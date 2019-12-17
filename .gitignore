@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/hipremeengine
+hipremeengine.so
+hipremeengine.dylib
+hipremeengine.dll
+hipremeengine.a
+hipremeengine.lib
+hipremeengine-test-*
+*.exe
+*.o
+*.obj
+*.lst
