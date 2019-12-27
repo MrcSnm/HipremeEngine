@@ -14,6 +14,7 @@ import sdl.event.handlers.keyboard;
  */
 immutable SDL_EventType types;
 
+
 int main(string[] args)
 {
 	loadSDLLibs();

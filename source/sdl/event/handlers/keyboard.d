@@ -1,8 +1,9 @@
 module sdl.event.handlers.keyboard;
+import std.stdio;
 private import sdl.loader;
 private import std.algorithm, std.conv, std.datetime.stopwatch;
 private import error.handler;
-private import util.time;
+private import util.time, util.array;
 
 /** 
  * Key handler
@@ -13,10 +14,8 @@ abstract class _Key
      * Reference for the handler
      */
     KeyboardHandler* keyboard;
-    /** 
-     * Getting metadata about the key code
-     */
     KeyMetadata meta;
+
     /** 
      * Only assigned by the KeyboardHandler
      * invoke rebind() for changing current key
@@ -36,7 +35,7 @@ abstract class _Key
     }
 }
 
-private class KeyMetadata
+final private class KeyMetadata
 {
     float lastDownTime, downTimeStamp;
     float lastUpTime, upTimeStamp;
@@ -99,15 +98,14 @@ class KeyboardHandler
 {
     private _Key[][int] listeners;
     private int[int] listenersCount;
-    private KeyMetadata[256] metadatas;
-    public int[256] pressedKeys;
+    private static KeyMetadata[256] metadatas;
+    private static int[256] pressedKeys;
 
-    this()
+    static this()
     {
-        import std.stdio;
         for(int i = 0; i < 256; i++)
             metadatas[i] = new KeyMetadata(i);
-        pressedKeys[] = -1;
+        pressedKeys[] = 0;
     }
     
     
@@ -155,11 +153,27 @@ class KeyboardHandler
         listenersCount[key]++;
     }
 
+    private void setPressed(SDL_Keycode key, bool press)
+    {
+        metadatas[cast(ubyte) key].setPressed(press);
+        if(press)
+        {
+            if(pressedKeys.indexOf(cast(ubyte)key) == -1)
+            {
+                bool hasChange = swapElementsFromArray(pressedKeys, cast(ubyte)key, 0);
+                //writeln("Changed!" ~ to!string(hasChange));
+            }
+        }
+        else
+            swapElementsFromArray(pressedKeys, cast(ubyte)key, 0);
+
+    }
+
     void handleKeyUp(SDL_Keycode key)
     {
+        setPressed(key, false);
         if((key in listeners) != null)
         {
-            metadatas[cast(ubyte)key].setPressed(false);
             _Key[] keyListeners = listeners[key];
             immutable int len = listenersCount[key];
             for(int i = 0; i < len; i++)
@@ -167,23 +181,25 @@ class KeyboardHandler
         }
     }
     
+    /**
+    *   Updates the metadata
+    */
     void handleKeyDown(SDL_Keycode key)
     {
-        if((key in listeners) != null)
-        {
-            metadatas[cast(ubyte)key].setPressed(true);
-            _Key[] keyListeners = listeners[key];
-            immutable int len = listenersCount[key];
-            for(int i = 0; i < len; i++)
-                keyListeners[i].onDown();
-        }
+        import std.stdio : writeln;
+        setPressed(key, true);
+        
+
     }
 
     void update()
     {
-        foreach(key; pressedKeys)
+        int i = 0;
+        while(pressedKeys[i] != 0)
         {
-            
+            foreach(key; listeners[pressedKeys[i]])
+                key.onDown();
+            i++;
         }
     }
 
