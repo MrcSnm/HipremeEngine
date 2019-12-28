@@ -39,21 +39,23 @@ final private class KeyMetadata
 {
     float lastDownTime, downTimeStamp;
     float lastUpTime, upTimeStamp;
-    int keyCode;
+    ubyte keyCode;
     bool isPressed = false;
     this(int key)
     {
-        this.keyCode = key;
+        this.keyCode = cast(ubyte)key;
     }
+
     this(SDL_Keycode key)
     {
-        this.keyCode = key;
+        this.keyCode = cast(ubyte)key;
     }
 
     private void stampDownTime()
     {
         downTimeStamp = Time.getCurrentTime();
     }
+
     private void stampUpTime()
     {
         upTimeStamp = Time.getCurrentTime();
@@ -98,8 +100,8 @@ class KeyboardHandler
 {
     private _Key[][int] listeners;
     private int[int] listenersCount;
-    private static KeyMetadata[256] metadatas;
     private static int[256] pressedKeys;
+    private static KeyMetadata[256] metadatas;
 
     static this()
     {
@@ -111,8 +113,8 @@ class KeyboardHandler
     
     /** 
      * Will take care of not let memory fragmentation happen by switching places with current index and last
-     * Params:
      *   k = Key object reference
+     * Params:
      *   kCode = New key code
      * Returns: Rebinded was succesful
      */
@@ -138,34 +140,46 @@ class KeyboardHandler
      */
     void addKeyListener(SDL_Keycode key, _Key k)
     {
-        if((key in listeners) == null)
+        if((key in listeners) == null) //Initialization for new key
         {
-            listeners[key] = [];
-            listeners[key].reserve(4);
-            listenersCount[key] = 0;
+            listeners[key] = []; //Creates a new place for the new key
+            listeners[key].reserve(4); //Reserves a bit of memory
+            listenersCount[key] = 0; //Initialization
         }
-        if(listeners[key].length != listenersCount[key])
+        if(listeners[key].length != listenersCount[key]) //Check if there is null space
             listeners[key][$ - 1] = k;
         else
-            listeners[key]~= k;
-        k.keyCode = key;
+            listeners[key]~= k; //Append if not
+        k.keyCode = key; //Initializes key
         k.meta = metadatas[cast(ubyte)key];
         listenersCount[key]++;
     }
-
+    /**
+      * Takes care of the pressed keys array
+      */
     private void setPressed(SDL_Keycode key, bool press)
     {
-        metadatas[cast(ubyte) key].setPressed(press);
+        ubyte _key = cast(ubyte)key;
+        metadatas[_key].setPressed(press);
         if(press)
         {
-            if(pressedKeys.indexOf(cast(ubyte)key) == -1)
+            if(pressedKeys.indexOf(_key) == -1)
             {
-                bool hasChange = swapElementsFromArray(pressedKeys, cast(ubyte)key, 0);
-                //writeln("Changed!" ~ to!string(hasChange));
+                pressedKeys[pressedKeys.indexOf(0)] = _key; //Assign to null index a key
             }
         }
         else
-            swapElementsFromArray(pressedKeys, cast(ubyte)key, 0);
+        {
+            const int index = pressedKeys.indexOf(0); //Get last index
+            const int upIndex = pressedKeys.indexOf(_key);
+            if(index > 1)
+            {
+                swapAt(pressedKeys, index - 1, upIndex);//Swaps the current key with the last valid key
+                pressedKeys[index - 1] = 0;
+            }
+            else pressedKeys[0] = 0;
+
+        }
 
     }
 
@@ -188,8 +202,7 @@ class KeyboardHandler
     {
         import std.stdio : writeln;
         setPressed(key, true);
-        
-
+    
     }
 
     void update()
@@ -197,8 +210,9 @@ class KeyboardHandler
         int i = 0;
         while(pressedKeys[i] != 0)
         {
-            foreach(key; listeners[pressedKeys[i]])
-                key.onDown();
+            if((pressedKeys[i] in listeners) != null)
+                foreach(key; listeners[pressedKeys[i]])
+                    key.onDown();
             i++;
         }
     }

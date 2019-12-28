@@ -1,4 +1,5 @@
 import std.stdio;
+import core.thread;
 import sdl.loader;
 import error.handler;
 import global.consts;
@@ -45,10 +46,11 @@ int main(string[] args)
 
 	EventDispatcher ev = new EventDispatcher(&kb);
 
-	while(!quit)
+	while(!quit && !ev.hasQuit)
 	{
 		ev.handleEvent();
 		SDL_UpdateWindowSurface(gWindow);
+		Thread.sleep(16.msecs);
 	}
 
 	exitEngine(&gWindow);
