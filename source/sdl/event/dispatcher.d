@@ -38,6 +38,8 @@ class EventDispatcher
                 default:break;
             }
         }
+        keyboard.update();
+
     }
 }
 
