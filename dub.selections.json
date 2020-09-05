@@ -1,7 +1,8 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"bindbc-loader": "0.2.1",
-		"bindbc-sdl": "0.13.0"
+		"bindbc-loader": "0.3.2",
+		"bindbc-openal": "0.4.1",
+		"bindbc-sdl": "0.19.1"
 	}
 }
