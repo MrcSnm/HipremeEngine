@@ -1,4 +1,5 @@
 import std.stdio;
+import core.thread;
 import sdl.loader;
 import error.handler;
 import global.consts;
@@ -66,7 +67,7 @@ extern(C)int SDL_main()
 
 	// EventDispatcher ev = new EventDispatcher(&kb);
 
-	while(!quit)
+	while(!quit && !ev.hasQuit)
 	{
 	// 	ev.handleEvent();
 	    SDL_Event e;
