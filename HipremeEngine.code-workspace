@@ -4,5 +4,21 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": 
+	{
+		"files.exclude": 
+		{
+			".dub":true,
+			"bin":true,
+			"linuxlib":true,
+			"dub.selections.json":true,
+			"*.so" : true,
+			"*.o" : true,
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true
+		}
+	}
 }

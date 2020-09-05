@@ -1,6 +1,11 @@
 module error.handler;
 import std.stdio;
 import std.conv;
+version(Android)
+{
+    import jni.helper.androidlog;
+}
+import std.system;
 
 /** 
  * Base clas for documenting errors
@@ -33,10 +38,20 @@ public class EngineErrorStack
 
     public void showStack()
     {
-        writeln("ErrorStack: " ~ stackName);
-        const int len = cast(int)this.errorStack.length;
-        for(int i = 0; i < len; i++)
-            writeln("\t" ~ errorStack[i]);
+        static if(os == OS.android)
+        {
+            aloge("HipremeEngine", "ErrorStack: " ~ stackName);
+            const int len = cast(int)this.errorStack.length;
+            for(int i = 0; i < len; i++)
+                aloge("HipremeEngine", "\t" ~ errorStack[i]);
+        }
+        else
+        {
+            writeln("ErrorStack: " ~ stackName);
+            const int len = cast(int)this.errorStack.length;
+            for(int i = 0; i < len; i++)
+                writeln("\t" ~ errorStack[i]);
+        }
     }
 }
 
@@ -89,14 +104,23 @@ public static class ErrorHandler
 
 
     /** 
+     * This function adds to the error stack
      * Params:
      *   errorTitle = Error Header
      *   errorMessage = Error Message
      */
     public static void showErrorMessage(string errorTitle, string errorMessage)
     {
-        writeln("\nError: " ~ errorTitle);
-        writeln(errorMessage);
+        static if(os == OS.android)
+        {
+            aloge("HipremeEngine", "\nError: " ~ errorTitle);
+            aloge("HipremeEngine", errorMessage);
+        }
+        else
+        {
+            writeln("\nError: " ~ errorTitle);
+            writeln(errorMessage);
+        }
         getError(errorTitle, errorMessage);
     }
     /** 

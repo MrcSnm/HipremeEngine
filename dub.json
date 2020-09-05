@@ -1,19 +1,20 @@
 {
-    "authors": [
+	"authors": [
 		"Hipreme"
 	],
-    "copyright": "Copyright © 2019, Hipreme",
-    "dependencies": {
-        "bindbc-sdl": "~>0.13.0"
-    },
-    "targetPath": "bin",
-    "versions": [
+	"copyright": "Copyright © 2019, Hipreme",
+	"dependencies": {
+		"bindbc-openal": "~>0.4.1",
+		"bindbc-sdl": "~>0.19.0"
+	},
+	"description": "Open-Source D Game Engine",
+	"license": "proprietary",
+	"name": "main",
+	"targetPath": "bin",
+	"versions": [
 		"SDL_208",
 		"BindSDL_Mixer",
 		"BindSDL_TTF",
 		"BindSDL_Image"
-	],
-    "description": "Open-Source D Game Engine",
-    "license": "proprietary",
-    "name": "hipremeengine"
+	]
 }

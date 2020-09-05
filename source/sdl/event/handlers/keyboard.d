@@ -97,10 +97,13 @@ private class KeyMetadata
  */
 class KeyboardHandler
 {
-    private _Key[][int] listeners;
-    private int[int] listenersCount;
-    private KeyMetadata[256] metadatas;
-    public int[256] pressedKeys;
+    private:
+    _Key[][int] listeners;
+    int[int] listenersCount;
+    KeyMetadata[256] metadatas;
+
+    public:
+        int[256] pressedKeys;
 
     this()
     {
