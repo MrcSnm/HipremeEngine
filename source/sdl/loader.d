@@ -4,6 +4,7 @@ public:
     import bindbc.sdl.image;
     import implementations.audio.audio;
     import bindbc.sdl.ttf;
+    import sdl.sdl_sound;
     import std.system;
 private 
 {
@@ -36,7 +37,7 @@ version(BindSDL_Static)
 }
 else
 {
-    bool loadSDLLibs()
+    bool loadSDLLibs(bool audio3D)
     {
         SDLSupport ret = loadSDL();
         ErrorHandler.startListeningForErrors("Loading SDL Libraries");
@@ -66,9 +67,12 @@ else
         //Load image loading support
         ErrorHandler.assertErrorMessage(loadSDLImage() != sdlImageSupport, "Could not load library", "SDL Image library hasn't been able to load");
         //Load Audio support
-        Audio.initialize();
+        Audio.initialize(audio3D);
         //Load Font support
         ErrorHandler.assertErrorMessage(loadSDLTTF() != sdlTTFSupport, "Could not load library", "SDL TTF library hasn't been able to load");
+        ErrorHandler.assertErrorMessage(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0, "SDL Initialization",  "SDL could not initialize\nSDL Error: " ~ to!string(SDL_GetError()));
+
+        Sound_Init();
         return ErrorHandler.stopListeningForErrors();
     }
 }
@@ -81,22 +85,19 @@ else
  */
 bool initializeWindow(SDL_Window** window, SDL_Surface** surface)
 {
-    ErrorHandler.startListeningForErrors("SDL Initialization");
-	if(!ErrorHandler.assertErrorMessage(SDL_Init(SDL_INIT_VIDEO) < 0, "SDL Initialization",  "SDL could not initialize\nSDL Error: " ~ to!string(SDL_GetError())))
-	{
-		const int winPos = SDL_WINDOWPOS_UNDEFINED;
-        SDL_Rect gScreenRect = {0,0,320,240};
-        SDL_DisplayMode displayMode;
-        if( SDL_GetCurrentDisplayMode( 0, &displayMode ) == 0 )
-        {
-            gScreenRect.w = displayMode.w;
-            gScreenRect.h = displayMode.h;
-        }
+    ErrorHandler.startListeningForErrors("SDL Window Initialization");
+    const int winPos = SDL_WINDOWPOS_UNDEFINED;
+    SDL_Rect gScreenRect = {0,0,320,240};
+    SDL_DisplayMode displayMode;
+    if( SDL_GetCurrentDisplayMode( 0, &displayMode ) == 0 )
+    {
+        gScreenRect.w = displayMode.w;
+        gScreenRect.h = displayMode.h;
+    }
 
-		*window = SDL_CreateWindow(cast(char*)ENGINE_NAME, winPos, winPos, gScreenRect.w, gScreenRect.h,
-        SDL_WindowFlags.SDL_WINDOW_SHOWN | SDL_WindowFlags.SDL_WINDOW_OPENGL );
-		ErrorHandler.assertErrorMessage(window == null, "Window creation", "Window could not be opened\nSDL_Error: " ~ to!string(SDL_GetError()));
-	}
+    *window = SDL_CreateWindow(cast(char*)ENGINE_NAME, winPos, winPos, gScreenRect.w, gScreenRect.h,
+    SDL_WindowFlags.SDL_WINDOW_SHOWN | SDL_WindowFlags.SDL_WINDOW_OPENGL );
+    ErrorHandler.assertErrorMessage(window == null, "Window creation", "Window could not be opened\nSDL_Error: " ~ to!string(SDL_GetError()));
 
 	*surface = SDL_GetWindowSurface(*window);
 
