@@ -1,0 +1,3 @@
+[submodule "bindbc-openal"]
+	path = bindbc-openal
+	url = https://github.com/BindBC/bindbc-openal.git
