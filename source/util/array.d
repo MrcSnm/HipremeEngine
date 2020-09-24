@@ -6,7 +6,8 @@ private import std.conv : to;
 */
 int indexOf(T)(T[] arr, T element)
 {
-    const ulong len = arr.length;
+    const size_t len = arr.length;
+    if(len ==0)return-1;
     for(int i = 0; i < len; i++)
         if(arr[i] == element)
             return i;
@@ -15,7 +16,8 @@ int indexOf(T)(T[] arr, T element)
 
 int lastIndexOf(T)(T[] arr, T element)
 {
-    const ulong len = arr.length;
+    const size_t len = arr.length;
+    if(len==0)return-1;
     for(int i = (cast(int)len - 1); i >= 0; i--)
         if(arr[i] == element)
             return i;

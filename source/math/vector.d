@@ -20,7 +20,7 @@ public struct Vector(T)
     }
 
     float mag(){return sqrt(values[0]*values[0] + values[1]*values[1] + values[2]*values[2]);}
-    void normallize()
+    void normalize()
     {
         const float m = mag();
         values[0]/=m;
