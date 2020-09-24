@@ -6,6 +6,10 @@ import global.consts;
 import std.conv : to;
 import global.assets;
 import data.image;
+import implementations.audio.audio;
+import bindbc.sdl.mixer;
+import bindbc.openal;
+import implementations.audio.backend.alefx;
 import sdl.event.dispatcher;
 import sdl.event.handlers.keyboard;
 version(Android)
@@ -13,7 +17,19 @@ version(Android)
 	import jni.helper.androidlog;
 	import core.runtime : rt_init;
 }
-
+class t
+	{
+		int a;
+		float b;
+		void para(){}
+	}
+	class z : t
+	{
+		import global.udas;
+		string bz;
+		@Hidden uint floating;
+		void dab(){}
+	}
 
 /** 
  * Fast access for SDL Event Types
@@ -23,7 +39,7 @@ version(Android)
 static SDL_Window* gWindow = null;
 static SDL_Surface* gScreenSurface = null;
 
-static void initEngine()
+static void initEngine(bool audio3D = false)
 {
 	version(Android)
 	{
@@ -33,16 +49,49 @@ static void initEngine()
 	}
 	version(BindSDL_Static){}
 	else
-		loadSDLLibs();
+		loadSDLLibs(audio3D);
+}
+
+static void list_audio_devices(const ALCchar *devices)
+{
+        const(char)* device = devices;
+		const(char)* next = devices + 1;
+        size_t len = 0;
+
+        writeln("Devices list:\n");
+        writeln("----------\n");
+        while (device && *device != '\0' && next && *next != '\0') 
+		{
+			writefln("%s\n", to!string(device));
+			import core.stdc.string:strlen;
+			len = strlen(device);
+			device += (len + 1);
+			next += (len + 2);
+        }
+        writeln("----------\n");
 }
 
 
 extern(C)int SDL_main()
 {
-	initEngine();
+	initEngine(true);
 	initializeWindow(&gWindow, &gScreenSurface);
-	SDL_FillRect(gScreenSurface, null, SDL_MapRGB(gScreenSurface.format, 0xff, 0xff, 0x00));
 	
+	AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
+	Sound_AudioInfo info;
+	
+	info.channels=1;
+	info.rate = 22_050;
+	info.format = SDL_AudioFormat.AUDIO_S16;
+
+	AudioSource sc = Audio.getSource(buf);
+	Audio.setPitch(sc, 0.5);
+	import def.debugging.runtime;
+	
+
+	Audio.play(sc);
+	
+	SDL_FillRect(gScreenSurface, null, SDL_MapRGB(gScreenSurface.format, 0xff, 0xff, 0x00));
 	SDL_Surface* imgTeste;
 	if(loadImage(Assets.Graphics.Sprites.teste_bmp))
 	{
@@ -50,7 +99,11 @@ extern(C)int SDL_main()
 		SDL_BlitSurface(imgTeste, null, gScreenSurface, null);
 	}
 	bool quit = false;
-	// KeyboardHandler kb = new KeyboardHandler();
+	KeyboardHandler kb = new KeyboardHandler();
+
+
+	z bola = new z();
+	RuntimeDebug.instancePrint!bola;
 
 	// _Key k = new class _Key
 	// {
@@ -67,7 +120,11 @@ extern(C)int SDL_main()
 
 	// EventDispatcher ev = new EventDispatcher(&kb);
 
-	while(!quit && !ev.hasQuit)
+	float angle=0;
+	float angleSum = 0.01;
+	import std.math:sin,cos;
+
+	while(!quit)
 	{
 	// 	ev.handleEvent();
 	    SDL_Event e;
@@ -89,9 +146,14 @@ extern(C)int SDL_main()
 		// SDL_RenderPresent(gWindow);
 		SDL_UpdateWindowSurface(gWindow);
 		SDL_Delay(16);
+	//	alSource3f(src, AL_POSITION, cos(angle) * 10, 0, sin(angle) * 10);
+		angle+=angleSum;
+		
 	}
 
 	exitEngine(&gWindow);
+	Audio.onDestroy();
+
 	return 1;
 }
 

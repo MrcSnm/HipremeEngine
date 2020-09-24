@@ -131,10 +131,19 @@ public static class ErrorHandler
      *   errorMessage = Error Message
      * Returns: If the error happenned
      */
-    public static bool assertErrorMessage(bool expression, string errorTitle, string errorMessage)
+    public static bool assertErrorMessage(bool expression, string errorTitle, string errorMessage,
+    string file = __FILE__, size_t line =__LINE__, string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
     {
+        version(HIPREME_DEBUG)
+        {
+            string where = mod~"."~file~":"~to!string(line)~"("~func~")\n\t";
+        }
+        else
+        {
+            string where="";
+        }
         if(expression)
-            showErrorMessage(errorTitle, errorMessage);
+            showErrorMessage(where~errorTitle, "\t"~errorMessage);
         return expression;
     }
 
