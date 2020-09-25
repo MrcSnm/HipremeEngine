@@ -1,6 +1,6 @@
 [submodule "bindbc-openal"]
 	path = bindbc-openal
 	url = https://github.com/BindBC/bindbc-openal.git
-[submodule "building/imgui"]
-	path = building/imgui
-	url = https://github.com/ocornut/imgui.git
+[submodule "building/cimgui"]
+	path = building/cimgui
+	url = https://github.com/cimgui/cimgui.git
