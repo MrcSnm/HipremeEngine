@@ -17,19 +17,7 @@ version(Android)
 	import jni.helper.androidlog;
 	import core.runtime : rt_init;
 }
-class t
-	{
-		int a;
-		float b;
-		void para(){}
-	}
-	class z : t
-	{
-		import global.udas;
-		string bz;
-		@Hidden uint floating;
-		void dab(){}
-	}
+
 
 /** 
  * Fast access for SDL Event Types
@@ -88,7 +76,7 @@ extern(C)int SDL_main()
 	Audio.setPitch(sc, 0.5);
 	import def.debugging.runtime;
 	
-
+	
 	Audio.play(sc);
 	
 	SDL_FillRect(gScreenSurface, null, SDL_MapRGB(gScreenSurface.format, 0xff, 0xff, 0x00));
@@ -101,9 +89,7 @@ extern(C)int SDL_main()
 	bool quit = false;
 	KeyboardHandler kb = new KeyboardHandler();
 
-
-	z bola = new z();
-	RuntimeDebug.instancePrint!bola;
+	
 
 	// _Key k = new class _Key
 	// {

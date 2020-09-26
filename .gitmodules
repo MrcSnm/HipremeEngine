@@ -4,3 +4,6 @@
 [submodule "building/cimgui"]
 	path = building/cimgui
 	url = https://github.com/cimgui/cimgui.git
+[submodule "d-cimgui"]
+	path = d-cimgui
+	url = https://github.com/MrcSnm/d-cimgui.git
