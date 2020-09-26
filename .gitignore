@@ -13,3 +13,4 @@ hipremeengine-test-*
 *.o
 *.obj
 *.lst
+.history
