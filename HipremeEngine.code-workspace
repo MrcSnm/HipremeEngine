@@ -27,6 +27,17 @@
 			"**/.hg": true,
 			"**/CVS": true,
 			"**/.DS_Store": true
+		},
+		"search.exclude": {
+			"**/.git": true,
+			"linuxlib":true,
+			"bindbc-openal":true,
+			"building":true,
+			"bin":true,
+			"**/node_modules": true,
+			".history":true,
+			"**/bower_components": true,
+			"**/*.code-search": true
 		}
 	}
 }
