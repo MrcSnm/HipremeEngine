@@ -175,6 +175,23 @@ class Audio
     {
         audioInterface.setMaxDistance(src, dist);
         src.maxDistance = dist;
+    }
+
+    public static void update(AudioSource src)
+    {
+        if(!src.isPlaying)
+            Audio.pause(src);
+        else
+            Audio.resume(src);
+        audioInterface.setMaxDistance(src, src.maxDistance);
+        audioInterface.setRolloffFactor(src, src.rolloffFactor);
+        audioInterface.setReferenceDistance(src, src.referenceDistance);
+        audioInterface.setVolume(src, src.volume);
+        audioInterface.setPanning(src, src.panning);
+        audioInterface.setPitch(src, src.pitch);
+        import std.stdio:writefln;
+        // float* pos;
+        // alGetSourcef(src.id, AL_POSITION, pos);
 
     }
 
@@ -192,7 +209,5 @@ class Audio
     version(HIPREME_DEBUG)
     {
         public static bool hasInitializedAudio = false;
-    }
-
-    
+    }    
 }

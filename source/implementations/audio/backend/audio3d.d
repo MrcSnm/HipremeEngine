@@ -210,21 +210,19 @@ public class Audio3DBackend : IAudio
     //Start Effects
     public void setVolume(AudioSource src, float volume)
     {
-         alSourcef(src.id, AL_GAIN, volume);
+        alSourcef(src.id, AL_GAIN, volume);
     }
     public void setPanning(AudioSource src, float panning)
     {
         alSource3f(src.id, AL_POSITION, src.position.x + (panning*Audio3DBackend.PANNING_CONSTANT), src.position.y, src.position.z);
-        src.panning = panning;
     }
     public void setPitch(AudioSource src, float pitch)
     {
         alSourcef(src.id, AL_PITCH, pitch);
-        src.pitch = pitch;
     }
     public void setPosition(AudioSource src, ref Vector!float pos)
     {
-        alSource3f(src.id, AL_POSITION, pos.x, pos.y, pos.z);
+        alSource3f(src.id, AL_POSITION, pos.x + (src.panning*Audio3DBackend.PANNING_CONSTANT), pos.y, pos.z);
         src.position = pos;
     }
 
@@ -258,5 +256,5 @@ public class Audio3DBackend : IAudio
     /**
     * Constant used for making the panning distance offset from the listener
     */
-    public static ALfloat PANNING_CONSTANT = 1;
+    public static ALfloat PANNING_CONSTANT = 1000;
 }
