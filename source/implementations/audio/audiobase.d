@@ -18,6 +18,8 @@ public abstract class AudioBuffer
     {
         bufferType = audioType;
         fullPath = audioPath;
+        import std.path : baseName;
+        fileName = baseName(audioPath);
         this.isStreamed = isStreamed;
         return load(audioPath, audioType, isStreamed);
     }
