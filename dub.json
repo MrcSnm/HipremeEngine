@@ -10,21 +10,32 @@
 	"copyright": "Copyright © 2019 - 2020, Hipreme",
 	"dependencies": {
 		"bindbc-opengl": "~>0.13.0",
-		"bindbc-sdl": "~>0.19.0"
+		"bindbc-sdl": "~>0.19.0",
+		"bindbc-cimgui": "~master"
 	},
 	"description": "Open-Source D Game Engine",
 	"dflags": [
 		"-version=HIPREME_DEBUG"
+	],
+	"dflags-linux":
+	[
+		"-L-Ldependencies/Bindbc-Cimgui/lib",
+		"-L-Ldependencies/bindbc-openal/lib"
 	],
 	"importPaths": [
 		"source",
 		"dependencies/bindbc-openal/source",
 		"dependencies/Bindbc-Cimgui/source"
 	],
-	"libs": 
+	"libs-windows": 
 	[
 		"dependencies/Bindbc-Cimgui/lib/bindbc-cimgui",
 		"dependencies/bindbc-openal/lib/bindBC_OpenAL"
+	],
+	"libs-linux": 
+	[
+		"bindbc-cimgui",
+		"BindBC_OpenAL"
 	],
 	"license": "proprietary",
 	"name": "main",
