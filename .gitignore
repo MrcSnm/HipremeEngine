@@ -12,8 +12,11 @@ hipremeengine-test-*
 building/openal-soft-1.20.1-bin
 building/SDL_sound-default
 building/SDL2-2.0.12
+.history
 *.exe
 *.o
 *.obj
 *.lst
 .history
+imgui.ini
+bin/.vs
