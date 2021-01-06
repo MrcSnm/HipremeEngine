@@ -65,12 +65,12 @@ else
                 ErrorHandler.showErrorMessage("Lower " ~ filetype ~ " version ", "Your " ~ filetype ~ " version is lower than the version expected " ~ CURRENT_SDL_VERSION);
         }
         //Load image loading support
-        ErrorHandler.assertErrorMessage(loadSDLImage() != sdlImageSupport, "Could not load library", "SDL Image library hasn't been able to load");
+        ErrorHandler.assertErrorMessage(loadSDLImage() == sdlImageSupport, "Could not load library", "SDL Image library hasn't been able to load");
         //Load Audio support
         Audio.initialize(audio3D);
         //Load Font support
-        ErrorHandler.assertErrorMessage(loadSDLTTF() != sdlTTFSupport, "Could not load library", "SDL TTF library hasn't been able to load");
-        ErrorHandler.assertErrorMessage(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0, "SDL Initialization",  "SDL could not initialize\nSDL Error: " ~ to!string(SDL_GetError()));
+        ErrorHandler.assertErrorMessage(loadSDLTTF() == sdlTTFSupport, "Could not load library", "SDL TTF library hasn't been able to load");
+        ErrorHandler.assertErrorMessage(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) > 0, "SDL Initialization",  "SDL could not initialize\nSDL Error: " ~ to!string(SDL_GetError()));
 
         Sound_Init();
         return ErrorHandler.stopListeningForErrors();
@@ -97,7 +97,7 @@ bool initializeWindow(SDL_Window** window, SDL_Surface** surface)
 
     *window = SDL_CreateWindow(cast(char*)ENGINE_NAME, winPos, winPos, gScreenRect.w, gScreenRect.h,
     SDL_WindowFlags.SDL_WINDOW_SHOWN | SDL_WindowFlags.SDL_WINDOW_OPENGL );
-    ErrorHandler.assertErrorMessage(window == null, "Window creation", "Window could not be opened\nSDL_Error: " ~ to!string(SDL_GetError()));
+    ErrorHandler.assertErrorMessage(window != null, "Window creation", "Window could not be opened\nSDL_Error: " ~ to!string(SDL_GetError()));
 
 	*surface = SDL_GetWindowSurface(*window);
 

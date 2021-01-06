@@ -142,6 +142,7 @@ public static class ErrorHandler
         {
             string where="";
         }
+        expression = !expression; //Negate the expression, as it must return wether error ocurred
         if(expression)
             showErrorMessage(where~errorTitle, "\t"~errorMessage);
         return expression;

@@ -43,8 +43,16 @@ static void initEngine(bool audio3D = false)
 	else
 	{
 		loadSDLLibs(audio3D);
-		if(!loadCImGUI())
-			writeln("Could not load dll");
+		import implementations.imgui.imgui_impl_sdl;
+		import bindbc.loader : SharedLib;
+		void function(SharedLib) implementation = null;
+		static if(!CIMGUI_USER_DEFINED_IMPLEMENTATION)
+			implementation = &bindSDLImgui;
+
+		if(!loadcimgui(implementation))
+		{
+			writeln("Could not load cimgui");
+		}
 	}
 }
 
@@ -79,9 +87,7 @@ extern(C)int SDL_main()
 	initEngine(true);
 	gWindow = createSDL_GL_Window();
 	//initializeWindow(&gWindow, &gScreenSurface);
-	
-	
-	AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
+	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
 
 	Sound_AudioInfo info;
 		
@@ -89,12 +95,23 @@ extern(C)int SDL_main()
 	info.rate = 22_050;
 	info.format = SDL_AudioFormat.AUDIO_S16;
 
-	AudioSource sc = Audio.getSource(buf);
-	Audio.setPitch(sc, 0.5);
+	//AudioSource sc = Audio.getSource(buf);
+	//Audio.setPitch(sc, 1);
 	import def.debugging.runtime;
 
 	DI.start(gWindow);
-	Audio.play(sc);
+	import global.fonts.icons;
+
+	ImFontConfig cfg = DI.getDefaultFontConfig("Default + Icons");
+	ImFontAtlas_AddFontDefault(igGetIO().Fonts, &cfg);
+	DI.mergeFont("assets/fonts/"~FontAwesomeSolid, 16, FontAwesomeRange, &cfg);
+
+
+
+	import implementations.imgui.imgui_impl_opengl3;
+	//ImGui_ImplOpenGL3_CreateFontsTexture();
+	
+	//Audio.play(sc);
 	
 	// SDL_FillRect(gScreenSurface, null, SDL_MapRGB(gScreenSurface.format, 0xff, 0xff, 0x00));
 	// SDL_Surface* imgTeste;
@@ -108,34 +125,32 @@ extern(C)int SDL_main()
 
 	
 
-	// _Key k = new class _Key
-	// {
-	// 	override void onDown(){quit = true;}
-	// 	override void onUp(){}
-	// };
-	// kb.addKeyListener(SDL_Keycode.SDLK_ESCAPE, k);
-	// 	override void onDown(){import util.time : Time; writeln(this.meta.getDowntimeDuration());}
-	// kb.addKeyListener(SDL_Keycode.SDLK_a, new class _Key
-	// {
-	// 	override void onUp(){}
-	// });
-	// kb.rebind(k, SDLK_F10);
+	Key k = new class Key
+	{
+		override void onDown(){quit = true;}
+		override void onUp(){}
+	};
+	kb.addKeyListener(SDL_Keycode.SDLK_ESCAPE, k);
+	kb.addKeyListener(SDL_Keycode.SDLK_a, new class Key
+	{
+		override void onDown(){import util.time : Time; writeln(this.meta.getDowntimeDuration());}
+		override void onUp(){}
+	});
 
-	// EventDispatcher ev = new EventDispatcher(&kb);
+	EventDispatcher ev = new EventDispatcher(&kb);
 
 	float angle=0;
 	float angleSum = 0.01;
 	import std.math:sin,cos;
-	bool show_demo_window = true;
-    bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	
 	while(!quit)
 	{
-	// 	ev.handleEvent();
+		ev.handleEvent();
 	    SDL_Event e;
 		while(SDL_PollEvent(&e)) 
 		{
+			DI.update(&e);
 			switch(e.type)
 			{
 				case SDL_QUIT:
@@ -144,79 +159,36 @@ extern(C)int SDL_main()
 //				case SDL_KEYDOWN:
 //					alogi("D_LANG", to!string(e.key.keysym.sym));
 				default:break;
-			}  
+			}
 		}
+
 
 		///////////START IMGUI
 
 		// Start the Dear ImGui frame
-        DI.update();
-
-        // 1. Show the big demo window (Most of the sample code is in igShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-             igShowDemoWindow(&show_demo_window);
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+        DI.begin();
         {
 			import implementations.imgui.imgui_debug;
-            static float f = 1f;
-			static float v = 1f;
-			
-			Audio.setPitch(sc, f);
-			Audio.setVolume(sc, v);
-            static int counter = 0;
-			
-
-            igBegin("Hello, world!", null,0);                          // Create a window called "Hello, world!" and append into it.
-
-
-            igText("This is some useful text.");               // Display some text (you can use a format strings too)
-            igCheckbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            igCheckbox("Another Window", &show_another_window);
-
-            igSliderFloat("pitch", &f, 0.1f, 4.0f, null, 0);            // Edit 1 float using a slider from 0.0f to 1.0f
-            igSliderFloat("voolume", &v, 0.1f, 4.0f, null, 0);            // Edit 1 float using a slider from 0.0f to 1.0f
-            igColorEdit4("clear color", cast(float*)&clear_color,0); // Edit 3 floats representing a color
-
-            if (igButton("Button".ptr, ImVec2()))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            igSameLine(0,0);
-            igText("counter = %d", counter);
-
-            igText("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / igGetIO().Framerate, igGetIO().Framerate);
-            igEnd();
-			igBegin("New Window!", null, 0);
-			igSameLine(0,0);
-			igText("Hello Worlder");
-			igSameLine(0,0);
-			igText("Hello Worlder");
-			igEnd();
+			// addDebug!(sc, AudioSource3D);
         }
 
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            igBegin("Another Window", &show_another_window, 0);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            igText("Hello from another window!");
-            if (igButton("Close Me".ptr, ImVec2()))
-                show_another_window = false;
-            igEnd();
-        }
+		if(igButton("Viewport flag".ptr, ImVec2(0,0)))
+		{
+			//writeln(igGetIO().ConfigFlags);
+			igGetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		}
 
         // Rendering
 		// glViewport(0, 0, cast(int)io.DisplaySize.x, cast(int)io.DisplaySize.y);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
-		DI.render();
+		DI.end();
 
         SDL_GL_SwapWindow(gWindow);
 		
 		// SDL_UpdateWindowSurface(gWindow);
 		// SDL_Delay(16);
     }
-	
-		//////////END IMGUI
-
 	    // SDL_SetRenderDrawColor(renderer, r, g, b, 0xFF);
 		// SDL_RenderClear(gWindow);
 		// SDL_RenderPresent(gWindow);
@@ -225,13 +197,18 @@ extern(C)int SDL_main()
 		
 	// Cleanup
 
-	SDL_GL_DeleteContext(SDL_GL_GetCurrentContext());
+	destroyEngine();
 
+	return 1;
+}
+
+static void destroyEngine()
+{
+	SDL_GL_DeleteContext(SDL_GL_GetCurrentContext());
+	DI.onDestroy();
 
 	exitEngine(&gWindow);
 	Audio.onDestroy();
-
-	return 1;
 }
 
 version(Android){}
