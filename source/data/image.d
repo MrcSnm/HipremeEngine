@@ -5,14 +5,50 @@ import error.handler;
 
 public static class ResourceManager
 {
+    private static SDL_Renderer* renderer;
     public static SDL_Surface*[string] loadedImages = null;
+    public static SDL_Texture*[string] loadedTextures = null;
+
+    public static bool init(SDL_Renderer* renderer)
+    {
+        ResourceManager.renderer = renderer;
+        int imgFlags = IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_JPG | IMG_INIT_WEBP;
+        if(!(IMG_Init(imgFlags) & imgFlags))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    public static bool loadTexture(string textureName)
+    {   
+        SDL_Texture* texture = null;
+        textureName = sanitizePath(textureName);
+        if((textureName in ResourceManager.loadedImages) == null)
+        {
+            SDL_Surface* img = null;
+            img = IMG_Load(textureName.ptr);
+            
+            texture = SDL_CreateTextureFromSurface(renderer, img);
+            ErrorHandler.assertErrorMessage(texture != null, "Loading Texture: ", "Could not load texture " ~ textureName);
+            ResourceManager.loadedTextures[textureName] = texture;
+            return true;
+        }
+        return false;
+    }
+
 
     public static void disposeResources()
     {
-        foreach(image; loadedImages)
+        foreach(ref image; loadedImages)
         {
             SDL_FreeSurface(image);
             image = null;
+        }
+        foreach(ref texture; loadedTextures)
+        {
+            SDL_DestroyTexture(texture);
+            texture = null;
         }
     }
 }
@@ -40,15 +76,20 @@ SDL_Surface* getImage(string imageName)
 }
 
 bool loadImage(string imageName)
-{
+{   
     imageName = sanitizePath(imageName);
     if((imageName in ResourceManager.loadedImages) == null)
     {
         SDL_Surface* img = null;
-        img = SDL_LoadBMP(cast(char*)imageName);
-        ErrorHandler.assertErrorMessage(img == null, "Loading Image: ", "Could not load image " ~ imageName);
+        img = SDL_LoadBMP(imageName.ptr);
+        ErrorHandler.assertErrorMessage(img != null, "Loading Image: ", "Could not load image " ~ imageName);
         ResourceManager.loadedImages[imageName] = img;
         return true;
     }
     return false;
+}
+
+SDL_Texture* getTexture(string textureName)
+{
+
 }

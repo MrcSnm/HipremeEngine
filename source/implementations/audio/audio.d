@@ -20,12 +20,12 @@ class Audio
             hasInitializedAudio = true;
         }
         Audio.is3D = is3D;
-        ErrorHandler.assertErrorMessage(!loadSDLSound(), "Error Loading SDL_Sound", "SDL_Sound not found");
+        ErrorHandler.assertErrorMessage(loadSDLSound(), "Error Loading SDL_Sound", "SDL_Sound not found");
         if(is3D)
         {
             ErrorHandler.startListeningForErrors("HipremeAudio3D initialization");
             ALSupport sup = loadOpenAL();
-            if(ErrorHandler.assertErrorMessage(sup != ALSupport.al11, "Error loading OpenAL", "No OpenAL support found"))
+            if(ErrorHandler.assertErrorMessage(sup == ALSupport.al11, "Error loading OpenAL", "No OpenAL support found"))
             {
                 if(sup == ALSupport.badLibrary)
                     ErrorHandler.showErrorMessage("Bad OpenAL Support", "Unknown version of OpenAL");
@@ -96,7 +96,7 @@ class Audio
         //Creates a buffer compatible with the target interface
         version(HIPREME_DEBUG)
         {
-            if(ErrorHandler.assertErrorMessage(hasInitializedAudio == false, "Audio not initialized", "Call Audio.initialize before loading buffers"))
+            if(ErrorHandler.assertErrorMessage(hasInitializedAudio, "Audio not initialized", "Call Audio.initialize before loading buffers"))
                 return null;
         }
         AudioBuffer* checker = null;

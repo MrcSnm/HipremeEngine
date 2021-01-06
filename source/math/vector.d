@@ -8,6 +8,7 @@ public struct Vector(T)
     {
         values = [t1, t2, t3];
     }
+    this(T[3] ts){values = [ts[0], ts[1], ts[2]];}
     Vector!T opIndexUnary(string op)(size_t index)
     {
         static if(op == "-")
@@ -67,6 +68,13 @@ public struct Vector(T)
         values[2] = other[2];
         return this;
     }
+    ref Vector!T opAssign(T[3] other)
+    {
+        values[0] = other[0];
+        values[1] = other[1];
+        values[2] = other[2];
+        return this;
+    }
     ref T opIndex(size_t index){return values[index];}
 
     static Vector!T Zero(){return Vector(0,0,0);}
@@ -75,4 +83,5 @@ public struct Vector(T)
     scope ref T x(){return values[0];}
     scope ref T y(){return values[1];}
     scope ref T z(){return values[2];}
+
 }
