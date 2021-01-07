@@ -1,8 +1,12 @@
+/**
+*   Module responsibly for loading dynamic link libraries
+*/
 module sdl.loader;
 public:
     import bindbc.sdl;
     import bindbc.sdl.image;
     import implementations.audio.audio;
+    import implementations.renderer.renderer;
     import bindbc.sdl.ttf;
     import sdl.sdl_sound;
     import std.system;
@@ -15,26 +19,14 @@ private
     import global.consts;
 }
 
-version(Android)
-{
-    immutable string CURRENT_SDL_VERSION = "SDL_2_0_12";
-}
-else version(Windows)
-{
-    immutable string CURRENT_SDL_VERSION = "SDL_2_0_10";
-}
-else version(linux)
-{
-    immutable string CURRENT_SDL_VERSION = "SDL_2_0_8";
-}
+version(Android){immutable string CURRENT_SDL_VERSION = "SDL_2_0_12";}
+else version(Windows){immutable string CURRENT_SDL_VERSION = "SDL_2_0_10";}
+else version(linux){immutable string CURRENT_SDL_VERSION = "SDL_2_0_8";}
 /** 
  * This function will load SDL Dependencies
  * Returns: HAS_ANY_ERROR_HAPPENNED
  */
-version(BindSDL_Static)
-{
-
-}
+version(BindSDL_Static){}
 else
 {
     bool loadSDLLibs(bool audio3D)
@@ -66,53 +58,15 @@ else
         }
         //Load image loading support
         ErrorHandler.assertErrorMessage(loadSDLImage() == sdlImageSupport, "Could not load library", "SDL Image library hasn't been able to load");
+        int imgFlags = IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_JPG | IMG_INIT_WEBP;
+        ErrorHandler.assertErrorMessage((IMG_Init(imgFlags) & imgFlags) > 0, "Could not initialize library",  "SDL Image library could not initialize");
         //Load Audio support
         Audio.initialize(audio3D);
         //Load Font support
         ErrorHandler.assertErrorMessage(loadSDLTTF() == sdlTTFSupport, "Could not load library", "SDL TTF library hasn't been able to load");
-        ErrorHandler.assertErrorMessage(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) > 0, "SDL Initialization",  "SDL could not initialize\nSDL Error: " ~ to!string(SDL_GetError()));
+        ErrorHandler.assertErrorMessage(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0, "SDL Initialization",  "SDL could not initialize\nSDL Error: " ~ to!string(SDL_GetError()));
 
         Sound_Init();
         return ErrorHandler.stopListeningForErrors();
     }
-}
-/** 
- * 
- * Params:
- *   window = A window reference to start
- *   surface = A surface reference to start
- * Returns: HAS_ANY_ERROR_HAPPENNED
- */
-bool initializeWindow(SDL_Window** window, SDL_Surface** surface)
-{
-    ErrorHandler.startListeningForErrors("SDL Window Initialization");
-    const int winPos = SDL_WINDOWPOS_UNDEFINED;
-    SDL_Rect gScreenRect = {0,0,320,240};
-    SDL_DisplayMode displayMode;
-    if( SDL_GetCurrentDisplayMode( 0, &displayMode ) == 0 )
-    {
-        gScreenRect.w = displayMode.w;
-        gScreenRect.h = displayMode.h;
-    }
-
-    *window = SDL_CreateWindow(cast(char*)ENGINE_NAME, winPos, winPos, gScreenRect.w, gScreenRect.h,
-    SDL_WindowFlags.SDL_WINDOW_SHOWN | SDL_WindowFlags.SDL_WINDOW_OPENGL );
-    ErrorHandler.assertErrorMessage(window != null, "Window creation", "Window could not be opened\nSDL_Error: " ~ to!string(SDL_GetError()));
-
-	*surface = SDL_GetWindowSurface(*window);
-
-    return ErrorHandler.stopListeningForErrors();
-}
-
-/** 
- * This function will destroy SDL and dispose every resource
- * Params:
- *   window = Window to destroy
- */
-void exitEngine(SDL_Window** window)
-{
-    ResourceManager.disposeResources();
-    SDL_DestroyWindow(*window);
-    *window = null;
-    SDL_Quit();
 }

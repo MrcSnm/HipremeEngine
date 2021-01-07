@@ -38,8 +38,6 @@ public class DebugInterface
         
         ErrorHandler.assertErrorMessage(ImGui_ImplSDL2_InitForOpenGL(window, SDL_GL_GetCurrentContext()),
         "ImGUI Error", "Error Initializing SDL implementation");
-        import std.stdio:writeln;
-		writeln("AA loading!!");
         ErrorHandler.assertErrorMessage(ImGui_ImplOpenGL3_Init(""), 
         "ImGUI Error", "Error initializing OpenGL implementation");
         return ErrorHandler.stopListeningForErrors();

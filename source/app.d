@@ -19,6 +19,7 @@ version(Android)
 	import core.runtime : rt_init;
 }
 import bindbc.cimgui;
+import implementations.renderer.renderer;
 import def.debugging.gui;
 
 
@@ -27,7 +28,6 @@ import def.debugging.gui;
  */
 // immutable SDL_EventType types;
 
-static SDL_Window* gWindow = null;
 static SDL_Surface* gScreenSurface = null;
 
 static void initEngine(bool audio3D = false)
@@ -56,37 +56,17 @@ static void initEngine(bool audio3D = false)
 	}
 }
 
-SDL_Window* createSDL_GL_Window()
-{
-	SDL_GL_LoadLibrary(null);
 
-	//Set GL Version
-	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_ACCELERATED_VISUAL, 1);
-	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MINOR_VERSION, 5);
-	//Create window type
-	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DEPTH_SIZE, 24);
-	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
-	alias f = SDL_WindowFlags;
-	SDL_WindowFlags flags = (f.SDL_WINDOW_OPENGL | f.SDL_WINDOW_RESIZABLE | f.SDL_WINDOW_ALLOW_HIGHDPI);
-
-	SDL_Window* window = SDL_CreateWindow("GL Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, flags);
-	SDL_GLContext ctx = SDL_GL_CreateContext(window);
-	SDL_GL_MakeCurrent(window, ctx);
-	GLSupport ver = loadOpenGL();
-	
-	writeln(ver);
-	SDL_GL_SetSwapInterval(1);
-	return window;
-}
 
 
 extern(C)int SDL_main()
 {
 	initEngine(true);
-	gWindow = createSDL_GL_Window();
-	//initializeWindow(&gWindow, &gScreenSurface);
+	Renderer.init();
+	SDL_Texture* t;
+	ResourceManager.loadTexture(Assets.Graphics.Sprites.teste_bmp);
+	t = ResourceManager.getTexture(Assets.Graphics.Sprites.teste_bmp);
+	
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
 
 	Sound_AudioInfo info;
@@ -99,7 +79,7 @@ extern(C)int SDL_main()
 	//Audio.setPitch(sc, 1);
 	import def.debugging.runtime;
 
-	DI.start(gWindow);
+	DI.start(Renderer.window);
 	import global.fonts.icons;
 
 	ImFontConfig cfg = DI.getDefaultFontConfig("Default + Icons");
@@ -184,14 +164,11 @@ extern(C)int SDL_main()
         glClear(GL_COLOR_BUFFER_BIT);
 		DI.end();
 
-        SDL_GL_SwapWindow(gWindow);
-		
-		// SDL_UpdateWindowSurface(gWindow);
-		// SDL_Delay(16);
+		Renderer.clear(0,0,0);
+		static SDL_Rect rec = SDL_Rect(0, 0, 100, 100);
+		SDL_RenderCopy(Renderer.renderer, t, null, &rec);
+        Renderer.render();
     }
-	    // SDL_SetRenderDrawColor(renderer, r, g, b, 0xFF);
-		// SDL_RenderClear(gWindow);
-		// SDL_RenderPresent(gWindow);
 	//	alSource3f(src, AL_POSITION, cos(angle) * 10, 0, sin(angle) * 10);
 		angle+=angleSum;
 		
@@ -202,13 +179,17 @@ extern(C)int SDL_main()
 	return 1;
 }
 
+/** 
+ * This function will destroy SDL and dispose every resource
+ */
 static void destroyEngine()
 {
+    ResourceManager.disposeResources();
 	SDL_GL_DeleteContext(SDL_GL_GetCurrentContext());
 	DI.onDestroy();
-
-	exitEngine(&gWindow);
+	Renderer.dispose();
 	Audio.onDestroy();
+    SDL_Quit();
 }
 
 version(Android){}
