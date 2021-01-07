@@ -30,6 +30,12 @@ private SDL_Window* createSDL_GL_Window()
 	return window;
 }
 
+/**
+*   While this class is at implementation and don't have a backend folders,
+*   it actually does not requires a backend(as it is using SDL for now), but
+*   the structure could be changed at any time for supporting a new platform
+*   that SDL does not support
+*/
 public static class Renderer
 {
     private static Viewport currentViewport = null;

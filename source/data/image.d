@@ -2,7 +2,7 @@ module data.image;
 import sdl.loader;
 import std.algorithm:countUntil;
 import std.string:toStringz;
-import std.system, std.array : replace;
+import util.system;
 import error.handler;
 
 public static class ResourceManager
@@ -58,19 +58,6 @@ public static class ResourceManager
         }
     }
 }
-private:
-string sanitizePath(string path)
-{
-    switch(os)
-    {
-        case os.win32:
-        case os.win64:
-            return replace(path, "/", "\\");
-        default:
-            return replace(path, "\\", "/");
-    }
-}
-
 public:
 
 SDL_Surface* getImage(string imageName)
