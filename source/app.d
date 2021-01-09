@@ -63,9 +63,18 @@ extern(C)int SDL_main()
 {
 	initEngine(true);
 	Renderer.init();
-	SDL_Texture* t;
-	ResourceManager.loadTexture(Assets.Graphics.Sprites.teste_bmp);
-	t = ResourceManager.getTexture(Assets.Graphics.Sprites.teste_bmp);
+	import graphics.image;
+	import graphics.texture;
+	import graphics.g2d.sprite;
+	Image img = new Image(Assets.Graphics.Sprites.teste_bmp, 0x7f7f7f);
+	img.load();
+	Texture t = new Texture(img);
+
+	Sprite s = new Sprite(t);
+
+
+	SDL_Rect clip = SDL_Rect(0,0,t.width/2,t.height);
+
 	
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
 
@@ -93,13 +102,6 @@ extern(C)int SDL_main()
 	
 	//Audio.play(sc);
 	
-	// SDL_FillRect(gScreenSurface, null, SDL_MapRGB(gScreenSurface.format, 0xff, 0xff, 0x00));
-	// SDL_Surface* imgTeste;
-	// if(loadImage(Assets.Graphics.Sprites.teste_bmp))
-	// {
-	// 	imgTeste = getImage(Assets.Graphics.Sprites.teste_bmp);
-	// 	SDL_BlitSurface(imgTeste, null, gScreenSurface, null);
-	// }
 	bool quit = false;
 	KeyboardHandler kb = new KeyboardHandler();
 
@@ -146,11 +148,13 @@ extern(C)int SDL_main()
 		///////////START IMGUI
 
 		// Start the Dear ImGui frame
+		Renderer.clear(0,0,0);
         DI.begin();
-        {
-			import implementations.imgui.imgui_debug;
-			// addDebug!(sc, AudioSource3D);
-        }
+		s.draw();
+		static bool open = true;
+		igShowDemoWindow(&open);
+		import implementations.imgui.imgui_debug;
+		addDebug!(s);
 
 		if(igButton("Viewport flag".ptr, ImVec2(0,0)))
 		{
@@ -160,14 +164,12 @@ extern(C)int SDL_main()
 
         // Rendering
 		// glViewport(0, 0, cast(int)io.DisplaySize.x, cast(int)io.DisplaySize.y);
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
+		
 		DI.end();
-
-		Renderer.clear(0,0,0);
-		static SDL_Rect rec = SDL_Rect(0, 0, 100, 100);
-		SDL_RenderCopy(Renderer.renderer, t, null, &rec);
         Renderer.render();
+		SDL_GL_SwapWindow(Renderer.window);
+
+	
     }
 	//	alSource3f(src, AL_POSITION, cos(angle) * 10, 0, sin(angle) * 10);
 		angle+=angleSum;

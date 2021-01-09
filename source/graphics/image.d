@@ -7,6 +7,8 @@ import util.system;
 
 /**
 *   This class represents pixel data on RAM (CPU Powered)
+*   this is useful for loading images on another thread and then
+*   sending it to the GPU
 */
 public class Image
 {
