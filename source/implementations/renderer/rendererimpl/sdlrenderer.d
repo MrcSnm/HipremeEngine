@@ -1,4 +1,4 @@
-module implementations.renderer.renderer;
+module implementations.renderer.rendererimpl.sdlrenderer;
 import graphics.texture;
 import graphics.g2d.viewport;
 import math.rect;
@@ -10,7 +10,6 @@ import std.stdio:writeln;
 private SDL_Window* createSDL_GL_Window()
 {
 	SDL_GL_LoadLibrary(null);
-
 	//Set GL Version
 	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_ACCELERATED_VISUAL, 1);
 	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MAJOR_VERSION, 4);
