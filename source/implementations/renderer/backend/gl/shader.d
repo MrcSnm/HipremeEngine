@@ -1,4 +1,4 @@
-module implementations.renderer.shaderimpl.glshader;
+module implementations.renderer.backend.gl.shader;
 import std.conv:to;
 import error.handler;
 import bindbc.opengl;

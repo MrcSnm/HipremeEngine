@@ -1,6 +1,6 @@
 module implementations.renderer.shader;
 import bindbc.opengl;
-import implementations.renderer.shaderimpl.glshader;
+import implementations.renderer.backend.gl.shader;
 import util.file;
 
 enum ShaderStatus
