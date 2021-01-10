@@ -148,7 +148,9 @@ extern(C)int SDL_main()
 		///////////START IMGUI
 
 		// Start the Dear ImGui frame
-		Renderer.clear(0,0,0);
+		Renderer.begin();
+		Renderer.clear(255,255,255,255);
+        Renderer.end();
         DI.begin();
 		s.draw();
 		static bool open = true;
@@ -166,8 +168,6 @@ extern(C)int SDL_main()
 		// glViewport(0, 0, cast(int)io.DisplaySize.x, cast(int)io.DisplaySize.y);
 		
 		DI.end();
-        Renderer.render();
-		SDL_GL_SwapWindow(Renderer.window);
 
 	
     }

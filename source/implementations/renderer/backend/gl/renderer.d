@@ -1,4 +1,4 @@
-module implementations.renderer.rendererimpl.sdlrenderer;
+module implementations.renderer.backend.gl.renderer;
 import graphics.texture;
 import graphics.g2d.viewport;
 import math.rect;
@@ -7,9 +7,11 @@ import bindbc.sdl;
 import bindbc.opengl;
 import std.stdio:writeln;
 
+
 private SDL_Window* createSDL_GL_Window()
 {
 	SDL_GL_LoadLibrary(null);
+
 	//Set GL Version
 	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_ACCELERATED_VISUAL, 1);
 	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -30,6 +32,7 @@ private SDL_Window* createSDL_GL_Window()
 	return window;
 }
 
+
 /**
 *   While this class is at implementation and don't have a backend folders,
 *   it actually does not requires a backend(as it is using SDL for now), but
@@ -38,12 +41,25 @@ private SDL_Window* createSDL_GL_Window()
 */
 public static class Renderer
 {
-    private static Viewport currentViewport = null;
-    private static Viewport mainViewport = null;
+    protected static Viewport currentViewport = null;
+    protected static Viewport mainViewport = null;
+
+    protected static uint[] vertexBuffersIDS;
+    protected static uint currentVertexBufferIndex;
+
+
+    protected static immutable uint[6] rectElementBuffer = [
+        0, 1, 2,
+        2, 3, 1
+    ];
+
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
-    public static bool init()
+
+    public static bool init(uint reserveAmount=1024)
     {
+        vertexBuffersIDS.reserve(reserveAmount);
+
         ErrorHandler.startListeningForErrors("Renderer initialization");
         window = createSDL_GL_Window();
         ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL GL Window");
@@ -67,15 +83,35 @@ public static class Renderer
         SDL_RenderSetViewport(renderer, &v.bounds);
     }
 
+    protected static uint getFreeVertexBuffer()
+    {
+        if(vertexBuffersIDS.length >= currentVertexBufferIndex)
+        {
+            uint buf; 
+            glGenBuffers(1, &buf);
+            vertexBuffersIDS~=buf;
+        }
+        uint ret = vertexBuffersIDS[currentVertexBufferIndex];
+        currentVertexBufferIndex++;
+        return ret;
+    }
+
+    /**
+    *   This function is used to control the internal state for creating vertex buffers
+    */
+    public static void begin()
+    {
+        currentVertexBufferIndex = 0;       
+    }
+    /**
+    */
+    public static void end()
+    {
+        SDL_GL_SwapWindow(window);
+    }
+
     public static void draw(Texture t, int x, int y, SDL_Rect* clip = null)
     {
-        SDL_Rect dest = SDL_Rect(x, y,t.width,t.height);
-        if(clip != null)
-        {
-            dest.w=clip.w;
-            dest.h=clip.h;
-        }
-        SDL_RenderCopy(renderer, t.data, clip, &dest);
     }
 
     pragma(inline, true)
@@ -85,10 +121,15 @@ public static class Renderer
         SDL_RenderPresent(renderer);
     }
     pragma(inline, true)
+    public static void clear()
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
     public static void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
-        setColor(r,g,b,a);
-        SDL_RenderClear(renderer);
+        glClearColor(r/255,g/255,b/255,a/255);
+        glClear(GL_COLOR_BUFFER_BIT);
     }
 
     public static void fillRect(int x, int y, int width, int height)
@@ -111,11 +152,22 @@ public static class Renderer
     }
     public static void drawLine(int x1, int y1, int x2, int y2)
     {
-        SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+        int[4] line = [
+            x1, y1,
+            x2, y2
+        ];
+        glBindBuffer(GL_ARRAY_BUFFER, getFreeVertexBuffer());
+        glBufferData(GL_ARRAY_BUFFER, int.sizeof*4, line.ptr, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_LINES, 0, 2);
     }
     public static void drawPixel(int x, int y)
     {
-        SDL_RenderDrawPoint(renderer, x, y);
+        int[2] pixel = [
+            x, y,
+        ];
+        glBindBuffer(GL_ARRAY_BUFFER, getFreeVertexBuffer());
+        glBufferData(GL_ARRAY_BUFFER, int.sizeof*2, pixel.ptr, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_POINT, 0, 1);
     }
 
     public static void dispose()

@@ -2,7 +2,7 @@ module util.system;
 import std.system:os;
 import std.array:replace;
 
-string sanitizePath(string path)
+pure nothrow string sanitizePath(string path)
 {
     switch(os)
     {
