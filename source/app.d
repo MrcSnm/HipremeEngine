@@ -149,25 +149,27 @@ extern(C)int SDL_main()
 
 		// Start the Dear ImGui frame
 		Renderer.begin();
-		Renderer.clear(255,255,255,255);
+		// Renderer.clear(255,0,0,0);
+		// Renderer.drawLine(0, 0, 1, 1);
+		Renderer.drawTriangle();
         Renderer.end();
-        DI.begin();
-		s.draw();
-		static bool open = true;
-		igShowDemoWindow(&open);
-		import implementations.imgui.imgui_debug;
-		addDebug!(s);
+        // DI.begin();
+		// s.draw();
+		// static bool open = true;
+		// igShowDemoWindow(&open);
+		// import implementations.imgui.imgui_debug;
+		// addDebug!(s);
 
-		if(igButton("Viewport flag".ptr, ImVec2(0,0)))
-		{
-			//writeln(igGetIO().ConfigFlags);
-			igGetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-		}
+		// if(igButton("Viewport flag".ptr, ImVec2(0,0)))
+		// {
+		// 	//writeln(igGetIO().ConfigFlags);
+		// 	igGetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		// }
 
-        // Rendering
-		// glViewport(0, 0, cast(int)io.DisplaySize.x, cast(int)io.DisplaySize.y);
+        // // Rendering
+		// // glViewport(0, 0, cast(int)io.DisplaySize.x, cast(int)io.DisplaySize.y);
 		
-		DI.end();
+		// DI.end();
 
 	
     }
