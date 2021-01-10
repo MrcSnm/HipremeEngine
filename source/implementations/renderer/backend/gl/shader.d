@@ -10,10 +10,10 @@ struct ShaderProgram{uint program;}
 enum DEFAULT_FRAGMENT = q{
     #version 330 core
     
-    out vec4 glFragColor;
+    out vec4 color;
     void main()
     {
-        glFragColor = vec4(1.0f, 0.5f, 1.0f, 1.0f);
+        color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 };
 enum DEFAULT_VERTEX = q{
@@ -50,7 +50,9 @@ ShaderProgram createShaderProgram()
 
 bool compileShader(GLuint shaderID, string shaderSource)
 {
-    glShaderSource(shaderID, 1, cast(const(char*)*)(shaderSource~"\0").ptr,  cast(GLint*)null);
+    shaderSource~="\0";
+    char* source = cast(char*)shaderSource.ptr; 
+    glShaderSource(shaderID, 1, &source,  cast(GLint*)null);
     glCompileShader(shaderID);
     int success;
     char[512] infoLog;
@@ -103,6 +105,11 @@ void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool 
 {
     glVertexAttribPointer(layoutIndex, valueAmount, dataType, normalize, stride, cast(void*)offset);
     glEnableVertexAttribArray(layoutIndex);
+}
+
+void setCurrentShader(ShaderProgram program)
+{
+    glUseProgram(program.program);
 }
 
 void useShader(ShaderProgram program){glUseProgram(program.program);}

@@ -34,7 +34,11 @@ public class Shader
         shaderProgram = createShaderProgram();
         if(createDefault)
         {
-            loadShaders(DEFAULT_VERTEX, DEFAULT_FRAGMENT);
+            if(loadShaders(DEFAULT_VERTEX, DEFAULT_FRAGMENT) != ShaderStatus.SUCCESS)
+            {
+                import std.stdio:writeln;
+                writeln("Failed loading shaders");
+            }
         }
     }
 
@@ -65,6 +69,11 @@ public class Shader
     void setVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
     {
         sendVertexAttribute(layoutIndex, valueAmount, dataType, normalize, stride, offset);
+    }
+
+    void setAsCurrent()
+    {
+        setCurrentShader(shaderProgram);
     }
 
 
