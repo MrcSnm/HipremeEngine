@@ -149,8 +149,9 @@ extern(C)int SDL_main()
 
 		// Start the Dear ImGui frame
 		Renderer.begin();
-		// Renderer.clear(255,0,0,0);
+		Renderer.clear(255,0,0,0);
 		// Renderer.drawLine(0, 0, 1, 1);
+		Renderer.drawRect();
 		Renderer.drawTriangle();
         Renderer.end();
         // DI.begin();
