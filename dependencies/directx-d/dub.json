@@ -1,0 +1,7 @@
+{
+	"name": "directx-d",
+	"description": "DirectX for D",
+	"license": "MIT",
+	"targetType": "library",
+	"sourcePaths": [ "src" ]
+}
