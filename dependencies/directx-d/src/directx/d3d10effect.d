@@ -1,0 +1,15 @@
+module directx.d3d10effect;
+//////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//
+//  File:       D3D10Effect.h
+//  Content:    D3D10 Stateblock/Effect Types & APIs
+//
+//////////////////////////////////////////////////////////////////////////////
+
+version(Windows):
+
+public import directx.d3d10;
+
+// TODO:

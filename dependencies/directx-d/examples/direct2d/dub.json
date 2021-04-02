@@ -1,0 +1,13 @@
+{
+	"name": "direct2d-example",
+	"description": "Direct2D for D example",
+	"targetType": "executable",
+	"authors": [ "evilrat666" ],
+	"libs": [ "ole32", "d2d1", "dxgi", "user32", "dwrite" ],
+	"workingDirectory": "../resources",
+	"mainSourceFile": "source/boxsample.d",
+	"dependencies": {
+                "directx-d": {"version": "~master", "path": "../../"}
+	},
+	"targetType": "executable",
+}

@@ -1,0 +1,1381 @@
+module directx.d3dcommon;
+
+version(Windows):
+
+public import directx.com;
+
+alias D3DCOLOR = DWORD;
+
+struct D3DVECTOR {
+    float x;
+    float y;
+    float z;
+}
+alias LPD3DVECTOR = D3DVECTOR*;
+
+struct D3DCOLORVALUE {
+    float r;
+    float g;
+    float b;
+    float a;
+}
+alias LPD3DCOLORVALUE = D3DCOLORVALUE*;
+
+struct D3DRECT {
+    LONG x1;
+    LONG y1;
+    LONG x2;
+    LONG y2;
+}
+alias LPD3DRECT = D3DRECT*;
+
+union D3DMATRIX {
+    struct {
+        float        _11, _12, _13, _14;
+        float        _21, _22, _23, _24;
+        float        _31, _32, _33, _34;
+        float        _41, _42, _43, _44;
+    }
+    float[4][4] m;
+}
+alias LPD3DMATRIX = D3DMATRIX*;
+
+alias D3DTRANSFORMSTATETYPE = DWORD;
+enum : D3DTRANSFORMSTATETYPE {
+    D3DTS_VIEW          = 2,
+    D3DTS_PROJECTION    = 3,
+    D3DTS_TEXTURE0      = 16,
+    D3DTS_TEXTURE1      = 17,
+    D3DTS_TEXTURE2      = 18,
+    D3DTS_TEXTURE3      = 19,
+    D3DTS_TEXTURE4      = 20,
+    D3DTS_TEXTURE5      = 21,
+    D3DTS_TEXTURE6      = 22,
+    D3DTS_TEXTURE7      = 23
+}
+
+alias D3DTEXTURESTAGESTATETYPE = DWORD;
+enum : D3DTEXTURESTAGESTATETYPE {
+    D3DTSS_COLOROP        =  1, /* D3DTEXTUREOP - per-stage blending controls for color channels */
+    D3DTSS_COLORARG1      =  2, /* D3DTA_* (texture arg) */
+    D3DTSS_COLORARG2      =  3, /* D3DTA_* (texture arg) */
+    D3DTSS_ALPHAOP        =  4, /* D3DTEXTUREOP - per-stage blending controls for alpha channel */
+    D3DTSS_ALPHAARG1      =  5, /* D3DTA_* (texture arg) */
+    D3DTSS_ALPHAARG2      =  6, /* D3DTA_* (texture arg) */
+    D3DTSS_BUMPENVMAT00   =  7, /* float (bump mapping matrix) */
+    D3DTSS_BUMPENVMAT01   =  8, /* float (bump mapping matrix) */
+    D3DTSS_BUMPENVMAT10   =  9, /* float (bump mapping matrix) */
+    D3DTSS_BUMPENVMAT11   = 10, /* float (bump mapping matrix) */
+    D3DTSS_TEXCOORDINDEX  = 11, /* identifies which set of texture coordinates index this texture */
+    D3DTSS_BUMPENVLSCALE  = 22, /* float scale for bump map luminance */
+    D3DTSS_BUMPENVLOFFSET = 23, /* float offset for bump map luminance */
+    D3DTSS_TEXTURETRANSFORMFLAGS = 24, /* D3DTEXTURETRANSFORMFLAGS controls texture transform */
+    D3DTSS_COLORARG0      = 26, /* D3DTA_* third arg for triadic ops */
+    D3DTSS_ALPHAARG0      = 27, /* D3DTA_* third arg for triadic ops */
+    D3DTSS_RESULTARG      = 28, /* D3DTA_* arg for result (CURRENT or TEMP) */
+    D3DTSS_CONSTANT       = 32, /* Per-stage constant D3DTA_CONSTANT */
+}
+
+alias D3DSTATEBLOCKTYPE = DWORD;
+enum : D3DSTATEBLOCKTYPE {
+    D3DSBT_ALL           = 1, // capture all state
+    D3DSBT_PIXELSTATE    = 2, // capture pixel state
+    D3DSBT_VERTEXSTATE   = 3, // capture vertex state
+}
+
+alias D3DRENDERSTATETYPE = DWORD;
+enum : D3DRENDERSTATETYPE {
+    D3DRS_ZENABLE                   = 7,    /* D3DZBUFFERTYPE (or TRUE/FALSE for legacy) */
+    D3DRS_FILLMODE                  = 8,    /* D3DFILLMODE */
+    D3DRS_SHADEMODE                 = 9,    /* D3DSHADEMODE */
+    D3DRS_ZWRITEENABLE              = 14,   /* TRUE to enable z writes */
+    D3DRS_ALPHATESTENABLE           = 15,   /* TRUE to enable alpha tests */
+    D3DRS_LASTPIXEL                 = 16,   /* TRUE for last-pixel on lines */
+    D3DRS_SRCBLEND                  = 19,   /* D3DBLEND */
+    D3DRS_DESTBLEND                 = 20,   /* D3DBLEND */
+    D3DRS_CULLMODE                  = 22,   /* D3DCULL */
+    D3DRS_ZFUNC                     = 23,   /* D3DCMPFUNC */
+    D3DRS_ALPHAREF                  = 24,   /* D3DFIXED */
+    D3DRS_ALPHAFUNC                 = 25,   /* D3DCMPFUNC */
+    D3DRS_DITHERENABLE              = 26,   /* TRUE to enable dithering */
+    D3DRS_ALPHABLENDENABLE          = 27,   /* TRUE to enable alpha blending */
+    D3DRS_FOGENABLE                 = 28,   /* TRUE to enable fog blending */
+    D3DRS_SPECULARENABLE            = 29,   /* TRUE to enable specular */
+    D3DRS_FOGCOLOR                  = 34,   /* D3DCOLOR */
+    D3DRS_FOGTABLEMODE              = 35,   /* D3DFOGMODE */
+    D3DRS_FOGSTART                  = 36,   /* Fog start (for both vertex and pixel fog) */
+    D3DRS_FOGEND                    = 37,   /* Fog end      */
+    D3DRS_FOGDENSITY                = 38,   /* Fog density  */
+    D3DRS_RANGEFOGENABLE            = 48,   /* Enables range-based fog */
+    D3DRS_STENCILENABLE             = 52,   /* BOOL enable/disable stenciling */
+    D3DRS_STENCILFAIL               = 53,   /* D3DSTENCILOP to do if stencil test fails */
+    D3DRS_STENCILZFAIL              = 54,   /* D3DSTENCILOP to do if stencil test passes and Z test fails */
+    D3DRS_STENCILPASS               = 55,   /* D3DSTENCILOP to do if both stencil and Z tests pass */
+    D3DRS_STENCILFUNC               = 56,   /* D3DCMPFUNC fn.  Stencil Test passes if ((ref & mask) stencilfn (stencil & mask)) is true */
+    D3DRS_STENCILREF                = 57,   /* Reference value used in stencil test */
+    D3DRS_STENCILMASK               = 58,   /* Mask value used in stencil test */
+    D3DRS_STENCILWRITEMASK          = 59,   /* Write mask applied to values written to stencil buffer */
+    D3DRS_TEXTUREFACTOR             = 60,   /* D3DCOLOR used for multi-texture blend */
+    D3DRS_WRAP0                     = 128,  /* wrap for 1st texture coord. set */
+    D3DRS_WRAP1                     = 129,  /* wrap for 2nd texture coord. set */
+    D3DRS_WRAP2                     = 130,  /* wrap for 3rd texture coord. set */
+    D3DRS_WRAP3                     = 131,  /* wrap for 4th texture coord. set */
+    D3DRS_WRAP4                     = 132,  /* wrap for 5th texture coord. set */
+    D3DRS_WRAP5                     = 133,  /* wrap for 6th texture coord. set */
+    D3DRS_WRAP6                     = 134,  /* wrap for 7th texture coord. set */
+    D3DRS_WRAP7                     = 135,  /* wrap for 8th texture coord. set */
+    D3DRS_CLIPPING                  = 136,
+    D3DRS_LIGHTING                  = 137,
+    D3DRS_AMBIENT                   = 139,
+    D3DRS_FOGVERTEXMODE             = 140,
+    D3DRS_COLORVERTEX               = 141,
+    D3DRS_LOCALVIEWER               = 142,
+    D3DRS_NORMALIZENORMALS          = 143,
+    D3DRS_DIFFUSEMATERIALSOURCE     = 145,
+    D3DRS_SPECULARMATERIALSOURCE    = 146,
+    D3DRS_AMBIENTMATERIALSOURCE     = 147,
+    D3DRS_EMISSIVEMATERIALSOURCE    = 148,
+    D3DRS_VERTEXBLEND               = 151,
+    D3DRS_CLIPPLANEENABLE           = 152,
+    D3DRS_POINTSIZE                 = 154,   /* float point size */
+    D3DRS_POINTSIZE_MIN             = 155,   /* float point size min threshold */
+    D3DRS_POINTSPRITEENABLE         = 156,   /* BOOL point texture coord control */
+    D3DRS_POINTSCALEENABLE          = 157,   /* BOOL point size scale enable */
+    D3DRS_POINTSCALE_A              = 158,   /* float point attenuation A value */
+    D3DRS_POINTSCALE_B              = 159,   /* float point attenuation B value */
+    D3DRS_POINTSCALE_C              = 160,   /* float point attenuation C value */
+    D3DRS_MULTISAMPLEANTIALIAS      = 161,  // BOOL - set to do FSAA with multisample buffer
+    D3DRS_MULTISAMPLEMASK           = 162,  // DWORD - per-sample enable/disable
+    D3DRS_PATCHEDGESTYLE            = 163,  // Sets whether patch edges will use float style tessellation
+    D3DRS_DEBUGMONITORTOKEN         = 165,  // DEBUG ONLY - token to debug monitor
+    D3DRS_POINTSIZE_MAX             = 166,   /* float point size max threshold */
+    D3DRS_INDEXEDVERTEXBLENDENABLE  = 167,
+    D3DRS_COLORWRITEENABLE          = 168,  // per-channel write enable
+    D3DRS_TWEENFACTOR               = 170,   // float tween factor
+    D3DRS_BLENDOP                   = 171,   // D3DBLENDOP setting
+    D3DRS_POSITIONDEGREE            = 172,   // NPatch position interpolation degree. D3DDEGREE_LINEAR or D3DDEGREE_CUBIC (default)
+    D3DRS_NORMALDEGREE              = 173,   // NPatch normal interpolation degree. D3DDEGREE_LINEAR (default) or D3DDEGREE_QUADRATIC
+    D3DRS_SCISSORTESTENABLE         = 174,
+    D3DRS_SLOPESCALEDEPTHBIAS       = 175,
+    D3DRS_ANTIALIASEDLINEENABLE     = 176,
+    D3DRS_MINTESSELLATIONLEVEL      = 178,
+    D3DRS_MAXTESSELLATIONLEVEL      = 179,
+    D3DRS_ADAPTIVETESS_X            = 180,
+    D3DRS_ADAPTIVETESS_Y            = 181,
+    D3DRS_ADAPTIVETESS_Z            = 182,
+    D3DRS_ADAPTIVETESS_W            = 183,
+    D3DRS_ENABLEADAPTIVETESSELLATION = 184,
+    D3DRS_TWOSIDEDSTENCILMODE       = 185,   /* BOOL enable/disable 2 sided stenciling */
+    D3DRS_CCW_STENCILFAIL           = 186,   /* D3DSTENCILOP to do if ccw stencil test fails */
+    D3DRS_CCW_STENCILZFAIL          = 187,   /* D3DSTENCILOP to do if ccw stencil test passes and Z test fails */
+    D3DRS_CCW_STENCILPASS           = 188,   /* D3DSTENCILOP to do if both ccw stencil and Z tests pass */
+    D3DRS_CCW_STENCILFUNC           = 189,   /* D3DCMPFUNC fn.  ccw Stencil Test passes if ((ref & mask) stencilfn (stencil & mask)) is true */
+    D3DRS_COLORWRITEENABLE1         = 190,   /* Additional ColorWriteEnables for the devices that support D3DPMISCCAPS_INDEPENDENTWRITEMASKS */
+    D3DRS_COLORWRITEENABLE2         = 191,   /* Additional ColorWriteEnables for the devices that support D3DPMISCCAPS_INDEPENDENTWRITEMASKS */
+    D3DRS_COLORWRITEENABLE3         = 192,   /* Additional ColorWriteEnables for the devices that support D3DPMISCCAPS_INDEPENDENTWRITEMASKS */
+    D3DRS_BLENDFACTOR               = 193,   /* D3DCOLOR used for a constant blend factor during alpha blending for devices that support D3DPBLENDCAPS_BLENDFACTOR */
+    D3DRS_SRGBWRITEENABLE           = 194,   /* Enable rendertarget writes to be DE-linearized to SRGB (for formats that expose D3DUSAGE_QUERY_SRGBWRITE) */
+    D3DRS_DEPTHBIAS                 = 195,
+    D3DRS_WRAP8                     = 198,   /* Additional wrap states for vs_3_0+ attributes with D3DDECLUSAGE_TEXCOORD */
+    D3DRS_WRAP9                     = 199,
+    D3DRS_WRAP10                    = 200,
+    D3DRS_WRAP11                    = 201,
+    D3DRS_WRAP12                    = 202,
+    D3DRS_WRAP13                    = 203,
+    D3DRS_WRAP14                    = 204,
+    D3DRS_WRAP15                    = 205,
+    D3DRS_SEPARATEALPHABLENDENABLE  = 206,  /* TRUE to enable a separate blending function for the alpha channel */
+    D3DRS_SRCBLENDALPHA             = 207,  /* SRC blend factor for the alpha channel when D3DRS_SEPARATEDESTALPHAENABLE is TRUE */
+    D3DRS_DESTBLENDALPHA            = 208,  /* DST blend factor for the alpha channel when D3DRS_SEPARATEDESTALPHAENABLE is TRUE */
+    D3DRS_BLENDOPALPHA              = 209,  /* Blending operation for the alpha channel when D3DRS_SEPARATEDESTALPHAENABLE is TRUE */
+}
+
+alias D3DPRIMITIVETYPE = DWORD;
+enum : D3DPRIMITIVETYPE {
+    D3DPT_POINTLIST             = 1,
+    D3DPT_LINELIST              = 2,
+    D3DPT_LINESTRIP             = 3,
+    D3DPT_TRIANGLELIST          = 4,
+    D3DPT_TRIANGLESTRIP         = 5,
+    D3DPT_TRIANGLEFAN           = 6
+}
+
+alias D3DLIGHTTYPE = DWORD;
+enum : D3DLIGHTTYPE {
+    D3DLIGHT_POINT          = 1,
+    D3DLIGHT_SPOT           = 2,
+    D3DLIGHT_DIRECTIONAL    = 3
+}
+
+enum D3DADAPTER_DEFAULT = 0;
+
+enum {
+    D3DCLEAR_TARGET           = 0x00000001,  /* Clear target surface */
+    D3DCLEAR_ZBUFFER          = 0x00000002,  /* Clear target z buffer */
+    D3DCLEAR_STENCIL          = 0x00000004   /* Clear stencil planes */
+}
+
+alias D3DDEVTYPE = DWORD;
+enum : D3DDEVTYPE {
+    D3DDEVTYPE_HAL     = 1,
+    D3DDEVTYPE_NULLREF = 4,
+    D3DDEVTYPE_REF     = 2,
+    D3DDEVTYPE_SW      = 3
+}
+
+alias D3DFORMAT = DWORD;
+enum : D3DFORMAT {
+    D3DFMT_UNKNOWN              =  0,
+
+    D3DFMT_R8G8B8               = 20,
+    D3DFMT_A8R8G8B8             = 21,
+    D3DFMT_X8R8G8B8             = 22,
+    D3DFMT_R5G6B5               = 23,
+    D3DFMT_X1R5G5B5             = 24,
+    D3DFMT_A1R5G5B5             = 25,
+    D3DFMT_A4R4G4B4             = 26,
+    D3DFMT_R3G3B2               = 27,
+    D3DFMT_A8                   = 28,
+    D3DFMT_A8R3G3B2             = 29,
+    D3DFMT_X4R4G4B4             = 30,
+    D3DFMT_A2B10G10R10          = 31,
+    D3DFMT_A8B8G8R8             = 32,
+    D3DFMT_X8B8G8R8             = 33,
+    D3DFMT_G16R16               = 34,
+    D3DFMT_A2R10G10B10          = 35,
+    D3DFMT_A16B16G16R16         = 36,
+
+    D3DFMT_A8P8                 = 40,
+    D3DFMT_P8                   = 41,
+
+    D3DFMT_L8                   = 50,
+    D3DFMT_A8L8                 = 51,
+    D3DFMT_A4L4                 = 52,
+
+    D3DFMT_V8U8                 = 60,
+    D3DFMT_L6V5U5               = 61,
+    D3DFMT_X8L8V8U8             = 62,
+    D3DFMT_Q8W8V8U8             = 63,
+    D3DFMT_V16U16               = 64,
+    D3DFMT_A2W10V10U10          = 67,
+
+    /*D3DFMT_UYVY                 = MAKEFOURCC('U', 'Y', 'V', 'Y'),
+    D3DFMT_R8G8_B8G8            = MAKEFOURCC('R', 'G', 'B', 'G'),
+    D3DFMT_YUY2                 = MAKEFOURCC('Y', 'U', 'Y', '2'),
+    D3DFMT_G8R8_G8B8            = MAKEFOURCC('G', 'R', 'G', 'B'),
+    D3DFMT_DXT1                 = MAKEFOURCC('D', 'X', 'T', '1'),
+    D3DFMT_DXT2                 = MAKEFOURCC('D', 'X', 'T', '2'),
+    D3DFMT_DXT3                 = MAKEFOURCC('D', 'X', 'T', '3'),
+    D3DFMT_DXT4                 = MAKEFOURCC('D', 'X', 'T', '4'),
+    D3DFMT_DXT5                 = MAKEFOURCC('D', 'X', 'T', '5'),*/
+
+    D3DFMT_D16_LOCKABLE         = 70,
+    D3DFMT_D32                  = 71,
+    D3DFMT_D15S1                = 73,
+    D3DFMT_D24S8                = 75,
+    D3DFMT_D24X8                = 77,
+    D3DFMT_D24X4S4              = 79,
+    D3DFMT_D16                  = 80,
+
+    D3DFMT_D32F_LOCKABLE        = 82,
+    D3DFMT_D24FS8               = 83,
+
+    /* D3D9Ex only -- */
+    D3DFMT_D32_LOCKABLE         = 84,
+    D3DFMT_S8_LOCKABLE          = 85,
+    /* -- D3D9Ex only */
+
+    D3DFMT_L16                  = 81,
+
+    D3DFMT_VERTEXDATA           =100,
+    D3DFMT_INDEX16              =101,
+    D3DFMT_INDEX32              =102,
+
+    D3DFMT_Q16W16V16U16         =110,
+
+    //D3DFMT_MULTI2_ARGB8         = MAKEFOURCC('M','E','T','1'),
+
+    D3DFMT_R16F                 = 111,
+    D3DFMT_G16R16F              = 112,
+    D3DFMT_A16B16G16R16F        = 113,
+
+    D3DFMT_R32F                 = 114,
+    D3DFMT_G32R32F              = 115,
+    D3DFMT_A32B32G32R32F        = 116,
+
+    D3DFMT_CxV8U8               = 117,
+
+    /* D3D9Ex only -- */
+    D3DFMT_A1                   = 118,
+    D3DFMT_A2B10G10R10_XR_BIAS  = 119,
+    D3DFMT_BINARYBUFFER         = 199
+    /* -- D3D9Ex only */
+}
+
+alias D3DMULTISAMPLE_TYPE = DWORD;
+enum : D3DMULTISAMPLE_TYPE {
+    TODO_D3DMULTISAMPLE_TYPE
+}
+
+alias D3DRESOURCETYPE = DWORD;
+enum : D3DRESOURCETYPE {
+    TODO_D3DRESOURCETYPE
+}
+
+alias D3DBACKBUFFER_TYPE = DWORD;
+enum : D3DBACKBUFFER_TYPE {
+    D3DBACKBUFFER_TYPE_MONO         = 0,
+    D3DBACKBUFFER_TYPE_LEFT         = 1,
+    D3DBACKBUFFER_TYPE_RIGHT        = 2
+}
+
+alias D3DSWAPEFFECT = DWORD;
+enum : D3DSWAPEFFECT {
+    D3DSWAPEFFECT_DISCARD = 1,
+    D3DSWAPEFFECT_FLIP    = 2,
+    D3DSWAPEFFECT_COPY    = 3,
+
+    /* D3D9Ex only -- */
+    D3DSWAPEFFECT_OVERLAY = 4,
+    D3DSWAPEFFECT_FLIPEX  = 5
+    /* -- D3D9Ex only */
+}
+
+alias D3DPOOL = DWORD;
+enum : D3DPOOL {
+    D3DPOOL_DEFAULT                 = 0,
+    D3DPOOL_MANAGED                 = 1,
+    D3DPOOL_SYSTEMMEM               = 2,
+    D3DPOOL_SCRATCH                 = 3
+}
+
+alias D3DBASISTYPE = DWORD;
+enum : D3DBASISTYPE {
+    D3DBASIS_BEZIER      = 0,
+    D3DBASIS_BSPLINE     = 1,
+    D3DBASIS_CATMULL_ROM = 2, /* In D3D8 this used to be D3DBASIS_INTERPOLATE */
+}
+
+alias D3DDEGREETYPE = DWORD;
+enum : D3DDEGREETYPE {
+    D3DDEGREE_LINEAR      = 1,
+    D3DDEGREE_QUADRATIC   = 2,
+    D3DDEGREE_CUBIC       = 3,
+    D3DDEGREE_QUINTIC     = 5
+}
+
+struct D3DRECTPATCH_INFO {
+    UINT                StartVertexOffsetWidth;
+    UINT                StartVertexOffsetHeight;
+    UINT                Width;
+    UINT                Height;
+    UINT                Stride;
+    D3DBASISTYPE        Basis;
+    D3DDEGREETYPE       Degree;
+}
+
+struct D3DTRIPATCH_INFO {
+    UINT                StartVertexOffset;
+    UINT                NumVertices;
+    D3DBASISTYPE        Basis;
+    D3DDEGREETYPE       Degree;
+}
+
+alias D3DCUBEMAP_FACES = DWORD;
+enum : D3DCUBEMAP_FACES {
+    D3DCUBEMAP_FACE_POSITIVE_X     = 0,
+    D3DCUBEMAP_FACE_NEGATIVE_X     = 1,
+    D3DCUBEMAP_FACE_POSITIVE_Y     = 2,
+    D3DCUBEMAP_FACE_NEGATIVE_Y     = 3,
+    D3DCUBEMAP_FACE_POSITIVE_Z     = 4,
+    D3DCUBEMAP_FACE_NEGATIVE_Z     = 5
+}
+
+struct D3DSURFACE_DESC {
+    D3DFORMAT           Format;
+    D3DRESOURCETYPE     Type;
+    DWORD               Usage;
+    D3DPOOL             Pool;
+    UINT                Size;
+
+    D3DMULTISAMPLE_TYPE MultiSampleType;
+    UINT                Width;
+    UINT                Height;
+}
+
+struct D3DVOLUME_DESC {
+    D3DFORMAT           Format;
+    D3DRESOURCETYPE     Type;
+    DWORD               Usage;
+    D3DPOOL             Pool;
+    UINT                Size;
+
+    UINT                Width;
+    UINT                Height;
+    UINT                Depth;
+}
+
+struct D3DLOCKED_RECT {
+    INT                 Pitch;
+    void*               pBits;
+}
+
+struct D3DBOX {
+    UINT                Left;
+    UINT                Top;
+    UINT                Right;
+    UINT                Bottom;
+    UINT                Front;
+    UINT                Back;
+}
+
+struct D3DLOCKED_BOX {
+    INT                 RowPitch;
+    INT                 SlicePitch;
+    void*               pBits;
+}
+
+struct D3DGAMMARAMP {
+    WORD[256]                red  ;
+    WORD[256]                green;
+    WORD[256]                blue ;
+}
+
+struct D3DDEVICE_CREATION_PARAMETERS {
+    UINT            AdapterOrdinal;
+    D3DDEVTYPE      DeviceType;
+    HWND            hFocusWindow;
+    DWORD           BehaviorFlags;
+}
+
+struct D3DDISPLAYMODE {
+    UINT      Width;
+    UINT      Height;
+    UINT      RefreshRate;
+    D3DFORMAT Format;
+}
+
+struct D3DPRESENT_PARAMETERS {
+    UINT                  BackBufferWidth;
+    UINT                  BackBufferHeight;
+    D3DFORMAT             BackBufferFormat;
+    UINT                  BackBufferCount;
+
+    D3DMULTISAMPLE_TYPE   MultiSampleType;
+    version (_D3D9) DWORD MultiSampleQuality;
+
+    D3DSWAPEFFECT         SwapEffect;
+    HWND                  hDeviceWindow;
+    BOOL                  Windowed;
+    BOOL                  EnableAutoDepthStencil;
+    D3DFORMAT             AutoDepthStencilFormat;
+    DWORD                 Flags;
+
+    /* FullScreen_RefreshRateInHz must be zero for Windowed mode */
+    UINT                  FullScreen_RefreshRateInHz;
+    UINT                  FullScreen_PresentationInterval;
+}
+
+enum MAX_DEVICE_IDENTIFIER_STRING = 512;
+struct D3DADAPTER_IDENTIFIER8 {
+    char[MAX_DEVICE_IDENTIFIER_STRING]            Driver;
+    char[MAX_DEVICE_IDENTIFIER_STRING]            Description;
+
+    //#ifdef _WIN32
+    LARGE_INTEGER   DriverVersion;            /* Defined for 32 bit components */
+    //#else
+    //        DWORD           DriverVersionLowPart;     /* Defined for 16 bit driver components */
+    //        DWORD           DriverVersionHighPart;
+    //#endif
+
+    DWORD           VendorId;
+    DWORD           DeviceId;
+    DWORD           SubSysId;
+    DWORD           Revision;
+
+    GUID            DeviceIdentifier;
+
+    DWORD           WHQLLevel;
+}
+
+struct D3DADAPTER_IDENTIFIER9 {
+    D3DADAPTER_IDENTIFIER8 identifier8; alias identifier8 this;
+}
+
+struct D3DRASTER_STATUS {
+    BOOL            InVBlank;
+    UINT            ScanLine;
+}
+
+struct D3DCAPS8 {
+    /* Device Info */
+    D3DDEVTYPE  DeviceType;
+    UINT    AdapterOrdinal;
+
+    /* Caps from DX7 Draw */
+    DWORD   Caps;
+    DWORD   Caps2;
+    DWORD   Caps3;
+    DWORD   PresentationIntervals;
+
+    /* Cursor Caps */
+    DWORD   CursorCaps;
+
+    /* 3D Device Caps */
+    DWORD   DevCaps;
+
+    DWORD   PrimitiveMiscCaps;
+    DWORD   RasterCaps;
+    DWORD   ZCmpCaps;
+    DWORD   SrcBlendCaps;
+    DWORD   DestBlendCaps;
+    DWORD   AlphaCmpCaps;
+    DWORD   ShadeCaps;
+    DWORD   TextureCaps;
+    DWORD   TextureFilterCaps;          // D3DPTFILTERCAPS for IDirect3DTexture8's
+    DWORD   CubeTextureFilterCaps;      // D3DPTFILTERCAPS for IDirect3DCubeTexture8's
+    DWORD   VolumeTextureFilterCaps;    // D3DPTFILTERCAPS for IDirect3DVolumeTexture8's
+    DWORD   TextureAddressCaps;         // D3DPTADDRESSCAPS for IDirect3DTexture8's
+    DWORD   VolumeTextureAddressCaps;   // D3DPTADDRESSCAPS for IDirect3DVolumeTexture8's
+
+    DWORD   LineCaps;                   // D3DLINECAPS
+
+    DWORD   MaxTextureWidth, MaxTextureHeight;
+    DWORD   MaxVolumeExtent;
+
+    DWORD   MaxTextureRepeat;
+    DWORD   MaxTextureAspectRatio;
+    DWORD   MaxAnisotropy;
+    float   MaxVertexW;
+
+    float   GuardBandLeft;
+    float   GuardBandTop;
+    float   GuardBandRight;
+    float   GuardBandBottom;
+
+    float   ExtentsAdjust;
+    DWORD   StencilCaps;
+
+    DWORD   FVFCaps;
+    DWORD   TextureOpCaps;
+    DWORD   MaxTextureBlendStages;
+    DWORD   MaxSimultaneousTextures;
+
+    DWORD   VertexProcessingCaps;
+    DWORD   MaxActiveLights;
+    DWORD   MaxUserClipPlanes;
+    DWORD   MaxVertexBlendMatrices;
+    DWORD   MaxVertexBlendMatrixIndex;
+
+    float   MaxPointSize;
+
+    DWORD   MaxPrimitiveCount;          // max number of primitives per DrawPrimitive call
+    DWORD   MaxVertexIndex;
+    DWORD   MaxStreams;
+    DWORD   MaxStreamStride;            // max stride for SetStreamSource
+
+    DWORD   VertexShaderVersion;
+    DWORD   MaxVertexShaderConst;       // number of vertex shader constant registers
+
+    DWORD   PixelShaderVersion;
+    float   MaxPixelShaderValue;        // max value of pixel shader arithmetic component
+}
+
+struct D3DVSHADERCAPS2_0 {
+    DWORD Caps;
+    INT   DynamicFlowControlDepth;
+    INT   NumTemps;
+    INT   StaticFlowControlDepth;
+}
+
+struct D3DPSHADERCAPS2_0 {
+    DWORD Caps;
+    INT   DynamicFlowControlDepth;
+    INT   NumTemps;
+    INT   StaticFlowControlDepth;
+    INT   NumInstructionSlots;
+}
+
+struct D3DCAPS9 {
+    D3DCAPS8 d3dcaps8; alias d3dcaps8 this;
+
+    // Here are the DX9 specific ones
+    DWORD   DevCaps2;
+
+    float   MaxNpatchTessellationLevel;
+    DWORD   Reserved5;
+
+    UINT    MasterAdapterOrdinal;       // ordinal of master adaptor for adapter group
+    UINT    AdapterOrdinalInGroup;      // ordinal inside the adapter group
+    UINT    NumberOfAdaptersInGroup;    // number of adapters in this adapter group (only if master)
+    DWORD   DeclTypes;                  // Data types, supported in vertex declarations
+    DWORD   NumSimultaneousRTs;         // Will be at least 1
+    DWORD   StretchRectFilterCaps;      // Filter caps supported by StretchRect
+    D3DVSHADERCAPS2_0 VS20Caps;
+    D3DPSHADERCAPS2_0 PS20Caps;
+    DWORD   VertexTextureFilterCaps;    // D3DPTFILTERCAPS for IDirect3DTexture9's for texture, used in vertex shaders
+    DWORD   MaxVShaderInstructionsExecuted; // maximum number of vertex shader instructions that can be executed
+    DWORD   MaxPShaderInstructionsExecuted; // maximum number of pixel shader instructions that can be executed
+    DWORD   MaxVertexShader30InstructionSlots;
+    DWORD   MaxPixelShader30InstructionSlots;
+}
+
+enum {
+    D3DCREATE_FPU_PRESERVE                  = 0x00000002,
+    D3DCREATE_MULTITHREADED                 = 0x00000004,
+
+    D3DCREATE_PUREDEVICE                    = 0x00000010,
+    D3DCREATE_SOFTWARE_VERTEXPROCESSING     = 0x00000020,
+    D3DCREATE_HARDWARE_VERTEXPROCESSING     = 0x00000040,
+    D3DCREATE_MIXED_VERTEXPROCESSING        = 0x00000080,
+
+    D3DCREATE_DISABLE_DRIVER_MANAGEMENT     = 0x00000100,
+    D3DCREATE_ADAPTERGROUP_DEVICE           = 0x00000200,
+    D3DCREATE_DISABLE_DRIVER_MANAGEMENT_EX  = 0x00000400,
+
+    // This flag causes the D3D runtime not to alter the focus
+    // window in any way. Use with caution- the burden of supporting
+    // focus management events (alt-tab, etc.) falls on the
+    // application, and appropriate responses (switching display
+    // mode, etc.) should be coded.
+    D3DCREATE_NOWINDOWCHANGES				= 0x00000800,
+
+    /* D3D9Ex only -- */
+
+    // Disable multithreading for software vertex processing
+    D3DCREATE_DISABLE_PSGP_THREADING        = 0x00002000,
+    // This flag enables present statistics on device.
+    D3DCREATE_ENABLE_PRESENTSTATS           = 0x00004000,
+    // This flag disables printscreen support in the runtime for this device
+    D3DCREATE_DISABLE_PRINTSCREEN           = 0x00008000,
+
+    D3DCREATE_SCREENSAVER                   = 0x10000000
+}
+
+enum {
+    /* Usages */
+    D3DUSAGE_RENDERTARGET       = 0x00000001,
+    D3DUSAGE_DEPTHSTENCIL       = 0x00000002,
+
+    /* Usages for Vertex/Index buffers */
+    D3DUSAGE_WRITEONLY          = 0x00000008,
+    D3DUSAGE_SOFTWAREPROCESSING = 0x00000010,
+    D3DUSAGE_DONOTCLIP          = 0x00000020,
+    D3DUSAGE_POINTS             = 0x00000040,
+    D3DUSAGE_RTPATCHES          = 0x00000080,
+    D3DUSAGE_NPATCHES           = 0x00000100,
+    D3DUSAGE_DYNAMIC            = 0x00000200
+}
+
+alias D3D_DRIVER_TYPE = int;
+enum : D3D_DRIVER_TYPE
+{
+	D3D_DRIVER_TYPE_UNKNOWN	= 0,
+	D3D_DRIVER_TYPE_HARDWARE	= ( D3D_DRIVER_TYPE_UNKNOWN + 1 ) ,
+	D3D_DRIVER_TYPE_REFERENCE	= ( D3D_DRIVER_TYPE_HARDWARE + 1 ) ,
+	D3D_DRIVER_TYPE_NULL	= ( D3D_DRIVER_TYPE_REFERENCE + 1 ) ,
+	D3D_DRIVER_TYPE_SOFTWARE	= ( D3D_DRIVER_TYPE_NULL + 1 ) ,
+	D3D_DRIVER_TYPE_WARP	= ( D3D_DRIVER_TYPE_SOFTWARE + 1 ) 
+}
+
+alias D3D_FEATURE_LEVEL = int;
+enum : D3D_FEATURE_LEVEL
+{
+	D3D_FEATURE_LEVEL_9_1	= 0x9100,
+	D3D_FEATURE_LEVEL_9_2	= 0x9200,
+	D3D_FEATURE_LEVEL_9_3	= 0x9300,
+	D3D_FEATURE_LEVEL_10_0	= 0xa000,
+	D3D_FEATURE_LEVEL_10_1	= 0xa100,
+	D3D_FEATURE_LEVEL_11_0	= 0xb000,
+    D3D_FEATURE_LEVEL_11_1  = 0xb100,
+    D3D_FEATURE_LEVEL_12_0  = 0xc000,
+    D3D_FEATURE_LEVEL_12_1  = 0xc100
+}
+
+alias D3D_PRIMITIVE_TOPOLOGY = int;
+enum : D3D_PRIMITIVE_TOPOLOGY
+{
+	D3D_PRIMITIVE_TOPOLOGY_UNDEFINED	= 0,
+	D3D_PRIMITIVE_TOPOLOGY_POINTLIST	= 1,
+	D3D_PRIMITIVE_TOPOLOGY_LINELIST	= 2,
+	D3D_PRIMITIVE_TOPOLOGY_LINESTRIP	= 3,
+	D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST	= 4,
+	D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP	= 5,
+	D3D_PRIMITIVE_TOPOLOGY_LINELIST_ADJ	= 10,
+	D3D_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ	= 11,
+	D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ	= 12,
+	D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ	= 13,
+	D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST	= 33,
+	D3D_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST	= 34,
+	D3D_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST	= 35,
+	D3D_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST	= 36,
+	D3D_PRIMITIVE_TOPOLOGY_5_CONTROL_POINT_PATCHLIST	= 37,
+	D3D_PRIMITIVE_TOPOLOGY_6_CONTROL_POINT_PATCHLIST	= 38,
+	D3D_PRIMITIVE_TOPOLOGY_7_CONTROL_POINT_PATCHLIST	= 39,
+	D3D_PRIMITIVE_TOPOLOGY_8_CONTROL_POINT_PATCHLIST	= 40,
+	D3D_PRIMITIVE_TOPOLOGY_9_CONTROL_POINT_PATCHLIST	= 41,
+	D3D_PRIMITIVE_TOPOLOGY_10_CONTROL_POINT_PATCHLIST	= 42,
+	D3D_PRIMITIVE_TOPOLOGY_11_CONTROL_POINT_PATCHLIST	= 43,
+	D3D_PRIMITIVE_TOPOLOGY_12_CONTROL_POINT_PATCHLIST	= 44,
+	D3D_PRIMITIVE_TOPOLOGY_13_CONTROL_POINT_PATCHLIST	= 45,
+	D3D_PRIMITIVE_TOPOLOGY_14_CONTROL_POINT_PATCHLIST	= 46,
+	D3D_PRIMITIVE_TOPOLOGY_15_CONTROL_POINT_PATCHLIST	= 47,
+	D3D_PRIMITIVE_TOPOLOGY_16_CONTROL_POINT_PATCHLIST	= 48,
+	D3D_PRIMITIVE_TOPOLOGY_17_CONTROL_POINT_PATCHLIST	= 49,
+	D3D_PRIMITIVE_TOPOLOGY_18_CONTROL_POINT_PATCHLIST	= 50,
+	D3D_PRIMITIVE_TOPOLOGY_19_CONTROL_POINT_PATCHLIST	= 51,
+	D3D_PRIMITIVE_TOPOLOGY_20_CONTROL_POINT_PATCHLIST	= 52,
+	D3D_PRIMITIVE_TOPOLOGY_21_CONTROL_POINT_PATCHLIST	= 53,
+	D3D_PRIMITIVE_TOPOLOGY_22_CONTROL_POINT_PATCHLIST	= 54,
+	D3D_PRIMITIVE_TOPOLOGY_23_CONTROL_POINT_PATCHLIST	= 55,
+	D3D_PRIMITIVE_TOPOLOGY_24_CONTROL_POINT_PATCHLIST	= 56,
+	D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST	= 57,
+	D3D_PRIMITIVE_TOPOLOGY_26_CONTROL_POINT_PATCHLIST	= 58,
+	D3D_PRIMITIVE_TOPOLOGY_27_CONTROL_POINT_PATCHLIST	= 59,
+	D3D_PRIMITIVE_TOPOLOGY_28_CONTROL_POINT_PATCHLIST	= 60,
+	D3D_PRIMITIVE_TOPOLOGY_29_CONTROL_POINT_PATCHLIST	= 61,
+	D3D_PRIMITIVE_TOPOLOGY_30_CONTROL_POINT_PATCHLIST	= 62,
+	D3D_PRIMITIVE_TOPOLOGY_31_CONTROL_POINT_PATCHLIST	= 63,
+	D3D_PRIMITIVE_TOPOLOGY_32_CONTROL_POINT_PATCHLIST	= 64,
+	D3D10_PRIMITIVE_TOPOLOGY_UNDEFINED	= D3D_PRIMITIVE_TOPOLOGY_UNDEFINED,
+	D3D10_PRIMITIVE_TOPOLOGY_POINTLIST	= D3D_PRIMITIVE_TOPOLOGY_POINTLIST,
+	D3D10_PRIMITIVE_TOPOLOGY_LINELIST	= D3D_PRIMITIVE_TOPOLOGY_LINELIST,
+	D3D10_PRIMITIVE_TOPOLOGY_LINESTRIP	= D3D_PRIMITIVE_TOPOLOGY_LINESTRIP,
+	D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST	= D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+	D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP	= D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
+	D3D10_PRIMITIVE_TOPOLOGY_LINELIST_ADJ	= D3D_PRIMITIVE_TOPOLOGY_LINELIST_ADJ,
+	D3D10_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ	= D3D_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ,
+	D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ	= D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ,
+	D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ	= D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ,
+	D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED	= D3D_PRIMITIVE_TOPOLOGY_UNDEFINED,
+	D3D11_PRIMITIVE_TOPOLOGY_POINTLIST	= D3D_PRIMITIVE_TOPOLOGY_POINTLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_LINELIST	= D3D_PRIMITIVE_TOPOLOGY_LINELIST,
+	D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP	= D3D_PRIMITIVE_TOPOLOGY_LINESTRIP,
+	D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST	= D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+	D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP	= D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
+	D3D11_PRIMITIVE_TOPOLOGY_LINELIST_ADJ	= D3D_PRIMITIVE_TOPOLOGY_LINELIST_ADJ,
+	D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ	= D3D_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ,
+	D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ	= D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ,
+	D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ	= D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ,
+	D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_5_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_5_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_6_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_6_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_7_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_7_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_8_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_8_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_9_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_9_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_10_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_10_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_11_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_11_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_12_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_12_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_13_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_13_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_14_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_14_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_15_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_15_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_16_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_16_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_17_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_17_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_18_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_18_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_19_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_19_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_20_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_20_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_21_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_21_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_22_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_22_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_23_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_23_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_24_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_24_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_26_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_26_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_27_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_27_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_28_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_28_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_29_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_29_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_30_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_30_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_31_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_31_CONTROL_POINT_PATCHLIST,
+	D3D11_PRIMITIVE_TOPOLOGY_32_CONTROL_POINT_PATCHLIST	= D3D_PRIMITIVE_TOPOLOGY_32_CONTROL_POINT_PATCHLIST
+}
+
+alias D3D_PRIMITIVE = int;
+enum : D3D_PRIMITIVE
+{
+	D3D_PRIMITIVE_UNDEFINED	= 0,
+	D3D_PRIMITIVE_POINT	= 1,
+	D3D_PRIMITIVE_LINE	= 2,
+	D3D_PRIMITIVE_TRIANGLE	= 3,
+	D3D_PRIMITIVE_LINE_ADJ	= 6,
+	D3D_PRIMITIVE_TRIANGLE_ADJ	= 7,
+	D3D_PRIMITIVE_1_CONTROL_POINT_PATCH	= 8,
+	D3D_PRIMITIVE_2_CONTROL_POINT_PATCH	= 9,
+	D3D_PRIMITIVE_3_CONTROL_POINT_PATCH	= 10,
+	D3D_PRIMITIVE_4_CONTROL_POINT_PATCH	= 11,
+	D3D_PRIMITIVE_5_CONTROL_POINT_PATCH	= 12,
+	D3D_PRIMITIVE_6_CONTROL_POINT_PATCH	= 13,
+	D3D_PRIMITIVE_7_CONTROL_POINT_PATCH	= 14,
+	D3D_PRIMITIVE_8_CONTROL_POINT_PATCH	= 15,
+	D3D_PRIMITIVE_9_CONTROL_POINT_PATCH	= 16,
+	D3D_PRIMITIVE_10_CONTROL_POINT_PATCH	= 17,
+	D3D_PRIMITIVE_11_CONTROL_POINT_PATCH	= 18,
+	D3D_PRIMITIVE_12_CONTROL_POINT_PATCH	= 19,
+	D3D_PRIMITIVE_13_CONTROL_POINT_PATCH	= 20,
+	D3D_PRIMITIVE_14_CONTROL_POINT_PATCH	= 21,
+	D3D_PRIMITIVE_15_CONTROL_POINT_PATCH	= 22,
+	D3D_PRIMITIVE_16_CONTROL_POINT_PATCH	= 23,
+	D3D_PRIMITIVE_17_CONTROL_POINT_PATCH	= 24,
+	D3D_PRIMITIVE_18_CONTROL_POINT_PATCH	= 25,
+	D3D_PRIMITIVE_19_CONTROL_POINT_PATCH	= 26,
+	D3D_PRIMITIVE_20_CONTROL_POINT_PATCH	= 28,
+	D3D_PRIMITIVE_21_CONTROL_POINT_PATCH	= 29,
+	D3D_PRIMITIVE_22_CONTROL_POINT_PATCH	= 30,
+	D3D_PRIMITIVE_23_CONTROL_POINT_PATCH	= 31,
+	D3D_PRIMITIVE_24_CONTROL_POINT_PATCH	= 32,
+	D3D_PRIMITIVE_25_CONTROL_POINT_PATCH	= 33,
+	D3D_PRIMITIVE_26_CONTROL_POINT_PATCH	= 34,
+	D3D_PRIMITIVE_27_CONTROL_POINT_PATCH	= 35,
+	D3D_PRIMITIVE_28_CONTROL_POINT_PATCH	= 36,
+	D3D_PRIMITIVE_29_CONTROL_POINT_PATCH	= 37,
+	D3D_PRIMITIVE_30_CONTROL_POINT_PATCH	= 38,
+	D3D_PRIMITIVE_31_CONTROL_POINT_PATCH	= 39,
+	D3D_PRIMITIVE_32_CONTROL_POINT_PATCH	= 40,
+	D3D10_PRIMITIVE_UNDEFINED	= D3D_PRIMITIVE_UNDEFINED,
+	D3D10_PRIMITIVE_POINT	= D3D_PRIMITIVE_POINT,
+	D3D10_PRIMITIVE_LINE	= D3D_PRIMITIVE_LINE,
+	D3D10_PRIMITIVE_TRIANGLE	= D3D_PRIMITIVE_TRIANGLE,
+	D3D10_PRIMITIVE_LINE_ADJ	= D3D_PRIMITIVE_LINE_ADJ,
+	D3D10_PRIMITIVE_TRIANGLE_ADJ	= D3D_PRIMITIVE_TRIANGLE_ADJ,
+	D3D11_PRIMITIVE_UNDEFINED	= D3D_PRIMITIVE_UNDEFINED,
+	D3D11_PRIMITIVE_POINT	= D3D_PRIMITIVE_POINT,
+	D3D11_PRIMITIVE_LINE	= D3D_PRIMITIVE_LINE,
+	D3D11_PRIMITIVE_TRIANGLE	= D3D_PRIMITIVE_TRIANGLE,
+	D3D11_PRIMITIVE_LINE_ADJ	= D3D_PRIMITIVE_LINE_ADJ,
+	D3D11_PRIMITIVE_TRIANGLE_ADJ	= D3D_PRIMITIVE_TRIANGLE_ADJ,
+	D3D11_PRIMITIVE_1_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_1_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_2_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_2_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_3_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_3_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_4_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_4_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_5_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_5_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_6_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_6_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_7_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_7_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_8_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_8_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_9_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_9_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_10_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_10_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_11_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_11_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_12_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_12_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_13_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_13_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_14_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_14_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_15_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_15_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_16_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_16_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_17_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_17_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_18_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_18_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_19_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_19_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_20_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_20_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_21_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_21_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_22_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_22_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_23_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_23_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_24_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_24_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_25_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_25_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_26_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_26_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_27_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_27_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_28_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_28_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_29_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_29_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_30_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_30_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_31_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_31_CONTROL_POINT_PATCH,
+	D3D11_PRIMITIVE_32_CONTROL_POINT_PATCH	= D3D_PRIMITIVE_32_CONTROL_POINT_PATCH
+}
+
+
+alias D3D_SRV_DIMENSION = int;
+enum : D3D_SRV_DIMENSION
+{
+	D3D_SRV_DIMENSION_UNKNOWN	= 0,
+	D3D_SRV_DIMENSION_BUFFER	= 1,
+	D3D_SRV_DIMENSION_TEXTURE1D	= 2,
+	D3D_SRV_DIMENSION_TEXTURE1DARRAY	= 3,
+	D3D_SRV_DIMENSION_TEXTURE2D	= 4,
+	D3D_SRV_DIMENSION_TEXTURE2DARRAY	= 5,
+	D3D_SRV_DIMENSION_TEXTURE2DMS	= 6,
+	D3D_SRV_DIMENSION_TEXTURE2DMSARRAY	= 7,
+	D3D_SRV_DIMENSION_TEXTURE3D	= 8,
+	D3D_SRV_DIMENSION_TEXTURECUBE	= 9,
+	D3D_SRV_DIMENSION_TEXTURECUBEARRAY	= 10,
+	D3D_SRV_DIMENSION_BUFFEREX	= 11,
+	D3D10_SRV_DIMENSION_UNKNOWN	= D3D_SRV_DIMENSION_UNKNOWN,
+	D3D10_SRV_DIMENSION_BUFFER	= D3D_SRV_DIMENSION_BUFFER,
+	D3D10_SRV_DIMENSION_TEXTURE1D	= D3D_SRV_DIMENSION_TEXTURE1D,
+	D3D10_SRV_DIMENSION_TEXTURE1DARRAY	= D3D_SRV_DIMENSION_TEXTURE1DARRAY,
+	D3D10_SRV_DIMENSION_TEXTURE2D	= D3D_SRV_DIMENSION_TEXTURE2D,
+	D3D10_SRV_DIMENSION_TEXTURE2DARRAY	= D3D_SRV_DIMENSION_TEXTURE2DARRAY,
+	D3D10_SRV_DIMENSION_TEXTURE2DMS	= D3D_SRV_DIMENSION_TEXTURE2DMS,
+	D3D10_SRV_DIMENSION_TEXTURE2DMSARRAY	= D3D_SRV_DIMENSION_TEXTURE2DMSARRAY,
+	D3D10_SRV_DIMENSION_TEXTURE3D	= D3D_SRV_DIMENSION_TEXTURE3D,
+	D3D10_SRV_DIMENSION_TEXTURECUBE	= D3D_SRV_DIMENSION_TEXTURECUBE,
+	D3D10_1_SRV_DIMENSION_UNKNOWN	= D3D_SRV_DIMENSION_UNKNOWN,
+	D3D10_1_SRV_DIMENSION_BUFFER	= D3D_SRV_DIMENSION_BUFFER,
+	D3D10_1_SRV_DIMENSION_TEXTURE1D	= D3D_SRV_DIMENSION_TEXTURE1D,
+	D3D10_1_SRV_DIMENSION_TEXTURE1DARRAY	= D3D_SRV_DIMENSION_TEXTURE1DARRAY,
+	D3D10_1_SRV_DIMENSION_TEXTURE2D	= D3D_SRV_DIMENSION_TEXTURE2D,
+	D3D10_1_SRV_DIMENSION_TEXTURE2DARRAY	= D3D_SRV_DIMENSION_TEXTURE2DARRAY,
+	D3D10_1_SRV_DIMENSION_TEXTURE2DMS	= D3D_SRV_DIMENSION_TEXTURE2DMS,
+	D3D10_1_SRV_DIMENSION_TEXTURE2DMSARRAY	= D3D_SRV_DIMENSION_TEXTURE2DMSARRAY,
+	D3D10_1_SRV_DIMENSION_TEXTURE3D	= D3D_SRV_DIMENSION_TEXTURE3D,
+	D3D10_1_SRV_DIMENSION_TEXTURECUBE	= D3D_SRV_DIMENSION_TEXTURECUBE,
+	D3D10_1_SRV_DIMENSION_TEXTURECUBEARRAY	= D3D_SRV_DIMENSION_TEXTURECUBEARRAY,
+	D3D11_SRV_DIMENSION_UNKNOWN	= D3D_SRV_DIMENSION_UNKNOWN,
+	D3D11_SRV_DIMENSION_BUFFER	= D3D_SRV_DIMENSION_BUFFER,
+	D3D11_SRV_DIMENSION_TEXTURE1D	= D3D_SRV_DIMENSION_TEXTURE1D,
+	D3D11_SRV_DIMENSION_TEXTURE1DARRAY	= D3D_SRV_DIMENSION_TEXTURE1DARRAY,
+	D3D11_SRV_DIMENSION_TEXTURE2D	= D3D_SRV_DIMENSION_TEXTURE2D,
+	D3D11_SRV_DIMENSION_TEXTURE2DARRAY	= D3D_SRV_DIMENSION_TEXTURE2DARRAY,
+	D3D11_SRV_DIMENSION_TEXTURE2DMS	= D3D_SRV_DIMENSION_TEXTURE2DMS,
+	D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY	= D3D_SRV_DIMENSION_TEXTURE2DMSARRAY,
+	D3D11_SRV_DIMENSION_TEXTURE3D	= D3D_SRV_DIMENSION_TEXTURE3D,
+	D3D11_SRV_DIMENSION_TEXTURECUBE	= D3D_SRV_DIMENSION_TEXTURECUBE,
+	D3D11_SRV_DIMENSION_TEXTURECUBEARRAY	= D3D_SRV_DIMENSION_TEXTURECUBEARRAY,
+	D3D11_SRV_DIMENSION_BUFFEREX	= D3D_SRV_DIMENSION_BUFFEREX
+}
+
+struct _D3D_SHADER_MACRO
+{
+	LPCSTR Name;
+	LPCSTR Definition;
+}
+alias _D3D_SHADER_MACRO D3D_SHADER_MACRO;
+alias _D3D_SHADER_MACRO* LPD3D_SHADER_MACRO;
+
+mixin( uuid!(ID3D10Blob, "8BA5FB08-5195-40e2-AC58-0D989C3A0102") );
+interface ID3D10Blob : IUnknown
+{
+	extern(Windows):
+	LPVOID GetBufferPointer();
+	
+	SIZE_T GetBufferSize();
+	
+}
+alias ID3D10Blob LPD3D10BLOB;
+alias ID3D10Blob ID3DBlob;
+alias ID3DBlob LPD3DBLOB;
+alias IID_ID3D10Blob IID_ID3DBlob;
+
+
+alias _D3D_INCLUDE_TYPE = int;
+enum : _D3D_INCLUDE_TYPE
+{
+	D3D_INCLUDE_LOCAL	= 0,
+	D3D_INCLUDE_SYSTEM	= ( D3D_INCLUDE_LOCAL + 1 ) ,
+	D3D10_INCLUDE_LOCAL	= D3D_INCLUDE_LOCAL,
+	D3D10_INCLUDE_SYSTEM	= D3D_INCLUDE_SYSTEM,
+	D3D_INCLUDE_FORCE_DWORD	= 0x7fffffff
+}
+alias _D3D_INCLUDE_TYPE D3D_INCLUDE_TYPE;
+
+
+extern(C++) interface ID3DInclude
+{
+  extern(Windows):
+    HRESULT Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes);
+    HRESULT Close(LPCVOID pData);
+}
+alias ID3DInclude LPD3DINCLUDE;
+
+
+alias _D3D_SHADER_VARIABLE_CLASS = int;
+enum : _D3D_SHADER_VARIABLE_CLASS
+{
+	D3D_SVC_SCALAR	= 0,
+	D3D_SVC_VECTOR	= ( D3D_SVC_SCALAR + 1 ) ,
+	D3D_SVC_MATRIX_ROWS	= ( D3D_SVC_VECTOR + 1 ) ,
+	D3D_SVC_MATRIX_COLUMNS	= ( D3D_SVC_MATRIX_ROWS + 1 ) ,
+	D3D_SVC_OBJECT	= ( D3D_SVC_MATRIX_COLUMNS + 1 ) ,
+	D3D_SVC_STRUCT	= ( D3D_SVC_OBJECT + 1 ) ,
+	D3D_SVC_INTERFACE_CLASS	= ( D3D_SVC_STRUCT + 1 ) ,
+	D3D_SVC_INTERFACE_POINTER	= ( D3D_SVC_INTERFACE_CLASS + 1 ) ,
+	D3D10_SVC_SCALAR	= D3D_SVC_SCALAR,
+	D3D10_SVC_VECTOR	= D3D_SVC_VECTOR,
+	D3D10_SVC_MATRIX_ROWS	= D3D_SVC_MATRIX_ROWS,
+	D3D10_SVC_MATRIX_COLUMNS	= D3D_SVC_MATRIX_COLUMNS,
+	D3D10_SVC_OBJECT	= D3D_SVC_OBJECT,
+	D3D10_SVC_STRUCT	= D3D_SVC_STRUCT,
+	D3D11_SVC_INTERFACE_CLASS	= D3D_SVC_INTERFACE_CLASS,
+	D3D11_SVC_INTERFACE_POINTER	= D3D_SVC_INTERFACE_POINTER,
+	D3D_SVC_FORCE_DWORD	= 0x7fffffff
+}
+alias _D3D_SHADER_VARIABLE_CLASS D3D_SHADER_VARIABLE_CLASS;
+
+
+alias _D3D_SHADER_VARIABLE_FLAGS = int;
+enum : _D3D_SHADER_VARIABLE_FLAGS
+{
+	D3D_SVF_USERPACKED	= 1,
+	D3D_SVF_USED	= 2,
+	D3D_SVF_INTERFACE_POINTER	= 4,
+	D3D_SVF_INTERFACE_PARAMETER	= 8,
+	D3D10_SVF_USERPACKED	= D3D_SVF_USERPACKED,
+	D3D10_SVF_USED	= D3D_SVF_USED,
+	D3D11_SVF_INTERFACE_POINTER	= D3D_SVF_INTERFACE_POINTER,
+	D3D11_SVF_INTERFACE_PARAMETER	= D3D_SVF_INTERFACE_PARAMETER,
+	D3D_SVF_FORCE_DWORD	= 0x7fffffff
+}
+alias _D3D_SHADER_VARIABLE_FLAGS D3D_SHADER_VARIABLE_FLAGS;
+
+
+alias _D3D_SHADER_VARIABLE_TYPE = int;
+enum : _D3D_SHADER_VARIABLE_TYPE
+{
+	D3D_SVT_VOID	= 0,
+	D3D_SVT_BOOL	= 1,
+	D3D_SVT_INT	= 2,
+	D3D_SVT_FLOAT	= 3,
+	D3D_SVT_STRING	= 4,
+	D3D_SVT_TEXTURE	= 5,
+	D3D_SVT_TEXTURE1D	= 6,
+	D3D_SVT_TEXTURE2D	= 7,
+	D3D_SVT_TEXTURE3D	= 8,
+	D3D_SVT_TEXTURECUBE	= 9,
+	D3D_SVT_SAMPLER	= 10,
+	D3D_SVT_SAMPLER1D	= 11,
+	D3D_SVT_SAMPLER2D	= 12,
+	D3D_SVT_SAMPLER3D	= 13,
+	D3D_SVT_SAMPLERCUBE	= 14,
+	D3D_SVT_PIXELSHADER	= 15,
+	D3D_SVT_VERTEXSHADER	= 16,
+	D3D_SVT_PIXELFRAGMENT	= 17,
+	D3D_SVT_VERTEXFRAGMENT	= 18,
+	D3D_SVT_UINT	= 19,
+	D3D_SVT_UINT8	= 20,
+	D3D_SVT_GEOMETRYSHADER	= 21,
+	D3D_SVT_RASTERIZER	= 22,
+	D3D_SVT_DEPTHSTENCIL	= 23,
+	D3D_SVT_BLEND	= 24,
+	D3D_SVT_BUFFER	= 25,
+	D3D_SVT_CBUFFER	= 26,
+	D3D_SVT_TBUFFER	= 27,
+	D3D_SVT_TEXTURE1DARRAY	= 28,
+	D3D_SVT_TEXTURE2DARRAY	= 29,
+	D3D_SVT_RENDERTARGETVIEW	= 30,
+	D3D_SVT_DEPTHSTENCILVIEW	= 31,
+	D3D_SVT_TEXTURE2DMS	= 32,
+	D3D_SVT_TEXTURE2DMSARRAY	= 33,
+	D3D_SVT_TEXTURECUBEARRAY	= 34,
+	D3D_SVT_HULLSHADER	= 35,
+	D3D_SVT_DOMAINSHADER	= 36,
+	D3D_SVT_INTERFACE_POINTER	= 37,
+	D3D_SVT_COMPUTESHADER	= 38,
+	D3D_SVT_DOUBLE	= 39,
+	D3D_SVT_RWTEXTURE1D	= 40,
+	D3D_SVT_RWTEXTURE1DARRAY	= 41,
+	D3D_SVT_RWTEXTURE2D	= 42,
+	D3D_SVT_RWTEXTURE2DARRAY	= 43,
+	D3D_SVT_RWTEXTURE3D	= 44,
+	D3D_SVT_RWBUFFER	= 45,
+	D3D_SVT_BYTEADDRESS_BUFFER	= 46,
+	D3D_SVT_RWBYTEADDRESS_BUFFER	= 47,
+	D3D_SVT_STRUCTURED_BUFFER	= 48,
+	D3D_SVT_RWSTRUCTURED_BUFFER	= 49,
+	D3D_SVT_APPEND_STRUCTURED_BUFFER	= 50,
+	D3D_SVT_CONSUME_STRUCTURED_BUFFER	= 51,
+	D3D10_SVT_VOID	= D3D_SVT_VOID,
+	D3D10_SVT_BOOL	= D3D_SVT_BOOL,
+	D3D10_SVT_INT	= D3D_SVT_INT,
+	D3D10_SVT_FLOAT	= D3D_SVT_FLOAT,
+	D3D10_SVT_STRING	= D3D_SVT_STRING,
+	D3D10_SVT_TEXTURE	= D3D_SVT_TEXTURE,
+	D3D10_SVT_TEXTURE1D	= D3D_SVT_TEXTURE1D,
+	D3D10_SVT_TEXTURE2D	= D3D_SVT_TEXTURE2D,
+	D3D10_SVT_TEXTURE3D	= D3D_SVT_TEXTURE3D,
+	D3D10_SVT_TEXTURECUBE	= D3D_SVT_TEXTURECUBE,
+	D3D10_SVT_SAMPLER	= D3D_SVT_SAMPLER,
+	D3D10_SVT_SAMPLER1D	= D3D_SVT_SAMPLER1D,
+	D3D10_SVT_SAMPLER2D	= D3D_SVT_SAMPLER2D,
+	D3D10_SVT_SAMPLER3D	= D3D_SVT_SAMPLER3D,
+	D3D10_SVT_SAMPLERCUBE	= D3D_SVT_SAMPLERCUBE,
+	D3D10_SVT_PIXELSHADER	= D3D_SVT_PIXELSHADER,
+	D3D10_SVT_VERTEXSHADER	= D3D_SVT_VERTEXSHADER,
+	D3D10_SVT_PIXELFRAGMENT	= D3D_SVT_PIXELFRAGMENT,
+	D3D10_SVT_VERTEXFRAGMENT	= D3D_SVT_VERTEXFRAGMENT,
+	D3D10_SVT_UINT	= D3D_SVT_UINT,
+	D3D10_SVT_UINT8	= D3D_SVT_UINT8,
+	D3D10_SVT_GEOMETRYSHADER	= D3D_SVT_GEOMETRYSHADER,
+	D3D10_SVT_RASTERIZER	= D3D_SVT_RASTERIZER,
+	D3D10_SVT_DEPTHSTENCIL	= D3D_SVT_DEPTHSTENCIL,
+	D3D10_SVT_BLEND	= D3D_SVT_BLEND,
+	D3D10_SVT_BUFFER	= D3D_SVT_BUFFER,
+	D3D10_SVT_CBUFFER	= D3D_SVT_CBUFFER,
+	D3D10_SVT_TBUFFER	= D3D_SVT_TBUFFER,
+	D3D10_SVT_TEXTURE1DARRAY	= D3D_SVT_TEXTURE1DARRAY,
+	D3D10_SVT_TEXTURE2DARRAY	= D3D_SVT_TEXTURE2DARRAY,
+	D3D10_SVT_RENDERTARGETVIEW	= D3D_SVT_RENDERTARGETVIEW,
+	D3D10_SVT_DEPTHSTENCILVIEW	= D3D_SVT_DEPTHSTENCILVIEW,
+	D3D10_SVT_TEXTURE2DMS	= D3D_SVT_TEXTURE2DMS,
+	D3D10_SVT_TEXTURE2DMSARRAY	= D3D_SVT_TEXTURE2DMSARRAY,
+	D3D10_SVT_TEXTURECUBEARRAY	= D3D_SVT_TEXTURECUBEARRAY,
+	D3D11_SVT_HULLSHADER	= D3D_SVT_HULLSHADER,
+	D3D11_SVT_DOMAINSHADER	= D3D_SVT_DOMAINSHADER,
+	D3D11_SVT_INTERFACE_POINTER	= D3D_SVT_INTERFACE_POINTER,
+	D3D11_SVT_COMPUTESHADER	= D3D_SVT_COMPUTESHADER,
+	D3D11_SVT_DOUBLE	= D3D_SVT_DOUBLE,
+	D3D11_SVT_RWTEXTURE1D	= D3D_SVT_RWTEXTURE1D,
+	D3D11_SVT_RWTEXTURE1DARRAY	= D3D_SVT_RWTEXTURE1DARRAY,
+	D3D11_SVT_RWTEXTURE2D	= D3D_SVT_RWTEXTURE2D,
+	D3D11_SVT_RWTEXTURE2DARRAY	= D3D_SVT_RWTEXTURE2DARRAY,
+	D3D11_SVT_RWTEXTURE3D	= D3D_SVT_RWTEXTURE3D,
+	D3D11_SVT_RWBUFFER	= D3D_SVT_RWBUFFER,
+	D3D11_SVT_BYTEADDRESS_BUFFER	= D3D_SVT_BYTEADDRESS_BUFFER,
+	D3D11_SVT_RWBYTEADDRESS_BUFFER	= D3D_SVT_RWBYTEADDRESS_BUFFER,
+	D3D11_SVT_STRUCTURED_BUFFER	= D3D_SVT_STRUCTURED_BUFFER,
+	D3D11_SVT_RWSTRUCTURED_BUFFER	= D3D_SVT_RWSTRUCTURED_BUFFER,
+	D3D11_SVT_APPEND_STRUCTURED_BUFFER	= D3D_SVT_APPEND_STRUCTURED_BUFFER,
+	D3D11_SVT_CONSUME_STRUCTURED_BUFFER	= D3D_SVT_CONSUME_STRUCTURED_BUFFER,
+	D3D_SVT_FORCE_DWORD	= 0x7fffffff
+}
+alias _D3D_SHADER_VARIABLE_TYPE	D3D_SHADER_VARIABLE_TYPE;
+
+
+alias _D3D_SHADER_INPUT_FLAGS = int;
+enum : _D3D_SHADER_INPUT_FLAGS
+{
+	D3D_SIF_USERPACKED	= 1,
+	D3D_SIF_COMPARISON_SAMPLER	= 2,
+	D3D_SIF_TEXTURE_COMPONENT_0	= 4,
+	D3D_SIF_TEXTURE_COMPONENT_1	= 8,
+	D3D_SIF_TEXTURE_COMPONENTS	= 12,
+	D3D10_SIF_USERPACKED	= D3D_SIF_USERPACKED,
+	D3D10_SIF_COMPARISON_SAMPLER	= D3D_SIF_COMPARISON_SAMPLER,
+	D3D10_SIF_TEXTURE_COMPONENT_0	= D3D_SIF_TEXTURE_COMPONENT_0,
+	D3D10_SIF_TEXTURE_COMPONENT_1	= D3D_SIF_TEXTURE_COMPONENT_1,
+	D3D10_SIF_TEXTURE_COMPONENTS	= D3D_SIF_TEXTURE_COMPONENTS,
+	D3D_SIF_FORCE_DWORD	= 0x7fffffff
+}
+alias _D3D_SHADER_INPUT_FLAGS D3D_SHADER_INPUT_FLAGS;
+
+
+alias _D3D_SHADER_INPUT_TYPE = int;
+enum : _D3D_SHADER_INPUT_TYPE
+{
+	D3D_SIT_CBUFFER	= 0,
+	D3D_SIT_TBUFFER	= ( D3D_SIT_CBUFFER + 1 ) ,
+	D3D_SIT_TEXTURE	= ( D3D_SIT_TBUFFER + 1 ) ,
+	D3D_SIT_SAMPLER	= ( D3D_SIT_TEXTURE + 1 ) ,
+	D3D_SIT_UAV_RWTYPED	= ( D3D_SIT_SAMPLER + 1 ) ,
+	D3D_SIT_STRUCTURED	= ( D3D_SIT_UAV_RWTYPED + 1 ) ,
+	D3D_SIT_UAV_RWSTRUCTURED	= ( D3D_SIT_STRUCTURED + 1 ) ,
+	D3D_SIT_BYTEADDRESS	= ( D3D_SIT_UAV_RWSTRUCTURED + 1 ) ,
+	D3D_SIT_UAV_RWBYTEADDRESS	= ( D3D_SIT_BYTEADDRESS + 1 ) ,
+	D3D_SIT_UAV_APPEND_STRUCTURED	= ( D3D_SIT_UAV_RWBYTEADDRESS + 1 ) ,
+	D3D_SIT_UAV_CONSUME_STRUCTURED	= ( D3D_SIT_UAV_APPEND_STRUCTURED + 1 ) ,
+	D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER	= ( D3D_SIT_UAV_CONSUME_STRUCTURED + 1 ) ,
+	D3D10_SIT_CBUFFER	= D3D_SIT_CBUFFER,
+	D3D10_SIT_TBUFFER	= D3D_SIT_TBUFFER,
+	D3D10_SIT_TEXTURE	= D3D_SIT_TEXTURE,
+	D3D10_SIT_SAMPLER	= D3D_SIT_SAMPLER,
+	D3D11_SIT_UAV_RWTYPED	= D3D_SIT_UAV_RWTYPED,
+	D3D11_SIT_STRUCTURED	= D3D_SIT_STRUCTURED,
+	D3D11_SIT_UAV_RWSTRUCTURED	= D3D_SIT_UAV_RWSTRUCTURED,
+	D3D11_SIT_BYTEADDRESS	= D3D_SIT_BYTEADDRESS,
+	D3D11_SIT_UAV_RWBYTEADDRESS	= D3D_SIT_UAV_RWBYTEADDRESS,
+	D3D11_SIT_UAV_APPEND_STRUCTURED	= D3D_SIT_UAV_APPEND_STRUCTURED,
+	D3D11_SIT_UAV_CONSUME_STRUCTURED	= D3D_SIT_UAV_CONSUME_STRUCTURED,
+	D3D11_SIT_UAV_RWSTRUCTURED_WITH_COUNTER	= D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER
+}
+alias _D3D_SHADER_INPUT_TYPE D3D_SHADER_INPUT_TYPE;
+
+
+alias _D3D_SHADER_CBUFFER_FLAGS = int;
+enum : _D3D_SHADER_CBUFFER_FLAGS
+{
+	D3D_CBF_USERPACKED	= 1,
+	D3D10_CBF_USERPACKED	= D3D_CBF_USERPACKED,
+	D3D_CBF_FORCE_DWORD	= 0x7fffffff
+}
+alias _D3D_SHADER_CBUFFER_FLAGS D3D_SHADER_CBUFFER_FLAGS;
+
+
+alias _D3D_CBUFFER_TYPE = int;
+enum : _D3D_CBUFFER_TYPE
+{
+	D3D_CT_CBUFFER	= 0,
+	D3D_CT_TBUFFER	= ( D3D_CT_CBUFFER + 1 ) ,
+	D3D_CT_INTERFACE_POINTERS	= ( D3D_CT_TBUFFER + 1 ) ,
+	D3D_CT_RESOURCE_BIND_INFO	= ( D3D_CT_INTERFACE_POINTERS + 1 ) ,
+	D3D10_CT_CBUFFER	= D3D_CT_CBUFFER,
+	D3D10_CT_TBUFFER	= D3D_CT_TBUFFER,
+	D3D11_CT_CBUFFER	= D3D_CT_CBUFFER,
+	D3D11_CT_TBUFFER	= D3D_CT_TBUFFER,
+	D3D11_CT_INTERFACE_POINTERS	= D3D_CT_INTERFACE_POINTERS,
+	D3D11_CT_RESOURCE_BIND_INFO	= D3D_CT_RESOURCE_BIND_INFO
+}
+alias _D3D_CBUFFER_TYPE D3D_CBUFFER_TYPE;
+
+
+alias D3D_NAME = int;
+enum : D3D_NAME
+{
+	D3D_NAME_UNDEFINED	= 0,
+	D3D_NAME_POSITION	= 1,
+	D3D_NAME_CLIP_DISTANCE	= 2,
+	D3D_NAME_CULL_DISTANCE	= 3,
+	D3D_NAME_RENDER_TARGET_ARRAY_INDEX	= 4,
+	D3D_NAME_VIEWPORT_ARRAY_INDEX	= 5,
+	D3D_NAME_VERTEX_ID	= 6,
+	D3D_NAME_PRIMITIVE_ID	= 7,
+	D3D_NAME_INSTANCE_ID	= 8,
+	D3D_NAME_IS_FRONT_FACE	= 9,
+	D3D_NAME_SAMPLE_INDEX	= 10,
+	D3D_NAME_FINAL_QUAD_EDGE_TESSFACTOR	= 11,
+	D3D_NAME_FINAL_QUAD_INSIDE_TESSFACTOR	= 12,
+	D3D_NAME_FINAL_TRI_EDGE_TESSFACTOR	= 13,
+	D3D_NAME_FINAL_TRI_INSIDE_TESSFACTOR	= 14,
+	D3D_NAME_FINAL_LINE_DETAIL_TESSFACTOR	= 15,
+	D3D_NAME_FINAL_LINE_DENSITY_TESSFACTOR	= 16,
+	D3D_NAME_TARGET	= 64,
+	D3D_NAME_DEPTH	= 65,
+	D3D_NAME_COVERAGE	= 66,
+	D3D_NAME_DEPTH_GREATER_EQUAL	= 67,
+	D3D_NAME_DEPTH_LESS_EQUAL	= 68,
+    D3D_NAME_STENCIL_REF	= 69,
+    D3D_NAME_INNER_COVERAGE	= 70,
+	D3D10_NAME_UNDEFINED	= D3D_NAME_UNDEFINED,
+	D3D10_NAME_POSITION	= D3D_NAME_POSITION,
+	D3D10_NAME_CLIP_DISTANCE	= D3D_NAME_CLIP_DISTANCE,
+	D3D10_NAME_CULL_DISTANCE	= D3D_NAME_CULL_DISTANCE,
+	D3D10_NAME_RENDER_TARGET_ARRAY_INDEX	= D3D_NAME_RENDER_TARGET_ARRAY_INDEX,
+	D3D10_NAME_VIEWPORT_ARRAY_INDEX	= D3D_NAME_VIEWPORT_ARRAY_INDEX,
+	D3D10_NAME_VERTEX_ID	= D3D_NAME_VERTEX_ID,
+	D3D10_NAME_PRIMITIVE_ID	= D3D_NAME_PRIMITIVE_ID,
+	D3D10_NAME_INSTANCE_ID	= D3D_NAME_INSTANCE_ID,
+	D3D10_NAME_IS_FRONT_FACE	= D3D_NAME_IS_FRONT_FACE,
+	D3D10_NAME_SAMPLE_INDEX	= D3D_NAME_SAMPLE_INDEX,
+	D3D10_NAME_TARGET	= D3D_NAME_TARGET,
+	D3D10_NAME_DEPTH	= D3D_NAME_DEPTH,
+	D3D10_NAME_COVERAGE	= D3D_NAME_COVERAGE,
+	D3D11_NAME_FINAL_QUAD_EDGE_TESSFACTOR	= D3D_NAME_FINAL_QUAD_EDGE_TESSFACTOR,
+	D3D11_NAME_FINAL_QUAD_INSIDE_TESSFACTOR	= D3D_NAME_FINAL_QUAD_INSIDE_TESSFACTOR,
+	D3D11_NAME_FINAL_TRI_EDGE_TESSFACTOR	= D3D_NAME_FINAL_TRI_EDGE_TESSFACTOR,
+	D3D11_NAME_FINAL_TRI_INSIDE_TESSFACTOR	= D3D_NAME_FINAL_TRI_INSIDE_TESSFACTOR,
+	D3D11_NAME_FINAL_LINE_DETAIL_TESSFACTOR	= D3D_NAME_FINAL_LINE_DETAIL_TESSFACTOR,
+	D3D11_NAME_FINAL_LINE_DENSITY_TESSFACTOR	= D3D_NAME_FINAL_LINE_DENSITY_TESSFACTOR,
+	D3D11_NAME_DEPTH_GREATER_EQUAL	= D3D_NAME_DEPTH_GREATER_EQUAL,
+	D3D11_NAME_DEPTH_LESS_EQUAL	= D3D_NAME_DEPTH_LESS_EQUAL,
+    D3D11_NAME_STENCIL_REF	= D3D_NAME_STENCIL_REF,
+    D3D11_NAME_INNER_COVERAGE	= D3D_NAME_INNER_COVERAGE
+}
+
+alias D3D_RESOURCE_RETURN_TYPE = int;
+enum : D3D_RESOURCE_RETURN_TYPE
+{
+	D3D_RETURN_TYPE_UNORM	= 1,
+	D3D_RETURN_TYPE_SNORM	= 2,
+	D3D_RETURN_TYPE_SINT	= 3,
+	D3D_RETURN_TYPE_UINT	= 4,
+	D3D_RETURN_TYPE_FLOAT	= 5,
+	D3D_RETURN_TYPE_MIXED	= 6,
+	D3D_RETURN_TYPE_DOUBLE	= 7,
+	D3D_RETURN_TYPE_CONTINUED	= 8,
+	D3D10_RETURN_TYPE_UNORM	= D3D_RETURN_TYPE_UNORM,
+	D3D10_RETURN_TYPE_SNORM	= D3D_RETURN_TYPE_SNORM,
+	D3D10_RETURN_TYPE_SINT	= D3D_RETURN_TYPE_SINT,
+	D3D10_RETURN_TYPE_UINT	= D3D_RETURN_TYPE_UINT,
+	D3D10_RETURN_TYPE_FLOAT	= D3D_RETURN_TYPE_FLOAT,
+	D3D10_RETURN_TYPE_MIXED	= D3D_RETURN_TYPE_MIXED,
+	D3D11_RETURN_TYPE_UNORM	= D3D_RETURN_TYPE_UNORM,
+	D3D11_RETURN_TYPE_SNORM	= D3D_RETURN_TYPE_SNORM,
+	D3D11_RETURN_TYPE_SINT	= D3D_RETURN_TYPE_SINT,
+	D3D11_RETURN_TYPE_UINT	= D3D_RETURN_TYPE_UINT,
+	D3D11_RETURN_TYPE_FLOAT	= D3D_RETURN_TYPE_FLOAT,
+	D3D11_RETURN_TYPE_MIXED	= D3D_RETURN_TYPE_MIXED,
+	D3D11_RETURN_TYPE_DOUBLE	= D3D_RETURN_TYPE_DOUBLE,
+	D3D11_RETURN_TYPE_CONTINUED	= D3D_RETURN_TYPE_CONTINUED
+}
+
+alias D3D_REGISTER_COMPONENT_TYPE = int;
+enum : D3D_REGISTER_COMPONENT_TYPE
+{
+	D3D_REGISTER_COMPONENT_UNKNOWN	= 0,
+	D3D_REGISTER_COMPONENT_UINT32	= 1,
+	D3D_REGISTER_COMPONENT_SINT32	= 2,
+	D3D_REGISTER_COMPONENT_FLOAT32	= 3,
+	D3D10_REGISTER_COMPONENT_UNKNOWN	= D3D_REGISTER_COMPONENT_UNKNOWN,
+	D3D10_REGISTER_COMPONENT_UINT32	= D3D_REGISTER_COMPONENT_UINT32,
+	D3D10_REGISTER_COMPONENT_SINT32	= D3D_REGISTER_COMPONENT_SINT32,
+	D3D10_REGISTER_COMPONENT_FLOAT32	= D3D_REGISTER_COMPONENT_FLOAT32
+}
+
+alias D3D_TESSELLATOR_DOMAIN = int;
+enum : D3D_TESSELLATOR_DOMAIN
+{
+	D3D_TESSELLATOR_DOMAIN_UNDEFINED	= 0,
+	D3D_TESSELLATOR_DOMAIN_ISOLINE	= 1,
+	D3D_TESSELLATOR_DOMAIN_TRI	= 2,
+	D3D_TESSELLATOR_DOMAIN_QUAD	= 3,
+	D3D11_TESSELLATOR_DOMAIN_UNDEFINED	= D3D_TESSELLATOR_DOMAIN_UNDEFINED,
+	D3D11_TESSELLATOR_DOMAIN_ISOLINE	= D3D_TESSELLATOR_DOMAIN_ISOLINE,
+	D3D11_TESSELLATOR_DOMAIN_TRI	= D3D_TESSELLATOR_DOMAIN_TRI,
+	D3D11_TESSELLATOR_DOMAIN_QUAD	= D3D_TESSELLATOR_DOMAIN_QUAD
+}
+
+alias D3D_TESSELLATOR_PARTITIONING = int;
+enum : D3D_TESSELLATOR_PARTITIONING
+{
+	D3D_TESSELLATOR_PARTITIONING_UNDEFINED	= 0,
+	D3D_TESSELLATOR_PARTITIONING_INTEGER	= 1,
+	D3D_TESSELLATOR_PARTITIONING_POW2	= 2,
+	D3D_TESSELLATOR_PARTITIONING_FRACTIONAL_ODD	= 3,
+	D3D_TESSELLATOR_PARTITIONING_FRACTIONAL_EVEN	= 4,
+	D3D11_TESSELLATOR_PARTITIONING_UNDEFINED	= D3D_TESSELLATOR_PARTITIONING_UNDEFINED,
+	D3D11_TESSELLATOR_PARTITIONING_INTEGER	= D3D_TESSELLATOR_PARTITIONING_INTEGER,
+	D3D11_TESSELLATOR_PARTITIONING_POW2	= D3D_TESSELLATOR_PARTITIONING_POW2,
+	D3D11_TESSELLATOR_PARTITIONING_FRACTIONAL_ODD	= D3D_TESSELLATOR_PARTITIONING_FRACTIONAL_ODD,
+	D3D11_TESSELLATOR_PARTITIONING_FRACTIONAL_EVEN	= D3D_TESSELLATOR_PARTITIONING_FRACTIONAL_EVEN
+}
+
+
+alias D3D_TESSELLATOR_OUTPUT_PRIMITIVE = int;
+enum : D3D_TESSELLATOR_OUTPUT_PRIMITIVE
+{
+	D3D_TESSELLATOR_OUTPUT_UNDEFINED	= 0,
+	D3D_TESSELLATOR_OUTPUT_POINT	= 1,
+	D3D_TESSELLATOR_OUTPUT_LINE	= 2,
+	D3D_TESSELLATOR_OUTPUT_TRIANGLE_CW	= 3,
+	D3D_TESSELLATOR_OUTPUT_TRIANGLE_CCW	= 4,
+	D3D11_TESSELLATOR_OUTPUT_UNDEFINED	= D3D_TESSELLATOR_OUTPUT_UNDEFINED,
+	D3D11_TESSELLATOR_OUTPUT_POINT	= D3D_TESSELLATOR_OUTPUT_POINT,
+	D3D11_TESSELLATOR_OUTPUT_LINE	= D3D_TESSELLATOR_OUTPUT_LINE,
+	D3D11_TESSELLATOR_OUTPUT_TRIANGLE_CW	= D3D_TESSELLATOR_OUTPUT_TRIANGLE_CW,
+	D3D11_TESSELLATOR_OUTPUT_TRIANGLE_CCW	= D3D_TESSELLATOR_OUTPUT_TRIANGLE_CCW
+}
+
+alias DWORD D3D_MIN_PRECISION;
+enum : D3D_MIN_PRECISION
+{
+    D3D_MIN_PRECISION_DEFAULT	= 0,
+    D3D_MIN_PRECISION_FLOAT_16	= 1,
+    D3D_MIN_PRECISION_FLOAT_2_8	= 2,
+    D3D_MIN_PRECISION_RESERVED	= 3,
+    D3D_MIN_PRECISION_SINT_16	= 4,
+    D3D_MIN_PRECISION_UINT_16	= 5,
+    D3D_MIN_PRECISION_ANY_16	= 0xf0,
+    D3D_MIN_PRECISION_ANY_10	= 0xf1
+}
+
+alias DWORD D3D_INTERPOLATION_MODE;
+enum : D3D_INTERPOLATION_MODE
+{
+    D3D_INTERPOLATION_UNDEFINED	= 0,
+    D3D_INTERPOLATION_CONSTANT	= 1,
+    D3D_INTERPOLATION_LINEAR	= 2,
+    D3D_INTERPOLATION_LINEAR_CENTROID	= 3,
+    D3D_INTERPOLATION_LINEAR_NOPERSPECTIVE	= 4,
+    D3D_INTERPOLATION_LINEAR_NOPERSPECTIVE_CENTROID	= 5,
+    D3D_INTERPOLATION_LINEAR_SAMPLE	= 6,
+    D3D_INTERPOLATION_LINEAR_NOPERSPECTIVE_SAMPLE	= 7
+}
+
+alias DWORD D3D_PARAMETER_FLAGS;
+enum : D3D_PARAMETER_FLAGS
+{
+    D3D_PF_NONE	= 0,
+    D3D_PF_IN	= 0x1,
+    D3D_PF_OUT	= 0x2,
+    D3D_PF_FORCE_DWORD	= 0x7fffffff
+}
+
+mixin( uuid!(WKPDID_D3DDebugObjectName,  "429b8c22-9188-4b0c-8742-acb0bf85c200") );
+mixin( uuid!(WKPDID_D3DDebugObjectNameW, "4cca5fd8-921f-42c8-8566-70caf2a9b741") );
+mixin( uuid!(WKPDID_CommentStringW,      "d0149dc0-90e8-4ec8-8144-e900ad266bb2") );
+interface WKPDID_D3DDebugObjectName {}
+interface WKPDID_D3DDebugObjectNameW {}
+interface WKPDID_CommentStringW {}
