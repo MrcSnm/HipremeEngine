@@ -1,0 +1,26 @@
+{
+	"name": "xaudio-example",
+	"description": "DirectX D XAudio2 example",
+	"targetType": "executable",
+	"authors": [ "evilrat666" ],
+	"libs": [ "ole32", "user32" ],
+	"workingDirectory": "../resources",
+	"mainSourceFile": "source/xaudio.d",
+	"dependencies": {
+                "directx-d": {"version": "~master", "path": "../../"}
+	},
+	"configurations": [
+		{
+			"name": "Windows",
+			"targetType": "executable",
+			"versions": ["DXSDK_2010_6"],
+		},
+		{
+			"name": "Windows8",
+			"targetType": "executable",
+			"platforms": ["windows"],
+			"libs": [ "xaudio2" ],
+			"versions": ["Win8", "XAUDIO_2_8"],
+		}
+	]
+}

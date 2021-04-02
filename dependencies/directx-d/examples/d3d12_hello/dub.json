@@ -1,0 +1,15 @@
+{
+	"name": "d3d12_hello",
+	"authors": [ "evilrat666" ],
+	"description": "Direct3D 12.0 Hello world!",
+	"license": "MIT",
+	
+	"targetType": "executable",
+	"mainSourceFile": "source/d3d12_hello.d",
+	"stringImportPaths": [ "../resources" ],
+	"libs": [ "ole32", "user32", "d3dcompiler", "d3d12", "dxgi", "d2d1" ],
+	
+	"dependencies": {
+                "directx-d": {"version": "", "path": "../../"}
+	}
+}
