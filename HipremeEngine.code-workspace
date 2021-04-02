@@ -9,6 +9,7 @@
 		"files.exclude": 
 		{
 			"building":true,
+			"dependencies/Bindbc-Cimgui/example":true,
 			".vscode":true,
 			".gitmodules":true,
 			"bindbc-openal":true,
@@ -34,6 +35,7 @@
 			"bindbc-openal":true,
 			"building":true,
 			"bin":true,
+			"**/*/*.cpp":true,
 			"**/node_modules": true,
 			".history":true,
 			"**/bower_components": true,

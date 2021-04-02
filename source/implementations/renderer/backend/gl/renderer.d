@@ -39,6 +39,14 @@ private SDL_Window* createSDL_GL_Window()
 *   it actually does not requires a backend(as it is using SDL for now), but
 *   the structure could be changed at any time for supporting a new platform
 *   that SDL does not support
+<<<<<<< HEAD
+=======
+*
+*
+*   Those functions here present are fairly inneficient as there is not batch ocurring,
+*   as I don't understand how to implement it right now, I'll mantain those functions for having
+*   static access to drawing
+>>>>>>> 40c71572e01e512a98ff7a36960221e179f9b76e
 */
 public static class Renderer
 {
@@ -93,7 +101,7 @@ public static class Renderer
 
     public static void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
-        SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        glClearColor(r/255, g/255, b/255, a/255);
     }
     public static Viewport getCurrentViewport(){return this.currentViewport;}
 
@@ -132,7 +140,7 @@ public static class Renderer
             rectangleVertexBuffersIDS~=buf;
             rectangleVertexArraysIDS~=vao;
             glBindVertexArray(vao);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rectangleEBO);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER , rectangleEBO);
             glBindVertexArray(0);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
@@ -195,9 +203,7 @@ public static class Renderer
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffersIDS[index]);
     }
 
-    
-    pragma(inline, true)
-    protected static void rectangle()
+    public static void fillRect(int x, int y, int width, int height)
     {
         float[12] vertices = [
             -0.5, -0.5, 0,
@@ -209,21 +215,16 @@ public static class Renderer
         glBindVertexArray(rectangleVertexArraysIDS[index]);
         glBindBuffer(GL_ARRAY_BUFFER, rectangleVertexBuffersIDS[index]);
 
-        writeln(rectangleVertexArraysIDS[index]);
-        
         glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, &vertices, GL_DYNAMIC_DRAW);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*float.sizeof, cast(void*)0);
         glEnableVertexAttribArray(0);
-    }
-    public static void fillRect(int x, int y, int width, int height)
-    {
-        rectangle();        
+        
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, cast(void*)0);
     }
     public static void drawRect()
     // public static void drawRect(int x, int y, int width, int height)
     {
-        rectangle();        
+        // rectangle();        
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, cast(void*)0);
     }
 
@@ -243,10 +244,14 @@ public static class Renderer
     pragma(inline, true)
     protected static void triangle()
     {
-        float[9] triangle = [
+        float[18] triangle = [
             -0.5f, -0.5f, 0.0f,
              0.5f, -0.5f, 0.0f,
-             0.0f,  0.5f, 0.0f
+             0.0f,  0.5f, 0.0f,
+
+             -0.6f, -0.6f, 0.0f,
+             0.6f, -0.6f, 0.0f,
+             0.1f,  0.6f, 0.0f,
         ];
         
         bindNextVertexArrayObject();
@@ -259,9 +264,9 @@ public static class Renderer
     public static void drawTriangle()
     // public static void drawTriangle(float x1, float y1, float x2, float y2, float x3, float y3)
     {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         triangle();
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
     }
     public static void drawPixel(int x, int y)
     {
@@ -271,6 +276,7 @@ public static class Renderer
         bindNextVertexArrayObject();
         glBufferData(GL_ARRAY_BUFFER, pixel.sizeof, pixel.ptr, GL_DYNAMIC_DRAW);
         glDrawArrays(GL_POINT, 0, 1);
+        
     }
 
     public static void dispose()

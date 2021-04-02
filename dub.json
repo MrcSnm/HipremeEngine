@@ -7,11 +7,11 @@
 		"debugInfo",
 		"debugInfoC"
 	],
-	"copyright": "Copyright © 2019 - 2020, Hipreme",
+	"copyright": "Copyright © 2019 - 2021, Hipreme",
 	"dependencies": {
 		"bindbc-opengl": "~>0.13.0",
 		"bindbc-sdl": "~>0.19.0",
-		"bindbc-cimgui": "~master"
+		"bindbc-cimgui": {"path": "dependencies/Bindbc-Cimgui/"}
 	},
 	"description": "Open-Source D Game Engine",
 	"dflags": [
@@ -24,11 +24,13 @@
 	],
 	"importPaths": [
 		"source",
+		"dependencies/directx-d/src",
 		"dependencies/bindbc-openal/source",
 		"dependencies/Bindbc-Cimgui/source"
 	],
 	"libs-windows": 
 	[
+		"dependencies/directx-d/directx-d.lib",
 		"dependencies/Bindbc-Cimgui/lib/bindbc-cimgui",
 		"dependencies/bindbc-openal/lib/bindBC_OpenAL"
 	],
