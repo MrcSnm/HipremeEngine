@@ -8,7 +8,7 @@ private import util.time, util.array;
 /** 
  * Key handler
  */
-abstract class _Key
+abstract class Key
 {
     /** 
      * Reference for the handler
@@ -31,7 +31,7 @@ abstract class _Key
     final void rebind(SDL_Keycode newKeycode)
     {
         if(newKeycode != keyCode)
-            ErrorHandler.assertErrorMessage(keyboard.rebind(this, newKeycode), "Key Rebind error", "Error rebinding key'" ~ newKeycode.to!char);
+            ErrorHandler.assertErrorMessage(!keyboard.rebind(this, newKeycode), "Key Rebind error", "Error rebinding key'" ~ newKeycode.to!char);
     }
 }
 
@@ -98,7 +98,7 @@ final private class KeyMetadata
  */
 class KeyboardHandler
 {
-    private _Key[][int] listeners;
+    private Key[][int] listeners;
     private int[int] listenersCount;
     private static int[256] pressedKeys;
     private static KeyMetadata[256] metadatas;
@@ -118,9 +118,9 @@ class KeyboardHandler
      *   kCode = New key code
      * Returns: Rebinded was succesful
      */
-    bool rebind(_Key k, SDL_Keycode kCode)
+    bool rebind(Key k, SDL_Keycode kCode)
     {
-        _Key[] currentListener = listeners[k.keyCode];
+        Key[] currentListener = listeners[k.keyCode];
         int currentCount = listenersCount[k.keyCode];
         int index = cast(int)countUntil(currentListener, k);
         if(index != -1)
@@ -138,7 +138,7 @@ class KeyboardHandler
      *   key = Keycode for being assigned with the Key object
      *   k = Key object reference
      */
-    void addKeyListener(SDL_Keycode key, _Key k)
+    void addKeyListener(SDL_Keycode key, Key k)
     {
         if((key in listeners) == null) //Initialization for new key
         {
@@ -159,19 +159,19 @@ class KeyboardHandler
       */
     private void setPressed(SDL_Keycode key, bool press)
     {
-        ubyte _key = cast(ubyte)key;
-        metadatas[_key].setPressed(press);
+        ubyte Key = cast(ubyte)key;
+        metadatas[Key].setPressed(press);
         if(press)
         {
-            if(pressedKeys.indexOf(_key) == -1)
+            if(pressedKeys.indexOf(Key) == -1)
             {
-                pressedKeys[pressedKeys.indexOf(0)] = _key; //Assign to null index a key
+                pressedKeys[pressedKeys.indexOf(0)] = Key; //Assign to null index a key
             }
         }
         else
         {
             const int index = pressedKeys.indexOf(0); //Get last index
-            const int upIndex = pressedKeys.indexOf(_key);
+            const int upIndex = pressedKeys.indexOf(Key);
             if(index > 1)
             {
                 swapAt(pressedKeys, index - 1, upIndex);//Swaps the current key with the last valid key
@@ -188,7 +188,7 @@ class KeyboardHandler
         setPressed(key, false);
         if((key in listeners) != null)
         {
-            _Key[] keyListeners = listeners[key];
+            Key[] keyListeners = listeners[key];
             immutable int len = listenersCount[key];
             for(int i = 0; i < len; i++)
                 keyListeners[i].onUp();
