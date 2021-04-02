@@ -1,5 +1,7 @@
 module implementations.imgui.imgui_debug;
+import std.traits : getUDAs;
 import bindbc.cimgui;
+import implementations.audio.audio;
 import std.string:toStringz;
 import core.stdc.string:strlen;
 import def.debugging.gui;
@@ -7,22 +9,21 @@ import def.debugging.gui;
 immutable float FLOAT_MIN = cast(float)int.min;
 immutable float FLOAT_MAX = cast(float)int.max;
 
-void addVecType(T, int dimensions, string vecName)()
-{
 
+struct InterfaceImplementation
+{
+    void function(ref void* u_data) interfaceFunc;
 }
 
-
-void addDebug(alias variable)(ref typeof(variable) var = variable)
+void addDebug(alias variable, T = typeof(variable))(ref typeof(variable) var = variable)
 {
-    alias T = typeof(variable);
     static if(is(T == float))
     {
-        igDragFloat(variable.stringof, &var, 1, FLOAT_MIN, FLOAT_MAX, null, 0);
+        igInputFloat(variable.stringof, &var, 0.01f, 5f, null, 0);
     }
     else static if(is(T == int))
     {
-        igDragInt(variable.stringof, &var, int.min, int.max, null, 0);
+        igInputInt(variable.stringof, &var, int.min, int.max, null, 0);
     }
     else static if(is(T == string))
     {
@@ -44,26 +45,34 @@ void addDebug(alias variable)(ref typeof(variable) var = variable)
                 }
             }
         }
-        igComboStr_arr(variable.stringof, &currentOption, opts, opts, opts.length, DI.MAX_COMBO_BOX_HEIGHT);
-        
+        igComboStr_arr(variable.stringof, &currentOption, opts, opts, opts.length, DI.MAX_COMBO_BOX_HEIGHT);   
         
     }
-    else static if(is(T == struct))
+    else static if(is(T == struct) || is(T == class))
     {
-        igBeginGroup();
-        MEMBERS: foreach(mem; __traits(T, allMembers))
+        static if(getUDAs!(T, InterfaceImplementation).length >= 1)
         {
-            static if(__traits(compiles, __traits(getMember, T, mem)))
-            {
-                enum name = "cls."~mem;
-                foreach(attr; __traits(getAttributes, mixin("T."~mem)))
-                {
-                    static if(is(attr == Hidden))
-                        continue MEMBERS;
-                }
-                addDebug!(typeof(mem))(mem);
-            }
+            static assert(getUDAs!(T, InterfaceImplementation).length == 1, "Type "~ T.stringof~" should not have more than one InterfaceImplementation");
+            void* varRef = cast(void*)&var;
+            getUDAs!(T, InterfaceImplementation)[0].interfaceFunc(varRef);
         }
-        igEndGroup();
+        else
+        {
+            igBeginGroup();
+            MEMBERS: foreach(mem; __traits(allMembers, T))
+            {
+                static if(__traits(compiles, __traits(getMember, T, mem)))
+                {
+                    enum name = "cls."~mem;
+                    foreach(attr; __traits(getAttributes, mixin("T."~mem)))
+                    {
+                        static if(is(attr == Hidden))
+                            continue MEMBERS;
+                    }
+                    // addDebug!mem;
+                }
+            }
+            igEndGroup();
+        }
     }
 }
