@@ -1,6 +1,7 @@
 module implementations.renderer.backend.d3d.renderer;
 version(Windows):
 import implementations.renderer.shader;
+import error.handler;
 
 import graphics.g2d.viewport;
 import core.stdc.string;
