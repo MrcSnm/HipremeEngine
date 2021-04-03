@@ -18,6 +18,34 @@ enum ShaderTypes
     INT
 }
 
+interface IShader
+{
+    VertexShader createVertexShader();
+    FragmentShader createFragmentShader();
+    ShaderProgram createShaderProgram();
+
+    bool compileShader(FragmentShader fs, string shaderSource);
+    bool compileShader(VertexShader vs, string shaderSource);
+    bool linkProgram(ref ShaderProgram program, VertexShader vs,  FragmentShader fs);
+    void setCurrentShader(ShaderProgram program);
+    void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
+    void deleteShader(FragmentShader* fs);
+    void deleteShader(VertexShader* vs);
+}
+
+abstract class VertexShader
+{
+    abstract string getDefaultVertex();
+}
+abstract class FragmentShader
+{
+    abstract string getDefaultFragment();
+}
+
+abstract class ShaderProgram{}
+
+
+
 public class Shader
 {
     VertexShader vertexShader;

@@ -35,18 +35,10 @@ private SDL_Window* createSDL_GL_Window()
 
 
 /**
-*   While this class is at implementation and don't have a backend folders,
-*   it actually does not requires a backend(as it is using SDL for now), but
-*   the structure could be changed at any time for supporting a new platform
-*   that SDL does not support
-<<<<<<< HEAD
-=======
-*
 *
 *   Those functions here present are fairly inneficient as there is not batch ocurring,
 *   as I don't understand how to implement it right now, I'll mantain those functions for having
 *   static access to drawing
->>>>>>> 40c71572e01e512a98ff7a36960221e179f9b76e
 */
 public static class Renderer
 {
