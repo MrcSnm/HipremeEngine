@@ -1,5 +1,6 @@
 module implementations.renderer.backend.d3d.renderer;
 version(Windows):
+import implementations.renderer.shader;
 
 import graphics.g2d.viewport;
 import core.stdc.string;
@@ -60,9 +61,11 @@ private SDL_Window* createSDL_DX_Window()
     levelArray.ptr, cast(uint)levelArray.length, D3D11_SDK_VERSION, &dsc, &_hip_d3d_swapChain, &_hip_d3d_device,
     &featureLevel, &_hip_d3d_context))
     {
-        CleanDeviceD3D();
+        Renderer.dispose();
         return null;
     }
+
+    return window;
 }
 
 void CreateRenderTarget()
@@ -75,31 +78,26 @@ void CreateRenderTarget()
 }
 
 
-void CleanDeviceD3D()
-{
-    if(_hip_d3d_swapChain)
-    {
-        _hip_d3d_swapChain.Release();
-        _hip_d3d_swapChain = null;
-    }
-    if(_hip_d3d_context)
-    {
-        _hip_d3d_context.Release();
-        _hip_d3d_context = null;
-    }
-    if(_hip_d3d_device)
-    {
-        _hip_d3d_device.Release();
-        _hip_d3d_device = null;
-    }
-}
-
 class Renderer
 {
-
-    private static Viewport currentViewport;
-
+    public static SDL_Renderer* renderer = null;
+    public static SDL_Window* window = null;
+    protected static Viewport currentViewport;
+    protected static Viewport mainViewport;
     public static Viewport getCurrentViewport(){return currentViewport;}
+    public static Shader currentShader;
+
+    public static bool init()
+    {
+        window = createSDL_DX_Window();
+        ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL D3D Window");
+        renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+        ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
+        mainViewport = new Viewport(0,0,0,0);
+        setShader(new Shader());
+
+        return ErrorHandler.stopListeningForErrors();
+    }
 
 
     public static void setMode(RendererMode mode)
@@ -122,5 +120,24 @@ class Renderer
 
         currentViewport = v;
         _hip_d3d_context.RSSetViewports(1u, &vp);
+    }
+
+    public static void dispose()
+    {
+        if(_hip_d3d_swapChain)
+        {
+            _hip_d3d_swapChain.Release();
+            _hip_d3d_swapChain = null;
+        }
+        if(_hip_d3d_context)
+        {
+            _hip_d3d_context.Release();
+            _hip_d3d_context = null;
+        }
+        if(_hip_d3d_device)
+        {
+            _hip_d3d_device.Release();
+            _hip_d3d_device = null;
+        }
     }
 }
