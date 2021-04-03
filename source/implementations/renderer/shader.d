@@ -52,17 +52,20 @@ public class Shader
     FragmentShader fragmentShader;
     ShaderProgram shaderProgram;
     //Optional
+    IShader shaderImpl;
     string fragmentShaderPath;
     string vertexShaderPath;
 
-    this(bool createDefault = true)
+    this(IShader shaderImpl, bool createDefault = true)
     {
-        vertexShader = createVertexShader();
-        fragmentShader = createFragmentShader();
-        shaderProgram = createShaderProgram();
+        this.shaderImpl = shaderImpl;
+        vertexShader = shaderImpl.createVertexShader();
+        fragmentShader = shaderImpl.createFragmentShader();
+        shaderProgram = shaderImpl.createShaderProgram();
         if(createDefault)
         {
-            if(loadShaders(DEFAULT_VERTEX, DEFAULT_FRAGMENT) != ShaderStatus.SUCCESS)
+            if(loadShaders(vertexShader.getDefaultVertex(),
+            fragmentShader.getDefaultFragment()) != ShaderStatus.SUCCESS)
             {
                 import std.stdio:writeln;
                 writeln("Failed loading shaders");
@@ -72,11 +75,11 @@ public class Shader
 
     int loadShaders(string vertexShaderSource, string fragmentShaderSource)
     {
-        if(!compileShader(vertexShader, vertexShaderSource))
+        if(!shaderImpl.compileShader(vertexShader, vertexShaderSource))
             return ShaderStatus.VERTEX_COMPILATION_ERROR;
-        if(!compileShader(fragmentShader, fragmentShaderSource))
+        if(!shaderImpl.compileShader(fragmentShader, fragmentShaderSource))
             return ShaderStatus.FRAGMENT_COMPILATION_ERROR;
-        if(!linkProgram(shaderProgram, vertexShader, fragmentShader))
+        if(!shaderImpl.linkProgram(shaderProgram, vertexShader, fragmentShader))
             return ShaderStatus.LINK_ERROR;
         deleteShaders();
         return ShaderStatus.SUCCESS;
@@ -96,19 +99,19 @@ public class Shader
 
     void setVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
     {
-        sendVertexAttribute(layoutIndex, valueAmount, dataType, normalize, stride, offset);
+        shaderImpl.sendVertexAttribute(layoutIndex, valueAmount, dataType, normalize, stride, offset);
     }
 
     void setAsCurrent()
     {
-        setCurrentShader(shaderProgram);
+        shaderImpl.setCurrentShader(shaderProgram);
     }
 
 
     protected void deleteShaders()
     {
-        deleteShader(&fragmentShader);
-        deleteShader(&vertexShader);
+        shaderImpl.deleteShader(&fragmentShader);
+        shaderImpl.deleteShader(&vertexShader);
     }
 
 }
