@@ -16,10 +16,10 @@ enum RendererMode
     TRIANGLE_STRIP
 }
 
-ID3D11Device* _hip_d3d_device = null;
-ID3D11DeviceContext* _hip_d3d_context = null;
-IDXGISwapChain* _hip_d3d_swapChain = null;
-ID3D11RenderTargetView* _hip_d3d_mainRenderTarget = null;
+ID3D11Device _hip_d3d_device = null;
+ID3D11DeviceContext _hip_d3d_context = null;
+IDXGISwapChain _hip_d3d_swapChain = null;
+ID3D11RenderTargetView _hip_d3d_mainRenderTarget = null;
 
 /**
 *   Currently only supports direct3d11
@@ -36,7 +36,7 @@ private SDL_Window* createSDL_DX_Window()
 
     DXGI_SWAP_CHAIN_DESC dsc;
     
-    memset(&dsc, 0, sizeof(dsc));//ZeroMemory
+    memset(&dsc, 0, dsc.sizeof);//ZeroMemory
 
     dsc.BufferCount = 2;
     dsc.BufferDesc.Width = 0;
@@ -56,8 +56,8 @@ private SDL_Window* createSDL_DX_Window()
     const D3D_FEATURE_LEVEL[] levelArray = [D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0];
     D3D_FEATURE_LEVEL featureLevel;
 
-    if(D3D11CreateDeviceAndSwapChain(null, D3D_DRIVER_TYPE_HARDWARE, null, createDeviceFlags,
-    levelArray, levelArray.length, D3D11_SDK_VERSION, &dsc, &_hip_d3d_swapChain, &_hip_d3d_device,
+    if(D3D11CreateDeviceAndSwapChain(cast(IDXGIAdapter)null, D3D_DRIVER_TYPE_HARDWARE, cast(HMODULE)null, createDeviceFlags,
+    levelArray.ptr, cast(uint)levelArray.length, D3D11_SDK_VERSION, &dsc, &_hip_d3d_swapChain, &_hip_d3d_device,
     &featureLevel, &_hip_d3d_context))
     {
         CleanDeviceD3D();
@@ -67,9 +67,9 @@ private SDL_Window* createSDL_DX_Window()
 
 void CreateRenderTarget()
 {
-    ID3D11Texture2D* backBuffer;
-    _hip_d3d_swapChain.GetBuffer(0, IID_PPV_ARGS(&backBuffer));
-    _hip_d3d_device.CreateRenderTargetView(&backBuffer, null, &_hip_d3d_mainRenderTarget);
+    ID3D11Texture2D backBuffer;
+    _hip_d3d_swapChain.GetBuffer(0, &IID_ID3D11Texture2D, cast(void**)&backBuffer);
+    _hip_d3d_device.CreateRenderTargetView(backBuffer, null, &_hip_d3d_mainRenderTarget);
     backBuffer.Release();
 
 }
@@ -97,9 +97,9 @@ void CleanDeviceD3D()
 class Renderer
 {
 
-    Viewport currentViewport;
+    private static Viewport currentViewport;
 
-    public static Viewport getCurrentViewport(){return this.currentViewport;}
+    public static Viewport getCurrentViewport(){return currentViewport;}
 
 
     public static void setMode(RendererMode mode)
@@ -113,8 +113,8 @@ class Renderer
     public static void setViewport(Viewport v)
     {
         D3D11_VIEWPORT vp;
-        vp.Width = v.width;
-        vp.Height = v.height;
+        vp.Width = v.w;
+        vp.Height = v.h;
         vp.MinDepth = 0;
         vp.MaxDepth = 1;
         vp.TopLeftX = 0;

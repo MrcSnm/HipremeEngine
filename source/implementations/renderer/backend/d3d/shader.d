@@ -3,18 +3,19 @@ module implementations.renderer.backend.d3d.shader;
 version(Windows):
 import implementations.renderer.backend.d3d.renderer;
 import directx.d3d11;
+import directx.d3dcompiler;
 import std.conv:to;
 import error.handler;
 
 struct FragmentShader
 {
-    ID3DBlob* shader;
-    ID3D11PixelShader* fs;
+    ID3DBlob shader;
+    ID3D11PixelShader fs;
 }
 struct VertexShader
 {
-    ID3DBlob* shader;
-    ID3D11VertexShader* vs;
+    ID3DBlob shader;
+    ID3D11VertexShader vs;
 }
 struct ShaderProgram
 {
@@ -60,7 +61,7 @@ ShaderProgram createShaderProgram()
     return prog;
 }
 
-bool compileShader(ref ID3DBlob* shaderPtr, string shaderPrefix, string shaderSource)
+bool compileShader(ref ID3DBlob shaderPtr, string shaderPrefix, string shaderSource)
 {
     shaderSource~="\0";
     char* source = cast(char*)shaderSource.ptr; 
@@ -69,8 +70,8 @@ bool compileShader(ref ID3DBlob* shaderPtr, string shaderPrefix, string shaderSo
 
     uint compile_flags = 0;
     uint effects_flags = 0;
-    ID3DBlob* shader = null;
-    ID3DBlob* error = null;
+    ID3DBlob shader = null;
+    ID3DBlob error = null;
     shaderPrefix~= "_3_0\0"; //Append version on shader type
 
 
@@ -85,11 +86,13 @@ bool compileShader(ref ID3DBlob* shaderPtr, string shaderPrefix, string shaderSo
 
     const D3D_SHADER_MACRO[] defines = 
     [
-        null, null
+        cast(D3D_SHADER_MACRO)null, cast(D3D_SHADER_MACRO)null
     ];
 
-    HRESULT hr = D3DCompile(source, shaderSource.length+1, defines.ptr,
-    null, null, "main",  shaderPrefix.ptr, compile_flags, effects_flags, &shader, &errors);
+
+    
+    HRESULT hr = D3DCompile(source, shaderSource.length+1, null,
+    defines.ptr, null, "main",  shaderPrefix.ptr, compile_flags, effects_flags, &shader, &error);
     shaderPtr = shader;
 
     if(ErrorHandler.assertErrorMessage(!FAILED(hr), "Shader compilation error", "Compilation failed"))
@@ -110,7 +113,7 @@ bool compileShader(VertexShader vs, string shaderSource)
     bool ret = compileShader(vs.shader, "vs", shaderSource);
     if(ret)
     {
-        auto res = _hip_d3d_device.CreateVertexShader(vs.shader.getBufferPointer(), vs.shader.getBufferSize(), null, &vs.vs);
+        auto res = _hip_d3d_device.CreateVertexShader(vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), null, &vs.vs);
         ErrorHandler.assertErrorMessage(!FAILED(res), "Vertex shader creation error", "Creation failed");
     }
     return ret;
@@ -120,7 +123,7 @@ bool compileShader(FragmentShader fs, string shaderSource)
     bool ret = compileShader(fs.shader, "ps", shaderSource);
     if(ret)
     {
-        auto res = _hip_d3d_device.CreatePixelShader(fs.shader.getBufferPointer(), fs.shader.getBufferSize(), null, &fs.fs);
+        auto res = _hip_d3d_device.CreatePixelShader(fs.shader.GetBufferPointer(), fs.shader.GetBufferSize(), null, &fs.fs);
         ErrorHandler.assertErrorMessage(!FAILED(res), "Fragment/Pixel shader creation error", "Creation failed");
     }
     return ret;
@@ -152,8 +155,8 @@ void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool 
 
 void setCurrentShader(ShaderProgram program)
 {
-    _hip_d3d_context.VSSetShader(*program.vs.vs, cast(ID3D11ClassInstance*)0, 0u);
-    _hip_d3d_context.PSSetShader(*program.fs.fs, cast(ID3D11ClassInstance*)0, 0u);
+    _hip_d3d_context.VSSetShader(program.vs.vs, cast(ID3D11ClassInstance*)0, 0u);
+    _hip_d3d_context.PSSetShader(program.fs.fs, cast(ID3D11ClassInstance*)0, 0u);
 
     _hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_mainRenderTarget, null);
 }
