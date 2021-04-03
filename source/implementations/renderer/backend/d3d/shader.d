@@ -1,14 +1,15 @@
 module implementations.renderer.backend.d3d.shader;
 
 version(Windows):
-
+import implementations.renderer.backend.d3d.renderer;
+import directx.d3d11;
 import std.conv:to;
 import error.handler;
 
 struct FragmentShader
 {
     ID3DBlob* shader;
-    ID3D11PixelShader* ps;
+    ID3D11PixelShader* fs;
 }
 struct VertexShader
 {
@@ -40,7 +41,7 @@ FragmentShader createFragmentShader()
 {
     FragmentShader fs;
     fs.shader = null;
-    fs.ps = null;
+    fs.fs = null;
     return fs;
 }
 
@@ -119,7 +120,7 @@ bool compileShader(FragmentShader fs, string shaderSource)
     bool ret = compileShader(fs.shader, "ps", shaderSource);
     if(ret)
     {
-        auto res = _hip_d3d_device.CreatePixelShader(fs.shader.getBufferPointer(), fs.shader.getBufferSize(), null, &fs.ps);
+        auto res = _hip_d3d_device.CreatePixelShader(fs.shader.getBufferPointer(), fs.shader.getBufferSize(), null, &fs.fs);
         ErrorHandler.assertErrorMessage(!FAILED(res), "Fragment/Pixel shader creation error", "Creation failed");
     }
     return ret;
@@ -145,16 +146,16 @@ bool linkProgram(ref ShaderProgram program, VertexShader vs,  FragmentShader fs)
 */
 void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
 {
-    glVertexAttribPointer(layoutIndex, valueAmount, dataType, normalize, stride, cast(void*)offset);
-    glEnableVertexAttribArray(layoutIndex);
+    // glVertexAttribPointer(layoutIndex, valueAmount, dataType, normalize, stride, cast(void*)offset);
+    // glEnableVertexAttribArray(layoutIndex);
 }
 
 void setCurrentShader(ShaderProgram program)
 {
-    _hip_d3d_context.VSSetShader(program.vs.Get(), null, 0u);
-    _hip_d3d_context.PSSetShader(program.ps.Get(), null, 0u);
+    _hip_d3d_context.VSSetShader(*program.vs.vs, cast(ID3D11ClassInstance*)0, 0u);
+    _hip_d3d_context.PSSetShader(*program.fs.fs, cast(ID3D11ClassInstance*)0, 0u);
 
-    _hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_target, null);
+    _hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_mainRenderTarget, null);
 }
 
 void useShader(ShaderProgram program){setCurrentShader(program);}
@@ -162,8 +163,8 @@ void deleteShader(FragmentShader* fs)
 {
     fs.shader.Release();
     fs.shader = null;
-    fs.ps.Release();
-    fs.ps = null;
+    fs.fs.Release();
+    fs.fs = null;
 }
 void deleteShader(VertexShader* vs)
 {

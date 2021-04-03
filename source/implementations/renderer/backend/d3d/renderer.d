@@ -1,5 +1,9 @@
 module implementations.renderer.backend.d3d.renderer;
 version(Windows):
+
+import graphics.g2d.viewport;
+import core.stdc.string;
+import directx.d3d11;
 import core.sys.windows.windows;
 import bindbc.sdl;
 
@@ -31,7 +35,8 @@ private SDL_Window* createSDL_DX_Window()
     HWND hwnd = cast(HWND)wmInfo.info.win.window;
 
     DXGI_SWAP_CHAIN_DESC dsc;
-    ZeroMemory(&dsc, sizeof(dsc));
+    
+    memset(&dsc, 0, sizeof(dsc));//ZeroMemory
 
     dsc.BufferCount = 2;
     dsc.BufferDesc.Width = 0;
@@ -99,7 +104,7 @@ class Renderer
 
     public static void setMode(RendererMode mode)
     {
-        if(mode == TRIANGLE)
+        if(mode == RendererMode.TRIANGLE)
         {
             _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         }
