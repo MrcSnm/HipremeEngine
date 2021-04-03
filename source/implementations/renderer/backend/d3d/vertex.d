@@ -12,8 +12,8 @@ import implementations.renderer.backend.vertex.vertex;
 * For reflecting OpenGL API, we create an accessor with the create functions, this is a locally
 * managed array, but you're able to get it by using the private name, for flexibility.
 */
-__gshared ID3D11Buffer*[] _hip_d3d_arrVBO;
-__gshared ID3D11Buffer*[] _hip_d3d_arrVAO;
+__gshared ID3D11Buffer[] _hip_d3d_arrVBO;
+__gshared ID3D11Buffer[] _hip_d3d_arrVAO;
 
 enum AttributeType
 {
@@ -132,7 +132,7 @@ void setVertexArrayObjectData(ref VertexArrayObject obj, void* data, size_t data
     bd.Usage = (obj.isStatic) ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
     bd.CPUAccessFlags = 0u;
     bd.MiscFlags = 0u;
-    bd.ByteWidth = dataSize;
+    bd.ByteWidth = cast(uint)dataSize;
     bd.StructureByteStride = obj.stride;
 
     D3D11_SUBRESOURCE_DATA sd;
