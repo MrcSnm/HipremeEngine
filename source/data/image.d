@@ -29,7 +29,7 @@ public static class ResourceManager
                 cast(ubyte)(rgbColorKey & 255))); //B
             }
             ErrorHandler.assertErrorMessage(img != null, "Loading Texture: ", "Could not load texture " ~ textureName);
-            texture = SDL_CreateTextureFromSurface(Renderer.renderer, img);
+            texture = SDL_CreateTextureFromSurface(HipRenderer.renderer, img);
             ErrorHandler.assertErrorMessage(texture != null, "Loading Texture: ", "Could not create texture from pixel data from: " ~ textureName);
             ResourceManager.loadedTextures[textureName] = texture;
             SDL_FreeSurface(img);

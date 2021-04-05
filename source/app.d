@@ -62,7 +62,7 @@ static void initEngine(bool audio3D = false)
 extern(C)int SDL_main()
 {
 	initEngine(true);
-	Renderer.init();
+	HipRenderer.init();
 	import graphics.image;
 	import graphics.texture;
 	import graphics.g2d.sprite;
@@ -88,7 +88,7 @@ extern(C)int SDL_main()
 	//Audio.setPitch(sc, 1);
 	import def.debugging.runtime;
 
-	DI.start(Renderer.window);
+	DI.start(HipRenderer.window);
 	import global.fonts.icons;
 
 	ImFontConfig cfg = DI.getDefaultFontConfig("Default + Icons");
@@ -148,12 +148,12 @@ extern(C)int SDL_main()
 		///////////START IMGUI
 
 		// Start the Dear ImGui frame
-		Renderer.begin();
-		Renderer.clear(255,0,0,0);
-		// Renderer.drawLine(0, 0, 1, 1);
-		Renderer.drawRect();
-		Renderer.drawTriangle();
-        Renderer.end();
+		HipRenderer.begin();
+		HipRenderer.clear(255,0,0,0);
+		// HipRenderer.drawLine(0, 0, 1, 1);
+		HipRenderer.drawRect();
+		HipRenderer.drawTriangle();
+        HipRenderer.end();
         // DI.begin();
 		// s.draw();
 		// static bool open = true;
@@ -192,7 +192,7 @@ static void destroyEngine()
     ResourceManager.disposeResources();
 	SDL_GL_DeleteContext(SDL_GL_GetCurrentContext());
 	DI.onDestroy();
-	Renderer.dispose();
+	HipRenderer.dispose();
 	Audio.onDestroy();
     SDL_Quit();
 }

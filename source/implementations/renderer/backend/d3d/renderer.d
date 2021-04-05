@@ -1,6 +1,7 @@
 module implementations.renderer.backend.d3d.renderer;
 version(Windows):
 import implementations.renderer.shader;
+import implementations.renderer.backend.d3d.shader;
 import error.handler;
 
 import graphics.g2d.viewport;
@@ -62,7 +63,7 @@ private SDL_Window* createSDL_DX_Window()
     levelArray.ptr, cast(uint)levelArray.length, D3D11_SDK_VERSION, &dsc, &_hip_d3d_swapChain, &_hip_d3d_device,
     &featureLevel, &_hip_d3d_context))
     {
-        Renderer.dispose();
+        Hip_D3D11_Renderer.dispose();
         return null;
     }
 
@@ -79,7 +80,7 @@ void CreateRenderTarget()
 }
 
 
-class Renderer
+class Hip_D3D11_Renderer
 {
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
@@ -88,14 +89,18 @@ class Renderer
     public static Viewport getCurrentViewport(){return currentViewport;}
     public static Shader currentShader;
 
-    public static bool init()
+    public Shader createShader(bool createDefault)
+    {
+        return new Shader(new Hip_D3D11_ShaderImpl(), createDefault);
+    }
+    public bool init()
     {
         window = createSDL_DX_Window();
         ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL D3D Window");
         renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
         ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
         mainViewport = new Viewport(0,0,0,0);
-        setShader(new Shader());
+        // setShader(new Shader(new Hip_D3D11_ShaderImpl()));
 
         return ErrorHandler.stopListeningForErrors();
     }

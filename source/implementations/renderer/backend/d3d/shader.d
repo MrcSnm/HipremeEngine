@@ -1,6 +1,7 @@
 module implementations.renderer.backend.d3d.shader;
 
 version(Windows):
+import global.consts;
 import implementations.renderer.shader;
 import implementations.renderer.backend.d3d.renderer;
 import directx.d3d11;
@@ -42,7 +43,7 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
     Hip_D3D11_FragmentShader fs;
 }
 
-class D3D11_ShaderImpl : IShader
+class Hip_D3D11_ShaderImpl : IShader
 {
     FragmentShader createFragmentShader()
     {

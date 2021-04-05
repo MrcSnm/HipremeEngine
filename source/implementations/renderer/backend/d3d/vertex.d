@@ -6,6 +6,7 @@ import error.handler;
 import directx.d3d11;
 import implementations.renderer.backend.d3d.renderer;
 import implementations.renderer.backend.vertex.vertex;
+import global.consts;
 
 
 /**
@@ -119,8 +120,8 @@ void useVertexArrayObject(ref VertexArrayObject obj)
 
     ID3D11InputLayout inputLayout;
 
-    _hip_d3d_device.CreateInputLayout(descs.ptr, descs.length,
-    vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), &inputLayout);
+    // _hip_d3d_device.CreateInputLayout(descs.ptr, descs.length,
+    // vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), &inputLayout);
 
     _hip_d3d_context.IASetInputLayout(inputLayout);
 }
