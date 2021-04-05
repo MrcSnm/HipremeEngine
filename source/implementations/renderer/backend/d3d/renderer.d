@@ -1,5 +1,11 @@
 module implementations.renderer.backend.d3d.renderer;
 version(Windows):
+
+pragma(lib, "ole32");
+pragma(lib, "user32");
+pragma(lib, "d3dcompiler");
+pragma(lib, "d3d11");
+pragma(lib, "dxgi");
 import implementations.renderer.shader;
 import implementations.renderer.backend.d3d.shader;
 import error.handler;

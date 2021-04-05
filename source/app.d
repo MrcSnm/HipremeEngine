@@ -62,7 +62,7 @@ static void initEngine(bool audio3D = false)
 extern(C)int SDL_main()
 {
 	initEngine(true);
-	HipRenderer.init();
+	HipRenderer.init(new Hip_D3D11_Renderer());
 	import graphics.image;
 	import graphics.texture;
 	import graphics.g2d.sprite;
