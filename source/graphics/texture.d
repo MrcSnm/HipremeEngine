@@ -31,7 +31,7 @@ public class Texture
     {
         if(img.data != null)
         {
-            data = SDL_CreateTextureFromSurface(Renderer.renderer, img.data);
+            data = SDL_CreateTextureFromSurface(HipRenderer.renderer, img.data);
             width = img.data.w;
             height = img.data.h;
             mIsLoaded = true;
@@ -68,7 +68,7 @@ public class Texture
 
     void render(int x, int y)
     {
-        Renderer.draw(this, x, y);
+        HipRenderer.draw(this, x, y);
     }
 
     /**

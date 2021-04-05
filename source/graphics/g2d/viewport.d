@@ -13,7 +13,7 @@ public class Viewport
 
     void setAsCurrentViewport()
     {
-        Renderer.setViewport(this);
+        HipRenderer.setViewport(this);
     }
 
     void setPosition(int x, int y)

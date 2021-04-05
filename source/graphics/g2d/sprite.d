@@ -41,6 +41,6 @@ import graphics.abstraction.transformable;
     {
         SDL_SetTextureColorMod(texture.data, color.r,color.g,color.b);
         SDL_SetTextureAlphaMod(texture.data, color.a);
-        Renderer.draw(texture, x, y, &region);
+        HipRenderer.draw(texture, x, y, &region);
     }
 }

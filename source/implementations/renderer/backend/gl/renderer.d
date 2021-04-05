@@ -1,5 +1,7 @@
 module implementations.renderer.backend.gl.renderer;
+import implementations.renderer.renderer;
 import implementations.renderer.shader;
+import implementations.renderer.backend.gl.shader;
 import graphics.texture;
 import graphics.g2d.viewport;
 import math.rect;
@@ -40,70 +42,76 @@ private SDL_Window* createSDL_GL_Window()
 *   as I don't understand how to implement it right now, I'll mantain those functions for having
 *   static access to drawing
 */
-public static class Renderer
+class Hip_GL3Renderer : RendererImpl
 {
-    protected static Viewport currentViewport = null;
-    protected static Viewport mainViewport = null;
-
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    Shader currentShader;
     /**
     *   Does not uses EBO
     */
-    protected static uint[] vertexBuffersIDS;
-    protected static uint[] vertexArraysIDS;
-    protected static uint currentVertexBufferIndex;
+    protected uint[] vertexBuffersIDS;
+    protected uint[] vertexArraysIDS;
+    protected uint currentVertexBufferIndex;
 
     /**
     *   Uses EBO
     */
-    protected static uint[] rectangleVertexBuffersIDS;
-    protected static uint[] rectangleVertexArraysIDS;
-    protected static uint currentRectangleVertexBufferIndex;
+    protected uint[] rectangleVertexBuffersIDS;
+    protected uint[] rectangleVertexArraysIDS;
+    protected uint currentRectangleVertexBufferIndex;
 
-    protected static uint rectangleEBO;
+    protected uint rectangleEBO;
 
     protected static immutable uint[6] rectangleIndices = [
         3, 2, 1, //Right rectangle
         1, 0, 3  //Left rectangle
     ];
 
-    public static SDL_Renderer* renderer = null;
-    public static SDL_Window* window = null;
 
-    public static Shader currentShader;
-
-    public static bool init(uint reserveAmount=1024)
+    SDL_Window* createWindow()
     {
+        return createSDL_GL_Window();
+    }
+    SDL_Renderer* createRenderer(SDL_Window* window)
+    {
+        return SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+    }
+    Shader createShader(bool createDefault = true)
+    {
+        return new Shader(new Hip_GL3_ShaderImpl(), createDefault);
+    }
+    public bool init(SDL_Window* window, SDL_Renderer* renderer)
+    {
+        this.window = window;
+        this.renderer = renderer;
+        uint reserveAmount=1024;
         vertexBuffersIDS.reserve(reserveAmount);
         rectangleVertexBuffersIDS.reserve(reserveAmount);
-        ErrorHandler.startListeningForErrors("Renderer initialization");
-        window = createSDL_GL_Window();
-        ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL GL Window");
-        renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
-        ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
         setColor();
-
         glGenBuffers(1, &rectangleEBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rectangleEBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, rectangleIndices.sizeof, &rectangleIndices, GL_DYNAMIC_DRAW);
-        mainViewport = new Viewport(0,0,0,0);
-        setShader(new Shader());
-        
-        return ErrorHandler.stopListeningForErrors();
+        setShader(createShader(true));
+        return true;
     }
 
-    public static void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
+    void setShader(Shader s)
+    {
+        currentShader = s;
+    }
+
+    public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         glClearColor(r/255, g/255, b/255, a/255);
     }
-    public static Viewport getCurrentViewport(){return this.currentViewport;}
 
-    public static void setViewport(Viewport v)
+    public void setViewport(Viewport v)
     {
-        this.currentViewport = v;
         SDL_RenderSetViewport(renderer, &v.bounds);
     }
 
-    protected static uint getFreeVertexBufferIndex()
+    protected uint getFreeVertexBufferIndex()
     {
         if(vertexBuffersIDS.length >= currentVertexBufferIndex)
         {
@@ -121,7 +129,7 @@ public static class Renderer
     /**
     *   As it uses element buffer object, it is better to separate for better performance
     */
-    protected static uint getFreeVertexBufferIndexForRectangle()
+    protected uint getFreeVertexBufferIndexForRectangle()
     {
         if(rectangleVertexBuffersIDS.length >= currentRectangleVertexBufferIndex)
         {
@@ -144,41 +152,36 @@ public static class Renderer
     /**
     *   This function is used to control the internal state for creating vertex buffers
     */
-    public static void begin()
+    public void begin()
     {
         currentVertexBufferIndex = 0;
         currentRectangleVertexBufferIndex = 0;
     }
 
-    public static void setShader(Shader s)
-    {
-        s.setAsCurrent();
-        currentShader = s;
-    }
     /**
     */
-    public static void end()
+    public void end()
     {
         SDL_GL_SwapWindow(window);
     }
 
-    public static void draw(Texture t, int x, int y, SDL_Rect* clip = null)
+    public void draw(Texture t, int x, int y, SDL_Rect* clip = null)
     {
     }
 
     pragma(inline, true)
-    public static void render()
+    public void render()
     {
         // SDL_GL_SwapWindow(window);
         SDL_RenderPresent(renderer);
     }
     pragma(inline, true)
-    public static void clear()
+    public void clear()
     {
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    public static void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
+    public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         glClearColor(r/255,g/255,b/255,a/255);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -188,14 +191,14 @@ public static class Renderer
     *   This function must be used only for primitives which don't use EBO
     */
     pragma(inline, true)
-    protected static void bindNextVertexArrayObject()
+    protected void bindNextVertexArrayObject()
     {
         uint index = getFreeVertexBufferIndex();
         glBindVertexArray(vertexArraysIDS[index]);
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffersIDS[index]);
     }
 
-    public static void fillRect(int x, int y, int width, int height)
+    public void fillRect(int x, int y, int width, int height)
     {
         float[12] vertices = [
             -0.5, -0.5, 0,
@@ -213,14 +216,14 @@ public static class Renderer
         
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, cast(void*)0);
     }
-    public static void drawRect()
+    public void drawRect()
     // public static void drawRect(int x, int y, int width, int height)
     {
         // rectangle();        
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, cast(void*)0);
     }
 
-    public static void drawLine(int x1, int y1, int x2, int y2)
+    public void drawLine(int x1, int y1, int x2, int y2)
     {
         int[4] line = [
             x1, y1,
@@ -234,7 +237,7 @@ public static class Renderer
     }
 
     pragma(inline, true)
-    protected static void triangle()
+    protected void triangle()
     {
         float[18] triangle = [
             -0.5f, -0.5f, 0.0f,
@@ -253,14 +256,14 @@ public static class Renderer
         glEnableVertexAttribArray(0);
     }
 
-    public static void drawTriangle()
+    public void drawTriangle()
     // public static void drawTriangle(float x1, float y1, float x2, float y2, float x3, float y3)
     {
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         triangle();
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
-    public static void drawPixel(int x, int y)
+    public void drawPixel(int x, int y)
     {
         int[2] pixel = [
             x, y,
@@ -271,7 +274,7 @@ public static class Renderer
         
     }
 
-    public static void dispose()
+    public void dispose()
     {
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
