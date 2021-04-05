@@ -39,8 +39,9 @@ class HipRenderer
     public static SDL_Window* window = null;
     public static Shader currentShader;
 
-    public static bool init()
+    public static bool init(RendererImpl impl)
     {
+        rendererImpl = impl;
         ErrorHandler.startListeningForErrors("Renderer initialization");
         window = rendererImpl.createWindow();
         ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL GL Window");

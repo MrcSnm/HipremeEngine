@@ -43,20 +43,20 @@ class Hip_GL3_ShaderImpl : IShader
 {
     FragmentShader createFragmentShader()
     {
-        Hip_GL3_FragmentShader fs;
+        Hip_GL3_FragmentShader fs = new Hip_GL3_FragmentShader();
         fs.shader = glCreateShader(GL_FRAGMENT_SHADER);
         return fs;
     }
 
     VertexShader createVertexShader()
     {
-        Hip_GL3_VertexShader vs;
+        Hip_GL3_VertexShader vs = new Hip_GL3_VertexShader();
         vs.shader = glCreateShader(GL_VERTEX_SHADER);
         return vs;
     }
     ShaderProgram createShaderProgram()
     {
-        Hip_GL3_ShaderProgram prog;
+        Hip_GL3_ShaderProgram prog = new Hip_GL3_ShaderProgram();
         prog.program = glCreateProgram();
         return prog;
     }
