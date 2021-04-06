@@ -20,6 +20,7 @@ version(Android)
 }
 import bindbc.cimgui;
 import implementations.renderer.renderer;
+import implementations.renderer.backend.d3d.renderer;
 import def.debugging.gui;
 
 
@@ -88,12 +89,12 @@ extern(C)int SDL_main()
 	//Audio.setPitch(sc, 1);
 	import def.debugging.runtime;
 
-	DI.start(HipRenderer.window);
+	// DI.start(HipRenderer.window);
 	import global.fonts.icons;
 
-	ImFontConfig cfg = DI.getDefaultFontConfig("Default + Icons");
-	ImFontAtlas_AddFontDefault(igGetIO().Fonts, &cfg);
-	DI.mergeFont("assets/fonts/"~FontAwesomeSolid, 16, FontAwesomeRange, &cfg);
+	// ImFontConfig cfg = DI.getDefaultFontConfig("Default + Icons");
+	// ImFontAtlas_AddFontDefault(igGetIO().Fonts, &cfg);
+	// DI.mergeFont("assets/fonts/"~FontAwesomeSolid, 16, FontAwesomeRange, &cfg);
 
 
 
@@ -132,7 +133,7 @@ extern(C)int SDL_main()
 	    SDL_Event e;
 		while(SDL_PollEvent(&e)) 
 		{
-			DI.update(&e);
+			// DI.update(&e);
 			switch(e.type)
 			{
 				case SDL_QUIT:

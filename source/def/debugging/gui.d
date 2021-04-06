@@ -117,9 +117,12 @@ public class DebugInterface
     }
     public static void onDestroy()
     {
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplSDL2_Shutdown();
-        igDestroyContext(igGetCurrentContext());
+        if(_inst !is null)
+        {
+            ImGui_ImplOpenGL3_Shutdown();
+            ImGui_ImplSDL2_Shutdown();
+            igDestroyContext(igGetCurrentContext());
+        }
     }
     public static enum MAX_COMBOBOX_HEIGHT = 8;
     private static DebugInterface _inst;
