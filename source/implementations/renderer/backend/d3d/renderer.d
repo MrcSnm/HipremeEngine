@@ -170,10 +170,11 @@ class Hip_D3D11_Renderer : RendererImpl
     {
         if(HipRenderer.currentShader != currentShader)
             HipRenderer.setShader(currentShader);
+        _hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_mainRenderTarget, null);
     }
     void end()
     {
-        _hip_d3d_swapChain.Present(0,0);
+        _hip_d3d_swapChain.Present(1,0);
     }
     void render(){}
     void clear(){}
