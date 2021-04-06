@@ -4,6 +4,7 @@ version(Windows):
 import global.consts;
 import implementations.renderer.shader;
 import implementations.renderer.backend.d3d.renderer;
+import implementations.renderer.backend.d3d.utils;
 import directx.d3d11;
 import directx.d3dcompiler;
 import std.conv:to;
@@ -76,7 +77,7 @@ class Hip_D3D11_ShaderImpl : IShader
         uint effects_flags = 0;
         ID3DBlob shader = null;
         ID3DBlob error = null;
-        shaderPrefix~= "_3_0\0"; //Append version on shader type
+        shaderPrefix~= "_5_0\0"; //Append version on shader type
 
 
         static if(HIP_DEBUG)
@@ -93,13 +94,11 @@ class Hip_D3D11_ShaderImpl : IShader
             cast(D3D_SHADER_MACRO)null, cast(D3D_SHADER_MACRO)null
         ];
 
-
-        
         HRESULT hr = D3DCompile(source, shaderSource.length+1, null,
         defines.ptr, null, "main",  shaderPrefix.ptr, compile_flags, effects_flags, &shader, &error);
         shaderPtr = shader;
 
-        if(ErrorHandler.assertErrorMessage(!FAILED(hr), "Shader compilation error", "Compilation failed"))
+        if(ErrorHandler.assertErrorMessage(SUCCEEDED(hr), "Shader compilation error", "Compilation failed"))
         {
             if(error)
             {
@@ -119,7 +118,7 @@ class Hip_D3D11_ShaderImpl : IShader
         if(ret)
         {
             auto res = _hip_d3d_device.CreateVertexShader(vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), null, &vs.vs);
-            ErrorHandler.assertErrorMessage(!FAILED(res), "Vertex shader creation error", "Creation failed");
+            ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Vertex shader creation error", "Creation failed");
         }
         return ret;
     }
@@ -130,7 +129,11 @@ class Hip_D3D11_ShaderImpl : IShader
         if(ret)
         {
             auto res = _hip_d3d_device.CreatePixelShader(fs.shader.GetBufferPointer(), fs.shader.GetBufferSize(), null, &fs.fs);
-            ErrorHandler.assertErrorMessage(!FAILED(res), "Fragment/Pixel shader creation error", "Creation failed");
+            if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Fragment/Pixel shader creation error", "Creation failed"))
+            {
+                ErrorHandler.showErrorMessage("Fragment Shader Error:", Hip_D3D11_GetErrorMessage(res));
+                ret = false;
+            }
         }
         return ret;
     }
