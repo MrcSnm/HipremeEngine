@@ -61,7 +61,7 @@ class Hip_D3D11_ShaderImpl : IShader
     }
     ShaderProgram createShaderProgram()
     {
-        Hip_D3D11_ShaderProgram prog;
+        Hip_D3D11_ShaderProgram prog = new Hip_D3D11_ShaderProgram();
         return prog;
     }
 
@@ -173,17 +173,21 @@ class Hip_D3D11_ShaderImpl : IShader
     void deleteShader(FragmentShader* _fs)
     {
         auto fs = cast(Hip_D3D11_FragmentShader)*_fs;
-        fs.shader.Release();
+        if(fs.shader !is null)
+            fs.shader.Release();
         fs.shader = null;
-        fs.fs.Release();
+        if(fs.fs !is null)
+            fs.fs.Release();
         fs.fs = null;
     }
     void deleteShader(VertexShader* _vs)
     {
         auto vs = cast(Hip_D3D11_VertexShader)*_vs;
-        vs.shader.Release();
+        if(vs.shader !is null)
+            vs.shader.Release();
         vs.shader = null;
-        vs.vs.Release();
+        if(vs.vs !is null)
+            vs.vs.Release();
         vs.vs = null;
     }
 }

@@ -6,6 +6,7 @@ pragma(lib, "user32");
 pragma(lib, "d3dcompiler");
 pragma(lib, "d3d11");
 pragma(lib, "dxgi");
+import implementations.renderer.renderer;
 import implementations.renderer.shader;
 import implementations.renderer.backend.d3d.shader;
 import error.handler;
@@ -69,11 +70,28 @@ private SDL_Window* createSDL_DX_Window()
     levelArray.ptr, cast(uint)levelArray.length, D3D11_SDK_VERSION, &dsc, &_hip_d3d_swapChain, &_hip_d3d_device,
     &featureLevel, &_hip_d3d_context))
     {
-        Hip_D3D11_Renderer.dispose();
+        Hip_D3D11_Dispose();
         return null;
     }
-
     return window;
+}
+private void Hip_D3D11_Dispose()
+{
+    if(_hip_d3d_swapChain)
+    {
+        _hip_d3d_swapChain.Release();
+        _hip_d3d_swapChain = null;
+    }
+    if(_hip_d3d_context)
+    {
+        _hip_d3d_context.Release();
+        _hip_d3d_context = null;
+    }
+    if(_hip_d3d_device)
+    {
+        _hip_d3d_device.Release();
+        _hip_d3d_device = null;
+    }
 }
 
 void CreateRenderTarget()
@@ -86,33 +104,39 @@ void CreateRenderTarget()
 }
 
 
-class Hip_D3D11_Renderer
+class Hip_D3D11_Renderer : RendererImpl
 {
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
     protected static Viewport currentViewport;
     protected static Viewport mainViewport;
-    public static Viewport getCurrentViewport(){return currentViewport;}
     public static Shader currentShader;
+
+    public SDL_Window* createWindow()
+    {
+        return createSDL_DX_Window();
+    }
+    public SDL_Renderer* createRenderer(SDL_Window* window)
+    {
+        return SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+    }
 
     public Shader createShader(bool createDefault)
     {
         return new Shader(new Hip_D3D11_ShaderImpl(), createDefault);
     }
-    public bool init()
+    public bool init(SDL_Window* window, SDL_Renderer* renderer)
     {
-        window = createSDL_DX_Window();
-        ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL D3D Window");
-        renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
-        ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
+        this.window = window;
+        this.renderer = renderer;
         mainViewport = new Viewport(0,0,0,0);
-        // setShader(new Shader(new Hip_D3D11_ShaderImpl()));
+        setShader(createShader(true));
 
         return ErrorHandler.stopListeningForErrors();
     }
 
 
-    public static void setMode(RendererMode mode)
+    public void setMode(RendererMode mode)
     {
         if(mode == RendererMode.TRIANGLE)
         {
@@ -120,7 +144,7 @@ class Hip_D3D11_Renderer
         }
     }
 
-    public static void setViewport(Viewport v)
+    public void setViewport(Viewport v)
     {
         D3D11_VIEWPORT vp;
         vp.Width = v.w;
@@ -133,23 +157,37 @@ class Hip_D3D11_Renderer
         currentViewport = v;
         _hip_d3d_context.RSSetViewports(1u, &vp);
     }
+    
 
-    public static void dispose()
+
+    void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255){}
+    void setShader(Shader s)
     {
-        if(_hip_d3d_swapChain)
-        {
-            _hip_d3d_swapChain.Release();
-            _hip_d3d_swapChain = null;
-        }
-        if(_hip_d3d_context)
-        {
-            _hip_d3d_context.Release();
-            _hip_d3d_context = null;
-        }
-        if(_hip_d3d_device)
-        {
-            _hip_d3d_device.Release();
-            _hip_d3d_device = null;
-        }
+        currentShader = s;
+    }
+
+    void begin()
+    {
+        if(HipRenderer.currentShader != currentShader)
+            HipRenderer.setShader(currentShader);
+    }
+    void end()
+    {
+        _hip_d3d_swapChain.Present(0,0);
+    }
+    void render(){}
+    void clear(){}
+    void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
+    {
+        float[4] color = [cast(float)r/255, cast(float)g/255, cast(float)b/255, cast(float)a/255];
+        _hip_d3d_context.ClearRenderTargetView(_hip_d3d_mainRenderTarget, color.ptr);
+    }
+    public void fillRect(int x, int y, int width, int height){}
+    public void drawLine(int x1, int y1, int x2, int y2){}
+    public void drawPixel(int x, int y ){}
+
+    public void dispose()
+    {
+        Hip_D3D11_Dispose();
     }
 }
