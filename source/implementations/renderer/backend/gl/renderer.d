@@ -276,10 +276,6 @@ class Hip_GL3Renderer : RendererImpl
 
     public void dispose()
     {
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        renderer = null;
-        window = null;
-        IMG_Quit();
+        SDL_GL_DeleteContext(SDL_GL_GetCurrentContext());
     }
 }
