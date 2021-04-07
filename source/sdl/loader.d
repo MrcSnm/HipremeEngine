@@ -42,12 +42,12 @@ else
             case os.win64:
                 errorHeader = "Missing DLL";
                 errorMessage = "Missing DLL 'SDL2.dll'\nVersion ";
-                filetype = "DLL";
+                filetype = ".dll";
                 break;
             default:
                 errorHeader = "Missing Library";
                 errorMessage = "Library 'libsdl2.so'\nVersion ";
-                filetype = "Library";
+                filetype = ".so";
         }
         if(ret != sdlSupport)
         {

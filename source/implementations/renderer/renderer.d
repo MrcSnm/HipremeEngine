@@ -41,14 +41,19 @@ class HipRenderer
 
     public static bool init(RendererImpl impl)
     {
-        rendererImpl = impl;
         ErrorHandler.startListeningForErrors("Renderer initialization");
+        rendererImpl = impl;
         window = rendererImpl.createWindow();
         ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL GL Window");
-        renderer = rendererImpl.createRenderer(window);
-        ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
+        // renderer = rendererImpl.createRenderer(window);
+        // ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
         rendererImpl.init(window, renderer);
-        mainViewport = new Viewport(0,0,0,0);
+
+        int w, h;
+        SDL_GetWindowSize(window, &w, &h);
+        mainViewport = new Viewport(0,0,w, h);
+        setViewport(mainViewport);
+        // setShader(rendererImpl.createShader(true));
 
         return ErrorHandler.stopListeningForErrors();
     }
@@ -70,8 +75,8 @@ class HipRenderer
     }
     public static void setShader(Shader s)
     {
-        s.setAsCurrent();
         currentShader = s;
+        s.setAsCurrent();
     }
     public static void begin()
     {
@@ -118,12 +123,14 @@ class HipRenderer
     }
     public static void dispose()
     {
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
+        rendererImpl.dispose();
+        if(renderer != null)
+            SDL_DestroyRenderer(renderer);
+        if(window != null)
+            SDL_DestroyWindow(window);
         renderer = null;
         window = null;
         IMG_Quit();
-        rendererImpl.dispose();
     }
 
 

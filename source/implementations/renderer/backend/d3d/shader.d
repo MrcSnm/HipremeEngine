@@ -118,7 +118,11 @@ class Hip_D3D11_ShaderImpl : IShader
         if(ret)
         {
             auto res = _hip_d3d_device.CreateVertexShader(vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), null, &vs.vs);
-            ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Vertex shader creation error", "Creation failed");
+            if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Vertex shader creation error", "Creation failed"))
+            {
+                ErrorHandler.showErrorMessage("Vertex Shader Error:", Hip_D3D11_GetErrorMessage(res));
+                res = false;
+            }
         }
         return ret;
     }
@@ -168,8 +172,6 @@ class Hip_D3D11_ShaderImpl : IShader
         auto program = cast(Hip_D3D11_ShaderProgram)_program;
         _hip_d3d_context.VSSetShader(program.vs.vs, cast(ID3D11ClassInstance*)0, 0u);
         _hip_d3d_context.PSSetShader(program.fs.fs, cast(ID3D11ClassInstance*)0, 0u);
-
-        _hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_mainRenderTarget, null);
     }
 
     void useShader(ShaderProgram program){setCurrentShader(program);}
