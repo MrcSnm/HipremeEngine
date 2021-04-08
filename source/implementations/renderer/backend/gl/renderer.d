@@ -110,6 +110,20 @@ class Hip_GL3Renderer : RendererImpl
     {
         SDL_RenderSetViewport(renderer, &v.bounds);
     }
+    public bool setWindowMode(HipWindowMode mode)
+    {
+        final switch(mode) with(HipWindowMode)
+        {
+            case BORDERLESS_FULLSCREEN:
+                break;
+            case FULLSCREEN:
+                break;
+            case WINDOWED:
+
+                break;
+        }
+        return false;
+    }
 
     protected uint getFreeVertexBufferIndex()
     {
@@ -165,6 +179,7 @@ class Hip_GL3Renderer : RendererImpl
         SDL_GL_SwapWindow(window);
     }
 
+    public void draw(Texture t, int x, int y){}
     public void draw(Texture t, int x, int y, SDL_Rect* clip = null)
     {
     }
@@ -216,8 +231,7 @@ class Hip_GL3Renderer : RendererImpl
         
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, cast(void*)0);
     }
-    public void drawRect()
-    // public static void drawRect(int x, int y, int width, int height)
+    public void drawRect(int x, int y, int width, int height)
     {
         // rectangle();        
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, cast(void*)0);
@@ -256,8 +270,7 @@ class Hip_GL3Renderer : RendererImpl
         glEnableVertexAttribArray(0);
     }
 
-    public void drawTriangle()
-    // public static void drawTriangle(float x1, float y1, float x2, float y2, float x3, float y3)
+    public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
     {
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         triangle();

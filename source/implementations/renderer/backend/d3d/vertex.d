@@ -5,7 +5,7 @@ import std.conv:to;
 import error.handler;
 import directx.d3d11;
 import implementations.renderer.backend.d3d.renderer;
-import implementations.renderer.backend.vertex.vertex;
+import implementations.renderer.vertex;
 import global.consts;
 
 

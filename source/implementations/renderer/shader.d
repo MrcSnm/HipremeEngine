@@ -29,6 +29,8 @@ interface IShader
     bool linkProgram(ref ShaderProgram program, VertexShader vs,  FragmentShader fs);
     void setCurrentShader(ShaderProgram program);
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
+    void setVar(T)(ref ShaderProgram prog, string name, T val);
+    void setVar(T)(int id, T val);
     void deleteShader(FragmentShader* fs);
     void deleteShader(VertexShader* vs);
 }

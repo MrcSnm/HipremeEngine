@@ -175,6 +175,8 @@ class Hip_D3D11_ShaderImpl : IShader
     }
 
     void useShader(ShaderProgram program){setCurrentShader(program);}
+    void setVar(T)(ref ShaderProgram prog, string name, T val){}
+    void setVar(T)(int id, T val){}
     void deleteShader(FragmentShader* _fs)
     {
         auto fs = cast(Hip_D3D11_FragmentShader)*_fs;

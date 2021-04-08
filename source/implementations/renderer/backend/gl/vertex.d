@@ -1,7 +1,7 @@
 module implementations.renderer.backend.gl.vertex;
 
 import bindbc.opengl;
-import implementations.renderer.backend.vertex.vertex;
+import implementations.renderer.vertex;
 
 
 enum AttributeType
