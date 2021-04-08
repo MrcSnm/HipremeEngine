@@ -1,4 +1,4 @@
-module implementations.renderer.backend.vertex.vertex;
+module implementations.renderer.vertex;
 public import implementations.renderer.backend.gl.vertex;
 
 enum InternalVertexAttribute

@@ -63,18 +63,19 @@ static void initEngine(bool audio3D = false)
 extern(C)int SDL_main()
 {
 	initEngine(true);
-	HipRenderer.init(new Hip_D3D11_Renderer());
+	HipRendererConfig cfg;
+	HipRenderer.init(new Hip_GL3Renderer(), &cfg);
 	import graphics.image;
 	import graphics.texture;
 	import graphics.g2d.sprite;
-	// Image img = new Image(Assets.Graphics.Sprites.teste_bmp, 0x7f7f7f);
-	// img.load();
-	// Texture t = new Texture(img);
+	Image img = new Image(Assets.Graphics.Sprites.teste_bmp, 0x7f7f7f);
+	img.load();
+	Texture t = new Texture(img);
 
-	// Sprite s = new Sprite(t);
+	Sprite s = new Sprite(t);
 
 
-	// SDL_Rect clip = SDL_Rect(0,0,t.width/2,t.height);
+	SDL_Rect clip = SDL_Rect(0,0,t.width/2,t.height);
 
 	
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
@@ -152,11 +153,11 @@ extern(C)int SDL_main()
 		HipRenderer.begin();
 		HipRenderer.clear(255,0,0,255);
 		// HipRenderer.drawLine(0, 0, 1, 1);
-		// HipRenderer.drawRect();
-		// HipRenderer.drawTriangle();
+		HipRenderer.drawRect(0,0,0,0);
+		HipRenderer.drawTriangle(0,0,0,0,0,0);
+		// s.draw();
         HipRenderer.end();
         // DI.begin();
-		// s.draw();
 		// static bool open = true;
 		// igShowDemoWindow(&open);
 		// import implementations.imgui.imgui_debug;

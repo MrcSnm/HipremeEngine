@@ -12,7 +12,6 @@ import util.system;
 */
 public class Image
 {
-
     SDL_Surface* data;
     string imagePath;
     int rgbColorKey;
@@ -35,7 +34,7 @@ public class Image
             cast(ubyte)((rgbColorKey >> 8) & 255), //G
             cast(ubyte)(rgbColorKey & 255))); //B
         data = img;
-        return img!=null;
+        return !ErrorHandler.stopListeningForErrors();
     }
 
     bool load(void function() onLoad)

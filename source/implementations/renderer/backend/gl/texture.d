@@ -1,24 +1,17 @@
 module implementations.renderer.backend.gl.texture;
+import implementations.renderer.texture;
 import bindbc.opengl;
 import bindbc.sdl;
 
-enum TextureWrapMode
-{
-    CLAMP_TO_EDGE,
-    CLAMP_TO_BORDER,
-    REPEAT,
-    MIRRORED_REPEAT,
-    MIRRORED_CLAMP_TO_EDGE,
-    UNKNOWN
-}
-
-class Texture
+class Hip_GL3_Texture : ITexture
 {
     GLuint textureID = 0;
+    string texturePath;
     int width, height;
     this(string texturePath)
     {
         glGenTextures(1, &textureID);
+        this.texturePath = texturePath;
 
     }
     protected int getGLWrapMode(TextureWrapMode mode)
@@ -42,7 +35,7 @@ class Texture
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mod);
     }
 
-    protected void load(SDL_Surface* surface)
+    bool load(SDL_Surface* surface)
     {
         int mode = GL_RGB;
         if(surface.format.BytesPerPixel==4)
@@ -54,6 +47,10 @@ class Texture
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
+        return true;
+    }
+    void bind()
+    {
+        glBindTexture(GL_TEXTURE_2D, textureID);
     }
 }

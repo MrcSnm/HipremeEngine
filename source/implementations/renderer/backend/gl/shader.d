@@ -107,6 +107,57 @@ class Hip_GL3_ShaderImpl : IShader
         
         return success==true;
     }
+    void setVar(T)(ref ShaderProgram prog, string name, T val)
+    {
+        int varID = glGetUniformLocation((cast(Hip_GL3_ShaderProgram)prog).program, name.ptr);
+        setVarImpl(varID, val);
+    }
+    void setVar(T)(int id, T val)
+    {
+        setVarImpl(id, val);
+    }
+    pragma(inline, true)
+    protected void setVarImpl(T)(int id, T val)
+    {
+        static if(is(T == int))
+        {
+            glUniform1i(id, val);
+        }
+        else static if(is(T == bool))
+        {
+            glUniform1i(id, val);
+        }
+        else static if(is(T == float))
+        {
+            glUniform1f(id, val);
+        }
+        else static if(is(T == double))
+        {
+            glUniform1d(id, val);
+        }
+        else static if(T.sizeof == float.sizeof * 2)
+        {
+            glUniform2f(id,
+            *(cast(float*)(&val)),
+            *(cast(float*)(&val) + 1));
+        }
+        else static if(T.sizeof == float.sizeof * 3)
+        {
+            glUniform3f(id,
+            *(cast(float*)(&val)),
+            *(cast(float*)(&val) + 1),
+            *(cast(float*)(&val) + 2));
+        }
+        else static if(T.sizeof == float.sizeof * 4)
+        {
+            glUniform4f(id,
+            *(cast(float*)(&val)),
+            *(cast(float*)(&val) + 1),
+            *(cast(float*)(&val) + 2),
+            *(cast(float*)(&val) + 3));
+        }
+
+    }
 
 
     /**

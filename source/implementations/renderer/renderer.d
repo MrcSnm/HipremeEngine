@@ -1,5 +1,6 @@
 module implementations.renderer.renderer;
-import implementations.renderer.shader;
+public import implementations.renderer.config;
+public import implementations.renderer.shader;
 import graphics.texture;
 import graphics.g2d.viewport;
 import math.rect;
@@ -11,6 +12,14 @@ import std.stdio:writeln;
 
 public import implementations.renderer.backend.gl.renderer;
 
+enum HipWindowMode
+{
+    WINDOWED,
+    FULLSCREEN,
+    BORDERLESS_FULLSCREEN
+}
+
+
 interface RendererImpl
 {
     public bool init(SDL_Window* window, SDL_Renderer* renderer);
@@ -19,14 +28,20 @@ interface RendererImpl
     public Shader createShader(bool createDefault = true);
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void setViewport(Viewport v);
+    public bool setWindowMode(HipWindowMode mode);
     public void begin();
     public void end();
     public void render();
     public void clear();
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void fillRect(int x, int y, int width, int height);
+    public void drawRect(int x, int y, int w, int h);
+    public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3);
+    public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3);
     public void drawLine(int x1, int y1, int x2, int y2);
     public void drawPixel(int x, int y); 
+    public void draw(Texture t, int x, int y);
+    public void draw(Texture t, int x, int y, SDL_Rect* rect);
     public void dispose();
 }
 
@@ -38,10 +53,14 @@ class HipRenderer
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
     public static Shader currentShader;
+    protected static HipRendererConfig currentConfig;
 
-    public static bool init(RendererImpl impl)
+
+    public static bool init(RendererImpl impl, HipRendererConfig* config)
     {
         ErrorHandler.startListeningForErrors("Renderer initialization");
+        if(config != null)
+            currentConfig = *config;
         rendererImpl = impl;
         window = rendererImpl.createWindow();
         ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL GL Window");
@@ -56,6 +75,10 @@ class HipRenderer
         // setShader(rendererImpl.createShader(true));
 
         return ErrorHandler.stopListeningForErrors();
+    }
+    public static HipRendererConfig getCurrentConfig()
+    {
+        return currentConfig;
     }
 
     public static void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
@@ -105,14 +128,24 @@ class HipRenderer
     }
     public static void draw(Texture t, int x, int y)
     {
-        
+        rendererImpl.draw(t, x, y);
     }
     public static void draw(Texture t, int x, int y, SDL_Rect* rect)
     {
-
+        rendererImpl.draw(t,x, y,rect);
     }
-    public static void drawTriangle(){}
-    public static void drawRect(){}
+    public static void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
+    {
+        rendererImpl.drawTriangle(x1,y1,x2,y2,x3,y3);
+    }
+    public static void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
+    {
+        rendererImpl.fillTriangle(x1,y1,x2,y2,x3,y3);
+    }
+    public static void drawRect(int x, int y, int w, int h)
+    {
+        rendererImpl.drawRect(x,y,w,h);
+    }
     public static void drawLine(int x1, int y1, int x2, int y2)
     {
         rendererImpl.drawLine(x1,y1,x2,y2);
