@@ -1,5 +1,6 @@
 module implementations.renderer.backend.sdl.sdlrenderer;
-import graphics.texture;
+import implementations.renderer.backend.sdl.texture;
+import implementations.renderer.renderer;
 import graphics.g2d.viewport;
 import math.rect;
 import error.handler;
@@ -36,38 +37,52 @@ private SDL_Window* createSDL_GL_Window()
 *   the structure could be changed at any time for supporting a new platform
 *   that SDL does not support
 */
-public static class Renderer
+public class Hip_SDL_Renderer : RendererImpl
 {
-    private static Viewport currentViewport = null;
-    private static Viewport mainViewport = null;
-    public static SDL_Renderer* renderer = null;
-    public static SDL_Window* window = null;
-    public static bool init()
+    private Viewport currentViewport = null;
+    private Viewport mainViewport = null;
+    public SDL_Renderer* renderer = null;
+    public SDL_Window* window = null;
+
+    SDL_Window* createWindow()
     {
-        ErrorHandler.startListeningForErrors("Renderer initialization");
-        window = createSDL_GL_Window();
-        ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL GL Window");
-        renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
-        ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
+        return SDL_CreateWindow("SDL Window",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        800, 600,
+        SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL_WindowFlags.SDL_WINDOW_RESIZABLE
+        );
+    }
+    SDL_Renderer* createRenderer(SDL_Window* window)
+    {
+        return SDL_CreateRenderer(window, 0, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+    }
+    public bool init(SDL_Window* window, SDL_Renderer* renderer)
+    {
+        this.window = window;
+        this.renderer = renderer;
         setColor();
         mainViewport = new Viewport(0,0,0,0);
         currentViewport = mainViewport;
         return ErrorHandler.stopListeningForErrors();
     }
 
-    public static void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
+    Shader createShader(bool createDefault = true){return null;}
+    public bool setWindowMode(HipWindowMode mode){return false;}
+    public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         SDL_SetRenderDrawColor(renderer, r, g, b, a);
     }
-    public static Viewport getCurrentViewport(){return this.currentViewport;}
+    public Viewport getCurrentViewport(){return this.currentViewport;}
 
-    public static void setViewport(Viewport v)
+    public void setViewport(Viewport v)
     {
         this.currentViewport = v;
         SDL_RenderSetViewport(renderer, &v.bounds);
     }
 
-    public static void draw(Texture t, int x, int y, SDL_Rect* clip = null)
+    public void draw(Texture t, int x, int y){draw(t,x,y, null);}
+    public void draw(Texture t, int x, int y, SDL_Rect* clip = null)
     {
         SDL_Rect dest = SDL_Rect(x, y,t.width,t.height);
         if(clip != null)
@@ -75,23 +90,29 @@ public static class Renderer
             dest.w=clip.w;
             dest.h=clip.h;
         }
-        SDL_RenderCopy(renderer, t.data, clip, &dest);
+        SDL_RenderCopy(renderer, (cast(Hip_SDL_Texture)t).data, clip, &dest);
     }
+    public void begin(){}
 
     pragma(inline, true)
-    public static void render()
+    public void end()
     {
         // SDL_GL_SwapWindow(window);
         SDL_RenderPresent(renderer);
     }
+    public void clear()
+    {
+        setColor(255,255,255,255);
+        SDL_RenderClear(renderer);
+    }
     pragma(inline, true)
-    public static void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
+    public void clear(ubyte r, ubyte g, ubyte b, ubyte a)
     {
         setColor(r,g,b,a);
         SDL_RenderClear(renderer);
     }
 
-    public static void fillRect(int x, int y, int width, int height)
+    public void fillRect(int x, int y, int width, int height)
     {
         static SDL_Rect rec;
         rec.x = x;
@@ -100,7 +121,7 @@ public static class Renderer
         rec.h = height;
         SDL_RenderFillRect(renderer, &rec);
     }
-    public static void drawRect(int x, int y, int width, int height)
+    public void drawRect(int x, int y, int width, int height)
     {
         static SDL_Rect rec;
         rec.x=x;
@@ -109,16 +130,18 @@ public static class Renderer
         rec.h=height;
         SDL_RenderDrawRect(renderer, &rec);
     }
-    public static void drawLine(int x1, int y1, int x2, int y2)
+    public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3){}
+    public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3){}
+    public void drawLine(int x1, int y1, int x2, int y2)
     {
         SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
     }
-    public static void drawPixel(int x, int y)
+    public void drawPixel(int x, int y)
     {
         SDL_RenderDrawPoint(renderer, x, y);
     }
 
-    public static void dispose()
+    public void dispose()
     {
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);

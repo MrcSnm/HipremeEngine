@@ -11,9 +11,9 @@ import implementations.renderer.renderer;
 import implementations.renderer.shader;
 import implementations.renderer.backend.d3d.shader;
 import implementations.renderer.backend.d3d.utils;
+import implementations.renderer.texture;
 import error.handler;
 
-import graphics.texture;
 import graphics.g2d.viewport;
 import core.stdc.string;
 import directx.d3d11;
@@ -193,6 +193,7 @@ class Hip_D3D11_Renderer : RendererImpl
 
         HipRendererConfig cfg = HipRenderer.getCurrentConfig();
         initD3D(cast(HWND)wmInfo.info.win.window, &cfg);
+        HipRenderer.rendererType = RendererType.D3D11;
         // setShader(createShader(true));
 
         return ErrorHandler.stopListeningForErrors();
@@ -245,7 +246,6 @@ class Hip_D3D11_Renderer : RendererImpl
     public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3){}
     public void drawRect(int x, int y, int w, int h){}
 
-    void render(){}
     void clear(){}
     void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {

@@ -1,7 +1,7 @@
 module implementations.renderer.renderer;
 public import implementations.renderer.config;
 public import implementations.renderer.shader;
-import graphics.texture;
+public import implementations.renderer.texture;
 import graphics.g2d.viewport;
 import math.rect;
 import error.handler;
@@ -18,6 +18,13 @@ enum HipWindowMode
     FULLSCREEN,
     BORDERLESS_FULLSCREEN
 }
+enum RendererType
+{
+    GL3,
+    D3D11,
+    SDL,
+    NONE
+}
 
 
 interface RendererImpl
@@ -31,7 +38,6 @@ interface RendererImpl
     public bool setWindowMode(HipWindowMode mode);
     public void begin();
     public void end();
-    public void render();
     public void clear();
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void fillRect(int x, int y, int width, int height);
@@ -53,6 +59,7 @@ class HipRenderer
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
     public static Shader currentShader;
+    public static RendererType rendererType = RendererType.NONE;
     protected static HipRendererConfig currentConfig;
 
 
@@ -109,10 +116,6 @@ class HipRenderer
     public static void end()
     {
         rendererImpl.end();
-    }
-    public static void render()
-    {
-        rendererImpl.render();
     }
     public static void clear()
     {

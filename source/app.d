@@ -66,15 +66,10 @@ extern(C)int SDL_main()
 	HipRendererConfig cfg;
 	HipRenderer.init(new Hip_GL3Renderer(), &cfg);
 	import graphics.image;
-	import graphics.texture;
 	import graphics.g2d.sprite;
-	Image img = new Image(Assets.Graphics.Sprites.teste_bmp, 0x7f7f7f);
-	img.load();
-	Texture t = new Texture(img);
+	Texture t = new Texture(Assets.Graphics.Sprites.teste_bmp);
 
 	Sprite s = new Sprite(t);
-
-
 	SDL_Rect clip = SDL_Rect(0,0,t.width/2,t.height);
 
 	
