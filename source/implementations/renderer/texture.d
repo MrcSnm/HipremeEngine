@@ -2,6 +2,11 @@
 *   This class will be only a wrapper for importing the correct backend
 */
 module implementations.renderer.texture;
+import error.handler;
+import implementations.renderer.renderer;
+import implementations.renderer.backend.gl.texture;
+import implementations.renderer.backend.d3d.texture;
+import implementations.renderer.backend.sdl.texture;
 import bindbc.sdl;
 import graphics.image;
 
@@ -25,20 +30,46 @@ class Texture
 {
     ITexture textureImpl;
     Image img;
-    this(ITexture textureImpl)
+    uint width,height;
+    this(string path = "")
     {
-        this.textureImpl = textureImpl;
+        if(HipRenderer.rendererType == RendererType.GL3)
+            textureImpl = new Hip_GL3_Texture();
+        else if(HipRenderer.rendererType == RendererType.D3D11)
+            textureImpl = new Hip_D3D11_Texture();
+        else if(HipRenderer.rendererType == RendererType.SDL)
+            textureImpl = new Hip_SDL_Texture();
+        else
+        {
+            ErrorHandler.showErrorMessage("No renderer implementation active",
+            "Can't create a texture without a renderer implementation active");
+        }
+        if(path != "")
+            load(path);
     }
     public void setWrapMode(TextureWrapMode mode)
     {
         textureImpl.setWrapMode(mode);
     }
+    
+    SDL_Rect getBounds()
+    {
+        return SDL_Rect(0,0,width,height);
+    }
+    void render(int x, int y)
+    {
+        HipRenderer.draw(this, x, y);
+    }
+
     public bool load(string path)
     {
         this.img = new Image(path);
         if(img.load())
         {
             textureImpl.load(img.data);
+            width = img.data.w;
+            height = img.data.h;
+            return true;
         }
         else
             return false;

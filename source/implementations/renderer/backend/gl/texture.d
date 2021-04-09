@@ -6,13 +6,10 @@ import bindbc.sdl;
 class Hip_GL3_Texture : ITexture
 {
     GLuint textureID = 0;
-    string texturePath;
     int width, height;
-    this(string texturePath)
+    this()
     {
         glGenTextures(1, &textureID);
-        this.texturePath = texturePath;
-
     }
     protected int getGLWrapMode(TextureWrapMode mode)
     {

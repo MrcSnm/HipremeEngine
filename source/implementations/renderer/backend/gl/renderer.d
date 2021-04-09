@@ -2,7 +2,6 @@ module implementations.renderer.backend.gl.renderer;
 import implementations.renderer.renderer;
 import implementations.renderer.shader;
 import implementations.renderer.backend.gl.shader;
-import graphics.texture;
 import graphics.g2d.viewport;
 import math.rect;
 import error.handler;
@@ -93,6 +92,8 @@ class Hip_GL3Renderer : RendererImpl
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rectangleEBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, rectangleIndices.sizeof, &rectangleIndices, GL_DYNAMIC_DRAW);
         setShader(createShader(true));
+
+        HipRenderer.rendererType = RendererType.GL3;
         return true;
     }
 
@@ -177,6 +178,7 @@ class Hip_GL3Renderer : RendererImpl
     public void end()
     {
         SDL_GL_SwapWindow(window);
+        SDL_RenderPresent(renderer);
     }
 
     public void draw(Texture t, int x, int y){}
@@ -184,12 +186,7 @@ class Hip_GL3Renderer : RendererImpl
     {
     }
 
-    pragma(inline, true)
-    public void render()
-    {
-        // SDL_GL_SwapWindow(window);
-        SDL_RenderPresent(renderer);
-    }
+
     pragma(inline, true)
     public void clear()
     {
@@ -275,6 +272,10 @@ class Hip_GL3Renderer : RendererImpl
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         triangle();
         glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+    public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
+    {
+
     }
     public void drawPixel(int x, int y)
     {

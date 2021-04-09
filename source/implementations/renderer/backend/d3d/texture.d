@@ -5,9 +5,8 @@ import implementations.renderer.texture;
 class Hip_D3D11_Texture : ITexture
 {
     ITexture textureImpl;
-    this(string texturePath)
+    this()
     {
-        this.texturePath = texturePath;
     }
     public void setWrapMode(TextureWrapMode mode)
     {
