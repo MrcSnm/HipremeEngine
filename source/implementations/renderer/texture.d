@@ -19,6 +19,16 @@ enum TextureWrapMode
     MIRRORED_CLAMP_TO_EDGE,
     UNKNOWN
 }
+
+enum TextureFilter
+{
+    LINEAR,
+    NEAREST,
+    NEAREST_MIPMAP_NEAREST,
+    LINEAR_MIPMAP_NEAREST,
+    NEAREST_MIPMAP_LINEAR,
+    LINEAR_MIPMAP_LINEAR
+}
 interface ITexture
 {
     void setWrapMode(TextureWrapMode mode);
@@ -31,6 +41,7 @@ class Texture
     ITexture textureImpl;
     Image img;
     uint width,height;
+    TextureFilter min, mag;
     this(string path = "")
     {
         if(HipRenderer.rendererType == RendererType.GL3)
@@ -50,6 +61,12 @@ class Texture
     public void setWrapMode(TextureWrapMode mode)
     {
         textureImpl.setWrapMode(mode);
+    }
+    public void setTextureFilter(TextureFilter min, TextureFilter mag)
+    {
+        this.min = min;
+        this.mag = mag;
+        textureImpl.setTextureFilter(min, mag);
     }
     
     SDL_Rect getBounds()
