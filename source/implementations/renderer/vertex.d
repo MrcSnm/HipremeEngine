@@ -66,7 +66,7 @@ struct VertexArrayObject
         info.offset = stride;
         infos~= info;
         index++;
-        stride+= length+typeSize;
+        stride+= length*typeSize;
     }
     /**
     *   Changes by implementation

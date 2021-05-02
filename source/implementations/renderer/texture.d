@@ -32,6 +32,7 @@ enum TextureFilter
 interface ITexture
 {
     void setWrapMode(TextureWrapMode mode);
+    void setTextureFilter(TextureFilter min, TextureFilter mag);
     bool load(SDL_Surface* surface);
     void bind();
 }
@@ -50,7 +51,7 @@ class Texture
             textureImpl = new Hip_D3D11_Texture();
         else if(HipRenderer.rendererType == RendererType.SDL)
             textureImpl = new Hip_SDL_Texture();
-        else
+        else    
         {
             ErrorHandler.showErrorMessage("No renderer implementation active",
             "Can't create a texture without a renderer implementation active");

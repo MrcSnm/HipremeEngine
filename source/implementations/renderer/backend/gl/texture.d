@@ -39,8 +39,9 @@ class Hip_GL3_Texture : ITexture
                 return GL_NEAREST_MIPMAP_LINEAR;
             case LINEAR_MIPMAP_LINEAR:
                 return GL_LINEAR_MIPMAP_LINEAR;
+            default:
+                return -1;
         }
-        return -1;
     }
 
     void bind()
@@ -54,7 +55,8 @@ class Hip_GL3_Texture : ITexture
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mod);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mod);
     }
-    void setMinMagFilters(TextureFilter mag, TextureFilter min)
+    
+    void setTextureFilter(TextureFilter min, TextureFilter mag)
     {
         bind();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
