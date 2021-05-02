@@ -8,6 +8,7 @@ class Hip_D3D11_Texture : ITexture
     this()
     {
     }
+    void setTextureFilter(TextureFilter mag, TextureFilter min){}
     public void setWrapMode(TextureWrapMode mode)
     {
         // setWrapMode(mode);

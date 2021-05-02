@@ -16,6 +16,7 @@ public class Hip_SDL_Texture : ITexture
         data = SDL_CreateTextureFromSurface(HipRenderer.renderer, surface);
         return true;
     }
+    void setTextureFilter(TextureFilter mag, TextureFilter min){}
 
     /**
     *   Let the engine call it for updating the resource state
