@@ -149,7 +149,7 @@ extern(C)int SDL_main()
 		HipRenderer.clear(255,0,0,255);
 		// HipRenderer.drawLine(0, 0, 1, 1);
 		HipRenderer.drawRect(0,0,0,0);
-		HipRenderer.drawTriangle(0,0,0,0,0,0);
+		// HipRenderer.drawTriangle(0,0,0,0,0,0);
 		// s.draw();
         HipRenderer.end();
         // DI.begin();
