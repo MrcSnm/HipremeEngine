@@ -51,16 +51,18 @@ class Hip_GL3_Texture : ITexture
     void setWrapMode(TextureWrapMode mode)
     {
         int mod = getGLWrapMode(mode);
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        bind();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mod);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mod);
     }
-    
+
     void setTextureFilter(TextureFilter min, TextureFilter mag)
     {
+        int min_filter = getGLMinMagFilter(min);
+        int mag_filter = getGLMinMagFilter(mag);
         bind();
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
     }
 
     bool load(SDL_Surface* surface)

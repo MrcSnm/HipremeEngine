@@ -184,6 +184,8 @@ class Hip_GL3Renderer : RendererImpl
     public void draw(Texture t, int x, int y){}
     public void draw(Texture t, int x, int y, SDL_Rect* clip = null)
     {
+        t.bind();
+        
     }
 
 
@@ -228,6 +230,34 @@ class Hip_GL3Renderer : RendererImpl
         
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, cast(void*)0);
     }
+
+    protected GLenum getGLRendererMode(RendererMode mode)
+    {
+        final switch(mode) with(RendererMode)
+        {
+            case POINT:
+                return GL_POINT;
+            case LINE:
+                return GL_LINE;
+            case LINE_STRIP:
+                return GL_LINE_STRIP;
+            case TRIANGLES:
+                return GL_TRIANGLES;
+            case TRIANGLE_STRIP:
+                return GL_TRIANGLE_STRIP;
+        }
+    }
+
+    public void drawVertices(RendererMode mode, uint count, uint offset)
+    {
+        glDrawArrays(getGLRendererMode(mode), offset, count);
+    }
+    public void drawIndexed(RendererMode mode, uint indicesSize, uint offset = 0)
+    {
+        glDrawElements(getGLRendererMode(mode), indicesSize, GL_UNSIGNED_INT, cast(void*)offset);
+    }
+
+
     public void drawRect(int x, int y, int width, int height)
     {
         // rectangle();        

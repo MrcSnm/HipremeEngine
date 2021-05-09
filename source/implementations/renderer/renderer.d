@@ -26,6 +26,14 @@ enum RendererType
     NONE
 }
 
+enum RendererMode
+{
+    POINT,
+    LINE,
+    LINE_STRIP,
+    TRIANGLES,
+    TRIANGLE_STRIP
+}
 
 interface RendererImpl
 {

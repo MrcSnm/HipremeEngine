@@ -20,15 +20,6 @@ import directx.d3d11;
 import core.sys.windows.windows;
 import bindbc.sdl;
 
-enum RendererMode
-{
-    POINT,
-    LINE,
-    LINE_STRIP,
-    TRIANGLE,
-    TRIANGLE_STRIP
-}
-
 ID3D11Device _hip_d3d_device = null;
 ID3D11DeviceContext _hip_d3d_context = null;
 IDXGISwapChain _hip_d3d_swapChain = null;
@@ -202,7 +193,7 @@ class Hip_D3D11_Renderer : RendererImpl
 
     public void setMode(RendererMode mode)
     {
-        if(mode == RendererMode.TRIANGLE)
+        if(mode == RendererMode.TRIANGLES)
         {
             _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         }
@@ -240,6 +231,15 @@ class Hip_D3D11_Renderer : RendererImpl
     void end()
     {
         _hip_d3d_swapChain.Present(0,0);
+    }
+
+    public void drawVertices(RendererMode mode, uint count, uint offset = 0)
+    {
+        _hip_d3d_context.Draw(count, offset);
+    }
+    public void drawIndexed(RendererMode mode, uint indicesSize, uint offset=0)
+    {
+        _hip_d3d_context.DrawIndexed(indicesSize, offset, 0);
     }
     public void drawRect(){}
     public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3){}
