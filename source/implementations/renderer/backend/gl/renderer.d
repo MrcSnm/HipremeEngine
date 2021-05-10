@@ -91,7 +91,6 @@ class Hip_GL3Renderer : RendererImpl
         glGenBuffers(1, &rectangleEBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rectangleEBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, rectangleIndices.sizeof, &rectangleIndices, GL_DYNAMIC_DRAW);
-        setShader(createShader(true));
 
         HipRenderer.rendererType = RendererType.GL3;
         return true;
@@ -281,9 +280,9 @@ class Hip_GL3Renderer : RendererImpl
     protected void triangle()
     {
         float[18] triangle = [
-            -0.5f, -0.5f, 0.0f,
-             0.5f, -0.5f, 0.0f,
-             0.0f,  0.5f, 0.0f,
+            0, 0, 0.0f,
+             50, 100, 0.0f,
+             100,  0, 0.0f,
 
              -0.6f, -0.6f, 0.0f,
              0.6f, -0.6f, 0.0f,
@@ -301,7 +300,7 @@ class Hip_GL3Renderer : RendererImpl
     {
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         triangle();
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
     }
     public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
     {

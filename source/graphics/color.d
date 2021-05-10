@@ -7,7 +7,7 @@ struct Color
     static Color fromInt(int color)
     {
         return Color(
-            cast(float)color >> 24,
+            cast(float)(color >> 24)/255,
             cast(float)((color >> 16) & 255)/255,
             cast(float)((color >> 8) & 255)/255,
             cast(float)(color & 255)/255

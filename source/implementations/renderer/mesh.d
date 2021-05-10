@@ -41,6 +41,12 @@ Supports up to unsigned short");
         {
             // HipRenderer.drawVertices()
         }
+        //else if(isInstanced)
+        /*
+        {
+            HipRenderer.drawInstanced()
+        }
+        */
         else
         {
             // HipRenderer.drawIndexed()
