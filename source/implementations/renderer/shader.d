@@ -29,10 +29,24 @@ interface IShader
     bool linkProgram(ref ShaderProgram program, VertexShader vs,  FragmentShader fs);
     void setCurrentShader(ShaderProgram program);
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
-    void setVar(T)(ref ShaderProgram prog, string name, T val);
-    void setVar(T)(int id, T val);
+    int  getId(ref ShaderProgram prog, string name);
+
+    final void setVar(T)(ref ShaderProgram prog, string name, T value)
+    {
+        int id = getId(prog, name);
+        setVar(id, value);
+    }
+    void setVar(int id, int val);
+    void setVar(int id, bool val);
+    void setVar(int id, float val);
+    void setVar(int id, float[2] val); ///Vec2
+    void setVar(int id, float[3] val); ///Vec3
+    void setVar(int id, float[4] val); ///Vec4
+    void setVar(int id, float[9] val); ///Matrix3
+    void setVar(int id, float[16] val); ///Matrix4
     void deleteShader(FragmentShader* fs);
     void deleteShader(VertexShader* vs);
+
 }
 
 abstract class VertexShader
@@ -102,6 +116,15 @@ public class Shader
     void setVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
     {
         shaderImpl.sendVertexAttribute(layoutIndex, valueAmount, dataType, normalize, stride, offset);
+    }
+
+    void setVar(T)(string name, T val)
+    {
+        shaderImpl.setVar(this.shaderProgram, name, val);
+    }
+    public void setVar(T)(int id, T val)
+    {
+        shaderImpl.setVar(id, val);
     }
 
     void setAsCurrent()

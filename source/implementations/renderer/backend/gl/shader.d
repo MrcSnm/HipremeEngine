@@ -35,6 +35,7 @@ class Hip_GL3_VertexShader : VertexShader
             layout (location = 0) in vec3 position;
             layout (location = 1) in vec4 color;
             layout (location = 2) in vec2 texCoord;
+            uniform mat4 proj;
 
 
             out vec4 vertexColor;
@@ -42,7 +43,7 @@ class Hip_GL3_VertexShader : VertexShader
 
             void main()
             {
-                gl_Position = vec4(position, 1.0f);
+                gl_Position = proj*vec4(position, 1.0f);
                 vertexColor = color;
                 tex_uv = texCoord;
             }
@@ -119,58 +120,41 @@ class Hip_GL3_ShaderImpl : IShader
         
         return success==true;
     }
-    void setVar(T)(ref ShaderProgram prog, string name, T val)
+    int getId(ref ShaderProgram prog, string name)
     {
         int varID = glGetUniformLocation((cast(Hip_GL3_ShaderProgram)prog).program, name.ptr);
-        setVarImpl(varID, val);
+        return varID;
     }
-    void setVar(T)(int id, T val)
+    void setVar(int id, int val){glUniform1i(id, val);}
+    void setVar(int id, bool val){glUniform1i(id, val);}
+    void setVar(int id, float val){glUniform1f(id, val);}
+    void setVar(int id, double val){glUniform1d(id, val);}
+    void setVar(int id, float[2] val)
     {
-        setVarImpl(id, val);
+        glUniform2f(id,
+        *(cast(float*)(&val)),
+        *(cast(float*)(&val) + 1));
     }
-    pragma(inline, true)
-    protected void setVarImpl(T)(int id, T val)
+    void setVar(int id, float[3] val)
     {
-        static if(is(T == int))
-        {
-            glUniform1i(id, val);
-        }
-        else static if(is(T == bool))
-        {
-            glUniform1i(id, val);
-        }
-        else static if(is(T == float))
-        {
-            glUniform1f(id, val);
-        }
-        else static if(is(T == double))
-        {
-            glUniform1d(id, val);
-        }
-        else static if(T.sizeof == float.sizeof * 2)
-        {
-            glUniform2f(id,
-            *(cast(float*)(&val)),
-            *(cast(float*)(&val) + 1));
-        }
-        else static if(T.sizeof == float.sizeof * 3)
-        {
-            glUniform3f(id,
-            *(cast(float*)(&val)),
-            *(cast(float*)(&val) + 1),
-            *(cast(float*)(&val) + 2));
-        }
-        else static if(T.sizeof == float.sizeof * 4)
-        {
-            glUniform4f(id,
-            *(cast(float*)(&val)),
-            *(cast(float*)(&val) + 1),
-            *(cast(float*)(&val) + 2),
-            *(cast(float*)(&val) + 3));
-        }
-
+        glUniform3f(id,
+        *(cast(float*)(&val)),
+        *(cast(float*)(&val) + 1),
+        *(cast(float*)(&val) + 2));
     }
-
+    void setVar(int id, float[4] val)
+    {
+        glUniform4f(id,
+        *(cast(float*)(&val)),
+        *(cast(float*)(&val) + 1),
+        *(cast(float*)(&val) + 2),
+        *(cast(float*)(&val) + 3));
+    }
+    void setVar(int id, float[9] val){glUniformMatrix3fv(id, 1, GL_FALSE, cast(float*)&val);}
+    void setVar(int id, float[16] val)
+    {
+        glUniformMatrix4fv(id, 1, GL_FALSE, cast(float*)&val);
+    }
 
     /**
     *   params:

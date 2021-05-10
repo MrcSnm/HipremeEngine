@@ -19,6 +19,7 @@ version(Android)
 	import core.runtime : rt_init;
 }
 import bindbc.cimgui;
+import math.matrix;
 import implementations.renderer.renderer;
 import implementations.renderer.backend.d3d.renderer;
 import def.debugging.gui;
@@ -145,11 +146,12 @@ extern(C)int SDL_main()
 		///////////START IMGUI
 
 		// Start the Dear ImGui frame
+		HipRenderer.currentShader.setVar("proj", Matrix4.orthoLH(0, 800, 600, 0, 0, 1));
 		HipRenderer.begin();
 		HipRenderer.clear(255,0,0,255);
 		// HipRenderer.drawLine(0, 0, 1, 1);
 		HipRenderer.drawRect(0,0,0,0);
-		// HipRenderer.drawTriangle(0,0,0,0,0,0);
+		HipRenderer.drawTriangle(0,0,0,0,0,0);
 		// s.draw();
         HipRenderer.end();
         // DI.begin();

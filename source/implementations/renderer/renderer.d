@@ -87,7 +87,7 @@ class HipRenderer
         SDL_GetWindowSize(window, &w, &h);
         mainViewport = new Viewport(0,0,w, h);
         setViewport(mainViewport);
-        // setShader(rendererImpl.createShader(true));
+        setShader(rendererImpl.createShader(true));
 
         return ErrorHandler.stopListeningForErrors();
     }

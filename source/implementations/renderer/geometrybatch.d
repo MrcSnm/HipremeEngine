@@ -19,7 +19,7 @@ class GeometryBatch
     
     this(uint verticesSize, uint indicesSize)
     {
-        mesh = new Mesh();
+        mesh = new Mesh(false);
         vertices = new float[verticesSize];
         indices = new uint[indicesSize];
     }
