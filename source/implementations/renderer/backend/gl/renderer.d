@@ -280,7 +280,7 @@ class Hip_GL3Renderer : RendererImpl
     protected void triangle()
     {
         float[18] triangle = [
-            0, 0, 0.0f,
+              0, 0, 0.0f,
              50, 100, 0.0f,
              100,  0, 0.0f,
 
@@ -288,6 +288,31 @@ class Hip_GL3Renderer : RendererImpl
              0.6f, -0.6f, 0.0f,
              0.1f,  0.6f, 0.0f,
         ];
+        import math.vector;
+
+        static float angle = 3.1415/4;
+
+        angle+=0.01;
+
+        Vector3 p0 = Vector3(200,200,0).rotateZ(angle);
+        Vector3 p1 = Vector3(250,300,0).rotateZ(angle);
+        Vector3 p2 = Vector3(300,200,0).rotateZ(angle);
+
+        triangle[0] = p0.x;
+        triangle[1] = p0.y;
+        triangle[2] = p0.z;
+        
+        triangle[3] = p1.x;
+        triangle[4] = p1.y;
+        triangle[5] = p1.z;
+        
+        triangle[6] = p2.x;
+        triangle[7] = p2.y;
+        triangle[8] = p2.z;
+        // *(cast(float*)triangle.ptr) = *(cast(float*)&p0);
+        // *(cast(float*)triangle.ptr+3) = *(cast(float*)&p1);
+        // *(cast(float*)triangle.ptr+6) = *(cast(float*)&p2);
+        
         
         bindNextVertexArrayObject();
         glBufferData(GL_ARRAY_BUFFER, triangle.sizeof, triangle.ptr, GL_DYNAMIC_DRAW);

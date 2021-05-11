@@ -2,45 +2,45 @@ module math.vector;
 import std.stdio;
 import core.math : sqrt, sin, cos;
 
-public struct Vector(T)
+public struct Vector3
 {
-    this(T t1, T t2, T t3)
+    this(float x, float y, float z)
     {
-        values = [t1, t2, t3];
+        values = [x,y,z];
     }
-    this(T[3] ts){values = [ts[0], ts[1], ts[2]];}
-    Vector!T opIndexUnary(string op)(size_t index)
+    this(float[3] v){values = [v[0], v[1], v[2]];}
+    Vector3 opIndexUnary(string op)(size_t index)
     {
         static if(op == "-")
             return Vector(-values[0], -values[1], -values[2]);
         return this;
     }
-    T dot()(auto ref Vector!T other) const
+    float dot()(auto ref Vector3 other) const
     {
         return (values[0]*other[0] + values[1]*other[1] + values[2] * other[2]);
     }
 
-    const T mag(){return sqrt(values[0]*values[0] + values[1]*values[1] + values[2]*values[2]);}
+    const float mag(){return sqrt(values[0]*values[0] + values[1]*values[1] + values[2]*values[2]);}
     void normalize()
     {
         const float m = mag();
         values[]/=m;
     }
 
-    Vector!T unit() const 
+    Vector3 unit() const 
     {
-        const T m = mag();
-        return Vector!T(values[0]/m, values[1]/m, values[2]/m);
+        const float m = mag();
+        return Vector3(values[0]/m, values[1]/m, values[2]/m);
     }
     
-    Vector!T project(ref Vector!T reference) const
+    Vector3 project(ref Vector3 reference) const
     {
         auto n = reference.unit;
         return n * dot(reference);
     }
 
     pragma(inline, true)
-    auto axisAngle(const ref Vector!T axis, float angle)
+    auto axisAngle(const ref Vector3 axis, float angle)
     {
         auto n = axis.unit;
         auto proj = n* axis.dot(n);
@@ -50,65 +50,154 @@ public struct Vector(T)
     }
 
 
-    Vector!T cross(ref Vector!T other) const
+    Vector3 cross(ref Vector3 other) const
     {
-        return Vector(values[1]*other[2] - values[2]-other[1],
+        return Vector3(values[1]*other[2] - values[2]-other[1],
                      -(values[0]*other[2]- values[2]*other[0]),
                      values[0]*other[1] - values[1]*other[0]);
     }
 
-    static T Dot(ref Vector!T first, ref Vector!T second){return first.dot(second);}
+    static float Dot(ref Vector3 first, ref Vector3 second){return first.dot(second);}
 
-    Vector!T rotateZ(float radians)
+    Vector3 rotateZ(float radians)
     {
         const float c = cos(radians);
         const float s = sin(radians);
 
-        return Vector!T(x*c - y*s, y*c + s*x, z);
+        return Vector3(x*c - y*s, y*c + s*x, z);
     }
 
-    auto opBinary(string op)(auto ref Vector!T rhs) const
+    auto opBinary(string op)(auto ref Vector3 rhs) const
     {
-        static if(op == "+")return Vector(values[0]+ rhs[0], values[1]+ rhs[1], values[2]+ rhs[2]);
-        else static if(op == "-")return Vector(values[0]- rhs[0], values[1]- rhs[1], values[2]- rhs[2]);
+        static if(op == "+")return Vector3(values[0]+ rhs[0], values[1]+ rhs[1], values[2]+ rhs[2]);
+        else static if(op == "-")return Vector3(values[0]- rhs[0], values[1]- rhs[1], values[2]- rhs[2]);
         else static if(op == "*")return dot(rhs);
     }
 
-    auto opBinary(string op)(auto ref T rhs) const
+    auto opBinary(string op)(auto ref float rhs) const
     {
-        mixin("return Vector(values[0] "~ op ~ "rhs , values[1] "~ op ~ "rhs, values[2] "~ op~"rhs);");
+        mixin("return Vector3(values[0] "~ op ~ "rhs , values[1] "~ op ~ "rhs, values[2] "~ op~"rhs);");
     }
 
-    T opIndexAssign(T value, size_t index)
+    float opIndexAssign(float value, size_t index)
     {
         values[index] = value;
         return value;
     }
     
-    ref Vector!T opAssign(Vector!T other)
+    ref Vector3 opAssign(Vector3 other) return
     {
         values[0] = other[0];
         values[1] = other[1];
         values[2] = other[2];
         return this;
     }
-    ref Vector!T opAssign(T[3] other)
+    ref Vector3 opAssign(float[3] other) return
     {
         values[0] = other[0];
         values[1] = other[1];
         values[2] = other[2];
         return this;
     }
-    ref T opIndex(size_t index){return values[index];}
 
-    static Vector!T Zero(){return Vector(0,0,0);}
-    private T[3] values;
+    static Vector3 Zero(){return Vector3(0,0,0);}
+    private float[3] values;
 
-    scope ref T x(){return values[0];}
-    scope ref T y(){return values[1];}
-    scope ref T z(){return values[2];}
+    scope ref float x() return {return values[0];}
+    scope ref float y() return {return values[1];}
+    scope ref float z() return {return values[2];}
+    ref float opIndex(size_t index) return {return values[index];}
 
 }
 
-alias Vectorf = Vector!float;
+public struct Vector4
+{
+    this(float x, float y, float z, float w)
+    {
+        values = [x,y,z, w];
+    }
+    this(float[4] v){values = [v[0], v[1], v[2], v[3]];}
+    Vector3 opIndexUnary(string op)(size_t index)
+    {
+        static if(op == "-")
+            return Vector(-values[0], -values[1], -values[2], -values[3]);
+        return this;
+    }
+    float dot()(auto ref Vector4 other) const
+    {
+        return (values[0]*other[0] + values[1]*other[1] + values[2] * other[2] + values[3]*other[3]);
+    }
+
+    const float mag(){return sqrt(values[0]*values[0] + values[1]*values[1] + values[2]*values[2] + values[3]*values[3]);}
+    void normalize()
+    {
+        const float m = mag();
+        values[]/=m;
+    }
+
+    Vector4 unit() const 
+    {
+        const float m = mag();
+        return Vector4(values[0]/m, values[1]/m, values[2]/m, values[3]/m);
+    }
+    
+    Vector4 project(ref Vector4 reference) const
+    {
+        auto n = reference.unit;
+        return n * dot(reference);
+    }
+
+    static float Dot(ref Vector3 first, ref Vector3 second){return first.dot(second);}
+
+    auto opBinary(string op)(auto ref Vector3 rhs) const
+    {
+        static if(op == "+")return Vector4(values[0]+ rhs[0], values[1]+ rhs[1], values[2]+ rhs[2], values[3]+rhs[3]);
+        else static if(op == "-")return Vector4(values[0]- rhs[0], values[1]- rhs[1], values[2]- rhs[2], values[3]-rhs[3]);
+        else static if(op == "*")return dot(rhs);
+    }
+
+    auto opBinary(string op)(auto ref float rhs) const
+    {
+        mixin("return Vector4(values[0] "~ op ~ "rhs,
+        values[1] "~ op ~ "rhs,
+        values[2] "~ op~"rhs,
+        values[3] "~ op~"rhs);");
+    }
+
+    float opIndexAssign(float value, size_t index)
+    {
+        values[index] = value;
+        return value;
+    }
+    
+    ref Vector4 opAssign(Vector4 other) return
+    {
+        values[0] = other[0];
+        values[1] = other[1];
+        values[2] = other[2];
+        values[3] = other[3];
+        return this;
+    }
+    ref Vector4 opAssign(float[4] other) return
+    {
+        values[0] = other[0];
+        values[1] = other[1];
+        values[2] = other[2];
+        values[3] = other[3];
+        return this;
+    }
+
+    static Vector4 Zero(){return Vector4(0,0,0,0);}
+    private float[4] values;
+
+    scope ref float x() return {return values[0];}
+    scope ref float y() return {return values[1];}
+    scope ref float z() return {return values[2];}
+    scope ref float w() return {return values[3];}
+    ref float opIndex(size_t index) return {return values[index];}
+
+}
+
+
+
 // alias Vectord = Vector!double;
