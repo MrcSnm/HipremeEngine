@@ -44,6 +44,7 @@ interface RendererImpl
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void setViewport(Viewport v);
     public bool setWindowMode(HipWindowMode mode);
+    public bool hasErrorOccurred(out string err, string line = __FILE__, int line =__LINE__);
     public void begin();
     public void end();
     public void clear();
@@ -116,6 +117,11 @@ class HipRenderer
         currentShader = s;
         s.setAsCurrent();
     }
+    public static bool hasErrorOccurred(out string err, string file = __FILE__, int line =__LINE__)
+    {
+        return rendererImpl.hasErrorOccurred(err, file, line);
+    }
+
     public static void begin()
     {
         rendererImpl.begin();

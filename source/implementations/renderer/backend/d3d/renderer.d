@@ -156,6 +156,11 @@ class Hip_D3D11_Renderer : RendererImpl
         // return SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
     }
 
+    public bool hasErrorOccurred(out string err, string file = __FILE__, int line = __LINE__)
+    {
+        return false;
+    }
+
     public bool setWindowMode(HipWindowMode mode)
     {
         final switch(mode) with(HipWindowMode)

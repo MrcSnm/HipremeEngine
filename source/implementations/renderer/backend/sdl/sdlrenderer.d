@@ -80,6 +80,10 @@ public class Hip_SDL_Renderer : RendererImpl
         this.currentViewport = v;
         SDL_RenderSetViewport(renderer, &v.bounds);
     }
+    public bool hasErrorOccurred(out string err, string file = __FILE__, int line = __LINE__)
+    {
+        return false;
+    }
 
     public void draw(Texture t, int x, int y){draw(t,x,y, null);}
     public void draw(Texture t, int x, int y, SDL_Rect* clip = null)
