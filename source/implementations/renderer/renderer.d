@@ -18,7 +18,7 @@ enum HipWindowMode
     FULLSCREEN,
     BORDERLESS_FULLSCREEN
 }
-enum RendererType
+enum HipRendererType
 {
     GL3,
     D3D11,
@@ -26,7 +26,7 @@ enum RendererType
     NONE
 }
 
-enum RendererMode
+enum HipRendererMode
 {
     POINT,
     LINE,
@@ -35,7 +35,34 @@ enum RendererMode
     TRIANGLE_STRIP
 }
 
-interface RendererImpl
+enum HipBlendFunction
+{
+    ZERO,
+    ONE,
+    SRC_COLOR,
+    ONE_MINUS_SRC_COLOR,
+    DST_COLOR,
+    ONE_MINUS_DST_COLOR,
+    SRC_ALPHA,
+    ONE_MINUS_SRC_ALPHA,
+    DST_ALPHA,
+    ONE_MINUST_DST_ALPHA,
+    CONSTANT_COLOR,
+    ONE_MINUS_CONSTANT_COLOR,
+    CONSTANT_ALPHA,
+    ONE_MINUS_CONSTANT_ALPHA,
+}
+
+enum HipBlendEquation
+{
+    ADD,
+    SUBTRACT,
+    REVERSE_SUBTRACT,
+    MIN,
+    MAX
+}
+
+interface IHipRendererImpl
 {
     public bool init(SDL_Window* window, SDL_Renderer* renderer);
     public SDL_Window* createWindow();
@@ -64,15 +91,15 @@ class HipRenderer
 {
     protected static Viewport currentViewport = null;
     protected static Viewport mainViewport = null;
-    protected static RendererImpl rendererImpl;
+    protected static IHipRendererImpl rendererImpl;
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
     public static Shader currentShader;
-    public static RendererType rendererType = RendererType.NONE;
+    public static HipRendererType rendererType = HipRendererType.NONE;
     protected static HipRendererConfig currentConfig;
 
 
-    public static bool init(RendererImpl impl, HipRendererConfig* config)
+    public static bool init(IHipRendererImpl impl, HipRendererConfig* config)
     {
         ErrorHandler.startListeningForErrors("Renderer initialization");
         if(config != null)

@@ -46,6 +46,8 @@ class Hip_GL3Renderer : RendererImpl
     SDL_Window* window;
     SDL_Renderer* renderer;
     Shader currentShader;
+    protected static bool isGLBlendEnabled = false;
+
     /**
     *   Does not uses EBO
     */
@@ -276,9 +278,9 @@ class Hip_GL3Renderer : RendererImpl
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, cast(void*)0);
     }
 
-    protected GLenum getGLRendererMode(RendererMode mode)
+    protected GLenum getGLRendererMode(HipRendererMode mode)
     {
-        final switch(mode) with(RendererMode)
+        final switch(mode) with(HipRendererMode)
         {
             case POINT:
                 return GL_POINT;
@@ -292,12 +294,32 @@ class Hip_GL3Renderer : RendererImpl
                 return GL_TRIANGLE_STRIP;
         }
     }
+    protected GLenum getGLBlendFunction(HipBlendFunction func)
+    {
+        return mixin("GL_"~func.stringof);
+    }
+    protected GLenum getGLBlendEquation(HipBlendEquation eq)
+    {
+        final switch(eq) with (HipBlendEquation)
+        {
+            case ADD:
+                return GL_FUNC_ADD;
+            case SUBTRACT:
+                return GL_FUNC_SUBTRACT;
+            case REVERSE_SUBTRACT:
+                return GL_FUNC_REVERSE_SUBTRACT;
+            case MIN:
+                return GL_MIN;
+            case MAX:
+                return GL_MAX;
+        }
+    }
 
-    public void drawVertices(RendererMode mode, uint count, uint offset)
+    public void drawVertices(HipRendererMode mode, uint count, uint offset)
     {
         glDrawArrays(getGLRendererMode(mode), offset, count);
     }
-    public void drawIndexed(RendererMode mode, uint indicesSize, uint offset = 0)
+    public void drawIndexed(HipRendererMode mode, uint indicesSize, uint offset = 0)
     {
         glDrawElements(getGLRendererMode(mode), indicesSize, GL_UNSIGNED_INT, cast(void*)offset);
     }
@@ -386,6 +408,26 @@ class Hip_GL3Renderer : RendererImpl
         glBufferData(GL_ARRAY_BUFFER, pixel.sizeof, pixel.ptr, GL_DYNAMIC_DRAW);
         glDrawArrays(GL_POINT, 0, 1);
         
+    }
+
+    public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst)
+    {
+        if(!isGLBlendEnabled)
+        {
+            glEnable(GL_BLEND);
+            isGLBlendEnabled = true;
+        }
+        glBlendFunc(getGLBlendFunction(src), getGLBlendFunction(dst));
+    }
+
+    public void setBlendingEquation(HipBlendEquation eq)
+    {
+        if(!isGLBlendEnabled)
+        {
+            glEnable(GL_BLEND);
+            isGLBlendEnabled = true;
+        }
+        glBlendEquation(getGLBlendEquation(eq));
     }
 
     public void dispose()

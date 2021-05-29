@@ -52,7 +52,7 @@ private void Hip_D3D11_Dispose()
 }
 
 
-class Hip_D3D11_Renderer : RendererImpl
+class Hip_D3D11_Renderer : IHipRendererImpl
 {
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
@@ -196,9 +196,9 @@ class Hip_D3D11_Renderer : RendererImpl
     }
 
 
-    public void setMode(RendererMode mode)
+    public void setMode(HipRendererMode mode)
     {
-        if(mode == RendererMode.TRIANGLES)
+        if(mode == HipRendererMode.TRIANGLES)
         {
             _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         }
@@ -238,11 +238,11 @@ class Hip_D3D11_Renderer : RendererImpl
         _hip_d3d_swapChain.Present(0,0);
     }
 
-    public void drawVertices(RendererMode mode, uint count, uint offset = 0)
+    public void drawVertices(HipRendererMode mode, uint count, uint offset = 0)
     {
         _hip_d3d_context.Draw(count, offset);
     }
-    public void drawIndexed(RendererMode mode, uint indicesSize, uint offset=0)
+    public void drawIndexed(HipRendererMode mode, uint indicesSize, uint offset=0)
     {
         _hip_d3d_context.DrawIndexed(indicesSize, offset, 0);
     }
