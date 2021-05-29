@@ -37,7 +37,7 @@ private SDL_Window* createSDL_GL_Window()
 *   the structure could be changed at any time for supporting a new platform
 *   that SDL does not support
 */
-public class Hip_SDL_Renderer : RendererImpl
+public class Hip_SDL_Renderer : IHipRendererImpl
 {
     private Viewport currentViewport = null;
     private Viewport mainViewport = null;

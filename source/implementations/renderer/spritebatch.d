@@ -1,4 +1,6 @@
 module implementations.renderer.spritebatch;
+import implementations.renderer.renderer;
+import implementations.renderer.shader;
 
 class SpriteBatch
 {
@@ -22,5 +24,12 @@ class SpriteBatch
             indices[i + 5] = 0+offset;
             offset+= 4; //Offset calculated for each quad
         }
+    }
+
+
+    static Shader getShaderForSpriteBatch()
+    {
+        Shader s = HipRenderer.newShader(false);
+        s.setVertexAttribute
     }
 }

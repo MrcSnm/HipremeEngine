@@ -65,7 +65,7 @@ extern(C)int SDL_main()
 {
 	initEngine(true);
 	HipRendererConfig cfg;
-	HipRenderer.init(new Hip_GL3Renderer(), &cfg);
+	HipRenderer.init(new Hip_D3D11_Renderer(), &cfg);
 	import graphics.image;
 	import graphics.g2d.sprite;
 	Texture t = new Texture(Assets.Graphics.Sprites.teste_bmp);

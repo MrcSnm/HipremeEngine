@@ -1,3 +1,10 @@
+/**
+*    This file provides the essential information for specifying vertices
+*   for the target 3D API. Its Attributes/Layout, some preset layouts.
+*    The workflow for vertices are entirely based on OpenGL, using VAOs and VBOs
+*
+*/
+
 module implementations.renderer.vertex;
 public import implementations.renderer.backend.gl.vertex;
 
@@ -14,6 +21,12 @@ enum InternalVertexAttributeFlags
     TEXTURE_COORDS = 1 << InternalVertexAttribute.TEXTURE_COORDS,
     COLOR = 1 << InternalVertexAttribute.COLOR,
 }
+enum HipBufferUsage
+{
+    DYNAMIC,
+    STATIC,
+    DEFAULT
+}
 
 struct VertexAttributeInfo
 {
@@ -25,10 +38,22 @@ struct VertexAttributeInfo
     string name;
 }
 
+
+interface IVertexBufferImpl
+{
+    void bind();
+    void unbind();
+    void setData(ulong size, const void* data);
+    void updateData(int offset, ulong size, const void* data);
+}
+interface IIndexBufferImpl : IVertexBufferImpl{}
+interface IVertexArrayImpl : IVertexBufferImpl{}
+
+
 /**
 *   Binds the (almost)C api on a D struct
 */
-struct VertexArrayObject
+class HipVertexArrayObject
 {
     uint ID;
     uint VBO;
@@ -37,13 +62,14 @@ struct VertexArrayObject
     uint index;
     uint offset;
     uint stride;
-    VertexAttributeInfo[] infos;
-
     bool isStatic;
+    VertexAttributeInfo[] infos;
+    
 
-    public static VertexArrayObject create(bool isStatic)
+
+    public static HipVertexArrayObject create(bool isStatic)
     {
-        VertexArrayObject ret;
+        HipVertexArrayObject ret;
         ret.ID = createVertexArrayObject();
         ret.VBO = createVertexBufferObject();
         ret.isStatic = isStatic;
@@ -74,9 +100,7 @@ struct VertexArrayObject
     void sendAttributes()
     {
         foreach(info; infos)
-        {
             setVertexAttribute(info, stride);
-        }
     }
 
     void use()
@@ -99,9 +123,9 @@ struct VertexArrayObject
     }
 }
 
-VertexArrayObject getXYZ_RGBA_ST_VAO(bool isStatic)
+HipVertexArrayObject getXYZ_RGBA_ST_VAO(bool isStatic)
 {
-    VertexArrayObject obj = VertexArrayObject.create(isStatic);
+    VertexArrayObject obj = HipVertexArrayObject.create(isStatic);
     with(AttributeType)
     {
         obj.appendAttribute(3, FLOAT, float.sizeof, "position"); //X, Y, Z
@@ -111,9 +135,9 @@ VertexArrayObject getXYZ_RGBA_ST_VAO(bool isStatic)
     return obj;
 }
 
-VertexArrayObject getXYZ_RGBA_VAO(bool isStatic)
+HipVertexArrayObject getXYZ_RGBA_VAO(bool isStatic)
 {
-    VertexArrayObject obj = VertexArrayObject.create(isStatic);
+    HipVertexArrayObject obj = HipVertexArrayObject.create(isStatic);
     with(AttributeType)
     {
         obj.appendAttribute(3, FLOAT, float.sizeof, "position"); //X, Y, Z
@@ -124,9 +148,9 @@ VertexArrayObject getXYZ_RGBA_VAO(bool isStatic)
     return obj;
 }
 
-VertexArrayObject getXY_RGBA_ST_VAO(bool isStatic)
+HipVertexArrayObject getXY_RGBA_ST_VAO(bool isStatic)
 {
-    VertexArrayObject obj = VertexArrayObject.create(isStatic);
+    HipVertexArrayObject obj = HipVertexArrayObject.create(isStatic);
     with(AttributeType)
     {
         obj.appendAttribute(2, FLOAT, float.sizeof, "position"); //X, Y, Z
