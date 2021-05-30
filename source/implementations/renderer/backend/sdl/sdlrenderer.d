@@ -100,6 +100,9 @@ public class Hip_SDL_Renderer : IHipRendererImpl
         SDL_RenderCopy(renderer, (cast(Hip_SDL_Texture)t).data, clip, &dest);
     }
     public void begin(){}
+    public void setRendererMode(HipRendererMode mode){}
+    public void drawIndexed(uint count, uint offset =0){}
+    public void drawVertices(uint count, uint offset =0){}
 
     pragma(inline, true)
     public void end()

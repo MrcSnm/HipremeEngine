@@ -1,6 +1,7 @@
 module implementations.renderer.backend.gl.vertex;
 
 import bindbc.opengl;
+import std.format:format;
 import implementations.renderer.vertex;
 
 
@@ -45,13 +46,13 @@ class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
     void unbind(){glBindBuffer(GL_ARRAY_BUFFER, 0);}
     void setData(ulong size, const void* data)
     {
-        assert(size <= this.size);
+        assert(size <= this.size, format!"Tried to set data with size %s for vertex buffer with size %s"(size, this.size));
         this.bind();
         glBufferData(GL_ARRAY_BUFFER, size, data, this.usage);
     }
     void updateData(int offset, ulong size, const void* data)
     {
-        assert(size+offset <= this.size);
+        assert(size+offset <= this.size, format!"Tried to set data with size %s and offset %s for vertex buffer with size %s"(size, offset, this.size));
         this.bind();
         glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
     }

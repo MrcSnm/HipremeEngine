@@ -7,6 +7,8 @@
 
 module implementations.renderer.vertex;
 import implementations.renderer.renderer;
+import std.stdio;
+import core.stdc.stdlib:exit;
 public import implementations.renderer.backend.gl.vertex;
 
 enum InternalVertexAttribute
@@ -71,7 +73,8 @@ interface IHipVertexArrayImpl
 
 
 /**
-*   Binds the (almost)C api on a D struct
+*   For using this class, you must first define the vertex layout for after that, create the vertex
+*   buffer and/or the index buffer.
 */
 class HipVertexArrayObject
 {
@@ -85,13 +88,24 @@ class HipVertexArrayObject
     {
         this.VAO = HipRenderer.createVertexArray();
     }
+    /**
+    *   Creates and binds an index buffer
+    * The EBO is not unbound at the end of this process
+    */
     void createIndexBuffer(uint count, HipBufferUsage usage)
     {
         this.EBO = HipRenderer.createIndexBuffer(count, usage);
+        this.EBO.bind();
     }
-    void createVertexBuffer(ulong size, HipBufferUsage usage)
+    /**
+    * Creates and binds a vertex buffer.
+    * The vertex buffer size is dependant on the attributes that were appended to this vertex array.
+    * The VBO is not unbound at the end of this process
+    */
+    void createVertexBuffer(uint count, HipBufferUsage usage)
     {
-        this.VBO = HipRenderer.createVertexBuffer(size, usage);
+        this.VBO = HipRenderer.createVertexBuffer(count*this.stride, usage);
+        this.VBO.bind();
     }
     /**
     *   This function creates an attribute information,
@@ -112,31 +126,53 @@ class HipVertexArrayObject
         return this;
     }
     /**
-    *   Iterates the VAO list and set each attribute info active
+    *   Sets the attribute infos that were appended to this object. This function must only be called
+    *   after binding/creating a VBO, or it will fail
     */
     void sendAttributes()
     {
         foreach(info; infos)
+        {
             this.VAO.setAttributeInfo(info, stride);
+            writeln(info);
+        }
+        HipRenderer.exitOnError();
+
     }
 
     void bind()
     {
         this.VAO.bind();
+        HipRenderer.exitOnError();
     }
     void unbind()
     {
         this.VAO.unbind();
+        HipRenderer.exitOnError();
     }
 
-    void setVBOData(ulong dataSize, const void* data)
+    void setVBOData(uint count, const void* data)
     {
-        this.bind();
-        this.VBO.setData(dataSize, data);
+        this.bind(); 
+        this.VBO.setData(count*this.stride, data);
+        HipRenderer.exitOnError();
     }
     void setEBOData(uint count, const uint* data)
     {
+        this.bind();
         this.EBO.setData(count, data);
+        HipRenderer.exitOnError();
+    }
+
+    static HipVertexArrayObject getXYZ_RGBA_VAO()
+    {
+        HipVertexArrayObject obj = new HipVertexArrayObject();
+        with(HipAttributeType)
+        {
+            obj.appendAttribute(3, FLOAT, float.sizeof, "position") //X, Y, Z
+                .appendAttribute(4, FLOAT, float.sizeof, "color"); //R, G, B, A
+        }
+        return obj;
     }
 
     static HipVertexArrayObject getXYZ_RGBA_ST_VAO()
@@ -146,20 +182,7 @@ class HipVertexArrayObject
         {
             obj.appendAttribute(3, FLOAT, float.sizeof, "position") //X, Y, Z
                 .appendAttribute(4, FLOAT, float.sizeof, "color") //R, G, B, A
-                .sendAttributes();
-        }
-        return obj;
-    }
-
-    static HipVertexArrayObject getXYZ_RGBA_VAO()
-    {
-        HipVertexArrayObject obj = new HipVertexArrayObject();
-        with(HipAttributeType)
-        {
-            obj.appendAttribute(3, FLOAT, float.sizeof, "position") //X, Y, Z
-                .appendAttribute(4, FLOAT, float.sizeof, "color") //R, G, B, A
-                .appendAttribute(2, FLOAT, float.sizeof, "tex_st") //S, T (Texture coordinates)
-                .sendAttributes();
+                .appendAttribute(2, FLOAT, float.sizeof, "tex_st"); //S, T (Texture coordinates)
         }
         return obj;
     }
@@ -173,7 +196,6 @@ class HipVertexArrayObject
             obj.appendAttribute(4, FLOAT, float.sizeof, "color"); //R, G, B, A
             obj.appendAttribute(2, FLOAT, float.sizeof, "tex_st"); //S, T (Texture coordinates)
         }
-        obj.sendAttributes();
         return obj;
     }
 }

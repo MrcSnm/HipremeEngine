@@ -11,7 +11,7 @@ class Hip_GL3_FragmentShader : FragmentShader
     {
         return q{
             #version 330 core
-            uniform vec4 globalColor;
+            // uniform vec4 globalColor;
 
             in vec4 vertexColor;
             in vec2 tex_uv;
@@ -19,7 +19,7 @@ class Hip_GL3_FragmentShader : FragmentShader
 
             void main()
             {
-                gl_FragColor = texture(tex1, tex_uv)*globalColor*vertexColor;
+                gl_FragColor = vertexColor*texture(tex1, tex_uv);
             }
         };
     }

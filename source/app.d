@@ -73,9 +73,29 @@ extern(C)int SDL_main()
 	Sprite s = new Sprite(t);
 	SDL_Rect clip = SDL_Rect(0,0,t.width/2,t.height);
 
+	HipVertexArrayObject obj = HipVertexArrayObject.getXYZ_RGBA_ST_VAO();
+	obj.createVertexBuffer(4, HipBufferUsage.DYNAMIC);
+	obj.createIndexBuffer(6, HipBufferUsage.STATIC);
+
+	const float[] vbo = [
+//		 X    Y   Z      R  G   B   A   S  T
+		0.0, 0.0, 0.0, 1.0,1.0,1.0,1.0, 0.0,0.0, //TLeft
+		0.0, 200, 0.0, 1.0,1.0,1.0,1.0, 0.0,1.0, //BLeft
+		200, 200, 0.0, 1.0,1.0,1.0,1.0, 1.0,1.0,//BRight 
+		200, 0, 0.0, 1.0,1.0,1.0,1.0,   1.0,0.0 	//TRight
+	];
+	const uint[] ebo = [0, 1, 2, 2, 3, 0];
+	obj.setVBOData(4, vbo.ptr);
+	obj.setEBOData(cast(uint)ebo.length, ebo.ptr);
+	obj.sendAttributes();
+
+	import implementations.renderer.backend.gl.vertex;
+
+	// writeln((cast(Hip_GL3_VertexBufferObject)obj.VBO).vbo);
+	// writeln((cast(Hip_GL3_IndexBufferObject)obj.EBO).ebo);
+	
 	
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
-
 	Sound_AudioInfo info;
 		
 	info.channels=1;
@@ -147,11 +167,18 @@ extern(C)int SDL_main()
 
 		// Start the Dear ImGui frame
 		HipRenderer.currentShader.setVar("proj", Matrix4.orthoLH(0, 800, 600, 0, 0, 1));
+
+		// float[] t = [1.0, 1.0, 1.0, 1.0];
+		// HipRenderer.currentShader.setVar("gloablColor", t);
 		HipRenderer.begin();
 		HipRenderer.clear(255,0,0,255);
 		// HipRenderer.drawLine(0, 0, 1, 1);
-		HipRenderer.drawRect(0,0,0,0);
-		HipRenderer.drawTriangle(0,0,0,0,0,0);
+		// HipRenderer.drawRect(0,0,0,0);
+		// HipRenderer.drawTriangle(0,0,0,0,0,0);
+		obj.bind();
+		t.bind();
+
+		HipRenderer.drawIndexed(HipRendererMode.TRIANGLES, 6u);
 		// s.draw();
         HipRenderer.end();
         // DI.begin();

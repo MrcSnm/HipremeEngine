@@ -47,6 +47,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     SDL_Renderer* renderer;
     Shader currentShader;
     protected static bool isGLBlendEnabled = false;
+    protected static GLenum mode;
 
     /**
     *   Does not uses EBO
@@ -108,7 +109,7 @@ class Hip_GL3Renderer : IHipRendererImpl
         glClearColor(r/255, g/255, b/255, a/255);
     }
 
-    public IHipVertexArrayImpl  createVertexArray()
+    public IHipVertexArrayImpl createVertexArray()
     {
         return new Hip_GL3_VertexArrayObject();
     }
@@ -116,7 +117,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         return new Hip_GL3_VertexBufferObject(size, usage);
     }
-    public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage)
+    public IHipIndexBufferImpl createIndexBuffer(uint count, HipBufferUsage usage)
     {
         return new Hip_GL3_IndexBufferObject(count, usage);
     }
@@ -357,14 +358,17 @@ class Hip_GL3Renderer : IHipRendererImpl
                 return GL_MAX;
         }
     }
-
-    public void drawVertices(HipRendererMode mode, uint count, uint offset)
+    public void setRendererMode(HipRendererMode mode)
     {
-        glDrawArrays(getGLRendererMode(mode), offset, count);
+        this.mode = getGLRendererMode(mode);
     }
-    public void drawIndexed(HipRendererMode mode, uint indicesSize, uint offset = 0)
+    public void drawVertices(uint count, uint offset)
     {
-        glDrawElements(getGLRendererMode(mode), indicesSize, GL_UNSIGNED_INT, cast(void*)offset);
+        glDrawArrays(this.mode, offset, count);
+    }
+    public void drawIndexed(uint indicesSize, uint offset = 0)
+    {
+        glDrawElements(this.mode, indicesSize, GL_UNSIGNED_INT, cast(void*)offset);
     }
 
 
