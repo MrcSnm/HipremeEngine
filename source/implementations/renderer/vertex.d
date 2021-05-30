@@ -6,6 +6,7 @@
 */
 
 module implementations.renderer.vertex;
+import implementations.renderer.renderer;
 public import implementations.renderer.backend.gl.vertex;
 
 enum InternalVertexAttribute
@@ -28,26 +29,45 @@ enum HipBufferUsage
     DEFAULT
 }
 
-struct VertexAttributeInfo
+enum HipAttributeType
+{
+    FLOAT,
+    INT,
+    BOOL
+}
+
+
+struct HipVertexAttributeInfo
 {
     uint index;
-    uint length;
+    uint count;
     uint offset;
     uint typeSize;
-    int valueType;
+    HipAttributeType valueType;
     string name;
 }
 
 
-interface IVertexBufferImpl
+interface IHipVertexBufferImpl
 {
     void bind();
     void unbind();
     void setData(ulong size, const void* data);
     void updateData(int offset, ulong size, const void* data);
 }
-interface IIndexBufferImpl : IVertexBufferImpl{}
-interface IVertexArrayImpl : IVertexBufferImpl{}
+interface IHipIndexBufferImpl
+{
+    void bind();
+    void unbind();
+    void setData(uint count, const uint* data);
+    void updateData(int offset, uint count, const uint* data);
+}
+interface IHipVertexArrayImpl
+{
+    void bind();
+    void unbind();
+    void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride);
+}
 
 
 /**
@@ -55,108 +75,105 @@ interface IVertexArrayImpl : IVertexBufferImpl{}
 */
 class HipVertexArrayObject
 {
-    uint ID;
-    uint VBO;
-    uint EBO;
-
-    uint index;
-    uint offset;
+    IHipVertexArrayImpl  VAO;
+    IHipVertexBufferImpl VBO;
+    IHipIndexBufferImpl  EBO;
     uint stride;
-    bool isStatic;
-    VertexAttributeInfo[] infos;
+    HipVertexAttributeInfo[] infos;
     
-
-
-    public static HipVertexArrayObject create(bool isStatic)
+    this()
     {
-        HipVertexArrayObject ret;
-        ret.ID = createVertexArrayObject();
-        ret.VBO = createVertexBufferObject();
-        ret.isStatic = isStatic;
-        return ret;
+        this.VAO = HipRenderer.createVertexArray();
     }
-
+    void createIndexBuffer(uint count, HipBufferUsage usage)
+    {
+        this.EBO = HipRenderer.createIndexBuffer(count, usage);
+    }
+    void createVertexBuffer(ulong size, HipBufferUsage usage)
+    {
+        this.VBO = HipRenderer.createVertexBuffer(size, usage);
+    }
     /**
     *   This function creates an attribute information,
     * for later sending it(it is necessary as the stride needs to be recalculated)
     */
-    void appendAttribute(uint length, int type, uint typeSize, string infoName)
+    HipVertexArrayObject appendAttribute(uint count, HipAttributeType valueType, uint typeSize, string infoName)
     {
-        VertexAttributeInfo info;
+        HipVertexAttributeInfo info;
         info.name = infoName;
-        info.length = length;
-        info.valueType = type;
+        info.count = count;
+        info.valueType = valueType;
         info.typeSize = typeSize;
-        info.index = index;
+        info.index = cast(uint)infos.length;
         //It actually is the `last stride`, which is the same as the offset is the total current stride
         info.offset = stride;
         infos~= info;
-        index++;
-        stride+= length*typeSize;
+        stride+= count*typeSize;
+        return this;
     }
     /**
-    *   Changes by implementation
+    *   Iterates the VAO list and set each attribute info active
     */
     void sendAttributes()
     {
         foreach(info; infos)
-            setVertexAttribute(info, stride);
+            this.VAO.setAttributeInfo(info, stride);
     }
 
-    void use()
+    void bind()
     {
-        useVertexArrayObject(this);
+        this.VAO.bind();
     }
-
-    void setData(void* data, size_t dataSize)
+    void unbind()
     {
-        use();
-        setVertexArrayObjectData(this, data, dataSize);
+        this.VAO.unbind();
     }
 
-
-    void clean()
+    void setVBOData(ulong dataSize, const void* data)
     {
-        deleteVertexArrayObject(this);
-        deleteVertexBufferObject(this);
-        deleteElementBufferObject(this);
+        this.bind();
+        this.VBO.setData(dataSize, data);
     }
-}
-
-HipVertexArrayObject getXYZ_RGBA_ST_VAO(bool isStatic)
-{
-    VertexArrayObject obj = HipVertexArrayObject.create(isStatic);
-    with(AttributeType)
+    void setEBOData(uint count, const uint* data)
     {
-        obj.appendAttribute(3, FLOAT, float.sizeof, "position"); //X, Y, Z
-        obj.appendAttribute(4, FLOAT, float.sizeof, "color"); //R, G, B, A
+        this.EBO.setData(count, data);
     }
-    obj.sendAttributes();
-    return obj;
-}
 
-HipVertexArrayObject getXYZ_RGBA_VAO(bool isStatic)
-{
-    HipVertexArrayObject obj = HipVertexArrayObject.create(isStatic);
-    with(AttributeType)
+    static HipVertexArrayObject getXYZ_RGBA_ST_VAO()
     {
-        obj.appendAttribute(3, FLOAT, float.sizeof, "position"); //X, Y, Z
-        obj.appendAttribute(4, FLOAT, float.sizeof, "color"); //R, G, B, A
-        obj.appendAttribute(2, FLOAT, float.sizeof, "tex_st"); //S, T (Texture coordinates)
+        HipVertexArrayObject obj = new HipVertexArrayObject();
+        with(HipAttributeType)
+        {
+            obj.appendAttribute(3, FLOAT, float.sizeof, "position") //X, Y, Z
+                .appendAttribute(4, FLOAT, float.sizeof, "color") //R, G, B, A
+                .sendAttributes();
+        }
+        return obj;
     }
-    obj.sendAttributes();
-    return obj;
-}
 
-HipVertexArrayObject getXY_RGBA_ST_VAO(bool isStatic)
-{
-    HipVertexArrayObject obj = HipVertexArrayObject.create(isStatic);
-    with(AttributeType)
+    static HipVertexArrayObject getXYZ_RGBA_VAO()
     {
-        obj.appendAttribute(2, FLOAT, float.sizeof, "position"); //X, Y, Z
-        obj.appendAttribute(4, FLOAT, float.sizeof, "color"); //R, G, B, A
-        obj.appendAttribute(2, FLOAT, float.sizeof, "tex_st"); //S, T (Texture coordinates)
+        HipVertexArrayObject obj = new HipVertexArrayObject();
+        with(HipAttributeType)
+        {
+            obj.appendAttribute(3, FLOAT, float.sizeof, "position") //X, Y, Z
+                .appendAttribute(4, FLOAT, float.sizeof, "color") //R, G, B, A
+                .appendAttribute(2, FLOAT, float.sizeof, "tex_st") //S, T (Texture coordinates)
+                .sendAttributes();
+        }
+        return obj;
     }
-    obj.sendAttributes();
-    return obj;
+
+    static HipVertexArrayObject getXY_RGBA_ST_VAO()
+    {
+        HipVertexArrayObject obj = new HipVertexArrayObject();
+        with(HipAttributeType)
+        {
+            obj.appendAttribute(2, FLOAT, float.sizeof, "position"); //X, Y, Z
+            obj.appendAttribute(4, FLOAT, float.sizeof, "color"); //R, G, B, A
+            obj.appendAttribute(2, FLOAT, float.sizeof, "tex_st"); //S, T (Texture coordinates)
+        }
+        obj.sendAttributes();
+        return obj;
+    }
 }

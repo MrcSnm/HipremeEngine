@@ -41,7 +41,7 @@ private SDL_Window* createSDL_GL_Window()
 *   as I don't understand how to implement it right now, I'll mantain those functions for having
 *   static access to drawing
 */
-class Hip_GL3Renderer : RendererImpl
+class Hip_GL3Renderer : IHipRendererImpl
 {
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -94,7 +94,7 @@ class Hip_GL3Renderer : RendererImpl
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rectangleEBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, rectangleIndices.sizeof, &rectangleIndices, GL_DYNAMIC_DRAW);
 
-        HipRenderer.rendererType = RendererType.GL3;
+        HipRenderer.rendererType = HipRendererType.GL3;
         return true;
     }
 
@@ -106,6 +106,19 @@ class Hip_GL3Renderer : RendererImpl
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         glClearColor(r/255, g/255, b/255, a/255);
+    }
+
+    public IHipVertexArrayImpl  createVertexArray()
+    {
+        return new Hip_GL3_VertexArrayObject();
+    }
+    public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
+    {
+        return new Hip_GL3_VertexBufferObject(size, usage);
+    }
+    public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage)
+    {
+        return new Hip_GL3_IndexBufferObject(count, usage);
     }
 
     public void setViewport(Viewport v)
@@ -296,7 +309,37 @@ class Hip_GL3Renderer : RendererImpl
     }
     protected GLenum getGLBlendFunction(HipBlendFunction func)
     {
-        return mixin("GL_"~func.stringof);
+        final switch(func) with(HipBlendFunction)
+        {
+            case  ZERO:
+                return GL_ZERO;
+            case  ONE:
+                return GL_ONE;
+            case  SRC_COLOR:
+                return GL_SRC_COLOR;
+            case  ONE_MINUS_SRC_COLOR:
+                return GL_ONE_MINUS_SRC_COLOR;
+            case  DST_COLOR:
+                return GL_DST_COLOR;
+            case  ONE_MINUS_DST_COLOR:
+                return GL_ONE_MINUS_DST_COLOR;
+            case  SRC_ALPHA:
+                return GL_SRC_ALPHA;
+            case  ONE_MINUS_SRC_ALPHA:
+                return GL_ONE_MINUS_SRC_ALPHA;
+            case  DST_ALPHA:
+                return GL_DST_ALPHA;
+            case  ONE_MINUST_DST_ALPHA:
+                return GL_ONE_MINUS_DST_ALPHA;
+            case  CONSTANT_COLOR:
+                return GL_CONSTANT_COLOR;
+            case  ONE_MINUS_CONSTANT_COLOR:
+                return GL_ONE_MINUS_CONSTANT_COLOR;
+            case  CONSTANT_ALPHA:
+                return GL_CONSTANT_ALPHA;
+            case  ONE_MINUS_CONSTANT_ALPHA:
+                return GL_ONE_MINUS_CONSTANT_ALPHA;
+        }
     }
     protected GLenum getGLBlendEquation(HipBlendEquation eq)
     {

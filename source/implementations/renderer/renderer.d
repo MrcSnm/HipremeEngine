@@ -2,6 +2,7 @@ module implementations.renderer.renderer;
 public import implementations.renderer.config;
 public import implementations.renderer.shader;
 public import implementations.renderer.texture;
+public import implementations.renderer.vertex;
 import graphics.g2d.viewport;
 import math.rect;
 import error.handler;
@@ -68,6 +69,9 @@ interface IHipRendererImpl
     public SDL_Window* createWindow();
     public SDL_Renderer* createRenderer(SDL_Window* window);
     public Shader createShader(bool createDefault = true);
+    public IHipVertexArrayImpl  createVertexArray();
+    public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage);
+    public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage);
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void setViewport(Viewport v);
     public bool setWindowMode(HipWindowMode mode);
@@ -138,6 +142,18 @@ class HipRenderer
     public static Shader newShader(bool createDefault = true)
     {
         return rendererImpl.createShader(createDefault);
+    }
+    public static IHipVertexArrayImpl  createVertexArray()
+    {
+        return rendererImpl.createVertexArray();
+    }
+    public static IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
+    {
+        return rendererImpl.createVertexBuffer(size, usage);
+    }
+    public static IHipIndexBufferImpl createIndexBuffer(uint count, HipBufferUsage usage)
+    {
+        return rendererImpl.createIndexBuffer(count, usage);
     }
     public static void setShader(Shader s)
     {

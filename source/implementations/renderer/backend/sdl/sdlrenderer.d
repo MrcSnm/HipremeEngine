@@ -68,6 +68,9 @@ public class Hip_SDL_Renderer : IHipRendererImpl
     }
 
     Shader createShader(bool createDefault = true){return null;}
+    public IHipVertexArrayImpl  createVertexArray(){return null;}
+    public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage){return null;}
+    public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage){return null;}
     public bool setWindowMode(HipWindowMode mode){return false;}
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {

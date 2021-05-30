@@ -175,6 +175,18 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         }
         return false;
     }
+    public IHipVertexArrayImpl  createVertexArray()
+    {
+        return null;
+    }
+    public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
+    {
+        return null;
+    }
+    public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage)
+    {
+        return null;
+    }
 
     public Shader createShader(bool createDefault)
     {
@@ -189,7 +201,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
         HipRendererConfig cfg = HipRenderer.getCurrentConfig();
         initD3D(cast(HWND)wmInfo.info.win.window, &cfg);
-        HipRenderer.rendererType = RendererType.D3D11;
+        HipRenderer.rendererType = HipRendererType.D3D11;
         // setShader(createShader(true));
 
         return ErrorHandler.stopListeningForErrors();
@@ -252,6 +264,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     public void drawRect(int x, int y, int w, int h){}
 
     void clear(){}
+    
     void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         float[4] color = [cast(float)r/255, cast(float)g/255, cast(float)b/255, cast(float)a/255];
