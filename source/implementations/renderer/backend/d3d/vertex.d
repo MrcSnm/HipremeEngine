@@ -13,6 +13,8 @@ import global.consts;
 * For reflecting OpenGL API, we create an accessor with the create functions, this is a locally
 * managed array, but you're able to get it by using the private name, for flexibility.
 */
+
+/++
 __gshared ID3D11Buffer[] _hip_d3d_arrVBO;
 __gshared ID3D11Buffer[] _hip_d3d_arrVAO;
 
@@ -21,6 +23,14 @@ enum AttributeType
     FLOAT = 0,
     INT = 1,
     BOOL = 2
+}
+
+class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
+{
+    this()
+    {
+
+    }
 }
 
 uint createVertexArrayObject()
@@ -47,7 +57,7 @@ void setVertexAttribute(ref VertexAttributeInfo info, uint stride)
     // glEnableVertexAttribArray(info.index);
 }
 
-DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref VertexAttributeInfo info)
+private DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref HipVertexAttributeInfo info)
 {
     DXGI_FORMAT ret;
     switch(info.valueType)
@@ -172,3 +182,5 @@ void deleteElementBufferObject(ref VertexArrayObject obj)
         obj.EBO = 0;
     }
 }
+
++/

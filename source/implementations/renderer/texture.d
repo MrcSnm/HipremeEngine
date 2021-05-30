@@ -45,11 +45,11 @@ class Texture
     TextureFilter min, mag;
     this(string path = "")
     {
-        if(HipRenderer.rendererType == RendererType.GL3)
+        if(HipRenderer.rendererType == HipRendererType.GL3)
             textureImpl = new Hip_GL3_Texture();
-        else if(HipRenderer.rendererType == RendererType.D3D11)
+        else if(HipRenderer.rendererType == HipRendererType.D3D11)
             textureImpl = new Hip_D3D11_Texture();
-        else if(HipRenderer.rendererType == RendererType.SDL)
+        else if(HipRenderer.rendererType == HipRendererType.SDL)
             textureImpl = new Hip_SDL_Texture();
         else    
         {

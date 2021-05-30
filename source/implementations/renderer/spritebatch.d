@@ -30,6 +30,8 @@ class SpriteBatch
     static Shader getShaderForSpriteBatch()
     {
         Shader s = HipRenderer.newShader(false);
-        s.setVertexAttribute
+        // s.setVertexAttribute
+
+        return s;
     }
 }

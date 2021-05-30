@@ -13,7 +13,7 @@ class GeometryBatch
     protected uint currentVertex;
     protected uint verticesLength;
     protected Color currentColor;
-    RendererMode mode;
+    HipRendererMode mode;
     float[] vertices;
     uint[] indices;
     
@@ -63,10 +63,10 @@ class GeometryBatch
     }
     void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
     {
-        if(mode != RendererMode.TRIANGLES)
+        if(mode != HipRendererMode.TRIANGLES)
         {
             flush();
-            mode = RendererMode.TRIANGLES;
+            mode = HipRendererMode.TRIANGLES;
         }
         triangleVertices(x1,y1,x2,y2,x3,y3);
     }
@@ -77,10 +77,10 @@ class GeometryBatch
     }
     void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
     {
-        if(mode != RendererMode.LINE_STRIP)
+        if(mode != HipRendererMode.LINE_STRIP)
         {
             flush();
-            mode = RendererMode.LINE_STRIP;
+            mode = HipRendererMode.LINE_STRIP;
         }
         triangleVertices(x1, y1, x2, y2, x3, y3);
     }
@@ -91,10 +91,10 @@ class GeometryBatch
     }
     void drawLine(int x1, int y1, int x2, int y2)
     {
-        if(mode != RendererMode.LINE)
+        if(mode != HipRendererMode.LINE)
         {
             flush();
-            mode = RendererMode.LINE;
+            mode = HipRendererMode.LINE;
         }
         addVertex(x1, y1, 0);
         addVertex(x2, y2, 0);
@@ -110,10 +110,10 @@ class GeometryBatch
 
     void drawPixel(int x, int y)
     {
-        if(mode != RendererMode.POINT)
+        if(mode != HipRendererMode.POINT)
         {
             flush();
-            mode = RendererMode.POINT;
+            mode = HipRendererMode.POINT;
         }
         addVertex(x, y, 0);
         addIndex(verticesLength);
@@ -154,10 +154,10 @@ class GeometryBatch
 
     void drawRectangle(int x, int y, int w, int h)
     {
-        if(mode != RendererMode.TRIANGLES)
+        if(mode != HipRendererMode.TRIANGLES)
         {
             flush();
-            mode = RendererMode.TRIANGLES;
+            mode = HipRendererMode.TRIANGLES;
         }
         rectangleVertices(x,y,w,h);
     }
@@ -169,10 +169,10 @@ class GeometryBatch
 
     void fillRectangle(int x, int y, int w, int h)
     {
-        if(mode != RendererMode.LINE_STRIP)
+        if(mode != HipRendererMode.LINE_STRIP)
         {
             flush();
-            mode = RendererMode.LINE_STRIP;
+            mode = HipRendererMode.LINE_STRIP;
         }
         rectangleVertices(x,y,w,h);
     }
