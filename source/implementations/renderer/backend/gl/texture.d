@@ -46,6 +46,7 @@ class Hip_GL3_Texture : ITexture
 
     void bind()
     {
+        // glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
     }
     void setWrapMode(TextureWrapMode mode)

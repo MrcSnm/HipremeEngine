@@ -9,7 +9,7 @@ import error.handler;
 import bindbc.sdl;
 import bindbc.opengl;
 import std.stdio:writeln;
-
+import core.stdc.stdlib:exit;
 
 public import implementations.renderer.backend.gl.renderer;
 
@@ -63,6 +63,7 @@ enum HipBlendEquation
     MAX
 }
 
+
 interface IHipRendererImpl
 {
     public bool init(SDL_Window* window, SDL_Renderer* renderer);
@@ -77,6 +78,9 @@ interface IHipRendererImpl
     public bool setWindowMode(HipWindowMode mode);
     public bool hasErrorOccurred(out string err, string line = __FILE__, int line =__LINE__);
     public void begin();
+    public void setRendererMode(HipRendererMode mode);
+    public void drawIndexed(uint count, uint offset = 0);
+    public void drawVertices(uint count, uint offset = 0);
     public void end();
     public void clear();
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
@@ -120,6 +124,8 @@ class HipRenderer
         mainViewport = new Viewport(0,0,w, h);
         setViewport(mainViewport);
         setShader(rendererImpl.createShader(true));
+        HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+
 
         return ErrorHandler.stopListeningForErrors();
     }
@@ -165,9 +171,46 @@ class HipRenderer
         return rendererImpl.hasErrorOccurred(err, file, line);
     }
 
+    public static void exitOnError(string file = __FILE__, int line = __LINE__)
+    {
+        string err;
+        if(hasErrorOccurred(err, file, line))
+        {
+            writeln(err);
+            exit(-1);
+        }
+    }
+
     public static void begin()
     {
         rendererImpl.begin();
+    }
+
+    public static void setRendererMode(HipRendererMode mode)
+    {
+        rendererImpl.setRendererMode(mode);
+        HipRenderer.exitOnError();
+    }
+
+    public static void drawIndexed(uint count, uint offset = 0)
+    {
+        rendererImpl.drawIndexed(count, offset);
+        HipRenderer.exitOnError();
+    }
+    public static void drawIndexed(HipRendererMode mode, uint count, uint offset = 0)
+    {
+        HipRenderer.setRendererMode(mode);
+        HipRenderer.drawIndexed(count, offset);
+    }
+    public static void drawVertices(uint count, uint offset = 0)
+    {
+        rendererImpl.drawVertices(count, offset);
+        HipRenderer.exitOnError();
+    }
+    public static void drawVertices(HipRendererMode mode, uint count, uint offset = 0)
+    {
+        rendererImpl.setRendererMode(mode);
+        rendererImpl.drawVertices(count, offset);
     }
 
     public static void end()

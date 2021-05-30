@@ -208,7 +208,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     }
 
 
-    public void setMode(HipRendererMode mode)
+    public void setRendererMode(HipRendererMode mode)
     {
         if(mode == HipRendererMode.TRIANGLES)
         {
@@ -250,11 +250,11 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         _hip_d3d_swapChain.Present(0,0);
     }
 
-    public void drawVertices(HipRendererMode mode, uint count, uint offset = 0)
+    public void drawVertices(uint count, uint offset = 0)
     {
         _hip_d3d_context.Draw(count, offset);
     }
-    public void drawIndexed(HipRendererMode mode, uint indicesSize, uint offset=0)
+    public void drawIndexed(uint indicesSize, uint offset=0)
     {
         _hip_d3d_context.DrawIndexed(indicesSize, offset, 0);
     }
