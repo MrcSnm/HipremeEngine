@@ -1,5 +1,6 @@
 module implementations.renderer.backend.gl.shader;
 import implementations.renderer.shader;
+import implementations.renderer.renderer;
 import std.conv:to;
 import error.handler;
 import bindbc.opengl;
@@ -11,7 +12,7 @@ class Hip_GL3_FragmentShader : FragmentShader
     {
         return q{
             #version 330 core
-            // uniform vec4 globalColor;
+            uniform vec4 globalColor;
 
             in vec4 vertexColor;
             in vec2 tex_uv;
@@ -19,7 +20,7 @@ class Hip_GL3_FragmentShader : FragmentShader
 
             void main()
             {
-                gl_FragColor = vertexColor*texture(tex1, tex_uv);
+                gl_FragColor = vertexColor*globalColor*texture(tex1, tex_uv);
             }
         };
     }
@@ -123,6 +124,11 @@ class Hip_GL3_ShaderImpl : IShader
     int getId(ref ShaderProgram prog, string name)
     {
         int varID = glGetUniformLocation((cast(Hip_GL3_ShaderProgram)prog).program, name.ptr);
+        if(varID < 0)
+        {
+            ErrorHandler.showErrorMessage("Uniform not found",
+            "Variable named '"~name~"' does not exists in the shader");
+        }
         return varID;
     }
     void setVar(int id, int val){glUniform1i(id, val);}

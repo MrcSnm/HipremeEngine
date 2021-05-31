@@ -151,16 +151,29 @@ class HipVertexArrayObject
         HipRenderer.exitOnError();
     }
 
-    void setVBOData(uint count, const void* data)
+    void setVertices(uint count, const void* data)
     {
         this.bind(); 
         this.VBO.setData(count*this.stride, data);
         HipRenderer.exitOnError();
     }
-    void setEBOData(uint count, const uint* data)
+
+    void updateVertices(uint count, const void* data, int offset = 0)
+    {
+        this.bind();
+        this.VBO.updateData(offset, count*this.stride, data);
+        HipRenderer.exitOnError();
+    }
+    void setIndices(uint count, const uint* data)
     {
         this.bind();
         this.EBO.setData(count, data);
+        HipRenderer.exitOnError();
+    }
+    void updateIndices(uint count, uint* data, int offset = 0)
+    {
+        this.bind();
+        this.EBO.updateData(offset, count, data);
         HipRenderer.exitOnError();
     }
 

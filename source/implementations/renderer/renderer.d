@@ -164,7 +164,7 @@ class HipRenderer
     public static void setShader(Shader s)
     {
         currentShader = s;
-        s.setAsCurrent();
+        s.bind();
     }
     public static bool hasErrorOccurred(out string err, string file = __FILE__, int line =__LINE__)
     {

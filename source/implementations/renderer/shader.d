@@ -127,7 +127,7 @@ public class Shader
         shaderImpl.setVar(id, val);
     }
 
-    void setAsCurrent()
+    void bind()
     {
         shaderImpl.setCurrentShader(shaderProgram);
     }
