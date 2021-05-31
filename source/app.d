@@ -167,9 +167,7 @@ extern(C)int SDL_main()
 
 		// Start the Dear ImGui frame
 		HipRenderer.currentShader.setVar("proj", Matrix4.orthoLH(0, 800, 600, 0, 0, 1));
-
-		// float[] t = [1.0, 1.0, 1.0, 1.0];
-		// HipRenderer.currentShader.setVar("gloablColor", t);
+		HipRenderer.currentShader.setVar("globalColor", cast(float[4])[0.5f, 0.75f, 0.5f, 0.5f]);
 		HipRenderer.begin();
 		HipRenderer.clear(255,0,0,255);
 		// HipRenderer.drawLine(0, 0, 1, 1);

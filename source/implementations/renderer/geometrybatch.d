@@ -5,6 +5,10 @@ import implementations.renderer.mesh;
 import graphics.color;
 
 
+/**
+*   This class uses the vertex layout XYZ RGBA.
+*   it is meant to be a 2D API for drawing primitives
+*/
 class GeometryBatch
 {
     protected Mesh mesh;
@@ -17,9 +21,9 @@ class GeometryBatch
     float[] vertices;
     uint[] indices;
     
-    this(uint verticesSize, uint indicesSize)
+    this(uint verticesSize, uint indicesSize, Shader shader)
     {
-        mesh = new Mesh(false);
+        mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_VAO(), shader);
         vertices = new float[verticesSize];
         indices = new uint[indicesSize];
     }
@@ -29,7 +33,9 @@ class GeometryBatch
         currentShader = s;
     }
 
-    ///Adds a vertex to the structure and return its current index
+    /**
+    * Adds a vertex to the structure and return its current index.
+    */
     uint addVertex(float x, float y, float z)
     {
         alias c = currentColor;
@@ -186,8 +192,10 @@ class GeometryBatch
     {
         currentIndex = 0;
         currentVertex = 0;
+        this.mesh.updateVertices(this.vertices);
+        this.mesh.updateIndices(this.indices);
         //Vertices to render = indices.length
-        //HipRenderer.drawIndexed(indices.length, 0);
+        this.mesh.draw();
     }
 
 }
