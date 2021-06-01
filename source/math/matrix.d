@@ -119,6 +119,15 @@ struct Matrix4
 {
     float[16] values;
 
+    static Matrix4 identity()
+    {
+        return Matrix4([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ]);
+    }
     pragma(inline, true)
     static Matrix4 translation(float x, float y, float z)
     {

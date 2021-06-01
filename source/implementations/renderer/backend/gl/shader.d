@@ -24,6 +24,21 @@ class Hip_GL3_FragmentShader : FragmentShader
             }
         };
     }
+
+    override final string getGeometryBatchFragment()
+    {
+        return q{
+            #version 330 core
+
+            uniform vec4 uGlobalColor;
+            in vec4 inVertexColor;
+
+            void main()
+            {
+                gl_FragColor = inVertexColor * uGlobalColor;
+            }
+        };
+    }
 }
 class Hip_GL3_VertexShader : VertexShader
 {
@@ -47,6 +62,26 @@ class Hip_GL3_VertexShader : VertexShader
                 gl_Position = proj*vec4(position, 1.0f);
                 vertexColor = color;
                 tex_uv = texCoord;
+            }
+        };
+    }
+    override final string getGeometryBatchVertex()
+    {
+        return q{
+            #version 330 core
+            layout (location = 0) in vec3 vPosition;
+            layout (location = 1) in vec4 vColor;
+
+            uniform mat4 uProj;
+            uniform mat4 uModel;
+            uniform mat4 uView;
+            
+            out vec4 inVertexColor;
+
+            void main()
+            {
+                gl_Position = uProj*uView*uModel*vec4(vPosition, 1.0f);
+                inVertexColor = vColor;
             }
         };
     }

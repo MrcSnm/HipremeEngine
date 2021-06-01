@@ -22,6 +22,7 @@ import bindbc.cimgui;
 import math.matrix;
 import implementations.renderer.renderer;
 import implementations.renderer.backend.d3d.renderer;
+import view.testscene;
 import def.debugging.gui;
 
 
@@ -85,16 +86,11 @@ extern(C)int SDL_main()
 		200, 0, 0.0, 1.0,1.0,1.0,1.0,   1.0,0.0 	//TRight
 	];
 	const uint[] ebo = [0, 1, 2, 2, 3, 0];
-	obj.setVBOData(4, vbo.ptr);
-	obj.setEBOData(cast(uint)ebo.length, ebo.ptr);
+	obj.setVertices(4, vbo.ptr);
+	obj.setIndices(cast(uint)ebo.length, ebo.ptr);
 	obj.sendAttributes();
 
-	import implementations.renderer.backend.gl.vertex;
 
-	// writeln((cast(Hip_GL3_VertexBufferObject)obj.VBO).vbo);
-	// writeln((cast(Hip_GL3_IndexBufferObject)obj.EBO).ebo);
-	
-	
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
 	Sound_AudioInfo info;
 		
@@ -143,6 +139,11 @@ extern(C)int SDL_main()
 	float angleSum = 0.01;
 	import std.math:sin,cos;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+	Shader shader = HipRenderer.currentShader;
+
+	TestScene testscene = new TestScene();
+	testscene.init();
 	
 	while(!quit)
 	{
@@ -166,10 +167,12 @@ extern(C)int SDL_main()
 		///////////START IMGUI
 
 		// Start the Dear ImGui frame
+		shader.bind();
 		HipRenderer.currentShader.setVar("proj", Matrix4.orthoLH(0, 800, 600, 0, 0, 1));
 		HipRenderer.currentShader.setVar("globalColor", cast(float[4])[0.5f, 0.75f, 0.5f, 0.5f]);
 		HipRenderer.begin();
 		HipRenderer.clear(255,0,0,255);
+
 		// HipRenderer.drawLine(0, 0, 1, 1);
 		// HipRenderer.drawRect(0,0,0,0);
 		// HipRenderer.drawTriangle(0,0,0,0,0,0);
@@ -177,6 +180,7 @@ extern(C)int SDL_main()
 		t.bind();
 
 		HipRenderer.drawIndexed(HipRendererMode.TRIANGLES, 6u);
+		testscene.render();
 		// s.draw();
         HipRenderer.end();
         // DI.begin();

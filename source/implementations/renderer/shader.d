@@ -1,6 +1,7 @@
 module implementations.renderer.shader;
 import bindbc.opengl;
 import implementations.renderer.backend.gl.shader;
+import implementations.renderer.shader;
 import util.file;
 
 enum ShaderStatus
@@ -17,6 +18,14 @@ enum ShaderTypes
     FLOAT,
     INT
 }
+enum HipShaderPresets
+{
+    DEFAULT,
+    GEOMETRY_BATCH,
+    SPRITE_BATCH,
+    NONE
+}
+
 
 interface IShader
 {
@@ -52,10 +61,12 @@ interface IShader
 abstract class VertexShader
 {
     abstract string getDefaultVertex();
+    abstract string getGeometryBatchVertex();
 }
 abstract class FragmentShader
 {
     abstract string getDefaultFragment();
+    abstract string getGeometryBatchFragment();
 }
 
 abstract class ShaderProgram{}
@@ -72,24 +83,35 @@ public class Shader
     string fragmentShaderPath;
     string vertexShaderPath;
 
-    this(IShader shaderImpl, bool createDefault = true)
+    this(IShader shaderImpl, HipShaderPresets preset = HipShaderPresets.DEFAULT)
     {
         this.shaderImpl = shaderImpl;
         vertexShader = shaderImpl.createVertexShader();
         fragmentShader = shaderImpl.createFragmentShader();
         shaderProgram = shaderImpl.createShaderProgram();
-        if(createDefault)
+
+        ShaderStatus status = ShaderStatus.SUCCESS;
+        switch(preset) with(HipShaderPresets)
         {
-            if(loadShaders(vertexShader.getDefaultVertex(),
-            fragmentShader.getDefaultFragment()) != ShaderStatus.SUCCESS)
-            {
-                import std.stdio:writeln;
-                writeln("Failed loading shaders");
-            }
+            case SPRITE_BATCH:
+            case GEOMETRY_BATCH:
+                status = loadShaders(vertexShader.getGeometryBatchVertex(), fragmentShader.getGeometryBatchFragment());
+                break;
+            case DEFAULT:
+                status = loadShaders(vertexShader.getDefaultVertex(),fragmentShader.getDefaultFragment());
+                break;
+            case NONE:
+            default:
+                break;
+        }
+        if(status != ShaderStatus.SUCCESS)
+        {
+            import std.stdio:writeln;
+            writeln("Failed loading shaders");
         }
     }
 
-    int loadShaders(string vertexShaderSource, string fragmentShaderSource)
+    ShaderStatus loadShaders(string vertexShaderSource, string fragmentShaderSource)
     {
         if(!shaderImpl.compileShader(vertexShader, vertexShaderSource))
             return ShaderStatus.VERTEX_COMPILATION_ERROR;
@@ -101,14 +123,14 @@ public class Shader
         return ShaderStatus.SUCCESS;
     }
 
-    int loadShadersFromFiles(string vertexShaderPath, string fragmentShaderPath)
+    ShaderStatus loadShadersFromFiles(string vertexShaderPath, string fragmentShaderPath)
     {
         this.vertexShaderPath = vertexShaderPath;
         this.fragmentShaderPath = fragmentShaderPath;
         return loadShaders(getFileContent(vertexShaderPath), getFileContent(fragmentShaderPath));
     }
 
-    int reloadShaders()
+    ShaderStatus reloadShaders()
     {
         return loadShadersFromFiles(this.vertexShaderPath, this.fragmentShaderPath);
     }
