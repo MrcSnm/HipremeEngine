@@ -7,6 +7,7 @@
 
 module implementations.renderer.vertex;
 import implementations.renderer.renderer;
+import error.handler;
 import std.stdio;
 import core.stdc.stdlib:exit;
 public import implementations.renderer.backend.gl.vertex;
@@ -94,6 +95,7 @@ class HipVertexArrayObject
     */
     void createIndexBuffer(uint count, HipBufferUsage usage)
     {
+        this.bind();
         this.EBO = HipRenderer.createIndexBuffer(count, usage);
         this.EBO.bind();
     }
@@ -104,6 +106,7 @@ class HipVertexArrayObject
     */
     void createVertexBuffer(uint count, HipBufferUsage usage)
     {
+        this.bind();
         this.VBO = HipRenderer.createVertexBuffer(count*this.stride, usage);
         this.VBO.bind();
     }
@@ -153,6 +156,9 @@ class HipVertexArrayObject
 
     void setVertices(uint count, const void* data)
     {
+        if(VBO is null)
+            ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
+            
         this.bind(); 
         this.VBO.setData(count*this.stride, data);
         HipRenderer.exitOnError();
@@ -166,6 +172,8 @@ class HipVertexArrayObject
     }
     void setIndices(uint count, const uint* data)
     {
+        if(EBO is null)
+            ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");
         this.bind();
         this.EBO.setData(count, data);
         HipRenderer.exitOnError();

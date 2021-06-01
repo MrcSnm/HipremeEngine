@@ -67,7 +67,7 @@ public class Hip_SDL_Renderer : IHipRendererImpl
         return ErrorHandler.stopListeningForErrors();
     }
 
-    Shader createShader(bool createDefault = true){return null;}
+    Shader createShader(HipShaderPresets preset = HipShaderPresets.DEFAULT){return null;}
     public IHipVertexArrayImpl  createVertexArray(){return null;}
     public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage){return null;}
     public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage){return null;}

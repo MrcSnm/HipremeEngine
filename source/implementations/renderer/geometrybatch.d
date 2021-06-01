@@ -2,7 +2,9 @@ module implementations.renderer.geometrybatch;
 import implementations.renderer.renderer;
 import implementations.renderer.shader;
 import implementations.renderer.mesh;
+import math.matrix;
 import graphics.color;
+import std.stdio;
 
 
 /**
@@ -15,17 +17,32 @@ class GeometryBatch
     protected Shader currentShader;
     protected uint currentIndex;
     protected uint currentVertex;
-    protected uint verticesLength;
+    protected uint verticesCount;
     protected Color currentColor;
     HipRendererMode mode;
     float[] vertices;
     uint[] indices;
     
-    this(uint verticesSize, uint indicesSize, Shader shader)
+    this(uint verticesCount, uint indicesCount, Shader shader)
     {
         mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_VAO(), shader);
-        vertices = new float[verticesSize];
-        indices = new uint[indicesSize];
+        vertices = new float[verticesCount*7]; //XYZ, RGBA
+        indices = new uint[indicesCount];
+
+
+        indices[] = 0;
+        vertices[] = 0;
+
+        //Initialize the mesh with 0
+        mesh.createVertexBuffer(verticesCount, HipBufferUsage.DYNAMIC);
+        mesh.createIndexBuffer(indicesCount, HipBufferUsage.DYNAMIC);
+        mesh.vao.bind();
+        mesh.setIndices(indices);
+        mesh.setVertices(vertices);
+        mesh.sendAttributes();
+        this.setShader(shader);
+        this.setColor(Color(1,1,1,1));
+
     }
 
     void setShader(Shader s)
@@ -46,7 +63,7 @@ class GeometryBatch
         vertices[currentVertex++] = c.g;
         vertices[currentVertex++] = c.b;
         vertices[currentVertex++] = c.a;
-        return verticesLength++;
+        return verticesCount++;
     }
     pragma(inline, true)
     void addIndex(uint index)
@@ -63,9 +80,9 @@ class GeometryBatch
         addVertex(x1, y1, 0);
         addVertex(x2, y2, 0);
         addVertex(x3, y3, 0);
-        addIndex(verticesLength-3);
-        addIndex(verticesLength-2);
-        addIndex(verticesLength-1);
+        addIndex(verticesCount-3);
+        addIndex(verticesCount-2);
+        addIndex(verticesCount-1);
     }
     void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
     {
@@ -105,8 +122,8 @@ class GeometryBatch
         addVertex(x1, y1, 0);
         addVertex(x2, y2, 0);
 
-        addIndex(verticesLength-2);
-        addIndex(verticesLength-1);
+        addIndex(verticesCount-2);
+        addIndex(verticesCount-1);
     }
     void drawLine(int x1, int y1, int x2, int y2, Color color)
     {
@@ -122,7 +139,7 @@ class GeometryBatch
             mode = HipRendererMode.POINT;
         }
         addVertex(x, y, 0);
-        addIndex(verticesLength);
+        addIndex(verticesCount);
     }
     void drawPixel(int x, int y, Color color)
     {
@@ -190,10 +207,18 @@ class GeometryBatch
 
     void flush()
     {
+        verticesCount = 0;
         currentIndex = 0;
         currentVertex = 0;
         this.mesh.updateVertices(this.vertices);
         this.mesh.updateIndices(this.indices);
+        writeln(this.vertices);
+
+        currentShader.bind();
+        currentShader.setVar("uGlobalColor", cast(float[4])[1,1,1,1]);
+        currentShader.setVar("uProj", Matrix4.orthoLH(0, 800, 0, 600, 0.001, 1));
+        currentShader.setVar("uModel",Matrix4.identity());
+        currentShader.setVar("uView", Matrix4.identity());
         //Vertices to render = indices.length
         this.mesh.draw();
     }

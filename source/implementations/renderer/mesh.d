@@ -25,6 +25,19 @@ class Mesh
         this.vao = vao;
         this.shader = shader;
     }
+    void createVertexBuffer(uint count, HipBufferUsage usage)
+    {
+        this.vao.createVertexBuffer(count, usage);
+    }
+    void createIndexBuffer(uint count, HipBufferUsage usage)
+    {
+        this.vao.createIndexBuffer(count, usage);
+    }
+    void sendAttributes()
+    {
+        this.vao.sendAttributes();
+    }
+
     /**
     *   Use this function only for creation!
     *   inside loops, you must use updateIndices

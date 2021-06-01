@@ -5,6 +5,8 @@ class Scene
 {
     Layer[] layerStack;
 
+    public void init(){}
+
     public void pushLayer(Layer l)
     {
         layerStack~= l;
