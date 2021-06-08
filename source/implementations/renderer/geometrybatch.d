@@ -5,6 +5,7 @@ import implementations.renderer.mesh;
 import math.matrix;
 import graphics.color;
 import std.stdio;
+import std.format:format;
 
 
 /**
@@ -48,6 +49,7 @@ class GeometryBatch
     void setShader(Shader s)
     {
         currentShader = s;
+        mesh.setShader(s);
     }
 
     /**
@@ -55,6 +57,10 @@ class GeometryBatch
     */
     uint addVertex(float x, float y, float z)
     {
+        assert(verticesCount+1 <= this.vertices.length/7,
+            format!"Too many vertices (%s) for a buffer of size %s"(verticesCount+1, this.vertices.length/7)
+        );
+
         alias c = currentColor;
         vertices[currentVertex++] = x;
         vertices[currentVertex++] = y;
@@ -63,6 +69,7 @@ class GeometryBatch
         vertices[currentVertex++] = c.g;
         vertices[currentVertex++] = c.b;
         vertices[currentVertex++] = c.a;
+
         return verticesCount++;
     }
     pragma(inline, true)
@@ -212,7 +219,7 @@ class GeometryBatch
         currentVertex = 0;
         this.mesh.updateVertices(this.vertices);
         this.mesh.updateIndices(this.indices);
-        writeln(this.vertices);
+        // writeln(this.vertices);
 
         currentShader.bind();
         currentShader.setVar("uGlobalColor", cast(float[4])[1,1,1,1]);

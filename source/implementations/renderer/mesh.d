@@ -54,7 +54,7 @@ class Mesh
     public void setVertices(ref float[] vertices)
     {
         this.vertices = vertices;
-        this.vao.setVertices(cast(uint)vertices.length/this.vao.stride, vertices.ptr);
+        this.vao.setVertices(cast(uint)vertices.length/this.vao.dataCount, vertices.ptr);
     }
     public void updateIndices(ref uint[] indices)
     {
@@ -65,7 +65,7 @@ class Mesh
     public void updateVertices(ref float[] vertices)
     {
         this.vertices = vertices;
-        this.vao.updateVertices(cast(uint)vertices.length/this.vao.stride, vertices.ptr);
+        this.vao.updateVertices(cast(uint)vertices.length/this.vao.dataCount, vertices.ptr);
     }
     public void setShader(Shader s)
     {

@@ -82,7 +82,10 @@ class HipVertexArrayObject
     IHipVertexArrayImpl  VAO;
     IHipVertexBufferImpl VBO;
     IHipIndexBufferImpl  EBO;
+    ///Accumulated size of the vertex data
     uint stride;
+    ///How many data slots it uses, for instance, vec3 will count +3
+    uint dataCount;
     HipVertexAttributeInfo[] infos;
     
     this()
@@ -126,6 +129,7 @@ class HipVertexArrayObject
         info.offset = stride;
         infos~= info;
         stride+= count*typeSize;
+        dataCount+= count;
         return this;
     }
     /**
