@@ -167,19 +167,19 @@ extern(C)int SDL_main()
 		///////////START IMGUI
 
 		// Start the Dear ImGui frame
-		shader.bind();
-		HipRenderer.currentShader.setVar("proj", Matrix4.orthoLH(0, 800, 600, 0, 0, 1));
-		HipRenderer.currentShader.setVar("globalColor", cast(float[4])[0.5f, 0.75f, 0.5f, 0.5f]);
+		// shader.bind();
+		// HipRenderer.currentShader.setVar("proj", Matrix4.orthoLH(0, 800, 600, 0, 0, 1));
+		// HipRenderer.currentShader.setVar("globalColor", cast(float[4])[0.5f, 0.75f, 0.5f, 0.5f]);
 		HipRenderer.begin();
 		HipRenderer.clear(255,0,0,255);
 
 		// HipRenderer.drawLine(0, 0, 1, 1);
 		// HipRenderer.drawRect(0,0,0,0);
 		// HipRenderer.drawTriangle(0,0,0,0,0,0);
-		obj.bind();
-		t.bind();
+		// obj.bind();
+		// t.bind();
 
-		HipRenderer.drawIndexed(HipRendererMode.TRIANGLES, 6u);
+		// HipRenderer.drawIndexed(HipRendererMode.TRIANGLES, 6u);
 		testscene.render();
 		// s.draw();
         HipRenderer.end();
