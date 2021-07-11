@@ -62,11 +62,13 @@ abstract class VertexShader
 {
     abstract string getDefaultVertex();
     abstract string getGeometryBatchVertex();
+    abstract string getSpriteBatchVertex();
 }
 abstract class FragmentShader
 {
     abstract string getDefaultFragment();
     abstract string getGeometryBatchFragment();
+    abstract string getSpriteBatchFragment();
 }
 
 abstract class ShaderProgram{}

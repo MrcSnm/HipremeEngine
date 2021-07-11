@@ -2,6 +2,96 @@ module math.vector;
 import std.stdio;
 import core.math : sqrt, sin, cos;
 
+
+public struct Vector2
+{
+    this(float x, float y, float z)
+    {
+        values = [x,y];
+    }
+    this(float[2] v){values = [v[0], v[1]];}
+    Vector3 opIndexUnary(string op)(size_t index)
+    {
+        static if(op == "-")
+            return Vector(-values[0], -values[1]);
+        return this;
+    }
+    float dot()(auto ref Vector2 other) const
+    {
+        return (values[0]*other[0] + values[1]*other[1]);
+    }
+
+    const float mag(){return sqrt(values[0]*values[0] + values[1]*values[1]);}
+    void normalize()
+    {
+        const float m = mag();
+        values[]/=m;
+    }
+
+    Vector2 unit() const 
+    {
+        const float m = mag();
+        return Vector2(values[0]/m, values[1]/m);
+    }
+    
+    Vector2 project(ref Vector2 reference) const
+    {
+        auto n = reference.unit;
+        return n * dot(reference);
+    }
+
+    static float dot(ref Vector2 first, ref Vector2 second){return first.dot(second);}
+
+    Vector2 rotate(float radians)
+    {
+        const float c = cos(radians);
+        const float s = sin(radians);
+
+        return Vector2(x*c - y*s, y*c + s*x);
+    }
+
+    auto opBinary(string op)(auto ref Vector3 rhs) const
+    {
+        static if(op == "+")return Vector2(values[0]+ rhs[0], values[1]+ rhs[1]);
+        else static if(op == "-")return Vector2(values[0]- rhs[0], values[1]- rhs[1]);
+        else static if(op == "*")return dot(rhs);
+    }
+
+    auto opBinary(string op)(auto ref float rhs) const
+    {
+        mixin("return Vector2(values[0] "~ op ~ "rhs , values[1] "~ op ~ "rhs);");
+    }
+
+    float opIndexAssign(float value, size_t index)
+    {
+        values[index] = value;
+        return value;
+    }
+    
+    ref Vector2 opAssign(Vector2 other) return
+    {
+        values[0] = other[0];
+        values[1] = other[1];
+        return this;
+    }
+    ref Vector3 opAssign(float[2] other) return
+    {
+        values[0] = other[0];
+        values[1] = other[1];
+        return this;
+    }
+
+    static Vector2 zero(){return Vector2(0,0,0);}
+    private float[2] values;
+
+    scope ref float x() return {return values[0];}
+    scope ref float y() return {return values[1];}
+    scope ref float z() return {return values[2];}
+    ref float opIndex(size_t index) return {return values[index];}
+
+}
+
+
 public struct Vector3
 {
     this(float x, float y, float z)

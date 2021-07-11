@@ -72,7 +72,10 @@ class Mesh
         this.currentShader = s;
     }
 
-    public void draw()
+    /**
+    *   How many indices should it draw
+    */
+    public void draw(uint count)
     {
         // if(isVertexArray)
         // {
@@ -86,9 +89,7 @@ class Mesh
         */
         this.shader.bind();
         this.vao.bind();
-        HipRenderer.drawIndexed(cast(uint)this.indices.length);
+        HipRenderer.drawIndexed(count);
     }
 
-
-    
 }
