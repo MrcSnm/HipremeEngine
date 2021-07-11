@@ -19,6 +19,7 @@ class GeometryBatch
     protected uint currentIndex;
     protected uint currentVertex;
     protected uint verticesCount;
+    protected uint indicesCount;
     protected Color currentColor;
     HipRendererMode mode;
     float[] vertices;
@@ -42,7 +43,7 @@ class GeometryBatch
         mesh.setVertices(vertices);
         mesh.sendAttributes();
         this.setShader(shader);
-        this.setColor(Color(1,1,1,1));
+        this.setColor(HipColor(1,1,1,1));
 
     }
 
@@ -75,9 +76,12 @@ class GeometryBatch
     pragma(inline, true)
     void addIndex(uint index)
     {
+        assert(currentIndex+1 <= this.indices.length,
+            format!"Too many indices (%s) for a buffer of size %s"(currentIndex+1, this.indices.length)
+        );
         indices[currentIndex++] = index;
     }
-    void setColor(Color c)
+    void setColor(HipColor c)
     {
         currentColor = c;
     }
@@ -214,6 +218,7 @@ class GeometryBatch
 
     void flush()
     {
+        const uint count = this.currentIndex;
         verticesCount = 0;
         currentIndex = 0;
         currentVertex = 0;
@@ -227,7 +232,7 @@ class GeometryBatch
         currentShader.setVar("uModel",Matrix4.identity());
         currentShader.setVar("uView", Matrix4.identity());
         //Vertices to render = indices.length
-        this.mesh.draw();
+        this.mesh.draw(count);
     }
 
 }

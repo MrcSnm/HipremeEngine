@@ -27,7 +27,10 @@ class Hip_D3D11_FragmentShader : FragmentShader
     {
         return this.getDefaultFragment();
     }
-
+    override final string getSpriteBatchFragment()
+    {
+        return this.getDefaultFragment();
+    }
 }
 class Hip_D3D11_VertexShader : VertexShader
 {
@@ -43,6 +46,10 @@ class Hip_D3D11_VertexShader : VertexShader
         }};
     }
     override final string getGeometryBatchVertex()
+    {
+        return this.getDefaultVertex();
+    }
+    override final string getSpriteBatchVertex()
     {
         return this.getDefaultVertex();
     }

@@ -39,10 +39,13 @@ interface ITexture
 
 class Texture
 {
-    ITexture textureImpl;
     Image img;
     uint width,height;
     TextureFilter min, mag;
+
+    protected ITexture textureImpl;
+
+
     this(string path = "")
     {
         if(HipRenderer.rendererType == HipRendererType.GL3)
@@ -95,5 +98,55 @@ class Texture
     public void bind()
     {
         textureImpl.bind();
+    }
+}
+
+
+
+class TextureRegion : Texture
+{
+    public float x1, y1, x2, y2;
+    protected float[8] vertices;
+
+    this(string texturePath, float x1 = 0, float y1 = 0, float x2 = 1, float y2 = 1)
+    {
+        super(texturePath);
+        this.setRegion(x1,y1,x2,y2);
+    }
+
+    /**
+    *   Defines a region for the texture in the following order:
+    *   Top-left
+    *   Top-Right
+    *   Bot-Right
+    *   Bot-Left
+    */
+    public void setRegion(float x1, float y1, float x2, float y2)
+    {
+        this.x1 = x1;
+        this.x2 = x2;
+        this.y1 = y1;
+        this.y2 = y2;
+
+        //Top left
+        vertices[0] = x1;
+        vertices[1] = y1;
+
+        //Top right
+        vertices[2] = x2;
+        vertices[3] = y1;
+        
+        //Bot right
+        vertices[4] = x2;
+        vertices[5] = y2;
+
+        //Bot left
+        vertices[6] = x1;
+        vertices[7] = y2;
+    }
+
+    public ref float[8] getVertices()
+    {
+        return vertices;
     }
 }
