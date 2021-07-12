@@ -45,7 +45,6 @@ class Audio
                 ErrorHandler.showErrorMessage("No SDL_Mixer found", "Could not find any SDL_Mixer version");
             // ErrorHandler.assertErrorMessage(Mix_OpenAudio(44100));
 
-            import std.stdio : writeln;
             audioInterface = new Audio2DBackend(AudioConfig.lightweightConfig);
         }
 

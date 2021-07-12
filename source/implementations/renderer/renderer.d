@@ -8,7 +8,7 @@ import math.rect;
 import error.handler;
 import bindbc.sdl;
 import bindbc.opengl;
-import std.stdio:writeln;
+import def.debugging.log;
 import core.stdc.stdlib:exit;
 
 public import implementations.renderer.backend.gl.renderer;
@@ -176,7 +176,7 @@ class HipRenderer
         string err;
         if(hasErrorOccurred(err, file, line))
         {
-            writeln(err);
+            logln(err);
             exit(-1);
         }
     }

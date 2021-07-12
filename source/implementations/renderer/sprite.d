@@ -23,9 +23,31 @@ class HipSprite
 
     this(string texturePath)
     {
-        this.texture = new TextureRegion(texturePath);
-        this.scaleX = 1f;
-        this.scaleY = 1f;
+        vertices[] = 0;
+        x = 0;
+        y = 0;
+        rotation = 0;
+        scaleX = 1f;
+        scaleY = 1f;
+        isDirty = true;
+        texture = new TextureRegion(texturePath);
+        setColor(White);
+        width  = texture.width;
+        height = texture.height;
+        setRegion(texture.x1, texture.y1, texture.x2, texture.y2);
+    }
+    void setRegion(float x1, float y1, float x2, float y2)
+    {
+        texture.setRegion(x1, y1, x2, y2);
+        const float[] v = texture.getVertices();
+        vertices[U1] = v[0];
+        vertices[V1] = v[1];
+        vertices[U2] = v[2];
+        vertices[V2] = v[3];
+        vertices[U3] = v[4];
+        vertices[V3] = v[5];
+        vertices[U4] = v[6];
+        vertices[V4] = v[7];
     }
 
 
@@ -51,20 +73,19 @@ class HipSprite
 
         //Top right
         vertices[X2] = x2;
-        vertices[Y2] = y1;
+        vertices[Y2] = y;
 
         //Bot right
         vertices[X3] = x2;
         vertices[Y3] = y2;
 
         //Bot left
-        vertices[X4] = x1;
+        vertices[X4] = x;
         vertices[Y4] = y2;
     }
 
     ref float[vertices.length] getVertices()
     {
-
         if(isDirty)
         {
             float x2 = x+width*scaleX;
@@ -76,14 +97,14 @@ class HipSprite
 
             //Top right
             vertices[X2] = x2;
-            vertices[Y2] = y1;
+            vertices[Y2] = y;
 
             //Bot right
             vertices[X3] = x2;
             vertices[Y3] = y2;
 
             //Bot left
-            vertices[X4] = x1;
+            vertices[X4] = x;
             vertices[Y4] = y2;
         }
 

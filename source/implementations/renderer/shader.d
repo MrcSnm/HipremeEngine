@@ -74,7 +74,6 @@ abstract class FragmentShader
 abstract class ShaderProgram{}
 
 
-
 public class Shader
 {
     VertexShader vertexShader;
@@ -96,6 +95,8 @@ public class Shader
         switch(preset) with(HipShaderPresets)
         {
             case SPRITE_BATCH:
+                status = loadShaders(vertexShader.getSpriteBatchVertex(), fragmentShader.getSpriteBatchFragment());
+                break;
             case GEOMETRY_BATCH:
                 status = loadShaders(vertexShader.getGeometryBatchVertex(), fragmentShader.getGeometryBatchFragment());
                 break;
@@ -108,8 +109,8 @@ public class Shader
         }
         if(status != ShaderStatus.SUCCESS)
         {
-            import std.stdio:writeln;
-            writeln("Failed loading shaders");
+            import def.debugging.log;
+            logln("Failed loading shaders");
         }
     }
 

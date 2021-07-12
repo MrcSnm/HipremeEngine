@@ -3,6 +3,9 @@ module graphics.image;
 import error.handler;
 import bindbc.sdl;
 import util.system;
+import std.string;
+import def.debugging.log;
+import std.stdio;
 
 
 /**
@@ -26,7 +29,8 @@ public class Image
     bool load()
     {
         SDL_Surface* img = null;
-        img = IMG_Load(imagePath.ptr);
+        img = IMG_Load(toStringz(imagePath));
+
         ErrorHandler.assertErrorMessage(img != null, "Loading Image: ", "Could not load image " ~ imagePath);
         if(img != null && rgbColorKey != -1)
             SDL_SetColorKey(img, SDL_TRUE, SDL_MapRGB(img.format,

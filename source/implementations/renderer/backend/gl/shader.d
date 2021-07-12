@@ -29,7 +29,7 @@ class Hip_GL3_FragmentShader : FragmentShader
         return q{
             #version 330 core
 
-            uniform vec4 uGlobalColor;
+            uniform vec4 uBatchColor;
             uniform sampler2D uTex1;
 
             in vec4 inVertexColor;
@@ -37,7 +37,7 @@ class Hip_GL3_FragmentShader : FragmentShader
 
             void main()
             {
-                gl_FragColor = texture(uTex1, inTexST)* inVertexColor * uGlobalColor;
+                gl_FragColor = texture(uTex1, inTexST)* inVertexColor * uBatchColor;
             }
         };
     }
@@ -95,13 +95,13 @@ class Hip_GL3_VertexShader : VertexShader
             uniform mat4 uView;
             
             out vec4 inVertexColor;
-            out vec2 inVertexST;
+            out vec2 inTexST;
 
             void main()
             {
                 gl_Position = uProj*uView*uModel*vec4(vPosition, 1.0f);
                 inVertexColor = vColor;
-                inVertexST = vTexST;
+                inTexST = vTexST;
             }
         };
     }

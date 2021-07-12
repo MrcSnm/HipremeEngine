@@ -200,9 +200,7 @@ class KeyboardHandler
     */
     void handleKeyDown(SDL_Keycode key)
     {
-        import std.stdio : writeln;
         setPressed(key, true);
-    
     }
 
     void update()

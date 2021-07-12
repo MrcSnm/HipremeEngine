@@ -21,7 +21,7 @@ import graphics.abstraction.transformable;
 })public class Sprite
 {
     bool dirty;
-    Color color;
+    HipColor color;
     Texture texture;
     Rect region;
     mixin Positionable;
@@ -33,8 +33,6 @@ import graphics.abstraction.transformable;
         texture = t;
         color = White;
         region = t.getBounds();
-        import std.stdio;
-        writeln(color.r, color.g, color.b);
     }
 
     void draw()
