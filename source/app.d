@@ -1,4 +1,5 @@
 import std.stdio;
+import def.debugging.log;
 import core.thread;
 import sdl.loader;
 import error.handler;
@@ -23,6 +24,7 @@ import math.matrix;
 import implementations.renderer.renderer;
 import implementations.renderer.backend.d3d.renderer;
 import view.testscene;
+import view.spritetestscene;
 import def.debugging.gui;
 
 
@@ -54,7 +56,7 @@ static void initEngine(bool audio3D = false)
 
 		if(!loadcimgui(implementation))
 		{
-			writeln("Could not load cimgui");
+			logln("Could not load cimgui");
 		}
 	}
 }
@@ -129,7 +131,7 @@ extern(C)int SDL_main()
 	kb.addKeyListener(SDL_Keycode.SDLK_ESCAPE, k);
 	kb.addKeyListener(SDL_Keycode.SDLK_a, new class Key
 	{
-		override void onDown(){import util.time : Time; writeln(this.meta.getDowntimeDuration());}
+		override void onDown(){import util.time : Time; logln(this.meta.getDowntimeDuration());}
 		override void onUp(){}
 	});
 
@@ -142,8 +144,12 @@ extern(C)int SDL_main()
 
 	Shader shader = HipRenderer.currentShader;
 
-	TestScene testscene = new TestScene();
+	SpriteTestScene testscene = new SpriteTestScene();
+	
 	testscene.init();
+
+
+	
 	
 	while(!quit)
 	{
@@ -191,7 +197,7 @@ extern(C)int SDL_main()
 
 		// if(igButton("Viewport flag".ptr, ImVec2(0,0)))
 		// {
-		// 	//writeln(igGetIO().ConfigFlags);
+		// 	//logln!(igGetIO().ConfigFlags);
 		// 	igGetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		// }
 

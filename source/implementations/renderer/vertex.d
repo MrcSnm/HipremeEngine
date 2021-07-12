@@ -10,6 +10,7 @@ import implementations.renderer.renderer;
 import error.handler;
 import std.stdio;
 import core.stdc.stdlib:exit;
+import def.debugging.log;
 public import implementations.renderer.backend.gl.vertex;
 
 enum InternalVertexAttribute
@@ -141,7 +142,7 @@ class HipVertexArrayObject
         foreach(info; infos)
         {
             this.VAO.setAttributeInfo(info, stride);
-            writeln(info);
+            logln(info);
         }
         HipRenderer.exitOnError();
 

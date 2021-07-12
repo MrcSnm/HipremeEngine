@@ -4,8 +4,7 @@ import implementations.audio.audio;
 import std.string : lastIndexOf;
 import bindbc.sdl.mixer;
 import bindbc.sdl;
-
-import std.stdio : writeln;
+import def.debugging.log;
 
 class SDL_MixerBuffer : AudioBuffer
 {
@@ -113,7 +112,7 @@ class Audio2DBackend : IAudio
         //     buffer.unload();
         //     buffer = null;
         // }
-        writeln("Audio Died");
+        logln("Audio Died");
         Mix_CloseAudio();
         Mix_Quit();
     }

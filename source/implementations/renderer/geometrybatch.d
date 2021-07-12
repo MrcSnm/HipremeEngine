@@ -20,7 +20,7 @@ class GeometryBatch
     protected uint currentVertex;
     protected uint verticesCount;
     protected uint indicesCount;
-    protected Color currentColor;
+    protected HipColor currentColor;
     HipRendererMode mode;
     float[] vertices;
     uint[] indices;
@@ -104,7 +104,7 @@ class GeometryBatch
         }
         triangleVertices(x1,y1,x2,y2,x3,y3);
     }
-    void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Color color)
+    void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color)
     {
         currentColor = color;
         fillTriangle(x1,y1,x2,y2,x3,y3);
@@ -118,7 +118,7 @@ class GeometryBatch
         }
         triangleVertices(x1, y1, x2, y2, x3, y3);
     }
-    void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Color color)
+    void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color)
     {
         currentColor = color;
         drawTriangle(x1,y1,x2,y2,x3,y3);
@@ -136,7 +136,7 @@ class GeometryBatch
         addIndex(verticesCount-2);
         addIndex(verticesCount-1);
     }
-    void drawLine(int x1, int y1, int x2, int y2, Color color)
+    void drawLine(int x1, int y1, int x2, int y2, HipColor color)
     {
         currentColor = color;
         drawLine(x1,y1,x2,y2);
@@ -152,7 +152,7 @@ class GeometryBatch
         addVertex(x, y, 0);
         addIndex(verticesCount);
     }
-    void drawPixel(int x, int y, Color color)
+    void drawPixel(int x, int y, HipColor color)
     {
         currentColor = color;
         drawPixel(x,y);
@@ -195,7 +195,7 @@ class GeometryBatch
         }
         rectangleVertices(x,y,w,h);
     }
-    void drawRectangle(int x, int y, int w, int h, Color color)
+    void drawRectangle(int x, int y, int w, int h, HipColor color)
     {
         currentColor = color;
         drawRectangle(x,y,w,h);
@@ -210,7 +210,7 @@ class GeometryBatch
         }
         rectangleVertices(x,y,w,h);
     }
-    void fillRectangle(int x, int y, int w, int h, Color color)
+    void fillRectangle(int x, int y, int w, int h, HipColor color)
     {
         currentColor = color;
         fillRectangle(x,y,w,h);
@@ -224,7 +224,6 @@ class GeometryBatch
         currentVertex = 0;
         this.mesh.updateVertices(this.vertices);
         this.mesh.updateIndices(this.indices);
-        // writeln(this.vertices);
 
         currentShader.bind();
         currentShader.setVar("uGlobalColor", cast(float[4])[1,1,1,1]);

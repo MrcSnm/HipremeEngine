@@ -7,7 +7,7 @@ import math.rect;
 import error.handler;
 import bindbc.sdl;
 import bindbc.opengl;
-import std.stdio:writeln;
+import def.debugging.log;
 
 
 private SDL_Window* createSDL_GL_Window()
@@ -29,7 +29,7 @@ private SDL_Window* createSDL_GL_Window()
 	SDL_GLContext ctx = SDL_GL_CreateContext(window);
 	SDL_GL_MakeCurrent(window, ctx);
 	GLSupport ver = loadOpenGL();
-	writeln(ver);
+	logln(ver);
 	SDL_GL_SetSwapInterval(1);
 	return window;
 }

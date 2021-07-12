@@ -74,7 +74,7 @@ bool loadImage(string imageName)
     if((imageName in ResourceManager.loadedImages) == null)
     {
         SDL_Surface* img = null;
-        img = SDL_LoadBMP(imageName.ptr);
+        img = IMG_Load(imageName.ptr);
         ErrorHandler.assertErrorMessage(img != null, "Loading Image: ", "Could not load image " ~ imageName);
         ResourceManager.loadedImages[imageName] = img;
         return true;

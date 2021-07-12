@@ -105,19 +105,19 @@ import global.fonts.icons;
 
 })public class AudioSource3D : AudioSource
 {   
-    import std.stdio:writeln;
+    import def.debugging.log;
 
     override void setBuffer(AudioBuffer buf)
     {
         import implementations.audio.backend.audio3d : OpenALBuffer;
         super.setBuffer(buf);
-        writeln((cast(OpenALBuffer)buf).bufferId);
-        writeln(id);
+        logln((cast(OpenALBuffer)buf).bufferId);
+        logln(id);
         alSourcei(id, AL_BUFFER, (cast(OpenALBuffer)buf).bufferId);
     }
     ~this()
     {
-        writeln("AudioSource Killed!");
+        logln("AudioSource Killed!");
         alDeleteSources(1, &id);
         id = -1;
     }
