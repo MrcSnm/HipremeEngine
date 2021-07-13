@@ -188,9 +188,9 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         return null;
     }
 
-    public Shader createShader(HipShaderPresets preset = HipShaderPresets.DEFAULT)
+    public Shader createShader()
     {
-        return new Shader(new Hip_D3D11_ShaderImpl(), preset);
+        return new Shader(new Hip_D3D11_ShaderImpl());
     }
     public bool init(SDL_Window* window, SDL_Renderer* renderer)
     {

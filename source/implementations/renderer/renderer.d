@@ -69,7 +69,7 @@ interface IHipRendererImpl
     public bool init(SDL_Window* window, SDL_Renderer* renderer);
     public SDL_Window* createWindow();
     public SDL_Renderer* createRenderer(SDL_Window* window);
-    public Shader createShader(HipShaderPresets preset = HipShaderPresets.DEFAULT);
+    public Shader createShader();
     public IHipVertexArrayImpl  createVertexArray();
     public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage);
     public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage);
@@ -148,6 +148,10 @@ class HipRenderer
     public static Shader newShader(HipShaderPresets shaderPreset = HipShaderPresets.DEFAULT)
     {
         return rendererImpl.createShader(shaderPreset);
+    }
+    public static Shader newShader(string vertexShader, string fragmentShader)
+    {
+        return rendererImpl.createShader(vertexShader, fragmentShader);
     }
     public static IHipVertexArrayImpl  createVertexArray()
     {
