@@ -79,9 +79,9 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         return SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
     }
-    Shader createShader(HipShaderPresets preset = HipShaderPresets.DEFAULT)
+    Shader createShader()
     {
-        return new Shader(new Hip_GL3_ShaderImpl(), preset);
+        return new Shader(new Hip_GL3_ShaderImpl());
     }
     public bool init(SDL_Window* window, SDL_Renderer* renderer)
     {

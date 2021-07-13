@@ -84,13 +84,26 @@ public class Shader
     string fragmentShaderPath;
     string vertexShaderPath;
 
-    this(IShader shaderImpl, HipShaderPresets preset = HipShaderPresets.DEFAULT)
+    this(IShader shaderImpl)
     {
         this.shaderImpl = shaderImpl;
         vertexShader = shaderImpl.createVertexShader();
         fragmentShader = shaderImpl.createFragmentShader();
         shaderProgram = shaderImpl.createShaderProgram();
+    }
+    this(IShader shaderImpl, string vertexSource, string fragmentSource)
+    {
+        this(shaderImpl);
+        ShaderStatus status = loadShaders(vertexSource, fragmentSource);
+        if(status != ShaderStatus.SUCCESS)
+        {
+            import def.debugging.log;
+            logln("Failed loading shaders");
+        }
+    }
 
+    void setFromPreset(HipShaderPresets preset = HipShaderPresets.DEFAULT)
+    {
         ShaderStatus status = ShaderStatus.SUCCESS;
         switch(preset) with(HipShaderPresets)
         {
