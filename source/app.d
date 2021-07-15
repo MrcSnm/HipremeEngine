@@ -25,6 +25,7 @@ import implementations.renderer.renderer;
 import implementations.renderer.backend.d3d.renderer;
 import view.testscene;
 import view.spritetestscene;
+import view.framebuffertestscene;
 import def.debugging.gui;
 
 
@@ -144,7 +145,7 @@ extern(C)int SDL_main()
 
 	Shader shader = HipRenderer.currentShader;
 
-	SpriteTestScene testscene = new SpriteTestScene();
+	FrameBufferTestScene testscene = new FrameBufferTestScene();
 	
 	testscene.init();
 

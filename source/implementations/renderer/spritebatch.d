@@ -98,7 +98,7 @@ class HipSpriteBatch
     {
         mesh.shader.bind();
         mesh.shader.setVar("uBatchColor", cast(float[4])[1,1,1,1]);
-        mesh.shader.setVar("uProj", Matrix4.orthoLH(0, 800, 0, 600, 0.001, 1));
+        mesh.shader.setVar("uProj", Matrix4.orthoLH(0, 800, 600, 0, 0.001, 1));
         mesh.shader.setVar("uModel",Matrix4.identity());
         mesh.shader.setVar("uView", Matrix4.identity());
 

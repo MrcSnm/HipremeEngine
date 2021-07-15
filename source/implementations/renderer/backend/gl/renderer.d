@@ -1,6 +1,8 @@
 module implementations.renderer.backend.gl.renderer;
 import implementations.renderer.renderer;
+import implementations.renderer.framebuffer;
 import implementations.renderer.shader;
+import implementations.renderer.backend.gl.framebuffer;
 import implementations.renderer.backend.gl.shader;
 import graphics.g2d.viewport;
 import math.rect;
@@ -107,6 +109,11 @@ class Hip_GL3Renderer : IHipRendererImpl
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         glClearColor(r/255, g/255, b/255, a/255);
+    }
+
+    public IHipFrameBuffer createFrameBuffer(int width, int height)
+    {
+        return new Hip_GL3_FrameBuffer(width, height);
     }
 
     public IHipVertexArrayImpl createVertexArray()

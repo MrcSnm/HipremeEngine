@@ -21,6 +21,7 @@ enum ShaderTypes
 enum HipShaderPresets
 {
     DEFAULT,
+    FRAME_BUFFER,
     GEOMETRY_BATCH,
     SPRITE_BATCH,
     NONE
@@ -61,12 +62,14 @@ interface IShader
 abstract class VertexShader
 {
     abstract string getDefaultVertex();
+    abstract string getFrameBufferVertex();
     abstract string getGeometryBatchVertex();
     abstract string getSpriteBatchVertex();
 }
 abstract class FragmentShader
 {
     abstract string getDefaultFragment();
+    abstract string getFrameBufferFragment();
     abstract string getGeometryBatchFragment();
     abstract string getSpriteBatchFragment();
 }
@@ -109,6 +112,9 @@ public class Shader
         {
             case SPRITE_BATCH:
                 status = loadShaders(vertexShader.getSpriteBatchVertex(), fragmentShader.getSpriteBatchFragment());
+                break;
+            case FRAME_BUFFER:
+                status = loadShaders(vertexShader.getFrameBufferVertex(), fragmentShader.getFrameBufferFragment());
                 break;
             case GEOMETRY_BATCH:
                 status = loadShaders(vertexShader.getGeometryBatchVertex(), fragmentShader.getGeometryBatchFragment());

@@ -9,6 +9,7 @@ pragma(lib, "dxgi");
 import global.consts;
 import implementations.renderer.renderer;
 import implementations.renderer.shader;
+import implementations.renderer.framebuffer;
 import implementations.renderer.backend.d3d.shader;
 import implementations.renderer.backend.d3d.utils;
 import implementations.renderer.texture;
@@ -174,6 +175,11 @@ class Hip_D3D11_Renderer : IHipRendererImpl
                 break;
         }
         return false;
+    }
+
+    public IHipFrameBuffer createFrameBuffer(int width, int height)
+    {
+        return null;
     }
     public IHipVertexArrayImpl  createVertexArray()
     {

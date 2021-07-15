@@ -24,6 +24,23 @@ class Hip_GL3_FragmentShader : FragmentShader
             }
         };
     }
+    override final string getFrameBufferFragment()
+    {
+        return q{
+            #version 330 core
+
+            in vec2 inTexST;
+            uniform sampler2D uBufferTexture;
+            uniform vec4 uColor;
+
+            void main()
+            {
+                vec4 col = texture(uBufferTexture, inTexST);
+                float grey = (col.r+col.g+col.b)/3.0;
+                gl_FragColor = grey * uColor;
+            }
+        };
+    }
     override final string getSpriteBatchFragment()
     {
         return q{
@@ -79,6 +96,22 @@ class Hip_GL3_VertexShader : VertexShader
                 gl_Position = proj*vec4(position, 1.0f);
                 vertexColor = color;
                 tex_uv = texCoord;
+            }
+        };
+    }
+    override final string getFrameBufferVertex()
+    {
+        return q{
+            #version 330 core
+            layout (location = 0) in vec2 vPosition;
+            layout (location = 1) in vec2 vTexST;
+
+            out vec2 inTexST;
+
+            void main()
+            {
+                gl_Position = vec4(vPosition, 0.0, 1.0);
+                inTexST = vTexST;
             }
         };
     }

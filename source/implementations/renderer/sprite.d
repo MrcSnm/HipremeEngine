@@ -34,7 +34,7 @@ class HipSprite
         setColor(White);
         width  = texture.width;
         height = texture.height;
-        setRegion(texture.x1, texture.y1, texture.x2, texture.y2);
+        setRegion(texture.u1, texture.v1, texture.u2, texture.v2);
     }
     void setRegion(float x1, float y1, float x2, float y2)
     {
