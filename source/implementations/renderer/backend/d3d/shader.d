@@ -23,6 +23,7 @@ class Hip_D3D11_FragmentShader : FragmentShader
             return float4(1.0f, 1.0f, 1.0f, 1.0f);
         }};
     }
+    override final string getFrameBufferFragment(){return getDefaultFragment();}
     override final string getGeometryBatchFragment()
     {
         return this.getDefaultFragment();
@@ -45,6 +46,7 @@ class Hip_D3D11_VertexShader : VertexShader
             return float4(pos.x, pos.y, 0.0f, 1.0f);
         }};
     }
+    override final string getFrameBufferVertex(){return getDefaultVertex();}
     override final string getGeometryBatchVertex()
     {
         return this.getDefaultVertex();

@@ -1,6 +1,7 @@
 module implementations.renderer.backend.sdl.sdlrenderer;
 import implementations.renderer.backend.sdl.texture;
 import implementations.renderer.renderer;
+import implementations.renderer.framebuffer;
 import graphics.g2d.viewport;
 import math.rect;
 import error.handler;
@@ -67,7 +68,8 @@ public class Hip_SDL_Renderer : IHipRendererImpl
         return ErrorHandler.stopListeningForErrors();
     }
 
-    Shader createShader(HipShaderPresets preset = HipShaderPresets.DEFAULT){return null;}
+    Shader createShader(){return null;}
+    public IHipFrameBuffer      createFrameBuffer(int width, int height){return null;}
     public IHipVertexArrayImpl  createVertexArray(){return null;}
     public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage){return null;}
     public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage){return null;}

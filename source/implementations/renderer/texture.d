@@ -105,13 +105,13 @@ class Texture
 
 class TextureRegion : Texture
 {
-    public float x1, y1, x2, y2;
+    public float u1, v1, u2, v2;
     protected float[8] vertices;
 
-    this(string texturePath, float x1 = 0, float y1 = 0, float x2 = 1, float y2 = 1)
+    this(string texturePath, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
     {
         super(texturePath);
-        this.setRegion(x1,y1,x2,y2);
+        this.setRegion(u1,v1,u2,v2);
     }
 
     /**
@@ -121,28 +121,28 @@ class TextureRegion : Texture
     *   Bot-Right
     *   Bot-Left
     */
-    public void setRegion(float x1, float y1, float x2, float y2)
+    public void setRegion(float u1, float v1, float u2, float v2)
     {
-        this.x1 = x1;
-        this.x2 = x2;
-        this.y1 = y1;
-        this.y2 = y2;
+        this.u1 = u1;
+        this.u2 = u2;
+        this.v1 = v1;
+        this.v2 = v2;
 
         //Top left
-        vertices[0] = x1;
-        vertices[1] = y1;
+        vertices[0] = u1;
+        vertices[1] = v1;
 
         //Top right
-        vertices[2] = x2;
-        vertices[3] = y1;
+        vertices[2] = u2;
+        vertices[3] = v1;
         
         //Bot right
-        vertices[4] = x2;
-        vertices[5] = y2;
+        vertices[4] = u2;
+        vertices[5] = v2;
 
         //Bot left
-        vertices[6] = x1;
-        vertices[7] = y2;
+        vertices[6] = u1;
+        vertices[7] = v2;
     }
 
     public ref float[8] getVertices()

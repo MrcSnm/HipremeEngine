@@ -1,33 +1,11 @@
 module implementations.renderer.backend.gl.framebuffer;
 import bindbc.opengl;
 import error.handler;
+import implementations.renderer.framebuffer;
 import implementations.renderer.shader;
 
-private const float[24] vertices = //X, Y, S, T
-[
-    //First Quad
-    //Top Left
-    -1.0, -1.0, 0.0, 0.0,
 
-    //Top Right
-    1.0, -1.0, 1.0, 0.0,
-
-    //Bot Right
-    1.0, 1.0, 1.0, 1.0,
-
-    //Second quad
-
-    //Bot Right
-    1.0, 1.0, 1.0, 1.0,
-
-    //Bot Left
-    -1.0, 1.0, 0.0, 1.0,
-
-    //Top Left
-    -1.0, -1.0, 0.0, 0.0
-];
-
-class HipGLFrameBuffer
+class Hip_GL3_FrameBuffer : IHipFrameBuffer
 {
     uint vao;
     uint vbo;
@@ -48,7 +26,7 @@ class HipGLFrameBuffer
         //VAO and VBO initialization
         glBindVertexArray(this.vao);
         glBindBuffer(GL_ARRAY_BUFFER, this.vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, vertices.ptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, framebufferVertices.sizeof, framebufferVertices.ptr, GL_DYNAMIC_DRAW);
         glVertexAttribPointer(0, 2, GL_FLOAT, false, 4*float.sizeof, null); //XY
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(1, 2, GL_FLOAT, false, 4*float.sizeof, cast(void*)(2*float.sizeof)); //ST
@@ -79,6 +57,16 @@ class HipGLFrameBuffer
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindVertexArray(0);
+    }
+
+    void bind(){glBindFramebuffer(GL_FRAMEBUFFER, this.fbo);}
+    void unbind(){glBindFramebuffer(GL_FRAMEBUFFER, 0);}
+
+    void draw()
+    {
+        glBindVertexArray(this.vao);
+        glBindTexture(GL_TEXTURE_2D, this.texture);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
     void dispose()

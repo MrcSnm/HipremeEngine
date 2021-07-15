@@ -3,6 +3,7 @@ public import implementations.renderer.config;
 public import implementations.renderer.shader;
 public import implementations.renderer.texture;
 public import implementations.renderer.vertex;
+import implementations.renderer.framebuffer;
 import graphics.g2d.viewport;
 import math.rect;
 import error.handler;
@@ -70,6 +71,7 @@ interface IHipRendererImpl
     public SDL_Window* createWindow();
     public SDL_Renderer* createRenderer(SDL_Window* window);
     public Shader createShader();
+    public IHipFrameBuffer createFrameBuffer(int width, int height);
     public IHipVertexArrayImpl  createVertexArray();
     public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage);
     public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage);
@@ -123,7 +125,7 @@ class HipRenderer
         SDL_GetWindowSize(window, &w, &h);
         mainViewport = new Viewport(0,0,w, h);
         setViewport(mainViewport);
-        setShader(rendererImpl.createShader(HipShaderPresets.DEFAULT));
+        setShader(HipRenderer.newShader());
         HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
 
 
@@ -147,11 +149,19 @@ class HipRenderer
     }
     public static Shader newShader(HipShaderPresets shaderPreset = HipShaderPresets.DEFAULT)
     {
-        return rendererImpl.createShader(shaderPreset);
+        Shader ret = rendererImpl.createShader();
+        ret.setFromPreset(shaderPreset);
+        return ret;
     }
     public static Shader newShader(string vertexShader, string fragmentShader)
     {
-        return rendererImpl.createShader(vertexShader, fragmentShader);
+        Shader ret = rendererImpl.createShader();
+        ret.loadShadersFromFiles(vertexShader, fragmentShader);
+        return ret;
+    }
+    public static HipFrameBuffer newFrameBuffer(int width, int height, Shader frameBufferShader = null)
+    {
+        return new HipFrameBuffer(rendererImpl.createFrameBuffer(width, height), width, height, frameBufferShader);
     }
     public static IHipVertexArrayImpl  createVertexArray()
     {
