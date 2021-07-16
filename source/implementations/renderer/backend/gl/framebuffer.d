@@ -61,6 +61,11 @@ class Hip_GL3_FrameBuffer : IHipFrameBuffer
 
     void bind(){glBindFramebuffer(GL_FRAMEBUFFER, this.fbo);}
     void unbind(){glBindFramebuffer(GL_FRAMEBUFFER, 0);}
+    void clear()
+    {
+        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
 
     void draw()
     {
