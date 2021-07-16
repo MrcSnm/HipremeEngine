@@ -88,14 +88,19 @@ class HipVertexArrayObject
     ///How many data slots it uses, for instance, vec3 will count +3
     uint dataCount;
     HipVertexAttributeInfo[] infos;
+
+    protected bool isBonded;
     
+    /**
+    *   Remember calling sendAttributes
+    */
     this()
     {
+        isBonded = false;
         this.VAO = HipRenderer.createVertexArray();
     }
     /**
-    *   Creates and binds an index buffer
-    * The EBO is not unbound at the end of this process
+    *   Creates and binds an index buffer.
     */
     void createIndexBuffer(uint count, HipBufferUsage usage)
     {
@@ -105,8 +110,8 @@ class HipVertexArrayObject
     }
     /**
     * Creates and binds a vertex buffer.
+    *
     * The vertex buffer size is dependant on the attributes that were appended to this vertex array.
-    * The VBO is not unbound at the end of this process
     */
     void createVertexBuffer(uint count, HipBufferUsage usage)
     {
@@ -139,6 +144,11 @@ class HipVertexArrayObject
     */
     void sendAttributes()
     {
+        if(!isBonded)
+        {
+            ErrorHandler.showErrorMessage("VertexArrayObject error", "VAO wasn't bound when trying to send its attributes");
+            return;
+        }
         foreach(info; infos)
         {
             this.VAO.setAttributeInfo(info, stride);
@@ -150,15 +160,22 @@ class HipVertexArrayObject
 
     void bind()
     {
+        isBonded = true;
         this.VAO.bind();
         HipRenderer.exitOnError();
     }
     void unbind()
     {
+        isBonded = false;
         this.VAO.unbind();
         HipRenderer.exitOnError();
     }
 
+    /**
+    *   Sets the VBO data. Use this function only for initialization as it allocates memory.
+    *
+    *   If you wish to only update its data, call updateVertices instead.
+    */
     void setVertices(uint count, const void* data)
     {
         if(VBO is null)
@@ -168,13 +185,21 @@ class HipVertexArrayObject
         this.VBO.setData(count*this.stride, data);
         HipRenderer.exitOnError();
     }
-
+    /**
+    *   Update the VBO. Won't cause memory allocation
+    */
     void updateVertices(uint count, const void* data, int offset = 0)
     {
         this.bind();
         this.VBO.updateData(offset, count*this.stride, data);
         HipRenderer.exitOnError();
     }
+    /**
+    *   Will set the indices data. Beware that this function may allocate memory.
+    *   
+    *   If you need to only change its data value instead of allocating memory for a greater index buffer
+    *   call updateIndices
+    */
     void setIndices(uint count, const uint* data)
     {
         if(EBO is null)
@@ -183,6 +208,9 @@ class HipVertexArrayObject
         this.EBO.setData(count, data);
         HipRenderer.exitOnError();
     }
+    /**
+    *   Updates the index buffer's data. It won't allocate memory
+    */
     void updateIndices(uint count, uint* data, int offset = 0)
     {
         this.bind();
@@ -190,6 +218,28 @@ class HipVertexArrayObject
         HipRenderer.exitOnError();
     }
 
+    /**
+    *   Remember calling sendAttributes!
+    *   Defines:
+    *
+    *    vec2 vPosition
+    *   
+    *    vec2 vTexST
+    */
+    static HipVertexArrayObject getXY_ST_VAO()
+    {
+        HipVertexArrayObject obj = new HipVertexArrayObject();
+        with(HipAttributeType)
+        {
+            obj.appendAttribute(2, FLOAT, float.sizeof, "vPosition") //X, Y
+               .appendAttribute(2, FLOAT, float.sizeof, "vTexST"); //ST
+        }
+        return obj;
+    }
+
+    /**
+    *   Remember calling sendAttributes!
+    */
     static HipVertexArrayObject getXYZ_RGBA_VAO()
     {
         HipVertexArrayObject obj = new HipVertexArrayObject();
@@ -200,7 +250,9 @@ class HipVertexArrayObject
         }
         return obj;
     }
-
+    /**
+    *   Remember calling sendAttributes!
+    */
     static HipVertexArrayObject getXYZ_RGBA_ST_VAO()
     {
         HipVertexArrayObject obj = new HipVertexArrayObject();
@@ -212,7 +264,9 @@ class HipVertexArrayObject
         }
         return obj;
     }
-
+    /**
+    *   Remember calling sendAttributes!
+    */
     static HipVertexArrayObject getXY_RGBA_ST_VAO()
     {
         HipVertexArrayObject obj = new HipVertexArrayObject();

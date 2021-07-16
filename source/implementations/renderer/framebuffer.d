@@ -13,6 +13,9 @@ interface IHipFrameBuffer
     ///Must draw the framebuffer content
     void draw();
 
+    ///Clears the current framebuffer content
+    void clear();
+
     void dispose();
 }
 
@@ -32,6 +35,7 @@ class HipFrameBuffer : IHipFrameBuffer
 
     void bind(){this.impl.bind();}
     void unbind(){this.impl.unbind();}
+    void clear(){this.impl.clear();}
 
     void draw()
     {
