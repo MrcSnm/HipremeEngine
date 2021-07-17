@@ -2,6 +2,7 @@ module implementations.renderer.mesh;
 import implementations.renderer.renderer;
 import implementations.renderer.shader;
 import implementations.renderer.vertex;
+import std.traits;
 
 class Mesh
 {
@@ -75,8 +76,9 @@ class Mesh
     /**
     *   How many indices should it draw
     */
-    public void draw(uint count)
+    public void draw(T)(T count)
     {
+        static assert(isUnsigned!T, "Mesh must receive an integral type in its draw");
         // if(isVertexArray)
         // {
             // HipRenderer.drawVertices()
@@ -89,7 +91,7 @@ class Mesh
         */
         this.shader.bind();
         this.vao.bind();
-        HipRenderer.drawIndexed(count);
+        HipRenderer.drawIndexed(cast(uint)count);
     }
 
 }
