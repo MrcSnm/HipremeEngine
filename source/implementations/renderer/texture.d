@@ -82,6 +82,9 @@ class Texture
         HipRenderer.draw(this, x, y);
     }
 
+    /**
+    *   Returns whether the load was successful
+    */
     public bool load(string path)
     {
         this.img = new Image(path);
