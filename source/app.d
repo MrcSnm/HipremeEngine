@@ -23,9 +23,11 @@ import bindbc.cimgui;
 import math.matrix;
 import implementations.renderer.renderer;
 import implementations.renderer.backend.d3d.renderer;
+import view.scene;
 import view.testscene;
 import view.spritetestscene;
 import view.framebuffertestscene;
+import view.bitmaptestscene;
 import def.debugging.gui;
 
 
@@ -145,7 +147,7 @@ extern(C)int SDL_main()
 
 	Shader shader = HipRenderer.currentShader;
 
-	FrameBufferTestScene testscene = new FrameBufferTestScene();
+	Scene testscene = new BitmapTestScene();
 	
 	testscene.init();
 

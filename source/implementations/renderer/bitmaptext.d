@@ -1,4 +1,8 @@
 module implementations.renderer.bitmaptext;
+import std.string;
+import std.conv:to;
+import error.handler;
+import def.debugging.log;
 import implementations.renderer.vertex;
 import implementations.renderer.texture;
 import core.stdc.string;
@@ -35,7 +39,10 @@ struct HipBitmapChar
 class HipBitmapFont
 {
     Texture texture;
+    ///The atlas path is saved inside the class
     string atlasPath;
+    ///This variable is defined when the atlas is being read
+    string atlasTexturePath;
     HipBitmapChar[] characters;
 
     ///Use that property to know how many characters was read inside the atlas
@@ -68,7 +75,7 @@ class HipBitmapFont
         FILE* f = fopen(atlasPath.ptr, "r");
         if(f == null)
         {
-            printf("Error! Could not read file %s!!\n\n", atlasPath.ptr);
+            logln("Error! Could not read file ", atlasPath, "!!\n\n");
             return;
         }
 
@@ -82,6 +89,8 @@ class HipBitmapFont
 
         //Page
         fscanf(f, "page id=%d file=%s\n", &pageId, file.ptr);
+
+        atlasTexturePath = to!string(file)[1..strlen(file.ptr)-1];
         //Count
         fscanf(f, "chars count=%d\n", &count);
 
@@ -102,11 +111,39 @@ class HipBitmapFont
         fclose(f);
     }
 
+    void readTexture(string texturePath = "")
+    {
+        if(texturePath == "" && atlasTexturePath != "")
+        {
+            const long ind = atlasPath.lastIndexOf('/');
+            if(ind != -1)
+                texturePath = atlasPath[0..ind+1]~ atlasTexturePath;
+            else
+                texturePath = atlasTexturePath;
+        }
+        auto t = new Texture();
+        ErrorHandler.assertErrorMessage(t.load(texturePath), "BitmapFontError", "Could not load texture at path "~texturePath);
+        texture = t;
 
-    static HipBitmapFont fromFile(string atlasPath)
+        for(int i = 0; i < characters.length; i++)
+        {
+            auto ch = characters[i];
+            if(ch.id != 0)
+            {
+                ch.normalizedX = cast(float)ch.x/texture.width;
+                ch.normalizedY = cast(float)ch.y/texture.height;
+                ch.normalizedWidth = cast(float)ch.width/texture.width;
+                ch.normalizedHeight = cast(float)ch.height/texture.height;
+            }
+        }
+    }
+
+
+    static HipBitmapFont fromFile(string atlasPath, string texturePath = "")
     {
         auto ret = new HipBitmapFont();
         ret.readAtlas(atlasPath);
+        ret.readTexture(texturePath);
         return ret;
     }
 
@@ -137,6 +174,10 @@ class HipBitmapText
         //6 indices per quad
         vao.createIndexBuffer("DEFAULT".length*6, HipBufferUsage.STATIC);
         vao.sendAttributes();
+    }
+    void setBitmapFont(HipBitmapFont font)
+    {
+        this.font = font;
     }
     protected void updateAlign()
     {
@@ -190,7 +231,10 @@ class HipBitmapText
                     break;
                 default:
                     xoffset+= ch.width;
-                    //Gen vertices
+                    //Gen vertices 
+
+                    import std.stdio;
+                    writeln(char(cast(byte)ch.id));
 
                     //Top left
                     v[vI++] = xoffset+displayX; //X
