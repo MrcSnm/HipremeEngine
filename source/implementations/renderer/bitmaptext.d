@@ -2,9 +2,10 @@ module implementations.renderer.bitmaptext;
 import std.string;
 import std.conv:to;
 import error.handler;
+import std.stdio;
 import def.debugging.log;
-import implementations.renderer.vertex;
-import implementations.renderer.texture;
+import math.matrix;
+import implementations.renderer;
 import core.stdc.string;
 import core.stdc.stdio;
 
@@ -127,7 +128,7 @@ class HipBitmapFont
 
         for(int i = 0; i < characters.length; i++)
         {
-            auto ch = characters[i];
+            auto ch = &characters[i];
             if(ch.id != 0)
             {
                 ch.normalizedX = cast(float)ch.x/texture.width;
@@ -149,10 +150,13 @@ class HipBitmapFont
 
 }
 
+
+private Shader bmTextShader = null;
+
 class HipBitmapText
 {
     HipBitmapFont font;
-    HipVertexArrayObject vao;
+    Mesh mesh;
     ///For controlling easier without having to mess with align
     int x, y;
     ///Where it is actually rendered
@@ -164,16 +168,27 @@ class HipBitmapText
     HipTextAlign alignh = HipTextAlign.LEFT;
     HipTextAlign alignv = HipTextAlign.TOP;
     uint[] indices;
+    float[] vertices;
     string text;
 
     this()
     {
-        vao = HipVertexArrayObject.getXY_ST_VAO();
+        if(bmTextShader is null)
+        {
+            bmTextShader = HipRenderer.newShader(HipShaderPresets.BITMAP_TEXT);
+            bmTextShader.bind();
+            bmTextShader.setVar("uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
+            bmTextShader.setVar("uModel", Matrix4.identity);
+            bmTextShader.setVar("uView", Matrix4.orthoLH(0, 800, 600, 0, 0.01, 100));
+            bmTextShader.setVar("uProj", Matrix4.identity);
+        }
+        text = "";
+        mesh = new Mesh(HipVertexArrayObject.getXY_ST_VAO(), bmTextShader);
         //4 vertices per quad
-        vao.createVertexBuffer("DEFAULT".length*4, HipBufferUsage.DYNAMIC);
+        mesh.createVertexBuffer("DEFAULT".length*4, HipBufferUsage.DYNAMIC);
         //6 indices per quad
-        vao.createIndexBuffer("DEFAULT".length*6, HipBufferUsage.STATIC);
-        vao.sendAttributes();
+        mesh.createIndexBuffer("DEFAULT".length*6, HipBufferUsage.DYNAMIC);
+        mesh.sendAttributes();
     }
     void setBitmapFont(HipBitmapFont font)
     {
@@ -234,7 +249,6 @@ class HipBitmapText
                     //Gen vertices 
 
                     import std.stdio;
-                    writeln(char(cast(byte)ch.id));
 
                     //Top left
                     v[vI++] = xoffset+displayX; //X
@@ -269,9 +283,12 @@ class HipBitmapText
     {
         if(text.length > this.text.length)
         {
-            indices.reserve(text.length*6);
-            ulong index = 6*indices.length;
-            for(int i = 0; i < indices.length; i++)
+            if(indices is null)
+                indices = new uint[text.length*6];
+            else
+                indices.reserve(text.length*6);
+            ulong index = 0;
+            for(uint i = 0; i < text.length; i++)
             {
                 indices[index+0] = i*4+0;
                 indices[index+1] = i*4+1;
@@ -282,9 +299,17 @@ class HipBitmapText
                 indices[index+5] = i*4+0;
                 index+=6;
             }
-            vao.setIndices(cast(uint)indices.length, indices.ptr);
+            mesh.setIndices(indices);
         }
         this.text = text;
         updateAlign();
+        vertices = getVertices();
+        mesh.setVertices(vertices);
+    }
+
+    void render()
+    {
+        import std.stdio;
+        mesh.draw(indices.length);
     }
 }

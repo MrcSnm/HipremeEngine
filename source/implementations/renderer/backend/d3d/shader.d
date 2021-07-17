@@ -32,6 +32,7 @@ class Hip_D3D11_FragmentShader : FragmentShader
     {
         return this.getDefaultFragment();
     }
+    override final string getBitmapTextFragment(){return getDefaultFragment();}
 }
 class Hip_D3D11_VertexShader : VertexShader
 {
@@ -55,6 +56,7 @@ class Hip_D3D11_VertexShader : VertexShader
     {
         return this.getDefaultVertex();
     }
+    override final string getBitmapTextVertex(){return getDefaultVertex();}
 }
 class Hip_D3D11_ShaderProgram : ShaderProgram
 {

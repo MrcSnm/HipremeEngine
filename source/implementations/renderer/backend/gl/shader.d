@@ -73,6 +73,22 @@ class Hip_GL3_FragmentShader : FragmentShader
             }
         };
     }
+
+    override final string getBitmapTextFragment()
+    {
+        return q{
+            #version 330 core
+
+            uniform vec4 uColor;
+            uniform sampler2D uTex;
+            in vec2 inTexST;
+
+            void main()
+            {
+                gl_FragColor = texture(uTex, inTexST)*uColor;
+            }
+        };
+    }
 }
 class Hip_GL3_VertexShader : VertexShader
 {
@@ -158,6 +174,27 @@ class Hip_GL3_VertexShader : VertexShader
             }
         };
     }
+
+    override final string getBitmapTextVertex()
+    {
+        return q{
+            #version 330 core
+            layout (location = 0) in vec2 vPos;
+            layout (location = 1) in vec2 vTexST;
+
+            uniform mat4 uModel;
+            uniform mat4 uView;
+            uniform mat4 uProj;
+
+            out vec2 inTexST;
+
+            void main()
+            {
+                gl_Position = uProj * uView * uModel * vec4(vPos, 1.0, 1.0);
+                inTexST = vTexST;
+            }
+        };
+    }
 }
 class Hip_GL3_ShaderProgram : ShaderProgram{uint program;}
 
@@ -215,7 +252,7 @@ class Hip_GL3_ShaderImpl : IShader
         glAttachShader(prog, (cast(Hip_GL3_VertexShader)vs).shader);
         glAttachShader(prog, (cast(Hip_GL3_FragmentShader)fs).shader);
         glLinkProgram(prog);
-
+        
         int success;
         char[512] infoLog;
 

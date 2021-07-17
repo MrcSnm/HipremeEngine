@@ -24,6 +24,7 @@ enum HipShaderPresets
     FRAME_BUFFER,
     GEOMETRY_BATCH,
     SPRITE_BATCH,
+    BITMAP_TEXT,
     NONE
 }
 
@@ -65,6 +66,7 @@ abstract class VertexShader
     abstract string getFrameBufferVertex();
     abstract string getGeometryBatchVertex();
     abstract string getSpriteBatchVertex();
+    abstract string getBitmapTextVertex();
 }
 abstract class FragmentShader
 {
@@ -72,6 +74,7 @@ abstract class FragmentShader
     abstract string getFrameBufferFragment();
     abstract string getGeometryBatchFragment();
     abstract string getSpriteBatchFragment();
+    abstract string getBitmapTextFragment();
 }
 
 abstract class ShaderProgram{}
@@ -119,6 +122,9 @@ public class Shader
             case GEOMETRY_BATCH:
                 status = loadShaders(vertexShader.getGeometryBatchVertex(), fragmentShader.getGeometryBatchFragment());
                 break;
+            case BITMAP_TEXT:
+                status = loadShaders(vertexShader.getBitmapTextVertex(), fragmentShader.getBitmapTextFragment());
+                break;
             case DEFAULT:
                 status = loadShaders(vertexShader.getDefaultVertex(),fragmentShader.getDefaultFragment());
                 break;
@@ -129,7 +135,7 @@ public class Shader
         if(status != ShaderStatus.SUCCESS)
         {
             import def.debugging.log;
-            logln("Failed loading shaders");
+            logln("Failed loading shaders with status ", status, " at preset ", preset);
         }
     }
 
