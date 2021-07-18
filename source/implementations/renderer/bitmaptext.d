@@ -1,4 +1,6 @@
 module implementations.renderer.bitmaptext;
+import util.data_structures;
+import std.algorithm.comparison : max;
 import std.string;
 import std.conv:to;
 import error.handler;
@@ -55,6 +57,9 @@ class HipBitmapFont
     ///How much the line break will offset in Y the next char
     uint lineBreakHeight;
 
+
+    Pair!(int, int)[int] kerning;
+
     void readAtlas(string atlasPath)
     {
         this.atlasPath = atlasPath;
@@ -109,32 +114,39 @@ class HipBitmapFont
         charactersCount = count;
         characters = ch;
 
-        float avgWidth = 0;
-        float avgHeight = 0;
-        uint avgCount = 0;
+        uint maxWidth = 0;
+        uint maxHeight = 0;
         for(int i = 0; i < count; i++)
         {
             HipBitmapChar c;
             fscanf(f, "char id=%d x=%d y=%d width=%d height=%d xoffset=%d yoffset=%d xadvance=%d page=%d chnl=%d\n",
             &c.id, &c.x, &c.y, &c.width, &c.height, &c.xoffset, &c.yoffset, &c.xadvance, &c.page, &c.chnl);
             ch[c.id] = c;
-            if(c.width != 0 && c.height != 0)
-            {
-                avgWidth+= c.width;
-                avgHeight+= c.height;
-                avgCount++;
-            }
+            
+            maxWidth = max(maxWidth, c.width);
+            maxHeight = max(maxHeight, c.height);
         }
         if(characters[' '].width == 0 && characters[' '].xadvance == 0)
-            spaceWidth = cast(uint)(avgWidth/avgCount);
+            spaceWidth = maxWidth;
         else
             spaceWidth = characters[' '].xadvance;
 
         if(characters['\n'].height == 0)
-            lineBreakHeight = cast(uint)(avgHeight/avgCount);
+            lineBreakHeight = maxHeight;
         else
             lineBreakHeight = characters['\n'].height;
         
+        int kerningCount = 0;
+        int k1, k2, kv;
+
+        fscanf(f, "kernings count=%d\n", &kerningCount);
+        
+        for(int i = 0; i < kerningCount; i++)
+        {
+            fscanf(f, "kerning first=%d second=%d amount=%d\n", &k1, &k2, &kv);
+            kerning[k1] = Pair!(int, int)(k2, kv);
+        }
+
         fclose(f);
     }
 
@@ -282,7 +294,7 @@ class HipBitmapText
                     }
                     goto default;
                 default:
-                    xoffset+= ch.xadvance + ch.xoffset;
+                    xoffset+= ch.xoffset;
                     yoffset+= ch.yoffset;
                     //Gen vertices 
 
@@ -311,6 +323,9 @@ class HipBitmapText
                     v[vI++] = ch.normalizedY + ch.normalizedHeight; //T+H
 
                     yoffset-= ch.yoffset;
+
+                    xoffset-= ch.xoffset;
+                    xoffset+= ch.xadvance;
 
             }
         }

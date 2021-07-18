@@ -11,7 +11,7 @@ class BitmapTestScene : Scene
     {
         txt = new HipBitmapText();
         txt.setBitmapFont(HipBitmapFont.fromFile("assets/fonts/arial.fnt"));
-        txt.setText("Vou testar\nOpa");// agora pra caramba sobre como meu bitmaptext\n esta funcionando neste momento.");
+        txt.setText("Esta eh uma frase inteiramente completa.\nTemos que testar, (amigo).");// agora pra caramba sobre como meu bitmaptext\n esta funcionando neste momento.");
         logln(txt.font.atlasTexturePath);
         // logln(txt.getVertices());
     }

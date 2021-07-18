@@ -304,9 +304,9 @@ class Hip_GL3Renderer : IHipRendererImpl
         final switch(mode) with(HipRendererMode)
         {
             case POINT:
-                return GL_POINT;
+                return GL_POINTS;
             case LINE:
-                return GL_LINE;
+                return GL_LINES;
             case LINE_STRIP:
                 return GL_LINE_STRIP;
             case TRIANGLES:
