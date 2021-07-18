@@ -32,8 +32,8 @@ private int getGLAttributeType(HipAttributeType _t)
 
 class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
 {
-    immutable ulong size;
     immutable int  usage;
+    ulong size;
     uint vbo;
 
     this(ulong size, HipBufferUsage usage)
@@ -46,7 +46,7 @@ class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
     void unbind(){glBindBuffer(GL_ARRAY_BUFFER, 0);}
     void setData(ulong size, const void* data)
     {
-        // assert(size <= this.size, format!"Tried to set data with size %s for vertex buffer with size %s"(size, this.size));
+        this.size = size;
         this.bind();
         glBufferData(GL_ARRAY_BUFFER, size, data, this.usage);
     }
@@ -60,9 +60,9 @@ class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
 }
 class Hip_GL3_IndexBufferObject : IHipIndexBufferImpl
 {
-    immutable ulong size;
-    immutable uint count;
     immutable int  usage;
+    ulong size;
+    uint count;
     uint ebo;
     this(uint count, HipBufferUsage usage)
     {
@@ -75,7 +75,8 @@ class Hip_GL3_IndexBufferObject : IHipIndexBufferImpl
     void unbind(){glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);}
     void setData(uint count, const uint* data)
     {
-        // assert(count <= this.count);
+        this.count = count;
+        this.size = uint.sizeof*count;
         this.bind();
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, uint.sizeof*count, data, this.usage);
     }

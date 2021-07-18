@@ -190,6 +190,8 @@ class HipVertexArrayObject
     */
     void updateVertices(uint count, const void* data, int offset = 0)
     {
+        if(VBO is null)
+            ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
         this.bind();
         this.VBO.updateData(offset, count*this.stride, data);
         HipRenderer.exitOnError();
@@ -213,6 +215,8 @@ class HipVertexArrayObject
     */
     void updateIndices(uint count, uint* data, int offset = 0)
     {
+        if(EBO is null)
+            ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");
         this.bind();
         this.EBO.updateData(offset, count, data);
         HipRenderer.exitOnError();
