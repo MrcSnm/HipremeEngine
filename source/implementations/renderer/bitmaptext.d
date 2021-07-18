@@ -48,6 +48,12 @@ class HipBitmapFont
 
     ///Use that property to know how many characters was read inside the atlas
     uint charactersCount;
+    
+    ///Saves the space width for the bitmap text process the ' '. If the original spaceWidth is == 0, it won't draw a quad
+    uint spaceWidth;
+
+    ///How much the line break will offset in Y the next char
+    uint lineBreakHeight;
 
     void readAtlas(string atlasPath)
     {
@@ -102,13 +108,33 @@ class HipBitmapFont
         HipBitmapChar[] ch = new HipBitmapChar[memSize];
         charactersCount = count;
         characters = ch;
+
+        float avgWidth = 0;
+        float avgHeight = 0;
+        uint avgCount = 0;
         for(int i = 0; i < count; i++)
         {
             HipBitmapChar c;
             fscanf(f, "char id=%d x=%d y=%d width=%d height=%d xoffset=%d yoffset=%d xadvance=%d page=%d chnl=%d\n",
             &c.id, &c.x, &c.y, &c.width, &c.height, &c.xoffset, &c.yoffset, &c.xadvance, &c.page, &c.chnl);
             ch[c.id] = c;
+            if(c.width != 0 && c.height != 0)
+            {
+                avgWidth+= c.width;
+                avgHeight+= c.height;
+                avgCount++;
+            }
         }
+        if(characters[' '].width == 0 && characters[' '].xadvance == 0)
+            spaceWidth = cast(uint)(avgWidth/avgCount);
+        else
+            spaceWidth = characters[' '].xadvance;
+
+        if(characters['\n'].height == 0)
+            lineBreakHeight = cast(uint)(avgHeight/avgCount);
+        else
+            lineBreakHeight = characters['\n'].height;
+        
         fclose(f);
     }
 
@@ -230,9 +256,8 @@ class HipBitmapText
     float[] getVertices()
     {
         HipBitmapChar ch;
-        uint linebreakCount;
-        int  linebreakMultiplier = 5;
-        int xoffset;
+        int yoffset = 0;
+        int xoffset = 0;
         //4 floats(vec2 pos, vec2 texst) and 4 vertices per character
         float[] v = new float[text.length*4*4];
         int vI = 0;
@@ -242,37 +267,50 @@ class HipBitmapText
             switch(ch.id)
             {
                 case '\n':
-                    linebreakCount++;
+                    if(ch.height == 0)
+                    {
+                        yoffset+= font.lineBreakHeight;
+                        xoffset = 0;
+                        break;
+                    }
                     break;
+                case ' ':
+                    if(ch.width == 0)
+                    {
+                        xoffset+= font.spaceWidth;
+                        break;
+                    }
+                    goto default;
                 default:
-                    xoffset+= ch.width;
+                    xoffset+= ch.xadvance + ch.xoffset;
+                    yoffset+= ch.yoffset;
                     //Gen vertices 
-
-                    import std.stdio;
 
                     //Top left
                     v[vI++] = xoffset+displayX; //X
-                    v[vI++] = linebreakCount*linebreakMultiplier+displayY; //Y
+                    v[vI++] = yoffset+displayY; //Y
                     v[vI++] = ch.normalizedX; //S
                     v[vI++] = ch.normalizedY; //T
 
                     //Top Right
                     v[vI++] = xoffset+displayX+ch.width; //X+W
-                    v[vI++] = linebreakCount*linebreakMultiplier+displayY; //Y
+                    v[vI++] = yoffset+displayY; //Y
                     v[vI++] = ch.normalizedX + ch.normalizedWidth; //S+W
                     v[vI++] = ch.normalizedY; //T
 
                     //Bot right
                     v[vI++] = xoffset+displayX+ch.width; //X+W
-                    v[vI++] = linebreakCount*linebreakMultiplier+displayY + ch.height; //Y
+                    v[vI++] = yoffset+displayY + ch.height; //Y
                     v[vI++] = ch.normalizedX + ch.normalizedWidth; //S+W
                     v[vI++] = ch.normalizedY + ch.normalizedHeight; //T
 
                     //Bot left
                     v[vI++] = xoffset+displayX; //X
-                    v[vI++] = linebreakCount*linebreakMultiplier+displayY + ch.height; //Y+H
+                    v[vI++] = yoffset+displayY + ch.height; //Y+H
                     v[vI++] = ch.normalizedX; //S
                     v[vI++] = ch.normalizedY + ch.normalizedHeight; //T+H
+
+                    yoffset-= ch.yoffset;
 
             }
         }
