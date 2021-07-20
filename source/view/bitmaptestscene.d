@@ -11,7 +11,7 @@ class BitmapTestScene : Scene
     {
         txt = new HipBitmapText();
         txt.setBitmapFont(HipBitmapFont.fromFile("assets/fonts/tnroman.fnt"));
-        txt.setText("Esta eh uma frase inteiramente completa.\nTemos que testar, (amigo).");
+        txt.setText("Ola amigo. Vamos tentar criar um jogo?");
         logln(txt.font.atlasTexturePath);
         // logln(txt.getVertices());
     }

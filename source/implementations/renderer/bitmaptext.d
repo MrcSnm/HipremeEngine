@@ -29,7 +29,7 @@ interface IHipBitmapText
 struct HipBitmapChar
 {
     ///Not meant to support more than ushort right now
-    ushort id;
+    uint id;
     ///Those are in absolute values
     int x, y, width, height;
 
@@ -58,18 +58,19 @@ class HipBitmapFont
     uint lineBreakHeight;
 
 
-    Pair!(int, int)[int] kerning;
+    Pair!(int, int)[][int] kerning;
 
     void readAtlas(string atlasPath)
     {
         this.atlasPath = atlasPath;
-        char[100] name;
+        char[512] name;
         int size;
-        bool bold, italic;
-        char[100] charset;
-        bool unicode;
+
+        int bold, italic;
+        char[512] charset;
+        int unicode;
         int stretchH;
-        bool smooth, aa;
+        int smooth, aa;
 
         int paddingX, paddingY, paddingW, paddingH;
         int spacingX, spacingY;
@@ -91,7 +92,9 @@ class HipBitmapFont
             return;
         }
 
-        fscanf(f, "info face=\"%[^\"]%s size=%d bold=%d italic=%d charset=%s unicode=%d stretchH=%d smooth=%d aa=%d padding=%d,%d,%d,%d spacing=%d,%d outline=%d\n",
+        //Doing that disables the warning
+        string format = "info face=\"%[^\"]%512s size=%d bold=%d italic=%d charset=%512s unicode=%d stretchH=%d smooth=%d aa=%d padding=%d,%d,%d,%d spacing=%d,%d outline=%d\n";
+        fscanf(f, format.ptr,
         name.ptr, &size, &bold, &italic, charset.ptr, &unicode, &stretchH, &smooth, &aa,
         &paddingX, &paddingY, &paddingW, &paddingH, &spacingX, &spacingY, &outline);
 
@@ -100,7 +103,8 @@ class HipBitmapFont
         &lineHeight, &base, &scaleW, &scaleH, &pages, &packed, &alpha, &red, &green, &blue);
 
         //Page
-        fscanf(f, "page id=%d file=\"%[^\"]%s\n", &pageId, file.ptr);
+        format = "page id=%d file=\"%[^\"]%512s\n";
+        fscanf(f, format.ptr, &pageId, file.ptr);
 
         atlasTexturePath = to!string(file)[0..strlen(file.ptr)];
         //Count
@@ -115,26 +119,21 @@ class HipBitmapFont
         characters = ch;
 
         uint maxWidth = 0;
-        uint maxHeight = 0;
         for(int i = 0; i < count; i++)
         {
             HipBitmapChar c;
-            fscanf(f, "char id=%d x=%d y=%d width=%d height=%d xoffset=%d yoffset=%d xadvance=%d page=%d chnl=%d\n",
+            fscanf(f, "char id=%u x=%d y=%d width=%d height=%d xoffset=%d yoffset=%d xadvance=%d page=%d chnl=%d\n",
             &c.id, &c.x, &c.y, &c.width, &c.height, &c.xoffset, &c.yoffset, &c.xadvance, &c.page, &c.chnl);
             ch[c.id] = c;
             
             maxWidth = max(maxWidth, c.width);
-            maxHeight = max(maxHeight, c.height);
         }
         if(characters[' '].width == 0 && characters[' '].xadvance == 0)
             spaceWidth = maxWidth;
         else
             spaceWidth = characters[' '].xadvance;
 
-        if(characters['\n'].height == 0)
-            lineBreakHeight = maxHeight;
-        else
-            lineBreakHeight = characters['\n'].height;
+        lineBreakHeight = lineHeight;
         
         int kerningCount = 0;
         int k1, k2, kv;
@@ -144,7 +143,9 @@ class HipBitmapFont
         for(int i = 0; i < kerningCount; i++)
         {
             fscanf(f, "kerning first=%d second=%d amount=%d\n", &k1, &k2, &kv);
-            kerning[k1] = Pair!(int, int)(k2, kv);
+            if((k1 in kerning) is null)
+                kerning[k1] = [];
+            kerning[k1]~= Pair!(int, int)(k2, kv);
         }
 
         fclose(f);
@@ -273,6 +274,9 @@ class HipBitmapText
         //4 floats(vec2 pos, vec2 texst) and 4 vertices per character
         float[] v = new float[text.length*4*4];
         int vI = 0;
+
+        int lastCharacter = 0;
+        int kerningAmount = 0;
         for(int i = 0; i < text.length; i++)
         {
             ch = font.characters[text[i]];
@@ -294,7 +298,20 @@ class HipBitmapText
                     }
                     goto default;
                 default:
-                    xoffset+= ch.xoffset;
+                    //Find kerning
+                    Pair!(int, int)[]* pair = lastCharacter in font.kerning;
+                    if(pair !is null)
+                    {
+                        foreach(p; *pair)
+                        {
+                            if(p.first == ch.id)
+                            {
+                                kerningAmount = p.second;
+                                break;
+                            }
+                        }
+                    }
+                    xoffset+= ch.xoffset+kerningAmount;
                     yoffset+= ch.yoffset;
                     //Gen vertices 
 
@@ -323,11 +340,12 @@ class HipBitmapText
                     v[vI++] = ch.normalizedY + ch.normalizedHeight; //T+H
 
                     yoffset-= ch.yoffset;
-
-                    xoffset-= ch.xoffset;
+                    xoffset-= ch.xoffset + kerningAmount;
                     xoffset+= ch.xadvance;
 
             }
+            lastCharacter = ch.id;
+
         }
         return v;
     }
