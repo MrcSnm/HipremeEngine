@@ -91,7 +91,7 @@ class HipBitmapFont
             return;
         }
 
-        fscanf(f, "info face=%s size=%d bold=%d italic=%d charset=%s unicode=%d stretchH=%d smooth=%d aa=%d padding=%d,%d,%d,%d spacing=%d,%d outline=%d\n",
+        fscanf(f, "info face=\"%[^\"]%s size=%d bold=%d italic=%d charset=%s unicode=%d stretchH=%d smooth=%d aa=%d padding=%d,%d,%d,%d spacing=%d,%d outline=%d\n",
         name.ptr, &size, &bold, &italic, charset.ptr, &unicode, &stretchH, &smooth, &aa,
         &paddingX, &paddingY, &paddingW, &paddingH, &spacingX, &spacingY, &outline);
 
@@ -100,9 +100,9 @@ class HipBitmapFont
         &lineHeight, &base, &scaleW, &scaleH, &pages, &packed, &alpha, &red, &green, &blue);
 
         //Page
-        fscanf(f, "page id=%d file=%s\n", &pageId, file.ptr);
+        fscanf(f, "page id=%d file=\"%[^\"]%s\n", &pageId, file.ptr);
 
-        atlasTexturePath = to!string(file)[1..strlen(file.ptr)-1];
+        atlasTexturePath = to!string(file)[0..strlen(file.ptr)];
         //Count
         fscanf(f, "chars count=%d\n", &count);
 
