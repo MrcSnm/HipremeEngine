@@ -134,7 +134,11 @@ extern(C)int SDL_main()
 	kb.addKeyListener(SDL_Keycode.SDLK_ESCAPE, k);
 	kb.addKeyListener(SDL_Keycode.SDLK_a, new class Key
 	{
-		override void onDown(){import util.time : Time; logln(this.meta.getDowntimeDuration());}
+		override void onDown()
+		{
+			import util.time : Time;
+			// logln(this.meta.getDowntimeDuration());
+		}
 		override void onUp(){}
 	});
 
@@ -144,8 +148,6 @@ extern(C)int SDL_main()
 	float angleSum = 0.01;
 	import std.math:sin,cos;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-	Shader shader = HipRenderer.currentShader;
 
 	Scene testscene = new BitmapTestScene();
 	
@@ -157,21 +159,8 @@ extern(C)int SDL_main()
 	while(!quit)
 	{
 		ev.handleEvent();
-	    SDL_Event e;
-		while(SDL_PollEvent(&e)) 
-		{
-			// DI.update(&e);
-			switch(e.type)
-			{
-				case SDL_QUIT:
-					quit = true;
-					break;
-//				case SDL_KEYDOWN:
-//					alogi("D_LANG", to!string(e.key.keysym.sym));
-				default:break;
-			}
-		}
-
+		if(ev.hasQuit)
+			break;
 
 		///////////START IMGUI
 
@@ -209,7 +198,7 @@ extern(C)int SDL_main()
 		
 		// DI.end();
 
-	
+		ev.postUpdate();
     }
 	//	alSource3f(src, AL_POSITION, cos(angle) * 10, 0, sin(angle) * 10);
 		angle+=angleSum;

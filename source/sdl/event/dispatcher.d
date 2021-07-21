@@ -11,6 +11,7 @@ class EventDispatcher
 {
     SDL_Event e;
     private SDL_EventType types;
+    ulong frameCount;
     KeyboardHandler* keyboard = null;
 
     this(KeyboardHandler *kb)
@@ -39,7 +40,12 @@ class EventDispatcher
             }
         }
         keyboard.update();
+        frameCount++;
+    }
 
+    void postUpdate()
+    {
+        keyboard.postUpdate();
     }
 }
 
