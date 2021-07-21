@@ -357,7 +357,7 @@ class HipBitmapText
             if(indices is null)
                 indices = new uint[text.length*6];
             else
-                indices.reserve(text.length*6);
+                indices.length = (text.length*6);
             ulong index = 0;
             for(uint i = 0; i < text.length; i++)
             {
