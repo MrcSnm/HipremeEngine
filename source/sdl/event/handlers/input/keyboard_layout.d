@@ -28,9 +28,12 @@ abstract class KeyboardLayout
 
     final string getKey(char key, KeyState ks)
     {
+        import std.stdio;
         string* str = (KeyStroke(key, ks) in kb);
         if(str == null)
+        {
             return "";
+        }
         return *str; 
     }
 

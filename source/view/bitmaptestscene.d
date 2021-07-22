@@ -15,9 +15,7 @@ class BitmapTestScene : Scene
     {
         txt = new HipBitmapText();
         abnt2 = new KeyboardLayoutABNT2();
-        txt.setBitmapFont(HipBitmapFont.fromFile("assets/fonts/tnroman.fnt"));
-        logln(abnt2.getKey('a', KeyboardLayout.KeyState.NONE));
-        // logln(txt.getVertices());
+        txt.setBitmapFont(HipBitmapFont.fromFile("assets/fonts/arial.fnt"));
     }
 
     override void render()
@@ -26,7 +24,6 @@ class BitmapTestScene : Scene
         HipRenderer.clear(); 
         string _txt = txt.text;
         string input = KeyboardHandler.getInputText(abnt2);
-        writeln(input);
         _txt~= input;
         txt.setText(_txt);
         txt.render();

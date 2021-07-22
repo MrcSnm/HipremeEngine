@@ -194,6 +194,7 @@ extern(C)int SDL_main()
 		// }
 
         // // Rendering
+
 		// // glViewport(0, 0, cast(int)io.DisplaySize.x, cast(int)io.DisplaySize.y);
 		
 		// DI.end();
