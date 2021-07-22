@@ -23,7 +23,7 @@ enum KeyCodes
 private char toUppercase(char a)
 {
     ubyte charV = ubyte(a);
-    if(charV >= KeyCodes.A+32 || charV <= KeyCodes.Z+32)
+    if(charV >= KeyCodes.A+32 && charV <= KeyCodes.Z+32)
         return cast(char)(charV-32);
     return a;
 }
@@ -100,11 +100,12 @@ final private class KeyMetadata
     }
     private void setPressed(bool press)
     {
+        if(press && !isPressed)
+            justPressed = true;
         if(press != isPressed)
         {
             if(isPressed)
             {
-                justPressed = true;
                 lastDownTime = getDowntimeDuration();
                 stampUpTime();
             }
@@ -253,6 +254,7 @@ class KeyboardHandler
     */
     void handleKeyDown(SDL_Keycode key)
     {
+        import std.stdio;
         setPressed(key, true);
     }
 

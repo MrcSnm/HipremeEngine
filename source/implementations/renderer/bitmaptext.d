@@ -1,4 +1,5 @@
 module implementations.renderer.bitmaptext;
+import graphics.g2d.viewport;
 import util.data_structures;
 import std.algorithm.comparison : max;
 import std.string;
@@ -35,6 +36,7 @@ struct HipBitmapChar
 
     int xoffset, yoffset, xadvance, page, chnl; 
 
+
     ///Normalized values
     float normalizedX, normalizedY, normalizedWidth, normalizedHeight;
 }
@@ -57,6 +59,7 @@ class HipBitmapFont
     ///How much the line break will offset in Y the next char
     uint lineBreakHeight;
 
+    int padL, padU, padR, padD;
 
     Pair!(int, int)[][int] kerning;
 
@@ -97,6 +100,11 @@ class HipBitmapFont
         fscanf(f, format.ptr,
         name.ptr, &size, &bold, &italic, charset.ptr, &unicode, &stretchH, &smooth, &aa,
         &paddingX, &paddingY, &paddingW, &paddingH, &spacingX, &spacingY, &outline);
+
+        padL = paddingX;
+        padU = paddingY;
+        padR = paddingW;
+        padD = paddingH;
 
         //Common
         fscanf(f, "common lineHeight=%d base=%d scaleW=%d scaleH=%d pages=%d packed=%d alphaChnl=%d redChnl=%d greenChnl=%d blueChnl=%d\n",
@@ -218,7 +226,8 @@ class HipBitmapText
             bmTextShader.bind();
             bmTextShader.setVar("uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
             bmTextShader.setVar("uModel", Matrix4.identity);
-            bmTextShader.setVar("uView", Matrix4.orthoLH(0, 800, 600, 0, 0.01, 100));
+            const Viewport v = HipRenderer.getCurrentViewport();
+            bmTextShader.setVar("uView", Matrix4.orthoLH(0, v.w, v.h, 0, 0.01, 100));
             bmTextShader.setVar("uProj", Matrix4.identity);
         }
         text = "";
@@ -340,7 +349,7 @@ class HipBitmapText
                     v[vI++] = ch.normalizedY + ch.normalizedHeight; //T+H
 
                     yoffset-= ch.yoffset;
-                    xoffset-= ch.xoffset + kerningAmount;
+                    xoffset-= ch.xoffset;
                     xoffset+= ch.xadvance;
 
             }

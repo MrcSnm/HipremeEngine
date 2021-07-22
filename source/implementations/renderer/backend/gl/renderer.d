@@ -131,7 +131,10 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public void setViewport(Viewport v)
     {
-        SDL_RenderSetViewport(renderer, &v.bounds);
+        import std.stdio;
+        // writeln(v.w, v.h);
+        glViewport(v.x, v.y, v.w, v.h);
+        // SDL_RenderSetViewport(renderer, &v.bounds);
     }
     public bool setWindowMode(HipWindowMode mode)
     {
