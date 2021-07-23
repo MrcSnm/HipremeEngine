@@ -53,8 +53,8 @@ abstract class KeyboardLayout
     {
         with(KeyCodes)
         {
-            // addKeyAnyState(SPACE, " ");
-            addKey(SPACE, " ");
+            addKeyAnyState(SPACE, " ");
+            addKeyAnyState(ENTER, "\n");
             addKey(_0, "0");
             addKey(_1, "1");
             addKey(_2, "2");

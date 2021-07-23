@@ -16,6 +16,8 @@ class BitmapTestScene : Scene
         txt = new HipBitmapText();
         abnt2 = new KeyboardLayoutABNT2();
         txt.setBitmapFont(HipBitmapFont.fromFile("assets/fonts/arial.fnt"));
+        txt.x = 1280/2;
+        txt.alignh = HipTextAlign.CENTER;
     }
 
     override void render()

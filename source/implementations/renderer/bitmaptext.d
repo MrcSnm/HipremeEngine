@@ -59,7 +59,6 @@ class HipBitmapFont
     ///How much the line break will offset in Y the next char
     uint lineBreakHeight;
 
-    int padL, padU, padR, padD;
 
     Pair!(int, int)[][int] kerning;
 
@@ -100,11 +99,6 @@ class HipBitmapFont
         fscanf(f, format.ptr,
         name.ptr, &size, &bold, &italic, charset.ptr, &unicode, &stretchH, &smooth, &aa,
         &paddingX, &paddingY, &paddingW, &paddingH, &spacingX, &spacingY, &outline);
-
-        padL = paddingX;
-        padU = paddingY;
-        padR = paddingW;
-        padD = paddingH;
 
         //Common
         fscanf(f, "common lineHeight=%d base=%d scaleW=%d scaleH=%d pages=%d packed=%d alphaChnl=%d redChnl=%d greenChnl=%d blueChnl=%d\n",
@@ -212,6 +206,9 @@ class HipBitmapText
     ///Update dynamically based on the font, the text scale and the text length
     uint width, height;
 
+    //Line widths, containing width for each line for correctly aplying text align
+    uint[] linesWidths;
+
     HipTextAlign alignh = HipTextAlign.LEFT;
     HipTextAlign alignv = HipTextAlign.TOP;
     uint[] indices;
@@ -230,6 +227,7 @@ class HipBitmapText
             bmTextShader.setVar("uView", Matrix4.orthoLH(0, v.w, v.h, 0, 0.01, 100));
             bmTextShader.setVar("uProj", Matrix4.identity);
         }
+        linesWidths = new uint[4];
         text = "";
         mesh = new Mesh(HipVertexArrayObject.getXY_ST_VAO(), bmTextShader);
         //4 vertices per quad
@@ -242,8 +240,9 @@ class HipBitmapText
     {
         this.font = font;
     }
-    protected void updateAlign()
+    protected void updateAlign(int lineNumber)
     {
+        uint w = linesWidths[lineNumber];
         displayX = x;
         displayY = y;
         with(HipTextAlign)
@@ -251,10 +250,10 @@ class HipBitmapText
             switch(alignh)
             {
                 case CENTER:
-                    displayX+= width/2;
+                    displayX-= w/2;
                     break;
                 case RIGHT:
-                    displayX+= width;
+                    displayX-= w;
                     break;
                 case LEFT:
                 default:
@@ -286,6 +285,8 @@ class HipBitmapText
 
         int lastCharacter = 0;
         int kerningAmount = 0;
+        int lineBreakCount = 0;
+        updateAlign(0);
         for(int i = 0; i < text.length; i++)
         {
             ch = font.characters[text[i]];
@@ -296,6 +297,7 @@ class HipBitmapText
                     {
                         yoffset+= font.lineBreakHeight;
                         xoffset = 0;
+                        updateAlign(++lineBreakCount);
                         break;
                     }
                     break;
@@ -349,7 +351,7 @@ class HipBitmapText
                     v[vI++] = ch.normalizedY + ch.normalizedHeight; //T+H
 
                     yoffset-= ch.yoffset;
-                    xoffset-= ch.xoffset;
+                    xoffset-= ch.xoffset+kerningAmount;
                     xoffset+= ch.xadvance;
 
             }
@@ -361,6 +363,35 @@ class HipBitmapText
 
     void setText(string text)
     {
+        int w, h;
+        int lastMaxW = 0;
+        int lineCount = 0;
+        HipBitmapChar[] ch = font.characters;
+        for(int i = 0; i < text.length; i++)
+        {
+            switch(text[i])
+            {
+                case '\n':
+                    h+=font.lineBreakHeight;
+                    lastMaxW = max(w, lastMaxW);
+                    if(linesWidths.length < lineCount)
+                        linesWidths~= w;
+                    else
+                        linesWidths[lineCount] = w;
+                    lineCount++;
+                    w = 0;
+                    break;
+                case ' ':
+                    w+= font.spaceWidth;
+                    break;
+                default:
+                    w+= ch[text[i]].xadvance;
+                    break;
+            }
+        }
+        width = max(w, lastMaxW);
+        linesWidths[lineCount] = w;
+        height = h;
         if(text.length > this.text.length)
         {
             if(indices is null)
@@ -382,7 +413,6 @@ class HipBitmapText
             mesh.setIndices(indices);
         }
         this.text = text;
-        updateAlign();
         vertices = getVertices();
         mesh.setVertices(vertices);
     }
