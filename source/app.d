@@ -26,6 +26,7 @@ import implementations.renderer.backend.d3d.renderer;
 import view.scene;
 import view.testscene;
 import view.spritetestscene;
+import view.tilemaptest;
 import view.framebuffertestscene;
 import view.bitmaptestscene;
 import def.debugging.gui;
@@ -149,7 +150,7 @@ extern(C)int SDL_main()
 	import std.math:sin,cos;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	Scene testscene = new BitmapTestScene();
+	Scene testscene = new TilemapTestScene();
 	
 	testscene.init();
 
