@@ -21,8 +21,6 @@ class BitmapTestScene : Scene
         txt.alignh = HipTextAlign.CENTER;
 
         Tilemap m = Tilemap.readTiled();
-
-        logln(m.layers[$-1].properties["restorer"].get!int);
     }
 
     override void render()
