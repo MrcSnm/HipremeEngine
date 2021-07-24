@@ -1,70 +1,105 @@
 module implementations.renderer.backend.gl.vertex;
 
 import bindbc.opengl;
-import implementations.renderer.backend.vertex.vertex;
+import std.format:format;
+import implementations.renderer.vertex;
 
 
-enum AttributeType
+private int getGLUsage(HipBufferUsage usage)
 {
-    FLOAT = GL_FLOAT,
-    INT = GL_INT,
-    BOOL = GL_BOOL
+    final switch(usage) with(HipBufferUsage)
+    {
+        case STATIC:
+            return GL_STATIC_DRAW;
+        case DEFAULT:
+        case DYNAMIC:
+            return GL_DYNAMIC_DRAW;
+    }
+}
+private int getGLAttributeType(HipAttributeType _t)
+{
+    final switch(_t) with(HipAttributeType)
+    {
+        case FLOAT:
+            return GL_FLOAT;
+        case INT:
+            return GL_INT;
+        case BOOL:
+            return GL_BOOL;
+    }
 }
 
-uint createVertexArrayObject()
+
+class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
+{
+    immutable int  usage;
+    ulong size;
+    uint vbo;
+
+    this(ulong size, HipBufferUsage usage)
+    {
+        this.size = size;
+        this.usage = getGLUsage(usage);
+        glGenBuffers(1, &this.vbo);
+    }
+    void bind(){glBindBuffer(GL_ARRAY_BUFFER, this.vbo);}
+    void unbind(){glBindBuffer(GL_ARRAY_BUFFER, 0);}
+    void setData(ulong size, const void* data)
+    {
+        this.size = size;
+        this.bind();
+        glBufferData(GL_ARRAY_BUFFER, size, data, this.usage);
+    }
+    void updateData(int offset, ulong size, const void* data)
+    {
+        assert(size+offset <= this.size, format!"Tried to set data with size %s and offset %s for vertex buffer with size %s"(size, offset, this.size));
+        this.bind();
+        glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+    }
+    ~this(){glDeleteBuffers(1, &this.vbo);}
+}
+class Hip_GL3_IndexBufferObject : IHipIndexBufferImpl
+{
+    immutable int  usage;
+    ulong size;
+    uint count;
+    uint ebo;
+    this(uint count, HipBufferUsage usage)
+    {
+        this.size = uint.sizeof*count;
+        this.count = count;
+        this.usage = getGLUsage(usage);
+        glGenBuffers(1, &this.ebo);
+    }
+    void bind(){glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.ebo);}
+    void unbind(){glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);}
+    void setData(uint count, const uint* data)
+    {
+        this.count = count;
+        this.size = uint.sizeof*count;
+        this.bind();
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, uint.sizeof*count, data, this.usage);
+    }
+    void updateData(int offset, uint count, const uint* data)
+    {
+        assert((offset+count)*uint.sizeof <= this.size);
+        this.bind();
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, data);
+    }
+    ~this(){glDeleteBuffers(1, &this.ebo);}
+}
+
+class Hip_GL3_VertexArrayObject : IHipVertexArrayImpl
 {
     uint vao;
-    glGenBuffers(GL_VERTEX_ARRAY, &vao);
-    return vao;
-}
-
-uint createVertexBufferObject()
-{
-    uint vbo;
-    glGenBuffers(GL_ARRAY_BUFFER, &vbo);
-    return vbo;
-}
-
-void setVertexAttribute(ref VertexAttributeInfo info, uint stride)
-{
-    glVertexAttribPointer(info.index, info.length, info.valueType, GL_FALSE, stride, cast(void*)info.offset);
-    glEnableVertexAttribArray(info.index);
-}
-
-void useVertexArrayObject(ref VertexArrayObject obj)
-{
-    glBindVertexArray(obj.ID);
-}
-
-void setVertexArrayObjectData(ref VertexArrayObject obj, void* data, size_t dataSize)
-{
-    if(obj.isStatic)
-        glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
-    else
-        glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_DYNAMIC_DRAW);
-}
-
-void deleteVertexArrayObject(ref VertexArrayObject obj)
-{
-    glDeleteBuffers(1, &obj.ID);
-    obj.ID = 0;
-    obj.index = 0;
-}
-
-void deleteVertexBufferObject(ref VertexArrayObject obj)
-{
-    if(obj.VBO != 0)
+    this(){glGenVertexArrays(1, &this.vao);}
+    void bind(){glBindVertexArray(this.vao);}
+    void unbind(){glBindVertexArray(0);}
+    void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride)
     {
-        glDeleteBuffers(1, &obj.VBO);
-        obj.VBO = 0;
+        glVertexAttribPointer(info.index, info.count, 
+            getGLAttributeType(info.valueType), GL_FALSE, stride, cast(void*)info.offset);
+        glEnableVertexAttribArray(info.index);
     }
-}
-
-void deleteElementBufferObject(ref VertexArrayObject obj)
-{
-    if(obj.EBO != 0)
-    {
-        glDeleteBuffers(1, &obj.EBO);
-        obj.EBO = 0;
-    }
+    ~this(){glDeleteVertexArrays(1, &this.vao);}
 }

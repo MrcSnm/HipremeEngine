@@ -136,7 +136,7 @@ public static class ErrorHandler
     {
         version(HIPREME_DEBUG)
         {
-            string where = mod~"."~file~":"~to!string(line)~"("~func~")\n\t";
+            string where = "at module '"~mod~"' "~file~":"~to!string(line)~"("~func~")\n\t";
         }
         else
         {

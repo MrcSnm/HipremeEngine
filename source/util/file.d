@@ -1,12 +1,13 @@
 module util.file;
 import std.file;
 import util.system;
+import util.string;
 
-string getFileContent(string path)
+string getFileContent(string path, bool noCarriageReturn = true)
 {
     path = sanitizePath(path);
     if(!exists(path))
         return "";
-    
-    return readText(path);
+    string content = readText(path);
+    return (noCarriageReturn) ? content.replaceAll('\r') : content;
 }

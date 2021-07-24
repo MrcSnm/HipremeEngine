@@ -46,7 +46,7 @@ bool swapElementsFromArray(T)(T[] arr, T element1, T element2)
 
 void printArrayWithoutValues(T)(const T[] arr, T[] ignoreValues...)
 {
-    import std.stdio : writeln;
+    import def.debugging.log;
     string str = "[";
     MainLoop: foreach (val; arr)
     {
@@ -58,7 +58,7 @@ void printArrayWithoutValues(T)(const T[] arr, T[] ignoreValues...)
     str~= "]";
     const int index = lastIndexOf(str, ',');
     if(index == -1)
-        writeln("[]");
+        logln("[]");
     else
-        writeln(str[0..index] ~ str[index+2..$]);
+        logln(str[0..index] ~ str[index+2..$]);
 }

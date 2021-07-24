@@ -1,9 +1,32 @@
 module sdl.event.handlers.keyboard;
+import sdl.event.handlers.input.keyboard_layout;
+import util.data_structures;
 import std.stdio;
 private import sdl.loader;
 private import std.algorithm, std.conv, std.datetime.stopwatch;
 private import error.handler;
 private import util.time, util.array;
+
+enum KeyCodes
+{
+    BACKSPACE = 8, TAB, ENTER = 13, SHIFT = 16, CTRL, ALT, PAUSE_BREAK, CAPSLOCK,
+    ESCAPE = 27, SPACE = 32, PAGE_UP, PAGE_DOWN, END, HOME, ARROW_LEFT, ARROW_UP, ARROW_RIGHT, ARROW_DOWN,
+    INSERT = 45, DELETE, _0 = 48, _1, _2, _3, _4, _5, _6, _7, _8, _9,
+    A = 65, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
+
+    META_LEFT = 91, META_RIGHT,
+
+    F1 = 112, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, 
+    SEMICOLON = 186, EQUAL, COMMA, MINUS, PERIOD = 190, SLASH, BACKQUOTE, BRACKET_LEFT = 219, BACKSLASH, BRACKET_RIGHT, QUOTE
+}
+
+private char toUppercase(char a)
+{
+    ubyte charV = ubyte(a);
+    if(charV >= KeyCodes.A+32 && charV <= KeyCodes.Z+32)
+        return cast(char)(charV-32);
+    return a;
+}
 
 /** 
  * Key handler
@@ -41,6 +64,7 @@ final private class KeyMetadata
     float lastUpTime, upTimeStamp;
     ubyte keyCode;
     bool isPressed = false;
+    bool justPressed = false;
     this(int key)
     {
         this.keyCode = cast(ubyte)key;
@@ -76,6 +100,8 @@ final private class KeyMetadata
     }
     private void setPressed(bool press)
     {
+        if(press && !isPressed)
+            justPressed = true;
         if(press != isPressed)
         {
             if(isPressed)
@@ -102,6 +128,12 @@ class KeyboardHandler
     private int[int] listenersCount;
     private static int[256] pressedKeys;
     private static KeyMetadata[256] metadatas;
+    private static string frameText;
+
+    private static bool altPressed;
+    private static bool shiftPressed;
+    private static bool ctrlPressed;
+    private static float keyRepeatDelay = 0.5;
 
     static this()
     {
@@ -178,7 +210,23 @@ class KeyboardHandler
                 pressedKeys[index - 1] = 0;
             }
             else pressedKeys[0] = 0;
-
+        }
+        switch(key)
+        {
+            case SDL_Keycode.SDLK_LALT:
+            case SDL_Keycode.SDLK_RALT:
+                altPressed = press;
+                break;
+            case SDL_Keycode.SDLK_LCTRL:
+            case SDL_Keycode.SDLK_RCTRL:
+                ctrlPressed = press;
+                break;
+            case SDL_Keycode.SDLK_LSHIFT:
+            case SDL_Keycode.SDLK_RSHIFT:
+                shiftPressed = press;
+                break;
+            default:
+                break;
         }
 
     }
@@ -194,15 +242,41 @@ class KeyboardHandler
                 keyListeners[i].onUp();
         }
     }
+
+    pragma(inline, true)
+    bool isKeyPressed(char key)
+    {
+        return metadatas[key].isPressed;
+    }
     
     /**
     *   Updates the metadata
     */
     void handleKeyDown(SDL_Keycode key)
     {
-        import std.stdio : writeln;
+        import std.stdio;
         setPressed(key, true);
-    
+    }
+
+    static string getInputText(KeyboardLayout layout)
+    {
+        KeyboardLayout.KeyState state = KeyboardLayout.KeyState.NONE;
+        if(altPressed)
+            state|= KeyboardLayout.KeyState.ALT;
+        if(shiftPressed)
+            state|= KeyboardLayout.KeyState.SHIFT;
+        if(ctrlPressed)
+            state|= KeyboardLayout.KeyState.CTRL;
+        string ret = "";
+        int i = 0;
+        while(pressedKeys[i] != 0)
+        {
+            const float pressTime = metadatas[pressedKeys[i]].getDowntimeDuration();
+            if(pressTime >= keyRepeatDelay || metadatas[pressedKeys[i]].justPressed)
+                ret~= layout.getKey(toUppercase(cast(char)pressedKeys[i]), state);
+            i++;
+        }
+        return ret;
     }
 
     void update()
@@ -210,11 +284,21 @@ class KeyboardHandler
         int i = 0;
         while(pressedKeys[i] != 0)
         {
+            //Check listeners for that ey
             if((pressedKeys[i] in listeners) != null)
                 foreach(key; listeners[pressedKeys[i]])
                     key.onDown();
+            //Add it to the current input
             i++;
         }
+    }
+
+    void postUpdate()
+    {
+        int i = 0;
+        while(pressedKeys[i] != 0)
+            metadatas[pressedKeys[i++]].justPressed = false;
+        frameText = "";
     }
 
 }

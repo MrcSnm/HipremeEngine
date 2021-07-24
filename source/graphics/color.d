@@ -1,23 +1,24 @@
 module graphics.color;
 
-struct Color
+struct HipColor
 {
-    ubyte r, g, b, a;
+    float r, g, b, a;
 
-    static Color fromInt(int color, ubyte alpha)
+    static HipColor fromInt(int color)
     {
-        return Color(
-            cast(ubyte)color >> 16,
-            cast(ubyte)((color >> 8) & 255),
-            cast(ubyte)color & 255,
-            alpha);
+        return HipColor(
+            cast(float)(color >> 24)/255,
+            cast(float)((color >> 16) & 255)/255,
+            cast(float)((color >> 8) & 255)/255,
+            cast(float)(color & 255)/255
+        );
     }
 }
-static enum White   = Color(255,255,255,255);
-static enum Black   = Color(0,0,0,0);
-static enum Red     = Color(255,0,0,255);
-static enum Green   = Color(0,255,0,255);
-static enum Blue    = Color(0,0,255,255);
-static enum Yellow  = Color(255,255,0,255);
-static enum Purple  = Color(255,0,255,255);
-static enum Teal    = Color(0,255,255,255);
+static enum White   = HipColor(1,1,1,1);
+static enum Black   = HipColor(0,0,0,0);
+static enum Red     = HipColor(1,0,0,1);
+static enum Green   = HipColor(0,1,0,1);
+static enum Blue    = HipColor(0,0,1,1);
+static enum Yellow  = HipColor(1,1,0,1);
+static enum Purple  = HipColor(1,0,1,1);
+static enum Teal    = HipColor(0,1,1,1);

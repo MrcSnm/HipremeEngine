@@ -1,12 +1,15 @@
 module implementations.renderer.backend.gl.renderer;
+import implementations.renderer.renderer;
+import implementations.renderer.framebuffer;
 import implementations.renderer.shader;
-import graphics.texture;
+import implementations.renderer.backend.gl.framebuffer;
+import implementations.renderer.backend.gl.shader;
 import graphics.g2d.viewport;
 import math.rect;
 import error.handler;
 import bindbc.sdl;
 import bindbc.opengl;
-import std.stdio:writeln;
+import def.debugging.log;
 
 
 private SDL_Window* createSDL_GL_Window()
@@ -28,87 +31,127 @@ private SDL_Window* createSDL_GL_Window()
 	SDL_GLContext ctx = SDL_GL_CreateContext(window);
 	SDL_GL_MakeCurrent(window, ctx);
 	GLSupport ver = loadOpenGL();
-	writeln(ver);
+	logln(ver);
 	SDL_GL_SetSwapInterval(1);
 	return window;
 }
 
 
 /**
-*   While this class is at implementation and don't have a backend folders,
-*   it actually does not requires a backend(as it is using SDL for now), but
-*   the structure could be changed at any time for supporting a new platform
-*   that SDL does not support
-*
 *
 *   Those functions here present are fairly inneficient as there is not batch ocurring,
 *   as I don't understand how to implement it right now, I'll mantain those functions for having
 *   static access to drawing
 */
-public static class Renderer
+class Hip_GL3Renderer : IHipRendererImpl
 {
-    protected static Viewport currentViewport = null;
-    protected static Viewport mainViewport = null;
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    Shader currentShader;
+    protected static bool isGLBlendEnabled = false;
+    protected static GLenum mode;
 
     /**
     *   Does not uses EBO
     */
-    protected static uint[] vertexBuffersIDS;
-    protected static uint[] vertexArraysIDS;
-    protected static uint currentVertexBufferIndex;
+    protected uint[] vertexBuffersIDS;
+    protected uint[] vertexArraysIDS;
+    protected uint currentVertexBufferIndex;
 
     /**
     *   Uses EBO
     */
-    protected static uint[] rectangleVertexBuffersIDS;
-    protected static uint[] rectangleVertexArraysIDS;
-    protected static uint currentRectangleVertexBufferIndex;
+    protected uint[] rectangleVertexBuffersIDS;
+    protected uint[] rectangleVertexArraysIDS;
+    protected uint currentRectangleVertexBufferIndex;
 
-    protected static uint rectangleEBO;
+    protected uint rectangleEBO;
 
     protected static immutable uint[6] rectangleIndices = [
         3, 2, 1, //Right rectangle
         1, 0, 3  //Left rectangle
     ];
 
-    public static SDL_Renderer* renderer = null;
-    public static SDL_Window* window = null;
 
-    public static Shader currentShader;
-
-    public static bool init(uint reserveAmount=1024)
+    SDL_Window* createWindow()
     {
+        return createSDL_GL_Window();
+    }
+    SDL_Renderer* createRenderer(SDL_Window* window)
+    {
+        return SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+    }
+    Shader createShader()
+    {
+        return new Shader(new Hip_GL3_ShaderImpl());
+    }
+    public bool init(SDL_Window* window, SDL_Renderer* renderer)
+    {
+        this.window = window;
+        this.renderer = renderer;
+        uint reserveAmount=1024;
         vertexBuffersIDS.reserve(reserveAmount);
         rectangleVertexBuffersIDS.reserve(reserveAmount);
-        ErrorHandler.startListeningForErrors("Renderer initialization");
-        window = createSDL_GL_Window();
-        ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL GL Window");
-        renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
-        ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
         setColor();
-
         glGenBuffers(1, &rectangleEBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rectangleEBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, rectangleIndices.sizeof, &rectangleIndices, GL_DYNAMIC_DRAW);
-        mainViewport = new Viewport(0,0,0,0);
-        setShader(new Shader());
-        
-        return ErrorHandler.stopListeningForErrors();
+
+        HipRenderer.rendererType = HipRendererType.GL3;
+        return true;
     }
 
-    public static void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
+    void setShader(Shader s)
+    {
+        currentShader = s;
+    }
+
+    public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         glClearColor(r/255, g/255, b/255, a/255);
     }
-    public static Viewport getCurrentViewport(){return this.currentViewport;}
 
-    public static void setViewport(Viewport v)
+    public IHipFrameBuffer createFrameBuffer(int width, int height)
     {
-        this.currentViewport = v;
-        SDL_RenderSetViewport(renderer, &v.bounds);
+        return new Hip_GL3_FrameBuffer(width, height);
     }
 
-    protected static uint getFreeVertexBufferIndex()
+    public IHipVertexArrayImpl createVertexArray()
+    {
+        return new Hip_GL3_VertexArrayObject();
+    }
+    public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
+    {
+        return new Hip_GL3_VertexBufferObject(size, usage);
+    }
+    public IHipIndexBufferImpl createIndexBuffer(uint count, HipBufferUsage usage)
+    {
+        return new Hip_GL3_IndexBufferObject(count, usage);
+    }
+
+    public void setViewport(Viewport v)
+    {
+        import std.stdio;
+        // writeln(v.w, v.h);
+        glViewport(v.x, v.y, v.w, v.h);
+        // SDL_RenderSetViewport(renderer, &v.bounds);
+    }
+    public bool setWindowMode(HipWindowMode mode)
+    {
+        final switch(mode) with(HipWindowMode)
+        {
+            case BORDERLESS_FULLSCREEN:
+                break;
+            case FULLSCREEN:
+                break;
+            case WINDOWED:
+
+                break;
+        }
+        return false;
+    }
+
+    protected uint getFreeVertexBufferIndex()
     {
         if(vertexBuffersIDS.length >= currentVertexBufferIndex)
         {
@@ -126,7 +169,7 @@ public static class Renderer
     /**
     *   As it uses element buffer object, it is better to separate for better performance
     */
-    protected static uint getFreeVertexBufferIndexForRectangle()
+    protected uint getFreeVertexBufferIndexForRectangle()
     {
         if(rectangleVertexBuffersIDS.length >= currentRectangleVertexBufferIndex)
         {
@@ -146,44 +189,84 @@ public static class Renderer
         return ret;
     }
 
+    public bool hasErrorOccurred(out string err, string file = __FILE__, int line =__LINE__)
+    {
+        import std.format:format;
+        GLenum errorCode = glGetError();
+        static enum GL_STACK_OVERFLOW = 0x0503;
+        static enum GL_STACK_UNDERFLOW = 0x0504;
+        switch(errorCode)
+        {
+            case GL_NO_ERROR:
+                err = format!`GL_NO_ERROR at %s:%s:
+    No error has been recorded. The value of this symbolic constant is guaranteed to be 0.`(file, line);
+                    break;
+            case GL_INVALID_ENUM:
+                err = format!`GL_INVALID_ENUM at %s:%s:
+    An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag.`(file, line);
+                break;
+            case GL_INVALID_VALUE:
+                err = format!`GL_INVALID_VALUE at %s:%s:
+    A numeric argument is out of range. The offending command is ignored and has no other side effect than to set the error flag.`(file, line);
+                break;
+            case GL_INVALID_OPERATION:
+                err = format!`GL_INVALID_OPERATION at %s:%s:
+    The specified operation is not allowed in the current state. The offending command is ignored and has no other side effect than to set the error flag.`(file, line);
+                break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION:
+                err = format!`GL_INVALID_FRAMEBUFFER_OPERATION at %s:%s:
+    The framebuffer object is not complete. The offending command is ignored and has no other side effect than to set the error flag.`(file, line);
+                break;
+            case GL_OUT_OF_MEMORY:
+                err = format!`GL_OUT_OF_MEMORY at %s:%s:
+    There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded.`(file, line);
+                break;
+            case GL_STACK_UNDERFLOW:
+                err = format!`GL_STACK_UNDERFLOW at %s:%s:
+    An attempt has been made to perform an operation that would cause an internal stack to underflow.`(file, line);
+                break;
+            case GL_STACK_OVERFLOW:
+                err = format!`GL_STACK_OVERFLOW at %s:%s:
+    An attempt has been made to perform an operation that would cause an internal stack to overflow.`(file, line);
+                break;
+            default:
+                err = "Unknown error code";
+        }
+        return errorCode != GL_NO_ERROR;
+    }
+
     /**
     *   This function is used to control the internal state for creating vertex buffers
     */
-    public static void begin()
+    public void begin()
     {
         currentVertexBufferIndex = 0;
         currentRectangleVertexBufferIndex = 0;
     }
 
-    public static void setShader(Shader s)
-    {
-        s.setAsCurrent();
-        currentShader = s;
-    }
     /**
     */
-    public static void end()
+    public void end()
     {
         SDL_GL_SwapWindow(window);
-    }
-
-    public static void draw(Texture t, int x, int y, SDL_Rect* clip = null)
-    {
-    }
-
-    pragma(inline, true)
-    public static void render()
-    {
-        // SDL_GL_SwapWindow(window);
         SDL_RenderPresent(renderer);
     }
+
+    public void draw(Texture t, int x, int y){}
+    public void draw(Texture t, int x, int y, SDL_Rect* clip = null)
+    {
+        t.bind();
+        
+    }
+
+
     pragma(inline, true)
-    public static void clear()
+    public void clear()
     {
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    public static void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
+    public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         glClearColor(r/255,g/255,b/255,a/255);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -193,14 +276,14 @@ public static class Renderer
     *   This function must be used only for primitives which don't use EBO
     */
     pragma(inline, true)
-    protected static void bindNextVertexArrayObject()
+    protected void bindNextVertexArrayObject()
     {
         uint index = getFreeVertexBufferIndex();
         glBindVertexArray(vertexArraysIDS[index]);
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffersIDS[index]);
     }
 
-    public static void fillRect(int x, int y, int width, int height)
+    public void fillRect(int x, int y, int width, int height)
     {
         float[12] vertices = [
             -0.5, -0.5, 0,
@@ -218,14 +301,94 @@ public static class Renderer
         
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, cast(void*)0);
     }
-    public static void drawRect()
-    // public static void drawRect(int x, int y, int width, int height)
+
+    protected GLenum getGLRendererMode(HipRendererMode mode)
+    {
+        final switch(mode) with(HipRendererMode)
+        {
+            case POINT:
+                return GL_POINTS;
+            case LINE:
+                return GL_LINES;
+            case LINE_STRIP:
+                return GL_LINE_STRIP;
+            case TRIANGLES:
+                return GL_TRIANGLES;
+            case TRIANGLE_STRIP:
+                return GL_TRIANGLE_STRIP;
+        }
+    }
+    protected GLenum getGLBlendFunction(HipBlendFunction func)
+    {
+        final switch(func) with(HipBlendFunction)
+        {
+            case  ZERO:
+                return GL_ZERO;
+            case  ONE:
+                return GL_ONE;
+            case  SRC_COLOR:
+                return GL_SRC_COLOR;
+            case  ONE_MINUS_SRC_COLOR:
+                return GL_ONE_MINUS_SRC_COLOR;
+            case  DST_COLOR:
+                return GL_DST_COLOR;
+            case  ONE_MINUS_DST_COLOR:
+                return GL_ONE_MINUS_DST_COLOR;
+            case  SRC_ALPHA:
+                return GL_SRC_ALPHA;
+            case  ONE_MINUS_SRC_ALPHA:
+                return GL_ONE_MINUS_SRC_ALPHA;
+            case  DST_ALPHA:
+                return GL_DST_ALPHA;
+            case  ONE_MINUST_DST_ALPHA:
+                return GL_ONE_MINUS_DST_ALPHA;
+            case  CONSTANT_COLOR:
+                return GL_CONSTANT_COLOR;
+            case  ONE_MINUS_CONSTANT_COLOR:
+                return GL_ONE_MINUS_CONSTANT_COLOR;
+            case  CONSTANT_ALPHA:
+                return GL_CONSTANT_ALPHA;
+            case  ONE_MINUS_CONSTANT_ALPHA:
+                return GL_ONE_MINUS_CONSTANT_ALPHA;
+        }
+    }
+    protected GLenum getGLBlendEquation(HipBlendEquation eq)
+    {
+        final switch(eq) with (HipBlendEquation)
+        {
+            case ADD:
+                return GL_FUNC_ADD;
+            case SUBTRACT:
+                return GL_FUNC_SUBTRACT;
+            case REVERSE_SUBTRACT:
+                return GL_FUNC_REVERSE_SUBTRACT;
+            case MIN:
+                return GL_MIN;
+            case MAX:
+                return GL_MAX;
+        }
+    }
+    public void setRendererMode(HipRendererMode mode)
+    {
+        this.mode = getGLRendererMode(mode);
+    }
+    public void drawVertices(uint count, uint offset)
+    {
+        glDrawArrays(this.mode, offset, count);
+    }
+    public void drawIndexed(uint indicesSize, uint offset = 0)
+    {
+        glDrawElements(this.mode, indicesSize, GL_UNSIGNED_INT, cast(void*)offset);
+    }
+
+
+    public void drawRect(int x, int y, int width, int height)
     {
         // rectangle();        
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, cast(void*)0);
     }
 
-    public static void drawLine(int x1, int y1, int x2, int y2)
+    public void drawLine(int x1, int y1, int x2, int y2)
     {
         int[4] line = [
             x1, y1,
@@ -239,17 +402,42 @@ public static class Renderer
     }
 
     pragma(inline, true)
-    protected static void triangle()
+    protected void triangle()
     {
         float[18] triangle = [
-            -0.5f, -0.5f, 0.0f,
-             0.5f, -0.5f, 0.0f,
-             0.0f,  0.5f, 0.0f,
+              0, 0, 0.0f,
+             50, 100, 0.0f,
+             100,  0, 0.0f,
 
              -0.6f, -0.6f, 0.0f,
              0.6f, -0.6f, 0.0f,
              0.1f,  0.6f, 0.0f,
         ];
+        import math.vector;
+
+        static float angle = 3.1415/4;
+
+        angle+=0.01;
+
+        Vector3 p0 = Vector3(200,200,0).rotateZ(angle);
+        Vector3 p1 = Vector3(250,300,0).rotateZ(angle);
+        Vector3 p2 = Vector3(300,200,0).rotateZ(angle);
+
+        triangle[0] = p0.x;
+        triangle[1] = p0.y;
+        triangle[2] = p0.z;
+        
+        triangle[3] = p1.x;
+        triangle[4] = p1.y;
+        triangle[5] = p1.z;
+        
+        triangle[6] = p2.x;
+        triangle[7] = p2.y;
+        triangle[8] = p2.z;
+        // *(cast(float*)triangle.ptr) = *(cast(float*)&p0);
+        // *(cast(float*)triangle.ptr+3) = *(cast(float*)&p1);
+        // *(cast(float*)triangle.ptr+6) = *(cast(float*)&p2);
+        
         
         bindNextVertexArrayObject();
         glBufferData(GL_ARRAY_BUFFER, triangle.sizeof, triangle.ptr, GL_DYNAMIC_DRAW);
@@ -258,14 +446,17 @@ public static class Renderer
         glEnableVertexAttribArray(0);
     }
 
-    public static void drawTriangle()
-    // public static void drawTriangle(float x1, float y1, float x2, float y2, float x3, float y3)
+    public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
     {
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         triangle();
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
     }
-    public static void drawPixel(int x, int y)
+    public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
+    {
+
+    }
+    public void drawPixel(int x, int y)
     {
         int[2] pixel = [
             x, y,
@@ -276,12 +467,28 @@ public static class Renderer
         
     }
 
-    public static void dispose()
+    public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst)
     {
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        renderer = null;
-        window = null;
-        IMG_Quit();
+        if(!isGLBlendEnabled)
+        {
+            glEnable(GL_BLEND);
+            isGLBlendEnabled = true;
+        }
+        glBlendFunc(getGLBlendFunction(src), getGLBlendFunction(dst));
+    }
+
+    public void setBlendingEquation(HipBlendEquation eq)
+    {
+        if(!isGLBlendEnabled)
+        {
+            glEnable(GL_BLEND);
+            isGLBlendEnabled = true;
+        }
+        glBlendEquation(getGLBlendEquation(eq));
+    }
+
+    public void dispose()
+    {
+        SDL_GL_DeleteContext(SDL_GL_GetCurrentContext());
     }
 }
