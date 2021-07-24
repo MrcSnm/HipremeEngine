@@ -9,16 +9,20 @@
 	],
 	"copyright": "Copyright © 2019 - 2021, Hipreme",
 	"dependencies": {
+		"arsd-official:dom": "~>10.2.0",
+		"bindbc-cimgui": {
+			"path": "dependencies/Bindbc-Cimgui/",
+			"version": ">=0.0.0"
+		},
 		"bindbc-opengl": "~>0.13.0",
-		"bindbc-sdl": "~>0.19.0",
-		"bindbc-cimgui": {"path": "dependencies/Bindbc-Cimgui/"}
+		"bindbc-sdl": "~>0.19.0"
 	},
 	"description": "Open-Source D Game Engine",
 	"dflags": [
-		"-version=HIPREME_DEBUG"
+		"-version=HIPREME_DEBUG",
+		"-J=."
 	],
-	"dflags-linux":
-	[
+	"dflags-linux": [
 		"-L-Ldependencies/Bindbc-Cimgui/lib",
 		"-L-Ldependencies/bindbc-openal/lib"
 	],
@@ -28,16 +32,19 @@
 		"dependencies/bindbc-openal/source",
 		"dependencies/Bindbc-Cimgui/source"
 	],
-	"libs-windows": 
-	[
-		"dependencies/directx-d/directx-d.lib",
-		"dependencies/Bindbc-Cimgui/lib/bindbc-cimgui",
-		"dependencies/bindbc-openal/lib/bindBC_OpenAL"
-	],
-	"libs-linux": 
-	[
+	"libs-linux": [
 		"bindbc-cimgui",
 		"BindBC_OpenAL"
+	],
+	"libs-windows": [
+		"ole32",
+		"user32",
+		"d3dcompiler",
+		"d3d11",
+		"dxgi",
+		"dependencies/directx-d/directx-d",
+		"dependencies/Bindbc-Cimgui/lib/bindbc-cimgui",
+		"dependencies/bindbc-openal/lib/bindBC_OpenAL"
 	],
 	"license": "proprietary",
 	"name": "main",

@@ -42,12 +42,12 @@ else
             case os.win64:
                 errorHeader = "Missing DLL";
                 errorMessage = "Missing DLL 'SDL2.dll'\nVersion ";
-                filetype = "DLL";
+                filetype = ".dll";
                 break;
             default:
                 errorHeader = "Missing Library";
                 errorMessage = "Library 'libsdl2.so'\nVersion ";
-                filetype = "Library";
+                filetype = ".so";
         }
         if(ret != sdlSupport)
         {
@@ -58,7 +58,7 @@ else
         }
         //Load image loading support
         ErrorHandler.assertErrorMessage(loadSDLImage() == sdlImageSupport, "Could not load library", "SDL Image library hasn't been able to load");
-        int imgFlags = IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_JPG | IMG_INIT_WEBP;
+        int imgFlags = IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_JPG;
         ErrorHandler.assertErrorMessage((IMG_Init(imgFlags) & imgFlags) > 0, "Could not initialize library",  "SDL Image library could not initialize");
         //Load Audio support
         Audio.initialize(audio3D);

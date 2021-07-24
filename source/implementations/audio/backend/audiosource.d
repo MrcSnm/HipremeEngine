@@ -68,7 +68,7 @@ import global.fonts.icons;
             Audio.setMaxDistance(this, 0f);
             Audio.setRolloffFactor(this, 1f);
             Audio.setReferenceDistance(this, 0f);
-            position = Vector!float.Zero();
+            position = Vector3.Zero();
             // id = -1;
             buffer = null;
             return this;
@@ -77,7 +77,7 @@ import global.fonts.icons;
         
         //Making 3D concept available for every audio, it can be useful
         // Vector!float position = [0f,0f,0f];
-        Vector!float position = [0f,0f,0f];
+        Vector3 position = [0f,0f,0f];
         uint id;
 }
 
@@ -105,19 +105,19 @@ import global.fonts.icons;
 
 })public class AudioSource3D : AudioSource
 {   
-    import std.stdio:writeln;
+    import def.debugging.log;
 
     override void setBuffer(AudioBuffer buf)
     {
         import implementations.audio.backend.audio3d : OpenALBuffer;
         super.setBuffer(buf);
-        writeln((cast(OpenALBuffer)buf).bufferId);
-        writeln(id);
+        logln((cast(OpenALBuffer)buf).bufferId);
+        logln(id);
         alSourcei(id, AL_BUFFER, (cast(OpenALBuffer)buf).bufferId);
     }
     ~this()
     {
-        writeln("AudioSource Killed!");
+        logln("AudioSource Killed!");
         alDeleteSources(1, &id);
         id = -1;
     }

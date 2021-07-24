@@ -10,7 +10,6 @@ static class Time
     static StopWatch stopwatch;
     static this()
     {
-        import std.stdio : writeln;
         stopwatch = StopWatch(AutoStart.yes);
     }
 

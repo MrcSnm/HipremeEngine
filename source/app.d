@@ -1,4 +1,5 @@
 import std.stdio;
+import def.debugging.log;
 import core.thread;
 import sdl.loader;
 import error.handler;
@@ -19,7 +20,15 @@ version(Android)
 	import core.runtime : rt_init;
 }
 import bindbc.cimgui;
+import math.matrix;
 import implementations.renderer.renderer;
+import implementations.renderer.backend.d3d.renderer;
+import view.scene;
+import view.testscene;
+import view.spritetestscene;
+import view.tilemaptest;
+import view.framebuffertestscene;
+import view.bitmaptestscene;
 import def.debugging.gui;
 
 
@@ -51,7 +60,7 @@ static void initEngine(bool audio3D = false)
 
 		if(!loadcimgui(implementation))
 		{
-			writeln("Could not load cimgui");
+			logln("Could not load cimgui");
 		}
 	}
 }
@@ -62,22 +71,33 @@ static void initEngine(bool audio3D = false)
 extern(C)int SDL_main()
 {
 	initEngine(true);
-	Renderer.init();
+	HipRendererConfig cfg;
+	HipRenderer.init(new Hip_GL3Renderer(), &cfg);
 	import graphics.image;
-	import graphics.texture;
 	import graphics.g2d.sprite;
-	Image img = new Image(Assets.Graphics.Sprites.teste_bmp, 0x7f7f7f);
-	img.load();
-	Texture t = new Texture(img);
+	Texture t = new Texture(Assets.Graphics.Sprites.teste_bmp);
 
 	Sprite s = new Sprite(t);
-
-
 	SDL_Rect clip = SDL_Rect(0,0,t.width/2,t.height);
 
-	
-	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
+	HipVertexArrayObject obj = HipVertexArrayObject.getXYZ_RGBA_ST_VAO();
+	obj.createVertexBuffer(4, HipBufferUsage.DYNAMIC);
+	obj.createIndexBuffer(6, HipBufferUsage.STATIC);
 
+	const float[] vbo = [
+//		 X    Y   Z      R  G   B   A   S  T
+		0.0, 0.0, 0.0, 1.0,1.0,1.0,1.0, 0.0,0.0, //TLeft
+		0.0, 200, 0.0, 1.0,1.0,1.0,1.0, 0.0,1.0, //BLeft
+		200, 200, 0.0, 1.0,1.0,1.0,1.0, 1.0,1.0,//BRight 
+		200, 0, 0.0, 1.0,1.0,1.0,1.0,   1.0,0.0 	//TRight
+	];
+	const uint[] ebo = [0, 1, 2, 2, 3, 0];
+	obj.setVertices(4, vbo.ptr);
+	obj.setIndices(cast(uint)ebo.length, ebo.ptr);
+	obj.sendAttributes();
+
+
+	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
 	Sound_AudioInfo info;
 		
 	info.channels=1;
@@ -88,12 +108,12 @@ extern(C)int SDL_main()
 	//Audio.setPitch(sc, 1);
 	import def.debugging.runtime;
 
-	DI.start(Renderer.window);
+	// DI.start(HipRenderer.window);
 	import global.fonts.icons;
 
-	ImFontConfig cfg = DI.getDefaultFontConfig("Default + Icons");
-	ImFontAtlas_AddFontDefault(igGetIO().Fonts, &cfg);
-	DI.mergeFont("assets/fonts/"~FontAwesomeSolid, 16, FontAwesomeRange, &cfg);
+	// ImFontConfig cfg = DI.getDefaultFontConfig("Default + Icons");
+	// ImFontAtlas_AddFontDefault(igGetIO().Fonts, &cfg);
+	// DI.mergeFont("assets/fonts/"~FontAwesomeSolid, 16, FontAwesomeRange, &cfg);
 
 
 
@@ -115,7 +135,11 @@ extern(C)int SDL_main()
 	kb.addKeyListener(SDL_Keycode.SDLK_ESCAPE, k);
 	kb.addKeyListener(SDL_Keycode.SDLK_a, new class Key
 	{
-		override void onDown(){import util.time : Time; writeln(this.meta.getDowntimeDuration());}
+		override void onDown()
+		{
+			import util.time : Time;
+			// logln(this.meta.getDowntimeDuration());
+		}
 		override void onUp(){}
 	});
 
@@ -125,37 +149,40 @@ extern(C)int SDL_main()
 	float angleSum = 0.01;
 	import std.math:sin,cos;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+	Scene testscene = new TilemapTestScene();
+	
+	testscene.init();
+
+
+	
 	
 	while(!quit)
 	{
 		ev.handleEvent();
-	    SDL_Event e;
-		while(SDL_PollEvent(&e)) 
-		{
-			DI.update(&e);
-			switch(e.type)
-			{
-				case SDL_QUIT:
-					quit = true;
-					break;
-//				case SDL_KEYDOWN:
-//					alogi("D_LANG", to!string(e.key.keysym.sym));
-				default:break;
-			}
-		}
-
+		if(ev.hasQuit)
+			break;
 
 		///////////START IMGUI
 
 		// Start the Dear ImGui frame
-		Renderer.begin();
-		Renderer.clear(255,0,0,0);
-		// Renderer.drawLine(0, 0, 1, 1);
-		// Renderer.drawRect();
-		Renderer.drawTriangle();
-        Renderer.end();
-        // DI.begin();
+		// shader.bind();
+		// HipRenderer.currentShader.setVar("proj", Matrix4.orthoLH(0, 800, 600, 0, 0, 1));
+		// HipRenderer.currentShader.setVar("globalColor", cast(float[4])[0.5f, 0.75f, 0.5f, 0.5f]);
+		HipRenderer.begin();
+		HipRenderer.clear(255,0,0,255);
+
+		// HipRenderer.drawLine(0, 0, 1, 1);
+		// HipRenderer.drawRect(0,0,0,0);
+		// HipRenderer.drawTriangle(0,0,0,0,0,0);
+		// obj.bind();
+		// t.bind();
+
+		// HipRenderer.drawIndexed(HipRendererMode.TRIANGLES, 6u);
+		testscene.render();
 		// s.draw();
+        HipRenderer.end();
+        // DI.begin();
 		// static bool open = true;
 		// igShowDemoWindow(&open);
 		// import implementations.imgui.imgui_debug;
@@ -163,16 +190,17 @@ extern(C)int SDL_main()
 
 		// if(igButton("Viewport flag".ptr, ImVec2(0,0)))
 		// {
-		// 	//writeln(igGetIO().ConfigFlags);
+		// 	//logln!(igGetIO().ConfigFlags);
 		// 	igGetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		// }
 
         // // Rendering
+
 		// // glViewport(0, 0, cast(int)io.DisplaySize.x, cast(int)io.DisplaySize.y);
 		
 		// DI.end();
 
-	
+		ev.postUpdate();
     }
 	//	alSource3f(src, AL_POSITION, cos(angle) * 10, 0, sin(angle) * 10);
 		angle+=angleSum;
@@ -190,9 +218,8 @@ extern(C)int SDL_main()
 static void destroyEngine()
 {
     ResourceManager.disposeResources();
-	SDL_GL_DeleteContext(SDL_GL_GetCurrentContext());
 	DI.onDestroy();
-	Renderer.dispose();
+	HipRenderer.dispose();
 	Audio.onDestroy();
     SDL_Quit();
 }

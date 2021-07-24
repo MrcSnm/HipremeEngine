@@ -1,17 +1,22 @@
 module implementations.renderer.backend.d3d.vertex;
 
 version(Windows):
-
+import std.conv:to;
+import error.handler;
+import directx.d3d11;
 import implementations.renderer.backend.d3d.renderer;
-import implementations.renderer.backend.vertex.vertex;
+import implementations.renderer.vertex;
+import global.consts;
 
 
 /**
 * For reflecting OpenGL API, we create an accessor with the create functions, this is a locally
 * managed array, but you're able to get it by using the private name, for flexibility.
 */
-__gshared ID3D11Buffer*[] _hip_d3d_arrVBO;
-__gshared ID3D11Buffer*[] _hip_d3d_arrVAO;
+
+/++
+__gshared ID3D11Buffer[] _hip_d3d_arrVBO;
+__gshared ID3D11Buffer[] _hip_d3d_arrVAO;
 
 enum AttributeType
 {
@@ -20,13 +25,21 @@ enum AttributeType
     BOOL = 2
 }
 
+class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
+{
+    this()
+    {
+
+    }
+}
+
 uint createVertexArrayObject()
 {
     if(_hip_d3d_arrVAO.length + 1 > _hip_d3d_arrVAO.capacity)
         _hip_d3d_arrVAO.reserve(_hip_d3d_arrVAO.length*2);
     
     _hip_d3d_arrVAO~= null;
-    return _hip_d3d_arrVAO.length;
+    return cast(uint)_hip_d3d_arrVAO.length;
 }
 
 uint createVertexBufferObject()
@@ -35,21 +48,21 @@ uint createVertexBufferObject()
         _hip_d3d_arrVBO.reserve(_hip_d3d_arrVBO.length*2);
     
     _hip_d3d_arrVBO~= null;
-    return _hip_d3d_arrVBO.length;
+    return cast(uint)_hip_d3d_arrVBO.length;
 }
 
 void setVertexAttribute(ref VertexAttributeInfo info, uint stride)
 {
-    glVertexAttribPointer(info.index, info.length, info.valueType, GL_FALSE, stride, cast(void*)info.offset);
-    glEnableVertexAttribArray(info.index);
+    // glVertexAttribPointer(info.index, info.length, info.valueType, GL_FALSE, stride, cast(void*)info.offset);
+    // glEnableVertexAttribArray(info.index);
 }
 
-DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref VertexAttributeInfo info)
+private DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref HipVertexAttributeInfo info)
 {
     DXGI_FORMAT ret;
     switch(info.valueType)
     {
-        case FLOAT:
+        case AttributeType.FLOAT:
             switch(info.length)
             {
                 case 1:
@@ -65,11 +78,12 @@ DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref VertexAttributeInfo info)
                     ret = DXGI_FORMAT_R32G32B32A32_FLOAT;
                     break;
                 default:
-                    ErrorHandler.showErrorMessage("Unknown format type from float with length " ~ to!string(info.length));
+                    ErrorHandler.showErrorMessage("DXGI Format Error",
+                    "Unknown format type from float with length " ~ to!string(info.length));
             }
             break;
-        case BOOL:
-        case INT:
+        case AttributeType.BOOL:
+        case AttributeType.INT:
             switch(info.length)
             {
                 case 1:
@@ -85,11 +99,12 @@ DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref VertexAttributeInfo info)
                     ret = DXGI_FORMAT_R32G32B32A32_SINT;
                     break;
                 default:
-                    ErrorHandler.showErrorMessage("Unknown format type from int/bool with length " ~ to!string(info.length));
+                    ErrorHandler.showErrorMessage("DXGI Format Error",
+                    "Unknown format type from int/bool with length " ~ to!string(info.length));
             }
             break;
         default:
-            ErrorHandler.showErrorMessage("Unknown format type from info");
+            ErrorHandler.showErrorMessage("DXGI Format Error", "Unknown format type from info");
             break;
     }
     return ret;
@@ -97,13 +112,14 @@ DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref VertexAttributeInfo info)
 
 void useVertexArrayObject(ref VertexArrayObject obj)
 {
-    D3D11_INPUT_ELEMENT_DESC[obj.infos.length] descs;
+    D3D11_INPUT_ELEMENT_DESC[] descs;
+    descs.length = obj.infos.length;
 
     D3D11_INPUT_ELEMENT_DESC desc;
     foreach(i, info; obj.infos)
     {
         desc.SemanticName = cast(char*)(info.name~"\0").ptr;
-        desc.SemanticIndex = i;
+        desc.SemanticIndex = cast(uint)i;
         desc.Format = _hip_d3d_getFormatFromInfo(info);
         desc.InputSlot = 0;
         desc.AlignedByteOffset = info.offset;
@@ -113,8 +129,9 @@ void useVertexArrayObject(ref VertexArrayObject obj)
     }
 
     ID3D11InputLayout inputLayout;
-    _hip_d3d_device.CreateInputLayout(descs.ptr, descs.length,
-    vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), &inputLayout);
+
+    // _hip_d3d_device.CreateInputLayout(descs.ptr, descs.length,
+    // vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), &inputLayout);
 
     _hip_d3d_context.IASetInputLayout(inputLayout);
 }
@@ -124,9 +141,9 @@ void setVertexArrayObjectData(ref VertexArrayObject obj, void* data, size_t data
     D3D11_BUFFER_DESC bd;
     bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bd.Usage = (obj.isStatic) ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
-    bd.CPUAccessFlag = 0u;
+    bd.CPUAccessFlags = 0u;
     bd.MiscFlags = 0u;
-    bd.ByteWidth = dataSize;
+    bd.ByteWidth = cast(uint)dataSize;
     bd.StructureByteStride = obj.stride;
 
     D3D11_SUBRESOURCE_DATA sd;
@@ -165,3 +182,5 @@ void deleteElementBufferObject(ref VertexArrayObject obj)
         obj.EBO = 0;
     }
 }
+
++/

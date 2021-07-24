@@ -3,7 +3,7 @@ import bindbc.sdl;
 import math.rect;
 import implementations.renderer.renderer;
 import implementations.imgui.imgui_debug;
-import graphics.texture;
+import implementations.renderer.backend.sdl.texture;
 import graphics.color;
 import graphics.abstraction.transformable;
 
@@ -21,7 +21,7 @@ import graphics.abstraction.transformable;
 })public class Sprite
 {
     bool dirty;
-    Color color;
+    HipColor color;
     Texture texture;
     Rect region;
     mixin Positionable;
@@ -33,14 +33,12 @@ import graphics.abstraction.transformable;
         texture = t;
         color = White;
         region = t.getBounds();
-        import std.stdio;
-        writeln(color.r, color.g, color.b);
     }
 
     void draw()
     {
-        SDL_SetTextureColorMod(texture.data, color.r,color.g,color.b);
-        SDL_SetTextureAlphaMod(texture.data, color.a);
-        Renderer.draw(texture, x, y, &region);
+        // SDL_SetTextureColorMod(texture.data, color.r,color.g,color.b);
+        // SDL_SetTextureAlphaMod(texture.data, color.a);
+        HipRenderer.draw(texture, x, y, &region);
     }
 }
