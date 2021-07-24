@@ -1,5 +1,6 @@
 module view.bitmaptestscene;
 import std.stdio;
+import implementations.renderer.tilemap;
 import sdl.event.handlers.input.keyboard_layout;
 import implementations.renderer;
 import sdl.event.handlers.keyboard;
@@ -18,6 +19,10 @@ class BitmapTestScene : Scene
         txt.setBitmapFont(HipBitmapFont.fromFile("assets/fonts/arial.fnt"));
         txt.x = 1280/2;
         txt.alignh = HipTextAlign.CENTER;
+
+        Tilemap m = Tilemap.readTiled();
+
+        logln(m.layers[$-1].properties["restorer"].get!int);
     }
 
     override void render()
