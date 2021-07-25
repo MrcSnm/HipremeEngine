@@ -1,6 +1,8 @@
 module data.assetpacker;
+import util.file;
+import std.algorithm : countUntil, map, min, sort;
 import core.stdc.stdio;
-import std.array : split;
+import std.array : split, array;
 import std.conv:to;
 import core.stdc.string;
 import std.stdio;
@@ -116,9 +118,74 @@ bool appendAssetInPack(string hapFile, string[] assetPaths, string basePath = ""
     f.rawWrite(files);
     f.rawWrite(toAppend);
     f.rawWrite(HapHeaderStart);
-
+    f.close();
+    
     return true;
     
+}
+
+bool updateAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
+{
+    ubyte[] hapData = cast(ubyte[])read(hapFile);
+    ulong headerStart = getHeaderStart(hapFile);
+
+    string[] toAppend;
+    HapFile[] files = getHapFiles(hapData, headerStart);
+
+    string[] fileNames = files.map!"a.fileName".array();
+
+    ulong lowestStartPosition = ulong.max;
+
+    foreach(p; assetPaths)
+    {
+        string path = p;
+        if(basePath != "")  
+            path = relativePath(path, basePath);
+        if(!exists(path))
+        {
+            writeln("File '"~path~"' does not exists");
+            continue;
+        }
+        long pathIndex = countUntil(fileNames, path);
+        if(pathIndex != -1)
+        {
+            HapFile* f = &files[pathIndex];
+            lowestStartPosition = min(lowestStartPosition, f.startPosition);
+            ubyte[] fileData = cast(ubyte[])read(path);
+            f.bin = fileData;
+        }
+        else
+            toAppend~= path;
+    }
+    files = files.sort!"a.startPosition < b.startPosition".array();
+
+    File target = File(hapFile, "r+");
+    target.seek(lowestStartPosition);
+
+    ulong nextStartPosition = lowestStartPosition;
+    for(int i = 0; i < files.length; i++)
+    {
+        if(files[i].startPosition >= lowestStartPosition)
+        {
+            writeln("Updating "~files[i].fileName);
+            target.rawWrite(files[i].bin);
+            files[i].startPosition = nextStartPosition;
+            nextStartPosition+= files[i].bin.length;
+        }
+    }
+
+    fileTruncate(target, nextStartPosition);
+    target.rawWrite(HapHeaderEnd);
+    foreach(_f; files)
+        target.rawWrite(_f.fileName~", "~to!string(_f.startPosition)~"\n");
+    target.rawWrite(HapHeaderStart);
+    target.close();
+
+    writeln(toAppend);
+
+    if(toAppend.length != 0)
+        return appendAssetInPack(hapFile, toAppend,  basePath);
+    return false;
 }
 
 ulong getHeaderStart (string hapFile)
@@ -144,7 +211,7 @@ ulong getHeaderStart (string hapFile)
         }
         z = 0;
     }
-    return i;
+    return i+1;
 }
 
 HapFile[] getHapFiles(ubyte[] hapFile, ulong headerStart)
@@ -159,6 +226,8 @@ HapFile[] getHapFiles(ubyte[] hapFile, ulong headerStart)
     {
         HapFile h;
         string[] temp = split(info, ", ");
+        if(temp.length == 0)
+            continue;
         h.fileName = temp[0];
         h.startPosition = to!ulong(temp[1]);
         ret~= h;
@@ -170,7 +239,11 @@ HapFile[] getHapFiles(ubyte[] hapFile, ulong headerStart)
         ret[i].bin = new ubyte[fileLength];
         memcpy(ret[i].bin.ptr, hapFile.ptr+ret[i].startPosition, fileLength);
     }
-    memcpy(ret[$-1].bin.ptr, hapFile.ptr+ret[$-1].startPosition, hapFile.length - ret[$-1].startPosition - HapHeaderSize);
+
+    //File length - headerLength
+    const ulong headerLength = (hapFile.length - headerStart);
+    ret[$-1].bin = new ubyte[hapFile.length - ret[$-1].startPosition - headerLength - HapHeaderEnd.length];
+    memcpy(ret[$-1].bin.ptr, hapFile.ptr+ret[$-1].startPosition, ret[$-1].bin.length);
 
     return ret;
 
