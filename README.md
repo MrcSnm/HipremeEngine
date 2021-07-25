@@ -20,4 +20,14 @@ The engine mantains some global options which you can modify it on source/global
 - ImGUI compatibility;
 - Sprite, SpriteBatch, GeometryBatch, FrameBuffer renderer;
 - Initial JNI and Android build system for future Android support
+- Asset packing, appending, reading for faster performance(less IO).
+
+
+## Next steps
+
+- Dispatch file reading to the asset/resource packer.
+- Render Tiled maps
+- Create a proof of concept
+- Multi threaded asset loading/decoding
+- Cross platform build system
   
