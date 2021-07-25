@@ -81,14 +81,14 @@ bool appendAssetInPack(string hapFile, string[] assetPaths, string basePath = ""
     if(!exists(hapFile))
         return false;
 
-    ubyte[] rawData = cast(ubyte[])read(hapFile);
+    File f = File(hapFile, "r+");
+    ubyte[] rawData = new ubyte[f.size];
+    f.rawRead(rawData);
 
-    ulong headerStart = getHeaderStart(hapFile);
+    ulong headerStart = getHeaderStart(rawData);
     string files = "";
     for(ulong i = headerStart; i < rawData.length - HapHeaderEnd.length; i++)
         files~= rawData[i];
-
-    File f = File(hapFile, "r+");
 
     headerStart-= HapHeaderStart.length;
     f.seek(headerStart);
@@ -126,8 +126,11 @@ bool appendAssetInPack(string hapFile, string[] assetPaths, string basePath = ""
 
 bool updateAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
 {
-    ubyte[] hapData = cast(ubyte[])read(hapFile);
-    ulong headerStart = getHeaderStart(hapFile);
+    File target = File(hapFile, "r+");
+    ubyte[] hapData = new ubyte[target.size];
+    target.rawRead(hapData);
+    
+    const ulong headerStart = getHeaderStart(hapData);
 
     string[] toAppend;
     HapFile[] files = getHapFiles(hapData, headerStart);
@@ -159,7 +162,6 @@ bool updateAssetInPack(string hapFile, string[] assetPaths, string basePath = ""
     }
     files = files.sort!"a.startPosition < b.startPosition".array();
 
-    File target = File(hapFile, "r+");
     target.seek(lowestStartPosition);
 
     ulong nextStartPosition = lowestStartPosition;
@@ -181,8 +183,6 @@ bool updateAssetInPack(string hapFile, string[] assetPaths, string basePath = ""
     target.rawWrite(HapHeaderStart);
     target.close();
 
-    writeln(toAppend);
-
     if(toAppend.length != 0)
         return appendAssetInPack(hapFile, toAppend,  basePath);
     return false;
@@ -190,7 +190,15 @@ bool updateAssetInPack(string hapFile, string[] assetPaths, string basePath = ""
 
 ulong getHeaderStart (string hapFile)
 {
-    ubyte[] fileData = cast(ubyte[])read(hapFile);
+    if(exists(hapFile))
+    {
+        ubyte[] hapData = cast(ubyte[])read(hapFile);
+        getHeaderStart(hapData);
+    }
+    return 0;
+}
+ulong getHeaderStart (ref ubyte[] fileData)
+{
     string header = "";
     ulong i;
     for(i = 0; i != HapHeaderEnd.length; i++)
