@@ -1,4 +1,5 @@
 module implementations.renderer.tilemap;
+import implementations.renderer.spritebatch;
 import std.conv:to;
 import arsd.dom;
 import util.file;
@@ -51,12 +52,13 @@ struct TileAnimationFrame
 struct Tile
 {
     ushort id;
+    ushort currentFrame;
     TileProperty[string] properties;
     TileAnimationFrame[] animation;
     alias properties this;
 }
 
-struct TileLayer
+class TileLayer
 {
     string name;
     ushort[] tiles;
@@ -67,25 +69,44 @@ struct TileLayer
     string drawOrder;
     TileProperty[string] properties;
     float opacity;
+
+
+    void render(HipSpriteBatch batch)
+    {
+        batch.begin();
+        ulong tilesL = tiles.length;
+        for(uint i = 0; i < tilesL; i++)
+        {
+
+        }
+    }
     
 }
 
 class Tileset
 {
     uint columns;
+
+    ///Means where the tileset id starts
     uint firstGid;
-    string texturePath; //"image"
-    uint  textureHeight; //"imageheight"
-    uint  textureWidth; //"imagewidth"
+
+    ///"image" in tiled
+    string texturePath; 
+    ///"imageheight" in tiled
+    uint  textureHeight;
+    ///"imagewidth" in tiled 
+    uint  textureWidth; 
     int margin;
     string name;
 
+    ///Only available when loaded via .tsx
     string path;
     int spacing;
     uint tileCount;
     uint tileHeight;
     uint tileWidth;
 
+    ///Usually only accessed when looking for a specific property
     Tile[] tiles;
 
     this(uint tileCount)
@@ -95,15 +116,14 @@ class Tileset
     }
 
 
-    static auto fromTSX(string tsxPath)
+    static Tileset fromTSX(string tsxPath)
     {
         string xmlFile = getFileContent(tsxPath);
         auto document = new XmlDocument(xmlFile);
-        import std.stdio;
         auto tileset = document.querySelector("tileset");
-        auto image = document.querySelector("image");
+        auto image   = document.querySelector("image");
 
-        uint tileCount = to!uint(tileset.getAttribute("tilecount"));
+        const uint tileCount = to!uint(tileset.getAttribute("tilecount"));
         Tileset ret = new Tileset(tileCount);
 
         //Tileset
@@ -138,13 +158,12 @@ class Tileset
             }
         }
 
-        return document;
+        return ret;
     }
 
     alias tiles this;
 }
 
-enum Tiled = import("source/implementations/renderer/map1.json");
 
 class Tilemap
 {
@@ -161,10 +180,10 @@ class Tilemap
     Tileset[] tilesets;
 
 
-    static Tilemap readTiled()
+    static Tilemap readTiledJSON(string tiledPath)
     {
         Tilemap ret = new Tilemap();
-        JSONValue json = parseJSON(Tiled);
+        JSONValue json = parseJSON(getFileContent(tiledPath));
         ret.height     =    cast(uint)json["height"].integer;
         ret.isInfinite =              json["infinite"].boolean;
         ret.width      =    cast(uint)json["width"].integer;
@@ -177,7 +196,7 @@ class Tilemap
 
         foreach(l; layers)
         {
-            TileLayer layer;
+            TileLayer layer = new TileLayer();
 
             //Check first the layer type.
             layer.type    =             l["type"].str;
@@ -253,18 +272,25 @@ class Tilemap
         foreach(t; tilesets)
         {
             uint tileCount = cast(uint)t["tilecount"].integer;
-            Tileset tileset = new Tileset(tileCount);
+            Tileset tileset;
 
-            tileset.columns       = cast(ushort)t["columns"].integer;
+            const(JSONValue)* source = ("source" in t);
+            if(source !is null)
+                tileset = Tileset.fromTSX(source.str);
+            else
+            {
+                tileset = new Tileset(tileCount);
+                tileset.columns       = cast(ushort)t["columns"].integer;
+                tileset.texturePath   =             t["image"].str;
+                tileset.textureHeight =   cast(uint)t["imageheight"].integer;
+                tileset.textureWidth  =   cast(uint)t["imagewidth"].integer;
+                tileset.margin        =    cast(int)t["margin"].integer;
+                tileset.name          =             t["name"].str;
+                tileset.spacing       =    cast(int)t["spacing"].integer;
+                tileset.tileHeight    =   cast(uint)t["tileheight"].integer;
+                tileset.tileWidth     =   cast(uint)t["tilewidth"].integer;
+            }
             tileset.firstGid      = cast(ushort)t["firstgid"].integer;
-            tileset.texturePath   =             t["image"].str;
-            tileset.textureHeight =   cast(uint)t["imageheight"].integer;
-            tileset.textureWidth  =   cast(uint)t["imagewidth"].integer;
-            tileset.margin        =    cast(int)t["margin"].integer;
-            tileset.name          =             t["name"].str;
-            tileset.spacing       =    cast(int)t["spacing"].integer;
-            tileset.tileHeight    =   cast(uint)t["tileheight"].integer;
-            tileset.tileWidth     =   cast(uint)t["tilewidth"].integer;
 
             JSONValue[] tiles = t["tiles"].array;
 
