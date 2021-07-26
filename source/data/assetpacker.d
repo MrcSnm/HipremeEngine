@@ -68,7 +68,7 @@ bool writeAssetPack(string outputFileName, string[] assetPaths, string basePath 
             dataLength+= fileData.length;
             plainData.length = dataLength;
             toAppend~= path~", "~to!string(dataLength-fileData.length)~"\n";
-            memcpy((plainData.ptr+dataLength-fileData.length), fileData.ptr, dataLength);
+            memcpy((plainData.ptr+dataLength-fileData.length), fileData.ptr, fileData.length);
         }
         else
             writeln("Archive at path '"~path~"' does not exists, it will be skipped");
