@@ -13,6 +13,13 @@ enum HapHeaderStart = "1HZ00ZH9";
 enum HapHeaderEnd   = "9HZ00ZH1";
 enum HapHeaderSize = HapHeaderEnd.length + HapHeaderStart.length;
 
+enum HapHeaderStatus
+{
+    SUCCESS = 0, 
+    DOES_NOT_EXIST,
+    NOT_HAP
+}
+
 
 struct HapFile
 {
@@ -75,17 +82,24 @@ bool writeAssetPack(string outputFileName, string[] assetPaths, string basePath 
     return false;
 }
 
-
-bool appendAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
+/**
+*   Appends the file to the asset pack. It does not check if the file is already present.
+*   
+*   Returns the operation status, 0 = success
+*/
+HapHeaderStatus appendAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
 {
     if(!exists(hapFile))
-        return false;
+        return HapHeaderStatus.DOES_NOT_EXIST;
 
     File f = File(hapFile, "r+");
     ubyte[] rawData = new ubyte[f.size];
     f.rawRead(rawData);
 
     ulong headerStart = getHeaderStart(rawData);
+    if(headerStart == 0)
+        return HapHeaderStatus.NOT_HAP;
+
     string files = "";
     for(ulong i = headerStart; i < rawData.length - HapHeaderEnd.length; i++)
         files~= rawData[i];
@@ -120,17 +134,21 @@ bool appendAssetInPack(string hapFile, string[] assetPaths, string basePath = ""
     f.rawWrite(HapHeaderStart);
     f.close();
     
-    return true;
+    return HapHeaderStatus.SUCCESS;
     
 }
 
-bool updateAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
+HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
 {
+    if(!exists(hapFile))
+        return HapHeaderStatus.DOES_NOT_EXIST;
     File target = File(hapFile, "r+");
     ubyte[] hapData = new ubyte[target.size];
     target.rawRead(hapData);
     
     const ulong headerStart = getHeaderStart(hapData);
+    if(headerStart == 0)
+        return HapHeaderStatus.NOT_HAP;
 
     string[] toAppend;
     HapFile[] files = getHapFiles(hapData, headerStart);
@@ -185,7 +203,7 @@ bool updateAssetInPack(string hapFile, string[] assetPaths, string basePath = ""
 
     if(toAppend.length != 0)
         return appendAssetInPack(hapFile, toAppend,  basePath);
-    return false;
+    return HapHeaderStatus.SUCCESS;
 }
 
 ulong getHeaderStart (string hapFile)
