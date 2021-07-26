@@ -116,7 +116,7 @@ class Tileset
     }
 
 
-    static Tileset fromTSX(string tsxPath)
+    static Tileset fromTSX(string tsxPath, bool autoLoadTexture = true)
     {
         string xmlFile = getFileContent(tsxPath);
         auto document = new XmlDocument(xmlFile);
