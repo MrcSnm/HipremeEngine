@@ -19,8 +19,6 @@ class BitmapTestScene : Scene
         txt.setBitmapFont(HipBitmapFont.fromFile("assets/fonts/arial.fnt"));
         txt.x = 1280/2;
         txt.alignh = HipTextAlign.CENTER;
-
-        Tilemap m = Tilemap.readTiled();
     }
 
     override void render()
