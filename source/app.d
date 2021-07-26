@@ -6,7 +6,6 @@ import error.handler;
 import global.consts;
 import std.conv : to;
 import global.assets;
-import data.image;
 import implementations.audio.audio;
 import bindbc.sdl;
 import bindbc.opengl;
@@ -23,12 +22,7 @@ import bindbc.cimgui;
 import math.matrix;
 import implementations.renderer.renderer;
 import implementations.renderer.backend.d3d.renderer;
-import view.scene;
-import view.testscene;
-import view.spritetestscene;
-import view.tilemaptest;
-import view.framebuffertestscene;
-import view.bitmaptestscene;
+import view;
 import def.debugging.gui;
 
 
@@ -150,7 +144,7 @@ extern(C)int SDL_main()
 	import std.math:sin,cos;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	Scene testscene = new TilemapTestScene();
+	Scene testscene = new ParallelTestScene();
 	
 	testscene.init();
 
@@ -217,7 +211,7 @@ extern(C)int SDL_main()
  */
 static void destroyEngine()
 {
-    ResourceManager.disposeResources();
+    //HipAssetManager.disposeResources();
 	DI.onDestroy();
 	HipRenderer.dispose();
 	Audio.onDestroy();

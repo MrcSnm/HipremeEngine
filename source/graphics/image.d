@@ -25,25 +25,42 @@ public class Image
             this.rgbColorKey = rgbColorKey;
         imagePath = sanitizePath(path);
     }
+    
+    this(ubyte[] data, string path)
+    {
+        imagePath = sanitizePath(path);
+    }
 
-    bool load()
+    shared bool loadFromMemory(ref ubyte[] data)
+    {
+        SDL_RWops* rw = SDL_RWFromMem(data.ptr, cast(int)data.length);
+        SDL_Surface* img = IMG_Load_RW(rw, 1); //Free SDL_RWops
+        return setColorKey(img, this.imagePath);
+    }
+
+    shared bool loadFromFile()
     {
         SDL_Surface* img = null;
         img = IMG_Load(toStringz(imagePath));
+        return setColorKey(img, imagePath);
+    }
 
-        ErrorHandler.assertErrorMessage(img != null, "Loading Image: ", "Could not load image " ~ imagePath);
+    protected shared bool setColorKey(SDL_Surface* img, string imagePath)
+    {
+        ErrorHandler.assertErrorMessage(img != null, "Decoding Image: ", "Could not load image " ~ imagePath);
         if(img != null && rgbColorKey != -1)
             SDL_SetColorKey(img, SDL_TRUE, SDL_MapRGB(img.format,
             cast(ubyte)(rgbColorKey >> 16), //R
             cast(ubyte)((rgbColorKey >> 8) & 255), //G
             cast(ubyte)(rgbColorKey & 255))); //B
-        data = img;
+        data = cast(shared)img;
         return !ErrorHandler.stopListeningForErrors();
     }
 
-    bool load(void function() onLoad)
+
+    shared bool load(void function() onLoad)
     {
-        bool ret = load();
+        bool ret = loadFromFile();
         if(ret)
             onLoad();
         return ret;

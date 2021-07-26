@@ -44,9 +44,10 @@ class Texture
     TextureFilter min, mag;
 
     protected ITexture textureImpl;
-
-
-    this(string path = "")
+    /**
+    *   Initializes with the current renderer type
+    */
+    protected this()
     {
         if(HipRenderer.rendererType == HipRendererType.GL3)
             textureImpl = new Hip_GL3_Texture();
@@ -59,13 +60,18 @@ class Texture
             ErrorHandler.showErrorMessage("No renderer implementation active",
             "Can't create a texture without a renderer implementation active");
         }
+    }
+
+
+    this(string path = "")
+    {
+        this();
         if(path != "")
             load(path);
     }
-    public void setWrapMode(TextureWrapMode mode)
-    {
-        textureImpl.setWrapMode(mode);
-    }
+    /** Binds as the texture target on the renderer. */
+    public void bind(){textureImpl.bind();}
+    public void setWrapMode(TextureWrapMode mode){textureImpl.setWrapMode(mode);}
     public void setTextureFilter(TextureFilter min, TextureFilter mag)
     {
         this.min = min;
@@ -73,35 +79,28 @@ class Texture
         textureImpl.setTextureFilter(min, mag);
     }
     
-    SDL_Rect getBounds()
-    {
-        return SDL_Rect(0,0,width,height);
-    }
-    void render(int x, int y)
-    {
-        HipRenderer.draw(this, x, y);
-    }
+    SDL_Rect getBounds(){return SDL_Rect(0,0,width,height);}
+    void render(int x, int y){HipRenderer.draw(this, x, y);}
 
     /**
     *   Returns whether the load was successful
     */
     public bool load(string path)
     {
-        this.img = new Image(path);
-        if(img.load())
-        {
-            textureImpl.load(img.data);
-            width = img.data.w;
-            height = img.data.h;
-            return true;
-        }
-        else
+        // this.img = new Image(path);
+        // if(img.loadFromFile())
+        // {
+        //     textureImpl.load(img.data);
+        //     width = img.data.w;
+        //     height = img.data.h;
+        //     return true;
+        // }
+        // else
             return false;
     }
-    public void bind()
-    {
-        textureImpl.bind();
-    }
+
+
+
 }
 
 
