@@ -43,6 +43,7 @@ void fileTruncate(File file, long offset)
 }
 
 
+        import std.stdio;
 
 class FileProgression
 {
@@ -54,37 +55,42 @@ class FileProgression
     File target;
 
     /**
-    *   If readsteps == 0, it will automatically decide how it will progress
-    *   through the file. Actually it will use 10 powered to x, x is defined by
-    *   the first power of 10 that makes the file size goes decimal
+    *   If bytes == 0, it will use readsteps.
+    *
+    *   Readsteps default is by progressing from 0 to 100, which makes great for percentage. Also notice that with 100 readsteps there's almost
+    *   no loss compared to reading the file in one go, so it is the recommended value.
+    *
+    *   The greater the readsteps, the more time it will take to read the file and the more precision the percentage will have. Usually 100 should be enough.
+    *
+    *   If the readsteps are greater than the filesize, it will clamp to fileSize as readsteps.
+    *   That means it will update at every byte
     */
-    this(string filePath, uint readSteps = 0)
+    this(string filePath, uint readSteps = 100, uint bytes = 0)
     {
+        assert(readSteps != 0 || bytes != 0, "Can't have readSteps and bytes both == 0");
         progress = 0;
         target = File(filePath, "r");
-        ulong fSize = target.size;
-        fileSize = fSize;
+        ulong fSize = fileSize = target.size;
+        assert(cast(uint)fSize < uint.max, "Filesize is greater than uint.max, contact the FileProgression mantainer");
         fileData.reserve(cast(uint)fSize);
-        real sz = fSize;
+        
+        if(readSteps > fSize)
+            readSteps = cast(uint)fSize;
+        if(bytes != 0)
+            readSteps = cast(uint)fSize/bytes;
 
-        if(readSteps == 0)
+        real sz =cast(real)fSize/readSteps;
+        if(sz != fSize/readSteps) //Odd
         {
-            uint i = 10;
-            while((sz/=10) == cast(uint)sz)
-                i*= 10;
-            stepSize = i;
-        }
-        else
-            stepSize = readSteps;
-
-        if(fSize % 2 == 1) //Odd
-        {
-            buffer = new ubyte[1];
+            ulong remaining = cast(ulong)((sz-(fSize/readSteps))*readSteps);
+            buffer = new ubyte[remaining];
             target.rawRead(buffer);
             fileData~= buffer[];
-            progress+= 1;
+            progress+= remaining;
+            stepSize = cast(uint)(fSize-remaining)/readSteps;
         }
-        stepSize = cast(uint)fSize/stepSize;
+        else
+            stepSize = cast(uint)fSize/readSteps;
         buffer.length = stepSize;
     }
 
@@ -93,8 +99,6 @@ class FileProgression
         target.rawRead(buffer);
         fileData~= buffer[];
         progress+=stepSize;
-        import std.stdio;
-        writeln(fileSize, " ", progress);
         bool finished = progress >= fileSize;
         if(finished)
             target.close();
