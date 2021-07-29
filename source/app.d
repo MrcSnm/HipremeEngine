@@ -67,12 +67,6 @@ extern(C)int SDL_main()
 	initEngine(true);
 	HipRendererConfig cfg;
 	HipRenderer.init(new Hip_GL3Renderer(), &cfg);
-	import graphics.image;
-	import graphics.g2d.sprite;
-	Texture t = new Texture(Assets.Graphics.Sprites.teste_bmp);
-
-	Sprite s = new Sprite(t);
-	SDL_Rect clip = SDL_Rect(0,0,t.width/2,t.height);
 
 	HipVertexArrayObject obj = HipVertexArrayObject.getXYZ_RGBA_ST_VAO();
 	obj.createVertexBuffer(4, HipBufferUsage.DYNAMIC);
@@ -127,15 +121,7 @@ extern(C)int SDL_main()
 		override void onUp(){}
 	};
 	kb.addKeyListener(SDL_Keycode.SDLK_ESCAPE, k);
-	kb.addKeyListener(SDL_Keycode.SDLK_a, new class Key
-	{
-		override void onDown()
-		{
-			import util.time : Time;
-			// logln(this.meta.getDowntimeDuration());
-		}
-		override void onUp(){}
-	});
+	
 
 	EventDispatcher ev = new EventDispatcher(&kb);
 
@@ -144,7 +130,7 @@ extern(C)int SDL_main()
 	import std.math:sin,cos;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	Scene testscene = new ParallelTestScene();
+	Scene testscene = new FileProgressTest();
 	
 	testscene.init();
 

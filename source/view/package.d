@@ -6,4 +6,5 @@ public import
     view.framebuffertestscene,
     view.paralleltestscene,
     view.tilemaptest,
+    view.fileprogresstest,
     view.spritetestscene;
