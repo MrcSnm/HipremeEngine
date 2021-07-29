@@ -2,6 +2,7 @@
 *   This class will be only a wrapper for importing the correct backend
 */
 module implementations.renderer.texture;
+import data.assetmanager;
 import error.handler;
 import implementations.renderer.renderer;
 import implementations.renderer.backend.gl.texture;
@@ -87,16 +88,14 @@ class Texture
     */
     public bool load(string path)
     {
-        // this.img = new Image(path);
-        // if(img.loadFromFile())
-        // {
-        //     textureImpl.load(img.data);
-        //     width = img.data.w;
-        //     height = img.data.h;
-        //     return true;
-        // }
-        // else
-            return false;
+        HipAssetManager.loadImage(path, (Image img)
+        {
+            this.img = img;
+            this.textureImpl.load(img.data);
+            this.width = img.data.w;
+            this.height = img.data.h;
+        }, false);
+        return false;
     }
 
 

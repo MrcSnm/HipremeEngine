@@ -21,12 +21,16 @@ enum HapHeaderStatus
 }
 
 
-struct HapFile
+struct HapChunk
 {
     string fileName;
     ulong startPosition;
     ubyte[] bin;
+
+    alias bin this;
 }
+
+alias HapFile = HapChunk[string];
 
 private string reverse(string s)
 {
@@ -151,9 +155,9 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
         return HapHeaderStatus.NOT_HAP;
 
     string[] toAppend;
-    HapFile[] files = getHapFiles(hapData, headerStart);
+    HapChunk[] chunks = getHapFiles(hapData, headerStart);
 
-    string[] fileNames = files.map!"a.fileName".array();
+    string[] fileNames = chunks.map!"a.fileName".array();
 
     ulong lowestStartPosition = ulong.max;
 
@@ -170,7 +174,7 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
         long pathIndex = countUntil(fileNames, path);
         if(pathIndex != -1)
         {
-            HapFile* f = &files[pathIndex];
+            HapChunk* f = &chunks[pathIndex];
             lowestStartPosition = min(lowestStartPosition, f.startPosition);
             ubyte[] fileData = cast(ubyte[])read(path);
             f.bin = fileData;
@@ -178,25 +182,25 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
         else
             toAppend~= path;
     }
-    files = files.sort!"a.startPosition < b.startPosition".array();
+    chunks = chunks.sort!"a.startPosition < b.startPosition".array();
 
     target.seek(lowestStartPosition);
 
     ulong nextStartPosition = lowestStartPosition;
-    for(int i = 0; i < files.length; i++)
+    for(int i = 0; i < chunks.length; i++)
     {
-        if(files[i].startPosition >= lowestStartPosition)
+        if(chunks[i].startPosition >= lowestStartPosition)
         {
-            writeln("Updating "~files[i].fileName);
-            target.rawWrite(files[i].bin);
-            files[i].startPosition = nextStartPosition;
-            nextStartPosition+= files[i].bin.length;
+            writeln("Updating "~chunks[i].fileName);
+            target.rawWrite(chunks[i].bin);
+            chunks[i].startPosition = nextStartPosition;
+            nextStartPosition+= chunks[i].bin.length;
         }
     }
 
     fileTruncate(target, nextStartPosition);
     target.rawWrite(HapHeaderEnd);
-    foreach(_f; files)
+    foreach(_f; chunks)
         target.rawWrite(_f.fileName~", "~to!string(_f.startPosition)~"\n");
     target.rawWrite(HapHeaderStart);
     target.close();
@@ -240,9 +244,9 @@ ulong getHeaderStart (ref ubyte[] fileData)
     return i+1;
 }
 
-HapFile[] getHapFiles(ubyte[] hapFile, ulong headerStart)
+HapChunk[] getHapFiles(ubyte[] hapFile, ulong headerStart)
 {
-    HapFile[] ret;
+    HapChunk[] ret;
     string hap = "";
     for(ulong i = headerStart; i < hapFile.length-HapHeaderStart.length; i++)
         hap~= hapFile[i];
@@ -250,7 +254,7 @@ HapFile[] getHapFiles(ubyte[] hapFile, ulong headerStart)
 
     foreach(info; infos)
     {
-        HapFile h;
+        HapChunk h;
         string[] temp = split(info, ", ");
         if(temp.length == 0)
             continue;
@@ -273,4 +277,23 @@ HapFile[] getHapFiles(ubyte[] hapFile, ulong headerStart)
 
     return ret;
 
+}
+
+HapChunk[] getHapFiles(string hapFilePath)
+{
+    File f = File(hapFilePath);
+    ubyte[] hapFile = new ubyte[f.size];
+    f.rawRead(hapFile);
+    return getHapFiles(hapFile, getHeaderStart(hapFile));
+}
+
+HapFile getHapPack(string hapFilePath)
+{
+    HapChunk[] files = getHapFiles(hapFilePath);
+    HapFile pack;
+    foreach(f; files)
+    {
+        pack[f.fileName] = f;
+    }
+    return pack;
 }
