@@ -5,8 +5,9 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 module implementations.imgui.imgui_impl_sdl;
-// // SDL
+// SDL
 
+///If false, it will attempt to use the SDL cimgui implementation
 enum CIMGUI_USER_DEFINED_IMPLEMENTATION = true;
 import bindbc.sdl;
 

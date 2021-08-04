@@ -2,6 +2,7 @@ module systems.game;
 private import sdl.event.dispatcher;
 private import sdl.event.handlers.keyboard;
 private import sdl.loader;
+import view;
 
 class GameSystem
 {
@@ -10,11 +11,49 @@ class GameSystem
      */
     EventDispatcher dispatcher;
     KeyboardHandler keyboard;
+    Scene[] scenes;
+    bool hasFinished;
 
-    float update()
+    this()
+    {
+        keyboard = new KeyboardHandler();
+        keyboard.addKeyListener(SDLK_ESCAPE, new class Key
+        {
+            override void onDown()
+            {
+                hasFinished = true;
+            }
+            override void onUp()
+            {
+
+            }
+        });
+        dispatcher = new EventDispatcher(&keyboard);
+
+        Scene testscene = new SpriteTestScene();
+    	testscene.init();
+        scenes~= testscene;
+
+    }
+
+    bool update()
     {
         dispatcher.handleEvent();
+        if(hasFinished || dispatcher.hasQuit)
+            return false;
         keyboard.update();
-        return 0;
+        // foreach(s; scenes)
+        //     s.update();
+
+        return true;
+    }
+    void render()
+    {
+        foreach (Scene s; scenes)
+            s.render();
+    }
+    void postUpdate()
+    {
+        dispatcher.postUpdate();
     }
 }

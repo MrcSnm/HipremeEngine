@@ -1,6 +1,8 @@
 module implementations.renderer.tilemap;
+import math.rect;
 import implementations.renderer.spritebatch;
 import std.conv:to;
+import std.file;
 import arsd.dom;
 import util.file;
 import std.json;
@@ -71,14 +73,17 @@ class TileLayer
     float opacity;
 
 
-    void render(HipSpriteBatch batch)
+    void render(HipSpriteBatch batch, bool shouldEndBatch = false)
     {
-        batch.begin();
+        if(!batch.hasBegun)
+            batch.begin();
         ulong tilesL = tiles.length;
-        for(uint i = 0; i < tilesL; i++)
-        {
-
-        }
+        // for(int tileY = batch.camera.y - y; tileY < batch.camera.viewHeight; tileY+= tileHeight)
+        // {
+            
+        // }
+        if(shouldEndBatch)
+            batch.end();
     }
     
 }
@@ -115,10 +120,9 @@ class Tileset
         this.tileCount = tileCount;
     }
 
-
-    static Tileset fromTSX(string tsxPath, bool autoLoadTexture = true)
+    static Tileset fromTSX(ubyte[] tsxData, bool autoLoadTexture = true)
     {
-        string xmlFile = getFileContent(tsxPath);
+        string xmlFile = cast(string)tsxData;
         auto document = new XmlDocument(xmlFile);
         auto tileset = document.querySelector("tileset");
         auto image   = document.querySelector("image");
@@ -161,6 +165,12 @@ class Tileset
         return ret;
     }
 
+
+    static Tileset fromTSX(string tsxPath, bool autoLoadTexture = true)
+    {
+        return fromTSX(cast(ubyte[])read(tsxPath), autoLoadTexture);
+    }
+
     alias tiles this;
 }
 
@@ -179,11 +189,10 @@ class Tilemap
     uint tileWidth;
     Tileset[] tilesets;
 
-
-    static Tilemap readTiledJSON(string tiledPath)
+    static Tilemap readTiledJSON(ubyte[] tiledData)
     {
         Tilemap ret = new Tilemap();
-        JSONValue json = parseJSON(getFileContent(tiledPath));
+        JSONValue json = parseJSON(cast(string)(tiledData));
         ret.height     =    cast(uint)json["height"].integer;
         ret.isInfinite =              json["infinite"].boolean;
         ret.width      =    cast(uint)json["width"].integer;
@@ -314,6 +323,11 @@ class Tilemap
         }
 
         return ret;
+    }
+
+    static Tilemap readTiledJSON(string tiledPath)
+    {
+        return readTiledJSON(cast(ubyte[])read(tiledPath));
     }
 
     alias layers this;

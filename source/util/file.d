@@ -50,6 +50,8 @@ class FileProgression
     protected ulong progress;
     protected uint stepSize;
     protected ulong fileSize;
+    protected void delegate(ref ubyte[] data) onFinish;
+    protected void delegate(float progress) onUpdate;
     ubyte[] fileData;
     ubyte[] buffer;
     File target;
@@ -94,14 +96,23 @@ class FileProgression
         buffer.length = stepSize;
     }
 
+    void setOnFinish(void delegate(ref ubyte[] data) onFinish){this.onFinish = onFinish;}
+    void setOnUpdate(void delegate(float progress) onUpdate){this.onUpdate = onUpdate;}
+
     bool update()
     {
         target.rawRead(buffer);
         fileData~= buffer[];
         progress+=stepSize;
+        if(onUpdate)
+            onUpdate(getProgress());
         bool finished = progress >= fileSize;
         if(finished)
+        {
             target.close();
+            if(onFinish)
+                onFinish(this.fileData);
+        }
 
         return !finished;
     }
@@ -112,5 +123,5 @@ class FileProgression
     @property ulong size(){return fileSize;}
 
 
-    override string toString(){return cast(string)fileData;};
+    override string toString(){return cast(string)fileData;}
 }

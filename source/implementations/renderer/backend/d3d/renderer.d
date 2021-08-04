@@ -60,7 +60,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     protected static Viewport currentViewport;
     public static Shader currentShader;
 
-    public SDL_Window* createWindow()
+    public SDL_Window* createWindow(uint width, uint height)
     {
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d11");
         static if(HIP_DEBUG)
@@ -69,7 +69,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         }
         alias f = SDL_WindowFlags;
         SDL_WindowFlags flags = f.SDL_WINDOW_RESIZABLE | f.SDL_WINDOW_ALLOW_HIGHDPI;
-        SDL_Window* window = SDL_CreateWindow("DX Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, flags);
+        SDL_Window* window = SDL_CreateWindow("DX Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
 
         return window;
     }
