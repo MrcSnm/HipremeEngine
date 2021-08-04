@@ -1,5 +1,6 @@
 module view.spritetestscene;
 import bindbc.sdl;
+import bindbc.opengl;
 import implementations.renderer.shader;
 import implementations.renderer.sprite;
 import implementations.renderer.spritebatch;
@@ -13,7 +14,7 @@ class SpriteTestScene : Scene
     HipSprite sprite;
     this()
     {
-        batch = new HipSpriteBatch(1);
+        batch = new HipSpriteBatch();
         sprite = new HipSprite("D:\\HipremeEngine\\assets\\graphics\\sprites\\sprite.png");
         import def.debugging.log;
 
@@ -23,6 +24,7 @@ class SpriteTestScene : Scene
     public override void render()
     {
         super.render();
+        batch.camera.setScale(4, 4);
         batch.begin();
         batch.draw(sprite);
         batch.end();

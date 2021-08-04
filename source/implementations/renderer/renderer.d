@@ -68,7 +68,7 @@ enum HipBlendEquation
 interface IHipRendererImpl
 {
     public bool init(SDL_Window* window, SDL_Renderer* renderer);
-    public SDL_Window* createWindow();
+    public SDL_Window* createWindow(uint width, uint height);
     public SDL_Renderer* createRenderer(SDL_Window* window);
     public Shader createShader();
     public IHipFrameBuffer createFrameBuffer(int width, int height);
@@ -106,24 +106,27 @@ class HipRenderer
     public static SDL_Window* window = null;
     public static Shader currentShader;
     public static HipRendererType rendererType = HipRendererType.NONE;
+
+    public static uint width, height;
     protected static HipRendererConfig currentConfig;
 
 
-    public static bool init(IHipRendererImpl impl, HipRendererConfig* config)
+    public static bool init(IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height)
     {
         ErrorHandler.startListeningForErrors("Renderer initialization");
         if(config != null)
             currentConfig = *config;
         rendererImpl = impl;
-        window = rendererImpl.createWindow();
+        window = rendererImpl.createWindow(width, height);
         ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL GL Window");
         // renderer = rendererImpl.createRenderer(window);
         // ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
         rendererImpl.init(window, renderer);
-
+        HipRenderer.width = width;
+        HipRenderer.height = height;
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
-        mainViewport = new Viewport(0,0,w, h);
+        mainViewport = new FitViewport(0,0, 800, 600);
         setViewport(mainViewport);
         setShader(HipRenderer.newShader());
         HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);

@@ -1,4 +1,5 @@
 module view.tilemaptest;
+import data.assetpacker;
 import std.stdio;
 import view.scene;
 import data.assetpacker;
@@ -11,6 +12,8 @@ class TilemapTestScene : Scene
     Tilemap map;
     this()
     {
+        HapFile f = HapFile.get("gamepack.hap");
+        writeln(f.getChunksList());
         // (Tileset.fromTSX());
     }
 

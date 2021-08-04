@@ -1,4 +1,5 @@
 module data.assetpacker;
+import util.string;
 import util.file;
 import std.algorithm : countUntil, map, min, sort;
 import core.stdc.stdio;
@@ -30,7 +31,55 @@ struct HapChunk
     alias bin this;
 }
 
-alias HapFile = HapChunk[string];
+class HapFile
+{
+    HapChunk[string] chunks;
+    protected FileProgression fp;
+
+    /**
+    *   Reads the entire hapfile and get its chunks synchronously
+    */
+    static HapFile get(string filePath)
+    {
+        HapFile f = new HapFile(filePath, 1);
+        f.update();
+        return f;
+    }
+
+    this(string filePath, uint fileSteps = 10)
+    {
+        fp = new FileProgression(filePath, fileSteps);
+        fp.setOnFinish((ref ubyte[] data)
+        {
+            HapChunk[] ch = getHapChunks(data, getHeaderStart(data));
+            foreach(c;ch)
+                chunks[c.fileName] = c;
+        });
+    }
+
+    string getText(string chunkName, bool removeCarriageReturn = true)
+    {
+        HapChunk* ch = (chunkName in chunks);
+        if(ch is null)
+            return "";
+        if(!removeCarriageReturn)
+            return cast(string)ch.bin;
+        return replaceAll(cast(string)ch.bin, '\r');
+    }
+
+    string[] getChunksList()
+    {
+        string[] ret;
+        foreach(k, v; chunks)
+            ret~=k;
+        return ret;
+    }
+    bool update(){return fp.update();}
+    float getProgress(){return fp.getProgress();}
+
+
+    alias chunks this;
+}
 
 private string reverse(string s)
 {
@@ -42,7 +91,7 @@ private string reverse(string s)
 
 /**
 *
-*   Writes an asset pack in the .hap format (hipreme asset pack),
+*   Writes an asset pack in the .hap format (Hipreme Asset Pack),
 *   it is only sequential binary chunk containing its headers on
 *   the file end.
 *
@@ -142,6 +191,13 @@ HapHeaderStatus appendAssetInPack(string hapFile, string[] assetPaths, string ba
     
 }
 
+/**
+*       Updates files in the assetpack, mantains the order and won't overwrite every single data,
+*   unless the data to be updated is at the top. 
+*   
+*       Mantaining an intelligent system that will let the less changing files at the 
+*   top is the way to go.
+*/
 HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
 {
     if(!exists(hapFile))
@@ -155,7 +211,7 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
         return HapHeaderStatus.NOT_HAP;
 
     string[] toAppend;
-    HapChunk[] chunks = getHapFiles(hapData, headerStart);
+    HapChunk[] chunks = getHapChunks(hapData, headerStart);
 
     string[] fileNames = chunks.map!"a.fileName".array();
 
@@ -244,7 +300,7 @@ ulong getHeaderStart (ref ubyte[] fileData)
     return i+1;
 }
 
-HapChunk[] getHapFiles(ubyte[] hapFile, ulong headerStart)
+HapChunk[] getHapChunks(ref ubyte[] hapFile, ulong headerStart)
 {
     HapChunk[] ret;
     string hap = "";
@@ -279,21 +335,10 @@ HapChunk[] getHapFiles(ubyte[] hapFile, ulong headerStart)
 
 }
 
-HapChunk[] getHapFiles(string hapFilePath)
+HapChunk[] getHapChunks(string hapFilePath)
 {
     File f = File(hapFilePath);
     ubyte[] hapFile = new ubyte[f.size];
     f.rawRead(hapFile);
-    return getHapFiles(hapFile, getHeaderStart(hapFile));
-}
-
-HapFile getHapPack(string hapFilePath)
-{
-    HapChunk[] files = getHapFiles(hapFilePath);
-    HapFile pack;
-    foreach(f; files)
-    {
-        pack[f.fileName] = f;
-    }
-    return pack;
+    return getHapChunks(hapFile, getHeaderStart(hapFile));
 }
