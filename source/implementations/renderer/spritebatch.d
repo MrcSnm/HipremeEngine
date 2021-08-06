@@ -5,6 +5,7 @@ import graphics.orthocamera;
 import implementations.renderer.renderer;
 import math.matrix;
 import implementations.renderer.shader;
+import implementations.renderer.material;
 import implementations.renderer.sprite;
 import graphics.color;
 import math.vector;
@@ -30,6 +31,7 @@ class HipSpriteBatch
     Shader shader;
     HipOrthoCamera camera;
     Mesh mesh;
+    Material material;
 
     protected uint quadsCount;
 
@@ -47,6 +49,10 @@ class HipSpriteBatch
         mesh.createIndexBuffer(maxQuads*6, HipBufferUsage.STATIC);
         mesh.sendAttributes();
         setShader(s);
+
+        material = new Material(mesh.shader);
+        material.setFragmentVar("uBatchColor", cast(float[4])[1,0,0,1]);
+
         camera = new HipOrthoCamera();
 
         int offset = 0;
@@ -97,8 +103,10 @@ class HipSpriteBatch
 
     void flush()
     {
-        mesh.shader.bind();
-        mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
+        // mesh.shader.bind();
+        // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
+        material.bind();
+        HipRenderer.exitOnError();
         mesh.shader.setVertexVar("uProj", camera.proj);
         mesh.shader.setVertexVar("uModel",Matrix4.identity());
         mesh.shader.setVertexVar("uView", camera.view);

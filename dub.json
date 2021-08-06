@@ -24,7 +24,7 @@
 	],
 	"dflags-linux": [
 		"-L-Ldependencies/Bindbc-Cimgui/lib",
-		"-L-Ldependencies/bindbc-openal/lib"
+		"-L-Ldependencies/bindbc-openal/lib",
 	],
 	"importPaths": [
 		"source",
@@ -39,7 +39,7 @@
 	"libs-windows": [
 		"ole32",
 		"user32",
-		"d3dcompiler",
+		"C:\\Program Files (x86)\\Microsoft DirectX SDK (June 2010)\\Lib\\x64\\d3dcompiler",
 		"d3d11",
 		"dxgi",
 		"dependencies/directx-d/directx-d",
