@@ -226,10 +226,10 @@ class GeometryBatch
         this.mesh.updateIndices(this.indices);
 
         currentShader.bind();
-        currentShader.setVar("uGlobalColor", cast(float[4])[1,1,1,1]);
-        currentShader.setVar("uProj", Matrix4.orthoLH(0, 800, 0, 600, 0.001, 1));
-        currentShader.setVar("uModel",Matrix4.identity());
-        currentShader.setVar("uView", Matrix4.identity());
+        currentShader.setFragmentVar("uGlobalColor", cast(float[4])[1,1,1,1]);
+        currentShader.setVertexVar("uProj", Matrix4.orthoLH(0, 800, 0, 600, 0.001, 1));
+        currentShader.setVertexVar("uModel",Matrix4.identity());
+        currentShader.setVertexVar("uView", Matrix4.identity());
         //Vertices to render = indices.length
         this.mesh.draw(count);
     }

@@ -54,7 +54,19 @@ class Hip_D3D11_VertexShader : VertexShader
     }
     override final string getSpriteBatchVertex()
     {
-        return this.getDefaultVertex();
+        return q{
+            cbuffer Cbuf
+            {
+                float4x4 uProj;
+                float4x4 uModel;
+                float4x4 uView;
+            };
+
+            float4 main(float2 pos : Position) : SV_POSITION
+            {
+                return mul(mul(float4(pos.x, pos.y, 0.0f, 1.0f), uModel), uProj);
+            }
+        };
     }
     override final string getBitmapTextVertex(){return getDefaultVertex();}
 }
@@ -62,6 +74,32 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
 {
     Hip_D3D11_VertexShader vs;
     Hip_D3D11_FragmentShader fs;
+
+    ID3D11ShaderReflection vReflector;
+    ID3D11ShaderReflection pReflector;
+
+    bool initialize()
+    {
+        import implementations.renderer;
+        import std.stdio;
+        auto hres = D3DReflect(vs.shader.GetBufferPointer(),
+        vs.shader.GetBufferSize(), &IID_ID3D11ShaderReflection, cast(void**)&vReflector);
+        if(FAILED(hres))
+        {
+            ErrorHandler.showErrorMessage("D3D11 ShaderProgram initialization", 
+            "Could not get the reflection interface from the vertex shader, error: "~ Hip_D3D11_GetErrorMessage(hres));
+            return false;
+        }
+        hres = D3DReflect(fs.shader.GetBufferPointer(),
+        fs.shader.GetBufferSize(), &IID_ID3D11ShaderReflection, cast(void**)&pReflector);
+        if(FAILED(hres))
+        {
+            ErrorHandler.showErrorMessage("D3D11 ShaderProgram initialization", 
+            "Could not get the reflection interface from the pixel shader, error: "~ Hip_D3D11_GetErrorMessage(hres));
+            return false;
+        }
+        return true;
+    }
 }
 
 class Hip_D3D11_ShaderImpl : IShader
@@ -93,7 +131,7 @@ class Hip_D3D11_ShaderImpl : IShader
 
         //No #includes
 
-        uint compile_flags = 0;
+        uint compile_flags = D3DCOMPILE_ENABLE_STRICTNESS;
         uint effects_flags = 0;
         ID3DBlob shader = null;
         ID3DBlob error = null;
@@ -168,7 +206,7 @@ class Hip_D3D11_ShaderImpl : IShader
         auto program = cast(Hip_D3D11_ShaderProgram)_program;
         program.vs = cast(Hip_D3D11_VertexShader)vs;
         program.fs = cast(Hip_D3D11_FragmentShader)fs;
-        return true;
+        return program.initialize();
     }
 
 
@@ -196,16 +234,36 @@ class Hip_D3D11_ShaderImpl : IShader
     }
 
     void useShader(ShaderProgram program){setCurrentShader(program);}
-    int getId(ref ShaderProgram prog, string name){return -1;}
-    void setVar(int id, int val){}
-    void setVar(int id, bool val){}
-    void setVar(int id, float val){}
-    void setVar(int id, double val){}
-    void setVar(int id, float[2] val){}
-    void setVar(int id, float[3] val){}
-    void setVar(int id, float[4] val){}
-    void setVar(int id, float[9] val){}
-    void setVar(int id, float[16] val){}
+    int getId(ref ShaderProgram prog, string name)
+    {
+        import std.stdio;
+        Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
+        D3D11_SHADER_INPUT_BIND_DESC output;
+        p.vReflector.GetResourceBindingDescByName("Cbuf", &output);
+        writeln(output);
+        return -1;
+    }
+    void setVertexVar(int id, int val){}
+    void setVertexVar(int id, bool val){}
+    void setVertexVar(int id, float val){}
+    void setVertexVar(int id, double val){}
+    void setVertexVar(int id, float[2] val){}
+    void setVertexVar(int id, float[3] val){}
+    void setVertexVar(int id, float[4] val){}
+    void setVertexVar(int id, float[9] val){}
+    void setVertexVar(int id, float[16] val){}
+    
+
+    void setFragmentVar(int id, int val){}
+    void setFragmentVar(int id, bool val){}
+    void setFragmentVar(int id, float val){}
+    void setFragmentVar(int id, double val){}
+    void setFragmentVar(int id, float[2] val){}
+    void setFragmentVar(int id, float[3] val){}
+    void setFragmentVar(int id, float[4] val){}
+    void setFragmentVar(int id, float[9] val){}
+    void setFragmentVar(int id, float[16] val){}
+
     void deleteShader(FragmentShader* _fs){}
     void deleteShader(VertexShader* _vs){}
     void dispose(ref ShaderProgram prog)

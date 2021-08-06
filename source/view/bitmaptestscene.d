@@ -30,6 +30,6 @@ class BitmapTestScene : Scene
         _txt~= input;
         txt.setText(_txt);
         txt.render();
-        txt.mesh.shader.setVar("uColor", cast(float[4])[1.0, 1.0, 0.0, 1.0]);
+        txt.mesh.shader.setFragmentVar("uColor", cast(float[4])[1.0, 1.0, 0.0, 1.0]);
     }
 }

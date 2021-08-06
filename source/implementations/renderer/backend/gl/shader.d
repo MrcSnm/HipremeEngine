@@ -276,24 +276,24 @@ class Hip_GL3_ShaderImpl : IShader
         }
         return varID;
     }
-    void setVar(int id, int val){glUniform1i(id, val);}
-    void setVar(int id, bool val){glUniform1i(id, val);}
-    void setVar(int id, float val){glUniform1f(id, val);}
-    void setVar(int id, double val){glUniform1d(id, val);}
-    void setVar(int id, float[2] val)
+    void setVertexVar(int id, int val){glUniform1i(id, val);}
+    void setVertexVar(int id, bool val){glUniform1i(id, val);}
+    void setVertexVar(int id, float val){glUniform1f(id, val);}
+    void setVertexVar(int id, double val){glUniform1d(id, val);}
+    void setVertexVar(int id, float[2] val)
     {
         glUniform2f(id,
         *(cast(float*)(&val)),
         *(cast(float*)(&val) + 1));
     }
-    void setVar(int id, float[3] val)
+    void setVertexVar(int id, float[3] val)
     {
         glUniform3f(id,
         *(cast(float*)(&val)),
         *(cast(float*)(&val) + 1),
         *(cast(float*)(&val) + 2));
     }
-    void setVar(int id, float[4] val)
+    void setVertexVar(int id, float[4] val)
     {
         glUniform4f(id,
         *(cast(float*)(&val)),
@@ -301,11 +301,26 @@ class Hip_GL3_ShaderImpl : IShader
         *(cast(float*)(&val) + 2),
         *(cast(float*)(&val) + 3));
     }
-    void setVar(int id, float[9] val){glUniformMatrix3fv(id, 1, GL_FALSE, cast(float*)&val);}
-    void setVar(int id, float[16] val)
+    void setVertexVar(int id, float[9] val){glUniformMatrix3fv(id, 1, GL_FALSE, cast(float*)&val);}
+    void setVertexVar(int id, float[16] val)
     {
         glUniformMatrix4fv(id, 1, GL_FALSE, cast(float*)&val);
     }
+    private template v(T)
+    {
+        void setFragmentVar(int id, T val){setVertexVar(id, val);}
+    }
+    mixin v!int;
+    mixin v!bool;
+    mixin v!float;
+    mixin v!double;
+    mixin v!(float[2]);
+    mixin v!(float[3]);
+    mixin v!(float[4]);
+    mixin v!(float[9]);
+    mixin v!(float[16]);
+
+    
 
     /**
     *   params:
