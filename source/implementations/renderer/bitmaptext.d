@@ -221,11 +221,11 @@ class HipBitmapText
         {
             bmTextShader = HipRenderer.newShader(HipShaderPresets.BITMAP_TEXT);
             bmTextShader.bind();
-            bmTextShader.setVar("uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
-            bmTextShader.setVar("uModel", Matrix4.identity);
+            bmTextShader.setFragmentVar("uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
+            bmTextShader.setVertexVar("uModel", Matrix4.identity);
             const Viewport v = HipRenderer.getCurrentViewport();
-            bmTextShader.setVar("uView", Matrix4.orthoLH(0, v.w, v.h, 0, 0.01, 100));
-            bmTextShader.setVar("uProj", Matrix4.identity);
+            bmTextShader.setVertexVar("uView", Matrix4.orthoLH(0, v.w, v.h, 0, 0.01, 100));
+            bmTextShader.setVertexVar("uProj", Matrix4.identity);
         }
         linesWidths = new uint[4];
         text = "";

@@ -98,10 +98,10 @@ class HipSpriteBatch
     void flush()
     {
         mesh.shader.bind();
-        mesh.shader.setVar("uBatchColor", cast(float[4])[1,1,1,1]);
-        mesh.shader.setVar("uProj", camera.proj);
-        mesh.shader.setVar("uModel",Matrix4.identity());
-        mesh.shader.setVar("uView", camera.view);
+        mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
+        mesh.shader.setVertexVar("uProj", camera.proj);
+        mesh.shader.setVertexVar("uModel",Matrix4.identity());
+        mesh.shader.setVertexVar("uView", camera.view);
 
         mesh.updateVertices(vertices);
         mesh.draw(quadsCount*6);

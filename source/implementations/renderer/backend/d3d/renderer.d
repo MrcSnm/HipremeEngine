@@ -29,32 +29,6 @@ IDXGISwapChain _hip_d3d_swapChain = null;
 ID3D11RenderTargetView _hip_d3d_mainRenderTarget = null;
 
 
-private void Hip_D3D11_Dispose()
-{
-    if(_hip_d3d_swapChain)
-    {
-        _hip_d3d_swapChain.SetFullscreenState(FALSE, null);
-        _hip_d3d_swapChain.Release();
-        _hip_d3d_swapChain = null;
-    }
-    if(_hip_d3d_context)
-    {
-        _hip_d3d_context.Release();
-        _hip_d3d_context = null;
-    }
-    if(_hip_d3d_device)
-    {
-        _hip_d3d_device.Release();
-        _hip_d3d_device = null;
-    }
-    if(_hip_d3d_mainRenderTarget)
-    {
-        _hip_d3d_mainRenderTarget.Release();
-        _hip_d3d_mainRenderTarget = null;
-    }
-}
-
-
 class Hip_D3D11_Renderer : IHipRendererImpl
 {
     public static SDL_Renderer* renderer = null;
@@ -356,3 +330,29 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         Hip_D3D11_Dispose();
     }
 }
+
+private void Hip_D3D11_Dispose()
+{
+    if(_hip_d3d_swapChain)
+    {
+        _hip_d3d_swapChain.SetFullscreenState(FALSE, null);
+        _hip_d3d_swapChain.Release();
+        _hip_d3d_swapChain = null;
+    }
+    if(_hip_d3d_context)
+    {
+        _hip_d3d_context.Release();
+        _hip_d3d_context = null;
+    }
+    if(_hip_d3d_device)
+    {
+        _hip_d3d_device.Release();
+        _hip_d3d_device = null;
+    }
+    if(_hip_d3d_mainRenderTarget)
+    {
+        _hip_d3d_mainRenderTarget.Release();
+        _hip_d3d_mainRenderTarget = null;
+    }
+}
+

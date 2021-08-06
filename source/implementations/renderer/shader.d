@@ -13,11 +13,6 @@ enum ShaderStatus
     UNKNOWN_ERROR
 }
 
-enum ShaderTypes
-{
-    FLOAT,
-    INT
-}
 enum HipShaderPresets
 {
     DEFAULT,
@@ -42,19 +37,34 @@ interface IShader
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
     int  getId(ref ShaderProgram prog, string name);
 
-    final void setVar(T)(ref ShaderProgram prog, string name, T value)
+    final void setVertexVar(T)(ref ShaderProgram prog, string name, T value)
     {
         int id = getId(prog, name);
-        setVar(id, value);
+        setVertexVar(id, value);
     }
-    void setVar(int id, int val);
-    void setVar(int id, bool val);
-    void setVar(int id, float val);
-    void setVar(int id, float[2] val); ///Vec2
-    void setVar(int id, float[3] val); ///Vec3
-    void setVar(int id, float[4] val); ///Vec4
-    void setVar(int id, float[9] val); ///Matrix3
-    void setVar(int id, float[16] val); ///Matrix4
+    final void setFragmentVar(T)(ref ShaderProgram prog, string name, T value)
+    {
+        int id = getId(prog, name);
+        setFragmentVar(id, value);
+    }
+    void setFragmentVar(int id, int val);
+    void setFragmentVar(int id, bool val);
+    void setFragmentVar(int id, float val);
+    void setFragmentVar(int id, float[2] val); ///Vec2
+    void setFragmentVar(int id, float[3] val); ///Vec3
+    void setFragmentVar(int id, float[4] val); ///Vec4
+    void setFragmentVar(int id, float[9] val); ///Matrix3
+    void setFragmentVar(int id, float[16] val); ///Matrix4
+
+    void setVertexVar(int id, int val);
+    void setVertexVar(int id, bool val);
+    void setVertexVar(int id, float val);
+    void setVertexVar(int id, float[2] val); ///Vec2
+    void setVertexVar(int id, float[3] val); ///Vec3
+    void setVertexVar(int id, float[4] val); ///Vec4
+    void setVertexVar(int id, float[9] val); ///Matrix3
+    void setVertexVar(int id, float[16] val); ///Matrix4
+
     ///Used as intermediary for deleting non program intermediary in opengl
     void deleteShader(FragmentShader* fs);
     ///Used as intermediary for deleting non program intermediary in opengl
@@ -170,14 +180,10 @@ public class Shader
         shaderImpl.sendVertexAttribute(layoutIndex, valueAmount, dataType, normalize, stride, offset);
     }
 
-    void setVar(T)(string name, T val)
-    {
-        shaderImpl.setVar(this.shaderProgram, name, val);
-    }
-    public void setVar(T)(int id, T val)
-    {
-        shaderImpl.setVar(id, val);
-    }
+    public void setVertexVar(T)(string name, T val){shaderImpl.setVertexVar(this.shaderProgram, name, val);}
+    public void setVertexVar(T)(int id, T val){shaderImpl.setVertexVar(id, val);}
+    public void setFragmentVar(T)(string name, T val){shaderImpl.setFragmentVar(this.shaderProgram, name, val);}
+    public void setFragmentVar(T)(int id, T val){shaderImpl.setFragmentVar(id, val);}
 
     void bind()
     {
