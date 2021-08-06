@@ -126,9 +126,8 @@ class HipRenderer
         HipRenderer.height = height;
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
-        mainViewport = new FitViewport(0,0, 800, 600);
+        mainViewport = new Viewport(0,0,800, 600);
         setViewport(mainViewport);
-        setShader(HipRenderer.newShader());
         HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
 
 

@@ -133,11 +133,12 @@ class Hip_D3D11_ShaderImpl : IShader
     }
     bool compileShader(VertexShader _vs, string shaderSource)
     {
-        auto vs = cast(Hip_D3D11_VertexShader)_vs;
+        Hip_D3D11_VertexShader vs = cast(Hip_D3D11_VertexShader)_vs;
         bool ret = compileShader(vs.shader, "vs", shaderSource);
         if(ret)
         {
-            auto res = _hip_d3d_device.CreateVertexShader(vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), null, &vs.vs);
+            auto res = _hip_d3d_device.CreateVertexShader(vs.shader.GetBufferPointer(),
+            vs.shader.GetBufferSize(), null, &vs.vs);
             if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Vertex shader creation error", "Creation failed"))
             {
                 ErrorHandler.showErrorMessage("Vertex Shader Error:", Hip_D3D11_GetErrorMessage(res));
@@ -205,19 +206,19 @@ class Hip_D3D11_ShaderImpl : IShader
     void setVar(int id, float[4] val){}
     void setVar(int id, float[9] val){}
     void setVar(int id, float[16] val){}
-    void deleteShader(FragmentShader* _fs)
+    void deleteShader(FragmentShader* _fs){}
+    void deleteShader(VertexShader* _vs){}
+    void dispose(ref ShaderProgram prog)
     {
-        auto fs = cast(Hip_D3D11_FragmentShader)*_fs;
+        Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
+        auto fs = p.fs;
         if(fs.shader !is null)
             fs.shader.Release();
         fs.shader = null;
         if(fs.fs !is null)
             fs.fs.Release();
         fs.fs = null;
-    }
-    void deleteShader(VertexShader* _vs)
-    {
-        auto vs = cast(Hip_D3D11_VertexShader)*_vs;
+        auto vs = p.vs;
         if(vs.shader !is null)
             vs.shader.Release();
         vs.shader = null;

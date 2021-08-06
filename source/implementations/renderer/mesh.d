@@ -36,7 +36,7 @@ class Mesh
     }
     void sendAttributes()
     {
-        this.vao.sendAttributes();
+        this.vao.sendAttributes(shader);
     }
 
     /**

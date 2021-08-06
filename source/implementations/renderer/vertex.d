@@ -68,9 +68,11 @@ interface IHipIndexBufferImpl
 }
 interface IHipVertexArrayImpl
 {
-    void bind();
-    void unbind();
+    void bind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo);
+    void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo);
     void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride);
+    ///Was created because Direct3D 11 needs shader to create its VAO
+    void createInputLayout(Shader s);
 }
 
 
@@ -142,7 +144,7 @@ class HipVertexArrayObject
     *   Sets the attribute infos that were appended to this object. This function must only be called
     *   after binding/creating a VBO, or it will fail
     */
-    void sendAttributes()
+    void sendAttributes(Shader s)
     {
         if(!isBonded)
         {
@@ -154,6 +156,7 @@ class HipVertexArrayObject
             this.VAO.setAttributeInfo(info, stride);
             logln(info);
         }
+        this.VAO.createInputLayout(s);
         HipRenderer.exitOnError();
 
     }
@@ -161,13 +164,13 @@ class HipVertexArrayObject
     void bind()
     {
         isBonded = true;
-        this.VAO.bind();
+        this.VAO.bind(this.VBO, this.EBO);
         HipRenderer.exitOnError();
     }
     void unbind()
     {
         isBonded = false;
-        this.VAO.unbind();
+        this.VAO.unbind(this.VBO, this.EBO);
         HipRenderer.exitOnError();
     }
 

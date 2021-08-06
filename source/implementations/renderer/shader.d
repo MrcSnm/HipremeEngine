@@ -55,9 +55,11 @@ interface IShader
     void setVar(int id, float[4] val); ///Vec4
     void setVar(int id, float[9] val); ///Matrix3
     void setVar(int id, float[16] val); ///Matrix4
+    ///Used as intermediary for deleting non program intermediary in opengl
     void deleteShader(FragmentShader* fs);
+    ///Used as intermediary for deleting non program intermediary in opengl
     void deleteShader(VertexShader* vs);
-
+    void dispose(ref ShaderProgram);
 }
 
 abstract class VertexShader

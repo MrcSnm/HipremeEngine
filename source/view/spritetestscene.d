@@ -6,6 +6,7 @@ import implementations.renderer.sprite;
 import implementations.renderer.spritebatch;
 import implementations.renderer.renderer;
 import view.scene;
+import graphics.g2d.viewport;
 
 
 class SpriteTestScene : Scene
@@ -17,16 +18,25 @@ class SpriteTestScene : Scene
         batch = new HipSpriteBatch();
         sprite = new HipSprite("D:\\HipremeEngine\\assets\\graphics\\sprites\\sprite.png");
         import def.debugging.log;
-
-        logln(sprite.getVertices());
     }
 
     public override void render()
     {
         super.render();
+        Viewport v = HipRenderer.getCurrentViewport();
+        v.setSize(5000, 2500);
+        v.update();
         batch.camera.setScale(4, 4);
         batch.begin();
         batch.draw(sprite);
         batch.end();
+    }
+
+    public override void onResize(uint width, uint height)
+    {
+        import std.stdio;
+        Viewport v = HipRenderer.getCurrentViewport();
+        v.update();
+        writeln(v.w, " ", v.h);
     }
 }

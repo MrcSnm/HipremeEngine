@@ -12,7 +12,7 @@ class EventDispatcher
     SDL_Event e;
     ulong frameCount;
     KeyboardHandler* keyboard = null;
-    protected void function(uint width, uint height)[] resizeListeners;
+    protected void delegate(uint width, uint height)[] resizeListeners;
 
     this(KeyboardHandler *kb)
     {
@@ -55,7 +55,7 @@ class EventDispatcher
         frameCount++;
     }
 
-    void addOnResizeListener(void function(uint width, uint height) onResize)
+    void addOnResizeListener(void delegate(uint width, uint height) onResize)
     in{assert(onResize !is null, "onResize event must not be null.");}
     do
     {
