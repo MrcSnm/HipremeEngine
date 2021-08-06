@@ -152,13 +152,8 @@ class HipVertexArrayObject
             return;
         }
         foreach(info; infos)
-        {
             this.VAO.setAttributeInfo(info, stride);
-            logln(info);
-        }
         this.VAO.createInputLayout(s);
-        HipRenderer.exitOnError();
-
     }
 
     void bind()

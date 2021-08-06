@@ -31,7 +31,6 @@ private SDL_Window* createSDL_GL_Window(uint width, uint height)
 	SDL_GLContext ctx = SDL_GL_CreateContext(window);
 	SDL_GL_MakeCurrent(window, ctx);
 	GLSupport ver = loadOpenGL();
-	logln(ver);
 	SDL_GL_SetSwapInterval(1);
 	return window;
 }
