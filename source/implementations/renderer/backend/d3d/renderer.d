@@ -18,6 +18,7 @@ import error.handler;
 
 import graphics.g2d.viewport;
 import core.stdc.string;
+import std.conv:to;
 import directx.d3d11;
 import core.sys.windows.windows;
 import bindbc.sdl;
@@ -58,6 +59,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 {
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
+    protected static bool hasDebugAvailable;
     protected static Viewport currentViewport;
     public static Shader currentShader;
 
@@ -172,6 +174,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
                 Hip_D3D11_GetErrorMessage(hres) ~ "\nDebug layer will be aborted.");
                 goto rendererDefine;
             }
+            hasDebugAvailable = true;
         }
         rendererDefine:
 
@@ -196,7 +199,36 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
     public bool hasErrorOccurred(out string err, string file = __FILE__, int line = __LINE__)
     {
-        return false;
+        if(hasDebugAvailable)
+        {
+            DXGI_INFO_QUEUE_MESSAGE* msg;
+            bool hasError;
+            ulong msgSize;
+            for(ulong i = 0, 
+            // len = dxgiQueue.GetNumStoredMessagesAllowedByRetrievalFilters(DXGI_DEBUG_DX);
+            len = dxgiQueue.GetNumStoredMessages(DXGI_DEBUG_DX);
+            i < len; i++)
+            {
+                import std.stdio;
+                import core.stdc.stdlib;
+                dxgiQueue.GetMessage(DXGI_DEBUG_DX, i, null, &msgSize);
+                msg = cast(DXGI_INFO_QUEUE_MESSAGE*)malloc(msgSize);
+                dxgiQueue.GetMessage(DXGI_DEBUG_DX, i, msg, &msgSize);
+                if(msg.pDescription !is null || msg.Severity == DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR)
+                {
+                    hasError = true;
+                    err~= to!string(msg.pDescription)~"\n";
+                }
+                free(msg);
+            }
+            return hasError;
+        }
+        else
+        {
+            HRESULT hres = GetLastError();
+            err = Hip_D3D11_GetErrorMessage(hres);
+            return FAILED(hres);
+        }
     }
 
     public bool setWindowMode(HipWindowMode mode)

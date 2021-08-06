@@ -8,6 +8,7 @@ import error.handler;
 import directx.d3d11;
 import util.system;
 import core.sys.windows.windows;
+import implementations.renderer;
 import implementations.renderer.backend.d3d.renderer;
 import implementations.renderer.backend.d3d.utils;
 import implementations.renderer.shader;
@@ -44,7 +45,7 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         D3D11_BUFFER_DESC bd;
         bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         bd.Usage = usage;
-        bd.CPUAccessFlags = 0;
+        bd.CPUAccessFlags = getD3D11_CPUUsage(usage);
         bd.MiscFlags = 0u;
         bd.ByteWidth = cast(uint)size;
         bd.StructureByteStride = 0;
@@ -52,11 +53,8 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         D3D11_SUBRESOURCE_DATA sd;
         sd.pSysMem = cast(void*)data;
         //TODO: Check failure
-        HRESULT hr = _hip_d3d_device.CreateBuffer(&bd, &sd, &buffer);
-        if(FAILED(hr))
-        {
-            writeln(Hip_D3D11_GetErrorMessage(hr));
-        }
+        _hip_d3d_device.CreateBuffer(&bd, &sd, &buffer);
+        HipRenderer.exitOnError();
         
         // writeln("Buffer created ", buffer);
         // _hip_d3d_context.IASetVertexBuffers(0u, 1u, &buffer, null, &obj.offset);
