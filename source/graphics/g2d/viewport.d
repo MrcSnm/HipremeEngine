@@ -31,6 +31,12 @@ public class Viewport
         bounds.w=width;
         bounds.h=height;
     }
+    void update()
+    {
+        this.setSize(this.w, this.h);
+        if(HipRenderer.getCurrentViewport() == this)
+            this.setAsCurrentViewport();
+    }
     void setSize(uint width, uint height)
     {
         this.w = width;
@@ -41,6 +47,7 @@ public class Viewport
 
 public class FitViewport : Viewport
 {
+    uint worldWidth, worldHeight;    
     this(int x, int y, uint worldWidth, uint worldHeight)
     {
         super();
@@ -49,6 +56,8 @@ public class FitViewport : Viewport
     this(int worldWidth, int worldHeight){this(0,0,worldWidth,worldHeight);}
     override void setSize(uint width, uint height)
     {
+        this.worldWidth = worldWidth;
+        this.worldHeight = worldHeight;
         Vector2 scale = Scaling.fit(width, height, HipRenderer.width, HipRenderer.height);
         this.setBounds(
             (HipRenderer.width - cast(int)scale.x)/2,

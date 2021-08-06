@@ -11,6 +11,7 @@ import implementations.renderer.renderer;
 import implementations.renderer.shader;
 import implementations.renderer.framebuffer;
 import implementations.renderer.backend.d3d.shader;
+import implementations.renderer.backend.d3d.vertex;
 import implementations.renderer.backend.d3d.utils;
 import implementations.renderer.texture;
 import error.handler;
@@ -59,6 +60,13 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     public static SDL_Window* window = null;
     protected static Viewport currentViewport;
     public static Shader currentShader;
+
+    static if(HIP_DEBUG)
+    {
+        import directx.dxgidebug;
+        IDXGIInfoQueue dxgiQueue;
+    }
+    
 
     public SDL_Window* createWindow(uint width, uint height)
     {
@@ -112,10 +120,18 @@ class Hip_D3D11_Renderer : IHipRendererImpl
             * under System, Apps & features, Manage optional Features,
             * Add a feature, and then look for "Graphics Tools".
             */
-            // createDeviceFlags|= D3D11_CREATE_DEVICE_DEBUG;
-
+            createDeviceFlags|= D3D11_CREATE_DEVICE_DEBUG;
+            
         }
-        const D3D_FEATURE_LEVEL[] levelArray = [D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0];
+        const D3D_FEATURE_LEVEL[] levelArray = 
+        [
+            D3D_FEATURE_LEVEL_11_1,
+            D3D_FEATURE_LEVEL_11_0,
+            D3D_FEATURE_LEVEL_10_1,
+            D3D_FEATURE_LEVEL_10_0,
+            D3D_FEATURE_LEVEL_9_3,
+            D3D_FEATURE_LEVEL_9_1
+        ];
         D3D_FEATURE_LEVEL featureLevel;
 
         auto res = D3D11CreateDeviceAndSwapChain(null,
@@ -131,12 +147,33 @@ class Hip_D3D11_Renderer : IHipRendererImpl
                                                 &featureLevel,
                                                 &_hip_d3d_context);
 
-
+        
         if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "D3D11: Error creating device and swap chain", Hip_D3D11_GetErrorMessage(res)))
         {
             Hip_D3D11_Dispose();
             return;
         }
+
+        static if(HIP_DEBUG)
+        {
+            import core.sys.windows.dll;
+            HRESULT hres;
+            DXGIGetDebugInterface = cast(_DXGIGetDebugInterface)GetProcAddress(GetModuleHandle("Dxgidebug.dll"), "DXGIGetDebugInterface");
+            if(DXGIGetDebugInterface is null)
+            {
+                ErrorHandler.showErrorMessage("DLL Error", "Error loading the DXGIGetDebugInterface from Dxgidebug.dll
+                Debug layer will be aborted.");
+                goto rendererDefine;
+            }
+            hres = DXGIGetDebugInterface(&uuidof!IDXGIInfoQueue, cast(void**)&dxgiQueue);
+            if(FAILED(hres))
+            {
+                ErrorHandler.showErrorMessage("DXGI Error", "Could not get the IDXGIInfoQueue interface. \nError: " ~
+                Hip_D3D11_GetErrorMessage(hres) ~ "\nDebug layer will be aborted.");
+                goto rendererDefine;
+            }
+        }
+        rendererDefine:
 
         ID3D11Texture2D pBackBuffer;
 
@@ -183,15 +220,15 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     }
     public IHipVertexArrayImpl  createVertexArray()
     {
-        return null;
+        return new Hip_D3D11_VertexArrayObject();
     }
     public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
     {
-        return null;
+        return new Hip_D3D11_VertexBufferObject(size, usage);
     }
     public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage)
     {
-        return null;
+        return new Hip_D3D11_IndexBufferObject(count, usage);
     }
 
     public Shader createShader()

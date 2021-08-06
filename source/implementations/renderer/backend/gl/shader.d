@@ -339,4 +339,9 @@ class Hip_GL3_ShaderImpl : IShader
         auto vs = cast(Hip_GL3_VertexShader)*_vs;
         glDeleteShader(vs.shader); vs.shader = 0;
     }
+    void dispose(ref ShaderProgram prog)
+    {
+        Hip_GL3_ShaderProgram p = cast(Hip_GL3_ShaderProgram)prog;
+        glDeleteProgram(p.program);
+    }
 }

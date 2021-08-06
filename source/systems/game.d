@@ -19,16 +19,17 @@ class GameSystem
         keyboard = new KeyboardHandler();
         keyboard.addKeyListener(SDLK_ESCAPE, new class Key
         {
-            override void onDown()
-            {
-                hasFinished = true;
-            }
-            override void onUp()
-            {
-
-            }
+            override void onDown(){hasFinished = true;}
+            override void onUp(){}
         });
         dispatcher = new EventDispatcher(&keyboard);
+        dispatcher.addOnResizeListener((uint width, uint height)
+        {
+            HipRenderer.width = width;
+            HipRenderer.height = height;
+            foreach (Scene s; scenes)
+                s.onResize(width, height);
+        });
 
         Scene testscene = new SpriteTestScene();
     	testscene.init();
