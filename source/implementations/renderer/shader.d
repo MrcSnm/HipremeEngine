@@ -1,5 +1,6 @@
 module implementations.renderer.shader;
 import bindbc.opengl;
+import error.handler;
 import implementations.renderer.backend.gl.shader;
 import implementations.renderer.shader;
 import util.file;
@@ -13,6 +14,13 @@ enum ShaderStatus
     UNKNOWN_ERROR
 }
 
+enum ShaderTypes
+{
+    VERTEX,
+    FRAGMENT,
+    GEOMETRY //Unsupported yet
+}
+
 enum HipShaderPresets
 {
     DEFAULT,
@@ -21,6 +29,179 @@ enum HipShaderPresets
     SPRITE_BATCH,
     BITMAP_TEXT,
     NONE
+}
+
+enum UniformType
+{
+    boolean,
+    integer,
+    uinteger,
+    floating,
+    floating2,
+    floating3,
+    floating4,
+    floating2x2,
+    floating3x3,
+    floating4x4
+}
+
+struct ShaderVar
+{
+    void* data;
+    string name;
+    ShaderTypes shaderType;
+    UniformType type;
+    ulong varSize;
+
+    T get(T)(){return *(cast(T*)this.data);}
+    bool set(T)(T data)
+    {
+        import std.traits;
+        import core.stdc.string;
+        static assert(isNumeric!T || isBoolean!T || isStaticArray!T, "Invalid type "~T.stringof);
+
+        if(data.sizeof != varSize)
+            return false;
+        memcpy(this.data, &data, varSize);
+        return true;
+    }
+    auto opAssign(T)(T value)
+    {
+        static if(is(T == ShaderVar))
+        {
+            this.data = value.data;
+            this.name = value.name;
+            this.shaderType = value.shaderType;
+            this.varSize = value.varSize;
+        }
+        else
+            assert(this.set(value), "Value set for '"~name~"' is invalid.");
+        return this;
+    }
+
+    static ShaderVar* get(ShaderTypes t, string varName, bool data){return ShaderVar.get(t, varName, &data, UniformType.boolean, data.sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, int data){return ShaderVar.get(t, varName, &data, UniformType.integer, data.sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, uint data){return ShaderVar.get(t, varName, &data, UniformType.uinteger, data.sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, float data){return ShaderVar.get(t, varName, &data, UniformType.floating, data.sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, float[2] data){return ShaderVar.get(t, varName, &data, UniformType.floating2, data.sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, float[3] data){return ShaderVar.get(t, varName, &data, UniformType.floating3, data.sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, float[4] data){return ShaderVar.get(t, varName, &data, UniformType.floating4, data.sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, float[9] data){return ShaderVar.get(t, varName, &data, UniformType.floating3x3, data.sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, float[16] data){return ShaderVar.get(t, varName, &data, UniformType.floating4x4, data.sizeof);}
+    protected static ShaderVar* get(ShaderTypes t, string varName, void* varData, UniformType type, ulong varSize)
+    {
+        import core.stdc.string : memcpy;
+        import core.stdc.stdlib : malloc;
+        assert(isShaderVarNameValid(varName), "Variable '"~varName~"' is invalid.");
+        ShaderVar* s = new ShaderVar();
+        s.data = malloc(varSize);
+        s.name = varName;
+        s.shaderType = t;
+        s.type = type;
+        s.varSize = varSize;
+        memcpy(s.data, varData, varSize);
+        return s;
+    }
+}
+
+struct ShaderVarLayout
+{
+    ShaderVar* sVar;
+    uint alignment;
+    uint size;
+}
+
+/**
+*   This class is meant to be created together with the Shaders.
+*   
+*   Those are meant to wrap the cbuffer from Direct3D and Uniform Block from OpenGL.
+*
+*   By wrapping the uniforms/cbuffers layouts, it is much easier to send those variables from any API.
+*/
+class ShaderVariablesLayout
+{
+    ShaderVarLayout[string] variables;
+    string name;
+    ShaderTypes shaderType;
+
+    protected uint lastPosition;
+
+    /**
+    *   Use the layout name for mentioning the uniform/cbuffer block name.
+    *
+    *   Its members are the ShaderVar* passed
+    */
+    this(string layoutName, ShaderTypes t, ShaderVar*[] variables ...)
+    {
+        this.name = layoutName;
+        this.shaderType = t;
+        uint position = 0;
+        foreach(ShaderVar* v; variables)
+        {
+            assert(v.shaderType == t, "ShaderVariableLayout must contain only one shader type");
+            assert((v.name in this.variables) is null, "Variable named "~v.name~" is already in the layout "~name);
+            uint size = glSTD140(v, 0);
+            position = glSTD140(v, position);
+            this.variables[v.name] = ShaderVarLayout(v, position-size, size);
+        }
+        lastPosition = position;
+    }
+    /**
+    *   Uses the OpenGL's GLSL Std 140 for getting the variable position.
+    *   This function must return what is the end position given the last variable size.
+    */
+    final uint glSTD140(ref ShaderVar* v, uint lastAlignment = 0,  uint n = float.sizeof)
+    {
+        uint newN;
+        final switch(v.type) with(UniformType)
+        {
+            case floating:
+            case uinteger:
+            case integer:
+            case boolean:
+                newN = n;
+                break;
+            case floating2:
+                newN = n*2;
+                break;
+            case floating3:
+            case floating4:
+            case floating2x2:
+                newN = n*4;
+                break;
+            case floating3x3:
+                newN = n*12;
+                break;
+            case floating4x4:
+                newN = n*16;
+                break;
+        }
+        if(lastAlignment == 0)
+            return newN;
+
+        uint n4 = n*4;
+        if(lastAlignment % n4 > (lastAlignment+newN) % n4 || newN % n4 == 0)
+            return lastAlignment+ (lastAlignment % n4) + newN;
+        
+        return lastAlignment + newN;
+    }
+
+    ShaderVariablesLayout append(T)(string varName, T data)
+    {
+        assert((varName in variables) is null, "Variable named "~varName~" is already in the layout "~name);
+        ShaderVar* v = ShaderVar.get(this.shaderType, varName, data);
+        uint sz = glSTD140(v, 0);
+        uint pos = glSTD140(v, lastPosition);
+        lastPosition = pos;
+        variables[varName] = ShaderVarLayout(v, lastPosition-sz, sz);
+
+        return this;
+    }
+
+    auto opDispatch(string member)()
+    {
+        return variables[member].sVar;
+    }
 }
 
 
@@ -88,6 +269,20 @@ abstract class FragmentShader
     abstract string getSpriteBatchFragment();
     abstract string getBitmapTextFragment();
 }
+abstract class ShaderVariableBlock
+{
+    ShaderVariablesLayout[string] layouts;
+    this(ShaderVariablesLayout[] layout ...)
+    {
+        foreach(l; layout)
+        {
+            assert((l.name in layouts) is null, "ShaderVariableBlock can't have blocks with the same name");
+            layouts[l.name] = l;
+        }
+    }
+    abstract void sendVertexBlock(string layoutName);
+    abstract void sendFragmentBlock(string layoutName);
+}
 
 abstract class ShaderProgram{}
 
@@ -97,10 +292,14 @@ public class Shader
     VertexShader vertexShader;
     FragmentShader fragmentShader;
     ShaderProgram shaderProgram;
+    ShaderVariablesLayout[string] layouts;
+    protected ShaderVariablesLayout defaultLayout;
     //Optional
     IShader shaderImpl;
     string fragmentShaderPath;
     string vertexShaderPath;
+
+    private bool isUseCall = false;
 
     this(IShader shaderImpl)
     {
@@ -185,9 +384,88 @@ public class Shader
     public void setFragmentVar(T)(string name, T val){shaderImpl.setFragmentVar(this.shaderProgram, name, val);}
     public void setFragmentVar(T)(int id, T val){shaderImpl.setFragmentVar(id, val);}
 
+    protected ShaderVar* findByName(string name)
+    {
+        import std.array : split;
+        string[] names = name.split(".");
+        bool isDefault = names[0] == "";
+
+        if(isDefault)
+        {
+            import std.stdio;
+            ShaderVarLayout* sL = names[1] in defaultLayout.variables;
+            if(sL !is null)
+                return sL.sVar;
+        }
+        else
+        {
+            ShaderVariablesLayout* l = (names[0] in layouts);
+            if(l !is null)
+            {
+                ShaderVarLayout* sL = names[1] in l.variables;
+                if(sL !is null)
+                    return sL.sVar;
+            }
+        }
+        return null;
+    }
+
+    public ShaderVar* get(string name){return findByName(name);}
+
+    // public void setVertexVar(T)(string name, T val)
+    // {
+
+    // }
+
+    public void addVarLayout(ShaderVariablesLayout layout)
+    {
+        assert((layout.name in layouts) is null, "Shader: VariablesLayout '"~layout.name~"' is already defined");
+        if(defaultLayout is null)
+            defaultLayout = layout;
+        layouts[layout.name] = layout;
+    }
+
+    /** 
+     * This creates a state in the current shader to which block will be accessed
+     * when using setVertexVar(".property"). If no default block is set ("")
+     * .property will always access the first block defined
+     * Params:
+     *   blockName = Which block will be accessed with .property
+     */
+    public void setDefaultBlock(string blockName){defaultLayout = layouts[blockName];}
+
     void bind()
     {
         shaderImpl.setCurrentShader(shaderProgram);
+    }
+
+    auto opDispatch(string member)()
+    {
+        static if(member == "useLayout")
+        {
+            isUseCall = true;
+            return this;
+        }
+        else
+        {
+            if(isUseCall)
+            {
+                setDefaultBlock(member);
+                isUseCall = false;
+                return null;
+            }
+            return defaultLayout.variables[member].sVar;
+        }
+    }
+    auto opDispatch(string member, T)(T value)
+    {
+        assert(defaultLayout.variables[member].sVar.set(value), "Invalid value of type "~
+        T.stringof~" passed to "~defaultLayout.name~"."~member);
+    }
+
+    void sendVars()
+    {
+           
     }
 
 
@@ -197,4 +475,12 @@ public class Shader
         shaderImpl.deleteShader(&vertexShader);
     }
 
+}
+
+private bool isShaderVarNameValid(ref string varName)
+{
+    import std.algorithm;
+    
+    return varName.length > 0 && 
+    varName.countUntil(" ") == -1;
 }

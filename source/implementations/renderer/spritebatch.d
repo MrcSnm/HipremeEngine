@@ -5,7 +5,7 @@ import graphics.orthocamera;
 import implementations.renderer.renderer;
 import math.matrix;
 import implementations.renderer.shader;
-import implementations.renderer.material;
+import graphics.material;
 import implementations.renderer.sprite;
 import graphics.color;
 import math.vector;
@@ -49,6 +49,27 @@ class HipSpriteBatch
         mesh.createIndexBuffer(maxQuads*6, HipBufferUsage.STATIC);
         mesh.sendAttributes();
         setShader(s);
+        
+
+        auto v = new ShaderVariablesLayout("cbuf", ShaderTypes.FRAGMENT)
+            .append("Opa", 500)
+            .append("vish", 200)
+            .append("vTest", cast(float[4])[1f, 2, 3.0, 5])
+            .append("vTestr", cast(float[3])[2, 3.0, 5])
+            .append("vTestss", cast(float[4])[1f, 2, 3.0, 5])
+            .append("visher", false)
+            .append("vishs", false);
+
+        s.addVarLayout(v);
+        s.useLayout.cbuf;
+        s.vish = false;
+
+
+        debug { import std.stdio : writeln; try { writeln(s.get(".vish").get!int); } catch (Exception) {} }
+
+        import std.stdio;
+
+        v.variables["vTest"].writeln;
 
         material = new Material(mesh.shader);
         material.setFragmentVar("uBatchColor", cast(float[4])[1,0,0,1]);
