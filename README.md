@@ -30,3 +30,8 @@ The engine mantains some global options which you can modify it on source/global
 - Create a proof of concept
 - Multi threaded asset loading/decoding
 - Cross platform build system
+
+
+## Issues list
+
+- D3DReflect needs to link to D3dcompiler_43 instead of _47

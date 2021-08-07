@@ -1,38 +1,7 @@
-module implementations.renderer.material;
+module graphics.material;
 import math.matrix;
 import math.vector;
-
 import implementations.renderer.shader;
-
-enum UniformType
-{
-    boolean,
-    integer,
-    uinteger,
-    floating,
-    floating2,
-    floating3,
-    floating4,
-    floating2x2,
-    floating3x3,
-    floating4x4
-}
-
-enum ShaderTypes
-{
-    VERTEX,
-    FRAGMENT,
-    GEOMETRY //Unsupported yet
-}
-
-struct ShaderVar
-{
-  void* data;
-  string name;
-  ShaderTypes shaderType;
-  UniformType type;
-  ulong varSize;
-}
 
 class Material
 {
@@ -105,11 +74,7 @@ class Material
     {
         shader.bind();
         foreach(ref ShaderVar v; variables)
-        {
-            import std.stdio;
-            writeln(v);
             setShaderVar(v);
-        }
     }
 }
 
