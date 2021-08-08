@@ -62,10 +62,10 @@ class HipSpriteBatch
 
         s.addVarLayout(v);
         s.useLayout.cbuf;
-        s.vish = false;
+        s.vTest[1] = cast(float[3])[3,1,1];
 
 
-        debug { import std.stdio : writeln; try { writeln(s.get(".vish").get!int); } catch (Exception) {} }
+        debug { import std.stdio : writeln; try { writeln(s.vTest[1]); } catch (Exception) {} }
 
         import std.stdio;
 
