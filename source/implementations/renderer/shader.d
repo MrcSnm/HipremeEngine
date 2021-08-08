@@ -47,6 +47,12 @@ enum UniformType
     none
 }
 
+enum ShaderHint : uint
+{
+    NONE = 0,
+    GL_USE_BLOCK = 1<<0,
+}
+
 struct ShaderVar
 {
     void* data;
@@ -56,7 +62,7 @@ struct ShaderVar
     ulong singleSize;
     ulong varSize;
 
-    T get(T)(){return *(cast(T*)this.data);}
+    const T get(T)(){return *(cast(T*)this.data);}
     bool set(T)(T data)
     {
         import std.traits;
@@ -161,6 +167,7 @@ struct ShaderVar
         assert(isShaderVarNameValid(varName), "Variable '"~varName~"' is invalid.");
         ShaderVar* s = new ShaderVar();
         s.data = malloc(varSize);
+        assert(s.data !is null, "Out of memory");
         s.name = varName;
         s.shaderType = t;
         s.type = type;
@@ -168,6 +175,18 @@ struct ShaderVar
         s.singleSize = singleSize;
         memcpy(s.data, varData, varSize);
         return s;
+    }
+
+    void dispose()
+    {
+        import core.stdc.stdlib:free;
+        type = UniformType.none;
+        shaderType = ShaderTypes.NONE;
+        singleSize = 0;
+        varSize = 0;
+        if(data != null)
+            free(data);
+        data = null;
     }
 }
 
@@ -190,18 +209,32 @@ class ShaderVariablesLayout
     ShaderVarLayout[string] variables;
     string name;
     ShaderTypes shaderType;
+    protected void* data;
+    protected void* additionalData;
+    protected bool isAdditionalAllocated;
+    private bool isLocked;
 
+    ///The hint are used for the Shader backend as a notifier
+    public immutable int hint;
     protected uint lastPosition;
 
     /**
     *   Use the layout name for mentioning the uniform/cbuffer block name.
     *
     *   Its members are the ShaderVar* passed
+    *
+    *   Params:
+    *       layoutName = From which block it will be accessed on the shader
+    *       t = What is the shader type that holds those variables
+    *       hint = Use ShaderHint for additional information, multiple hints may be passed
+    *       variables = Usually you won't pass any and use .append for writing less
     */
-    this(string layoutName, ShaderTypes t, ShaderVar*[] variables ...)
+    this(string layoutName, ShaderTypes t, uint hint, ShaderVar*[] variables ...)
     {
+        import core.stdc.stdlib:malloc;
         this.name = layoutName;
         this.shaderType = t;
+        this.hint = hint;
         uint position = 0;
         foreach(ShaderVar* v; variables)
         {
@@ -211,8 +244,12 @@ class ShaderVariablesLayout
             position = glSTD140(v, position);
             this.variables[v.name] = ShaderVarLayout(v, position-size, size);
         }
+        data = malloc(getLayoutSize());
+        assert(data != null, "Out of memory");
         lastPosition = position;
     }
+    void lock(){this.isLocked = true;}
+
     /**
     *   Uses the OpenGL's GLSL Std 140 for getting the variable position.
     *   This function must return what is the end position given the last variable size.
@@ -255,21 +292,58 @@ class ShaderVariablesLayout
         return lastAlignment + newN;
     }
 
+    void* getBlockData()
+    {
+        import core.stdc.string:memcpy;
+        foreach(v; variables)
+            memcpy(data+v.alignment, v.sVar.data, v.size);
+        return data;
+    }
+
     ShaderVariablesLayout append(T)(string varName, T data)
     {
+        import core.stdc.stdlib:realloc;
         assert((varName in variables) is null, "Variable named "~varName~" is already in the layout "~name);
+        assert(!isLocked, "Can't append ShaderVariable after it has been locked");
         ShaderVar* v = ShaderVar.get(this.shaderType, varName, data);
         uint sz = glSTD140(v, 0);
         uint pos = glSTD140(v, lastPosition);
         lastPosition = pos;
         variables[varName] = ShaderVarLayout(v, lastPosition-sz, sz);
+        this.data = realloc(this.data, getLayoutSize());
+        assert(this.data != null, "Out of memory");
 
         return this;
     }
+    final ulong getLayoutSize(){return lastPosition;}
+    final void setAdditionalData(void* d, bool isAllocated)
+    {
+        this.additionalData = d;
+        this.isAdditionalAllocated = isAllocated;
+    }
+    final const(void*) getAdditionalData() const {return cast(const(void*))additionalData;}
 
     auto opDispatch(string member)()
     {
         return variables[member].sVar;
+    }
+
+    void dispose()
+    {
+        import core.stdc.stdlib:free;
+        foreach (ref v; variables)
+        {
+            v.sVar.dispose();
+            v.alignment = 0;
+            v.size = 0;
+            v.sVar = null;
+        }
+        if(data != null)
+            free(data);
+        if(isAdditionalAllocated && additionalData != null)
+            free(additionalData);
+        additionalData = null;
+        data = null;
     }
 }
 
@@ -319,6 +393,9 @@ interface IShader
     void deleteShader(FragmentShader* fs);
     ///Used as intermediary for deleting non program intermediary in opengl
     void deleteShader(VertexShader* vs);
+
+    void createVariablesBlock(ref ShaderVariablesLayout layout);
+    void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts);
     void dispose(ref ShaderProgram);
 }
 
@@ -337,20 +414,6 @@ abstract class FragmentShader
     abstract string getGeometryBatchFragment();
     abstract string getSpriteBatchFragment();
     abstract string getBitmapTextFragment();
-}
-abstract class ShaderVariableBlock
-{
-    ShaderVariablesLayout[string] layouts;
-    this(ShaderVariablesLayout[] layout ...)
-    {
-        foreach(l; layout)
-        {
-            assert((l.name in layouts) is null, "ShaderVariableBlock can't have blocks with the same name");
-            layouts[l.name] = l;
-        }
-    }
-    abstract void sendVertexBlock(string layoutName);
-    abstract void sendFragmentBlock(string layoutName);
 }
 
 abstract class ShaderProgram{}
@@ -492,6 +555,7 @@ public class Shader
         if(defaultLayout is null)
             defaultLayout = layout;
         layouts[layout.name] = layout;
+        shaderImpl.createVariablesBlock(layout);
     }
 
     /** 
@@ -535,7 +599,7 @@ public class Shader
 
     void sendVars()
     {
-           
+        shaderImpl.sendVars(shaderProgram, layouts);
     }
 
 
