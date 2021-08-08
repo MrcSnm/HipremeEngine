@@ -200,6 +200,9 @@ class Hip_GL3_ShaderProgram : ShaderProgram{uint program;}
 
 class Hip_GL3_ShaderImpl : IShader
 {
+    import util.data_structures:Pair;
+    protected ShaderVariablesLayout[] layouts;
+    protected Pair!(ShaderVariablesLayout, uint)[] ubos;
     FragmentShader createFragmentShader()
     {
         Hip_GL3_FragmentShader fs = new Hip_GL3_FragmentShader();
@@ -344,6 +347,75 @@ class Hip_GL3_ShaderImpl : IShader
     }
 
     void useShader(ShaderProgram program){glUseProgram((cast(Hip_GL3_ShaderProgram)program).program);}
+
+
+    void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts)
+    {
+        foreach(l; layouts)
+        {
+            foreach (v; l.variables)
+            {
+                int id = getId(prog, v.sVar.name);
+                final switch(v.sVar.type) with(UniformType)
+                {
+                    case boolean:
+                        glUniform1i(id, v.sVar.get!bool);
+                        break;
+                    case integer:
+                        glUniform1i(id, v.sVar.get!int);
+                        break;
+                    case uinteger:
+                        glUniform1ui(id, v.sVar.get!uint);
+                        break;
+                    case floating:
+                        glUniform1f(id, v.sVar.get!float);
+                        break;
+                    case floating2:
+                        float[2] temp = v.sVar.get!(float[2]);
+                        glUniform2f(id, temp[0], temp[1]);
+                        break;
+                    case floating3:
+                        float[3] temp = v.sVar.get!(float[3]);
+                        glUniform3f(id, temp[0], temp[1], temp[2]);
+                        break;
+                    case floating4:
+                        float[4] temp = v.sVar.get!(float[4]);
+                        glUniform4f(id, temp[0], temp[1], temp[2], temp[3]);
+                        break;
+                    case floating2x2:
+                        glUniformMatrix2fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[4]).ptr);
+                        break;
+                    case floating3x3:
+                        glUniformMatrix3fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[9]).ptr);
+                        break;
+                    case floating4x4:
+                        glUniformMatrix4fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[16]).ptr);
+                        break;
+                    case none:break;
+                }
+            }
+        }
+                
+    }
+    void createVariablesBlock(ref ShaderVariablesLayout layout)
+    {
+        if(layout.hint & ShaderHint.GL_USE_BLOCK)
+        {
+            uint ubo;
+            glCreateBuffers(1, &ubo);
+            glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+            glBufferData(GL_UNIFORM_BUFFER, layout.getLayoutSize(), null, GL_DYNAMIC_DRAW);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            ubos~= Pair!(ShaderVariablesLayout, uint)(layout, ubo);
+        }
+    }
+    protected void updateUbo(ref Pair!(ShaderVariablesLayout, int) ubo)
+    {
+        glBindBuffer(GL_UNIFORM_BUFFER, ubo.b);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, ubo.a.getLayoutSize(), ubo.a.getBlockData());
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+
     void deleteShader(FragmentShader* _fs)
     {
         auto fs = cast(Hip_GL3_FragmentShader)*_fs;
@@ -358,5 +430,9 @@ class Hip_GL3_ShaderImpl : IShader
     {
         Hip_GL3_ShaderProgram p = cast(Hip_GL3_ShaderProgram)prog;
         glDeleteProgram(p.program);
+
+        foreach (ub; ubos)
+            glDeleteBuffers(1, &ub.b);
+        ubos.length = 0;
     }
 }

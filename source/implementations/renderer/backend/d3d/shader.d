@@ -102,8 +102,15 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
     }
 }
 
+struct Hip_D3D11_ShaderVarAdditionalData
+{
+    ID3D11Buffer buffer;
+    uint id;
+}
+
 class Hip_D3D11_ShaderImpl : IShader
 {
+    import util.data_structures:Pair;
     FragmentShader createFragmentShader()
     {
         Hip_D3D11_FragmentShader fs = new Hip_D3D11_FragmentShader();
@@ -240,8 +247,7 @@ class Hip_D3D11_ShaderImpl : IShader
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
         D3D11_SHADER_INPUT_BIND_DESC output;
         p.vReflector.GetResourceBindingDescByName("Cbuf", &output);
-        writeln(output);
-        return -1;
+        return output.BindPoint;
     }
     void setVertexVar(int id, int val){}
     void setVertexVar(int id, bool val){}
@@ -263,6 +269,54 @@ class Hip_D3D11_ShaderImpl : IShader
     void setFragmentVar(int id, float[4] val){}
     void setFragmentVar(int id, float[9] val){}
     void setFragmentVar(int id, float[16] val){}
+
+    void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts)
+    {
+        foreach(l; layouts)
+        {
+            Hip_D3D11_ShaderVarAdditionalData* data = cast(Hip_D3D11_ShaderVarAdditionalData*)l.getAdditionalData();
+            assert(data != null, "D3D11 ShaderVarAdditionalData is null, can't send variables");
+            final switch(l.shaderType)
+            {
+                case ShaderTypes.FRAGMENT:
+                    _hip_d3d_context.PSSetConstantBuffers(0, 1, &data.buffer);
+                    break;
+                case ShaderTypes.VERTEX:
+                    _hip_d3d_context.VSSetConstantBuffers(0, 1, &data.buffer);
+                    break;
+                case ShaderTypes.GEOMETRY:
+                case ShaderTypes.NONE:
+                    break;
+            }
+            break;
+        }
+    }
+    void createVariablesBlock(ref ShaderVariablesLayout layout)
+    {
+        import std.conv:to;
+        import core.stdc.stdlib:malloc;
+        D3D11_BUFFER_DESC desc;
+        desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        desc.StructureByteStride=0;
+        desc.MiscFlags = 0;
+        desc.Usage = D3D11_USAGE_DYNAMIC;
+        desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        desc.ByteWidth = cast(uint)layout.getLayoutSize();
+        D3D11_SUBRESOURCE_DATA data;
+        data.pSysMem = layout.getBlockData();
+
+        ID3D11Buffer cbuffer;
+        Hip_D3D11_ShaderVarAdditionalData* d = cast(Hip_D3D11_ShaderVarAdditionalData*)
+            malloc(Hip_D3D11_ShaderVarAdditionalData.sizeof);
+
+        d.buffer = cbuffer;
+        HRESULT res = _hip_d3d_device.CreateBuffer(&desc, &data, &cbuffer);
+        layout.setAdditionalData(cast(void*)d, true);
+
+        if(FAILED(res))
+            ErrorHandler.showErrorMessage("D3D11 Error while creating variables block",
+            "Error while creating variable buffer for Shader with type "~to!string(layout.shaderType));
+    }
 
     void deleteShader(FragmentShader* _fs){}
     void deleteShader(VertexShader* _vs){}

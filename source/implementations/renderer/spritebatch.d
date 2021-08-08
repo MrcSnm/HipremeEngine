@@ -51,28 +51,16 @@ class HipSpriteBatch
         setShader(s);
         
 
-        auto v = new ShaderVariablesLayout("cbuf", ShaderTypes.FRAGMENT)
-            .append("Opa", 500)
-            .append("vish", 200)
-            .append("vTest", cast(float[4])[1f, 2, 3.0, 5])
-            .append("vTestr", cast(float[3])[2, 3.0, 5])
-            .append("vTestss", cast(float[4])[1f, 2, 3.0, 5])
-            .append("visher", false)
-            .append("vishs", false);
+        auto v = new ShaderVariablesLayout("Cbuf", ShaderTypes.FRAGMENT, ShaderHint.NONE)
+        .append("uBatchColor", cast(float[4])[1,1,1,1]);
+        shader.addVarLayout(v);
+        shader.useLayout.Cbuf;
+        shader.uBatchColor[1] = cast(float[2])[0, 0];
+        shader.bind();
+        shader.sendVars();
 
-        s.addVarLayout(v);
-        s.useLayout.cbuf;
-        s.vTest[1] = cast(float[3])[3,1,1];
-
-
-        debug { import std.stdio : writeln; try { writeln(s.vTest[1]); } catch (Exception) {} }
-
-        import std.stdio;
-
-        v.variables["vTest"].writeln;
-
-        material = new Material(mesh.shader);
-        material.setFragmentVar("uBatchColor", cast(float[4])[1,0,0,1]);
+        // material = new Material(mesh.shader);
+        // material.setFragmentVar("uBatchColor", cast(float[4])[1,0,0,1]);
 
         camera = new HipOrthoCamera();
 
@@ -126,7 +114,9 @@ class HipSpriteBatch
     {
         // mesh.shader.bind();
         // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
-        material.bind();
+        // material.bind();
+        mesh.shader.bind();
+        mesh.shader.sendVars();
         HipRenderer.exitOnError();
         mesh.shader.setVertexVar("uProj", camera.proj);
         mesh.shader.setVertexVar("uModel",Matrix4.identity());
