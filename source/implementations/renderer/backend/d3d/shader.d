@@ -249,29 +249,11 @@ class Hip_D3D11_ShaderImpl : IShader
         p.vReflector.GetResourceBindingDescByName("Cbuf", &output);
         return output.BindPoint;
     }
-    void setVertexVar(int id, int val){}
-    void setVertexVar(int id, bool val){}
-    void setVertexVar(int id, float val){}
-    void setVertexVar(int id, double val){}
-    void setVertexVar(int id, float[2] val){}
-    void setVertexVar(int id, float[3] val){}
-    void setVertexVar(int id, float[4] val){}
-    void setVertexVar(int id, float[9] val){}
-    void setVertexVar(int id, float[16] val){}
-    
-
-    void setFragmentVar(int id, int val){}
-    void setFragmentVar(int id, bool val){}
-    void setFragmentVar(int id, float val){}
-    void setFragmentVar(int id, double val){}
-    void setFragmentVar(int id, float[2] val){}
-    void setFragmentVar(int id, float[3] val){}
-    void setFragmentVar(int id, float[4] val){}
-    void setFragmentVar(int id, float[9] val){}
-    void setFragmentVar(int id, float[16] val){}
 
     void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts)
     {
+        D3D11_SHADER_INPUT_BIND_DESC desc;
+        Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
         foreach(l; layouts)
         {
             Hip_D3D11_ShaderVarAdditionalData* data = cast(Hip_D3D11_ShaderVarAdditionalData*)l.getAdditionalData();
@@ -279,10 +261,12 @@ class Hip_D3D11_ShaderImpl : IShader
             final switch(l.shaderType)
             {
                 case ShaderTypes.FRAGMENT:
-                    _hip_d3d_context.PSSetConstantBuffers(0, 1, &data.buffer);
+                    p.pReflector.GetResourceBindingDescByName((l.name~"\0").ptr, &desc);
+                    _hip_d3d_context.PSSetConstantBuffers(desc.BindPoint, 1, &data.buffer);
                     break;
                 case ShaderTypes.VERTEX:
-                    _hip_d3d_context.VSSetConstantBuffers(0, 1, &data.buffer);
+                    p.vReflector.GetResourceBindingDescByName((l.name~"\0").ptr, &desc);
+                    _hip_d3d_context.VSSetConstantBuffers(desc.BindPoint, 1, &data.buffer);
                     break;
                 case ShaderTypes.GEOMETRY:
                 case ShaderTypes.NONE:

@@ -1,6 +1,6 @@
 module view.testscene;
 
-import implementations.renderer.geometrybatch;
+import graphics.g2d.geometrybatch;
 import implementations.renderer.shader;
 import implementations.renderer.renderer;
 import graphics.color;

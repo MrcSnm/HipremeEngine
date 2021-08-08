@@ -112,6 +112,12 @@ struct Matrix3
         return ret~"]";
     }
 
+    T opCast(T)() const
+    {
+        static assert(is(T == float[9]), "Matrix3 can only be cast to float[9]");
+        return values;
+    }
+
     alias values this;
 }
 

@@ -67,7 +67,7 @@ extern(C)int SDL_main()
 {
 	initEngine(true);
 	HipRendererConfig rendererConfig;
-	HipRenderer.init(new Hip_D3D11_Renderer(), &rendererConfig, 1280, 720);
+	HipRenderer.init(new Hip_GL3Renderer(), &rendererConfig, 1280, 720);
 
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
 	Sound_AudioInfo info;

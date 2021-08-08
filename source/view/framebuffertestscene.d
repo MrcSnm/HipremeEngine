@@ -1,8 +1,7 @@
 module view.framebuffertestscene;
 import view.scene;
 import def.debugging.log;
-import implementations.renderer.spritebatch;
-import implementations.renderer.sprite;
+import graphics.g2d;
 import implementations.renderer.renderer;
 import implementations.renderer.framebuffer;
 

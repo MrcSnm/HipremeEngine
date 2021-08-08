@@ -2,6 +2,7 @@ module view.paralleltestscene;
 import implementations.renderer;
 import std.stdio;
 import graphics.image;
+import graphics.g2d;
 import data.assetpacker;
 import data.assetmanager;
 import view.scene;

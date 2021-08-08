@@ -1,7 +1,7 @@
-module implementations.renderer.geometrybatch;
+module graphics.g2d.geometrybatch;
 import implementations.renderer.renderer;
 import implementations.renderer.shader;
-import implementations.renderer.mesh;
+import graphics.mesh;
 import math.matrix;
 import graphics.color;
 import std.stdio;
