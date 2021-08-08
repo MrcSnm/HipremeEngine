@@ -1,8 +1,10 @@
 module view.bitmaptestscene;
 import std.stdio;
-import implementations.renderer.tilemap;
+import graphics.g2d.tilemap;
 import sdl.event.handlers.input.keyboard_layout;
 import implementations.renderer;
+import graphics.g2d;
+import graphics.mesh;
 import sdl.event.handlers.keyboard;
 import def.debugging.log;
 import view.scene;

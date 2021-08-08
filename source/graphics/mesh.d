@@ -1,4 +1,4 @@
-module implementations.renderer.mesh;
+module graphics.mesh;
 import implementations.renderer.renderer;
 import implementations.renderer.shader;
 import implementations.renderer.vertex;

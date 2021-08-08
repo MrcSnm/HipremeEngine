@@ -1,6 +1,6 @@
-module implementations.renderer.tilemap;
+module graphics.g2d.tilemap;
 import math.rect;
-import implementations.renderer.spritebatch;
+import graphics.g2d.spritebatch;
 import std.conv:to;
 import std.file;
 import arsd.dom;

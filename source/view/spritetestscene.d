@@ -2,11 +2,9 @@ module view.spritetestscene;
 import bindbc.sdl;
 import bindbc.opengl;
 import implementations.renderer.shader;
-import implementations.renderer.sprite;
-import implementations.renderer.spritebatch;
+import graphics.g2d;
 import implementations.renderer.renderer;
 import view.scene;
-import graphics.g2d.viewport;
 
 
 class SpriteTestScene : Scene

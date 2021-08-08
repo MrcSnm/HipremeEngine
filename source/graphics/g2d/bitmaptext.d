@@ -1,5 +1,6 @@
-module implementations.renderer.bitmaptext;
-import graphics.g2d.viewport;
+module graphics.g2d.bitmaptext;
+import graphics.g2d;
+import graphics.mesh;
 import util.data_structures;
 import std.algorithm.comparison : max;
 import std.string;

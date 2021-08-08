@@ -1,4 +1,4 @@
-module implementations.renderer.textureatlas;
+module graphics.g2d.textureatlas;
 import util.file;
 import std.string : lastIndexOf;
 import std.array : split;

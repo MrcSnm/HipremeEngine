@@ -1,4 +1,5 @@
 module implementations.renderer.shader;
+import math.matrix;
 import bindbc.opengl;
 import error.handler;
 import implementations.renderer.backend.gl.shader;
@@ -51,6 +52,9 @@ enum ShaderHint : uint
 {
     NONE = 0,
     GL_USE_BLOCK = 1<<0,
+    GL_USE_STD_140 = 1<<1,
+
+    D3D_USE_HLSL_4 = 1<<2
 }
 
 struct ShaderVar
@@ -67,7 +71,9 @@ struct ShaderVar
     {
         import std.traits;
         import core.stdc.string;
-        static assert(isNumeric!T || isBoolean!T || isStaticArray!T, "Invalid type "~T.stringof);
+        static assert(isNumeric!T ||
+        isBoolean!T || isStaticArray!T ||
+        is(T == Matrix3) || is(T == Matrix4), "Invalid type "~T.stringof);
 
         if(data.sizeof != varSize)
             return false;
@@ -361,34 +367,6 @@ interface IShader
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
     int  getId(ref ShaderProgram prog, string name);
 
-    final void setVertexVar(T)(ref ShaderProgram prog, string name, T value)
-    {
-        int id = getId(prog, name);
-        setVertexVar(id, value);
-    }
-    final void setFragmentVar(T)(ref ShaderProgram prog, string name, T value)
-    {
-        int id = getId(prog, name);
-        setFragmentVar(id, value);
-    }
-    void setFragmentVar(int id, int val);
-    void setFragmentVar(int id, bool val);
-    void setFragmentVar(int id, float val);
-    void setFragmentVar(int id, float[2] val); ///Vec2
-    void setFragmentVar(int id, float[3] val); ///Vec3
-    void setFragmentVar(int id, float[4] val); ///Vec4
-    void setFragmentVar(int id, float[9] val); ///Matrix3
-    void setFragmentVar(int id, float[16] val); ///Matrix4
-
-    void setVertexVar(int id, int val);
-    void setVertexVar(int id, bool val);
-    void setVertexVar(int id, float val);
-    void setVertexVar(int id, float[2] val); ///Vec2
-    void setVertexVar(int id, float[3] val); ///Vec3
-    void setVertexVar(int id, float[4] val); ///Vec4
-    void setVertexVar(int id, float[9] val); ///Matrix3
-    void setVertexVar(int id, float[16] val); ///Matrix4
-
     ///Used as intermediary for deleting non program intermediary in opengl
     void deleteShader(FragmentShader* fs);
     ///Used as intermediary for deleting non program intermediary in opengl
@@ -511,10 +489,27 @@ public class Shader
         shaderImpl.sendVertexAttribute(layoutIndex, valueAmount, dataType, normalize, stride, offset);
     }
 
-    public void setVertexVar(T)(string name, T val){shaderImpl.setVertexVar(this.shaderProgram, name, val);}
-    public void setVertexVar(T)(int id, T val){shaderImpl.setVertexVar(id, val);}
-    public void setFragmentVar(T)(string name, T val){shaderImpl.setFragmentVar(this.shaderProgram, name, val);}
-    public void setFragmentVar(T)(int id, T val){shaderImpl.setFragmentVar(id, val);}
+    public void setVertexVar(T)(string name, T val)
+    {
+        ShaderVar* v = findByName(name);
+        import std.stdio;
+        if(v == null)
+        {
+            import std.stdio : writeln;
+            writeln(name);
+        }
+        else
+        {
+            assert(v.shaderType == ShaderTypes.VERTEX, "Variable named "~name~" must be from Vertex Shader");
+            v.set(val);
+        }
+    }
+    public void setFragmentVar(T)(string name, T val)
+    {
+        ShaderVar* v = findByName(name);
+        assert(v.shaderType == ShaderTypes.FRAGMENT, "Variable named "~name~" must be from Vertex Shader");
+        v.set(val);
+    }
 
     protected ShaderVar* findByName(string name)
     {

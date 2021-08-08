@@ -5,7 +5,7 @@ import view.scene;
 import data.assetpacker;
 import def.debugging.log;
 import implementations.renderer;
-import implementations.renderer.tilemap;
+import graphics.g2d.tilemap;
 
 class TilemapTestScene : Scene
 {
