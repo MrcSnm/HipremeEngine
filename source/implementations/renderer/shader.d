@@ -18,7 +18,8 @@ enum ShaderTypes
 {
     VERTEX,
     FRAGMENT,
-    GEOMETRY //Unsupported yet
+    GEOMETRY, //Unsupported yet
+    NONE 
 }
 
 enum HipShaderPresets
@@ -42,7 +43,8 @@ enum UniformType
     floating4,
     floating2x2,
     floating3x3,
-    floating4x4
+    floating4x4,
+    none
 }
 
 struct ShaderVar
@@ -51,6 +53,7 @@ struct ShaderVar
     string name;
     ShaderTypes shaderType;
     UniformType type;
+    ulong singleSize;
     ulong varSize;
 
     T get(T)(){return *(cast(T*)this.data);}
@@ -73,22 +76,85 @@ struct ShaderVar
             this.name = value.name;
             this.shaderType = value.shaderType;
             this.varSize = value.varSize;
+            this.singleSize = value.singleSize;
         }
         else
             assert(this.set(value), "Value set for '"~name~"' is invalid.");
         return this;
     }
 
-    static ShaderVar* get(ShaderTypes t, string varName, bool data){return ShaderVar.get(t, varName, &data, UniformType.boolean, data.sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, int data){return ShaderVar.get(t, varName, &data, UniformType.integer, data.sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, uint data){return ShaderVar.get(t, varName, &data, UniformType.uinteger, data.sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, float data){return ShaderVar.get(t, varName, &data, UniformType.floating, data.sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, float[2] data){return ShaderVar.get(t, varName, &data, UniformType.floating2, data.sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, float[3] data){return ShaderVar.get(t, varName, &data, UniformType.floating3, data.sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, float[4] data){return ShaderVar.get(t, varName, &data, UniformType.floating4, data.sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, float[9] data){return ShaderVar.get(t, varName, &data, UniformType.floating3x3, data.sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, float[16] data){return ShaderVar.get(t, varName, &data, UniformType.floating4x4, data.sizeof);}
-    protected static ShaderVar* get(ShaderTypes t, string varName, void* varData, UniformType type, ulong varSize)
+    private void throwOnOutOfBounds(size_t index)
+    {
+        switch(type) with(UniformType)
+        {
+            case floating2:
+                assert(index < 2, "Index out of bounds on shader variable "~name);
+                break;
+            case floating3:
+                assert(index < 3, "Index out of bounds on shader variable "~name);
+                break;
+            case floating4:
+                assert(index < 4, "Index out of bounds on shader variable "~name);
+                break;
+            case floating2x2:
+                assert(index < 4, "Index out of bounds on shader variable "~name);
+                break;
+            case floating3x3:
+                assert(index < 9, "Index out of bounds on shader variable "~name);
+                break;
+            case floating4x4:
+                assert(index < 16, "Index out of bounds on shader variable "~name);
+                break;
+            default:
+                import std.conv:to;
+                assert(false, "opIndex is unsupported in var of type "~to!string(type));
+        }
+    }
+
+    auto opIndexAssign(T)(T value, size_t index)
+    {
+        import core.stdc.string;
+        import std.conv:to;
+        throwOnOutOfBounds(index);
+        assert(index*singleSize + T.sizeof <= varSize, "Value assign of type "~T.stringof~" at index "~to!string(index)~
+        " is invalid for shader variable "~name~" of type "~to!string(type));
+        memcpy(cast(ubyte*)data + singleSize*index, &value, T.sizeof);
+        return value;
+    }
+
+    ref auto opIndex(size_t index)
+    {
+        throwOnOutOfBounds(index);
+        switch(type) with(UniformType)
+        {
+            case floating2:
+                return get!(float[2])[index];
+            case floating3:
+                return get!(float[3])[index];
+            case floating4:
+                return get!(float[4])[index];
+            case floating2x2:
+                return get!(float[4])[index];
+            case floating3x3:
+                return get!(float[9])[index];
+            case floating4x4:
+                return get!(float[16])[index];
+            default:
+                import std.conv:to;
+                assert(false, "opIndex is unsupported in var of type "~to!string(type));
+        }
+    }
+
+    static ShaderVar* get(ShaderTypes t, string varName, bool data){return ShaderVar.get(t, varName, &data, UniformType.boolean, data.sizeof, data.sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, int data){return ShaderVar.get(t, varName, &data, UniformType.integer, data.sizeof, data.sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, uint data){return ShaderVar.get(t, varName, &data, UniformType.uinteger, data.sizeof, data.sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, float data){return ShaderVar.get(t, varName, &data, UniformType.floating, data.sizeof, data.sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, float[2] data){return ShaderVar.get(t, varName, &data, UniformType.floating2, data.sizeof, data[0].sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, float[3] data){return ShaderVar.get(t, varName, &data, UniformType.floating3, data.sizeof, data[0].sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, float[4] data){return ShaderVar.get(t, varName, &data, UniformType.floating4, data.sizeof, data[0].sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, float[9] data){return ShaderVar.get(t, varName, &data, UniformType.floating3x3, data.sizeof, data[0].sizeof);}
+    static ShaderVar* get(ShaderTypes t, string varName, float[16] data){return ShaderVar.get(t, varName, &data, UniformType.floating4x4, data.sizeof, data[0].sizeof);}
+    protected static ShaderVar* get(ShaderTypes t, string varName, void* varData, UniformType type, ulong varSize, ulong singleSize)
     {
         import core.stdc.string : memcpy;
         import core.stdc.stdlib : malloc;
@@ -99,6 +165,7 @@ struct ShaderVar
         s.shaderType = t;
         s.type = type;
         s.varSize = varSize;
+        s.singleSize = singleSize;
         memcpy(s.data, varData, varSize);
         return s;
     }
@@ -175,6 +242,8 @@ class ShaderVariablesLayout
             case floating4x4:
                 newN = n*16;
                 break;
+            case none:
+                assert(false, "Can't use none uniform type on ShaderVariablesLayout");
         }
         if(lastAlignment == 0)
             return newN;
@@ -452,9 +521,10 @@ public class Shader
             {
                 setDefaultBlock(member);
                 isUseCall = false;
-                return null;
+                ShaderVar s;
+                return s;
             }
-            return defaultLayout.variables[member].sVar;
+            return *defaultLayout.variables[member].sVar;
         }
     }
     auto opDispatch(string member, T)(T value)

@@ -113,5 +113,7 @@ private string getSetShaderVarCall(string shaderT)
         case floating4x4:
             shader.set$Var(v.name, *cast(Matrix4*)v.data);
             break;
+        case none:
+            assert(false, "Can't set ShaderVar of type 'none'");
     }}.replaceAll('$', shaderT);
 }
