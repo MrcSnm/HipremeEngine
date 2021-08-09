@@ -31,6 +31,12 @@ class Hip_D3D11_FragmentShader : FragmentShader
     override final string getSpriteBatchFragment()
     {
         return this.getDefaultFragment();
+        // return q{
+        //     float4 main() : SV_TARGET
+        //     {
+
+        //     }
+        // };
     }
     override final string getBitmapTextFragment(){return getDefaultFragment();}
 }

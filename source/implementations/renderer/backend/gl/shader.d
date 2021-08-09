@@ -1,6 +1,7 @@
 module implementations.renderer.backend.gl.shader;
 import implementations.renderer.shader;
 import implementations.renderer.renderer;
+import implementations.renderer.shader.shadervar;
 import std.conv:to;
 import error.handler;
 import bindbc.opengl;
