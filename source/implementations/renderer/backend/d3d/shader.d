@@ -286,9 +286,16 @@ class Hip_D3D11_ShaderImpl : IShader
     {
         D3D11_SHADER_INPUT_BIND_DESC desc;
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
-        foreach(l; layouts)
+        foreach(k, _; layouts)
         {
+            import core.stdc.string:memcpy;
+            ShaderVariablesLayout l = cast(ShaderVariablesLayout)layouts[k];
             Hip_D3D11_ShaderVarAdditionalData* data = cast(Hip_D3D11_ShaderVarAdditionalData*)l.getAdditionalData();
+            D3D11_MAPPED_SUBRESOURCE resource;
+            _hip_d3d_context.Map(data.buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+            memcpy(resource.pData, l.getBlockData(), l.getLayoutSize());
+            _hip_d3d_context.Unmap(data.buffer,  0);
+            
             assert(data != null, "D3D11 ShaderVarAdditionalData is null, can't send variables");
             final switch(l.shaderType)
             {
@@ -321,12 +328,9 @@ class Hip_D3D11_ShaderImpl : IShader
         D3D11_SUBRESOURCE_DATA data;
         data.pSysMem = layout.getBlockData();
 
-        ID3D11Buffer cbuffer;
         Hip_D3D11_ShaderVarAdditionalData* d = cast(Hip_D3D11_ShaderVarAdditionalData*)
             malloc(Hip_D3D11_ShaderVarAdditionalData.sizeof);
-
-        d.buffer = cbuffer;
-        HRESULT res = _hip_d3d_device.CreateBuffer(&desc, &data, &cbuffer);
+        HRESULT res = _hip_d3d_device.CreateBuffer(&desc, &data, &d.buffer);
         layout.setAdditionalData(cast(void*)d, true);
 
         if(FAILED(res))
