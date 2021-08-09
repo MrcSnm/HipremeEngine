@@ -124,12 +124,13 @@ class HipSpriteBatch
         // mesh.shader.bind();
         // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
         // material.bind();
-        mesh.shader.bind();
-        mesh.shader.sendVars();
-        HipRenderer.exitOnError();
         mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj);
         mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity());
         mesh.shader.setVertexVar("Cbuf1.uView", camera.view);
+        
+        mesh.shader.bind();
+        mesh.shader.sendVars();
+        HipRenderer.exitOnError();
 
         mesh.updateVertices(vertices);
         mesh.draw(quadsCount*6);
