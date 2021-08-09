@@ -260,9 +260,9 @@ class HipVertexArrayObject
         HipVertexArrayObject obj = new HipVertexArrayObject();
         with(HipAttributeType)
         {
-            obj.appendAttribute(3, FLOAT, float.sizeof, "position") //X, Y, Z
-                .appendAttribute(4, FLOAT, float.sizeof, "color") //R, G, B, A
-                .appendAttribute(2, FLOAT, float.sizeof, "tex_st"); //S, T (Texture coordinates)
+            obj.appendAttribute(3, FLOAT, float.sizeof, "vPosition") //X, Y, Z
+               .appendAttribute(4, FLOAT, float.sizeof, "vColor") //R, G, B, A
+               .appendAttribute(2, FLOAT, float.sizeof, "vTexST"); //S, T (Texture coordinates)
         }
         return obj;
     }

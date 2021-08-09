@@ -30,13 +30,23 @@ class Hip_D3D11_FragmentShader : FragmentShader
     }
     override final string getSpriteBatchFragment()
     {
-        return this.getDefaultFragment();
-        // return q{
-        //     float4 main() : SV_TARGET
-        //     {
+        // return this.getDefaultFragment();
+        return q{
 
-        //     }
-        // };
+            Texture2D uTex1;
+            SamplerState state;
+
+            cbuffer input
+            {
+                float4 bColor: uBatchColor;
+            }
+
+            float4 main(float4 inVertexColor : inColor, float2 texST : inTexST) : SV_TARGET
+            {
+                // return uBatchColor * uTex1.Sample(state, inTexST);
+                return uTex1.Sample(state, texST);
+            }
+        };
     }
     override final string getBitmapTextFragment(){return getDefaultFragment();}
 }
@@ -63,11 +73,11 @@ class Hip_D3D11_VertexShader : VertexShader
         return q{
             struct VSOut
             {
-                float3 vPosition : SV_POSITION;
-                float4 vColor    : Color;
-                float2 vTexST    : TexST;
+                float4 inColor : inColor;
+                float2 inTexST : inTexST;
+                float4 vPosition: SV_POSITION;
             };
-            
+
             cbuffer Cbuf
             {
                 float4x4 uProj;
@@ -75,9 +85,17 @@ class Hip_D3D11_VertexShader : VertexShader
                 float4x4 uView;
             };
 
-            float4 main(float2 pos : Position) : SV_POSITION
+            VSOut main(
+                float3 pos   : vPosition,
+                float4 col : vColor,
+                float2 texST : vTexST
+                )
             {
-                return mul(mul(float4(pos.x, pos.y, 0.0f, 1.0f), uModel), uProj);
+                VSOut output;
+                output.vPosition = mul(mul(float4(pos.x, pos.y, 0.0f, 1.0f), uModel), uProj);
+                output.inTexST = texST;
+                output.inColor = col;
+                return output;
             }
         };
     }
@@ -178,9 +196,10 @@ class Hip_D3D11_ShaderImpl : IShader
 
         if(ErrorHandler.assertErrorMessage(SUCCEEDED(hr), "Shader compilation error", "Compilation failed"))
         {
-            if(error)
+            if(error !is null)
             {
-                ErrorHandler.showErrorMessage("Compilation error:", to!string(error.GetBufferPointer()));
+                string errMessage = to!string(cast(char*)error.GetBufferPointer());
+                ErrorHandler.showErrorMessage("Compilation error:", errMessage);
                 error.Release();
             }
             if(shader)
@@ -259,7 +278,7 @@ class Hip_D3D11_ShaderImpl : IShader
         import std.stdio;
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
         D3D11_SHADER_INPUT_BIND_DESC output;
-        p.vReflector.GetResourceBindingDescByName("Cbuf", &output);
+        p.vReflector.GetResourceBindingDescByName(name.ptr, &output);
         return output.BindPoint;
     }
 
