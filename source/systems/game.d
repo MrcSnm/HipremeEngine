@@ -31,7 +31,8 @@ class GameSystem
                 s.onResize(width, height);
         });
 
-        Scene testscene = new SpriteTestScene();
+        import view.testscene;
+        Scene testscene = new TestScene();
     	testscene.init();
         scenes~= testscene;
 

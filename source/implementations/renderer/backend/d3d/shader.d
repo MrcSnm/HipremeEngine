@@ -26,7 +26,18 @@ class Hip_D3D11_FragmentShader : FragmentShader
     override final string getFrameBufferFragment(){return getDefaultFragment();}
     override final string getGeometryBatchFragment()
     {
-        return this.getDefaultFragment();
+        return q{
+
+            cbuffer FragVars
+            {
+                float4 uGlobalColor : uGlobalColor;
+            };
+
+            float4 main(float4 inVertexColor : inVertexColor) : SV_TARGET
+            {
+                return inVertexColor * uGlobalColor;
+            }
+        };
     }
     override final string getSpriteBatchFragment()
     {
@@ -66,7 +77,29 @@ class Hip_D3D11_VertexShader : VertexShader
     override final string getFrameBufferVertex(){return getDefaultVertex();}
     override final string getGeometryBatchVertex()
     {
-        return this.getDefaultVertex();
+        return q{
+
+            cbuffer Geom
+            {
+                float4x4 uModel: uModel;
+                float4x4 uView : uView;
+                float4x4 uProj : uProj;
+            };
+            struct VSOut
+            {
+                float4 inVertexColor : inVertexColor;
+                float4 outPosition : SV_POSITION;
+            };
+
+            VSOut main(float3 vPosition: vPosition, float4 vColor: vColor)
+            {
+                VSOut ret;
+                float4x4 mvp = mul(uModel, mul(uProj, uView));
+                ret.outPosition = mul(uProj, float4(vPosition, 1.0));
+                ret.inVertexColor = vColor;
+                return ret;
+            }
+        };
     }
     override final string getSpriteBatchVertex()
     {
@@ -92,7 +125,10 @@ class Hip_D3D11_VertexShader : VertexShader
                 )
             {
                 VSOut output;
-                output.vPosition = mul(mul(float4(pos.x, pos.y, 0.0f, 1.0f), uModel), uProj);
+                float4 position = float4(pos.x, pos.y, pos.z, 1.0f);
+                // output.vPosition = mul(mul(float4(pos.x, pos.y, 0.0f, 1.0f), uModel), uProj);
+                output.vPosition = mul(uProj, mul(uView, mul(uModel, position)));
+
                 output.inTexST = texST;
                 output.inColor = col;
                 return output;
@@ -286,6 +322,7 @@ class Hip_D3D11_ShaderImpl : IShader
     {
         D3D11_SHADER_INPUT_BIND_DESC desc;
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
+        import std.stdio;
         foreach(k, _; layouts)
         {
             import core.stdc.string:memcpy;
@@ -297,6 +334,7 @@ class Hip_D3D11_ShaderImpl : IShader
             _hip_d3d_context.Unmap(data.buffer,  0);
             
             assert(data != null, "D3D11 ShaderVarAdditionalData is null, can't send variables");
+            
             final switch(l.shaderType)
             {
                 case ShaderTypes.FRAGMENT:
@@ -311,7 +349,6 @@ class Hip_D3D11_ShaderImpl : IShader
                 case ShaderTypes.NONE:
                     break;
             }
-            break;
         }
     }
     void createVariablesBlock(ref ShaderVariablesLayout layout)

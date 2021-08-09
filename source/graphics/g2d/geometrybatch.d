@@ -25,16 +25,23 @@ class GeometryBatch
     float[] vertices;
     uint[] indices;
     
-    this(uint verticesCount, uint indicesCount, Shader shader)
+    this(uint verticesCount, uint indicesCount)
     {
-        mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_VAO(), shader);
+        Shader s = HipRenderer.newShader(HipShaderPresets.GEOMETRY_BATCH); 
+        s.addVarLayout(new ShaderVariablesLayout("Geom", ShaderTypes.VERTEX, 0)
+        .append("uModel", Matrix4.identity)
+        .append("uView", Matrix4.identity)
+        .append("uProj", Matrix4.identity));
+
+        s.addVarLayout(new ShaderVariablesLayout("FragVars", ShaderTypes.FRAGMENT, 0)
+        .append("uGlobalColor", cast(float[4])[1,1,1,1]));
+
+        mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_VAO(), s);
+        setShader(s);
         vertices = new float[verticesCount*7]; //XYZ, RGBA
         indices = new uint[indicesCount];
-
-
         indices[] = 0;
         vertices[] = 0;
-
         //Initialize the mesh with 0
         mesh.createVertexBuffer(verticesCount, HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(indicesCount, HipBufferUsage.DYNAMIC);
@@ -42,7 +49,6 @@ class GeometryBatch
         mesh.setIndices(indices);
         mesh.setVertices(vertices);
         mesh.sendAttributes();
-        this.setShader(shader);
         this.setColor(HipColor(1,1,1,1));
 
     }
@@ -115,6 +121,7 @@ class GeometryBatch
         {
             flush();
             mode = HipRendererMode.LINE_STRIP;
+            HipRenderer.setRendererMode(mode);
         }
         triangleVertices(x1, y1, x2, y2, x3, y3);
     }
@@ -129,9 +136,10 @@ class GeometryBatch
         {
             flush();
             mode = HipRendererMode.LINE;
+            HipRenderer.setRendererMode(mode);
         }
-        addVertex(x1, y1, 0);
-        addVertex(x2, y2, 0);
+        addVertex(x1, y1, 1);
+        addVertex(x2, y2, 1);
 
         addIndex(verticesCount-2);
         addIndex(verticesCount-1);
@@ -148,6 +156,7 @@ class GeometryBatch
         {
             flush();
             mode = HipRendererMode.POINT;
+            HipRenderer.setRendererMode(mode);
         }
         addVertex(x, y, 0);
         addIndex(verticesCount);
@@ -192,6 +201,7 @@ class GeometryBatch
         {
             flush();
             mode = HipRendererMode.TRIANGLES;
+            HipRenderer.setRendererMode(mode);
         }
         rectangleVertices(x,y,w,h);
     }
@@ -207,6 +217,7 @@ class GeometryBatch
         {
             flush();
             mode = HipRendererMode.LINE_STRIP;
+            HipRenderer.setRendererMode(mode);
         }
         rectangleVertices(x,y,w,h);
     }
@@ -225,12 +236,15 @@ class GeometryBatch
         this.mesh.updateVertices(this.vertices);
         this.mesh.updateIndices(this.indices);
 
+        currentShader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1]);
+        // currentShader.setVertexVar("Geom.uProj", Matrix4.alternateHandedness(Matrix4.orthoLH(0, 800, 600, 0, 0.001, 1)));
+        currentShader.setVertexVar("Geom.uProj",Matrix4.identity());
+        currentShader.setVertexVar("Geom.uModel",Matrix4.identity());
+        currentShader.setVertexVar("Geom.uView", Matrix4.identity());
         currentShader.bind();
-        currentShader.setFragmentVar("uGlobalColor", cast(float[4])[1,1,1,1]);
-        currentShader.setVertexVar("uProj", Matrix4.orthoLH(0, 800, 0, 600, 0.001, 1));
-        currentShader.setVertexVar("uModel",Matrix4.identity());
-        currentShader.setVertexVar("uView", Matrix4.identity());
+        currentShader.sendVars();
         //Vertices to render = indices.length
+        
         this.mesh.draw(count);
     }
 

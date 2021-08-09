@@ -6,5 +6,6 @@ struct HipRendererConfig
     ubyte multisamplingLevel = 0;
     ///Single/Double/Triple buffering
     ubyte bufferingCount = 2;
+    bool isMatrixRowMajor = true;
     bool vsync = true;
 }

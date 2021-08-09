@@ -68,6 +68,7 @@ enum HipBlendEquation
 interface IHipRendererImpl
 {
     public bool init(SDL_Window* window, SDL_Renderer* renderer);
+    public bool isRowMajor();
     public SDL_Window* createWindow(uint width, uint height);
     public SDL_Renderer* createRenderer(SDL_Window* window);
     public Shader createShader();
@@ -164,6 +165,16 @@ class HipRenderer
         this.currentViewport = v;
         rendererImpl.setViewport(v);
         // SDL_RenderSetViewport(renderer, &v.bounds);
+    }
+    /**
+    * Fixes the matrix order based on the config and renderer.
+    * If the renderer is column and the config is row, it will tranpose
+    */
+    public static T getMatrix(T)(ref T mat)
+    {
+        if(currentConfig.isMatrixRowMajor && !rendererImpl.isRowMajor())
+            return mat.transpose();
+        return mat;
     }
     public static Shader newShader(HipShaderPresets shaderPreset = HipShaderPresets.DEFAULT)
     {
