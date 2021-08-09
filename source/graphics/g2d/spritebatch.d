@@ -56,8 +56,12 @@ class HipSpriteBatch
         .append("uView", Matrix4.identity)
         .append("uProj", Matrix4.identity));
 
+        import std.stdio;
+
         shader.addVarLayout(new ShaderVariablesLayout("Cbuf", ShaderTypes.FRAGMENT, ShaderHint.NONE)
-        .append("uBatchColor", cast(float[4])[1,1,1,1]));
+        .append("uBatchColor", cast(float[4])[1,1,1,1])
+        );
+
 
         shader.useLayout.Cbuf;
         shader.uBatchColor[1] = cast(float[2])[0, 0];

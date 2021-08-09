@@ -176,13 +176,7 @@ public class Shader
     public void setVertexVar(T)(string name, T val)
     {
         ShaderVar* v = findByName(name);
-        import std.stdio;
-        if(v == null)
-        {
-            import std.stdio : writeln;
-            writeln(name);
-        }
-        else
+        if(v != null)
         {
             assert(v.shaderType == ShaderTypes.VERTEX, "Variable named "~name~" must be from Vertex Shader");
             v.set(val);
@@ -191,8 +185,11 @@ public class Shader
     public void setFragmentVar(T)(string name, T val)
     {
         ShaderVar* v = findByName(name);
-        assert(v.shaderType == ShaderTypes.FRAGMENT, "Variable named "~name~" must be from Vertex Shader");
-        v.set(val);
+        if(v != null)
+        {
+            assert(v.shaderType == ShaderTypes.FRAGMENT, "Variable named "~name~" must be from Fragment Shader");
+            v.set(val);
+        }
     }
 
     protected ShaderVar* findByName(string name)
@@ -220,13 +217,8 @@ public class Shader
         }
         return null;
     }
-
     public ShaderVar* get(string name){return findByName(name);}
 
-    // public void setVertexVar(T)(string name, T val)
-    // {
-
-    // }
 
     public void addVarLayout(ShaderVariablesLayout layout)
     {
@@ -234,6 +226,7 @@ public class Shader
         if(defaultLayout is null)
             defaultLayout = layout;
         layouts[layout.name] = layout;
+        layout.lock();
         shaderImpl.createVariablesBlock(layout);
     }
 
