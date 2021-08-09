@@ -105,7 +105,7 @@ class HipRenderer
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
     public static Shader currentShader;
-    public static HipRendererType rendererType = HipRendererType.NONE;
+    package static HipRendererType rendererType = HipRendererType.NONE;
 
     public static uint width, height;
     protected static HipRendererConfig currentConfig;
@@ -130,12 +130,28 @@ class HipRenderer
         setViewport(mainViewport);
         HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
 
-
         return ErrorHandler.stopListeningForErrors();
     }
-    public static HipRendererConfig getCurrentConfig()
+    public static HipRendererType getRendererType(){return rendererType;}
+    public static HipRendererConfig getCurrentConfig(){return currentConfig;}
+    public static ITexture getTextureImplementation()
     {
-        return currentConfig;
+        import implementations.renderer.backend.gl.texture;
+        import implementations.renderer.backend.d3d.texture;
+        import implementations.renderer.backend.sdl.texture;
+        switch(HipRenderer.getRendererType())
+        {
+            case HipRendererType.GL3:
+                return new Hip_GL3_Texture();
+            case HipRendererType.D3D11:
+                return new Hip_D3D11_Texture();
+            case HipRendererType.SDL:
+                return new Hip_SDL_Texture();
+            default:
+                ErrorHandler.showErrorMessage("No renderer implementation active",
+                "Can't create a texture without a renderer implementation active");
+                return null;
+        }
     }
 
     public static void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)

@@ -2,6 +2,7 @@ module graphics.material;
 import math.matrix;
 import math.vector;
 import implementations.renderer.shader;
+import implementations.renderer.shader.shadervar;
 
 class Material
 {

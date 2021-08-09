@@ -5,9 +5,6 @@ module implementations.renderer.texture;
 import data.assetmanager;
 import error.handler;
 import implementations.renderer.renderer;
-import implementations.renderer.backend.gl.texture;
-import implementations.renderer.backend.d3d.texture;
-import implementations.renderer.backend.sdl.texture;
 import bindbc.sdl;
 import graphics.image;
 
@@ -50,17 +47,7 @@ class Texture
     */
     protected this()
     {
-        if(HipRenderer.rendererType == HipRendererType.GL3)
-            textureImpl = new Hip_GL3_Texture();
-        else if(HipRenderer.rendererType == HipRendererType.D3D11)
-            textureImpl = new Hip_D3D11_Texture();
-        else if(HipRenderer.rendererType == HipRendererType.SDL)
-            textureImpl = new Hip_SDL_Texture();
-        else    
-        {
-            ErrorHandler.showErrorMessage("No renderer implementation active",
-            "Can't create a texture without a renderer implementation active");
-        }
+        textureImpl = HipRenderer.getTextureImplementation();
     }
 
 
