@@ -182,7 +182,10 @@ struct ShaderVarLayout
 */
 class ShaderVariablesLayout
 {
+    import implementations.renderer.shader.var_packing;
+
     ShaderVarLayout[string] variables;
+    private string[] namesOrder;
     string name;
     ShaderTypes shaderType;
     protected void* data;
@@ -195,7 +198,7 @@ class ShaderVariablesLayout
     protected uint lastPosition;
 
     ///A function that must return a variable size when position = 0
-    private uint function(
+    private VarPosition function(
         ref ShaderVar* v,
         uint lastAlignment = 0,
         bool isLast = false,
@@ -217,7 +220,6 @@ class ShaderVariablesLayout
     this(string layoutName, ShaderTypes t, uint hint, ShaderVar*[] variables ...)
     {
         import core.stdc.stdlib:malloc;
-        import implementations.renderer.shader.var_packing;
         this.name = layoutName;
         this.shaderType = t;
         this.hint = hint;
@@ -242,16 +244,32 @@ class ShaderVariablesLayout
         {
             assert(v.shaderType == t, "ShaderVariableLayout must contain only one shader type");
             assert((v.name in this.variables) is null, "Variable named "~v.name~" is already in the layout "~name);
-            
-            uint size = glSTD140(v, 0);
-            position = glSTD140(v, position);
-            this.variables[v.name] = ShaderVarLayout(v, position-size, size);
+            this.variables[v.name] = ShaderVarLayout(v, 0, 0);
+            namesOrder~= v.name;
         }
+        calcAlignment();
         data = malloc(getLayoutSize());
         assert(data != null, "Out of memory");
-        lastPosition = position;
     }
-    void lock(){this.isLocked = true;}
+    void lock()
+    {
+        calcAlignment();
+        this.isLocked = true;
+    }
+
+    final void calcAlignment()
+    {
+        uint lastAlign = 0;
+        for(int i = 0; i < namesOrder.length; i++)
+        {
+            ShaderVarLayout* l = &variables[namesOrder[i]];
+            VarPosition pos = packFunc(l.sVar, lastAlign, i == cast(int)namesOrder.length-1);
+            l.size = pos.size;
+            l.alignment = pos.startPos;
+            lastAlign = pos.endPos;
+        }
+        lastPosition = lastAlign;
+    }
 
 
     void* getBlockData()
@@ -268,10 +286,9 @@ class ShaderVariablesLayout
         assert((varName in variables) is null, "Variable named "~varName~" is already in the layout "~name);
         assert(!isLocked, "Can't append ShaderVariable after it has been locked");
         ShaderVar* v = ShaderVar.get(this.shaderType, varName, data);
-        uint sz = packFunc(v, 0);
-        uint pos = packFunc(v, lastPosition);
-        lastPosition = pos;
-        variables[varName] = ShaderVarLayout(v, lastPosition-sz, sz);
+        variables[varName] = ShaderVarLayout(v, 0, 0);
+        namesOrder~= varName;
+        calcAlignment();
         this.data = realloc(this.data, getLayoutSize());
         assert(this.data != null, "Out of memory");
 
