@@ -61,6 +61,13 @@ class Hip_D3D11_VertexShader : VertexShader
     override final string getSpriteBatchVertex()
     {
         return q{
+            struct VSOut
+            {
+                float3 vPosition : SV_POSITION;
+                float4 vColor    : Color;
+                float2 vTexST    : TexST;
+            };
+            
             cbuffer Cbuf
             {
                 float4x4 uProj;

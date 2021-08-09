@@ -191,6 +191,7 @@ class ShaderVariablesLayout
     protected void* data;
     protected void* additionalData;
     protected bool isAdditionalAllocated;
+    ///Can't unlock Layout
     private bool isLocked;
 
     ///The hint are used for the Shader backend as a notifier
@@ -223,7 +224,6 @@ class ShaderVariablesLayout
         this.name = layoutName;
         this.shaderType = t;
         this.hint = hint;
-        uint position = 0;
 
         switch(HipRenderer.getRendererType())
         {
