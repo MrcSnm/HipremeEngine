@@ -54,6 +54,8 @@ public class Hip_SDL_Renderer : IHipRendererImpl
         SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL_WindowFlags.SDL_WINDOW_RESIZABLE
         );
     }
+
+    public final bool isRowMajor(){return true;}
     SDL_Renderer* createRenderer(SDL_Window* window)
     {
         return SDL_CreateRenderer(window, 0, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);

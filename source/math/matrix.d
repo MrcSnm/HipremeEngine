@@ -1,9 +1,14 @@
 module math.matrix;
 import core.math;
 
+enum MatrixType
+{
+    COLUMN_MAJOR,
+    ROW_MAJOR
+}
+
 struct Matrix3
 {
-
     float[9] values;
     pragma(inline, true)
     static Matrix3 translation(float x, float y)
@@ -226,7 +231,7 @@ struct Matrix4
             {
                 for(uint i = 0; i < 16; i+=4)
                 {
-                    ret[i] = values[i]*rhs[0] +values[i+1]*rhs[4] + values[i+2]*rhs[8] + values[i+3]*rhs[12];
+                    ret[i]   = values[i]*rhs[0] +values[i+1]*rhs[4] + values[i+2]*rhs[8] + values[i+3]*rhs[12];
                     ret[i+1] = values[i]*rhs[1] +values[i+1]*rhs[5] + values[i+2]*rhs[9] + values[i+3]*rhs[13];
                     ret[i+2] = values[i]*rhs[2] +values[i+1]*rhs[6] + values[i+2]*rhs[10] + values[i+3]*rhs[14];
                     ret[i+3] = values[i]*rhs[3] +values[i+1]*rhs[7] + values[i+2]*rhs[11] + values[i+3]*rhs[15];
@@ -245,10 +250,8 @@ struct Matrix4
         }
         else static if(op == "/")
         {
-            static if(is(R == float))
-            {
-                ret[]/=rhs;
-            }
+            static assert(is(R == float), "Only float is valid for matrix division");
+            ret[]/=rhs;
         }
         return ret;
     }
@@ -265,6 +268,13 @@ struct Matrix4
             0, 0, 1/(zfar-znear), 0,
             (left+right)/(left-right), (top+bottom)/(bottom-top), znear/(znear-zfar), 1
         ]);
+    }
+
+    static Matrix4 alternateHandedness(Matrix4 mat)
+    {
+        Matrix4 ret = mat;
+        ret[14] = -ret[14];
+        return ret;
     }
 
     string toString()

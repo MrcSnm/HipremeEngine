@@ -42,8 +42,7 @@ void fileTruncate(File file, long offset)
     }
 }
 
-
-        import std.stdio;
+import std.stdio;
 
 class FileProgression
 {

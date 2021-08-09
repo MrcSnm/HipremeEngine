@@ -45,6 +45,9 @@ struct ShaderVar
         isBoolean!T || isStaticArray!T ||
         is(T == Matrix3) || is(T == Matrix4), "Invalid type "~T.stringof);
 
+        static if(is(T == Matrix3) || is(T == Matrix4))
+            data = HipRenderer.getMatrix(data);
+
         if(data.sizeof != varSize)
             return false;
         memcpy(this.data, &data, varSize);

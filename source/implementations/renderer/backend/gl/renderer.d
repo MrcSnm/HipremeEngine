@@ -71,6 +71,8 @@ class Hip_GL3Renderer : IHipRendererImpl
         1, 0, 3  //Left rectangle
     ];
 
+    public final bool isRowMajor(){return true;}
+
 
     SDL_Window* createWindow(uint width, uint height)
     {

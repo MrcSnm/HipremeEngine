@@ -78,6 +78,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         dsc.Windowed = TRUE; //True
         //Let user being able to switch between fullscreen and windowed
         dsc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
         
         // dsc.BufferDesc.Width = 0;
         // dsc.BufferDesc.Height = 0;
@@ -164,6 +165,8 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
         _hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_mainRenderTarget, null);
     }
+    public final bool isRowMajor(){return false;}
+
     public SDL_Renderer* createRenderer(SDL_Window* window)
     {
         //D3D Cannot create any sdl renderer
