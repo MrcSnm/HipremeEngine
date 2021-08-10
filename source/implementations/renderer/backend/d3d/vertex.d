@@ -37,8 +37,9 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
     void unbind()
     {
         _hip_d3d_context.IASetVertexBuffers(0, 0, null, null, null);
+        HipRenderer.exitOnError();
     }
-    void setData(ulong size, const void* data)
+    void createBuffer(ulong size, const void* data)
     {
         import std.stdio;
         this.size = size;
@@ -52,12 +53,16 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
 
         D3D11_SUBRESOURCE_DATA sd;
         sd.pSysMem = cast(void*)data;
+
         //TODO: Check failure
         _hip_d3d_device.CreateBuffer(&bd, &sd, &buffer);
         HipRenderer.exitOnError();
-        
-        // writeln("Buffer created ", buffer);
-        // _hip_d3d_context.IASetVertexBuffers(0u, 1u, &buffer, null, &obj.offset);
+    }
+    void setData(ulong size, const void* data)
+    {
+        if(data == null || size == 0)
+            return;
+        createBuffer(size, data);
     }
     void updateData(int offset, ulong size, const void* data)
     {
@@ -66,6 +71,7 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
         memcpy(resource.pData+offset, data, size);
         _hip_d3d_context.Unmap(buffer, 0);
+        HipRenderer.exitOnError();
     }
 }
 class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
@@ -80,9 +86,7 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
         this.count = count;
         this.usage = getD3D11Usage(usage);
     }
-    void bind(){_hip_d3d_context.IASetIndexBuffer(buffer, DXGI_FORMAT_R32_UINT, 0);}
-    void unbind(){_hip_d3d_context.IASetIndexBuffer(null, DXGI_FORMAT_R32_UINT, 0);}
-    void setData(uint count, const uint* data)
+    protected void createBuffer(uint count, void* data)
     {
         this.size = count*uint.sizeof;
         D3D11_BUFFER_DESC bd;
@@ -92,11 +96,26 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
         bd.MiscFlags = 0u;
         bd.ByteWidth = cast(uint)this.size;
         bd.StructureByteStride = 0;
-
         D3D11_SUBRESOURCE_DATA sd;
         sd.pSysMem = cast(void*)data;
         //TODO: Check failure
         _hip_d3d_device.CreateBuffer(&bd, &sd, &buffer);
+    }
+    void bind(){_hip_d3d_context.IASetIndexBuffer(buffer, DXGI_FORMAT_R32_UINT, 0);}
+    void unbind(){_hip_d3d_context.IASetIndexBuffer(null, DXGI_FORMAT_R32_UINT, 0);}
+
+    /**
+    * If the count is 0, it means that it should create the vertex buffero
+    * with its creation size
+    */
+    void setData(uint count, const uint* data)
+    {
+        if(count == 0)
+        {
+            createBuffer(this.count, cast(void*)data);
+            return;
+        }
+        createBuffer(count, cast(void*)data);
     }
     void updateData(int offset, uint count, const uint* data)
     {
@@ -105,6 +124,7 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
         memcpy(resource.pData+offset, data, count*uint.sizeof);
         _hip_d3d_context.Unmap(buffer, 0);
+        HipRenderer.exitOnError();
     }
 }
 
@@ -124,6 +144,7 @@ class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
         _hip_d3d_context.IASetInputLayout(inputLayout);
         _hip_d3d_context.IASetVertexBuffers(0u, 1u, &v.buffer, &stride, &offset);
         ebo.bind();
+        HipRenderer.exitOnError();
     }
     void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
     {
@@ -132,6 +153,7 @@ class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
         vbo.unbind();
         ebo.unbind();
         _hip_d3d_context.IASetInputLayout(null);
+        HipRenderer.exitOnError();
     }
     void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride)
     {
@@ -160,6 +182,7 @@ class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
         }
         _hip_d3d_device.CreateInputLayout(descs.ptr, cast(uint)descs.length,
         vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), &inputLayout);
+        HipRenderer.exitOnError();
     }
 }
 

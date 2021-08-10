@@ -154,6 +154,16 @@ struct Matrix4
         return this * translation(x,y,z);
     }
 
+    static Matrix4 createScale(float x, float y, float z)
+    {
+        return Matrix4([
+            x, 0, 0, 0,
+            0, y, 0, 0,
+            0, 0, z, 0,
+            0, 0, 0, 1
+        ]);
+    }
+
     Matrix4 scale(float x, float y, float z)
     {
         return this * Matrix4([
@@ -266,15 +276,18 @@ struct Matrix4
             2/(right-left), 0, 0, 0,
             0, 2/(top-bottom), 0, 0,
             0, 0, 1/(zfar-znear), 0,
-            (left+right)/(left-right), (top+bottom)/(bottom-top), znear/(znear-zfar), 1
+            (left+right)/(left-right), (top+bottom)/(bottom-top), -znear/(znear-zfar), 1
         ]);
     }
 
     static Matrix4 alternateHandedness(Matrix4 mat)
     {
-        Matrix4 ret = mat;
-        ret[14] = -ret[14];
-        return ret;
+        return Matrix4([
+            1, 0, 0, 0,
+            0, 1, 0, 1,
+            0, 0,-1, 0,
+            0, 0, 0, 1
+        ]) * mat;
     }
 
     string toString()

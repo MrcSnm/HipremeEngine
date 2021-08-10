@@ -19,7 +19,8 @@ class BitmapTestScene : Scene
         txt = new HipBitmapText();
         abnt2 = new KeyboardLayoutABNT2();
         txt.setBitmapFont(HipBitmapFont.fromFile("assets/fonts/arial.fnt"));
-        txt.x = 1280/2;
+        import std.stdio;
+        txt.x = HipRenderer.width/2;
         txt.alignh = HipTextAlign.CENTER;
     }
 
@@ -32,6 +33,6 @@ class BitmapTestScene : Scene
         _txt~= input;
         txt.setText(_txt);
         txt.render();
-        txt.mesh.shader.setFragmentVar("uColor", cast(float[4])[1.0, 1.0, 0.0, 1.0]);
+        txt.mesh.shader.setFragmentVar("FragBuf.uColor", cast(float[4])[1.0, 1.0, 0.0, 1.0]);
     }
 }

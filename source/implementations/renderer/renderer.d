@@ -256,7 +256,7 @@ class HipRenderer
         string err;
         if(hasErrorOccurred(err, file, line))
         {
-            logln(err);
+            logln(err, file,":",line);
             exit(-1);
         }
     }

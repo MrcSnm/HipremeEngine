@@ -21,6 +21,7 @@ struct IniVar
 struct IniBlock
 {
     string name;
+    string comment;
     IniVar[string] vars;
 
     string toString() const @safe pure

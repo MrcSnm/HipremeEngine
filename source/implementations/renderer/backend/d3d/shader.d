@@ -49,17 +49,29 @@ class Hip_D3D11_FragmentShader : FragmentShader
 
             cbuffer input
             {
-                float4 bColor: uBatchColor;
+                float4 uBatchColor: uBatchColor;
             }
 
             float4 main(float4 inVertexColor : inColor, float2 texST : inTexST) : SV_TARGET
             {
                 // return uBatchColor * uTex1.Sample(state, inTexST);
-                return uTex1.Sample(state, texST);
+                return uTex1.Sample(state, texST) * inVertexColor * uBatchColor;
             }
         };
     }
-    override final string getBitmapTextFragment(){return getDefaultFragment();}
+    override final string getBitmapTextFragment()
+    {
+        return q{
+
+            Texture2D uSampler1;
+            SamplerState state;
+
+            float4 main(float2 inTexST : inTexST) : SV_TARGET
+            {
+                return uSampler1.Sample(state, inTexST);
+            }
+        };
+    }
 }
 class Hip_D3D11_VertexShader : VertexShader
 {
@@ -94,9 +106,7 @@ class Hip_D3D11_VertexShader : VertexShader
             VSOut main(float3 vPosition: vPosition, float4 vColor: vColor)
             {
                 VSOut ret;
-                float4x4 mvp = mul(uModel, mul(uProj, uView));
-                // ret.outPosition = mul(uProj, float4(vPosition, 1.0));
-                ret.outPosition = mul(float4(vPosition, 1.0), uProj);
+                ret.outPosition = mul(float4(vPosition, 1.0), mul(mul(uModel, uView), uProj));
                 ret.inVertexColor = vColor;
                 return ret;
             }
@@ -127,8 +137,7 @@ class Hip_D3D11_VertexShader : VertexShader
             {
                 VSOut output;
                 float4 position = float4(pos.x, pos.y, pos.z, 1.0f);
-                // output.vPosition = mul(mul(float4(pos.x, pos.y, 0.0f, 1.0f), uModel), uProj);
-                output.vPosition = mul(uProj, mul(uView, mul(uModel, position)));
+                output.vPosition = mul(position, mul(mul(uModel, uView), uProj));
 
                 output.inTexST = texST;
                 output.inColor = col;
@@ -136,7 +145,32 @@ class Hip_D3D11_VertexShader : VertexShader
             }
         };
     }
-    override final string getBitmapTextVertex(){return getDefaultVertex();}
+    override final string getBitmapTextVertex()
+    {
+        return q{
+
+            cbuffer Cbuf
+            {
+                float4x4 uModel;
+                float4x4 uView;
+                float4x4 uProj;
+            };
+
+            struct VSOut
+            {
+                float2 inTexST : inTexST;
+                float4 outPosition : SV_POSITION;
+            };
+
+            VSOut main(float2 vPosition : vPosition, float2 vTexST : vTexST)
+            {
+                VSOut ret;
+                ret.outPosition = mul(float4(vPosition, 1.0, 1.0), mul(mul(uModel, uView), uProj));
+                ret.inTexST = vTexST;
+                return ret;
+            }
+        };
+    }
 }
 class Hip_D3D11_ShaderProgram : ShaderProgram
 {

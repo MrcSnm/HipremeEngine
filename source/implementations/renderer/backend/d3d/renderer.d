@@ -164,6 +164,19 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         pBackBuffer.Release();
 
         _hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_mainRenderTarget, null);
+        setState();
+    }
+
+    public void setState()
+    {
+        D3D11_RASTERIZER_DESC desc;
+        desc.CullMode = D3D11_CULL_NONE;
+        ID3D11RasterizerState state;
+
+        if(FAILED(_hip_d3d_device.CreateRasterizerState(&desc, &state)))
+            HipRenderer.exitOnError();
+
+        _hip_d3d_context.RSSetState(state);
     }
     public final bool isRowMajor(){return false;}
 
@@ -262,9 +275,23 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
     public void setRendererMode(HipRendererMode mode)
     {
-        if(mode == HipRendererMode.TRIANGLES)
+        final switch(mode) with(HipRendererMode)
         {
-            _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            case TRIANGLES:
+                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                break;
+            case TRIANGLE_STRIP:
+                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+                break;
+            case LINE:
+                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+                break;
+            case LINE_STRIP:
+                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+                break;
+            case POINT:
+                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+                break;
         }
     }
 
