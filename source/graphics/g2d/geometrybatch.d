@@ -138,8 +138,8 @@ class GeometryBatch
             mode = HipRendererMode.LINE;
             HipRenderer.setRendererMode(mode);
         }
-        addVertex(x1, y1, 1);
-        addVertex(x2, y2, 1);
+        addVertex(x1, y1, 0);
+        addVertex(x2, y2, 0);
 
         addIndex(verticesCount-2);
         addIndex(verticesCount-1);
@@ -237,8 +237,8 @@ class GeometryBatch
         this.mesh.updateIndices(this.indices);
 
         currentShader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1]);
-        // currentShader.setVertexVar("Geom.uProj", Matrix4.alternateHandedness(Matrix4.orthoLH(0, 800, 600, 0, 0.001, 1)));
-        currentShader.setVertexVar("Geom.uProj",Matrix4.identity());
+        currentShader.setVertexVar("Geom.uProj", Matrix4.alternateHandedness(Matrix4.orthoLH(0, 800, 600, 0, 0.001, 1)));
+        // currentShader.setVertexVar("Geom.uProj",Matrix4.identity());
         currentShader.setVertexVar("Geom.uModel",Matrix4.identity());
         currentShader.setVertexVar("Geom.uView", Matrix4.identity());
         currentShader.bind();

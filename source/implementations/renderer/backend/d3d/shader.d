@@ -95,7 +95,8 @@ class Hip_D3D11_VertexShader : VertexShader
             {
                 VSOut ret;
                 float4x4 mvp = mul(uModel, mul(uProj, uView));
-                ret.outPosition = mul(uProj, float4(vPosition, 1.0));
+                // ret.outPosition = mul(uProj, float4(vPosition, 1.0));
+                ret.outPosition = mul(float4(vPosition, 1.0), uProj);
                 ret.inVertexColor = vColor;
                 return ret;
             }
