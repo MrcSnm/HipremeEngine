@@ -9,7 +9,11 @@
 		"files.exclude": 
 		{
 			"building":true,
-			"dependencies/Bindbc-Cimgui/example":true,
+			"*.hap" : true,
+			"imgui.ini" : true,
+			"*.zip" : true,
+			"*.jar" : true,
+			"dependencies":true,
 			".vscode":true,
 			".gitmodules":true,
 			"bindbc-openal":true,
@@ -32,6 +36,7 @@
 		"search.exclude": {
 			"**/.git": true,
 			"linuxlib":true,
+			"dependencies":true,
 			"bindbc-openal":true,
 			"building":true,
 			"bin":true,
@@ -40,6 +45,7 @@
 			".history":true,
 			"**/bower_components": true,
 			"**/*.code-search": true
-		}
+		},
+		"git.ignoreLimitWarning": true
 	}
 }
