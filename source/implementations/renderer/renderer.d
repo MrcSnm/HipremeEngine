@@ -68,7 +68,8 @@ enum HipBlendEquation
 interface IHipRendererImpl
 {
     public bool init(SDL_Window* window, SDL_Renderer* renderer);
-    public SDL_Window* createWindow();
+    public bool isRowMajor();
+    public SDL_Window* createWindow(uint width, uint height);
     public SDL_Renderer* createRenderer(SDL_Window* window);
     public Shader createShader();
     public IHipFrameBuffer createFrameBuffer(int width, int height);
@@ -105,35 +106,90 @@ class HipRenderer
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
     public static Shader currentShader;
-    public static HipRendererType rendererType = HipRendererType.NONE;
+    package static HipRendererType rendererType = HipRendererType.NONE;
+
+    public static uint width, height;
     protected static HipRendererConfig currentConfig;
 
+    public static bool init(string confPath)
+    {
+        import implementations.renderer.backend.d3d.renderer;
+        import data.ini;
+        IniFile ini = IniFile.parse(confPath);
+        HipRendererConfig cfg;
+        if(ini.configFound && ini.noError)
+        {
+            cfg.bufferingCount = ini.tryGet!ubyte("buffering.count", 2);
+            cfg.multisamplingLevel = ini.tryGet!ubyte("multisampling.level", 0);
+            cfg.vsync = ini.tryGet("vsync.on", true);
+            
+            int width = ini.tryGet("screen.width", 1280);
+            int height = ini.tryGet("screen.height", 720);
+            string renderer = ini.tryGet("screen.renderer", "GL3");
 
-    public static bool init(IHipRendererImpl impl, HipRendererConfig* config)
+            switch(renderer)
+            {
+                case "GL3":
+                    return init(new Hip_GL3Renderer(), &cfg, width, height);
+                case "D3D11":
+                    return init(new Hip_D3D11_Renderer(), &cfg, width, height);
+                default:
+                    ErrorHandler.showErrorMessage("Invalid renderer '"~renderer~"'",
+                    `
+                        Available renderers:
+                            GL3
+                            D3D11
+                        Starting with GL3
+                    `);
+                    goto case "GL3";
+            }
+
+        }
+        return init(new Hip_GL3Renderer(), &cfg, 1280, 720);
+    }
+
+
+    public static bool init(IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height)
     {
         ErrorHandler.startListeningForErrors("Renderer initialization");
         if(config != null)
             currentConfig = *config;
         rendererImpl = impl;
-        window = rendererImpl.createWindow();
+        window = rendererImpl.createWindow(width, height);
         ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL GL Window");
         // renderer = rendererImpl.createRenderer(window);
         // ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
         rendererImpl.init(window, renderer);
-
+        HipRenderer.width = width;
+        HipRenderer.height = height;
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
-        mainViewport = new Viewport(0,0,w, h);
+        mainViewport = new Viewport(0,0,800, 600);
         setViewport(mainViewport);
-        setShader(HipRenderer.newShader());
         HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
-
 
         return ErrorHandler.stopListeningForErrors();
     }
-    public static HipRendererConfig getCurrentConfig()
+    public static HipRendererType getRendererType(){return rendererType;}
+    public static HipRendererConfig getCurrentConfig(){return currentConfig;}
+    public static ITexture getTextureImplementation()
     {
-        return currentConfig;
+        import implementations.renderer.backend.gl.texture;
+        import implementations.renderer.backend.d3d.texture;
+        import implementations.renderer.backend.sdl.texture;
+        switch(HipRenderer.getRendererType())
+        {
+            case HipRendererType.GL3:
+                return new Hip_GL3_Texture();
+            case HipRendererType.D3D11:
+                return new Hip_D3D11_Texture();
+            case HipRendererType.SDL:
+                return new Hip_SDL_Texture();
+            default:
+                ErrorHandler.showErrorMessage("No renderer implementation active",
+                "Can't create a texture without a renderer implementation active");
+                return null;
+        }
     }
 
     public static void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
@@ -146,6 +202,16 @@ class HipRenderer
         this.currentViewport = v;
         rendererImpl.setViewport(v);
         // SDL_RenderSetViewport(renderer, &v.bounds);
+    }
+    /**
+    * Fixes the matrix order based on the config and renderer.
+    * If the renderer is column and the config is row, it will tranpose
+    */
+    public static T getMatrix(T)(ref T mat)
+    {
+        if(currentConfig.isMatrixRowMajor && !rendererImpl.isRowMajor())
+            return mat.transpose();
+        return mat;
     }
     public static Shader newShader(HipShaderPresets shaderPreset = HipShaderPresets.DEFAULT)
     {
@@ -190,7 +256,7 @@ class HipRenderer
         string err;
         if(hasErrorOccurred(err, file, line))
         {
-            logln(err);
+            logln(err, file,":",line);
             exit(-1);
         }
     }

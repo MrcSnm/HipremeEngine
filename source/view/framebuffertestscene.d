@@ -1,8 +1,7 @@
 module view.framebuffertestscene;
 import view.scene;
 import def.debugging.log;
-import implementations.renderer.spritebatch;
-import implementations.renderer.sprite;
+import graphics.g2d;
 import implementations.renderer.renderer;
 import implementations.renderer.framebuffer;
 
@@ -26,7 +25,7 @@ class FrameBufferTestScene : Scene
         batch.end();
         fb.unbind();
         fb.currentShader.bind();
-        fb.currentShader.setVar("uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
+        fb.currentShader.setFragmentVar("uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
         fb.draw();
     }
 }

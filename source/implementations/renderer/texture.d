@@ -2,11 +2,9 @@
 *   This class will be only a wrapper for importing the correct backend
 */
 module implementations.renderer.texture;
+import data.assetmanager;
 import error.handler;
 import implementations.renderer.renderer;
-import implementations.renderer.backend.gl.texture;
-import implementations.renderer.backend.d3d.texture;
-import implementations.renderer.backend.sdl.texture;
 import bindbc.sdl;
 import graphics.image;
 
@@ -44,28 +42,24 @@ class Texture
     TextureFilter min, mag;
 
     protected ITexture textureImpl;
+    /**
+    *   Initializes with the current renderer type
+    */
+    protected this()
+    {
+        textureImpl = HipRenderer.getTextureImplementation();
+    }
 
 
     this(string path = "")
     {
-        if(HipRenderer.rendererType == HipRendererType.GL3)
-            textureImpl = new Hip_GL3_Texture();
-        else if(HipRenderer.rendererType == HipRendererType.D3D11)
-            textureImpl = new Hip_D3D11_Texture();
-        else if(HipRenderer.rendererType == HipRendererType.SDL)
-            textureImpl = new Hip_SDL_Texture();
-        else    
-        {
-            ErrorHandler.showErrorMessage("No renderer implementation active",
-            "Can't create a texture without a renderer implementation active");
-        }
+        this();
         if(path != "")
             load(path);
     }
-    public void setWrapMode(TextureWrapMode mode)
-    {
-        textureImpl.setWrapMode(mode);
-    }
+    /** Binds as the texture target on the renderer. */
+    public void bind(){textureImpl.bind();}
+    public void setWrapMode(TextureWrapMode mode){textureImpl.setWrapMode(mode);}
     public void setTextureFilter(TextureFilter min, TextureFilter mag)
     {
         this.min = min;
@@ -73,35 +67,26 @@ class Texture
         textureImpl.setTextureFilter(min, mag);
     }
     
-    SDL_Rect getBounds()
-    {
-        return SDL_Rect(0,0,width,height);
-    }
-    void render(int x, int y)
-    {
-        HipRenderer.draw(this, x, y);
-    }
+    SDL_Rect getBounds(){return SDL_Rect(0,0,width,height);}
+    void render(int x, int y){HipRenderer.draw(this, x, y);}
 
     /**
     *   Returns whether the load was successful
     */
     public bool load(string path)
     {
-        this.img = new Image(path);
-        if(img.load())
+        HipAssetManager.loadImage(path, (Image img)
         {
-            textureImpl.load(img.data);
-            width = img.data.w;
-            height = img.data.h;
-            return true;
-        }
-        else
-            return false;
+            this.img = img;
+            this.width = img.data.w;
+            this.height = img.data.h;
+            this.textureImpl.load(img.data);
+        }, false);
+        return this.width != 0;
     }
-    public void bind()
-    {
-        textureImpl.bind();
-    }
+
+
+
 }
 
 

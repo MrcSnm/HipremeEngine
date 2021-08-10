@@ -18,5 +18,7 @@ building/SDL2-2.0.12
 *.obj
 *.lst
 .history
+*.tsx
+assets/
 imgui.ini
 bin/.vs

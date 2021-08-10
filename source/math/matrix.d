@@ -1,9 +1,14 @@
 module math.matrix;
 import core.math;
 
+enum MatrixType
+{
+    COLUMN_MAJOR,
+    ROW_MAJOR
+}
+
 struct Matrix3
 {
-
     float[9] values;
     pragma(inline, true)
     static Matrix3 translation(float x, float y)
@@ -112,6 +117,12 @@ struct Matrix3
         return ret~"]";
     }
 
+    T opCast(T)() const
+    {
+        static assert(is(T == float[9]), "Matrix3 can only be cast to float[9]");
+        return values;
+    }
+
     alias values this;
 }
 
@@ -141,6 +152,16 @@ struct Matrix4
     Matrix4 translate(float x, float y, float z)
     {
         return this * translation(x,y,z);
+    }
+
+    static Matrix4 createScale(float x, float y, float z)
+    {
+        return Matrix4([
+            x, 0, 0, 0,
+            0, y, 0, 0,
+            0, 0, z, 0,
+            0, 0, 0, 1
+        ]);
     }
 
     Matrix4 scale(float x, float y, float z)
@@ -220,7 +241,7 @@ struct Matrix4
             {
                 for(uint i = 0; i < 16; i+=4)
                 {
-                    ret[i] = values[i]*rhs[0] +values[i+1]*rhs[4] + values[i+2]*rhs[8] + values[i+3]*rhs[12];
+                    ret[i]   = values[i]*rhs[0] +values[i+1]*rhs[4] + values[i+2]*rhs[8] + values[i+3]*rhs[12];
                     ret[i+1] = values[i]*rhs[1] +values[i+1]*rhs[5] + values[i+2]*rhs[9] + values[i+3]*rhs[13];
                     ret[i+2] = values[i]*rhs[2] +values[i+1]*rhs[6] + values[i+2]*rhs[10] + values[i+3]*rhs[14];
                     ret[i+3] = values[i]*rhs[3] +values[i+1]*rhs[7] + values[i+2]*rhs[11] + values[i+3]*rhs[15];
@@ -239,10 +260,8 @@ struct Matrix4
         }
         else static if(op == "/")
         {
-            static if(is(R == float))
-            {
-                ret[]/=rhs;
-            }
+            static assert(is(R == float), "Only float is valid for matrix division");
+            ret[]/=rhs;
         }
         return ret;
     }
@@ -257,8 +276,18 @@ struct Matrix4
             2/(right-left), 0, 0, 0,
             0, 2/(top-bottom), 0, 0,
             0, 0, 1/(zfar-znear), 0,
-            (left+right)/(left-right), (top+bottom)/(bottom-top), znear/(znear-zfar), 1
+            (left+right)/(left-right), (top+bottom)/(bottom-top), -znear/(znear-zfar), 1
         ]);
+    }
+
+    static Matrix4 alternateHandedness(Matrix4 mat)
+    {
+        return Matrix4([
+            1, 0, 0, 0,
+            0, 1, 0, 1,
+            0, 0,-1, 0,
+            0, 0, 0, 1
+        ]) * mat;
     }
 
     string toString()

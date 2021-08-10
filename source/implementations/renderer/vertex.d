@@ -68,9 +68,11 @@ interface IHipIndexBufferImpl
 }
 interface IHipVertexArrayImpl
 {
-    void bind();
-    void unbind();
+    void bind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo);
+    void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo);
     void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride);
+    ///Was created because Direct3D 11 needs shader to create its VAO
+    void createInputLayout(Shader s);
 }
 
 
@@ -142,7 +144,7 @@ class HipVertexArrayObject
     *   Sets the attribute infos that were appended to this object. This function must only be called
     *   after binding/creating a VBO, or it will fail
     */
-    void sendAttributes()
+    void sendAttributes(Shader s)
     {
         if(!isBonded)
         {
@@ -150,24 +152,20 @@ class HipVertexArrayObject
             return;
         }
         foreach(info; infos)
-        {
             this.VAO.setAttributeInfo(info, stride);
-            logln(info);
-        }
-        HipRenderer.exitOnError();
-
+        this.VAO.createInputLayout(s);
     }
 
     void bind()
     {
         isBonded = true;
-        this.VAO.bind();
+        this.VAO.bind(this.VBO, this.EBO);
         HipRenderer.exitOnError();
     }
     void unbind()
     {
         isBonded = false;
-        this.VAO.unbind();
+        this.VAO.unbind(this.VBO, this.EBO);
         HipRenderer.exitOnError();
     }
 
@@ -249,8 +247,8 @@ class HipVertexArrayObject
         HipVertexArrayObject obj = new HipVertexArrayObject();
         with(HipAttributeType)
         {
-            obj.appendAttribute(3, FLOAT, float.sizeof, "position") //X, Y, Z
-                .appendAttribute(4, FLOAT, float.sizeof, "color"); //R, G, B, A
+            obj.appendAttribute(3, FLOAT, float.sizeof, "vPosition") //X, Y, Z
+               .appendAttribute(4, FLOAT, float.sizeof, "vColor"); //R, G, B, A
         }
         return obj;
     }
@@ -262,9 +260,9 @@ class HipVertexArrayObject
         HipVertexArrayObject obj = new HipVertexArrayObject();
         with(HipAttributeType)
         {
-            obj.appendAttribute(3, FLOAT, float.sizeof, "position") //X, Y, Z
-                .appendAttribute(4, FLOAT, float.sizeof, "color") //R, G, B, A
-                .appendAttribute(2, FLOAT, float.sizeof, "tex_st"); //S, T (Texture coordinates)
+            obj.appendAttribute(3, FLOAT, float.sizeof, "vPosition") //X, Y, Z
+               .appendAttribute(4, FLOAT, float.sizeof, "vColor") //R, G, B, A
+               .appendAttribute(2, FLOAT, float.sizeof, "vTexST"); //S, T (Texture coordinates)
         }
         return obj;
     }

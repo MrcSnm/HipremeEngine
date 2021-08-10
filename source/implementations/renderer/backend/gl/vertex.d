@@ -2,6 +2,7 @@ module implementations.renderer.backend.gl.vertex;
 
 import bindbc.opengl;
 import std.format:format;
+import implementations.renderer.shader;
 import implementations.renderer.vertex;
 
 
@@ -93,13 +94,14 @@ class Hip_GL3_VertexArrayObject : IHipVertexArrayImpl
 {
     uint vao;
     this(){glGenVertexArrays(1, &this.vao);}
-    void bind(){glBindVertexArray(this.vao);}
-    void unbind(){glBindVertexArray(0);}
+    void bind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo){glBindVertexArray(this.vao);}
+    void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo){glBindVertexArray(0);}
     void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride)
     {
         glVertexAttribPointer(info.index, info.count, 
             getGLAttributeType(info.valueType), GL_FALSE, stride, cast(void*)info.offset);
         glEnableVertexAttribArray(info.index);
     }
+    void createInputLayout(Shader s){}
     ~this(){glDeleteVertexArrays(1, &this.vao);}
 }

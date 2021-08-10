@@ -13,7 +13,6 @@ public:
 private 
 {
     import std.stdio;
-    import data.image;
     import error.handler;
     import std.conv : to;
     import global.consts;

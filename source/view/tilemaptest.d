@@ -1,15 +1,20 @@
 module view.tilemaptest;
+import data.assetpacker;
+import std.stdio;
 import view.scene;
+import data.assetpacker;
 import def.debugging.log;
 import implementations.renderer;
-import implementations.renderer.tilemap;
+import graphics.g2d.tilemap;
 
 class TilemapTestScene : Scene
 {
     Tilemap map;
     this()
     {
-        (Tileset.fromTSX("./source/view/wateranimate2.tsx"));
+        HapFile f = HapFile.get("gamepack.hap");
+        writeln(f.getChunksList());
+        // (Tileset.fromTSX());
     }
 
     override void render()

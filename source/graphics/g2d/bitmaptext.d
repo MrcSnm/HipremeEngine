@@ -1,5 +1,6 @@
-module implementations.renderer.bitmaptext;
-import graphics.g2d.viewport;
+module graphics.g2d.bitmaptext;
+import graphics.g2d;
+import graphics.mesh;
 import util.data_structures;
 import std.algorithm.comparison : max;
 import std.string;
@@ -220,14 +221,24 @@ class HipBitmapText
         if(bmTextShader is null)
         {
             bmTextShader = HipRenderer.newShader(HipShaderPresets.BITMAP_TEXT);
-            bmTextShader.bind();
-            bmTextShader.setVar("uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
-            bmTextShader.setVar("uModel", Matrix4.identity);
+            bmTextShader.addVarLayout(new ShaderVariablesLayout("Cbuf", ShaderTypes.VERTEX, 0)
+            .append("uModel", Matrix4.identity)
+            .append("uView", Matrix4.identity)
+            .append("uProj", Matrix4.identity)
+            );
+            bmTextShader.addVarLayout(new ShaderVariablesLayout("FragBuf", ShaderTypes.FRAGMENT, 0)
+            .append("uColor", cast(float[4])[1.0,1.0,1.0,1.0])
+            );
+
+            bmTextShader.setFragmentVar("FragBuf.uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
+            bmTextShader.uModel = Matrix4.identity;
             const Viewport v = HipRenderer.getCurrentViewport();
-            bmTextShader.setVar("uView", Matrix4.orthoLH(0, v.w, v.h, 0, 0.01, 100));
-            bmTextShader.setVar("uProj", Matrix4.identity);
+            bmTextShader.uView = Matrix4.identity;
+            bmTextShader.uProj = Matrix4.orthoLH(0, v.w, v.h, 0, 0.01, 100);
+            bmTextShader.bind();
+            bmTextShader.sendVars();
         }
-        linesWidths = new uint[4];
+        linesWidths.length = 1;
         text = "";
         mesh = new Mesh(HipVertexArrayObject.getXY_ST_VAO(), bmTextShader);
         //4 vertices per quad
@@ -374,11 +385,11 @@ class HipBitmapText
                 case '\n':
                     h+=font.lineBreakHeight;
                     lastMaxW = max(w, lastMaxW);
-                    if(linesWidths.length < lineCount)
+                    lineCount++;
+                    if(linesWidths.length == lineCount)
                         linesWidths~= w;
                     else
                         linesWidths[lineCount] = w;
-                    lineCount++;
                     w = 0;
                     break;
                 case ' ':
@@ -419,7 +430,7 @@ class HipBitmapText
 
     void render()
     {
-        import std.stdio;
+        this.font.texture.bind();
         mesh.draw(indices.length);
     }
 }
