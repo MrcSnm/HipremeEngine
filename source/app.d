@@ -68,14 +68,8 @@ extern(C)int SDL_main()
 	import data.ini;
 	initEngine(true);
 
-	IniFile f = IniFile.parse("renderer.conf");
-
-	import std.stdio;
-
-	debug { import std.stdio : writeln; try { writeln(f.vsync.on.get!bool); } catch (Exception) {} }
-	HipRendererConfig rendererConfig;
-	HipRenderer.init(new Hip_GL3Renderer(), &rendererConfig, 1280, 720);
-
+	HipRenderer.init("renderer.conf");
+	
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
 	Sound_AudioInfo info;
 	info.channels=1;

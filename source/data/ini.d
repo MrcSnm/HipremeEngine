@@ -8,6 +8,7 @@ struct IniVar
     string value;
 
     T get(T)(){return to!T(value);}
+    string get(){return value;}
     auto opAssign(T)(T value)
     {
         this.value = to!string(value);
@@ -42,6 +43,7 @@ class IniFile
     IniBlock[string] blocks;
     string path;
     bool configFound = false;
+    bool noError = true;
 
     /**
     *   Simple parser for the .conf or .ini files commonly found.
@@ -69,6 +71,11 @@ class IniFile
                 import std.stdio;
                 string capture = "";
                 while(content[++i] != ']'){capture~=content[i];}
+                if(i >= content.length)
+                {
+                    ret.noError = false;
+                    break;
+                }
                 IniBlock block;
                 block.name = capture;
                 capture = "";
@@ -79,6 +86,11 @@ class IniFile
                     if(l == "")
                         continue;
                     string[] kv = l.split("=");
+                    if(kv.length < 2)
+                    {
+                        ret.noError = false;
+                        break;
+                    }
                     string name = kv[0].replaceAll(' ', "");
                     string _val  = kv[1];
                     string val = "";
@@ -97,6 +109,22 @@ class IniFile
             }
         }
         return ret;
+    }
+
+
+    public T tryGet(T)(string varPath, T defaultVal = T.init)
+    {
+        import std.array:split;
+        string[] accessors = varPath.split(".");
+        if(accessors.length < 2)
+            return defaultVal;
+        IniBlock* b = (accessors[0] in this);
+        if(b is null)
+            return defaultVal;
+        IniVar* v = (accessors[1] in *b);
+        if(v is null)
+            return defaultVal;
+        return v.get!T;
     }
 
     auto opDispatch(string member)()

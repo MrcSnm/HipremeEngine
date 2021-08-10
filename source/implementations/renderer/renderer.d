@@ -111,6 +111,43 @@ class HipRenderer
     public static uint width, height;
     protected static HipRendererConfig currentConfig;
 
+    public static bool init(string confPath)
+    {
+        import implementations.renderer.backend.d3d.renderer;
+        import data.ini;
+        IniFile ini = IniFile.parse(confPath);
+        HipRendererConfig cfg;
+        if(ini.configFound && ini.noError)
+        {
+            cfg.bufferingCount = ini.tryGet!ubyte("buffering.count", 2);
+            cfg.multisamplingLevel = ini.tryGet!ubyte("multisampling.level", 0);
+            cfg.vsync = ini.tryGet("vsync.on", true);
+            
+            int width = ini.tryGet("screen.width", 1280);
+            int height = ini.tryGet("screen.height", 720);
+            string renderer = ini.tryGet("screen.renderer", "GL3");
+
+            switch(renderer)
+            {
+                case "GL3":
+                    return init(new Hip_GL3Renderer(), &cfg, width, height);
+                case "D3D11":
+                    return init(new Hip_D3D11_Renderer(), &cfg, width, height);
+                default:
+                    ErrorHandler.showErrorMessage("Invalid renderer '"~renderer~"'",
+                    `
+                        Available renderers:
+                            GL3
+                            D3D11
+                        Starting with GL3
+                    `);
+                    goto case "GL3";
+            }
+
+        }
+        return init(new Hip_GL3Renderer(), &cfg, 1280, 720);
+    }
+
 
     public static bool init(IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height)
     {
