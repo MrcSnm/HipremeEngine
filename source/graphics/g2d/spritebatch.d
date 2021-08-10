@@ -1,10 +1,12 @@
-module implementations.renderer.spritebatch;
-import implementations.renderer.mesh;
+module graphics.g2d.spritebatch;
+import graphics.mesh;
 import core.stdc.string:memcpy;
+import graphics.orthocamera;
 import implementations.renderer.renderer;
 import math.matrix;
 import implementations.renderer.shader;
-import implementations.renderer.sprite;
+import graphics.material;
+import graphics.g2d.sprite;
 import graphics.color;
 import math.vector;
 
@@ -27,7 +29,9 @@ class HipSpriteBatch
     float[] vertices;
     bool hasBegun;
     Shader shader;
+    HipOrthoCamera camera;
     Mesh mesh;
+    Material material;
 
     protected uint quadsCount;
 
@@ -44,9 +48,27 @@ class HipSpriteBatch
         mesh.createVertexBuffer(maxQuads*spriteVertexSize*4, HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(maxQuads*6, HipBufferUsage.STATIC);
         mesh.sendAttributes();
-
-        import std.stdio;
         setShader(s);
+        
+
+        shader.addVarLayout(new ShaderVariablesLayout("Cbuf1", ShaderTypes.VERTEX, ShaderHint.NONE)
+        .append("uModel", Matrix4.identity)
+        .append("uView", Matrix4.identity)
+        .append("uProj", Matrix4.identity));
+
+        shader.addVarLayout(new ShaderVariablesLayout("Cbuf", ShaderTypes.FRAGMENT, ShaderHint.NONE)
+        .append("uBatchColor", cast(float[4])[1,1,1,1])
+        );
+
+
+        shader.useLayout.Cbuf;
+        shader.bind();
+        shader.sendVars();
+
+        // material = new Material(mesh.shader);
+        // material.setFragmentVar("uBatchColor", cast(float[4])[1,0,0,1]);
+
+        camera = new HipOrthoCamera();
 
         int offset = 0;
         for(int i = 0; i < maxQuads; i+=6)
@@ -96,11 +118,16 @@ class HipSpriteBatch
 
     void flush()
     {
+        // mesh.shader.bind();
+        // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
+        // material.bind();
+        mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj);
+        mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity());
+        mesh.shader.setVertexVar("Cbuf1.uView", camera.view);
+        
         mesh.shader.bind();
-        mesh.shader.setVar("uBatchColor", cast(float[4])[1,1,1,1]);
-        mesh.shader.setVar("uProj", Matrix4.orthoLH(0, 800, 600, 0, 0.001, 1));
-        mesh.shader.setVar("uModel",Matrix4.identity());
-        mesh.shader.setVar("uView", Matrix4.identity());
+        mesh.shader.sendVars();
+        HipRenderer.exitOnError();
 
         mesh.updateVertices(vertices);
         mesh.draw(quadsCount*6);

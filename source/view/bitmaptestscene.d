@@ -1,8 +1,10 @@
 module view.bitmaptestscene;
 import std.stdio;
-import implementations.renderer.tilemap;
+import graphics.g2d.tilemap;
 import sdl.event.handlers.input.keyboard_layout;
 import implementations.renderer;
+import graphics.g2d;
+import graphics.mesh;
 import sdl.event.handlers.keyboard;
 import def.debugging.log;
 import view.scene;
@@ -17,10 +19,9 @@ class BitmapTestScene : Scene
         txt = new HipBitmapText();
         abnt2 = new KeyboardLayoutABNT2();
         txt.setBitmapFont(HipBitmapFont.fromFile("assets/fonts/arial.fnt"));
-        txt.x = 1280/2;
+        import std.stdio;
+        txt.x = HipRenderer.width/2;
         txt.alignh = HipTextAlign.CENTER;
-
-        Tilemap m = Tilemap.readTiled();
     }
 
     override void render()
@@ -32,6 +33,6 @@ class BitmapTestScene : Scene
         _txt~= input;
         txt.setText(_txt);
         txt.render();
-        txt.mesh.shader.setVar("uColor", cast(float[4])[1.0, 1.0, 0.0, 1.0]);
+        txt.mesh.shader.setFragmentVar("FragBuf.uColor", cast(float[4])[1.0, 1.0, 0.0, 1.0]);
     }
 }

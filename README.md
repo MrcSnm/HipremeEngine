@@ -18,6 +18,23 @@ The engine mantains some global options which you can modify it on source/global
 - TextureAtlas .atlas and .json parser;
 - BitmapFont parser and renderer, currently only text align is supported;
 - ImGUI compatibility;
-- Sprite, SpriteBatch, GeometryBatch, FrameBuffer renderer;
-- Initial JNI and Android build system for future Android support
-  
+- Sprite, SpriteBatch, GeometryBatch, FrameBuffer renderer and shader;
+- Initial JNI and Android build system for future Android support;
+- Asset packing, appending, updating and reading for faster performance(less IO);
+- .INI and .CONF parser and renderer config for changing renderer without recompiling;
+- FileProgression, file reading with progress notification;
+- Multi threaded asset loading and deconding (image).
+
+
+## Next steps
+
+- GLSL to HLSL transpiler
+- Dispatch file reading to the asset/resource packer.
+- Render Tiled maps
+- Create a proof of concept
+- Cross platform build system
+
+
+## Issues list
+
+- D3DReflect needs to link to D3dcompiler_43 instead of _47

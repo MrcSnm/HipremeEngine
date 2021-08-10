@@ -11,12 +11,14 @@ import implementations.renderer.renderer;
 import implementations.renderer.shader;
 import implementations.renderer.framebuffer;
 import implementations.renderer.backend.d3d.shader;
+import implementations.renderer.backend.d3d.vertex;
 import implementations.renderer.backend.d3d.utils;
 import implementations.renderer.texture;
 import error.handler;
 
 import graphics.g2d.viewport;
 import core.stdc.string;
+import std.conv:to;
 import directx.d3d11;
 import core.sys.windows.windows;
 import bindbc.sdl;
@@ -27,40 +29,22 @@ IDXGISwapChain _hip_d3d_swapChain = null;
 ID3D11RenderTargetView _hip_d3d_mainRenderTarget = null;
 
 
-private void Hip_D3D11_Dispose()
-{
-    if(_hip_d3d_swapChain)
-    {
-        _hip_d3d_swapChain.SetFullscreenState(FALSE, null);
-        _hip_d3d_swapChain.Release();
-        _hip_d3d_swapChain = null;
-    }
-    if(_hip_d3d_context)
-    {
-        _hip_d3d_context.Release();
-        _hip_d3d_context = null;
-    }
-    if(_hip_d3d_device)
-    {
-        _hip_d3d_device.Release();
-        _hip_d3d_device = null;
-    }
-    if(_hip_d3d_mainRenderTarget)
-    {
-        _hip_d3d_mainRenderTarget.Release();
-        _hip_d3d_mainRenderTarget = null;
-    }
-}
-
-
 class Hip_D3D11_Renderer : IHipRendererImpl
 {
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
+    protected static bool hasDebugAvailable;
     protected static Viewport currentViewport;
     public static Shader currentShader;
 
-    public SDL_Window* createWindow()
+    static if(HIP_DEBUG)
+    {
+        import directx.dxgidebug;
+        IDXGIInfoQueue dxgiQueue;
+    }
+    
+
+    public SDL_Window* createWindow(uint width, uint height)
     {
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d11");
         static if(HIP_DEBUG)
@@ -69,7 +53,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         }
         alias f = SDL_WindowFlags;
         SDL_WindowFlags flags = f.SDL_WINDOW_RESIZABLE | f.SDL_WINDOW_ALLOW_HIGHDPI;
-        SDL_Window* window = SDL_CreateWindow("DX Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, flags);
+        SDL_Window* window = SDL_CreateWindow("DX Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
 
         return window;
     }
@@ -94,6 +78,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         dsc.Windowed = TRUE; //True
         //Let user being able to switch between fullscreen and windowed
         dsc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
         
         // dsc.BufferDesc.Width = 0;
         // dsc.BufferDesc.Height = 0;
@@ -112,10 +97,18 @@ class Hip_D3D11_Renderer : IHipRendererImpl
             * under System, Apps & features, Manage optional Features,
             * Add a feature, and then look for "Graphics Tools".
             */
-            // createDeviceFlags|= D3D11_CREATE_DEVICE_DEBUG;
-
+            createDeviceFlags|= D3D11_CREATE_DEVICE_DEBUG;
+            
         }
-        const D3D_FEATURE_LEVEL[] levelArray = [D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0];
+        const D3D_FEATURE_LEVEL[] levelArray = 
+        [
+            D3D_FEATURE_LEVEL_11_1,
+            D3D_FEATURE_LEVEL_11_0,
+            D3D_FEATURE_LEVEL_10_1,
+            D3D_FEATURE_LEVEL_10_0,
+            D3D_FEATURE_LEVEL_9_3,
+            D3D_FEATURE_LEVEL_9_1
+        ];
         D3D_FEATURE_LEVEL featureLevel;
 
         auto res = D3D11CreateDeviceAndSwapChain(null,
@@ -131,12 +124,34 @@ class Hip_D3D11_Renderer : IHipRendererImpl
                                                 &featureLevel,
                                                 &_hip_d3d_context);
 
-
+        
         if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "D3D11: Error creating device and swap chain", Hip_D3D11_GetErrorMessage(res)))
         {
             Hip_D3D11_Dispose();
             return;
         }
+
+        static if(HIP_DEBUG)
+        {
+            import core.sys.windows.dll;
+            HRESULT hres;
+            DXGIGetDebugInterface = cast(_DXGIGetDebugInterface)GetProcAddress(GetModuleHandle("Dxgidebug.dll"), "DXGIGetDebugInterface");
+            if(DXGIGetDebugInterface is null)
+            {
+                ErrorHandler.showErrorMessage("DLL Error", "Error loading the DXGIGetDebugInterface from Dxgidebug.dll
+                Debug layer will be aborted.");
+                goto rendererDefine;
+            }
+            hres = DXGIGetDebugInterface(&uuidof!IDXGIInfoQueue, cast(void**)&dxgiQueue);
+            if(FAILED(hres))
+            {
+                ErrorHandler.showErrorMessage("DXGI Error", "Could not get the IDXGIInfoQueue interface. \nError: " ~
+                Hip_D3D11_GetErrorMessage(hres) ~ "\nDebug layer will be aborted.");
+                goto rendererDefine;
+            }
+            hasDebugAvailable = true;
+        }
+        rendererDefine:
 
         ID3D11Texture2D pBackBuffer;
 
@@ -149,7 +164,22 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         pBackBuffer.Release();
 
         _hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_mainRenderTarget, null);
+        setState();
     }
+
+    public void setState()
+    {
+        D3D11_RASTERIZER_DESC desc;
+        desc.CullMode = D3D11_CULL_NONE;
+        ID3D11RasterizerState state;
+
+        if(FAILED(_hip_d3d_device.CreateRasterizerState(&desc, &state)))
+            HipRenderer.exitOnError();
+
+        _hip_d3d_context.RSSetState(state);
+    }
+    public final bool isRowMajor(){return false;}
+
     public SDL_Renderer* createRenderer(SDL_Window* window)
     {
         //D3D Cannot create any sdl renderer
@@ -159,7 +189,36 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
     public bool hasErrorOccurred(out string err, string file = __FILE__, int line = __LINE__)
     {
-        return false;
+        if(hasDebugAvailable)
+        {
+            DXGI_INFO_QUEUE_MESSAGE* msg;
+            bool hasError;
+            ulong msgSize;
+            for(ulong i = 0, 
+            // len = dxgiQueue.GetNumStoredMessagesAllowedByRetrievalFilters(DXGI_DEBUG_DX);
+            len = dxgiQueue.GetNumStoredMessages(DXGI_DEBUG_DX);
+            i < len; i++)
+            {
+                import std.stdio;
+                import core.stdc.stdlib;
+                dxgiQueue.GetMessage(DXGI_DEBUG_DX, i, null, &msgSize);
+                msg = cast(DXGI_INFO_QUEUE_MESSAGE*)malloc(msgSize);
+                dxgiQueue.GetMessage(DXGI_DEBUG_DX, i, msg, &msgSize);
+                if(msg.pDescription !is null || msg.Severity == DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR)
+                {
+                    hasError = true;
+                    err~= to!string(msg.pDescription)~"\n";
+                }
+                free(msg);
+            }
+            return hasError;
+        }
+        else
+        {
+            HRESULT hres = GetLastError();
+            err = Hip_D3D11_GetErrorMessage(hres);
+            return FAILED(hres);
+        }
     }
 
     public bool setWindowMode(HipWindowMode mode)
@@ -183,15 +242,15 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     }
     public IHipVertexArrayImpl  createVertexArray()
     {
-        return null;
+        return new Hip_D3D11_VertexArrayObject();
     }
     public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
     {
-        return null;
+        return new Hip_D3D11_VertexBufferObject(size, usage);
     }
     public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage)
     {
-        return null;
+        return new Hip_D3D11_IndexBufferObject(count, usage);
     }
 
     public Shader createShader()
@@ -216,9 +275,23 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
     public void setRendererMode(HipRendererMode mode)
     {
-        if(mode == HipRendererMode.TRIANGLES)
+        final switch(mode) with(HipRendererMode)
         {
-            _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            case TRIANGLES:
+                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                break;
+            case TRIANGLE_STRIP:
+                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+                break;
+            case LINE:
+                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+                break;
+            case LINE_STRIP:
+                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+                break;
+            case POINT:
+                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+                break;
         }
     }
 
@@ -287,3 +360,29 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         Hip_D3D11_Dispose();
     }
 }
+
+private void Hip_D3D11_Dispose()
+{
+    if(_hip_d3d_swapChain)
+    {
+        _hip_d3d_swapChain.SetFullscreenState(FALSE, null);
+        _hip_d3d_swapChain.Release();
+        _hip_d3d_swapChain = null;
+    }
+    if(_hip_d3d_context)
+    {
+        _hip_d3d_context.Release();
+        _hip_d3d_context = null;
+    }
+    if(_hip_d3d_device)
+    {
+        _hip_d3d_device.Release();
+        _hip_d3d_device = null;
+    }
+    if(_hip_d3d_mainRenderTarget)
+    {
+        _hip_d3d_mainRenderTarget.Release();
+        _hip_d3d_mainRenderTarget = null;
+    }
+}
+

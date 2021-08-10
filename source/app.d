@@ -6,7 +6,6 @@ import error.handler;
 import global.consts;
 import std.conv : to;
 import global.assets;
-import data.image;
 import implementations.audio.audio;
 import bindbc.sdl;
 import bindbc.opengl;
@@ -23,12 +22,8 @@ import bindbc.cimgui;
 import math.matrix;
 import implementations.renderer.renderer;
 import implementations.renderer.backend.d3d.renderer;
-import view.scene;
-import view.testscene;
-import view.spritetestscene;
-import view.tilemaptest;
-import view.framebuffertestscene;
-import view.bitmaptestscene;
+import view;
+import systems.game;
 import def.debugging.gui;
 
 
@@ -70,118 +65,50 @@ static void initEngine(bool audio3D = false)
 
 extern(C)int SDL_main()
 {
+	import data.ini;
 	initEngine(true);
-	HipRendererConfig cfg;
-	HipRenderer.init(new Hip_GL3Renderer(), &cfg);
-	import graphics.image;
-	import graphics.g2d.sprite;
-	Texture t = new Texture(Assets.Graphics.Sprites.teste_bmp);
 
-	Sprite s = new Sprite(t);
-	SDL_Rect clip = SDL_Rect(0,0,t.width/2,t.height);
-
-	HipVertexArrayObject obj = HipVertexArrayObject.getXYZ_RGBA_ST_VAO();
-	obj.createVertexBuffer(4, HipBufferUsage.DYNAMIC);
-	obj.createIndexBuffer(6, HipBufferUsage.STATIC);
-
-	const float[] vbo = [
-//		 X    Y   Z      R  G   B   A   S  T
-		0.0, 0.0, 0.0, 1.0,1.0,1.0,1.0, 0.0,0.0, //TLeft
-		0.0, 200, 0.0, 1.0,1.0,1.0,1.0, 0.0,1.0, //BLeft
-		200, 200, 0.0, 1.0,1.0,1.0,1.0, 1.0,1.0,//BRight 
-		200, 0, 0.0, 1.0,1.0,1.0,1.0,   1.0,0.0 	//TRight
-	];
-	const uint[] ebo = [0, 1, 2, 2, 3, 0];
-	obj.setVertices(4, vbo.ptr);
-	obj.setIndices(cast(uint)ebo.length, ebo.ptr);
-	obj.sendAttributes();
-
-
+	HipRenderer.init("renderer.conf");
+	
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
 	Sound_AudioInfo info;
-		
 	info.channels=1;
 	info.rate = 22_050;
 	info.format = SDL_AudioFormat.AUDIO_S16;
 
 	//AudioSource sc = Audio.getSource(buf);
 	//Audio.setPitch(sc, 1);
-	import def.debugging.runtime;
-
+	// import def.debugging.runtime;
+	// import global.fonts.icons;
+	// import implementations.imgui.imgui_impl_opengl3;
 	// DI.start(HipRenderer.window);
-	import global.fonts.icons;
-
 	// ImFontConfig cfg = DI.getDefaultFontConfig("Default + Icons");
 	// ImFontAtlas_AddFontDefault(igGetIO().Fonts, &cfg);
 	// DI.mergeFont("assets/fonts/"~FontAwesomeSolid, 16, FontAwesomeRange, &cfg);
+	// ImGui_ImplOpenGL3_CreateFontsTexture();
 
-
-
-	import implementations.imgui.imgui_impl_opengl3;
-	//ImGui_ImplOpenGL3_CreateFontsTexture();
 	
 	//Audio.play(sc);
 	
-	bool quit = false;
-	KeyboardHandler kb = new KeyboardHandler();
-
-	
-
-	Key k = new class Key
-	{
-		override void onDown(){quit = true;}
-		override void onUp(){}
-	};
-	kb.addKeyListener(SDL_Keycode.SDLK_ESCAPE, k);
-	kb.addKeyListener(SDL_Keycode.SDLK_a, new class Key
-	{
-		override void onDown()
-		{
-			import util.time : Time;
-			// logln(this.meta.getDowntimeDuration());
-		}
-		override void onUp(){}
-	});
-
-	EventDispatcher ev = new EventDispatcher(&kb);
-
 	float angle=0;
 	float angleSum = 0.01;
 	import std.math:sin,cos;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	Scene testscene = new TilemapTestScene();
+	GameSystem sys = new GameSystem();
 	
-	testscene.init();
-
-
-	
-	
-	while(!quit)
+	while(true)
 	{
-		ev.handleEvent();
-		if(ev.hasQuit)
+		if(!sys.update())
 			break;
+		HipRenderer.begin();
+		HipRenderer.clear(0,0,0,255);
+		sys.render();
+		HipRenderer.end();
+		sys.postUpdate();
 
 		///////////START IMGUI
-
 		// Start the Dear ImGui frame
-		// shader.bind();
-		// HipRenderer.currentShader.setVar("proj", Matrix4.orthoLH(0, 800, 600, 0, 0, 1));
-		// HipRenderer.currentShader.setVar("globalColor", cast(float[4])[0.5f, 0.75f, 0.5f, 0.5f]);
-		HipRenderer.begin();
-		HipRenderer.clear(255,0,0,255);
-
-		// HipRenderer.drawLine(0, 0, 1, 1);
-		// HipRenderer.drawRect(0,0,0,0);
-		// HipRenderer.drawTriangle(0,0,0,0,0,0);
-		// obj.bind();
-		// t.bind();
-
-		// HipRenderer.drawIndexed(HipRendererMode.TRIANGLES, 6u);
-		testscene.render();
-		// s.draw();
-        HipRenderer.end();
         // DI.begin();
 		// static bool open = true;
 		// igShowDemoWindow(&open);
@@ -195,12 +122,7 @@ extern(C)int SDL_main()
 		// }
 
         // // Rendering
-
-		// // glViewport(0, 0, cast(int)io.DisplaySize.x, cast(int)io.DisplaySize.y);
-		
 		// DI.end();
-
-		ev.postUpdate();
     }
 	//	alSource3f(src, AL_POSITION, cos(angle) * 10, 0, sin(angle) * 10);
 		angle+=angleSum;
@@ -217,7 +139,7 @@ extern(C)int SDL_main()
  */
 static void destroyEngine()
 {
-    ResourceManager.disposeResources();
+    //HipAssetManager.disposeResources();
 	DI.onDestroy();
 	HipRenderer.dispose();
 	Audio.onDestroy();

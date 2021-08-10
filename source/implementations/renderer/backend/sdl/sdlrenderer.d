@@ -9,7 +9,7 @@ import bindbc.sdl;
 import bindbc.opengl;
 import def.debugging.log;
 
-private SDL_Window* createSDL_GL_Window()
+private SDL_Window* createSDL_GL_Window(uint width, uint height)
 {
 	SDL_GL_LoadLibrary(null);
 	//Set GL Version
@@ -23,7 +23,7 @@ private SDL_Window* createSDL_GL_Window()
 	alias f = SDL_WindowFlags;
 	SDL_WindowFlags flags = (f.SDL_WINDOW_OPENGL | f.SDL_WINDOW_RESIZABLE | f.SDL_WINDOW_ALLOW_HIGHDPI);
 
-	SDL_Window* window = SDL_CreateWindow("GL Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, flags);
+	SDL_Window* window = SDL_CreateWindow("GL Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
 	SDL_GLContext ctx = SDL_GL_CreateContext(window);
 	SDL_GL_MakeCurrent(window, ctx);
 	GLSupport ver = loadOpenGL();
@@ -45,15 +45,17 @@ public class Hip_SDL_Renderer : IHipRendererImpl
     public SDL_Renderer* renderer = null;
     public SDL_Window* window = null;
 
-    SDL_Window* createWindow()
+    SDL_Window* createWindow(uint width, uint height)
     {
         return SDL_CreateWindow("SDL Window",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        800, 600,
+        width, height,
         SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL_WindowFlags.SDL_WINDOW_RESIZABLE
         );
     }
+
+    public final bool isRowMajor(){return true;}
     SDL_Renderer* createRenderer(SDL_Window* window)
     {
         return SDL_CreateRenderer(window, 0, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);

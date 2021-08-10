@@ -5,7 +5,7 @@ private import std.conv : to;
 
 
 
-static class Time
+class Time
 {
     static StopWatch stopwatch;
     static this()

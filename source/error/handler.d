@@ -65,6 +65,7 @@ public static class ErrorHandler
 
     private static EngineErrorStack currentStack;
     private static EngineErrorStack[] stackHistory;
+    private static string[] warnHistory;
     private static bool isListening = false;
     public static string LAST_ERROR = "";
     
@@ -123,6 +124,21 @@ public static class ErrorHandler
         }
         getError(errorTitle, errorMessage);
     }
+    public static void showWarningMessage(string warningTitle, string warningMessage)
+    {
+        static if(os == OS.android)
+        {
+            alogw("HipremeEngine", "\nWarning: " ~ warningTitle);
+            alogw("HipremeEngine", warningMessage);
+        }
+        else
+        {
+            writeln("\nWarning: " ~ warningTitle);
+            writeln(warningMessage);
+        }
+        warnHistory~= warningTitle~": "~warningMessage;
+    }
+
     /** 
      * 
      * Params:

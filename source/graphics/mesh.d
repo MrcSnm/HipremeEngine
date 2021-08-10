@@ -1,4 +1,4 @@
-module implementations.renderer.mesh;
+module graphics.mesh;
 import implementations.renderer.renderer;
 import implementations.renderer.shader;
 import implementations.renderer.vertex;
@@ -36,7 +36,7 @@ class Mesh
     }
     void sendAttributes()
     {
-        this.vao.sendAttributes();
+        this.vao.sendAttributes(shader);
     }
 
     /**
@@ -45,15 +45,25 @@ class Mesh
     */
     public void setIndices(ref uint[] indices)
     {
+        if(indices.length <  this.indices.length)
+        {
+            updateIndices(indices);
+            return;
+        }
         this.indices = indices;
         this.vao.setIndices(cast(uint)indices.length, indices.ptr);
     }
-    /**
+    /**''
     *   Use this function only for creation!
     *   Inside loops, you must use updateVertices
     */
     public void setVertices(ref float[] vertices)
     {
+        if(vertices.length <  this.vertices.length)
+        {
+            updateVertices(vertices);
+            return;
+        }
         this.vertices = vertices;
         this.vao.setVertices(cast(uint)vertices.length/this.vao.dataCount, vertices.ptr);
     }
