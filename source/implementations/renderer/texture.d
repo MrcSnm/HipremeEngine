@@ -78,11 +78,11 @@ class Texture
         HipAssetManager.loadImage(path, (Image img)
         {
             this.img = img;
-            this.textureImpl.load(img.data);
             this.width = img.data.w;
             this.height = img.data.h;
+            this.textureImpl.load(img.data);
         }, false);
-        return false;
+        return this.width != 0;
     }
 
 

@@ -116,27 +116,45 @@ public class Shader
     void setFromPreset(HipShaderPresets preset = HipShaderPresets.DEFAULT)
     {
         ShaderStatus status = ShaderStatus.SUCCESS;
+        fragmentShaderPath="implementations.renderer.backend.";
+        switch(HipRenderer.getRendererType())
+        {
+            case HipRendererType.D3D11:
+                fragmentShaderPath~= "d3d.shader";
+                break;
+            case HipRendererType.GL3:
+                fragmentShaderPath~= "gl3.shader";
+                break;
+            default:break;
+        }
         switch(preset) with(HipShaderPresets)
         {
             case SPRITE_BATCH:
                 status = loadShaders(vertexShader.getSpriteBatchVertex(), fragmentShader.getSpriteBatchFragment());
+                fragmentShaderPath~= ".SPRITE_BATCH";
                 break;
             case FRAME_BUFFER:
                 status = loadShaders(vertexShader.getFrameBufferVertex(), fragmentShader.getFrameBufferFragment());
+                fragmentShaderPath~= ".FRAME_BUFFER";
                 break;
             case GEOMETRY_BATCH:
                 status = loadShaders(vertexShader.getGeometryBatchVertex(), fragmentShader.getGeometryBatchFragment());
+                fragmentShaderPath~= ".GEOMETRY_BATCH";
                 break;
             case BITMAP_TEXT:
                 status = loadShaders(vertexShader.getBitmapTextVertex(), fragmentShader.getBitmapTextFragment());
+                fragmentShaderPath~= ".BITMAP_TEXT";
                 break;
             case DEFAULT:
                 status = loadShaders(vertexShader.getDefaultVertex(),fragmentShader.getDefaultFragment());
+                fragmentShaderPath~= ".DEFAULT";
                 break;
             case NONE:
             default:
                 break;
         }
+        vertexShaderPath = fragmentShaderPath;
+        
         if(status != ShaderStatus.SUCCESS)
         {
             import def.debugging.log;
@@ -181,6 +199,12 @@ public class Shader
             assert(v.shaderType == ShaderTypes.VERTEX, "Variable named "~name~" must be from Vertex Shader");
             v.set(val);
         }
+        else
+            ErrorHandler.showWarningMessage("Shader Vertex Var not set on shader loaded from '"~vertexShaderPath~"'",
+            "Could not find shader var with name "~name~
+            ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
+            "Did you forget to add a layout namespace to the var name?"
+            ));
     }
     public void setFragmentVar(T)(string name, T val)
     {
@@ -190,6 +214,12 @@ public class Shader
             assert(v.shaderType == ShaderTypes.FRAGMENT, "Variable named "~name~" must be from Fragment Shader");
             v.set(val);
         }
+        else
+            ErrorHandler.showWarningMessage("Shader Fragment Var not set on shader loaded from '"~fragmentShaderPath~"'",
+            "Could not find shader var with name "~name~
+            ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
+            "Did you forget to add a layout namespace to the var name?"
+            ));
     }
 
     protected ShaderVar* findByName(string name)

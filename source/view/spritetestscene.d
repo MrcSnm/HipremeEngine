@@ -22,9 +22,9 @@ class SpriteTestScene : Scene
     {
         super.render();
         Viewport v = HipRenderer.getCurrentViewport();
-        v.setSize(5000, 2500);
+        v.setSize(800, 600);
         v.update();
-        batch.camera.setScale(4, 4);
+        batch.camera.setScale(2, 2);
         batch.begin();
         batch.draw(sprite);
         batch.end();
