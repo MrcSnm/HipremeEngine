@@ -34,7 +34,6 @@ version(Windows)
 
     void dll_import_varS(alias varSymbol)()
     {
-        mixin("alias p"~varSymbol.stringof~" = "~typeof(varSymbol).stringof~";");
-        varSymbol = mixin("cast(p"~varSymbol.stringof~")dll_import_var(\""~varSymbol.stringof~"\")");
+        varSymbol = cast(typeof(varSymbol))dll_import_var(varSymbol.stringof);
     }
 }

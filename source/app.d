@@ -69,13 +69,12 @@ static void initEngine(bool audio3D = false)
 }
 
 
-
+GameSystem sys;
 extern(C)int SDL_main()
 {
 	import data.ini;
 	import def.debugging.console;
 	initEngine(true);
-
 	version(dll)
 	{
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
@@ -102,48 +101,34 @@ extern(C)int SDL_main()
 	
 	//Audio.play(sc);
 	
-	float angle=0;
-	float angleSum = 0.01;
-	import std.math:sin,cos;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-	GameSystem sys = new GameSystem();
-	
-	while(true)
+	sys = new GameSystem();
+	version(UWP){}
+	else
 	{
-		if(!sys.update())
-			break;
-		HipRenderer.begin();
-		HipRenderer.clear(0,0,0,255);
-		sys.render();
-		HipRenderer.end();
-		sys.postUpdate();
-
-		///////////START IMGUI
-		// Start the Dear ImGui frame
-        // DI.begin();
-		// static bool open = true;
-		// igShowDemoWindow(&open);
-		// import implementations.imgui.imgui_debug;
-		// addDebug!(s);
-
-		// if(igButton("Viewport flag".ptr, ImVec2(0,0)))
-		// {
-		// 	//logln!(igGetIO().ConfigFlags);
-		// 	igGetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-		// }
-
-        // // Rendering
-		// DI.end();
-    }
-	//	alSource3f(src, AL_POSITION, cos(angle) * 10, 0, sin(angle) * 10);
-		angle+=angleSum;
-		
-	// Cleanup
-
-	destroyEngine();
-
+		while(HipremeUpdate()){}
+		HipremeDestroy();
+		destroyEngine();
+	}
 	return 1;
+	///////////START IMGUI
+	// Start the Dear ImGui frame
+	// DI.begin();
+	// static bool open = true;
+	// igShowDemoWindow(&open);
+	// import implementations.imgui.imgui_debug;
+	// addDebug!(s);
+
+	// if(igButton("Viewport flag".ptr, ImVec2(0,0)))
+	// {
+	// 	//logln!(igGetIO().ConfigFlags);
+	// 	igGetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	// }
+
+	// // Rendering
+	// DI.end();
+	//	alSource3f(src, AL_POSITION, cos(angle) * 10, 0, sin(angle) * 10);
+	// Cleanup
 }
 
 /** 
@@ -169,3 +154,19 @@ else
 
 
 export extern(C) int HipremeMain(){return SDL_main();}
+export extern(C) bool HipremeUpdate()
+{
+	rawlog("Mrc");
+	if(!sys.update())
+		return false;
+	HipRenderer.begin();
+	HipRenderer.clear(0,0,0,255);
+	sys.render();
+	HipRenderer.end();
+	sys.postUpdate();
+	return true;
+}
+export extern(C) void HipremeDestroy()
+{
+	destroyEngine();
+}

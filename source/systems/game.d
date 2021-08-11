@@ -32,7 +32,7 @@ class GameSystem
         });
 
         import view.testscene;
-        Scene testscene = new BitmapTestScene();
+        Scene testscene = new TestScene();
     	testscene.init();
         scenes~= testscene;
 
