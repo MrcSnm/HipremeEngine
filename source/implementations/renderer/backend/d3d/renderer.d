@@ -29,11 +29,6 @@ IDXGISwapChain _hip_d3d_swapChain = null;
 ID3D11RenderTargetView _hip_d3d_mainRenderTarget = null;
 
 
-private extern(Windows) nothrow @system 
-{
-    HWND function() getCoreWindowHWND;
-}
-
 class Hip_D3D11_Renderer : IHipRendererImpl
 {
     public static SDL_Renderer* renderer = null;
@@ -279,10 +274,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
     public bool initExternal()
     {
-        import util.system;
-        import def.debugging.console;
-        dll_import_var("OutputUWP");
-        Console.init(Platform.UWP);
+        import bind.external:getCoreWindowHWND;
         HWND hwnd = getCoreWindowHWND();
         if(hwnd == null)
             return false;

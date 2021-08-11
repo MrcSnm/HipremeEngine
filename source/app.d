@@ -35,13 +35,22 @@ static SDL_Surface* gScreenSurface = null;
 
 static void initEngine(bool audio3D = false)
 {
-	
-	version(Android)
+	import core.runtime;
+	import def.debugging.console;
+	import bind.external;
+	version(dll)
 	{
 		rt_init();
+		importExternal();
+	}
+	version(Android)
+	{
 		alogi("D_LANG", "Came here");
 		alogi("HipremeEngine", "Starting engine on android");
+		Console.install(Platforms.ANDROID);
 	}
+	else version(UWP){Console.install(Platforms.UWP, &uwpPrint);}
+	else{Console.install();}
 	version(BindSDL_Static){}
 	else
 	{
@@ -64,10 +73,14 @@ static void initEngine(bool audio3D = false)
 extern(C)int SDL_main()
 {
 	import data.ini;
+	import def.debugging.console;
 	initEngine(true);
 
-	// HipRenderer.init("renderer.conf");
-	HipRenderer.initExternal(HipRendererType.D3D11);
+	version(dll)
+	{
+		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
+	}
+	else{HipRenderer.init("renderer.conf");}
 	
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
 	Sound_AudioInfo info;

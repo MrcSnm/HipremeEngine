@@ -1,4 +1,5 @@
 module def.debugging.console;
+import bind.external;
 private import global.opts;
 import util.reflection : isLiteral;
 import std.conv:to;
@@ -8,16 +9,6 @@ import implementations.imgui.imgui_debug : InterfaceImplementation;
 
 static enum androidTag = "HipremeEngine";
 enum GUI_CONSOLE = true;
-
-enum Platform
-{
-    DEFAULT,
-    DESKTOP,
-    ANDROID,
-    UWP,
-    NULL
-}
-
 
 void function(string toPrint) _log;
 static string _format(alias fmt, Args...)(Args a){return format!fmt(a);}
@@ -75,9 +66,9 @@ static string _format(Args...)(Args args)
         DEFAULT = new Console("Output", 99);
     }
 
-    static void init(Platform p = Platform.DEFAULT, void function(string) printFunc = null)
+    static void install(Platforms p = Platforms.DEFAULT, void function(string) printFunc = null)
     {
-        switch(p) with(Platform)
+        switch(p) with(Platforms)
         {
             case NULL:
                 _log = function(string s){};
