@@ -275,6 +275,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     public bool initExternal()
     {
         import bind.external:getCoreWindowHWND;
+        import def.debugging.log;
         HWND hwnd = getCoreWindowHWND();
         if(hwnd == null)
             return false;
