@@ -69,6 +69,7 @@ public class Hip_SDL_Renderer : IHipRendererImpl
         currentViewport = mainViewport;
         return ErrorHandler.stopListeningForErrors();
     }
+    public bool initExternal(){return false;}
 
     Shader createShader(){return null;}
     public IHipFrameBuffer      createFrameBuffer(int width, int height){return null;}

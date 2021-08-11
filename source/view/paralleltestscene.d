@@ -18,7 +18,7 @@ class ParallelTestScene : Scene
 
         // HipAssetMnager.loadImage("./assets/graphics/sprites/rex.png", (Image img)
         // {
-        //     img.writeln;
+        
         // }, true);
         
     }
@@ -29,10 +29,7 @@ class ParallelTestScene : Scene
         if(spr.texture.img !is null)
         {
             batch.draw(spr);
-            spr.getVertices().writeln;
         }
-        else
-            "Vei".writeln;
         batch.end();
     }
 

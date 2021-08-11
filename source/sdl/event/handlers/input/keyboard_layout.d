@@ -164,9 +164,9 @@ class KeyboardLayoutABNT2 : KeyboardLayout
             addKey(COMMA, "<", KeyState.SHIFT);
             addKey(BACKQUOTE, "\"", KeyState.SHIFT);
 
-            import std.stdio;
+            import def.debugging.log;
 
-            writeln(kb[KeyStroke('A', KeyState.NONE)]);
+            rawlog(kb[KeyStroke('A', KeyState.NONE)]);
             
         }
     }

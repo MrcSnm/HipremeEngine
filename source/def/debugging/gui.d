@@ -32,7 +32,6 @@ public class DebugInterface
             i.io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
         }
         
-        import std.stdio: writeln;
         i.window = window;
         import global.assets;
         
@@ -101,11 +100,8 @@ public class DebugInterface
 
         static if(CIMGUI_VIEWPORT_BRANCH)
         {
-            import std.stdio:writeln;
-
             if (_inst.io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
             {
-                //writeln(_inst.io.ConfigFlags);
                 SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
                 SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
                 igUpdatePlatformWindows();
