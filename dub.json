@@ -7,6 +7,7 @@
 		"debugInfo",
 		"debugInfoC"
 	],
+	"targetType": "dynamicLibrary",
 	"copyright": "Copyright © 2019 - 2021, Hipreme",
 	"dependencies": {
 		"arsd-official:dom": "~>10.2.0",
@@ -24,13 +25,15 @@
 	],
 	"dflags-linux": [
 		"-L-Ldependencies/Bindbc-Cimgui/lib",
-		"-L-Ldependencies/bindbc-openal/lib",
+		"-L-Ldependencies/bindbc-openal/lib"
 	],
 	"importPaths": [
 		"source",
 		"dependencies/directx-d/src",
 		"dependencies/bindbc-openal/source",
-		"dependencies/Bindbc-Cimgui/source"
+		"dependencies/Bindbc-Cimgui/source",
+		"C:/D/dmd-2.093.1/src/druntime/src",
+		"C:/D/dmd-2.093.1/src/phobos"
 	],
 	"libs-linux": [
 		"bindbc-cimgui",
@@ -53,6 +56,8 @@
 	],
 	"targetPath": "bin",
 	"versions": [
+		"dll",
+		"UWP",
 		"SDL_208",
 		"BindSDL_Mixer",
 		"BindSDL_TTF",

@@ -25,10 +25,16 @@ version(Windows)
     import core.sys.windows.dll;
     import core.sys.windows.windows;
     private HMODULE moduleHandle;
-    void* dll_import_var(string name)
+    extern(Windows) nothrow @system void* dll_import_var(string name)
     {
         if(moduleHandle == null)
             moduleHandle = GetModuleHandle(null);
         return GetProcAddress(moduleHandle, (name~"\0").ptr);
+    }
+
+    void dll_import_varS(alias varSymbol)()
+    {
+        mixin("alias p"~varSymbol.stringof~" = "~typeof(varSymbol).stringof~";");
+        varSymbol = mixin("cast(p"~varSymbol.stringof~")dll_import_var(\""~varSymbol.stringof~"\")");
     }
 }
