@@ -140,7 +140,8 @@ class Audio
         foreach(ref buf; bufferPool)
             buf.unload();
         bufferPool.clear();
-        audioInterface.onDestroy();
+        if(audioInterface !is null)
+            audioInterface.onDestroy();
         audioInterface = null;
     }
 
