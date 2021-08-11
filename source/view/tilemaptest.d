@@ -13,7 +13,7 @@ class TilemapTestScene : Scene
     this()
     {
         HapFile f = HapFile.get("gamepack.hap");
-        writeln(f.getChunksList());
+        rawlog(f.getChunksList());
         // (Tileset.fromTSX());
     }
 

@@ -1,4 +1,5 @@
 module data.assetmanager;
+import def.debugging.log;
 import util.system;
 import std.stdio;
 import util.data_structures;
@@ -49,7 +50,7 @@ class HipAssetManager
         {
             Image img = new Image(imagePath);
             img.loadFromFile();
-            writeln(Time.getCurrentTime()-HipAssetManager.currentTime, "ms");
+            logln(Time.getCurrentTime()-HipAssetManager.currentTime, "ms");
             images[imagePath] = AssetPair!(Image)(img, cb);
             cb(img);
         }
@@ -58,14 +59,13 @@ class HipAssetManager
 
     static void checkLoad()
     {
-        // writeln(img);
         if(workerPool.length > 0)
         {
             receiveTimeout(HipAssetManager.timeout,
                 (shared Image img)
                 {
-                    writeln(img.imagePath ~" decoded in ");
-                    writeln(Time.getCurrentTime()-HipAssetManager.currentTime, " ms.");
+                    logln(img.imagePath ~" decoded in ");
+                    logln(Time.getCurrentTime()-HipAssetManager.currentTime, " ms.");
 
                     images[img.imagePath].first = cast(Image)img;
                     AssetPair!Image p = images[img.imagePath];

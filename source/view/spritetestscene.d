@@ -32,9 +32,9 @@ class SpriteTestScene : Scene
 
     public override void onResize(uint width, uint height)
     {
-        import std.stdio;
+        import def.debugging.log;
         Viewport v = HipRenderer.getCurrentViewport();
         v.update();
-        writeln(v.w, " ", v.h);
+        rawlog(v.w, " ", v.h);
     }
 }

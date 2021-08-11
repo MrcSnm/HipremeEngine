@@ -1,4 +1,5 @@
 module data.assetpacker;
+import def.debugging.log;
 import util.string;
 import util.file;
 import std.algorithm : countUntil, map, min, sort;
@@ -101,7 +102,7 @@ bool writeAssetPack(string outputFileName, string[] assetPaths, string basePath 
 {
     if(exists(outputFileName~".hap"))
     {
-        writeln(outputFileName~".hap already exists");
+        rawlog(outputFileName~".hap already exists");
         return false;
     }
     ubyte[] plainData;
@@ -124,7 +125,7 @@ bool writeAssetPack(string outputFileName, string[] assetPaths, string basePath 
             memcpy((plainData.ptr+dataLength-fileData.length), fileData.ptr, fileData.length);
         }
         else
-            writeln("Archive at path '"~path~"' does not exists, it will be skipped");
+            rawlog("Archive at path '"~path~"' does not exists, it will be skipped");
     }
     toAppend~= HapHeaderStart;
 
@@ -177,7 +178,7 @@ HapHeaderStatus appendAssetInPack(string hapFile, string[] assetPaths, string ba
             headerStart+= data.length;
         }
         else
-            writeln("File named '"~finalPath~"' does not exists, it will not be appended");
+            rawlog("File named '"~finalPath~"' does not exists, it will not be appended");
     }
 
     f.rawWrite(dataToAppend);
@@ -224,7 +225,7 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
             path = relativePath(path, basePath);
         if(!exists(path))
         {
-            writeln("File '"~path~"' does not exists");
+            rawlog("File '"~path~"' does not exists");
             continue;
         }
         long pathIndex = countUntil(fileNames, path);
@@ -247,7 +248,7 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
     {
         if(chunks[i].startPosition >= lowestStartPosition)
         {
-            writeln("Updating "~chunks[i].fileName);
+            rawlog("Updating "~chunks[i].fileName);
             target.rawWrite(chunks[i].bin);
             chunks[i].startPosition = nextStartPosition;
             nextStartPosition+= chunks[i].bin.length;

@@ -1,4 +1,3 @@
-import std.stdio;
 import def.debugging.log;
 import core.thread;
 import sdl.loader;
@@ -62,13 +61,13 @@ static void initEngine(bool audio3D = false)
 
 
 
-
 extern(C)int SDL_main()
 {
 	import data.ini;
 	initEngine(true);
 
-	HipRenderer.init("renderer.conf");
+	// HipRenderer.init("renderer.conf");
+	HipRenderer.initExternal(HipRendererType.D3D11);
 	
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
 	Sound_AudioInfo info;
@@ -154,3 +153,6 @@ else
 		SDL_main();		
 	}
 }
+
+
+export extern(C) int HipremeMain(){return SDL_main();}

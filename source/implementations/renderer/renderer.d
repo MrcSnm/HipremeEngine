@@ -68,6 +68,7 @@ enum HipBlendEquation
 interface IHipRendererImpl
 {
     public bool init(SDL_Window* window, SDL_Renderer* renderer);
+    public bool initExternal();
     public bool isRowMajor();
     public SDL_Window* createWindow(uint width, uint height);
     public SDL_Renderer* createRenderer(SDL_Window* window);
@@ -146,6 +147,30 @@ class HipRenderer
 
         }
         return init(new Hip_GL3Renderer(), &cfg, 1280, 720);
+    }
+
+    public static bool initExternal(HipRendererType type)
+    {
+        version(Windows)
+        {import implementations.renderer.backend.d3d.renderer;}
+        import implementations.renderer.backend.sdl.sdlrenderer;
+        HipRenderer.rendererType = type;
+        final switch(type)
+        {
+            case HipRendererType.D3D11:
+                version(Windows){rendererImpl = new Hip_D3D11_Renderer();}
+                else{return false;}
+                break;
+            case HipRendererType.GL3:
+                rendererImpl = new Hip_GL3Renderer();
+                break;
+            case HipRendererType.SDL:
+                rendererImpl = new Hip_SDL_Renderer();
+                break;
+            case HipRendererType.NONE:
+                return false;
+        }
+        return rendererImpl.initExternal();
     }
 
 
@@ -233,7 +258,7 @@ class HipRenderer
     {
         return rendererImpl.createVertexArray();
     }
-    public static IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
+    public static IHipVertexBufferImpl  createVertexBuffer(ulong size, HipBufferUsage usage)
     {
         return rendererImpl.createVertexBuffer(size, usage);
     }

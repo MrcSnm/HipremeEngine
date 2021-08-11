@@ -1,4 +1,5 @@
 module error.handler;
+import def.debugging.log;
 import std.stdio;
 import std.conv;
 version(Android)
@@ -40,17 +41,17 @@ public class EngineErrorStack
     {
         static if(os == OS.android)
         {
-            aloge("HipremeEngine", "ErrorStack: " ~ stackName);
+            rawerror("HipremeEngine", "ErrorStack: " ~ stackName);
             const int len = cast(int)this.errorStack.length;
             for(int i = 0; i < len; i++)
-                aloge("HipremeEngine", "\t" ~ errorStack[i]);
+                rawerror("HipremeEngine", "\t" ~ errorStack[i]);
         }
         else
         {
-            writeln("ErrorStack: " ~ stackName);
+            rawlog("ErrorStack: " ~ stackName);
             const int len = cast(int)this.errorStack.length;
             for(int i = 0; i < len; i++)
-                writeln("\t" ~ errorStack[i]);
+                rawlog("\t" ~ errorStack[i]);
         }
     }
 }
@@ -114,13 +115,13 @@ public static class ErrorHandler
     {
         static if(os == OS.android)
         {
-            aloge("HipremeEngine", "\nError: " ~ errorTitle);
-            aloge("HipremeEngine", errorMessage);
+            rawerror("HipremeEngine", "\nError: " ~ errorTitle);
+            rawerror("HipremeEngine", errorMessage);
         }
         else
         {
-            writeln("\nError: " ~ errorTitle);
-            writeln(errorMessage);
+            rawlog("\nError: " ~ errorTitle);
+            rawlog(errorMessage);
         }
         getError(errorTitle, errorMessage);
     }
@@ -133,8 +134,8 @@ public static class ErrorHandler
         }
         else
         {
-            writeln("\nWarning: " ~ warningTitle);
-            writeln(warningMessage);
+            rawlog("\nWarning: " ~ warningTitle);
+            rawlog(warningMessage);
         }
         warnHistory~= warningTitle~": "~warningMessage;
     }

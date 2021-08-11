@@ -1,5 +1,6 @@
 module view.fileprogresstest;
 import std.stdio;
+import def.debugging.log;
 import util.file;
 import util.time;
 import view;
@@ -12,7 +13,7 @@ class FileProgressTest : Scene
         float msecs;
         msecs = Time.getCurrentTime();
         ubyte[] dt = cast(ubyte[])read("test.zip");
-        writeln("NonFile took ", Time.getCurrentTime() - msecs, "ms");
+        rawlog("NonFile took ", Time.getCurrentTime() - msecs, "ms");
 
         msecs = Time.getCurrentTime();
 
@@ -23,13 +24,13 @@ class FileProgressTest : Scene
         ubyte[] data = new ubyte[sz];
         f.rawRead(data);
         f.close();
-        writeln("NonProgression took ", Time.getCurrentTime() - msecs, "ms");
+        rawlog("NonProgression took ", Time.getCurrentTime() - msecs, "ms");
 
 
         FileProgression fp = new FileProgression("test.zip", 10);
         msecs = Time.getCurrentTime();
         while(fp.update()){}
-        writeln("Progression took ", Time.getCurrentTime() - msecs, "ms");
+        rawlog("Progression took ", Time.getCurrentTime() - msecs, "ms");
 
     }
     override void render()

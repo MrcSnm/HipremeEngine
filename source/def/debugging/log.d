@@ -1,4 +1,5 @@
 module def.debugging.log;
+import def.debugging.console;
 import std.conv:to;
 import std.stdio:write;
 import std.format:format;
@@ -20,7 +21,7 @@ ulong line = __LINE__,  Args...)(Args a)
 {
     string toLog = format!fmt(a) ~ "\t\t"~file~":"~to!string(line)~" at "~func.formatPrettyFunction;
     logHistory~= toLog;
-    write(toLog, "\n");
+    Console.DEFAULT.log(toLog~"\n");
 }
 
 void logln(string file = __FILE__,
@@ -32,5 +33,34 @@ ulong line = __LINE__, Args...)(Args a)
         toLog~= to!string(arg);
     toLog~= "\t\t"~file~":"~to!string(line)~" at "~func.formatPrettyFunction;
     logHistory~= toLog;
-    write(toLog, "\n");
+    Console.DEFAULT.log(toLog~"\n");
+}
+
+void rawlog(alias fmt, Args... )(Args a)
+{
+    string toLog = format!fmt(a);
+    Console.DEFAULT.log(toLog~"\n");
+}
+
+void rawlog(Args... )(Args a)
+{
+    string toLog = "";
+    foreach(arg; a)
+        toLog~= to!string(arg);
+    Console.DEFAULT.log(toLog~"\n");
+}
+
+
+void rawerror(alias fmt, Args... )(Args a)
+{
+    string toLog = format!fmt(a);
+    Console.DEFAULT.error(toLog~"\n");
+}
+
+void rawerror(Args... )(Args a)
+{
+    string toLog = "";
+    foreach(arg; a)
+        toLog~= to!string(arg);
+    Console.DEFAULT.error(toLog~"\n");
 }

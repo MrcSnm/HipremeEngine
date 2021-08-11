@@ -1,23 +1,26 @@
-module implementations.log.log;
+module def.debugging.console;
 private import global.opts;
 import util.reflection : isLiteral;
+import std.conv:to;
 import std.format : format;
 import std.string : toStringz;
 import implementations.imgui.imgui_debug : InterfaceImplementation;
 
-version(Android) { import jni.helper.androidlog; }
-else { import std.stdio;}
-
 static enum androidTag = "HipremeEngine";
-
 enum GUI_CONSOLE = true;
 
-
-static string _format(alias fmt, Args...)(Args a)
+enum Platform
 {
-    return format!fmt(a);
+    DEFAULT,
+    DESKTOP,
+    ANDROID,
+    UWP,
+    NULL
 }
 
+
+void function(string toPrint) _log;
+static string _format(alias fmt, Args...)(Args a){return format!fmt(a);}
 static string _format(Args...)(Args args)
 {
     import std.traits : isIntegral, isBoolean;
@@ -66,6 +69,49 @@ static string _format(Args...)(Args args)
     int indentationSize = 4; //? Don't know if it should be used instead of \t
     bool useTab = true;
     bool isShowing = true;
+    static Console DEFAULT;
+    static this()
+    {
+        DEFAULT = new Console("Output", 99);
+    }
+
+    static void init(Platform p = Platform.DEFAULT, void function(string) printFunc = null)
+    {
+        switch(p) with(Platform)
+        {
+            case NULL:
+                _log = function(string s){};
+                break;
+            case ANDROID:
+                _log = function(string s)
+                {
+                    version(Android) 
+                    {
+                        import jni.helper.androidlog; 
+                        aloge(androidTag, s.ptr);
+                    }
+                };
+                break;
+            case UWP:
+                _log = printFunc;
+                break;
+            case DEFAULT:
+            case DESKTOP:
+            default:
+                _log = function(string s)
+                {
+                    import std.stdio;
+                    writeln(s);
+                };
+                break;
+        }
+    }
+    private this(string consoleName, ushort id)
+    {
+        lines.reserve(255);
+        name = consoleName;
+        this.id = id;
+    }
 
     this(string consoleName)
     {
@@ -81,6 +127,8 @@ static string _format(Args...)(Args args)
         lines~= log;
         if(lines.length > maxLines)
             lines = lines[1..$];
+        if(_log != null)
+            _log(log);
     }
     
     void log(alias fmt, Args...)(Args a)
@@ -90,13 +138,13 @@ static string _format(Args...)(Args args)
             string toLog = _format!(fmt, a);
             _defaultLog(toLog);
         }
-        
     }
     void log(Args...)(Args a)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
-            string toLog = _format!(fmt, a);
+            string toLog = "";
+            foreach(_a; a) toLog~= to!string(_a);
             _defaultLog(toLog);
         }
     }
@@ -154,21 +202,6 @@ static string _format(Args...)(Args args)
             indentation = indentation[indentationSize..$];
         indentationCount--;
     }
-
-}
-
-void log_err(string toLog, ...)
-{
-    // static if(!HE_NO_LOG)
-    //     version(Android)
-    //     {
-    //         // aloge("HipremeEngine_ERROR", toLog, )
-    //     }
-    //     else
-    //     {
-    //         al
-    //     }
-        
 }
 
 void varPrint(A...)()
