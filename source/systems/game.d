@@ -32,7 +32,7 @@ class GameSystem
         });
 
         import view.testscene;
-        Scene testscene = new TestScene();
+        Scene testscene = new SpriteTestScene();
     	testscene.init();
         scenes~= testscene;
 

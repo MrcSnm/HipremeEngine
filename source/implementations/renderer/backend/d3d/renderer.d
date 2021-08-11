@@ -272,17 +272,20 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         return ErrorHandler.stopListeningForErrors();
     }
 
-    public bool initExternal()
+    version(dll)
     {
-        import bind.external:getCoreWindowHWND;
-        import def.debugging.log;
-        HWND hwnd = getCoreWindowHWND();
-        rawlog("OPAAAA RTEMOS AQUI");
-        if(hwnd == null)
-            return false;
-        HipRendererConfig cfg;
-        initD3D(hwnd, &cfg);
-        return true;
+        public bool initExternal()
+        {
+            import bind.external:getCoreWindowHWND;
+            import def.debugging.log;
+            HWND hwnd = getCoreWindowHWND();
+            rawlog("OPAAAA RTEMOS AQUI");
+            if(hwnd == null)
+                return false;
+            HipRendererConfig cfg;
+            initD3D(hwnd, &cfg);
+            return true;
+        }
     }
 
 

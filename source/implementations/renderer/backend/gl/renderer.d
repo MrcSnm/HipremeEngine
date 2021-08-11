@@ -102,7 +102,7 @@ class Hip_GL3Renderer : IHipRendererImpl
         return true;
     }
 
-    public bool initExternal(){return false;}
+    version(dll){public bool initExternal(){return false;}}
 
     void setShader(Shader s)
     {

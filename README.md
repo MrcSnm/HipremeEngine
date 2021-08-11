@@ -24,6 +24,7 @@ The engine mantains some global options which you can modify it on source/global
 - .INI and .CONF parser and renderer config for changing renderer without recompiling;
 - FileProgression, file reading with progress notification;
 - Multi threaded asset loading and deconding (image).
+- Building for UWP(Xbox)
 
 
 ## Next steps
