@@ -32,7 +32,8 @@ class GameSystem
         });
 
         import view.testscene;
-        Scene testscene = new SpriteTestScene();
+        import view.uwptest;
+        Scene testscene = new UwpTestScene();
     	testscene.init();
         scenes~= testscene;
 
