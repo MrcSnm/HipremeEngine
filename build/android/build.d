@@ -37,8 +37,8 @@ string[] sourcePaths =
 [
 	"source/",
 	"jni/",
-	"bindbc-loader/source",
-	"bindbc-sdl/source"
+	"$DUBPATH$bindbc-loader/source",
+	"$DUBPATH$bindbc-sdl/source"
 ];
 string[] dependencies = 
 [
@@ -50,10 +50,13 @@ string[] dependencies =
 **/
 string[] versions = 
 [
-	"SDL_2012",
-	"BindSDL_Mixer", 
-	"BindSDL_TTF", 
-	"BindSDL_Image"
+	"dll",
+	"SDL_208",
+	"BindSDL_Mixer",
+	"BindSDL_TTF",
+	"BindSDL_Image",
+	"GL_45",
+	"GL_ARB"
 ];
 /**
 *	Debug options
@@ -66,7 +69,7 @@ string[] debugs =
 /**
 *	Android libraries taken from NDK
 **/
-string[] libraries = 
+string[] ndkLibraries = 
 [
 	"log"
 ];
@@ -121,7 +124,7 @@ void buildProgram(string arch, string[] sources)
 		command ~= format!"-d-version=%s"(version_);
 	foreach (debug_; debugs)
 		command ~= format!"-d-debug=%s"(debug_);
-	foreach (library; libraries)
+	foreach (library; ndkLibraries)
 		command ~= format!"-L=-l%s"(library); //-L= for using GNU Linker(ld)
 
 	//Select architecture

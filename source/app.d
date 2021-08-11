@@ -78,6 +78,7 @@ extern(C)int SDL_main()
 	version(dll)
 	{
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
+		else version(Android){HipRenderer.initExternal(HipRendererType.GL3);}
 	}
 	else{HipRenderer.init("renderer.conf");}
 	
@@ -110,7 +111,6 @@ extern(C)int SDL_main()
 		HipremeDestroy();
 		destroyEngine();
 	}
-	rawlog("ACABOU PORRA");
 	return 0;
 	///////////START IMGUI
 	// Start the Dear ImGui frame
@@ -157,7 +157,6 @@ else
 export extern(C) int HipremeMain(){return SDL_main();}
 export extern(C) bool HipremeUpdate()
 {
-	rawlog("Mrc");
 	if(!sys.update())
 		return false;
 	HipRenderer.begin();

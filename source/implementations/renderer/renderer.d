@@ -68,7 +68,7 @@ enum HipBlendEquation
 interface IHipRendererImpl
 {
     public bool init(SDL_Window* window, SDL_Renderer* renderer);
-    public bool initExternal();
+    version(dll){public bool initExternal();}
     public bool isRowMajor();
     public SDL_Window* createWindow(uint width, uint height);
     public SDL_Renderer* createRenderer(SDL_Window* window);
@@ -149,7 +149,7 @@ class HipRenderer
         return init(new Hip_GL3Renderer(), &cfg, 1280, 720);
     }
 
-    public static bool initExternal(HipRendererType type)
+    version(dll) public static bool initExternal(HipRendererType type)
     {
         version(Windows)
         {import implementations.renderer.backend.d3d.renderer;}

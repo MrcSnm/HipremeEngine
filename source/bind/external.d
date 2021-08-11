@@ -17,7 +17,6 @@ version(UWP)
     {
         HWND function() getCoreWindowHWND;
         void function(wchar* wcstr) OutputUWP;
-        int function() get500;
     }
     void uwpPrint(string str)
     {

@@ -7,7 +7,6 @@
 		"debugInfo",
 		"debugInfoC"
 	],
-	"targetType": "dynamicLibrary",
 	"copyright": "Copyright © 2019 - 2021, Hipreme",
 	"dependencies": {
 		"arsd-official:dom": "~>10.2.0",
@@ -54,15 +53,39 @@
 	"sourcePaths": [
 		"source"
 	],
-	"targetPath": "bin",
-	"versions": [
-		"dll",
-		"UWP",
-		"SDL_208",
-		"BindSDL_Mixer",
-		"BindSDL_TTF",
-		"BindSDL_Image",
-		"GL_45",
-		"GL_ARB"
+	"configurations": 
+	[
+		{
+			"name" : "desktop",
+			"targetType": "executable",
+			"targetPath": "bin",
+			"versions": 
+			[
+				"SDL_208",
+				"BindSDL_Mixer",
+				"BindSDL_TTF",
+				"BindSDL_Image",
+				"GL_45",
+				"GL_ARB"
+			]
+		},
+
+		{
+			"name" : "uwp",
+			"targetType": "dynamicLibrary",
+			"targetPath": "uwp/",
+			"versions": 
+			[
+				"dll",
+				"UWP",
+				"SDL_208",
+				"BindSDL_Mixer",
+				"BindSDL_TTF",
+				"BindSDL_Image",
+				"GL_45",
+				"GL_ARB"
+			]
+		}
 	]
+	
 }
