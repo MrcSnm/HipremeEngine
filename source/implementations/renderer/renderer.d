@@ -170,9 +170,16 @@ class HipRenderer
             case HipRendererType.NONE:
                 return false;
         }
-        return rendererImpl.initExternal();
+        bool ret = rendererImpl.initExternal();
+        afterInit();
+        return ret;
     }
-
+    private static afterInit()
+    {
+        mainViewport = new Viewport(0,0,800, 600);
+        setViewport(mainViewport);
+        HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+    }
 
     public static bool init(IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height)
     {
@@ -189,9 +196,7 @@ class HipRenderer
         HipRenderer.height = height;
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
-        mainViewport = new Viewport(0,0,800, 600);
-        setViewport(mainViewport);
-        HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+        afterInit();
 
         return ErrorHandler.stopListeningForErrors();
     }
