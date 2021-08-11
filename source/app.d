@@ -110,7 +110,8 @@ extern(C)int SDL_main()
 		HipremeDestroy();
 		destroyEngine();
 	}
-	return 1;
+	rawlog("ACABOU PORRA");
+	return 0;
 	///////////START IMGUI
 	// Start the Dear ImGui frame
 	// DI.begin();
