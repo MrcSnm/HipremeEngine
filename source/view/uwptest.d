@@ -5,10 +5,12 @@ class UwpTestScene : Scene
 {
     this()
     {
-        import std.file;
+        import data.hipfs;
         import std.conv:to;
+        string strData;
 
+        HipFS.readText("renderer.conf", strData);
         rawlog("Working dir: ", getcwd());
-        rawlog(to!string(read("C:\\Users\\Hipreme\\source\\repos\\CoreApp1\\x64\\Debug\\CoreApp1\\AppX\\renderer.conf")));
+        rawlog(strData);
     }
 }

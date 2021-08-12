@@ -14,6 +14,13 @@ pure nothrow string sanitizePath(string path)
             return replace(path, "\\", "/");
     }
 }
+pure nothrow bool isPathUnixStyle(string path)
+{
+    for(int i = 0; i < path.length; i++)
+        if(path[i] == '/')
+            return true;
+    return false;
+}
 
 void setZeroMemory(T)(ref T variable)
 {

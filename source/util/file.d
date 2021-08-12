@@ -20,6 +20,23 @@ string getFileContentFromBasePath(string path, string basePath, bool noCarriageR
     string finalPath = relativePath(sanitizePath(path), sanitizePath(basePath));
     return getFileContent(finalPath, noCarriageReturn);
 }
+string joinPath(string[] paths ...){return joinPath(paths);}
+string joinPath(string[] paths)
+{
+    if(paths.length == 1)
+        return paths[0];
+    string output;
+    char charType = isPathUnixStyle(paths[0]) ? '/' : '\\';
+    for(int i = 0; i < paths.length; i++)
+    {
+        if(paths[i] == "")
+            continue;
+        output~=paths[i];
+        if(i+1 != paths.length && paths[i+1][0] != charType && paths[i][$-1] != charType)
+            output~=charType;
+    }
+    return output;
+}
 
 
 

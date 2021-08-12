@@ -1,4 +1,5 @@
 import def.debugging.log;
+import data.hipfs;
 import core.thread;
 import sdl.loader;
 import error.handler;
@@ -10,15 +11,12 @@ import bindbc.sdl;
 import bindbc.opengl;
 import bindbc.openal;
 import implementations.audio.backend.alefx;
-import sdl.event.dispatcher;
-import sdl.event.handlers.keyboard;
 version(Android)
 {
 	import jni.helper.androidlog;
 	import core.runtime : rt_init;
 }
 import bindbc.cimgui;
-import math.matrix;
 import implementations.renderer.renderer;
 import implementations.renderer.backend.d3d.renderer;
 import view;
@@ -48,9 +46,26 @@ static void initEngine(bool audio3D = false)
 		alogi("D_LANG", "Came here");
 		alogi("HipremeEngine", "Starting engine on android");
 		Console.install(Platforms.ANDROID);
+		HipFS.install(getcwd());
 	}
-	else version(UWP){Console.install(Platforms.UWP, &uwpPrint);}
-	else{Console.install();}
+	else version(UWP)
+	{
+		Console.install(Platforms.UWP, &uwpPrint);
+		HipFS.install(getcwd(), (string path, out string msg)
+		{
+			if(!HipFS.exists(path))
+			{
+				msg = "File at path "~path~" does not exists. Did you forget to add it to the AppX Resources?";
+				return false;
+			}
+			return true;
+		});
+	}
+	else
+	{
+		Console.install();
+		HipFS.install(getcwd());
+	}
 	version(BindSDL_Static){}
 	else
 	{
