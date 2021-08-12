@@ -57,7 +57,6 @@ static void initEngine(bool audio3D = false)
 	}
 	version(Android)
 	{
-		pragma(msg, "OI");
 		Console.install(Platforms.ANDROID);
 		HipFS.install(getcwd());
 		rawlog("Starting engine on android");

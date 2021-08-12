@@ -177,9 +177,8 @@ class HipRenderer
         final switch(type)
         {
             case HipRendererType.D3D11:
-                version(Windows){rendererImpl = new Hip_D3D11_Renderer();}
+                version(Windows){rendererImpl = new Hip_D3D11_Renderer();break;}
                 else{return false;}
-                break;
             case HipRendererType.GL3:
                 rendererImpl = new Hip_GL3Renderer();
                 break;

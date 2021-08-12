@@ -290,7 +290,6 @@ class Hip_D3D11_Renderer : IHipRendererImpl
             import bind.external:getCoreWindowHWND;
             import def.debugging.log;
             HWND hwnd = getCoreWindowHWND();
-            rawlog("OPAAAA RTEMOS AQUI");
             if(hwnd == null)
                 return false;
             HipRendererConfig cfg;

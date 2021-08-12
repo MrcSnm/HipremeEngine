@@ -1,19 +1,13 @@
 {
+	"name": "hipreme_engine",
 	"authors": [
 		"Hipreme"
 	],
-	"buildOptions": [
-		"debugMode",
-		"debugInfo",
-		"debugInfoC"
-	],
-	"copyright": "Copyright © 2019 - 2021, Hipreme",
+	"copyright": "Copyright © 2018 - 2021, Hipreme",
 	"dependencies": {
 		"arsd-official:dom": "~>10.2.0",
-		"bindbc-cimgui": {
-			"path": "dependencies/Bindbc-Cimgui/",
-			"version": ">=0.0.0"
-		},
+		"bindbc-cimgui": "~>1.0.1",
+		"bindbc-openal": "~>0.5.0",
 		"bindbc-opengl": "~>0.13.0",
 		"bindbc-sdl": "~>0.19.0"
 	},
@@ -22,19 +16,9 @@
 		"-version=HIPREME_DEBUG",
 		"-J=."
 	],
-	"dflags-linux": [
-		"-L-Ldependencies/Bindbc-Cimgui/lib",
-		"-L-Ldependencies/bindbc-openal/lib"
-	],
 	"importPaths": [
 		"source",
-		"dependencies/directx-d/src",
-		"dependencies/bindbc-openal/source",
-		"dependencies/Bindbc-Cimgui/source",
-	],
-	"libs-linux": [
-		"bindbc-cimgui",
-		"BindBC_OpenAL"
+		"dependencies/directx-d/src"
 	],
 	"libs-windows": [
 		"ole32",
@@ -42,68 +26,59 @@
 		"C:\\Program Files (x86)\\Microsoft DirectX SDK (June 2010)\\Lib\\x64\\d3dcompiler",
 		"d3d11",
 		"dxgi",
-		"dependencies/directx-d/directx-d",
-		"dependencies/Bindbc-Cimgui/lib/bindbc-cimgui",
-		"dependencies/bindbc-openal/lib/bindBC_OpenAL"
+		"dependencies/directx-d/directx-d"
 	],
 	"license": "proprietary",
-	"name": "hipreme_engine",
 	"sourcePaths": [
 		"source"
 	],
-	"configurations": 
+	
+	"buildOptions": [
+		"debugMode",
+		"debugInfo",
+		"debugInfoC"
+	],
+	"versions": 
 	[
+		"SDL_208",
+		"BindSDL_Mixer",
+		"BindSDL_TTF",
+		"BindSDL_Image",
+		"GL_45",
+		"GL_ARB",
+		"AL_EFX"
+	],
+	"configurations": [
 		{
-			"name" : "desktop",
+			"name": "desktop",
+			"targetPath": "bin/desktop",
 			"targetType": "executable",
-			"targetPath": "bin",
-			"versions": 
-			[
-				"SDL_208",
-				"BindSDL_Mixer",
-				"BindSDL_TTF",
-				"BindSDL_Image",
-				"GL_45",
-				"GL_ARB"
-			]
 		},
-
 		{
-			"name" : "uwp",
+			"name": "uwp",
+			"targetPath": "bin/uwp/",
 			"targetType": "dynamicLibrary",
-			"targetPath": "bin/",
-			"versions": 
-			[
+			"versions": [
 				"dll",
 				"UWP",
-				"SDL_208",
-				"BindSDL_Mixer",
-				"BindSDL_TTF",
-				"BindSDL_Image",
-				"GL_45",
-				"GL_ARB"
 			]
 		},
-		
 		{
-			"name" : "android",
-			"libs": 
-			[
+			"libs": [
 				"log"
 			],
+			"name": "android",
+			"toolchainRequirements": 
+			{
+				"dmd": "no",
+				"gdc": "no",
+				"ldc": ">=1.23"
+			},
+			"targetPath": "bin/android/",
 			"targetType": "dynamicLibrary",
-			"targetPath": "bin/",
-			"versions": 
-			[
-				"dll",
-				"SDL_208",
-				"BindSDL_Mixer",
-				"BindSDL_TTF",
-				"BindSDL_Image",
-				"GL_45",
-				"GL_ARB"
+			"versions": [
+				"dll"
 			]
 		}
 	]
-	
 }
