@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 import def.debugging.log;
 import data.hipfs;
 import core.thread;
@@ -43,10 +54,9 @@ static void initEngine(bool audio3D = false)
 	}
 	version(Android)
 	{
-		alogi("D_LANG", "Came here");
-		alogi("HipremeEngine", "Starting engine on android");
 		Console.install(Platforms.ANDROID);
 		HipFS.install(getcwd());
+		rawlog("Starting engine on android");
 	}
 	else version(UWP)
 	{
