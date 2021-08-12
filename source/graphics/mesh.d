@@ -17,14 +17,7 @@ import std.traits;
 
 class Mesh
 {
-    version(Android)
-    {
-        protected ushort[] indices;        
-    }
-    else
-    {
-        protected uint[] indices;
-    }
+    protected index_t[] indices;
     protected float[] vertices;
     protected Shader currentShader;
     ///Not yet supported
@@ -37,11 +30,11 @@ class Mesh
         this.vao = vao;
         this.shader = shader;
     }
-    void createVertexBuffer(uint count, HipBufferUsage usage)
+    void createVertexBuffer(index_t count, HipBufferUsage usage)
     {
         this.vao.createVertexBuffer(count, usage);
     }
-    void createIndexBuffer(uint count, HipBufferUsage usage)
+    void createIndexBuffer(index_t count, HipBufferUsage usage)
     {
         this.vao.createIndexBuffer(count, usage);
     }
@@ -54,7 +47,8 @@ class Mesh
     *   Use this function only for creation!
     *   inside loops, you must use updateIndices
     */
-    public void setIndices(ref uint[] indices)
+    
+    public void setIndices(ref index_t[] indices)
     {
         if(indices.length <  this.indices.length)
         {
@@ -62,7 +56,7 @@ class Mesh
             return;
         }
         this.indices = indices;
-        this.vao.setIndices(cast(uint)indices.length, indices.ptr);
+        this.vao.setIndices(cast(index_t)indices.length, indices.ptr);
     }
     /**''
     *   Use this function only for creation!
@@ -78,16 +72,16 @@ class Mesh
         this.vertices = vertices;
         this.vao.setVertices(cast(uint)vertices.length/this.vao.dataCount, vertices.ptr);
     }
-    public void updateIndices(ref uint[] indices)
+    public void updateIndices(ref index_t[] indices)
     {
         this.indices = indices;
-        this.vao.updateIndices(cast(uint)indices.length, indices.ptr);
+        this.vao.updateIndices(cast(index_t)indices.length, indices.ptr);
     }
 
     public void updateVertices(ref float[] vertices)
     {
         this.vertices = vertices;
-        this.vao.updateVertices(cast(uint)vertices.length/this.vao.dataCount, vertices.ptr);
+        this.vao.updateVertices(cast(index_t)vertices.length/this.vao.dataCount, vertices.ptr);
     }
     public void setShader(Shader s)
     {

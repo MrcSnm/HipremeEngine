@@ -10,6 +10,7 @@ Distributed under the Boost Software License, Version 1.0.
 */
 
 module implementations.renderer.backend.d3d.texture;
+version(Windows):
 import implementations.renderer.backend.d3d.renderer;
 import directx.d3d11;
 import bindbc.sdl;

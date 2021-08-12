@@ -27,9 +27,12 @@ version(Android)
 	import jni.helper.androidlog;
 	import core.runtime : rt_init;
 }
+version(Windows)
+{
+	import implementations.renderer.backend.d3d.renderer;
+}
 import bindbc.cimgui;
 import implementations.renderer.renderer;
-import implementations.renderer.backend.d3d.renderer;
 import view;
 import systems.game;
 import def.debugging.gui;
@@ -54,6 +57,7 @@ static void initEngine(bool audio3D = false)
 	}
 	version(Android)
 	{
+		pragma(msg, "OI");
 		Console.install(Platforms.ANDROID);
 		HipFS.install(getcwd());
 		rawlog("Starting engine on android");
