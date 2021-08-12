@@ -181,7 +181,9 @@ static string _format(Args...)(Args args)
     {
         static if(!HE_NO_LOG)
         {
-            string toLog = _format!(fmt, a);
+            string toLog;
+            static foreach(arg; a)
+                toLog~= to!string(arg);
             _defaultLog(toLog);
         }
     }

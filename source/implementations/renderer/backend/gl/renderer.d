@@ -138,7 +138,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         return new Hip_GL3_VertexBufferObject(size, usage);
     }
-    public IHipIndexBufferImpl createIndexBuffer(uint count, HipBufferUsage usage)
+    public IHipIndexBufferImpl createIndexBuffer(index_t count, HipBufferUsage usage)
     {
         return new Hip_GL3_IndexBufferObject(count, usage);
     }
