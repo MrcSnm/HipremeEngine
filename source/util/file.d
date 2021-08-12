@@ -32,7 +32,10 @@ string joinPath(string[] paths)
         if(paths[i] == "")
             continue;
         output~=paths[i];
-        if(i+1 != paths.length && paths[i+1][0] != charType && paths[i][$-1] != charType)
+        if(i+1 != paths.length &&
+        paths[i+1].length != 0 &&
+        paths[i+1][0] != charType &&
+        paths[i][$-1] != charType)
             output~=charType;
     }
     return output;

@@ -55,7 +55,7 @@ static void initEngine(bool audio3D = false)
 		{
 			if(!HipFS.exists(path))
 			{
-				msg = "File at path "~path~" does not exists. Did you forget to add it to the AppX Resources?";
+				msg = "File at path "~HipFS.getPath(path)~" does not exists. Did you forget to add it to the AppX Resources?";
 				return false;
 			}
 			return true;
