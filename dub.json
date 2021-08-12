@@ -31,8 +31,6 @@
 		"dependencies/directx-d/src",
 		"dependencies/bindbc-openal/source",
 		"dependencies/Bindbc-Cimgui/source",
-		"C:/D/dmd-2.093.1/src/druntime/src",
-		"C:/D/dmd-2.093.1/src/phobos"
 	],
 	"libs-linux": [
 		"bindbc-cimgui",
@@ -49,7 +47,7 @@
 		"dependencies/bindbc-openal/lib/bindBC_OpenAL"
 	],
 	"license": "proprietary",
-	"name": "main",
+	"name": "hipreme_engine",
 	"sourcePaths": [
 		"source"
 	],
@@ -73,11 +71,31 @@
 		{
 			"name" : "uwp",
 			"targetType": "dynamicLibrary",
-			"targetPath": "uwp/",
+			"targetPath": "bin/",
 			"versions": 
 			[
 				"dll",
 				"UWP",
+				"SDL_208",
+				"BindSDL_Mixer",
+				"BindSDL_TTF",
+				"BindSDL_Image",
+				"GL_45",
+				"GL_ARB"
+			]
+		},
+		
+		{
+			"name" : "android",
+			"libs": 
+			[
+				"log"
+			],
+			"targetType": "dynamicLibrary",
+			"targetPath": "bin/",
+			"versions": 
+			[
+				"dll",
 				"SDL_208",
 				"BindSDL_Mixer",
 				"BindSDL_TTF",
