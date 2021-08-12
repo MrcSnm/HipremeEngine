@@ -14,7 +14,7 @@ class SpriteTestScene : Scene
     this()
     {
         batch = new HipSpriteBatch();
-        sprite = new HipSprite("D:\\HipremeEngine\\assets\\graphics\\sprites\\sprite.png");
+        sprite = new HipSprite("sprite.png");
         import def.debugging.log;
     }
 

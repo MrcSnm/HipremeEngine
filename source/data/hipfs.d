@@ -89,6 +89,13 @@ class HipFileSystem
         output = std.file.read(path);
         return true;
     }
+    public static bool read(string path, out ubyte[] output)
+    {
+        void[] data;
+        bool ret = read(path, data);
+        output = cast(ubyte[])data;
+        return ret;
+    }
     public static bool readText(string path, out string output)
     {
         void[] data;

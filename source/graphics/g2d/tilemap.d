@@ -1,4 +1,5 @@
 module graphics.g2d.tilemap;
+import data.hipfs;
 import math.rect;
 import graphics.g2d.spritebatch;
 import std.conv:to;
@@ -168,7 +169,9 @@ class Tileset
 
     static Tileset fromTSX(string tsxPath, bool autoLoadTexture = true)
     {
-        return fromTSX(cast(ubyte[])read(tsxPath), autoLoadTexture);
+        void[] tsxData;
+        HipFS.read(tsxPath, tsxData);
+        return fromTSX(cast(ubyte[])tsxData, autoLoadTexture);
     }
 
     alias tiles this;
@@ -327,7 +330,9 @@ class Tilemap
 
     static Tilemap readTiledJSON(string tiledPath)
     {
-        return readTiledJSON(cast(ubyte[])read(tiledPath));
+        void[] jsonData;
+        HipFS.read(tiledPath, jsonData);
+        return readTiledJSON(cast(ubyte[])jsonData);
     }
 
     alias layers this;
