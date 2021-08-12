@@ -166,7 +166,7 @@ void InitD3D(HWND hWnd)
 
 void RenderFrame()
 {
-    float[4] color = [0.0f, 0.2f, 0.4f, 1.0f];
+    float[4] color = [1.0f, 0.2f, 0.4f, 1.0f];
     // clear the back buffer to a deep blue
     context.ClearRenderTargetView(backbuffer, color.ptr);
 
