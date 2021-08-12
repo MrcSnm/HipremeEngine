@@ -9,7 +9,7 @@ class UwpTestScene : Scene
         import std.conv:to;
         string strData;
 
-        HipFS.readText("renderer.conf", strData);
+        HipFS.readText("assets/graphics/sprite.png", strData);
         rawlog("Working dir: ", getcwd());
         rawlog(strData);
     }

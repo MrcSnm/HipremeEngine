@@ -53,6 +53,7 @@ class HipFileSystem
     {
         if(initialPath == "" && path != "")
             initialPath = path.sanitizePath;
+        setPath("");
         foreach (v; validations){extraValidations~=v;}
     }
     public static string getPath(string path){return joinPath(combinedPath, path.sanitizePath);}
@@ -75,9 +76,8 @@ class HipFileSystem
 
     public static bool setPath(string path)
     {
-        path = path.sanitizePath;
-        defPath = path;
-        combinedPath = joinPath(path, defPath);
+        defPath = path.sanitizePath;
+        combinedPath = joinPath(initialPath, defPath);
         return validatePath(initialPath, combinedPath);
     }
 
@@ -109,7 +109,7 @@ class HipFileSystem
 
     public static bool write(string path, void[] data)
     {
-        if(!isPathValid(path) || !isPathValidExtra(path))
+        if(!isPathValid(path))
             return false;
         std.file.write(getPath(path), data);
         return true;
