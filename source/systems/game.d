@@ -44,7 +44,7 @@ class GameSystem
 
         import view.testscene;
         import view.uwptest;
-        Scene testscene = new SpriteTestScene();
+        Scene testscene = new TestScene();
     	testscene.init();
         scenes~= testscene;
 
@@ -52,12 +52,14 @@ class GameSystem
 
     bool update()
     {
-        dispatcher.handleEvent();
+        version(Android){}
+        else {dispatcher.handleEvent();}
+
         if(hasFinished || dispatcher.hasQuit)
             return false;
         keyboard.update();
         // foreach(s; scenes)
-        //     s.update();
+            // s.update();
 
         return true;
     }

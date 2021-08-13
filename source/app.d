@@ -8,7 +8,6 @@ Distributed under the Boost Software License, Version 1.0.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
-
 import def.debugging.log;
 import data.hipfs;
 import core.thread;
@@ -18,14 +17,10 @@ import global.consts;
 import std.conv : to;
 import global.assets;
 import implementations.audio.audio;
-import bindbc.sdl;
-import bindbc.opengl;
-import bindbc.openal;
 import implementations.audio.backend.alefx;
 version(Android)
 {
 	import jni.helper.androidlog;
-	import core.runtime : rt_init;
 }
 version(Windows)
 {
@@ -47,11 +42,11 @@ static SDL_Surface* gScreenSurface = null;
 
 static void initEngine(bool audio3D = false)
 {
-	import core.runtime;
 	import def.debugging.console;
 	import bind.external;
 	version(dll)
 	{
+		import core.runtime;
 		rt_init();
 		importExternal();
 	}
@@ -106,7 +101,10 @@ extern(C)int SDL_main()
 	version(dll)
 	{
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
-		else version(Android){HipRenderer.initExternal(HipRendererType.GL3);}
+		else version(Android)
+		{
+			HipRenderer.initExternal(HipRendererType.GL3);
+		}
 	}
 	else{HipRenderer.init("renderer.conf");}
 	
@@ -133,6 +131,7 @@ extern(C)int SDL_main()
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	sys = new GameSystem();
 	version(UWP){}
+	else version(Android){}
 	else
 	{
 		while(HipremeUpdate()){}
@@ -172,17 +171,29 @@ static void destroyEngine()
     SDL_Quit();
 }
 
-version(Android){}
-else
+version(Android)
 {
-	void main()
+	import jni.jni;
+	extern(C) jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
 	{
-		SDL_main();		
+		return HipremeMain();
 	}
-}
-
+	extern(C) jboolean Java_com_hipremeengine_app_HipremeEngine_HipremeUpdate(JNIEnv* env, jclass clazz)
+	{
+		return HipremeUpdate();
+	}
+	extern(C) void  Java_com_hipremeengine_app_HipremeEngine_HipremeDestroy(JNIEnv* env, jclass clazz)
+	{
+		HipremeDestroy();
+	}
+}  
 
 export extern(C) int HipremeMain(){return SDL_main();}
+version(dll){}
+else{void main(){HipremeMain();}}
+
+
+extern(C) @nogc nothrow void glClearColor(float, float, float, float);
 export extern(C) bool HipremeUpdate()
 {
 	if(!sys.update())
@@ -197,4 +208,9 @@ export extern(C) bool HipremeUpdate()
 export extern(C) void HipremeDestroy()
 {
 	destroyEngine();
+	version(dll)
+	{
+		import core.runtime;
+		rt_term();
+	}
 }

@@ -71,7 +71,7 @@ static string _format(Args...)(Args args)
     int indentationSize = 4; //? Don't know if it should be used instead of \t
     bool useTab = true;
     bool isShowing = true;
-    static Console DEFAULT;
+    static __gshared Console DEFAULT;
     static this()
     {
         DEFAULT = new Console("Output", 99);
@@ -90,7 +90,7 @@ static string _format(Args...)(Args args)
                     version(Android) 
                     {
                         import jni.helper.androidlog; 
-                        aloge(androidTag, s.ptr);
+                        alogi(androidTag, (s~"\0").ptr);
                     }
                 };
                 break;

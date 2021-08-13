@@ -11,7 +11,7 @@ Distributed under the Boost Software License, Version 1.0.
 
 module implementations.renderer.backend.gl.vertex;
 
-import bindbc.opengl;
+import implementations.renderer.backend.gl.renderer;
 import std.format:format;
 import implementations.renderer.shader;
 import implementations.renderer.vertex;

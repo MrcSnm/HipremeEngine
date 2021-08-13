@@ -41,42 +41,46 @@ else
 {
     bool loadSDLLibs(bool audio3D)
     {
-        SDLSupport ret = loadSDL();
-        ErrorHandler.startListeningForErrors("Loading SDL Libraries");
-        string errorHeader;
-        string errorMessage; 
-        string filetype;
-        switch(os)
+        version(Android){return false;}
+        else
         {
-            case os.win32:
-            case os.win64:
-                errorHeader = "Missing DLL";
-                errorMessage = "Missing DLL 'SDL2.dll'\nVersion ";
-                filetype = ".dll";
-                break;
-            default:
-                errorHeader = "Missing Library";
-                errorMessage = "Library 'libsdl2.so'\nVersion ";
-                filetype = ".so";
-        }
-        if(ret != sdlSupport)
-        {
-            if(ret == SDLSupport.noLibrary)
-                ErrorHandler.showErrorMessage(errorHeader, errorMessage ~ CURRENT_SDL_VERSION);
-            else if(ret == SDLSupport.badLibrary)
-                ErrorHandler.showErrorMessage("Lower " ~ filetype ~ " version ", "Your " ~ filetype ~ " version is lower than the version expected " ~ CURRENT_SDL_VERSION);
-        }
-        //Load image loading support
-        ErrorHandler.assertErrorMessage(loadSDLImage() == sdlImageSupport, "Could not load library", "SDL Image library hasn't been able to load");
-        int imgFlags = IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_JPG;
-        ErrorHandler.assertErrorMessage((IMG_Init(imgFlags) & imgFlags) > 0, "Could not initialize library",  "SDL Image library could not initialize");
-        //Load Audio support
-        Audio.initialize(audio3D);
-        //Load Font support
-        // ErrorHandler.assertErrorMessage(loadSDLTTF() == sdlTTFSupport, "Could not load library", "SDL TTF library hasn't been able to load");
-        ErrorHandler.assertErrorMessage(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0, "SDL Initialization",  "SDL could not initialize\nSDL Error: " ~ to!string(SDL_GetError()));
+            SDLSupport ret = loadSDL();
+            ErrorHandler.startListeningForErrors("Loading SDL Libraries");
+            string errorHeader;
+            string errorMessage; 
+            string filetype;
+            switch(os)
+            {
+                case os.win32:
+                case os.win64:
+                    errorHeader = "Missing DLL";
+                    errorMessage = "Missing DLL 'SDL2.dll'\nVersion ";
+                    filetype = ".dll";
+                    break;
+                default:
+                    errorHeader = "Missing Library";
+                    errorMessage = "Library 'libsdl2.so'\nVersion ";
+                    filetype = ".so";
+            }
+            if(ret != sdlSupport)
+            {
+                if(ret == SDLSupport.noLibrary)
+                    ErrorHandler.showErrorMessage(errorHeader, errorMessage ~ CURRENT_SDL_VERSION);
+                else if(ret == SDLSupport.badLibrary)
+                    ErrorHandler.showErrorMessage("Lower " ~ filetype ~ " version ", "Your " ~ filetype ~ " version is lower than the version expected " ~ CURRENT_SDL_VERSION);
+            }
+            //Load image loading support
+            ErrorHandler.assertErrorMessage(loadSDLImage() == sdlImageSupport, "Could not load library", "SDL Image library hasn't been able to load");
+            int imgFlags = IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_JPG;
+            ErrorHandler.assertErrorMessage((IMG_Init(imgFlags) & imgFlags) > 0, "Could not initialize library",  "SDL Image library could not initialize");
+            //Load Audio support
+            Audio.initialize(audio3D);
+            //Load Font support
+            // ErrorHandler.assertErrorMessage(loadSDLTTF() == sdlTTFSupport, "Could not load library", "SDL TTF library hasn't been able to load");
+            ErrorHandler.assertErrorMessage(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0, "SDL Initialization",  "SDL could not initialize\nSDL Error: " ~ to!string(SDL_GetError()));
 
-        Sound_Init();
-        return ErrorHandler.stopListeningForErrors();
+            Sound_Init();
+            return ErrorHandler.stopListeningForErrors();
+        }
     }
 }

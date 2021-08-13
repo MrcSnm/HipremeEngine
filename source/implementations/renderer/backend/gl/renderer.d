@@ -19,31 +19,42 @@ import graphics.g2d.viewport;
 import math.rect;
 import error.handler;
 import bindbc.sdl;
-import bindbc.opengl;
+version(Android)
+{
+    public import gles.gl30;
+}
+else
+{
+    public import bindbc.opengl;
+}
 import def.debugging.log;
 
 
 private SDL_Window* createSDL_GL_Window(uint width, uint height)
 {
-	SDL_GL_LoadLibrary(null);
+    version(Android){return null;}
+    else
+    {
+        SDL_GL_LoadLibrary(null);
 
-	//Set GL Version
-	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_ACCELERATED_VISUAL, 1);
-	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MINOR_VERSION, 5);
-	//Create window type
-	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DEPTH_SIZE, 24);
-	SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
-	alias f = SDL_WindowFlags;
-	SDL_WindowFlags flags = (f.SDL_WINDOW_OPENGL | f.SDL_WINDOW_RESIZABLE | f.SDL_WINDOW_ALLOW_HIGHDPI);
+        //Set GL Version
+        SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_ACCELERATED_VISUAL, 1);
+        SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MINOR_VERSION, 5);
+        //Create window type
+        SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
+        alias f = SDL_WindowFlags;
+        SDL_WindowFlags flags = (f.SDL_WINDOW_OPENGL | f.SDL_WINDOW_RESIZABLE | f.SDL_WINDOW_ALLOW_HIGHDPI);
 
-	SDL_Window* window = SDL_CreateWindow("GL Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
-	SDL_GLContext ctx = SDL_GL_CreateContext(window);
-	SDL_GL_MakeCurrent(window, ctx);
-	GLSupport ver = loadOpenGL();
-	SDL_GL_SetSwapInterval(1);
-	return window;
+        SDL_Window* window = SDL_CreateWindow("GL Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+        SDL_GLContext ctx = SDL_GL_CreateContext(window);
+        SDL_GL_MakeCurrent(window, ctx);
+        GLSupport ver = loadOpenGL();
+        SDL_GL_SetSwapInterval(1);
+        return window;
+    }
 }
 
 
@@ -61,29 +72,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     protected static bool isGLBlendEnabled = false;
     protected static GLenum mode;
 
-    /**
-    *   Does not uses EBO
-    */
-    protected uint[] vertexBuffersIDS;
-    protected uint[] vertexArraysIDS;
-    protected uint currentVertexBufferIndex;
-
-    /**
-    *   Uses EBO
-    */
-    protected uint[] rectangleVertexBuffersIDS;
-    protected uint[] rectangleVertexArraysIDS;
-    protected uint currentRectangleVertexBufferIndex;
-
-    protected uint rectangleEBO;
-
-    protected static immutable uint[6] rectangleIndices = [
-        3, 2, 1, //Right rectangle
-        1, 0, 3  //Left rectangle
-    ];
-
     public final bool isRowMajor(){return true;}
-
 
     SDL_Window* createWindow(uint width, uint height)
     {
@@ -101,19 +90,15 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         this.window = window;
         this.renderer = renderer;
-        uint reserveAmount=1024;
-        vertexBuffersIDS.reserve(reserveAmount);
-        rectangleVertexBuffersIDS.reserve(reserveAmount);
         setColor();
-        glGenBuffers(1, &rectangleEBO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rectangleEBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, rectangleIndices.sizeof, &rectangleIndices, GL_DYNAMIC_DRAW);
-
         HipRenderer.rendererType = HipRendererType.GL3;
         return true;
     }
 
-    version(dll){public bool initExternal(){return false;}}
+    version(dll)public bool initExternal()
+    {
+        return init(null, null);
+    }
 
     void setShader(Shader s)
     {
@@ -147,7 +132,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         import std.stdio;
         glViewport(v.x, v.y, v.w, v.h);
-        // SDL_RenderSetViewport(renderer, &v.bounds);
+        
     }
     public bool setWindowMode(HipWindowMode mode)
     {
@@ -163,45 +148,6 @@ class Hip_GL3Renderer : IHipRendererImpl
         }
         return false;
     }
-
-    protected uint getFreeVertexBufferIndex()
-    {
-        if(vertexBuffersIDS.length >= currentVertexBufferIndex)
-        {
-            uint buf;
-            uint vao;
-            glGenBuffers(1, &buf);
-            glGenVertexArrays(1, &vao);
-            vertexBuffersIDS~=buf;
-            vertexArraysIDS~=vao;
-        }
-        uint ret = currentVertexBufferIndex;
-        currentVertexBufferIndex++;
-        return ret;
-    }
-    /**
-    *   As it uses element buffer object, it is better to separate for better performance
-    */
-    protected uint getFreeVertexBufferIndexForRectangle()
-    {
-        if(rectangleVertexBuffersIDS.length >= currentRectangleVertexBufferIndex)
-        {
-            uint buf;
-            uint vao;
-            glGenBuffers(1, &buf);
-            glGenVertexArrays(1, &vao);
-            rectangleVertexBuffersIDS~=buf;
-            rectangleVertexArraysIDS~=vao;
-            glBindVertexArray(vao);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER , rectangleEBO);
-            glBindVertexArray(0);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        }
-        uint ret = currentRectangleVertexBufferIndex;
-        currentRectangleVertexBufferIndex++;
-        return ret;
-    }
-
     public bool hasErrorOccurred(out string err, string file = __FILE__, int line =__LINE__)
     {
         import std.format:format;
@@ -251,18 +197,18 @@ class Hip_GL3Renderer : IHipRendererImpl
     /**
     *   This function is used to control the internal state for creating vertex buffers
     */
-    public void begin()
-    {
-        currentVertexBufferIndex = 0;
-        currentRectangleVertexBufferIndex = 0;
-    }
+    public void begin(){}
 
     /**
     */
     public void end()
     {
-        SDL_GL_SwapWindow(window);
-        SDL_RenderPresent(renderer);
+        version(Android){}
+        else
+        {
+            SDL_GL_SwapWindow(window);
+            SDL_RenderPresent(renderer);
+        }
     }
 
     public void draw(Texture t, int x, int y){}
@@ -283,36 +229,6 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         glClearColor(r/255,g/255,b/255,a/255);
         glClear(GL_COLOR_BUFFER_BIT);
-    }
-
-    /**
-    *   This function must be used only for primitives which don't use EBO
-    */
-    pragma(inline, true)
-    protected void bindNextVertexArrayObject()
-    {
-        uint index = getFreeVertexBufferIndex();
-        glBindVertexArray(vertexArraysIDS[index]);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffersIDS[index]);
-    }
-
-    public void fillRect(int x, int y, int width, int height)
-    {
-        float[12] vertices = [
-            -0.5, -0.5, 0,
-            0.5, -0.5, 0,
-            0.5, 0.5, 0,
-            -0.5, 0.5, 0
-        ];
-        uint index = getFreeVertexBufferIndexForRectangle();
-        glBindVertexArray(rectangleVertexArraysIDS[index]);
-        glBindBuffer(GL_ARRAY_BUFFER, rectangleVertexBuffersIDS[index]);
-
-        glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, &vertices, GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*float.sizeof, cast(void*)0);
-        glEnableVertexAttribArray(0);
-        
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, cast(void*)0);
     }
 
     protected GLenum getGLRendererMode(HipRendererMode mode)
@@ -394,92 +310,6 @@ class Hip_GL3Renderer : IHipRendererImpl
         glDrawElements(this.mode, indicesSize, GL_UNSIGNED_INT, cast(void*)offset);
     }
 
-
-    public void drawRect(int x, int y, int width, int height)
-    {
-        // rectangle();        
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, cast(void*)0);
-    }
-
-    public void drawLine(int x1, int y1, int x2, int y2)
-    {
-        int[4] line = [
-            x1, y1,
-            x2, y2
-        ];
-        bindNextVertexArrayObject();
-        glBufferData(GL_ARRAY_BUFFER, int.sizeof*4, line.ptr, GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 3 * float.sizeof, cast(void*)0);
-        glEnableVertexAttribArray(0);
-        glDrawArrays(GL_LINES, 0, 2);
-    }
-
-    pragma(inline, true)
-    protected void triangle()
-    {
-        float[18] triangle = [
-              0, 0, 0.0f,
-             50, 100, 0.0f,
-             100,  0, 0.0f,
-
-             -0.6f, -0.6f, 0.0f,
-             0.6f, -0.6f, 0.0f,
-             0.1f,  0.6f, 0.0f,
-        ];
-        import math.vector;
-
-        static float angle = 3.1415/4;
-
-        angle+=0.01;
-
-        Vector3 p0 = Vector3(200,200,0).rotateZ(angle);
-        Vector3 p1 = Vector3(250,300,0).rotateZ(angle);
-        Vector3 p2 = Vector3(300,200,0).rotateZ(angle);
-
-        triangle[0] = p0.x;
-        triangle[1] = p0.y;
-        triangle[2] = p0.z;
-        
-        triangle[3] = p1.x;
-        triangle[4] = p1.y;
-        triangle[5] = p1.z;
-        
-        triangle[6] = p2.x;
-        triangle[7] = p2.y;
-        triangle[8] = p2.z;
-        // *(cast(float*)triangle.ptr) = *(cast(float*)&p0);
-        // *(cast(float*)triangle.ptr+3) = *(cast(float*)&p1);
-        // *(cast(float*)triangle.ptr+6) = *(cast(float*)&p2);
-        
-        
-        bindNextVertexArrayObject();
-        glBufferData(GL_ARRAY_BUFFER, triangle.sizeof, triangle.ptr, GL_DYNAMIC_DRAW);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * float.sizeof, cast(void*)0);
-        glEnableVertexAttribArray(0);
-    }
-
-    public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
-    {
-        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        triangle();
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-    }
-    public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
-    {
-
-    }
-    public void drawPixel(int x, int y)
-    {
-        int[2] pixel = [
-            x, y,
-        ];
-        bindNextVertexArrayObject();
-        glBufferData(GL_ARRAY_BUFFER, pixel.sizeof, pixel.ptr, GL_DYNAMIC_DRAW);
-        glDrawArrays(GL_POINT, 0, 1);
-        
-    }
-
     public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst)
     {
         if(!isGLBlendEnabled)
@@ -499,9 +329,19 @@ class Hip_GL3Renderer : IHipRendererImpl
         }
         glBlendEquation(getGLBlendEquation(eq));
     }
+    public void drawRect(){}
+    public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3){}
+    public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3){}
+    public void drawRect(int x, int y, int w, int h){}
+    public void fillRect(int x, int y, int width, int height){}
+    public void drawLine(int x1, int y1, int x2, int y2){}
+    public void drawPixel(int x, int y ){}
 
     public void dispose()
     {
-        SDL_GL_DeleteContext(SDL_GL_GetCurrentContext());
+        if(window != null)
+        {
+            SDL_GL_DeleteContext(SDL_GL_GetCurrentContext());
+        }
     }
 }
