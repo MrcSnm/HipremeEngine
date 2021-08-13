@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module implementations.renderer.backend.sdl.sdlrenderer;
 import implementations.renderer.backend.sdl.texture;
 import implementations.renderer.renderer;
@@ -69,12 +80,13 @@ public class Hip_SDL_Renderer : IHipRendererImpl
         currentViewport = mainViewport;
         return ErrorHandler.stopListeningForErrors();
     }
+    version(dll){public bool initExternal(){return false;}}
 
     Shader createShader(){return null;}
     public IHipFrameBuffer      createFrameBuffer(int width, int height){return null;}
     public IHipVertexArrayImpl  createVertexArray(){return null;}
     public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage){return null;}
-    public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage){return null;}
+    public IHipIndexBufferImpl  createIndexBuffer(index_t count, HipBufferUsage usage){return null;}
     public bool setWindowMode(HipWindowMode mode){return false;}
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {

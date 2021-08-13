@@ -1,6 +1,17 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module implementations.renderer.backend.gl.vertex;
 
-import bindbc.opengl;
+import implementations.renderer.backend.gl.renderer;
 import std.format:format;
 import implementations.renderer.shader;
 import implementations.renderer.vertex;
@@ -63,27 +74,27 @@ class Hip_GL3_IndexBufferObject : IHipIndexBufferImpl
 {
     immutable int  usage;
     ulong size;
-    uint count;
+    index_t count;
     uint ebo;
-    this(uint count, HipBufferUsage usage)
+    this(index_t count, HipBufferUsage usage)
     {
-        this.size = uint.sizeof*count;
+        this.size = index_t.sizeof*count;
         this.count = count;
         this.usage = getGLUsage(usage);
         glGenBuffers(1, &this.ebo);
     }
     void bind(){glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.ebo);}
     void unbind(){glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);}
-    void setData(uint count, const uint* data)
+    void setData(index_t count, const index_t* data)
     {
         this.count = count;
-        this.size = uint.sizeof*count;
+        this.size = index_t.sizeof*count;
         this.bind();
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, uint.sizeof*count, data, this.usage);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_t.sizeof*count, data, this.usage);
     }
-    void updateData(int offset, uint count, const uint* data)
+    void updateData(int offset, index_t count, const index_t* data)
     {
-        assert((offset+count)*uint.sizeof <= this.size);
+        assert((offset+count)*index_t.sizeof <= this.size);
         this.bind();
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, data);
     }

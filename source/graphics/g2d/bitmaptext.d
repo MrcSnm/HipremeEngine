@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module graphics.g2d.bitmaptext;
 import graphics.g2d;
 import graphics.mesh;
@@ -212,7 +223,7 @@ class HipBitmapText
 
     HipTextAlign alignh = HipTextAlign.LEFT;
     HipTextAlign alignv = HipTextAlign.TOP;
-    uint[] indices;
+    index_t[] indices;
     float[] vertices;
     string text;
 
@@ -406,19 +417,19 @@ class HipBitmapText
         if(text.length > this.text.length)
         {
             if(indices is null)
-                indices = new uint[text.length*6];
+                indices = new index_t[text.length*6];
             else
                 indices.length = (text.length*6);
-            ulong index = 0;
-            for(uint i = 0; i < text.length; i++)
+            index_t index = 0;
+            for(index_t i = 0; i < text.length; i++)
             {
-                indices[index+0] = i*4+0;
-                indices[index+1] = i*4+1;
-                indices[index+2] = i*4+2;
+                indices[index+0] = cast(index_t)(i*4+0);
+                indices[index+1] = cast(index_t)(i*4+1);
+                indices[index+2] = cast(index_t)(i*4+2);
 
-                indices[index+3] = i*4+2;
-                indices[index+4] = i*4+3;
-                indices[index+5] = i*4+0;
+                indices[index+3] = cast(index_t)(i*4+2);
+                indices[index+4] = cast(index_t)(i*4+3);
+                indices[index+5] = cast(index_t)(i*4+0);
                 index+=6;
             }
             mesh.setIndices(indices);

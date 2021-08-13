@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module view.paralleltestscene;
 import implementations.renderer;
 import std.stdio;
@@ -18,7 +29,7 @@ class ParallelTestScene : Scene
 
         // HipAssetMnager.loadImage("./assets/graphics/sprites/rex.png", (Image img)
         // {
-        //     img.writeln;
+        
         // }, true);
         
     }
@@ -29,10 +40,7 @@ class ParallelTestScene : Scene
         if(spr.texture.img !is null)
         {
             batch.draw(spr);
-            spr.getVertices().writeln;
         }
-        else
-            "Vei".writeln;
         batch.end();
     }
 

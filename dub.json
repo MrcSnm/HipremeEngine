@@ -1,40 +1,27 @@
 {
+	"name": "hipreme_engine",
 	"authors": [
 		"Hipreme"
 	],
-	"buildOptions": [
-		"debugMode",
-		"debugInfo",
-		"debugInfoC"
-	],
-	"copyright": "Copyright © 2019 - 2021, Hipreme",
+	"copyright": "Copyright © 2018 - 2021, Hipreme",
 	"dependencies": {
 		"arsd-official:dom": "~>10.2.0",
-		"bindbc-cimgui": {
-			"path": "dependencies/Bindbc-Cimgui/",
-			"version": ">=0.0.0"
-		},
+		"bindbc-cimgui": "~>1.0.1",
+		"bindbc-openal": "~>0.5.0",
 		"bindbc-opengl": "~>0.13.0",
-		"bindbc-sdl": "~>0.19.0"
+		"bindbc-sdl": "~>0.19.0",
+		"directx-d" : {"path": "dependencies/directx-d"},
+		"gles" : {"path": "dependencies/gles"}
 	},
 	"description": "Open-Source D Game Engine",
 	"dflags": [
-		"-version=HIPREME_DEBUG",
 		"-J=."
-	],
-	"dflags-linux": [
-		"-L-Ldependencies/Bindbc-Cimgui/lib",
-		"-L-Ldependencies/bindbc-openal/lib",
 	],
 	"importPaths": [
 		"source",
 		"dependencies/directx-d/src",
-		"dependencies/bindbc-openal/source",
-		"dependencies/Bindbc-Cimgui/source"
-	],
-	"libs-linux": [
-		"bindbc-cimgui",
-		"BindBC_OpenAL"
+		"dependencies/gles/source",
+		"C:/ldc2/import"
 	],
 	"libs-windows": [
 		"ole32",
@@ -42,22 +29,74 @@
 		"C:\\Program Files (x86)\\Microsoft DirectX SDK (June 2010)\\Lib\\x64\\d3dcompiler",
 		"d3d11",
 		"dxgi",
-		"dependencies/directx-d/directx-d",
-		"dependencies/Bindbc-Cimgui/lib/bindbc-cimgui",
-		"dependencies/bindbc-openal/lib/bindBC_OpenAL"
+		"dependencies/directx-d/directx-d"
 	],
 	"license": "proprietary",
-	"name": "main",
 	"sourcePaths": [
 		"source"
 	],
-	"targetPath": "bin",
-	"versions": [
+	
+	"buildOptions": [
+		"debugMode",
+		"debugInfo",
+		"debugInfoC"
+	],
+	"versions": 
+	[
+		"HIPREME_DEBUG",
 		"SDL_208",
 		"BindSDL_Mixer",
 		"BindSDL_TTF",
 		"BindSDL_Image",
 		"GL_45",
-		"GL_ARB"
+		"GL_ARB",
+		"AL_EFX"
+	],
+	"configurations": [
+		{
+			"name": "desktop",
+			"targetPath": "bin/desktop",
+			"targetType": "executable"
+		},
+		{
+			"name": "uwp",
+			"targetPath": "bin/uwp/",
+			"targetType": "dynamicLibrary",
+			"versions": [
+				"dll",
+				"UWP"
+			]
+		},
+		{
+			"name": "android",
+			"libs": [
+				"log",
+				"android",
+				"EGL",
+				"GLESv3"
+			],
+			"lflags": [
+				"-LC:/ldc2/lib-android_aarch64/lib/",
+				"-lphobos2-ldc",
+				"-ldruntime-ldc"
+			],
+			"dflags": [
+				"-g"
+			],
+			"postBuildCommands": [
+				"copy /B .\\bin\\android\\libhipreme_engine.so .\\build\\android\\project\\app\\src\\main\\jniLibs\\arm64-v8a\\libhipreme_engine.so"
+			],
+			"toolchainRequirements" : 
+			{
+				"dmd":"no",
+				"gdc":"no",
+				"ldc2":">=1.27.0"
+			},
+			"targetPath": "bin/android/",
+			"targetType": "dynamicLibrary",
+			"versions": [
+				"dll"
+			]
+		}
 	]
 }

@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module implementations.renderer.renderer;
 public import implementations.renderer.config;
 public import implementations.renderer.shader;
@@ -13,6 +24,14 @@ import def.debugging.log;
 import core.stdc.stdlib:exit;
 
 public import implementations.renderer.backend.gl.renderer;
+
+version(Windows)
+{
+    import implementations.renderer.backend.d3d.renderer;
+    import implementations.renderer.backend.d3d.texture;
+}
+import implementations.renderer.backend.gl.texture;
+import implementations.renderer.backend.sdl.texture;
 
 enum HipWindowMode
 {
@@ -68,6 +87,7 @@ enum HipBlendEquation
 interface IHipRendererImpl
 {
     public bool init(SDL_Window* window, SDL_Renderer* renderer);
+    version(dll){public bool initExternal();}
     public bool isRowMajor();
     public SDL_Window* createWindow(uint width, uint height);
     public SDL_Renderer* createRenderer(SDL_Window* window);
@@ -75,7 +95,7 @@ interface IHipRendererImpl
     public IHipFrameBuffer createFrameBuffer(int width, int height);
     public IHipVertexArrayImpl  createVertexArray();
     public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage);
-    public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage);
+    public IHipIndexBufferImpl  createIndexBuffer(index_t count, HipBufferUsage usage);
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void setViewport(Viewport v);
     public bool setWindowMode(HipWindowMode mode);
@@ -113,7 +133,6 @@ class HipRenderer
 
     public static bool init(string confPath)
     {
-        import implementations.renderer.backend.d3d.renderer;
         import data.ini;
         IniFile ini = IniFile.parse(confPath);
         HipRendererConfig cfg;
@@ -132,7 +151,10 @@ class HipRenderer
                 case "GL3":
                     return init(new Hip_GL3Renderer(), &cfg, width, height);
                 case "D3D11":
-                    return init(new Hip_D3D11_Renderer(), &cfg, width, height);
+                    version(Windows)
+                        return init(new Hip_D3D11_Renderer(), &cfg, width, height);
+                    else
+                        return false;
                 default:
                     ErrorHandler.showErrorMessage("Invalid renderer '"~renderer~"'",
                     `
@@ -148,6 +170,34 @@ class HipRenderer
         return init(new Hip_GL3Renderer(), &cfg, 1280, 720);
     }
 
+    version(dll) public static bool initExternal(HipRendererType type)
+    {
+        import implementations.renderer.backend.sdl.sdlrenderer;
+        HipRenderer.rendererType = type;
+        final switch(type)
+        {
+            case HipRendererType.D3D11:
+                version(Windows){rendererImpl = new Hip_D3D11_Renderer();break;}
+                else{return false;}
+            case HipRendererType.GL3:
+                rendererImpl = new Hip_GL3Renderer();
+                break;
+            case HipRendererType.SDL:
+                rendererImpl = new Hip_SDL_Renderer();
+                break;
+            case HipRendererType.NONE:
+                return false;
+        }
+        bool ret = rendererImpl.initExternal();
+        afterInit();
+        return ret;
+    }
+    private static afterInit()
+    {
+        mainViewport = new Viewport(0,0,800, 600);
+        setViewport(mainViewport);
+        HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+    }
 
     public static bool init(IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height)
     {
@@ -164,9 +214,7 @@ class HipRenderer
         HipRenderer.height = height;
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
-        mainViewport = new Viewport(0,0,800, 600);
-        setViewport(mainViewport);
-        HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+        afterInit();
 
         return ErrorHandler.stopListeningForErrors();
     }
@@ -174,15 +222,16 @@ class HipRenderer
     public static HipRendererConfig getCurrentConfig(){return currentConfig;}
     public static ITexture getTextureImplementation()
     {
-        import implementations.renderer.backend.gl.texture;
-        import implementations.renderer.backend.d3d.texture;
-        import implementations.renderer.backend.sdl.texture;
+        
         switch(HipRenderer.getRendererType())
         {
             case HipRendererType.GL3:
                 return new Hip_GL3_Texture();
             case HipRendererType.D3D11:
-                return new Hip_D3D11_Texture();
+                version(Windows)
+                    return new Hip_D3D11_Texture();
+                else
+                    return null;
             case HipRendererType.SDL:
                 return new Hip_SDL_Texture();
             default:
@@ -233,11 +282,11 @@ class HipRenderer
     {
         return rendererImpl.createVertexArray();
     }
-    public static IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
+    public static IHipVertexBufferImpl  createVertexBuffer(ulong size, HipBufferUsage usage)
     {
         return rendererImpl.createVertexBuffer(size, usage);
     }
-    public static IHipIndexBufferImpl createIndexBuffer(uint count, HipBufferUsage usage)
+    public static IHipIndexBufferImpl createIndexBuffer(index_t count, HipBufferUsage usage)
     {
         return rendererImpl.createIndexBuffer(count, usage);
     }

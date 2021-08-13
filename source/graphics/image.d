@@ -1,4 +1,16 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module graphics.image;
+import data.hipfs;
 import util.concurrency;
 import data.asset;
 import error.handler;
@@ -21,13 +33,6 @@ public class Image : HipAsset
     string imagePath;
     int rgbColorKey;
 
-    shared this(in string path, int rgbColorKey = -1)
-    {
-        super("Image_"~path);
-        if(rgbColorKey != -1)
-            this.rgbColorKey = rgbColorKey;
-        imagePath = sanitizePath(path);
-    }
     this(in string path, int rgbColorKey = -1)
     {
         super("Image_"~path);
@@ -36,28 +41,25 @@ public class Image : HipAsset
         imagePath = sanitizePath(path);
     }
     
-    mixin concurrent!(
-    q{this(ubyte[] data, string path)
+    this(ubyte[] data, string path)
     {
         super("Image_"~path);
         imagePath = sanitizePath(path);
-    }});
+    }
 
-    mixin concurrent!(q{
     bool loadFromMemory(ref ubyte[] data)
     {
         SDL_RWops* rw = SDL_RWFromMem(data.ptr, cast(int)data.length);
         SDL_Surface* img = IMG_Load_RW(rw, 1); //Free SDL_RWops
         return setColorKey(img);
-    }});
+    }
 
-    mixin concurrent!(
-    q{bool loadFromFile()
+    bool loadFromFile()
     {
-        SDL_Surface* img = null;
-        img = IMG_Load(toStringz(imagePath));
-        return setColorKey(img);
-    }});
+        ubyte[] data;
+        HipFS.read(imagePath, data);
+        return loadFromMemory(data);
+    }
 
     shared bool setColorKey(SDL_Surface* img)
     {
@@ -82,29 +84,26 @@ public class Image : HipAsset
         return !ErrorHandler.stopListeningForErrors();
     }
 
-    mixin concurrent!(
-    q{override bool load()
+    override bool load()
     {
         _ready = loadFromFile();
         return _ready;
-    }});
+    }
 
-    mixin concurrent!(
-    q{override bool isReady()
+    override bool isReady()
     {
         return _ready;
-    }});
+    }
 
 
 
-    mixin concurrent!(
-    q{bool load(void function() onLoad)
+    bool load(void function() onLoad)
     {
         bool ret = loadFromFile();
         if(ret)
             onLoad();
         return ret;
-    }});
+    }
 
     override void onDispose()
     {

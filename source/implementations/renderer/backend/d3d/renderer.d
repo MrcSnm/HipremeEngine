@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module implementations.renderer.backend.d3d.renderer;
 version(Windows):
 
@@ -272,6 +283,21 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         return ErrorHandler.stopListeningForErrors();
     }
 
+    version(dll)
+    {
+        public bool initExternal()
+        {
+            import bind.external:getCoreWindowHWND;
+            import def.debugging.log;
+            HWND hwnd = getCoreWindowHWND();
+            if(hwnd == null)
+                return false;
+            HipRendererConfig cfg;
+            initD3D(hwnd, &cfg);
+            return true;
+        }
+    }
+
 
     public void setRendererMode(HipRendererMode mode)
     {
@@ -341,6 +367,11 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3){}
     public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3){}
     public void drawRect(int x, int y, int w, int h){}
+    public void draw(Texture t, int x, int y){}
+    public void draw(Texture t, int x, int y, SDL_Rect* rect){}
+    public void fillRect(int x, int y, int width, int height){}
+    public void drawLine(int x1, int y1, int x2, int y2){}
+    public void drawPixel(int x, int y ){}
 
     void clear(){}
     
@@ -349,11 +380,6 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         float[4] color = [cast(float)r/255, cast(float)g/255, cast(float)b/255, cast(float)a/255];
         _hip_d3d_context.ClearRenderTargetView(_hip_d3d_mainRenderTarget, color.ptr);
     }
-    public void draw(Texture t, int x, int y){}
-    public void draw(Texture t, int x, int y, SDL_Rect* rect){}
-    public void fillRect(int x, int y, int width, int height){}
-    public void drawLine(int x1, int y1, int x2, int y2){}
-    public void drawPixel(int x, int y ){}
 
     public void dispose()
     {
