@@ -6,13 +6,14 @@ import android.os.Bundle;
 
 public class HipSurfaceView extends GLSurfaceView
 {
-    HipremeGL20Renderer renderer;
-    public HipremeSurfaceView(Context ctx)
+    Hip_GLES30_Renderer renderer;
+    public HipSurfaceView(Context ctx)
     {
         super(ctx);
-        setEGLContextClientVersion(2);
-        renderer = new
+        setEGLContextClientVersion(3);
+        renderer = new Hip_GLES30_Renderer();
         //Save battery
+        setRenderer(renderer);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 }
