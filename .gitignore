@@ -22,3 +22,4 @@ building/SDL2-2.0.12
 assets/
 imgui.ini
 bin/.vs
+.vscode

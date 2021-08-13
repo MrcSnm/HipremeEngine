@@ -1,0 +1,11 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"targetType": "dynamicLibrary",
+	"copyright": "Copyright © 2021, Hipreme",
+	"description": "A minimal D application.",
+	"buildRequirements": ["allowWarnings"],
+	"license": "proprietary",
+	"name": "test"
+}

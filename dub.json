@@ -9,16 +9,19 @@
 		"bindbc-cimgui": "~>1.0.1",
 		"bindbc-openal": "~>0.5.0",
 		"bindbc-opengl": "~>0.13.0",
-		"bindbc-sdl": "~>0.19.0"
+		"bindbc-sdl": "~>0.19.0",
+		"directx-d" : {"path": "dependencies/directx-d"},
+		"gles" : {"path": "dependencies/gles"}
 	},
 	"description": "Open-Source D Game Engine",
 	"dflags": [
-		"-version=HIPREME_DEBUG",
 		"-J=."
 	],
 	"importPaths": [
 		"source",
-		"dependencies/directx-d/src"
+		"dependencies/directx-d/src",
+		"dependencies/gles/source",
+		"C:/ldc2/import"
 	],
 	"libs-windows": [
 		"ole32",
@@ -40,6 +43,7 @@
 	],
 	"versions": 
 	[
+		"HIPREME_DEBUG",
 		"SDL_208",
 		"BindSDL_Mixer",
 		"BindSDL_TTF",
@@ -52,7 +56,7 @@
 		{
 			"name": "desktop",
 			"targetPath": "bin/desktop",
-			"targetType": "executable",
+			"targetType": "executable"
 		},
 		{
 			"name": "uwp",
@@ -60,19 +64,33 @@
 			"targetType": "dynamicLibrary",
 			"versions": [
 				"dll",
-				"UWP",
+				"UWP"
 			]
 		},
 		{
-			"libs": [
-				"log"
-			],
 			"name": "android",
-			"toolchainRequirements": 
+			"libs": [
+				"log",
+				"android",
+				"EGL",
+				"GLESv3"
+			],
+			"lflags": [
+				"-LC:/ldc2/lib-android_aarch64/lib/",
+				"-lphobos2-ldc",
+				"-ldruntime-ldc"
+			],
+			"dflags": [
+				"-g"
+			],
+			"postBuildCommands": [
+				"copy /B .\\bin\\android\\libhipreme_engine.so .\\build\\android\\project\\app\\src\\main\\jniLibs\\arm64-v8a\\libhipreme_engine.so"
+			],
+			"toolchainRequirements" : 
 			{
-				"dmd": "no",
-				"gdc": "no",
-				"ldc": ">=1.23"
+				"dmd":"no",
+				"gdc":"no",
+				"ldc2":">=1.27.0"
 			},
 			"targetPath": "bin/android/",
 			"targetType": "dynamicLibrary",
