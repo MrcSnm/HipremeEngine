@@ -1,7 +1,18 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module util.libinfos;
 import bindbc.openal;
 import bindbc.opengl;
-import std.stdio:writefln, writeln;
+import def.debugging.log;
 import core.stdc.string:strlen;
 import std.conv:to;
 
@@ -11,29 +22,29 @@ void list_audio_devices(const ALCchar *devices)
 	const(char)* next = devices + 1;
 	size_t len = 0;
 
-	writeln("Devices list:\n");
-	writeln("----------\n");
+	rawlog("Devices list:\n");
+	rawlog("----------\n");
 	while (device && *device != '\0' && next && *next != '\0') 
 	{
-		writefln("%s\n", to!string(device));
+		rawlog!"%s\n"(to!string(device));
 		len = strlen(device);
 		device += (len + 1);
 		next += (len + 2);
 	}
-	writeln("----------\n");
+	rawlog("----------\n");
 }
 
 void show_opengl_info()
 {
     if(!isOpenGLLoaded())
     {
-        writefln("OpenGL is not loaded for being able to show info!");
+        rawlog("OpenGL is not loaded for being able to show info!");
     }
     else
-        writefln(`OpenGL Infos:
+        rawlog!`OpenGL Infos:
     Vendor:   %s
     Renderer: %s
-    Version:  %s`, to!string(glGetString(GL_VENDOR)),
+    Version:  %s`(to!string(glGetString(GL_VENDOR)),
     to!string(glGetString(GL_RENDERER)),
     to!string(glGetString(GL_VERSION)));
 }

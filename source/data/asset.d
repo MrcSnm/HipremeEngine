@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module data.asset;
 import util.time;
 
@@ -17,12 +28,6 @@ abstract class HipAsset
     ///How much time it took to load, in millis
     float loadTime;
 
-    shared this(string assetName)
-    {
-        this.name = assetName;
-        assetID = ++currentAssetID;
-    }
-
     this(string assetName)
     {
         this.name = assetName;
@@ -31,10 +36,8 @@ abstract class HipAsset
 
     /** Should return if the load was successful */
     abstract bool load();
-    abstract shared bool load();
     /** Should return if the asset is ready for use*/
     abstract bool isReady();
-    abstract shared bool isReady();
     /**
     * Action for when the asset finishes loading
     * Proabably be executed on the main thread
@@ -48,11 +51,6 @@ abstract class HipAsset
         load();
     }
 
-    shared void startLoading()
-    {
-        startLoadingTimestamp = Time.getCurrentTime();
-        load();
-    }
     void finishLoading()
     {
         if(isReady())

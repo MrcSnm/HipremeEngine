@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module sdl.event.handlers.input.keyboard_layout;
 import sdl.event.handlers.keyboard;
 import util.data_structures;
@@ -164,9 +175,9 @@ class KeyboardLayoutABNT2 : KeyboardLayout
             addKey(COMMA, "<", KeyState.SHIFT);
             addKey(BACKQUOTE, "\"", KeyState.SHIFT);
 
-            import std.stdio;
+            import def.debugging.log;
 
-            writeln(kb[KeyStroke('A', KeyState.NONE)]);
+            rawlog(kb[KeyStroke('A', KeyState.NONE)]);
             
         }
     }

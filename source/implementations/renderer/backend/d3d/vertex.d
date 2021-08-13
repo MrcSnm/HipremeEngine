@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module implementations.renderer.backend.d3d.vertex;
 
 version(Windows):
@@ -175,11 +186,6 @@ class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
         if(ErrorHandler.assertErrorMessage(s !is null, "D3D11 VAO Error", "Error at creating input layout"))
             return;
         Hip_D3D11_VertexShader vs = cast(Hip_D3D11_VertexShader)s.vertexShader;
-        foreach (D3D11_INPUT_ELEMENT_DESC key; descs)
-        {
-            import std.conv:to;
-            debug { import std.stdio : writeln; try { writeln(to!string(key.SemanticName)); } catch (Exception) {} }   
-        }
         _hip_d3d_device.CreateInputLayout(descs.ptr, cast(uint)descs.length,
         vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), &inputLayout);
         HipRenderer.exitOnError();

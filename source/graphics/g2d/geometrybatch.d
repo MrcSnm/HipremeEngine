@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module graphics.g2d.geometrybatch;
 import implementations.renderer.renderer;
 import implementations.renderer.shader;
@@ -16,16 +27,16 @@ class GeometryBatch
 {
     protected Mesh mesh;
     protected Shader currentShader;
-    protected uint currentIndex;
-    protected uint currentVertex;
-    protected uint verticesCount;
-    protected uint indicesCount;
+    protected index_t currentIndex;
+    protected index_t currentVertex;
+    protected index_t verticesCount;
+    protected index_t indicesCount;
     protected HipColor currentColor;
     HipRendererMode mode;
     float[] vertices;
-    uint[] indices;
+    index_t[] indices;
     
-    this(uint verticesCount, uint indicesCount)
+    this(index_t verticesCount, index_t indicesCount)
     {
         Shader s = HipRenderer.newShader(HipShaderPresets.GEOMETRY_BATCH); 
         s.addVarLayout(new ShaderVariablesLayout("Geom", ShaderTypes.VERTEX, 0)
@@ -39,7 +50,7 @@ class GeometryBatch
         mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_VAO(), s);
         setShader(s);
         vertices = new float[verticesCount*7]; //XYZ, RGBA
-        indices = new uint[indicesCount];
+        indices = new index_t[indicesCount];
         indices[] = 0;
         vertices[] = 0;
         //Initialize the mesh with 0
@@ -62,7 +73,7 @@ class GeometryBatch
     /**
     * Adds a vertex to the structure and return its current index.
     */
-    uint addVertex(float x, float y, float z)
+    index_t addVertex(float x, float y, float z)
     {
         assert(verticesCount+1 <= this.vertices.length/7,
             format!"Too many vertices (%s) for a buffer of size %s"(verticesCount+1, this.vertices.length/7)
@@ -80,7 +91,7 @@ class GeometryBatch
         return verticesCount++;
     }
     pragma(inline, true)
-    void addIndex(uint index)
+    void addIndex(index_t index)
     {
         assert(currentIndex+1 <= this.indices.length,
             format!"Too many indices (%s) for a buffer of size %s"(currentIndex+1, this.indices.length)
@@ -97,9 +108,9 @@ class GeometryBatch
         addVertex(x1, y1, 0);
         addVertex(x2, y2, 0);
         addVertex(x3, y3, 0);
-        addIndex(verticesCount-3);
-        addIndex(verticesCount-2);
-        addIndex(verticesCount-1);
+        addIndex(cast(index_t)(verticesCount-3));
+        addIndex(cast(index_t)(verticesCount-2));
+        addIndex(cast(index_t)(verticesCount-1));
     }
     void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
     {
@@ -141,8 +152,8 @@ class GeometryBatch
         addVertex(x1, y1, 0);
         addVertex(x2, y2, 0);
 
-        addIndex(verticesCount-2);
-        addIndex(verticesCount-1);
+        addIndex(cast(index_t)(verticesCount-2));
+        addIndex(cast(index_t)(verticesCount-1));
     }
     void drawLine(int x1, int y1, int x2, int y2, HipColor color)
     {
@@ -180,10 +191,10 @@ class GeometryBatch
     pragma(inline, true)
     protected void rectangleVertices(int x, int y, int w, int h)
     {
-        uint topLeft = addVertex(x, y, 0);
-        uint botLeft = addVertex(x, y+h, 0);
-        uint botRight= addVertex(x+w, y+h, 0);
-        uint topRight= addVertex(x+w, y, 0);
+        index_t topLeft = addVertex(x, y, 0);
+        index_t botLeft = addVertex(x, y+h, 0);
+        index_t botRight= addVertex(x+w, y+h, 0);
+        index_t topRight= addVertex(x+w, y, 0);
 
         addIndex(topLeft);
         addIndex(botLeft);

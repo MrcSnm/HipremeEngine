@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module view.spritetestscene;
 import bindbc.sdl;
 import bindbc.opengl;
@@ -14,7 +25,7 @@ class SpriteTestScene : Scene
     this()
     {
         batch = new HipSpriteBatch();
-        sprite = new HipSprite("D:\\HipremeEngine\\assets\\graphics\\sprites\\sprite.png");
+        sprite = new HipSprite("sprite.png");
         import def.debugging.log;
     }
 
@@ -32,9 +43,9 @@ class SpriteTestScene : Scene
 
     public override void onResize(uint width, uint height)
     {
-        import std.stdio;
+        import def.debugging.log;
         Viewport v = HipRenderer.getCurrentViewport();
         v.update();
-        writeln(v.w, " ", v.h);
+        rawlog(v.w, " ", v.h);
     }
 }

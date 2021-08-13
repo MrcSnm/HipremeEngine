@@ -1,4 +1,16 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module graphics.g2d.tilemap;
+import data.hipfs;
 import math.rect;
 import graphics.g2d.spritebatch;
 import std.conv:to;
@@ -168,7 +180,9 @@ class Tileset
 
     static Tileset fromTSX(string tsxPath, bool autoLoadTexture = true)
     {
-        return fromTSX(cast(ubyte[])read(tsxPath), autoLoadTexture);
+        void[] tsxData;
+        HipFS.read(tsxPath, tsxData);
+        return fromTSX(cast(ubyte[])tsxData, autoLoadTexture);
     }
 
     alias tiles this;
@@ -327,7 +341,9 @@ class Tilemap
 
     static Tilemap readTiledJSON(string tiledPath)
     {
-        return readTiledJSON(cast(ubyte[])read(tiledPath));
+        void[] jsonData;
+        HipFS.read(tiledPath, jsonData);
+        return readTiledJSON(cast(ubyte[])jsonData);
     }
 
     alias layers this;

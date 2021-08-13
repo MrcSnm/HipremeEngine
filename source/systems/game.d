@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module systems.game;
 private import sdl.event.dispatcher;
 private import sdl.event.handlers.keyboard;
@@ -32,7 +43,8 @@ class GameSystem
         });
 
         import view.testscene;
-        Scene testscene = new BitmapTestScene();
+        import view.uwptest;
+        Scene testscene = new TestScene();
     	testscene.init();
         scenes~= testscene;
 
@@ -40,12 +52,14 @@ class GameSystem
 
     bool update()
     {
-        dispatcher.handleEvent();
+        version(Android){}
+        else {dispatcher.handleEvent();}
+
         if(hasFinished || dispatcher.hasQuit)
             return false;
         keyboard.update();
         // foreach(s; scenes)
-        //     s.update();
+            // s.update();
 
         return true;
     }

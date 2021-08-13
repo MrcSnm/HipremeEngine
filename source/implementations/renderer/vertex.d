@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 /**
 *    This file provides the essential information for specifying vertices
 *   for the target 3D API. Its Attributes/Layout, some preset layouts.
@@ -12,6 +23,8 @@ import std.stdio;
 import core.stdc.stdlib:exit;
 import def.debugging.log;
 public import implementations.renderer.backend.gl.vertex;
+version(Android){alias index_t = ushort;}
+else{alias index_t = uint;}
 
 enum InternalVertexAttribute
 {
@@ -63,8 +76,8 @@ interface IHipIndexBufferImpl
 {
     void bind();
     void unbind();
-    void setData(uint count, const uint* data);
-    void updateData(int offset, uint count, const uint* data);
+    void setData(index_t count, const index_t* data);
+    void updateData(int offset, index_t count, const index_t* data);
 }
 interface IHipVertexArrayImpl
 {
@@ -104,7 +117,7 @@ class HipVertexArrayObject
     /**
     *   Creates and binds an index buffer.
     */
-    void createIndexBuffer(uint count, HipBufferUsage usage)
+    void createIndexBuffer(index_t count, HipBufferUsage usage)
     {
         this.bind();
         this.EBO = HipRenderer.createIndexBuffer(count, usage);
@@ -186,7 +199,7 @@ class HipVertexArrayObject
     /**
     *   Update the VBO. Won't cause memory allocation
     */
-    void updateVertices(uint count, const void* data, int offset = 0)
+    void updateVertices(index_t count, const void* data, int offset = 0)
     {
         if(VBO is null)
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
@@ -200,7 +213,7 @@ class HipVertexArrayObject
     *   If you need to only change its data value instead of allocating memory for a greater index buffer
     *   call updateIndices
     */
-    void setIndices(uint count, const uint* data)
+    void setIndices(index_t count, const index_t* data)
     {
         if(EBO is null)
             ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");
@@ -211,7 +224,7 @@ class HipVertexArrayObject
     /**
     *   Updates the index buffer's data. It won't allocate memory
     */
-    void updateIndices(uint count, uint* data, int offset = 0)
+    void updateIndices(index_t count, index_t* data, int offset = 0)
     {
         if(EBO is null)
             ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");

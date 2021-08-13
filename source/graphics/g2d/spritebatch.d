@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module graphics.g2d.spritebatch;
 import graphics.mesh;
 import core.stdc.string:memcpy;
@@ -24,8 +35,8 @@ private enum spriteVertexSize = cast(uint)(HipSpriteVertex.sizeof/float.sizeof);
 
 class HipSpriteBatch
 {
-    uint maxQuads;
-    uint[] indices;
+    index_t maxQuads;
+    index_t[] indices;
     float[] vertices;
     bool hasBegun;
     Shader shader;
@@ -35,18 +46,18 @@ class HipSpriteBatch
 
     protected uint quadsCount;
 
-    this(uint maxQuads = 20_000)
+    this(index_t maxQuads = 20_000)
     {
         this.maxQuads = maxQuads;
-        indices = new uint[maxQuads*6];
+        indices = new index_t[maxQuads*6];
         vertices = new float[maxQuads*spriteVertexSize*4]; //XYZ -> 3, RGBA -> 4, ST -> 2, 3+4+2=9
         vertices[] = 0;
 
         Shader s = HipRenderer.newShader(HipShaderPresets.SPRITE_BATCH);
         mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_ST_VAO(), s);
         mesh.vao.bind();
-        mesh.createVertexBuffer(maxQuads*spriteVertexSize*4, HipBufferUsage.DYNAMIC);
-        mesh.createIndexBuffer(maxQuads*6, HipBufferUsage.STATIC);
+        mesh.createVertexBuffer(cast(index_t)(maxQuads*spriteVertexSize*4), HipBufferUsage.DYNAMIC);
+        mesh.createIndexBuffer(cast(index_t)(maxQuads*6), HipBufferUsage.STATIC);
         mesh.sendAttributes();
         setShader(s);
         
@@ -70,16 +81,16 @@ class HipSpriteBatch
 
         camera = new HipOrthoCamera();
 
-        int offset = 0;
-        for(int i = 0; i < maxQuads; i+=6)
+        index_t offset = 0;
+        for(index_t i = 0; i < maxQuads; i+=6)
         {
-            indices[i + 0] = 0+offset;
-            indices[i + 1] = 1+offset;
-            indices[i + 2] = 2+offset;
+            indices[i + 0] = cast(index_t)(0+offset);
+            indices[i + 1] = cast(index_t)(1+offset);
+            indices[i + 2] = cast(index_t)(2+offset);
 
-            indices[i + 3] = 2+offset;
-            indices[i + 4] = 3+offset;
-            indices[i + 5] = 0+offset;
+            indices[i + 3] = cast(index_t)(2+offset);
+            indices[i + 4] = cast(index_t)(3+offset);
+            indices[i + 5] = cast(index_t)(0+offset);
             offset+= 4; //Offset calculated for each quad
         }
         mesh.setVertices(vertices);

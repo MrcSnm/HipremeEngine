@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module util.file;
 import std.stdio: File;
 import std.conv:to;
@@ -19,6 +30,26 @@ string getFileContentFromBasePath(string path, string basePath, bool noCarriageR
 {
     string finalPath = relativePath(sanitizePath(path), sanitizePath(basePath));
     return getFileContent(finalPath, noCarriageReturn);
+}
+string joinPath(string[] paths ...){return joinPath(paths);}
+string joinPath(string[] paths)
+{
+    if(paths.length == 1)
+        return paths[0];
+    string output;
+    char charType = isPathUnixStyle(paths[0]) ? '/' : '\\';
+    for(int i = 0; i < paths.length; i++)
+    {
+        if(paths[i] == "")
+            continue;
+        output~=paths[i];
+        if(i+1 != paths.length &&
+        paths[i+1].length != 0 &&
+        paths[i+1][0] != charType &&
+        paths[i][$-1] != charType)
+            output~=charType;
+    }
+    return output;
 }
 
 

@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module def.debugging.gui;
 import bindbc.cimgui;
 import bindbc.sdl;
@@ -32,7 +43,6 @@ public class DebugInterface
             i.io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
         }
         
-        import std.stdio: writeln;
         i.window = window;
         import global.assets;
         
@@ -101,11 +111,8 @@ public class DebugInterface
 
         static if(CIMGUI_VIEWPORT_BRANCH)
         {
-            import std.stdio:writeln;
-
             if (_inst.io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
             {
-                //writeln(_inst.io.ConfigFlags);
                 SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
                 SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
                 igUpdatePlatformWindows();

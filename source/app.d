@@ -1,5 +1,15 @@
-import std.stdio;
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
 import def.debugging.log;
+import data.hipfs;
 import core.thread;
 import sdl.loader;
 import error.handler;
@@ -7,21 +17,17 @@ import global.consts;
 import std.conv : to;
 import global.assets;
 import implementations.audio.audio;
-import bindbc.sdl;
-import bindbc.opengl;
-import bindbc.openal;
 import implementations.audio.backend.alefx;
-import sdl.event.dispatcher;
-import sdl.event.handlers.keyboard;
 version(Android)
 {
 	import jni.helper.androidlog;
-	import core.runtime : rt_init;
+}
+version(Windows)
+{
+	import implementations.renderer.backend.d3d.renderer;
 }
 import bindbc.cimgui;
-import math.matrix;
 import implementations.renderer.renderer;
-import implementations.renderer.backend.d3d.renderer;
 import view;
 import systems.game;
 import def.debugging.gui;
@@ -36,12 +42,37 @@ static SDL_Surface* gScreenSurface = null;
 
 static void initEngine(bool audio3D = false)
 {
-	
+	import def.debugging.console;
+	import bind.external;
+	version(dll)
+	{
+		import core.runtime;
+		rt_init();
+		importExternal();
+	}
 	version(Android)
 	{
-		rt_init();
-		alogi("D_LANG", "Came here");
-		alogi("HipremeEngine", "Starting engine on android");
+		Console.install(Platforms.ANDROID);
+		HipFS.install(getcwd());
+		rawlog("Starting engine on android");
+	}
+	else version(UWP)
+	{
+		Console.install(Platforms.UWP, &uwpPrint);
+		HipFS.install(getcwd(), (string path, out string msg)
+		{
+			if(!HipFS.exists(path))
+			{
+				msg = "File at path "~HipFS.getPath(path)~" does not exists. Did you forget to add it to the AppX Resources?";
+				return false;
+			}
+			return true;
+		});
+	}
+	else
+	{
+		Console.install();
+		HipFS.install(getcwd());
 	}
 	version(BindSDL_Static){}
 	else
@@ -61,14 +92,21 @@ static void initEngine(bool audio3D = false)
 }
 
 
-
-
+GameSystem sys;
 extern(C)int SDL_main()
 {
 	import data.ini;
+	import def.debugging.console;
 	initEngine(true);
-
-	HipRenderer.init("renderer.conf");
+	version(dll)
+	{
+		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
+		else version(Android)
+		{
+			HipRenderer.initExternal(HipRendererType.GL3);
+		}
+	}
+	else{HipRenderer.init("renderer.conf");}
 	
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
 	Sound_AudioInfo info;
@@ -90,48 +128,35 @@ extern(C)int SDL_main()
 	
 	//Audio.play(sc);
 	
-	float angle=0;
-	float angleSum = 0.01;
-	import std.math:sin,cos;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-	GameSystem sys = new GameSystem();
-	
-	while(true)
+	sys = new GameSystem();
+	version(UWP){}
+	else version(Android){}
+	else
 	{
-		if(!sys.update())
-			break;
-		HipRenderer.begin();
-		HipRenderer.clear(0,0,0,255);
-		sys.render();
-		HipRenderer.end();
-		sys.postUpdate();
+		while(HipremeUpdate()){}
+		HipremeDestroy();
+		destroyEngine();
+	}
+	return 0;
+	///////////START IMGUI
+	// Start the Dear ImGui frame
+	// DI.begin();
+	// static bool open = true;
+	// igShowDemoWindow(&open);
+	// import implementations.imgui.imgui_debug;
+	// addDebug!(s);
 
-		///////////START IMGUI
-		// Start the Dear ImGui frame
-        // DI.begin();
-		// static bool open = true;
-		// igShowDemoWindow(&open);
-		// import implementations.imgui.imgui_debug;
-		// addDebug!(s);
+	// if(igButton("Viewport flag".ptr, ImVec2(0,0)))
+	// {
+	// 	//logln!(igGetIO().ConfigFlags);
+	// 	igGetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	// }
 
-		// if(igButton("Viewport flag".ptr, ImVec2(0,0)))
-		// {
-		// 	//logln!(igGetIO().ConfigFlags);
-		// 	igGetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-		// }
-
-        // // Rendering
-		// DI.end();
-    }
+	// // Rendering
+	// DI.end();
 	//	alSource3f(src, AL_POSITION, cos(angle) * 10, 0, sin(angle) * 10);
-		angle+=angleSum;
-		
 	// Cleanup
-
-	destroyEngine();
-
-	return 1;
 }
 
 /** 
@@ -146,11 +171,46 @@ static void destroyEngine()
     SDL_Quit();
 }
 
-version(Android){}
-else
+version(Android)
 {
-	void main()
+	import jni.jni;
+	extern(C) jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
 	{
-		SDL_main();		
+		return HipremeMain();
+	}
+	extern(C) jboolean Java_com_hipremeengine_app_HipremeEngine_HipremeUpdate(JNIEnv* env, jclass clazz)
+	{
+		return HipremeUpdate();
+	}
+	extern(C) void  Java_com_hipremeengine_app_HipremeEngine_HipremeDestroy(JNIEnv* env, jclass clazz)
+	{
+		HipremeDestroy();
+	}
+}  
+
+export extern(C) int HipremeMain(){return SDL_main();}
+version(dll){}
+else{void main(){HipremeMain();}}
+
+
+extern(C) @nogc nothrow void glClearColor(float, float, float, float);
+export extern(C) bool HipremeUpdate()
+{
+	if(!sys.update())
+		return false;
+	HipRenderer.begin();
+	HipRenderer.clear(0,0,0,255);
+	sys.render();
+	HipRenderer.end();
+	sys.postUpdate();
+	return true;
+}
+export extern(C) void HipremeDestroy()
+{
+	destroyEngine();
+	version(dll)
+	{
+		import core.runtime;
+		rt_term();
 	}
 }
