@@ -26,7 +26,7 @@ The engine mantains some global options which you can modify it on source/global
 - Multi threaded asset loading and deconding (image).
 - Virtual File System for being able to write and read files anywhere
 - Building for UWP(Xbox)
-
+- Building for Android
 
 ## Next steps
 
@@ -34,7 +34,9 @@ The engine mantains some global options which you can modify it on source/global
 - Dispatch file reading to the asset/resource packer.
 - Render Tiled maps
 - Create a proof of concept
-- Cross platform build system
+- Automatize resources transfer to UWP
+- Automatize dependencies dll's generation
+- Event handler for UPW and Android
 
 
 ## Issues list
