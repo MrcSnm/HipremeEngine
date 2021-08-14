@@ -174,9 +174,14 @@ static void destroyEngine()
 version(Android)
 {
 	import jni.jni;
+	import jni.helper.jnicall;
+
 	extern(C) jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
 	{
-		return HipremeMain();
+		int ret = 0;
+		ret = HipremeMain();
+		rawlog(javaCall!(int, "com.hipremeengine.app.HipremeEngine.getWindowSize")(env));
+		return ret;
 	}
 	extern(C) jboolean Java_com_hipremeengine_app_HipremeEngine_HipremeUpdate(JNIEnv* env, jclass clazz)
 	{
