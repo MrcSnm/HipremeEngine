@@ -53,7 +53,7 @@ static void initEngine(bool audio3D = false)
 	version(Android)
 	{
 		Console.install(Platforms.ANDROID);
-		HipFS.install(getcwd());
+		HipFS.install(HipremeAndroid.javaCall!(string, "getApplicationDir"));
 		rawlog("Starting engine on android");
 	}
 	else version(UWP)

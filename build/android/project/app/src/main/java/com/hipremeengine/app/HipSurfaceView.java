@@ -12,8 +12,8 @@ public class HipSurfaceView extends GLSurfaceView
         super(ctx);
         setEGLContextClientVersion(3);
         renderer = new Hip_GLES30_Renderer();
-        //Save battery
         setRenderer(renderer);
+        //Save battery
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 }
