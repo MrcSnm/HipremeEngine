@@ -4,7 +4,7 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
@@ -91,8 +91,8 @@ static void initEngine(bool audio3D = false)
 	}
 }
 
-
-GameSystem sys;
+///Globally shared for accessing it on Android Game Thread
+__gshared GameSystem sys;
 extern(C)int SDL_main()
 {
 	import data.ini;
@@ -134,7 +134,7 @@ extern(C)int SDL_main()
 	else version(Android){}
 	else
 	{
-		while(HipremeUpdate()){}
+		while(HipremeUpdate()){HipremeRender();}
 		HipremeDestroy();
 		destroyEngine();
 	}
@@ -175,20 +175,30 @@ version(Android)
 {
 	import jni.jni;
 	import jni.helper.jnicall;
+	alias HipremeAndroid = javaGetPackage!("com.hipremeengine.app.HipremeEngine");
+
 
 	extern(C) jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
 	{
 		int ret = 0;
 		ret = HipremeMain();
-		rawlog(javaCall!(int, "com.hipremeengine.app.HipremeEngine.getWindowSize")(env));
+		HipremeAndroid.setEnv(env);
+		import graphics.g2d.viewport;
+		int[2] wsize = HipremeAndroid.javaCall!(int[2], "getWindowSize");
+		HipRenderer.setViewport(new Viewport(0, 0, wsize[0], wsize[1]));
 		return ret;
 	}
 	extern(C) jboolean Java_com_hipremeengine_app_HipremeEngine_HipremeUpdate(JNIEnv* env, jclass clazz)
 	{
 		return HipremeUpdate();
 	}
+	extern(C) void Java_com_hipremeengine_app_HipremeEngine_HipremeRender(JNIEnv* env, jclass clazz)
+	{
+		HipremeRender();
+	}
 	extern(C) void  Java_com_hipremeengine_app_HipremeEngine_HipremeDestroy(JNIEnv* env, jclass clazz)
 	{
+		HipremeAndroid.setEnv(null);
 		HipremeDestroy();
 	}
 }  
@@ -203,12 +213,20 @@ export extern(C) bool HipremeUpdate()
 {
 	if(!sys.update())
 		return false;
+	sys.postUpdate();
+	return true;
+}
+/**
+* This function was created for making it rendering optional. On Android, 
+* the game is only rendered when the renderer is dirty, it is absolutely
+* not recommended to do game logic on the render
+*/
+export extern(C) void HipremeRender()
+{
 	HipRenderer.begin();
 	HipRenderer.clear(0,0,0,255);
 	sys.render();
 	HipRenderer.end();
-	sys.postUpdate();
-	return true;
 }
 export extern(C) void HipremeDestroy()
 {

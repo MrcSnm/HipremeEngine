@@ -1,9 +1,13 @@
 module jni.helper.jnicall;
+import std.format:format;
+import std.ascii:toUpper;
 import std.array:split;
 import std.string:toStringz;
 import std.traits : isArray;
 import std.algorithm:countUntil;
 import jni.jni;
+
+version(Android):
 
 
 string javaGetTypeRepresentation(T)()
@@ -35,6 +39,31 @@ string javaGetTypeRepresentation(T)()
         case "ushort":
             return "S";
     }
+}
+
+string javaGetType(T)()
+{
+    long ind = T.stringof.countUntil("[");
+    string ret = T.stringof;
+    if(ind != -1)
+        ret = ret[0..ind];
+    switch(ret)
+    {
+        case "uint":
+            ret = "int";
+            break;
+        case "bool":
+            ret~= "ean";
+            break;
+        case "ushort":
+            ret = "short";
+            break;
+        case "ulong":
+            ret = "long";
+            break;
+        default:break;
+    }
+    return ret;
 }
 
 private string getArgs(Args...)()
@@ -94,54 +123,67 @@ string javaGetMethodName(string where)
         return where[ind+1..$];
 }
 
-T javaCall(T, string where, Args...)(JNIEnv* env)
+template javaGetPackage(string packageName)
 {
-    enum s = getArgs!Args;
-    string t = "(";
-    string rep = "";
-    foreach (i, a; Args)
-    {
-        rep = javaGetTypeRepresentation!(typeof(a));
-        t~= rep;
-        if(i < Args.length - 1)
-            t~=",";
-    }
-    t~=")"~javaGetTypeRepresentation!T;
-    
+    JNIEnv* _env = null;
+    void setEnv(JNIEnv* env){_env = env;}
 
-    jclass cls = javaGetClass(env, where);
-    jmethodID id = (*env).GetStaticMethodID(env, cls, javaGetMethodName(where).toStringz, t.toStringz);
-    static if(is(T == int) || is(T == uint))
+    T javaCall(T, string path, Args...)(JNIEnv* env = _env)
     {
-        return mixin(q{(*env).CallStaticIntMethod(env, cls, id }~s~")");
-    }
-    else static if(is(T == bool))
-    {
-        return mixin(q{(*env).CallStaticBooleanMethod(env, cls, id }~s~");");
-    }
-    else static if(is(T == char))
-    {
-        return mixin(q{(*env).CallStaticCharMethod(env, cls, id }~s~");");
-    }
-    else static if(is(T == short) || is(T == ushort))
-    {
-        return mixin(q{(*env).CallStaticShortMethod(env, cls, id }~s~");");
-    }
-    else static if(is(T == float))
-    {
-        return mixin(q{(*env).CallStaticFloatMethod(env, cls, id }~s~");");
-    }
-    else static if(is(T == double))
-    {
-        return mixin(q{(*env).CallStaticDoubleMethod(env, cls, id }~s~");");
-    }
-    else static if(is(T == long) || is(T == ulong))
-    {
-        return mixin(q{(*env).CallStaticLongMethod(env, cls, id }~s~");");
-    }
-    else static if(is(T == void))
-    {
-        return mixin(q{(*env).CallStaticVoidMethod(env, cls, id }~s~");");
-    }
+        static if(packageName[$-1] != '.' && path[0] != '.')
+            enum where = packageName~"."~path;
+        else
+            enum where = packageName~path;
+        enum s = getArgs!Args;
+        string t = "(";
+        string rep = "";
+        enum ind = T.stringof.countUntil("[");
+        enum isArray = ind != -1;
+        static if(isArray)
+            enum dType = T.stringof[0..ind];
+        else
+            enum dType = T.stringof;
+        enum javaType = javaGetType!T;
+        enum javaTypeUpper = toUpper(javaType[0]) ~ javaType[1..$];
 
+
+        foreach (i, a; Args)
+        {
+            rep = javaGetTypeRepresentation!(typeof(a));
+            t~= rep;
+            if(i < Args.length - 1)
+                t~=",";
+        }
+        t~=")"~javaGetTypeRepresentation!T;
+        
+
+        jclass cls = javaGetClass(env, where);
+        jmethodID id = (*env).GetStaticMethodID(env, cls, javaGetMethodName(where).toStringz, t.toStringz);
+
+        
+
+        static if(!isArray)
+            return mixin(q{(*env).CallStatic}~javaTypeUpper~q{Method(env, cls, id } ~s~")");
+        else
+        {
+            jarray obj = mixin(q{(*env).CallStaticObjectMethod(env, cls, id } ~ s~")");
+
+            mixin(format!q{
+                j%s* javaArr = (*env).Get%sArrayElements(env, cast(j%sArray)obj, null);
+            }(javaType, javaTypeUpper, javaType));
+
+            int arrL = (*env).GetArrayLength(env, obj);
+            T ret;
+            static if(T.length == 0)
+                ret.length = arrL;
+
+            for(int i = 0; i < arrL; i++)
+                mixin("ret[i] = cast("~dType~")javaArr[i];");
+
+            mixin(format!q{(*env).Release%sArrayElements(env, obj, javaArr, 0);}(javaTypeUpper));
+            return ret;
+        }
+    }
 }
+
+alias javaCall = javaGetPackage!"".javaCall;

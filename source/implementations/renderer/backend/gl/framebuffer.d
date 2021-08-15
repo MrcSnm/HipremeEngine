@@ -4,13 +4,13 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
 
 module implementations.renderer.backend.gl.framebuffer;
-import bindbc.opengl;
+import implementations.renderer.backend.gl.renderer;
 import error.handler;
 import implementations.renderer.framebuffer;
 import implementations.renderer.shader;

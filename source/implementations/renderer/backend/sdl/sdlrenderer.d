@@ -4,7 +4,7 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
@@ -117,8 +117,8 @@ public class Hip_SDL_Renderer : IHipRendererImpl
     }
     public void begin(){}
     public void setRendererMode(HipRendererMode mode){}
-    public void drawIndexed(uint count, uint offset =0){}
-    public void drawVertices(uint count, uint offset =0){}
+    public void drawIndexed(index_t count, uint offset =0){}
+    public void drawVertices(index_t count, uint offset =0){}
 
     pragma(inline, true)
     public void end()
