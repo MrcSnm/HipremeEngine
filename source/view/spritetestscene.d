@@ -24,21 +24,22 @@ class SpriteTestScene : Scene
     HipSprite sprite;
     this()
     {
-        batch = new HipSpriteBatch();
-        sprite = new HipSprite("sprite.png");
         import def.debugging.log;
+        batch = new HipSpriteBatch();
+
+        // sprite = new HipSprite("sprite.png");
     }
 
     public override void render()
     {
         super.render();
-        Viewport v = HipRenderer.getCurrentViewport();
-        v.setSize(800, 600);
-        v.update();
-        batch.camera.setScale(2, 2);
-        batch.begin();
-        batch.draw(sprite);
-        batch.end();
+        // Viewport v = HipRenderer.getCurrentViewport();
+        // v.setSize(800, 600);
+        // v.update();
+        // batch.camera.setScale(2, 2);
+        // batch.begin();
+        // batch.draw(sprite);
+        // batch.end();
     }
 
     public override void onResize(uint width, uint height)

@@ -26,12 +26,17 @@ class Hip_GL3_Texture : ITexture
     {
         switch(mode)
         {
+            import gles.gl30;
+            version(GLES30){}
+            else
+            {
+                case TextureWrapMode.MIRRORED_CLAMP_TO_EDGE: return GL_MIRROR_CLAMP_TO_EDGE;
+                case TextureWrapMode.CLAMP_TO_BORDER: return GL_CLAMP_TO_BORDER;
+            }
             case TextureWrapMode.CLAMP_TO_EDGE: return GL_CLAMP_TO_EDGE;
-            case TextureWrapMode.CLAMP_TO_BORDER: return GL_CLAMP_TO_BORDER;
             case TextureWrapMode.REPEAT: return GL_REPEAT;
             case TextureWrapMode.MIRRORED_REPEAT: return GL_MIRRORED_REPEAT;
-            case TextureWrapMode.MIRRORED_CLAMP_TO_EDGE: return GL_MIRROR_CLAMP_TO_EDGE;
-            default: return -1;
+            default: return GL_REPEAT;
         }
     }
     protected int getGLMinMagFilter(TextureFilter filter)

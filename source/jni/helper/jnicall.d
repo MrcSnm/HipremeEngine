@@ -1,4 +1,5 @@
 module jni.helper.jnicall;
+import std.conv:to;
 import std.format:format;
 import std.ascii:toUpper;
 import std.array:split;
@@ -9,35 +10,34 @@ import jni.jni;
 
 version(Android):
 
+enum javaRep =
+[
+    "byte"  : "B",
+    "ubyte" : "B",
+    "char"  : "C",
+    "bool"  : "Z",
+    "int"   : "I",
+    "uint"  : "I",
+    "void"  : "V",
+    "long"  : "J",
+    "ulong" : "J",
+    "float" : "F",
+    "double": "D",
+    "short" : "S",
+    "ushort": "S",
+    "string": "Ljava/lang/String;"
+];
 
-string javaGetTypeRepresentation(T)()
+enum javaGetTypeRepresentation(T)()
 {
-    static if(isArray!T)
-        return "["~javaGetTypeRepresentation!(mixin(T.stringof[0..T.stringof.countUntil("[")]));
-    final switch(T.stringof)
+    static if(isArray!T && !is(T == string))
     {
-        case "byte":
-        case "ubyte":
-            return "B";
-        case "char":
-            return "C";
-        case "bool":
-            return "Z";
-        case "int":
-        case "uint":
-            return "I";
-        case "void":
-            return "V";
-        case "long":
-        case "ulong":
-            return "J";
-        case "float":
-            return "F";
-        case "double":
-            return "D";
-        case "short":
-        case "ushort":
-            return "S";
+        return "["~javaGetTypeRepresentation!(typeof(T.init[0]));
+    }
+    else
+    {
+        static assert((T.stringof in javaRep) !is null, "Type name "~T.stringof~" not found when searching for java type representation");
+        return javaRep[T.stringof];
     }
 }
 
@@ -49,6 +49,9 @@ string javaGetType(T)()
         ret = ret[0..ind];
     switch(ret)
     {
+        case "string":
+            ret = "Ljava/lang/String;";
+            break;
         case "uint":
             ret = "int";
             break;
@@ -156,13 +159,21 @@ template javaGetPackage(string packageName)
         }
         t~=")"~javaGetTypeRepresentation!T;
         
+        import def.debugging.log;
 
         jclass cls = javaGetClass(env, where);
         jmethodID id = (*env).GetStaticMethodID(env, cls, javaGetMethodName(where).toStringz, t.toStringz);
 
-        
 
-        static if(!isArray)
+        static if(is(T == string))
+        {
+            jstring obj = mixin(q{(*env).CallStaticObjectMethod(env, cls, id } ~ s~")");
+            const(char)* chs = (*env).GetStringUTFChars(env, obj, null);
+            string str = to!string(chs);
+            (*env).ReleaseStringUTFChars(env, obj, chs);
+            return str;
+        }
+        else static if(!isArray)
             return mixin(q{(*env).CallStatic}~javaTypeUpper~q{Method(env, cls, id } ~s~")");
         else
         {
