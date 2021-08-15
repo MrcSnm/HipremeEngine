@@ -4,7 +4,7 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
@@ -74,6 +74,7 @@ class Mesh
     }
     public void updateIndices(ref index_t[] indices)
     {
+        import def.debugging.log;
         this.indices = indices;
         this.vao.updateIndices(cast(index_t)indices.length, indices.ptr);
     }
@@ -106,7 +107,7 @@ class Mesh
         */
         this.shader.bind();
         this.vao.bind();
-        HipRenderer.drawIndexed(cast(uint)count);
+        HipRenderer.drawIndexed(cast(index_t)count);
     }
 
 }

@@ -4,7 +4,7 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
@@ -19,7 +19,6 @@ import graphics.g2d.viewport;
 import math.rect;
 import error.handler;
 import bindbc.sdl;
-import bindbc.opengl;
 import def.debugging.log;
 import core.stdc.stdlib:exit;
 
@@ -102,8 +101,8 @@ interface IHipRendererImpl
     public bool hasErrorOccurred(out string err, string line = __FILE__, int line =__LINE__);
     public void begin();
     public void setRendererMode(HipRendererMode mode);
-    public void drawIndexed(uint count, uint offset = 0);
-    public void drawVertices(uint count, uint offset = 0);
+    public void drawIndexed(index_t count, uint offset = 0);
+    public void drawVertices(index_t count, uint offset = 0);
     public void end();
     public void clear();
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
@@ -120,6 +119,7 @@ interface IHipRendererImpl
 
 class HipRenderer
 {
+    __gshared:
     protected static Viewport currentViewport = null;
     protected static Viewport mainViewport = null;
     protected static IHipRendererImpl rendererImpl;
@@ -321,22 +321,22 @@ class HipRenderer
         HipRenderer.exitOnError();
     }
 
-    public static void drawIndexed(uint count, uint offset = 0)
+    public static void drawIndexed(index_t count, uint offset = 0)
     {
         rendererImpl.drawIndexed(count, offset);
         HipRenderer.exitOnError();
     }
-    public static void drawIndexed(HipRendererMode mode, uint count, uint offset = 0)
+    public static void drawIndexed(HipRendererMode mode, index_t count, uint offset = 0)
     {
         HipRenderer.setRendererMode(mode);
         HipRenderer.drawIndexed(count, offset);
     }
-    public static void drawVertices(uint count, uint offset = 0)
+    public static void drawVertices(index_t count, uint offset = 0)
     {
         rendererImpl.drawVertices(count, offset);
         HipRenderer.exitOnError();
     }
-    public static void drawVertices(HipRendererMode mode, uint count, uint offset = 0)
+    public static void drawVertices(HipRendererMode mode, index_t count, uint offset = 0)
     {
         rendererImpl.setRendererMode(mode);
         rendererImpl.drawVertices(count, offset);

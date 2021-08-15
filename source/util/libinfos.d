@@ -4,14 +4,14 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
 
 module util.libinfos;
 import bindbc.openal;
-import bindbc.opengl;
+import implementations.renderer.backend.gl.renderer;
 import def.debugging.log;
 import core.stdc.string:strlen;
 import std.conv:to;
@@ -36,12 +36,15 @@ void list_audio_devices(const ALCchar *devices)
 
 void show_opengl_info()
 {
-    if(!isOpenGLLoaded())
-    {
-        rawlog("OpenGL is not loaded for being able to show info!");
-    }
-    else
-        rawlog!`OpenGL Infos:
+	version(Android){}
+	else{
+		if(!isOpenGLLoaded())
+		{
+			rawlog("OpenGL is not loaded for being able to show info!");
+			return;
+		}
+	}
+	rawlog!`OpenGL Infos:
     Vendor:   %s
     Renderer: %s
     Version:  %s`(to!string(glGetString(GL_VENDOR)),
