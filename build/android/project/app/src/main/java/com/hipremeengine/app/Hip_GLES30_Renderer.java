@@ -13,22 +13,20 @@ public class Hip_GLES30_Renderer implements GLSurfaceView.Renderer
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config)
     {
+        HipremeEngine.HipremeInit();
         HipremeEngine.HipremeMain();
-        HipremeEngine.gameThread = new Thread(new Runnable() {
-            @Override
-            public void run()
+        HipremeEngine.gameThread = new Thread(() ->
+        {
+            long initialTime, deltaTime;
+            while(HipremeEngine.isRunning)
             {
-                long initialTime, deltaTime;
-                while(HipremeEngine.isRunning)
-                {
-                    try{ Thread.sleep(16); }
-                    catch(InterruptedException e) { e.printStackTrace();}
+                try{ Thread.sleep(16); }
+                catch(InterruptedException e) { e.printStackTrace();}
 
-                    initialTime =  System.nanoTime();
-                    HipremeEngine.HipremeUpdate();
-                    deltaTime = System.nanoTime() - initialTime;
-                    //System.out.println(deltaTime/1000);
-                }
+                initialTime =  System.nanoTime();
+                HipremeEngine.HipremeUpdate();
+                deltaTime = System.nanoTime() - initialTime;
+                //System.out.println(deltaTime/1000);
             }
         });
         HipremeEngine.gameThread.start();
