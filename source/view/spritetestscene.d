@@ -26,8 +26,14 @@ class SpriteTestScene : Scene
     {
         import def.debugging.log;
         batch = new HipSpriteBatch();
+        import data.hipfs;
+        string output;
 
-        // sprite = new HipSprite("sprite.png");
+
+        HipFS.readText("text/renderer.conf", output);
+        rawlog(output);
+
+        // sprite = new HipSprite("rex.png");
     }
 
     public override void render()
