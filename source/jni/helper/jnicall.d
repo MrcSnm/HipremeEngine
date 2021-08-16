@@ -25,7 +25,8 @@ enum javaRep =
     "double": "D",
     "short" : "S",
     "ushort": "S",
-    "string": "Ljava/lang/String;"
+    "string": "Ljava/lang/String;",
+    "Object": "Ljava/lang/Object;"
 ];
 
 enum javaGetTypeRepresentation(T)()
@@ -51,6 +52,9 @@ string javaGetType(T)()
     {
         case "string":
             ret = "Ljava/lang/String;";
+            break;
+        case "Object":
+            ret = "LJava/lang/Object;";
             break;
         case "uint":
             ret = "int";
@@ -131,8 +135,10 @@ template javaGetPackage(string packageName)
     JNIEnv* _env = null;
     void setEnv(JNIEnv* env){_env = env;}
 
-    T javaCall(T, string path, Args...)(JNIEnv* env = _env)
+    auto javaCall(T, string path, Args...)(JNIEnv* env = _env)
     {
+        static if(is(T == void*))
+            return javaCall!(Object, path, Args);
         static if(packageName[$-1] != '.' && path[0] != '.')
             enum where = packageName~"."~path;
         else
@@ -164,8 +170,12 @@ template javaGetPackage(string packageName)
         jclass cls = javaGetClass(env, where);
         jmethodID id = (*env).GetStaticMethodID(env, cls, javaGetMethodName(where).toStringz, t.toStringz);
 
-
-        static if(is(T == string))
+        static if(is(T == Object))
+        {
+            jobject obj = mixin(q{(*env).CallStaticObjectMethod(env, cls, id } ~s ~")");
+            return cast(void*)obj;
+        }
+        else static if(is(T == string))
         {
             jstring obj = mixin(q{(*env).CallStaticObjectMethod(env, cls, id } ~ s~")");
             const(char)* chs = (*env).GetStringUTFChars(env, obj, null);

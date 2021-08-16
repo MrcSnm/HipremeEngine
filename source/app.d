@@ -9,8 +9,8 @@ Distributed under the MIT Software License.
 	https://opensource.org/licenses/MIT)
 */
 import def.debugging.log;
+import bind.external;
 import data.hipfs;
-import core.thread;
 import sdl.loader;
 import error.handler;
 import global.consts;
@@ -21,6 +21,9 @@ import implementations.audio.backend.alefx;
 version(Android)
 {
 	import jni.helper.androidlog;
+	import jni.jni;
+	import jni.helper.jnicall;
+	alias HipremeAndroid = javaGetPackage!("com.hipremeengine.app.HipremeEngine");
 }
 version(Windows)
 {
@@ -43,18 +46,12 @@ static SDL_Surface* gScreenSurface = null;
 static void initEngine(bool audio3D = false)
 {
 	import def.debugging.console;
-	import bind.external;
-	version(dll)
-	{
-		import core.runtime;
-		rt_init();
-		importExternal();
-	}
 	version(Android)
 	{
 		Console.install(Platforms.ANDROID);
-		HipFS.install(HipremeAndroid.javaCall!(string, "getApplicationDir"));
-		rawlog("Starting engine on android");
+		// HipFS.install(HipremeAndroid.javaCall!(string, "getApplicationDir"));
+		HipFS.install("");
+		rawlog("Starting engine on android\nWorking Dir: ", HipFS.getPath(""));
 	}
 	else version(UWP)
 	{
@@ -97,6 +94,7 @@ extern(C)int SDL_main()
 {
 	import data.ini;
 	import def.debugging.console;
+	import data.hipfs;
 	initEngine(true);
 	version(dll)
 	{
@@ -171,18 +169,22 @@ static void destroyEngine()
     SDL_Quit();
 }
 
+
+
 version(Android)
 {
-	import jni.jni;
-	import jni.helper.jnicall;
-	alias HipremeAndroid = javaGetPackage!("com.hipremeengine.app.HipremeEngine");
-
+	extern(C) void Java_com_hipremeengine_app_HipremeEngine_HipremeInit(JNIEnv* env, jclass clazz)
+	{
+		HipremeInit();
+		HipremeAndroid.setEnv(env);
+		aaMgr = cast(AAssetManager*)HipremeAndroid.javaCall!(Object, "getAssetManager");
+		aaMgr = AAssetManager_fromJava(env, aaMgr);
+		
+	}
 
 	extern(C) jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
 	{
-		int ret = 0;
-		ret = HipremeMain();
-		HipremeAndroid.setEnv(env);
+		int ret = HipremeMain();
 		import graphics.g2d.viewport;
 		int[2] wsize = HipremeAndroid.javaCall!(int[2], "getWindowSize");
 		HipRenderer.setViewport(new Viewport(0, 0, wsize[0], wsize[1]));
@@ -203,12 +205,22 @@ version(Android)
 	}
 }  
 
+///Initializes the D runtime and import external functions
+export extern(C) void HipremeInit()
+{
+	version(dll)
+	{
+		import core.runtime;
+		rt_init();
+		importExternal();
+	}
+}
+///Setup the engine
 export extern(C) int HipremeMain(){return SDL_main();}
 version(dll){}
 else{void main(){HipremeMain();}}
 
-
-extern(C) @nogc nothrow void glClearColor(float, float, float, float);
+///Steps an engine frame
 export extern(C) bool HipremeUpdate()
 {
 	if(!sys.update())
