@@ -150,6 +150,7 @@ Options:
         mkdir(toWhere);
     }
     //Copy loop
+    uint copyQuant = 0;
     foreach(c; mainEntries)
     {
         //Make path relative to where it is started, so it is possible to create same folder structure
@@ -187,17 +188,26 @@ Options:
             string namePath = name[0..ind];
             if(!exists(namePath))
                 mkdirRecurse(namePath);
+            willCopy = true;
         }
         
         if(willCopy)
         {
+            copyQuant++;
             writeln(c.entry.name, " -> ", name);
             copy(c.entry.name, name);
             cache[getCacheName(c.entry.name)].timeCopied = DirEntry(name).timeLastModified.toSimpleString;
         }
     }
-
-    writeCacheFile(workingDir, args[1], args[2]);
+    if(copyQuant != 0)
+    {
+        writeCacheFile(workingDir, args[1], args[2]);
+        writeln("CopyResources: Copied ", copyQuant, " files");
+    }
+    else
+    {
+        writeln("CopyResources: Target folder '"~toWhere~"' is up to date");
+    }
 
     return EXIT_SUCCESS;
 }
