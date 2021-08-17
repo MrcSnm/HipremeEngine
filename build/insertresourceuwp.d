@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the MIT Software License.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 import std.stdio;
 import std.conv:to;
 import std.process;
@@ -57,21 +68,78 @@ bool stripLastRes(ref string res)
     long start = res.countUntil(copyInit);
     if(start == -1)
     {
-        writeln("Nothing to strip");
+        writeln("Nothing to strip on .vcxproj");
         return true;
     }
     long end = res[cast(uint)start..$].countUntil(copyEnd);
     if(end == -1)
     {
-        writeln("Malformed input. Won't do anything with vcxproj");
+        writeln("Malformed input on. Won't do anything with vcxproj");
         return false;
     }
 
     end+=start + copyEnd.length;
-    writeln("Stripping last ResourceCopy...");
+    writeln("Stripping last .vcxproj ResourceCopy...");
     res = res[0..cast(uint)start]~res[cast(uint)end..$];
     return true;
 }
+
+bool stripLastResFilter(ref string res)
+{
+    long start = res.countUntil(copyInit);
+    if(start == -1)
+    {
+        writeln("Nothing to strip on .vcxproj.filters");
+        return true;
+    }
+    long end = res[cast(uint)start..$].countUntil(copyEnd);
+    if(end == -1)
+    {
+        writeln("Malformed input. Won't do anything with vcxproj.filters");
+        return false;
+    }
+
+    end+=start + copyEnd.length;
+    writeln("Stripping last .vcxproj.filters ResourceCopy...");
+    res = res[0..cast(uint)start]~res[cast(uint)end..$];
+    return true;
+}
+
+string getResourceDescriptor(DirEntry e, string targetPath)
+{
+    string n = "$(ProjectPath)..\\UWPResources"~e.name[targetPath.length..$];
+    return ("<"~getType(e.name) ~" Include=\""~ n ~ "\"/>");
+}
+
+string getResourceFilterDescriptor(DirEntry e, string targetPath)
+{
+    string type = getType(e.name);
+    string filterName = e.name[targetPath.length-"UWPResources\\".length..$];
+
+    long ind = lastIndexOf(filterName, '\\');
+    if(ind == -1)
+    {
+        writeln("Unexpected Error: Resource is a directory.");
+        return "";
+    }
+    filterName = filterName[0..cast(uint)ind];
+    if(filterName[0] == '\\')filterName = filterName[1..$];
+
+    string n = "$(ProjectPath)..\\UWPResources"~e.name[targetPath.length..$];
+    return ("<"~type ~" Include=\""~ n ~ "\">\n\t<Filter>"~filterName~"</Filter>\n</"~type~">");
+}
+
+string generateFilterDefinition(DirEntry e, string targetPath)
+{
+    string descriptor = e.name[targetPath.length-"UWPResources\\".length..$];
+    long ind = lastIndexOf(descriptor, '\\');
+    descriptor = descriptor[0..cast(uint)ind];
+    if(descriptor[0] == '\\')descriptor = descriptor[1..$];
+
+    return "<Filter Include=\""~descriptor~"\"/>";
+}
+
+string[] filters = ["<Filter Include=\"UWPResources\"/>"];
 
 int main(string[] args)
 {
@@ -89,20 +157,34 @@ int main(string[] args)
         writeln(vcxPath~" does not exists.");
         return EXIT_FAILURE;
     }
+    if(args[2] != "--strip-only" && !exists(args[2].asAbsolutePath.asNormalizedPath.array))
+    {
+        writeln(args[2].asAbsolutePath.asNormalizedPath.array, " does not exists.");
+        return EXIT_FAILURE;
+    }
     
     string vcx = to!string(read(vcxPath));
+    string vcxfilter = to!string(read(vcxPath~".filters"));
+
     if(!stripLastRes(vcx))
         return EXIT_FAILURE;
+    if(!stripLastResFilter(vcxfilter))
+        return EXIT_FAILURE;
+
     if(args[2] != "--strip-only")
     {
-        long startIndex = vcx.countUntil(wordToFind);
-        if(startIndex == -1)
+        long startIndex       = vcx.countUntil(wordToFind);
+        long startIndexFilter = vcxfilter.countUntil(wordToFind);
+        if(startIndex == -1 || startIndexFilter == -1)
         {
             writeln("File format is not yet supported.");
             return EXIT_FAILURE;
         }
-        startIndex+=wordToFind.length;
+        startIndex      +=wordToFind.length;
+        startIndexFilter+=wordToFind.length;
+
         string toAppend = copyInit~"\n";
+        string toAppendFilter = "";
 
         string absRes = args[2].asNormalizedPath.array.asAbsolutePath.array.asNormalizedPath.array;
         string targetPath = args[1]~"\\..\\UWPResources";
@@ -115,17 +197,45 @@ int main(string[] args)
 
         foreach(DirEntry e; dirEntries(targetPath, SpanMode.depth).filter!((DirEntry entry) => entry.isFile))
         {
-            string n = "$(ProjectPath)..\\UWPResources"~e.name[targetPath.length..$];
-            toAppend~=("<"~getType(e.name) ~" Include=\""~ n ~ "\"/>"~"\n");
+            string resource = getResourceDescriptor(e, targetPath);
+            string filter = getResourceFilterDescriptor(e, targetPath);
+            if(resource == "")
+            {
+                writeln("Fatal Error. Stopping resource insertion process.");
+                return EXIT_FAILURE;
+            }
+            bool hasFilter = false;
+
+            string filterDef = generateFilterDefinition(e, targetPath);
+            for(int i = 0; i < filters.length && !hasFilter; i++)
+            {
+                if(filters[i] == filterDef)
+                    hasFilter = true;
+            }
+            if(!hasFilter)
+                filters~= filterDef;
+
+            toAppend~= resource~"\n";
+            toAppendFilter ~= filter~"\n";
         }
         toAppend~= copyEnd;
+        toAppendFilter = copyInit~"\n"~join(filters,"\n")~"\n"~toAppendFilter~copyEnd;
 
         int plusIndex = 0;
         while(vcx[plusIndex++] != '<'){}
-        plusIndex-=1;
-        vcx = vcx[plusIndex..cast(uint)startIndex+plusIndex]~toAppend~vcx[cast(uint)startIndex+plusIndex..$];
-    }
+        if(plusIndex != 0) plusIndex-=1;
 
+        int plusIndexFilter = 0;
+        while(vcxfilter[plusIndexFilter++] != '<'){}
+        if(plusIndexFilter != 0) plusIndexFilter-=1;
+
+        vcx = vcx[plusIndex..cast(uint)startIndex+plusIndex]~toAppend~vcx[cast(uint)startIndex+plusIndex..$];
+        vcxfilter = vcxfilter[plusIndexFilter..cast(uint)startIndexFilter+plusIndexFilter]~
+            toAppendFilter~
+            vcxfilter[cast(uint)startIndexFilter+plusIndexFilter..$];        
+    }
+    writeln("Writing .vcxproj and .vcxproj.filters");
     std.file.write(vcxPath, vcx);
+    std.file.write(vcxPath~".filters", vcxfilter);
     return EXIT_SUCCESS;
 }
