@@ -107,7 +107,7 @@ bool stripLastResFilter(ref string res)
 
 string getResourceDescriptor(DirEntry e, string targetPath)
 {
-    string n = "$(ProjectPath)..\\UWPResources"~e.name[targetPath.length..$];
+    string n = "$(ProjectDir)\\UWPResources"~e.name[targetPath.length..$];
     return ("<"~getType(e.name) ~" Include=\""~ n ~ "\"/>");
 }
 
@@ -125,21 +125,56 @@ string getResourceFilterDescriptor(DirEntry e, string targetPath)
     filterName = filterName[0..cast(uint)ind];
     if(filterName[0] == '\\')filterName = filterName[1..$];
 
-    string n = "$(ProjectPath)..\\UWPResources"~e.name[targetPath.length..$];
+    string n = "$(ProjectDir)\\UWPResources"~e.name[targetPath.length..$];
     return ("<"~type ~" Include=\""~ n ~ "\">\n\t<Filter>"~filterName~"</Filter>\n</"~type~">");
 }
 
-string generateFilterDefinition(DirEntry e, string targetPath)
+string getFilterName(DirEntry e, string targetPath)
 {
     string descriptor = e.name[targetPath.length-"UWPResources\\".length..$];
     long ind = lastIndexOf(descriptor, '\\');
     descriptor = descriptor[0..cast(uint)ind];
     if(descriptor[0] == '\\')descriptor = descriptor[1..$];
+    return descriptor;
+}
+string[] filters = [];
 
-    return "<Filter Include=\""~descriptor~"\"/>";
+string generateFilterDefinition()
+{
+    string retVal = "";
+    foreach(f; filters)
+        retVal~="<Filter Include=\""~f~"\"/>\n";
+    return retVal[0..$-1];
 }
 
-string[] filters = ["<Filter Include=\"UWPResources\"/>"];
+bool hasFilter(string filterName)
+{
+    bool has = false;
+    for(int i = 0; i < filters.length && !has; i++)
+        if(filters[i] == filterName)
+            has = true;
+
+    return has;
+}
+
+
+void generateFilters(string filterName)
+{
+    string[] paths = pathSplitter(filterName).array;
+
+
+    for(int i =0; i < paths.length; i++)
+    {
+        string toGenerate = "";
+        for(int z = i; z >= 0; z--)
+            toGenerate = paths[z]~"\\"~toGenerate;
+        if(toGenerate[$-1] == '\\')
+            toGenerate = toGenerate[0..$-1];
+        if(!hasFilter(toGenerate))
+            filters~= toGenerate;
+    }
+    
+}
 
 int main(string[] args)
 {
@@ -187,7 +222,7 @@ int main(string[] args)
         string toAppendFilter = "";
 
         string absRes = args[2].asNormalizedPath.array.asAbsolutePath.array.asNormalizedPath.array;
-        string targetPath = args[1]~"\\..\\UWPResources";
+        string targetPath = args[1]~"\\UWPResources";
         if(!exists(targetPath))
             mkdir(targetPath);
         string command = "rdmd copyresources.d "~absRes~" "~targetPath;
@@ -204,22 +239,16 @@ int main(string[] args)
                 writeln("Fatal Error. Stopping resource insertion process.");
                 return EXIT_FAILURE;
             }
-            bool hasFilter = false;
+            string filterDef = getFilterName(e, targetPath);
 
-            string filterDef = generateFilterDefinition(e, targetPath);
-            for(int i = 0; i < filters.length && !hasFilter; i++)
-            {
-                if(filters[i] == filterDef)
-                    hasFilter = true;
-            }
-            if(!hasFilter)
-                filters~= filterDef;
+            if(!hasFilter(filterDef))
+                generateFilters(filterDef);
 
             toAppend~= resource~"\n";
             toAppendFilter ~= filter~"\n";
         }
         toAppend~= copyEnd;
-        toAppendFilter = copyInit~"\n"~join(filters,"\n")~"\n"~toAppendFilter~copyEnd;
+        toAppendFilter = copyInit~"\n"~generateFilterDefinition()~"\n"~toAppendFilter~copyEnd;
 
         int plusIndex = 0;
         while(vcx[plusIndex++] != '<'){}
