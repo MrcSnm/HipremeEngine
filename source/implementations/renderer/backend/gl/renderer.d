@@ -307,7 +307,10 @@ class Hip_GL3Renderer : IHipRendererImpl
     }
     public void drawIndexed(index_t indicesSize, uint offset = 0)
     {
-        glDrawElements(this.mode, indicesSize, GL_UNSIGNED_INT, cast(void*)offset);
+        static if(is(index_t == uint))
+            glDrawElements(this.mode, indicesSize, GL_UNSIGNED_INT, cast(void*)offset);
+        else
+            glDrawElements(this.mode, indicesSize, GL_UNSIGNED_SHORT, cast(void*)offset);
     }
 
     public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst)

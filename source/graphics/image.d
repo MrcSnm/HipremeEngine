@@ -14,12 +14,61 @@ import data.hipfs;
 import util.concurrency;
 import data.asset;
 import error.handler;
-import bindbc.sdl;
 import util.system;
-import std.string;
 import def.debugging.log;
-import std.stdio;
 
+public interface IHipImageDecoder
+{
+    ///Use that for decoding from memory, returns wether decode was successful
+    bool startDecoding(void[] data);
+    uint getWidth();
+    uint getHeight();
+    void* getPixels();
+    ubyte getBytesPerPixel();
+    final ushort getBitsPerPixel(){return getBytesPerPixel()*8;}
+    ///Dispose the pixels
+    void dispose();
+}
+
+import bindbc.sdl;
+//In progress?
+public interface IHipPNGDecoder  : IHipImageDecoder{}
+public interface IHipJPEGDecoder : IHipImageDecoder{}
+public interface IHipWebPDecoder : IHipImageDecoder{}
+public interface IHipBMPDecoder  : IHipImageDecoder{}
+public interface IHipAnyImageDecoder : IHipPNGDecoder, IHipJPEGDecoder, IHipWebPDecoder, IHipBMPDecoder{}
+IHipBMPDecoder bmp;
+IHipJPEGDecoder jpeg;
+IHipPNGDecoder png;
+IHipWebPDecoder webP;
+
+final class HipSDLImageDecoder : IHipAnyImageDecoder
+{
+    this()
+    {
+        bmp = this; jpeg = this; png = this; webP = this;
+    }
+    SDL_Surface* img;
+    bool startDecoding(void[] data)
+    {
+        SDL_RWops* rw = SDL_RWFromMem(data.ptr, cast(int)data.length);
+        img = IMG_Load_RW(rw, 1); //Free SDL_RWops
+        // if(img != null && rgbColorKey != -1)
+        //     SDL_SetColorKey(img, SDL_TRUE, SDL_MapRGB(img.format,
+        //     cast(ubyte)(rgbColorKey >> 16), //R
+        //     cast(ubyte)((rgbColorKey >> 8) & 255), //G
+        //     cast(ubyte)(rgbColorKey & 255))); //B
+        return img != null;
+    }
+    uint getWidth(){return (img == null) ? 0 : img.w;}
+    uint getHeight(){return (img == null) ? 0 : img.h;}
+    void* getPixels(){return (img == null) ? null : img.pixels;}
+    ubyte getBytesPerPixel(){return (img == null) ? 0 : img.format.BytesPerPixel;}
+    ///Dispose the pixels
+    void dispose(){if(img != null){SDL_FreeSurface(img);img = null;}}
+}
+///Use that alias for supporting more platforms
+alias HipPlatformImageDecoder = HipSDLImageDecoder;
 
 /**
 *   This class represents pixel data on RAM (CPU Powered)
@@ -28,30 +77,33 @@ import std.stdio;
 */
 public class Image : HipAsset
 {
-    SDL_Surface* data;
     protected shared bool _ready;
+    IHipImageDecoder decoder;
     string imagePath;
-    int rgbColorKey;
+    uint width, height;
+    ubyte bytesPerPixel;
+    ushort bitsPerPixel;
+    void* pixels;
 
-    this(in string path, int rgbColorKey = -1)
+    this(in string path)
     {
         super("Image_"~path);
-        if(rgbColorKey != -1)
-            this.rgbColorKey = rgbColorKey;
+        decoder = new HipPlatformImageDecoder();
         imagePath = sanitizePath(path);
     }
-    
-    this(ubyte[] data, string path)
-    {
-        super("Image_"~path);
-        imagePath = sanitizePath(path);
-    }
+
 
     bool loadFromMemory(ref ubyte[] data)
     {
-        SDL_RWops* rw = SDL_RWFromMem(data.ptr, cast(int)data.length);
-        SDL_Surface* img = IMG_Load_RW(rw, 1); //Free SDL_RWops
-        return setColorKey(img);
+        if(ErrorHandler.assertErrorMessage(decoder.startDecoding(data),
+        "Decoding Image: ", "Could not load image " ~ imagePath))
+            return false;
+        width         = decoder.getWidth();
+        height        = decoder.getHeight();
+        bitsPerPixel  = decoder.getBitsPerPixel();
+        bytesPerPixel = decoder.getBytesPerPixel();
+        pixels        = decoder.getPixels();
+        return true;
     }
 
     bool loadFromFile()
@@ -61,42 +113,13 @@ public class Image : HipAsset
         return loadFromMemory(data);
     }
 
-    shared bool setColorKey(SDL_Surface* img)
-    {
-        ErrorHandler.assertErrorMessage(img != null, "Decoding Image: ", "Could not load image " ~ imagePath);
-        if(img != null && rgbColorKey != -1)
-            SDL_SetColorKey(img, SDL_TRUE, SDL_MapRGB(img.format,
-            cast(ubyte)(rgbColorKey >> 16), //R
-            cast(ubyte)((rgbColorKey >> 8) & 255), //G
-            cast(ubyte)(rgbColorKey & 255))); //B
-        data = cast(shared)img;
-        return !ErrorHandler.stopListeningForErrors();
-    }
-    bool setColorKey(SDL_Surface* img)
-    {
-        ErrorHandler.assertErrorMessage(img != null, "Decoding Image: ", "Could not load image " ~ imagePath);
-        if(img != null && rgbColorKey != -1)
-            SDL_SetColorKey(img, SDL_TRUE, SDL_MapRGB(img.format,
-            cast(ubyte)(rgbColorKey >> 16), //R
-            cast(ubyte)((rgbColorKey >> 8) & 255), //G
-            cast(ubyte)(rgbColorKey & 255))); //B
-        data = img;
-        return !ErrorHandler.stopListeningForErrors();
-    }
-
     override bool load()
     {
         _ready = loadFromFile();
         return _ready;
     }
 
-    override bool isReady()
-    {
-        return _ready;
-    }
-
-
-
+    override bool isReady(){return _ready;}
     bool load(void function() onLoad)
     {
         bool ret = loadFromFile();
@@ -104,16 +127,8 @@ public class Image : HipAsset
             onLoad();
         return ret;
     }
-
-    override void onDispose()
-    {
-        if(data != null)
-            SDL_FreeSurface(data);
-        data = null;
-    }
-
-    override void onFinishLoading()
-    {
-
-    }
+    override void onDispose(){decoder.dispose();}
+    override void onFinishLoading(){}
+    alias w = width;
+    alias h = height;
 }

@@ -46,8 +46,10 @@ class HipSpriteBatch
 
     protected uint quadsCount;
 
-    this(index_t maxQuads = 20_000)
+    this(index_t maxQuads = 10_900)
     {
+        import std.conv:to;
+        assert(is(index_t == ushort) && index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
         this.maxQuads = maxQuads;
         indices = new index_t[maxQuads*6];
         vertices = new float[maxQuads*spriteVertexSize*4]; //XYZ -> 3, RGBA -> 4, ST -> 2, 3+4+2=9

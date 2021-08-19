@@ -42,7 +42,7 @@ interface ITexture
 {
     void setWrapMode(TextureWrapMode mode);
     void setTextureFilter(TextureFilter min, TextureFilter mag);
-    bool load(SDL_Surface* surface);
+    bool load(Image img);
     void bind();
 }
 
@@ -89,9 +89,9 @@ class Texture
         HipAssetManager.loadImage(path, (Image img)
         {
             this.img = img;
-            this.width = img.data.w;
-            this.height = img.data.h;
-            this.textureImpl.load(img.data);
+            this.width = img.w;
+            this.height = img.h;
+            this.textureImpl.load(img);
         }, false);
         return this.width != 0;
     }

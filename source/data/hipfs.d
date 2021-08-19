@@ -131,11 +131,6 @@ version(Android)
         }
         override ulong getSize()
         {
-            import def.debugging.log;
-            void[] data = new void[500];
-            read(data.ptr, 30);
-            import std.conv:to;
-            rawlog(to!string(data));
             return cast(ulong)AAsset_getLength64(asset);
         }
         override bool open(string path, FileMode mode)
@@ -151,7 +146,7 @@ version(Android)
         {
             super.seek(count, whence);
             version(offset64)
-                return AAsset_seek(asset, count, SEEK_CUR);
+                return AAsset_seek64(asset, count, SEEK_CUR);
             else
                 return AAsset_seek(asset, cast(int)count, SEEK_CUR);
         }

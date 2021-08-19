@@ -12,6 +12,7 @@ Distributed under the MIT Software License.
 module implementations.renderer.backend.d3d.texture;
 version(Windows):
 import implementations.renderer.backend.d3d.renderer;
+import graphics.image;
 import directx.d3d11;
 import bindbc.sdl;
 import implementations.renderer.texture;
@@ -50,24 +51,25 @@ class Hip_D3D11_Texture : ITexture
         wrap = Hip_D3D11_getWrapMode(mode);
         updateSamplerState();
     }
-    protected DXGI_FORMAT getFromFromSurface(SDL_Surface* surface)
-    {
-        return DXGI_FORMAT_R8G8B8A8_UNORM;
-    }
-    public bool load(SDL_Surface* surface)
+    // protected DXGI_FORMAT getFromFromSurface(SDL_Surface* surface)
+    // {
+    //     return DXGI_FORMAT_R8G8B8A8_UNORM;
+    // }
+    public bool load(Image image)
     {
         D3D11_TEXTURE2D_DESC desc;
-        desc.Format = getFromFromSurface(surface);
+        // desc.Format = getFromFromSurface(surface);
+        desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         desc.Usage = D3D11_USAGE_IMMUTABLE;
         desc.CPUAccessFlags = 0;
         desc.MipLevels = 1;
         desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-        desc.Width = surface.w;
-        desc.Height = surface.h;
+        desc.Width = image.w;
+        desc.Height = image.h;
 
         D3D11_SUBRESOURCE_DATA data;
-        data.pSysMem = surface.pixels;
-        data.SysMemPitch = surface.w*surface.format.BytesPerPixel;
+        data.pSysMem = image.pixels;
+        data.SysMemPitch = image.w*image.bytesPerPixel;
 
         _hip_d3d_device.CreateTexture2D(&desc, &data, &texture);
         _hip_d3d_device.CreateShaderResourceView(texture, cast(D3D11_SHADER_RESOURCE_VIEW_DESC*)null, &resource);
