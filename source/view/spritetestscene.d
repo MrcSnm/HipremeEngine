@@ -30,22 +30,21 @@ class SpriteTestScene : Scene
         string output;
 
 
-        HipFS.readText("text/renderer.conf", output);
-        rawlog(output);
-
-        // sprite = new HipSprite("rex.png");
+        // HipFS.readText("text/renderer.conf", output);
+        // rawlog(output);
+        sprite = new HipSprite("graphics/sprites/sprite.png");
     }
 
     public override void render()
     {
         super.render();
-        // Viewport v = HipRenderer.getCurrentViewport();
-        // v.setSize(800, 600);
-        // v.update();
-        // batch.camera.setScale(2, 2);
-        // batch.begin();
-        // batch.draw(sprite);
-        // batch.end();
+        Viewport v = HipRenderer.getCurrentViewport();
+        v.setSize(800, 600);
+        v.update();
+        batch.camera.setScale(2, 2);
+        batch.begin();
+        batch.draw(sprite);
+        batch.end();
     }
 
     public override void onResize(uint width, uint height)

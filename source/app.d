@@ -74,17 +74,10 @@ static void initEngine(bool audio3D = false)
 	version(BindSDL_Static){}
 	else
 	{
+		import bind.dependencies;
+		rawlog("Initializing SDL");
 		loadSDLLibs(audio3D);
-		import implementations.imgui.imgui_impl_sdl;
-		import bindbc.loader : SharedLib;
-		void function(SharedLib) implementation = null;
-		static if(!CIMGUI_USER_DEFINED_IMPLEMENTATION)
-			implementation = &bindSDLImgui;
-
-		if(!loadcimgui(implementation))
-		{
-			logln("Could not load cimgui");
-		}
+		loadEngineDependencies();
 	}
 }
 

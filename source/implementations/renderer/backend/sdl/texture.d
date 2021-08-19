@@ -22,9 +22,10 @@ public class Hip_SDL_Texture : ITexture
     
     public void setWrapMode(TextureWrapMode mode){}
     public void bind(){}
-    public bool load(SDL_Surface* surface)
+    public bool load(Image img)
     {
-        data = SDL_CreateTextureFromSurface(HipRenderer.renderer, surface);
+        // SDL_Surface* surface = img;
+        // data = SDL_CreateTextureFromSurface(HipRenderer.renderer, surface);
         return true;
     }
     void setTextureFilter(TextureFilter mag, TextureFilter min){}
