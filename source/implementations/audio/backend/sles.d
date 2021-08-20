@@ -5,6 +5,7 @@ version(Android)
 {
     import opensles.android;
 }
+version(Android):
 
 string sliGetError(SLresult res)
 {
@@ -391,21 +392,21 @@ static short *nextBuffer;
 static uint nextSize;
 static int nextCount;
 // this callback handler is called every time a buffer finishes playing
-extern(C)void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
-{
-    // for streaming playback, replace this test by logic to find and fill the next buffer
-    if (--nextCount > 0 && null != nextBuffer && 0 != nextSize) {
-        SLresult result;
-        // enqueue another buffer
-        result = (*bq).Enqueue(bq, nextBuffer, nextSize);
-        // the most likely other result is SL_RESULT_BUFFER_INSUFFICIENT,
-        // which for this code example would indicate a programming error
-        // if (SL_RESULT_SUCCESS != result) {
-        //     pthread_mutex_unlock(&audioEngineLock);
-        // }
-    } 
-    // else {
-    //     releaseResampleBuf();
-    //     pthread_mutex_unlock(&audioEngineLock);
-    // }
-}
+// extern(C)void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
+// {
+//     // for streaming playback, replace this test by logic to find and fill the next buffer
+//     if (--nextCount > 0 && null != nextBuffer && 0 != nextSize) {
+//         SLresult result;
+//         // enqueue another buffer
+//         result = (*bq).Enqueue(bq, nextBuffer, nextSize);
+//         // the most likely other result is SL_RESULT_BUFFER_INSUFFICIENT,
+//         // which for this code example would indicate a programming error
+//         // if (SL_RESULT_SUCCESS != result) {
+//         //     pthread_mutex_unlock(&audioEngineLock);
+//         // }
+//     } 
+//     // else {
+//     //     releaseResampleBuf();
+//     //     pthread_mutex_unlock(&audioEngineLock);
+//     // }
+// }

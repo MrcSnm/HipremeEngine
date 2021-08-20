@@ -32,7 +32,7 @@ class SpriteTestScene : Scene
 
         // HipFS.readText("text/renderer.conf", output);
         // rawlog(output);
-        sprite = new HipSprite("graphics/sprites/sprite.png");
+        sprite = new HipSprite("assets/graphics/sprites/sprite.png");
     }
 
     public override void render()

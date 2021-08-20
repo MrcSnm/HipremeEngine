@@ -12,15 +12,19 @@ Distributed under the MIT Software License.
 module implementations.audio.backend.nullaudio;
 import implementations.audio.audiobase;
 import implementations.audio.backend.audiosource;
+import audio.audio;
 
 
-public class NullBuffer : AudioBuffer
+public class HipNullBuffer : HipAudioBuffer
 {
-    public override bool load(string audioPath, TYPE audioType, bool isStreamed = false){return false;}
+    this(IHipAudioDecoder decoder){super(null);}
+    public override bool load(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false){return false;}
+    override void* getBuffer(){return null;}
+    override ulong getBufferSize(){return 0;}
     public override void unload(){}
 }
 
-public class NullAudio : IAudio
+public class HipNullAudio : IHipAudioPlayer
 {
     public bool isMusicPlaying(AudioSource src){return false;}
     public bool isMusicPaused(AudioSource src){return false;}

@@ -16,46 +16,58 @@ import bindbc.sdl.mixer;
 public import implementations.audio.audiobase;
 public import implementations.audio.backend.audiosource;
 public import implementations.audio.backend.audioconfig;
-import implementations.audio.backend.audio2d;
-import implementations.audio.backend.audio3d;
-import sdl.sdl_sound;
+import audio.audio;
 import error.handler;
+
+/**
+* Controls how the gain will falloff
+*/
+enum DistanceModel
+{
+    DISTANCE_MODEL,
+    /**
+    * Very similar to the exponential curve
+    */
+    INVERSE,
+    INVERSE_CLAMPED,
+    /**
+    * Linear curve, the only which can achieve 0 volume
+    */
+    LINEAR,
+    LINEAR_CLAMPED,
+
+    /**
+    * Exponential curve for the model
+    */
+    EXPONENT,
+    /**
+    * When the distance is below the reference, it will clamp the volume to 1
+    * When the distance is higher than max distance, it will not decrease volume any longer
+    */
+    EXPONENT_CLAMPED
+}
 
 
 class Audio
 {
     public static bool initialize(bool is3D = true)
     {
+        ErrorHandler.startListeningForErrors("HipremeAudio initialization");
         version(HIPREME_DEBUG)
         {
             hasInitializedAudio = true;
         }
+        import def.debugging.log;
         Audio.is3D = is3D;
-        ErrorHandler.assertErrorMessage(loadSDLSound(), "Error Loading SDL_Sound", "SDL_Sound not found");
+        
         if(is3D)
         {
-            ErrorHandler.startListeningForErrors("HipremeAudio3D initialization");
-            ALSupport sup = loadOpenAL();
-            if(ErrorHandler.assertErrorMessage(sup == ALSupport.al11, "Error loading OpenAL", "No OpenAL support found"))
-            {
-                if(sup == ALSupport.badLibrary)
-                    ErrorHandler.showErrorMessage("Bad OpenAL Support", "Unknown version of OpenAL");
-                else
-                    ErrorHandler.showErrorMessage("OpenAL not found", "Could not find OpenAL library");
-            }
             //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
             audioInterface = new Audio3DBackend(AudioConfig.lightweightConfig);
         }
         else
         {
-            ErrorHandler.startListeningForErrors("HipremeAudio2D initialization");
-            SDLMixerSupport sup = loadSDLMixer();
-            if(sup == SDLMixerSupport.badLibrary)
-                ErrorHandler.showErrorMessage("Bad SDL_Mixer support", "Unknown version of SDL_Mixer");
-            else if(sup == SDLMixerSupport.noLibrary)
-                ErrorHandler.showErrorMessage("No SDL_Mixer found", "Could not find any SDL_Mixer version");
             // ErrorHandler.assertErrorMessage(Mix_OpenAudio(44100));
-
             audioInterface = new Audio2DBackend(AudioConfig.lightweightConfig);
         }
 
@@ -101,7 +113,7 @@ class Audio
     *   If forceLoad is set to true, you will need to manage it's destruction yourself
     *   Just call audioBufferInstance.unload()
     */
-    static AudioBuffer load(string path, AudioBuffer.TYPE bufferType, bool forceLoad = false)
+    static HipAudioBuffer load(string path, HipAudioType bufferType, bool forceLoad = false)
     {
         //Creates a buffer compatible with the target interface
         version(HIPREME_DEBUG)
@@ -109,11 +121,11 @@ class Audio
             if(ErrorHandler.assertErrorMessage(hasInitializedAudio, "Audio not initialized", "Call Audio.initialize before loading buffers"))
                 return null;
         }
-        AudioBuffer* checker = null;
+        HipAudioBuffer* checker = null;
         checker = path in bufferPool;
         if(!checker)
         {
-            AudioBuffer buf = audioInterface.load(path, bufferType);
+            HipAudioBuffer buf = audioInterface.load(path, bufferType);
             bufferPool[path] = buf;
             checker = &buf;
         }
@@ -122,9 +134,9 @@ class Audio
         return *checker;
     }
 
-    static AudioSource getSource(AudioBuffer buff = null)
+    static HipAudioSource getSource(HipAudioBuffer buff = null)
     {
-        AudioSource ret;
+        HipAudioSource ret;
         if(sourcePool.length == activeSources)
             ret = audioInterface.getSource();
         else
@@ -135,7 +147,7 @@ class Audio
         return ret;
     }
 
-    static bool isMusicPlaying(AudioSource src)
+    static bool isMusicPlaying(HipAudioSource src)
     {
         audioInterface.isMusicPlaying(src);
         return false;
@@ -187,7 +199,10 @@ class Audio
         audioInterface.setMaxDistance(src, dist);
         src.maxDistance = dist;
     }
-
+    /**
+    *   Call this function whenever you update any AudioSource property
+    * without calling its setter.
+    */
     public static void update(AudioSource src)
     {
         if(!src.isPlaying)
@@ -200,7 +215,6 @@ class Audio
         audioInterface.setVolume(src, src.volume);
         audioInterface.setPanning(src, src.panning);
         audioInterface.setPitch(src, src.pitch);
-        import std.stdio:writefln;
         // float* pos;
         // alGetSourcef(src.id, AL_POSITION, pos);
 
@@ -210,11 +224,11 @@ class Audio
 
 
     private static bool is3D;
-    private static AudioBuffer[string] bufferPool; 
-    private static AudioSource[] sourcePool;
+    private static HipAudioBuffer[string] bufferPool; 
+    private static HipAudioSource[] sourcePool;
     private static uint activeSources;
 
-    static IAudio audioInterface;
+    static IAudioPlayer audioInterface;
 
     //Debug vars
     version(HIPREME_DEBUG)
