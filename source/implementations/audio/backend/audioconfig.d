@@ -59,11 +59,7 @@ struct AudioConfig
     }
     Sound_AudioInfo getSDL_SoundInfo()
     {
-        Sound_AudioInfo info;
-        info.channels = cast(ubyte)channels;
-        info.format = getFormatAsSDL_AudioFormat();
-        info.rate = sampleRate;
-        return info;
+        return Sound_AudioInfo(getFormatAsSDL_AudioFormat(), cast(ubyte)channels, sampleRate);
     }
     
     ALuint getFormatAsOpenAL()

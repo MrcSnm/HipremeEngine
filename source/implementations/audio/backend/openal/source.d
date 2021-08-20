@@ -36,9 +36,8 @@ import bindbc.openal;
     override void setBuffer(HipAudioBuffer buf)
     {
         super.setBuffer(buf);
-        logln((cast(HipOpenALBuffer)buf).bufferId);
-        logln(id);
         alSourcei(id, AL_BUFFER, (cast(HipOpenALBuffer)buf).bufferId);
+        logln(id);
     }
     ~this()
     {
