@@ -1,6 +1,8 @@
 module audio.audio;
 import bindbc.sdl;
+import implementations.audio.audio;
 import sdl.sdl_sound;
+import error.handler;
 
 
 enum HipAudioEncoding
@@ -36,11 +38,11 @@ private char* getNameFromEncoding(HipAudioEncoding encoding)
 {
     final switch(encoding)
     {
-        case HipAudioEncoding.FLAC:return "flac\0";
-        case HipAudioEncoding.MIDI:return "midi\0";
-        case HipAudioEncoding.MP3:return "mp3\0";
-        case HipAudioEncoding.OGG:return "ogg\0";
-        case HipAudioEncoding.WAV:return "wav\0";
+        case HipAudioEncoding.FLAC:return cast(char*)"flac\0".ptr;
+        case HipAudioEncoding.MIDI:return cast(char*)"midi\0".ptr;
+        case HipAudioEncoding.MP3:return cast(char*)"mp3\0".ptr;
+        case HipAudioEncoding.OGG:return cast(char*)"ogg\0".ptr;
+        case HipAudioEncoding.WAV:return cast(char*)"wav\0".ptr;
     }
 }
 
@@ -83,6 +85,8 @@ class HipSDL_MixerDecoder : IHipAudioDecoder
             return music != null;
         }
     }
+    Mix_Chunk* getChunk(){return chunk;}
+    Mix_Music* getMusic(){return music;}
     void* getBuffer()
     {
         if(type == HipAudioType.SFX)
@@ -121,14 +125,18 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
 {
     public static bool initDecoder()
     {
-        return !ErrorHandler.assertErrorMessage(loadSDLSound(), "Error Loading SDL_Sound", "SDL_Sound not found");
+        bool ret = ErrorHandler.assertErrorMessage(loadSDLSound(), "Error Loading SDL_Sound", "SDL_Sound not found");
+        if(!ret)
+            Sound_Init();
+        return ret;
     }
     Sound_Sample* sample;
     bool startDecoding(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false)
     {
+        Sound_AudioInfo info = HipAudio.getConfig().getSDL_SoundInfo();
         SDL_RWops* rw = SDL_RWFromMem(cast(void*)data.ptr, cast(int)data.length);
         import def.debugging.log;
-        sample = Sound_NewSample(rw, getNameFromEncoding(encoding), &Audio3DBackend.info, Audio3DBackend.defaultBufferSize);
+        sample = Sound_NewSample(rw, getNameFromEncoding(encoding), &info, HipAudio.defaultBufferSize);
         SDL_RWclose(rw);
         if(!isStreamed && sample != null)
             Sound_DecodeAll(sample);

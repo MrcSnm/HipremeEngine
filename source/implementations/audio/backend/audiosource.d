@@ -41,7 +41,7 @@ import global.fonts.icons;
     igSliderFloat("Rolloff Factor", &src.rolloffFactor, 0, 1, "%0.3f", 0);
     igSliderFloat("Max Distance", &src.maxDistance, 0, 65_000, "%0.3f", 0);
     igEndGroup();
-    Audio.update(*src);
+    HipAudio.update(*src);
 
 }) public class HipAudioSource
 {
@@ -69,20 +69,20 @@ import global.fonts.icons;
         float rolloffFactor = 0;
         float referenceDistance = 0;
 
-        public HipAudioSource clean()
+        HipAudioSource clean()
         {
             isLooping = false;
             isPlaying = false;
-            Audio.stop(this);
+            HipAudio.stop(this);
             length = 0;
-            Audio.setPitch(this, 1f);
-            Audio.setPanning(this, 0f);
-            Audio.setVolume(this, 1f);
-            Audio.setMaxDistance(this, 0f);
-            Audio.setRolloffFactor(this, 1f);
-            Audio.setReferenceDistance(this, 0f);
+            HipAudio.setPitch(this, 1f);
+            HipAudio.setPanning(this, 0f);
+            HipAudio.setVolume(this, 1f);
+            HipAudio.setMaxDistance(this, 0f);
+            HipAudio.setRolloffFactor(this, 1f);
+            HipAudio.setReferenceDistance(this, 0f);
             position = Vector3.Zero();
-            // id = -1;
+            id = 0;
             buffer = null;
             return this;
         }

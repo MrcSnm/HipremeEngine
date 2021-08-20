@@ -16,6 +16,9 @@ import bindbc.sdl.mixer;
 public import implementations.audio.audiobase;
 public import implementations.audio.backend.audiosource;
 public import implementations.audio.backend.audioconfig;
+import implementations.audio.backend.openal.player;
+import implementations.audio.backend.sdl.player;
+// import implementations.audio.backend.opensles.player;
 import audio.audio;
 import error.handler;
 
@@ -47,10 +50,16 @@ enum DistanceModel
     EXPONENT_CLAMPED
 }
 
-
-class Audio
+enum HipAudioImplementation
 {
-    public static bool initialize(bool is3D = true)
+    OPENAL,
+    SDL,
+    OPENSLES
+}
+
+class HipAudio
+{
+    public static bool initialize(HipAudioImplementation implementation = HipAudioImplementation.OPENAL)
     {
         ErrorHandler.startListeningForErrors("HipremeAudio initialization");
         version(HIPREME_DEBUG)
@@ -58,23 +67,24 @@ class Audio
             hasInitializedAudio = true;
         }
         import def.debugging.log;
-        Audio.is3D = is3D;
+        HipAudio.is3D = is3D;
         
-        if(is3D)
+        switch(implementation)
         {
-            //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
-            audioInterface = new Audio3DBackend(AudioConfig.lightweightConfig);
+            case HipAudioImplementation.OPENSLES:
+            case HipAudioImplementation.SDL:
+                audioInterface = new HipSDLAudioPlayer(AudioConfig.lightweightConfig);
+                break;
+            case HipAudioImplementation.OPENAL:
+            default:
+                //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
+                audioInterface = new HipOpenALAudioPlayer(AudioConfig.lightweightConfig);
         }
-        else
-        {
-            // ErrorHandler.assertErrorMessage(Mix_OpenAudio(44100));
-            audioInterface = new Audio2DBackend(AudioConfig.lightweightConfig);
-        }
-
+        
         return ErrorHandler.stopListeningForErrors();
     }
 
-    static bool play(AudioSource src)
+    static bool play(HipAudioSource src)
     {
         if(audioInterface.play(src))
         {
@@ -84,25 +94,25 @@ class Audio
         }
         return false;
     }
-    static bool pause(AudioSource src)
+    static bool pause(HipAudioSource src)
     {
         audioInterface.pause(src);
         src.isPlaying = false;
         return false;
     }
-    static bool play_streamed(AudioSource src)
+    static bool play_streamed(HipAudioSource src)
     {
         audioInterface.play_streamed(src);
         src.isPlaying = true;
         return false;
     }
-    static bool resume(AudioSource src)
+    static bool resume(HipAudioSource src)
     {
         audioInterface.resume(src);
         src.isPlaying = true;
         return false;
     }
-    static bool stop(AudioSource src)
+    static bool stop(HipAudioSource src)
     {
         audioInterface.stop(src);
         return false;
@@ -152,7 +162,7 @@ class Audio
         audioInterface.isMusicPlaying(src);
         return false;
     }
-    static bool isMusicPaused(AudioSource src)
+    static bool isMusicPaused(HipAudioSource src)
     {
         audioInterface.isMusicPaused(src);
         return false;
@@ -169,46 +179,48 @@ class Audio
     }
 
 
-    static void setPitch(AudioSource src, float pitch)
+    static void setPitch(HipAudioSource src, float pitch)
     {
         audioInterface.setPitch(src, pitch);
         src.pitch = pitch;
     }
-    static void setPanning(AudioSource src, float panning)
+    static void setPanning(HipAudioSource src, float panning)
     {
         audioInterface.setPanning(src, panning);
         src.panning = panning;
     }
-    static void setVolume(AudioSource src, float volume)
+    static void setVolume(HipAudioSource src, float volume)
     {
         audioInterface.setVolume(src, volume);
         src.volume = volume;
     }
-    public static void setReferenceDistance(AudioSource src, float dist)
+    public static void setReferenceDistance(HipAudioSource src, float dist)
     {
         audioInterface.setReferenceDistance(src, dist);
         src.referenceDistance = dist;
     }
-    public static void setRolloffFactor(AudioSource src, float factor)
+    public static void setRolloffFactor(HipAudioSource src, float factor)
     {
         audioInterface.setRolloffFactor(src, factor);
         src.rolloffFactor = factor;
     }
-    public static void setMaxDistance(AudioSource src, float dist)
+    public static void setMaxDistance(HipAudioSource src, float dist)
     {
         audioInterface.setMaxDistance(src, dist);
         src.maxDistance = dist;
     }
+    public static AudioConfig getConfig(){return config;}
+    
     /**
-    *   Call this function whenever you update any AudioSource property
+    *   Call this function whenever you update any HipAudioSource property
     * without calling its setter.
     */
-    public static void update(AudioSource src)
+    public static void update(HipAudioSource src)
     {
         if(!src.isPlaying)
-            Audio.pause(src);
+            HipAudio.pause(src);
         else
-            Audio.resume(src);
+            HipAudio.resume(src);
         audioInterface.setMaxDistance(src, src.maxDistance);
         audioInterface.setRolloffFactor(src, src.rolloffFactor);
         audioInterface.setReferenceDistance(src, src.referenceDistance);
@@ -219,20 +231,18 @@ class Audio
         // alGetSourcef(src.id, AL_POSITION, pos);
 
     }
-
-
-
-
+    protected static AudioConfig config;
+    public immutable static uint defaultBufferSize = 4096;
     private static bool is3D;
     private static HipAudioBuffer[string] bufferPool; 
     private static HipAudioSource[] sourcePool;
     private static uint activeSources;
 
-    static IAudioPlayer audioInterface;
+    static IHipAudioPlayer audioInterface;
 
     //Debug vars
     version(HIPREME_DEBUG)
     {
         public static bool hasInitializedAudio = false;
-    }    
+    }
 }

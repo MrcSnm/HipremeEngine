@@ -10,8 +10,7 @@ Distributed under the MIT Software License.
 */
 
 module global.consts;
-private:
-    import sdl.loader;
+import bindbc.sdl;
 
 public:
     immutable static enum ENGINE_NAME = "Hipreme Engine";
