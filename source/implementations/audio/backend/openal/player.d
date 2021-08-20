@@ -72,6 +72,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
 
         if(!alEffecti)
             ErrorHandler.showErrorMessage("OpenAL EFX Error", "Could not load OpenAL EFX");
+
         return true;
     }
     public HipAudioSource getSource()
@@ -84,6 +85,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         alSource3f(id, AL_POSITION, 0f, 0f, 0f);
         alSource3f(id, AL_VELOCITY, 0f, 0f, 0f);
     	alSourcei(id, AL_LOOPING, AL_FALSE);
+       
 
         return src;
     }
@@ -129,6 +131,8 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     {
         HipOpenALBuffer buffer = new HipOpenALBuffer(new HipSDL_SoundDecoder());
         buffer.load(path, getEncodingFromName(path), bufferType);
+        import def.debugging.log;
+        rawlog(buffer.getBufferSize);
         return buffer;
     }
 

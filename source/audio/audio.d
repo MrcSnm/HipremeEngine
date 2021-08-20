@@ -133,11 +133,13 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
     Sound_Sample* sample;
     bool startDecoding(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false)
     {
+        import def.debugging.log;
         Sound_AudioInfo info = HipAudio.getConfig().getSDL_SoundInfo();
         SDL_RWops* rw = SDL_RWFromMem(cast(void*)data.ptr, cast(int)data.length);
-        import def.debugging.log;
-        sample = Sound_NewSample(rw, getNameFromEncoding(encoding), &info, HipAudio.defaultBufferSize);
+        rawlog(rw);
+        sample = Sound_NewSample(rw, "wav\0".ptr, &info, HipAudio.defaultBufferSize);
         SDL_RWclose(rw);
+        
         if(!isStreamed && sample != null)
             Sound_DecodeAll(sample);
         return sample != null;

@@ -68,6 +68,7 @@ class HipAudio
         }
         import def.debugging.log;
         HipAudio.is3D = is3D;
+        config = AudioConfig.lightweightConfig;
         
         switch(implementation)
         {
