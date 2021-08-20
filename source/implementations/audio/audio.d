@@ -18,7 +18,7 @@ public import implementations.audio.backend.audiosource;
 public import implementations.audio.backend.audioconfig;
 import implementations.audio.backend.openal.player;
 import implementations.audio.backend.sdl.player;
-// import implementations.audio.backend.opensles.player;
+version(Android){import implementations.audio.backend.opensles.player;}
 import audio.audio;
 import error.handler;
 
@@ -73,6 +73,11 @@ class HipAudio
         switch(implementation)
         {
             case HipAudioImplementation.OPENSLES:
+                version(Android)
+                {
+                    audioInterface = new HipOpenSLESAudioPlayer(AudioConfig.lightweightConfig);
+                    break;
+                }
             case HipAudioImplementation.SDL:
                 audioInterface = new HipSDLAudioPlayer(AudioConfig.lightweightConfig);
                 break;
