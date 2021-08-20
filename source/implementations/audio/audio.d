@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the MIT Software License.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module implementations.audio.audio;
 
 import bindbc.openal;
@@ -45,7 +56,6 @@ class Audio
                 ErrorHandler.showErrorMessage("No SDL_Mixer found", "Could not find any SDL_Mixer version");
             // ErrorHandler.assertErrorMessage(Mix_OpenAudio(44100));
 
-            import std.stdio : writeln;
             audioInterface = new Audio2DBackend(AudioConfig.lightweightConfig);
         }
 
@@ -141,7 +151,8 @@ class Audio
         foreach(ref buf; bufferPool)
             buf.unload();
         bufferPool.clear();
-        audioInterface.onDestroy();
+        if(audioInterface !is null)
+            audioInterface.onDestroy();
         audioInterface = null;
     }
 

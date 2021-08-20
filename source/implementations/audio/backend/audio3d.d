@@ -1,3 +1,14 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the MIT Software License.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module implementations.audio.backend.audio3d;
 import implementations.audio.audiobase;
 import implementations.audio.backend.audiosource;
@@ -220,18 +231,18 @@ public class Audio3DBackend : IAudio
     {
         alSourcef(src.id, AL_PITCH, pitch);
     }
-    public void setPosition(AudioSource src, ref Vector!float pos)
+    public void setPosition(AudioSource src, ref Vector3 pos)
     {
         alSource3f(src.id, AL_POSITION, pos.x + (src.panning*Audio3DBackend.PANNING_CONSTANT), pos.y, pos.z);
         src.position = pos;
     }
 
-    public void setVelocity(AudioSource src, ref Vector!float vel)
+    public void setVelocity(AudioSource src, ref Vector3 vel)
     {
         alSource3f(src.id, AL_VELOCITY, vel.x, vel.y, vel.z);
         
     }
-    public void setDoppler(AudioSource src, ref Vector!float vel)
+    public void setDoppler(AudioSource src, ref Vector3 vel)
     {
         alSource3f(src.id, AL_DOPPLER_VELOCITY, vel.x, vel.y, vel.z);
 

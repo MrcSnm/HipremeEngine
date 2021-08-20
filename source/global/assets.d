@@ -14,4 +14,8 @@ public class Assets
 		the_sound_of_silence_wav = "assets/audio/the-sound-of-silence.wav",
 		junkyard_a_class_mp3 = "assets/audio/junkyard-a-class.mp3"
 	}
+	public enum Fonts : string
+	{
+		fontello_ttf = "assets/fonts/fontello.ttf"
+	}
 }

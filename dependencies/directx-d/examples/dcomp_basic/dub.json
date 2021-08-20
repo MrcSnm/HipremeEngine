@@ -1,0 +1,11 @@
+{
+	"name": "dcomp-basic",
+	"description": "DirectX-D: Basic DirectComposition example",
+	"targetType": "executable",
+	"authors": [ "S.Percentage" ],
+	"mainSourceFile": "source/main.d",
+	"libs": [ "ole32", "user32", "d3d11", "dxgi", "d2d1", "dcomp" ],
+	"dependencies": {
+                "directx-d": {"version": "", "path": "../../"}
+	}
+}

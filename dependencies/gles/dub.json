@@ -1,0 +1,11 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"targetType": "library",
+	"targetPath": "lib",
+	"copyright": "Copyright © 2021, Hipreme",
+	"description": "DPP converted opengl es3.2 header",
+	"license": "proprietary",
+	"name": "gles"
+}
