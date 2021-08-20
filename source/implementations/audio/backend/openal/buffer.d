@@ -52,4 +52,7 @@ public class HipOpenALBuffer : HipAudioBuffer
     * Id for accessing via OpenAL Soft
     */
     public ALuint bufferId;
+
+    ///If not present, it won't call the super class .load(string) for some reason
+    alias load = HipAudioBuffer.load;
 }
