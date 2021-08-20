@@ -11,7 +11,6 @@ Distributed under the MIT Software License.
 
 module util.libinfos;
 import bindbc.openal;
-import bindbc.freeimage;
 import implementations.renderer.backend.gl.renderer;
 import def.debugging.log;
 import core.stdc.string:strlen;
@@ -52,14 +51,6 @@ void show_opengl_info()
     to!string(glGetString(GL_RENDERER)),
     to!string(glGetString(GL_VERSION)));
 }
-
-void show_FreeImage_info()
-{
-	string ver = to!string(FreeImage_GetVersion());
-	rawlog("libFreeImage version: ", ver,"\n", to!string(FreeImage_GetCopyrightMessage()));
-}
-
-
 
 
 /** Current OpenSL ES Version*/

@@ -37,6 +37,7 @@ public class HipAudioBuffer
     ///Probably isStreamed does not makes any sense when reading entire file
     public final bool load(string audioPath, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false)
     {
+        import def.debugging.log;
         void[] data;
         fullPath = audioPath;
         fileName = baseName(audioPath);
