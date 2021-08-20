@@ -1,105 +1,52 @@
-/*
-Copyright: Marcelo S. N. Mancini, 2018 - 2021
-License:   [https://opensource.org/licenses/MIT|MIT License].
-Authors: Marcelo S. N. Mancini
-
-	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the MIT Software License.
-   (See accompanying file LICENSE.txt or copy at
-	https://opensource.org/licenses/MIT)
-*/
-
-module implementations.audio.backend.audio3d;
-import implementations.audio.audiobase;
-import implementations.audio.backend.audiosource;
+module implementations.audio.backend.openal.player;
 import implementations.audio.backend.audioconfig;
-import math.vector;
-import error.handler;
-import bindbc.openal;
-import sdl.sdl_sound;
+import implementations.audio.backend.openal.source;
+import implementations.audio.audiobase;
+import implementations.audio.audio;
+
+ALenum getALDistanceMode(DistanceMode model)
+{
+    final switch(model) with(DistanceMode)
+    {
+        case DISTANCE_MODEL: return AL_DISTANCE_MODEL;
+        case INVERSE: return AL_INVERSE_DISTANCE;
+        case INVERSE_CLAMPED: return AL_INVERSE_DISTANCE_CLAMPED;
+        case LINEAR: return AL_LINEAR_DISTANCE;
+        case LINEAR_CLAMPED: return AL_LINEAR_DISTANCE_CLAMPED;
+        case EXPONENT: return AL_EXPONENT_DISTANCE;
+        case EXPONENT_CLAMPED: return AL_EXPONENT_DISTANCE_CLAMPED;
+    }
+}
 
 /**
-* Controls how the gain will falloff
+* Wraps OpenAL API onto the IAudioPlayer interface. With that, when HipAudioSource receives that interface,
+* it will update OpenAL properties through that interface.
 */
-enum DistanceModel : ALenum
-{
-    DISTANCE_MODEL      = AL_DISTANCE_MODEL,
-    /**
-    * Very similar to the exponential curve
-    */
-    INVERSE             = AL_INVERSE_DISTANCE,
-    INVERSE_CLAMPED     = AL_INVERSE_DISTANCE_CLAMPED,
-    /**
-    * Linear curve, the only which can achieve 0 volume
-    */
-    LINEAR              = AL_LINEAR_DISTANCE,
-    LINEAR_CLAMPED      = AL_LINEAR_DISTANCE_CLAMPED,
-
-    /**
-    * Exponential curve for the model
-    */
-    EXPONENT            = AL_EXPONENT_DISTANCE,
-    /**
-    * When the distance is below the reference, it will clamp the volume to 1
-    * When the distance is higher than max distance, it will not decrease volume any longer
-    */
-    EXPONENT_CLAMPED    = AL_EXPONENT_DISTANCE_CLAMPED
-}
-
-
-public class OpenALBuffer : AudioBuffer
-{
-    this()
-    {
-        alGenBuffers(1, &bufferId);
-    }
-
-    override public bool load(string audioPath, TYPE audioType, bool isStreamed = false)
-    {
-        sample = Sound_NewSampleFromFile(cast(const(char)*)audioPath, &Audio3DBackend.info, Audio3DBackend.defaultBufferSize);
-        if(!isStreamed)
-        {
-            Sound_DecodeAll(sample);
-        }
-        else
-        {   
-            //Need to study yet how to stream            
-        }
-        alBufferData(bufferId, Audio3DBackend.config.getFormatAsOpenAL(), sample.buffer, sample.buffer_size, Audio3DBackend.config.sampleRate);
-        return false;
-    }
-
-    override public void unload()
-    {
-        alDeleteBuffers(1, &bufferId);
-        Sound_FreeSample(sample);
-        sample = null;
-        bufferId = -1;
-    }
-
-    /**
-    * Id for accessing via OpenAL Soft
-    */
-    public ALuint bufferId;
-    /**
-    * Buffer where data is stored
-    */
-    public Sound_Sample* sample;
-}
-
-public class Audio3DBackend : IAudio
+public class HipOpenALPlayer : IHipAudioPlayer
 {
     public this(AudioConfig cfg)
     {
         initializeOpenAL();
         config = cfg;
         
-        info.channels = cast(ubyte)cfg.channels;        
+        info.channels = cast(ubyte)cfg.chanels;        
         info.format = cfg.getFormatAsSDL_AudioFormat();
         info.rate = cfg.sampleRate;
     }
     public static bool initializeOpenAL()
     {
+        ErrorHandler.startListeningForErrors("HipremeAudio3D initialization");
+        ALSupport sup = loadOpenAL();
+        if(sup != ALSupport.al11) //Probably should not load a non al11 version.
+        {
+            if(sup == ALSupport.badLibrary)
+                ErrorHandler.showErrorMessage("Bad OpenAL Support", "Unknown version of OpenAL");
+            else
+            {
+                ErrorHandler.showErrorMessage("OpenAL not found", "Could not find OpenAL library");
+                return false;
+            }
+        }
         device = alcOpenDevice(alcGetString(null, ALC_DEVICE_SPECIFIER));
         if(device == null)
         {
@@ -123,12 +70,11 @@ public class Audio3DBackend : IAudio
 
         if(!alEffecti)
             ErrorHandler.showErrorMessage("OpenAL EFX Error", "Could not load OpenAL EFX");
-            
         return true;
     }
-    public AudioSource getSource()
+    public HipAudioSource getSource()
     {
-        AudioSource src = new AudioSource3D();
+        HipAudioSource src = new HipAudioSource3D();
         alGenSources(1, &src.id);
         ALuint id = src.id;
         alSourcef(id, AL_GAIN, 1);
@@ -140,16 +86,9 @@ public class Audio3DBackend : IAudio
         return src;
     }
 
-    public bool isMusicPlaying(AudioSource src)
-    {
-        return false;
-    }
-    public bool isMusicPaused(AudioSource src)
-    {
-        
-        return false;
-    }
-    public bool resume(AudioSource src)
+    public bool isMusicPlaying(HipAudioSource src){return false;}
+    public bool isMusicPaused(HipAudioSource src){return false;}
+    public bool resume(HipAudioSource src)
     {
         if(!src.isPlaying)
         {
@@ -158,7 +97,7 @@ public class Audio3DBackend : IAudio
         }
         return false;
     }
-    public bool play(AudioSource src)
+    public bool play(HipAudioSource src)
     {
         OpenALBuffer _buf = cast(OpenALBuffer)src.buffer;
         if(_buf.bufferId != -1)
@@ -168,18 +107,18 @@ public class Audio3DBackend : IAudio
         }
         return false;
     }
-    public bool stop(AudioSource src)
+    public bool stop(HipAudioSource src)
     {
         alSourceStop(src.id);
         return false;
     }
-    public bool pause(AudioSource src)
+    public bool pause(HipAudioSource src)
     {
         alSourcePause(src.id);
         return false;
     }
 
-    public bool play_streamed(AudioSource src)
+    public bool play_streamed(HipAudioSource src)
     {
         return false;
     }
@@ -198,7 +137,7 @@ public class Audio3DBackend : IAudio
     /**
     * After the max distance, the volume won't decrease anymore
     */
-    public void setMaxDistance(AudioSource src, float dist)
+    public void setMaxDistance(HipAudioSource src, float dist)
     {
         alSourcef(src.id, AL_MAX_DISTANCE, dist);
     }
@@ -206,43 +145,43 @@ public class Audio3DBackend : IAudio
     * The factor which the sound volume decreases when the distance is greater
     * than the reference
     */
-    public void setRolloffFactor(AudioSource src, float factor)
+    public void setRolloffFactor(HipAudioSource src, float factor)
     {
         alSourcef(src.id, AL_ROLLOFF_FACTOR, factor);
     }
     /**
     * Sets the distance where the volume will be equal to 1
     */
-    public void setReferenceDistance(AudioSource src, float dist)
+    public void setReferenceDistance(HipAudioSource src, float dist)
     {
         alSourcef(src.id, AL_REFERENCE_DISTANCE, dist);
     }
 
     //Start Effects
-    public void setVolume(AudioSource src, float volume)
+    public void setVolume(HipAudioSource src, float volume)
     {
         alSourcef(src.id, AL_GAIN, volume);
     }
-    public void setPanning(AudioSource src, float panning)
+    public void setPanning(HipAudioSource src, float panning)
     {
         alSource3f(src.id, AL_POSITION, src.position.x + (panning*Audio3DBackend.PANNING_CONSTANT), src.position.y, src.position.z);
     }
-    public void setPitch(AudioSource src, float pitch)
+    public void setPitch(HipAudioSource src, float pitch)
     {
         alSourcef(src.id, AL_PITCH, pitch);
     }
-    public void setPosition(AudioSource src, ref Vector3 pos)
+    public void setPosition(HipAudioSource src, ref Vector3 pos)
     {
         alSource3f(src.id, AL_POSITION, pos.x + (src.panning*Audio3DBackend.PANNING_CONSTANT), pos.y, pos.z);
         src.position = pos;
     }
 
-    public void setVelocity(AudioSource src, ref Vector3 vel)
+    public void setVelocity(HipAudioSource src, ref Vector3 vel)
     {
         alSource3f(src.id, AL_VELOCITY, vel.x, vel.y, vel.z);
         
     }
-    public void setDoppler(AudioSource src, ref Vector3 vel)
+    public void setDoppler(HipAudioSource src, ref Vector3 vel)
     {
         alSource3f(src.id, AL_DOPPLER_VELOCITY, vel.x, vel.y, vel.z);
 

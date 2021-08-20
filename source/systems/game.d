@@ -44,7 +44,7 @@ class GameSystem
 
         import view.testscene;
         import view.uwptest;
-        Scene testscene = new SpriteTestScene();
+        Scene testscene = new SoundTestScene();
     	testscene.init();
         scenes~= testscene;
 

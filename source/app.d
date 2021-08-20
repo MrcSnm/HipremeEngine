@@ -100,10 +100,6 @@ extern(C)int SDL_main()
 	else{HipRenderer.init("renderer.conf");}
 	
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
-	Sound_AudioInfo info;
-	info.channels=1;
-	info.rate = 22_050;
-	info.format = SDL_AudioFormat.AUDIO_S16;
 
 	//AudioSource sc = Audio.getSource(buf);
 	//Audio.setPitch(sc, 1);
@@ -146,7 +142,6 @@ extern(C)int SDL_main()
 
 	// // Rendering
 	// DI.end();
-	//	alSource3f(src, AL_POSITION, cos(angle) * 10, 0, sin(angle) * 10);
 	// Cleanup
 }
 
