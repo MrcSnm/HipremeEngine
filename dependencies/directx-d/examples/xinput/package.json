@@ -1,0 +1,12 @@
+{
+	"name": "xinput",
+	"description": "DirectX D XInput example",
+	"license": "MIT",
+	"authors": [ "evilrat666" ],
+	"targetType": "executable",
+	"mainSourceFile": "source/xinput.d",
+	"libs": [ "ole32", "xinput" ],
+	"dependencies": {
+                "directx-d": {"version": "~master", "path": "../../"}
+	}
+}

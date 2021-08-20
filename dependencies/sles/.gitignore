@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/sles
+sles.so
+sles.dylib
+sles.dll
+sles.a
+sles.lib
+sles-test-*
+*.exe
+*.o
+*.obj
+*.lst

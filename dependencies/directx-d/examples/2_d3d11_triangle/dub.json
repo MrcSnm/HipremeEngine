@@ -1,0 +1,13 @@
+{
+	"name": "d3d11-triangle",
+	"description": "DirectX D D3D11 triangle example",
+	"authors": [ "evilrat666" ],
+	"targetType": "executable",
+	"libs": [ "ole32", "user32", "d3dcompiler", "d3d11", "dxgi"  ],
+	"workingDirectory": "../resources",
+	"mainSourceFile": "source/d3d11_triangle.d",
+	"dependencies": {
+                "directx-d": {"version": "", "path": "../../"}
+	},
+	"dflags": ["-m32mscoff"]
+}

@@ -1,0 +1,4 @@
+*.exe
+*.obj
+.dub
+*.lib

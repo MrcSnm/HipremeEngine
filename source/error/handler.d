@@ -1,4 +1,16 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the MIT Software License.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module error.handler;
+import def.debugging.log;
 import std.stdio;
 import std.conv;
 version(Android)
@@ -40,17 +52,17 @@ public class EngineErrorStack
     {
         static if(os == OS.android)
         {
-            aloge("HipremeEngine", "ErrorStack: " ~ stackName);
+            rawerror("HipremeEngine", "ErrorStack: " ~ stackName);
             const int len = cast(int)this.errorStack.length;
             for(int i = 0; i < len; i++)
-                aloge("HipremeEngine", "\t" ~ errorStack[i]);
+                rawerror("HipremeEngine", "\t" ~ errorStack[i]);
         }
         else
         {
-            writeln("ErrorStack: " ~ stackName);
+            rawlog("ErrorStack: " ~ stackName);
             const int len = cast(int)this.errorStack.length;
             for(int i = 0; i < len; i++)
-                writeln("\t" ~ errorStack[i]);
+                rawlog("\t" ~ errorStack[i]);
         }
     }
 }
@@ -65,6 +77,7 @@ public static class ErrorHandler
 
     private static EngineErrorStack currentStack;
     private static EngineErrorStack[] stackHistory;
+    private static string[] warnHistory;
     private static bool isListening = false;
     public static string LAST_ERROR = "";
     
@@ -113,16 +126,31 @@ public static class ErrorHandler
     {
         static if(os == OS.android)
         {
-            aloge("HipremeEngine", "\nError: " ~ errorTitle);
-            aloge("HipremeEngine", errorMessage);
+            rawerror("HipremeEngine", "\nError: " ~ errorTitle);
+            rawerror("HipremeEngine", errorMessage);
         }
         else
         {
-            writeln("\nError: " ~ errorTitle);
-            writeln(errorMessage);
+            rawlog("\nError: " ~ errorTitle);
+            rawlog(errorMessage);
         }
         getError(errorTitle, errorMessage);
     }
+    public static void showWarningMessage(string warningTitle, string warningMessage)
+    {
+        static if(os == OS.android)
+        {
+            alogw("HipremeEngine", "\nWarning: " ~ warningTitle);
+            alogw("HipremeEngine", warningMessage);
+        }
+        else
+        {
+            rawlog("\nWarning: " ~ warningTitle);
+            rawlog(warningMessage);
+        }
+        warnHistory~= warningTitle~": "~warningMessage;
+    }
+
     /** 
      * 
      * Params:
@@ -136,12 +164,13 @@ public static class ErrorHandler
     {
         version(HIPREME_DEBUG)
         {
-            string where = mod~"."~file~":"~to!string(line)~"("~func~")\n\t";
+            string where = "at module '"~mod~"' "~file~":"~to!string(line)~"("~func~")\n\t";
         }
         else
         {
             string where="";
         }
+        expression = !expression; //Negate the expression, as it must return wether error ocurred
         if(expression)
             showErrorMessage(where~errorTitle, "\t"~errorMessage);
         return expression;

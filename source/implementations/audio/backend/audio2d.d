@@ -1,11 +1,21 @@
+/*
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
+Authors: Marcelo S. N. Mancini
+
+	Copyright Marcelo S. N. Mancini 2018 - 2021.
+Distributed under the MIT Software License.
+   (See accompanying file LICENSE.txt or copy at
+	https://opensource.org/licenses/MIT)
+*/
+
 module implementations.audio.backend.audio2d;
 import implementations.audio.audiobase;
 import implementations.audio.audio;
 import std.string : lastIndexOf;
 import bindbc.sdl.mixer;
 import bindbc.sdl;
-
-import std.stdio : writeln;
+import def.debugging.log;
 
 class SDL_MixerBuffer : AudioBuffer
 {
@@ -113,7 +123,7 @@ class Audio2DBackend : IAudio
         //     buffer.unload();
         //     buffer = null;
         // }
-        writeln("Audio Died");
+        logln("Audio Died");
         Mix_CloseAudio();
         Mix_Quit();
     }
