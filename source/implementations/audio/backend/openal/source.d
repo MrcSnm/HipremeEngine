@@ -1,9 +1,16 @@
 module implementations.audio.backend.openal.source;
+import implementations.audio.backend.openal.buffer;
+import implementations.audio.audiobase;
+import implementations.imgui.imgui_debug;
+import global.fonts.icons;
+import implementations.audio.audio;
+import implementations.audio.backend.audiosource;
+import bindbc.openal;
 
 @InterfaceImplementation(function(ref void* data)
 {
     import bindbc.cimgui;
-    HipAudioSource3D* src = cast(HipAudioSource3D*)data;
+    HipOpenALAudioSource* src = cast(HipOpenALAudioSource*)data;
     igBeginGroup();
     igCheckbox("Playing", &src.isPlaying);
     if(src.isPlaying)
@@ -20,24 +27,23 @@ module implementations.audio.backend.openal.source;
     igSliderFloat("Rolloff Factor", &src.rolloffFactor, 0, 1, "%0.3f", 0);
     igSliderFloat("Max Distance", &src.maxDistance, 0, 65_000, "%0.3f", 0);
     igEndGroup();
-    Audio.update(*src);
+    HipAudio.update(*src);
 
 })public class HipOpenALAudioSource : HipAudioSource
 {   
     import def.debugging.log;
 
-    override void setBuffer(AudioBuffer buf)
+    override void setBuffer(HipAudioBuffer buf)
     {
-        import implementations.audio.backend.audio3d : OpenALBuffer;
         super.setBuffer(buf);
-        logln((cast(OpenALBuffer)buf).bufferId);
+        logln((cast(HipOpenALBuffer)buf).bufferId);
         logln(id);
-        alSourcei(id, AL_BUFFER, (cast(OpenALBuffer)buf).bufferId);
+        alSourcei(id, AL_BUFFER, (cast(HipOpenALBuffer)buf).bufferId);
     }
     ~this()
     {
         logln("HipAudioSource Killed!");
         alDeleteSources(1, &id);
-        id = -1;
+        id = 0;
     }
 }

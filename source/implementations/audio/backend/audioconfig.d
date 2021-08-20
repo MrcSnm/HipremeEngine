@@ -12,6 +12,7 @@ Distributed under the MIT Software License.
 module implementations.audio.backend.audioconfig;
 import bindbc.sdl.mixer;
 import bindbc.sdl : SDL_AudioFormat;
+import sdl.sdl_sound;
 import bindbc.openal;
 
 struct AudioConfig
@@ -55,6 +56,14 @@ struct AudioConfig
             }
         }
         return SDL_AudioFormat.AUDIO_S16;
+    }
+    Sound_AudioInfo getSDL_SoundInfo()
+    {
+        Sound_AudioInfo info;
+        info.channels = cast(ubyte)channels;
+        info.format = getFormatAsSDL_AudioFormat();
+        info.rate = sampleRate;
+        return info;
     }
     
     ALuint getFormatAsOpenAL()

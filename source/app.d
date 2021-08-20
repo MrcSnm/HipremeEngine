@@ -11,7 +11,6 @@ Distributed under the MIT Software License.
 import def.debugging.log;
 import bind.external;
 import data.hipfs;
-import sdl.loader;
 import error.handler;
 import global.consts;
 import std.conv : to;
@@ -35,13 +34,6 @@ import view;
 import systems.game;
 import def.debugging.gui;
 
-
-/** 
- * Fast access for SDL Event Types
- */
-// immutable SDL_EventType types;
-
-static SDL_Surface* gScreenSurface = null;
 
 static void initEngine(bool audio3D = false)
 {
@@ -76,7 +68,6 @@ static void initEngine(bool audio3D = false)
 	{
 		import bind.dependencies;
 		rawlog("Initializing SDL");
-		loadSDLLibs(audio3D);
 		loadEngineDependencies();
 	}
 }
@@ -89,6 +80,7 @@ extern(C)int SDL_main()
 	import def.debugging.console;
 	import data.hipfs;
 	initEngine(true);
+	HipAudio.initialize();
 	version(dll)
 	{
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
@@ -153,7 +145,8 @@ static void destroyEngine()
     //HipAssetManager.disposeResources();
 	DI.onDestroy();
 	HipRenderer.dispose();
-	Audio.onDestroy();
+	HipAudio.onDestroy();
+	import bindbc.sdl:SDL_Quit;
     SDL_Quit();
 }
 

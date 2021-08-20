@@ -1,12 +1,17 @@
 module implementations.audio.backend.openal.player;
+import implementations.audio.backend.openal.buffer;
 import implementations.audio.backend.audioconfig;
 import implementations.audio.backend.openal.source;
 import implementations.audio.audiobase;
 import implementations.audio.audio;
+import error.handler;
+import audio.audio;
+import math.vector;
+import bindbc.openal;
 
-ALenum getALDistanceMode(DistanceMode model)
+ALenum getALDistanceModel(DistanceModel model)
 {
-    final switch(model) with(DistanceMode)
+    final switch(model) with(DistanceModel)
     {
         case DISTANCE_MODEL: return AL_DISTANCE_MODEL;
         case INVERSE: return AL_INVERSE_DISTANCE;
@@ -22,16 +27,13 @@ ALenum getALDistanceMode(DistanceMode model)
 * Wraps OpenAL API onto the IAudioPlayer interface. With that, when HipAudioSource receives that interface,
 * it will update OpenAL properties through that interface.
 */
-public class HipOpenALPlayer : IHipAudioPlayer
+public class HipOpenALAudioPlayer : IHipAudioPlayer
 {
     public this(AudioConfig cfg)
     {
+        HipSDL_SoundDecoder.initDecoder();
         initializeOpenAL();
         config = cfg;
-        
-        info.channels = cast(ubyte)cfg.chanels;        
-        info.format = cfg.getFormatAsSDL_AudioFormat();
-        info.rate = cfg.sampleRate;
     }
     public static bool initializeOpenAL()
     {
@@ -74,7 +76,7 @@ public class HipOpenALPlayer : IHipAudioPlayer
     }
     public HipAudioSource getSource()
     {
-        HipAudioSource src = new HipAudioSource3D();
+        HipAudioSource src = new HipOpenALAudioSource();
         alGenSources(1, &src.id);
         ALuint id = src.id;
         alSourcef(id, AL_GAIN, 1);
@@ -99,7 +101,7 @@ public class HipOpenALPlayer : IHipAudioPlayer
     }
     public bool play(HipAudioSource src)
     {
-        OpenALBuffer _buf = cast(OpenALBuffer)src.buffer;
+        HipOpenALBuffer _buf = cast(HipOpenALBuffer)src.buffer;
         if(_buf.bufferId != -1)
         {
             alSourcePlay(src.id);
@@ -123,16 +125,16 @@ public class HipOpenALPlayer : IHipAudioPlayer
         return false;
     }
     
-    public AudioBuffer load(string path, AudioBuffer.TYPE bufferType)
+    public HipAudioBuffer load(string path, HipAudioType bufferType)
     {
-        OpenALBuffer buffer = new OpenALBuffer();
-        buffer.defaultLoad(path, bufferType);
+        HipOpenALBuffer buffer = new HipOpenALBuffer(new HipSDL_SoundDecoder());
+        buffer.load(path, getEncodingFromName(path), bufferType);
         return buffer;
     }
 
     public void setDistanceModel(DistanceModel model)
     {
-        alDistanceModel(model);
+        alDistanceModel(getALDistanceModel(model));
     }
     /**
     * After the max distance, the volume won't decrease anymore
@@ -164,7 +166,7 @@ public class HipOpenALPlayer : IHipAudioPlayer
     }
     public void setPanning(HipAudioSource src, float panning)
     {
-        alSource3f(src.id, AL_POSITION, src.position.x + (panning*Audio3DBackend.PANNING_CONSTANT), src.position.y, src.position.z);
+        alSource3f(src.id, AL_POSITION, src.position.x + (panning*PANNING_CONSTANT), src.position.y, src.position.z);
     }
     public void setPitch(HipAudioSource src, float pitch)
     {
@@ -172,7 +174,7 @@ public class HipOpenALPlayer : IHipAudioPlayer
     }
     public void setPosition(HipAudioSource src, ref Vector3 pos)
     {
-        alSource3f(src.id, AL_POSITION, pos.x + (src.panning*Audio3DBackend.PANNING_CONSTANT), pos.y, pos.z);
+        alSource3f(src.id, AL_POSITION, pos.x + (src.panning*PANNING_CONSTANT), pos.y, pos.z);
         src.position = pos;
     }
 
@@ -195,13 +197,9 @@ public class HipOpenALPlayer : IHipAudioPlayer
         device = null;               
     }
 
-    protected static Sound_AudioInfo info;
-    protected static AudioConfig config;
+    package static AudioConfig config;
     protected static ALCdevice* device;
     protected static ALCcontext* context;
-
-
-    protected static ALuint defaultBufferSize = 4096;
 
     /**
     * Constant used for making the panning distance offset from the listener

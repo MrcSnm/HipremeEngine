@@ -12,11 +12,10 @@ Distributed under the MIT Software License.
 module sdl.event.handlers.keyboard;
 import sdl.event.handlers.input.keyboard_layout;
 import util.data_structures;
-import std.stdio;
-private import sdl.loader;
-private import std.algorithm, std.conv, std.datetime.stopwatch;
-private import error.handler;
-private import util.time, util.array;
+import bindbc.sdl;
+import std.algorithm, std.conv, std.datetime.stopwatch;
+import error.handler;
+import util.time, util.array;
 
 enum KeyCodes
 {

@@ -11,8 +11,8 @@ Distributed under the MIT Software License.
 
 module sdl.event.dispatcher;
 private:
-    import sdl.loader;
     import sdl.event.handlers.keyboard;
+    import bindbc.sdl;
 
 public:
 /** 

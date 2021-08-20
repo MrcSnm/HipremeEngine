@@ -14,6 +14,7 @@ import audio.audio;
 import implementations.audio.audiobase;
 import implementations.audio.backend.audiosource;
 import implementations.audio.backend.audioconfig;
+import implementations.audio.backend.openal.player;
 import bindbc.openal;
 
 public class HipOpenALBuffer : HipAudioBuffer
@@ -30,10 +31,10 @@ public class HipOpenALBuffer : HipAudioBuffer
         {
             alBufferData(
                 bufferId,
-                Audio3DBackend.config.getFormatAsOpenAL(),
+                HipOpenALAudioPlayer.config.getFormatAsOpenAL(),
                 getBuffer(),
                 cast(ALsizei)getBufferSize(),
-                Audio3DBackend.config.sampleRate
+                HipOpenALAudioPlayer.config.sampleRate
             );
             return true;
         }
