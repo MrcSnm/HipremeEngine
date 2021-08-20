@@ -287,12 +287,12 @@ struct SLIAudioPlayer
 /**
 * Engine interface
 */
-static SLObjectItf engineObject = null;
-static SLEngineItf engine;
+__gshared SLObjectItf engineObject = null;
+__gshared SLEngineItf engine;
 
-static SLIOutputMix outputMix;
-static SLIAudioPlayer gAudioPlayer;
-static short[8000] sawtoothBuffer;
+__gshared SLIOutputMix outputMix;
+__gshared SLIAudioPlayer gAudioPlayer;
+__gshared short[8000] sawtoothBuffer;
 
 static void loadSawtooth()
 {
@@ -380,7 +380,8 @@ bool sliCreateOutputContext()
     destination.pFormat = null;
 
     SLIAudioPlayer.initializeForAndroid(gAudioPlayer, engine, src, destination);
-    SLIAudioPlayer.play(gAudioPlayer, sawtoothBuffer.ptr, 8000);
+    
+    //SLIAudioPlayer.play(gAudioPlayer, sawtoothBuffer.ptr, 8000);
 
     
     return sliErrorQueue.length == 0;

@@ -33,6 +33,14 @@ import implementations.renderer.renderer;
 import view;
 import systems.game;
 import def.debugging.gui;
+/**
+* Compiling instructions:
+
+* Desktop: dub
+* UWP: dub build -c uwp
+* Android: dub build -c android --compiler=ldc2 -a aarch64--linux-android
+*/
+
 
 
 static void initEngine(bool audio3D = false)
@@ -80,7 +88,10 @@ extern(C)int SDL_main()
 	import def.debugging.console;
 	import data.hipfs;
 	initEngine(true);
-	HipAudio.initialize();
+	version(Android)
+		HipAudio.initialize(HipAudioImplementation.OPENSLES);
+	else
+		HipAudio.initialize();
 	version(dll)
 	{
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
