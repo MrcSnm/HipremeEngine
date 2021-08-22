@@ -4,7 +4,7 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
@@ -42,7 +42,7 @@ interface ITexture
 {
     void setWrapMode(TextureWrapMode mode);
     void setTextureFilter(TextureFilter min, TextureFilter mag);
-    bool load(SDL_Surface* surface);
+    bool load(Image img);
     void bind();
 }
 
@@ -89,9 +89,9 @@ class Texture
         HipAssetManager.loadImage(path, (Image img)
         {
             this.img = img;
-            this.width = img.data.w;
-            this.height = img.data.h;
-            this.textureImpl.load(img.data);
+            this.width = img.w;
+            this.height = img.h;
+            this.textureImpl.load(img);
         }, false);
         return this.width != 0;
     }

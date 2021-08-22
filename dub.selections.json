@@ -2,9 +2,15 @@
 	"fileVersion": 1,
 	"versions": {
 		"arsd-official": "10.2.1",
+		"bindbc-cimgui": "1.0.1",
+		"bindbc-freeimage": "1.0.1",
+		"bindbc-generate": "1.0.0",
 		"bindbc-loader": "0.3.2",
-		"bindbc-openal": "0.4.1",
+		"bindbc-openal": "0.5.0",
 		"bindbc-opengl": "0.13.0",
-		"bindbc-sdl": "0.19.2"
+		"bindbc-sdl": "0.19.2",
+		"directx-d": {"path":"dependencies/directx-d"},
+		"gles": {"path":"dependencies/gles"},
+		"regexes": {"path":"C:/Users/Hipreme/AppData/Local/dub/packages/bindbc-generate-1.0.0/bindbc-generate/regexes"}
 	}
 }

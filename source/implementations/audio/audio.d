@@ -4,7 +4,7 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
@@ -16,53 +16,81 @@ import bindbc.sdl.mixer;
 public import implementations.audio.audiobase;
 public import implementations.audio.backend.audiosource;
 public import implementations.audio.backend.audioconfig;
-import implementations.audio.backend.audio2d;
-import implementations.audio.backend.audio3d;
-import sdl.sdl_sound;
+import implementations.audio.backend.openal.player;
+import implementations.audio.backend.sdl.player;
+version(Android){import implementations.audio.backend.opensles.player;}
+import audio.audio;
 import error.handler;
 
-
-class Audio
+/**
+* Controls how the gain will falloff
+*/
+enum DistanceModel
 {
-    public static bool initialize(bool is3D = true)
+    DISTANCE_MODEL,
+    /**
+    * Very similar to the exponential curve
+    */
+    INVERSE,
+    INVERSE_CLAMPED,
+    /**
+    * Linear curve, the only which can achieve 0 volume
+    */
+    LINEAR,
+    LINEAR_CLAMPED,
+
+    /**
+    * Exponential curve for the model
+    */
+    EXPONENT,
+    /**
+    * When the distance is below the reference, it will clamp the volume to 1
+    * When the distance is higher than max distance, it will not decrease volume any longer
+    */
+    EXPONENT_CLAMPED
+}
+
+enum HipAudioImplementation
+{
+    OPENAL,
+    SDL,
+    OPENSLES
+}
+
+class HipAudio
+{
+    public static bool initialize(HipAudioImplementation implementation = HipAudioImplementation.OPENAL)
     {
+        ErrorHandler.startListeningForErrors("HipremeAudio initialization");
         version(HIPREME_DEBUG)
         {
             hasInitializedAudio = true;
         }
-        Audio.is3D = is3D;
-        ErrorHandler.assertErrorMessage(loadSDLSound(), "Error Loading SDL_Sound", "SDL_Sound not found");
-        if(is3D)
+        import def.debugging.log;
+        HipAudio.is3D = is3D;
+        config = AudioConfig.lightweightConfig;
+        
+        switch(implementation)
         {
-            ErrorHandler.startListeningForErrors("HipremeAudio3D initialization");
-            ALSupport sup = loadOpenAL();
-            if(ErrorHandler.assertErrorMessage(sup == ALSupport.al11, "Error loading OpenAL", "No OpenAL support found"))
-            {
-                if(sup == ALSupport.badLibrary)
-                    ErrorHandler.showErrorMessage("Bad OpenAL Support", "Unknown version of OpenAL");
-                else
-                    ErrorHandler.showErrorMessage("OpenAL not found", "Could not find OpenAL library");
-            }
-            //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
-            audioInterface = new Audio3DBackend(AudioConfig.lightweightConfig);
+            case HipAudioImplementation.OPENSLES:
+                version(Android)
+                {
+                    audioInterface = new HipOpenSLESAudioPlayer(AudioConfig.lightweightConfig);
+                    break;
+                }
+            case HipAudioImplementation.SDL:
+                audioInterface = new HipSDLAudioPlayer(AudioConfig.lightweightConfig);
+                break;
+            case HipAudioImplementation.OPENAL:
+            default:
+                //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
+                audioInterface = new HipOpenALAudioPlayer(AudioConfig.lightweightConfig);
         }
-        else
-        {
-            ErrorHandler.startListeningForErrors("HipremeAudio2D initialization");
-            SDLMixerSupport sup = loadSDLMixer();
-            if(sup == SDLMixerSupport.badLibrary)
-                ErrorHandler.showErrorMessage("Bad SDL_Mixer support", "Unknown version of SDL_Mixer");
-            else if(sup == SDLMixerSupport.noLibrary)
-                ErrorHandler.showErrorMessage("No SDL_Mixer found", "Could not find any SDL_Mixer version");
-            // ErrorHandler.assertErrorMessage(Mix_OpenAudio(44100));
-
-            audioInterface = new Audio2DBackend(AudioConfig.lightweightConfig);
-        }
-
+        
         return ErrorHandler.stopListeningForErrors();
     }
 
-    static bool play(AudioSource src)
+    static bool play(HipAudioSource src)
     {
         if(audioInterface.play(src))
         {
@@ -72,25 +100,25 @@ class Audio
         }
         return false;
     }
-    static bool pause(AudioSource src)
+    static bool pause(HipAudioSource src)
     {
         audioInterface.pause(src);
         src.isPlaying = false;
         return false;
     }
-    static bool play_streamed(AudioSource src)
+    static bool play_streamed(HipAudioSource src)
     {
         audioInterface.play_streamed(src);
         src.isPlaying = true;
         return false;
     }
-    static bool resume(AudioSource src)
+    static bool resume(HipAudioSource src)
     {
         audioInterface.resume(src);
         src.isPlaying = true;
         return false;
     }
-    static bool stop(AudioSource src)
+    static bool stop(HipAudioSource src)
     {
         audioInterface.stop(src);
         return false;
@@ -101,7 +129,7 @@ class Audio
     *   If forceLoad is set to true, you will need to manage it's destruction yourself
     *   Just call audioBufferInstance.unload()
     */
-    static AudioBuffer load(string path, AudioBuffer.TYPE bufferType, bool forceLoad = false)
+    static HipAudioBuffer load(string path, HipAudioType bufferType, bool forceLoad = false)
     {
         //Creates a buffer compatible with the target interface
         version(HIPREME_DEBUG)
@@ -109,11 +137,11 @@ class Audio
             if(ErrorHandler.assertErrorMessage(hasInitializedAudio, "Audio not initialized", "Call Audio.initialize before loading buffers"))
                 return null;
         }
-        AudioBuffer* checker = null;
+        HipAudioBuffer* checker = null;
         checker = path in bufferPool;
         if(!checker)
         {
-            AudioBuffer buf = audioInterface.load(path, bufferType);
+            HipAudioBuffer buf = audioInterface.load(path, bufferType);
             bufferPool[path] = buf;
             checker = &buf;
         }
@@ -122,9 +150,9 @@ class Audio
         return *checker;
     }
 
-    static AudioSource getSource(AudioBuffer buff = null)
+    static HipAudioSource getSource(HipAudioBuffer buff = null)
     {
-        AudioSource ret;
+        HipAudioSource ret;
         if(sourcePool.length == activeSources)
             ret = audioInterface.getSource();
         else
@@ -135,12 +163,12 @@ class Audio
         return ret;
     }
 
-    static bool isMusicPlaying(AudioSource src)
+    static bool isMusicPlaying(HipAudioSource src)
     {
         audioInterface.isMusicPlaying(src);
         return false;
     }
-    static bool isMusicPaused(AudioSource src)
+    static bool isMusicPaused(HipAudioSource src)
     {
         audioInterface.isMusicPaused(src);
         return false;
@@ -157,68 +185,70 @@ class Audio
     }
 
 
-    static void setPitch(AudioSource src, float pitch)
+    static void setPitch(HipAudioSource src, float pitch)
     {
         audioInterface.setPitch(src, pitch);
         src.pitch = pitch;
     }
-    static void setPanning(AudioSource src, float panning)
+    static void setPanning(HipAudioSource src, float panning)
     {
         audioInterface.setPanning(src, panning);
         src.panning = panning;
     }
-    static void setVolume(AudioSource src, float volume)
+    static void setVolume(HipAudioSource src, float volume)
     {
         audioInterface.setVolume(src, volume);
         src.volume = volume;
     }
-    public static void setReferenceDistance(AudioSource src, float dist)
+    public static void setReferenceDistance(HipAudioSource src, float dist)
     {
         audioInterface.setReferenceDistance(src, dist);
         src.referenceDistance = dist;
     }
-    public static void setRolloffFactor(AudioSource src, float factor)
+    public static void setRolloffFactor(HipAudioSource src, float factor)
     {
         audioInterface.setRolloffFactor(src, factor);
         src.rolloffFactor = factor;
     }
-    public static void setMaxDistance(AudioSource src, float dist)
+    public static void setMaxDistance(HipAudioSource src, float dist)
     {
         audioInterface.setMaxDistance(src, dist);
         src.maxDistance = dist;
     }
-
-    public static void update(AudioSource src)
+    public static AudioConfig getConfig(){return config;}
+    
+    /**
+    *   Call this function whenever you update any HipAudioSource property
+    * without calling its setter.
+    */
+    public static void update(HipAudioSource src)
     {
         if(!src.isPlaying)
-            Audio.pause(src);
+            HipAudio.pause(src);
         else
-            Audio.resume(src);
+            HipAudio.resume(src);
         audioInterface.setMaxDistance(src, src.maxDistance);
         audioInterface.setRolloffFactor(src, src.rolloffFactor);
         audioInterface.setReferenceDistance(src, src.referenceDistance);
         audioInterface.setVolume(src, src.volume);
         audioInterface.setPanning(src, src.panning);
         audioInterface.setPitch(src, src.pitch);
-        import std.stdio:writefln;
         // float* pos;
         // alGetSourcef(src.id, AL_POSITION, pos);
 
     }
-
-
-
-
+    protected static AudioConfig config;
+    public immutable static uint defaultBufferSize = 4096;
     private static bool is3D;
-    private static AudioBuffer[string] bufferPool; 
-    private static AudioSource[] sourcePool;
+    private static HipAudioBuffer[string] bufferPool; 
+    private static HipAudioSource[] sourcePool;
     private static uint activeSources;
 
-    static IAudio audioInterface;
+    static IHipAudioPlayer audioInterface;
 
     //Debug vars
     version(HIPREME_DEBUG)
     {
         public static bool hasInitializedAudio = false;
-    }    
+    }
 }

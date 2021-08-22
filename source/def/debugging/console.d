@@ -4,7 +4,7 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
@@ -21,7 +21,8 @@ import implementations.imgui.imgui_debug : InterfaceImplementation;
 static enum androidTag = "HipremeEngine";
 enum GUI_CONSOLE = true;
 
-void function(string toPrint) _log;
+///If it is inside thread local storage, then, it won't work being called from another thread
+__gshared void function(string toPrint) _log;
 static string _format(alias fmt, Args...)(Args a){return format!fmt(a);}
 static string _format(Args...)(Args args)
 {

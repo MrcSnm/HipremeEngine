@@ -1,4 +1,7 @@
+.gradle
 .dub
+build/android/project/app/src/main/assets/**
+build/android/project/app/build
 docs.json
 __dummy.html
 docs/
@@ -9,6 +12,9 @@ hipremeengine.dll
 hipremeengine.a
 hipremeengine.lib
 hipremeengine-test-*
+build/.cache
+dependencies/gles/lib/*.a
+dependencies/gles/lib/*.lib
 building/openal-soft-1.20.1-bin
 building/SDL_sound-default
 building/SDL2-2.0.12

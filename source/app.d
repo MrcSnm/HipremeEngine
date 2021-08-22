@@ -4,14 +4,13 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
 import def.debugging.log;
+import bind.external;
 import data.hipfs;
-import core.thread;
-import sdl.loader;
 import error.handler;
 import global.consts;
 import std.conv : to;
@@ -21,6 +20,9 @@ import implementations.audio.backend.alefx;
 version(Android)
 {
 	import jni.helper.androidlog;
+	import jni.jni;
+	import jni.helper.jnicall;
+	alias HipremeAndroid = javaGetPackage!("com.hipremeengine.app.HipremeEngine");
 }
 version(Windows)
 {
@@ -31,30 +33,25 @@ import implementations.renderer.renderer;
 import view;
 import systems.game;
 import def.debugging.gui;
+/**
+* Compiling instructions:
+
+* Desktop: dub
+* UWP: dub build -c uwp
+* Android: dub build -c android --compiler=ldc2 -a aarch64--linux-android
+*/
 
 
-/** 
- * Fast access for SDL Event Types
- */
-// immutable SDL_EventType types;
-
-static SDL_Surface* gScreenSurface = null;
 
 static void initEngine(bool audio3D = false)
 {
 	import def.debugging.console;
-	import bind.external;
-	version(dll)
-	{
-		import core.runtime;
-		rt_init();
-		importExternal();
-	}
 	version(Android)
 	{
 		Console.install(Platforms.ANDROID);
-		HipFS.install(getcwd());
-		rawlog("Starting engine on android");
+		// HipFS.install(HipremeAndroid.javaCall!(string, "getApplicationDir"));
+		HipFS.install("");
+		rawlog("Starting engine on android\nWorking Dir: ", HipFS.getPath(""));
 	}
 	else version(UWP)
 	{
@@ -77,27 +74,24 @@ static void initEngine(bool audio3D = false)
 	version(BindSDL_Static){}
 	else
 	{
-		loadSDLLibs(audio3D);
-		import implementations.imgui.imgui_impl_sdl;
-		import bindbc.loader : SharedLib;
-		void function(SharedLib) implementation = null;
-		static if(!CIMGUI_USER_DEFINED_IMPLEMENTATION)
-			implementation = &bindSDLImgui;
-
-		if(!loadcimgui(implementation))
-		{
-			logln("Could not load cimgui");
-		}
+		import bind.dependencies;
+		rawlog("Initializing SDL");
+		loadEngineDependencies();
 	}
 }
 
-
-GameSystem sys;
+///Globally shared for accessing it on Android Game Thread
+__gshared GameSystem sys;
 extern(C)int SDL_main()
 {
 	import data.ini;
 	import def.debugging.console;
+	import data.hipfs;
 	initEngine(true);
+	version(Android)
+		HipAudio.initialize(HipAudioImplementation.OPENSLES);
+	else
+		HipAudio.initialize();
 	version(dll)
 	{
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
@@ -109,10 +103,6 @@ extern(C)int SDL_main()
 	else{HipRenderer.init("renderer.conf");}
 	
 	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
-	Sound_AudioInfo info;
-	info.channels=1;
-	info.rate = 22_050;
-	info.format = SDL_AudioFormat.AUDIO_S16;
 
 	//AudioSource sc = Audio.getSource(buf);
 	//Audio.setPitch(sc, 1);
@@ -134,7 +124,7 @@ extern(C)int SDL_main()
 	else version(Android){}
 	else
 	{
-		while(HipremeUpdate()){}
+		while(HipremeUpdate()){HipremeRender();}
 		HipremeDestroy();
 		destroyEngine();
 	}
@@ -155,7 +145,6 @@ extern(C)int SDL_main()
 
 	// // Rendering
 	// DI.end();
-	//	alSource3f(src, AL_POSITION, cos(angle) * 10, 0, sin(angle) * 10);
 	// Cleanup
 }
 
@@ -167,43 +156,81 @@ static void destroyEngine()
     //HipAssetManager.disposeResources();
 	DI.onDestroy();
 	HipRenderer.dispose();
-	Audio.onDestroy();
+	HipAudio.onDestroy();
+	import bindbc.sdl:SDL_Quit;
     SDL_Quit();
 }
 
+
+
 version(Android)
 {
-	import jni.jni;
+	extern(C) void Java_com_hipremeengine_app_HipremeEngine_HipremeInit(JNIEnv* env, jclass clazz)
+	{
+		HipremeInit();
+		HipremeAndroid.setEnv(env);
+		aaMgr = cast(AAssetManager*)HipremeAndroid.javaCall!(Object, "getAssetManager");
+		aaMgr = AAssetManager_fromJava(env, aaMgr);
+		
+	}
+
 	extern(C) jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
 	{
-		return HipremeMain();
+		int ret = HipremeMain();
+		import graphics.g2d.viewport;
+		int[2] wsize = HipremeAndroid.javaCall!(int[2], "getWindowSize");
+		HipRenderer.setViewport(new Viewport(0, 0, wsize[0], wsize[1]));
+		return ret;
 	}
 	extern(C) jboolean Java_com_hipremeengine_app_HipremeEngine_HipremeUpdate(JNIEnv* env, jclass clazz)
 	{
 		return HipremeUpdate();
 	}
+	extern(C) void Java_com_hipremeengine_app_HipremeEngine_HipremeRender(JNIEnv* env, jclass clazz)
+	{
+		HipremeRender();
+	}
 	extern(C) void  Java_com_hipremeengine_app_HipremeEngine_HipremeDestroy(JNIEnv* env, jclass clazz)
 	{
+		HipremeAndroid.setEnv(null);
 		HipremeDestroy();
 	}
 }  
 
+///Initializes the D runtime and import external functions
+export extern(C) void HipremeInit()
+{
+	version(dll)
+	{
+		import core.runtime;
+		rt_init();
+		importExternal();
+	}
+}
+///Setup the engine
 export extern(C) int HipremeMain(){return SDL_main();}
 version(dll){}
 else{void main(){HipremeMain();}}
 
-
-extern(C) @nogc nothrow void glClearColor(float, float, float, float);
+///Steps an engine frame
 export extern(C) bool HipremeUpdate()
 {
 	if(!sys.update())
 		return false;
+	sys.postUpdate();
+	return true;
+}
+/**
+* This function was created for making it rendering optional. On Android, 
+* the game is only rendered when the renderer is dirty, it is absolutely
+* not recommended to do game logic on the render
+*/
+export extern(C) void HipremeRender()
+{
 	HipRenderer.begin();
 	HipRenderer.clear(0,0,0,255);
 	sys.render();
 	HipRenderer.end();
-	sys.postUpdate();
-	return true;
 }
 export extern(C) void HipremeDestroy()
 {
