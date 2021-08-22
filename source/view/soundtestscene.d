@@ -8,7 +8,9 @@ class SoundTestScene : Scene
 {
     this()
     {
-        HipAudioBuffer buf = HipAudio.load("audio/the-sound-of-silence.wav", HipAudioType.SFX);
+        import util.libinfos;
+        show_sdl_sound_info();
+        HipAudioBuffer buf = HipAudio.load("audio/junkyard-a-class.mp3", HipAudioType.MUSIC);
         HipAudioSource sc = HipAudio.getSource(buf);
         HipAudio.setPitch(sc, 1);
         HipAudio.play(sc);

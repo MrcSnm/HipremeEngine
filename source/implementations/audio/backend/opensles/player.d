@@ -5,8 +5,67 @@ import implementations.audio.audiobase;
 import implementations.audio.backend.sles;
 import audio.audio;
 import opensles.sles;
+import error.handler;
+import implementations.audio.audio;
 
 version(Android):
+
+
+package __gshared SLIAudioPlayer*[] playerPool;
+package uint poolRingIndex = 0;
+enum MAX_SLI_AUDIO_PLAYERS = 32;
+
+
+package SLIAudioPlayer* hipGenAudioPlayer()
+{
+    SLDataFormat_PCM fmt = HipAudio.getConfig().getFormatAsOpenSLES();
+    version(Android)
+    {
+        import opensles.android;
+        SLDataLocator_AndroidSimpleBufferQueue locator;
+        locator.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
+        locator.numBuffers = 1;
+    }
+    else
+    {
+        SLDataLocator_Address locator;
+        locator.locatorType = SL_DATALOCATOR_ADDRESS;
+        // locator.pAddress = bufferPtr;
+        // locator.length = bufferLength;
+    }
+    SLDataSource src;
+    src.pLocator = &locator;
+    src.pFormat = &fmt;
+
+    //Okay
+    SLDataLocator_OutputMix locatorMix;
+    locatorMix.locatorType = SL_DATALOCATOR_OUTPUTMIX;
+    locatorMix.outputMix = outputMix.outputMixObj;
+
+    SLDataSink destination;
+    destination.pLocator = &locatorMix;
+    destination.pFormat = null;
+
+    return sliGenAudioPlayer(src, destination);
+}
+
+package SLIAudioPlayer* hipGetPlayerFromPool()
+{
+    foreach(p; playerPool)
+    {
+        if(!p.isPlaying)
+            return p;
+    }
+    if(playerPool.length == MAX_SLI_AUDIO_PLAYERS)
+    {
+        SLIAudioPlayer* temp = playerPool[poolRingIndex];
+        SLIAudioPlayer.stop(*temp);
+        poolRingIndex = (poolRingIndex+1)%MAX_SLI_AUDIO_PLAYERS;
+        return temp;
+    }
+    return hipGenAudioPlayer();
+}
+
 class HipOpenSLESAudioPlayer : IHipAudioPlayer
 {
     AudioConfig cfg;
@@ -15,16 +74,21 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     this(AudioConfig cfg)
     {
         this.cfg = cfg;
-        sliCreateOutputContext();
+        HipSDL_SoundDecoder.initDecoder();
+        ErrorHandler.assertErrorMessage(sliCreateOutputContext(),
+        "Error creating OpenSLES context.", sliGetErrorMessages());
     }
     public bool isMusicPlaying(HipAudioSource src){return false;}
     public bool isMusicPaused(HipAudioSource src){return false;}
     public bool resume(HipAudioSource src){return false;}
     public bool play(HipAudioSource src)
     {
-        import def.debugging.log;
-        rawlog(src.buffer.getBufferSize);
-        SLIAudioPlayer.play(gAudioPlayer, src.buffer.getBuffer(), cast(uint)src.buffer.getBufferSize());
+        SLIAudioPlayer* p = hipGetPlayerFromPool();
+        SLIAudioPlayer.play(*p,
+            src.buffer.getBuffer(),
+            cast(uint)src.buffer.getBufferSize()
+        );
+
         return true;
     }
     public bool stop(HipAudioSource src){return false;}
@@ -48,5 +112,5 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     public void setRolloffFactor(HipAudioSource src, float factor){}
     public void setReferenceDistance(HipAudioSource src, float dist){}
 
-    public void onDestroy(){}
+    public void onDestroy(){sliDestroyContext();}
 }

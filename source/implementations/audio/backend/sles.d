@@ -1,4 +1,7 @@
 module implementations.audio.backend.sles;
+import std.conv:to;
+import std.format:format;
+import core.atomic;
 import std.algorithm:count;
 import opensles.sles;
 version(Android)
@@ -6,6 +9,14 @@ version(Android)
     import opensles.android;
 }
 version(Android):
+package __gshared SLresult[] sliErrorQueue;
+package __gshared string[]   sliErrorMessages;
+///Hold the engine 
+package __gshared SLObjectItf engineObject = null;
+package __gshared SLEngineItf engine;
+package __gshared SLIOutputMix outputMix;
+package __gshared SLIAudioPlayer*[] genPlayers;
+
 
 string sliGetError(SLresult res)
 {
@@ -31,12 +42,16 @@ string sliGetError(SLresult res)
         default: return "Undefined error";
     }
 }
-private SLresult[] sliErrorQueue;
-private string[]   sliErrorMessages;
-bool sliError(SLresult res)
+
+
+bool sliError(SLresult res, string file = __FILE__, string func = __PRETTY_FUNCTION__,  uint line = __LINE__)
 {
     if(res != SL_RESULT_SUCCESS)
+    {
         sliErrorQueue~= res;
+        import def.debugging.log;
+        rawlog(format!("OpenSL ES Error: '%s' at file %s:%s at %s")(sliGetError(res), file, line, func));
+    }
     return res != SL_RESULT_SUCCESS;
 }
 
@@ -46,9 +61,10 @@ bool sliError(SLresult res)
 *
 *   Returns wether the call was okay
 */
-private bool sliCall(SLresult opRes, string errMessage)
+private bool sliCall(SLresult opRes, string errMessage,
+string file = __FILE__, string func = __PRETTY_FUNCTION__,  uint line = __LINE__)
 {
-    if(sliError(opRes))
+    if(sliError(opRes, file, func, line))
     {
         sliErrorMessages~= errMessage;
         return false;
@@ -150,6 +166,17 @@ string getAudioPlayerRequirements()
     return req;
 }
 
+string sliGetErrorMessages()
+{
+    string ret;
+    for(int i = 0; i < sliErrorMessages.length;i++)
+        ret~= sliGetError(sliErrorQueue[i])~": "~sliErrorMessages[i];
+
+    sliErrorQueue.length = 0;
+    sliErrorMessages.length = 0;
+    return ret;
+}
+
 struct SLIAudioPlayer
 {
     ///The Audio player
@@ -197,7 +224,6 @@ struct SLIAudioPlayer
             playerSeek = null;
             playerEffectSend = null;
             version(Android){playerAndroidSimpleBufferQueue = null;}
-
         }
     }
 
@@ -206,7 +232,7 @@ struct SLIAudioPlayer
         if(event & SL_PLAYEVENT_HEADATEND)
         {
             SLIAudioPlayer p = *(cast(SLIAudioPlayer*)context);
-            p.hasFinishedTrack = true;
+            atomicStore(p.hasFinishedTrack,  true);
         }
     }
     static void play(ref SLIAudioPlayer audioPlayer, void* samples, uint sampleSize)
@@ -237,69 +263,85 @@ struct SLIAudioPlayer
             SLIAudioPlayer.stop(audioPlayer);
         }
     }
-
-
-
-    static bool initializeForAndroid(ref SLIAudioPlayer output, ref SLEngineItf engine, ref SLDataSource src, ref SLDataSink dest, bool autoRegisterCallback = true)
-    {
-        string[] errs;
-        with(output)
-        {
-            mixin("const(SLInterfaceID)* ids = ["~getAudioPlayerInterfaces()~"].ptr;");
-            mixin("const(SLboolean)* req = ["~getAudioPlayerRequirements()~"].ptr;");
-
-            sliCall((*engine).CreateAudioPlayer(engine, &playerObj, &src, &dest,
-            cast(uint)(getAudioPlayerInterfaces().count(",")+1), ids, req),
-            "Could not create AudioPlayer");
-
-            sliCall((*playerObj).Realize(playerObj, SL_BOOLEAN_FALSE),
-            "Could not initialize AudioPlayer");
-
-
-            sliCall((*playerObj).GetInterface(playerObj, SL_IID_PLAY, &player),
-            "Could not get play interface for AudioPlayer");
-            sliCall((*playerObj).GetInterface(playerObj, SL_IID_VOLUME, &playerVol),
-            "Could not get volume interface for AudioPlayer");
-            
-            // sliCall((*playerObj).GetInterface(playerObj, SL_IID_SEEK, &playerSeek),
-            //("Could not get Seek interface for AudioPlayer");
-            sliCall((*playerObj).GetInterface(playerObj, SL_IID_EFFECTSEND, &playerEffectSend),
-            "Could not get EffectSend interface for AudioPlayer");
-            sliCall((*playerObj).GetInterface(playerObj, SL_IID_METADATAEXTRACTION, &playerMetadata),
-            "Could not get MetadataExtraction interface for AudioPlayer");
-            
-            version(Android)
-            {
-                sliCall((*playerObj).GetInterface(playerObj, 
-                SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &playerAndroidSimpleBufferQueue),
-                "Could not get AndroidSimpleBufferQueue for AudioPlayer");
-            }
-            if(autoRegisterCallback)
-            {
-                (*player).RegisterCallback(player, &SLIAudioPlayer.checkClipEnd_Callback, cast(void*)&output);
-                (*player).SetCallbackEventsMask(player, SL_PLAYEVENT_HEADATEND);
-            }
-            return errs.length == 0;
-        }
-    }
 }
 
 /**
-* Engine interface
+*   Returns null on failure.
 */
-__gshared SLObjectItf engineObject = null;
-__gshared SLEngineItf engine;
-
-__gshared SLIOutputMix outputMix;
-__gshared SLIAudioPlayer gAudioPlayer;
-__gshared short[8000] sawtoothBuffer;
-
-static void loadSawtooth()
+SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoRegisterCallback = true)
 {
-    for(uint i =0; i < 8000; ++i)
-        sawtoothBuffer[i] = cast(short)(40_000 - ((i%100) * 220));
+    import core.stdc.stdlib:malloc;
+    SLIAudioPlayer temp;
+    with(temp)
+    {
+        mixin("SLInterfaceID[] ids = ["~getAudioPlayerInterfaces()~"];");
+        mixin("SLboolean[] req = ["~getAudioPlayerRequirements()~"];");
+
+        sliCall((*engine).CreateAudioPlayer(engine, &playerObj, &src, &dest,
+        cast(uint)(ids.length), ids.ptr, req.ptr),
+        "Could not create AudioPlayer");
+
+        sliCall((*playerObj).Realize(playerObj, SL_BOOLEAN_FALSE),
+        "Could not initialize AudioPlayer");
+
+
+        sliCall((*playerObj).GetInterface(playerObj, SL_IID_PLAY, &player),
+        "Could not get play interface for AudioPlayer");
+        sliCall((*playerObj).GetInterface(playerObj, SL_IID_VOLUME, &playerVol),
+        "Could not get volume interface for AudioPlayer");
         
+        // sliCall((*playerObj).GetInterface(playerObj, SL_IID_SEEK, &playerSeek),
+        //("Could not get Seek interface for AudioPlayer");
+        sliCall((*playerObj).GetInterface(playerObj, SL_IID_EFFECTSEND, &playerEffectSend),
+        "Could not get EffectSend interface for AudioPlayer");
+        sliCall((*playerObj).GetInterface(playerObj, SL_IID_METADATAEXTRACTION, &playerMetadata),
+        "Could not get MetadataExtraction interface for AudioPlayer");
+        
+        version(Android)
+        {
+            sliCall((*playerObj).GetInterface(playerObj, 
+            SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &playerAndroidSimpleBufferQueue),
+            "Could not get AndroidSimpleBufferQueue for AudioPlayer");
+        }
+    }
+    if(sliErrorMessages.length == 0)
+    {
+        SLIAudioPlayer* playerOut = cast(SLIAudioPlayer*)malloc(SLIAudioPlayer.sizeof);
+        *playerOut = temp;
+        if(autoRegisterCallback)
+        {
+            (*temp.player).RegisterCallback(temp.player, &SLIAudioPlayer.checkClipEnd_Callback, cast(void*)playerOut);
+            (*temp.player).SetCallbackEventsMask(temp.player, SL_PLAYEVENT_HEADATEND);
+        }
+        genPlayers~= playerOut;
+        return playerOut;
+    }
+    return null;
 }
+
+void sliDestroyContext()
+{
+    import core.stdc.stdlib;
+    (*engineObject).Destroy(engineObject);
+    with(outputMix) (*outputMixObj).Destroy(outputMixObj);
+
+    foreach(ref gp; genPlayers)
+    {
+        SLIAudioPlayer.destroyAudioPlayer(*gp);
+        free(gp);
+        gp = null;
+    }
+}
+
+
+// __gshared short[8000] sawtoothBuffer;
+
+// static void loadSawtooth()
+// {
+//     for(uint i =0; i < 8000; ++i)
+//         sawtoothBuffer[i] = cast(short)(40_000 - ((i%100) * 220));
+        
+// }
 
 version(Android){alias SLIDataLocator_Address = SLDataLocator_AndroidSimpleBufferQueue;}
 else{alias SLIDataLocator_Address = SLDataLocator_Address;}
@@ -336,53 +378,11 @@ bool sliCreateOutputContext()
     sliCall((*engineObject).GetInterface(engineObject, SL_IID_ENGINE, &engine),
     "Could not get an interface for creating objects");
 
-    loadSawtooth();
+    // loadSawtooth();
 
     version(Android)
-    {
         SLIOutputMix.initializeForAndroid(outputMix, engine);
-        SLDataLocator_AndroidSimpleBufferQueue locator;
-        locator.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
-        locator.numBuffers = 1;
-    }
-    else
-    {
-        SLDataLocator_Address locator;
-        locator.locatorType = SL_DATALOCATOR_ADDRESS;
-        locator.pAddress = sawtoothBuffer.ptr;
-        locator.length = 8000*2;
-    }
-    //Okay
-    SLDataFormat_PCM format;
-    format.formatType = SL_DATAFORMAT_PCM;
-    format.numChannels = 1;
-    format.samplesPerSec =  SL_SAMPLINGRATE_8;
-    format.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
-    format.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
-    format.channelMask = SL_SPEAKER_FRONT_CENTER;
-    format.endianness = SL_BYTEORDER_LITTLEENDIAN;
-
-    
-
-    //Okay
-    SLDataSource src;
-    src.pLocator = &locator;
-    src.pFormat = &format;
-
-    //Okay
-    SLDataLocator_OutputMix locatorMix;
-    locatorMix.locatorType = SL_DATALOCATOR_OUTPUTMIX;
-    locatorMix.outputMix = outputMix.outputMixObj;
-
-    //Okay
-    SLDataSink destination;
-    destination.pLocator = &locatorMix;
-    destination.pFormat = null;
-
-    SLIAudioPlayer.initializeForAndroid(gAudioPlayer, engine, src, destination);
-    
-    //SLIAudioPlayer.play(gAudioPlayer, sawtoothBuffer.ptr, 8000);
-
+    // SLIAudioPlayer.initializeForAndroid(gAudioPlayer, engine, src, destination);
     
     return sliErrorQueue.length == 0;
 }

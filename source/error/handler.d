@@ -106,7 +106,7 @@ public static class ErrorHandler
         return HAS_ANY_ERROR_HAPPENNED;
     }
 
-    private static void getError(string errorHeader, string error)
+    private static void getError(lazy string errorHeader, lazy string error)
     {
         if(isListening)
         {
