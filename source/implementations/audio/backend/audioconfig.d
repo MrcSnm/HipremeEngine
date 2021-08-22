@@ -61,6 +61,23 @@ struct AudioConfig
     {
         return Sound_AudioInfo(getFormatAsSDL_AudioFormat(), cast(ubyte)channels, sampleRate);
     }
+    version(Android)
+    {
+        import opensles.sles;
+        SLDataFormat_PCM getFormatAsOpenSLES()
+        {
+            SLDataFormat_PCM ret;
+            ret.formatType = SL_DATAFORMAT_PCM;
+            ret.numChannels = 1;
+            ret.samplesPerSec = SL_SAMPLINGRATE_22_05;
+            ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
+            ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
+            ret.channelMask = SL_SPEAKER_FRONT_CENTER;
+            ///Android only uses little endian
+            ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
+            return ret;
+        }
+    }
     
     ALuint getFormatAsOpenAL()
     {

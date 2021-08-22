@@ -34,6 +34,26 @@ void list_audio_devices(const ALCchar *devices)
 	rawlog("----------\n");
 }
 
+void show_sdl_sound_info()
+{
+    import sdl.sdl_sound;
+    string toPrint = "SDL2_Sound Available Decoders:\n";
+    Sound_DecoderInfo** info = cast(Sound_DecoderInfo**)Sound_AvailableDecoders();
+    while(*info != null)
+    {
+        toPrint~="\n\t"~to!string((*info).description);
+        toPrint~="\n\tURL:"~to!string((*info).url);
+        toPrint~="\n\tExtensions: ";
+        for(int i = 0; (*info).extensions[i] != null; i++)
+        {
+            toPrint~= to!string((*info).extensions[i]) ~" ";
+        }
+        toPrint~="\n";
+        info++;
+    }
+    rawlog(toPrint);
+}
+
 void show_opengl_info()
 {
 	version(Android){}
