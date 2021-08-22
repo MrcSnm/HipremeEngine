@@ -4,7 +4,7 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
@@ -259,7 +259,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         return new Hip_D3D11_VertexBufferObject(size, usage);
     }
-    public IHipIndexBufferImpl  createIndexBuffer(uint count, HipBufferUsage usage)
+    public IHipIndexBufferImpl  createIndexBuffer(index_t count, HipBufferUsage usage)
     {
         return new Hip_D3D11_IndexBufferObject(count, usage);
     }
@@ -355,11 +355,11 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         _hip_d3d_swapChain.Present(0,0);
     }
 
-    public void drawVertices(uint count, uint offset = 0)
+    public void drawVertices(index_t count, uint offset = 0)
     {
         _hip_d3d_context.Draw(count, offset);
     }
-    public void drawIndexed(uint indicesSize, uint offset=0)
+    public void drawIndexed(index_t indicesSize, uint offset=0)
     {
         _hip_d3d_context.DrawIndexed(indicesSize, offset, 0);
     }

@@ -4,14 +4,14 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
 
 module view.spritetestscene;
 import bindbc.sdl;
-import bindbc.opengl;
+import implementations.renderer.backend.gl.renderer;
 import implementations.renderer.shader;
 import graphics.g2d;
 import implementations.renderer.renderer;
@@ -24,9 +24,15 @@ class SpriteTestScene : Scene
     HipSprite sprite;
     this()
     {
-        batch = new HipSpriteBatch();
-        sprite = new HipSprite("sprite.png");
         import def.debugging.log;
+        batch = new HipSpriteBatch();
+        import data.hipfs;
+        string output;
+
+
+        // HipFS.readText("text/renderer.conf", output);
+        // rawlog(output);
+        sprite = new HipSprite("assets/graphics/sprites/sprite.png");
     }
 
     public override void render()

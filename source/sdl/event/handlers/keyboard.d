@@ -4,7 +4,7 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
@@ -12,11 +12,10 @@ Distributed under the Boost Software License, Version 1.0.
 module sdl.event.handlers.keyboard;
 import sdl.event.handlers.input.keyboard_layout;
 import util.data_structures;
-import std.stdio;
-private import sdl.loader;
-private import std.algorithm, std.conv, std.datetime.stopwatch;
-private import error.handler;
-private import util.time, util.array;
+import bindbc.sdl;
+import std.algorithm, std.conv, std.datetime.stopwatch;
+import error.handler;
+import util.time, util.array;
 
 enum KeyCodes
 {

@@ -4,7 +4,7 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
@@ -93,13 +93,13 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
     ulong size;
     this(uint count, HipBufferUsage usage)
     {
-        this.size = count*uint.sizeof;
+        this.size = count*index_t.sizeof;
         this.count = count;
         this.usage = getD3D11Usage(usage);
     }
     protected void createBuffer(uint count, void* data)
     {
-        this.size = count*uint.sizeof;
+        this.size = count*index_t.sizeof;
         D3D11_BUFFER_DESC bd;
         bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
         bd.Usage = usage;
@@ -112,14 +112,26 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
         //TODO: Check failure
         _hip_d3d_device.CreateBuffer(&bd, &sd, &buffer);
     }
-    void bind(){_hip_d3d_context.IASetIndexBuffer(buffer, DXGI_FORMAT_R32_UINT, 0);}
-    void unbind(){_hip_d3d_context.IASetIndexBuffer(null, DXGI_FORMAT_R32_UINT, 0);}
+    void bind()
+    {
+        static if(is(index_t == uint))
+            _hip_d3d_context.IASetIndexBuffer(buffer, DXGI_FORMAT_R32_UINT, 0);
+        else
+            _hip_d3d_context.IASetIndexBuffer(buffer, DXGI_FORMAT_R16_UINT, 0);
+    }
+    void unbind()
+    {
+        static if(is(index_t == uint))
+            _hip_d3d_context.IASetIndexBuffer(null, DXGI_FORMAT_R16_UINT, 0);
+        else
+            _hip_d3d_context.IASetIndexBuffer(null, DXGI_FORMAT_R16_UINT, 0);
+    }
 
     /**
     * If the count is 0, it means that it should create the vertex buffero
     * with its creation size
     */
-    void setData(uint count, const uint* data)
+    void setData(index_t count, const index_t* data)
     {
         if(count == 0)
         {
@@ -128,12 +140,12 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
         }
         createBuffer(count, cast(void*)data);
     }
-    void updateData(int offset, uint count, const uint* data)
+    void updateData(int offset, index_t count, const index_t* data)
     {
-        assert(count*uint.sizeof+offset <= this.size, format!"Tried to set data with size %s and offset %s for vertex buffer with size %s"(count*uint.sizeof, offset, this.size));
+        assert(count*index_t.sizeof+offset <= this.size, format!"Tried to set data with size %s and offset %s for vertex buffer with size %s"(count*index_t.sizeof, offset, this.size));
         D3D11_MAPPED_SUBRESOURCE resource;
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-        memcpy(resource.pData+offset, data, count*uint.sizeof);
+        memcpy(resource.pData+offset, data, count*index_t.sizeof);
         _hip_d3d_context.Unmap(buffer, 0);
         HipRenderer.exitOnError();
     }

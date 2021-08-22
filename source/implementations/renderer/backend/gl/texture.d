@@ -4,14 +4,15 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
 
 module implementations.renderer.backend.gl.texture;
 import implementations.renderer.texture;
-import bindbc.opengl;
+import implementations.renderer.backend.gl.renderer;
+import graphics.image;
 import bindbc.sdl;
 
 class Hip_GL3_Texture : ITexture
@@ -26,12 +27,17 @@ class Hip_GL3_Texture : ITexture
     {
         switch(mode)
         {
+            import gles.gl30;
+            version(GLES30){}
+            else
+            {
+                case TextureWrapMode.MIRRORED_CLAMP_TO_EDGE: return GL_MIRROR_CLAMP_TO_EDGE;
+                case TextureWrapMode.CLAMP_TO_BORDER: return GL_CLAMP_TO_BORDER;
+            }
             case TextureWrapMode.CLAMP_TO_EDGE: return GL_CLAMP_TO_EDGE;
-            case TextureWrapMode.CLAMP_TO_BORDER: return GL_CLAMP_TO_BORDER;
             case TextureWrapMode.REPEAT: return GL_REPEAT;
             case TextureWrapMode.MIRRORED_REPEAT: return GL_MIRRORED_REPEAT;
-            case TextureWrapMode.MIRRORED_CLAMP_TO_EDGE: return GL_MIRROR_CLAMP_TO_EDGE;
-            default: return -1;
+            default: return GL_REPEAT;
         }
     }
     protected int getGLMinMagFilter(TextureFilter filter)
@@ -77,15 +83,15 @@ class Hip_GL3_Texture : ITexture
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
     }
 
-    bool load(SDL_Surface* surface)
+    bool load(Image image)
     {
         int mode = GL_RGB;
-        if(surface.format.BytesPerPixel==4)
+        if(image.bytesPerPixel==4)
             mode = GL_RGBA;
         bind();
-        glTexImage2D(GL_TEXTURE_2D, 0, mode, surface.w, surface.h, 0, mode, GL_UNSIGNED_BYTE, surface.pixels);
-        width = surface.w;
-        height = surface.h;
+        glTexImage2D(GL_TEXTURE_2D, 0, mode, image.w, image.h, 0, mode, GL_UNSIGNED_BYTE, image.pixels);
+        width = image.w;
+        height = image.h;
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

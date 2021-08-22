@@ -1,0 +1,6 @@
+APP_STL   := c++_static
+APP_ABI := all
+APP_OPTIM := release
+TARGET_OUT:= $(LOCAL_PATH)../../jniLibs/$(TARGET_ARCH_ABI)
+APP_CPPFLAGS += -DANDROID
+LOCAL_SHORT_COMMANDS := true

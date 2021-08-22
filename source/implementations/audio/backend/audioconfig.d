@@ -4,7 +4,7 @@ License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
@@ -12,6 +12,7 @@ Distributed under the Boost Software License, Version 1.0.
 module implementations.audio.backend.audioconfig;
 import bindbc.sdl.mixer;
 import bindbc.sdl : SDL_AudioFormat;
+import sdl.sdl_sound;
 import bindbc.openal;
 
 struct AudioConfig
@@ -55,6 +56,27 @@ struct AudioConfig
             }
         }
         return SDL_AudioFormat.AUDIO_S16;
+    }
+    Sound_AudioInfo getSDL_SoundInfo()
+    {
+        return Sound_AudioInfo(getFormatAsSDL_AudioFormat(), cast(ubyte)channels, sampleRate);
+    }
+    version(Android)
+    {
+        import opensles.sles;
+        SLDataFormat_PCM getFormatAsOpenSLES()
+        {
+            SLDataFormat_PCM ret;
+            ret.formatType = SL_DATAFORMAT_PCM;
+            ret.numChannels = 1;
+            ret.samplesPerSec = SL_SAMPLINGRATE_22_05;
+            ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
+            ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
+            ret.channelMask = SL_SPEAKER_FRONT_CENTER;
+            ///Android only uses little endian
+            ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
+            return ret;
+        }
     }
     
     ALuint getFormatAsOpenAL()
