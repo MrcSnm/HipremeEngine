@@ -38,7 +38,10 @@ class HipSDLAudioPlayer : IHipAudioPlayer
         buffer.load(audioName,getEncodingFromName(audioName), bufferType);
         return buffer;
     }
-    public HipAudioSource getSource(){return new HipAudioSource();}
+    public HipAudioBuffer loadStreamed(string audioName){assert(false, "SDL Audio Player does not support chunked decoding");}
+    public void updateStream(HipAudioSource source){}
+
+    public HipAudioSource getSource(bool isStreamed){return new HipAudioSource();}
 
     bool play(HipAudioSource src)
     {

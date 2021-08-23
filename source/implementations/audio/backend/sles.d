@@ -1,6 +1,8 @@
 module implementations.audio.backend.sles;
+import def.debugging.log;
 import std.conv:to;
 import std.format:format;
+import core.sync.mutex;
 import core.atomic;
 import std.algorithm:count;
 import opensles.sles;
@@ -9,11 +11,25 @@ version(Android)
     import opensles.android;
 }
 version(Android):
+/**
+*   OpenSL ES Debuggability
+*/
 package __gshared SLresult[] sliErrorQueue;
 package __gshared string[]   sliErrorMessages;
-///Hold the engine 
+
+/**
+*   Engine related objects
+*/
 package __gshared SLObjectItf engineObject = null;
 package __gshared SLEngineItf engine;
+package __gshared SLEngineCapabilitiesItf engineCapabilities;
+package __gshared short engineMajor = 1;
+package __gshared short engineMinor = 0;
+package __gshared short enginePatch = 1;
+
+/**
+*   Controls the output and the players
+*/
 package __gshared SLIOutputMix outputMix;
 package __gshared SLIAudioPlayer*[] genPlayers;
 
@@ -43,14 +59,19 @@ string sliGetError(SLresult res)
     }
 }
 
+package void sliClearErrors()
+{
+    sliErrorMessages.length = 0;
+    sliErrorQueue.length = 0;
+}
 
-bool sliError(SLresult res, string file = __FILE__, string func = __PRETTY_FUNCTION__,  uint line = __LINE__)
+
+bool sliError(SLresult res, lazy string errMessage, string file = __FILE__, string func = __PRETTY_FUNCTION__,  uint line = __LINE__)
 {
     if(res != SL_RESULT_SUCCESS)
     {
         sliErrorQueue~= res;
-        import def.debugging.log;
-        rawlog(format!("OpenSL ES Error: '%s' at file %s:%s at %s")(sliGetError(res), file, line, func));
+        rawlog(format!("'OpenSL ES' Error: '%s' at file %s:%s at %s\n\t%s")(sliGetError(res), file, line, func, errMessage));
     }
     return res != SL_RESULT_SUCCESS;
 }
@@ -64,7 +85,7 @@ bool sliError(SLresult res, string file = __FILE__, string func = __PRETTY_FUNCT
 private bool sliCall(SLresult opRes, string errMessage,
 string file = __FILE__, string func = __PRETTY_FUNCTION__,  uint line = __LINE__)
 {
-    if(sliError(opRes, file, func, line))
+    if(sliError(opRes, errMessage, file, func, line))
     {
         sliErrorMessages~= errMessage;
         return false;
@@ -229,6 +250,7 @@ struct SLIAudioPlayer
 
     extern(C) static void checkClipEnd_Callback(SLPlayItf player, void* context, SLuint32 event)
     {
+        rawlog("Cb");
         if(event & SL_PLAYEVENT_HEADATEND)
         {
             SLIAudioPlayer p = *(cast(SLIAudioPlayer*)context);
@@ -255,14 +277,7 @@ struct SLIAudioPlayer
             isPlaying = false;
         }
     }
-
-    static void checkFinishedPlaying(ref SLIAudioPlayer audioPlayer)
-    {
-        if(audioPlayer.isPlaying && audioPlayer.hasFinishedTrack)
-        {
-            SLIAudioPlayer.stop(audioPlayer);
-        }
-    }
+    
 }
 
 /**
@@ -279,7 +294,7 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
 
         sliCall((*engine).CreateAudioPlayer(engine, &playerObj, &src, &dest,
         cast(uint)(ids.length), ids.ptr, req.ptr),
-        "Could not create AudioPlayer");
+        "Could not create AudioPlayer with format: "~to!string(*(cast(SLDataFormat_PCM*)src.pFormat)));
 
         sliCall((*playerObj).Realize(playerObj, SL_BOOLEAN_FALSE),
         "Could not initialize AudioPlayer");
@@ -377,6 +392,18 @@ bool sliCreateOutputContext()
     //Get the interface for being able to create child objects from the engine
     sliCall((*engineObject).GetInterface(engineObject, SL_IID_ENGINE, &engine),
     "Could not get an interface for creating objects");
+
+    if(sliCall((*engineObject).GetInterface(engineObject, SL_IID_ENGINECAPABILITIES, &engineCapabilities),
+    "Could not get engine capabilities"))
+    {
+        if(sliCall((*engineCapabilities).QueryAPIVersion(engineCapabilities, &engineMajor, &engineMinor, &enginePatch),
+        "Could not query OpenSLES version"))
+            rawlog(format!"OpenSL Version: %s.%s.%s"(engineMajor, engineMinor, enginePatch));
+        else if(sliErrorMessages.length == 1)
+            sliClearErrors();
+    }
+    else if(sliErrorMessages.length == 1)
+        sliClearErrors();
 
     // loadSawtooth();
 

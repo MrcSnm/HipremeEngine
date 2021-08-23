@@ -9,6 +9,43 @@ import audio.audio;
 import math.vector;
 import bindbc.openal;
 
+package string alGetErrorString(ALenum err)
+{
+    if(err != AL_NO_ERROR)
+    {
+        final switch(err)
+        {
+            case AL_INVALID_NAME:
+                return "AL_INVALID_NAME: A bad name (ID) was passed to an OpenAL function";
+            case AL_INVALID_ENUM:
+                return "AL_INVALID_ENUM: An invalid enum value was passed to an OpenAL function";
+            case AL_INVALID_VALUE:
+                return "AL_INVALID_VALUE: An invalid value was passed to an OpenAL function";
+            case AL_INVALID_OPERATION:
+                return "AL_INVALID_OPERATION: A requested operation is not valid";
+            case AL_OUT_OF_MEMORY:
+                return "AL_OUT_OF_MEMORY: The requested operation resulted in OpenAL running out of memory";
+        }
+    }
+    return "";
+}
+
+package string alCheckError(string title="", string message="")()
+{
+    import std.format:format;
+    static if(message != "")
+        message = "\n"~message;
+    return format!q{version(HIPREME_DEBUG)
+    {
+        static if(!is(typeof(alCheckError_err)))
+            ALenum alCheckError_err = alGetError();
+        else
+            alCheckError_err = alGetError();
+        if(alCheckError_err != AL_NO_ERROR)
+            ErrorHandler.showErrorMessage("OpenAL Error: %s", alGetErrorString(alCheckError_err)~"%s");
+    }}(title, message);
+}
+
 ALenum getALDistanceModel(DistanceModel model)
 {
     final switch(model) with(DistanceModel)
@@ -50,6 +87,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
             }
         }
         device = alcOpenDevice(alcGetString(null, ALC_DEVICE_SPECIFIER));
+        mixin(alCheckError!("Error opening OpenAL Device"));
         if(device == null)
         {
             ErrorHandler.showErrorMessage("OpenAL Initialization", "Error on creating device");
@@ -57,6 +95,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         }
         //static const ALCint* contextAttr = [ALC_FREQUENCY, 22_050, 0];
         context = alcCreateContext(device, null);
+        mixin(alCheckError!("Error creating OpenAL context"));
         if(context == null)
         {
             ErrorHandler.showErrorMessage("OpenAL context error", "Error creating OpenAL context");
@@ -75,16 +114,18 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
 
         return true;
     }
-    public HipAudioSource getSource()
+    public HipAudioSource getSource(bool isStreamed = false)
     {
-        HipAudioSource src = new HipOpenALAudioSource();
+        HipAudioSource src = new HipOpenALAudioSource(isStreamed);
         alGenSources(1, &src.id);
+        mixin(alCheckError!("Error creating OpenAL source"));
         ALuint id = src.id;
         alSourcef(id, AL_GAIN, 1);
         alSourcef(id, AL_PITCH, 1);
         alSource3f(id, AL_POSITION, 0f, 0f, 0f);
         alSource3f(id, AL_VELOCITY, 0f, 0f, 0f);
     	alSourcei(id, AL_LOOPING, AL_FALSE);
+        mixin(alCheckError!("Error setting OpenAL source properties"));
        
 
         return src;
@@ -97,6 +138,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         if(!src.isPlaying)
         {
             alSourcePlay(src.id);
+            mixin(alCheckError!("Error querying OpenAL play"));
             return true;
         }
         return false;
@@ -104,9 +146,10 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     public bool play(HipAudioSource src)
     {
         HipOpenALBuffer _buf = cast(HipOpenALBuffer)src.buffer;
-        if(_buf.bufferId != -1)
+        if(_buf.hasBuffer)
         {
             alSourcePlay(src.id);
+            mixin(alCheckError!("Error querying OpenAL play"));
             return true;
         }
         return false;
@@ -114,31 +157,55 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     public bool stop(HipAudioSource src)
     {
         alSourceStop(src.id);
+        mixin(alCheckError!("Error querying OpenAL stop"));
         return false;
     }
     public bool pause(HipAudioSource src)
     {
         alSourcePause(src.id);
+        mixin(alCheckError!("Error querying OpenAL pause"));
         return false;
     }
 
     public bool play_streamed(HipAudioSource src)
     {
+        HipOpenALBuffer _buf = cast(HipOpenALBuffer)src.buffer;
+        if(_buf.hasBuffer)
+        {
+            alSourcePlay(src.id);
+            mixin(alCheckError!("Error querying OpenAL play streamed"));
+            return true;
+        }
         return false;
     }
     
     public HipAudioBuffer load(string path, HipAudioType bufferType)
     {
         HipOpenALBuffer buffer = new HipOpenALBuffer(new HipSDL_SoundDecoder());
+        
         buffer.load(path, getEncodingFromName(path), bufferType);
         import def.debugging.log;
         rawlog(buffer.getBufferSize);
         return buffer;
     }
+    public HipAudioBuffer loadStreamed(string path)
+    {
+        HipAudioBuffer buffer = new HipOpenALBuffer(new HipSDL_SoundDecoder());
+        buffer.loadStreamed(path, getEncodingFromName(path));
+        return buffer;
+    }
+
+    public void updateStream(HipAudioSource source)
+    {
+        HipOpenALAudioSource src = cast(HipOpenALAudioSource)source;
+        alSourceQueueBuffers(src.id, 1, cast(uint*)src.buffer.outBuffer);
+        mixin(alCheckError!("Error queueing OpenAL buffer on source"));
+    }
 
     public void setDistanceModel(DistanceModel model)
     {
         alDistanceModel(getALDistanceModel(model));
+        mixin(alCheckError!("Error setting OpenAL source distance model"));
     }
     /**
     * After the max distance, the volume won't decrease anymore
@@ -146,6 +213,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     public void setMaxDistance(HipAudioSource src, float dist)
     {
         alSourcef(src.id, AL_MAX_DISTANCE, dist);
+        mixin(alCheckError!("Error setting OpenAL source max distance"));
     }
     /**
     * The factor which the sound volume decreases when the distance is greater
@@ -154,6 +222,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     public void setRolloffFactor(HipAudioSource src, float factor)
     {
         alSourcef(src.id, AL_ROLLOFF_FACTOR, factor);
+        mixin(alCheckError!("Error setting OpenAL source rolloff factor"));
     }
     /**
     * Sets the distance where the volume will be equal to 1
@@ -161,42 +230,50 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     public void setReferenceDistance(HipAudioSource src, float dist)
     {
         alSourcef(src.id, AL_REFERENCE_DISTANCE, dist);
+        mixin(alCheckError!("Error setting OpenAL source reference distance"));
     }
 
     //Start Effects
     public void setVolume(HipAudioSource src, float volume)
     {
         alSourcef(src.id, AL_GAIN, volume);
+        mixin(alCheckError!("Error setting OpenAL source volume"));
     }
     public void setPanning(HipAudioSource src, float panning)
     {
         alSource3f(src.id, AL_POSITION, src.position.x + (panning*PANNING_CONSTANT), src.position.y, src.position.z);
+        mixin(alCheckError!("Error setting OpenAL source panning"));
     }
     public void setPitch(HipAudioSource src, float pitch)
     {
         alSourcef(src.id, AL_PITCH, pitch);
+        mixin(alCheckError!("Error setting OpenAL source pitch"));
     }
     public void setPosition(HipAudioSource src, ref Vector3 pos)
     {
         alSource3f(src.id, AL_POSITION, pos.x + (src.panning*PANNING_CONSTANT), pos.y, pos.z);
         src.position = pos;
+        mixin(alCheckError!("Error setting OpenAL source position"));
     }
 
     public void setVelocity(HipAudioSource src, ref Vector3 vel)
     {
         alSource3f(src.id, AL_VELOCITY, vel.x, vel.y, vel.z);
+        mixin(alCheckError!("Error setting OpenAL source velocity"));
         
     }
     public void setDoppler(HipAudioSource src, ref Vector3 vel)
     {
         alSource3f(src.id, AL_DOPPLER_VELOCITY, vel.x, vel.y, vel.z);
-
+        mixin(alCheckError!("Error setting OpenAL source doppler factor"));
     }
     //End Effects
     public void onDestroy()
     {
         alcDestroyContext(context);
+        mixin(alCheckError!("Error destroying OpenAL context"));
         alcCloseDevice(device);
+        mixin(alCheckError!("Error destroying OpenAL device"));
         context = null;
         device = null;               
     }

@@ -1,4 +1,5 @@
 module implementations.audio.backend.opensles.player;
+import implementations.audio.backend.opensles.source;
 import implementations.audio.backend.audiosource;
 import implementations.audio.backend.audioconfig;
 import implementations.audio.audiobase;
@@ -83,16 +84,26 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     public bool resume(HipAudioSource src){return false;}
     public bool play(HipAudioSource src)
     {
-        SLIAudioPlayer* p = hipGetPlayerFromPool();
-        SLIAudioPlayer.play(*p,
+        HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
+        SLIAudioPlayer.play(*source.audioPlayer,
             src.buffer.getBuffer(),
             cast(uint)src.buffer.getBufferSize()
         );
 
         return true;
     }
-    public bool stop(HipAudioSource src){return false;}
-    public bool pause(HipAudioSource src){return false;}
+    public bool stop(HipAudioSource src)
+    {
+        HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
+        SLIAudioPlayer.stop(*source.audioPlayer);
+        source.audioPlayer = null; //?
+        return false;
+    }
+    public bool pause(HipAudioSource src)
+    {
+        HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
+        return false;
+    }
 
     //LOAD RELATED
     public bool play_streamed(HipAudioSource src){return false;}
@@ -102,7 +113,19 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
         buffer.load(path, getEncodingFromName(path), type);
         return buffer;
     }
-    public HipAudioSource getSource(){return new HipAudioSource();}
+    public HipAudioBuffer loadStreamed(string path)
+    {
+        HipAudioBuffer buffer = new HipAudioBuffer(new HipSDL_SoundDecoder());
+        buffer.loadStreamed(path, getEncodingFromName(path));
+        return buffer;
+    }
+    public void updateStreamed(HipAudioSource source){}
+    
+    public HipAudioSource getSource(bool isStreamed)
+    {
+        SLIAudioPlayer* p = hipGetPlayerFromPool();
+        return new HipOpenSLESAudioSource(p);
+    }
 
     //EFFECTS
     public void setPitch(HipAudioSource src, float pitch){}
