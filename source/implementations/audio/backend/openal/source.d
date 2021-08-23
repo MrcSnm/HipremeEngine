@@ -32,11 +32,19 @@ import bindbc.openal;
 })public class HipOpenALAudioSource : HipAudioSource
 {   
     import def.debugging.log;
+    //id is created from OpenAL player
+    bool isStreamed;
+
+    this(bool isStreamed)
+    {
+        this.isStreamed=isStreamed;
+    }
 
     override void setBuffer(HipAudioBuffer buf)
     {
         super.setBuffer(buf);
-        alSourcei(id, AL_BUFFER, (cast(HipOpenALBuffer)buf).bufferId);
+        if(!buf.isStreamed)
+            alSourcei(id, AL_BUFFER, (cast(HipOpenALBuffer)buf).bufferPool[0]);
         logln(id);
     }
     ~this()

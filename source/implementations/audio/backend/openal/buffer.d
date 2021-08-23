@@ -22,7 +22,9 @@ public class HipOpenALBuffer : HipAudioBuffer
     this(IHipAudioDecoder decoder)
     {
         super(decoder);
-        alGenBuffers(1, &bufferId);
+        import def.debugging.log;
+        rawlog("OI;");
+        getNextBuffer();
     }
 
     override public bool load(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false)
@@ -30,7 +32,23 @@ public class HipOpenALBuffer : HipAudioBuffer
         if(super.load(data, encoding, type, isStreamed))
         {
             alBufferData(
-                bufferId,
+                bufferPool[0],
+                HipOpenALAudioPlayer.config.getFormatAsOpenAL(),
+                getBuffer(),
+                cast(ALsizei)getBufferSize(),
+                HipOpenALAudioPlayer.config.sampleRate
+            );
+            return true;
+        }
+        return false;
+    }
+    override public uint loadStreamed(in void[] data, HipAudioEncoding encoding)
+    {
+        uint ret = super.loadStreamed(data, encoding);
+        if(ret != 0)
+        {
+            alBufferData(
+                getNextBuffer(),
                 HipOpenALAudioPlayer.config.getFormatAsOpenAL(),
                 getBuffer(),
                 cast(ALsizei)getBufferSize(),
@@ -41,17 +59,34 @@ public class HipOpenALBuffer : HipAudioBuffer
         return false;
     }
 
+    protected ALuint getNextBuffer()
+    {
+        hasBuffer = true;
+        poolCursor++;
+        if(poolCursor == bufferPool.length)
+        {
+            import def.debugging.log;
+            bufferPool.length++;
+            alGenBuffers(1, &bufferPool[$-1]);
+        }
+        return bufferPool[poolCursor];
+    }
+    
     override public void unload()
     {
         super.unload();
-        alDeleteBuffers(1, &bufferId);
-        bufferId = -1;
+        if(bufferPool.length > 0)
+            alDeleteBuffers(cast(ALsizei)bufferPool.length, bufferPool.ptr);
+        hasBuffer = false;
     }
 
     /**
     * Id for accessing via OpenAL Soft
     */
-    public ALuint bufferId;
+    public ALuint[] bufferPool;
+    bool hasBuffer;
+    int poolCursor = -1;
+
 
     ///If not present, it won't call the super class .load(string) for some reason
     alias load = HipAudioBuffer.load;

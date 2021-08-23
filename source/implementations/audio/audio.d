@@ -149,12 +149,33 @@ class HipAudio
             return audioInterface.load(path, bufferType);
         return *checker;
     }
+    /**
+    *   By using this function, the bufferType is implicitly treated as music, as someone would usually
+    *   load SFXs completely in memory for not bloating the decoding thread. 
+    *
+    *   Currently this operation is blocking, but returns much faster than load(). 
+    *
+    *   As this one needs to load the file first, decoding occurs on background, as it is more demanding
+    */
+    static HipAudioBuffer loadStreamed(string path)
+    {
+        HipAudioBuffer buf = audioInterface.loadStreamed(path);
+        return buf;
+    }
 
-    static HipAudioSource getSource(HipAudioBuffer buff = null)
+    static void updateStream(HipAudioSource source)
+    {
+        audioInterface.updateStream(source);
+    }
+
+    static HipAudioSource getSource(bool isStreamed = false, HipAudioBuffer buff = null)
     {
         HipAudioSource ret;
         if(sourcePool.length == activeSources)
-            ret = audioInterface.getSource();
+        {
+            ret = audioInterface.getSource(isStreamed);
+            sourcePool~= ret;
+        }
         else
             ret = sourcePool[activeSources].clean();
         if(buff)

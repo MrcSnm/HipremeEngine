@@ -22,6 +22,8 @@ import implementations.audio.backend.audiosource;
 public class HipAudioBuffer
 {
     IHipAudioDecoder decoder;
+    void[] dataToDecode;
+    void* outBuffer;
     this(IHipAudioDecoder decoder){this.decoder = decoder;}
     /**
     *   Should implement the specific loading here
@@ -32,17 +34,36 @@ public class HipAudioBuffer
         this.isStreamed = isStreamed;
         return decoder.startDecoding(data, encoding, type, isStreamed);
     }
+    public uint updateStream()
+    {
+        return decoder.decode(dataToDecode, outBuffer, HipAudioEncoding.MP3);
+    }
+    
+    public uint loadStreamed(in void[] data, HipAudioEncoding encoding)
+    {
+        dataToDecode = cast(void[])data;
+        return decoder.decode(data, outBuffer, encoding);
+    }
     public void* getBuffer(){return decoder.getBuffer();}
     public ulong getBufferSize(){return decoder.getBufferSize();}
+    public float getDuration(){return decoder.getDuration();}
     ///Probably isStreamed does not makes any sense when reading entire file
     public final bool load(string audioPath, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false)
     {
-        import def.debugging.log;
         void[] data;
         fullPath = audioPath;
         fileName = baseName(audioPath);
         HipFS.read(audioPath, data);
         return load(data, encoding, type, isStreamed);
+    }
+    public final uint loadStreamed(string audioPath, HipAudioEncoding encoding)
+    {
+        isStreamed = true;
+        void[] data;
+        fullPath = audioPath;
+        fileName = baseName(audioPath);
+        HipFS.read(audioPath, data);
+        return loadStreamed(data, encoding);
     }
     public void unload(){decoder.dispose();}
 
@@ -70,7 +91,9 @@ public interface IHipAudioPlayer
     //LOAD RELATED
     public bool play_streamed(HipAudioSource src);
     public HipAudioBuffer load(string path, HipAudioType type);
-    public HipAudioSource getSource();
+    public HipAudioBuffer loadStreamed(string path);
+    public void updateStream(HipAudioSource source);
+    public HipAudioSource getSource(bool isStreamed);
     public final HipAudioBuffer loadMusic(string mus){return load(mus, HipAudioType.MUSIC);}
     public final HipAudioBuffer loadSfx(string sfx){return load(sfx, HipAudioType.SFX);}
 

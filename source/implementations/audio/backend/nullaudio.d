@@ -36,7 +36,9 @@ public class HipNullAudio : IHipAudioPlayer
     //LOAD RELATED
     public bool play_streamed(HipAudioSource src){return false;}
     public HipAudioBuffer load(string path, HipAudioType bufferType){return new HipNullAudioBuffer(null);}
-    public HipAudioSource getSource(){return new HipAudioSource();}
+    public HipAudioBuffer loadStreamed(string path){return new HipNullAudioBuffer(null);}
+    public void updateStream(HipAudioSource source){}
+    public HipAudioSource getSource(bool isStreamed){return new HipAudioSource();}
 
     //EFFECTS
     public void setPitch(HipAudioSource src, float pitch){}

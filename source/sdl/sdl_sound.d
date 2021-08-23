@@ -321,6 +321,34 @@ int Sound_Rewind(Sound_Sample* sample);
 *     nonzero on success, zero on error. Specifics of the error can be gleaned from Sound_GetError().
 */
 int Sound_Seek(Sound_Sample* sample, uint ms);
+
+
+
+/**
+ * \fn Sint32 Sound_GetDuration(Sound_Sample *sample)
+ * \brief Retrieve total play time of sample, in milliseconds.
+ *
+ * Report total time length of sample, in milliseconds. This is a fast
+ *  call. Duration is calculated during Sound_NewSample*, so this is just
+ *  an accessor into otherwise opaque data.
+ *
+ * Please note that not all formats can determine a total time, some can't
+ *  be exact without fully decoding the data, and thus will estimate the
+ *  duration. Many decoders will require the ability to seek in the data
+ *  stream to calculate this, so even if we can tell you how long an .ogg
+ *  file will be, the same data set may fail if it's, say, streamed over an
+ *  HTTP connection. Plan accordingly.
+ *
+ * Most people won't need this function to just decode and playback, but it
+ *  can be useful for informational purposes in, say, a music player's UI.
+ *
+ *    \param sample Sound_Sample from which to retrieve duration information.
+ *   \return Sample length in milliseconds, or -1 if duration can't be
+ *           determined for any reason.
+ */
+int Sound_GetDuration(Sound_Sample* sample);
+
+
 /**
 * Change the current buffer size for a sample.
 * If the buffer size could be changed, then the sample->buffer and sample->buffer_size fields will reflect that. If they could not be changed, then your original sample state is preserved. If the buffer is shrinking, the data at the end of buffer is truncated. If the buffer is growing, the contents of the new space at the end is undefined until you decode more into it or initialize it yourself.
@@ -349,6 +377,7 @@ else
     alias pSound_Quit = int function();
     alias pSound_Rewind = int function (Sound_Sample*);
     alias pSound_Seek = int function(Sound_Sample*, uint);
+    alias pSound_GetDuration = int function(Sound_Sample*);
     alias pSound_SetBufferSize = int function(Sound_Sample*, uint);
 
     __gshared
@@ -367,6 +396,7 @@ else
         pSound_Quit Sound_Quit;
         pSound_Rewind Sound_Rewind;
         pSound_Seek Sound_Seek;
+        pSound_GetDuration Sound_GetDuration;
         pSound_SetBufferSize Sound_SetBufferSize;
     }
 }
@@ -418,5 +448,6 @@ private void bindSymbols()
     lib.bindSymbol(cast(void**)&Sound_Quit, "Sound_Quit");
     lib.bindSymbol(cast(void**)&Sound_Rewind, "Sound_Rewind");
     lib.bindSymbol(cast(void**)&Sound_Seek, "Sound_Seek");
+    lib.bindSymbol(cast(void**)&Sound_GetDuration, "Sound_GetDuration");
     lib.bindSymbol(cast(void**)&Sound_SetBufferSize, "Sound_SetBufferSize");
 }
