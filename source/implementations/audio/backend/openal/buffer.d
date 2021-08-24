@@ -11,7 +11,7 @@ Distributed under the MIT Software License.
 
 module implementations.audio.backend.openal.buffer;
 import audio.audio;
-import implementations.audio.audiobase;
+import implementations.audio.audio;
 import implementations.audio.backend.audiosource;
 import implementations.audio.backend.audioconfig;
 import implementations.audio.backend.openal.player;
@@ -22,9 +22,11 @@ public class HipOpenALBuffer : HipAudioBuffer
     this(IHipAudioDecoder decoder)
     {
         super(decoder);
-        import def.debugging.log;
-        rawlog("OI;");
         getNextBuffer();
+    }
+    this(IHipAudioDecoder decoder, uint chunkSize)
+    {
+        super(decoder, chunkSize);
     }
 
     override public bool load(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false)
@@ -59,7 +61,7 @@ public class HipOpenALBuffer : HipAudioBuffer
         return false;
     }
 
-    protected ALuint getNextBuffer()
+    ref ALuint getNextBuffer()
     {
         hasBuffer = true;
         poolCursor++;
@@ -70,6 +72,12 @@ public class HipOpenALBuffer : HipAudioBuffer
             alGenBuffers(1, &bufferPool[$-1]);
         }
         return bufferPool[poolCursor];
+    }
+    int* getFreeBuffer()
+    {
+        int buffersProcessed;
+        return null;
+        // alGetSourcei(srcId, AL_BUFFERS_PROCESSED, &buffersProcessed);
     }
     
     override public void unload()

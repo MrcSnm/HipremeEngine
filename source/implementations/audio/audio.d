@@ -13,7 +13,7 @@ module implementations.audio.audio;
 
 import bindbc.openal;
 import bindbc.sdl.mixer;
-public import implementations.audio.audiobase;
+public import implementations.audio.audiobuffer;
 public import implementations.audio.backend.audiosource;
 public import implementations.audio.backend.audioconfig;
 import implementations.audio.backend.openal.player;
@@ -55,6 +55,40 @@ enum HipAudioImplementation
     OPENAL,
     SDL,
     OPENSLES
+}
+
+/** 
+ * This is an interface that should be created only once inside the application.
+ *  Every audio function is global, meaning that every AudioSource will refer to the player
+ */
+public interface IHipAudioPlayer
+{
+    //COMMON TASK
+    public bool isMusicPlaying(HipAudioSource src);
+    public bool isMusicPaused(HipAudioSource src);
+    public bool resume(HipAudioSource src);
+    public bool play(HipAudioSource src);
+    public bool stop(HipAudioSource src);
+    public bool pause(HipAudioSource src);
+
+    //LOAD RELATED
+    public bool play_streamed(HipAudioSource src);
+    public HipAudioBuffer load(string path, HipAudioType type);
+    public HipAudioBuffer loadStreamed(string path, uint chunkSize);
+    public void updateStream(HipAudioSource source);
+    public HipAudioSource getSource(bool isStreamed);
+    public final HipAudioBuffer loadMusic(string mus){return load(mus, HipAudioType.MUSIC);}
+    public final HipAudioBuffer loadSfx(string sfx){return load(sfx, HipAudioType.SFX);}
+
+    //EFFECTS
+    public void setPitch(HipAudioSource src, float pitch);
+    public void setPanning(HipAudioSource src, float panning);
+    public void setVolume(HipAudioSource src, float volume);
+    public void setMaxDistance(HipAudioSource src, float dist);
+    public void setRolloffFactor(HipAudioSource src, float factor);
+    public void setReferenceDistance(HipAudioSource src, float dist);
+
+    public void onDestroy();
 }
 
 class HipAudio
@@ -157,9 +191,9 @@ class HipAudio
     *
     *   As this one needs to load the file first, decoding occurs on background, as it is more demanding
     */
-    static HipAudioBuffer loadStreamed(string path)
+    static HipAudioBuffer loadStreamed(string path, uint chunkSize)
     {
-        HipAudioBuffer buf = audioInterface.loadStreamed(path);
+        HipAudioBuffer buf = audioInterface.loadStreamed(path, chunkSize);
         return buf;
     }
 

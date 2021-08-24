@@ -9,7 +9,7 @@ Distributed under the MIT Software License.
 	https://opensource.org/licenses/MIT)
 */
 
-module implementations.audio.audiobase;
+module implementations.audio.audiobuffer;
 import std.path : baseName;
 import data.hipfs;
 import audio.audio;
@@ -22,9 +22,30 @@ import implementations.audio.backend.audiosource;
 public class HipAudioBuffer
 {
     IHipAudioDecoder decoder;
+    ///Unused for non streamed. It is the binary loaded from a file which will be decoded
     void[] dataToDecode;
+    ///Unused for non streamed. Where the user will get its audio decoded.
     void* outBuffer;
+    ///Unused for non streamed
+    uint chunkSize;
+    
+    ulong totalDecoded = 0;
+
+    HipAudioType type;
+    HipAudioEncoding encoding;
+    bool isStreamed = false;
+    string fullPath;
+    string fileName;
+
     this(IHipAudioDecoder decoder){this.decoder = decoder;}
+    this(IHipAudioDecoder decoder, uint chunkSize)
+    {
+        import core.stdc.stdlib:malloc;
+        this(decoder);
+        this.chunkSize = chunkSize;
+        outBuffer = malloc(chunkSize);
+        assert(outBuffer != null, "Out of memory");
+    }
     /**
     *   Should implement the specific loading here
     */
@@ -36,17 +57,38 @@ public class HipAudioBuffer
     }
     public uint updateStream()
     {
-        return decoder.decode(dataToDecode, outBuffer, HipAudioEncoding.MP3);
+        uint dec = decoder.updateDecoding(dataToDecode, outBuffer, chunkSize,encoding);
+        totalDecoded+= dec;
+        return dec;
     }
     
     public uint loadStreamed(in void[] data, HipAudioEncoding encoding)
     {
         dataToDecode = cast(void[])data;
-        return decoder.decode(data, outBuffer, encoding);
+        this.encoding = encoding;
+        return updateStream();
     }
-    public void* getBuffer(){return decoder.getBuffer();}
-    public ulong getBufferSize(){return decoder.getBufferSize();}
+    public void* getBuffer()
+    {
+        if(isStreamed)
+            return outBuffer;
+        return decoder.getBuffer();
+    }
+    public ulong getBufferSize()
+    {
+        if(isStreamed)
+            return totalDecoded;
+        return decoder.getBufferSize();
+    }
     public float getDuration(){return decoder.getDuration();}
+    public final float getDecodedDuration()
+    {
+        import implementations.audio.backend.audioconfig;
+        AudioConfig cfg = decoder.getAudioConfig();
+        import def.debugging.log;
+        rawlog(cfg.getBitDepth, cfg.channels, cfg.sampleRate);
+        return getBufferSize() / (cast(float) cfg.sampleRate);
+    }
     ///Probably isStreamed does not makes any sense when reading entire file
     public final bool load(string audioPath, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false)
     {
@@ -65,47 +107,16 @@ public class HipAudioBuffer
         HipFS.read(audioPath, data);
         return loadStreamed(data, encoding);
     }
-    public void unload(){decoder.dispose();}
+    public void unload()
+    {
+        import core.stdc.stdlib:free;
+        decoder.dispose();
+        if(outBuffer != null)
+        {
+            free(outBuffer);
+            outBuffer = null;
+        }
+    }
 
-    HipAudioType type;
-    bool isStreamed;
-    string fullPath;
-    string fileName;
 
 }
-
-/** 
- * This is an interface that should be created only once inside the application.
- *  Every audio function is global, meaning that every AudioSource will refer to the player
- */
-public interface IHipAudioPlayer
-{
-    //COMMON TASK
-    public bool isMusicPlaying(HipAudioSource src);
-    public bool isMusicPaused(HipAudioSource src);
-    public bool resume(HipAudioSource src);
-    public bool play(HipAudioSource src);
-    public bool stop(HipAudioSource src);
-    public bool pause(HipAudioSource src);
-
-    //LOAD RELATED
-    public bool play_streamed(HipAudioSource src);
-    public HipAudioBuffer load(string path, HipAudioType type);
-    public HipAudioBuffer loadStreamed(string path);
-    public void updateStream(HipAudioSource source);
-    public HipAudioSource getSource(bool isStreamed);
-    public final HipAudioBuffer loadMusic(string mus){return load(mus, HipAudioType.MUSIC);}
-    public final HipAudioBuffer loadSfx(string sfx){return load(sfx, HipAudioType.SFX);}
-
-    //EFFECTS
-    public void setPitch(HipAudioSource src, float pitch);
-    public void setPanning(HipAudioSource src, float panning);
-    public void setVolume(HipAudioSource src, float volume);
-    public void setMaxDistance(HipAudioSource src, float dist);
-    public void setRolloffFactor(HipAudioSource src, float factor);
-    public void setReferenceDistance(HipAudioSource src, float dist);
-
-    public void onDestroy();
-}
-
-

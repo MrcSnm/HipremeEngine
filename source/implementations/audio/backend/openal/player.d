@@ -2,7 +2,6 @@ module implementations.audio.backend.openal.player;
 import implementations.audio.backend.openal.buffer;
 import implementations.audio.backend.audioconfig;
 import implementations.audio.backend.openal.source;
-import implementations.audio.audiobase;
 import implementations.audio.audio;
 import error.handler;
 import audio.audio;
@@ -87,7 +86,6 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
             }
         }
         device = alcOpenDevice(alcGetString(null, ALC_DEVICE_SPECIFIER));
-        mixin(alCheckError!("Error opening OpenAL Device"));
         if(device == null)
         {
             ErrorHandler.showErrorMessage("OpenAL Initialization", "Error on creating device");
@@ -95,7 +93,6 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         }
         //static const ALCint* contextAttr = [ALC_FREQUENCY, 22_050, 0];
         context = alcCreateContext(device, null);
-        mixin(alCheckError!("Error creating OpenAL context"));
         if(context == null)
         {
             ErrorHandler.showErrorMessage("OpenAL context error", "Error creating OpenAL context");
@@ -188,18 +185,20 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         rawlog(buffer.getBufferSize);
         return buffer;
     }
-    public HipAudioBuffer loadStreamed(string path)
+    public HipAudioBuffer loadStreamed(string path, uint chunkSize)
     {
-        HipAudioBuffer buffer = new HipOpenALBuffer(new HipSDL_SoundDecoder());
+        HipAudioBuffer buffer = new HipOpenALBuffer(new HipSDL_SoundDecoder(), chunkSize);
         buffer.loadStreamed(path, getEncodingFromName(path));
         return buffer;
     }
 
     public void updateStream(HipAudioSource source)
     {
+
         HipOpenALAudioSource src = cast(HipOpenALAudioSource)source;
-        alSourceQueueBuffers(src.id, 1, cast(uint*)src.buffer.outBuffer);
-        mixin(alCheckError!("Error queueing OpenAL buffer on source"));
+        HipOpenALBuffer buf = cast(HipOpenALBuffer)src.buffer;
+        alSourceQueueBuffers(src.id, 1, &buf.getNextBuffer());
+        mixin(alCheckError!("Error enqueueing OpenAL buffer on source"));
     }
 
     public void setDistanceModel(DistanceModel model)
@@ -271,9 +270,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     public void onDestroy()
     {
         alcDestroyContext(context);
-        mixin(alCheckError!("Error destroying OpenAL context"));
         alcCloseDevice(device);
-        mixin(alCheckError!("Error destroying OpenAL device"));
         context = null;
         device = null;               
     }

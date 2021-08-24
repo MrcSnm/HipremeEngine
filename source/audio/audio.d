@@ -1,4 +1,5 @@
 module audio.audio;
+import std.format;
 import bindbc.sdl;
 import implementations.audio.audio;
 import sdl.sdl_sound;
@@ -49,7 +50,8 @@ private char* getNameFromEncoding(HipAudioEncoding encoding)
 interface IHipAudioDecoder
 {
     bool startDecoding(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false);
-    uint decode(in void[] data, out void* decodedData, HipAudioEncoding encoding);
+    uint updateDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
+    in (chunkSize > 0 , "Chunk size must be greater than 0");
     AudioConfig getAudioConfig();
     void* getBuffer();
     ulong getBufferSize();
@@ -73,7 +75,9 @@ class HipSDL_MixerDecoder : IHipAudioDecoder
         }
         return true;
     }
-    uint decode(in void[] data,  out void* decodedData, HipAudioEncoding encoding){assert(false, "SDL_MixerDecoder does not support chunk decoding");}
+    uint updateDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
+    {assert(false, "SDL_MixerDecoder does not support chunk decoding");}
+
     bool startDecoding(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false)
     {
         SDL_RWops* ops = SDL_RWFromMem(cast(void*)data.ptr, cast(int)data.length);
@@ -134,6 +138,7 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
 {
     Sound_Sample* sample;
     HipAudioEncoding selectedEncoding;
+    float duration;
     public static bool initDecoder()
     {
         bool ret = ErrorHandler.assertErrorMessage(loadSDLSound(), "Error Loading SDL_Sound", "SDL_Sound not found");
@@ -153,21 +158,40 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
         return sample != null;
     }
 
-    uint decode(in void[] data, out void* decodedData, HipAudioEncoding encoding)
+    uint updateDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
     {
+        import core.stdc.string:memcpy;
         if(sample == null)
         {
             Sound_AudioInfo info = HipAudio.getConfig().getSDL_SoundInfo();
-            sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length, getNameFromEncoding(encoding), &info, HipAudio.defaultBufferSize);
+            sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length,            
+            getNameFromEncoding(encoding), &info, HipAudio.defaultBufferSize);
+            if(Sound_SetBufferSize(sample, chunkSize) == 0)
+                ErrorHandler.showErrorMessage("SDL_Sound decoding error",
+                format!"Could not set sample with chunk size %s"(chunkSize));
             selectedEncoding = encoding;
         }
-        uint ret = Sound_Decode(sample);
-        decodedData = sample.buffer;
-        return ret;
+        uint ret = 0;
+        uint decodedTotal = 0;
+        while(decodedTotal != chunkSize && (ret = Sound_Decode(sample)) != 0)
+        {
+            memcpy(outputDecodedData+decodedTotal, sample.buffer, ret);
+            decodedTotal+= ret;
+            duration+= ret;
+            if(ErrorHandler.assertErrorMessage(decodedTotal <= chunkSize, "SDL_Sound decoding error", 
+            format!"Chunk size %s is invalid for decoding step %s"(chunkSize, ret)))
+                return 0;
+        }
+        if(sample.flags & Sound_SampleFlags.SOUND_SAMPLEFLAG_ERROR)
+            ErrorHandler.showErrorMessage("SDL_Sound decoding error",
+            format!"Error decoding sample.\nReason: %s"(Sound_GetError()));
+        return decodedTotal;
     }
     float getDuration()
     {
         import audio.format_utils;
+        if(duration != 0)
+            return duration;
         if(sample != null)
         {
             if(selectedEncoding == HipAudioEncoding.MP3)
