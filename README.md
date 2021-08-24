@@ -10,33 +10,75 @@ The engine mantains some global options which you can modify it on source/global
 
 ## Current features
 
-- Abstract renderer for writing code once for DirectX and OpenGL;
-- Abstract audio player, with OpenAL and SDL_Sound;
-- Tiled .tsx and .json parser;
 - Input handler and text input with selected keyboard layout;
 - Minimal Matrix/Vector implementation;
-- TextureAtlas .atlas and .json parser;
-- BitmapFont parser and renderer, currently only text align is supported;
-- ImGUI compatibility;
-- Sprite, SpriteBatch, GeometryBatch, FrameBuffer renderer and shader;
-- Initial JNI and Android build system for future Android support;
 - Asset packing, appending, updating and reading for faster performance(less IO);
-- .INI and .CONF parser and renderer config for changing renderer without recompiling;
-- FileProgression, file reading with progress notification;
-- Multi threaded asset loading and deconding (image).
-- Virtual File System for being able to write and read files anywhere
-- Building for UWP(Xbox)
-- Building for Android
+- Multi threaded asset loading and decoding (image).
+
+## Platforms
+
+- UWP (Xbox and everything Windows runs on)
+- Android
+- Linux
+
+### Features
+
+1. Simple build system
+2. Virtual File System
+3. Centralized asset locator with caching
+4. File reading with progress notification
+
+
+## Rendering
+
+- Direct X 11
+- OpenGL 3
+- OpenGL ES 3
+- HipRenderer (abstraction)
+  
+### Features
+
+1. Sprite
+2. SpriteBatch
+3. GeometryBatch
+4. FrameBuffer
+5. BitmapText
+6. ImGUI
+7. Shader
+8. Material
+
+## Audio
+
+- OpenSL ES
+- OpenAL
+- SDL
+- HipAudio (abstraction)
+
+### Features
+
+1. Streaming
+2. 3D audio
+
+## Decoding
+
+- Images: WebP, PNG, JPG, BMP via SDL_Image
+- Audio: MP3, OGG, WAV, FLAC via SDL_Sound
+- Tiled: TSX and JSON parser
+- TextureAtlas: JSON and ATLAS parser
+- Font: FNT parser
+- Pack: HapFile(Hipreme Asset Packing File)
+- Settings: INI/CONF parser
 
 ## Next steps
 
 - GLSL to HLSL transpiler
+- Multi threaded audio decoding (currently only single threaded is supported)
 - Dispatch file reading to the asset/resource packer.
 - Render Tiled maps
+- Add UWP project
 - Create a proof of concept
-- Automatize resources transfer to UWP
 - Automatize dependencies dll's generation
-- Event handler for UPW and Android
+- Event handler for UWP and Android
 
 
 ## Issues list
