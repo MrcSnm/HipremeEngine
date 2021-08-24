@@ -12,7 +12,7 @@ Distributed under the MIT Software License.
 module implementations.audio.backend.sdl.player;
 import implementations.audio.backend.sdl.buffer;
 import implementations.audio.backend.audiosource;
-import implementations.audio.audiobase;
+import implementations.audio.audio;
 import def.debugging.log;
 import audio.audio;
 import bindbc.sdl.mixer;
@@ -38,7 +38,7 @@ class HipSDLAudioPlayer : IHipAudioPlayer
         buffer.load(audioName,getEncodingFromName(audioName), bufferType);
         return buffer;
     }
-    public HipAudioBuffer loadStreamed(string audioName){assert(false, "SDL Audio Player does not support chunked decoding");}
+    public HipAudioBuffer loadStreamed(string audioName, uint chunkSize){assert(false, "SDL Audio Player does not support chunked decoding");}
     public void updateStream(HipAudioSource source){}
 
     public HipAudioSource getSource(bool isStreamed){return new HipAudioSource();}

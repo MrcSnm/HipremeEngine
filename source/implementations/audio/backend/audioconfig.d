@@ -136,7 +136,7 @@ struct AudioConfig
         }
     }
     
-    ALuint getFormatAsOpenAL()
+    ALenum getFormatAsOpenAL()
     {
         if(channels == 1)
         {

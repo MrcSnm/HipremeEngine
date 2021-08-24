@@ -10,7 +10,7 @@ Distributed under the MIT Software License.
 */
 
 module implementations.audio.backend.nullaudio;
-import implementations.audio.audiobase;
+import implementations.audio.audio;
 import implementations.audio.backend.audiosource;
 import audio.audio;
 
@@ -36,7 +36,7 @@ public class HipNullAudio : IHipAudioPlayer
     //LOAD RELATED
     public bool play_streamed(HipAudioSource src){return false;}
     public HipAudioBuffer load(string path, HipAudioType bufferType){return new HipNullAudioBuffer(null);}
-    public HipAudioBuffer loadStreamed(string path){return new HipNullAudioBuffer(null);}
+    public HipAudioBuffer loadStreamed(string path, uint chunkSize){return new HipNullAudioBuffer(null);}
     public void updateStream(HipAudioSource source){}
     public HipAudioSource getSource(bool isStreamed){return new HipAudioSource();}
 

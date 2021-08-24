@@ -2,7 +2,6 @@ module implementations.audio.backend.opensles.player;
 import implementations.audio.backend.opensles.source;
 import implementations.audio.backend.audiosource;
 import implementations.audio.backend.audioconfig;
-import implementations.audio.audiobase;
 import implementations.audio.backend.sles;
 import audio.audio;
 import opensles.sles;
@@ -113,7 +112,7 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
         buffer.load(path, getEncodingFromName(path), type);
         return buffer;
     }
-    public HipAudioBuffer loadStreamed(string path)
+    public HipAudioBuffer loadStreamed(string path, uint chunkSize)
     {
         HipAudioBuffer buffer = new HipAudioBuffer(new HipSDL_SoundDecoder());
         buffer.loadStreamed(path, getEncodingFromName(path));

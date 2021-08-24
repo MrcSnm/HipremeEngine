@@ -11,7 +11,7 @@ Distributed under the MIT Software License.
 
 module implementations.audio.backend.audiosource;
 import math.vector;
-import implementations.audio.audiobase : HipAudioBuffer;
+import implementations.audio.audiobuffer : HipAudioBuffer;
 import implementations.audio.audio;
 import bindbc.openal;
 import implementations.imgui.imgui_debug;

@@ -1,5 +1,5 @@
 module implementations.audio.backend.sdl.buffer;
-import implementations.audio.audiobase;
+import implementations.audio.audiobuffer;
 import audio.audio;
 
 class HipSDL_MixerAudioBuffer : HipAudioBuffer
