@@ -46,6 +46,28 @@ import bindbc.openal;
             alSourcei(id, AL_BUFFER, (cast(HipOpenALBuffer)buf).bufferPool[0]);
         logln(id);
     }
+
+    override void pullStreamData()
+    {
+        assert(buffer !is null, "Can't pull stream data without any buffer attached");
+        assert(id != 0, "Can't pull stream data without source id");
+        uint freeBuf = getFreeBuffer();
+        if(freeBuf != 0)
+            alSourceUnqueueBuffers(id, 1, &freeBuf);
+        HipOpenALBuffer alBuf = cast(HipOpenALBuffer)buffer;
+        freeBuf = alBuf.updateALSourceStream(freeBuf); 
+        alSourceQueueBuffers(id, 1, &freeBuf);
+        
+    }
+
+    uint getFreeBuffer()
+    {
+        int b;
+        alGetSourcei(id, AL_BUFFERS_PROCESSED, &b);
+        return cast(uint)b;
+    }
+    
+
     ~this()
     {
         logln("HipAudioSource Killed!");

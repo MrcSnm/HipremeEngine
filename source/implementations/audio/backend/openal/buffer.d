@@ -17,6 +17,13 @@ import implementations.audio.backend.audioconfig;
 import implementations.audio.backend.openal.player;
 import bindbc.openal;
 
+/** 
+ * OpenAL Buffer works in the following way:
+ * If the buffer is streamed, it won't be owned by any source, so it will have total control
+ * over itself. That way, it can be reused by any source.
+ *
+ * Else, the buffer will be owned by the source for decoding, updating, and pulling data.
+ */
 public class HipOpenALBuffer : HipAudioBuffer
 {
     this(IHipAudioDecoder decoder)
@@ -24,45 +31,57 @@ public class HipOpenALBuffer : HipAudioBuffer
         super(decoder);
         getNextBuffer();
     }
-    this(IHipAudioDecoder decoder, uint chunkSize)
+    this(IHipAudioDecoder decoder, uint chunkSize){super(decoder, chunkSize);}
+    void loadALBuffer(uint bufferId, void* data, uint dataSize)
     {
-        super(decoder, chunkSize);
+        alBufferData(
+            bufferId,
+            HipOpenALAudioPlayer.config.getFormatAsOpenAL(),
+            data,
+            dataSize,
+            HipOpenALAudioPlayer.config.sampleRate
+        );
     }
 
     override public bool load(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false)
     {
         if(super.load(data, encoding, type, isStreamed))
         {
-            alBufferData(
-                bufferPool[0],
-                HipOpenALAudioPlayer.config.getFormatAsOpenAL(),
-                getBuffer(),
-                cast(ALsizei)getBufferSize(),
-                HipOpenALAudioPlayer.config.sampleRate
-            );
+            loadALBuffer(bufferPool[0],getBuffer(),cast(uint)getBufferSize());
             return true;
         }
         return false;
     }
+    
     override public uint loadStreamed(in void[] data, HipAudioEncoding encoding)
     {
         uint ret = super.loadStreamed(data, encoding);
         if(ret != 0)
         {
-            alBufferData(
-                getNextBuffer(),
-                HipOpenALAudioPlayer.config.getFormatAsOpenAL(),
-                getBuffer(),
-                cast(ALsizei)getBufferSize(),
-                HipOpenALAudioPlayer.config.sampleRate
-            );
+            loadALBuffer(getNextBuffer(),getBuffer(),cast(uint)getBufferSize());
             return true;
         }
         return false;
     }
 
+    uint updateALSourceStream(uint buffer = 0)
+    {
+        import def.debugging.log;
+        uint decoded = updateStream();
+        import util.time;
+
+        rawlog("Decoded ",decoded, " at time: ", Time.getCurrentTime());
+        if(buffer == 0)
+            buffer = getNextBuffer();
+        loadALBuffer(buffer, outBuffer, decoded);
+        return buffer;
+    }
+
     ref ALuint getNextBuffer()
     {
+        //Buffer -> Contains the buffers which will be queried from the source
+        //Source -> Queries for more data and updates with those changes
+        //Creates the 
         hasBuffer = true;
         poolCursor++;
         if(poolCursor == bufferPool.length)
@@ -72,12 +91,6 @@ public class HipOpenALBuffer : HipAudioBuffer
             alGenBuffers(1, &bufferPool[$-1]);
         }
         return bufferPool[poolCursor];
-    }
-    int* getFreeBuffer()
-    {
-        int buffersProcessed;
-        return null;
-        // alGetSourcei(srcId, AL_BUFFERS_PROCESSED, &buffersProcessed);
     }
     
     override public void unload()

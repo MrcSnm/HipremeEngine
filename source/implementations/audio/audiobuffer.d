@@ -15,6 +15,13 @@ import data.hipfs;
 import audio.audio;
 import implementations.audio.backend.audiosource;
 
+struct HipAudioStreamBuffer
+{
+    void* data;
+    uint  size;
+    bool  inUse;
+}
+
 /** 
  * Wraps a decoder onto it. Basically an easier interface with some more controls
  *  that would be needed inside specific APIs.

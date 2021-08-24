@@ -50,6 +50,7 @@ import global.fonts.icons;
         void attachToPosition(){}
         void attachOnDestroy(){}
         float getProgress(){return time/length;}
+        void pullStreamData(){}
         void setBuffer(HipAudioBuffer buf){buffer = buf;}
 
     //Properties
