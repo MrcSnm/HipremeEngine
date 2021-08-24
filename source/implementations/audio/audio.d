@@ -204,6 +204,7 @@ class HipAudio
 
     static HipAudioSource getSource(bool isStreamed = false, HipAudioBuffer buff = null)
     {
+        if(isStreamed) assert(buff !is null, "Can't get streamed source without any buffer");
         HipAudioSource ret;
         if(sourcePool.length == activeSources)
         {
