@@ -10,6 +10,7 @@ Distributed under the MIT Software License.
 */
 
 module implementations.imgui.imgui_debug;
+version(CIMGUI):
 import std.traits : getUDAs;
 import bindbc.cimgui;
 import implementations.audio.audio;
@@ -21,10 +22,7 @@ immutable float FLOAT_MIN = cast(float)int.min;
 immutable float FLOAT_MAX = cast(float)int.max;
 
 
-struct InterfaceImplementation
-{
-    void function(ref void* u_data) interfaceFunc;
-}
+
 
 void addDebug(alias variable, T = typeof(variable))(ref typeof(variable) var = variable)
 {

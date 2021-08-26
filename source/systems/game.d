@@ -73,4 +73,9 @@ class GameSystem
     {
         dispatcher.postUpdate();
     }
+    
+    void quit()
+    {
+        SDL_Quit();
+    }
 }

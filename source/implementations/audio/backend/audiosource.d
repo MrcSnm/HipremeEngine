@@ -14,7 +14,7 @@ import math.vector;
 import implementations.audio.audiobuffer : HipAudioBuffer;
 import implementations.audio.audio;
 import bindbc.openal;
-import implementations.imgui.imgui_debug;
+import def.debugging.gui;
 import global.fonts.icons;
 /** 
 *   Wraps properties for the AudioPlayer. The closest graphical represetantion
@@ -24,24 +24,27 @@ import global.fonts.icons;
 
 @InterfaceImplementation(function(ref void* data)
 {
-    import bindbc.cimgui;
-    HipAudioSource* src = cast(HipAudioSource*)data;
-    igBeginGroup();
-    igCheckbox("Playing", &src.isPlaying);
-    if(src.isPlaying)
+    version(CIMGUI)
     {
-        igIndent(0);
-        igText("Sound Name: %s %s", src.buffer.fileName.ptr, Icons_FontAwesome.FILE_AUDIO);
-        igUnindent(0);
+        import bindbc.cimgui;
+        HipAudioSource* src = cast(HipAudioSource*)data;
+        igBeginGroup();
+        igCheckbox("Playing", &src.isPlaying);
+        if(src.isPlaying)
+        {
+            igIndent(0);
+            igText("Sound Name: %s %s", src.buffer.fileName.ptr, Icons_FontAwesome.FILE_AUDIO);
+            igUnindent(0);
+        }
+        igSliderFloat("Pitch", &src.pitch, 0, 4, "%0.4f", 0);
+        igSliderFloat("Panning", &src.panning, -1, 1, "%0.3f", 0);
+        igSliderFloat("Volume", &src.volume, 0, 1, "%0.3f", 0);
+        igSliderFloat("Reference Distance", &src.referenceDistance, 0, 65_000, "%0.3f", 0);
+        igSliderFloat("Rolloff Factor", &src.rolloffFactor, 0, 1, "%0.3f", 0);
+        igSliderFloat("Max Distance", &src.maxDistance, 0, 65_000, "%0.3f", 0);
+        igEndGroup();
+        HipAudio.update(*src);
     }
-    igSliderFloat("Pitch", &src.pitch, 0, 4, "%0.4f", 0);
-    igSliderFloat("Panning", &src.panning, -1, 1, "%0.3f", 0);
-    igSliderFloat("Volume", &src.volume, 0, 1, "%0.3f", 0);
-    igSliderFloat("Reference Distance", &src.referenceDistance, 0, 65_000, "%0.3f", 0);
-    igSliderFloat("Rolloff Factor", &src.rolloffFactor, 0, 1, "%0.3f", 0);
-    igSliderFloat("Max Distance", &src.maxDistance, 0, 65_000, "%0.3f", 0);
-    igEndGroup();
-    HipAudio.update(*src);
 
 }) public class HipAudioSource
 {

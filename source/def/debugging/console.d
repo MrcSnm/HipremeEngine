@@ -16,7 +16,7 @@ import util.reflection : isLiteral;
 import std.conv:to;
 import std.format : format;
 import std.string : toStringz;
-import implementations.imgui.imgui_debug : InterfaceImplementation;
+import def.debugging.gui:InterfaceImplementation;
 
 static enum androidTag = "HipremeEngine";
 enum GUI_CONSOLE = true;
@@ -49,15 +49,17 @@ static string _format(Args...)(Args args)
 
 @InterfaceImplementation(function(ref void* console)
 {
-    import bindbc.cimgui;
-    Console c = cast(Console)console;
-    
-    igBegin(c.name.toStringz, &c.isShowing, 0);
-    foreach_reverse(line; c.lines)
+    version(CIMGUI)
     {
-        igText(line.toStringz);
+        Console c = cast(Console)console;
+        
+        igBegin(c.name.toStringz, &c.isShowing, 0);
+        foreach_reverse(line; c.lines)
+        {
+            igText(line.toStringz);
+        }
+        igEnd();
     }
-    igEnd();
 }) class Console
 {
     string name;

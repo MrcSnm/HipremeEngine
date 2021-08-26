@@ -240,7 +240,6 @@ public class Shader
 
         if(isDefault)
         {
-            import std.stdio;
             ShaderVarLayout* sL = names[1] in defaultLayout.variables;
             if(sL !is null)
                 return sL.sVar;

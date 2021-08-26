@@ -12,11 +12,11 @@ class SoundTestScene : Scene
     {
         import def.debugging.log;
 
-        HipAudioBuffer buf = HipAudio.load("audio/the-sound-of-silence.wav", HipAudioType.SFX);
+        HipAudioBuffer buf = HipAudio.load("audio/wind-sfx.mp3", HipAudioType.SFX);
         src = HipAudio.getSource(false, buf);
         HipAudio.play(src);
         
-        // HipAudioBuffer buf = HipAudio.loadStreamed("assets/audio/the-sound-of-silence.wav", (ushort.max+1));
+        // HipAudioBuffer buf = HipAudio.loadStreamed("assets/audio/junkyard-a-class.mp3", (ushort.max+1));
         // src = HipAudio.getSource(true, buf);
         // src.pullStreamData();
         // src.pullStreamData();

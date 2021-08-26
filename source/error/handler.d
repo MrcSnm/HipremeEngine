@@ -11,7 +11,6 @@ Distributed under the MIT Software License.
 
 module error.handler;
 import def.debugging.log;
-import std.stdio;
 import std.conv;
 version(Android)
 {

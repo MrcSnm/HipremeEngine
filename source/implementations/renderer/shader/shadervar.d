@@ -12,6 +12,7 @@ Distributed under the MIT Software License.
 module implementations.renderer.shader.shadervar;
 import implementations.renderer.shader.shader;
 import implementations.renderer.renderer;
+import std.conv:to;
 import math.matrix;
 
 enum ShaderHint : uint
@@ -102,7 +103,6 @@ struct ShaderVar
                 assert(index < 16, "Index out of bounds on shader variable "~name);
                 break;
             default:
-                import std.conv:to;
                 assert(false, "opIndex is unsupported in var of type "~to!string(type));
         }
     }
@@ -110,7 +110,6 @@ struct ShaderVar
     auto opIndexAssign(T)(T value, size_t index)
     {
         import core.stdc.string;
-        import std.conv:to;
         throwOnOutOfBounds(index);
         assert(index*singleSize + T.sizeof <= varSize, "Value assign of type "~T.stringof~" at index "~to!string(index)~
         " is invalid for shader variable "~name~" of type "~to!string(type));
@@ -136,7 +135,6 @@ struct ShaderVar
             case floating4x4:
                 return get!(float[16])[index];
             default:
-                import std.conv:to;
                 assert(false, "opIndex is unsupported in var of type "~to!string(type));
         }
     }
@@ -343,7 +341,7 @@ class ShaderVariablesLayout
 
 private bool isShaderVarNameValid(ref string varName)
 {
-    import std.algorithm;
+    import std.algorithm : countUntil;
     
     return varName.length > 0 && 
     varName.countUntil(" ") == -1;

@@ -17,6 +17,7 @@ version(Android):
 package __gshared SLresult[] sliErrorQueue;
 package __gshared string[]   sliErrorMessages;
 
+///Packs engine interface, object and capabilities and give a cleaner interface for use
 struct SLIEngine
 {
     SLObjectItf engineObject = null;
@@ -298,12 +299,23 @@ struct SLIAudioPlayer
             version(Android){playerAndroidSimpleBufferQueue = null;}
         }
     }
+    alias PlayerCallback = extern(C) void function(SLPlayItf player, void* context, SLuint32 event);
+
+    void RegisterCallback(PlayerCallback callback, void* context)
+    {
+        (*player).RegisterCallback(player, callback, context);
+    }
+    void SetCallbackEventsMask(uint mask)
+    {
+        (*player).SetCallbackEventsMask(player, mask);
+    }
 
     extern(C) static void checkClipEnd_Callback(SLPlayItf player, void* context, SLuint32 event)
     {
         rawlog("Cb");
         if(event & SL_PLAYEVENT_HEADATEND)
         {
+            rawlog("Opa");
             SLIAudioPlayer p = *(cast(SLIAudioPlayer*)context);
             atomicStore(p.hasFinishedTrack,  true);
         }
@@ -325,6 +337,15 @@ struct SLIAudioPlayer
         {
             (*player).SetPlayState(player, SL_PLAYSTATE_STOPPED);
             version(Android){(*playerAndroidSimpleBufferQueue).Clear(playerAndroidSimpleBufferQueue);}
+            isPlaying = false;
+        }
+    }
+
+    static void pause(ref SLIAudioPlayer audioPlayer)
+    {
+        with(audioPlayer)
+        {
+            (*player).SetPlayState(player, SL_PLAYSTATE_PAUSED);
             isPlaying = false;
         }
     }
@@ -376,8 +397,8 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
         *playerOut = temp;
         if(autoRegisterCallback)
         {
-            (*temp.player).RegisterCallback(temp.player, &SLIAudioPlayer.checkClipEnd_Callback, cast(void*)playerOut);
-            (*temp.player).SetCallbackEventsMask(temp.player, SL_PLAYEVENT_HEADATEND);
+            temp.RegisterCallback(&SLIAudioPlayer.checkClipEnd_Callback, cast(void*)playerOut);
+            temp.SetCallbackEventsMask(SL_PLAYEVENT_HEADATEND | SL_PLAYEVENT_HEADATNEWPOS);
         }
         genPlayers~= playerOut;
         return playerOut;

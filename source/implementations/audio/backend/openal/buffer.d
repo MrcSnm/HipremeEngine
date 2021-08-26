@@ -59,6 +59,7 @@ public class HipOpenALBuffer : HipAudioBuffer
         if(ret != 0)
         {
             loadALBuffer(getNextBuffer(),getBuffer(),cast(uint)getBufferSize());
+            hasBuffer = true;
             return true;
         }
         return false;

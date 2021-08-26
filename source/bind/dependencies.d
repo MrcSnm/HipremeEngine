@@ -11,8 +11,6 @@ Distributed under the MIT Software License.
 
 module bind.dependencies;
 import error.handler;
-import std.conv:to;
-import bindbc.cimgui;
 import bindbc.sdl;
 import bindbc.sdl.ttf;
 import bindbc.sdl.image;
@@ -34,6 +32,8 @@ private void showDLLMissingError(string dllName)
 
 private bool loadSDLDependencies()
 {
+    import std.conv:to;
+
     SDLSupport ret = loadSDL();
     if(ret != sdlSupport)
     {
@@ -70,12 +70,18 @@ bool loadEngineDependencies()
         ErrorHandler.showErrorMessage("SDL2 Loading error", "Could not load all SDL2 dependencies");
 
     void function(SharedLib) implementation = null;
-    static if(!CIMGUI_USER_DEFINED_IMPLEMENTATION)
-        implementation = &bindSDLImgui;
 
-    if(!loadcimgui(implementation))
+
+    version(CIMGUI)
     {
-        ErrorHandler.showErrorMessage("Could not load cimgui", "Cimgui.dll not found");
+        import bindbc.cimgui;
+        static if(!CIMGUI_USER_DEFINED_IMPLEMENTATION)
+            implementation = &bindSDLImgui;
+
+        if(!loadcimgui(implementation))
+        {
+            ErrorHandler.showErrorMessage("Could not load cimgui", "Cimgui.dll not found");
+        }
     }
 
     return ErrorHandler.stopListeningForErrors();

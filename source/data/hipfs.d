@@ -17,9 +17,16 @@ import std.string:lastIndexOf, toStringz;
 import std.array:split;
 import util.system;
 static import std.file;
-
-public import std.file : getcwd;
-import core.stdc.stdio;
+///Less dependencies
+enum
+{
+    /// Offset is relative to the beginning
+    SEEK_SET,
+    /// Offset is relative to the current position
+    SEEK_CUR,
+    /// Offset is relative to the end
+    SEEK_END
+}
 
 private pure bool validatePath(string initial, string toAppend)
 {
@@ -299,7 +306,11 @@ class HipFileSystem
         if(!isPathValid(path) || !isPathValidExtra(path))
             return false;
         return fs.remove(getPath(path));
-    } 
+    }
+    public static string getcwd()
+    {
+        return getPath("");
+    }
 
 
 

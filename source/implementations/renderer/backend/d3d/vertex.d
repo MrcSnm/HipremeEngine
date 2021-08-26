@@ -52,7 +52,6 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
     }
     void createBuffer(ulong size, const void* data)
     {
-        import std.stdio;
         this.size = size;
         D3D11_BUFFER_DESC bd;
         bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
