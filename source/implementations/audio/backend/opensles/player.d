@@ -118,6 +118,7 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
         buffer.loadStreamed(path, getEncodingFromName(path));
         return buffer;
     }
+    void updateStream(HipAudioSource source){}
     public void updateStreamed(HipAudioSource source){}
     
     public HipAudioSource getSource(bool isStreamed)

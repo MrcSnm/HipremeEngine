@@ -79,10 +79,6 @@ public class HipOpenALBuffer : HipAudioBuffer
 
     ref ALuint getNextBuffer()
     {
-        //Buffer -> Contains the buffers which will be queried from the source
-        //Source -> Queries for more data and updates with those changes
-        //Creates the 
-        hasBuffer = true;
         poolCursor++;
         if(poolCursor == bufferPool.length)
         {
@@ -105,8 +101,8 @@ public class HipOpenALBuffer : HipAudioBuffer
     * Id for accessing via OpenAL Soft
     */
     public ALuint[] bufferPool;
-    bool hasBuffer;
     int poolCursor = -1;
+    bool hasBuffer;
 
 
     ///If not present, it won't call the super class .load(string) for some reason

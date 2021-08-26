@@ -11,14 +11,17 @@ class SoundTestScene : Scene
     this()
     {
         import def.debugging.log;
+
+        HipAudioBuffer buf = HipAudio.load("audio/the-sound-of-silence.wav", HipAudioType.SFX);
+        src = HipAudio.getSource(false, buf);
+        HipAudio.play(src);
         
-        HipAudioBuffer buf = HipAudio.loadStreamed("assets/audio/the-sound-of-silence.wav", (ushort.max+1));
-        src = HipAudio.getSource(true, buf);
+        // HipAudioBuffer buf = HipAudio.loadStreamed("assets/audio/the-sound-of-silence.wav", (ushort.max+1));
+        // src = HipAudio.getSource(true, buf);
+        // src.pullStreamData();
+        // src.pullStreamData();
 
-        src.pullStreamData();
-        src.pullStreamData();
-
-        HipAudio.play_streamed(src);
+        // HipAudio.play_streamed(src);
 
 
     }
@@ -26,12 +29,12 @@ class SoundTestScene : Scene
     override void render()
     {
         import def.debugging.log;
-        auto s = cast(HipOpenALAudioSource)src;
-        int b = s.getFreeBuffer();
-        if(b != 0)
-        {
-            src.pullStreamData();
-        }
+        // auto s = cast(HipOpenALAudioSource)src;
+        // int b = s.getFreeBuffer();
+        // if(b != 0)
+        // {
+        //     src.pullStreamData();
+        // }
         // rawlog(sc.isPlaying);
     }
 }

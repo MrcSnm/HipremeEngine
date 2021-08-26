@@ -207,7 +207,7 @@ class Hip_GL3Renderer : IHipRendererImpl
         else
         {
             SDL_GL_SwapWindow(window);
-            SDL_RenderPresent(renderer);
+            // SDL_RenderPresent(renderer);
         }
     }
 
