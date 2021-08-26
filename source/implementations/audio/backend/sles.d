@@ -17,12 +17,63 @@ version(Android):
 package __gshared SLresult[] sliErrorQueue;
 package __gshared string[]   sliErrorMessages;
 
+struct SLIEngine
+{
+    SLObjectItf engineObject = null;
+    SLEngineItf engine;
+    SLEngineCapabilitiesItf engineCapabilities;
+
+    void initialize()
+    {
+        sliCall(slCreateEngine(&engineObject,0,null,0,null,null),
+        "Could not create engine");
+
+        //Initialize|Realize the engine
+        sliCall((*engineObject).Realize(engineObject, SL_BOOLEAN_FALSE),
+        "Could not realize|initialize engine");
+        
+
+        //Get the interface for being able to create child objects from the engine
+        sliCall((*engineObject).GetInterface(engineObject, SL_IID_ENGINE, &engine),
+        "Could not get an interface for creating objects");
+
+        if(sliCall((*engineObject).GetInterface(engineObject, SL_IID_ENGINECAPABILITIES, &engineCapabilities),
+        "Could not get engine capabilities"))
+        {
+            if(sliCall((*engineCapabilities).QueryAPIVersion(engineCapabilities, &engineMajor, &engineMinor, &enginePatch),
+            "Could not query OpenSLES version"))
+                rawlog(format!"OpenSL Version: %s.%s.%s"(engineMajor, engineMinor, enginePatch));
+            else if(sliErrorMessages.length == 1)
+                sliClearErrors();
+        }
+        else if(sliErrorMessages.length == 1)
+            sliClearErrors();
+    }
+
+    uint CreateOutputMix(const(const(SLObjectItf_)*)** outputMix, uint interfacesCount,
+    const(const(SLInterfaceID_)*)* interfaces, const(uint)* requirements)
+    {
+        return (*engine).CreateOutputMix(engine, outputMix, interfacesCount, interfaces, requirements);
+    }
+    uint CreateAudioPlayer(SLObjectItf* audioPlayer, SLDataSource* source, SLDataSink* sink,
+    uint interfacesCount, SLInterfaceID* interfaces, uint* requirements)
+    {
+        return (*engine).CreateAudioPlayer(engine, audioPlayer, source, sink, interfacesCount, interfaces, requirements);
+    }
+
+    void Destroy()
+    {
+        if(engineObject != null)
+        {
+            (*engineObject).Destroy(engineObject);
+        }
+    }
+}
+
 /**
 *   Engine related objects
 */
-package __gshared SLObjectItf engineObject = null;
-package __gshared SLEngineItf engine;
-package __gshared SLEngineCapabilitiesItf engineCapabilities;
+package __gshared SLIEngine engine; 
 package __gshared short engineMajor = 1;
 package __gshared short engineMinor = 0;
 package __gshared short enginePatch = 1;
@@ -105,7 +156,7 @@ struct SLIOutputMix
     SLObjectItf outputMixObj;
 
 
-    static bool initializeForAndroid(ref SLIOutputMix output, ref SLEngineItf e)
+    static bool initializeForAndroid(ref SLIOutputMix output, ref SLIEngine e)
     {
         //All those interfaces are supported on Android, so, require them
         const(SLInterfaceID)* ids = 
@@ -127,7 +178,7 @@ struct SLIOutputMix
 
         with(output)
         {
-            sliCall((*e).CreateOutputMix(e, &outputMixObj, 5, ids, req),
+            sliCall(e.CreateOutputMix(&outputMixObj, 5u, ids, req),
             "Could not create output mix");
             //Do it assyncly
             sliCall((*outputMixObj).Realize(outputMixObj, SL_BOOLEAN_FALSE),
@@ -292,7 +343,7 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
         mixin("SLInterfaceID[] ids = ["~getAudioPlayerInterfaces()~"];");
         mixin("SLboolean[] req = ["~getAudioPlayerRequirements()~"];");
 
-        sliCall((*engine).CreateAudioPlayer(engine, &playerObj, &src, &dest,
+        sliCall(engine.CreateAudioPlayer(&playerObj, &src, &dest,
         cast(uint)(ids.length), ids.ptr, req.ptr),
         "Could not create AudioPlayer with format: "~to!string(*(cast(SLDataFormat_PCM*)src.pFormat)));
 
@@ -337,7 +388,7 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
 void sliDestroyContext()
 {
     import core.stdc.stdlib;
-    (*engineObject).Destroy(engineObject);
+    engine.Destroy();
     with(outputMix) (*outputMixObj).Destroy(outputMixObj);
 
     foreach(ref gp; genPlayers)
@@ -381,29 +432,8 @@ else{alias SLIDataLocator_Address = SLDataLocator_Address;}
 
 bool sliCreateOutputContext()
 {
-    sliCall(slCreateEngine(&engineObject,0,null,0,null,null),
-    "Could not create engine");
-
-    //Initialize|Realize the engine
-    sliCall((*engineObject).Realize(engineObject, SL_BOOLEAN_FALSE),
-    "Could not realize|initialize engine");
-    
-
-    //Get the interface for being able to create child objects from the engine
-    sliCall((*engineObject).GetInterface(engineObject, SL_IID_ENGINE, &engine),
-    "Could not get an interface for creating objects");
-
-    if(sliCall((*engineObject).GetInterface(engineObject, SL_IID_ENGINECAPABILITIES, &engineCapabilities),
-    "Could not get engine capabilities"))
-    {
-        if(sliCall((*engineCapabilities).QueryAPIVersion(engineCapabilities, &engineMajor, &engineMinor, &enginePatch),
-        "Could not query OpenSLES version"))
-            rawlog(format!"OpenSL Version: %s.%s.%s"(engineMajor, engineMinor, enginePatch));
-        else if(sliErrorMessages.length == 1)
-            sliClearErrors();
-    }
-    else if(sliErrorMessages.length == 1)
-        sliClearErrors();
+    engine = SLIEngine(null,null,null);
+    engine.initialize();
 
     // loadSawtooth();
 
