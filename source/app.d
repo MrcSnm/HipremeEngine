@@ -9,14 +9,12 @@ Distributed under the MIT Software License.
 	https://opensource.org/licenses/MIT)
 */
 import def.debugging.log;
+import def.debugging.console;
 import bind.external;
 import data.hipfs;
 import error.handler;
 import global.consts;
-import std.conv : to;
-import global.assets;
 import implementations.audio.audio;
-import implementations.audio.backend.alefx;
 version(Android)
 {
 	import jni.helper.androidlog;
@@ -28,7 +26,10 @@ version(Windows)
 {
 	import implementations.renderer.backend.d3d.renderer;
 }
-import bindbc.cimgui;
+version(dll)
+{
+	import core.runtime;
+}
 import implementations.renderer.renderer;
 import view;
 import systems.game;
@@ -45,7 +46,6 @@ import def.debugging.gui;
 
 static void initEngine(bool audio3D = false)
 {
-	import def.debugging.console;
 	version(Android)
 	{
 		Console.install(Platforms.ANDROID);
@@ -69,6 +69,7 @@ static void initEngine(bool audio3D = false)
 	else
 	{
 		Console.install();
+		import std.file:getcwd;
 		HipFS.install(getcwd());
 	}
 	version(BindSDL_Static){}
@@ -85,8 +86,6 @@ __gshared GameSystem sys;
 extern(C)int SDL_main()
 {
 	import data.ini;
-	import def.debugging.console;
-	import data.hipfs;
 	initEngine(true);
 	version(Android)
 		HipAudio.initialize(HipAudioImplementation.OPENSLES);
@@ -118,7 +117,7 @@ extern(C)int SDL_main()
 	
 	//Audio.play(sc);
 	
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	// ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	sys = new GameSystem();
 	version(UWP){}
 	else version(Android){}
@@ -154,11 +153,10 @@ extern(C)int SDL_main()
 static void destroyEngine()
 {
     //HipAssetManager.disposeResources();
-	DI.onDestroy();
+	version(CIMGUI) DI.onDestroy();
 	HipRenderer.dispose();
 	HipAudio.onDestroy();
-	import bindbc.sdl:SDL_Quit;
-    SDL_Quit();
+	sys.quit();
 }
 
 
@@ -202,7 +200,6 @@ export extern(C) void HipremeInit()
 {
 	version(dll)
 	{
-		import core.runtime;
 		rt_init();
 		importExternal();
 	}
@@ -237,7 +234,6 @@ export extern(C) void HipremeDestroy()
 	destroyEngine();
 	version(dll)
 	{
-		import core.runtime;
 		rt_term();
 	}
 }

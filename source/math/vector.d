@@ -10,7 +10,6 @@ Distributed under the MIT Software License.
 */
 
 module math.vector;
-import std.stdio;
 import core.math : sqrt, sin, cos;
 
 

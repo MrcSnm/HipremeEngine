@@ -12,7 +12,6 @@ Distributed under the MIT Software License.
 module def.debugging.log;
 import def.debugging.console;
 import std.conv:to;
-import std.stdio:write;
 import std.format:format;
 
 private string[] logHistory = [];

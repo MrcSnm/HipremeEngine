@@ -22,7 +22,7 @@ enum HipAudioType
 
 HipAudioEncoding getEncodingFromName(string name)
 {
-    import std.string;
+    import std.string : lastIndexOf;
     string temp = name[name.lastIndexOf(".")+1..$];
     switch(temp)
     {

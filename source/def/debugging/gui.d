@@ -10,13 +10,17 @@ Distributed under the MIT Software License.
 */
 
 module def.debugging.gui;
+
+public struct DebugName{string name;}
+public struct InterfaceImplementation{void function(ref void* u_data) interfaceFunc;}
+
+version(CIMGUI):
 import bindbc.cimgui;
 import bindbc.sdl;
 import error.handler;
 import implementations.imgui.imgui_impl_opengl3;
 import implementations.imgui.imgui_impl_sdl;
 
-public struct DebugName{string name;}
 
 /**
 * This class wraps ImGUI initialization only (currently) for easier mantaining
@@ -69,7 +73,6 @@ public class DebugInterface
         cfg.OversampleV = 1;
         cfg.RasterizerMultiply = 1;
         cfg.RasterizerFlags = 0;
-        import std.string:toStringz;
         cfg.Name = fontName;
         return cfg;
     }

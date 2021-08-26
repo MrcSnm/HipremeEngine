@@ -130,7 +130,6 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public void setViewport(Viewport v)
     {
-        import std.stdio;
         glViewport(v.x, v.y, v.w, v.h);
         
     }

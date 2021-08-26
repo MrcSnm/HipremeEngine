@@ -19,8 +19,6 @@ Distributed under the MIT Software License.
 module implementations.renderer.vertex;
 import implementations.renderer.renderer;
 import error.handler;
-import std.stdio;
-import core.stdc.stdlib:exit;
 import def.debugging.log;
 public import implementations.renderer.backend.gl.vertex;
 // version(Android){alias index_t = ushort;}

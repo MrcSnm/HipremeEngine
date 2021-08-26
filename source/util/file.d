@@ -10,7 +10,7 @@ Distributed under the MIT Software License.
 */
 
 module util.file;
-import std.stdio: File;
+import std.stdio;
 import std.conv:to;
 import std.path;
 import std.file;
@@ -72,8 +72,6 @@ void fileTruncate(File file, long offset)
             throw new FileException(file.name, "ftruncate error with code "~to!string(res));
     }
 }
-
-import std.stdio;
 
 class FileProgression
 {

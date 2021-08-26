@@ -12,6 +12,7 @@ Distributed under the MIT Software License.
 module data.ini;
 import std.conv:to;
 import util.file;
+import std.array:split;
 
 struct IniVar
 {
@@ -78,9 +79,7 @@ class IniFile
             }
             else if(c == '[')
             {
-                import std.array:split;
                 import util.string : replaceAll;
-                import std.stdio;
                 string capture = "";
                 while(content[++i] != ']'){capture~=content[i];}
                 if(i >= content.length)
@@ -126,7 +125,6 @@ class IniFile
 
     public T tryGet(T)(string varPath, T defaultVal = T.init)
     {
-        import std.array:split;
         string[] accessors = varPath.split(".");
         if(accessors.length < 2)
             return defaultVal;

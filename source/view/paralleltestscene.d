@@ -11,7 +11,6 @@ Distributed under the MIT Software License.
 
 module view.paralleltestscene;
 import implementations.renderer;
-import std.stdio;
 import graphics.image;
 import graphics.g2d;
 import data.assetpacker;

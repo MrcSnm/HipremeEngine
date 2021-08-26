@@ -10,6 +10,7 @@ Distributed under the MIT Software License.
 */
 
 module implementations.imgui.imgui_impl_opengl3;
+version(CIMGUI):
 import bindbc.cimgui;
 
 import std.conv:to;
@@ -190,7 +191,6 @@ static if(CIMGUI_USER_DEFINED_GL)
             if (glsl_version == "")
                 glsl_version = "#version 130";
         }
-        import std.conv:to;
         IM_ASSERT(cast(int)strlen(glsl_version) + 2 < IM_ARRAYSIZE(g_GlslVersionString));
         strcpy(g_GlslVersionString.ptr, glsl_version);
         strcat(g_GlslVersionString.ptr, "\n");
@@ -444,7 +444,6 @@ static if(CIMGUI_USER_DEFINED_GL)
 
         ImFontAtlas_GetTexDataAsRGBA32(io.Fonts, &pixels, &width, &height, &bytePerPixel);   // Load as RGBA 32-bit (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
 
-        import std.stdio;
         // Upload texture to graphics system
         GLint last_texture;
         glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);

@@ -10,6 +10,7 @@ Distributed under the MIT Software License.
 */
 
 module implementations.imgui.imgui_impl_sdl;
+version(CIMGUI):
 // SDL
 
 ///If false, it will attempt to use the SDL cimgui implementation

@@ -11,13 +11,10 @@ Distributed under the MIT Software License.
 
 module graphics.g2d.textureatlas;
 import util.file;
-import std.string : lastIndexOf;
-import std.array : split;
 import std.conv:to;
 import std.algorithm : countUntil;
 import util.string;
 import std.file;
-import std.json;
 import math.rect;
 
 struct AtlasFrame
@@ -40,6 +37,7 @@ class TextureAtlas
 
     static TextureAtlas readJSON(string atlasPath, string texturePath)
     {
+        import std.json;
         TextureAtlas ret = new TextureAtlas();
         ret.texturePaths~= texturePath;
         ret.atlasPath = atlasPath;
@@ -76,6 +74,7 @@ class TextureAtlas
 
     static TextureAtlas readAtlas(string atlasPath)
     {
+        import std.array : split;
         TextureAtlas ret = new TextureAtlas();
         ret.atlasPath = atlasPath;
         string[] lines;
@@ -145,6 +144,7 @@ class TextureAtlas
 
     static bool read(string fileName)
     {
+        import std.string : lastIndexOf;
         long ind = fileName.lastIndexOf(".");
         if(ind == -1)
             return false;

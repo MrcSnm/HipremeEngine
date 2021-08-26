@@ -101,6 +101,7 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     public bool pause(HipAudioSource src)
     {
         HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
+        SLIAudioPlayer.pause(*source.audioPlayer);
         return false;
     }
 

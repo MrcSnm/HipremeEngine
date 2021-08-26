@@ -12,7 +12,6 @@ Distributed under the MIT Software License.
 module data.assetmanager;
 import def.debugging.log;
 import util.system;
-import std.stdio;
 import util.data_structures;
 import util.time;
 import core.time:Duration, dur;
