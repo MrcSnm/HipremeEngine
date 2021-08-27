@@ -15,6 +15,7 @@ hipremeengine-test-*
 build/.cache
 dependencies/gles/lib/*.a
 dependencies/gles/lib/*.lib
+build/android/SDL2*
 building/openal-soft-1.20.1-bin
 building/SDL_sound-default
 building/SDL2-2.0.12

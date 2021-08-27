@@ -10,8 +10,8 @@ Distributed under the MIT Software License.
 */
 
 module graphics.g2d.geometrybatch;
-import implementations.renderer.renderer;
-import implementations.renderer.shader;
+import hiprenderer.renderer;
+import hiprenderer.shader;
 import graphics.mesh;
 import math.matrix;
 import graphics.color;

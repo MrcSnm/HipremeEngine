@@ -264,7 +264,6 @@ class KeyboardHandler
     */
     void handleKeyDown(SDL_Keycode key)
     {
-        import std.stdio;
         setPressed(key, true);
     }
 

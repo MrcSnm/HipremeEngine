@@ -10,8 +10,8 @@ Distributed under the MIT Software License.
 */
 
 module graphics.orthocamera;
-import graphics.g2d.viewport;
-import implementations.renderer;
+import hiprenderer.viewport;
+import hiprenderer;
 import math.matrix;
 
 class HipOrthoCamera

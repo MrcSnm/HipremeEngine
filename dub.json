@@ -69,11 +69,15 @@
 	"dflags": [
 		"-J=."
 	],
+
 	"importPaths": [
 		"source",
 		"dependencies/directx-d/src",
 		"dependencies/gles/source",
-		"dependencies/sles/source",
+		"dependencies/sles/source"
+	],
+	"importPaths-ldc" :
+	[
 		"C:/ldc2/import"
 	],
 	"libs-windows": [

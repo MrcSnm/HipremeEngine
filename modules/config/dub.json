@@ -1,0 +1,10 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"description": "HipremeEngine config module",
+	"license": "proprietary",
+	"dflags": ["-g"],
+	"name": "config"
+}

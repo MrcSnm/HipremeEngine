@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/config
+config.so
+config.dylib
+config.dll
+config.a
+config.lib
+config-test-*
+*.exe
+*.o
+*.obj
+*.lst

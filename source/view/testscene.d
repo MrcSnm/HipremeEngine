@@ -12,9 +12,9 @@ Distributed under the MIT Software License.
 module view.testscene;
 
 import graphics.g2d.geometrybatch;
-import implementations.renderer.shader;
-import implementations.renderer;
-import graphics.g2d.viewport;
+import hiprenderer.shader;
+import hiprenderer;
+import hiprenderer.viewport;
 import graphics.color;
 import std.math;
 import view.scene;
@@ -34,7 +34,7 @@ class TestScene : Scene
     override void update(float dt)
     {
         super.update(dt);
-        import def.debugging.log;
+        import console.log;
         // rawlog("Comi sua mae");
     }
 

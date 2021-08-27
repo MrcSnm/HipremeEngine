@@ -11,10 +11,10 @@ Distributed under the MIT Software License.
 
 module view.spritetestscene;
 import bindbc.sdl;
-import implementations.renderer.backend.gl.renderer;
-import implementations.renderer.shader;
+import hiprenderer.backend.gl.renderer;
+import hiprenderer.shader;
 import graphics.g2d;
-import implementations.renderer.renderer;
+import hiprenderer.renderer;
 import view.scene;
 
 
@@ -24,7 +24,7 @@ class SpriteTestScene : Scene
     HipSprite sprite;
     this()
     {
-        import def.debugging.log;
+        import console.log;
         batch = new HipSpriteBatch();
         import data.hipfs;
         string output;
@@ -49,7 +49,7 @@ class SpriteTestScene : Scene
 
     public override void onResize(uint width, uint height)
     {
-        import def.debugging.log;
+        import console.log;
         Viewport v = HipRenderer.getCurrentViewport();
         v.update();
         rawlog(v.w, " ", v.h);

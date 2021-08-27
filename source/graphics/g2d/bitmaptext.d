@@ -14,15 +14,12 @@ import graphics.g2d;
 import graphics.mesh;
 import util.data_structures;
 import std.algorithm.comparison : max;
-import std.string;
 import std.conv:to;
 import error.handler;
-import std.stdio;
-import def.debugging.log;
+import console.log;
 import math.matrix;
-import implementations.renderer;
-import core.stdc.string;
-import core.stdc.stdio;
+import hiprenderer;
+
 
 enum HipTextAlign
 {
@@ -76,6 +73,8 @@ class HipBitmapFont
 
     void readAtlas(string atlasPath)
     {
+        import core.stdc.string : strlen;
+        import core.stdc.stdio;
         this.atlasPath = atlasPath;
         char[512] name;
         int size;
@@ -167,6 +166,7 @@ class HipBitmapFont
 
     void readTexture(string texturePath = "")
     {
+        import std.string : lastIndexOf;
         if(texturePath == "" && atlasTexturePath != "")
         {
             const long ind = atlasPath.lastIndexOf('/');
