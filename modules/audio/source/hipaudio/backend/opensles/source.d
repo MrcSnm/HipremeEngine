@@ -12,4 +12,17 @@ class HipOpenSLESAudioSource : HipAudioSource
     {
         audioPlayer = player;
     }
+
+    override void pullStreamData()
+    {
+        import util.memory;
+
+        assert(buffer !is null, "Can't pull stream data without any buffer attached");
+        assert(audioPlayer.playerObj != null, "Can't pull stream data without null audioplayer");
+        uint decoded = buffer.updateStream();
+        void* temp = malloc(decoded);
+        memcpy(temp, buffer.outBuffer, decoded);
+        
+        SLIAudioPlayer.Enqueue(*audioPlayer, temp, decoded);
+    }
 }

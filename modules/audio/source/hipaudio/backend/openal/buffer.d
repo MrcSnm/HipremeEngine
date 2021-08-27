@@ -70,8 +70,6 @@ public class HipOpenALBuffer : HipAudioBuffer
         import console.log;
         uint decoded = updateStream();
         import util.time;
-
-        rawlog("Decoded ",decoded, " at time: ", Time.getCurrentTime());
         if(buffer == 0)
             buffer = getNextBuffer();
         loadALBuffer(buffer, outBuffer, decoded);

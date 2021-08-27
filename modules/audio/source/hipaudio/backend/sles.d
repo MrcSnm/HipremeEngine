@@ -250,6 +250,14 @@ string sliGetErrorMessages()
     return ret;
 }
 
+struct SLIBuffer
+{
+    uint size;
+    bool isLocked;
+    bool hasBeenProcessed;
+    void* data;
+}
+
 struct SLIAudioPlayer
 {
     ///The Audio player
@@ -264,6 +272,9 @@ struct SLIAudioPlayer
     SLEffectSendItf playerEffectSend;
     ///@TODO
     SLMetadataExtractionItf playerMetadata;
+
+    protected SLIBuffer* streamQueue;
+    protected ushort streamQueueCursor;
 
     version(Android){SLAndroidSimpleBufferQueueItf playerAndroidSimpleBufferQueue;}
     else  //Those lines will appear just as a documentation, right now, we don't have any implementation using it
@@ -320,15 +331,53 @@ struct SLIAudioPlayer
             atomicStore(p.hasFinishedTrack,  true);
         }
     }
-    static void play(ref SLIAudioPlayer audioPlayer, void* samples, uint sampleSize)
+
+    void pushBuffer(void* buffer, uint size)
+    {
+        import core.stdc.stdlib:realloc;
+        if(streamQueue == null)
+            streamQueue = cast(SLIBuffer*)malloc(SLIBuffer.sizeof * streamQueueCursor);
+        else
+            streamQueue = realloc(streamQueue, SLIBuffer.sizeof * streamQueueCursor);
+        streamQueue[streamQueueCursor-1] = SLIBuffer(size, false, false, buffer);
+    }
+
+    SLIBuffer* getProcessedBuffer()
+    {
+        for(int i = 0; i < streamQueueCursor;i++)
+            if(!streamQueue[i].isLocked && streamQueue[i].isProcessed)
+                return &streamQueue[i];
+        return null;
+    }
+
+    /**
+    *   Same behavior from (*androidBufferQueue).Enqueue. If you wish to use queue
+    *   for streaming sound, call pushBuffer
+    */
+    static void Enqueue(ref SLIAudioPlayer audioPlayer, void* samples, uint sampleSize)
+    {
+        version(Android)
+        {
+            (*audioPlayer.playerAndroidSimpleBufferQueue)
+                .Enqueue(audioPlayer.playerAndroidSimpleBufferQueue, samples, sampleSize);
+        }
+    }
+    static void resume(ref SLIAudioPlayer audioPlayer)
     {
         with(audioPlayer)
         {
-            version(Android){(*playerAndroidSimpleBufferQueue).Enqueue(playerAndroidSimpleBufferQueue, samples, sampleSize);}
             isPlaying = true;
-            hasFinishedTrack = false;
-
             (*player).SetPlayState(player, SL_PLAYSTATE_PLAYING);
+        }
+    }
+
+    static void play(ref SLIAudioPlayer audioPlayer, void* samples, uint sampleSize)
+    {
+        SLIAudioPlayer.Enqueue(audioPlayer, samples, sampleSize);
+        with(audioPlayer)
+        {
+            SLIAudioPlayer.resume(audioPlayer);
+            hasFinishedTrack = false;
         }
     }
     static void stop(ref SLIAudioPlayer audioPlayer)

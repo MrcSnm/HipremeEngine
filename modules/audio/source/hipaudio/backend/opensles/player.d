@@ -129,7 +129,12 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     }
     public bool isMusicPlaying(HipAudioSource src){return false;}
     public bool isMusicPaused(HipAudioSource src){return false;}
-    public bool resume(HipAudioSource src){return false;}
+    public bool resume(HipAudioSource src)
+    {
+        HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
+        SLIAudioPlayer.resume(*source.audioPlayer);
+        return false;
+    }
     public bool play(HipAudioSource src)
     {
         HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
@@ -155,7 +160,10 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     }
 
     //LOAD RELATED
-    public bool play_streamed(HipAudioSource src){return false;}
+    public bool play_streamed(HipAudioSource src)
+    {
+        return play(src);
+    }
     public HipAudioBuffer load(string path, HipAudioType type)
     {
         HipAudioBuffer buffer = new HipAudioBuffer(new HipSDL_SoundDecoder());
@@ -164,7 +172,7 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     }
     public HipAudioBuffer loadStreamed(string path, uint chunkSize)
     {
-        HipAudioBuffer buffer = new HipAudioBuffer(new HipSDL_SoundDecoder());
+        HipAudioBuffer buffer = new HipAudioBuffer(new HipSDL_SoundDecoder(), chunkSize);
         buffer.loadStreamed(path, getEncodingFromName(path));
         return buffer;
     }
