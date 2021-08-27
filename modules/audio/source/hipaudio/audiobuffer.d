@@ -47,10 +47,13 @@ public class HipAudioBuffer
 
     this(IHipAudioDecoder decoder){this.decoder = decoder;}
     this(IHipAudioDecoder decoder, uint chunkSize)
+    in(chunkSize > 0, "Chunk must be greater than 0")
     {
         import core.stdc.stdlib:malloc;
         this(decoder);
         this.chunkSize = chunkSize;
+        import console.log;
+        logln(chunkSize);
         outBuffer = malloc(chunkSize);
         assert(outBuffer != null, "Out of memory");
     }
@@ -63,9 +66,13 @@ public class HipAudioBuffer
         this.isStreamed = isStreamed;
         return decoder.startDecoding(data, encoding, type, isStreamed);
     }
-    public uint updateStream()
+    /**
+    *   Decodes a bit more of the current buffer
+    */
+    public uint updateStream(void* outputBuffer = outBuffer)
     {
-        uint dec = decoder.updateDecoding(dataToDecode, outBuffer, chunkSize,encoding);
+        assert(chunkSize > 0, "Can't update stream with 0 sized buffer.");
+        uint dec = decoder.updateDecoding(dataToDecode, outputBuffer, chunkSize,encoding);
         totalDecoded+= dec;
         return dec;
     }

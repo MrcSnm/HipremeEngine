@@ -32,12 +32,6 @@ pure nothrow bool isPathUnixStyle(string path)
             return true;
     return false;
 }
-
-void setZeroMemory(T)(ref T variable)
-{
-    memset(&variable, 0, T.sizeof);
-}
-
 version(Windows)
 {
     import core.sys.windows.dll;
