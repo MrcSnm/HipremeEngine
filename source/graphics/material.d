@@ -12,8 +12,8 @@ Distributed under the MIT Software License.
 module graphics.material;
 import math.matrix;
 import math.vector;
-import implementations.renderer.shader;
-import implementations.renderer.shader.shadervar;
+import hiprenderer.shader;
+import hiprenderer.shader.shadervar;
 
 class Material
 {

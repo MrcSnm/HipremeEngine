@@ -11,11 +11,10 @@ Distributed under the MIT Software License.
 
 module view.tilemaptest;
 import data.assetpacker;
-import std.stdio;
 import view.scene;
 import data.assetpacker;
-import def.debugging.log;
-import implementations.renderer;
+import console.log;
+import hiprenderer;
 import graphics.g2d.tilemap;
 
 class TilemapTestScene : Scene

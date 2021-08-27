@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/error
+error.so
+error.dylib
+error.dll
+error.a
+error.lib
+error-test-*
+*.exe
+*.o
+*.obj
+*.lst

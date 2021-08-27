@@ -10,14 +10,13 @@ Distributed under the MIT Software License.
 */
 
 module view.bitmaptestscene;
-import std.stdio;
 import graphics.g2d.tilemap;
 import sdl.event.handlers.input.keyboard_layout;
-import implementations.renderer;
+import hiprenderer;
 import graphics.g2d;
 import graphics.mesh;
 import sdl.event.handlers.keyboard;
-import def.debugging.log;
+import console.log;
 import view.scene;
 
 
@@ -30,7 +29,6 @@ class BitmapTestScene : Scene
         txt = new HipBitmapText();
         abnt2 = new KeyboardLayoutABNT2();
         txt.setBitmapFont(HipBitmapFont.fromFile("assets/fonts/arial.fnt"));
-        import std.stdio;
         txt.x = HipRenderer.width/2;
         txt.alignh = HipTextAlign.CENTER;
     }

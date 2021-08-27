@@ -11,7 +11,7 @@ Distributed under the MIT Software License.
 
 module view.fileprogresstest;
 import std.stdio;
-import def.debugging.log;
+import console.log;
 import util.file;
 import util.time;
 import view;

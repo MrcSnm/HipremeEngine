@@ -1,0 +1,13 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"util": {"path": "../util"},
+		"console": {"path":"../console"}
+	},
+	"description": "HipremeEngine error module",
+	"license": "proprietary",
+	"name": "error"
+}

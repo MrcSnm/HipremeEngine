@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"description": "HipremeEngine math module",
+	"license": "proprietary",
+	"name": "math"
+}

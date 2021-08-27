@@ -11,20 +11,23 @@ Distributed under the MIT Software License.
 
 module graphics.g2d.sprite;
 import graphics.g2d.spritebatch;
-import implementations.renderer.texture;
-import implementations.imgui.imgui_debug;
+import hiprenderer.texture;
+import debugging.gui;
 import graphics.color;
 
 @InterfaceImplementation(function(ref void* data)
 {
-    import bindbc.cimgui;
-    HipSprite* s = cast(HipSprite*)data;
+    version(CIMGUI)
+    {
+        import bindbc.cimgui;
+        HipSprite* s = cast(HipSprite*)data;
 
-    igBeginGroup();
-    igSliderFloat2("Position", &s.x, -1000, 1000,  null, 0);
-    igSliderFloat2("Scale", &s.scaleX, -1, 1000,  null, 0);
-    igSliderFloat("Rotation", cast(float*)&s.rotation, 0, 360, null, 0);
-    igEndGroup();
+        igBeginGroup();
+        igSliderFloat2("Position", &s.x, -1000, 1000,  null, 0);
+        igSliderFloat2("Scale", &s.scaleX, -1, 1000,  null, 0);
+        igSliderFloat("Rotation", cast(float*)&s.rotation, 0, 360, null, 0);
+        igEndGroup();
+    }
 
 })class HipSprite
 {

@@ -11,10 +11,10 @@ Distributed under the MIT Software License.
 
 module view.framebuffertestscene;
 import view.scene;
-import def.debugging.log;
+import console.log;
 import graphics.g2d;
-import implementations.renderer.renderer;
-import implementations.renderer.framebuffer;
+import hiprenderer.renderer;
+import hiprenderer.framebuffer;
 
 class FrameBufferTestScene : Scene
 {

@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/renderer
+renderer.so
+renderer.dylib
+renderer.dll
+renderer.a
+renderer.lib
+renderer-test-*
+*.exe
+*.o
+*.obj
+*.lst

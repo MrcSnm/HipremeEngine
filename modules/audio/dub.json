@@ -1,0 +1,24 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"bindbc-openal": "~>0.5.0",
+		"bindbc-sdl": "~>1.0.1", 
+		"data" : {"path": "../data"},
+		"math" : {"path": "../math"},
+		"imgui": {"path": "../imgui"},
+		"sles": {"path": "../../dependencies/sles"},
+		"sdl_sound": {"path": "../../dependencies/sdl_sound"}
+	},
+	"description": "HipremeEngine audio module",
+	"license": "proprietary",
+	"dflags": ["-g"],
+	"name": "audio",
+	"versions": [
+		"SDL_208",
+		"BindSDL_Mixer",
+		"AL_EFX"
+	]
+}
