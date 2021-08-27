@@ -22,6 +22,7 @@
 		}
 	},
 	"description": "HipremeEngine bind module",
+	"dflags": [""],
 	"license": "proprietary",
 	"name": "bind",
 	"versions": [

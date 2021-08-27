@@ -65,57 +65,6 @@ struct AudioConfig
     {
         return Sound_AudioInfo(getFormatAsSDL_AudioFormat(), cast(ubyte)channels, sampleRate);
     }
-    version(Android)
-    {
-        import opensles.sles;
-        SLDataFormat_PCM getFormatAsOpenSLES()
-        {
-            SLDataFormat_PCM ret;
-            ret.formatType = SL_DATAFORMAT_PCM;
-            ret.numChannels = channels; //2 channels seems to not be supported yet
-            ret.samplesPerSec = sampleRate*1000;
-            switch(format)
-            {
-                //Big
-                case SDL_AudioFormat.AUDIO_S16MSB:
-                    ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
-                    ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
-                    ret.endianness = SL_BYTEORDER_BIGENDIAN;
-                    break;
-                case SDL_AudioFormat.AUDIO_S32MSB:
-                    ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_32;
-                    ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_32;
-                    ret.endianness = SL_BYTEORDER_BIGENDIAN;
-                    break;
-
-                case SDL_AudioFormat.AUDIO_S8:
-                    ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_8;
-                    ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_8;
-                    ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
-                    break;
-                default:
-                case SDL_AudioFormat.AUDIO_S16LSB:
-                    ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
-                    ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
-                    ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
-                    break;
-                //Little
-                case SDL_AudioFormat.AUDIO_S32LSB:
-                    ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_32;
-                    ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_32;
-                    ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
-                    break;
-            }
-            if(channels == 2)
-                ret.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
-            else if(channels == 1)
-                ret.channelMask = SL_SPEAKER_FRONT_CENTER;
-            else
-                ErrorHandler.showErrorMessage("OpenSL ES Audio Config.", "OpenSL ES does not supports " ~ to!string(channels)~" channels");
-
-            return ret;
-        }
-    }
 
     uint getBitDepth()
     {

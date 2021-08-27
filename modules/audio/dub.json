@@ -14,6 +14,7 @@
 	},
 	"description": "HipremeEngine audio module",
 	"license": "proprietary",
+	"dflags": ["-g"],
 	"name": "audio",
 	"versions": [
 		"SDL_208",
