@@ -10,7 +10,7 @@ Distributed under the MIT Software License.
 */
 
 module view.uwptest;
-import def.debugging.log;
+import console.log;
 import view.scene;
 class UwpTestScene : Scene
 {

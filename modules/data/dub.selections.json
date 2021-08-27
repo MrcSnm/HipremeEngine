@@ -1,0 +1,11 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"bindbc-loader": "1.0.1",
+		"bindbc-sdl": "1.0.1",
+		"console": {"path":"../console"},
+		"debugging": {"path":"../debugging"},
+		"error": {"path":"../error"},
+		"util": {"path":"../util"}
+	}
+}

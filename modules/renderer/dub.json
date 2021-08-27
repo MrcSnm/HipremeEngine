@@ -1,0 +1,36 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"bindbc-opengl": "~>1.0.0",
+		"bindbc-sdl": "~>1.0.1",
+		"directx-d": {"path": "../../dependencies/directx-d"},
+		"gles" : {"path": "../../dependencies/gles"},
+		"data" : {"path": "../data"},
+		"config": {
+			"path": "../config",
+			"version": ">=0.0.0"
+		},
+		"error": {
+			"path": "../error",
+			"version": ">=0.0.0"
+		},
+		"math": {
+			"path": "../math",
+			"version": ">=0.0.0"
+		}
+	},
+	"versions": [
+		"SDL_208",
+		"BindSDL_Mixer",
+		"BindSDL_TTF",
+		"BindSDL_Image",
+		"GL_45",
+		"GL_ARB"
+	],
+	"description": "HipremeEngine renderer module",
+	"license": "proprietary",
+	"name": "renderer"
+}

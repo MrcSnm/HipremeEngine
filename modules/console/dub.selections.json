@@ -1,0 +1,11 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"bind": {"path":"../bind"},
+		"bindbc-loader": "1.0.1",
+		"bindbc-sdl": "1.0.1",
+		"debugging": {"path":"../debugging"},
+		"error": {"path":"../error"},
+		"util": {"path":"../util"}
+	}
+}

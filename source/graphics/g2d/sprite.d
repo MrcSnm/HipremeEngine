@@ -11,8 +11,8 @@ Distributed under the MIT Software License.
 
 module graphics.g2d.sprite;
 import graphics.g2d.spritebatch;
-import implementations.renderer.texture;
-import def.debugging.gui;
+import hiprenderer.texture;
+import debugging.gui;
 import graphics.color;
 
 @InterfaceImplementation(function(ref void* data)

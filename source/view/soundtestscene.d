@@ -1,8 +1,8 @@
 module view.soundtestscene;
 import data.hipfs;
-import implementations.audio.audio;
-import implementations.audio.backend.openal.source;
-import audio.audio;
+import hipaudio.audio;
+import hipaudio.backend.openal.source;
+import data.audio.audio;
 import view.scene;
 
 class SoundTestScene : Scene
@@ -10,31 +10,31 @@ class SoundTestScene : Scene
     HipAudioSource src;
     this()
     {
-        import def.debugging.log;
+        import console.log;
 
-        HipAudioBuffer buf = HipAudio.load("audio/wind-sfx.mp3", HipAudioType.SFX);
-        src = HipAudio.getSource(false, buf);
-        HipAudio.play(src);
+        // HipAudioBuffer buf = HipAudio.load("assets/audio/wind-sfx.mp3", HipAudioType.SFX);
+        // src = HipAudio.getSource(false, buf);
+        // HipAudio.play(src);
         
-        // HipAudioBuffer buf = HipAudio.loadStreamed("assets/audio/junkyard-a-class.mp3", (ushort.max+1));
-        // src = HipAudio.getSource(true, buf);
-        // src.pullStreamData();
-        // src.pullStreamData();
+        HipAudioBuffer buf = HipAudio.loadStreamed("assets/audio/junkyard-a-class.mp3", (ushort.max+1));
+        src = HipAudio.getSource(true, buf);
+        src.pullStreamData();
+        src.pullStreamData();
 
-        // HipAudio.play_streamed(src);
+        HipAudio.play_streamed(src);
 
 
     }
 
     override void render()
     {
-        import def.debugging.log;
-        // auto s = cast(HipOpenALAudioSource)src;
-        // int b = s.getFreeBuffer();
-        // if(b != 0)
-        // {
-        //     src.pullStreamData();
-        // }
+        import console.log;
+        auto s = cast(HipOpenALAudioSource)src;
+        int b = s.getFreeBuffer();
+        if(b != 0)
+        {
+            src.pullStreamData();
+        }
         // rawlog(sc.isPlaying);
     }
 }

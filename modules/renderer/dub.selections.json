@@ -1,0 +1,14 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"bindbc-loader": "1.0.1",
+		"bindbc-opengl": "1.0.0",
+		"bindbc-sdl": "1.0.1",
+		"config": {"path":"../config"},
+		"console": {"path":"../console"},
+		"debugging": {"path":"../debugging"},
+		"error": {"path":"../error"},
+		"math": {"path":"../math"},
+		"util": {"path":"../util"}
+	}
+}

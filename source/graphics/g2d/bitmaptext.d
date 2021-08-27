@@ -16,9 +16,9 @@ import util.data_structures;
 import std.algorithm.comparison : max;
 import std.conv:to;
 import error.handler;
-import def.debugging.log;
+import console.log;
 import math.matrix;
-import implementations.renderer;
+import hiprenderer;
 
 
 enum HipTextAlign

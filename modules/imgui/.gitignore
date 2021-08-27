@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/imgui
+imgui.so
+imgui.dylib
+imgui.dll
+imgui.a
+imgui.lib
+imgui-test-*
+*.exe
+*.o
+*.obj
+*.lst
