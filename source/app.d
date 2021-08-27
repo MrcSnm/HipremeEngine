@@ -8,13 +8,13 @@ Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
 	https://opensource.org/licenses/MIT)
 */
-import def.debugging.log;
-import def.debugging.console;
+import console.log;
+import console.console;
 import bind.external;
 import data.hipfs;
 import error.handler;
 import global.consts;
-import implementations.audio.audio;
+import hipaudio.audio;
 version(Android)
 {
 	import jni.helper.androidlog;
@@ -24,16 +24,16 @@ version(Android)
 }
 version(Windows)
 {
-	import implementations.renderer.backend.d3d.renderer;
+	import hiprenderer.backend.d3d.renderer;
 }
 version(dll)
 {
 	import core.runtime;
 }
-import implementations.renderer.renderer;
+import hiprenderer.renderer;
 import view;
 import systems.game;
-import def.debugging.gui;
+import debugging.gui;
 /**
 * Compiling instructions:
 
@@ -105,8 +105,8 @@ extern(C)int SDL_main()
 
 	//AudioSource sc = Audio.getSource(buf);
 	//Audio.setPitch(sc, 1);
-	// import def.debugging.runtime;
-	// import global.fonts.icons;
+	// import debugging.runtime;
+	// import imgui.fonts.icons;
 	// import implementations.imgui.imgui_impl_opengl3;
 	// DI.start(HipRenderer.window);
 	// ImFontConfig cfg = DI.getDefaultFontConfig("Default + Icons");
@@ -175,7 +175,7 @@ version(Android)
 	extern(C) jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
 	{
 		int ret = HipremeMain();
-		import graphics.g2d.viewport;
+		import hiprenderer.viewport;
 		int[2] wsize = HipremeAndroid.javaCall!(int[2], "getWindowSize");
 		HipRenderer.setViewport(new Viewport(0, 0, wsize[0], wsize[1]));
 		return ret;

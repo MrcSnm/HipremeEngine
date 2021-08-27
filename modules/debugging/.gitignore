@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/debugging
+debugging.so
+debugging.dylib
+debugging.dll
+debugging.a
+debugging.lib
+debugging-test-*
+*.exe
+*.o
+*.obj
+*.lst

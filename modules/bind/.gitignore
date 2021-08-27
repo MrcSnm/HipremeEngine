@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/bind
+bind.so
+bind.dylib
+bind.dll
+bind.a
+bind.lib
+bind-test-*
+*.exe
+*.o
+*.obj
+*.lst

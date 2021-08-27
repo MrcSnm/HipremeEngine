@@ -1,0 +1,14 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"debugging" : {"path": "../debugging"},
+		"config": {"path": "../config"},
+		"util" : {"path": "../util"}
+	},
+	"description": "HipremeEngine console module",
+	"license": "proprietary",
+	"name": "console"
+}

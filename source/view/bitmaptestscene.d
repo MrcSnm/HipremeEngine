@@ -12,11 +12,11 @@ Distributed under the MIT Software License.
 module view.bitmaptestscene;
 import graphics.g2d.tilemap;
 import sdl.event.handlers.input.keyboard_layout;
-import implementations.renderer;
+import hiprenderer;
 import graphics.g2d;
 import graphics.mesh;
 import sdl.event.handlers.keyboard;
-import def.debugging.log;
+import console.log;
 import view.scene;
 
 

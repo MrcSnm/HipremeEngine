@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/math
+math.so
+math.dylib
+math.dll
+math.a
+math.lib
+math-test-*
+*.exe
+*.o
+*.obj
+*.lst

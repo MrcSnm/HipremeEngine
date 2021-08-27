@@ -1,0 +1,28 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"bindbc-sdl": "~>1.0.1",
+		"sdl_sound": {"path": "../../dependencies/sdl_sound"},
+		"console": {
+			"path": "../console",
+			"version": ">=0.0.0"
+		},
+		"error": {
+			"path": "../error",
+			"version": ">=0.0.0"
+		},
+		"util": {
+			"path": "../util",
+			"version": ">=0.0.0"
+		}
+	},
+	"description": "HipremeEngine data module",
+	"versions": [
+		"BindSDL_Image"
+	],
+	"license": "proprietary",
+	"name": "data"
+}

@@ -10,8 +10,8 @@ Distributed under the MIT Software License.
 */
 
 module view.paralleltestscene;
-import implementations.renderer;
-import graphics.image;
+import hiprenderer;
+import data.image;
 import graphics.g2d;
 import data.assetpacker;
 import data.assetmanager;

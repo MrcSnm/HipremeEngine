@@ -10,9 +10,9 @@ Distributed under the MIT Software License.
 */
 
 module graphics.mesh;
-import implementations.renderer.renderer;
-import implementations.renderer.shader;
-import implementations.renderer.vertex;
+import hiprenderer.renderer;
+import hiprenderer.shader;
+import hiprenderer.vertex;
 import std.traits;
 
 class Mesh
@@ -74,7 +74,7 @@ class Mesh
     }
     public void updateIndices(ref index_t[] indices)
     {
-        import def.debugging.log;
+        import console.log;
         this.indices = indices;
         this.vao.updateIndices(cast(index_t)indices.length, indices.ptr);
     }

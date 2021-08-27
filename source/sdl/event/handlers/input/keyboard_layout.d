@@ -174,7 +174,7 @@ class KeyboardLayoutABNT2 : KeyboardLayout
             addKey(COMMA, "<", KeyState.SHIFT);
             addKey(BACKQUOTE, "\"", KeyState.SHIFT);
 
-            import def.debugging.log;
+            import console.log;
 
             rawlog(kb[KeyStroke('A', KeyState.NONE)]);
             

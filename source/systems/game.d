@@ -11,7 +11,7 @@ Distributed under the MIT Software License.
 
 module systems.game;
 import bindbc.sdl;
-import implementations.renderer.renderer;
+import hiprenderer.renderer;
 private import sdl.event.dispatcher;
 private import sdl.event.handlers.keyboard;
 import view;
