@@ -6,6 +6,7 @@
 	"dependencies": {
 		"debugging" : {"path": "../debugging"},
 		"config": {"path": "../config"},
+		"jni" : {"path": "../jni"},
 		"util" : {"path": "../util"}
 	},
 	"description": "HipremeEngine console module",

@@ -4,12 +4,61 @@ import hipaudio.backend.audiosource;
 import data.audio.audioconfig;
 import hipaudio.backend.sles;
 import data.audio.audio;
+import std.conv:to;
 import opensles.sles;
 import error.handler;
 import hipaudio.audio;
+import bindbc.sdl;
 
 version(Android):
+SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)
+{
+    SLDataFormat_PCM ret;
+    ret.formatType = SL_DATAFORMAT_PCM;
+    ret.numChannels = cfg.channels; //2 channels seems to not be supported yet
+    ret.samplesPerSec = cfg.sampleRate*1000;
+    switch(cfg.format)
+    {
+        //Big
+        case SDL_AudioFormat.AUDIO_S16MSB:
+            ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
+            ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
+            ret.endianness = SL_BYTEORDER_BIGENDIAN;
+            break;
+        case SDL_AudioFormat.AUDIO_S32MSB:
+            ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_32;
+            ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_32;
+            ret.endianness = SL_BYTEORDER_BIGENDIAN;
+            break;
 
+        case SDL_AudioFormat.AUDIO_S8:
+            ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_8;
+            ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_8;
+            ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
+            break;
+        default:
+        case SDL_AudioFormat.AUDIO_S16LSB:
+            ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
+            ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
+            ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
+            break;
+        //Little
+        case SDL_AudioFormat.AUDIO_S32LSB:
+            ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_32;
+            ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_32;
+            ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
+            break;
+    }
+    if(cfg.channels == 2)
+        ret.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
+    else if(cfg.channels == 1)
+        ret.channelMask = SL_SPEAKER_FRONT_CENTER;
+    else
+        ErrorHandler.showErrorMessage("OpenSL ES Audio Config.", "OpenSL ES does not supports " ~
+        to!string(cfg.channels)~" channels");
+
+    return ret;
+}
 
 package __gshared SLIAudioPlayer*[] playerPool;
 package uint poolRingIndex = 0;
