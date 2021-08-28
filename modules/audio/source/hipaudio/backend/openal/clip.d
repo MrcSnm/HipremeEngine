@@ -46,13 +46,13 @@ public class HipOpenALClip : HipAudioClip
         return ret;
     }
 
-    override void onUpdateStream(uint decodedSize, void* data)
+    override void onUpdateStream(void* data, uint decodedSize)
     {
         // if(buffer == 0)
             // buffer = getNextBuffer();
         // loadALBuffer(buffer, this.outBuffer, decoded);
     }
-    override HipAudioBufferWrapper createBuffer(uint bufferSize, void* data)
+    override HipAudioBufferWrapper createBuffer(void* data, uint bufferSize)
     {
         import core.stdc.stdlib:malloc;
         import core.stdc.string:memcpy;
@@ -82,7 +82,7 @@ public class HipOpenALClip : HipAudioClip
         loadALBuffer(bufferId, data, size);
     }
 
-    ALuint getALBuffer(uint size, void* data){return *cast(ALuint*)getBuffer(size, data);}
+    ALuint getALBuffer(uint size, void* data){return *cast(ALuint*)getBuffer(data, size);}
 
 
     bool hasBuffer;

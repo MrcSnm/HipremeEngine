@@ -94,16 +94,16 @@ public abstract class HipAudioClip
         assert(chunkSize > 0, "Can't update stream with 0 sized buffer.");
         uint dec = decoder.updateDecoding(dataToDecode, outBuffer, chunkSize,encoding);
         totalDecoded+= dec;
-        onUpdateStream(dec, outBuffer);
+        onUpdateStream(outBuffer, dec);
         return dec;
     }
 
     ///Event method called when the stream is updated
-    protected abstract void  onUpdateStream(uint decodedSize, void* data);
+    protected abstract void  onUpdateStream(void* data, uint decodedSize);
     /**
     *   Always alocates a pointer to the buffer data. So, after getting its content. Free the pointer
     */
-    protected abstract HipAudioBufferWrapper createBuffer(uint size, void* data);
+    protected abstract HipAudioBufferWrapper createBuffer(void* data, uint size);
     protected abstract void  destroyBuffer(void* buffer);
     package final HipAudioBufferWrapper* findBuffer(void* buf)
     {
@@ -113,7 +113,7 @@ public abstract class HipAudioClip
         return null;
     }
     public    abstract void  setBufferData(void* buffer, uint size, void* data);
-    public    final    void* getBuffer(uint size, void* data)
+    public    final    void* getBuffer(void* data, uint size)
     {
         void* ret;
         if(buffersToRecycle.length > 0)
@@ -124,7 +124,7 @@ public abstract class HipAudioClip
             ret = w.buffer;
             return ret;
         }
-        HipAudioBufferWrapper w = createBuffer(size, data);
+        HipAudioBufferWrapper w = createBuffer(data, size);
         ret = w.buffer;
         buffersCreated~=w;
         return ret;
