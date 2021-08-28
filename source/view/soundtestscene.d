@@ -18,9 +18,9 @@ class SoundTestScene : Scene
         
         HipAudioClip buf = HipAudio.loadStreamed("assets/audio/junkyard-a-class.mp3", (ushort.max+1));
         src = HipAudio.getSource(true, buf);
-        src.pullStreamData();
-        src.pullStreamData();
         HipAudio.play_streamed(src);
+        src.pullStreamData();
+        src.pullStreamData();
 
 
     }
@@ -28,11 +28,9 @@ class SoundTestScene : Scene
     override void render()
     {
         // import console.log;
-        // auto s = cast(HipOpenALAudioSource)src;
-        // int b = s.getFreeBuffer();
-        // if(b != 0)
-        // {
-        //     src.pullStreamData();
-        // }
+        if(src.getFreeBuffer() != null)
+        {
+            src.pullStreamData();
+        }
     }
 }

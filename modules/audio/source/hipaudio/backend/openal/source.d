@@ -52,6 +52,12 @@ import bindbc.openal;
             ALuint buf = *cast(ALuint*)clip.getBuffer(cast(uint)clip.getClipSize(), clip.getClipData());
             alSourcei(id, AL_BUFFER, buf);
         }
+        else
+        {
+            HipOpenALClip c = cast(HipOpenALClip)clip;
+            ALuint buf = c.getALBuffer(c.chunkSize, c.getClipData());
+            alSourceQueueBuffers(id, 1, &buf);
+        }
         logln(id);
     }
 
@@ -59,7 +65,7 @@ import bindbc.openal;
     {
         assert(clip !is null, "Can't pull stream data without any buffer attached");
         assert(id != 0, "Can't pull stream data without source id");
-        uint freeBuf = getFreeBuffer();
+        uint freeBuf = getALFreeBuffer();
         if(freeBuf != 0)
         {
             uint fb = freeBuf;
@@ -67,17 +73,26 @@ import bindbc.openal;
             sendAvailableBuffer(&fb);
         }
         clip.updateStream();
-        // HipOpenALClip alBuf = cast(HipOpenALClip)buffer;
-        // freeBuf = alBuf.updateALSourceStream(freeBuf); 
+        HipOpenALClip c = cast(HipOpenALClip)clip;
+        freeBuf = c.getALBuffer(c.chunkSize, c.getClipData());
         alSourceQueueBuffers(id, 1, &freeBuf);
         
     }
 
-    uint getFreeBuffer()
+    uint getALFreeBuffer()
     {
         int b;
         alGetSourcei(id, AL_BUFFERS_PROCESSED, &b);
         return cast(uint)b;
+    }
+
+    override HipAudioBufferWrapper* getFreeBuffer()
+    {
+        int b;
+        alGetSourcei(id, AL_BUFFERS_PROCESSED, &b);
+        if(b == 0)
+            return null;
+        return clip.findBuffer(&b);
     }
     
 

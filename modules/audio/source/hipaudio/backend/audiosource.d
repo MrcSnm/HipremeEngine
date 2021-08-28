@@ -55,6 +55,7 @@ import imgui.fonts.icons;
         float getProgress(){return time/length;}
         void pullStreamData(){}
         void setClip(HipAudioClip clip){this.clip = clip;}
+        HipAudioBufferWrapper* getFreeBuffer(){return null;}
 
         final void sendAvailableBuffer(void* buffer)
         {
