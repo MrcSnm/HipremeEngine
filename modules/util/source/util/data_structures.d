@@ -20,40 +20,53 @@ struct Pair(A, B)
     alias b = second;
 }
 
-struct RingBuffer(T)
+struct RingBuffer(T, uint Length)
 {
     import core.stdc.stdlib:malloc, free;
+    import util.concurrency:Volatile;
 
-    T* data;
-    uint length;
-    uint cursor;
+    T[Length] data;
+    private Volatile!uint writeCursor;
+    private Volatile!uint readCursor;
 
-    this(uint length)
+    this()
     {
-        data = cast(T*)malloc(T.sizeof*length);
-        this.length = length;
-        this.cursor = 0;
+        this.writeCursor = 0;
+        this.readCursor = 0;
     }
 
     void push(T data)
     {
-        this.data[cursor] = data;
-        cursor++;
-        if(cursor == length)
-            cursor = 0;
+        this.data[writeCursor] = data;
+        writeCursor = (writeCursor+1) % Length;
     }
-    immutable T[] read(uint length = this.length, uint start = 0)
+    ///It may read less than count if it is out of bounds
+    immutable T[] read(uint count)
     {
-        return data[start .. length];
+        uint temp = readCursor;
+        if(temp + count > Length)
+        {
+            readCursor = 0;
+            return data[temp..Length];
+        }
+        readCursor = (temp+count)%Length;
+        return data[temp .. count];
+    }
+
+    immutable T read()
+    {
+        uint temp = readCursor;
+        immutable T ret = data[temp];
+        readCursor = (temp+1)%Length;
+        return ret;
     }
 
     void dispose()
     {
-        if(data != null)
-            free(data);
         data = null;
         length = 0;
-        cursor = 0;
+        writeCursor = 0;
+        readCursor = 0;
     }
 
     ~this(){dispose();}

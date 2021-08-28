@@ -1,8 +1,9 @@
 module hipaudio.backend.openal.source;
-import hipaudio.backend.openal.buffer;
+import hipaudio.backend.openal.clip;
 import hipaudio.audio;
 import hipaudio.backend.audiosource;
 import debugging.gui;
+import util.memory;
 import bindbc.openal;
 
 @InterfaceImplementation(function(ref void* data)
@@ -43,23 +44,31 @@ import bindbc.openal;
         this.isStreamed=isStreamed;
     }
 
-    override void setBuffer(HipAudioBuffer buf)
+    override void setClip(HipAudioClip clip)
     {
-        super.setBuffer(buf);
-        if(!buf.isStreamed)
-            alSourcei(id, AL_BUFFER, (cast(HipOpenALBuffer)buf).bufferPool[0]);
+        super.setClip(clip);
+        if(!clip.isStreamed)
+        {
+            ALuint buf = *cast(ALuint*)clip.getBuffer(cast(uint)clip.getClipSize(), clip.getClipData());
+            alSourcei(id, AL_BUFFER, buf);
+        }
         logln(id);
     }
 
     override void pullStreamData()
     {
-        assert(buffer !is null, "Can't pull stream data without any buffer attached");
+        assert(clip !is null, "Can't pull stream data without any buffer attached");
         assert(id != 0, "Can't pull stream data without source id");
         uint freeBuf = getFreeBuffer();
         if(freeBuf != 0)
+        {
+            uint fb = freeBuf;
             alSourceUnqueueBuffers(id, 1, &freeBuf);
-        HipOpenALBuffer alBuf = cast(HipOpenALBuffer)buffer;
-        freeBuf = alBuf.updateALSourceStream(freeBuf); 
+            sendAvailableBuffer(&fb);
+        }
+        clip.updateStream();
+        // HipOpenALClip alBuf = cast(HipOpenALClip)buffer;
+        // freeBuf = alBuf.updateALSourceStream(freeBuf); 
         alSourceQueueBuffers(id, 1, &freeBuf);
         
     }

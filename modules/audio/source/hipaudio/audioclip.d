@@ -9,25 +9,37 @@ Distributed under the MIT Software License.
 	https://opensource.org/licenses/MIT)
 */
 
-module hipaudio.audiobuffer;
+module hipaudio.audioclip;
 import std.path : baseName;
 import data.hipfs;
 import data.audio.audio;
 import hipaudio.audio;
 import hipaudio.backend.audiosource;
 
-struct HipAudioStreamBuffer
+///Wraps an audio buffer by saving the specific API inside 
+struct HipAudioBufferWrapper
 {
-    void* data;
-    uint  size;
-    bool  inUse;
+    void* buffer;
+    uint  bufferSize;
+    bool  isAvailable;
+
+    bool opEquals(R)(const R other) const
+    {
+        import core.stdc.string:memcmp;
+        static if(is(R == void*))
+            return memcmp(other, buffer, bufferSize) == 0;
+        else static if(is(R == typeof(this)))
+            return memcmp(other.buffer, this.buffer, bufferSize) == 0;
+        else
+            return &this == other;
+    }
 }
 
 /** 
  * Wraps a decoder onto it. Basically an easier interface with some more controls
  *  that would be needed inside specific APIs.
  */
-public class HipAudioBuffer
+public abstract class HipAudioClip
 {
     IHipAudioDecoder decoder;
     ///Unused for non streamed. It is the binary loaded from a file which will be decoded
@@ -36,6 +48,16 @@ public class HipAudioBuffer
     void* outBuffer;
     ///Unused for non streamed
     uint chunkSize;
+
+    /**
+    *   Buffers recycled from HipAudioSource.
+    *
+    *   When source notifies that the buffer is free, it is added to
+    *   that array. When getBuffer is called, it could send one
+    *   of those recycleds.
+    */ 
+    private HipAudioBufferWrapper[] buffersToRecycle;
+    private HipAudioBufferWrapper[] buffersCreated;
     
     ulong totalDecoded = 0;
 
@@ -52,8 +74,6 @@ public class HipAudioBuffer
         import core.stdc.stdlib:malloc;
         this(decoder);
         this.chunkSize = chunkSize;
-        import console.log;
-        logln(chunkSize);
         outBuffer = malloc(chunkSize);
         assert(outBuffer != null, "Out of memory");
     }
@@ -69,31 +89,75 @@ public class HipAudioBuffer
     /**
     *   Decodes a bit more of the current buffer
     */
-    public uint updateStream(void* outputBuffer = outBuffer)
+    public final uint updateStream()
     {
         assert(chunkSize > 0, "Can't update stream with 0 sized buffer.");
-        uint dec = decoder.updateDecoding(dataToDecode, outputBuffer, chunkSize,encoding);
+        uint dec = decoder.updateDecoding(dataToDecode, outBuffer, chunkSize,encoding);
         totalDecoded+= dec;
+        onUpdateStream(dec, outBuffer);
         return dec;
     }
-    
+
+    ///Event method called when the stream is updated
+    protected abstract void  onUpdateStream(uint decodedSize, void* data);
+    /**
+    *   Always alocates a pointer to the buffer data. So, after getting its content. Free the pointer
+    */
+    protected abstract HipAudioBufferWrapper createBuffer(uint size, void* data);
+    protected abstract void  destroyBuffer(void* buffer);
+    protected final HipAudioBufferWrapper* findBuffer(void* buf)
+    {
+        foreach(ref b; buffersCreated)
+            if(b == buf)
+                return &b;
+        return null;
+    }
+    public    abstract void  setBufferData(void* buffer, uint size, void* data);
+    public    final    void* getBuffer(uint size, void* data)
+    {
+        void* ret;
+        if(buffersToRecycle.length > 0)
+        {
+            HipAudioBufferWrapper* w = &buffersToRecycle[--buffersToRecycle.length];
+            w.isAvailable = false;
+            setBufferData(w.buffer, size, data);
+            ret = w.buffer;
+            return ret;
+        }
+        HipAudioBufferWrapper w = createBuffer(size, data);
+        ret = w.buffer;
+        buffersCreated~=w;
+        return ret;
+    }
+    package final void setBufferAvailable(void* buffer)
+    {
+        HipAudioBufferWrapper* w = findBuffer(buffer);
+        assert(w != null, "No buffer was found when trying to set it available");
+        w.isAvailable = true;
+    }
+
+    /**
+    *   Saves which data should be decoded and do 1 decoding frame
+    */
     public uint loadStreamed(in void[] data, HipAudioEncoding encoding)
     {
         dataToDecode = cast(void[])data;
         this.encoding = encoding;
         return updateStream();
     }
-    public void* getBuffer()
+    ///Returns the streambuffer if streamed, else, returns entire sound
+    public void* getClipData()
     {
         if(isStreamed)
             return outBuffer;
-        return decoder.getBuffer();
+        return decoder.getClipData();
     }
-    public ulong getBufferSize()
+    ///Returns how much has been decoded
+    public ulong getClipSize()
     {
         if(isStreamed)
             return totalDecoded;
-        return decoder.getBufferSize();
+        return decoder.getClipSize();
     }
     public float getDuration(){return decoder.getDuration();}
     public final float getDecodedDuration()
@@ -102,7 +166,7 @@ public class HipAudioBuffer
         AudioConfig cfg = decoder.getAudioConfig();
         import console.log;
         rawlog(cfg.getBitDepth, cfg.channels, cfg.sampleRate);
-        return getBufferSize() / (cast(float) cfg.sampleRate);
+        return getClipSize() / (cast(float) cfg.sampleRate);
     }
     ///Probably isStreamed does not makes any sense when reading entire file
     public final bool load(string audioPath, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false)
@@ -122,10 +186,14 @@ public class HipAudioBuffer
         HipFS.read(audioPath, data);
         return loadStreamed(data, encoding);
     }
+
     public void unload()
     {
         import core.stdc.stdlib:free;
         decoder.dispose();
+        foreach (b; buffersCreated)
+            destroyBuffer(b.buffer);
+        buffersCreated.length = 0;
         if(outBuffer != null)
         {
             free(outBuffer);
