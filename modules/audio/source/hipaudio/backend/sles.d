@@ -250,12 +250,49 @@ string sliGetErrorMessages()
     return ret;
 }
 
+///Must be used as an opaque pointer
 struct SLIBuffer
 {
     uint size;
     bool isLocked;
     bool hasBeenProcessed;
-    void* data;
+    ///Tightly packed structure
+    void[0] data;
+}
+
+/**
+*   Creates an unresizable buffer(tightly packed) for not getting a cache miss
+*/
+SLIBuffer* sliGenBuffer(void* data, uint size)
+{
+    import core.stdc.stdlib:malloc;
+    import core.stdc.string:memcpy,memset;
+    SLIBuffer* buf = cast(SLIBuffer*)malloc(SLIBuffer.sizeof+size);
+    buf.size = size;
+    buf.isLocked = false;
+    buf.hasBeenProcessed = false;
+    if(data == null)
+        memset(buf.data.ptr, 0, size);
+    else
+        memcpy(buf.data.ptr, data, size);
+    return buf;
+}
+
+///Copies data inside the buffer on its immutable size. Use that on unlocked buffers.
+void sliBufferData(SLIBuffer* buffer, void* data)
+{
+    import core.stdc.string:memcpy;
+    assert(!buffer.isLocked, "Can't write to locked buffer");
+    memcpy(buffer.data.ptr, data, buffer.size);
+}
+
+///Invalidates the buffer and makes it null
+void sliDestroyBuffer(ref SLIBuffer* buff)
+{
+    import core.stdc.stdlib:free;
+    if(buff != null)
+        free(buff);
+    buff = null;
 }
 
 struct SLIAudioPlayer
@@ -273,8 +310,9 @@ struct SLIAudioPlayer
     ///@TODO
     SLMetadataExtractionItf playerMetadata;
 
-    protected SLIBuffer* streamQueue;
+    protected SLIBuffer** streamQueue;
     protected ushort streamQueueCursor;
+    protected ushort streamQueueLength;
 
     version(Android){SLAndroidSimpleBufferQueueItf playerAndroidSimpleBufferQueue;}
     else  //Those lines will appear just as a documentation, right now, we don't have any implementation using it
@@ -296,12 +334,22 @@ struct SLIAudioPlayer
             volume = gain;
         }
     }
-
+    /**
+    *   Also invalidates enqueued SLIBuffer, so, destroy with care
+    */
     static void destroyAudioPlayer(ref SLIAudioPlayer audioPlayer)
     {
         with(audioPlayer)
         {
             (*playerObj).Destroy(playerObj);
+            if(streamQueue != null)
+            {
+                for(int i = 0; i < streamQueueLength; i++)
+                    sliDestroyBuffer(streamQueue[i]);
+                streamQueue = null;
+                streamQueueLength = 0;
+                streamQueueCursor = 0;
+            }
             playerObj = null;
             player = null;
             playerVol = null;
@@ -323,30 +371,42 @@ struct SLIAudioPlayer
 
     extern(C) static void checkClipEnd_Callback(SLPlayItf player, void* context, SLuint32 event)
     {
-        rawlog("Cb");
-        if(event & SL_PLAYEVENT_HEADATEND)
+        rawlog("Yo");
+        // if(event & SL_PLAYEVENT_HEADATEND)
         {
-            rawlog("Opa");
-            SLIAudioPlayer p = *(cast(SLIAudioPlayer*)context);
+            rawlog("Finished");
+            SLIAudioPlayer* p = (cast(SLIAudioPlayer*)context);
+            if(p.streamQueueLength > 0)
+            {
+                p.streamQueueCursor = (p.streamQueueCursor+1)%p.streamQueueLength;
+                if(p.streamQueueCursor < p.streamQueueLength)
+                {
+                    SLIBuffer* b = p.streamQueue[p.streamQueueCursor++];
+                    b.isLocked = true;
+                    SLIAudioPlayer.Enqueue(*p, b.data.ptr, b.size);
+                    rawlog(b.size);
+                }
+            }
             atomicStore(p.hasFinishedTrack,  true);
         }
     }
 
-    void pushBuffer(void* buffer, uint size)
+    void pushBuffer(SLIBuffer* buffer)
     {
-        import core.stdc.stdlib:realloc;
+        import core.stdc.stdlib:malloc,realloc;
+        streamQueueLength++;
         if(streamQueue == null)
-            streamQueue = cast(SLIBuffer*)malloc(SLIBuffer.sizeof * streamQueueCursor);
+            streamQueue = cast(SLIBuffer**)malloc((SLIBuffer*).sizeof * streamQueueLength);
         else
-            streamQueue = realloc(streamQueue, SLIBuffer.sizeof * streamQueueCursor);
-        streamQueue[streamQueueCursor-1] = SLIBuffer(size, false, false, buffer);
+            streamQueue = cast(SLIBuffer**)realloc(streamQueue, (SLIBuffer*).sizeof * streamQueueLength);
+        streamQueue[streamQueueLength-1] = buffer;
     }
 
     SLIBuffer* getProcessedBuffer()
     {
         for(int i = 0; i < streamQueueCursor;i++)
-            if(!streamQueue[i].isLocked && streamQueue[i].isProcessed)
-                return &streamQueue[i];
+            if(!streamQueue[i].isLocked && streamQueue[i].hasBeenProcessed)
+                return streamQueue[i];
         return null;
     }
 

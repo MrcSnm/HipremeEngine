@@ -15,13 +15,16 @@ import hipaudio.backend.audiosource;
 import data.audio.audio;
 
 
-public class HipNullAudioBuffer : HipAudioBuffer
+public class HipNullAudioClip : HipAudioClip
 {
     this(IHipAudioDecoder decoder){super(null);}
     public override bool load(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false){return false;}
-    override void* getBuffer(){return null;}
-    override ulong getBufferSize(){return 0;}
     public override void unload(){}
+    public override void onUpdateStream(uint decodedSize, void* data){}
+    protected override  void  destroyBuffer(void* buffer){}
+    protected override HipAudioBufferWrapper createBuffer(uint size, void* data){return HipAudioBufferWrapper(null, 0, false);}
+    public override void setBufferData(void* buffer, uint size, void* data){}
+    
 }
 
 public class HipNullAudio : IHipAudioPlayer
@@ -35,8 +38,8 @@ public class HipNullAudio : IHipAudioPlayer
 
     //LOAD RELATED
     public bool play_streamed(HipAudioSource src){return false;}
-    public HipAudioBuffer load(string path, HipAudioType bufferType){return new HipNullAudioBuffer(null);}
-    public HipAudioBuffer loadStreamed(string path, uint chunkSize){return new HipNullAudioBuffer(null);}
+    public HipAudioClip load(string path, HipAudioType bufferType){return new HipNullAudioClip(null);}
+    public HipAudioClip loadStreamed(string path, uint chunkSize){return new HipNullAudioClip(null);}
     public void updateStream(HipAudioSource source){}
     public HipAudioSource getSource(bool isStreamed){return new HipAudioSource();}
 

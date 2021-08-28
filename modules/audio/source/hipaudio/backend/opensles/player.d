@@ -1,5 +1,7 @@
 module hipaudio.backend.opensles.player;
+version(Android):
 import hipaudio.backend.opensles.source;
+import hipaudio.backend.opensles.clip;
 import hipaudio.backend.audiosource;
 import data.audio.audioconfig;
 import hipaudio.backend.sles;
@@ -63,6 +65,7 @@ SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)
 package __gshared SLIAudioPlayer*[] playerPool;
 package uint poolRingIndex = 0;
 enum MAX_SLI_AUDIO_PLAYERS = 32;
+enum MAX_SLI_BUFFERS       = 16;
 
 
 package SLIAudioPlayer* hipGenAudioPlayer()
@@ -73,7 +76,8 @@ package SLIAudioPlayer* hipGenAudioPlayer()
         import opensles.android;
         SLDataLocator_AndroidSimpleBufferQueue locator;
         locator.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
-        locator.numBuffers = 1;
+        ///This options says how many buffers it is possible to enqueue
+        locator.numBuffers = MAX_SLI_BUFFERS;
     }
     else
     {
@@ -164,15 +168,15 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     {
         return play(src);
     }
-    public HipAudioBuffer load(string path, HipAudioType type)
+    public HipAudioClip load(string path, HipAudioType type)
     {
-        HipAudioBuffer buffer = new HipAudioBuffer(new HipSDL_SoundDecoder());
+        HipAudioClip buffer = new HipOpenSLESAudioClip(new HipSDL_SoundDecoder());
         buffer.load(path, getEncodingFromName(path), type);
         return buffer;
     }
-    public HipAudioBuffer loadStreamed(string path, uint chunkSize)
+    public HipAudioClip loadStreamed(string path, uint chunkSize)
     {
-        HipAudioBuffer buffer = new HipAudioBuffer(new HipSDL_SoundDecoder(), chunkSize);
+        HipAudioClip buffer = new HipOpenSLESAudioClip(new HipSDL_SoundDecoder(), chunkSize);
         buffer.loadStreamed(path, getEncodingFromName(path));
         return buffer;
     }
@@ -182,7 +186,7 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     public HipAudioSource getSource(bool isStreamed)
     {
         SLIAudioPlayer* p = hipGetPlayerFromPool();
-        return new HipOpenSLESAudioSource(p);
+        return new HipOpenSLESAudioSource(p, isStreamed);
     }
 
     //EFFECTS

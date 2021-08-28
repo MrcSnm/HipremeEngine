@@ -11,7 +11,7 @@ Distributed under the MIT Software License.
 
 module hipaudio.backend.audiosource;
 import math.vector;
-import hipaudio.audiobuffer : HipAudioBuffer;
+import hipaudio.audioclip : HipAudioClip;
 import hipaudio.audio;
 import bindbc.openal;
 import debugging.gui;
@@ -54,10 +54,15 @@ import imgui.fonts.icons;
         void attachOnDestroy(){}
         float getProgress(){return time/length;}
         void pullStreamData(){}
-        void setBuffer(HipAudioBuffer buf){buffer = buf;}
+        void setClip(HipAudioClip clip){this.clip = clip;}
+
+        final void sendAvailableBuffer(void* buffer)
+        {
+            clip.setBufferAvailable(buffer);
+        }
 
     //Properties
-        HipAudioBuffer buffer;
+        HipAudioClip clip;
 
         bool isLooping;
         bool isPlaying;
@@ -87,7 +92,7 @@ import imgui.fonts.icons;
             HipAudio.setReferenceDistance(this, 0f);
             position = Vector3.Zero();
             id = 0;
-            buffer = null;
+            clip = null;
             return this;
         }
 

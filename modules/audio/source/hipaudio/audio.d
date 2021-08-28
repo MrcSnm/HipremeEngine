@@ -13,7 +13,7 @@ module hipaudio.audio;
 
 import bindbc.openal;
 import bindbc.sdl.mixer;
-public import hipaudio.audiobuffer;
+public import hipaudio.audioclip;
 public import hipaudio.backend.audiosource;
 public import data.audio.audioconfig;
 import hipaudio.backend.openal.player;
@@ -73,12 +73,12 @@ public interface IHipAudioPlayer
 
     //LOAD RELATED
     public bool play_streamed(HipAudioSource src);
-    public HipAudioBuffer load(string path, HipAudioType type);
-    public HipAudioBuffer loadStreamed(string path, uint chunkSize);
+    public HipAudioClip load(string path, HipAudioType type);
+    public HipAudioClip loadStreamed(string path, uint chunkSize);
     public void updateStream(HipAudioSource source);
     public HipAudioSource getSource(bool isStreamed);
-    public final HipAudioBuffer loadMusic(string mus){return load(mus, HipAudioType.MUSIC);}
-    public final HipAudioBuffer loadSfx(string sfx){return load(sfx, HipAudioType.SFX);}
+    public final HipAudioClip loadMusic(string mus){return load(mus, HipAudioType.MUSIC);}
+    public final HipAudioClip loadSfx(string sfx){return load(sfx, HipAudioType.SFX);}
 
     //EFFECTS
     public void setPitch(HipAudioSource src, float pitch);
@@ -163,7 +163,7 @@ class HipAudio
     *   If forceLoad is set to true, you will need to manage it's destruction yourself
     *   Just call audioBufferInstance.unload()
     */
-    static HipAudioBuffer load(string path, HipAudioType bufferType, bool forceLoad = false)
+    static HipAudioClip load(string path, HipAudioType bufferType, bool forceLoad = false)
     {
         //Creates a buffer compatible with the target interface
         version(HIPREME_DEBUG)
@@ -171,11 +171,11 @@ class HipAudio
             if(ErrorHandler.assertErrorMessage(hasInitializedAudio, "Audio not initialized", "Call Audio.initialize before loading buffers"))
                 return null;
         }
-        HipAudioBuffer* checker = null;
+        HipAudioClip* checker = null;
         checker = path in bufferPool;
         if(!checker)
         {
-            HipAudioBuffer buf = audioInterface.load(path, bufferType);
+            HipAudioClip buf = audioInterface.load(path, bufferType);
             bufferPool[path] = buf;
             checker = &buf;
         }
@@ -184,16 +184,11 @@ class HipAudio
         return *checker;
     }
     /**
-    *   By using this function, the bufferType is implicitly treated as music, as someone would usually
-    *   load SFXs completely in memory for not bloating the decoding thread. 
-    *
-    *   Currently this operation is blocking, but returns much faster than load(). 
-    *
-    *   As this one needs to load the file first, decoding occurs on background, as it is more demanding
+    *   Loads a file from disk, sets the chunkSize for streaming and does one decoding frame
     */
-    static HipAudioBuffer loadStreamed(string path, uint chunkSize)
+    static HipAudioClip loadStreamed(string path, uint chunkSize)
     {
-        HipAudioBuffer buf = audioInterface.loadStreamed(path, chunkSize);
+        HipAudioClip buf = audioInterface.loadStreamed(path, chunkSize);
         return buf;
     }
 
@@ -202,9 +197,9 @@ class HipAudio
         audioInterface.updateStream(source);
     }
 
-    static HipAudioSource getSource(bool isStreamed = false, HipAudioBuffer buff = null)
+    static HipAudioSource getSource(bool isStreamed = false, HipAudioClip clip = null)
     {
-        if(isStreamed) assert(buff !is null, "Can't get streamed source without any buffer");
+        if(isStreamed) assert(clip !is null, "Can't get streamed source without any buffer");
         HipAudioSource ret;
         if(sourcePool.length == activeSources)
         {
@@ -213,8 +208,8 @@ class HipAudio
         }
         else
             ret = sourcePool[activeSources].clean();
-        if(buff)
-            ret.setBuffer(buff);
+        if(clip)
+            ret.setClip(clip);
         activeSources++;
         return ret;
     }
@@ -295,7 +290,7 @@ class HipAudio
     }
     protected static AudioConfig config;
     private static bool is3D;
-    private static HipAudioBuffer[string] bufferPool; 
+    private static HipAudioClip[string] bufferPool; 
     private static HipAudioSource[] sourcePool;
     private static uint activeSources;
 

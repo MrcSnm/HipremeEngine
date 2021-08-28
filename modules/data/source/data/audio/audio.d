@@ -53,8 +53,8 @@ interface IHipAudioDecoder
     uint updateDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
     in (chunkSize > 0 , "Chunk size must be greater than 0");
     AudioConfig getAudioConfig();
-    void* getBuffer();
-    ulong getBufferSize();
+    void* getClipData();
+    ulong getClipSize();
     ///Don't apply to streamed audio. Gets the duration in seconds
     float getDuration();
 
@@ -103,13 +103,13 @@ class HipSDL_MixerDecoder : IHipAudioDecoder
     Mix_Chunk* getChunk(){return chunk;}
     Mix_Music* getMusic(){return music;}
     float getDuration(){return 0;}
-    void* getBuffer()
+    void* getClipData()
     {
         if(type == HipAudioType.SFX)
             return chunk.abuf;
         return null;
     }
-    ulong getBufferSize()
+    ulong getClipSize()
     {
         if(type == HipAudioType.SFX && chunk != null)
             return cast(ulong)chunk.alen;
@@ -217,13 +217,13 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
         }
         return ret;
     }
-    void* getBuffer()
+    void* getClipData()
     {
         if(sample != null)
             return sample.buffer;
         return null;
     }
-    ulong getBufferSize()
+    ulong getClipSize()
     {
         if(sample != null)
             return cast(ulong)sample.buffer_size;
