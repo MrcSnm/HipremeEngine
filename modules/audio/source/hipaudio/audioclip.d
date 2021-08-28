@@ -105,7 +105,7 @@ public abstract class HipAudioClip
     */
     protected abstract HipAudioBufferWrapper createBuffer(uint size, void* data);
     protected abstract void  destroyBuffer(void* buffer);
-    protected final HipAudioBufferWrapper* findBuffer(void* buf)
+    package final HipAudioBufferWrapper* findBuffer(void* buf)
     {
         foreach(ref b; buffersCreated)
             if(b == buf)

@@ -43,8 +43,6 @@ public class HipOpenALClip : HipAudioClip
     override public uint loadStreamed(in void[] data, HipAudioEncoding encoding)
     {
         uint ret = super.loadStreamed(data, encoding);
-        if(ret != 0)
-            getBuffer(chunkSize, outBuffer);
         return ret;
     }
 
