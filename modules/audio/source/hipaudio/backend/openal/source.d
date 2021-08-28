@@ -49,7 +49,7 @@ import bindbc.openal;
         super.setClip(clip);
         if(!clip.isStreamed)
         {
-            ALuint buf = *cast(ALuint*)clip.getBuffer(cast(uint)clip.getClipSize(), clip.getClipData());
+            ALuint buf = *cast(ALuint*)clip.getBuffer(clip.getClipData(), cast(uint)clip.getClipSize());
             alSourcei(id, AL_BUFFER, buf);
         }
         else

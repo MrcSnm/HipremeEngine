@@ -143,8 +143,8 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     {
         HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
         SLIAudioPlayer.play(*source.audioPlayer,
-            src.buffer.getBuffer(),
-            cast(uint)src.buffer.getBufferSize()
+            src.clip.getClipData(),
+            cast(uint)src.clip.getClipSize()
         );
 
         return true;

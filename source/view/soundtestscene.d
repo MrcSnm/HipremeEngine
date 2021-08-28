@@ -28,9 +28,9 @@ class SoundTestScene : Scene
     override void render()
     {
         // import console.log;
-        if(src.getFreeBuffer() != null)
-        {
-            src.pullStreamData();
-        }
+        // if(src.getFreeBuffer() != null)
+        // {
+        //     src.pullStreamData();
+        // }
     }
 }

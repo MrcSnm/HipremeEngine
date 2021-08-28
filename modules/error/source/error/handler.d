@@ -49,20 +49,10 @@ public class EngineErrorStack
 
     public void showStack()
     {
-        static if(os == OS.android)
-        {
-            rawerror("HipremeEngine", "ErrorStack: " ~ stackName);
-            const int len = cast(int)this.errorStack.length;
-            for(int i = 0; i < len; i++)
-                rawerror("HipremeEngine", "\t" ~ errorStack[i]);
-        }
-        else
-        {
-            rawlog("ErrorStack: " ~ stackName);
-            const int len = cast(int)this.errorStack.length;
-            for(int i = 0; i < len; i++)
-                rawlog("\t" ~ errorStack[i]);
-        }
+        rawerror("ErrorStack: " ~ stackName);
+        const int len = cast(int)this.errorStack.length;
+        for(int i = 0; i < len; i++)
+            rawerror("\t" ~ errorStack[i]);
     }
 }
 
@@ -123,16 +113,8 @@ public static class ErrorHandler
      */
     public static void showErrorMessage(string errorTitle, string errorMessage)
     {
-        static if(os == OS.android)
-        {
-            rawerror("HipremeEngine", "\nError: " ~ errorTitle);
-            rawerror("HipremeEngine", errorMessage);
-        }
-        else
-        {
-            rawlog("\nError: " ~ errorTitle);
-            rawlog(errorMessage);
-        }
+        rawerror("\nError: " ~ errorTitle);
+        rawerror(errorMessage);
         getError(errorTitle, errorMessage);
     }
     public static void showWarningMessage(string warningTitle, string warningMessage)

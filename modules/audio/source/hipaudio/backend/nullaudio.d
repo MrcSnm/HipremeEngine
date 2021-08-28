@@ -20,9 +20,9 @@ public class HipNullAudioClip : HipAudioClip
     this(IHipAudioDecoder decoder){super(null);}
     public override bool load(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false){return false;}
     public override void unload(){}
-    public override void onUpdateStream(uint decodedSize, void* data){}
+    public override void onUpdateStream(void* data, uint decodedSize){}
     protected override  void  destroyBuffer(void* buffer){}
-    protected override HipAudioBufferWrapper createBuffer(uint size, void* data){return HipAudioBufferWrapper(null, 0, false);}
+    protected override HipAudioBufferWrapper createBuffer(void* data, uint size){return HipAudioBufferWrapper(null, 0, false);}
     public override void setBufferData(void* buffer, uint size, void* data){}
     
 }

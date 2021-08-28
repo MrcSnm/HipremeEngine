@@ -32,6 +32,8 @@ enum GUI_CONSOLE = true;
 
 ///If it is inside thread local storage, then, it won't work being called from another thread
 __gshared void function(string toPrint) _log;
+__gshared void function(string toPrint) _err;
+
 static string _format(alias fmt, Args...)(Args a){return format!fmt(a);}
 static string _format(Args...)(Args args)
 {
@@ -95,6 +97,7 @@ static string _format(Args...)(Args args)
         {
             case NULL:
                 _log = function(string s){};
+                _err = function(string s){};
                 break;
             case ANDROID:
                 _log = function(string s)
@@ -105,9 +108,18 @@ static string _format(Args...)(Args args)
                         alogi(androidTag, (s~"\0").ptr);
                     }
                 };
+                _err = function(string s)
+                {
+                    version(Android)
+                    {
+                        import jni.helper.androidlog;
+                        aloge(androidTag, (s~"\0").ptr);
+                    }
+                };
                 break;
             case UWP:
                 _log = printFunc;
+                _err = _log;
                 break;
             case DEFAULT:
             case DESKTOP:
@@ -117,6 +129,7 @@ static string _format(Args...)(Args args)
                     import std.stdio;
                     writeln(s);
                 };
+                _err = _log;
                 break;
         }
     }
@@ -135,14 +148,12 @@ static string _format(Args...)(Args args)
         idCount++;
     }
 
-    private void _defaultLog(ref string log)
+    private void _formatLog(ref string log)
     {
         log~= indentation;
         lines~= log;
         if(lines.length > maxLines)
             lines = lines[1..$];
-        if(_log != null)
-            _log(log);
     }
     
     void log(alias fmt, Args...)(Args a)
@@ -150,7 +161,7 @@ static string _format(Args...)(Args args)
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             string toLog = _format!(fmt, a);
-            _defaultLog(toLog);
+            _log(toLog);
         }
     }
     void log(Args...)(Args a)
@@ -159,7 +170,8 @@ static string _format(Args...)(Args args)
         {
             string toLog = "";
             foreach(_a; a) toLog~= to!string(_a);
-            _defaultLog(toLog);
+            _formatLog(toLog);
+            _log(toLog);
         }
     }
 
@@ -168,7 +180,8 @@ static string _format(Args...)(Args args)
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             string toLog = _format!(fmt, a);
-            _defaultLog(toLog);
+            _formatLog(toLog);
+            _log(toLog);
         }
         
     }
@@ -177,7 +190,8 @@ static string _format(Args...)(Args args)
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             string toLog = _format!(fmt, a);
-            _defaultLog(toLog);
+            _formatLog(toLog);
+            _log(toLog);
         }
     }
     void error(alias fmt, Args...)(Args a)
@@ -185,7 +199,8 @@ static string _format(Args...)(Args args)
         static if(!HE_NO_LOG)
         {
             string toLog = _format!(fmt, a);
-            _defaultLog(toLog);
+            _formatLog(toLog);
+            _err(toLog);
         }
         
     }
@@ -196,7 +211,8 @@ static string _format(Args...)(Args args)
             string toLog;
             static foreach(arg; a)
                 toLog~= to!string(arg);
-            _defaultLog(toLog);
+            _formatLog(toLog);
+            _err(toLog);
         }
     }
 
