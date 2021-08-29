@@ -184,7 +184,9 @@ template javaGetPackage(string packageName)
             return str;
         }
         else static if(!isArray)
-            return mixin(q{(*env).CallStatic}~javaTypeUpper~q{Method(env, cls, id } ~s~")");
+        {
+            return cast(T)mixin(q{(*env).CallStatic}~javaTypeUpper~q{Method(env, cls, id } ~s~")");
+        }
         else
         {
             jarray obj = mixin(q{(*env).CallStaticObjectMethod(env, cls, id } ~ s~")");

@@ -87,7 +87,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
 {
     public this(AudioConfig cfg)
     {
-        HipSDL_SoundDecoder.initDecoder(cfg);
+        HipSDL_SoundDecoder.initDecoder(cfg, AudioConfig.defaultBufferSize);
         initializeOpenAL();
         config = cfg;
     }

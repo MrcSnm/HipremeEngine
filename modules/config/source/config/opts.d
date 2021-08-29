@@ -31,3 +31,6 @@ enum HE_ERR_ONLY = false;
 
 ///Unused yet?
 enum HIP_OPTIMIZE = false;
+
+
+enum HIP_USE_OPENSLES_LOW_LATENCY = true;

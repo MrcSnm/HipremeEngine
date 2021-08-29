@@ -93,7 +93,11 @@ public interface IHipAudioPlayer
 
 class HipAudio
 {
-    public static bool initialize(HipAudioImplementation implementation = HipAudioImplementation.OPENAL)
+    public static bool initialize(HipAudioImplementation implementation = HipAudioImplementation.OPENAL,
+    bool hasProAudio = false,
+    bool hasLowLatencyAudio = false,
+    int  optimalBufferSize = 4096,
+    int optimalSampleRate = 44_100)
     {
         ErrorHandler.startListeningForErrors("HipremeAudio initialization");
         version(HIPREME_DEBUG)
@@ -109,7 +113,11 @@ class HipAudio
             case HipAudioImplementation.OPENSLES:
                 version(Android)
                 {
-                    audioInterface = new HipOpenSLESAudioPlayer(AudioConfig.lightweightConfig);
+                    audioInterface = new HipOpenSLESAudioPlayer(AudioConfig.lightweightConfig,
+                    hasProAudio,
+                    hasLowLatencyAudio,
+                    optimalBufferSize,
+                    optimalSampleRate);
                     break;
                 }
             case HipAudioImplementation.SDL:

@@ -24,6 +24,7 @@ struct SLIEngine
     SLObjectItf engineObject = null;
     SLEngineItf engine;
     SLEngineCapabilitiesItf engineCapabilities;
+    bool willUseFastMixer;
 
     void initialize()
     {
@@ -158,54 +159,65 @@ struct SLIOutputMix
     SLObjectItf outputMixObj;
 
 
-    static bool initializeForAndroid(ref SLIOutputMix output, ref SLIEngine e)
+    static bool initializeForAndroid(ref SLIOutputMix output, ref SLIEngine e, bool willUseFastMixer)
     {
         //All those interfaces are supported on Android, so, require them
-        const(SLInterfaceID)* ids = 
-        [
-            SL_IID_ENVIRONMENTALREVERB,
-            SL_IID_PRESETREVERB,
-            SL_IID_BASSBOOST,
-            SL_IID_EQUALIZER,
-            SL_IID_VIRTUALIZER
-        ].ptr;
-        const(SLboolean)* req = 
-        [
-            SL_BOOLEAN_TRUE,
-            SL_BOOLEAN_TRUE,
-            SL_BOOLEAN_TRUE,
-            SL_BOOLEAN_TRUE,
-            SL_BOOLEAN_TRUE //5
-        ].ptr;
+        const(SLInterfaceID)* ids = null;
+        const(SLboolean)* req = null;
+        uint count = 0;
+
+        if(!willUseFastMixer)
+        {
+            ids = 
+            [
+                SL_IID_ENVIRONMENTALREVERB,
+                SL_IID_PRESETREVERB,
+                SL_IID_BASSBOOST,
+                SL_IID_EQUALIZER,
+                SL_IID_VIRTUALIZER
+            ].ptr;
+
+            req = 
+            [
+                SL_BOOLEAN_TRUE,
+                SL_BOOLEAN_TRUE,
+                SL_BOOLEAN_TRUE,
+                SL_BOOLEAN_TRUE,
+                SL_BOOLEAN_TRUE //5
+            ].ptr;
+            count = 5;
+        }
 
         with(output)
         {
-            sliCall(e.CreateOutputMix(&outputMixObj, 5u, ids, req),
+            sliCall(e.CreateOutputMix(&outputMixObj, count, ids, req),
             "Could not create output mix");
             //Do it assyncly
             sliCall((*outputMixObj).Realize(outputMixObj, SL_BOOLEAN_FALSE),
             "Could not initialize output mix");
 
-            
-            if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_ENVIRONMENTALREVERB, &environmentReverb),
-            "Could not get the ENVIRONMENTALREVERB interface"))
-                environmentReverb = null;
+            if(!willUseFastMixer)   
+            {
+                if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_ENVIRONMENTALREVERB, &environmentReverb),
+                "Could not get the ENVIRONMENTALREVERB interface"))
+                    environmentReverb = null;
 
-            if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_PRESETREVERB, &presetReverb),
-            "Could not get the PRESETREVERB interface"))
-                presetReverb = null;
-            
-            if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_BASSBOOST, &bassBoost),
-            "Could not get the BASSBOOST interface"))
-                bassBoost = null;
+                if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_PRESETREVERB, &presetReverb),
+                "Could not get the PRESETREVERB interface"))
+                    presetReverb = null;
+                
+                if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_BASSBOOST, &bassBoost),
+                "Could not get the BASSBOOST interface"))
+                    bassBoost = null;
 
-            if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_EQUALIZER, &equalizer),
-            "Could not get the EQUALIZER interface"))
-                equalizer = null;
+                if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_EQUALIZER, &equalizer),
+                "Could not get the EQUALIZER interface"))
+                    equalizer = null;
 
-            if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_VIRTUALIZER, &virtualizer),
-            "Could not get the VIRTUALIZER interface"))
-                virtualizer = null;
+                if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_VIRTUALIZER, &virtualizer),
+                "Could not get the VIRTUALIZER interface"))
+                    virtualizer = null;
+            }
         }
         return sliErrorQueue.length == 0;
     }
@@ -218,26 +230,25 @@ float sliToAttenuation(float gain)
     return (gain < 0.01f) ? -96.0f : 20 * log10(gain);
 }
 
-string getAudioPlayerInterfaces()
+SLInterfaceID[] getAudioPlayerInterfaces(bool willUseFastMixer)
 {
-    string itfs = "SL_IID_VOLUME, SL_IID_EFFECTSEND, SL_IID_METADATAEXTRACTION";
+    SLInterfaceID[] ret = [SL_IID_VOLUME/*, SL_IID_MUTESOLO*/]; //can't require SL_IID_MUTESOLO with a mono buffer queue data source error
+    if(!willUseFastMixer)
+    {
+        ret~= [SL_IID_BASSBOOST, SL_IID_EFFECTSEND, SL_IID_ENVIRONMENTALREVERB, SL_IID_EQUALIZER,
+        SL_IID_PLAYBACKRATE, SL_IID_PRESETREVERB, SL_IID_VIRTUALIZER, SL_IID_ANDROIDEFFECT,
+        SL_IID_ANDROIDEFFECTSEND, SL_IID_METADATAEXTRACTION][];
+    }
     version(Android)
-    {
-        itfs~=", SL_IID_ANDROIDSIMPLEBUFFERQUEUE";
-    }
-    return itfs;
+        ret~= SL_IID_ANDROIDSIMPLEBUFFERQUEUE;
+    return ret;
 }
-string getAudioPlayerRequirements()
+SLboolean[] getAudioPlayerRequirements(ref SLInterfaceID[] itfs)
 {
-    string req;
-    bool isFirst = true;
-    foreach (i; 0..getAudioPlayerInterfaces().count(",")+1)
-    {
-        if(isFirst)isFirst=!isFirst;
-        else req~=",";
-        req~= "SL_BOOLEAN_TRUE";
-    }
-    return req;
+    SLboolean[] ret;
+    foreach (SLInterfaceID id; itfs)
+        ret~= SL_BOOLEAN_TRUE;
+    return ret;
 }
 
 string sliGetErrorMessages()
@@ -306,6 +317,16 @@ struct SLIAudioPlayer
     SLVolumeItf playerVol;
     ///Ability to get and set the audio duration
     SLSeekItf playerSeek;
+
+    SLBassBoostItf bassBoost;
+    SLEnvironmentalReverbItf envReverb;
+    SLEqualizerItf equalizer;
+    SLPlaybackRateItf playbackRate;
+    SLPresetReverbItf presetReverb;
+    SLVirtualizerItf virtualizer;
+    SLAndroidEffectItf androidEffect;
+    SLAndroidEffectSendItf androidEffectSend;
+
     ///@TODO
     SLEffectSendItf playerEffectSend;
     ///@TODO
@@ -496,10 +517,11 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
 {
     import core.stdc.stdlib:malloc;
     SLIAudioPlayer temp;
+    bool willUseFastMixer = engine.willUseFastMixer;
     with(temp)
     {
-        mixin("SLInterfaceID[] ids = ["~getAudioPlayerInterfaces()~"];");
-        mixin("SLboolean[] req = ["~getAudioPlayerRequirements()~"];");
+        SLInterfaceID[] ids = getAudioPlayerInterfaces(willUseFastMixer);
+        SLboolean[] req = getAudioPlayerRequirements(ids);
 
         sliCall(engine.CreateAudioPlayer(&playerObj, &src, &dest,
         cast(uint)(ids.length), ids.ptr, req.ptr),
@@ -514,12 +536,42 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
         sliCall((*playerObj).GetInterface(playerObj, SL_IID_VOLUME, &playerVol),
         "Could not get volume interface for AudioPlayer");
         
-        // sliCall((*playerObj).GetInterface(playerObj, SL_IID_SEEK, &playerSeek),
-        //("Could not get Seek interface for AudioPlayer");
-        sliCall((*playerObj).GetInterface(playerObj, SL_IID_EFFECTSEND, &playerEffectSend),
-        "Could not get EffectSend interface for AudioPlayer");
-        sliCall((*playerObj).GetInterface(playerObj, SL_IID_METADATAEXTRACTION, &playerMetadata),
-        "Could not get MetadataExtraction interface for AudioPlayer");
+
+        if(!willUseFastMixer)
+        {
+            // sliCall((*playerObj).GetInterface(playerObj, SL_IID_SEEK, &playerSeek),
+            //("Could not get Seek interface for AudioPlayer");
+
+            //Metadata
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_METADATAEXTRACTION, &playerMetadata),
+            "Could not get MetadataExtraction interface for AudioPlayer");
+
+            //Misc
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_PLAYBACKRATE, &playbackRate),
+            "Could not get MetadataExtraction interface for AudioPlayer");
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_VIRTUALIZER, &virtualizer),
+            "Could not get MetadataExtraction interface for AudioPlayer");
+
+            //Wave amplitude modifiers
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_BASSBOOST, &bassBoost),
+            "Could not get MetadataExtraction interface for AudioPlayer");
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_EQUALIZER, &equalizer),
+            "Could not get MetadataExtraction interface for AudioPlayer");
+
+            //Reverb
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_ENVIRONMENTALREVERB, &envReverb),
+            "Could not get MetadataExtraction interface for AudioPlayer");
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_PRESETREVERB, &presetReverb),
+            "Could not get MetadataExtraction interface for AudioPlayer");
+
+            //Effect
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_EFFECTSEND, &playerEffectSend),
+            "Could not get EffectSend interface for AudioPlayer");
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_ANDROIDEFFECT, &androidEffect),
+            "Could not get MetadataExtraction interface for AudioPlayer");
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_ANDROIDEFFECTSEND, &androidEffectSend),
+            "Could not get MetadataExtraction interface for AudioPlayer");
+        }
         
         version(Android)
         {
@@ -588,15 +640,21 @@ else{alias SLIDataLocator_Address = SLDataLocator_Address;}
 
 // static BufferQueuePlayer bq;
 
-bool sliCreateOutputContext()
+bool sliCreateOutputContext(
+    bool hasProAudio=false,
+    bool hasLowLatencyAudio=false,
+    int  optimalBufferSize=44_100,
+    int  optimalSampleRate=4096,
+    bool willUseFastMixer = false
+)
 {
-    engine = SLIEngine(null,null,null);
+    engine = SLIEngine(null,null,null, willUseFastMixer);
     engine.initialize();
 
     // loadSawtooth();
 
     version(Android)
-        SLIOutputMix.initializeForAndroid(outputMix, engine);
+        SLIOutputMix.initializeForAndroid(outputMix, engine, willUseFastMixer);
     // SLIAudioPlayer.initializeForAndroid(gAudioPlayer, engine, src, destination);
     
     return sliErrorQueue.length == 0;
