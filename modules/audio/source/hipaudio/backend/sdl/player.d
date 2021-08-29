@@ -13,6 +13,7 @@ module hipaudio.backend.sdl.player;
 import hipaudio.backend.sdl.clip;
 import hipaudio.backend.audiosource;
 import hipaudio.audio;
+import error.handler;
 import console.log;
 import data.audio.audio;
 import bindbc.sdl.mixer;
@@ -39,7 +40,11 @@ class HipSDLAudioPlayer : IHipAudioPlayer
         // buffer.load(audioName,getEncodingFromName(audioName), bufferType);
         // return buffer;
     }
-    public HipAudioClip loadStreamed(string audioName, uint chunkSize){assert(false, "SDL Audio Player does not support chunked decoding");}
+    public HipAudioClip loadStreamed(string audioName, uint chunkSize)
+    {
+        ErrorHandler.assertExit(false, "SDL Audio Player does not support chunked decoding");
+        return null;
+    }
     public void updateStream(HipAudioSource source){}
 
     public HipAudioSource getSource(bool isStreamed){return new HipAudioSource();}

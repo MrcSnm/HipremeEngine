@@ -12,6 +12,7 @@ Distributed under the MIT Software License.
 module hipaudio.audioclip;
 import std.path : baseName;
 import data.hipfs;
+import error.handler;
 import data.audio.audio;
 import hipaudio.audio;
 import hipaudio.backend.audiosource;
@@ -75,7 +76,7 @@ public abstract class HipAudioClip
         this(decoder);
         this.chunkSize = chunkSize;
         outBuffer = malloc(chunkSize);
-        assert(outBuffer != null, "Out of memory");
+        ErrorHandler.assertExit(outBuffer != null, "Out of memory");
     }
     /**
     *   Should implement the specific loading here
@@ -91,7 +92,7 @@ public abstract class HipAudioClip
     */
     public final uint updateStream()
     {
-        assert(chunkSize > 0, "Can't update stream with 0 sized buffer.");
+        ErrorHandler.assertExit(chunkSize > 0, "Can't update stream with 0 sized buffer.");
         uint dec = decoder.updateDecoding(dataToDecode, outBuffer, chunkSize,encoding);
         totalDecoded+= dec;
         onUpdateStream(outBuffer, dec);
@@ -132,7 +133,7 @@ public abstract class HipAudioClip
     package final void setBufferAvailable(void* buffer)
     {
         HipAudioBufferWrapper* w = findBuffer(buffer);
-        assert(w != null, "No buffer was found when trying to set it available");
+        ErrorHandler.assertExit(w != null, "AudioClip Error: No buffer was found when trying to set it available");
         w.isAvailable = true;
     }
 

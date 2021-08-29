@@ -74,3 +74,17 @@ void rawerror(Args... )(Args a)
         toLog~= to!string(arg);
     Console.DEFAULT.error(toLog~"\n");
 }
+
+void rawfatal(alias fmt, Args... )(Args a)
+{
+    string toLog = format!fmt(a);
+    Console.DEFAULT.fatal(toLog~"\n");
+}
+
+void rawfatal(Args... )(Args a)
+{
+    string toLog = "";
+    foreach(arg; a)
+        toLog~= to!string(arg);
+    Console.DEFAULT.fatal(toLog~"\n");
+}

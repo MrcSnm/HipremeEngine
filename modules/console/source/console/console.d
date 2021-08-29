@@ -32,7 +32,9 @@ enum GUI_CONSOLE = true;
 
 ///If it is inside thread local storage, then, it won't work being called from another thread
 __gshared void function(string toPrint) _log;
+__gshared void function(string toPrint) _warn;
 __gshared void function(string toPrint) _err;
+__gshared void function(string toPrint) _fatal;
 
 static string _format(alias fmt, Args...)(Args a){return format!fmt(a);}
 static string _format(Args...)(Args args)
@@ -97,29 +99,25 @@ static string _format(Args...)(Args args)
         {
             case NULL:
                 _log = function(string s){};
-                _err = function(string s){};
+                _warn = _log;
+                _err = _log;
+                _fatal = _err;
                 break;
             case ANDROID:
-                _log = function(string s)
+                version(Android)
                 {
-                    version(Android) 
-                    {
-                        import jni.helper.androidlog; 
-                        alogi(androidTag, (s~"\0").ptr);
-                    }
-                };
-                _err = function(string s)
-                {
-                    version(Android)
-                    {
-                        import jni.helper.androidlog;
-                        aloge(androidTag, (s~"\0").ptr);
-                    }
-                };
+                    import jni.helper.androidlog; 
+                    _log   = function(string s){alogi(androidTag, (s~"\0").ptr);};
+                    _warn  = function(string s){alogw(androidTag, (s~"\0").ptr);};
+                    _err   = function(string s){aloge(androidTag, (s~"\0").ptr);};
+                    _fatal = function(string s){alogf(androidTag, (s~"\0").ptr);};
+                }
                 break;
             case UWP:
                 _log = printFunc;
+                _warn = _log;
                 _err = _log;
+                _fatal = _err;
                 break;
             case DEFAULT:
             case DESKTOP:
@@ -129,7 +127,10 @@ static string _format(Args...)(Args args)
                     import std.stdio;
                     writeln(s);
                 };
+                _log = printFunc;
+                _warn = _log;
                 _err = _log;
+                _fatal = _err;
                 break;
         }
     }
@@ -213,6 +214,27 @@ static string _format(Args...)(Args args)
                 toLog~= to!string(arg);
             _formatLog(toLog);
             _err(toLog);
+        }
+    }
+    void fatal(alias fmt, Args...)(Args a)
+    {
+        static if(!HE_NO_LOG)
+        {
+            string toLog = _format!(fmt, a);
+            _formatLog(toLog);
+            _fatal(toLog);
+        }
+        
+    }
+    void fatal(Args...)(Args a)
+    {
+        static if(!HE_NO_LOG)
+        {
+            string toLog;
+            static foreach(arg; a)
+                toLog~= to!string(arg);
+            _formatLog(toLog);
+            _fatal(toLog);
         }
     }
 

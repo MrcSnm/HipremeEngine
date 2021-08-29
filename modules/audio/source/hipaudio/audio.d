@@ -199,7 +199,7 @@ class HipAudio
 
     static HipAudioSource getSource(bool isStreamed = false, HipAudioClip clip = null)
     {
-        if(isStreamed) assert(clip !is null, "Can't get streamed source without any buffer");
+        if(isStreamed) ErrorHandler.assertExit(clip !is null, "Can't get streamed source without any buffer");
         HipAudioSource ret;
         if(sourcePool.length == activeSources)
         {
