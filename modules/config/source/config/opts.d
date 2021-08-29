@@ -32,5 +32,44 @@ enum HE_ERR_ONLY = false;
 ///Unused yet?
 enum HIP_OPTIMIZE = false;
 
+/**
+*	Will use OpenSL ES optimal sample rate for output and buffer size multiple. 
+*/
+enum HIP_OPENSLES_OPTIMAL = true;
 
-enum HIP_USE_OPENSLES_LOW_LATENCY = true;
+/**
+*	Beware that a lot of effects are disabled on Android when using low latency, aka Fast Mixer.
+*	So, it is better to have a deep thought before allowing its low latency.
+*	You will also lose sample rate conversion, so it is a lot problematic. Until there's a hand made sample
+*	converter, it will be almost impossible to use.
+*
+*	The following interfaces are unsupported on the fast mixer:
+*
+*   - SL_IID_BASSBOOST
+*
+*   - SL_IID_EFFECTSEND
+*
+*   - SL_IID_ENVIRONMENTALREVERB
+*
+*   - SL_IID_EQUALIZER
+*
+*   - SL_IID_PLAYBACKRATE
+*
+*   - SL_IID_PRESETREVERB
+*
+*   - SL_IID_VIRTUALIZER
+*
+*   - SL_IID_ANDROIDEFFECT
+*
+*   - SL_IID_ANDROIDEFFECTSEND
+*
+*/
+enum HIP_OPENSLES_FAST_MIXER = true;
+
+
+
+static if(HIP_OPENSLES_FAST_MIXER)
+{
+	static assert(HIP_OPENSLES_OPTIMAL, "Can't use OpenSL ES fast mixer without using its optimal 
+buffer size and sample rate");
+}
