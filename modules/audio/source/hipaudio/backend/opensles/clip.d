@@ -28,8 +28,16 @@ class HipOpenSLESAudioClip : HipAudioClip
         hasBuffer = true;
         return w;
     }
-    override void destroyBuffer(void* buffer){}
-    override void setBufferData(void* buffer, uint size, void* data){}
+    override void destroyBuffer(void* buffer)
+    {
+        SLIBuffer* buf = cast(SLIBuffer*)buffer;
+        sliDestroyBuffer(buf);
+    }
+    override void setBufferData(void* buffer, uint size, void* data)
+    {
+        SLIBuffer* buf = cast(SLIBuffer*)buffer;
+        sliBufferData(buf, data);
+    }
 
 
     bool hasBuffer;

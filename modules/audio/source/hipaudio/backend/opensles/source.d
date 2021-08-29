@@ -35,14 +35,43 @@ class HipOpenSLESAudioSource : HipAudioSource
         assert(clip !is null, "Can't pull stream data without any buffer attached");
         assert(audioPlayer.playerObj != null, "Can't pull stream data without null audioplayer");
         uint decoded = clip.updateStream();
-        
-        void* buf = alloc!void(decoded);
 
-        memcpy(buf, clip.outBuffer, decoded);
-        SLIAudioPlayer.Enqueue(*audioPlayer,  buf, decoded);
+        SLIBuffer* freeBuf = getSLIFreeBuffer();
+        import console.log;
+        rawlog(freeBuf);
+        
+        if(freeBuf != null)
+        {
+            audioPlayer.unqueue(freeBuf);
+            sendAvailableBuffer(&freeBuf);
+        }
+        
+        void* buf = clip.getBuffer(clip.getClipData(), clip.chunkSize);
+        audioPlayer.pushBuffer(cast(SLIBuffer*)buf);
+
+        // audioPlayer.pushBuffer()
 
 
         // SLIBuffer* buf = sliGenBuffer(buffer.outBuffer, decoded);
         // audioPlayer.pushBuffer(buf);
     }
+
+    SLIBuffer* getSLIFreeBuffer()
+    {
+        HipAudioBufferWrapper* freeBuf = getFreeBuffer();
+        if(freeBuf != null)
+            return cast(SLIBuffer*)freeBuf.buffer;
+        return null;
+    }
+
+    override HipAudioBufferWrapper* getFreeBuffer()
+    {
+        void* b = audioPlayer.getProcessedBuffer();
+        import console.log;
+        if(b == null)
+            return null;
+        rawlog("ACHOU");
+        return clip.findBuffer(&b);
+    }
+    
 }
