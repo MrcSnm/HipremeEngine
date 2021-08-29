@@ -313,6 +313,8 @@ struct SLIAudioPlayer
     protected SLIBuffer** streamQueue;
     protected ushort streamQueueCursor;
     protected ushort streamQueueLength;
+    protected ushort streamQueueCapacity;
+
 
     version(Android){SLAndroidSimpleBufferQueueItf playerAndroidSimpleBufferQueue;}
     else  //Those lines will appear just as a documentation, right now, we don't have any implementation using it
@@ -371,20 +373,24 @@ struct SLIAudioPlayer
 
     extern(C) static void checkClipEnd_Callback(SLPlayItf player, void* context, SLuint32 event)
     {
-        rawlog("Yo");
         // if(event & SL_PLAYEVENT_HEADATEND)
         {
-            rawlog("Finished");
             SLIAudioPlayer* p = (cast(SLIAudioPlayer*)context);
             if(p.streamQueueLength > 0)
             {
-                p.streamQueueCursor = (p.streamQueueCursor+1)%p.streamQueueLength;
+                SLIBuffer* current = p.streamQueue[p.streamQueueCursor];
+                import console.log;
+                rawlog(current.hasBeenProcessed, current.isLocked);
+                current.hasBeenProcessed = true;
+                current.isLocked = false;
+
+                // p.streamQueueCursor = (p.streamQueueCursor+1)%p.streamQueueLength;
+                p.streamQueueCursor = cast(ushort)(p.streamQueueCursor+1);
                 if(p.streamQueueCursor < p.streamQueueLength)
                 {
-                    SLIBuffer* b = p.streamQueue[p.streamQueueCursor++];
+                    SLIBuffer* b = p.streamQueue[p.streamQueueCursor];
                     b.isLocked = true;
                     SLIAudioPlayer.Enqueue(*p, b.data.ptr, b.size);
-                    rawlog(b.size);
                 }
             }
             atomicStore(p.hasFinishedTrack,  true);
@@ -397,14 +403,17 @@ struct SLIAudioPlayer
         streamQueueLength++;
         if(streamQueue == null)
             streamQueue = cast(SLIBuffer**)malloc((SLIBuffer*).sizeof * streamQueueLength);
-        else
+        else if(streamQueueLength > streamQueueCapacity)
+        {
             streamQueue = cast(SLIBuffer**)realloc(streamQueue, (SLIBuffer*).sizeof * streamQueueLength);
+            streamQueueCapacity = streamQueueLength;
+        }
         streamQueue[streamQueueLength-1] = buffer;
     }
 
     SLIBuffer* getProcessedBuffer()
     {
-        for(int i = 0; i < streamQueueCursor;i++)
+        for(int i = 0; i < streamQueueLength;i++)
             if(!streamQueue[i].isLocked && streamQueue[i].hasBeenProcessed)
                 return streamQueue[i];
         return null;
@@ -420,6 +429,23 @@ struct SLIAudioPlayer
         {
             (*audioPlayer.playerAndroidSimpleBufferQueue)
                 .Enqueue(audioPlayer.playerAndroidSimpleBufferQueue, samples, sampleSize);
+        }
+    }
+
+    void unqueue(SLIBuffer* processedBuffer)
+    {
+        bool isReordering = false;
+        for(int i = 0; i < streamQueueLength;i++)
+        {
+            if(streamQueue[i] == processedBuffer)
+            {                
+                streamQueueLength--;
+                isReordering = true;
+            }
+            if(isReordering)
+            {
+                streamQueue[i] = streamQueue[i+1];
+            }
         }
     }
     static void resume(ref SLIAudioPlayer audioPlayer)
