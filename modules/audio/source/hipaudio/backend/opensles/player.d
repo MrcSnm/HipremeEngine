@@ -5,7 +5,7 @@ import hipaudio.backend.opensles.clip;
 import hipaudio.backend.audiosource;
 import data.audio.audioconfig;
 import hipaudio.backend.sles;
-import config.opts : HIP_USE_OPENSLES_LOW_LATENCY;
+import config.opts : HIP_OPENSLES_OPTIMAL, HIP_OPENSLES_FAST_MIXER;
 import data.audio.audio;
 import std.conv:to;
 import opensles.sles;
@@ -20,7 +20,7 @@ SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)
     ret.formatType = SL_DATAFORMAT_PCM;
     ret.numChannels = cfg.channels; //2 channels seems to not be supported yet
 
-    static if(HIP_USE_OPENSLES_LOW_LATENCY)
+    static if(HIP_OPENSLES_OPTIMAL)
         ret.samplesPerSec = HipOpenSLESAudioPlayer.optimalSampleRate*1000;
     else
         ret.samplesPerSec = cfg.sampleRate*1000;
@@ -70,6 +70,8 @@ SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)
 
 package __gshared SLIAudioPlayer*[] playerPool;
 package uint poolRingIndex = 0;
+
+/// Probably should take into account fast mixer: https://source.android.com/devices/audio/latency/design
 enum MAX_SLI_AUDIO_PLAYERS = 32;
 enum MAX_SLI_BUFFERS       = 16;
 
@@ -168,7 +170,8 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
             hasProAudio,
             hasLowLatencyAudio,
             optimalBufferSize,
-            optimalSampleRate
+            optimalSampleRate,
+            HIP_OPENSLES_FAST_MIXER
         ),
         "Error creating OpenSLES context.", sliGetErrorMessages());
     }
@@ -183,7 +186,7 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     public bool play(HipAudioSource src)
     {
         HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
-        static if(HIP_USE_OPENSLES_LOW_LATENCY)
+        static if(HIP_OPENSLES_OPTIMAL)
             uint clipSize = cast(uint)HipOpenSLESAudioPlayer.optimalBufferSize;
         else
             uint clipSize = cast(uint)src.clip.getClipSize();

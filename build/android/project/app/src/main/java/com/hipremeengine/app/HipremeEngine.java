@@ -1,9 +1,11 @@
 package com.hipremeengine.app;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.media.AudioManager;
 import android.os.Bundle;
 
 import android.util.DisplayMetrics;
@@ -47,6 +49,10 @@ public class HipremeEngine extends Activity
         assetManager = getApplicationContext().getResources().getAssets();
         instance = this;
 
+        System.out.println(getOptimalAudioBufferSize());
+        System.out.println(hasLowLatencyFeature());
+        System.out.println(hasProFeature());
+        System.out.println(getOptimalSampleRate());
         view = new HipSurfaceView((this));
         setContentView(view);
     }
@@ -58,25 +64,60 @@ public class HipremeEngine extends Activity
         HipremeEngine.instance = null;
     }
 
+
+    //--------------------------------------------------------------------------------------------//
+    // Public API called by the native code
+    //--------------------------------------------------------------------------------------------//
+
+    //--------------------------------------------------------------------------------------------//
+    // Window section
+    //--------------------------------------------------------------------------------------------//
     public static int[] getWindowSize ()
     {
         DisplayMetrics m = Resources.getSystem().getDisplayMetrics();
         return new int[]{m.widthPixels, m.heightPixels};
     }
-    public static Object getAssetManager()
-    {
-        System.out.println("OPA AMIGAO");
-        return assetManager;
-    }
+    public static float getPixelsDensity(){return Resources.getSystem().getDisplayMetrics().density;}
 
+    //--------------------------------------------------------------------------------------------//
+    // Asset manager (file loading related)
+    //--------------------------------------------------------------------------------------------//
+
+    public static Object getAssetManager(){return assetManager;}
     public static String getApplicationDir() throws PackageManager.NameNotFoundException
     {
         if(instance != null)
             return instance.getPackageManager().getPackageInfo(instance.getPackageName(), 0).applicationInfo.dataDir;
         return "/";
     }
-    public static float getPixelsDensity()
+
+    //--------------------------------------------------------------------------------------------//
+    // Audio manger (low latency config)
+    //--------------------------------------------------------------------------------------------//
+
+    public static boolean hasLowLatencyFeature()
     {
-        return Resources.getSystem().getDisplayMetrics().density;
+        if(instance != null)
+            return instance.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUDIO_LOW_LATENCY);
+        return false;
+    }
+    public static boolean hasProFeature()
+    {
+        if(instance != null)
+            return instance.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUDIO_PRO);
+        return false;
+    }
+
+    public static int getOptimalSampleRate()
+    {
+        if(instance != null)
+            return Integer.parseInt(((AudioManager)instance.getSystemService(Context.AUDIO_SERVICE)).getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE));
+        return 44100;
+    }
+    public static int getOptimalAudioBufferSize()
+    {
+        if(instance != null)
+            return Integer.parseInt(((AudioManager)instance.getSystemService(Context.AUDIO_SERVICE)).getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER));
+        return 256;
     }
 }
