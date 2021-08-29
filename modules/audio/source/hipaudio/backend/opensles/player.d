@@ -5,6 +5,7 @@ import hipaudio.backend.opensles.clip;
 import hipaudio.backend.audiosource;
 import data.audio.audioconfig;
 import hipaudio.backend.sles;
+import config.opts : HIP_USE_OPENSLES_LOW_LATENCY;
 import data.audio.audio;
 import std.conv:to;
 import opensles.sles;
@@ -18,7 +19,12 @@ SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)
     SLDataFormat_PCM ret;
     ret.formatType = SL_DATAFORMAT_PCM;
     ret.numChannels = cfg.channels; //2 channels seems to not be supported yet
-    ret.samplesPerSec = cfg.sampleRate*1000;
+
+    static if(HIP_USE_OPENSLES_LOW_LATENCY)
+        ret.samplesPerSec = HipOpenSLESAudioPlayer.optimalSampleRate*1000;
+    else
+        ret.samplesPerSec = cfg.sampleRate*1000;
+
     switch(cfg.format)
     {
         //Big
@@ -56,7 +62,7 @@ SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)
     else if(cfg.channels == 1)
         ret.channelMask = SL_SPEAKER_FRONT_CENTER;
     else
-        ErrorHandler.showErrorMessage("OpenSL ES Audio Config.", "OpenSL ES does not supports " ~
+        ErrorHandler.assertExit(false, "OpenSL ES Audio Config does not supports " ~
         to!string(cfg.channels)~" channels");
 
     return ret;
@@ -124,11 +130,46 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     AudioConfig cfg;
     SLIOutputMix output;
     SLEngineItf itf;
-    this(AudioConfig cfg)
+
+    static bool hasProAudio;
+    static bool hasLowLatencyAudio;
+    static int  optimalBufferSize;
+    static int  optimalSampleRate;
+
+    /**
+    *   For understanding a bit better how the buffer size works, take a look into the documentation
+    *   provided by google: https://developer.android.com/ndk/guides/audio/audio-latency#buffer-size
+    *
+    *   As the buffersize can be a multiple, for not sending a buffer too small, it is get the closest
+    *   multiple to the optimal buffer size.
+    *
+    *   If first play takes a greater latency, it will be time to implement warmup silence:
+    *   https://developer.android.com/ndk/guides/audio/audio-latency#warmup-latency
+    */
+    this
+    (
+        AudioConfig cfg,
+        bool hasProAudio,
+        bool hasLowLatencyAudio,
+        int  optimalBufferSize,
+        int  optimalSampleRate
+    )
     {
         this.cfg = cfg;
-        HipSDL_SoundDecoder.initDecoder(cfg);
-        ErrorHandler.assertErrorMessage(sliCreateOutputContext(),
+        import math.utils:getClosestMultiple;
+        optimalBufferSize = getClosestMultiple(optimalBufferSize, AudioConfig.defaultBufferSize);
+        HipOpenSLESAudioPlayer.hasProAudio = hasProAudio;
+        HipOpenSLESAudioPlayer.hasLowLatencyAudio = hasLowLatencyAudio;
+        HipOpenSLESAudioPlayer.optimalBufferSize = optimalBufferSize;
+        HipOpenSLESAudioPlayer.optimalSampleRate = optimalSampleRate;
+
+        HipSDL_SoundDecoder.initDecoder(cfg, optimalBufferSize);
+        ErrorHandler.assertErrorMessage(sliCreateOutputContext(
+            hasProAudio,
+            hasLowLatencyAudio,
+            optimalBufferSize,
+            optimalSampleRate
+        ),
         "Error creating OpenSLES context.", sliGetErrorMessages());
     }
     public bool isMusicPlaying(HipAudioSource src){return false;}
@@ -142,9 +183,13 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     public bool play(HipAudioSource src)
     {
         HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
+        static if(HIP_USE_OPENSLES_LOW_LATENCY)
+            uint clipSize = cast(uint)HipOpenSLESAudioPlayer.optimalBufferSize;
+        else
+            uint clipSize = cast(uint)src.clip.getClipSize();
         SLIAudioPlayer.play(*source.audioPlayer,
             src.clip.getClipData(),
-            cast(uint)src.clip.getClipSize()
+            clipSize
         );
 
         return true;

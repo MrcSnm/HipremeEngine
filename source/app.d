@@ -88,7 +88,11 @@ extern(C)int SDL_main()
 	import data.ini;
 	initEngine(true);
 	version(Android)
-		HipAudio.initialize(HipAudioImplementation.OPENSLES);
+		HipAudio.initialize(HipAudioImplementation.OPENSLES, 
+		HipremeAndroid.javaCall!(bool, "hasProFeature"),
+		HipremeAndroid.javaCall!(bool, "hasLowLatencyFeature"),
+		HipremeAndroid.javaCall!(int, "getOptimalAudioBufferSize"),
+		HipremeAndroid.javaCall!(int, "getOptimalSampleRate"));
 	else
 		HipAudio.initialize();
 	version(dll)

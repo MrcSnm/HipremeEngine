@@ -142,12 +142,15 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
     Sound_Sample* sample;
     HipAudioEncoding selectedEncoding;
     float duration;
+    protected static int bufferSize;
     protected static AudioConfig cfg;
-    public static bool initDecoder(AudioConfig cfg)
+
+    public static bool initDecoder(AudioConfig cfg, int bufferSize)
     {
         bool ret = ErrorHandler.assertErrorMessage(loadSDLSound(), "Error Loading SDL_Sound", "SDL_Sound not found");
         if(!ret)
             Sound_Init();
+        HipSDL_SoundDecoder.bufferSize = bufferSize;
         HipSDL_SoundDecoder.cfg = cfg;
         return ret;
     }
@@ -156,7 +159,7 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
         import console.log;
         selectedEncoding = encoding;
         Sound_AudioInfo info = cfg.getSDL_SoundInfo();
-        sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length, getNameFromEncoding(encoding), &info, AudioConfig.defaultBufferSize);
+        sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length, getNameFromEncoding(encoding), &info, HipSDL_SoundDecoder.bufferSize);
         
         if(!isStreamed && sample != null)
             Sound_DecodeAll(sample);
@@ -170,7 +173,7 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
         {
             Sound_AudioInfo info = cfg.getSDL_SoundInfo();
             sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length,            
-            getNameFromEncoding(encoding), &info, AudioConfig.defaultBufferSize);
+            getNameFromEncoding(encoding), &info, HipSDL_SoundDecoder.bufferSize);
             if(Sound_SetBufferSize(sample, chunkSize) == 0)
                 ErrorHandler.showErrorMessage("SDL_Sound decoding error",
                 format!"Could not set sample with chunk size %s"(chunkSize));
