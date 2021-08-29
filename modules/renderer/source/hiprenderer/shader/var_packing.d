@@ -12,6 +12,7 @@ Distributed under the MIT Software License.
 module hiprenderer.shader.var_packing;
 import hiprenderer.shader;
 import hiprenderer.shader.shadervar;
+import error.handler;
 
 struct VarPosition
 {
@@ -40,7 +41,8 @@ private uint getVarSize(ref ShaderVar* v, uint n)
         case floating4x4:
             return n*16;
         case none:
-            assert(false, "Can't use none uniform type on ShaderVariablesLayout");
+            ErrorHandler.assertExit(false, "Can't use none uniform type on ShaderVariablesLayout");
+            return 0;
     }
 }
 

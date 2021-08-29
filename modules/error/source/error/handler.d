@@ -111,10 +111,18 @@ public static class ErrorHandler
      *   errorTitle = Error Header
      *   errorMessage = Error Message
      */
-    public static void showErrorMessage(string errorTitle, string errorMessage)
+    public static void showErrorMessage(string errorTitle, string errorMessage, bool isFatal = false)
     {
-        rawerror("\nError: " ~ errorTitle);
-        rawerror(errorMessage);
+        if(isFatal)
+        {
+            rawfatal("\nFATAL ERROR: " ~ errorTitle);
+            rawfatal(errorMessage);
+        }
+        else
+        {
+            rawerror("\nError: " ~ errorTitle);
+            rawerror(errorMessage);
+        }
         getError(errorTitle, errorMessage);
     }
     public static void showWarningMessage(string warningTitle, string warningMessage)
@@ -140,7 +148,7 @@ public static class ErrorHandler
      *   errorMessage = Error Message
      * Returns: If the error happenned
      */
-    public static bool assertErrorMessage(bool expression, string errorTitle, string errorMessage,
+    public static bool assertErrorMessage(bool expression, string errorTitle, string errorMessage, bool isFatal = false,
     string file = __FILE__, size_t line =__LINE__, string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
     {
         version(HIPREME_DEBUG)
@@ -153,8 +161,19 @@ public static class ErrorHandler
         }
         expression = !expression; //Negate the expression, as it must return wether error ocurred
         if(expression)
-            showErrorMessage(where~errorTitle, "\t"~errorMessage);
+            showErrorMessage(where~errorTitle, "\t"~errorMessage, isFatal);
         return expression;
+    }
+
+    public static void assertExit(bool expression, string onAssertionFailure = "Assertion Failure",
+    string file = __FILE__, size_t line = __LINE__, string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
+    {
+        if(ErrorHandler.assertErrorMessage(expression, "HipAssertion", onAssertionFailure, true,
+        file, line, mod, func))
+        {
+            import core.stdc.stdlib;
+            exit(EXIT_FAILURE);
+        }
     }
 
     public static void showEveryError()

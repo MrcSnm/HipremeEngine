@@ -12,6 +12,7 @@ Distributed under the MIT Software License.
 module graphics.material;
 import math.matrix;
 import math.vector;
+import error.handler;
 import hiprenderer.shader;
 import hiprenderer.shader.shadervar;
 
@@ -126,6 +127,6 @@ private string getSetShaderVarCall(string shaderT)
             shader.set$Var(v.name, *cast(Matrix4*)v.data);
             break;
         case none:
-            assert(false, "Can't set ShaderVar of type 'none'");
+            ErrorHandler.assertExit(false, "Can't set ShaderVar of type 'none'");
     }}.replaceAll('$', shaderT);
 }

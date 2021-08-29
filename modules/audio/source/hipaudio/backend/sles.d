@@ -1,4 +1,5 @@
 module hipaudio.backend.sles;
+import error.handler;
 import console.log;
 import std.conv:to;
 import std.format:format;
@@ -282,7 +283,7 @@ SLIBuffer* sliGenBuffer(void* data, uint size)
 void sliBufferData(SLIBuffer* buffer, void* data)
 {
     import core.stdc.string:memcpy;
-    assert(!buffer.isLocked, "Can't write to locked buffer");
+    ErrorHandler.assertExit(!buffer.isLocked, "Can't write to locked buffer");
     memcpy(buffer.data.ptr, data, buffer.size);
 }
 
@@ -376,19 +377,19 @@ struct SLIAudioPlayer
         // if(event & SL_PLAYEVENT_HEADATEND)
         {
             SLIAudioPlayer* p = (cast(SLIAudioPlayer*)context);
-            if(p.streamQueueLength > 0)
+            if(p.streamQueueLength > 0 && p.streamQueueCursor < p.streamQueueLength)
             {
                 SLIBuffer* current = p.streamQueue[p.streamQueueCursor];
-                import console.log;
-                rawlog(current.hasBeenProcessed, current.isLocked);
                 current.hasBeenProcessed = true;
                 current.isLocked = false;
 
-                // p.streamQueueCursor = (p.streamQueueCursor+1)%p.streamQueueLength;
+                p.streamQueueCursor = (p.streamQueueCursor+1)%p.streamQueueLength;
                 p.streamQueueCursor = cast(ushort)(p.streamQueueCursor+1);
                 if(p.streamQueueCursor < p.streamQueueLength)
                 {
                     SLIBuffer* b = p.streamQueue[p.streamQueueCursor];
+                    import console.log;
+                    logln(b.size);
                     b.isLocked = true;
                     SLIAudioPlayer.Enqueue(*p, b.data.ptr, b.size);
                 }
@@ -447,6 +448,7 @@ struct SLIAudioPlayer
                 streamQueue[i] = streamQueue[i+1];
             }
         }
+        ErrorHandler.assertExit(isReordering, "SLES Error: buffer not found when trying to unqueue it");
     }
     static void resume(ref SLIAudioPlayer audioPlayer)
     {

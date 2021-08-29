@@ -76,7 +76,7 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
     }
     void updateData(int offset, ulong size, const void* data)
     {
-        assert(size+offset <= this.size, format!"Tried to set data with size %s and offset %s for vertex buffer with size %s"(size, offset, this.size));
+        ErrorHandler.assertExit(size+offset <= this.size, format!"Tried to set data with size %s and offset %s for vertex buffer with size %s"(size, offset, this.size));
         D3D11_MAPPED_SUBRESOURCE resource;
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
         memcpy(resource.pData+offset, data, size);
@@ -141,7 +141,7 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
     }
     void updateData(int offset, index_t count, const index_t* data)
     {
-        assert(count*index_t.sizeof+offset <= this.size, format!"Tried to set data with size %s and offset %s for vertex buffer with size %s"(count*index_t.sizeof, offset, this.size));
+        ErrorHandler.assertExit(count*index_t.sizeof+offset <= this.size, format!"Tried to set data with size %s and offset %s for vertex buffer with size %s"(count*index_t.sizeof, offset, this.size));
         D3D11_MAPPED_SUBRESOURCE resource;
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
         memcpy(resource.pData+offset, data, count*index_t.sizeof);

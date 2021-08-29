@@ -1,5 +1,6 @@
 module hipaudio.backend.opensles.source;
 version(Android):
+import error.handler;
 import bindbc.sdl;
 import hipaudio.audioclip;
 import hipaudio.backend.sles;
@@ -23,7 +24,7 @@ class HipOpenSLESAudioSource : HipAudioSource
         super.setClip(clip);
         import console.log;
         SLIBuffer* buf = cast(SLIBuffer*)clip.getBuffer(clip.getClipData(), cast(uint)clip.getClipSize());
-        rawlog(buf.size);
+        logln(buf.size);
         SLIAudioPlayer.Enqueue(*audioPlayer, buf.data.ptr, buf.size);
         buf.isLocked = true;
     }
@@ -32,28 +33,22 @@ class HipOpenSLESAudioSource : HipAudioSource
     {
         import util.memory;
 
-        assert(clip !is null, "Can't pull stream data without any buffer attached");
-        assert(audioPlayer.playerObj != null, "Can't pull stream data without null audioplayer");
+        ErrorHandler.assertExit(clip !is null, "Can't pull stream data without any buffer attached");
+        ErrorHandler.assertExit(audioPlayer.playerObj != null, "Can't pull stream data without null audioplayer");
         uint decoded = clip.updateStream();
-
-        SLIBuffer* freeBuf = getSLIFreeBuffer();
         import console.log;
-        rawlog(freeBuf);
+        SLIBuffer* freeBuf = getSLIFreeBuffer();
         
         if(freeBuf != null)
         {
             audioPlayer.unqueue(freeBuf);
-            sendAvailableBuffer(&freeBuf);
+            sendAvailableBuffer(freeBuf);
         }
         
-        void* buf = clip.getBuffer(clip.getClipData(), clip.chunkSize);
-        audioPlayer.pushBuffer(cast(SLIBuffer*)buf);
+        SLIBuffer* buf = cast(SLIBuffer*)clip.getBuffer(clip.getClipData(), clip.chunkSize);
+        buf.isLocked = true;
+        audioPlayer.pushBuffer(buf);
 
-        // audioPlayer.pushBuffer()
-
-
-        // SLIBuffer* buf = sliGenBuffer(buffer.outBuffer, decoded);
-        // audioPlayer.pushBuffer(buf);
     }
 
     SLIBuffer* getSLIFreeBuffer()
@@ -67,11 +62,9 @@ class HipOpenSLESAudioSource : HipAudioSource
     override HipAudioBufferWrapper* getFreeBuffer()
     {
         void* b = audioPlayer.getProcessedBuffer();
-        import console.log;
         if(b == null)
             return null;
-        rawlog("ACHOU");
-        return clip.findBuffer(&b);
+        return clip.findBuffer(b);
     }
     
 }

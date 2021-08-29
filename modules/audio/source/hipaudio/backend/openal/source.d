@@ -1,5 +1,6 @@
 module hipaudio.backend.openal.source;
 import hipaudio.backend.openal.clip;
+import error.handler;
 import hipaudio.audio;
 import hipaudio.backend.audiosource;
 import debugging.gui;
@@ -63,8 +64,8 @@ import bindbc.openal;
 
     override void pullStreamData()
     {
-        assert(clip !is null, "Can't pull stream data without any buffer attached");
-        assert(id != 0, "Can't pull stream data without source id");
+        ErrorHandler.assertExit(clip !is null, "Can't pull stream data without any buffer attached");
+        ErrorHandler.assertExit(id != 0, "Can't pull stream data without source id");
         uint freeBuf = getALFreeBuffer();
         if(freeBuf != 0)
         {

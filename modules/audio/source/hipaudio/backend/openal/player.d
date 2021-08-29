@@ -199,10 +199,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     public HipAudioClip load(string path, HipAudioType clipType)
     {
         HipOpenALClip clip = new HipOpenALClip(new HipSDL_SoundDecoder());
-        
         clip.load(path, getEncodingFromName(path), clipType);
-        import console.log;
-        rawlog(clip.getClipSize);
         return clip;
     }
     public HipAudioClip loadStreamed(string path, uint chunkSize)
