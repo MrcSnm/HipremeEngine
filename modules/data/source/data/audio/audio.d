@@ -177,12 +177,17 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
         this.selectedEncoding = encoding;
         this.sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length,
             getNameFromEncoding(encoding), &info, HipSDL_SoundDecoder.bufferSize);
-        this.chunkSize = chunkSize;
 
         ErrorHandler.assertExit(sample != null, "SDL_Sound could not create a sample from memory.");
         if(Sound_SetBufferSize(sample, chunkSize) == 0)
             ErrorHandler.showErrorMessage("SDL_Sound decoding error",
             format!"Could not set sample with chunk size %s"(chunkSize));
+
+        import math.utils:getClosestMultiple;
+        uint decodeSize = Sound_Decode(sample);
+        this.chunkSize = getClosestMultiple(decodeSize, chunkSize);
+        ErrorHandler.assertExit(Sound_Rewind(sample) != 0, "SDL_Sound could not get back to sample start.");
+
         return updateDecoding(outputDecodedData);
     }
 
@@ -196,9 +201,9 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
             memcpy(outputDecodedData+decodedTotal, sample.buffer, ret);
             decodedTotal+= ret;
             duration+= ret;
-            if(ErrorHandler.assertErrorMessage(decodedTotal <= chunkSize, "SDL_Sound decoding error", 
-            format!"Chunk size %s is invalid for decoding step %s"(chunkSize, ret)))
-                return 0;
+            ErrorHandler.assertExit(decodedTotal <= chunkSize, "SDL_Sound decoding error", 
+            format!"Chunk size %s is invalid for decoding step %s"(chunkSize, ret));
+
         }
         if(sample.flags & Sound_SampleFlags.SOUND_SAMPLEFLAG_ERROR)
             ErrorHandler.showErrorMessage("SDL_Sound decoding error",
