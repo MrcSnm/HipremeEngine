@@ -82,7 +82,7 @@ public class HipOpenALClip : HipAudioClip
         loadALBuffer(bufferId, data, size);
     }
 
-    ALuint getALBuffer(uint size, void* data){return *cast(ALuint*)getBuffer(data, size);}
+    ALuint getALBuffer(void* data, uint size){return *cast(ALuint*)getBuffer(data, size);}
 
 
     bool hasBuffer;

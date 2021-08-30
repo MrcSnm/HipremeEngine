@@ -193,10 +193,7 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     public bool play(HipAudioSource src)
     {
         HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
-        SLIAudioPlayer.play(*source.audioPlayer,
-            src.clip.getClipData(),
-            cast(uint)src.clip.getClipSize()
-        );
+        SLIAudioPlayer.play(*source.audioPlayer);
 
         return true;
     }
@@ -223,11 +220,7 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
         else
             uint clipSize = cast(uint)src.clip.getClipSize();
 
-        SLIBuffer* buf = source.getSLIFreeBuffer();
-        SLIAudioPlayer.play(*source.audioPlayer,
-            buf.data.ptr,
-            clipSize
-        );
+        SLIAudioPlayer.play(*source.audioPlayer);
         return true;
     }
     public HipAudioClip load(string path, HipAudioType type)

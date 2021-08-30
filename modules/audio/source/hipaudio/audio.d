@@ -127,7 +127,7 @@ class HipAudio
             case HipAudioImplementation.OPENAL:
             default:
                 //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
-                audioInterface = new HipOpenALAudioPlayer(AudioConfig.lightweightConfig);
+                audioInterface = new HipOpenALAudioPlayer(AudioConfig.musicConfig);
         }
         HipAudio.hasProAudio        = hasProAudio;
         HipAudio.hasLowLatencyAudio = hasLowLatencyAudio;

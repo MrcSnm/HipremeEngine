@@ -114,13 +114,32 @@ public abstract class HipAudioClip
         return null;
     }
     public    abstract void  setBufferData(void* buffer, uint size, void* data);
+    /**
+    *   Attempts to get a buffer from the buffer recycler. 
+    *   Used for when loadStreamed must set a buffer available
+    */
+    public    final    void* pollFreeBuffer()
+    {
+        if(buffersToRecycle.length > 0)
+        {
+            import console.log;
+            logln(buffersToRecycle.length);
+            HipAudioBufferWrapper* w = &(buffersToRecycle[buffersToRecycle.length - 1]);
+            buffersToRecycle.length--;
+            w.isAvailable = false;
+            return w.buffer;
+        }
+        return null;
+    }
     public    final    void* getBuffer(void* data, uint size)
     {
         void* ret;
         if(buffersToRecycle.length > 0)
         {
-            HipAudioBufferWrapper* w = &buffersToRecycle[--buffersToRecycle.length];
+            HipAudioBufferWrapper* w = &(buffersToRecycle[buffersToRecycle.length-1]);
+            buffersToRecycle.length--;
             w.isAvailable = false;
+            import console.log;
             setBufferData(w.buffer, size, data);
             ret = w.buffer;
             return ret;
@@ -134,6 +153,7 @@ public abstract class HipAudioClip
     {
         HipAudioBufferWrapper* w = findBuffer(buffer);
         ErrorHandler.assertExit(w != null, "AudioClip Error: No buffer was found when trying to set it available");
+        buffersToRecycle~= *w;
         w.isAvailable = true;
     }
 

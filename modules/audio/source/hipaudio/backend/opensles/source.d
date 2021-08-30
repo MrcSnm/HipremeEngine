@@ -22,11 +22,10 @@ class HipOpenSLESAudioSource : HipAudioSource
     override void setClip(HipAudioClip clip)
     {
         super.setClip(clip);
-        import console.log;
         SLIBuffer* buf = cast(SLIBuffer*)clip.getBuffer(clip.getClipData(), cast(uint)clip.getClipSize());
-        // logln(clip.getClipData());
         SLIAudioPlayer.Enqueue(*audioPlayer, buf.data.ptr, buf.size);
         buf.isLocked = true;
+        buf.hasBeenProcessed = false;
     }
 
     override void pullStreamData()
@@ -41,12 +40,11 @@ class HipOpenSLESAudioSource : HipAudioSource
         
         if(freeBuf != null)
         {
-            audioPlayer.unqueue(freeBuf);
+            audioPlayer.removeFreeBuffer(freeBuf);
             sendAvailableBuffer(freeBuf);
         }
         
         SLIBuffer* buf = cast(SLIBuffer*)clip.getBuffer(clip.getClipData(), clip.chunkSize);
-        buf.isLocked = true;
         audioPlayer.pushBuffer(buf);
 
     }

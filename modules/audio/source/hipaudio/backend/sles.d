@@ -334,9 +334,23 @@ __gshared struct SLIAudioPlayer
     ///@TODO
     SLMetadataExtractionItf playerMetadata;
 
+    /**
+    *   This queue works as:
+
+        In Use   Unqueued    Capacity
+    |1, 2, 3, 4|  /5, 6\   (0, 0, 0, 0)
+    */
     protected SLIBuffer** streamQueue;
+    ///Data between | |
     protected ushort streamQueueLength;
+    ///Data between / \
+    protected ushort streamQueueFree;
+    //Data between ( )
     protected ushort streamQueueCapacity;
+    ///How many chunks have been streamed to that player
+    protected ushort totalChunksEnqueued;
+    ///How many chunks have been played
+    protected ushort totalChunksPlayed;
 
 
     version(Android){SLAndroidSimpleBufferQueueItf playerAndroidSimpleBufferQueue;}
@@ -395,28 +409,40 @@ __gshared struct SLIAudioPlayer
 
     extern(C) static void checkStreamCallback(SLPlayItf player, void* context, SLuint32 event)
     {
-        // if(event & SL_PLAYEVENT_HEADATEND)
+        if(event & SL_PLAYEVENT_HEADATEND)
         {
-            // mtx.lock();
+            import console.log;
             SLIAudioPlayer* p = (cast(SLIAudioPlayer*)context);
-            if(p.streamQueueLength != 0)
+            if(p.streamQueueLength > 0)
             {
-                import console.log;
-                SLIBuffer* current = p.streamQueue[0];
-                current.hasBeenProcessed = true;
-                current.isLocked = false;
-
-                if(p.streamQueueLength > 1)
+                SLIBuffer* buf;
+                if(p.totalChunksPlayed == 0)
                 {
-                    SLIBuffer* b = p.streamQueue[1];
-                    import console.log;
-                    logln(*b);
-                    b.isLocked = true;
-                    SLIAudioPlayer.Enqueue(*p, b.data.ptr, b.size);
+                    buf = p.streamQueue[0];
+                    logln("Using the first in queue");
+                }
+                else
+                {
+                    logln("Removing the last in the queue");
+                    p.unqueue(p.streamQueue[0]); //Unqueue the old buffer, thus, streamQueueLength--
+                    if(p.streamQueueLength > 0)
+                    {
+                        buf = p.streamQueue[0];
+                        logln("Using the next in the queue");
+                    }
+                }
+                if(buf != null)
+                {
+                    buf.isLocked = true;
+                    logln("Next:", *buf);
+                    p.totalChunksPlayed++;
+                    SLIAudioPlayer.Clear(*p);
+                    SLIAudioPlayer.Enqueue(*p, buf.data.ptr, buf.size);
+                    SLIAudioPlayer.resume(*p);
                 }
             }
-            p.hasFinishedTrack = true;
-            // mtx.unlock();
+            else
+                p.hasFinishedTrack = true;
         }
     }
 
@@ -424,25 +450,58 @@ __gshared struct SLIAudioPlayer
     {
         import core.stdc.stdlib:malloc,realloc;
         // mtx.lock();
+
+        totalChunksEnqueued++;
         streamQueueLength++;
+        ushort totalSize = cast(ushort)(streamQueueLength + streamQueueFree);
+
         if(streamQueue == null)
-            streamQueue = cast(SLIBuffer**)malloc((SLIBuffer*).sizeof * streamQueueLength);
-        else if(streamQueueLength > streamQueueCapacity)
+            streamQueue = cast(SLIBuffer**)malloc((SLIBuffer*).sizeof * totalSize);
+        else if(totalSize > streamQueueCapacity)
         {
-            streamQueue = cast(SLIBuffer**)realloc(streamQueue, (SLIBuffer*).sizeof * streamQueueLength);
-            streamQueueCapacity = streamQueueLength;
+            streamQueue = cast(SLIBuffer**)realloc(streamQueue, (SLIBuffer*).sizeof * totalSize);
+            streamQueueCapacity = totalSize;
         }
         buffer.hasBeenProcessed = false;
+        //Buffer is locked when playing
         streamQueue[streamQueueLength-1] = buffer;
         // mtx.unlock();
     }
 
+    /**
+    * Gets a free buffer from the /\ list
+    */
     SLIBuffer* getProcessedBuffer()
     {
-        for(int i = 0; i < streamQueueLength;i++)
+        for(int i = streamQueueLength; i < streamQueueLength+streamQueueFree;i++)
+        {
             if(!streamQueue[i].isLocked && streamQueue[i].hasBeenProcessed)
                 return streamQueue[i];
+        }
         return null;
+    }
+    /**
+    *   Will remove the free buffer and set it as unused /b\ -> (0)
+    *
+    * - | | = Enqueued
+    *
+    * - / \ = Free
+    *
+    * - ( ) = Unused (capacity)
+    */
+    void removeFreeBuffer(SLIBuffer* freeBuffer)
+    {
+        ErrorHandler.assertExit(!freeBuffer.isLocked, "This buffer is being used right now");
+        bool isReordering = false;
+        for(int i = streamQueueLength; i < streamQueueLength+streamQueueFree;i++)
+        {
+            if(streamQueue[i] == freeBuffer)
+                isReordering = true;
+            if(isReordering && i+1 < streamQueueCapacity)
+                streamQueue[i] = streamQueue[i+1];
+        }
+        streamQueueFree--;
+        ErrorHandler.assertExit(isReordering, "OpenSL ES: Buffer sent to remove is not in queue");
     }
 
     /**
@@ -457,7 +516,24 @@ __gshared struct SLIAudioPlayer
                 .Enqueue(audioPlayer.playerAndroidSimpleBufferQueue, samples, sampleSize);
         }
     }
+    static void Clear(ref SLIAudioPlayer audioPlayer)
+    {
+        version(Android)
+        {
+            (*audioPlayer.playerAndroidSimpleBufferQueue)
+                .Clear(audioPlayer.playerAndroidSimpleBufferQueue);
+        }
+    }
 
+    /**
+    *   Will put the processed buffer into the free list |b| -> /b\ 
+    *
+    * - | | = Enqueued
+    *
+    * - / \ = Free
+    *
+    * - ( ) = Unused (capacity)
+    */
     void unqueue(SLIBuffer* processedBuffer)
     {
         bool isReordering = false;
@@ -465,12 +541,17 @@ __gshared struct SLIAudioPlayer
         {
             if(streamQueue[i] == processedBuffer)
                 isReordering = true;
-            if(isReordering)
+            if(isReordering && i+1 < streamQueueCapacity)
                 streamQueue[i] = streamQueue[i+1];
         }
+        processedBuffer.hasBeenProcessed = true;
+        processedBuffer.isLocked = false;
         streamQueueLength--;
+        streamQueue[streamQueueLength+streamQueueFree] = processedBuffer;
+        streamQueueFree++;
         ErrorHandler.assertExit(isReordering, "SLES Error: buffer not found when trying to unqueue it");
     }
+
     static void resume(ref SLIAudioPlayer audioPlayer)
     {
         with(audioPlayer)
@@ -480,12 +561,13 @@ __gshared struct SLIAudioPlayer
         }
     }
 
-    static void play(ref SLIAudioPlayer audioPlayer, void* samples, uint sampleSize)
+    static void play(ref SLIAudioPlayer audioPlayer)
     {
-        SLIAudioPlayer.Enqueue(audioPlayer, samples, sampleSize);
         with(audioPlayer)
         {
             SLIAudioPlayer.resume(audioPlayer);
+            totalChunksEnqueued = 0;
+            totalChunksPlayed = 0;
             hasFinishedTrack = false;
         }
     }
@@ -494,7 +576,7 @@ __gshared struct SLIAudioPlayer
         with(audioPlayer)
         {
             (*player).SetPlayState(player, SL_PLAYSTATE_STOPPED);
-            version(Android){(*playerAndroidSimpleBufferQueue).Clear(playerAndroidSimpleBufferQueue);}
+            SLIAudioPlayer.Clear(audioPlayer);
             isPlaying = false;
         }
     }

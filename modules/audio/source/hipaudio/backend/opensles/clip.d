@@ -14,7 +14,8 @@ class HipOpenSLESAudioClip : HipAudioClip
         uint ret = super.loadStreamed(data, encoding);
         if(ret != 0)
         {
-            setBufferAvailable(getBuffer(getClipData(), chunkSize));
+            void* sliBuf = getBuffer(getClipData(), chunkSize);
+            setBufferAvailable(sliBuf);
             hasBuffer = true;
         }
         return ret;
