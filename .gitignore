@@ -32,4 +32,5 @@ modules/**/*.lib
 assets/
 imgui.ini
 bin/.vs
+bin/android/libhipreme_engine.so
 .vscode
