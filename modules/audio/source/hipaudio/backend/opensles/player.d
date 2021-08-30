@@ -107,7 +107,11 @@ package SLIAudioPlayer* hipGenAudioPlayer()
     destination.pLocator = &locatorMix;
     destination.pFormat = null;
 
-    return sliGenAudioPlayer(src, destination);
+    SLIAudioPlayer* player =  sliGenAudioPlayer(src, destination);
+    if(player == null)
+        ErrorHandler.showErrorMessage("SLIAudioPlayer creation error:", sliGetErrorMessages());
+
+    return player;
 }
 
 package SLIAudioPlayer* hipGetPlayerFromPool()
@@ -164,6 +168,9 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
         HipOpenSLESAudioPlayer.hasLowLatencyAudio = hasLowLatencyAudio;
         HipOpenSLESAudioPlayer.optimalBufferSize = optimalBufferSize;
         HipOpenSLESAudioPlayer.optimalSampleRate = optimalSampleRate;
+
+        static if(HIP_OPENSLES_OPTIMAL)
+            cfg.sampleRate = optimalSampleRate;
 
         HipSDL_SoundDecoder.initDecoder(cfg, optimalBufferSize);
         ErrorHandler.assertErrorMessage(sliCreateOutputContext(

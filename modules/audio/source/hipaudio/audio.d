@@ -20,6 +20,7 @@ import hipaudio.backend.openal.player;
 import hipaudio.backend.sdl.player;
 version(Android){import hipaudio.backend.opensles.player;}
 import data.audio.audio;
+import math.utils:getClosestMultiple;
 import error.handler;
 
 /**
@@ -128,7 +129,10 @@ class HipAudio
                 //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
                 audioInterface = new HipOpenALAudioPlayer(AudioConfig.lightweightConfig);
         }
-        
+        HipAudio.hasProAudio        = hasProAudio;
+        HipAudio.hasLowLatencyAudio = hasLowLatencyAudio;
+        HipAudio.optimalBufferSize  = optimalBufferSize;
+        HipAudio.optimalSampleRate  = optimalSampleRate;
         return ErrorHandler.stopListeningForErrors();
     }
 
@@ -194,8 +198,9 @@ class HipAudio
     /**
     *   Loads a file from disk, sets the chunkSize for streaming and does one decoding frame
     */
-    static HipAudioClip loadStreamed(string path, uint chunkSize)
+    static HipAudioClip loadStreamed(string path, uint chunkSize = ushort.max+1)
     {
+        chunkSize = getClosestMultiple(optimalBufferSize, chunkSize);
         HipAudioClip buf = audioInterface.loadStreamed(path, chunkSize);
         return buf;
     }
@@ -297,6 +302,10 @@ class HipAudio
 
     }
     protected static AudioConfig config;
+    protected static bool hasProAudio;
+    protected static bool hasLowLatencyAudio;
+    protected static int  optimalBufferSize;
+    protected static int  optimalSampleRate;
     private static bool is3D;
     private static HipAudioClip[string] bufferPool; 
     private static HipAudioSource[] sourcePool;

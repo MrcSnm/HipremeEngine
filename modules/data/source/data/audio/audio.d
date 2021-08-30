@@ -49,9 +49,10 @@ private char* getNameFromEncoding(HipAudioEncoding encoding)
 
 interface IHipAudioDecoder
 {
-    bool startDecoding(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false);
-    uint updateDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
+    bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type);
+    uint startDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
     in (chunkSize > 0 , "Chunk size must be greater than 0");
+    uint updateDecoding(void* outputDecodedData);
     AudioConfig getAudioConfig();
     void* getClipData();
     ulong getClipSize();
@@ -78,10 +79,12 @@ class HipSDL_MixerDecoder : IHipAudioDecoder
         HipSDL_MixerDecoder.cfg = cfg;
         return true;
     }
-    uint updateDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
+    uint startDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
+    {assert(false, "SDL_MixerDecoder does not support chunk decoding");}
+    uint updateDecoding(void* outputDecodedData)
     {assert(false, "SDL_MixerDecoder does not support chunk decoding");}
 
-    bool startDecoding(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false)
+    bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type)
     {
         SDL_RWops* ops = SDL_RWFromMem(cast(void*)data.ptr, cast(int)data.length);
         this.type = type; 
@@ -137,10 +140,14 @@ class HipSDL_MixerDecoder : IHipAudioDecoder
     HipAudioType type;
 }
 
+/**
+*   SDL_Sound decoder does suport resampling too. So, it won't be needed to implement
+*/
 class HipSDL_SoundDecoder : IHipAudioDecoder
 {
     Sound_Sample* sample;
     HipAudioEncoding selectedEncoding;
+    uint chunkSize;
     float duration;
     protected static int bufferSize;
     protected static AudioConfig cfg;
@@ -154,31 +161,34 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
         HipSDL_SoundDecoder.cfg = cfg;
         return ret;
     }
-    bool startDecoding(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false)
+    bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type)
     {
         import console.log;
         selectedEncoding = encoding;
         Sound_AudioInfo info = cfg.getSDL_SoundInfo();
         sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length, getNameFromEncoding(encoding), &info, HipSDL_SoundDecoder.bufferSize);
-        
-        if(!isStreamed && sample != null)
+        if(sample != null)
             Sound_DecodeAll(sample);
         return sample != null;
     }
+    uint startDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
+    {
+        Sound_AudioInfo info = cfg.getSDL_SoundInfo();
+        this.selectedEncoding = encoding;
+        this.sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length,
+            getNameFromEncoding(encoding), &info, HipSDL_SoundDecoder.bufferSize);
+        this.chunkSize = chunkSize;
 
-    uint updateDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
+        ErrorHandler.assertExit(sample != null, "SDL_Sound could not create a sample from memory.");
+        if(Sound_SetBufferSize(sample, chunkSize) == 0)
+            ErrorHandler.showErrorMessage("SDL_Sound decoding error",
+            format!"Could not set sample with chunk size %s"(chunkSize));
+        return updateDecoding(outputDecodedData);
+    }
+
+    uint updateDecoding(void* outputDecodedData)
     {
         import core.stdc.string:memcpy;
-        if(sample == null)
-        {
-            Sound_AudioInfo info = cfg.getSDL_SoundInfo();
-            sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length,            
-            getNameFromEncoding(encoding), &info, HipSDL_SoundDecoder.bufferSize);
-            if(Sound_SetBufferSize(sample, chunkSize) == 0)
-                ErrorHandler.showErrorMessage("SDL_Sound decoding error",
-                format!"Could not set sample with chunk size %s"(chunkSize));
-            selectedEncoding = encoding;
-        }
         uint ret = 0;
         uint decodedTotal = 0;
         while(decodedTotal != chunkSize && (ret = Sound_Decode(sample)) != 0)

@@ -64,7 +64,7 @@ enum HIP_OPENSLES_OPTIMAL = true;
 *   - SL_IID_ANDROIDEFFECTSEND
 *
 */
-enum HIP_OPENSLES_FAST_MIXER = true;
+enum HIP_OPENSLES_FAST_MIXER = false;
 
 
 

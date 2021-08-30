@@ -85,7 +85,7 @@ public abstract class HipAudioClip
     {
         this.type = type;
         this.isStreamed = isStreamed;
-        return decoder.startDecoding(data, encoding, type, isStreamed);
+        return decoder.decode(data, encoding, type);
     }
     /**
     *   Decodes a bit more of the current buffer
@@ -93,7 +93,7 @@ public abstract class HipAudioClip
     public final uint updateStream()
     {
         ErrorHandler.assertExit(chunkSize > 0, "Can't update stream with 0 sized buffer.");
-        uint dec = decoder.updateDecoding(dataToDecode, outBuffer, chunkSize,encoding);
+        uint dec = decoder.updateDecoding(outBuffer);
         totalDecoded+= dec;
         onUpdateStream(outBuffer, dec);
         return dec;
@@ -144,7 +144,11 @@ public abstract class HipAudioClip
     {
         dataToDecode = cast(void[])data;
         this.encoding = encoding;
-        return updateStream();
+        ErrorHandler.assertExit(chunkSize > 0, "Can't update stream with 0 sized buffer.");
+        uint dec = decoder.startDecoding(dataToDecode, outBuffer, chunkSize, encoding);
+        totalDecoded+= dec;
+        onUpdateStream(outBuffer, dec);
+        return dec;
     }
     ///Returns the streambuffer if streamed, else, returns entire sound
     public void* getClipData()
