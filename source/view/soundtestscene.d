@@ -16,7 +16,7 @@ class SoundTestScene : Scene
         // src = HipAudio.getSource(false, buf);
         // HipAudio.play(src);
         
-        HipAudioClip buf = HipAudio.loadStreamed("audio/junkyard-a-class.mp3", (ushort.max+1));
+        HipAudioClip buf = HipAudio.loadStreamed("audio/StrategicZone.mp3", (ushort.max+1));
         src = HipAudio.getSource(true, buf);
         HipAudio.play_streamed(src);
         src.pullStreamData();
@@ -28,6 +28,7 @@ class SoundTestScene : Scene
     {
         if(src.getFreeBuffer() != null)
         {
+            import console.log;
             src.pullStreamData();
         }
     }

@@ -35,7 +35,7 @@ enum HIP_OPTIMIZE = false;
 /**
 *	Will use OpenSL ES optimal sample rate for output and buffer size multiple. 
 */
-enum HIP_OPENSLES_OPTIMAL = true;
+enum HIP_OPENSLES_OPTIMAL = false;
 
 /**
 *	Beware that a lot of effects are disabled on Android when using low latency, aka Fast Mixer.

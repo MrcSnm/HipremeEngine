@@ -333,7 +333,6 @@ struct SLIAudioPlayer
     SLMetadataExtractionItf playerMetadata;
 
     protected SLIBuffer** streamQueue;
-    protected ushort streamQueueCursor;
     protected ushort streamQueueLength;
     protected ushort streamQueueCapacity;
 
@@ -372,7 +371,6 @@ struct SLIAudioPlayer
                     sliDestroyBuffer(streamQueue[i]);
                 streamQueue = null;
                 streamQueueLength = 0;
-                streamQueueCursor = 0;
             }
             playerObj = null;
             player = null;
@@ -398,17 +396,15 @@ struct SLIAudioPlayer
         // if(event & SL_PLAYEVENT_HEADATEND)
         {
             SLIAudioPlayer* p = (cast(SLIAudioPlayer*)context);
-            if(p.streamQueueLength > 0 && p.streamQueueCursor < p.streamQueueLength)
+            if(p.streamQueueLength != 0)
             {
-                SLIBuffer* current = p.streamQueue[p.streamQueueCursor];
+                SLIBuffer* current = p.streamQueue[0];
                 current.hasBeenProcessed = true;
                 current.isLocked = false;
 
-                p.streamQueueCursor = (p.streamQueueCursor+1)%p.streamQueueLength;
-                p.streamQueueCursor = cast(ushort)(p.streamQueueCursor+1);
-                if(p.streamQueueCursor < p.streamQueueLength)
+                if(p.streamQueueLength > 1)
                 {
-                    SLIBuffer* b = p.streamQueue[p.streamQueueCursor];
+                    SLIBuffer* b = p.streamQueue[1];
                     import console.log;
                     logln(b.size);
                     b.isLocked = true;
