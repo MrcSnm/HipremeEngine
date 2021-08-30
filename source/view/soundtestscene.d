@@ -12,7 +12,7 @@ class SoundTestScene : Scene
     {
         import console.log;
 
-        // HipAudioClip buf = HipAudio.load("assets/audio/the-sound-of-silence.wav", HipAudioType.SFX);
+        // HipAudioClip buf = HipAudio.load("audio/the-sound-of-silence.wav", HipAudioType.SFX);
         // src = HipAudio.getSource(false, buf);
         // HipAudio.play(src);
         

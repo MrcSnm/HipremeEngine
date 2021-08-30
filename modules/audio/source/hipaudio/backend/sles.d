@@ -125,7 +125,7 @@ bool sliError(SLresult res, lazy string errMessage, string file = __FILE__, stri
     if(res != SL_RESULT_SUCCESS)
     {
         sliErrorQueue~= res;
-        rawlog(format!("'OpenSL ES' Error: '%s' at file %s:%s at %s\n\t%s")(sliGetError(res), file, line, func, errMessage));
+        rawerror(format!("'OpenSL ES' Error: '%s' at file %s:%s at %s\n\t%s")(sliGetError(res), file, line, func, errMessage));
     }
     return res != SL_RESULT_SUCCESS;
 }
@@ -548,29 +548,32 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
 
             //Misc
             sliCall((*playerObj).GetInterface(playerObj, SL_IID_PLAYBACKRATE, &playbackRate),
-            "Could not get MetadataExtraction interface for AudioPlayer");
+            "Could not get PlaybackRate interface for AudioPlayer");
             sliCall((*playerObj).GetInterface(playerObj, SL_IID_VIRTUALIZER, &virtualizer),
-            "Could not get MetadataExtraction interface for AudioPlayer");
+            "Could not get Virtualizer interface for AudioPlayer");
 
             //Wave amplitude modifiers
             sliCall((*playerObj).GetInterface(playerObj, SL_IID_BASSBOOST, &bassBoost),
-            "Could not get MetadataExtraction interface for AudioPlayer");
+            "Could not get BassBoost interface for AudioPlayer");
+
             sliCall((*playerObj).GetInterface(playerObj, SL_IID_EQUALIZER, &equalizer),
-            "Could not get MetadataExtraction interface for AudioPlayer");
+            "Could not get Equalizer interface for AudioPlayer");
 
             //Reverb
             sliCall((*playerObj).GetInterface(playerObj, SL_IID_ENVIRONMENTALREVERB, &envReverb),
-            "Could not get MetadataExtraction interface for AudioPlayer");
+            "Could not get EnvironmentalReverb interface for AudioPlayer");
             sliCall((*playerObj).GetInterface(playerObj, SL_IID_PRESETREVERB, &presetReverb),
-            "Could not get MetadataExtraction interface for AudioPlayer");
+            "Could not get PresetReverb interface for AudioPlayer");
 
             //Effect
             sliCall((*playerObj).GetInterface(playerObj, SL_IID_EFFECTSEND, &playerEffectSend),
             "Could not get EffectSend interface for AudioPlayer");
             sliCall((*playerObj).GetInterface(playerObj, SL_IID_ANDROIDEFFECT, &androidEffect),
-            "Could not get MetadataExtraction interface for AudioPlayer");
+            "Could not get AndroidEffect interface for AudioPlayer");
+
+            
             sliCall((*playerObj).GetInterface(playerObj, SL_IID_ANDROIDEFFECTSEND, &androidEffectSend),
-            "Could not get MetadataExtraction interface for AudioPlayer");
+            "Could not get AndroidEffectSend interface for AudioPlayer");
         }
         
         version(Android)

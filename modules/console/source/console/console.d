@@ -127,7 +127,6 @@ static string _format(Args...)(Args args)
                     import std.stdio;
                     writeln(s);
                 };
-                _log = printFunc;
                 _warn = _log;
                 _err = _log;
                 _fatal = _err;

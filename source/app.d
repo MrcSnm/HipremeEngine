@@ -70,7 +70,7 @@ static void initEngine(bool audio3D = false)
 	{
 		Console.install();
 		import std.file:getcwd;
-		HipFS.install(getcwd());
+		HipFS.install(getcwd()~"/assets");
 	}
 	version(BindSDL_Static){}
 	else

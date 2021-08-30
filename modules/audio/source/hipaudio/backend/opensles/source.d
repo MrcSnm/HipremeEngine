@@ -24,7 +24,7 @@ class HipOpenSLESAudioSource : HipAudioSource
         super.setClip(clip);
         import console.log;
         SLIBuffer* buf = cast(SLIBuffer*)clip.getBuffer(clip.getClipData(), cast(uint)clip.getClipSize());
-        logln(buf.size);
+        // logln(clip.getClipData());
         SLIAudioPlayer.Enqueue(*audioPlayer, buf.data.ptr, buf.size);
         buf.isLocked = true;
     }

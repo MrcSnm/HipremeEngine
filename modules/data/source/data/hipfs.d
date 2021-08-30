@@ -212,7 +212,13 @@ version(Android)
 
 class HipStdFileSystemInteraction : IHipFileSystemInteraction
 {
-    bool read(string path, out void[] output){output = std.file.read(path);return true;}
+    bool read(string path, out void[] output)
+    {
+        if(ErrorHandler.assertErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
+            return false;
+        output = std.file.read(path);
+        return true;
+    }
     bool write(string path, void[] data){std.file.write(path, data);return true;}
     bool exists(string path){return std.file.exists(path);}
     bool remove(string path){std.file.remove(path);return true;}
