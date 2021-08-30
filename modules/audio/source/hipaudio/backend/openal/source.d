@@ -56,7 +56,7 @@ import bindbc.openal;
         else
         {
             HipOpenALClip c = cast(HipOpenALClip)clip;
-            ALuint buf = c.getALBuffer(c.chunkSize, c.getClipData());
+            ALuint buf = c.getALBuffer(c.getClipData(), c.chunkSize);
             alSourceQueueBuffers(id, 1, &buf);
         }
         logln(id);
@@ -66,16 +66,16 @@ import bindbc.openal;
     {
         ErrorHandler.assertExit(clip !is null, "Can't pull stream data without any buffer attached");
         ErrorHandler.assertExit(id != 0, "Can't pull stream data without source id");
-        uint freeBuf = getALFreeBuffer();
+        uint freeBuf = getALFreeBuffer(); //Gets the queueId
         if(freeBuf != 0)
         {
-            uint fb = freeBuf;
+            //Returns the bufferId to freeBuf
             alSourceUnqueueBuffers(id, 1, &freeBuf);
-            sendAvailableBuffer(&fb);
+            sendAvailableBuffer(&freeBuf);
         }
         clip.updateStream();
         HipOpenALClip c = cast(HipOpenALClip)clip;
-        freeBuf = c.getALBuffer(c.chunkSize, c.getClipData());
+        freeBuf = c.getALBuffer(c.getClipData(), c.chunkSize);
         alSourceQueueBuffers(id, 1, &freeBuf);
         
     }

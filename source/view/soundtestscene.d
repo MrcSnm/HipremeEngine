@@ -18,19 +18,19 @@ class SoundTestScene : Scene
         
         HipAudioClip buf = HipAudio.loadStreamed("audio/StrategicZone.mp3", (ushort.max+1)*4);
         src = HipAudio.getSource(true, buf);
+        src.pullStreamData();
+        src.pullStreamData();
         HipAudio.play_streamed(src);
-        src.pullStreamData();
-        src.pullStreamData();
 
 
     }
     override void update(float dt)
     {
-        if(src.getFreeBuffer() != null)
-        {
-            import console.log;
-            src.pullStreamData();
-        }
+        // if(src.getFreeBuffer() != null)
+        // {
+        //     import console.log;
+        //     src.pullStreamData();
+        // }
     }
 
     override void render()

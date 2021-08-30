@@ -63,8 +63,9 @@ import imgui.fonts.icons;
         }
 
     //Properties
-        HipAudioClip clip;
 
+        ///Where the audio data is stored
+        HipAudioClip clip;
         bool isLooping;
         bool isPlaying;
 
