@@ -49,10 +49,6 @@ public class HipremeEngine extends Activity
         assetManager = getApplicationContext().getResources().getAssets();
         instance = this;
 
-        System.out.println(getOptimalAudioBufferSize());
-        System.out.println(hasLowLatencyFeature());
-        System.out.println(hasProFeature());
-        System.out.println(getOptimalSampleRate());
         view = new HipSurfaceView((this));
         setContentView(view);
     }
