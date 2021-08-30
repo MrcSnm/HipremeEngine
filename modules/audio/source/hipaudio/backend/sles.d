@@ -86,6 +86,8 @@ package __gshared short enginePatch = 1;
 */
 package __gshared SLIOutputMix outputMix;
 package __gshared SLIAudioPlayer*[] genPlayers;
+package __gshared Mutex mtx;
+
 
 
 string sliGetError(SLresult res)
@@ -307,7 +309,7 @@ void sliDestroyBuffer(ref SLIBuffer* buff)
     buff = null;
 }
 
-struct SLIAudioPlayer
+__gshared struct SLIAudioPlayer
 {
     ///The Audio player
     SLObjectItf playerObj;
@@ -391,13 +393,15 @@ struct SLIAudioPlayer
         (*player).SetCallbackEventsMask(player, mask);
     }
 
-    extern(C) static void checkClipEnd_Callback(SLPlayItf player, void* context, SLuint32 event)
+    extern(C) static void checkStreamCallback(SLPlayItf player, void* context, SLuint32 event)
     {
         // if(event & SL_PLAYEVENT_HEADATEND)
         {
+            // mtx.lock();
             SLIAudioPlayer* p = (cast(SLIAudioPlayer*)context);
             if(p.streamQueueLength != 0)
             {
+                import console.log;
                 SLIBuffer* current = p.streamQueue[0];
                 current.hasBeenProcessed = true;
                 current.isLocked = false;
@@ -406,18 +410,20 @@ struct SLIAudioPlayer
                 {
                     SLIBuffer* b = p.streamQueue[1];
                     import console.log;
-                    logln(b.size);
+                    logln(*b);
                     b.isLocked = true;
                     SLIAudioPlayer.Enqueue(*p, b.data.ptr, b.size);
                 }
             }
-            atomicStore(p.hasFinishedTrack,  true);
+            p.hasFinishedTrack = true;
+            // mtx.unlock();
         }
     }
 
     void pushBuffer(SLIBuffer* buffer)
     {
         import core.stdc.stdlib:malloc,realloc;
+        // mtx.lock();
         streamQueueLength++;
         if(streamQueue == null)
             streamQueue = cast(SLIBuffer**)malloc((SLIBuffer*).sizeof * streamQueueLength);
@@ -426,7 +432,9 @@ struct SLIAudioPlayer
             streamQueue = cast(SLIBuffer**)realloc(streamQueue, (SLIBuffer*).sizeof * streamQueueLength);
             streamQueueCapacity = streamQueueLength;
         }
+        buffer.hasBeenProcessed = false;
         streamQueue[streamQueueLength-1] = buffer;
+        // mtx.unlock();
     }
 
     SLIBuffer* getProcessedBuffer()
@@ -456,15 +464,11 @@ struct SLIAudioPlayer
         for(int i = 0; i < streamQueueLength;i++)
         {
             if(streamQueue[i] == processedBuffer)
-            {                
-                streamQueueLength--;
                 isReordering = true;
-            }
             if(isReordering)
-            {
                 streamQueue[i] = streamQueue[i+1];
-            }
         }
+        streamQueueLength--;
         ErrorHandler.assertExit(isReordering, "SLES Error: buffer not found when trying to unqueue it");
     }
     static void resume(ref SLIAudioPlayer audioPlayer)
@@ -585,7 +589,7 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
         *playerOut = temp;
         if(autoRegisterCallback)
         {
-            temp.RegisterCallback(&SLIAudioPlayer.checkClipEnd_Callback, cast(void*)playerOut);
+            temp.RegisterCallback(&SLIAudioPlayer.checkStreamCallback, cast(void*)playerOut);
             temp.SetCallbackEventsMask(SL_PLAYEVENT_HEADATEND | SL_PLAYEVENT_HEADATNEWPOS);
         }
         genPlayers~= playerOut;
@@ -649,6 +653,7 @@ bool sliCreateOutputContext(
 {
     engine = SLIEngine(null,null,null, willUseFastMixer);
     engine.initialize();
+    mtx = new Mutex();
 
     // loadSawtooth();
 

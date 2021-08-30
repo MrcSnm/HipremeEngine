@@ -16,7 +16,7 @@ class SoundTestScene : Scene
         // src = HipAudio.getSource(false, buf);
         // HipAudio.play(src);
         
-        HipAudioClip buf = HipAudio.loadStreamed("audio/StrategicZone.mp3", (ushort.max+1));
+        HipAudioClip buf = HipAudio.loadStreamed("audio/StrategicZone.mp3", (ushort.max+1)*4);
         src = HipAudio.getSource(true, buf);
         HipAudio.play_streamed(src);
         src.pullStreamData();
