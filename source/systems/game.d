@@ -58,7 +58,8 @@ class GameSystem
 
         if(hasFinished || dispatcher.hasQuit)
             return false;
-        keyboard.update();
+        version(Android){}
+        else {keyboard.update();}
         foreach(s; scenes)
             s.update(0);
 

@@ -26,11 +26,14 @@ class SoundTestScene : Scene
     }
     override void update(float dt)
     {
-        // if(src.getFreeBuffer() != null)
-        // {
-        //     import console.log;
-        //     src.pullStreamData();
-        // }
+        // if(!HipAudio.isMusicPlaying(src))
+            // HipAudio.resume(src);
+        if(src.getFreeBuffer() != null)
+        {
+            import console.log;
+            rawerror("FOUND FREE BUFFERRR");
+            src.pullStreamData();
+        }
     }
 
     override void render()
