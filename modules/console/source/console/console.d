@@ -88,9 +88,12 @@ static string _format(Args...)(Args args)
     bool useTab = true;
     bool isShowing = true;
     static __gshared Console DEFAULT;
+    import core.sync.mutex:Mutex;
+    static __gshared Mutex mtx;
     static this()
     {
         DEFAULT = new Console("Output", 99);
+        mtx = new Mutex();
     }
 
     static void install(Platforms p = Platforms.DEFAULT, void function(string) printFunc = null)
@@ -160,18 +163,22 @@ static string _format(Args...)(Args args)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
+            mtx.lock();
             string toLog = _format!(fmt, a);
             _log(toLog);
+            mtx.unlock();
         }
     }
     void log(Args...)(Args a)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
+            mtx.lock();
             string toLog = "";
             foreach(_a; a) toLog~= to!string(_a);
             _formatLog(toLog);
             _log(toLog);
+            mtx.unlock();
         }
     }
 
@@ -179,9 +186,11 @@ static string _format(Args...)(Args args)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
+            mtx.lock();
             string toLog = _format!(fmt, a);
             _formatLog(toLog);
             _log(toLog);
+            mtx.unlock();
         }
         
     }
@@ -189,18 +198,22 @@ static string _format(Args...)(Args args)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
+            mtx.lock();
             string toLog = _format!(fmt, a);
             _formatLog(toLog);
             _log(toLog);
+            mtx.unlock();
         }
     }
     void error(alias fmt, Args...)(Args a)
     {
         static if(!HE_NO_LOG)
         {
+            mtx.lock();
             string toLog = _format!(fmt, a);
             _formatLog(toLog);
             _err(toLog);
+            mtx.unlock();
         }
         
     }
@@ -208,20 +221,24 @@ static string _format(Args...)(Args args)
     {
         static if(!HE_NO_LOG)
         {
+            mtx.lock();
             string toLog;
             static foreach(arg; a)
                 toLog~= to!string(arg);
             _formatLog(toLog);
             _err(toLog);
+            mtx.unlock();
         }
     }
     void fatal(alias fmt, Args...)(Args a)
     {
         static if(!HE_NO_LOG)
         {
+            mtx.lock();
             string toLog = _format!(fmt, a);
             _formatLog(toLog);
             _fatal(toLog);
+            mtx.unlock();
         }
         
     }
@@ -229,31 +246,37 @@ static string _format(Args...)(Args args)
     {
         static if(!HE_NO_LOG)
         {
+            mtx.lock();
             string toLog;
             static foreach(arg; a)
                 toLog~= to!string(arg);
             _formatLog(toLog);
             _fatal(toLog);
+            mtx.unlock();
         }
     }
 
     void indent()
     {
+        mtx.lock();
         if(useTab)
             indentation~= "\t";
         else
             for(int i = 0; i < indentationSize; i++)
                 indentation~= " ";
         indentationCount++;
+        mtx.unlock();
     }
 
     void unindent()
     {
+        mtx.lock();
         if(useTab)
             indentation = indentation[1..$];
         else
             indentation = indentation[indentationSize..$];
         indentationCount--;
+        mtx.unlock();
     }
 }
 
