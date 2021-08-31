@@ -10,6 +10,7 @@ import jni.jni;
 
 version(Android):
 
+
 enum javaRep =
 [
     "byte"  : "B",
@@ -129,12 +130,96 @@ string javaGetMethodName(string where)
     else
         return where[ind+1..$];
 }
+string javaGenerateMethodName(alias javaPackage)(string method)
+{
+    string packName;
+    string pName = javaPackage._packageName;
+    for(ulong i = 0; i < pName.length; i++)
+    {
+        if(pName[i] == '.')
+            packName~= '_';
+        else
+            packName~= pName[i];
+    }
+    return "Java_"~packName~"_"~method;
+}
+
+/**
+*   This function should provide the module to import for it being able to get the type
+*/
+string javaGenerateMethod(alias javaPackage, string funcSymbol, string m = __MODULE__)()
+{
+    static assert(__traits(hasMember, javaPackage, "_packageName"), "JavaFunc error: "~javaPackage.stringof~" is not a java package");
+    import std.algorithm:countUntil;
+    import std.array:split;
+    import std.format:format;
+    mixin("import "~m~";");
+
+
+    enum metName = javaGenerateMethodName!(javaPackage)(funcSymbol);
+    enum funcData = typeof(mixin(funcSymbol)).stringof;
+
+    long firstParensIndex = funcData.countUntil("(");
+    string funcRet = funcData[0..firstParensIndex];
+    string funcParams = funcData[firstParensIndex+1..$-1];
+
+    string[] paramsTemp = funcParams.split(",");
+
+    string paramsCall;
+    for(int i = 0; i < paramsTemp.length; i++)
+    {
+        if(i != 0)
+            paramsCall~=",";
+        paramsCall~= (paramsTemp[i].split(" "))[$-1]; //Last string after space is the argument name
+    }
+
+
+    return format!q{
+        extern(C) %s %s (%s)
+        {
+            pragma(inline, true)
+            %s(%s);
+        }
+    }(funcRet, metName, funcParams, funcSymbol, paramsCall);
+}
+
+
+mixin template javaGenerateModuleMethodsForPackage(alias javaPackage, alias module_, bool showGeneration = false)
+{
+    static foreach(m;  __traits(allMembers, module_))
+    {
+        static if(hasUDA!(mixin(m), JavaFunc!javaPackage))
+        {
+            static if(showGeneration)
+            {
+                pragma(msg, m,":");
+                pragma(msg, javaGenerateMethod!(javaPackage, m));
+            }
+            mixin(javaGenerateMethod!(javaPackage, m));
+        }
+    }
+}
+
+/**
+*   By not using templated struct, no instantiation will be required, and it will 
+*   be easier for searching when using __traits
+*/
+struct JavaFunc_{string packageName;}
+
+enum JavaFunc(alias T)()
+{
+    static assert(__traits(hasMember, T, "_packageName"), "JavaFunc error: "~T.stringof~" is not a java package");
+    return JavaFunc_(T._packageName);
+}
 
 template javaGetPackage(string packageName)
 {
     JNIEnv* _env = null;
+    immutable(string) _packageName = packageName;
     void setEnv(JNIEnv* env){_env = env;}
 
+
+    
     auto javaCall(T, string path, Args...)(JNIEnv* env = _env)
     {
         static if(is(T == void*))
@@ -207,6 +292,13 @@ template javaGetPackage(string packageName)
             return ret;
         }
     }
+
 }
 
-alias javaCall = javaGetPackage!"".javaCall;
+
+// mixin template ExportJavaFuncs(alias module_, alias javaPackage)
+// {
+
+// }
+
+alias javaCall = javaGetPackage!("").javaCall;
