@@ -436,9 +436,9 @@ __gshared struct SLIAudioPlayer
                     buf.isLocked = true;
                     logln("Next:", *buf);
                     p.totalChunksPlayed++;
-                    SLIAudioPlayer.Clear(*p);
                     SLIAudioPlayer.Enqueue(*p, buf.data.ptr, buf.size);
-                    SLIAudioPlayer.resume(*p);
+                    SLIAudioPlayer.stop(*p);
+                    SLIAudioPlayer.play(*p);
                 }
             }
             else
@@ -557,7 +557,11 @@ __gshared struct SLIAudioPlayer
         with(audioPlayer)
         {
             isPlaying = true;
-            (*player).SetPlayState(player, SL_PLAYSTATE_PLAYING);
+            uint playState;
+            (*player).GetPlayState(player, &playState);
+
+            if(playState == SL_PLAYSTATE_PAUSED || playState == SL_PLAYSTATE_STOPPED)
+                (*player).SetPlayState(player, SL_PLAYSTATE_PLAYING);
         }
     }
 
@@ -672,7 +676,7 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
         if(autoRegisterCallback)
         {
             temp.RegisterCallback(&SLIAudioPlayer.checkStreamCallback, cast(void*)playerOut);
-            temp.SetCallbackEventsMask(SL_PLAYEVENT_HEADATEND | SL_PLAYEVENT_HEADATNEWPOS);
+            temp.SetCallbackEventsMask(SL_PLAYEVENT_HEADATEND);
         }
         genPlayers~= playerOut;
         return playerOut;

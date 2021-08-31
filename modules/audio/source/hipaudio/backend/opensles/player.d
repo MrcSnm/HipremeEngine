@@ -182,7 +182,10 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
         ),
         "Error creating OpenSLES context.", sliGetErrorMessages());
     }
-    public bool isMusicPlaying(HipAudioSource src){return false;}
+    public bool isMusicPlaying(HipAudioSource src)
+    {
+        return (cast(HipOpenSLESAudioSource)src).audioPlayer.isPlaying;
+    }
     public bool isMusicPaused(HipAudioSource src){return false;}
     public bool resume(HipAudioSource src)
     {
