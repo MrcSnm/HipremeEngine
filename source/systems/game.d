@@ -53,8 +53,7 @@ class GameSystem
 
     bool update()
     {
-        version(Android){}
-        else {dispatcher.handleEvent();}
+        dispatcher.handleEvent();
 
         if(hasFinished || dispatcher.hasQuit)
             return false;

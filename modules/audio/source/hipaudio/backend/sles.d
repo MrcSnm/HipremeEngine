@@ -28,7 +28,8 @@ struct SLIEngine
 
     void initialize()
     {
-        sliCall(slCreateEngine(&engineObject,0,null,0,null,null),
+        SLEngineOption engineOptions = SLEngineOption(SL_ENGINEOPTION_THREADSAFE, SL_BOOLEAN_TRUE);
+        sliCall(slCreateEngine(&engineObject,1,&engineOptions,0,null,null),
         "Could not create engine");
 
         //Initialize|Realize the engine
@@ -361,9 +362,20 @@ __gshared struct SLIAudioPlayer
         SL3DDopplerItf doppler3D;
         SL3DLocationItf location3D;
     }
+    SLIBuffer* nextBuffer;
     bool isPlaying, hasFinishedTrack;
 
     float volume;
+
+    void update()
+    {
+        if(nextBuffer != null)
+        {
+            SLIAudioPlayer.Clear(this);
+            SLIAudioPlayer.Enqueue(this, nextBuffer.data.ptr, nextBuffer.size);
+            nextBuffer = null;
+        }
+    }
 
     static void setVolume(ref SLIAudioPlayer audioPlayer, float gain)
     {
@@ -407,6 +419,23 @@ __gshared struct SLIAudioPlayer
         (*player).SetCallbackEventsMask(player, mask);
     }
 
+    /**
+    *   Checking some bug issues tracker: 
+    *   - https://groups.google.com/g/android-ndk/c/zANdS2n2cQI
+    *
+    *   - https://issuetracker.google.com/issues/37011991
+    *
+    *   It seems that you can't make any call to OpenSL API inside SL_PLAYEVENT_HEADATEND
+    *
+    *   I'm delegating it right now to the void update() method. As it seems, there is a little
+    *   more music playing after SL_PLAYEVENT_HEADATEND(it is notified early).
+    *
+    *   It can cause some unsync in some other device, but that must be checked case-to-case.
+    *   
+    *   Using ushort.max seems to be the way to go about how much it need to decode. ushort.max/4 caused some
+    *   interruptions in music, while ushort.max/8 was inaudible (ushort.max is a great number, 65k, )
+    *
+    */
     extern(C) static void checkStreamCallback(SLPlayItf player, void* context, SLuint32 event)
     {
         if(event & SL_PLAYEVENT_HEADATEND)
@@ -417,28 +446,18 @@ __gshared struct SLIAudioPlayer
             {
                 SLIBuffer* buf;
                 if(p.totalChunksPlayed == 0)
-                {
                     buf = p.streamQueue[0];
-                    logln("Using the first in queue");
-                }
                 else
                 {
-                    logln("Removing the last in the queue");
                     p.unqueue(p.streamQueue[0]); //Unqueue the old buffer, thus, streamQueueLength--
                     if(p.streamQueueLength > 0)
-                    {
                         buf = p.streamQueue[0];
-                        logln("Using the next in the queue");
-                    }
                 }
                 if(buf != null)
                 {
                     buf.isLocked = true;
-                    logln("Next:", *buf);
                     p.totalChunksPlayed++;
-                    SLIAudioPlayer.Enqueue(*p, buf.data.ptr, buf.size);
-                    SLIAudioPlayer.stop(*p);
-                    SLIAudioPlayer.play(*p);
+                    p.nextBuffer = buf;
                 }
             }
             else
@@ -502,6 +521,13 @@ __gshared struct SLIAudioPlayer
         }
         streamQueueFree--;
         ErrorHandler.assertExit(isReordering, "OpenSL ES: Buffer sent to remove is not in queue");
+    }
+    int GetState()
+    {
+        SLAndroidSimpleBufferQueueState res;
+        (*playerAndroidSimpleBufferQueue).GetState(playerAndroidSimpleBufferQueue, &res);
+
+        return res.count; //If 0, nothing is playing
     }
 
     /**

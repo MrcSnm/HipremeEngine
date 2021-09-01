@@ -71,3 +71,85 @@ struct RingBuffer(T, uint Length)
 
     ~this(){dispose();}
 }
+
+/**
+*   High efficient(at least memory-wise), tightly packed Input queue that supports any kind of data in
+*   a single allocated memory pool(no fragmentation).
+*
+*   This class could probably be extendeded to be every event handler
+*/
+class EventQueue
+{
+    import util.memory;
+    
+    struct Event
+    {
+        ubyte type;
+        ubyte evSize;
+        void[0] evData;
+    }
+
+    ///Linearly allocated variable length Events
+    void* eventQueue;
+    ///BytesOffset should never be greater than capacity
+    uint bytesCapacity;
+    uint bytesOffset;
+    protected uint pollCursor;
+
+    protected this(uint capacity)
+    {
+        ///Uses capacity*greatest structure size
+        bytesCapacity = cast(uint)capacity;
+        bytesOffset = 0;
+        eventQueue = malloc(bytesCapacity);
+    }
+
+
+    void post(T)(ubyte type, T ev)
+    {
+        assert(bytesOffset+T.sizeof+Event.sizeof < bytesCapacity, "InputQueue Out of bounds");
+        if(pollCursor == bytesOffset) //It will restart if everything was polled
+        {
+            pollCursor = 0;
+            bytesOffset = 0;
+        }
+        else if(pollCursor != 0) //It will copy everything from the right to the start
+        {
+            memcpy(eventQueue, eventQueue+pollCursor, bytesOffset-pollCursor);
+            //Compensates the offset into the cursor.
+            bytesOffset-= pollCursor;
+            //Restarts the poll cursor, as everything from the right moved to left
+            pollCursor = 0;
+        }
+        Event temp;
+        temp.type = type;
+        temp.evSize = T.sizeof;
+        memcpy(eventQueue+bytesOffset, &temp, Event.sizeof);
+        memcpy(eventQueue+bytesOffset+Event.sizeof, &ev, T.sizeof);
+        bytesOffset+= T.sizeof+Event.sizeof;
+    }
+
+    void clear()
+    {
+        //By setting it equal, no one will be able to poll it
+        pollCursor = bytesOffset;
+    }
+
+    Event* poll()
+    {
+        if(bytesOffset - pollCursor <= 0)
+            return null;
+        Event* ev = cast(Event*)(eventQueue+pollCursor);
+        pollCursor+= ev.evSize+Event.sizeof;
+        return ev;
+    }
+
+    protected ~this()
+    {
+        free(eventQueue);
+        eventQueue = null;
+        pollCursor = 0;
+        bytesCapacity = 0;
+        bytesOffset = 0;
+    }
+}

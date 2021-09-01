@@ -16,7 +16,7 @@ class SoundTestScene : Scene
         // src = HipAudio.getSource(false, buf);
         // HipAudio.play(src);
         
-        HipAudioClip buf = HipAudio.loadStreamed("audio/StrategicZone.mp3", (ushort.max+1)*4);
+        HipAudioClip buf = HipAudio.loadStreamed("audio/StrategicZone.mp3", (ushort.max+1));
         src = HipAudio.getSource(true, buf);
         src.pullStreamData();
         src.pullStreamData();
@@ -28,10 +28,29 @@ class SoundTestScene : Scene
     {
         // if(!HipAudio.isMusicPlaying(src))
             // HipAudio.resume(src);
+        import systems.input;
+        import console.log;
+        import hipaudio.backend.opensles;
+        HipInput.InputEvent* ev;
+        while((ev = HipInput.poll(0)) != null)
+        {
+            switch(ev.type)
+            {
+                case HipInput.InputType.TOUCH_DOWN:
+
+                    logln("Resuming audiosurce");
+                    
+                    HipAudio.resume(src);
+                // case HipInput.InputType.TOUCH_UP:
+                // case HipInput.InputType.TOUCH_MOVE:
+                // case HipInput.InputType.TOUCH_SCROLL:
+                    break;
+                default:break;
+            }
+        }
+        ((cast(HipOpenSLESAudioSource)src).audioPlayer).update();       
         if(src.getFreeBuffer() != null)
         {
-            import console.log;
-            rawerror("FOUND FREE BUFFERRR");
             src.pullStreamData();
         }
     }
