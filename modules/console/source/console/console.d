@@ -163,22 +163,22 @@ static string _format(Args...)(Args args)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
-            mtx.lock();
+            //mtx.lock();
             string toLog = _format!(fmt, a);
             _log(toLog);
-            mtx.unlock();
+            //mtx.unlock();
         }
     }
     void log(Args...)(Args a)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
-            mtx.lock();
+            //mtx.lock();
             string toLog = "";
             foreach(_a; a) toLog~= to!string(_a);
             _formatLog(toLog);
             _log(toLog);
-            mtx.unlock();
+            //mtx.unlock();
         }
     }
 
@@ -186,11 +186,11 @@ static string _format(Args...)(Args args)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
-            mtx.lock();
+            //mtx.lock();
             string toLog = _format!(fmt, a);
             _formatLog(toLog);
             _log(toLog);
-            mtx.unlock();
+            //mtx.unlock();
         }
         
     }
@@ -198,22 +198,22 @@ static string _format(Args...)(Args args)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
-            mtx.lock();
+            //mtx.lock();
             string toLog = _format!(fmt, a);
             _formatLog(toLog);
             _log(toLog);
-            mtx.unlock();
+            //mtx.unlock();
         }
     }
     void error(alias fmt, Args...)(Args a)
     {
         static if(!HE_NO_LOG)
         {
-            mtx.lock();
+            //mtx.lock();
             string toLog = _format!(fmt, a);
             _formatLog(toLog);
             _err(toLog);
-            mtx.unlock();
+            //mtx.unlock();
         }
         
     }
@@ -221,24 +221,24 @@ static string _format(Args...)(Args args)
     {
         static if(!HE_NO_LOG)
         {
-            mtx.lock();
+            //mtx.lock();
             string toLog;
             static foreach(arg; a)
                 toLog~= to!string(arg);
             _formatLog(toLog);
             _err(toLog);
-            mtx.unlock();
+            //mtx.unlock();
         }
     }
     void fatal(alias fmt, Args...)(Args a)
     {
         static if(!HE_NO_LOG)
         {
-            mtx.lock();
+            //mtx.lock();
             string toLog = _format!(fmt, a);
             _formatLog(toLog);
             _fatal(toLog);
-            mtx.unlock();
+            //mtx.unlock();
         }
         
     }
@@ -246,37 +246,37 @@ static string _format(Args...)(Args args)
     {
         static if(!HE_NO_LOG)
         {
-            mtx.lock();
+            //mtx.lock();
             string toLog;
             static foreach(arg; a)
                 toLog~= to!string(arg);
             _formatLog(toLog);
             _fatal(toLog);
-            mtx.unlock();
+            //mtx.unlock();
         }
     }
 
     void indent()
     {
-        mtx.lock();
+        //mtx.lock();
         if(useTab)
             indentation~= "\t";
         else
             for(int i = 0; i < indentationSize; i++)
                 indentation~= " ";
         indentationCount++;
-        mtx.unlock();
+        //mtx.unlock();
     }
 
     void unindent()
     {
-        mtx.lock();
+        //mtx.lock();
         if(useTab)
             indentation = indentation[1..$];
         else
             indentation = indentation[indentationSize..$];
         indentationCount--;
-        mtx.unlock();
+        //mtx.unlock();
     }
 }
 
