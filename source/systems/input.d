@@ -1,38 +1,31 @@
 module systems.input;
+import util.data_structures;
+import error.handler;
 import jni.helper.androidlog;
 import jni.jni;
 import jni.helper.jnicall;
 ///Setups an Android Package for HipremeEngine
 alias HipAndroidInput = javaGetPackage!("com.hipremeengine.app.HipInput");
 
-__gshared HipInput inp;
 
 version(Android)
 {
     @JavaFunc!(HipAndroidInput) void onMotionEventActionMove(int pointerId, float x, float y)
 	{
-        import console.log;
-        inp.postInput(HipInput.InputType.TOUCH_MOVE, HipInput.Touch(cast(ushort)pointerId, x,y));
-        rawlog("Move: ", pointerId, " ", x, " ", y);
+        HipInput.post(0, HipInput.InputType.TOUCH_MOVE, HipInput.Touch(cast(ushort)pointerId, x,y));
 	}
 
     @JavaFunc!(HipAndroidInput) void onMotionEventActionPointerDown(int pointerId, float x, float y)
 	{
-        import console.log;
-        inp.postInput(HipInput.InputType.TOUCH_DOWN, HipInput.Touch(cast(ushort)pointerId, x,y));
-        rawlog("PointerDown: ", pointerId, " ", x, " ", y);
+        HipInput.post(0, HipInput.InputType.TOUCH_DOWN, HipInput.Touch(cast(ushort)pointerId, x,y));
 	}
     @JavaFunc!(HipAndroidInput) void onMotionEventActionPointerUp(int pointerId, float x, float y)
 	{
-        import console.log;
-        inp.postInput(HipInput.InputType.TOUCH_UP, HipInput.Touch(cast(ushort)pointerId, x,y));
-        rawlog("PointerUp: ", pointerId, " ", x, " ", y);
+        HipInput.post(0, HipInput.InputType.TOUCH_UP, HipInput.Touch(cast(ushort)pointerId, x,y));
 	}
     @JavaFunc!(HipAndroidInput) void onMotionEventActionScroll(float x, float y)
 	{
-        import console.log;
-        inp.postInput(HipInput.InputType.TOUCH_SCROLL, HipInput.Touch(ushort.max, x,y));
-        rawlog("Scroll: ", x, " ", y);
+        HipInput.post(0, HipInput.InputType.TOUCH_SCROLL, HipInput.Touch(ushort.max, x,y));
 	}
 
     mixin javaGenerateModuleMethodsForPackage!(HipAndroidInput, systems.input, false);
@@ -42,15 +35,22 @@ else
 
 } 
 
-class HipInput
+/**
+*   High efficient(at least memory-wise), tightly packed Input queue that supports any kind of data in
+*   a single allocated memory pool(no fragmentation).
+*
+*   This class could probably be extendeded to be every event handler
+*/
+class HipInput : EventQueue
 {
-    import util.memory;
     enum InputType : ubyte
     {
+        TOUCH, //Check if type >= TOUCH ?
         TOUCH_DOWN,
         TOUCH_MOVE,
         TOUCH_UP,
         TOUCH_SCROLL,
+        KEY,
         KEY_DOWN,
         KEY_UP
     }
@@ -75,66 +75,38 @@ class HipInput
         float  yPos;
     }
 
-    void* eventQueue;
-    uint bytesCapacity;
-    uint bytesOffset;
+    ///This class should probably not contain more than one instance(unless 2 people are playing)
+    protected __gshared HipInput[] controllers;
 
-    protected uint pollCursor;
-
-    this(uint touchStructsCapacity = 126)
+    protected this(uint touchStructsCapacity = 126)
     {
         ///Uses capacity*greatest structure size
-        bytesCapacity = cast(uint)Touch.sizeof*touchStructsCapacity;
-        bytesOffset = 0;
-        eventQueue = malloc(bytesCapacity);
+        super(cast(uint)Touch.sizeof*touchStructsCapacity);
     }
+    InputEvent* poll(){return cast(InputEvent*)super.poll();}
 
-
-    void postInput(T)(InputType type, T ev)
+    static HipInput newController(uint touchStructsCapacity = 126)
     {
-        assert(bytesOffset+T.sizeof+InputEvent.sizeof < bytesCapacity, "InputQueue Out of bounds");
-        if(pollCursor == bytesOffset) //It will restart if everything was polled
-        {
-            pollCursor = 0;
-            bytesOffset = 0;
-        }
-        else if(pollCursor != 0) //It will copy everything from the right to the start
-        {
-            memcpy(eventQueue, eventQueue+pollCursor, bytesOffset-pollCursor);
-            //Compensates the offset into the cursor.
-            bytesOffset-= pollCursor;
-            //Restarts the poll cursor, as everything from the right moved to left
-            pollCursor = 0;
-        }
-        InputEvent ie;
-        ie.type = type;
-        ie.evSize = T.sizeof;
-        memcpy(eventQueue+bytesOffset, &ie, InputEvent.sizeof);
-        memcpy(eventQueue+bytesOffset+InputEvent.sizeof, &ev, T.sizeof);
-        bytesOffset+= T.sizeof+InputEvent.sizeof;
+        HipInput ip = new HipInput(touchStructsCapacity);
+        controllers~= ip;
+        return ip;
     }
-
-    void clear()
+    static void post(T)(uint id, InputType type, T ev)
     {
-        //By setting it equal, no one will be able to poll it
-        pollCursor = bytesOffset;
+        ErrorHandler.assertExit(id < controllers.length, "Input controller out of range!");
+        controllers[id].post(cast(ubyte)type, ev);
     }
-
-    InputEvent* poll()
+    static InputEvent* poll(uint id)
     {
-        if(bytesOffset - pollCursor <= 0)
-            return null;
-        InputEvent* ev = cast(InputEvent*)(eventQueue+pollCursor);
-        pollCursor+= ev.evSize+InputEvent.sizeof;
-        return ev;
+        ErrorHandler.assertExit(id < controllers.length, "Input controller out of range!");
+        return controllers[id].poll();
     }
-
-    ~this()
+    static void clear(uint id)
     {
-        free(eventQueue);
-        eventQueue = null;
-        pollCursor = 0;
-        bytesCapacity = 0;
-        bytesOffset = 0;
+        ErrorHandler.assertExit(id < controllers.length, "Input controller out of range!");
+        controllers[id].clear();
     }
+    alias poll = EventQueue.poll;
+    alias post = EventQueue.post;
+    alias clear = EventQueue.clear;
 }
