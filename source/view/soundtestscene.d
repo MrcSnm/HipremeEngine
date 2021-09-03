@@ -22,8 +22,14 @@ class SoundTestScene : Scene
         t = new Test();
         t.x = 0;
         t.y = 0;
-        timer = HipTween.by!(["x", "y"])(15, t, 300, 800);
-        timer.setEasing(HipEasing.identity);
+        timer = new HipTweenSequence(false, 
+        new HipTweenSpawn(false, 
+            HipTween.by!(["x"])(0.2, t, 300), 
+            HipTween.by!(["y"])(8, t, 900),
+        ),
+        HipTween.to!(["x"])(15, t, 0)
+        );
+
         timer.play();
 
         // HipAudioClip buf = HipAudio.load("audio/the-sound-of-silence.wav", HipAudioType.SFX);
