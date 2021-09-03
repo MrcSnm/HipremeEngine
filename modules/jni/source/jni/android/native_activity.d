@@ -1,5 +1,5 @@
 module jni.android.native_activity;
-
+version(Android):
 /*
  * Copyright (C) 2010 The Android Open Source Project
  *

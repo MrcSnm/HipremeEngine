@@ -3,7 +3,6 @@ import error.handler;
 import console.log;
 import std.conv:to;
 import std.format:format;
-import core.sync.mutex;
 import core.atomic;
 import std.algorithm:count;
 import opensles.sles;
@@ -87,7 +86,6 @@ package __gshared short enginePatch = 1;
 */
 package __gshared SLIOutputMix outputMix;
 package __gshared SLIAudioPlayer*[] genPlayers;
-package __gshared Mutex mtx;
 
 
 
@@ -371,10 +369,18 @@ __gshared struct SLIAudioPlayer
     {
         if(nextBuffer != null)
         {
+            //Need to clear queue, as having too many can cause a crash
             SLIAudioPlayer.Clear(this);
+            //Set it playing
             SLIAudioPlayer.Enqueue(this, nextBuffer.data.ptr, nextBuffer.size);
             nextBuffer = null;
         }
+        else if(hasFinishedTrack)
+        {
+            import console.log;
+            logln("STOPPED!");
+            SLIAudioPlayer.stop(this);
+        }            
     }
 
     static void setVolume(ref SLIAudioPlayer audioPlayer, float gain)
@@ -433,8 +439,10 @@ __gshared struct SLIAudioPlayer
     *   It can cause some unsync in some other device, but that must be checked case-to-case.
     *   
     *   Using ushort.max seems to be the way to go about how much it need to decode. ushort.max/4 caused some
-    *   interruptions in music, while ushort.max/8 was inaudible (ushort.max is a great number, 65k, )
+    *   interruptions in music, while ushort.max/8 was inaudible (ushort.max is a great number, 65k)
     *
+    *   It is also possible to bypass the need for a callback by calling GetState and checking if count == 0,
+    *   that will mean that the head is at the end
     */
     extern(C) static void checkStreamCallback(SLPlayItf player, void* context, SLuint32 event)
     {
@@ -468,7 +476,6 @@ __gshared struct SLIAudioPlayer
     void pushBuffer(SLIBuffer* buffer)
     {
         import core.stdc.stdlib:malloc,realloc;
-        // mtx.lock();
 
         totalChunksEnqueued++;
         streamQueueLength++;
@@ -484,7 +491,6 @@ __gshared struct SLIAudioPlayer
         buffer.hasBeenProcessed = false;
         //Buffer is locked when playing
         streamQueue[streamQueueLength-1] = buffer;
-        // mtx.unlock();
     }
 
     /**
@@ -725,35 +731,9 @@ void sliDestroyContext()
 }
 
 
-// __gshared short[8000] sawtoothBuffer;
-
-// static void loadSawtooth()
-// {
-//     for(uint i =0; i < 8000; ++i)
-//         sawtoothBuffer[i] = cast(short)(40_000 - ((i%100) * 220));
-        
-// }
-
 version(Android){alias SLIDataLocator_Address = SLDataLocator_AndroidSimpleBufferQueue;}
 else{alias SLIDataLocator_Address = SLDataLocator_Address;}
 
-
-// SLIDataLocator_Address sliGetAddressDataLocator()
-// {
-//     SLIDataLocator_Address ret;
-//     version(Android)
-//     {
-//         ret.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
-//         ret.numBuffers = 1;
-//     }
-//     else
-//     {
-//         ret.locatorType = SL_DATALOCATOR_ADDRESS;
-//         ret.pAddress = 
-//     }
-// }
-
-// static BufferQueuePlayer bq;
 
 bool sliCreateOutputContext(
     bool hasProAudio=false,
@@ -765,7 +745,6 @@ bool sliCreateOutputContext(
 {
     engine = SLIEngine(null,null,null, willUseFastMixer);
     engine.initialize();
-    mtx = new Mutex();
 
     // loadSawtooth();
 
@@ -775,28 +754,3 @@ bool sliCreateOutputContext(
     
     return sliErrorQueue.length == 0;
 }
-
-
-// pointer and size of the next player buffer to enqueue, and number of remaining buffers
-static short *nextBuffer;
-static uint nextSize;
-static int nextCount;
-// this callback handler is called every time a buffer finishes playing
-// extern(C)void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
-// {
-//     // for streaming playback, replace this test by logic to find and fill the next buffer
-//     if (--nextCount > 0 && null != nextBuffer && 0 != nextSize) {
-//         SLresult result;
-//         // enqueue another buffer
-//         result = (*bq).Enqueue(bq, nextBuffer, nextSize);
-//         // the most likely other result is SL_RESULT_BUFFER_INSUFFICIENT,
-//         // which for this code example would indicate a programming error
-//         // if (SL_RESULT_SUCCESS != result) {
-//         //     pthread_mutex_unlock(&audioEngineLock);
-//         // }
-//     } 
-//     // else {
-//     //     releaseResampleBuf();
-//     //     pthread_mutex_unlock(&audioEngineLock);
-//     // }
-// }

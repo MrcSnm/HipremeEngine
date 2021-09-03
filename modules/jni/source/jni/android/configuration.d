@@ -1,5 +1,6 @@
 module jni.android.configuration;
 import jni.android.android_api;
+version(Android):
 
 /*
  * Copyright (C) 2010 The Android Open Source Project

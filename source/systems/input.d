@@ -5,11 +5,11 @@ import jni.helper.androidlog;
 import jni.jni;
 import jni.helper.jnicall;
 ///Setups an Android Package for HipremeEngine
-alias HipAndroidInput = javaGetPackage!("com.hipremeengine.app.HipInput");
 
 
 version(Android)
 {
+    alias HipAndroidInput = javaGetPackage!("com.hipremeengine.app.HipInput");
     @JavaFunc!(HipAndroidInput) void onMotionEventActionMove(int pointerId, float x, float y)
 	{
         HipInput.post(0, HipInput.InputType.TOUCH_MOVE, HipInput.Touch(cast(ushort)pointerId, x,y));

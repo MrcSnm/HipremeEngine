@@ -1,5 +1,5 @@
 module jni.android.android_native_app_glue;
-
+version(Android):
 /*
  * Copyright (C) 2010 The Android Open Source Project
  *
