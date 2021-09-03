@@ -1,6 +1,6 @@
 module util.memory;
 
-public import core.stdc.stdlib:free, malloc;
+public import core.stdc.stdlib:free, malloc, realloc;
 public import core.stdc.string:memcpy, memcmp, memset;
 
 T* alloc(T)(uint count = 1)
