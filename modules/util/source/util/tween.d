@@ -15,7 +15,7 @@ private enum d1 = 2.75f;
 */
 enum HipEasing : float function(float x)
 {
-    identity        = (x) => x,
+    identity        = null,
     easeInSine      = (x) => 1 - cos((x*PI)/2),
     easeOutSine     = (x) => sin((x*PI)/2),
     easeInOutSine   = (x) => -(cos(PI*x) - 1)/2,
@@ -74,9 +74,11 @@ enum HipEasing : float function(float x)
 class HipTween : HipTimer
 {
     import util.memory;
-    HipEasing easing;
-    void* savedData;
-    uint savedDataSize;
+    HipEasing easing = null;
+    void* savedData = null;
+    uint savedDataSize = 0;
+
+    protected void delegate() onPlay;
 
     this(float durationSeconds, bool loops)
     {
@@ -84,6 +86,16 @@ class HipTween : HipTimer
         this.easing = null;
     }
     void setEasing(HipEasing easing){this.easing = easing;}
+    void setProperties(string name, float durationSeconds, bool loops = false)
+    {
+        super.setProperties(name, durationSeconds, TimerType.progressive, loops);
+    }
+    override void play()
+    {
+        super.play();
+        if(onPlay != null)
+            onPlay();
+    }
 
     protected void allocSaveData(uint size)
     {
@@ -103,21 +115,29 @@ class HipTween : HipTimer
     {
         HipTween t = new HipTween(durationSeconds, false);
         t.allocSaveData(Props.length * V.sizeof);
-        
-        static foreach(i, p; Props)
-            mixin("memcpy(t.savedData+",V.sizeof*i, ", &target.",p,", ", V.sizeof,");");
+
         V[] v2 = values.dup;
-
-
-        t.addHandler((float prog, uint loops) 
+        t.onPlay = ()
         {
-            float multiplier = prog;
-            if(t.easing != null)
-                multiplier = t.easing(multiplier);
             static foreach(i, p; Props)
-                mixin("target.",p," = cast(V)((v2[",i,"] - *cast(V*)(t.savedData+",i*V.sizeof,"))*multiplier);");
-            
-        });
+                mixin("memcpy(t.savedData+",V.sizeof*i, ", &target.",p,", ", V.sizeof,");");
+                        
+
+            t.addHandler((float prog, uint loops) 
+            {
+                float multiplier = prog;
+                if(t.easing != null)
+                    multiplier = t.easing(multiplier);
+                V initialValue;
+                V newValue;
+                static foreach(i, p; Props)
+                {
+                    initialValue = *cast(V*)(t.savedData+i*V.sizeof);
+                    newValue = initialValue + cast(V)(v2[i]- initialValue * multiplier);
+                    mixin("target.",p," = newValue;");
+                }
+            });
+        };
         return t;
     }
     static HipTween by(string[] Props, T, V)(float durationSeconds, T target, V[]  values...)
@@ -126,35 +146,100 @@ class HipTween : HipTimer
         t.allocSaveData(Props.length * V.sizeof);
         //Zero init for every variable
         memset(t.savedData, 0, t.savedDataSize);
-
-
-        
         V[] v2 = values.dup;
 
-        t.addHandler((float prog, uint loops) 
+        t.onPlay = ()
         {
-            float multiplier = prog;
-            if(t.easing != null)
-                multiplier = t.easing(multiplier);
-            V temp;
-            V temp2;
-            static foreach(i, p; Props)
-            {
-                temp = *((cast(V*)t.savedData)+i);
-                temp2 = cast(V)(v2[i] * multiplier);
 
-                mixin("target.",p,"+= -temp + temp2;");
-                //Copy the new values for being subtracted next frame
-                memcpy(t.savedData + i * V.sizeof, &temp2, V.sizeof);
-            }
-            
-        });
+            t.addHandler((float prog, uint loops) 
+            {
+                float multiplier = prog;
+                if(t.easing != null)
+                    multiplier = t.easing(multiplier);
+                V temp;
+                V temp2;
+                static foreach(i, p; Props)
+                {
+                    temp = *((cast(V*)t.savedData)+i);
+                    temp2 = cast(V)(v2[i] * multiplier);
+
+                    mixin("target.",p,"+= -temp + temp2;");
+                    //Copy the new values for being subtracted next frame
+                    memcpy(t.savedData + i * V.sizeof, &temp2, V.sizeof);
+                }
+                
+            });
+        };
+
         return t;
     }
+    ~this(){safeFree(savedData);}
 
-    ~this()
+}
+
+class HipTweenSequence : HipTween
+{
+    HipTween[] tweenList;
+    uint listCursor;
+    float cursorDuration = 0;
+    float listAccumulator = 0;
+    this(bool loops, HipTween[] tweens...)
     {
-        safeFree(savedData);
-    }
+        super(0, loops);
+        foreach(t;tweens)
+        {
+            tweenList~= t;
+            durationSeconds+= t.getDuration();
+        }
+        cursorDuration = tweenList[0].getDuration();
+        setProperties("TweenSequence", durationSeconds, loops);
+        onPlay = ()
+        {
+            tweenList[0].play();
+        };
 
+        addHandler((prog, count)
+        {
+            if(accumulator - listAccumulator >= cursorDuration)
+            {
+                if(listCursor + 1 < tweenList.length)
+                {
+                    //Guarantee that it finishes here
+                    tweenList[listCursor].tick(deltaTime);
+                    cursorDuration = tweenList[++listCursor].getDuration();
+                    tweenList[listCursor].play();
+                    listAccumulator+= cursorDuration;
+                }
+            }
+            tweenList[listCursor].tick(deltaTime);
+        });
+    }
+}
+
+class HipTweenSpawn : HipTween
+{
+    HipTween[] tweenList;
+
+    this(bool loops, HipTween[] tweens...)
+    {
+        super(0, loops);
+        foreach(t;tweens)
+        {
+            tweenList~= t;
+            if(t.getDuration() > durationSeconds)
+                durationSeconds = t.getDuration();
+        }
+
+        onPlay = ()
+        {
+            foreach(t; tweenList)t.play();
+        };
+        setProperties("TweenSpawn", durationSeconds, loops);
+
+        addHandler((prog, count)
+        {
+            foreach(t; tweenList)
+                t.tick(deltaTime);
+        });
+    }
 }

@@ -8,11 +8,12 @@ class HipTimer
     }
     ///Enforce naming for making debugging easier
     string name;
-    protected uint loopCount;
-    protected bool loops;
-    protected float accumulator;
-    protected float durationSeconds;
-    protected bool isRunning;
+    protected uint loopCount = 0;
+    protected bool loops = false;
+    protected float deltaTime = 0;
+    protected float accumulator = 0;
+    protected float durationSeconds = 0;
+    protected bool isRunning = false;
     protected void delegate(float progress, uint loopCount)[] handlers;
     protected TimerType type;
 
@@ -32,6 +33,8 @@ class HipTimer
         this.loops = loops;
         stop();
     }
+    float getDuration(){return durationSeconds;}
+    float getProgress(){return accumulator/durationSeconds;}
     void addHandler(void delegate(float progress, uint loopCount) handler){handlers~=handler;}
     void forceFinish()
     {
@@ -47,6 +50,11 @@ class HipTimer
         accumulator = 0;
         loopCount = 0;
     }
+    void reset()
+    {
+        stop();
+        play();
+    }
     void loopRestart()
     {
         loopCount++;
@@ -59,6 +67,7 @@ class HipTimer
     {
         if(isRunning)
         {
+            this.deltaTime = dt;
             accumulator = dt+accumulator;
             if(accumulator>durationSeconds)accumulator = durationSeconds;
             final switch(type)
