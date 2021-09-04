@@ -20,6 +20,32 @@ struct Pair(A, B)
     alias b = second;
 }
 
+/**
+*   By using Array2D instead of T[][], only one array instance is created, not "i" arrays. So it is a lot
+*   faster when you use that instead of array of arrays.
+*/
+struct Array2D(T)
+{
+    private T[] data;
+    private uint height;
+    private uint width;
+
+    this(uint lengthHeight, uint lengthWidth)
+    {
+        data = new T[](lengthHeight*lengthWidth);
+        height = lengthHeight;
+        width = lengthWidth;
+    }
+    pragma(inline, true):
+    ref auto opIndex(size_t i,  size_t j){return data[i*width+j];}
+    ref auto opIndex(size_t i)
+    {
+        ulong temp = i*width;
+        return data[temp..temp+width];
+    }
+    auto opIndexAssign(T)(T value, size_t i, size_t j){return data[i*width+j] = value;}
+}
+
 struct RingBuffer(T, uint Length)
 {
     import core.stdc.stdlib:malloc, free;
