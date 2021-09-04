@@ -115,8 +115,10 @@ class HipSpriteBatch
     void draw(HipSprite s)
     {
         const float[] v = s.getVertices();
+        ErrorHandler.assertExit(s.width != 0 && s.height != 0, "Tried to draw 0 bounds sprite");
 
-        s.texture.bind();
+        s.texture.texture.bind();
+        ///X Y Z, RGBA, UV, 4 vertices
         for(int i = 0; i < 9*4; i++)
             vertices[(9*4*quadsCount)+i] = v[i];
         quadsCount++;

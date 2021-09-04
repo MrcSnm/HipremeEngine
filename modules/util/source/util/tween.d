@@ -85,16 +85,17 @@ class HipTween : HipTimer
         super("Tween", durationSeconds, HipTimer.TimerType.progressive, loops);
         this.easing = null;
     }
-    void setEasing(HipEasing easing){this.easing = easing;}
+    HipTween setEasing(HipEasing easing){this.easing = easing; return this;}
     void setProperties(string name, float durationSeconds, bool loops = false)
     {
         super.setProperties(name, durationSeconds, TimerType.progressive, loops);
     }
-    override void play()
+    override HipTween play()
     {
         super.play();
         if(onPlay != null)
             onPlay();
+        return this;
     }
 
     protected void allocSaveData(uint size)
@@ -150,7 +151,6 @@ class HipTween : HipTimer
 
         t.onPlay = ()
         {
-
             t.addHandler((float prog, uint loops) 
             {
                 float multiplier = prog;

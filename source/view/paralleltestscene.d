@@ -36,7 +36,7 @@ class ParallelTestScene : Scene
     {
         HipAssetManager.checkLoad();
         batch.begin();
-        if(spr.texture.img !is null)
+        if(spr.texture.texture.img !is null)
         {
             batch.draw(spr);
         }

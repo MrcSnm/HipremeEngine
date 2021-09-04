@@ -24,12 +24,13 @@ struct HipColor
             cast(float)(color & 255)/255
         );
     }
+
+    static enum white   = HipColor(1,1,1,1);
+    static enum black   = HipColor(0,0,0,0);
+    static enum red     = HipColor(1,0,0,1);
+    static enum green   = HipColor(0,1,0,1);
+    static enum blue    = HipColor(0,0,1,1);
+    static enum yellow  = HipColor(1,1,0,1);
+    static enum purple  = HipColor(1,0,1,1);
+    static enum teal    = HipColor(0,1,1,1);
 }
-static enum White   = HipColor(1,1,1,1);
-static enum Black   = HipColor(0,0,0,0);
-static enum Red     = HipColor(1,0,0,1);
-static enum Green   = HipColor(0,1,0,1);
-static enum Blue    = HipColor(0,0,1,1);
-static enum Yellow  = HipColor(1,1,0,1);
-static enum Purple  = HipColor(1,0,1,1);
-static enum Teal    = HipColor(0,1,1,1);

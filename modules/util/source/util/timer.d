@@ -43,7 +43,7 @@ class HipTimer
     }
 
     void pause(){isRunning = false;}
-    void play(){isRunning = true;}
+    HipTimer play(){isRunning = true;return this;}
     void stop()
     {
         isRunning = false;
