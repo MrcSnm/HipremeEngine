@@ -1,8 +1,10 @@
 module hipaudio.backend.openal.source;
-import hipaudio.backend.openal.buffer;
+import hipaudio.backend.openal.clip;
+import error.handler;
 import hipaudio.audio;
 import hipaudio.backend.audiosource;
 import debugging.gui;
+import util.memory;
 import bindbc.openal;
 
 @InterfaceImplementation(function(ref void* data)
@@ -43,32 +45,55 @@ import bindbc.openal;
         this.isStreamed=isStreamed;
     }
 
-    override void setBuffer(HipAudioBuffer buf)
+    override void setClip(HipAudioClip clip)
     {
-        super.setBuffer(buf);
-        if(!buf.isStreamed)
-            alSourcei(id, AL_BUFFER, (cast(HipOpenALBuffer)buf).bufferPool[0]);
+        super.setClip(clip);
+        if(!clip.isStreamed)
+        {
+            ALuint buf = *cast(ALuint*)clip.getBuffer(clip.getClipData(), cast(uint)clip.getClipSize());
+            alSourcei(id, AL_BUFFER, buf);
+        }
+        else
+        {
+            HipOpenALClip c = cast(HipOpenALClip)clip;
+            ALuint buf = c.getALBuffer(c.getClipData(), c.chunkSize);
+            alSourceQueueBuffers(id, 1, &buf);
+        }
         logln(id);
     }
 
     override void pullStreamData()
     {
-        assert(buffer !is null, "Can't pull stream data without any buffer attached");
-        assert(id != 0, "Can't pull stream data without source id");
-        uint freeBuf = getFreeBuffer();
+        ErrorHandler.assertExit(clip !is null, "Can't pull stream data without any buffer attached");
+        ErrorHandler.assertExit(id != 0, "Can't pull stream data without source id");
+        uint freeBuf = getALFreeBuffer(); //Gets the queueId
         if(freeBuf != 0)
+        {
+            //Returns the bufferId to freeBuf
             alSourceUnqueueBuffers(id, 1, &freeBuf);
-        HipOpenALBuffer alBuf = cast(HipOpenALBuffer)buffer;
-        freeBuf = alBuf.updateALSourceStream(freeBuf); 
+            sendAvailableBuffer(&freeBuf);
+        }
+        clip.updateStream();
+        HipOpenALClip c = cast(HipOpenALClip)clip;
+        freeBuf = c.getALBuffer(c.getClipData(), c.chunkSize);
         alSourceQueueBuffers(id, 1, &freeBuf);
         
     }
 
-    uint getFreeBuffer()
+    uint getALFreeBuffer()
     {
         int b;
         alGetSourcei(id, AL_BUFFERS_PROCESSED, &b);
         return cast(uint)b;
+    }
+
+    override HipAudioBufferWrapper* getFreeBuffer()
+    {
+        int b;
+        alGetSourcei(id, AL_BUFFERS_PROCESSED, &b);
+        if(b == 0)
+            return null;
+        return clip.findBuffer(&b);
     }
     
 

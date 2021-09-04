@@ -58,6 +58,7 @@ The engine mantains some global options which you can modify it on source/global
 
 1. Streaming
 2. 3D audio
+3. Low Latency on Android -> See flags at config/opts.d `HIP_OPENSLES_OPTIMAL` and `HIP_OPENSLES_FAST_MIXER`
 
 ## Decoding
 

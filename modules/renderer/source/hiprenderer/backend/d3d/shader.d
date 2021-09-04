@@ -376,7 +376,7 @@ class Hip_D3D11_ShaderImpl : IShader
             memcpy(resource.pData, l.getBlockData(), l.getLayoutSize());
             _hip_d3d_context.Unmap(data.buffer,  0);
             
-            assert(data != null, "D3D11 ShaderVarAdditionalData is null, can't send variables");
+            ErrorHandler.assertExit(data != null, "D3D11 ShaderVarAdditionalData is null, can't send variables");
             
             final switch(l.shaderType)
             {

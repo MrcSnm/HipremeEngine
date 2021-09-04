@@ -18,7 +18,7 @@ int asInt(alias enumMember)()
         if(mem == enumMember.stringof)
             return i;
     }
-    assert(0, "Member "~enumMember.stringof~" from type " ~ T.stringof~ " does not exist");
+    ErrorHandler.assertExit(0, "Member "~enumMember.stringof~" from type " ~ T.stringof~ " does not exist");
 }
 
 

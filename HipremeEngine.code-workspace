@@ -8,6 +8,9 @@
 	{
 		"files.exclude": 
 		{
+			"**/.dub" : true,
+			"**/*.lib": true,
+			"**/*.a" : true,
 			"building":true,
 			"*.hap" : true,
 			"imgui.ini" : true,

@@ -2,6 +2,11 @@
 	"authors": [
 		"Hipreme"
 	],
+	"buildOptions": [
+		"debugMode",
+		"debugInfo",
+		"debugInfoC"
+	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "HipremeEngine debugging module",
 	"license": "proprietary",

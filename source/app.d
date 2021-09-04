@@ -20,7 +20,8 @@ version(Android)
 	import jni.helper.androidlog;
 	import jni.jni;
 	import jni.helper.jnicall;
-	alias HipremeAndroid = javaGetPackage!("com.hipremeengine.app.HipremeEngine");
+	///Setups an Android Package for HipremeEngine
+	alias HipAndroid = javaGetPackage!("com.hipremeengine.app.HipremeEngine");
 }
 version(Windows)
 {
@@ -49,7 +50,7 @@ static void initEngine(bool audio3D = false)
 	version(Android)
 	{
 		Console.install(Platforms.ANDROID);
-		// HipFS.install(HipremeAndroid.javaCall!(string, "getApplicationDir"));
+		// HipFS.install(HipAndroid.javaCall!(string, "getApplicationDir"));
 		HipFS.install("");
 		rawlog("Starting engine on android\nWorking Dir: ", HipFS.getPath(""));
 	}
@@ -70,7 +71,7 @@ static void initEngine(bool audio3D = false)
 	{
 		Console.install();
 		import std.file:getcwd;
-		HipFS.install(getcwd());
+		HipFS.install(getcwd()~"/assets");
 	}
 	version(BindSDL_Static){}
 	else
@@ -88,7 +89,11 @@ extern(C)int SDL_main()
 	import data.ini;
 	initEngine(true);
 	version(Android)
-		HipAudio.initialize(HipAudioImplementation.OPENSLES);
+		HipAudio.initialize(HipAudioImplementation.OPENSLES, 
+		HipAndroid.javaCall!(bool, "hasProFeature"),
+		HipAndroid.javaCall!(bool, "hasLowLatencyFeature"),
+		HipAndroid.javaCall!(int, "getOptimalAudioBufferSize"),
+		HipAndroid.javaCall!(int, "getOptimalSampleRate"));
 	else
 		HipAudio.initialize();
 	version(dll)
@@ -101,7 +106,6 @@ extern(C)int SDL_main()
 	}
 	else{HipRenderer.init("renderer.conf");}
 	
-	//AudioBuffer buf = Audio.load("assets/audio/the-sound-of-silence.wav", AudioBuffer.TYPE.SFX);
 
 	//AudioSource sc = Audio.getSource(buf);
 	//Audio.setPitch(sc, 1);
@@ -163,20 +167,21 @@ static void destroyEngine()
 
 version(Android)
 {
+	import systems.input;
+	
 	extern(C) void Java_com_hipremeengine_app_HipremeEngine_HipremeInit(JNIEnv* env, jclass clazz)
 	{
 		HipremeInit();
-		HipremeAndroid.setEnv(env);
-		aaMgr = cast(AAssetManager*)HipremeAndroid.javaCall!(Object, "getAssetManager");
+		HipAndroid.setEnv(env);
+		aaMgr = cast(AAssetManager*)HipAndroid.javaCall!(Object, "getAssetManager");
 		aaMgr = AAssetManager_fromJava(env, aaMgr);
-		
 	}
 
 	extern(C) jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
 	{
 		int ret = HipremeMain();
 		import hiprenderer.viewport;
-		int[2] wsize = HipremeAndroid.javaCall!(int[2], "getWindowSize");
+		int[2] wsize = HipAndroid.javaCall!(int[2], "getWindowSize");
 		HipRenderer.setViewport(new Viewport(0, 0, wsize[0], wsize[1]));
 		return ret;
 	}
@@ -190,7 +195,7 @@ version(Android)
 	}
 	extern(C) void  Java_com_hipremeengine_app_HipremeEngine_HipremeDestroy(JNIEnv* env, jclass clazz)
 	{
-		HipremeAndroid.setEnv(null);
+		HipAndroid.setEnv(null);
 		HipremeDestroy();
 	}
 }  
@@ -204,7 +209,18 @@ export extern(C) void HipremeInit()
 		importExternal();
 	}
 }
-///Setup the engine
+/**
+*	Loads shared libraries and setups the engine modules:
+*
+*	- Console
+*
+*	- HipFS
+*
+*	- HipRenderer
+*
+*	- HipAudio
+*
+*/
 export extern(C) int HipremeMain(){return SDL_main();}
 version(dll){}
 else{void main(){HipremeMain();}}

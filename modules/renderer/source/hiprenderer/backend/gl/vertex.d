@@ -12,6 +12,7 @@ Distributed under the MIT Software License.
 module hiprenderer.backend.gl.vertex;
 
 import hiprenderer.backend.gl.renderer;
+import error.handler;
 import std.format:format;
 import hiprenderer.shader;
 import hiprenderer.vertex;
@@ -64,7 +65,7 @@ class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
     }
     void updateData(int offset, ulong size, const void* data)
     {
-        assert(size+offset <= this.size, format!"Tried to set data with size %s and offset %s for vertex buffer with size %s"(size, offset, this.size));
+        ErrorHandler.assertExit(size+offset <= this.size, format!"Tried to set data with size %s and offset %s for vertex buffer with size %s"(size, offset, this.size));
         this.bind();
         glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
     }
@@ -94,7 +95,7 @@ class Hip_GL3_IndexBufferObject : IHipIndexBufferImpl
     }
     void updateData(int offset, index_t count, const index_t* data)
     {
-        assert((offset+count)*index_t.sizeof <= this.size);
+        ErrorHandler.assertExit((offset+count)*index_t.sizeof <= this.size);
         this.bind();
         import console.log;
         rawlog(count);

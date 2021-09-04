@@ -19,4 +19,5 @@ public import
     view.tilemaptest,
     view.fileprogresstest,
     view.soundtestscene,
+    view.animationtestscene,
     view.spritetestscene;

@@ -1,8 +1,8 @@
 module hipaudio.backend.sles;
+import error.handler;
 import console.log;
 import std.conv:to;
 import std.format:format;
-import core.sync.mutex;
 import core.atomic;
 import std.algorithm:count;
 import opensles.sles;
@@ -23,10 +23,12 @@ struct SLIEngine
     SLObjectItf engineObject = null;
     SLEngineItf engine;
     SLEngineCapabilitiesItf engineCapabilities;
+    bool willUseFastMixer;
 
     void initialize()
     {
-        sliCall(slCreateEngine(&engineObject,0,null,0,null,null),
+        SLEngineOption engineOptions = SLEngineOption(SL_ENGINEOPTION_THREADSAFE, SL_BOOLEAN_TRUE);
+        sliCall(slCreateEngine(&engineObject,1,&engineOptions,0,null,null),
         "Could not create engine");
 
         //Initialize|Realize the engine
@@ -86,6 +88,7 @@ package __gshared SLIOutputMix outputMix;
 package __gshared SLIAudioPlayer*[] genPlayers;
 
 
+
 string sliGetError(SLresult res)
 {
     switch (res)
@@ -123,7 +126,7 @@ bool sliError(SLresult res, lazy string errMessage, string file = __FILE__, stri
     if(res != SL_RESULT_SUCCESS)
     {
         sliErrorQueue~= res;
-        rawlog(format!("'OpenSL ES' Error: '%s' at file %s:%s at %s\n\t%s")(sliGetError(res), file, line, func, errMessage));
+        rawerror(format!("'OpenSL ES' Error: '%s' at file %s:%s at %s\n\t%s")(sliGetError(res), file, line, func, errMessage));
     }
     return res != SL_RESULT_SUCCESS;
 }
@@ -157,54 +160,65 @@ struct SLIOutputMix
     SLObjectItf outputMixObj;
 
 
-    static bool initializeForAndroid(ref SLIOutputMix output, ref SLIEngine e)
+    static bool initializeForAndroid(ref SLIOutputMix output, ref SLIEngine e, bool willUseFastMixer)
     {
         //All those interfaces are supported on Android, so, require them
-        const(SLInterfaceID)* ids = 
-        [
-            SL_IID_ENVIRONMENTALREVERB,
-            SL_IID_PRESETREVERB,
-            SL_IID_BASSBOOST,
-            SL_IID_EQUALIZER,
-            SL_IID_VIRTUALIZER
-        ].ptr;
-        const(SLboolean)* req = 
-        [
-            SL_BOOLEAN_TRUE,
-            SL_BOOLEAN_TRUE,
-            SL_BOOLEAN_TRUE,
-            SL_BOOLEAN_TRUE,
-            SL_BOOLEAN_TRUE //5
-        ].ptr;
+        const(SLInterfaceID)* ids = null;
+        const(SLboolean)* req = null;
+        uint count = 0;
+
+        if(!willUseFastMixer)
+        {
+            ids = 
+            [
+                SL_IID_ENVIRONMENTALREVERB,
+                SL_IID_PRESETREVERB,
+                SL_IID_BASSBOOST,
+                SL_IID_EQUALIZER,
+                SL_IID_VIRTUALIZER
+            ].ptr;
+
+            req = 
+            [
+                SL_BOOLEAN_TRUE,
+                SL_BOOLEAN_TRUE,
+                SL_BOOLEAN_TRUE,
+                SL_BOOLEAN_TRUE,
+                SL_BOOLEAN_TRUE //5
+            ].ptr;
+            count = 5;
+        }
 
         with(output)
         {
-            sliCall(e.CreateOutputMix(&outputMixObj, 5u, ids, req),
+            sliCall(e.CreateOutputMix(&outputMixObj, count, ids, req),
             "Could not create output mix");
             //Do it assyncly
             sliCall((*outputMixObj).Realize(outputMixObj, SL_BOOLEAN_FALSE),
             "Could not initialize output mix");
 
-            
-            if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_ENVIRONMENTALREVERB, &environmentReverb),
-            "Could not get the ENVIRONMENTALREVERB interface"))
-                environmentReverb = null;
+            if(!willUseFastMixer)   
+            {
+                if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_ENVIRONMENTALREVERB, &environmentReverb),
+                "Could not get the ENVIRONMENTALREVERB interface"))
+                    environmentReverb = null;
 
-            if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_PRESETREVERB, &presetReverb),
-            "Could not get the PRESETREVERB interface"))
-                presetReverb = null;
-            
-            if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_BASSBOOST, &bassBoost),
-            "Could not get the BASSBOOST interface"))
-                bassBoost = null;
+                if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_PRESETREVERB, &presetReverb),
+                "Could not get the PRESETREVERB interface"))
+                    presetReverb = null;
+                
+                if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_BASSBOOST, &bassBoost),
+                "Could not get the BASSBOOST interface"))
+                    bassBoost = null;
 
-            if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_EQUALIZER, &equalizer),
-            "Could not get the EQUALIZER interface"))
-                equalizer = null;
+                if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_EQUALIZER, &equalizer),
+                "Could not get the EQUALIZER interface"))
+                    equalizer = null;
 
-            if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_VIRTUALIZER, &virtualizer),
-            "Could not get the VIRTUALIZER interface"))
-                virtualizer = null;
+                if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_VIRTUALIZER, &virtualizer),
+                "Could not get the VIRTUALIZER interface"))
+                    virtualizer = null;
+            }
         }
         return sliErrorQueue.length == 0;
     }
@@ -217,26 +231,25 @@ float sliToAttenuation(float gain)
     return (gain < 0.01f) ? -96.0f : 20 * log10(gain);
 }
 
-string getAudioPlayerInterfaces()
+SLInterfaceID[] getAudioPlayerInterfaces(bool willUseFastMixer)
 {
-    string itfs = "SL_IID_VOLUME, SL_IID_EFFECTSEND, SL_IID_METADATAEXTRACTION";
+    SLInterfaceID[] ret = [SL_IID_VOLUME/*, SL_IID_MUTESOLO*/]; //can't require SL_IID_MUTESOLO with a mono buffer queue data source error
+    if(!willUseFastMixer)
+    {
+        ret~= [SL_IID_BASSBOOST, SL_IID_EFFECTSEND, SL_IID_ENVIRONMENTALREVERB, SL_IID_EQUALIZER,
+        SL_IID_PLAYBACKRATE, SL_IID_PRESETREVERB, SL_IID_VIRTUALIZER, SL_IID_ANDROIDEFFECT,
+        SL_IID_ANDROIDEFFECTSEND, SL_IID_METADATAEXTRACTION][];
+    }
     version(Android)
-    {
-        itfs~=", SL_IID_ANDROIDSIMPLEBUFFERQUEUE";
-    }
-    return itfs;
+        ret~= SL_IID_ANDROIDSIMPLEBUFFERQUEUE;
+    return ret;
 }
-string getAudioPlayerRequirements()
+SLboolean[] getAudioPlayerRequirements(ref SLInterfaceID[] itfs)
 {
-    string req;
-    bool isFirst = true;
-    foreach (i; 0..getAudioPlayerInterfaces().count(",")+1)
-    {
-        if(isFirst)isFirst=!isFirst;
-        else req~=",";
-        req~= "SL_BOOLEAN_TRUE";
-    }
-    return req;
+    SLboolean[] ret;
+    foreach (SLInterfaceID id; itfs)
+        ret~= SL_BOOLEAN_TRUE;
+    return ret;
 }
 
 string sliGetErrorMessages()
@@ -250,7 +263,52 @@ string sliGetErrorMessages()
     return ret;
 }
 
-struct SLIAudioPlayer
+///Must be used as an opaque pointer
+struct SLIBuffer
+{
+    uint size;
+    bool isLocked;
+    bool hasBeenProcessed;
+    ///Tightly packed structure
+    void[0] data;
+}
+
+/**
+*   Creates an unresizable buffer(tightly packed) for not getting a cache miss
+*/
+SLIBuffer* sliGenBuffer(void* data, uint size)
+{
+    import core.stdc.stdlib:malloc;
+    import core.stdc.string:memcpy,memset;
+    SLIBuffer* buf = cast(SLIBuffer*)malloc(SLIBuffer.sizeof+size);
+    buf.size = size;
+    buf.isLocked = false;
+    buf.hasBeenProcessed = false;
+    if(data == null)
+        memset(buf.data.ptr, 0, size);
+    else
+        memcpy(buf.data.ptr, data, size);
+    return buf;
+}
+
+///Copies data inside the buffer on its immutable size. Use that on unlocked buffers.
+void sliBufferData(SLIBuffer* buffer, void* data)
+{
+    import core.stdc.string:memcpy;
+    ErrorHandler.assertExit(!buffer.isLocked, "Can't write to locked buffer");
+    memcpy(buffer.data.ptr, data, buffer.size);
+}
+
+///Invalidates the buffer and makes it null
+void sliDestroyBuffer(ref SLIBuffer* buff)
+{
+    import core.stdc.stdlib:free;
+    if(buff != null)
+        free(buff);
+    buff = null;
+}
+
+__gshared struct SLIAudioPlayer
 {
     ///The Audio player
     SLObjectItf playerObj;
@@ -260,10 +318,39 @@ struct SLIAudioPlayer
     SLVolumeItf playerVol;
     ///Ability to get and set the audio duration
     SLSeekItf playerSeek;
+
+    SLBassBoostItf bassBoost;
+    SLEnvironmentalReverbItf envReverb;
+    SLEqualizerItf equalizer;
+    SLPlaybackRateItf playbackRate;
+    SLPresetReverbItf presetReverb;
+    SLVirtualizerItf virtualizer;
+    SLAndroidEffectItf androidEffect;
+    SLAndroidEffectSendItf androidEffectSend;
+
     ///@TODO
     SLEffectSendItf playerEffectSend;
     ///@TODO
     SLMetadataExtractionItf playerMetadata;
+
+    /**
+    *   This queue works as:
+
+        In Use   Unqueued    Capacity
+    |1, 2, 3, 4|  /5, 6\   (0, 0, 0, 0)
+    */
+    protected SLIBuffer** streamQueue;
+    ///Data between | |
+    protected ushort streamQueueLength;
+    ///Data between / \
+    protected ushort streamQueueFree;
+    //Data between ( )
+    protected ushort streamQueueCapacity;
+    ///How many chunks have been streamed to that player
+    protected ushort totalChunksEnqueued;
+    ///How many chunks have been played
+    protected ushort totalChunksPlayed;
+
 
     version(Android){SLAndroidSimpleBufferQueueItf playerAndroidSimpleBufferQueue;}
     else  //Those lines will appear just as a documentation, right now, we don't have any implementation using it
@@ -273,9 +360,28 @@ struct SLIAudioPlayer
         SL3DDopplerItf doppler3D;
         SL3DLocationItf location3D;
     }
+    SLIBuffer* nextBuffer;
     bool isPlaying, hasFinishedTrack;
 
     float volume;
+
+    void update()
+    {
+        if(nextBuffer != null)
+        {
+            //Need to clear queue, as having too many can cause a crash
+            SLIAudioPlayer.Clear(this);
+            //Set it playing
+            SLIAudioPlayer.Enqueue(this, nextBuffer.data.ptr, nextBuffer.size);
+            nextBuffer = null;
+        }
+        else if(hasFinishedTrack)
+        {
+            import console.log;
+            logln("STOPPED!");
+            SLIAudioPlayer.stop(this);
+        }            
+    }
 
     static void setVolume(ref SLIAudioPlayer audioPlayer, float gain)
     {
@@ -285,12 +391,21 @@ struct SLIAudioPlayer
             volume = gain;
         }
     }
-
+    /**
+    *   Also invalidates enqueued SLIBuffer, so, destroy with care
+    */
     static void destroyAudioPlayer(ref SLIAudioPlayer audioPlayer)
     {
         with(audioPlayer)
         {
             (*playerObj).Destroy(playerObj);
+            if(streamQueue != null)
+            {
+                for(int i = 0; i < streamQueueLength; i++)
+                    sliDestroyBuffer(streamQueue[i]);
+                streamQueue = null;
+                streamQueueLength = 0;
+            }
             playerObj = null;
             player = null;
             playerVol = null;
@@ -310,25 +425,186 @@ struct SLIAudioPlayer
         (*player).SetCallbackEventsMask(player, mask);
     }
 
-    extern(C) static void checkClipEnd_Callback(SLPlayItf player, void* context, SLuint32 event)
+    /**
+    *   Checking some bug issues tracker: 
+    *   - https://groups.google.com/g/android-ndk/c/zANdS2n2cQI
+    *
+    *   - https://issuetracker.google.com/issues/37011991
+    *
+    *   It seems that you can't make any call to OpenSL API inside SL_PLAYEVENT_HEADATEND
+    *
+    *   I'm delegating it right now to the void update() method. As it seems, there is a little
+    *   more music playing after SL_PLAYEVENT_HEADATEND(it is notified early).
+    *
+    *   It can cause some unsync in some other device, but that must be checked case-to-case.
+    *   
+    *   Using ushort.max seems to be the way to go about how much it need to decode. ushort.max/4 caused some
+    *   interruptions in music, while ushort.max/8 was inaudible (ushort.max is a great number, 65k)
+    *
+    *   It is also possible to bypass the need for a callback by calling GetState and checking if count == 0,
+    *   that will mean that the head is at the end
+    */
+    extern(C) static void checkStreamCallback(SLPlayItf player, void* context, SLuint32 event)
     {
-        rawlog("Cb");
         if(event & SL_PLAYEVENT_HEADATEND)
         {
-            rawlog("Opa");
-            SLIAudioPlayer p = *(cast(SLIAudioPlayer*)context);
-            atomicStore(p.hasFinishedTrack,  true);
+            import console.log;
+            SLIAudioPlayer* p = (cast(SLIAudioPlayer*)context);
+            if(p.streamQueueLength > 0)
+            {
+                SLIBuffer* buf;
+                if(p.totalChunksPlayed == 0)
+                    buf = p.streamQueue[0];
+                else
+                {
+                    p.unqueue(p.streamQueue[0]); //Unqueue the old buffer, thus, streamQueueLength--
+                    if(p.streamQueueLength > 0)
+                        buf = p.streamQueue[0];
+                }
+                if(buf != null)
+                {
+                    buf.isLocked = true;
+                    p.totalChunksPlayed++;
+                    p.nextBuffer = buf;
+                }
+            }
+            else
+                p.hasFinishedTrack = true;
         }
     }
-    static void play(ref SLIAudioPlayer audioPlayer, void* samples, uint sampleSize)
+
+    void pushBuffer(SLIBuffer* buffer)
+    {
+        import core.stdc.stdlib:malloc,realloc;
+
+        totalChunksEnqueued++;
+        streamQueueLength++;
+        ushort totalSize = cast(ushort)(streamQueueLength + streamQueueFree);
+
+        if(streamQueue == null)
+            streamQueue = cast(SLIBuffer**)malloc((SLIBuffer*).sizeof * totalSize);
+        else if(totalSize > streamQueueCapacity)
+        {
+            streamQueue = cast(SLIBuffer**)realloc(streamQueue, (SLIBuffer*).sizeof * totalSize);
+            streamQueueCapacity = totalSize;
+        }
+        buffer.hasBeenProcessed = false;
+        //Buffer is locked when playing
+        streamQueue[streamQueueLength-1] = buffer;
+    }
+
+    /**
+    * Gets a free buffer from the /\ list
+    */
+    SLIBuffer* getProcessedBuffer()
+    {
+        for(int i = streamQueueLength; i < streamQueueLength+streamQueueFree;i++)
+        {
+            if(!streamQueue[i].isLocked && streamQueue[i].hasBeenProcessed)
+                return streamQueue[i];
+        }
+        return null;
+    }
+    /**
+    *   Will remove the free buffer and set it as unused /b\ -> (0)
+    *
+    * - | | = Enqueued
+    *
+    * - / \ = Free
+    *
+    * - ( ) = Unused (capacity)
+    */
+    void removeFreeBuffer(SLIBuffer* freeBuffer)
+    {
+        ErrorHandler.assertExit(!freeBuffer.isLocked, "This buffer is being used right now");
+        bool isReordering = false;
+        for(int i = streamQueueLength; i < streamQueueLength+streamQueueFree;i++)
+        {
+            if(streamQueue[i] == freeBuffer)
+                isReordering = true;
+            if(isReordering && i+1 < streamQueueCapacity)
+                streamQueue[i] = streamQueue[i+1];
+        }
+        streamQueueFree--;
+        ErrorHandler.assertExit(isReordering, "OpenSL ES: Buffer sent to remove is not in queue");
+    }
+    int GetState()
+    {
+        SLAndroidSimpleBufferQueueState res;
+        (*playerAndroidSimpleBufferQueue).GetState(playerAndroidSimpleBufferQueue, &res);
+
+        return res.count; //If 0, nothing is playing
+    }
+
+    /**
+    *   Same behavior from (*androidBufferQueue).Enqueue. If you wish to use queue
+    *   for streaming sound, call pushBuffer
+    */
+    static void Enqueue(ref SLIAudioPlayer audioPlayer, void* samples, uint sampleSize)
+    {
+        version(Android)
+        {
+            (*audioPlayer.playerAndroidSimpleBufferQueue)
+                .Enqueue(audioPlayer.playerAndroidSimpleBufferQueue, samples, sampleSize);
+        }
+    }
+    static void Clear(ref SLIAudioPlayer audioPlayer)
+    {
+        version(Android)
+        {
+            (*audioPlayer.playerAndroidSimpleBufferQueue)
+                .Clear(audioPlayer.playerAndroidSimpleBufferQueue);
+        }
+    }
+
+    /**
+    *   Will put the processed buffer into the free list |b| -> /b\ 
+    *
+    * - | | = Enqueued
+    *
+    * - / \ = Free
+    *
+    * - ( ) = Unused (capacity)
+    */
+    void unqueue(SLIBuffer* processedBuffer)
+    {
+        bool isReordering = false;
+        for(int i = 0; i < streamQueueLength;i++)
+        {
+            if(streamQueue[i] == processedBuffer)
+                isReordering = true;
+            if(isReordering && i+1 < streamQueueCapacity)
+                streamQueue[i] = streamQueue[i+1];
+        }
+        processedBuffer.hasBeenProcessed = true;
+        processedBuffer.isLocked = false;
+        streamQueueLength--;
+        streamQueue[streamQueueLength+streamQueueFree] = processedBuffer;
+        streamQueueFree++;
+        ErrorHandler.assertExit(isReordering, "SLES Error: buffer not found when trying to unqueue it");
+    }
+
+    static void resume(ref SLIAudioPlayer audioPlayer)
     {
         with(audioPlayer)
         {
-            version(Android){(*playerAndroidSimpleBufferQueue).Enqueue(playerAndroidSimpleBufferQueue, samples, sampleSize);}
             isPlaying = true;
-            hasFinishedTrack = false;
+            uint playState;
+            (*player).GetPlayState(player, &playState);
 
-            (*player).SetPlayState(player, SL_PLAYSTATE_PLAYING);
+            if(playState == SL_PLAYSTATE_PAUSED || playState == SL_PLAYSTATE_STOPPED)
+                (*player).SetPlayState(player, SL_PLAYSTATE_PLAYING);
+        }
+    }
+
+    static void play(ref SLIAudioPlayer audioPlayer)
+    {
+        with(audioPlayer)
+        {
+            SLIAudioPlayer.resume(audioPlayer);
+            totalChunksEnqueued = 0;
+            totalChunksPlayed = 0;
+            hasFinishedTrack = false;
         }
     }
     static void stop(ref SLIAudioPlayer audioPlayer)
@@ -336,7 +612,7 @@ struct SLIAudioPlayer
         with(audioPlayer)
         {
             (*player).SetPlayState(player, SL_PLAYSTATE_STOPPED);
-            version(Android){(*playerAndroidSimpleBufferQueue).Clear(playerAndroidSimpleBufferQueue);}
+            SLIAudioPlayer.Clear(audioPlayer);
             isPlaying = false;
         }
     }
@@ -359,10 +635,11 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
 {
     import core.stdc.stdlib:malloc;
     SLIAudioPlayer temp;
+    bool willUseFastMixer = engine.willUseFastMixer;
     with(temp)
     {
-        mixin("SLInterfaceID[] ids = ["~getAudioPlayerInterfaces()~"];");
-        mixin("SLboolean[] req = ["~getAudioPlayerRequirements()~"];");
+        SLInterfaceID[] ids = getAudioPlayerInterfaces(willUseFastMixer);
+        SLboolean[] req = getAudioPlayerRequirements(ids);
 
         sliCall(engine.CreateAudioPlayer(&playerObj, &src, &dest,
         cast(uint)(ids.length), ids.ptr, req.ptr),
@@ -377,12 +654,45 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
         sliCall((*playerObj).GetInterface(playerObj, SL_IID_VOLUME, &playerVol),
         "Could not get volume interface for AudioPlayer");
         
-        // sliCall((*playerObj).GetInterface(playerObj, SL_IID_SEEK, &playerSeek),
-        //("Could not get Seek interface for AudioPlayer");
-        sliCall((*playerObj).GetInterface(playerObj, SL_IID_EFFECTSEND, &playerEffectSend),
-        "Could not get EffectSend interface for AudioPlayer");
-        sliCall((*playerObj).GetInterface(playerObj, SL_IID_METADATAEXTRACTION, &playerMetadata),
-        "Could not get MetadataExtraction interface for AudioPlayer");
+
+        if(!willUseFastMixer)
+        {
+            // sliCall((*playerObj).GetInterface(playerObj, SL_IID_SEEK, &playerSeek),
+            //("Could not get Seek interface for AudioPlayer");
+
+            //Metadata
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_METADATAEXTRACTION, &playerMetadata),
+            "Could not get MetadataExtraction interface for AudioPlayer");
+
+            //Misc
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_PLAYBACKRATE, &playbackRate),
+            "Could not get PlaybackRate interface for AudioPlayer");
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_VIRTUALIZER, &virtualizer),
+            "Could not get Virtualizer interface for AudioPlayer");
+
+            //Wave amplitude modifiers
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_BASSBOOST, &bassBoost),
+            "Could not get BassBoost interface for AudioPlayer");
+
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_EQUALIZER, &equalizer),
+            "Could not get Equalizer interface for AudioPlayer");
+
+            //Reverb
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_ENVIRONMENTALREVERB, &envReverb),
+            "Could not get EnvironmentalReverb interface for AudioPlayer");
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_PRESETREVERB, &presetReverb),
+            "Could not get PresetReverb interface for AudioPlayer");
+
+            //Effect
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_EFFECTSEND, &playerEffectSend),
+            "Could not get EffectSend interface for AudioPlayer");
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_ANDROIDEFFECT, &androidEffect),
+            "Could not get AndroidEffect interface for AudioPlayer");
+
+            
+            sliCall((*playerObj).GetInterface(playerObj, SL_IID_ANDROIDEFFECTSEND, &androidEffectSend),
+            "Could not get AndroidEffectSend interface for AudioPlayer");
+        }
         
         version(Android)
         {
@@ -397,8 +707,8 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
         *playerOut = temp;
         if(autoRegisterCallback)
         {
-            temp.RegisterCallback(&SLIAudioPlayer.checkClipEnd_Callback, cast(void*)playerOut);
-            temp.SetCallbackEventsMask(SL_PLAYEVENT_HEADATEND | SL_PLAYEVENT_HEADATNEWPOS);
+            temp.RegisterCallback(&SLIAudioPlayer.checkStreamCallback, cast(void*)playerOut);
+            temp.SetCallbackEventsMask(SL_PLAYEVENT_HEADATEND);
         }
         genPlayers~= playerOut;
         return playerOut;
@@ -421,71 +731,26 @@ void sliDestroyContext()
 }
 
 
-// __gshared short[8000] sawtoothBuffer;
-
-// static void loadSawtooth()
-// {
-//     for(uint i =0; i < 8000; ++i)
-//         sawtoothBuffer[i] = cast(short)(40_000 - ((i%100) * 220));
-        
-// }
-
 version(Android){alias SLIDataLocator_Address = SLDataLocator_AndroidSimpleBufferQueue;}
 else{alias SLIDataLocator_Address = SLDataLocator_Address;}
 
 
-// SLIDataLocator_Address sliGetAddressDataLocator()
-// {
-//     SLIDataLocator_Address ret;
-//     version(Android)
-//     {
-//         ret.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
-//         ret.numBuffers = 1;
-//     }
-//     else
-//     {
-//         ret.locatorType = SL_DATALOCATOR_ADDRESS;
-//         ret.pAddress = 
-//     }
-// }
-
-// static BufferQueuePlayer bq;
-
-bool sliCreateOutputContext()
+bool sliCreateOutputContext(
+    bool hasProAudio=false,
+    bool hasLowLatencyAudio=false,
+    int  optimalBufferSize=44_100,
+    int  optimalSampleRate=4096,
+    bool willUseFastMixer = false
+)
 {
-    engine = SLIEngine(null,null,null);
+    engine = SLIEngine(null,null,null, willUseFastMixer);
     engine.initialize();
 
     // loadSawtooth();
 
     version(Android)
-        SLIOutputMix.initializeForAndroid(outputMix, engine);
+        SLIOutputMix.initializeForAndroid(outputMix, engine, willUseFastMixer);
     // SLIAudioPlayer.initializeForAndroid(gAudioPlayer, engine, src, destination);
     
     return sliErrorQueue.length == 0;
 }
-
-
-// pointer and size of the next player buffer to enqueue, and number of remaining buffers
-static short *nextBuffer;
-static uint nextSize;
-static int nextCount;
-// this callback handler is called every time a buffer finishes playing
-// extern(C)void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
-// {
-//     // for streaming playback, replace this test by logic to find and fill the next buffer
-//     if (--nextCount > 0 && null != nextBuffer && 0 != nextSize) {
-//         SLresult result;
-//         // enqueue another buffer
-//         result = (*bq).Enqueue(bq, nextBuffer, nextSize);
-//         // the most likely other result is SL_RESULT_BUFFER_INSUFFICIENT,
-//         // which for this code example would indicate a programming error
-//         // if (SL_RESULT_SUCCESS != result) {
-//         //     pthread_mutex_unlock(&audioEngineLock);
-//         // }
-//     } 
-//     // else {
-//     //     releaseResampleBuf();
-//     //     pthread_mutex_unlock(&audioEngineLock);
-//     // }
-// }

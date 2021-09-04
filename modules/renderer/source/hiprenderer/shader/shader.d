@@ -206,7 +206,7 @@ public class Shader
         ShaderVar* v = findByName(name);
         if(v != null)
         {
-            assert(v.shaderType == ShaderTypes.VERTEX, "Variable named "~name~" must be from Vertex Shader");
+            ErrorHandler.assertExit(v.shaderType == ShaderTypes.VERTEX, "Variable named "~name~" must be from Vertex Shader");
             v.set(val);
         }
         else
@@ -221,7 +221,7 @@ public class Shader
         ShaderVar* v = findByName(name);
         if(v != null)
         {
-            assert(v.shaderType == ShaderTypes.FRAGMENT, "Variable named "~name~" must be from Fragment Shader");
+            ErrorHandler.assertExit(v.shaderType == ShaderTypes.FRAGMENT, "Variable named "~name~" must be from Fragment Shader");
             v.set(val);
         }
         else
@@ -261,7 +261,7 @@ public class Shader
 
     public void addVarLayout(ShaderVariablesLayout layout)
     {
-        assert((layout.name in layouts) is null, "Shader: VariablesLayout '"~layout.name~"' is already defined");
+        ErrorHandler.assertExit((layout.name in layouts) is null, "Shader: VariablesLayout '"~layout.name~"' is already defined");
         if(defaultLayout is null)
             defaultLayout = layout;
         layouts[layout.name] = layout;
@@ -304,7 +304,7 @@ public class Shader
     }
     auto opDispatch(string member, T)(T value)
     {
-        assert(defaultLayout.variables[member].sVar.set(value), "Invalid value of type "~
+        ErrorHandler.assertExit(defaultLayout.variables[member].sVar.set(value), "Invalid value of type "~
         T.stringof~" passed to "~defaultLayout.name~"."~member);
     }
 

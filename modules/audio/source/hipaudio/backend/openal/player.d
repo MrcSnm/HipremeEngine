@@ -1,5 +1,5 @@
 module hipaudio.backend.openal.player;
-import hipaudio.backend.openal.buffer;
+import hipaudio.backend.openal.clip;
 import data.audio.audioconfig;
 import hipaudio.backend.openal.source;
 import hipaudio.audio;
@@ -87,7 +87,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
 {
     public this(AudioConfig cfg)
     {
-        HipSDL_SoundDecoder.initDecoder(cfg);
+        HipSDL_SoundDecoder.initDecoder(cfg, AudioConfig.defaultBufferSize);
         initializeOpenAL();
         config = cfg;
     }
@@ -162,7 +162,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     }
     public bool play(HipAudioSource src)
     {
-        HipOpenALBuffer _buf = cast(HipOpenALBuffer)src.buffer;
+        HipOpenALClip _buf = cast(HipOpenALClip)src.clip;
         if(_buf.hasBuffer)
         {
             alSourcePlay(src.id);
@@ -186,7 +186,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
 
     public bool play_streamed(HipAudioSource src)
     {
-        HipOpenALBuffer _buf = cast(HipOpenALBuffer)src.buffer;
+        HipOpenALClip _buf = cast(HipOpenALClip)src.clip;
         if(_buf.hasBuffer)
         {
             alSourcePlay(src.id);
@@ -196,29 +196,26 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         return false;
     }
     
-    public HipAudioBuffer load(string path, HipAudioType bufferType)
+    public HipAudioClip load(string path, HipAudioType clipType)
     {
-        HipOpenALBuffer buffer = new HipOpenALBuffer(new HipSDL_SoundDecoder());
-        
-        buffer.load(path, getEncodingFromName(path), bufferType);
-        import console.log;
-        rawlog(buffer.getBufferSize);
-        return buffer;
+        HipOpenALClip clip = new HipOpenALClip(new HipSDL_SoundDecoder());
+        clip.load(path, getEncodingFromName(path), clipType);
+        return clip;
     }
-    public HipAudioBuffer loadStreamed(string path, uint chunkSize)
+    public HipAudioClip loadStreamed(string path, uint chunkSize)
     {
-        HipAudioBuffer buffer = new HipOpenALBuffer(new HipSDL_SoundDecoder(), chunkSize);
-        buffer.loadStreamed(path, getEncodingFromName(path));
-        return buffer;
+        HipAudioClip clip = new HipOpenALClip(new HipSDL_SoundDecoder(), chunkSize);
+        clip.loadStreamed(path, getEncodingFromName(path));
+        return clip;
     }
 
     public void updateStream(HipAudioSource source)
     {
-
-        HipOpenALAudioSource src = cast(HipOpenALAudioSource)source;
-        HipOpenALBuffer buf = cast(HipOpenALBuffer)src.buffer;
-        alSourceQueueBuffers(src.id, 1, &buf.getNextBuffer());
-        mixin(alCheckError!("Error enqueueing OpenAL buffer on source"));
+        // HipOpenALAudioSource src = cast(HipOpenALAudioSource)source;
+        // HipOpenALClip clip = cast(HipOpenALClip)src.buffer;
+        // ALuint b = clip.getALBuffer();
+        // alSourceQueueBuffers(src.id, 1, &b);
+        // mixin(alCheckError!("Error enqueueing OpenAL buffer on source"));
     }
 
     public void setDistanceModel(DistanceModel model)
