@@ -13,19 +13,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="002a72a2-c94b-4c61-a2b8-f896bf1fb8a8" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../../../bin/android/libhipreme_engine.so" beforeDir="false" afterPath="$PROJECT_DIR$/../../../bin/android/libhipreme_engine.so" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/HipInput.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/HipInput.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/HipSurfaceView.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/HipSurfaceView.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/HipremeEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/HipremeEngine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/jniLibs/arm64-v8a/libhipreme_engine.so" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/jniLibs/arm64-v8a/libhipreme_engine.so" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../dub.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../dub.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../dub.selections.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../dub.selections.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hipaudio/backend/sles.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hipaudio/backend/sles.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/sdl/event/dispatcher.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/sdl/event/dispatcher.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/systems/game.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/systems/game.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/systems/input.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/systems/input.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../source/view/soundtestscene.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/view/soundtestscene.d" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
