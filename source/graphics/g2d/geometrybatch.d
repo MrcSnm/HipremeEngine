@@ -12,6 +12,7 @@ Distributed under the MIT Software License.
 module graphics.g2d.geometrybatch;
 import hiprenderer.renderer;
 import hiprenderer.shader;
+import error.handler;
 import graphics.mesh;
 import math.matrix;
 import graphics.color;
@@ -74,7 +75,7 @@ class GeometryBatch
     */
     index_t addVertex(float x, float y, float z)
     {
-        assert(verticesCount+1 <= this.vertices.length/7,
+        ErrorHandler.assertExit(verticesCount+1 <= this.vertices.length/7,
             format!"Too many vertices (%s) for a buffer of size %s"(verticesCount+1, this.vertices.length/7)
         );
 
@@ -92,7 +93,7 @@ class GeometryBatch
     pragma(inline, true)
     void addIndex(index_t index)
     {
-        assert(currentIndex+1 <= this.indices.length,
+        ErrorHandler.assertExit(currentIndex+1 <= this.indices.length,
             format!"Too many indices (%s) for a buffer of size %s"(currentIndex+1, this.indices.length)
         );
         indices[currentIndex++] = index;

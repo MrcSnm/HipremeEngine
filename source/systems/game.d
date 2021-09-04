@@ -45,7 +45,7 @@ class GameSystem
 
         import view.testscene;
         import view.uwptest;
-        Scene testscene = new SoundTestScene();
+        Scene testscene = new AnimationTestScene();
     	testscene.init();
         scenes~= testscene;
 
@@ -53,12 +53,12 @@ class GameSystem
 
     bool update()
     {
-        version(Android){}
-        else {dispatcher.handleEvent();}
+        dispatcher.handleEvent();
 
         if(hasFinished || dispatcher.hasQuit)
             return false;
-        keyboard.update();
+        version(Android){}
+        else {keyboard.update();}
         foreach(s; scenes)
             s.update(0);
 

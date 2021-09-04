@@ -89,3 +89,28 @@ int aloge(string tag, string format, ...)
     va_end(arg_list);
     return result;    
 }
+
+
+// FATAL SECTION
+int alogf(const(char*) tag, const(char*) format, va_list args)
+{
+    return __android_log_vprint(android_LogPriority.ANDROID_LOG_FATAL, tag, format, args);
+}
+int alogf(const(char*) tag, const(char*) format, ...)
+{
+    va_list arg_list;
+    va_start(arg_list, format);
+    int result = alogf(tag,format,arg_list);
+    va_end(arg_list);
+    return result;
+}
+int alogf(string tag, string format, ...)
+{
+    va_list arg_list;
+    va_start(arg_list, format);
+    const(char*) nTag = toStringz(tag);
+    const(char*) nFormat = toStringz(format);
+    int result = alogf(nTag, nFormat, arg_list);
+    va_end(arg_list);
+    return result;    
+}

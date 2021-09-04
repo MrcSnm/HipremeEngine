@@ -44,8 +44,7 @@ import graphics.color;
     static assert(cast(ulong)(HipSpriteVertex.sizeof/float.sizeof) == 9,  "SpriteVertex should contain 9 floats");
     protected float[cast(ulong)(HipSpriteVertex.sizeof/float.sizeof * 4)] vertices;
 
-
-    this(string texturePath)
+    this()
     {
         vertices[] = 0;
         x = 0;
@@ -54,11 +53,35 @@ import graphics.color;
         scaleX = 1f;
         scaleY = 1f;
         isDirty = true;
+        setColor(HipColor.white);
+    }
+
+    this(string texturePath)
+    {
+        this();
         texture = new TextureRegion(texturePath);
-        setColor(White);
+        width  = texture.regionWidth;
+        height = texture.regionHeight;
+        import std.stdio;
+        writeln(width,",",height);
+        setRegion(texture.u1, texture.v1, texture.u2, texture.v2);
+    }
+
+    this(Texture texture)
+    {
+        this();
+        this.texture = new TextureRegion(texture);
         width  = texture.width;
         height = texture.height;
-        setRegion(texture.u1, texture.v1, texture.u2, texture.v2);
+        setRegion(this.texture.u1, this.texture.v1, this.texture.u2, this.texture.v2);
+    }
+    this(TextureRegion region)
+    {
+        this();
+        this.texture = region;
+        width  = texture.regionWidth;
+        height = texture.regionHeight;
+        setRegion(region.u1, region.v1, region.u2, region.v2);
     }
     void setRegion(float x1, float y1, float x2, float y2)
     {
@@ -176,5 +199,39 @@ import graphics.color;
         scrollX = x;
         scrollY = y;
     }
+}
 
+
+class HipSpriteAnimation : HipSprite
+{
+    import graphics.g2d.animation;
+    HipAnimation animation;
+    HipAnimationFrame* currentFrame;
+
+    this(HipAnimation anim)
+    {
+        super("");
+        animation = anim;
+
+    }
+
+    void setBounds(uint width, uint height)
+    {
+        this.width = width;
+        this.height = height;
+    }
+
+    void setFrame(HipAnimationFrame* frame)
+    {
+        this.currentFrame = frame;
+        this.texture = frame.region;
+        setBounds(frame.region.regionWidth, frame.region.regionHeight);
+        setRegion(texture.u1, texture.v1, texture.u2, texture.v2);
+    }
+
+    void update(float dt)
+    {
+        animation.update(dt);
+        setFrame(animation.getCurrentFrame());
+    }
 }

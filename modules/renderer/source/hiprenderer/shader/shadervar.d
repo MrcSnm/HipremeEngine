@@ -12,6 +12,7 @@ Distributed under the MIT Software License.
 module hiprenderer.shader.shadervar;
 import hiprenderer.shader.shader;
 import hiprenderer.renderer;
+import error.handler;
 import std.conv:to;
 import math.matrix;
 
@@ -76,7 +77,7 @@ struct ShaderVar
             this.singleSize = value.singleSize;
         }
         else
-            assert(this.set(value), "Value set for '"~name~"' is invalid.");
+            ErrorHandler.assertExit(this.set(value), "Value set for '"~name~"' is invalid.");
         return this;
     }
 
@@ -85,25 +86,25 @@ struct ShaderVar
         switch(type) with(UniformType)
         {
             case floating2:
-                assert(index < 2, "Index out of bounds on shader variable "~name);
+                ErrorHandler.assertExit(index < 2, "Index out of bounds on shader variable "~name);
                 break;
             case floating3:
-                assert(index < 3, "Index out of bounds on shader variable "~name);
+                ErrorHandler.assertExit(index < 3, "Index out of bounds on shader variable "~name);
                 break;
             case floating4:
-                assert(index < 4, "Index out of bounds on shader variable "~name);
+                ErrorHandler.assertExit(index < 4, "Index out of bounds on shader variable "~name);
                 break;
             case floating2x2:
-                assert(index < 4, "Index out of bounds on shader variable "~name);
+                ErrorHandler.assertExit(index < 4, "Index out of bounds on shader variable "~name);
                 break;
             case floating3x3:
-                assert(index < 9, "Index out of bounds on shader variable "~name);
+                ErrorHandler.assertExit(index < 9, "Index out of bounds on shader variable "~name);
                 break;
             case floating4x4:
-                assert(index < 16, "Index out of bounds on shader variable "~name);
+                ErrorHandler.assertExit(index < 16, "Index out of bounds on shader variable "~name);
                 break;
             default:
-                assert(false, "opIndex is unsupported in var of type "~to!string(type));
+                ErrorHandler.assertExit(false, "opIndex is unsupported in var of type "~to!string(type));
         }
     }
 
@@ -111,7 +112,7 @@ struct ShaderVar
     {
         import core.stdc.string;
         throwOnOutOfBounds(index);
-        assert(index*singleSize + T.sizeof <= varSize, "Value assign of type "~T.stringof~" at index "~to!string(index)~
+        ErrorHandler.assertExit(index*singleSize + T.sizeof <= varSize, "Value assign of type "~T.stringof~" at index "~to!string(index)~
         " is invalid for shader variable "~name~" of type "~to!string(type));
         memcpy(cast(ubyte*)data + singleSize*index, &value, T.sizeof);
         return value;
@@ -135,7 +136,8 @@ struct ShaderVar
             case floating4x4:
                 return get!(float[16])[index];
             default:
-                assert(false, "opIndex is unsupported in var of type "~to!string(type));
+                ErrorHandler.assertExit(false, "opIndex is unsupported in var of type "~to!string(type));
+                return 0;
         }
     }
 
@@ -152,10 +154,10 @@ struct ShaderVar
     {
         import core.stdc.string : memcpy;
         import core.stdc.stdlib : malloc;
-        assert(isShaderVarNameValid(varName), "Variable '"~varName~"' is invalid.");
+        ErrorHandler.assertExit(isShaderVarNameValid(varName), "Variable '"~varName~"' is invalid.");
         ShaderVar* s = new ShaderVar();
         s.data = malloc(varSize);
-        assert(s.data !is null, "Out of memory");
+        ErrorHandler.assertExit(s.data !is null, "Out of memory");
         s.name = varName;
         s.shaderType = t;
         s.type = type;
@@ -254,14 +256,14 @@ class ShaderVariablesLayout
 
         foreach(ShaderVar* v; variables)
         {
-            assert(v.shaderType == t, "ShaderVariableLayout must contain only one shader type");
-            assert((v.name in this.variables) is null, "Variable named "~v.name~" is already in the layout "~name);
+            ErrorHandler.assertExit(v.shaderType == t, "ShaderVariableLayout must contain only one shader type");
+            ErrorHandler.assertExit((v.name in this.variables) is null, "Variable named "~v.name~" is already in the layout "~name);
             this.variables[v.name] = ShaderVarLayout(v, 0, 0);
             namesOrder~= v.name;
         }
         calcAlignment();
         data = malloc(getLayoutSize());
-        assert(data != null, "Out of memory");
+        ErrorHandler.assertExit(data != null, "Out of memory");
     }
     void lock()
     {
@@ -295,14 +297,14 @@ class ShaderVariablesLayout
     ShaderVariablesLayout append(T)(string varName, T data)
     {
         import core.stdc.stdlib:realloc;
-        assert((varName in variables) is null, "Variable named "~varName~" is already in the layout "~name);
-        assert(!isLocked, "Can't append ShaderVariable after it has been locked");
+        ErrorHandler.assertExit((varName in variables) is null, "Variable named "~varName~" is already in the layout "~name);
+        ErrorHandler.assertExit(!isLocked, "Can't append ShaderVariable after it has been locked");
         ShaderVar* v = ShaderVar.get(this.shaderType, varName, data);
         variables[varName] = ShaderVarLayout(v, 0, 0);
         namesOrder~= varName;
         calcAlignment();
         this.data = realloc(this.data, getLayoutSize());
-        assert(this.data != null, "Out of memory");
+        ErrorHandler.assertExit(this.data != null, "Out of memory");
 
         return this;
     }

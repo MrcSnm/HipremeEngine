@@ -10,9 +10,10 @@ Distributed under the MIT Software License.
 */
 
 module hipaudio.backend.sdl.player;
-import hipaudio.backend.sdl.buffer;
+import hipaudio.backend.sdl.clip;
 import hipaudio.backend.audiosource;
 import hipaudio.audio;
+import error.handler;
 import console.log;
 import data.audio.audio;
 import bindbc.sdl.mixer;
@@ -32,21 +33,26 @@ class HipSDLAudioPlayer : IHipAudioPlayer
     public bool pause(HipAudioSource src){Mix_PauseMusic();return false;}
     public bool play_streamed(HipAudioSource src){return false;}
 
-    public HipAudioBuffer load(string audioName, HipAudioType bufferType)
+    public HipAudioClip load(string audioName, HipAudioType bufferType)
     {
-        HipAudioBuffer buffer = new HipAudioBuffer(new HipSDL_MixerDecoder());
-        buffer.load(audioName,getEncodingFromName(audioName), bufferType);
-        return buffer;
+        return null;
+        // HipAudioClip buffer = new HipAudioClip(new HipSDL_MixerDecoder());
+        // buffer.load(audioName,getEncodingFromName(audioName), bufferType);
+        // return buffer;
     }
-    public HipAudioBuffer loadStreamed(string audioName, uint chunkSize){assert(false, "SDL Audio Player does not support chunked decoding");}
+    public HipAudioClip loadStreamed(string audioName, uint chunkSize)
+    {
+        ErrorHandler.assertExit(false, "SDL Audio Player does not support chunked decoding");
+        return null;
+    }
     public void updateStream(HipAudioSource source){}
 
     public HipAudioSource getSource(bool isStreamed){return new HipAudioSource();}
 
     bool play(HipAudioSource src)
     {
-        HipSDL_MixerDecoder dec = cast(HipSDL_MixerDecoder)src.buffer.decoder;
-        if(src.buffer.type == HipAudioType.SFX)   
+        HipSDL_MixerDecoder dec = cast(HipSDL_MixerDecoder)src.clip.decoder;
+        if(src.clip.type == HipAudioType.SFX)   
             return Mix_PlayChannel(-1, dec.getChunk(), 1) == 1;
         else
             return Mix_PlayMusic(dec.getMusic(), -1) == 1;

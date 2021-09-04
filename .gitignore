@@ -16,9 +16,12 @@ build/.cache
 dependencies/gles/lib/*.a
 dependencies/gles/lib/*.lib
 build/android/SDL2*
+build/android/project/app/release/*
 building/openal-soft-1.20.1-bin
 building/SDL_sound-default
 building/SDL2-2.0.12
+modules/**/*.a
+modules/**/*.lib
 .history
 *.exe
 *.o
@@ -29,4 +32,6 @@ building/SDL2-2.0.12
 assets/
 imgui.ini
 bin/.vs
+bin/android/libhipreme_engine.so
+build/android/project/app/src/main/jniLibs/**/libhipreme_engine.so
 .vscode

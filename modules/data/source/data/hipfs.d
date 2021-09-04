@@ -87,12 +87,14 @@ interface IHipFileSystemInteraction
 abstract class HipFile : IHipFileItf
 {
     immutable FileMode mode;
+    immutable string path;
     ulong size;
     ulong cursor;
     @disable this();
     this(string path, FileMode mode)
     {
         this.mode = mode;
+        this.path = path;
         open(path, mode);
         this.size = getSize();
     }
@@ -138,6 +140,8 @@ version(Android)
         }
         override ulong getSize()
         {
+            ErrorHandler.assertErrorMessage(asset != null, "HipAndroidFile error",
+            "Can't get size from null asset '"~path~"'");
             return cast(ulong)AAsset_getLength64(asset);
         }
         override bool open(string path, FileMode mode)
@@ -147,10 +151,12 @@ version(Android)
         }
         override int read(void* buffer, ulong count)
         {
+            ErrorHandler.assertErrorMessage(asset != null, "HipAndroidFile error", "Can't read null asset");
             return AAsset_read(asset, buffer, count);
         }
         override long seek(long count, int whence = SEEK_CUR)
         {
+            ErrorHandler.assertErrorMessage(asset != null, "HipAndroidFile error", "Can't seek null asset");
             super.seek(count, whence);
             version(offset64)
                 return AAsset_seek64(asset, count, SEEK_CUR);
@@ -164,7 +170,8 @@ version(Android)
         }
         void close()
         {
-            AAsset_close(asset);
+            if(asset != null)
+                AAsset_close(asset);
         }
     }
 
@@ -205,7 +212,13 @@ version(Android)
 
 class HipStdFileSystemInteraction : IHipFileSystemInteraction
 {
-    bool read(string path, out void[] output){output = std.file.read(path);return true;}
+    bool read(string path, out void[] output)
+    {
+        if(ErrorHandler.assertErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
+            return false;
+        output = std.file.read(path);
+        return true;
+    }
     bool write(string path, void[] data){std.file.write(path, data);return true;}
     bool exists(string path){return std.file.exists(path);}
     bool remove(string path){std.file.remove(path);return true;}

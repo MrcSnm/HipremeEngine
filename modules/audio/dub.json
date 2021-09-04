@@ -2,6 +2,11 @@
 	"authors": [
 		"Hipreme"
 	],
+	"buildOptions": [
+		"debugMode",
+		"debugInfo",
+		"debugInfoC"
+	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
 		"bindbc-openal": "~>0.5.0",
@@ -14,7 +19,6 @@
 	},
 	"description": "HipremeEngine audio module",
 	"license": "proprietary",
-	"dflags": ["-g"],
 	"name": "audio",
 	"versions": [
 		"SDL_208",
