@@ -41,6 +41,7 @@ class HipAnimationTrack
     this(string name, uint framesPerSecond, bool shouldLoop)
     {
         this.name = name;
+        setFramesPerSecond(framesPerSecond);
         isLooping = shouldLoop;
     }
     HipAnimationTrack addFrames(HipAnimationFrame[] frame...)
@@ -65,6 +66,8 @@ class HipAnimationTrack
     {
         accumulator+= dt;
         uint frame = cast(uint)(accumulator*framesPerSecond);
+        import console.log;
+        rawlog(frame);
         if(frame > lastFrame)
         {
             if(isLooping)
@@ -107,7 +110,18 @@ class HipAnimation
         this.timeScale = 1.0f;
     }
 
-    void addTrack(HipAnimationTrack track){tracks[track.name] = track;}
+    HipAnimation addTrack(HipAnimationTrack track)
+    {
+        if(currentTrack is null)
+        {
+            currentTrack = track;
+            update(0);//Updates the current frame
+        }
+        ErrorHandler.assertExit((track.name in tracks) == null,
+        "Track named "~track.name~" is already on animation '"~name~"'");
+        tracks[track.name] = track;
+        return this;
+    }
 
     HipAnimationTrack getCurrentTrack(){return currentTrack;}
     string getCurrentTrackName(){return currentTrack.name;}
@@ -121,6 +135,7 @@ class HipAnimation
         if(currentTrack !is null)
             currentTrack.reset();
         currentTrack = tracks[trackName];
+        update(0); //Updates the current frame
     }
 
 
@@ -129,5 +144,6 @@ class HipAnimation
         if(currentTrack is null)
             return;
         currentFrame = currentTrack.update(dt*timeScale);
+        
     }
 }
