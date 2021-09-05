@@ -10,9 +10,20 @@ import error.handler;
 */
 struct HipAnimationFrame
 {
+    import util.data_structures:Array2D;
     TextureRegion region;
     HipColor color = HipColor(1,1,1,1);
     Vector2 offset = Vector2(0,0);
+
+    static HipAnimationFrame[] fromTextureRegions(Array2D!TextureRegion reg, uint startY, uint startX, uint endY, uint endX)
+    {
+        HipAnimationFrame[] ret;
+
+        for(int i = startY; i <= endY; i++)
+            for(int j = startX; j <= endX; j++)
+                ret~= HipAnimationFrame(reg[i,j]);
+        return ret;
+    }
 }
 
 /**
@@ -66,8 +77,6 @@ class HipAnimationTrack
     {
         accumulator+= dt;
         uint frame = cast(uint)(accumulator*framesPerSecond);
-        import console.log;
-        rawlog(frame);
         if(frame > lastFrame)
         {
             if(isLooping)
