@@ -33,10 +33,8 @@ class AnimationTestScene : Scene
                            HipAnimationFrame(sheet[1,1]),
                            HipAnimationFrame(sheet[1,2])
             ))
-            .addTrack(new HipAnimationTrack("walk_right", 12, false)
-                .addFrames(HipAnimationFrame(sheet[2,0]),
-                           HipAnimationFrame(sheet[2,1]),
-                           HipAnimationFrame(sheet[2,2])
+            .addTrack(new HipAnimationTrack("walk_right", 12, true)
+                .addFrames(HipAnimationFrame.fromTextureRegions(sheet, 2, 0, 2, 2)
                 ))
             .addTrack(new HipAnimationTrack("walk_up", 12, false)
                 .addFrames(HipAnimationFrame(sheet[3,0]),
@@ -45,13 +43,14 @@ class AnimationTestScene : Scene
             ));
 
         spr = new HipSpriteAnimation(anim);
+        spr.setAnimation("walk_right");
 
-        // tween = HipTween.to!(["y"])(5, spr, 600).play.setEasing(HipEasing.easeOutBounce);
+        tween = HipTween.to!(["x"])(15, spr, 400).play;
     }
 
     override void update(float dt)
     {
-        // tween.tick(dt);
+        tween.tick(dt);
         anim.update(dt);
         spr.setFrame(anim.getCurrentFrame());
         // import console.log;
