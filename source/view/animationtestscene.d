@@ -18,28 +18,42 @@ class AnimationTestScene : Scene
     this()
     {
         batch = new HipSpriteBatch();
-        anim = new HipAnimation("Character");
         Texture t = new Texture("graphics/sprites/sprite.png");
-        Array2D!TextureRegion sheet = TextureRegion.spritesheet(t, 32, 32);
-        anim.addTrack(new HipAnimationTrack("Walk", 12, false)
-        .addFrames(HipAnimationFrame(new TextureRegion("graphics/sprites/sprite.png"))));
+        Array2D!TextureRegion sheet = TextureRegion.spritesheet(t, 32, 32, 96, 128, 0, 0, 0, 0);
+        anim = new HipAnimation("Character");
+
+        anim
+            .addTrack(new HipAnimationTrack("walk_down", 12, true)
+                .addFrames(HipAnimationFrame(sheet[0,0]),
+                            HipAnimationFrame(sheet[0,1]),
+                            HipAnimationFrame(sheet[0,2])
+                ))
+            .addTrack(new HipAnimationTrack("walk_left", 12, false)
+                .addFrames(HipAnimationFrame(sheet[1,0]),
+                           HipAnimationFrame(sheet[1,1]),
+                           HipAnimationFrame(sheet[1,2])
+            ))
+            .addTrack(new HipAnimationTrack("walk_right", 12, false)
+                .addFrames(HipAnimationFrame(sheet[2,0]),
+                           HipAnimationFrame(sheet[2,1]),
+                           HipAnimationFrame(sheet[2,2])
+                ))
+            .addTrack(new HipAnimationTrack("walk_up", 12, false)
+                .addFrames(HipAnimationFrame(sheet[3,0]),
+                           HipAnimationFrame(sheet[3,1]),
+                           HipAnimationFrame(sheet[3,2])
+            ));
 
         spr = new HipSpriteAnimation(anim);
 
-        frame = HipAnimationFrame(sheet[2,0]);
-        spr.setFrame(&frame);
-
-        tween = HipTween.to!(["y"])(5, spr, 600).play.setEasing(HipEasing.easeOutBounce);
-        import console.log;
-        rawlog(spr.x);
+        // tween = HipTween.to!(["y"])(5, spr, 600).play.setEasing(HipEasing.easeOutBounce);
     }
 
     override void update(float dt)
     {
-        import console.log;
-        rawlog(dt);
-        // spr.update(0.01);
-        tween.tick(dt);
+        // tween.tick(dt);
+        anim.update(dt);
+        spr.setFrame(anim.getCurrentFrame());
         // import console.log;
         // rawlog(tween.getProgress());
     }
@@ -47,10 +61,10 @@ class AnimationTestScene : Scene
     override void render()
     {
         super.render();
-        // Viewport v = HipRenderer.getCurrentViewport();
-        // v.setSize(800, 600);
-        // v.update();
-        // batch.camera.setScale(2, 2);
+        Viewport v = HipRenderer.getCurrentViewport();
+        v.setSize(800, 600);
+        v.update();
+        batch.camera.setScale(2, 2);
         batch.begin();
         batch.draw(spr);
         batch.end();

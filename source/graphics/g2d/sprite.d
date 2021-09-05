@@ -212,7 +212,14 @@ class HipSpriteAnimation : HipSprite
     {
         super("");
         animation = anim;
+        this.setAnimation(anim.getCurrentTrackName());
 
+    }
+
+    void setAnimation(string animName)
+    {
+        animation.setTrack(animName);
+        setFrame(animation.getCurrentFrame());
     }
 
     void setBounds(uint width, uint height)
