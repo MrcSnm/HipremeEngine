@@ -84,6 +84,9 @@ static void initEngine(bool audio3D = false)
 
 ///Globally shared for accessing it on Android Game Thread
 __gshared GameSystem sys;
+__gshared float g_deltaTime = 0;
+enum float FRAME_TIME = 1000/60; //60 frames per second
+
 extern(C)int SDL_main()
 {
 	import data.ini;
@@ -127,7 +130,10 @@ extern(C)int SDL_main()
 	else version(Android){}
 	else
 	{
-		while(HipremeUpdate()){HipremeRender();}
+		while(HipremeUpdate())
+		{
+			HipremeRender();
+		}
 		HipremeDestroy();
 		destroyEngine();
 	}
@@ -228,9 +234,20 @@ else{void main(){HipremeMain();}}
 ///Steps an engine frame
 export extern(C) bool HipremeUpdate()
 {
-	if(!sys.update())
+	import util.time;
+	import core.thread.osthread;
+	long initTime = HipTime.getCurrentTime();
+	if(g_deltaTime != 0)
+	{
+		long sleepTime = cast(long)(FRAME_TIME - g_deltaTime);
+		if(sleepTime > 0)
+			Thread.sleep(dur!"msecs"(sleepTime));
+	}
+	if(!sys.update(g_deltaTime))
 		return false;
 	sys.postUpdate();
+	g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1_000_000_000); //As seconds
+
 	return true;
 }
 /**

@@ -29,15 +29,17 @@ class AnimationTestScene : Scene
         frame = HipAnimationFrame(sheet[2,0]);
         spr.setFrame(&frame);
 
-        tween = HipTween.by!(["x"])(2, spr, 700).play().setEasing(HipEasing.easeInQuad);
+        tween = HipTween.to!(["y"])(5, spr, 600).play.setEasing(HipEasing.easeOutBounce);
         import console.log;
         rawlog(spr.x);
     }
 
     override void update(float dt)
     {
+        import console.log;
+        rawlog(dt);
         // spr.update(0.01);
-        tween.tick(0.01);
+        tween.tick(dt);
         // import console.log;
         // rawlog(tween.getProgress());
     }

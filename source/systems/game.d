@@ -51,7 +51,7 @@ class GameSystem
 
     }
 
-    bool update()
+    bool update(float deltaTime)
     {
         dispatcher.handleEvent();
 
@@ -60,7 +60,7 @@ class GameSystem
         version(Android){}
         else {keyboard.update();}
         foreach(s; scenes)
-            s.update(0);
+            s.update(deltaTime);
 
         return true;
     }
