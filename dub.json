@@ -20,6 +20,9 @@
 			"versions": [
 				"dll",
 				"UWP"
+			],
+			"postBuildCommands": [
+				"cd .\\build && rdmd insertresourceuwp.d .\\uwp\\HipremeEngine\\HipremeEngine ..\\assets"
 			]
 		},
 		{
