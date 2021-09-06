@@ -12,6 +12,7 @@ Distributed under the MIT Software License.
 module hiprenderer.backend.gl.texture;
 import hiprenderer.texture;
 import hiprenderer.backend.gl.renderer;
+import error.handler;
 import data.image;
 import bindbc.sdl;
 
@@ -85,11 +86,26 @@ class Hip_GL3_Texture : ITexture
 
     bool load(Image image)
     {
-        int mode = GL_RGB;
-        if(image.bytesPerPixel==4)
-            mode = GL_RGBA;
+        int mode;
+        void* pixels = image.pixels;
+        switch(image.bytesPerPixel)
+        {
+            case 1:
+                pixels = image.convertPalettizedToRGBA();
+                mode = GL_RGBA;
+                break;
+            case 3:
+                mode = GL_RGB;
+                break;
+            case 4:
+                mode = GL_RGBA;
+                break;
+            case 2:
+            default:
+                ErrorHandler.assertExit(false, "GL Pixel format unsupported");
+        }
         bind();
-        glTexImage2D(GL_TEXTURE_2D, 0, mode, image.w, image.h, 0, mode, GL_UNSIGNED_BYTE, image.pixels);
+        glTexImage2D(GL_TEXTURE_2D, 0, mode, image.w, image.h, 0, mode, GL_UNSIGNED_BYTE, pixels);
         width = image.w;
         height = image.h;
 

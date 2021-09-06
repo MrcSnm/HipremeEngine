@@ -13,6 +13,7 @@ module graphics.mesh;
 import hiprenderer.renderer;
 import hiprenderer.shader;
 import hiprenderer.vertex;
+import error.handler;
 import std.traits;
 
 class Mesh
@@ -82,7 +83,7 @@ class Mesh
     public void updateVertices(ref float[] vertices)
     {
         this.vertices = vertices;
-        this.vao.updateVertices(cast(index_t)vertices.length/this.vao.dataCount, vertices.ptr);
+        this.vao.updateVertices(cast(index_t)(vertices.length/this.vao.dataCount), vertices.ptr);
     }
     public void setShader(Shader s)
     {
@@ -95,6 +96,7 @@ class Mesh
     public void draw(T)(T count)
     {
         static assert(isUnsigned!T, "Mesh must receive an integral type in its draw");
+        ErrorHandler.assertExit(count < T.max, "Can't draw more than T.max");
         // if(isVertexArray)
         // {
             // HipRenderer.drawVertices()
