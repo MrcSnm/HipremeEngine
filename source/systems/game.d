@@ -45,7 +45,7 @@ class GameSystem
 
         import view.testscene;
         import view.uwptest;
-        Scene testscene = new AnimationTestScene();
+        Scene testscene = new TilemapTestScene();
     	testscene.init();
         scenes~= testscene;
 
