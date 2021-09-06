@@ -21,3 +21,17 @@ string replaceAll(string str, char what, string replaceWith = "")
     }
     return ret;
 }
+
+pure long lastIndexOf(in string str,in string toFind)
+{
+    long z = 1;
+    for(long i = str.length-1; i >= 0; i--)
+    {
+        while(str[i-z+1] == toFind[$-z] && z < toFind.length)
+            z++;
+        if(z == toFind.length)
+            return i;
+        z = 1;
+    }
+    return -1;
+}

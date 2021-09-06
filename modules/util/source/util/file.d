@@ -26,6 +26,13 @@ string getFileContent(string path, bool noCarriageReturn = true)
     return (noCarriageReturn) ? content.replaceAll('\r') : content;
 }
 
+string stripLineBreaks(string content)
+{
+    content = content.replaceAll('\r');
+    content = content.replaceAll('\n');
+    return content;
+}
+
 string getFileContentFromBasePath(string path, string basePath, bool noCarriageReturn = true)
 {
     string finalPath = relativePath(sanitizePath(path), sanitizePath(basePath));

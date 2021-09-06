@@ -16,20 +16,30 @@ import data.assetpacker;
 import console.log;
 import hiprenderer;
 import graphics.g2d.tilemap;
+import graphics.g2d.spritebatch;
 
 class TilemapTestScene : Scene
 {
     Tilemap map;
+    HipSpriteBatch batch;
     this()
     {
         HapFile f = HapFile.get("gamepack.hap");
-        rawlog(f.getChunksList());
+        batch = new HipSpriteBatch();
+
+
+        map = Tilemap.readTiledTMX("maps/minitest.tmx");
+        rawlog(map.layers["Camada de Tiles 1"].tiles);
+        // rawlog(f.getChunksList());
         // (Tileset.fromTSX());
     }
 
     override void render()
     {
         HipRenderer.clear();
+        batch.begin();
 
+        map.render(batch);
+        batch.end();
     }
 }

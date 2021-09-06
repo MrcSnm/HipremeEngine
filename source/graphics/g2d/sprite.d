@@ -41,8 +41,8 @@ import graphics.color;
 
     protected bool isDirty;
 
-    static assert(cast(ulong)(HipSpriteVertex.sizeof/float.sizeof) == 9,  "SpriteVertex should contain 9 floats");
-    protected float[cast(ulong)(HipSpriteVertex.sizeof/float.sizeof * 4)] vertices;
+    static assert(HipSpriteVertex.floatCount == 9,  "SpriteVertex should contain 9 floats");
+    protected float[HipSpriteVertex.floatCount * 4] vertices;
 
     this()
     {
@@ -131,7 +131,7 @@ import graphics.color;
         vertices[Y4] = y2;
     }
 
-    ref float[vertices.length] getVertices()
+    ref float[HipSpriteVertex.quadCount] getVertices()
     {
         if(isDirty)
         {

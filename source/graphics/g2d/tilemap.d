@@ -18,6 +18,8 @@ import std.file;
 import arsd.dom;
 import util.file;
 import std.json;
+import error.handler;
+import hiprenderer.texture;
 
 enum TileLayerType
 {
@@ -31,7 +33,7 @@ enum TileDrawOrder
     DOWN_TOP
 }
 
-struct TileProperty
+struct  TileProperty
 {
     string name;
     string type;
@@ -67,6 +69,7 @@ struct Tile
 {
     ushort id;
     ushort currentFrame;
+    TextureRegion region;
     TileProperty[string] properties;
     TileAnimationFrame[] animation;
     alias properties this;
@@ -85,15 +88,23 @@ class TileLayer
     float opacity;
 
 
-    void render(HipSpriteBatch batch, bool shouldEndBatch = false)
+    void render(Tilemap map, HipSpriteBatch batch, bool shouldEndBatch = false)
     {
         if(!batch.hasBegun)
             batch.begin();
-        ulong tilesL = tiles.length;
-        // for(int tileY = batch.camera.y - y; tileY < batch.camera.viewHeight; tileY+= tileHeight)
-        // {
-            
-        // }
+        uint w = width, h = height;
+        uint th = map.tileHeight, tw = map.tileWidth;
+
+        for(int i = 0, _y = y; i < height; i++, _y+= th)
+            for(int j =0, _x = x; j < width; j++, _x+= tw)
+            {
+                ushort targetTile = tiles[i*w+j];
+                if(targetTile == 0)
+                    continue;
+
+                batch.draw(map.getTextureRegionForID(targetTile), _x, _y);
+            }
+
         if(shouldEndBatch)
             batch.end();
     }
@@ -113,6 +124,8 @@ class Tileset
     uint  textureHeight;
     ///"imagewidth" in tiled 
     uint  textureWidth; 
+
+    Texture texture;
     int margin;
     string name;
 
@@ -132,7 +145,7 @@ class Tileset
         this.tileCount = tileCount;
     }
 
-    static Tileset fromTSX(ubyte[] tsxData, bool autoLoadTexture = true)
+    static Tileset fromTSX(ubyte[] tsxData, string tsxPath, bool autoLoadTexture = true)
     {
         string xmlFile = cast(string)tsxData;
         auto document = new XmlDocument(xmlFile);
@@ -141,6 +154,7 @@ class Tileset
 
         const uint tileCount = to!uint(tileset.getAttribute("tilecount"));
         Tileset ret = new Tileset(tileCount);
+        ret.path = tsxPath;
 
         //Tileset
         ret.name        =         tileset.getAttribute("name");
@@ -152,6 +166,9 @@ class Tileset
         ret.texturePath   =         image.getAttribute("source");
         ret.textureWidth  = to!uint(image.getAttribute("width"));
         ret.textureHeight = to!uint(image.getAttribute("height"));
+
+        if(autoLoadTexture)
+            ret.loadTexture();
         
         Element[] tiles = document.querySelectorAll("tile");
 
@@ -182,15 +199,43 @@ class Tileset
     {
         void[] tsxData;
         HipFS.read(tsxPath, tsxData);
-        return fromTSX(cast(ubyte[])tsxData, autoLoadTexture);
+        return fromTSX(cast(ubyte[])tsxData, tsxPath, autoLoadTexture);
     }
 
-    alias tiles this;
+    void loadTexture()
+    {
+        import std.path:pathSplitter, asNormalizedPath;
+        import std.array:array, join;
+        ErrorHandler.assertExit(texturePath != "", "No texture path for loading tilemap texture");
+
+        string[] temp = pathSplitter(path).array;
+        temp[$-1] = texturePath;
+        string texPath = temp.join("/").asNormalizedPath.array;
+
+        texture = new Texture(texPath);
+
+        int i = 0;
+        for(int y = 0; y < textureHeight; y+= tileHeight)
+            for(int x = 0; x < textureWidth; x+= tileWidth)
+            {
+                Tile* t = &tiles[i];
+                t.region = new TextureRegion(texture, x, y, x+tileWidth, y+tileHeight);
+                i++;
+            }
+    }
+
+    TextureRegion getTextureRegion(ushort id)
+    {
+        return tiles[id - firstGid].region;
+    }
+
+    // alias tiles this;
 }
 
 
 class Tilemap
 {
+    string path;
     uint width;
     uint height;
     bool isInfinite;
@@ -202,6 +247,93 @@ class Tilemap
     uint tileHeight;
     uint tileWidth;
     Tileset[] tilesets;
+
+    string getTSXPath(string tsxName)
+    {
+        import std.path:pathSplitter, buildPath;
+        import std.array:array;
+        string[] tsxPath = pathSplitter(path).array;
+        tsxPath[$-1] = tsxName;
+        return tsxPath.buildPath;
+    }
+
+    void render(HipSpriteBatch batch)
+    {
+        foreach(l; layers)
+            l.render(this, batch);
+    }
+
+    Tileset getTilesetForID(ushort id)
+    {
+        if(tilesets.length == 1)
+            return tilesets[0];
+        for(int i = 0; i < tilesets.length-1; i++)
+        {
+            if(id >= tilesets[i].firstGid && id < tilesets[i+1].firstGid)
+                return tilesets[i];
+        }
+        return tilesets[$-1];
+    }
+    TextureRegion getTextureRegionForID(ushort id)
+    {
+        return getTilesetForID(id).getTextureRegion(id);
+    }
+
+    static Tilemap readTiledTMX(ubyte[] tiledData, string tiledPath, bool autoLoadTexture = true)
+    {
+        Tilemap ret = new Tilemap();
+        string xmlFile = cast(string)tiledData;
+        auto document = new XmlDocument(xmlFile);
+        auto map = document.querySelector("map");
+        ret.path = tiledPath;
+
+        ret.tiled_version =         map.getAttribute("tiledVersion");
+        ret.orientation   =         map.getAttribute("orientation");
+        ret.width         = to!uint(map.getAttribute("width"));
+        ret.height        = to!uint(map.getAttribute("height"));
+        ret.tileWidth     = to!uint(map.getAttribute("tilewidth"));
+        ret.tileHeight    = to!uint(map.getAttribute("tileheight"));
+        ret.isInfinite    = (to!uint(map.getAttribute("infinite")) == 1);
+        ret.renderorder   =         map.getAttribute("renderorder");
+
+        auto tileset = document.querySelectorAll("tileset");
+
+        foreach(t; tileset)
+        {
+            string tsxPath = t.getAttribute("source");
+            Tileset set = Tileset.fromTSX(ret.getTSXPath(tsxPath), autoLoadTexture);
+            set.firstGid = to!uint(t.getAttribute("firstgid"));
+            ret.tilesets~=set;
+        }
+
+        auto layers = document.querySelectorAll("layer");
+        foreach(l; layers)
+        {
+            import std.array:split;
+            import util.file:stripLineBreaks;
+            TileLayer layer = new TileLayer();
+            layer.id      = to!ushort(l.getAttribute("id"));
+            layer.name    =           l.getAttribute("name");
+            layer.width   =   to!uint(l.getAttribute("width"));
+            layer.height  =   to!uint(l.getAttribute("height"));
+            string[] data = l.querySelector("data").innerText.stripLineBreaks.split(",");
+            layer.tiles.reserve(data.length);
+            for(int i = 0; i < data.length;i++)
+                layer.tiles~=to!ushort(data[i]);
+
+
+            ret.layers[layer.name] = layer;
+        }
+
+        return ret;
+
+    }
+    static Tilemap readTiledTMX(string tiledPath)
+    {
+        void[] tmxData;
+        HipFS.read(tiledPath, tmxData);
+        return readTiledTMX(cast(ubyte[])tmxData, tiledPath);
+    }
 
     static Tilemap readTiledJSON(ubyte[] tiledData)
     {
@@ -290,9 +422,9 @@ class Tilemap
             ret.layers[layer.name] = layer;
         }
 
-        JSONValue[] tilesets = json["tilesets"].array;
+        JSONValue[] jtilesets = json["tilesets"].array;
 
-        foreach(t; tilesets)
+        foreach(t; jtilesets)
         {
             uint tileCount = cast(uint)t["tilecount"].integer;
             Tileset tileset;
@@ -334,11 +466,11 @@ class Tilemap
                 }
                 tileset.tiles[tile.id] = tile;
             }
+        ret.tilesets~= tileset;
         }
 
         return ret;
     }
-
     static Tilemap readTiledJSON(string tiledPath)
     {
         void[] jsonData;
