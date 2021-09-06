@@ -1,7 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"arsd-official": "10.2.1",
+		"arsd-official": "10.2.2",
 		"bindbc-cimgui": "1.0.1",
 		"bindbc-generate": "1.0.0",
 		"bindbc-loader": "0.3.2",
