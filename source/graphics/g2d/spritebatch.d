@@ -130,7 +130,6 @@ class HipSpriteBatch
 
         s.texture.texture.bind();
         ///X Y Z, RGBA, UV, 4 vertices
-
         addQuad(v);
     }
 

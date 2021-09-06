@@ -13,7 +13,7 @@ module graphics.g2d.tilemap;
 import data.hipfs;
 import math.rect;
 import graphics.g2d.spritebatch;
-import std.conv:to;
+import util.string;
 import std.file;
 import arsd.dom;
 import util.file;
@@ -337,28 +337,73 @@ class Tilemap
             ret.tilesets~=set;
         }
 
-        auto layers = document.querySelectorAll("layer");
+        auto layers = document.querySelectorAll("map > layer");
         foreach(l; layers)
         {
-            import std.array:split;
-            import util.file:stripLineBreaks;
-            TileLayer layer = new TileLayer();
-            layer.id      = to!ushort(l.getAttribute("id"));
-            layer.name    =           l.getAttribute("name");
-            layer.width   =   to!uint(l.getAttribute("width"));
-            layer.height  =   to!uint(l.getAttribute("height"));
-            string[] data = l.querySelector("data").innerText.stripLineBreaks.split(",");
-            layer.tiles.reserve(data.length);
-            for(int i = 0; i < data.length;i++)
-                layer.tiles~=to!ushort(data[i]);
-
-
+            TileLayer layer = Tilemap.tileLayerFromElement(l);
             ret.layersArray~= layer;
             ret.layers[layer.name] = layer;
         }
 
-        return ret;
+        Element[] objGroups = document.querySelectorAll("map > objectgroup");
+        foreach(objGroup; objGroups)
+        {
+            TileLayer layer = Tilemap.objectLayerFromElement(objGroup);
+            ret.layers[layer.name] = layer;
+        }
 
+        return ret;
+    }
+
+    protected static TileLayer tileLayerFromElement(Element l)
+    {
+        import std.array:split;
+        import util.file:stripLineBreaks;
+        TileLayer layer = new TileLayer();
+        layer.type    = TileLayerType.TILE_LAYER;
+        layer.id      = to!ushort(l.getAttribute("id"));
+        layer.name    =           l.getAttribute("name");
+        layer.width   =   to!uint(l.getAttribute("width"));
+        layer.height  =   to!uint(l.getAttribute("height"));
+        string[] data = l.querySelector("data").innerText.stripLineBreaks.split(",");
+        layer.tiles.reserve(data.length);
+        for(int i = 0; i < data.length;i++)
+            layer.tiles~=to!ushort(data[i]);
+        
+        return layer;
+    }
+
+    protected static TileLayer objectLayerFromElement(Element objgroup)
+    {
+        TileLayer layer = new TileLayer();
+        layer.type = TileLayerType.OBJECT_LAYER;
+        layer.id   = toDefault!(ushort)(objgroup.getAttribute("id"));
+        layer.name = objgroup.getAttribute("name");
+        Element[] objs = objgroup.querySelectorAll("object");
+        foreach(o; objs)
+        {
+            TileLayerObject obj;
+            obj.gid     = toDefault!(ushort)(o.getAttribute("gid"));
+            obj.height  =   toDefault!(uint)(o.getAttribute("height"));
+            obj.id      = toDefault!(ushort)(o.getAttribute("id"));
+            obj.name    =            (o.getAttribute("name"));
+            obj.rotation=    toDefault!(int)(o.getAttribute("rotation"));
+            obj.type    =            (o.getAttribute("type"));
+            obj.visible =   toDefault!(bool)(o.getAttribute("visible"));
+            obj.width   =   toDefault!(uint)(o.getAttribute("width"));
+            obj.x       =    toDefault!(int)(o.getAttribute("x"));
+            obj.y       =    toDefault!(int)(o.getAttribute("y"));
+            Element[] props = o.querySelectorAll("properties");
+            foreach(p; props)
+            {
+                TileProperty tp;
+                tp.name  = p.getAttribute("name");
+                tp.type  = p.getAttribute("type");
+                tp.value = p.getAttribute("value");
+                obj.properties[tp.name] = tp;
+            }
+        }
+        return layer;
     }
     static Tilemap readTiledTMX(string tiledPath)
     {

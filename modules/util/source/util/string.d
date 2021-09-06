@@ -10,6 +10,7 @@ Distributed under the MIT Software License.
 */
 
 module util.string;
+public import std.conv:to;
 
 string replaceAll(string str, char what, string replaceWith = "")
 {
@@ -30,8 +31,26 @@ pure long lastIndexOf(in string str,in string toFind)
         while(str[i-z+1] == toFind[$-z] && z < toFind.length)
             z++;
         if(z == toFind.length)
-            return i;
+            return i-z+1;
         z = 1;
     }
     return -1;
+}
+
+T toDefault(T)(string s, T defaultValue = T.init)
+{
+    if(s == "")
+        return defaultValue;
+
+    T v = defaultValue;
+    try{v = to!(T)(s);}
+    catch(Exception e){}
+    return v;
+}
+
+unittest
+{
+    assert(toDefault!int("hello") == 0);
+    assert(lastIndexOf("hello, hello", "hello") == 7);
+    assert(replaceAll("\nTest\n", '\n') == "Test");
 }
