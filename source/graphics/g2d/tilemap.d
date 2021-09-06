@@ -95,14 +95,30 @@ class TileLayer
         uint w = width, h = height;
         uint th = map.tileHeight, tw = map.tileWidth;
 
-        for(int i = 0, _y = y; i < height; i++, _y+= th)
-            for(int j =0, _x = x; j < width; j++, _x+= tw)
+        ushort lastId;
+        TextureRegion lastTexture;
+
+
+        for(int i = 0, _y = y; i < w; i++, _y+= th)
+            for(int j =0, _x = x; j < h; j++, _x+= tw)
             {
                 ushort targetTile = tiles[i*w+j];
                 if(targetTile == 0)
                     continue;
-
-                batch.draw(map.getTextureRegionForID(targetTile), _x, _y);
+                if(lastId != targetTile)
+                {
+                    /**
+                    * Probably worth caching as it is: 
+                    * - one pointer dereference (map->)
+                    * - one function call (getTextureRegionForID)
+                    * - one function call (getTilesetForID)
+                    * - one pointer derefenrece (tileset->)
+                    * - one function call (getTextureRegion)
+                    */
+                    lastId = targetTile;
+                    lastTexture = map.getTextureRegionForID(targetTile);
+                }
+                batch.draw(lastTexture, _x, _y);
             }
 
         if(shouldEndBatch)
@@ -150,7 +166,12 @@ class Tileset
         string xmlFile = cast(string)tsxData;
         auto document = new XmlDocument(xmlFile);
         auto tileset = document.querySelector("tileset");
-        auto image   = document.querySelector("image");
+        return Tileset.fromXMLElement(tileset, tsxPath, autoLoadTexture);
+    }
+
+    static Tileset fromXMLElement(Element tileset, string tsxPath="", bool autoLoadTexture=true)
+    {
+        auto image   = tileset.querySelector("image");
 
         const uint tileCount = to!uint(tileset.getAttribute("tilecount"));
         Tileset ret = new Tileset(tileCount);
@@ -170,7 +191,7 @@ class Tileset
         if(autoLoadTexture)
             ret.loadTexture();
         
-        Element[] tiles = document.querySelectorAll("tile");
+        Element[] tiles = tileset.querySelectorAll("tile");
 
         foreach(t; tiles)
         {
@@ -239,6 +260,8 @@ class Tilemap
     uint width;
     uint height;
     bool isInfinite;
+    ///Used for rendering order
+    protected TileLayer[] layersArray;
     TileLayer[string] layers;
     string orientation;
     string renderorder;
@@ -301,7 +324,15 @@ class Tilemap
         foreach(t; tileset)
         {
             string tsxPath = t.getAttribute("source");
-            Tileset set = Tileset.fromTSX(ret.getTSXPath(tsxPath), autoLoadTexture);
+            Tileset set;
+            if(tsxPath != null)
+                set = Tileset.fromTSX(ret.getTSXPath(tsxPath), autoLoadTexture);
+            else
+            {
+                set = Tileset.fromXMLElement(t, ret.getTSXPath("null"));
+                //Using getTSXPath with any string, as it will be replaced later 
+                //For the texture path
+            }
             set.firstGid = to!uint(t.getAttribute("firstgid"));
             ret.tilesets~=set;
         }
@@ -322,6 +353,7 @@ class Tilemap
                 layer.tiles~=to!ushort(data[i]);
 
 
+            ret.layersArray~= layer;
             ret.layers[layer.name] = layer;
         }
 
@@ -418,7 +450,7 @@ class Tilemap
                     layer.properties[tp.name] = tp;
                 }
             }
-
+            ret.layersArray~=layer;
             ret.layers[layer.name] = layer;
         }
 

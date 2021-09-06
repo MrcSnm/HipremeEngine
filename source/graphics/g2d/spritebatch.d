@@ -35,8 +35,6 @@ struct HipSpriteVertex
     static enum quadCount = floatCount*4;
 }
 
-private enum spriteVertexSize = cast(uint)(HipSpriteVertex.sizeof/float.sizeof);
-
 class HipSpriteBatch
 {
     index_t maxQuads;
@@ -48,21 +46,21 @@ class HipSpriteBatch
     Mesh mesh;
     Material material;
 
-    protected uint quadsCount;
+    uint quadsCount;
 
     this(index_t maxQuads = 10_900)
     {
         import std.conv:to;
-        ErrorHandler.assertExit(is(index_t == ushort) && index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
+        ErrorHandler.assertExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
         this.maxQuads = maxQuads;
         indices = new index_t[maxQuads*6];
-        vertices = new float[maxQuads*spriteVertexSize*4]; //XYZ -> 3, RGBA -> 4, ST -> 2, 3+4+2=9
+        vertices = new float[maxQuads*HipSpriteVertex.quadCount]; //XYZ -> 3, RGBA -> 4, ST -> 2, 3+4+2=9
         vertices[] = 0;
 
         Shader s = HipRenderer.newShader(HipShaderPresets.SPRITE_BATCH);
         mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_ST_VAO(), s);
         mesh.vao.bind();
-        mesh.createVertexBuffer(cast(index_t)(maxQuads*spriteVertexSize*4), HipBufferUsage.DYNAMIC);
+        mesh.createVertexBuffer(cast(index_t)(maxQuads*HipSpriteVertex.quadCount), HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(cast(index_t)(maxQuads*6), HipBufferUsage.STATIC);
         mesh.sendAttributes();
         setShader(s);
@@ -88,7 +86,7 @@ class HipSpriteBatch
         camera = new HipOrthoCamera();
 
         index_t offset = 0;
-        for(index_t i = 0; i < maxQuads; i+=6)
+        for(index_t i = 0; i < cast(index_t)(maxQuads*6); i+=6)
         {
             indices[i + 0] = cast(index_t)(0+offset);
             indices[i + 1] = cast(index_t)(1+offset);
@@ -118,8 +116,11 @@ class HipSpriteBatch
 
     void addQuad(const float[HipSpriteVertex.quadCount] quad)
     {
-        for(int i = 0; i < 9*4; i++)
-            vertices[(9*4*quadsCount)+i] = quad[i];
+        if(quadsCount+1 > maxQuads)
+            flush();
+        for(ulong i = 0; i < HipSpriteVertex.quadCount; i++)
+            vertices[(HipSpriteVertex.quadCount*quadsCount)+i] = quad[i];
+        
         quadsCount++;
     }
     void draw(HipSprite s)
@@ -136,7 +137,7 @@ class HipSpriteBatch
     void draw(TextureRegion reg, int x, int y, int z = 0, HipColor color = HipColor.white)
     {
         const float[HipSpriteVertex.quadCount] v = getTextureRegionVertices(reg,x,y,z,color);
-        ErrorHandler.assertExit(reg.regionWidth != 0 && reg.regionHeight != 0, "Tried to draw 0 bounds sprite");
+        ErrorHandler.assertExit(reg.regionWidth != 0 && reg.regionHeight != 0, "Tried to draw 0 bounds region");
         reg.texture.bind();
         ///X Y Z, RGBA, UV, 4 vertices
 

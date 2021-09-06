@@ -15,6 +15,7 @@ import hiprenderer.backend.d3d.renderer;
 import data.image;
 import directx.d3d11;
 import bindbc.sdl;
+import error.handler;
 import hiprenderer.texture;
 
 class Hip_D3D11_Texture : ITexture
@@ -68,8 +69,28 @@ class Hip_D3D11_Texture : ITexture
         desc.Height = image.h;
 
         D3D11_SUBRESOURCE_DATA data;
-        data.pSysMem = image.pixels;
-        data.SysMemPitch = image.w*image.bytesPerPixel;
+
+        void* pixels;
+        ushort Bpp = 0;
+
+        switch(image.bytesPerPixel)
+        {
+            case 1:
+                pixels = image.convertPalettizedToRGBA();
+                Bpp = 4;
+                break;
+            case 3:
+            case 4:
+                pixels = image.pixels;
+                Bpp = image.bytesPerPixel;
+                break;
+            case 2:
+            default:
+                ErrorHandler.assertExit(false, 
+                "Unsopported bytes per pixel for D3D11 Texture named '"~image.name~"'");
+        }
+        data.pSysMem = pixels;
+        data.SysMemPitch = image.w*Bpp;
 
         _hip_d3d_device.CreateTexture2D(&desc, &data, &texture);
         _hip_d3d_device.CreateShaderResourceView(texture, cast(D3D11_SHADER_RESOURCE_VIEW_DESC*)null, &resource);

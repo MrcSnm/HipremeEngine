@@ -26,6 +26,7 @@ public interface IHipImageDecoder
     uint getHeight();
     void* getPixels();
     ubyte getBytesPerPixel();
+    ubyte[] getPalette();
     final ushort getBitsPerPixel(){return getBytesPerPixel()*8;}
     ///Dispose the pixels
     void dispose();
@@ -64,6 +65,25 @@ final class HipSDLImageDecoder : IHipAnyImageDecoder
     uint getHeight(){return (img == null) ? 0 : img.h;}
     void* getPixels(){return (img == null) ? null : img.pixels;}
     ubyte getBytesPerPixel(){return (img == null) ? 0 : img.format.BytesPerPixel;}
+    ubyte[] getPalette()
+    {
+        ubyte[] palette = new ubyte[](img.format.palette.ncolors*4);
+        palette[0] = 0;
+        palette[1] = 0;
+        palette[2] = 0;
+        palette[3] = 0;
+        uint z; //Palette index
+        for(int i = 1; i < img.format.palette.ncolors; i++)
+        {
+            SDL_Color c = img.format.palette.colors[i];
+            z = i*4;
+            palette[z] = c.r;
+            palette[z+1] = c.g;
+            palette[z+2] = c.b;
+            palette[z+3] = c.a;
+        }
+        return palette;
+    }
     ///Dispose the pixels
     void dispose(){if(img != null){SDL_FreeSurface(img);img = null;}}
 }
@@ -85,6 +105,8 @@ public class Image : HipAsset
     ushort bitsPerPixel;
     void* pixels;
 
+    protected void* convertedPixels;
+
     this(in string path)
     {
         super("Image_"~path);
@@ -104,6 +126,35 @@ public class Image : HipAsset
         bytesPerPixel = decoder.getBytesPerPixel();
         pixels        = decoder.getPixels();
         return true;
+    }
+
+    void* convertPalettizedToRGBA()
+    {
+        import core.stdc.stdlib:malloc;
+        if(convertedPixels != null)
+            return convertedPixels;
+        ubyte* pix = cast(ubyte*)malloc(4*width*height); //RGBA for each pixel
+        ErrorHandler.assertExit(pix != null, "Out of memory when converting palette pixels to RGBA");
+        convertedPixels = pix;
+
+        uint pixelsLength = width*height;
+        ubyte[] palette = decoder.getPalette();
+
+        uint colorIndex;
+        uint z;
+        for(uint i = 0; i < pixelsLength; i++)
+        {
+            //Palette r color = palette[pixels[i]*4]
+            colorIndex = (cast(ubyte*)pixels)[i]*4;
+            pix[z++]   = palette[colorIndex]; //R
+            pix[z++] = palette[colorIndex+1]; //G
+            pix[z++] = palette[colorIndex+2]; //B
+            pix[z++] = palette[colorIndex+3]; //A
+        }
+
+        destroy(palette);
+
+        return cast(void*)pix;
     }
 
     bool loadFromFile()
@@ -127,7 +178,16 @@ public class Image : HipAsset
             onLoad();
         return ret;
     }
-    override void onDispose(){decoder.dispose();}
+    override void onDispose()
+    {
+        import core.stdc.stdlib:free;
+        decoder.dispose();
+        if(convertedPixels != null)
+        {
+            free(convertedPixels);
+            convertedPixels = null;
+        }
+    }
     override void onFinishLoading(){}
     alias w = width;
     alias h = height;
