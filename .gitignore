@@ -33,5 +33,6 @@ assets/
 imgui.ini
 bin/.vs
 bin/android/libhipreme_engine.so
+bin/uwp/hiprem_engine.dll
 build/android/project/app/src/main/jniLibs/**/libhipreme_engine.so
 .vscode
