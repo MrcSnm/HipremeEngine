@@ -46,6 +46,7 @@ The engine mantains some global options which you can modify it on source/global
 6. ImGUI
 7. Shader
 8. Material
+9. Tiled maps
 
 ## Audio
 
@@ -75,8 +76,6 @@ The engine mantains some global options which you can modify it on source/global
 - GLSL to HLSL transpiler
 - Multi threaded audio decoding (currently only single threaded is supported)
 - Dispatch file reading to the asset/resource packer.
-- Render Tiled maps
-- Add UWP project
 - Create a proof of concept
 - Automatize dependencies dll's generation
 - Event handler for UWP and Android
