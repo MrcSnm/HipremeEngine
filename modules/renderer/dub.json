@@ -14,6 +14,7 @@
 		"directx-d": {"path": "../../dependencies/directx-d"},
 		"gles" : {"path": "../../dependencies/gles"},
 		"data" : {"path": "../data"},
+		"bind" : {"path": "../bind"},
 		"config": {
 			"path": "../config",
 			"version": ">=0.0.0"

@@ -62,8 +62,6 @@ import graphics.color;
         texture = new TextureRegion(texturePath);
         width  = texture.regionWidth;
         height = texture.regionHeight;
-        import std.stdio;
-        writeln(width,",",height);
         setRegion(texture.u1, texture.v1, texture.u2, texture.v2);
     }
 

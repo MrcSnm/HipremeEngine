@@ -407,8 +407,11 @@ class Tilemap
     }
     static Tilemap readTiledTMX(string tiledPath)
     {
+        import console.log;
         void[] tmxData;
+        rawlog(tiledPath);
         HipFS.read(tiledPath, tmxData);
+        rawlog(tiledPath);
         return readTiledTMX(cast(ubyte[])tmxData, tiledPath);
     }
 
