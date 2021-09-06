@@ -25,6 +25,7 @@ class GameSystem
     KeyboardHandler keyboard;
     Scene[] scenes;
     bool hasFinished;
+    float fps;
 
     this()
     {
@@ -53,6 +54,9 @@ class GameSystem
 
     bool update(float deltaTime)
     {
+        fps = cast(float)cast(uint)(1/deltaTime);
+        import std.conv:to;
+        SDL_SetWindowTitle(HipRenderer.window, (to!string(fps)~" FPS\0").ptr);
         dispatcher.handleEvent();
 
         if(hasFinished || dispatcher.hasQuit)

@@ -15,21 +15,22 @@ private import std.conv : to;
 /**
 * Returns index of element if it finds or returns -1 if not
 */
-int indexOf(T)(T[] arr, T element)
+int indexOf(T)(T[] arr, T element, int startIndex = 0)
 {
     const size_t len = arr.length;
     if(len ==0)return-1;
-    for(int i = 0; i < len; i++)
+    for(int i = startIndex; i < len; i++)
         if(arr[i] == element)
             return i;
     return -1;
 }
 
-int lastIndexOf(T)(T[] arr, T element)
+int lastIndexOf(T)(T[] arr, T element, int startIndex = -1)
 {
     const size_t len = arr.length;
     if(len==0)return-1;
-    for(int i = (cast(int)len - 1); i >= 0; i--)
+    if(startIndex < 0) startIndex = (cast(int)len - 1);
+    for(int i = startIndex; i >= 0; i--)
         if(arr[i] == element)
             return i;
     return -1;
@@ -72,4 +73,11 @@ void printArrayWithoutValues(T)(const T[] arr, T[] ignoreValues...)
         logln("[]");
     else
         logln(str[0..index] ~ str[index+2..$]);
+}
+
+unittest
+{
+    assert(indexOf([2, 3, 4], 3) == 1);
+    assert(swapElementsFromArray([5, 10, 9], 10, 9));
+    assert(lastIndexOf([2, 3, 3, 4], 4) == 2);
 }
