@@ -32,6 +32,8 @@ modules/**/*.lib
 assets/
 imgui.ini
 bin/.vs
+bin/desktop/.vs
+bin/desktop/hipreme_engine.v12.suo
 bin/android/libhipreme_engine.so
 bin/uwp/hiprem_engine.dll
 build/android/project/app/src/main/jniLibs/**/libhipreme_engine.so

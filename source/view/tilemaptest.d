@@ -26,7 +26,7 @@ class TilemapTestScene : Scene
     HipSprite spr;
     this()
     {
-        HapFile f = HapFile.get("gamepack.hap");
+        // HapFile f = HapFile.get("gamepack.hap");
         batch = new HipSpriteBatch();
 
 

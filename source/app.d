@@ -56,8 +56,9 @@ static void initEngine(bool audio3D = false)
 	}
 	else version(UWP)
 	{
+		import std.file:getcwd;
 		Console.install(Platforms.UWP, &uwpPrint);
-		HipFS.install(getcwd(), (string path, out string msg)
+		HipFS.install(getcwd()~"\\UWPResources\\", (string path, out string msg)
 		{
 			if(!HipFS.exists(path))
 			{
@@ -69,8 +70,8 @@ static void initEngine(bool audio3D = false)
 	}
 	else
 	{
-		Console.install();
 		import std.file:getcwd;
+		Console.install();
 		HipFS.install(getcwd()~"/assets");
 	}
 	version(BindSDL_Static){}
