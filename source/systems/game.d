@@ -46,7 +46,7 @@ class GameSystem
 
         import view.testscene;
         import view.uwptest;
-        Scene testscene = new TilemapTestScene();
+        Scene testscene = new TextureAtlasScene();
     	testscene.init();
         scenes~= testscene;
 
