@@ -1,4 +1,5 @@
 module graphics.g2d.animation;
+import graphics.g2d.textureatlas;
 import graphics.color;
 import math.vector;
 import hiprenderer.texture : TextureRegion;
@@ -117,6 +118,23 @@ class HipAnimation
     {
         this.name = name;
         this.timeScale = 1.0f;
+    }
+
+    static HipAnimation fromAtlas(TextureAtlas atlas, string which, uint fps, bool shouldLoop=false)
+    {
+        import std.conv:to;
+        HipAnimation ret = new HipAnimation(which);
+        HipAnimationTrack track = new HipAnimationTrack(which, fps, shouldLoop);
+        AtlasFrame* frame;
+        int i = 1;
+        while((frame = (which~"_"~to!string(i) in atlas)) != null)
+        {
+            track.addFrames(HipAnimationFrame(frame.region));
+            i++;
+        }
+        ret.addTrack(track);
+
+        return ret;
     }
 
     HipAnimation addTrack(HipAnimationTrack track)

@@ -61,15 +61,17 @@ pure long lastIndexOf(in string str,in string toFind)
     long z = 1;
     for(long i = str.length-1; i >= 0; i--)
     {
-        while(str[i-z+1] == toFind[$-z] && z < toFind.length)
+        while(str[i-z+1] == toFind[$-z])
+        {
             z++;
-        if(z == toFind.length)
-            return i-z+1;
+            if(z > toFind.length)break;
+        }
+        if(z-1 == toFind.length)
+            return i-toFind.length+1;
         z = 1;
     }
     return -1;
 }
-
 T toDefault(T)(string s, T defaultValue = T.init)
 {
     if(s == "")
