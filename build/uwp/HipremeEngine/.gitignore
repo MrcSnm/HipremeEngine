@@ -1,0 +1,7 @@
+.vs
+x64
+ARM
+HipremeEngine/Generated*
+HipremeEngine/HipremeEngine.aps
+HipremeEngine/x64
+HipremeEngine/UWPResources

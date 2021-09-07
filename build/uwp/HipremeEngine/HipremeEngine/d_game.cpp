@@ -1,25 +1,18 @@
-/*
-Copyright: Marcelo S. N. Mancini, 2018 - 2021
-License:   [https://opensource.org/licenses/MIT|MIT License].
-Authors: Marcelo S. N. Mancini
-
-	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
-   (See accompanying file LICENSE.txt or copy at
-	https://opensource.org/licenses/MIT)
-*/
-
 #include "d_game.h"
 #include "pch.h"
 #include "Def.h"
 
+void (*HipremeInit)() = nullptr;
 int  (*HipremeMain)() = nullptr;
 bool (*HipremeUpdate)() = nullptr;
+void (*HipremeRender)() = nullptr;
 void (*HipremeDestroy)() = nullptr;
 
 #define D_ENGINE_IMPORT_LIST \
+X(HipremeInit) \
 X(HipremeMain) \
 X(HipremeUpdate) \
+X(HipremeRender) \
 X(HipremeDestroy)
 
 

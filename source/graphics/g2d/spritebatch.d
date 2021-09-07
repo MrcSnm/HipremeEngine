@@ -30,9 +30,10 @@ struct HipSpriteVertex
     Vector3 position;
     HipColor color;
     Vector2 tex_uv;
-}
 
-private enum spriteVertexSize = cast(uint)(HipSpriteVertex.sizeof/float.sizeof);
+    static enum floatCount = cast(ulong)(HipSpriteVertex.sizeof/float.sizeof);
+    static enum quadCount = floatCount*4;
+}
 
 class HipSpriteBatch
 {
@@ -45,21 +46,21 @@ class HipSpriteBatch
     Mesh mesh;
     Material material;
 
-    protected uint quadsCount;
+    uint quadsCount;
 
     this(index_t maxQuads = 10_900)
     {
         import std.conv:to;
-        ErrorHandler.assertExit(is(index_t == ushort) && index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
+        ErrorHandler.assertExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
         this.maxQuads = maxQuads;
         indices = new index_t[maxQuads*6];
-        vertices = new float[maxQuads*spriteVertexSize*4]; //XYZ -> 3, RGBA -> 4, ST -> 2, 3+4+2=9
+        vertices = new float[maxQuads*HipSpriteVertex.quadCount]; //XYZ -> 3, RGBA -> 4, ST -> 2, 3+4+2=9
         vertices[] = 0;
 
         Shader s = HipRenderer.newShader(HipShaderPresets.SPRITE_BATCH);
         mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_ST_VAO(), s);
         mesh.vao.bind();
-        mesh.createVertexBuffer(cast(index_t)(maxQuads*spriteVertexSize*4), HipBufferUsage.DYNAMIC);
+        mesh.createVertexBuffer(cast(index_t)(maxQuads*HipSpriteVertex.quadCount), HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(cast(index_t)(maxQuads*6), HipBufferUsage.STATIC);
         mesh.sendAttributes();
         setShader(s);
@@ -85,7 +86,7 @@ class HipSpriteBatch
         camera = new HipOrthoCamera();
 
         index_t offset = 0;
-        for(index_t i = 0; i < maxQuads; i+=6)
+        for(index_t i = 0; i < cast(index_t)(maxQuads*6); i+=6)
         {
             indices[i + 0] = cast(index_t)(0+offset);
             indices[i + 1] = cast(index_t)(1+offset);
@@ -112,16 +113,88 @@ class HipSpriteBatch
             return;
         hasBegun = true;
     }
+
+    void addQuad(const float[HipSpriteVertex.quadCount] quad)
+    {
+        if(quadsCount+1 > maxQuads)
+            flush();
+        for(ulong i = 0; i < HipSpriteVertex.quadCount; i++)
+            vertices[(HipSpriteVertex.quadCount*quadsCount)+i] = quad[i];
+        
+        quadsCount++;
+    }
     void draw(HipSprite s)
     {
-        const float[] v = s.getVertices();
+        const float[HipSpriteVertex.quadCount] v = s.getVertices();
         ErrorHandler.assertExit(s.width != 0 && s.height != 0, "Tried to draw 0 bounds sprite");
 
         s.texture.texture.bind();
         ///X Y Z, RGBA, UV, 4 vertices
-        for(int i = 0; i < 9*4; i++)
-            vertices[(9*4*quadsCount)+i] = v[i];
-        quadsCount++;
+        addQuad(v);
+    }
+
+    void draw(TextureRegion reg, int x, int y, int z = 0, HipColor color = HipColor.white)
+    {
+        const float[HipSpriteVertex.quadCount] v = getTextureRegionVertices(reg,x,y,z,color);
+        ErrorHandler.assertExit(reg.regionWidth != 0 && reg.regionHeight != 0, "Tried to draw 0 bounds region");
+        reg.texture.bind();
+        ///X Y Z, RGBA, UV, 4 vertices
+
+        addQuad(v);
+    }
+
+    static float[HipSpriteVertex.floatCount * 4] getTextureRegionVertices(TextureRegion reg,
+    int x, int y, int z = 0, HipColor color = HipColor.white)
+    {
+        float[HipSpriteVertex.floatCount*4] ret;
+        
+        ret[X1] = x;
+        ret[Y1] = y;
+        ret[Z1] = z;
+
+        ret[X2] = x+reg.regionWidth;
+        ret[Y2] = y;
+        ret[Z2] = z;
+        
+        ret[X3] = x+reg.regionWidth;
+        ret[Y3] = y+reg.regionHeight;
+        ret[Z3] = z;
+
+        ret[X4] = x;
+        ret[Y4] = y+reg.regionHeight;
+        ret[Z4] = z;
+
+        const float[8] v = reg.getVertices();
+        ret[U1] = v[0];
+        ret[V1] = v[1];
+        ret[U2] = v[2];
+        ret[V2] = v[3];
+        ret[U3] = v[4];
+        ret[V3] = v[5];
+        ret[U4] = v[6];
+        ret[V4] = v[7];
+
+        ret[R1] = color.r;
+        ret[G1] = color.g;
+        ret[B1] = color.b;
+        ret[A1] = color.a;
+
+        ret[R2] = color.r;
+        ret[G2] = color.g;
+        ret[B2] = color.b;
+        ret[A2] = color.a;
+
+        ret[R3] = color.r;
+        ret[G3] = color.g;
+        ret[B3] = color.b;
+        ret[A3] = color.a;
+
+        ret[R4] = color.r;
+        ret[G4] = color.g;
+        ret[B4] = color.b;
+        ret[A4] = color.a;
+        
+        return ret;
     }
 
     void end()

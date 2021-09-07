@@ -1,4 +1,5 @@
 module graphics.g2d.animation;
+import graphics.g2d.textureatlas;
 import graphics.color;
 import math.vector;
 import hiprenderer.texture : TextureRegion;
@@ -10,9 +11,20 @@ import error.handler;
 */
 struct HipAnimationFrame
 {
+    import util.data_structures:Array2D;
     TextureRegion region;
     HipColor color = HipColor(1,1,1,1);
     Vector2 offset = Vector2(0,0);
+
+    static HipAnimationFrame[] fromTextureRegions(Array2D!TextureRegion reg, uint startY, uint startX, uint endY, uint endX)
+    {
+        HipAnimationFrame[] ret;
+
+        for(int i = startY; i <= endY; i++)
+            for(int j = startX; j <= endX; j++)
+                ret~= HipAnimationFrame(reg[i,j]);
+        return ret;
+    }
 }
 
 /**
@@ -41,6 +53,7 @@ class HipAnimationTrack
     this(string name, uint framesPerSecond, bool shouldLoop)
     {
         this.name = name;
+        setFramesPerSecond(framesPerSecond);
         isLooping = shouldLoop;
     }
     HipAnimationTrack addFrames(HipAnimationFrame[] frame...)
@@ -107,7 +120,35 @@ class HipAnimation
         this.timeScale = 1.0f;
     }
 
-    void addTrack(HipAnimationTrack track){tracks[track.name] = track;}
+    static HipAnimation fromAtlas(TextureAtlas atlas, string which, uint fps, bool shouldLoop=false)
+    {
+        import std.conv:to;
+        HipAnimation ret = new HipAnimation(which);
+        HipAnimationTrack track = new HipAnimationTrack(which, fps, shouldLoop);
+        AtlasFrame* frame;
+        int i = 1;
+        while((frame = (which~"_"~to!string(i) in atlas)) != null)
+        {
+            track.addFrames(HipAnimationFrame(frame.region));
+            i++;
+        }
+        ret.addTrack(track);
+
+        return ret;
+    }
+
+    HipAnimation addTrack(HipAnimationTrack track)
+    {
+        if(currentTrack is null)
+        {
+            currentTrack = track;
+            update(0);//Updates the current frame
+        }
+        ErrorHandler.assertExit((track.name in tracks) == null,
+        "Track named "~track.name~" is already on animation '"~name~"'");
+        tracks[track.name] = track;
+        return this;
+    }
 
     HipAnimationTrack getCurrentTrack(){return currentTrack;}
     string getCurrentTrackName(){return currentTrack.name;}
@@ -121,6 +162,7 @@ class HipAnimation
         if(currentTrack !is null)
             currentTrack.reset();
         currentTrack = tracks[trackName];
+        update(0); //Updates the current frame
     }
 
 
@@ -129,5 +171,6 @@ class HipAnimation
         if(currentTrack is null)
             return;
         currentFrame = currentTrack.update(dt*timeScale);
+        
     }
 }

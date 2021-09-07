@@ -22,11 +22,11 @@ class FileProgressTest : Scene
     {
         import std.file :read;
         float msecs;
-        msecs = Time.getCurrentTime();
+        msecs = HipTime.getCurrentTimeAsMilliseconds();
         ubyte[] dt = cast(ubyte[])read("test.zip");
-        rawlog("NonFile took ", Time.getCurrentTime() - msecs, "ms");
+        rawlog("NonFile took ", HipTime.getCurrentTimeAsMilliseconds() - msecs, "ms");
 
-        msecs = Time.getCurrentTime();
+        msecs = HipTime.getCurrentTimeAsMilliseconds();
 
 
 
@@ -35,13 +35,13 @@ class FileProgressTest : Scene
         ubyte[] data = new ubyte[sz];
         f.rawRead(data);
         f.close();
-        rawlog("NonProgression took ", Time.getCurrentTime() - msecs, "ms");
+        rawlog("NonProgression took ", HipTime.getCurrentTimeAsMilliseconds() - msecs, "ms");
 
 
         FileProgression fp = new FileProgression("test.zip", 10);
-        msecs = Time.getCurrentTime();
+        msecs = HipTime.getCurrentTimeAsMilliseconds();
         while(fp.update()){}
-        rawlog("Progression took ", Time.getCurrentTime() - msecs, "ms");
+        rawlog("Progression took ", HipTime.getCurrentTimeAsMilliseconds() - msecs, "ms");
 
     }
     override void render()

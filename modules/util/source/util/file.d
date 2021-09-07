@@ -13,6 +13,7 @@ module util.file;
 import std.stdio;
 import std.conv:to;
 import std.path;
+import std.array:array, join;
 import std.file;
 import util.system;
 import util.string;
@@ -24,6 +25,22 @@ string getFileContent(string path, bool noCarriageReturn = true)
         return "";
     string content = readText(path);
     return (noCarriageReturn) ? content.replaceAll('\r') : content;
+}
+
+string replaceFileName(string path, string newFileName)
+{
+    string[] p = pathSplitter(path).array;
+    p[$-1] = newFileName;
+    return p.join("/").asNormalizedPath.array;
+}
+
+string getFileNameFromPath(string path){return pathSplitter(path).array[$-1];}
+
+string stripLineBreaks(string content)
+{
+    content = content.replaceAll('\r');
+    content = content.replaceAll('\n');
+    return content;
 }
 
 string getFileContentFromBasePath(string path, string basePath, bool noCarriageReturn = true)

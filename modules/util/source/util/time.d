@@ -10,13 +10,14 @@ Distributed under the MIT Software License.
 */
 
 module util.time;
+public import std.datetime:Duration, dur;
 private import std.datetime.stopwatch;
 private import core.time;
 private import std.conv : to;
 
 
 
-class Time
+class HipTime
 {
     static StopWatch stopwatch;
     static this()
@@ -24,7 +25,12 @@ class Time
         stopwatch = StopWatch(AutoStart.yes);
     }
 
-    static float getCurrentTime()
+    static long getCurrentTime()
+    {
+        return stopwatch.peek.total!"nsecs";
+    }
+
+    static float getCurrentTimeAsMilliseconds()
     {
         return stopwatch.peek.total!"nsecs" / 1_000_000;
     }

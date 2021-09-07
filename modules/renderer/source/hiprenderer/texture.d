@@ -96,9 +96,6 @@ class Texture
         }, false);
         return this.width != 0;
     }
-
-
-
 }
 
 

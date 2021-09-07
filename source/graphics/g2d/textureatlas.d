@@ -15,6 +15,8 @@ import std.conv:to;
 import std.algorithm : countUntil;
 import util.string;
 import std.file;
+import data.hipfs;
+import hiprenderer.texture;
 import math.rect;
 
 struct AtlasFrame
@@ -26,6 +28,9 @@ struct AtlasFrame
     Rect frame;
     Rect spriteSourceSize;
     Size sourceSize;
+    TextureRegion region;
+
+    alias region this;
 }
 
 class TextureAtlas
@@ -33,16 +38,18 @@ class TextureAtlas
     string atlasPath;
     string[] texturePaths;
     AtlasFrame[string] frames;
+    Texture texture;
 
-
-    static TextureAtlas readJSON(string atlasPath, string texturePath)
+    static TextureAtlas readJSON(ubyte[] data, string atlasPath, string texturePath)
     {
         import std.json;
         TextureAtlas ret = new TextureAtlas();
         ret.texturePaths~= texturePath;
         ret.atlasPath = atlasPath;
 
-        JSONValue json = getFileContent(atlasPath, false);
+        ret.texture = new Texture(texturePath);
+
+        JSONValue json = parseJSON(cast(string)data);
         JSONValue[] frames = json["frames"].array;
         foreach(f; frames)
         {
@@ -66,10 +73,24 @@ class TextureAtlas
             );
             frameRect = f["sourceSize"].object;
             a.sourceSize = Size(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
+            a.region = new TextureRegion(ret.texture,
+            cast(uint)a.frame.x,
+            cast(uint)a.frame.y,
+            cast(uint)a.frame.x + cast(uint)a.frame.w,
+            cast(uint)a.frame.y + cast(uint)a.frame.h);
+
             ret.frames[a.filename] = a;
         }
 
         return ret;
+    }
+    static TextureAtlas readJSON(string atlasPath, string texturePath="")
+    {
+        ubyte[] data;
+        HipFS.read(atlasPath, data);
+        if(texturePath == "")
+            texturePath = atlasPath[0..atlasPath.lastIndexOf(".")]~".png";
+        return readJSON(data, atlasPath, texturePath);
     }
 
     static TextureAtlas readAtlas(string atlasPath)
