@@ -55,7 +55,7 @@ enum HipEasing : float function(float x)
                              ? -(pow(2, 20 * x - 10) * sin((20 * x - 11.125f) * c5))/2
                              : (pow(2, -20 * x + 10) * sin((20 * x - 11.125f) * c5))/2 + 1,
     easeInBounce    = (x) => 1 - HipEasing.easeOutBounce(1 - x),
-    easeOutBounce   = (float x)
+    easeOutBounce   = function float(float x)
     {
         if(x < 1.0f / d1)
             return n1 * x * x;
@@ -134,7 +134,7 @@ class HipTween : HipTimer
                 static foreach(i, p; Props)
                 {
                     initialValue = *cast(V*)(t.savedData+i*V.sizeof);
-                    newValue = initialValue + cast(V)(v2[i]- initialValue * multiplier);
+                    newValue = cast(V)((1-multiplier)*initialValue + (v2[i] * multiplier));
                     mixin("target.",p," = newValue;");
                 }
             });

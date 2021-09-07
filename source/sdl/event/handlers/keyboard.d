@@ -87,25 +87,25 @@ final private class KeyMetadata
 
     private void stampDownTime()
     {
-        downTimeStamp = Time.getCurrentTime();
+        downTimeStamp = HipTime.getCurrentTimeAsMilliseconds();
     }
 
     private void stampUpTime()
     {
-        upTimeStamp = Time.getCurrentTime();
+        upTimeStamp = HipTime.getCurrentTimeAsMilliseconds();
     }
 
 
     public float getDowntimeDuration()
     {
         if(isPressed)
-            return (Time.getCurrentTime() - downTimeStamp) / 1000;
+            return (HipTime.getCurrentTimeAsMilliseconds() - downTimeStamp) / 1000;
         return 0;
     }
     public float getUpTimeDuration()
     {
         if(!isPressed)
-            return (Time.getCurrentTime() - upTimeStamp) / 1000;
+            return (HipTime.getCurrentTimeAsMilliseconds() - upTimeStamp) / 1000;
         return 0;
     }
     private void setPressed(bool press)

@@ -1,14 +1,3 @@
-/*
-Copyright: Marcelo S. N. Mancini, 2018 - 2021
-License:   [https://opensource.org/licenses/MIT|MIT License].
-Authors: Marcelo S. N. Mancini
-
-	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the Boost Software License, Version 1.0.
-   (See accompanying file LICENSE.txt or copy at
-	https://opensource.org/licenses/MIT)
-*/
-
 #include "pch.h"
 #include <CoreWindow.h>
 #include "d_game.h"
@@ -77,6 +66,7 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
         com_ptr<ICoreWindowInterop> interop;
         assertOk(window.as<::IUnknown>()->QueryInterface(interop.put()), "Could not get window Interop interface");
         interop->get_WindowHandle(&g_CoreWindowHWND);
+        HipremeInit();
         HipremeMain();
 
         //CreateD3D11Device();
@@ -197,6 +187,7 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
         {
             dispatcher.ProcessEvents(CoreProcessEventsOption::ProcessOneIfPresent);
             HipremeUpdate();
+            HipremeRender();
         }
         HipremeDestroy();
     }
@@ -220,7 +211,7 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
             m_selected = nullptr;
         });
 
-        HMODULE lib = LoadDLL(L"main.dll");
+        HMODULE lib = LoadDLL(L"hipreme_engine.dll");
         if (d_game_LoadDLL(lib) != 0)
             OutputDebugString(L"Error ocurred when loading D libs");
 

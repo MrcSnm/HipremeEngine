@@ -47,7 +47,7 @@ abstract class HipAsset
 
     void startLoading()
     {
-        startLoadingTimestamp = Time.getCurrentTime();
+        startLoadingTimestamp = HipTime.getCurrentTimeAsMilliseconds();
         load();
     }
 
@@ -56,7 +56,7 @@ abstract class HipAsset
         if(isReady())
         {
             onFinishLoading();
-            loadTime = Time.getCurrentTime() - startLoadingTimestamp;
+            loadTime = HipTime.getCurrentTimeAsMilliseconds() - startLoadingTimestamp;
         }
     }
 

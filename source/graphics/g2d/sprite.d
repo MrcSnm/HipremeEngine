@@ -41,8 +41,8 @@ import graphics.color;
 
     protected bool isDirty;
 
-    static assert(cast(ulong)(HipSpriteVertex.sizeof/float.sizeof) == 9,  "SpriteVertex should contain 9 floats");
-    protected float[cast(ulong)(HipSpriteVertex.sizeof/float.sizeof * 4)] vertices;
+    static assert(HipSpriteVertex.floatCount == 9,  "SpriteVertex should contain 9 floats");
+    protected float[HipSpriteVertex.floatCount * 4] vertices;
 
     this()
     {
@@ -62,8 +62,6 @@ import graphics.color;
         texture = new TextureRegion(texturePath);
         width  = texture.regionWidth;
         height = texture.regionHeight;
-        import std.stdio;
-        writeln(width,",",height);
         setRegion(texture.u1, texture.v1, texture.u2, texture.v2);
     }
 
@@ -131,7 +129,7 @@ import graphics.color;
         vertices[Y4] = y2;
     }
 
-    ref float[vertices.length] getVertices()
+    ref float[HipSpriteVertex.quadCount] getVertices()
     {
         if(isDirty)
         {
@@ -212,7 +210,14 @@ class HipSpriteAnimation : HipSprite
     {
         super("");
         animation = anim;
+        this.setAnimation(anim.getCurrentTrackName());
 
+    }
+
+    void setAnimation(string animName)
+    {
+        animation.setTrack(animName);
+        setFrame(animation.getCurrentFrame());
     }
 
     void setBounds(uint width, uint height)

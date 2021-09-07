@@ -25,6 +25,7 @@ class GameSystem
     KeyboardHandler keyboard;
     Scene[] scenes;
     bool hasFinished;
+    float fps;
 
     this()
     {
@@ -45,14 +46,17 @@ class GameSystem
 
         import view.testscene;
         import view.uwptest;
-        Scene testscene = new AnimationTestScene();
+        Scene testscene = new TextureAtlasScene();
     	testscene.init();
         scenes~= testscene;
 
     }
 
-    bool update()
+    bool update(float deltaTime)
     {
+        fps = cast(float)cast(uint)(1/deltaTime);
+        import std.conv:to;
+        // SDL_SetWindowTitle(HipRenderer.window, (to!string(fps)~" FPS\0").ptr);
         dispatcher.handleEvent();
 
         if(hasFinished || dispatcher.hasQuit)
@@ -60,7 +64,7 @@ class GameSystem
         version(Android){}
         else {keyboard.update();}
         foreach(s; scenes)
-            s.update(0);
+            s.update(deltaTime);
 
         return true;
     }

@@ -20,4 +20,5 @@ public import
     view.fileprogresstest,
     view.soundtestscene,
     view.animationtestscene,
+    view.textureatlasscene,
     view.spritetestscene;

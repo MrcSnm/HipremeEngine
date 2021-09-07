@@ -50,7 +50,7 @@ class HipAssetManager
 
     static void loadImage(string imagePath, Callback!Image cb, bool async = true)
     {
-        currentTime = Time.getCurrentTime();
+        currentTime = HipTime.getCurrentTimeAsMilliseconds();
         if(async)
         {
             workerPool~= spawn(&loadImageAsyncImpl, thisTid, imagePath);
@@ -60,7 +60,7 @@ class HipAssetManager
         {
             Image img = new Image(imagePath);
             img.loadFromFile();
-            logln(Time.getCurrentTime()-HipAssetManager.currentTime, "ms");
+            logln(HipTime.getCurrentTimeAsMilliseconds()-HipAssetManager.currentTime, "ms");
             images[imagePath] = AssetPair!(Image)(img, cb);
             cb(img);
         }
@@ -75,7 +75,7 @@ class HipAssetManager
                 (shared Image img)
                 {
                     logln(img.imagePath ~" decoded in ");
-                    logln(Time.getCurrentTime()-HipAssetManager.currentTime, " ms.");
+                    logln(HipTime.getCurrentTimeAsMilliseconds()-HipAssetManager.currentTime, " ms.");
 
                     images[img.imagePath].first = cast(Image)img;
                     AssetPair!Image p = images[img.imagePath];
