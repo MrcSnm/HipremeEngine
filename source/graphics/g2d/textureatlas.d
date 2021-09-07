@@ -15,6 +15,7 @@ import std.conv:to;
 import std.algorithm : countUntil;
 import util.string;
 import std.file;
+import data.hipfs;
 import math.rect;
 
 struct AtlasFrame
@@ -34,15 +35,14 @@ class TextureAtlas
     string[] texturePaths;
     AtlasFrame[string] frames;
 
-
-    static TextureAtlas readJSON(string atlasPath, string texturePath)
+    static TextureAtlas readJSON(ubyte[] data, string atlasPath, string texturePath)
     {
         import std.json;
         TextureAtlas ret = new TextureAtlas();
         ret.texturePaths~= texturePath;
         ret.atlasPath = atlasPath;
 
-        JSONValue json = getFileContent(atlasPath, false);
+        JSONValue json = parseJSON(cast(string)data);
         JSONValue[] frames = json["frames"].array;
         foreach(f; frames)
         {
@@ -70,6 +70,14 @@ class TextureAtlas
         }
 
         return ret;
+    }
+    static TextureAtlas readJSON(string atlasPath, string texturePath="")
+    {
+        ubyte[] data;
+        HipFS.read(atlasPath, data);
+        if(texturePath == "")
+            texturePath = atlasPath[0..atlasPath.lastIndexOf(".")]~".png";
+        return readJSON(data, atlasPath, texturePath);
     }
 
     static TextureAtlas readAtlas(string atlasPath)
