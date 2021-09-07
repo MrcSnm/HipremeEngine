@@ -16,6 +16,7 @@ import std.algorithm : countUntil;
 import util.string;
 import std.file;
 import data.hipfs;
+import hiprenderer.texture;
 import math.rect;
 
 struct AtlasFrame
@@ -27,6 +28,9 @@ struct AtlasFrame
     Rect frame;
     Rect spriteSourceSize;
     Size sourceSize;
+    TextureRegion region;
+
+    alias region this;
 }
 
 class TextureAtlas
@@ -34,6 +38,7 @@ class TextureAtlas
     string atlasPath;
     string[] texturePaths;
     AtlasFrame[string] frames;
+    Texture texture;
 
     static TextureAtlas readJSON(ubyte[] data, string atlasPath, string texturePath)
     {
@@ -41,6 +46,8 @@ class TextureAtlas
         TextureAtlas ret = new TextureAtlas();
         ret.texturePaths~= texturePath;
         ret.atlasPath = atlasPath;
+
+        ret.texture = new Texture(texturePath);
 
         JSONValue json = parseJSON(cast(string)data);
         JSONValue[] frames = json["frames"].array;
@@ -66,6 +73,12 @@ class TextureAtlas
             );
             frameRect = f["sourceSize"].object;
             a.sourceSize = Size(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
+            a.region = new TextureRegion(ret.texture,
+            cast(uint)a.frame.x,
+            cast(uint)a.frame.y,
+            cast(uint)a.frame.x + cast(uint)a.frame.w,
+            cast(uint)a.frame.y + cast(uint)a.frame.h);
+
             ret.frames[a.filename] = a;
         }
 
