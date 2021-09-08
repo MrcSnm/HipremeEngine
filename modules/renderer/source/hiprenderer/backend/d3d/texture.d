@@ -102,6 +102,11 @@ class Hip_D3D11_Texture : ITexture
         _hip_d3d_context.PSSetSamplers(0, 1, &sampler);
         _hip_d3d_context.PSSetShaderResources(0, 1, &resource);
     }
+    void bind(int slot)
+    {
+        _hip_d3d_context.PSSetSamplers(slot, 1, &sampler);
+        _hip_d3d_context.PSSetShaderResources(slot, 1, &resource);
+    }
 }
 
 

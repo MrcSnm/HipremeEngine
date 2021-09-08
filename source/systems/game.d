@@ -46,7 +46,7 @@ class GameSystem
 
         import view.testscene;
         import view.uwptest;
-        Scene testscene = new TextureAtlasScene();
+        Scene testscene = new TilemapTestScene();
     	testscene.init();
         scenes~= testscene;
 
@@ -56,7 +56,7 @@ class GameSystem
     {
         fps = cast(float)cast(uint)(1/deltaTime);
         import std.conv:to;
-        // SDL_SetWindowTitle(HipRenderer.window, (to!string(fps)~" FPS\0").ptr);
+        SDL_SetWindowTitle(HipRenderer.window, (to!string(fps)~" FPS\0").ptr);
         dispatcher.handleEvent();
 
         if(hasFinished || dispatcher.hasQuit)

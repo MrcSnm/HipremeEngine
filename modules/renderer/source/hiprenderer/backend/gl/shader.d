@@ -76,17 +76,19 @@ class Hip_GL3_FragmentShader : FragmentShader
             %s
 
             uniform vec4 uBatchColor;
-            uniform sampler2D uTex1;
+            uniform sampler2D uTex1[%s];
 
             in vec4 inVertexColor;
             in vec2 inTexST;
+            in float inTexID;
 
             out vec4 outPixelColor;
             void main()
             {
-                outPixelColor = texture(uTex1, inTexST)* inVertexColor * uBatchColor;
+                int texId = int(inTexID);
+                outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
             }
-        }(shaderVersion, floatPrecision);
+        }(shaderVersion, floatPrecision, HipRenderer.getMaxSupportedShaderTextures());
     }
 
     override final string getGeometryBatchFragment()
@@ -175,6 +177,7 @@ class Hip_GL3_VertexShader : VertexShader
             layout (location = 0) in vec3 vPosition;
             layout (location = 1) in vec4 vColor;
             layout (location = 2) in vec2 vTexST;
+            layout (location = 3) in float vTexID;
 
             uniform mat4 uProj;
             uniform mat4 uModel;
@@ -182,12 +185,14 @@ class Hip_GL3_VertexShader : VertexShader
             
             out vec4 inVertexColor;
             out vec2 inTexST;
+            out float inTexID;
 
             void main()
             {
                 gl_Position = uProj*uView*uModel*vec4(vPosition, 1.0f);
                 inVertexColor = vColor;
                 inTexST = vTexST;
+                inTexID = vTexID;
             }
         }(shaderVersion, floatPrecision);
     }

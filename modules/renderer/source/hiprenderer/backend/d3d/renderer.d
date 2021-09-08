@@ -297,6 +297,10 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         }
     }
 
+    public int queryMaxSupportedPixelShaderTextures()
+    {
+        return D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT;
+    }
 
     public void setRendererMode(HipRendererMode mode)
     {

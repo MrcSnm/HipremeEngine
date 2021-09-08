@@ -45,6 +45,7 @@ interface ITexture
     void setTextureFilter(TextureFilter min, TextureFilter mag);
     bool load(Image img);
     void bind();
+    void bind(int slot);
 }
 
 class Texture
@@ -71,6 +72,8 @@ class Texture
     }
     /** Binds as the texture target on the renderer. */
     public void bind(){textureImpl.bind();}
+    ///Binds texture to the specific slot
+    public void bind(int slot){textureImpl.bind(slot);}
     public void setWrapMode(TextureWrapMode mode){textureImpl.setWrapMode(mode);}
     public void setTextureFilter(TextureFilter min, TextureFilter mag)
     {

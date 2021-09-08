@@ -104,6 +104,12 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         currentShader = s;
     }
+    public int queryMaxSupportedPixelShaderTextures()
+    {
+        int maxTex;
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTex);
+        return maxTex;
+    }
 
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {

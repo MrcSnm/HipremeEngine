@@ -278,6 +278,22 @@ class HipVertexArrayObject
         }
         return obj;
     }
+
+    /**
+    *   Remember calling sendAttributes!
+    */
+    static HipVertexArrayObject getXYZ_RGBA_ST_TID_VAO()
+    {
+        HipVertexArrayObject obj = new HipVertexArrayObject();
+        with(HipAttributeType)
+        {
+            obj.appendAttribute(3, FLOAT, float.sizeof, "vPosition") //X, Y, Z
+               .appendAttribute(4, FLOAT, float.sizeof, "vColor") //R, G, B, A
+               .appendAttribute(2, FLOAT, float.sizeof, "vTexST") //S, T (Texture coordinates)
+               .appendAttribute(1, INT  , int.sizeof  , "vTexID");
+        }
+        return obj;
+    }
     /**
     *   Remember calling sendAttributes!
     */
