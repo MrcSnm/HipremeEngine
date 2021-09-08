@@ -95,6 +95,7 @@ interface IHipRendererImpl
     public IHipVertexArrayImpl  createVertexArray();
     public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage);
     public IHipIndexBufferImpl  createIndexBuffer(index_t count, HipBufferUsage usage);
+    public int queryMaxSupportedPixelShaderTextures();
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void setViewport(Viewport v);
     public bool setWindowMode(HipWindowMode mode);
@@ -220,6 +221,7 @@ class HipRenderer
     }
     public static HipRendererType getRendererType(){return rendererType;}
     public static HipRendererConfig getCurrentConfig(){return currentConfig;}
+    public static int getMaxSupportedShaderTextures(){return rendererImpl.queryMaxSupportedPixelShaderTextures();}
     public static ITexture getTextureImplementation()
     {
         

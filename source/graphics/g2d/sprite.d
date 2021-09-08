@@ -41,7 +41,7 @@ import graphics.color;
 
     protected bool isDirty;
 
-    static assert(HipSpriteVertex.floatCount == 9,  "SpriteVertex should contain 9 floats");
+    static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
     protected float[HipSpriteVertex.floatCount * 4] vertices;
 
     this()

@@ -20,6 +20,7 @@ private import std.conv : to;
 class HipTime
 {
     static StopWatch stopwatch;
+    protected static long[string] performanceMeasurement;
     static this()
     {
         stopwatch = StopWatch(AutoStart.yes);
@@ -37,5 +38,15 @@ class HipTime
     static float getCurrentTimeAsSeconds()
     {
         return stopwatch.peek.total!"nsecs" / 1_000_000_000;
+    }
+
+    static void initPerformanceMeasurement(string name)
+    {
+        performanceMeasurement[name] = getCurrentTime();
+    }
+    static void finishPerformanceMeasurement(string name)
+    {
+        import std.stdio:writeln;
+        writeln(name, " took ", (getCurrentTime() - performanceMeasurement[name])/1_000_000, "ms");
     }
 }

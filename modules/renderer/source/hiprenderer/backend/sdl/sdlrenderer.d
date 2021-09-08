@@ -104,6 +104,8 @@ public class Hip_SDL_Renderer : IHipRendererImpl
         return false;
     }
 
+    public int queryMaxSupportedPixelShaderTextures(){return 0;}
+
     public void draw(Texture t, int x, int y){draw(t,x,y, null);}
     public void draw(Texture t, int x, int y, SDL_Rect* clip = null)
     {
