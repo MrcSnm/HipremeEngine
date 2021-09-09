@@ -30,6 +30,12 @@ private uint getVarSize(ref ShaderVar* v, uint n)
         case integer:
         case boolean:
             return n;
+        case integer_array:
+            return cast(uint)(n * v.get!(int[]).length);
+        case uinteger_array:
+            return cast(uint)(n * v.get!(uint[]).length);
+        case floating_array:
+            return cast(uint)(n * v.get!(float[]).length);
         case floating2:
             return n*2;
         case floating3:

@@ -290,7 +290,7 @@ class HipVertexArrayObject
             obj.appendAttribute(3, FLOAT, float.sizeof, "vPosition") //X, Y, Z
                .appendAttribute(4, FLOAT, float.sizeof, "vColor") //R, G, B, A
                .appendAttribute(2, FLOAT, float.sizeof, "vTexST") //S, T (Texture coordinates)
-               .appendAttribute(1, INT  , int.sizeof  , "vTexID");
+               .appendAttribute(1, FLOAT, float.sizeof, "vTexID");
         }
         return obj;
     }

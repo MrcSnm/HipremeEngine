@@ -48,7 +48,7 @@ class HipSpriteBatch
     Material material;
 
     protected Texture[] currentTextures;
-    protected int usingTexturesCount;
+    int usingTexturesCount;
 
     uint quadsCount;
 
@@ -77,9 +77,14 @@ class HipSpriteBatch
         .append("uView", Matrix4.identity)
         .append("uProj", Matrix4.identity));
 
+        import std.range:array, iota;
         shader.addVarLayout(new ShaderVariablesLayout("Cbuf", ShaderTypes.FRAGMENT, ShaderHint.NONE)
         .append("uBatchColor", cast(float[4])[1,1,1,1])
+        .append("uTex1", cast(int[])[0, 1])
         );
+
+
+
 
 
         shader.useLayout.Cbuf;
@@ -124,10 +129,13 @@ class HipSpriteBatch
     {
         if(quadsCount+1 > maxQuads)
             flush();
+
         quad[T1] = slot;
         quad[T2] = slot;
         quad[T3] = slot;
         quad[T4] = slot;
+        import std.stdio;
+        writeln(slot);
 
         for(ulong i = 0; i < HipSpriteVertex.quadCount; i++)
             vertices[(HipSpriteVertex.quadCount*quadsCount)+i] = quad[i];
@@ -155,7 +163,6 @@ class HipSpriteBatch
             flush();
             slot = getNextTextureID(texture);
         }
-        texture.bind(slot);
         return slot;
     }
     protected int setTexture(TextureRegion reg){return setTexture(reg.texture);}
@@ -257,13 +264,16 @@ class HipSpriteBatch
         // mesh.shader.bind();
         // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
         // material.bind();
+        // foreach(i; 0..16)
+        //     currentTextures[0].bind(i);
         mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj);
         mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity());
         mesh.shader.setVertexVar("Cbuf1.uView", camera.view);
         
         mesh.shader.bind();
+        foreach(i; 0..usingTexturesCount)
+            currentTextures[i].bind(i);
         mesh.shader.sendVars();
-        HipRenderer.exitOnError();
 
         mesh.updateVertices(vertices);
         mesh.draw(quadsCount*6);
