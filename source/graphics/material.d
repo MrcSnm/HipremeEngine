@@ -103,8 +103,14 @@ private string getSetShaderVarCall(string shaderT)
         case integer:
             shader.set$Var(v.name, *cast(int*)v.data);
             break;
+        case integer_array:
+            shader.set$Var(v.name, *cast(int[]*)v.data);
+            break;
         case uinteger:
             shader.set$Var(v.name, *cast(uint*)v.data);
+            break;
+        case uinteger_array:
+            shader.set$Var(v.name, *cast(uint[]*)v.data);
             break;
         case floating:
             shader.set$Var(v.name, *cast(float*)v.data);
@@ -125,6 +131,9 @@ private string getSetShaderVarCall(string shaderT)
             break;
         case floating4x4:
             shader.set$Var(v.name, *cast(Matrix4*)v.data);
+            break;
+        case floating_array:
+            shader.set$Var(v.name, *cast(float[]*)v.data);
             break;
         case none:
             ErrorHandler.assertExit(false, "Can't set ShaderVar of type 'none'");

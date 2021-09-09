@@ -87,6 +87,7 @@ class Hip_GL3_FragmentShader : FragmentShader
             {
                 int texId = int(inTexID);
                 outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
+                // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
             }
         }(shaderVersion, floatPrecision, HipRenderer.getMaxSupportedShaderTextures());
     }
@@ -364,8 +365,16 @@ class Hip_GL3_ShaderImpl : IShader
                     case integer:
                         glUniform1i(id, v.sVar.get!int);
                         break;
+                    case integer_array:
+                        int[] temp = v.sVar.get!(int[]);
+                        glUniform1iv(id, cast(int)temp.length, temp.ptr);
+                        break;
                     case uinteger:
                         glUniform1ui(id, v.sVar.get!uint);
+                        break;
+                    case uinteger_array:
+                        uint[] temp = v.sVar.get!(uint[]);
+                        glUniform1uiv(id, cast(int)temp.length, temp.ptr);
                         break;
                     case floating:
                         glUniform1f(id, v.sVar.get!float);
@@ -390,6 +399,10 @@ class Hip_GL3_ShaderImpl : IShader
                         break;
                     case floating4x4:
                         glUniformMatrix4fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[16]).ptr);
+                        break;
+                    case floating_array:
+                        float[] temp = v.sVar.get!(float[]);
+                        glUniform1fv(id, cast(int)temp.length, temp.ptr);
                         break;
                     case none:break;
                 }

@@ -281,6 +281,7 @@ public class Shader
     void bind()
     {
         shaderImpl.setCurrentShader(shaderProgram);
+        HipRenderer.exitOnError();
     }
 
     auto opDispatch(string member)()
@@ -311,6 +312,7 @@ public class Shader
     void sendVars()
     {
         shaderImpl.sendVars(shaderProgram, layouts);
+        HipRenderer.exitOnError();
     }
 
 
@@ -318,6 +320,7 @@ public class Shader
     {
         shaderImpl.deleteShader(&fragmentShader);
         shaderImpl.deleteShader(&vertexShader);
+        HipRenderer.exitOnError();
     }
 
 }

@@ -13,6 +13,7 @@ module hiprenderer.backend.d3d.shader;
 
 version(Windows):
 import config.opts;
+import hiprenderer.renderer;
 import hiprenderer.shader;
 import hiprenderer.backend.d3d.renderer;
 import hiprenderer.backend.d3d.utils;
@@ -53,22 +54,59 @@ class Hip_D3D11_FragmentShader : FragmentShader
     override final string getSpriteBatchFragment()
     {
         // return this.getDefaultFragment();
-        return q{
+        int sup = HipRenderer.getMaxSupportedShaderTextures();
+        import std.format:format;
+        return format!q{
 
-            Texture2D uTex1;
-            SamplerState state;
+            Texture2D uTex1[%s];
+            SamplerState state[%s];
 
             cbuffer input
             {
                 float4 uBatchColor: uBatchColor;
             }
 
-            float4 main(float4 inVertexColor : inColor, float2 texST : inTexST) : SV_TARGET
+            float4 main(float4 inVertexColor : inColor, float2 texST : inTexST, float inTexID : inTexID) : SV_TARGET
             {
                 // return uBatchColor * uTex1.Sample(state, inTexST);
-                return uTex1.Sample(state, texST) * inVertexColor * uBatchColor;
+                int tid = int(inTexID);
+                switch(tid)
+                {
+                    case 1:
+                        return uTex1[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
+                    case 2:
+                        return uTex1[2].Sample(state[2], texST) * inVertexColor * uBatchColor;
+                    case 3:
+                        return uTex1[3].Sample(state[3], texST) * inVertexColor * uBatchColor;
+                    case 4:
+                        return uTex1[4].Sample(state[4], texST) * inVertexColor * uBatchColor;
+                    case 5:
+                        return uTex1[5].Sample(state[5], texST) * inVertexColor * uBatchColor;
+                    case 6:
+                        return uTex1[6].Sample(state[6], texST) * inVertexColor * uBatchColor;
+                    case 7:
+                        return uTex1[7].Sample(state[7], texST) * inVertexColor * uBatchColor;
+                    case 8:
+                        return uTex1[8].Sample(state[8], texST) * inVertexColor * uBatchColor;
+                    case 9:
+                        return uTex1[9].Sample(state[9], texST) * inVertexColor * uBatchColor;
+                    case 10:
+                        return uTex1[10].Sample(state[10], texST) * inVertexColor * uBatchColor;
+                    case 11:
+                        return uTex1[11].Sample(state[11], texST) * inVertexColor * uBatchColor;
+                    case 12:
+                        return uTex1[12].Sample(state[12], texST) * inVertexColor * uBatchColor;
+                    case 13:
+                        return uTex1[13].Sample(state[13], texST) * inVertexColor * uBatchColor;
+                    case 14:
+                        return uTex1[14].Sample(state[14], texST) * inVertexColor * uBatchColor;
+                    case 15:
+                        return uTex1[15].Sample(state[15], texST) * inVertexColor * uBatchColor;
+                    default:
+                        return uTex1[0].Sample(state[0], texST) * inVertexColor * uBatchColor;
+                }
             }
-        };
+        }(sup,sup);
     }
     override final string getBitmapTextFragment()
     {
@@ -130,6 +168,7 @@ class Hip_D3D11_VertexShader : VertexShader
             {
                 float4 inColor : inColor;
                 float2 inTexST : inTexST;
+                float  inTexID : inTexID;
                 float4 vPosition: SV_POSITION;
             };
 
@@ -142,8 +181,9 @@ class Hip_D3D11_VertexShader : VertexShader
 
             VSOut main(
                 float3 pos   : vPosition,
-                float4 col : vColor,
-                float2 texST : vTexST
+                float4 col   : vColor,
+                float2 texST : vTexST,
+                float  texID : vTexID
                 )
             {
                 VSOut output;
@@ -152,6 +192,7 @@ class Hip_D3D11_VertexShader : VertexShader
 
                 output.inTexST = texST;
                 output.inColor = col;
+                output.inTexID = texID;
                 return output;
             }
         };

@@ -24,6 +24,8 @@ class TilemapTestScene : Scene
     Tilemap map;
     HipSpriteBatch batch;
     HipSprite spr;
+    HipSprite sprite;
+    HipSprite sprite2;
     this()
     {
         // HapFile f = HapFile.get("gamepack.hap");
@@ -32,6 +34,8 @@ class TilemapTestScene : Scene
 
         map = Tilemap.readTiledTMX("maps/Test.tmx");
         spr = new HipSprite(map.tilesets[0].texture);
+        sprite = new HipSprite("graphics/sprites/sprite.png");
+        sprite2 = new HipSprite("graphics/sprites/shaun.png");
         // rawlog(map.layers["Camada de Tiles 1"].tiles);
         // rawlog(f.getChunksList());
         // (Tileset.fromTSX());
@@ -41,12 +45,14 @@ class TilemapTestScene : Scene
     {
         import util.time;
 
-        HipRenderer.clear();
+        HipRenderer.clear(255, 0, 0, 255);
         batch.begin();
+        batch.draw(sprite);
+        batch.draw(sprite2);
         // batch.draw(spr);
-        HipTime.initPerformanceMeasurement("Tilemap Rendering");
-        map.render(batch);
-        HipTime.finishPerformanceMeasurement("Tilemap Rendering");
+        // HipTime.initPerformanceMeasurement("Tilemap Rendering");
+        // // map.render(batch);
+        // HipTime.finishPerformanceMeasurement("Tilemap Rendering");
         batch.end();
     }
 }

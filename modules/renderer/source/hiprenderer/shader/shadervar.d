@@ -29,7 +29,9 @@ enum UniformType
 {
     boolean,
     integer,
+    integer_array,
     uinteger,
+    uinteger_array,
     floating,
     floating2,
     floating3,
@@ -37,33 +39,61 @@ enum UniformType
     floating2x2,
     floating3x3,
     floating4x4,
+    floating_array,
     none
 }
 
+/**
+*   Struct that holds uniform/cbuffer information for Direct3D and OpenGL shaders. It can be any type.
+*   Its data is accessed by the ShaderVariableLayout when sendVars is called. Thus, depending on its
+*   corrensponding type, its data is uploaded to the GPU.
+*/
 struct ShaderVar
 {
+    import util.data_structures:Array;
+    import std.traits;
     void* data;
     string name;
     ShaderTypes shaderType;
     UniformType type;
     ulong singleSize;
     ulong varSize;
+    bool isDynamicArrayReference;
 
-    const T get(T)(){return *(cast(T*)this.data);}
-    bool set(T)(T data)
+    const T get(T)()
     {
-        import std.traits;
+        static if(isDynamicArray!T)
+        {
+            alias _t = typeof(T.init[0]);
+            Array!(_t)* arr = cast(Array!(_t)*)data;
+            return arr.data[0..arr.length];
+        }
+        else
+            return *(cast(T*)this.data);
+    }
+    bool set(T)(T value)
+    {
         import core.stdc.string;
         static assert(isNumeric!T ||
-        isBoolean!T || isStaticArray!T ||
+        isBoolean!T || isStaticArray!T || isDynamicArray!T ||
         is(T == Matrix3) || is(T == Matrix4), "Invalid type "~T.stringof);
 
         static if(is(T == Matrix3) || is(T == Matrix4))
-            data = HipRenderer.getMatrix(data);
+            value = HipRenderer.getMatrix(value);
 
-        if(data.sizeof != varSize)
+        if(value.sizeof != varSize)
             return false;
-        memcpy(this.data, &data, varSize);
+
+        static if(isDynamicArray!T)
+        {
+            alias _t = typeof(T.init[0]);
+            Array!(_t)* arr = cast(Array!(_t)*)data;
+            arr.dispose();
+            Array!(_t) temp = Array!(_t).fromDynamicArray(value);
+            memcpy(data, &temp, varSize);
+        }
+        else
+            memcpy(data, &value, varSize);
         return true;
     }
     auto opAssign(T)(T value)
@@ -114,7 +144,11 @@ struct ShaderVar
         throwOnOutOfBounds(index);
         ErrorHandler.assertExit(index*singleSize + T.sizeof <= varSize, "Value assign of type "~T.stringof~" at index "~to!string(index)~
         " is invalid for shader variable "~name~" of type "~to!string(type));
-        memcpy(cast(ubyte*)data + singleSize*index, &value, T.sizeof);
+
+        if(isDynamicArrayReference)
+            (cast(Array!(T)*)data)[index] = value;
+        else
+            memcpy(cast(ubyte*)data + singleSize*index, &value, T.sizeof);
         return value;
     }
 
@@ -141,29 +175,46 @@ struct ShaderVar
         }
     }
 
-    static ShaderVar* get(ShaderTypes t, string varName, bool data){return ShaderVar.get(t, varName, &data, UniformType.boolean, data.sizeof, data.sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, int data){return ShaderVar.get(t, varName, &data, UniformType.integer, data.sizeof, data.sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, uint data){return ShaderVar.get(t, varName, &data, UniformType.uinteger, data.sizeof, data.sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, float data){return ShaderVar.get(t, varName, &data, UniformType.floating, data.sizeof, data.sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, float[2] data){return ShaderVar.get(t, varName, &data, UniformType.floating2, data.sizeof, data[0].sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, float[3] data){return ShaderVar.get(t, varName, &data, UniformType.floating3, data.sizeof, data[0].sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, float[4] data){return ShaderVar.get(t, varName, &data, UniformType.floating4, data.sizeof, data[0].sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, float[9] data){return ShaderVar.get(t, varName, &data, UniformType.floating3x3, data.sizeof, data[0].sizeof);}
-    static ShaderVar* get(ShaderTypes t, string varName, float[16] data){return ShaderVar.get(t, varName, &data, UniformType.floating4x4, data.sizeof, data[0].sizeof);}
-    protected static ShaderVar* get(ShaderTypes t, string varName, void* varData, UniformType type, ulong varSize, ulong singleSize)
+    static ShaderVar* create(ShaderTypes t, string varName, bool data){return ShaderVar.create(t, varName, &data, UniformType.boolean, data.sizeof, data.sizeof);}
+    static ShaderVar* create(ShaderTypes t, string varName, int data){return ShaderVar.create(t, varName, &data, UniformType.integer, data.sizeof, data.sizeof);}
+    static ShaderVar* create(ShaderTypes t, string varName, uint data){return ShaderVar.create(t, varName, &data, UniformType.uinteger, data.sizeof, data.sizeof);}
+    static ShaderVar* create(ShaderTypes t, string varName, float data){return ShaderVar.create(t, varName, &data, UniformType.floating, data.sizeof, data.sizeof);}
+    static ShaderVar* create(ShaderTypes t, string varName, float[2] data){return ShaderVar.create(t, varName, &data, UniformType.floating2, data.sizeof, data[0].sizeof);}
+    static ShaderVar* create(ShaderTypes t, string varName, float[3] data){return ShaderVar.create(t, varName, &data, UniformType.floating3, data.sizeof, data[0].sizeof);}
+    static ShaderVar* create(ShaderTypes t, string varName, float[4] data){return ShaderVar.create(t, varName, &data, UniformType.floating4, data.sizeof, data[0].sizeof);}
+    static ShaderVar* create(ShaderTypes t, string varName, float[9] data){return ShaderVar.create(t, varName, &data, UniformType.floating3x3, data.sizeof, data[0].sizeof);}
+    static ShaderVar* create(ShaderTypes t, string varName, float[16] data){return ShaderVar.create(t, varName, &data, UniformType.floating4x4, data.sizeof, data[0].sizeof);}
+    static ShaderVar* create(ShaderTypes t, string varName, int[] data)
+    {
+        Array!int dRef = Array!int.fromDynamicArray(data);
+        return ShaderVar.create(t, varName, &dRef, UniformType.integer_array, dRef.sizeof, dRef[0].sizeof, true);
+    }
+    static ShaderVar* create(ShaderTypes t, string varName, uint[] data)
+    {
+        Array!uint dRef = Array!uint.fromDynamicArray(data);
+        return ShaderVar.create(t, varName, &dRef, UniformType.uinteger_array, dRef.sizeof, dRef[0].sizeof, true);
+    }
+    static ShaderVar* create(ShaderTypes t, string varName, float[] data)
+    {
+        Array!float dRef = Array!float.fromDynamicArray(data);
+        return ShaderVar.create(t, varName, &dRef, UniformType.floating_array, dRef.sizeof, dRef[0].sizeof, true);
+    }
+
+    protected static ShaderVar* create(ShaderTypes t, string varName, void* varData, UniformType type, ulong varSize, ulong singleSize, bool isDynamicArrayReference=false)
     {
         import core.stdc.string : memcpy;
         import core.stdc.stdlib : malloc;
         ErrorHandler.assertExit(isShaderVarNameValid(varName), "Variable '"~varName~"' is invalid.");
         ShaderVar* s = new ShaderVar();
         s.data = malloc(varSize);
+        memcpy(s.data, varData, varSize);
         ErrorHandler.assertExit(s.data !is null, "Out of memory");
         s.name = varName;
         s.shaderType = t;
         s.type = type;
         s.varSize = varSize;
+        s.isDynamicArrayReference = isDynamicArrayReference;
         s.singleSize = singleSize;
-        memcpy(s.data, varData, varSize);
         return s;
     }
 
@@ -174,7 +225,11 @@ struct ShaderVar
         shaderType = ShaderTypes.NONE;
         singleSize = 0;
         varSize = 0;
-        if(data != null)
+        if(isDynamicArrayReference)
+        {
+            (cast(Array!(int)*)data).dispose();
+        }
+        else if(data != null)
             free(data);
         data = null;
     }
@@ -271,6 +326,11 @@ class ShaderVariablesLayout
         this.isLocked = true;
     }
 
+    /**
+    *   Calculates the shader variables alignment based on the packFunc passed at startup.
+    *   Those functions are based on the shader vendor and version. Align should be called
+    *   always when there is a change on the layout.
+    */
     final void calcAlignment()
     {
         uint lastAlign = 0;
@@ -299,7 +359,7 @@ class ShaderVariablesLayout
         import core.stdc.stdlib:realloc;
         ErrorHandler.assertExit((varName in variables) is null, "Variable named "~varName~" is already in the layout "~name);
         ErrorHandler.assertExit(!isLocked, "Can't append ShaderVariable after it has been locked");
-        ShaderVar* v = ShaderVar.get(this.shaderType, varName, data);
+        ShaderVar* v = ShaderVar.create(this.shaderType, varName, data);
         variables[varName] = ShaderVarLayout(v, 0, 0);
         namesOrder~= varName;
         calcAlignment();

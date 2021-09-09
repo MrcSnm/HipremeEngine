@@ -20,6 +20,7 @@ class Hip_GL3_Texture : ITexture
 {
     GLuint textureID = 0;
     int width, height;
+    uint currentSlot;
     this()
     {
         glGenTextures(1, &textureID);
@@ -69,6 +70,7 @@ class Hip_GL3_Texture : ITexture
     }
     void bind(int slot)
     {
+        currentSlot = slot;
         glActiveTexture(GL_TEXTURE0+slot);
         glBindTexture(GL_TEXTURE_2D, textureID);
     }
@@ -76,7 +78,7 @@ class Hip_GL3_Texture : ITexture
     void setWrapMode(TextureWrapMode mode)
     {
         int mod = getGLWrapMode(mode);
-        bind();
+        bind(currentSlot);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mod);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mod);
     }
@@ -85,7 +87,7 @@ class Hip_GL3_Texture : ITexture
     {
         int min_filter = getGLMinMagFilter(min);
         int mag_filter = getGLMinMagFilter(mag);
-        bind();
+        bind(currentSlot);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
     }
@@ -110,7 +112,7 @@ class Hip_GL3_Texture : ITexture
             default:
                 ErrorHandler.assertExit(false, "GL Pixel format unsupported");
         }
-        bind();
+        bind(currentSlot);
         glTexImage2D(GL_TEXTURE_2D, 0, mode, image.w, image.h, 0, mode, GL_UNSIGNED_BYTE, pixels);
         width = image.w;
         height = image.h;
