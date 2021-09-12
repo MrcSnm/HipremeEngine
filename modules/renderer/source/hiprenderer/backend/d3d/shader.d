@@ -19,6 +19,7 @@ import hiprenderer.backend.d3d.renderer;
 import hiprenderer.backend.d3d.utils;
 import directx.d3d11;
 import directx.d3dcompiler;
+import directx.d3d11shader;
 import std.conv:to;
 import error.handler;
 
@@ -64,7 +65,7 @@ class Hip_D3D11_FragmentShader : FragmentShader
             cbuffer input
             {
                 float4 uBatchColor: uBatchColor;
-            }
+            };
 
             float4 main(float4 inVertexColor : inColor, float2 texST : inTexST, float inTexID : inTexID) : SV_TARGET
             {
@@ -435,6 +436,14 @@ class Hip_D3D11_ShaderImpl : IShader
             }
         }
     }
+
+    void initTextureSlots(ref ShaderProgram prog, Texture texture, string varName, int slotsCount)
+    {
+        for(int i = 0; i < slotsCount; i++)
+            texture.bind(i);
+            
+    }
+
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
         import core.stdc.stdlib:malloc;

@@ -42,6 +42,8 @@ class HipSpriteBatch
     index_t[] indices;
     float[] vertices;
     bool hasBegun;
+
+    protected bool hasInitTextureSlots;
     Shader shader;
     HipOrthoCamera camera;
     Mesh mesh;
@@ -77,15 +79,11 @@ class HipSpriteBatch
         .append("uView", Matrix4.identity)
         .append("uProj", Matrix4.identity));
 
-        import std.range:array, iota;
         shader.addVarLayout(new ShaderVariablesLayout("Cbuf", ShaderTypes.FRAGMENT, ShaderHint.NONE)
         .append("uBatchColor", cast(float[4])[1,1,1,1])
-        .append("uTex1", cast(int[])[0, 1])
         );
 
-
-
-
+        // shader.
 
         shader.useLayout.Cbuf;
         shader.bind();
@@ -134,8 +132,6 @@ class HipSpriteBatch
         quad[T2] = slot;
         quad[T3] = slot;
         quad[T4] = slot;
-        import std.stdio;
-        writeln(slot);
 
         for(ulong i = 0; i < HipSpriteVertex.quadCount; i++)
             vertices[(HipSpriteVertex.quadCount*quadsCount)+i] = quad[i];
@@ -162,6 +158,11 @@ class HipSpriteBatch
         {
             flush();
             slot = getNextTextureID(texture);
+        }
+        else if(!hasInitTextureSlots)
+        {
+            hasInitTextureSlots = true;
+            shader.initTextureSlots(texture, "uTex1", HipRenderer.getMaxSupportedShaderTextures());
         }
         return slot;
     }

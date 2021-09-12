@@ -42,5 +42,5 @@ class Scene
     *   Managed by the event dispatcher
     */
     public void onResize(uint width, uint height){}
-
+ 
 }

@@ -410,6 +410,17 @@ class Hip_GL3_ShaderImpl : IShader
         }
                 
     }
+
+    void initTextureSlots(ref ShaderProgram prog, Texture texture, string varName, int slotsCount)
+    {
+        setCurrentShader(prog);
+        int varID = getId(prog, varName);
+        int[] temp = new int[](slotsCount);
+        for(int i = 0; i < slotsCount; i++)
+            temp[i] = i;
+        glUniform1iv(varID, slotsCount, temp.ptr);
+        destroy(temp);
+    }
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
         if(layout.hint & ShaderHint.GL_USE_BLOCK)

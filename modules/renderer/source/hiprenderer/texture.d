@@ -54,7 +54,7 @@ class Texture
     uint width,height;
     TextureFilter min, mag;
 
-    protected ITexture textureImpl;
+    package ITexture textureImpl;
     /**
     *   Initializes with the current renderer type
     */
