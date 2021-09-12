@@ -120,10 +120,15 @@ interface IHipRendererImpl
 
 class HipRenderer
 {
+    static struct Statistics 
+    {
+        ulong drawCalls;
+    }
     __gshared:
     protected static Viewport currentViewport = null;
     protected static Viewport mainViewport = null;
     protected static IHipRendererImpl rendererImpl;
+    protected Statistics stats;
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
     public static Shader currentShader;
@@ -296,6 +301,7 @@ class HipRenderer
     {
         currentShader = s;
         s.bind();
+        HipRenderer.exitOnError();
     }
     public static bool hasErrorOccurred(out string err, string file = __FILE__, int line =__LINE__)
     {
@@ -315,23 +321,27 @@ class HipRenderer
     public static void begin()
     {
         rendererImpl.begin();
+        HipRenderer.exitOnError();
     }
 
     public static void setRendererMode(HipRendererMode mode)
     {
         rendererImpl.setRendererMode(mode);
         HipRenderer.exitOnError();
+        stats.drawCalls++;
     }
 
     public static void drawIndexed(index_t count, uint offset = 0)
     {
         rendererImpl.drawIndexed(count, offset);
         HipRenderer.exitOnError();
+        stats.drawCalls++;
     }
     public static void drawIndexed(HipRendererMode mode, index_t count, uint offset = 0)
     {
         HipRenderer.setRendererMode(mode);
         HipRenderer.drawIndexed(count, offset);
+        stats.drawCalls++;
     }
     public static void drawVertices(index_t count, uint offset = 0)
     {
@@ -341,20 +351,23 @@ class HipRenderer
     public static void drawVertices(HipRendererMode mode, index_t count, uint offset = 0)
     {
         rendererImpl.setRendererMode(mode);
-        rendererImpl.drawVertices(count, offset);
+        HipRenderer.drawVertices(count, offset);
     }
 
     public static void end()
     {
         rendererImpl.end();
+        stats.drawCalls=0;
     }
     public static void clear()
     {
         rendererImpl.clear();
+        stats.drawCalls++;
     }
     public static void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         rendererImpl.clear(r,g,b,a);
+        stats.drawCalls++;
     }
     public static void fillRect(int x, int y, int width, int height)
     {
@@ -388,6 +401,7 @@ class HipRenderer
     {
         rendererImpl.drawPixel(x,y);
     }
+    
     public static void dispose()
     {
         rendererImpl.dispose();
@@ -399,6 +413,4 @@ class HipRenderer
         window = null;
         IMG_Quit();
     }
-
-
 }

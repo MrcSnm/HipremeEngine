@@ -44,15 +44,11 @@ class TilemapTestScene : Scene
     override void render()
     {
         import util.time;
-
         HipRenderer.clear(255, 0, 0, 255);
         batch.begin();
         batch.draw(sprite);
-        batch.draw(sprite2);
-        // batch.draw(spr);
-        // HipTime.initPerformanceMeasurement("Tilemap Rendering");
-        // // map.render(batch);
-        // HipTime.finishPerformanceMeasurement("Tilemap Rendering");
+        // batch.draw(sprite2);
+        // map.render(batch);
         batch.end();
     }
 }

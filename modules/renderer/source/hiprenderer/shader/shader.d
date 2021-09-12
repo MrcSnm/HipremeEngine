@@ -68,6 +68,7 @@ interface IShader
 
     void createVariablesBlock(ref ShaderVariablesLayout layout);
     void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts);
+    void initTextureSlots(ref ShaderProgram prog, Texture texture, string varName, int slotsCount);
     void dispose(ref ShaderProgram);
 }
 
@@ -312,6 +313,12 @@ public class Shader
     void sendVars()
     {
         shaderImpl.sendVars(shaderProgram, layouts);
+        HipRenderer.exitOnError();
+    }
+
+    void initTextureSlots(Texture texture, string varName, int slotsCount)
+    {
+        shaderImpl.initTextureSlots(shaderProgram, texture, varName, slotsCount);
         HipRenderer.exitOnError();
     }
 
