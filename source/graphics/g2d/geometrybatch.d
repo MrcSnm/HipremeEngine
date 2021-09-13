@@ -17,6 +17,7 @@ import graphics.mesh;
 import math.matrix;
 import graphics.color;
 import std.format:format;
+public import graphics.color;
 
 
 /**
@@ -36,7 +37,7 @@ class GeometryBatch
     float[] vertices;
     index_t[] indices;
     
-    this(index_t verticesCount, index_t indicesCount)
+    this(index_t verticesCount=19_000, index_t indicesCount=19_000)
     {
         Shader s = HipRenderer.newShader(HipShaderPresets.GEOMETRY_BATCH); 
         s.addVarLayout(new ShaderVariablesLayout("Geom", ShaderTypes.VERTEX, 0)
@@ -208,10 +209,10 @@ class GeometryBatch
 
     void drawRectangle(int x, int y, int w, int h)
     {
-        if(mode != HipRendererMode.TRIANGLES)
+        if(mode != HipRendererMode.LINE_STRIP)
         {
             flush();
-            mode = HipRendererMode.TRIANGLES;
+            mode = HipRendererMode.LINE_STRIP;
             HipRenderer.setRendererMode(mode);
         }
         rectangleVertices(x,y,w,h);
@@ -224,10 +225,10 @@ class GeometryBatch
 
     void fillRectangle(int x, int y, int w, int h)
     {
-        if(mode != HipRendererMode.LINE_STRIP)
+        if(mode != HipRendererMode.TRIANGLES)
         {
             flush();
-            mode = HipRendererMode.LINE_STRIP;
+            mode = HipRendererMode.TRIANGLES;
             HipRenderer.setRendererMode(mode);
         }
         rectangleVertices(x,y,w,h);

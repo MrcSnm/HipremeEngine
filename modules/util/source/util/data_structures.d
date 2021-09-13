@@ -242,3 +242,4 @@ class EventQueue
         bytesOffset = 0;
     }
 }
+

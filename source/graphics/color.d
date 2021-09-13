@@ -13,7 +13,12 @@ module graphics.color;
 
 struct HipColor
 {
-    float r, g, b, a;
+    float r =0, g = 0, b = 0, a = 0;
+
+    this(float r, float g, float b, float a)
+    {
+        this.r=r;this.g=g;this.b=b;this.a=a;
+    }
 
     static HipColor fromInt(int color)
     {
