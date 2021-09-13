@@ -46,7 +46,7 @@ class GameSystem
 
         import view.testscene;
         import view.uwptest;
-        Scene testscene = new SteeringTest();
+        Scene testscene = new PathFindingTest();
     	testscene.init();
         scenes~= testscene;
 

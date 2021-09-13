@@ -22,4 +22,5 @@ public import
     view.animationtestscene,
     view.textureatlasscene,
     view.steeringtest,
+    view.pathfindingtest,
     view.spritetestscene;
