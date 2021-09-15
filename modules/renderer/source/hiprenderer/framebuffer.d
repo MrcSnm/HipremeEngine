@@ -12,11 +12,18 @@ Distributed under the MIT Software License.
 module hiprenderer.framebuffer;
 import hiprenderer.shader;
 import hiprenderer.renderer;
+import hiprenderer.texture;
 
 
 
 interface IHipFrameBuffer
 {
+    ///Creates the framebuffer using the target width and height
+    void create(uint width, uint height);
+
+    ///Resizes the framebuffer, probably this will not be implemented in the backend level
+    void resize(uint width, uint height);
+
     ///Binds the framebuffer, setting it as a target for every draw call
     void bind();
     ///Unbinds the framebuffer, resetting the renderer state and setting the output as the screen
@@ -26,6 +33,9 @@ interface IHipFrameBuffer
 
     ///Clears the current framebuffer content
     void clear();
+
+    ///Gets the texture containing the framebuffer data
+    Texture getTexture();
 
     void dispose();
 }
@@ -43,15 +53,31 @@ class HipFrameBuffer : IHipFrameBuffer
         if(framebufferShader is null)
             currentShader = HipRenderer.newShader(HipShaderPresets.FRAME_BUFFER);
     }
+    void create(uint width, uint height){}
+    void resize(uint width, uint height){}
 
-    void bind(){this.impl.bind();}
-    void unbind(){this.impl.unbind();}
-    void clear(){this.impl.clear();}
+    void bind()
+    {
+        this.impl.bind();
+        HipRenderer.exitOnError();
+    }
+    void unbind()
+    {
+        this.impl.unbind();
+        HipRenderer.exitOnError();
+    }
+    void clear()
+    {
+        this.impl.clear();
+        HipRenderer.exitOnError();
+    }
+    Texture getTexture(){return impl.getTexture();}
 
     void draw()
     {
         currentShader.bind();
         impl.draw();
+        HipRenderer.exitOnError();
     }
 
     void dispose(){impl.dispose();}

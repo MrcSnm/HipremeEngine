@@ -278,6 +278,11 @@ class HipSpriteBatch
 
         mesh.updateVertices(vertices);
         mesh.draw(quadsCount*6);
+
+        ///Some operations may require texture unbinding(D3D11 Framebuffer)
+        foreach(i; 0..usingTexturesCount)
+            currentTextures[i].unbind(i);
+
         quadsCount = 0;
         usingTexturesCount = 0;
     }

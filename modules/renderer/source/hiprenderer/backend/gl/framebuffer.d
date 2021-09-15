@@ -12,12 +12,16 @@ Distributed under the MIT Software License.
 module hiprenderer.backend.gl.framebuffer;
 import bindbc.opengl;
 import error.handler;
+import hiprenderer.renderer;
 import hiprenderer.framebuffer;
 import hiprenderer.shader;
+import hiprenderer.texture;
 
 
 class Hip_GL3_FrameBuffer : IHipFrameBuffer
 {
+    ///Texture to be returned. It is filled with the opengl framebuffer contents
+    Texture retTexture;
     uint vao;
     uint vbo;
     uint rbo;
@@ -26,6 +30,12 @@ class Hip_GL3_FrameBuffer : IHipFrameBuffer
     
 
     this(int width, int height)
+    {
+        create(width, height);
+    }
+    Texture getTexture(){return retTexture;}
+
+    void create(uint width, uint height)
     {
         //Objects initialization
         glGenFramebuffers(1, &this.fbo);
@@ -69,6 +79,7 @@ class Hip_GL3_FrameBuffer : IHipFrameBuffer
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindVertexArray(0);
     }
+    void resize(uint width, uint height){}
 
     void bind(){glBindFramebuffer(GL_FRAMEBUFFER, this.fbo);}
     void unbind(){glBindFramebuffer(GL_FRAMEBUFFER, 0);}
