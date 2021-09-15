@@ -113,3 +113,30 @@ Vector3 pathFollow(Vector3 position, ref PathFollowerStatus status, float speed,
         return Vector3.Zero;
     return seekAndStop(status.getWaypoint, position, speed, dt);
 }
+
+
+//Incomplete
+void flocking(
+    Vector3 position, float perceptionRadius,
+    ref Vector3 alignment,
+    Vector3[] groupPosition, Vector3[] groupAlignment
+)
+{
+
+    Vector3 alignmentSteering = Vector3.Zero;
+    ulong groupSize = 0;
+    for(ulong i = 0; i < groupPosition.length; i++)
+    {
+        if(groupPosition[i] != position && position.distance(groupPosition[i]) <= perceptionRadius)
+        {
+            alignmentSteering = alignmentSteering + groupPosition[i];
+            groupSize++;
+        }
+    }
+    if(groupSize != 0)
+    {
+        alignmentSteering/= groupSize;
+        alignment = alignment - alignmentSteering;
+    }
+    
+}
