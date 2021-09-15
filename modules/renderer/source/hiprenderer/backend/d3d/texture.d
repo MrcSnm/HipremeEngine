@@ -18,6 +18,10 @@ import bindbc.sdl;
 import error.handler;
 import hiprenderer.texture;
 
+
+private __gshared ID3D11ShaderResourceView nullSRV = null;
+private __gshared ID3D11SamplerState nullSamplerState = null;
+
 class Hip_D3D11_Texture : ITexture
 {
     ID3D11Texture2D texture;
@@ -32,7 +36,7 @@ class Hip_D3D11_Texture : ITexture
         filter = Hip_D3D11_getTextureFilter(min, mag);
         updateSamplerState();
     }
-    protected void updateSamplerState()
+    package void updateSamplerState()
     {
         D3D11_SAMPLER_DESC desc;
         desc.Filter = filter;
@@ -106,6 +110,17 @@ class Hip_D3D11_Texture : ITexture
     {
         _hip_d3d_context.PSSetSamplers(slot, 1, &sampler);
         _hip_d3d_context.PSSetShaderResources(slot, 1, &resource);
+    }
+
+    void unbind()
+    {
+        _hip_d3d_context.PSSetSamplers(0, 1, &nullSamplerState);
+        _hip_d3d_context.PSSetShaderResources(0, 1, &nullSRV);
+    }
+    void unbind(int slot)
+    {
+        _hip_d3d_context.PSSetSamplers(slot, 1, &nullSamplerState);
+        _hip_d3d_context.PSSetShaderResources(slot, 1, &nullSRV);
     }
 }
 

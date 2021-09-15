@@ -21,10 +21,7 @@ class Hip_GL3_Texture : ITexture
     GLuint textureID = 0;
     int width, height;
     uint currentSlot;
-    this()
-    {
-        glGenTextures(1, &textureID);
-    }
+
     protected int getGLWrapMode(TextureWrapMode mode)
     {
         switch(mode)
@@ -68,11 +65,24 @@ class Hip_GL3_Texture : ITexture
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
     }
+    void unbind()
+    {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
     void bind(int slot)
     {
         currentSlot = slot;
         glActiveTexture(GL_TEXTURE0+slot);
         glBindTexture(GL_TEXTURE_2D, textureID);
+    }
+
+    void unbind(int slot)
+    {
+        currentSlot = slot;
+        glActiveTexture(GL_TEXTURE0+slot);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     void setWrapMode(TextureWrapMode mode)
@@ -94,6 +104,7 @@ class Hip_GL3_Texture : ITexture
 
     bool load(Image image)
     {
+        glGenTextures(1, &textureID);
         int mode;
         void* pixels = image.pixels;
         switch(image.bytesPerPixel)

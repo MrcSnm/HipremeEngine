@@ -46,7 +46,7 @@ class GameSystem
 
         import view.testscene;
         import view.uwptest;
-        Scene testscene = new PathFindingTest();
+        Scene testscene = new FrameBufferTestScene();
     	testscene.init();
         scenes~= testscene;
 

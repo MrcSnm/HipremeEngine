@@ -46,6 +46,8 @@ interface ITexture
     bool load(Image img);
     void bind();
     void bind(int slot);
+    void unbind();
+    void unbind(int slot);
 }
 
 class Texture
@@ -54,6 +56,9 @@ class Texture
     uint width,height;
     TextureFilter min, mag;
 
+    /**
+    *   Make it available for implementors
+    */
     package ITexture textureImpl;
     /**
     *   Initializes with the current renderer type
@@ -71,9 +76,27 @@ class Texture
             load(path);
     }
     /** Binds as the texture target on the renderer. */
-    public void bind(){textureImpl.bind();}
+    public void bind()
+    {
+        textureImpl.bind();
+        HipRenderer.exitOnError();
+    }
     ///Binds texture to the specific slot
-    public void bind(int slot){textureImpl.bind(slot);}
+    public void bind(int slot)
+    {
+        textureImpl.bind(slot);
+        HipRenderer.exitOnError();
+    }
+    public void unbind()
+    {
+        textureImpl.unbind();
+        HipRenderer.exitOnError();
+    }
+    public void unbind(int slot)
+    {
+        textureImpl.unbind(slot);
+        HipRenderer.exitOnError();
+    }
     public void setWrapMode(TextureWrapMode mode){textureImpl.setWrapMode(mode);}
     public void setTextureFilter(TextureFilter min, TextureFilter mag)
     {

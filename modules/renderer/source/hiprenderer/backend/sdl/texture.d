@@ -22,7 +22,9 @@ public class Hip_SDL_Texture : ITexture
     
     public void setWrapMode(TextureWrapMode mode){}
     public void bind(){}
+    public void unbind(){}
     public void bind(int slot){}
+    public void unbind(int slot){}
     public bool load(Image img)
     {
         // SDL_Surface* surface = img;
