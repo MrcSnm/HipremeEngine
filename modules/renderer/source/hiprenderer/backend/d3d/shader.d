@@ -36,7 +36,18 @@ class Hip_D3D11_FragmentShader : FragmentShader
             return float4(1.0f, 1.0f, 1.0f, 1.0f);
         }};
     }
-    override final string getFrameBufferFragment(){return getDefaultFragment();}
+    override final string getFrameBufferFragment()
+    {
+        return q{
+            Texture2D uTex1;
+            SamplerState state;
+
+            float4 main(float2 inTexST : inTexST) : SV_TARGET
+            {
+                return uTex1.Sample(state, inTexST);
+            }
+        };
+    }
     override final string getGeometryBatchFragment()
     {
         return q{
@@ -52,11 +63,25 @@ class Hip_D3D11_FragmentShader : FragmentShader
             }
         };
     }
+    /**
+    *   Creates a massive switch case for supporting array of textures.
+    *   D3D11 causes an error if trying to access texture with a variable
+    *   instead of a literal.
+    */
     override final string getSpriteBatchFragment()
     {
-        // return this.getDefaultFragment();
         int sup = HipRenderer.getMaxSupportedShaderTextures();
         import std.format:format;
+        string textureSlotSwitchCase = "switch(tid)\n{\n"; //Switch textureID
+        for(int i = 1; i < sup; i++)
+        {
+            textureSlotSwitchCase~= "case "~ to!string(i)~": "~
+            format!q{   return uTex1[%s].Sample(state[%s], texST) * inVertexColor * uBatchColor;
+            }(i,i);
+        }
+        textureSlotSwitchCase~= "\ndefault:\n\treturn uTex1[0].Sample(state[0], texST) * inVertexColor * uBatchColor;";
+        textureSlotSwitchCase~= "}";
+
         return format!q{
 
             Texture2D uTex1[%s];
@@ -71,43 +96,13 @@ class Hip_D3D11_FragmentShader : FragmentShader
             {
                 // return uBatchColor * uTex1.Sample(state, inTexST);
                 int tid = int(inTexID);
-                switch(tid)
-                {
-                    case 1:
-                        return uTex1[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
-                    case 2:
-                        return uTex1[2].Sample(state[2], texST) * inVertexColor * uBatchColor;
-                    case 3:
-                        return uTex1[3].Sample(state[3], texST) * inVertexColor * uBatchColor;
-                    case 4:
-                        return uTex1[4].Sample(state[4], texST) * inVertexColor * uBatchColor;
-                    case 5:
-                        return uTex1[5].Sample(state[5], texST) * inVertexColor * uBatchColor;
-                    case 6:
-                        return uTex1[6].Sample(state[6], texST) * inVertexColor * uBatchColor;
-                    case 7:
-                        return uTex1[7].Sample(state[7], texST) * inVertexColor * uBatchColor;
-                    case 8:
-                        return uTex1[8].Sample(state[8], texST) * inVertexColor * uBatchColor;
-                    case 9:
-                        return uTex1[9].Sample(state[9], texST) * inVertexColor * uBatchColor;
-                    case 10:
-                        return uTex1[10].Sample(state[10], texST) * inVertexColor * uBatchColor;
-                    case 11:
-                        return uTex1[11].Sample(state[11], texST) * inVertexColor * uBatchColor;
-                    case 12:
-                        return uTex1[12].Sample(state[12], texST) * inVertexColor * uBatchColor;
-                    case 13:
-                        return uTex1[13].Sample(state[13], texST) * inVertexColor * uBatchColor;
-                    case 14:
-                        return uTex1[14].Sample(state[14], texST) * inVertexColor * uBatchColor;
-                    case 15:
-                        return uTex1[15].Sample(state[15], texST) * inVertexColor * uBatchColor;
-                    default:
-                        return uTex1[0].Sample(state[0], texST) * inVertexColor * uBatchColor;
-                }
+
+                //switch(tid)...
+                //case 1:
+                    //return uTex1[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
+                %s
             }
-        }(sup,sup);
+        }(sup,sup, textureSlotSwitchCase);
     }
     override final string getBitmapTextFragment()
     {
@@ -136,7 +131,24 @@ class Hip_D3D11_VertexShader : VertexShader
             return float4(pos.x, pos.y, 0.0f, 1.0f);
         }};
     }
-    override final string getFrameBufferVertex(){return getDefaultVertex();}
+    override final string getFrameBufferVertex()
+    {
+        return q{
+            struct VSOut
+            {
+                float2 inTexST : inTexST;
+                float4 outPosition : SV_POSITION;
+            };
+
+            VSOut main(float2 pos : vPosition, float2 vTexST : vTexST)
+            {
+                VSOut ret;
+                ret.outPosition = float4(pos.x, pos.y, 0.0, 1.0);
+                ret.inTexST = vTexST;
+                return ret;
+            }
+        };
+    }
     override final string getGeometryBatchVertex()
     {
         return q{
