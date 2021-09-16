@@ -9,7 +9,7 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"bindbc-sdl": "~>0.19.2",
+		"bindbc-sdl": "~>1.0.1",
 		"math": {"path": "../math"},
 		"sdl_sound": {"path": "../../dependencies/sdl_sound"},
 		"console": {

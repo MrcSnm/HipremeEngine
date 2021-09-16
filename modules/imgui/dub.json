@@ -9,7 +9,7 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"bindbc-cimgui": "~>1.0.1"
+		"bindbc-cimgui": "~>1.84.1"
 	},
 	"description": "HipremeEngine Imgui module",
 	"license": "proprietary",

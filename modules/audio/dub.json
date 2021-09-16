@@ -9,8 +9,8 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"bindbc-openal": "~>0.5.0",
-		"bindbc-sdl": "~>0.19.2", 
+		"bindbc-openal": "~>1.0.0",
+		"bindbc-sdl": "~>1.0.1", 
 		"data" : {"path": "../data"},
 		"math" : {"path": "../math"},
 		"imgui": {"path": "../imgui"},
