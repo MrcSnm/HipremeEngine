@@ -9,8 +9,8 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"bindbc-opengl": "~>1.0.0",
-		"bindbc-sdl": "~>1.0.1",
+		"bindbc-opengl": "~>0.17.1",
+		"bindbc-sdl": "~>0.19.2",
 		"directx-d": {"path": "../../dependencies/directx-d"},
 		"gles" : {"path": "../../dependencies/gles"},
 		"data" : {"path": "../data"},

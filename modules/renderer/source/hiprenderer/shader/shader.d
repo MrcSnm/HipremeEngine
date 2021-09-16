@@ -68,6 +68,8 @@ interface IShader
 
     void createVariablesBlock(ref ShaderVariablesLayout layout);
     void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts);
+
+    ///This function is actually required when working with multiple slots on D3D11.
     void initTextureSlots(ref ShaderProgram prog, Texture texture, string varName, int slotsCount);
     void dispose(ref ShaderProgram);
 }

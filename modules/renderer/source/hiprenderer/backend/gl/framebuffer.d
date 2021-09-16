@@ -11,19 +11,19 @@ Distributed under the MIT Software License.
 
 module hiprenderer.backend.gl.framebuffer;
 import bindbc.opengl;
+
 import error.handler;
 import hiprenderer.renderer;
 import hiprenderer.framebuffer;
 import hiprenderer.shader;
 import hiprenderer.texture;
+import hiprenderer.backend.gl.texture;
 
 
 class Hip_GL3_FrameBuffer : IHipFrameBuffer
 {
     ///Texture to be returned. It is filled with the opengl framebuffer contents
     Texture retTexture;
-    uint vao;
-    uint vbo;
     uint rbo;
     uint fbo;
     uint texture;
@@ -33,25 +33,12 @@ class Hip_GL3_FrameBuffer : IHipFrameBuffer
     {
         create(width, height);
     }
-    Texture getTexture(){return retTexture;}
-
     void create(uint width, uint height)
     {
         //Objects initialization
         glGenFramebuffers(1, &this.fbo);
-        glGenVertexArrays(1, &this.vao);
-        glGenBuffers(1, &this.vbo);
         glGenRenderbuffers(1, &this.rbo);
         glGenTextures(1, &this.texture);
-
-        //VAO and VBO initialization
-        glBindVertexArray(this.vao);
-        glBindBuffer(GL_ARRAY_BUFFER, this.vbo);
-        glBufferData(GL_ARRAY_BUFFER, framebufferVertices.sizeof, framebufferVertices.ptr, GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, false, 4*float.sizeof, null); //XY
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, false, 4*float.sizeof, cast(void*)(2*float.sizeof)); //ST
-        glEnableVertexAttribArray(1);
 
         //Texture initialization
         glBindFramebuffer(GL_FRAMEBUFFER, this.fbo);
@@ -71,13 +58,16 @@ class Hip_GL3_FrameBuffer : IHipFrameBuffer
 
         ErrorHandler.assertErrorMessage(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE,
         "GL Framebuffer creation", "Framebuffer was unable to complete its creations");
+        retTexture = new Texture();
+        retTexture.width = width;
+        retTexture.height = height;
+        Hip_GL3_Texture t = cast(Hip_GL3_Texture)(retTexture.textureImpl);
+        t.textureID = texture;
 
         //Reset to defaults
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
         glBindTexture(GL_TEXTURE_2D, 0);
-        glBindVertexArray(0);
     }
     void resize(uint width, uint height){}
 
@@ -89,17 +79,16 @@ class Hip_GL3_FrameBuffer : IHipFrameBuffer
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
+    Texture getTexture(){return retTexture;}
+
     void draw()
     {
-        glBindVertexArray(this.vao);
-        glBindTexture(GL_TEXTURE_2D, this.texture);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        // glBindTexture(GL_TEXTURE_2D, this.texture);
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
     void dispose()
     {
-        glDeleteBuffers(1, &this.vbo);
-        glDeleteVertexArrays(1, &this.vao);
         glDeleteTextures(1, &this.texture);
         glDeleteFramebuffers(1, &this.fbo);
         glDeleteRenderbuffers(1, &this.rbo);
