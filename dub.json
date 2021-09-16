@@ -55,8 +55,8 @@
 	"copyright": "Copyright © 2018 - 2021, Hipreme",
 	"dependencies": {
 		"arsd-official:dom": "~>10.2.0",
-		"bindbc-cimgui": "~>1.0.1",
-		"bindbc-sdl": "~>0.19.2",
+		"bindbc-cimgui": "~>1.84.1",
+		"bindbc-sdl": "~>1.0.1",
 		"bind"		: {"path" : "./modules/bind"},
 		"config"	: {"path" : "./modules/config"},
 		"console"	: {"path" : "./modules/console"},
