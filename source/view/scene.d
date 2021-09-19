@@ -38,6 +38,8 @@ class Scene
                 l.onRender();
         }
     }
+
+    public void dispose(){}
     /**
     *   Managed by the event dispatcher
     */

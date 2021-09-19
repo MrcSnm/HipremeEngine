@@ -14,7 +14,7 @@ import hipaudio.audio;
 import bindbc.sdl;
 
 version(Android):
-SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)
+private SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)
 {
     SLDataFormat_PCM ret;
     ret.formatType = SL_DATAFORMAT_PCM;
