@@ -12,9 +12,15 @@ Distributed under the MIT Software License.
 module systems.game;
 import bindbc.sdl;
 import hiprenderer.renderer;
+import systems.hotload;
 private import sdl.event.dispatcher;
 private import sdl.event.handlers.keyboard;
 import view;
+
+
+
+extern(C) Scene function() HipremeEngineGameInit;
+extern(C) void function() HipremeEngineGameDestroy;
 
 class GameSystem
 {
@@ -24,8 +30,44 @@ class GameSystem
     EventDispatcher dispatcher;
     KeyboardHandler keyboard;
     Scene[] scenes;
+    protected static Scene externalScene;
+    protected static HotloadableDLL hotload;
     bool hasFinished;
     float fps;
+
+
+    void loadGame(string gameDll)
+    {
+        import std.path:buildNormalizedPath;
+        import util.system;
+        import util.string:indexOf;
+        import std.stdio;
+
+        if(gameDll.indexOf("projects/") == -1)
+            gameDll = buildNormalizedPath("projects", gameDll, gameDll);
+
+        hotload = new HotloadableDLL(gameDll, (void* lib)
+        {
+            assert(lib != null, "No library " ~ gameDll ~ " was found");
+            HipremeEngineGameInit = 
+                cast(typeof(HipremeEngineGameInit))
+                dynamicLibrarySymbolLink(lib, "HipremeEngineGameInit");
+            assert(HipremeEngineGameInit != null,
+            "HipremeEngineGameInit wasn't found when looking into "~gameDll);
+            HipremeEngineGameDestroy = 
+                cast(typeof(HipremeEngineGameDestroy))
+                dynamicLibrarySymbolLink(lib, "HipremeEngineGameDestroy");
+            assert(HipremeEngineGameDestroy != null,
+            "HipremeEngineGameDestroy wasn't found when looking into "~gameDll);
+        });
+    }
+
+    void startExternalGame()
+    {
+        assert(HipremeEngineGameInit != null, "No game was loaded");
+        externalScene = HipremeEngineGameInit();
+        addScene(externalScene);
+    }
 
     this()
     {
@@ -34,6 +76,24 @@ class GameSystem
         {
             override void onDown(){hasFinished = true;}
             override void onUp(){}
+        });
+
+        keyboard.addKeyListener(SDLK_F5, new class Key
+        {
+            override void onDown(){}
+            override void onUp()
+            {
+                import util.array:remove;
+                if(hotload)
+                {
+                    scenes.remove(externalScene);
+                    externalScene = null;
+                    HipremeEngineGameDestroy();
+                    hotload.reload();
+                    HipremeEngineGameInit();
+                    startExternalGame();
+                }
+            }
         });
         dispatcher = new EventDispatcher(&keyboard);
         dispatcher.addOnResizeListener((uint width, uint height)
@@ -44,12 +104,12 @@ class GameSystem
                 s.onResize(width, height);
         });
 
-        import view.testscene;
-        import view.uwptest;
-        Scene testscene = new FrameBufferTestScene();
-    	testscene.init();
-        scenes~= testscene;
+    }
 
+    void addScene(Scene s)
+    {
+    	s.init();
+        scenes~= s;
     }
 
     bool update(float deltaTime)
@@ -80,6 +140,14 @@ class GameSystem
     
     void quit()
     {
+        if(hotload !is null)
+        {
+            scenes.length = 0;
+            externalScene = null;
+            if(HipremeEngineGameDestroy != null)
+                HipremeEngineGameDestroy();
+            hotload.dispose();
+        }
         SDL_Quit();
     }
 }

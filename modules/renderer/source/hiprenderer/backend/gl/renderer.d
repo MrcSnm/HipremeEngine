@@ -45,10 +45,9 @@ private SDL_Window* createSDL_GL_Window(uint width, uint height)
         SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
-        alias f = SDL_WindowFlags;
-        SDL_WindowFlags flags = (f.SDL_WINDOW_OPENGL | f.SDL_WINDOW_RESIZABLE | f.SDL_WINDOW_ALLOW_HIGHDPI);
+        uint flags = (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
-        SDL_Window* window = SDL_CreateWindow("GL Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+        SDL_Window* window = SDL_CreateWindow("GL Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, cast(SDL_WindowFlags)flags);
         SDL_GLContext ctx = SDL_GL_CreateContext(window);
         SDL_GL_MakeCurrent(window, ctx);
         GLSupport ver = loadOpenGL();
@@ -80,7 +79,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     }
     SDL_Renderer* createRenderer(SDL_Window* window)
     {
-        return SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+        return SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     }
     Shader createShader()
     {

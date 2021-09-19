@@ -70,8 +70,9 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         {
             SDL_SetHint(SDL_HINT_RENDER_DIRECT3D11_DEBUG, "1");
         }
-        SDL_WindowFlags flags = SDL_WindowFlags.SDL_WINDOW_RESIZABLE | SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI;
-        SDL_Window* window = SDL_CreateWindow("DX Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+        uint flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+        SDL_Window* window = SDL_CreateWindow("DX Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        width, height, cast(SDL_WindowFlags)flags);
 
         return window;
     }
