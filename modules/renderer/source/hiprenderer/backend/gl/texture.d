@@ -20,10 +20,8 @@ class Hip_GL3_Texture : ITexture
 {
     GLuint textureID = 0;
     int width, height;
-    this()
-    {
-        glGenTextures(1, &textureID);
-    }
+    uint currentSlot;
+
     protected int getGLWrapMode(TextureWrapMode mode)
     {
         switch(mode)
@@ -64,13 +62,33 @@ class Hip_GL3_Texture : ITexture
 
     void bind()
     {
-        // glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
     }
+    void unbind()
+    {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    void bind(int slot)
+    {
+        currentSlot = slot;
+        glActiveTexture(GL_TEXTURE0+slot);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+    }
+
+    void unbind(int slot)
+    {
+        currentSlot = slot;
+        glActiveTexture(GL_TEXTURE0+slot);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
     void setWrapMode(TextureWrapMode mode)
     {
         int mod = getGLWrapMode(mode);
-        bind();
+        bind(currentSlot);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mod);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mod);
     }
@@ -79,16 +97,17 @@ class Hip_GL3_Texture : ITexture
     {
         int min_filter = getGLMinMagFilter(min);
         int mag_filter = getGLMinMagFilter(mag);
-        bind();
+        bind(currentSlot);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
     }
 
-    bool load(Image image)
+    bool load(IImage image)
     {
+        glGenTextures(1, &textureID);
         int mode;
-        void* pixels = image.pixels;
-        switch(image.bytesPerPixel)
+        void* pixels = image.getPixels;
+        switch(image.getBytesPerPixel)
         {
             case 1:
                 pixels = image.convertPalettizedToRGBA();
@@ -104,10 +123,10 @@ class Hip_GL3_Texture : ITexture
             default:
                 ErrorHandler.assertExit(false, "GL Pixel format unsupported");
         }
-        bind();
-        glTexImage2D(GL_TEXTURE_2D, 0, mode, image.w, image.h, 0, mode, GL_UNSIGNED_BYTE, pixels);
-        width = image.w;
-        height = image.h;
+        bind(currentSlot);
+        glTexImage2D(GL_TEXTURE_2D, 0, mode, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, pixels);
+        width = image.getWidth;
+        height = image.getHeight;
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

@@ -109,6 +109,10 @@ extern(C)int SDL_main()
 		}
 	}
 	else{HipRenderer.init("renderer.conf");}
+
+	//Initialize 2D context
+	import graphics.g2d;
+	HipRenderer2D.initialize();
 	
 
 	//AudioSource sc = Audio.getSource(buf);
@@ -127,6 +131,8 @@ extern(C)int SDL_main()
 	
 	// ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	sys = new GameSystem();
+	sys.loadGame("TestScene");
+	sys.startExternalGame();
 	version(UWP){}
 	else version(Android){}
 	else
@@ -136,7 +142,6 @@ extern(C)int SDL_main()
 			HipremeRender();
 		}
 		HipremeDestroy();
-		destroyEngine();
 	}
 	return 0;
 	///////////START IMGUI
@@ -164,10 +169,10 @@ extern(C)int SDL_main()
 static void destroyEngine()
 {
     //HipAssetManager.disposeResources();
+	sys.quit();
 	version(CIMGUI) DI.onDestroy();
 	HipRenderer.dispose();
 	HipAudio.onDestroy();
-	sys.quit();
 }
 
 
@@ -270,4 +275,10 @@ export extern(C) void HipremeDestroy()
 	{
 		rt_term();
 	}
+}
+
+export extern(C) void log(string log)
+{
+	import console.log;
+	rawlog(log);
 }

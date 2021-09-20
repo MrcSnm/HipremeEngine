@@ -1,6 +1,6 @@
 module graphics.g2d.animation;
 import graphics.g2d.textureatlas;
-import graphics.color;
+import hipengine.api.graphics.color;
 import math.vector;
 import hiprenderer.texture : TextureRegion;
 import error.handler;

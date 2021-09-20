@@ -19,33 +19,7 @@ import hiprenderer.renderer;
 import bindbc.sdl;
 import data.image;
 public import util.data_structures:Array2D;
-
-enum TextureWrapMode
-{
-    CLAMP_TO_EDGE,
-    CLAMP_TO_BORDER,
-    REPEAT,
-    MIRRORED_REPEAT,
-    MIRRORED_CLAMP_TO_EDGE,
-    UNKNOWN
-}
-
-enum TextureFilter
-{
-    LINEAR,
-    NEAREST,
-    NEAREST_MIPMAP_NEAREST,
-    LINEAR_MIPMAP_NEAREST,
-    NEAREST_MIPMAP_LINEAR,
-    LINEAR_MIPMAP_LINEAR
-}
-interface ITexture
-{
-    void setWrapMode(TextureWrapMode mode);
-    void setTextureFilter(TextureFilter min, TextureFilter mag);
-    bool load(Image img);
-    void bind();
-}
+public import hipengine.api.renderer.texture;
 
 class Texture
 {
@@ -53,7 +27,10 @@ class Texture
     uint width,height;
     TextureFilter min, mag;
 
-    protected ITexture textureImpl;
+    /**
+    *   Make it available for implementors
+    */
+    package ITexture textureImpl;
     /**
     *   Initializes with the current renderer type
     */
@@ -70,7 +47,27 @@ class Texture
             load(path);
     }
     /** Binds as the texture target on the renderer. */
-    public void bind(){textureImpl.bind();}
+    public void bind()
+    {
+        textureImpl.bind();
+        HipRenderer.exitOnError();
+    }
+    ///Binds texture to the specific slot
+    public void bind(int slot)
+    {
+        textureImpl.bind(slot);
+        HipRenderer.exitOnError();
+    }
+    public void unbind()
+    {
+        textureImpl.unbind();
+        HipRenderer.exitOnError();
+    }
+    public void unbind(int slot)
+    {
+        textureImpl.unbind(slot);
+        HipRenderer.exitOnError();
+    }
     public void setWrapMode(TextureWrapMode mode){textureImpl.setWrapMode(mode);}
     public void setTextureFilter(TextureFilter min, TextureFilter mag)
     {

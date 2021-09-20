@@ -246,7 +246,7 @@ alias ID3D11ShaderReflectionConstantBuffer LPD3D11SHADERREFLECTIONCONSTANTBUFFER
 // from working with an old binary.  Recompiling with the new header
 // will pick up the new IID.
 
-mixin( uuid!(ID3D11ShaderReflection, "0a233719-3960-4578-9d7c-203b8b1d9cc1") );
+mixin( uuid!(ID3D11ShaderReflection, "8d536ca1-0cca-4956-a837-786963755584") );
 interface ID3D11ShaderReflection : IUnknown
 {
 	extern(Windows):

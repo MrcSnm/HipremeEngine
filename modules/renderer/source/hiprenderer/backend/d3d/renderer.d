@@ -17,22 +17,30 @@ pragma(lib, "user32");
 pragma(lib, "d3dcompiler");
 pragma(lib, "d3d11");
 pragma(lib, "dxgi");
+
+import core.stdc.string;
+import core.sys.windows.windows;
+import std.conv:to;
+
+import directx.d3d11;
+import bindbc.sdl;
+
+
 import config.opts;
-import hiprenderer.renderer;
-import hiprenderer.shader;
-import hiprenderer.framebuffer;
-import hiprenderer.backend.d3d.shader;
-import hiprenderer.backend.d3d.vertex;
-import hiprenderer.backend.d3d.utils;
-import hiprenderer.texture;
 import error.handler;
 
+import hiprenderer.shader;
+import hiprenderer.texture;
 import hiprenderer.viewport;
-import core.stdc.string;
-import std.conv:to;
-import directx.d3d11;
-import core.sys.windows.windows;
-import bindbc.sdl;
+import hiprenderer.renderer;
+import hiprenderer.framebuffer;
+
+import hiprenderer.backend.d3d.shader;
+import hiprenderer.backend.d3d.framebuffer;
+import hiprenderer.backend.d3d.vertex;
+import hiprenderer.backend.d3d.utils;
+
+
 
 ID3D11Device _hip_d3d_device = null;
 ID3D11DeviceContext _hip_d3d_context = null;
@@ -62,8 +70,9 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         {
             SDL_SetHint(SDL_HINT_RENDER_DIRECT3D11_DEBUG, "1");
         }
-        SDL_WindowFlags flags = SDL_WindowFlags.SDL_WINDOW_RESIZABLE | SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI;
-        SDL_Window* window = SDL_CreateWindow("DX Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+        uint flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+        SDL_Window* window = SDL_CreateWindow("DX Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        width, height, cast(SDL_WindowFlags)flags);
 
         return window;
     }
@@ -248,7 +257,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
     public IHipFrameBuffer createFrameBuffer(int width, int height)
     {
-        return null;
+        return new Hip_D3D11_FrameBuffer(width,height);
     }
     public IHipVertexArrayImpl  createVertexArray()
     {
@@ -297,6 +306,10 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         }
     }
 
+    public int queryMaxSupportedPixelShaderTextures()
+    {
+        return D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT;
+    }
 
     public void setRendererMode(HipRendererMode mode)
     {

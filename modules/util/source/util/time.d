@@ -19,7 +19,8 @@ private import std.conv : to;
 
 class HipTime
 {
-    static StopWatch stopwatch;
+    protected static StopWatch stopwatch;
+    protected static long[string] performanceMeasurement;
     static this()
     {
         stopwatch = StopWatch(AutoStart.yes);
@@ -38,4 +39,24 @@ class HipTime
     {
         return stopwatch.peek.total!"nsecs" / 1_000_000_000;
     }
+
+    static void initPerformanceMeasurement(string name)
+    {
+        performanceMeasurement[name] = getCurrentTime();
+    }
+    static void finishPerformanceMeasurement(string name)
+    {
+        import std.stdio:writeln;
+        writeln(name, " took ", (getCurrentTime() - performanceMeasurement[name])/1_000_000, "ms");
+    }
+
+    static struct Profiler
+    {
+        private string name;
+        this(string name){this.name = name;HipTime.initPerformanceMeasurement(name);}
+        ~this(){HipTime.finishPerformanceMeasurement(name);}
+    }
+    static mixin template Profile(string name){mixin("HipTime.Profiler _profile"~name~" = HipTime.Profiler("~name~");");}
+    static mixin template ProfileFunction(){mixin("HipTime.Profiler _profileFunc = HipTime.Profiler(__PRETTY_FUNCTION__);");}
+
 }

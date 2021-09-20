@@ -24,19 +24,22 @@ class FrameBufferTestScene : Scene
     this()
     {
         batch = new HipSpriteBatch();
-        sp = new HipSprite("D:\\HipremeEngine\\assets\\graphics\\sprites\\sprite.png");
+        sp = new HipSprite("graphics/sprites/sprite.png");
         fb = HipRenderer.newFrameBuffer(800, 600);
     }
     override void render()
     {
-        super.render();
         fb.bind();
         batch.begin();
         batch.draw(sp);
         batch.end();
         fb.unbind();
-        fb.currentShader.bind();
-        fb.currentShader.setFragmentVar("uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
-        fb.draw();
+
+        batch.begin();
+        batch.draw(new TextureRegion(fb.getTexture), 0, 0);
+        batch.end();
+        // fb.currentShader.bind();
+        // fb.currentShader.setFragmentVar("uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
+        // fb.draw();  
     }
 }

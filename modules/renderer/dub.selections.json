@@ -1,14 +1,21 @@
 {
 	"fileVersion": 1,
 	"versions": {
+		"bind": {"path":"../bind"},
 		"bindbc-loader": "1.0.1",
+		"bindbc-openal": "1.0.0",
 		"bindbc-opengl": "1.0.0",
 		"bindbc-sdl": "1.0.1",
 		"config": {"path":"../config"},
 		"console": {"path":"../console"},
+		"data": {"path":"../data"},
 		"debugging": {"path":"../debugging"},
+		"directx-d": {"path":"../../dependencies/directx-d"},
 		"error": {"path":"../error"},
+		"gles": {"path":"../../dependencies/gles"},
+		"jni": {"path":"../jni"},
 		"math": {"path":"../math"},
+		"sdl_sound": {"path":"../../dependencies/sdl_sound"},
 		"util": {"path":"../util"}
 	}
 }

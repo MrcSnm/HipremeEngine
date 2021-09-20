@@ -9,6 +9,7 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
+		"hipengine_api": {"path": "../../api"},
 		"bindbc-opengl": "~>1.0.0",
 		"bindbc-sdl": "~>1.0.1",
 		"directx-d": {"path": "../../dependencies/directx-d"},

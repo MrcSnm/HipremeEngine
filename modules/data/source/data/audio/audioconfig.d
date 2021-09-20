@@ -17,6 +17,21 @@ import bindbc.sdl.mixer;
 import bindbc.sdl : SDL_AudioFormat;
 import sdl_sound;
 
+
+package SDL_AudioFormat getFormatAsSDL_AudioFormat(AudioConfig cfg)
+{
+    if(cfg.format == MIX_DEFAULT_FORMAT)
+    {
+        version(LittleEndian) return SDL_AudioFormat.AUDIO_S16LSB;
+        else return SDL_AudioFormat.AUDIO_S16MSB;
+    }
+    return SDL_AudioFormat.AUDIO_S16;
+}
+package Sound_AudioInfo getSDL_SoundInfo(AudioConfig cfg)
+{
+    return Sound_AudioInfo(cfg.getFormatAsSDL_AudioFormat, cast(ubyte)cfg.channels, cfg.sampleRate);
+}
+
 struct AudioConfig
 {
     int sampleRate;
@@ -45,25 +60,6 @@ struct AudioConfig
         cfg.channels = 1U;
         cfg.bufferSize = 2048;
         return cfg;
-    }
-    SDL_AudioFormat getFormatAsSDL_AudioFormat()
-    {
-        if(format == MIX_DEFAULT_FORMAT)
-        {
-            version(LittleEndian)
-            {
-                return SDL_AudioFormat.AUDIO_S16LSB;
-            }
-            else
-            {
-                return SDL_AudioFormat.AUDIO_S16MSB;
-            }
-        }
-        return SDL_AudioFormat.AUDIO_S16;
-    }
-    Sound_AudioInfo getSDL_SoundInfo()
-    {
-        return Sound_AudioInfo(getFormatAsSDL_AudioFormat(), cast(ubyte)channels, sampleRate);
     }
 
     uint getBitDepth()

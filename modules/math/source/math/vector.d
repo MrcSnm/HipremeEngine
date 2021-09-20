@@ -120,6 +120,17 @@ public struct Vector3
         values[]/=m;
     }
 
+    float distance(Vector3 other)
+    {
+        float dx = (other.x-x);
+        dx*=dx;
+        float dy = other.y-y;
+        dy*=dy;
+        float dz = other.z-z;
+        dz*=dz;
+        return sqrt(dx+dy+dz);
+    }
+
     Vector3 unit() const 
     {
         const float m = mag();
@@ -167,9 +178,20 @@ public struct Vector3
         else static if(op == "*")return dot(rhs);
     }
 
-    auto opBinary(string op)(auto ref float rhs) const
+    Vector3 opBinary(string op, T)(auto ref T rhs) const
     {
         mixin("return Vector3(values[0] "~ op ~ "rhs , values[1] "~ op ~ "rhs, values[2] "~ op~"rhs);");
+    }
+    Vector3 opBinaryRight(string op, T)(auto ref T lhs) const
+    {
+        mixin("return Vector3(values[0] "~ op ~ "rhs , values[1] "~ op ~ "rhs, values[2] "~ op~"rhs);");
+    }
+    auto opOpAssign(string op, T)(T value)
+    {
+        mixin("this.x"~op~"= value;");
+        mixin("this.y"~op~"= value;");
+        mixin("this.z"~op~"= value;");
+        return this;
     }
 
     float opIndexAssign(float value, size_t index)
