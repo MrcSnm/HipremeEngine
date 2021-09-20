@@ -19,7 +19,7 @@ import error.handler;
 import hiprenderer.shader;
 import graphics.material;
 import graphics.g2d.sprite;
-import graphics.color;
+import hipengine.api.graphics.color;
 import math.vector;
 
 /**

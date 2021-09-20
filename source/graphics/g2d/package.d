@@ -19,3 +19,6 @@ public import graphics.g2d.bitmaptext,
     graphics.g2d.textureatlas,
     hiprenderer.viewport,
     graphics.g2d.tilemap;
+
+
+public import HipRenderer2D = graphics.g2d.renderer2d;

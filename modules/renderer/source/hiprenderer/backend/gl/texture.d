@@ -102,12 +102,12 @@ class Hip_GL3_Texture : ITexture
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
     }
 
-    bool load(Image image)
+    bool load(IImage image)
     {
         glGenTextures(1, &textureID);
         int mode;
-        void* pixels = image.pixels;
-        switch(image.bytesPerPixel)
+        void* pixels = image.getPixels;
+        switch(image.getBytesPerPixel)
         {
             case 1:
                 pixels = image.convertPalettizedToRGBA();
@@ -124,9 +124,9 @@ class Hip_GL3_Texture : ITexture
                 ErrorHandler.assertExit(false, "GL Pixel format unsupported");
         }
         bind(currentSlot);
-        glTexImage2D(GL_TEXTURE_2D, 0, mode, image.w, image.h, 0, mode, GL_UNSIGNED_BYTE, pixels);
-        width = image.w;
-        height = image.h;
+        glTexImage2D(GL_TEXTURE_2D, 0, mode, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, pixels);
+        width = image.getWidth;
+        height = image.getHeight;
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
