@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/sdl_sound
+sdl_sound.so
+sdl_sound.dylib
+sdl_sound.dll
+sdl_sound.a
+sdl_sound.lib
+sdl_sound-test-*
+*.exe
+*.o
+*.obj
+*.lst
