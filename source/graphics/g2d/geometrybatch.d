@@ -15,9 +15,8 @@ import hiprenderer.shader;
 import error.handler;
 import graphics.mesh;
 import math.matrix;
-import graphics.color;
 import std.format:format;
-public import graphics.color;
+public import hipengine.api.graphics.color;
 
 
 /**

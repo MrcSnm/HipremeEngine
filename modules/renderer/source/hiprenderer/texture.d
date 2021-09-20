@@ -19,36 +19,7 @@ import hiprenderer.renderer;
 import bindbc.sdl;
 import data.image;
 public import util.data_structures:Array2D;
-
-enum TextureWrapMode
-{
-    CLAMP_TO_EDGE,
-    CLAMP_TO_BORDER,
-    REPEAT,
-    MIRRORED_REPEAT,
-    MIRRORED_CLAMP_TO_EDGE,
-    UNKNOWN
-}
-
-enum TextureFilter
-{
-    LINEAR,
-    NEAREST,
-    NEAREST_MIPMAP_NEAREST,
-    LINEAR_MIPMAP_NEAREST,
-    NEAREST_MIPMAP_LINEAR,
-    LINEAR_MIPMAP_LINEAR
-}
-interface ITexture
-{
-    void setWrapMode(TextureWrapMode mode);
-    void setTextureFilter(TextureFilter min, TextureFilter mag);
-    bool load(Image img);
-    void bind();
-    void bind(int slot);
-    void unbind();
-    void unbind(int slot);
-}
+public import hipengine.api.renderer.texture;
 
 class Texture
 {

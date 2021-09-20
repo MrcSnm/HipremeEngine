@@ -19,7 +19,7 @@ import view;
 
 
 
-extern(C) Scene function() HipremeEngineGameInit;
+extern(C) AScene function() HipremeEngineGameInit;
 extern(C) void function() HipremeEngineGameDestroy;
 
 class GameSystem
@@ -29,8 +29,9 @@ class GameSystem
      */
     EventDispatcher dispatcher;
     KeyboardHandler keyboard;
-    Scene[] scenes;
-    protected static Scene externalScene;
+    AScene[] scenes;
+    string projectDir;
+    protected static AScene externalScene;
     protected static HotloadableDLL hotload;
     bool hasFinished;
     float fps;
@@ -44,7 +45,10 @@ class GameSystem
         import std.stdio;
 
         if(gameDll.indexOf("projects/") == -1)
+        {
+            projectDir = buildNormalizedPath("projects", gameDll);
             gameDll = buildNormalizedPath("projects", gameDll, gameDll);
+        }
 
         hotload = new HotloadableDLL(gameDll, (void* lib)
         {
@@ -60,6 +64,13 @@ class GameSystem
             assert(HipremeEngineGameDestroy != null,
             "HipremeEngineGameDestroy wasn't found when looking into "~gameDll);
         });
+    }
+
+    void recompileGame()
+    {
+        import std.process:executeShell;
+        executeShell("cd "~projectDir~" && dub");
+        hotload.reload();
     }
 
     void startExternalGame()
@@ -86,11 +97,10 @@ class GameSystem
                 import util.array:remove;
                 if(hotload)
                 {
+                    HipremeEngineGameDestroy();
                     scenes.remove(externalScene);
                     externalScene = null;
-                    HipremeEngineGameDestroy();
-                    hotload.reload();
-                    HipremeEngineGameInit();
+                    recompileGame(); // Calls hotload.reload();
                     startExternalGame();
                 }
             }
@@ -100,13 +110,13 @@ class GameSystem
         {
             HipRenderer.width = width;
             HipRenderer.height = height;
-            foreach (Scene s; scenes)
+            foreach (AScene s; scenes)
                 s.onResize(width, height);
         });
 
     }
 
-    void addScene(Scene s)
+    void addScene(AScene s)
     {
     	s.init();
         scenes~= s;
@@ -130,7 +140,7 @@ class GameSystem
     }
     void render()
     {
-        foreach (Scene s; scenes)
+        foreach (AScene s; scenes)
             s.render();
     }
     void postUpdate()
@@ -142,10 +152,10 @@ class GameSystem
     {
         if(hotload !is null)
         {
-            scenes.length = 0;
-            externalScene = null;
             if(HipremeEngineGameDestroy != null)
                 HipremeEngineGameDestroy();
+            scenes.length = 0;
+            externalScene = null;
             hotload.dispose();
         }
         SDL_Quit();

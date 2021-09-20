@@ -60,7 +60,7 @@ class Hip_D3D11_Texture : ITexture
     // {
     //     return DXGI_FORMAT_R8G8B8A8_UNORM;
     // }
-    public bool load(Image image)
+    public bool load(IImage image)
     {
         D3D11_TEXTURE2D_DESC desc;
         // desc.Format = getFromFromSurface(surface);
@@ -69,15 +69,15 @@ class Hip_D3D11_Texture : ITexture
         desc.CPUAccessFlags = 0;
         desc.MipLevels = 1;
         desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-        desc.Width = image.w;
-        desc.Height = image.h;
+        desc.Width = image.getWidth;
+        desc.Height = image.getHeight;
 
         D3D11_SUBRESOURCE_DATA data;
 
         void* pixels;
         ushort Bpp = 0;
 
-        switch(image.bytesPerPixel)
+        switch(image.getBytesPerPixel)
         {
             case 1:
                 pixels = image.convertPalettizedToRGBA();
@@ -85,16 +85,16 @@ class Hip_D3D11_Texture : ITexture
                 break;
             case 3:
             case 4:
-                pixels = image.pixels;
-                Bpp = image.bytesPerPixel;
+                pixels = image.getPixels;
+                Bpp = image.getBytesPerPixel;
                 break;
             case 2:
             default:
                 ErrorHandler.assertExit(false, 
-                "Unsopported bytes per pixel for D3D11 Texture named '"~image.name~"'");
+                "Unsopported bytes per pixel for D3D11 Texture named '"~image.getName~"'");
         }
         data.pSysMem = pixels;
-        data.SysMemPitch = image.w*Bpp;
+        data.SysMemPitch = image.getWidth*Bpp;
 
         _hip_d3d_device.CreateTexture2D(&desc, &data, &texture);
         _hip_d3d_device.CreateShaderResourceView(texture, cast(D3D11_SHADER_RESOURCE_VIEW_DESC*)null, &resource);

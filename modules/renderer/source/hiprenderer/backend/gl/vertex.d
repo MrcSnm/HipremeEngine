@@ -97,8 +97,6 @@ class Hip_GL3_IndexBufferObject : IHipIndexBufferImpl
     {
         ErrorHandler.assertExit((offset+count)*index_t.sizeof <= this.size);
         this.bind();
-        import console.log;
-        rawlog(count);
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, data);
     }
     ~this(){glDeleteBuffers(1, &this.ebo);}

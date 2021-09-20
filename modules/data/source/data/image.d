@@ -17,27 +17,9 @@ import error.handler;
 import util.system;
 import console.log;
 import bindbc.sdl;
+public import hipengine.api.data.image;
 
-public interface IHipImageDecoder
-{
-    ///Use that for decoding from memory, returns wether decode was successful
-    bool startDecoding(void[] data);
-    uint getWidth();
-    uint getHeight();
-    void* getPixels();
-    ubyte getBytesPerPixel();
-    ubyte[] getPalette();
-    final ushort getBitsPerPixel(){return getBytesPerPixel()*8;}
-    ///Dispose the pixels
-    void dispose();
-}
 
-//In progress?
-public interface IHipPNGDecoder  : IHipImageDecoder{}
-public interface IHipJPEGDecoder : IHipImageDecoder{}
-public interface IHipWebPDecoder : IHipImageDecoder{}
-public interface IHipBMPDecoder  : IHipImageDecoder{}
-public interface IHipAnyImageDecoder : IHipPNGDecoder, IHipJPEGDecoder, IHipWebPDecoder, IHipBMPDecoder{}
 IHipBMPDecoder bmp;
 IHipJPEGDecoder jpeg;
 IHipPNGDecoder png;
@@ -95,7 +77,7 @@ alias HipPlatformImageDecoder = HipSDLImageDecoder;
 *   this is useful for loading images on another thread and then
 *   sending it to the GPU
 */
-public class Image : HipAsset
+public class Image : HipAsset, IImage
 {
     protected shared bool _ready;
     IHipImageDecoder decoder;
@@ -113,6 +95,11 @@ public class Image : HipAsset
         decoder = new HipPlatformImageDecoder();
         imagePath = sanitizePath(path);
     }
+    string getName(){return name;}
+    uint getWidth(){return width;}
+    uint getHeight(){return height;}
+    ushort getBytesPerPixel(){return bytesPerPixel;}
+    void* getPixels(){return pixels;}
 
 
     bool loadFromMemory(ref ubyte[] data)

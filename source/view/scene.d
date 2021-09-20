@@ -10,26 +10,22 @@ Distributed under the MIT Software License.
 */
 
 module view.scene;
-import view.layer;
+public import hipengine.api.view.scene;
+public import view.layer;
 
-class Scene
+class Scene : AScene
 {
-    Layer[] layerStack;
-
     public void init(){}
-
     public void pushLayer(Layer l)
     {
         layerStack~= l;
         l.onAttach();
     }
-
     public void update(float dt)
     {
         foreach(ref l; layerStack)
             l.onUpdate(dt);
     }
-
     public void render()
     {
         foreach(ref l; layerStack)
@@ -38,7 +34,6 @@ class Scene
                 l.onRender();
         }
     }
-
     public void dispose(){}
     /**
     *   Managed by the event dispatcher
