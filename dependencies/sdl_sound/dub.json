@@ -1,0 +1,12 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"bindbc-sdl": "~>1.0.1"
+	},
+	"description": "SDL_Sound bindings",
+	"license": "proprietary",
+	"name": "sdl_sound"
+}
