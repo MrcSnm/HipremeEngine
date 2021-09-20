@@ -57,6 +57,7 @@
 		"arsd-official:dom": "~>10.2.0",
 		"bindbc-cimgui": "~>1.84.1",
 		"bindbc-sdl": "~>1.0.1",
+		"hipengine_api" : {"path": "./api"},
 		"bind"		: {"path" : "./modules/bind"},
 		"config"	: {"path" : "./modules/config"},
 		"console"	: {"path" : "./modules/console"},
@@ -73,9 +74,6 @@
 	"description": "Open-Source D Game Engine",
 	"dflags": [
 		"-J=."
-	],
-	"importPaths": [
-		"source"
 	],
 	"importPaths-ldc" :
 	[
