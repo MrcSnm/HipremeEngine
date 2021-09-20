@@ -113,7 +113,6 @@ class GameSystem
             foreach (AScene s; scenes)
                 s.onResize(width, height);
         });
-
     }
 
     void addScene(AScene s)
