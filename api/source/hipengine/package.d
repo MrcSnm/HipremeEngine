@@ -40,6 +40,7 @@ void function(int x1, int y1, int x2, int y2, int x3, int y3) drawTriangle;
 void function(int x1, int y1, int x2, int y2) drawLine;
 void function(IHipSprite sprite) drawSprite;
 IHipSprite function(string texturePath) newSprite;
+void function(ref IHipSprite sprite) destroySprite;
 
 
 void initG2D()
@@ -57,4 +58,5 @@ void initG2D()
 	drawLine = cast(typeof(drawLine))GetProcAddress(lh, "drawLine");
 	drawSprite = cast(typeof(drawSprite))GetProcAddress(lh, "drawSprite");
 	newSprite = cast(typeof(newSprite))GetProcAddress(lh, "newSprite");
+	destroySprite = cast(typeof(destroySprite))GetProcAddress(lh, "destroySprite");
 }
