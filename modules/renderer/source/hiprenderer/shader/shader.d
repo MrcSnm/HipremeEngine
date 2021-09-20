@@ -68,6 +68,9 @@ interface IShader
 
     void createVariablesBlock(ref ShaderVariablesLayout layout);
     void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts);
+
+    ///This function is actually required when working with multiple slots on D3D11.
+    void initTextureSlots(ref ShaderProgram prog, Texture texture, string varName, int slotsCount);
     void dispose(ref ShaderProgram);
 }
 
@@ -281,6 +284,7 @@ public class Shader
     void bind()
     {
         shaderImpl.setCurrentShader(shaderProgram);
+        HipRenderer.exitOnError();
     }
 
     auto opDispatch(string member)()
@@ -311,6 +315,13 @@ public class Shader
     void sendVars()
     {
         shaderImpl.sendVars(shaderProgram, layouts);
+        HipRenderer.exitOnError();
+    }
+
+    void initTextureSlots(Texture texture, string varName, int slotsCount)
+    {
+        shaderImpl.initTextureSlots(shaderProgram, texture, varName, slotsCount);
+        HipRenderer.exitOnError();
     }
 
 
@@ -318,6 +329,7 @@ public class Shader
     {
         shaderImpl.deleteShader(&fragmentShader);
         shaderImpl.deleteShader(&vertexShader);
+        HipRenderer.exitOnError();
     }
 
 }

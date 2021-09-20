@@ -76,17 +76,20 @@ class Hip_GL3_FragmentShader : FragmentShader
             %s
 
             uniform vec4 uBatchColor;
-            uniform sampler2D uTex1;
+            uniform sampler2D uTex1[%s];
 
             in vec4 inVertexColor;
             in vec2 inTexST;
+            in float inTexID;
 
             out vec4 outPixelColor;
             void main()
             {
-                outPixelColor = texture(uTex1, inTexST)* inVertexColor * uBatchColor;
+                int texId = int(inTexID);
+                outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
+                // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
             }
-        }(shaderVersion, floatPrecision);
+        }(shaderVersion, floatPrecision, HipRenderer.getMaxSupportedShaderTextures());
     }
 
     override final string getGeometryBatchFragment()
@@ -175,6 +178,7 @@ class Hip_GL3_VertexShader : VertexShader
             layout (location = 0) in vec3 vPosition;
             layout (location = 1) in vec4 vColor;
             layout (location = 2) in vec2 vTexST;
+            layout (location = 3) in float vTexID;
 
             uniform mat4 uProj;
             uniform mat4 uModel;
@@ -182,12 +186,14 @@ class Hip_GL3_VertexShader : VertexShader
             
             out vec4 inVertexColor;
             out vec2 inTexST;
+            out float inTexID;
 
             void main()
             {
                 gl_Position = uProj*uView*uModel*vec4(vPosition, 1.0f);
                 inVertexColor = vColor;
                 inTexST = vTexST;
+                inTexID = vTexID;
             }
         }(shaderVersion, floatPrecision);
     }
@@ -359,8 +365,16 @@ class Hip_GL3_ShaderImpl : IShader
                     case integer:
                         glUniform1i(id, v.sVar.get!int);
                         break;
+                    case integer_array:
+                        int[] temp = v.sVar.get!(int[]);
+                        glUniform1iv(id, cast(int)temp.length, temp.ptr);
+                        break;
                     case uinteger:
                         glUniform1ui(id, v.sVar.get!uint);
+                        break;
+                    case uinteger_array:
+                        uint[] temp = v.sVar.get!(uint[]);
+                        glUniform1uiv(id, cast(int)temp.length, temp.ptr);
                         break;
                     case floating:
                         glUniform1f(id, v.sVar.get!float);
@@ -386,11 +400,26 @@ class Hip_GL3_ShaderImpl : IShader
                     case floating4x4:
                         glUniformMatrix4fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[16]).ptr);
                         break;
+                    case floating_array:
+                        float[] temp = v.sVar.get!(float[]);
+                        glUniform1fv(id, cast(int)temp.length, temp.ptr);
+                        break;
                     case none:break;
                 }
             }
         }
                 
+    }
+
+    void initTextureSlots(ref ShaderProgram prog, Texture texture, string varName, int slotsCount)
+    {
+        setCurrentShader(prog);
+        int varID = getId(prog, varName);
+        int[] temp = new int[](slotsCount);
+        for(int i = 0; i < slotsCount; i++)
+            temp[i] = i;
+        glUniform1iv(varID, slotsCount, temp.ptr);
+        destroy(temp);
     }
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {

@@ -9,6 +9,7 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
+		"hipengine_api": {"path": "../../api"}, 
 		"bindbc-sdl": "~>1.0.1",
 		"math": {"path": "../math"},
 		"sdl_sound": {"path": "../../dependencies/sdl_sound"},
@@ -27,7 +28,8 @@
 	},
 	"description": "HipremeEngine data module",
 	"versions": [
-		"BindSDL_Image"
+		"BindSDL_Image",
+		"BindSDL_Mixer"
 	],
 	"license": "proprietary",
 	"name": "data"

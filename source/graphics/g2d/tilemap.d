@@ -249,6 +249,7 @@ class Tileset
     {
         return tiles[id - firstGid].region;
     }
+    Tile* getTile(ushort id){return &tiles[id - firstGid];}
 
     // alias tiles this;
 }
@@ -301,6 +302,7 @@ class Tilemap
     {
         return getTilesetForID(id).getTextureRegion(id);
     }
+    Tile* getTileForID(ushort id){return getTilesetForID(id).getTile(id);}
 
     static Tilemap readTiledTMX(ubyte[] tiledData, string tiledPath, bool autoLoadTexture = true)
     {

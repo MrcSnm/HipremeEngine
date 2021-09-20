@@ -13,11 +13,13 @@ module hiprenderer.backend.d3d.shader;
 
 version(Windows):
 import config.opts;
+import hiprenderer.renderer;
 import hiprenderer.shader;
 import hiprenderer.backend.d3d.renderer;
 import hiprenderer.backend.d3d.utils;
 import directx.d3d11;
 import directx.d3dcompiler;
+import directx.d3d11shader;
 import std.conv:to;
 import error.handler;
 
@@ -34,7 +36,18 @@ class Hip_D3D11_FragmentShader : FragmentShader
             return float4(1.0f, 1.0f, 1.0f, 1.0f);
         }};
     }
-    override final string getFrameBufferFragment(){return getDefaultFragment();}
+    override final string getFrameBufferFragment()
+    {
+        return q{
+            Texture2D uTex1;
+            SamplerState state;
+
+            float4 main(float2 inTexST : inTexST) : SV_TARGET
+            {
+                return uTex1.Sample(state, inTexST);
+            }
+        };
+    }
     override final string getGeometryBatchFragment()
     {
         return q{
@@ -50,25 +63,46 @@ class Hip_D3D11_FragmentShader : FragmentShader
             }
         };
     }
+    /**
+    *   Creates a massive switch case for supporting array of textures.
+    *   D3D11 causes an error if trying to access texture with a variable
+    *   instead of a literal.
+    */
     override final string getSpriteBatchFragment()
     {
-        // return this.getDefaultFragment();
-        return q{
+        int sup = HipRenderer.getMaxSupportedShaderTextures();
+        import std.format:format;
+        string textureSlotSwitchCase = "switch(tid)\n{\n"; //Switch textureID
+        for(int i = 1; i < sup; i++)
+        {
+            textureSlotSwitchCase~= "case "~ to!string(i)~": "~
+            format!q{   return uTex1[%s].Sample(state[%s], texST) * inVertexColor * uBatchColor;
+            }(i,i);
+        }
+        textureSlotSwitchCase~= "\ndefault:\n\treturn uTex1[0].Sample(state[0], texST) * inVertexColor * uBatchColor;";
+        textureSlotSwitchCase~= "}";
 
-            Texture2D uTex1;
-            SamplerState state;
+        return format!q{
+
+            Texture2D uTex1[%s];
+            SamplerState state[%s];
 
             cbuffer input
             {
                 float4 uBatchColor: uBatchColor;
-            }
+            };
 
-            float4 main(float4 inVertexColor : inColor, float2 texST : inTexST) : SV_TARGET
+            float4 main(float4 inVertexColor : inColor, float2 texST : inTexST, float inTexID : inTexID) : SV_TARGET
             {
                 // return uBatchColor * uTex1.Sample(state, inTexST);
-                return uTex1.Sample(state, texST) * inVertexColor * uBatchColor;
+                int tid = int(inTexID);
+
+                //switch(tid)...
+                //case 1:
+                    //return uTex1[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
+                %s
             }
-        };
+        }(sup,sup, textureSlotSwitchCase);
     }
     override final string getBitmapTextFragment()
     {
@@ -97,7 +131,24 @@ class Hip_D3D11_VertexShader : VertexShader
             return float4(pos.x, pos.y, 0.0f, 1.0f);
         }};
     }
-    override final string getFrameBufferVertex(){return getDefaultVertex();}
+    override final string getFrameBufferVertex()
+    {
+        return q{
+            struct VSOut
+            {
+                float2 inTexST : inTexST;
+                float4 outPosition : SV_POSITION;
+            };
+
+            VSOut main(float2 pos : vPosition, float2 vTexST : vTexST)
+            {
+                VSOut ret;
+                ret.outPosition = float4(pos.x, pos.y, 0.0, 1.0);
+                ret.inTexST = vTexST;
+                return ret;
+            }
+        };
+    }
     override final string getGeometryBatchVertex()
     {
         return q{
@@ -130,6 +181,7 @@ class Hip_D3D11_VertexShader : VertexShader
             {
                 float4 inColor : inColor;
                 float2 inTexST : inTexST;
+                float  inTexID : inTexID;
                 float4 vPosition: SV_POSITION;
             };
 
@@ -142,8 +194,9 @@ class Hip_D3D11_VertexShader : VertexShader
 
             VSOut main(
                 float3 pos   : vPosition,
-                float4 col : vColor,
-                float2 texST : vTexST
+                float4 col   : vColor,
+                float2 texST : vTexST,
+                float  texID : vTexID
                 )
             {
                 VSOut output;
@@ -152,6 +205,7 @@ class Hip_D3D11_VertexShader : VertexShader
 
                 output.inTexST = texST;
                 output.inColor = col;
+                output.inTexID = texID;
                 return output;
             }
         };
@@ -394,6 +448,14 @@ class Hip_D3D11_ShaderImpl : IShader
             }
         }
     }
+
+    void initTextureSlots(ref ShaderProgram prog, Texture texture, string varName, int slotsCount)
+    {
+        for(int i = 0; i < slotsCount; i++)
+            texture.bind(i);
+            
+    }
+
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
         import core.stdc.stdlib:malloc;

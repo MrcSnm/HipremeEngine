@@ -1,10 +1,10 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"bindbc-cimgui": "1.0.1",
+		"bindbc-cimgui": "1.84.1",
 		"bindbc-generate": "1.0.0",
-		"bindbc-loader": "0.3.2",
-		"bindbc-openal": "0.5.0",
+		"bindbc-loader": "1.0.1",
+		"bindbc-openal": "1.0.0",
 		"bindbc-sdl": "1.0.1",
 		"config": {"path":"../config"},
 		"console": {"path":"../console"},
@@ -12,8 +12,11 @@
 		"debugging": {"path":"../debugging"},
 		"error": {"path":"../error"},
 		"imgui": {"path":"../imgui"},
+		"jni": {"path":"../jni"},
 		"math": {"path":"../math"},
 		"regexes": {"path":"C:/Users/Hipreme/AppData/Local/dub/packages/bindbc-generate-1.0.0/bindbc-generate/regexes"},
+		"sdl_sound": {"path":"../../dependencies/sdl_sound"},
+		"sles": {"path":"../../dependencies/sles"},
 		"util": {"path":"../util"}
 	}
 }

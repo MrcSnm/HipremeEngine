@@ -12,9 +12,15 @@ Distributed under the MIT Software License.
 module systems.game;
 import bindbc.sdl;
 import hiprenderer.renderer;
+import systems.hotload;
 private import sdl.event.dispatcher;
 private import sdl.event.handlers.keyboard;
 import view;
+
+
+
+extern(C) AScene function() HipremeEngineGameInit;
+extern(C) void function() HipremeEngineGameDestroy;
 
 class GameSystem
 {
@@ -23,9 +29,56 @@ class GameSystem
      */
     EventDispatcher dispatcher;
     KeyboardHandler keyboard;
-    Scene[] scenes;
+    AScene[] scenes;
+    string projectDir;
+    protected static AScene externalScene;
+    protected static HotloadableDLL hotload;
     bool hasFinished;
     float fps;
+
+
+    void loadGame(string gameDll)
+    {
+        import std.path:buildNormalizedPath;
+        import util.system;
+        import util.string:indexOf;
+        import std.stdio;
+
+        if(gameDll.indexOf("projects/") == -1)
+        {
+            projectDir = buildNormalizedPath("projects", gameDll);
+            gameDll = buildNormalizedPath("projects", gameDll, gameDll);
+        }
+
+        hotload = new HotloadableDLL(gameDll, (void* lib)
+        {
+            assert(lib != null, "No library " ~ gameDll ~ " was found");
+            HipremeEngineGameInit = 
+                cast(typeof(HipremeEngineGameInit))
+                dynamicLibrarySymbolLink(lib, "HipremeEngineGameInit");
+            assert(HipremeEngineGameInit != null,
+            "HipremeEngineGameInit wasn't found when looking into "~gameDll);
+            HipremeEngineGameDestroy = 
+                cast(typeof(HipremeEngineGameDestroy))
+                dynamicLibrarySymbolLink(lib, "HipremeEngineGameDestroy");
+            assert(HipremeEngineGameDestroy != null,
+            "HipremeEngineGameDestroy wasn't found when looking into "~gameDll);
+        });
+    }
+
+    void recompileGame()
+    {
+        import std.process:executeShell;
+        executeShell("cd "~projectDir~" && dub");
+        hotload.reload();
+    }
+
+    void startExternalGame()
+    {
+        assert(HipremeEngineGameInit != null, "No game was loaded");
+        externalScene = HipremeEngineGameInit();
+        addScene(externalScene);
+    }
 
     this()
     {
@@ -35,28 +88,45 @@ class GameSystem
             override void onDown(){hasFinished = true;}
             override void onUp(){}
         });
+
+        keyboard.addKeyListener(SDLK_F5, new class Key
+        {
+            override void onDown(){}
+            override void onUp()
+            {
+                import util.array:remove;
+                if(hotload)
+                {
+                    HipremeEngineGameDestroy();
+                    scenes.remove(externalScene);
+                    externalScene = null;
+                    recompileGame(); // Calls hotload.reload();
+                    startExternalGame();
+                }
+            }
+        });
         dispatcher = new EventDispatcher(&keyboard);
         dispatcher.addOnResizeListener((uint width, uint height)
         {
             HipRenderer.width = width;
             HipRenderer.height = height;
-            foreach (Scene s; scenes)
+            foreach (AScene s; scenes)
                 s.onResize(width, height);
         });
 
-        import view.testscene;
-        import view.uwptest;
-        Scene testscene = new TextureAtlasScene();
-    	testscene.init();
-        scenes~= testscene;
+    }
 
+    void addScene(AScene s)
+    {
+    	s.init();
+        scenes~= s;
     }
 
     bool update(float deltaTime)
     {
         fps = cast(float)cast(uint)(1/deltaTime);
         import std.conv:to;
-        // SDL_SetWindowTitle(HipRenderer.window, (to!string(fps)~" FPS\0").ptr);
+        SDL_SetWindowTitle(HipRenderer.window, (to!string(fps)~" FPS\0").ptr);
         dispatcher.handleEvent();
 
         if(hasFinished || dispatcher.hasQuit)
@@ -70,7 +140,7 @@ class GameSystem
     }
     void render()
     {
-        foreach (Scene s; scenes)
+        foreach (AScene s; scenes)
             s.render();
     }
     void postUpdate()
@@ -80,6 +150,14 @@ class GameSystem
     
     void quit()
     {
+        if(hotload !is null)
+        {
+            if(HipremeEngineGameDestroy != null)
+                HipremeEngineGameDestroy();
+            scenes.length = 0;
+            externalScene = null;
+            hotload.dispose();
+        }
         SDL_Quit();
     }
 }

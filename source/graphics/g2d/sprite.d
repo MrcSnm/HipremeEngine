@@ -13,7 +13,7 @@ module graphics.g2d.sprite;
 import graphics.g2d.spritebatch;
 import hiprenderer.texture;
 import debugging.gui;
-import graphics.color;
+import hipengine.api.graphics.g2d.hipsprite;
 
 @InterfaceImplementation(function(ref void* data)
 {
@@ -29,7 +29,7 @@ import graphics.color;
         igEndGroup();
     }
 
-})class HipSprite
+})class HipSprite : IHipSprite
 {
     TextureRegion texture;
     HipColor color;
@@ -41,7 +41,7 @@ import graphics.color;
 
     protected bool isDirty;
 
-    static assert(HipSpriteVertex.floatCount == 9,  "SpriteVertex should contain 9 floats");
+    static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
     protected float[HipSpriteVertex.floatCount * 4] vertices;
 
     this()
@@ -156,7 +156,7 @@ import graphics.color;
         return vertices;
     }
 
-    pure void setColor()(auto ref HipColor color)
+    pure void setColor(HipColor color)
     {
         this.color = color;
         vertices[R1] = color.r;

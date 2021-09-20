@@ -3,7 +3,10 @@
 		"Hipreme"
 	],
 	"copyright": "Copyright © 2021, Hipreme",
-	"description": "HipremeEngine util module",
+	"description": "Hipreme Engine public API.",
+	"sourcePaths": [
+		"source"
+	],
 	"license": "proprietary",
-	"name": "util"
+	"name": "hipengine_api"
 }

@@ -20,6 +20,69 @@ struct Pair(A, B)
     alias b = second;
 }
 
+struct Array(T)
+{
+    ulong length;
+    T* data;
+
+    static Array!T create(ulong length = 0)
+    {
+        import core.stdc.stdlib:malloc;
+        Array!T ret;
+        ret.length = length;
+        ret.data = cast(T*)malloc(T.sizeof*length);
+        return ret;
+    }
+    static Array!T fromDynamicArray(T[] arr)
+    {
+        import core.stdc.string:memcpy;
+        Array!T ret = Array!(T).create(arr.length);
+        memcpy(ret.data, arr.ptr, ret.length*T.sizeof);
+        return ret;
+    }
+    void dispose()
+    {
+        import core.stdc.stdlib:free;
+        free(data);
+        data = null;
+        length = 0;
+    }
+    ulong opDollar(){return length;}
+    auto opSliceAssign(T)(T value, size_t start, size_t end)
+    {
+        for(int i = start; i < end; i++)data[i]=value;
+        return this;
+    }
+
+    ref auto opIndex(size_t index)
+    {
+        assert(index < length, "Array out of bounds");
+        return data[index];
+    }
+    auto opOpAssign(string op, T)(T value)
+    {
+        static assert(op == "~", "Operator not supported on Array");
+        import core.stdc.stdlib:realloc;
+        data = cast(T*)realloc(data, (length+1)*T.sizeof);
+        data[length++] = value;
+        return this;
+    }
+
+    string toString()
+    {
+        import std.conv:to;
+        string ret="[";
+        for(int i = 0; i < length; i++)
+        {
+            if(i != 0)
+                ret~=", ";
+            ret~=to!string(data[i]);
+        }
+        return ret~']';
+    }
+
+}
+
 /**
 *   By using Array2D instead of T[][], only one array instance is created, not "i" arrays. So it is a lot
 *   faster when you use that instead of array of arrays.
@@ -179,3 +242,4 @@ class EventQueue
         bytesOffset = 0;
     }
 }
+

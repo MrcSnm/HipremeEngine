@@ -18,6 +18,10 @@ import bindbc.sdl;
 import error.handler;
 import hiprenderer.texture;
 
+
+private __gshared ID3D11ShaderResourceView nullSRV = null;
+private __gshared ID3D11SamplerState nullSamplerState = null;
+
 class Hip_D3D11_Texture : ITexture
 {
     ID3D11Texture2D texture;
@@ -32,7 +36,7 @@ class Hip_D3D11_Texture : ITexture
         filter = Hip_D3D11_getTextureFilter(min, mag);
         updateSamplerState();
     }
-    protected void updateSamplerState()
+    package void updateSamplerState()
     {
         D3D11_SAMPLER_DESC desc;
         desc.Filter = filter;
@@ -56,7 +60,7 @@ class Hip_D3D11_Texture : ITexture
     // {
     //     return DXGI_FORMAT_R8G8B8A8_UNORM;
     // }
-    public bool load(Image image)
+    public bool load(IImage image)
     {
         D3D11_TEXTURE2D_DESC desc;
         // desc.Format = getFromFromSurface(surface);
@@ -65,15 +69,15 @@ class Hip_D3D11_Texture : ITexture
         desc.CPUAccessFlags = 0;
         desc.MipLevels = 1;
         desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-        desc.Width = image.w;
-        desc.Height = image.h;
+        desc.Width = image.getWidth;
+        desc.Height = image.getHeight;
 
         D3D11_SUBRESOURCE_DATA data;
 
         void* pixels;
         ushort Bpp = 0;
 
-        switch(image.bytesPerPixel)
+        switch(image.getBytesPerPixel)
         {
             case 1:
                 pixels = image.convertPalettizedToRGBA();
@@ -81,16 +85,16 @@ class Hip_D3D11_Texture : ITexture
                 break;
             case 3:
             case 4:
-                pixels = image.pixels;
-                Bpp = image.bytesPerPixel;
+                pixels = image.getPixels;
+                Bpp = image.getBytesPerPixel;
                 break;
             case 2:
             default:
                 ErrorHandler.assertExit(false, 
-                "Unsopported bytes per pixel for D3D11 Texture named '"~image.name~"'");
+                "Unsopported bytes per pixel for D3D11 Texture named '"~image.getName~"'");
         }
         data.pSysMem = pixels;
-        data.SysMemPitch = image.w*Bpp;
+        data.SysMemPitch = image.getWidth*Bpp;
 
         _hip_d3d_device.CreateTexture2D(&desc, &data, &texture);
         _hip_d3d_device.CreateShaderResourceView(texture, cast(D3D11_SHADER_RESOURCE_VIEW_DESC*)null, &resource);
@@ -101,6 +105,22 @@ class Hip_D3D11_Texture : ITexture
     {
         _hip_d3d_context.PSSetSamplers(0, 1, &sampler);
         _hip_d3d_context.PSSetShaderResources(0, 1, &resource);
+    }
+    void bind(int slot)
+    {
+        _hip_d3d_context.PSSetSamplers(slot, 1, &sampler);
+        _hip_d3d_context.PSSetShaderResources(slot, 1, &resource);
+    }
+
+    void unbind()
+    {
+        _hip_d3d_context.PSSetSamplers(0, 1, &nullSamplerState);
+        _hip_d3d_context.PSSetShaderResources(0, 1, &nullSRV);
+    }
+    void unbind(int slot)
+    {
+        _hip_d3d_context.PSSetSamplers(slot, 1, &nullSamplerState);
+        _hip_d3d_context.PSSetShaderResources(slot, 1, &nullSRV);
     }
 }
 

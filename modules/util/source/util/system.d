@@ -10,6 +10,7 @@ Distributed under the MIT Software License.
 */
 
 module util.system;
+import std.conv:to;
 import std.system:os;
 import core.stdc.string;
 import std.array:replace;
@@ -48,4 +49,84 @@ version(Windows)
     {
         varSymbol = cast(typeof(varSymbol))dll_import_var(varSymbol.stringof);
     }
+}
+
+
+string dynamicLibraryGetLibName(string libName)
+{
+    version(Windows) return libName~".dll";
+    else version(Posix) return "lib"~libName~".so";
+    else static assert(0, "Platform not supported");
+}
+
+bool dynamicLibraryIsLibNameValid(string libName)
+{
+    version(Windows)
+        return libName[$-4..$] == ".dll";
+    else version(Posix)
+        return libName[0..3] == "lib" && libName[$-3..$] == ".so";
+    else
+        return true;
+}
+
+void* dynamicLibraryLoad(string libName)
+{
+    void* ret;
+    version(Windows)
+    {
+        ret = LoadLibraryA((libName~"\0").ptr);
+    }
+    else version(Posix)
+    {
+        import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
+        ret = dlopen((dllName~"\0").ptr, RTLD_LAZY);
+    }
+    return ret;
+}
+void* dynamicLibrarySymbolLink(void* dll, const (char)* symbolName)
+{
+    void* ret;
+    version(Windows)
+    {
+        ret = GetProcAddress(dll, symbolName);
+        if(!ret)
+            err = ("Could not link symbol "~to!string(symbolName)).ptr;
+    }
+    else version(Posix)
+    {
+        import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
+        ret = dlopen(dllName, RTLD_LAZY);
+    }
+    return ret;
+}
+
+version(Windows) private const (char)* err;
+
+string dynamicLibraryError()
+{
+    version(Windows)
+    {
+        const(char)* ret = err;
+        err = null;
+        return to!string(ret);
+    }
+    else version(Posix)
+    {
+        import core.sys.posix.dlfcn;
+        return to!string(dlerror());
+    }
+    else static assert(0, "Platform not supported");
+}
+
+bool dynamicLibraryRelease(void* dll)
+{
+    version(Windows)
+        return FreeLibrary(dll) == 0;
+    else version(Posix)
+    {
+        import core.sys.posix.dlfcn;
+        return dlclose(dll) == 0;
+    }
+    else static assert(0, "Platform not supported");
+        
 }

@@ -10,7 +10,7 @@
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
 		"bindbc-loader": "~>1.0.1",
-		"bindbc-openal": "~>0.5.0",
+		"bindbc-openal": "~>1.0.0",
 		"bindbc-opengl": "~>1.0.0",
 		"bindbc-sdl": "~>1.0.1",
 		"console": {

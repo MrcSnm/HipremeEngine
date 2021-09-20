@@ -21,4 +21,6 @@ public import
     view.soundtestscene,
     view.animationtestscene,
     view.textureatlasscene,
+    view.steeringtest,
+    view.pathfindingtest,
     view.spritetestscene;

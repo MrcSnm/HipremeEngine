@@ -19,7 +19,7 @@ import error.handler;
 import hiprenderer.shader;
 import graphics.material;
 import graphics.g2d.sprite;
-import graphics.color;
+import hipengine.api.graphics.color;
 import math.vector;
 
 /**
@@ -30,6 +30,7 @@ struct HipSpriteVertex
     Vector3 position;
     HipColor color;
     Vector2 tex_uv;
+    int texID;
 
     static enum floatCount = cast(ulong)(HipSpriteVertex.sizeof/float.sizeof);
     static enum quadCount = floatCount*4;
@@ -41,10 +42,15 @@ class HipSpriteBatch
     index_t[] indices;
     float[] vertices;
     bool hasBegun;
+
+    protected bool hasInitTextureSlots;
     Shader shader;
     HipOrthoCamera camera;
     Mesh mesh;
     Material material;
+
+    protected Texture[] currentTextures;
+    int usingTexturesCount;
 
     uint quadsCount;
 
@@ -54,11 +60,13 @@ class HipSpriteBatch
         ErrorHandler.assertExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
         this.maxQuads = maxQuads;
         indices = new index_t[maxQuads*6];
-        vertices = new float[maxQuads*HipSpriteVertex.quadCount]; //XYZ -> 3, RGBA -> 4, ST -> 2, 3+4+2=9
+        vertices = new float[maxQuads*HipSpriteVertex.quadCount]; //XYZ -> 3, RGBA -> 4, ST -> 2, TexID 3+4+2+1=10
         vertices[] = 0;
+        currentTextures = new Texture[](HipRenderer.getMaxSupportedShaderTextures());
+        usingTexturesCount = 0;
 
         Shader s = HipRenderer.newShader(HipShaderPresets.SPRITE_BATCH);
-        mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_ST_VAO(), s);
+        mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_ST_TID_VAO(), s);
         mesh.vao.bind();
         mesh.createVertexBuffer(cast(index_t)(maxQuads*HipSpriteVertex.quadCount), HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(cast(index_t)(maxQuads*6), HipBufferUsage.STATIC);
@@ -75,6 +83,7 @@ class HipSpriteBatch
         .append("uBatchColor", cast(float[4])[1,1,1,1])
         );
 
+        // shader.
 
         shader.useLayout.Cbuf;
         shader.bind();
@@ -114,33 +123,79 @@ class HipSpriteBatch
         hasBegun = true;
     }
 
-    void addQuad(const float[HipSpriteVertex.quadCount] quad)
+    void addQuad(ref float[HipSpriteVertex.quadCount] quad, int slot)
     {
         if(quadsCount+1 > maxQuads)
             flush();
+
+        quad[T1] = slot;
+        quad[T2] = slot;
+        quad[T3] = slot;
+        quad[T4] = slot;
+
         for(ulong i = 0; i < HipSpriteVertex.quadCount; i++)
             vertices[(HipSpriteVertex.quadCount*quadsCount)+i] = quad[i];
         
         quadsCount++;
     }
+    
+    pragma(inline, true)
+    private int getNextTextureID(Texture t)
+    {
+        for(int i = 0; i < usingTexturesCount; i++)
+            if(currentTextures[i] == t)
+                return i;
+
+        if(usingTexturesCount + 1 == currentTextures.length)
+            return -1;
+        currentTextures[usingTexturesCount] = t;
+        return usingTexturesCount++;
+    }
+    protected int setTexture(Texture texture)
+    {
+        int slot = getNextTextureID(texture);
+        if(slot == -1)
+        {
+            flush();
+            slot = getNextTextureID(texture);
+        }
+        else if(!hasInitTextureSlots)
+        {
+            hasInitTextureSlots = true;
+            shader.initTextureSlots(texture, "uTex1", HipRenderer.getMaxSupportedShaderTextures());
+        }
+        return slot;
+    }
+    protected int setTexture(TextureRegion reg){return setTexture(reg.texture);}
+
+    void draw(Texture t, ref float[HipSpriteVertex.quadCount] vertices)
+    {
+        ErrorHandler.assertExit(t.width != 0 && t.height != 0, "Tried to draw 0 bounds sprite");
+        int slot = setTexture(t);
+        ErrorHandler.assertExit(slot != -1, "Texture slot can't be -1 on draw phase");
+        addQuad(vertices, slot);
+    }
     void draw(HipSprite s)
     {
-        const float[HipSpriteVertex.quadCount] v = s.getVertices();
+        float[HipSpriteVertex.quadCount] v = s.getVertices();
         ErrorHandler.assertExit(s.width != 0 && s.height != 0, "Tried to draw 0 bounds sprite");
-
-        s.texture.texture.bind();
+        int slot = setTexture(s.texture);
+        ErrorHandler.assertExit(slot != -1, "Texture slot can't be -1 on draw phase");
         ///X Y Z, RGBA, UV, 4 vertices
-        addQuad(v);
+        addQuad(v, slot);
     }
+
 
     void draw(TextureRegion reg, int x, int y, int z = 0, HipColor color = HipColor.white)
     {
-        const float[HipSpriteVertex.quadCount] v = getTextureRegionVertices(reg,x,y,z,color);
+        float[HipSpriteVertex.quadCount] v = getTextureRegionVertices(reg,x,y,z,color);
         ErrorHandler.assertExit(reg.regionWidth != 0 && reg.regionHeight != 0, "Tried to draw 0 bounds region");
-        reg.texture.bind();
-        ///X Y Z, RGBA, UV, 4 vertices
+        int slot = setTexture(reg);
+        ErrorHandler.assertExit(slot != -1, "Texture slot can't be -1 on draw phase");
 
-        addQuad(v);
+        ///X Y Z, RGBA, UV, 1, 4 vertices
+
+        addQuad(v, slot);
     }
 
     static float[HipSpriteVertex.floatCount * 4] getTextureRegionVertices(TextureRegion reg,
@@ -210,17 +265,26 @@ class HipSpriteBatch
         // mesh.shader.bind();
         // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
         // material.bind();
+        // foreach(i; 0..16)
+        //     currentTextures[0].bind(i);
         mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj);
         mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity());
         mesh.shader.setVertexVar("Cbuf1.uView", camera.view);
         
         mesh.shader.bind();
+        foreach(i; 0..usingTexturesCount)
+            currentTextures[i].bind(i);
         mesh.shader.sendVars();
-        HipRenderer.exitOnError();
 
         mesh.updateVertices(vertices);
         mesh.draw(quadsCount*6);
+
+        ///Some operations may require texture unbinding(D3D11 Framebuffer)
+        foreach(i; 0..usingTexturesCount)
+            currentTextures[i].unbind(i);
+
         quadsCount = 0;
+        usingTexturesCount = 0;
     }
 }
 
@@ -236,6 +300,7 @@ enum
     A1,
     U1,
     V1,
+    T1,
 
     X2,
     Y2,
@@ -246,6 +311,7 @@ enum
     A2,
     U2,
     V2,
+    T2,
 
     X3,
     Y3,
@@ -256,6 +322,7 @@ enum
     A3,
     U3,
     V3,
+    T3,
 
     X4,
     Y4,
@@ -265,5 +332,6 @@ enum
     B4,
     A4,
     U4,
-    V4
+    V4,
+    T4
 }

@@ -1,4 +1,6 @@
 module math.utils;
+import std.math;
+import math.vector;
 
 int getClosestMultiple(int from, int to)
 {
@@ -15,4 +17,39 @@ int getClosestMultiple(int from, int to)
         else
             return from*(tempI+1);
     }
+}
+
+enum AxisNavigation{xy, yz, xz, zx, zy, yx}
+
+Vector3 toCircleBounds(Vector3 v, float angle, AxisNavigation axis=AxisNavigation.xy)
+{
+    float mag = v.mag;
+    final switch(axis) with(AxisNavigation)
+    {
+        case xy:
+            v.x = cos(angle)*mag;
+            v.y = sin(angle)*mag;
+            break;
+        case yz:
+            v.y = cos(angle)*mag;
+            v.z = sin(angle)*mag;
+            break;
+        case xz:
+            v.x = cos(angle)*mag;
+            v.z = sin(angle)*mag;
+            break;
+        case zx:
+            v.z = cos(angle)*mag;
+            v.x = sin(angle)*mag;
+            break;
+        case zy:
+            v.z = cos(angle)*mag;
+            v.y = sin(angle)*mag;
+            break;
+        case yx:
+            v.y = cos(angle)*mag;
+            v.x = sin(angle)*mag;
+            break;
+    }
+    return v;
 }
