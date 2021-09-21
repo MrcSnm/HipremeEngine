@@ -14,8 +14,8 @@ module event.handlers.keyboard;
 import std.algorithm;
 import bindbc.sdl;
 
-import event.handlers.input.keyboard_layout;
-public import event.handlers.input.button;
+import event.handlers.keyboard_layout;
+public import event.handlers.button;
 
 import util.data_structures;
 import error.handler;
@@ -115,8 +115,8 @@ class KeyboardHandler
         listenersCount[key]++;
     }
     /**
-      * Takes care of the pressed keys array
-      */
+    * Takes care of the pressed keys array
+    */
     private void setPressed(SDL_Keycode key, bool press)
     {
         ubyte Key = cast(ubyte)key;
@@ -171,11 +171,7 @@ class KeyboardHandler
         }
     }
 
-    pragma(inline, true)
-    bool isKeyPressed(char key)
-    {
-        return metadatas[key].isPressed;
-    }
+    pragma(inline, true) bool isKeyPressed(char key){return metadatas[key]._isPressed;}
     
     /**
     *   Updates the metadata
@@ -183,6 +179,13 @@ class KeyboardHandler
     void handleKeyDown(SDL_Keycode key)
     {
         setPressed(key, true);
+        if((key in listeners) != null)
+        {
+            HipButton[] keyListeners = listeners[key];
+            immutable int len = listenersCount[key];
+            for(int i = 0; i < len; i++)
+                keyListeners[i].onDown();
+        }
     }
 
     static string getInputText(KeyboardLayout layout)

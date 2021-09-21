@@ -82,6 +82,10 @@ class HipEventQueue : EventQueue
         float  xPos;
         float  yPos;
     }
+    struct Scroll
+    {
+        float x, y,z;
+    }
 
     ///This class should probably not contain more than one instance(unless 2 people are playing)
     protected __gshared HipEventQueue[] controllers;

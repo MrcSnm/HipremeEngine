@@ -11,7 +11,7 @@ Distributed under the MIT Software License.
 
 module view.bitmaptestscene;
 import graphics.g2d.tilemap;
-import event.handlers.input.keyboard_layout;
+import event.handlers.keyboard_layout;
 import hiprenderer;
 import graphics.g2d;
 import graphics.mesh;

@@ -243,3 +243,12 @@ class EventQueue
     }
 }
 
+struct Signal(A...)
+{
+    void function(A)[] listeners;
+    void dispatch(A a)
+    {
+        foreach (void function(A) l; listeners)
+            l(a);
+    }
+}
