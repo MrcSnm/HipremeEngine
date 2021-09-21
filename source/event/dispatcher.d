@@ -12,6 +12,7 @@ Distributed under the MIT Software License.
 module event.dispatcher;
 private:
     import event.handlers.keyboard;
+    import event.handlers.mouse;
     import bindbc.sdl;
 
 public:
@@ -25,11 +26,13 @@ class EventDispatcher
     SDL_Event e;
     ulong frameCount;
     KeyboardHandler* keyboard = null;
+    HipMouse mouse = null;
     protected void delegate(uint width, uint height)[] resizeListeners;
 
     this(KeyboardHandler *kb)
     {
         keyboard = kb;
+        mouse = new HipMouse();
         HipEventQueue.newController(); //Creates controller 0
     }
     
@@ -49,6 +52,24 @@ class EventDispatcher
                         break;
                     case SDL_KEYUP:
                         HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)e.key.keysym.sym));
+                        break;
+                    case SDL_MOUSEMOTION:
+                        int x, y;
+                        SDL_GetMouseState(&x,&y);
+                        HipEventQueue.post(0, HipEventQueue.EventType.touchMove, HipEventQueue.Touch(0, x, y));
+                        break;
+                    case SDL_MOUSEBUTTONUP:
+                        int x, y;
+                        SDL_GetMouseState(&x,&y);
+                        HipEventQueue.post(0, HipEventQueue.EventType.touchUp, HipEventQueue.Touch(0, x, y));
+                        break;
+                    case SDL_MOUSEBUTTONDOWN:
+                        int x, y;
+                        SDL_GetMouseState(&x,&y);
+                        HipEventQueue.post(0, HipEventQueue.EventType.touchDown, HipEventQueue.Touch(0, x, y));
+                        break;
+                    case SDL_MOUSEWHEEL:
+                        HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Scroll(e.wheel.x, e.wheel.y, 0));
                         break;
                     case SDL_WINDOWEVENT:
                         SDL_WindowEvent wnd = e.window;
@@ -76,10 +97,22 @@ class EventDispatcher
         {
             switch(ev.type)
             {
-                case HipEventQueue.EventType.touchDown:break;
-                case HipEventQueue.EventType.touchUp:break;
-                case HipEventQueue.EventType.touchMove:break;
-                case HipEventQueue.EventType.touchScroll:break;
+                case HipEventQueue.EventType.touchDown:
+                    auto t = ev.get!(HipEventQueue.Touch);
+                    mouse.setPressed(HipMouseButton.LEFT, true);
+                    break;
+                case HipEventQueue.EventType.touchUp:
+                    auto t = ev.get!(HipEventQueue.Touch);
+                    mouse.setPressed(HipMouseButton.LEFT, false);
+                    break;
+                case HipEventQueue.EventType.touchMove:
+                    auto t = ev.get!(HipEventQueue.Touch);
+                    mouse.setPosition(t.xPos, t.yPos, t.id);
+                    break;
+                case HipEventQueue.EventType.touchScroll:
+                    auto t = ev.get!(HipEventQueue.Scroll);
+                    mouse.setScroll(t.x, t.y, t.z);
+                    break;
                 case HipEventQueue.EventType.keyDown:
                     auto k = ev.get!(HipEventQueue.Key);
                     keyboard.handleKeyDown(cast(SDL_Keycode)k.id);

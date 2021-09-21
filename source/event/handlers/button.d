@@ -1,4 +1,4 @@
-module event.handlers.input.button;
+module event.handlers.button;
 
 public import hipengine.api.input.button;
 import bindbc.sdl;

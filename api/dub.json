@@ -7,6 +7,22 @@
 	"sourcePaths": [
 		"source"
 	],
+	"configurations": 
+	[
+		{
+			"name": "hipengine",
+			"importPaths": [
+				"source",
+				"../modules/math/source"
+			]
+		},
+		{
+			"name": "script",
+			"versions": [
+				"Script"
+			]
+		}
+	],
 	"license": "proprietary",
 	"name": "hipengine_api"
 }

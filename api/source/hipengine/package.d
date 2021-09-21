@@ -1,5 +1,6 @@
 
 module hipengine;
+private import internal;
 // version (HipremeAudio)
 // {
 // 	public import hipaudio;
@@ -14,6 +15,8 @@ version (HipremeG2D)
 	public import hipengine.api.renderer.texture;
 	public import hipengine.api.graphics.g2d.hipsprite;
 }
+
+//View + graphics
 public import hipengine.api.data.image;
 public import hipengine.api.graphics.color;
 public import hipengine.api.renderer.texture;
@@ -21,14 +24,19 @@ public import hipengine.api.graphics.g2d.hipsprite;
 public import hipengine.api.view;
 
 
+//Math
+public import hipengine.api.math.vector;
+
+alias initializeHip = internal.initializeHip;
+
+
 void function(string s) log;
 void initConsole()
 {
-    import core.sys.windows.windows;
-    log = cast(typeof(log))GetProcAddress(GetModuleHandle(null), "log\0".ptr);
+    loadSymbol!log;
 }
 
-
+//version(Script)
 void function() beginSprite;
 void function() endSprite;
 void function() beginGeometry;
@@ -41,22 +49,22 @@ void function(int x1, int y1, int x2, int y2) drawLine;
 void function(IHipSprite sprite) drawSprite;
 IHipSprite function(string texturePath) newSprite;
 void function(ref IHipSprite sprite) destroySprite;
+//else version(ReleaseMode)
+//import graphics.g2d.renderer2d;
 
 
 void initG2D()
 {
-	import core.sys.windows.windows;
-	void* lh = GetModuleHandle(null);
-	beginSprite = cast(typeof(beginSprite))GetProcAddress(lh, "beginSprite");
-	endSprite = cast(typeof(endSprite))GetProcAddress(lh, "endSprite");
-	beginGeometry = cast(typeof(beginGeometry))GetProcAddress(lh, "beginGeometry");
-	endGeometry = cast(typeof(endGeometry))GetProcAddress(lh, "endGeometry");
-	setGeometryColor = cast(typeof(setGeometryColor))GetProcAddress(lh, "setGeometryColor");
-	drawPixel = cast(typeof(drawPixel))GetProcAddress(lh, "drawPixel");
-	drawRectangle = cast(typeof(drawRectangle))GetProcAddress(lh, "drawRectangle");
-	drawTriangle = cast(typeof(drawTriangle))GetProcAddress(lh, "drawTriangle");
-	drawLine = cast(typeof(drawLine))GetProcAddress(lh, "drawLine");
-	drawSprite = cast(typeof(drawSprite))GetProcAddress(lh, "drawSprite");
-	newSprite = cast(typeof(newSprite))GetProcAddress(lh, "newSprite");
-	destroySprite = cast(typeof(destroySprite))GetProcAddress(lh, "destroySprite");
+	loadSymbol!beginSprite;
+	loadSymbol!endSprite;
+	loadSymbol!beginGeometry;
+	loadSymbol!endGeometry;
+	loadSymbol!setGeometryColor;
+	loadSymbol!drawPixel;
+	loadSymbol!drawRectangle;
+	loadSymbol!drawTriangle;
+	loadSymbol!drawLine;
+	loadSymbol!drawSprite;
+	loadSymbol!newSprite;
+	loadSymbol!destroySprite;
 }

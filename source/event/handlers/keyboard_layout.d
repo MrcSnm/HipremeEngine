@@ -9,7 +9,7 @@ Distributed under the MIT Software License.
 	https://opensource.org/licenses/MIT)
 */
 
-module event.handlers.input.keyboard_layout;
+module event.handlers.keyboard_layout;
 import event.handlers.keyboard;
 import util.data_structures;
 

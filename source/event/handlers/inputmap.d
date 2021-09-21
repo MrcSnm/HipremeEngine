@@ -1,4 +1,4 @@
-module event.handlers.input.inputmap;
+module event.handlers.inputmap;
 import error.handler;
 
 //Public API

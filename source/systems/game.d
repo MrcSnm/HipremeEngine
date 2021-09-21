@@ -122,9 +122,11 @@ class GameSystem
             override void onUp(){}
         });
 
-        keyboard.addKeyListener(SDLK_F5, new class HipButton
+        keyboard.addKeyListener(SDLK_a, new class HipButton
         {
-            override void onDown(){}
+            override void onDown()
+            {
+            }
             override void onUp()
             {
                 import util.array:remove;
