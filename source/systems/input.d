@@ -4,28 +4,27 @@ import error.handler;
 import jni.helper.androidlog;
 import jni.jni;
 import jni.helper.jnicall;
-///Setups an Android Package for HipremeEngine
-
 
 version(Android)
 {
+    ///Setups an Android Package for HipremeEngine
     alias HipAndroidInput = javaGetPackage!("com.hipremeengine.app.HipInput");
     @JavaFunc!(HipAndroidInput) void onMotionEventActionMove(int pointerId, float x, float y)
 	{
-        HipInput.post(0, HipInput.InputType.TOUCH_MOVE, HipInput.Touch(cast(ushort)pointerId, x,y));
+        HipInput.post(0, HipInput.InputType.touchMove, HipInput.Touch(cast(ushort)pointerId, x,y));
 	}
 
     @JavaFunc!(HipAndroidInput) void onMotionEventActionPointerDown(int pointerId, float x, float y)
 	{
-        HipInput.post(0, HipInput.InputType.TOUCH_DOWN, HipInput.Touch(cast(ushort)pointerId, x,y));
+        HipInput.post(0, HipInput.InputType.touchDown, HipInput.Touch(cast(ushort)pointerId, x,y));
 	}
     @JavaFunc!(HipAndroidInput) void onMotionEventActionPointerUp(int pointerId, float x, float y)
 	{
-        HipInput.post(0, HipInput.InputType.TOUCH_UP, HipInput.Touch(cast(ushort)pointerId, x,y));
+        HipInput.post(0, HipInput.InputType.touchUp, HipInput.Touch(cast(ushort)pointerId, x,y));
 	}
     @JavaFunc!(HipAndroidInput) void onMotionEventActionScroll(float x, float y)
 	{
-        HipInput.post(0, HipInput.InputType.TOUCH_SCROLL, HipInput.Touch(ushort.max, x,y));
+        HipInput.post(0, HipInput.InputType.touchScroll, HipInput.Touch(ushort.max, x,y));
 	}
 
     mixin javaGenerateModuleMethodsForPackage!(HipAndroidInput, systems.input, false);
@@ -39,27 +38,36 @@ else
 *   High efficient(at least memory-wise), tightly packed Input queue that supports any kind of data in
 *   a single allocated memory pool(no fragmentation).
 *
-*   This class could probably be extendeded to be every event handler
+*   The input queue is populated by external APIs, like UWP's CoreWindow, Android's app and SDL2 Event. 
+*   This way, it is possible to create a centralized input resource. This class does not creates the entire
+*   input system. It creates its base for being handled.
 */
-class HipInput : EventQueue
+class HipEventQueue : EventQueue
 {
-    enum InputType : ubyte
+    enum EventType : ubyte
     {
-        TOUCH, //Check if type >= TOUCH ?
-        TOUCH_DOWN,
-        TOUCH_MOVE,
-        TOUCH_UP,
-        TOUCH_SCROLL,
-        KEY,
-        KEY_DOWN,
-        KEY_UP
+        ///Mouse was basically ignored for the sake of making it only touch ( it should be easier )
+        touchDown,
+        touchMove,
+        touchUp,
+        touchScroll,
+        keyDown,
+        keyUp,
+        ///When user returns to application
+        focusReceived,
+        ///When user exists the application
+        focusLost,
+        windowResize,
+        exit
     }
 
     struct InputEvent
     {
-        InputType type;
+        EventType type;
         ubyte evSize;
         void[0] evData;
+        pragma(inline, true)
+        T get(T)(){return *(cast(T*)evData);}
     }
 
     struct Key
@@ -76,7 +84,7 @@ class HipInput : EventQueue
     }
 
     ///This class should probably not contain more than one instance(unless 2 people are playing)
-    protected __gshared HipInput[] controllers;
+    protected __gshared HipEventQueue[] controllers;
 
     protected this(uint touchStructsCapacity = 126)
     {
@@ -85,17 +93,20 @@ class HipInput : EventQueue
     }
     InputEvent* poll(){return cast(InputEvent*)super.poll();}
 
-    static HipInput newController(uint touchStructsCapacity = 126)
+    static HipEventQueue newController(uint touchStructsCapacity = 126)
     {
-        HipInput ip = new HipInput(touchStructsCapacity);
+        HipEventQueue ip = new HipEventQueue(touchStructsCapacity);
         controllers~= ip;
         return ip;
     }
-    static void post(T)(uint id, InputType type, T ev)
+
+    /** External API used for getting the input events inside an internal queue. This way the API can remains the same*/
+    static void post(T)(uint id, EventType type, T ev)
     {
         ErrorHandler.assertExit(id < controllers.length, "Input controller out of range!");
         controllers[id].post(cast(ubyte)type, ev);
     }
+    /** Polls an input event for a specified controller */
     static InputEvent* poll(uint id)
     {
         ErrorHandler.assertExit(id < controllers.length, "Input controller out of range!");

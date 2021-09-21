@@ -175,6 +175,12 @@ public static class ErrorHandler
             exit(EXIT_FAILURE);
         }
     }
+    static immutable(string) assertReturn(string expression)(string onAssertionFailureMessage)
+    {
+        import std.format:format;
+        return format!q{if(ErrorHandler.assertErrorMessage(%s, "HipAssertion", "%s"))return;}
+            (expression, onAssertionFailureMessage);
+    }
 
     public static void showEveryError()
     {

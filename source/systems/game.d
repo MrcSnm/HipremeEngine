@@ -13,14 +13,38 @@ module systems.game;
 import bindbc.sdl;
 import hiprenderer.renderer;
 import systems.hotload;
-private import sdl.event.dispatcher;
-private import sdl.event.handlers.keyboard;
+private import event.dispatcher;
+private import event.handlers.keyboard;
+import std.typecons:Tuple;
 import view;
 
 
+private bool getDubError(Tuple!(int, "status", string, "output") dubObj, out string err)
+{
+    import console.log;
+    if(dubObj.status != 2)
+    {
+        import core.stdc.stdlib:exit;
+        rawlog("Dub error: ", dubObj);
+        exit(1);
+    }
+    else
+    {
+        import util.string:indexOf, lastIndexOf;
+        long errInd = dubObj.output.indexOf("Warning:");
+        if(errInd == -1)
+            errInd = dubObj.output.indexOf("Error:"); //Check first for warnings
+        if(errInd == -1) return false;
+        errInd = dubObj.output.lastIndexOf("\n", errInd)-1;
+        err = dubObj.output[errInd..$];
+        return true;
+    }
+}
 
 extern(C) AScene function() HipremeEngineGameInit;
 extern(C) void function() HipremeEngineGameDestroy;
+
+
 
 class GameSystem
 {
@@ -69,7 +93,16 @@ class GameSystem
     void recompileGame()
     {
         import std.process:executeShell;
-        executeShell("cd "~projectDir~" && dub");
+        auto dub = executeShell("cd "~projectDir~" && dub");
+        
+        //2 == up to date
+        string err;
+        if(getDubError(dub, err))
+        {
+            import core.sys.windows.windows;
+            import std.stdio;
+            MessageBoxA(null, (err~"\0").ptr, "GameDLL Compilation Failure\0".ptr,  MB_ICONERROR | MB_OK);
+        }
         hotload.reload();
     }
 
@@ -83,13 +116,13 @@ class GameSystem
     this()
     {
         keyboard = new KeyboardHandler();
-        keyboard.addKeyListener(SDLK_ESCAPE, new class Key
+        keyboard.addKeyListener(SDLK_ESCAPE, new class HipButton
         {
             override void onDown(){hasFinished = true;}
             override void onUp(){}
         });
 
-        keyboard.addKeyListener(SDLK_F5, new class Key
+        keyboard.addKeyListener(SDLK_F5, new class HipButton
         {
             override void onDown(){}
             override void onUp()

@@ -54,12 +54,12 @@ class SoundTestScene : Scene
         import systems.input;
         import hipaudio.backend.opensles;
 
-        HipInput.InputEvent* ev;
-        while((ev = HipInput.poll(0)) != null)
+        HipEventQueue.InputEvent* ev;
+        while((ev = HipEventQueue.poll(0)) != null)
         {
             switch(ev.type)
             {
-                case HipInput.InputType.TOUCH_DOWN:
+                case HipEventQueue.EventType.touchDown:
 
                     logln("Resuming audiosurce");
                     
