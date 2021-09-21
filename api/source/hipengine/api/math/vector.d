@@ -19,6 +19,7 @@ else: //version(Script):
 // import internal;
 struct VectorImpl
 {
+    extern(C):
     //Vector2
     static float function(const ref Vector2 first, Vector2 other) dot;
     static float function (const ref Vector2 first) mag;
@@ -49,7 +50,7 @@ struct VectorImpl
 private alias impl = VectorImpl;
 
 
-void initMath()
+package void initVector()
 {
     import hipengine.internal;
     impl.dot = getSymbol!(VectorImpl.dot);
