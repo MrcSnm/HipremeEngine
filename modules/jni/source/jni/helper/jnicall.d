@@ -280,7 +280,12 @@ string javaGenerateMethod(alias javaPackage, string funcSymbol, string m = __MOD
     }(funcRet, metName, funcParamsConverted, funcSymbol, paramsCall);
 }
 
-///Don't yet support functions with underlines (I think that the mangling is _1, but need to test)
+/**
+*
+*   It would pretty much work as if extern(Java) existed. Generates the java side names function
+*   definitions for functions marked with @JavaFunc
+*   Don't yet support functions with underlines (I think that the mangling is _1, but need to test)
+*/
 mixin template javaGenerateModuleMethodsForPackage(alias javaPackage, alias module_, bool showGeneration = false)
 {
     ///Must mix the hasUDA trait.

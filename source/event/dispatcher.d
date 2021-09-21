@@ -9,9 +9,9 @@ Distributed under the MIT Software License.
 	https://opensource.org/licenses/MIT)
 */
 
-module sdl.event.dispatcher;
+module event.dispatcher;
 private:
-    import sdl.event.handlers.keyboard;
+    import event.handlers.keyboard;
     import bindbc.sdl;
 
 public:
@@ -30,64 +30,71 @@ class EventDispatcher
     this(KeyboardHandler *kb)
     {
         keyboard = kb;
-        HipInput.newController(); //Creates controller 0
+        HipEventQueue.newController(); //Creates controller 0
     }
     
     bool hasQuit = false;
 
     void handleEvent()
     {
-        version(Android)
-        {
-            import console.log;
-            // HipInput.InputEvent* ev;
-            // while((ev = HipInput.poll(0)) != null)
-            // {
-            //     switch(ev.type)
-            //     {
-            //         case HipInput.InputType.TOUCH_DOWN:
-            //         case HipInput.InputType.TOUCH_UP:
-            //         case HipInput.InputType.TOUCH_MOVE:
-            //         case HipInput.InputType.TOUCH_SCROLL:
-            //         import hipaudio.audio;
-            //             HipAudio.
-            //             break;
-            //         default:break;
-            //     }
-            // }
-        }
-        else
+        ///Use SDL to populate our Input Queue
+        version(Desktop)
         {
             while(SDL_PollEvent(&e) != 0)
             {
                 switch(e.type) with (SDL_EventType)
                 {
                     case SDL_KEYDOWN:
-                        keyboard.handleKeyDown(e.key.keysym.sym);
+                        HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)e.key.keysym.sym));
                         break;
                     case SDL_KEYUP:
-                        keyboard.handleKeyUp(e.key.keysym.sym);
+                        HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)e.key.keysym.sym));
                         break;
                     case SDL_WINDOWEVENT:
                         SDL_WindowEvent wnd = e.window;
                         switch(wnd.event) with(SDL_WindowEventID)
                         {
                             case SDL_WINDOWEVENT_RESIZED:
+                                // HipEventQueue.post(0, HipEventQueue.EventType.windowResize, HipEventQueue.Key(e.key.keysym.sym));
                                 foreach(r; resizeListeners)
                                     r(wnd.data1, wnd.data2);
                                 break;
-                            default:
-                                break;
+                            default:break;
                         }
                         break;
                     case SDL_QUIT:
-                        hasQuit = true;
+                        HipEventQueue.post(0, HipEventQueue.EventType.exit, true);
                         break;
                     default:break;
                 }
             }
-            keyboard.update();
         }
+
+        //Now poll the cross platform input queue
+        HipEventQueue.InputEvent* ev;
+        while((ev = HipEventQueue.poll(0)) != null)
+        {
+            switch(ev.type)
+            {
+                case HipEventQueue.EventType.touchDown:break;
+                case HipEventQueue.EventType.touchUp:break;
+                case HipEventQueue.EventType.touchMove:break;
+                case HipEventQueue.EventType.touchScroll:break;
+                case HipEventQueue.EventType.keyDown:
+                    auto k = ev.get!(HipEventQueue.Key);
+                    keyboard.handleKeyDown(cast(SDL_Keycode)k.id);
+                    break;
+                case HipEventQueue.EventType.keyUp:
+                    auto k = ev.get!(HipEventQueue.Key);
+                    keyboard.handleKeyUp(cast(SDL_Keycode)k.id);
+                    break;
+                case HipEventQueue.EventType.exit:
+                    hasQuit = true;
+                    break;
+                default:break;
+            }
+        }
+        keyboard.update();
         frameCount++;
     }
 

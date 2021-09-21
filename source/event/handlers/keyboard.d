@@ -9,11 +9,15 @@ Distributed under the MIT Software License.
 	https://opensource.org/licenses/MIT)
 */
 
-module sdl.event.handlers.keyboard;
-import sdl.event.handlers.input.keyboard_layout;
-import util.data_structures;
+module event.handlers.keyboard;
+
+import std.algorithm;
 import bindbc.sdl;
-import std.algorithm, std.conv, std.datetime.stopwatch;
+
+import event.handlers.input.keyboard_layout;
+public import event.handlers.input.button;
+
+import util.data_structures;
 import error.handler;
 import util.time, util.array;
 
@@ -38,106 +42,21 @@ private char toUppercase(char a)
     return a;
 }
 
-/** 
- * Key handler
- */
-abstract class Key
-{
-    /** 
-     * Reference for the handler
-     */
-    KeyboardHandler* keyboard;
-    KeyMetadata meta;
-
-    /** 
-     * Only assigned by the KeyboardHandler
-     * invoke rebind() for changing current key
-     */
-    int keyCode;
-    abstract void onDown();
-    abstract void onUp();
-
-    /** 
-     * Params:
-     *   newKeycode = New button to be assigned
-     */
-    final void rebind(SDL_Keycode newKeycode)
-    {
-        if(newKeycode != keyCode)
-            ErrorHandler.assertErrorMessage(!keyboard.rebind(this, newKeycode), "Key Rebind error", "Error rebinding key'" ~ newKeycode.to!char);
-    }
-}
-
-final private class KeyMetadata
-{
-    float lastDownTime, downTimeStamp;
-    float lastUpTime, upTimeStamp;
-    ubyte keyCode;
-    bool isPressed = false;
-    bool justPressed = false;
-    this(int key)
-    {
-        this.keyCode = cast(ubyte)key;
-    }
-
-    this(SDL_Keycode key)
-    {
-        this.keyCode = cast(ubyte)key;
-    }
-
-    private void stampDownTime()
-    {
-        downTimeStamp = HipTime.getCurrentTimeAsMilliseconds();
-    }
-
-    private void stampUpTime()
-    {
-        upTimeStamp = HipTime.getCurrentTimeAsMilliseconds();
-    }
 
 
-    public float getDowntimeDuration()
-    {
-        if(isPressed)
-            return (HipTime.getCurrentTimeAsMilliseconds() - downTimeStamp) / 1000;
-        return 0;
-    }
-    public float getUpTimeDuration()
-    {
-        if(!isPressed)
-            return (HipTime.getCurrentTimeAsMilliseconds() - upTimeStamp) / 1000;
-        return 0;
-    }
-    private void setPressed(bool press)
-    {
-        if(press && !isPressed)
-            justPressed = true;
-        if(press != isPressed)
-        {
-            if(isPressed)
-            {
-                lastDownTime = getDowntimeDuration();
-                stampUpTime();
-            }
-            else
-            {
-                lastUpTime = getUpTimeDuration();
-                stampDownTime();
-            }
-            isPressed = press;
-        }
-    }
-}
 
 /** 
- * Keyboard wrapper
+ *  This class controls callbacks related to keyboard buttons state, as its downtime, uptime,
+ *  its current state, modifier key states and callbacks assigned to specific keys.
+ *
+ *  Controls what text has been typed in the current frame, useful for Label or Text objects.
  */
 class KeyboardHandler
 {
-    private Key[][int] listeners;
+    private HipButton[][int] listeners;
     private int[int] listenersCount;
     private static int[256] pressedKeys;
-    private static KeyMetadata[256] metadatas;
+    private static HipButtonMetadata[256] metadatas;
     private static string frameText;
 
     private static bool altPressed;
@@ -148,7 +67,7 @@ class KeyboardHandler
     static this()
     {
         for(int i = 0; i < 256; i++)
-            metadatas[i] = new KeyMetadata(i);
+            metadatas[i] = new HipButtonMetadata(i);
         pressedKeys[] = 0;
     }
     
@@ -160,16 +79,16 @@ class KeyboardHandler
      *   kCode = New key code
      * Returns: Rebinded was succesful
      */
-    bool rebind(Key k, SDL_Keycode kCode)
+    bool rebind(HipButton k, SDL_Keycode kCode)
     {
-        Key[] currentListener = listeners[k.keyCode];
-        int currentCount = listenersCount[k.keyCode];
+        HipButton[] currentListener = listeners[k.meta.id];
+        int currentCount = listenersCount[k.meta.id];
         int index = cast(int)countUntil(currentListener, k);
         if(index != -1)
         {
             swapAt(currentListener, index, currentCount - 1);
             currentListener[currentCount-1] = null;
-            listenersCount[k.keyCode]--;
+            listenersCount[k.meta.id]--;
             addKeyListener(kCode, k);
         }
         return index != -1;
@@ -177,10 +96,10 @@ class KeyboardHandler
     /** 
      * Will make the key being enqueued in the keyboard event distribution
      * Params:
-     *   key = Keycode for being assigned with the Key object
+     *   key = id for being assigned with the Key object
      *   k = Key object reference
      */
-    void addKeyListener(SDL_Keycode key, Key k)
+    void addKeyListener(SDL_Keycode key, HipButton k)
     {
         if((key in listeners) == null) //Initialization for new key
         {
@@ -192,7 +111,6 @@ class KeyboardHandler
             listeners[key][$ - 1] = k;
         else
             listeners[key]~= k; //Append if not
-        k.keyCode = key; //Initializes key
         k.meta = metadatas[cast(ubyte)key];
         listenersCount[key]++;
     }
@@ -246,7 +164,7 @@ class KeyboardHandler
         setPressed(key, false);
         if((key in listeners) != null)
         {
-            Key[] keyListeners = listeners[key];
+            HipButton[] keyListeners = listeners[key];
             immutable int len = listenersCount[key];
             for(int i = 0; i < len; i++)
                 keyListeners[i].onUp();
@@ -281,7 +199,7 @@ class KeyboardHandler
         while(pressedKeys[i] != 0)
         {
             const float pressTime = metadatas[pressedKeys[i]].getDowntimeDuration();
-            if(pressTime >= keyRepeatDelay || metadatas[pressedKeys[i]].justPressed)
+            if(pressTime >= keyRepeatDelay || metadatas[pressedKeys[i]]._isNewState)
                 ret~= layout.getKey(toUppercase(cast(char)pressedKeys[i]), state);
             i++;
         }
@@ -290,6 +208,14 @@ class KeyboardHandler
 
     void update()
     {
+        //HipInput.isActionButtonPressed("jump")
+        //HipInput.isActionButtonReleased("jump")
+        //HipInput.isActionButtonReleased("menu")
+        //HipInput.getTouchPosition(0) ==  HipInput.getMousePosition
+        //HipInput.getTouchDeltaPosition(0)
+        //HipInput.getScroll() -> Returns Vector3 for X, Y, Z
+        //HipInput.getTouchCount
+        //HipInput.
         int i = 0;
         while(pressedKeys[i] != 0)
         {
@@ -306,7 +232,7 @@ class KeyboardHandler
     {
         int i = 0;
         while(pressedKeys[i] != 0)
-            metadatas[pressedKeys[i++]].justPressed = false;
+            metadatas[pressedKeys[i++]]._isNewState = false;
         frameText = "";
     }
 
