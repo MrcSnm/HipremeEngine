@@ -10,16 +10,16 @@
 	"configurations": 
 	[
 		{
+			"name": "script",
+			"versions": [
+				"Script"
+			]
+		},
+		{
 			"name": "hipengine",
 			"importPaths": [
 				"source",
 				"../modules/math/source"
-			]
-		},
-		{
-			"name": "script",
-			"versions": [
-				"Script"
 			]
 		}
 	],

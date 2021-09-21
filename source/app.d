@@ -282,3 +282,7 @@ export extern(C) void log(string log)
 	import console.log;
 	rawlog(log);
 }
+
+import math.api;
+
+mixin ExportMathAPI;

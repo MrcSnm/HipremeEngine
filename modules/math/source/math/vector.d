@@ -12,7 +12,6 @@ Distributed under the MIT Software License.
 module math.vector;
 import core.math : sqrt, sin, cos;
 
-
 public struct Vector2
 {
     this(float x, float y)

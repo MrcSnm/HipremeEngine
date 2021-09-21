@@ -11,7 +11,10 @@
 		{
 			"name": "desktop",
 			"targetPath": "bin/desktop",
-			"targetType": "executable"
+			"targetType": "executable",
+			"versions": [
+				"Desktop"
+			]
 		},
 		{
 			"name": "uwp",
@@ -71,6 +74,9 @@
 		"renderer"  : {"path" : "./modules/renderer"},
 		"audio" 	: {"path" : "./modules/audio"}
 	},
+	"subConfigurations": {
+		"hipengine_api" : "hipengine"
+	},
 	"description": "Open-Source D Game Engine",
 	"dflags": [
 		"-J=."
@@ -93,6 +99,7 @@
 	],
 	"versions": [
 		"HIPREME_DEBUG",
+		"HipremeEngineDef",
 		"SDL_208",
 		"BindSDL_Mixer",
 		"BindSDL_TTF",

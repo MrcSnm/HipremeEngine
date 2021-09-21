@@ -99,8 +99,9 @@ class KeyboardHandler
      *   key = id for being assigned with the Key object
      *   k = Key object reference
      */
-    void addKeyListener(SDL_Keycode key, HipButton k)
+    void addKeyListener(SDL_Keycode keyCode, HipButton k)
     {
+        ubyte key = cast(ubyte)keyCode;
         if((key in listeners) == null) //Initialization for new key
         {
             listeners[key] = []; //Creates a new place for the new key
@@ -111,7 +112,7 @@ class KeyboardHandler
             listeners[key][$ - 1] = k;
         else
             listeners[key]~= k; //Append if not
-        k.meta = metadatas[cast(ubyte)key];
+        k.meta = metadatas[key];
         listenersCount[key]++;
     }
     /**

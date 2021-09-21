@@ -16,7 +16,7 @@ version(HipremeEngineDef)
 }
 else: //version(Script):
 
-
+// import internal;
 struct VectorImpl
 {
     //Vector2
@@ -51,6 +51,7 @@ private alias impl = VectorImpl;
 
 void initMath()
 {
+    import hipengine.internal;
     impl.dot = getSymbol!(VectorImpl.dot);
     impl.mag = getSymbol!(VectorImpl.mag);
     impl.normalize = getSymbol!(VectorImpl.normalize);

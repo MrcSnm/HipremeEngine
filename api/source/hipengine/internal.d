@@ -1,4 +1,5 @@
-private void* _dll;
+module hipengine.internal;
+private __gshared void* _dll;
 
 void initializeHip()
 {
