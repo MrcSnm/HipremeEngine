@@ -24,7 +24,7 @@ public import hipengine.api.view;
 
 
 //Math
-public import hipengine.api.math.vector;
+public import hipengine.api.math;
 
 import hipengine.internal;
 public import hipengine.internal:initializeHip;
@@ -37,18 +37,18 @@ void initConsole()
 }
 
 //version(Script)
-void function() beginSprite;
-void function() endSprite;
-void function() beginGeometry;
-void function() endGeometry;
-void function(HipColor color) setGeometryColor;
-void function(int x, int y) drawPixel;
-void function(int x, int y, int w, int h) drawRectangle;
-void function(int x1, int y1, int x2, int y2, int x3, int y3) drawTriangle;
-void function(int x1, int y1, int x2, int y2) drawLine;
-void function(IHipSprite sprite) drawSprite;
-IHipSprite function(string texturePath) newSprite;
-void function(ref IHipSprite sprite) destroySprite;
+extern(C) void function() beginSprite;
+extern(C) void function() endSprite;
+extern(C) void function() beginGeometry;
+extern(C) void function() endGeometry;
+extern(C) void function(HipColor color) setGeometryColor;
+extern(C) void function(int x, int y) drawPixel;
+extern(C) void function(int x, int y, int w, int h) drawRectangle;
+extern(C) void function(int x1, int y1, int x2, int y2, int x3, int y3) drawTriangle;
+extern(C) void function(int x1, int y1, int x2, int y2) drawLine;
+extern(C) void function(IHipSprite sprite) drawSprite;
+extern(C) IHipSprite function(string texturePath) newSprite;
+extern(C) void function(ref IHipSprite sprite) destroySprite;
 //else version(ReleaseMode)
 //import graphics.g2d.renderer2d;
 
