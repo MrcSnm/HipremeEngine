@@ -1,6 +1,5 @@
 
 module hipengine;
-private import internal;
 // version (HipremeAudio)
 // {
 // 	public import hipaudio;
@@ -27,7 +26,8 @@ public import hipengine.api.view;
 //Math
 public import hipengine.api.math.vector;
 
-alias initializeHip = internal.initializeHip;
+import hipengine.internal;
+public import hipengine.internal:initializeHip;
 
 
 void function(string s) log;
