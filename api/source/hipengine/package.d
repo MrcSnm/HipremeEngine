@@ -22,9 +22,15 @@ public import hipengine.api.renderer.texture;
 public import hipengine.api.graphics.g2d.hipsprite;
 public import hipengine.api.view;
 
+version(HipremeEngineDef){}
+else:
 
 //Math
 public import hipengine.api.math;
+
+//Input
+public import HipInput = hipengine.api.input;
+alias initInput = HipInput.initInput;
 
 import hipengine.internal;
 public import hipengine.internal:initializeHip;
