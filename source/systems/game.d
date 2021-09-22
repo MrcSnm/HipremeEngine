@@ -13,6 +13,7 @@ module systems.game;
 import bindbc.sdl;
 import hiprenderer.renderer;
 import systems.hotload;
+import systems.compilewatcher;
 private import event.dispatcher;
 private import event.handlers.keyboard;
 import std.typecons:Tuple;
@@ -57,6 +58,7 @@ class GameSystem
     string projectDir;
     protected static AScene externalScene;
     protected static HotloadableDLL hotload;
+    static CompileWatcher watcher;
     bool hasFinished;
     float fps;
 
@@ -73,6 +75,8 @@ class GameSystem
             projectDir = buildNormalizedPath("projects", gameDll);
             gameDll = buildNormalizedPath("projects", gameDll, gameDll);
         }
+
+        watcher = new CompileWatcher(projectDir, null, ["d"]).run;
 
         hotload = new HotloadableDLL(gameDll, (void* lib)
         {
@@ -113,6 +117,21 @@ class GameSystem
         addScene(externalScene);
     }
 
+    void recompileReloadExternalScene()
+    {
+        import util.array:remove;
+        import console.log;
+        if(hotload)
+        {
+            rawlog("Recompiling game");
+            HipremeEngineGameDestroy();
+            scenes.remove(externalScene);
+            externalScene = null;
+            recompileGame(); // Calls hotload.reload();
+            startExternalGame();
+        }
+    }
+
     this()
     {
         keyboard = new KeyboardHandler();
@@ -124,21 +143,8 @@ class GameSystem
 
         keyboard.addKeyListener(SDLK_F5, new class HipButton
         {
-            override void onDown()
-            {
-            }
-            override void onUp()
-            {
-                import util.array:remove;
-                if(hotload)
-                {
-                    HipremeEngineGameDestroy();
-                    scenes.remove(externalScene);
-                    externalScene = null;
-                    recompileGame(); // Calls hotload.reload();
-                    startExternalGame();
-                }
-            }
+            override void onDown(){}
+            override void onUp(){recompileReloadExternalScene();}
         });
         dispatcher = new EventDispatcher(&keyboard);
         dispatcher.addOnResizeListener((uint width, uint height)
@@ -161,6 +167,10 @@ class GameSystem
         fps = cast(float)cast(uint)(1/deltaTime);
         import std.conv:to;
         SDL_SetWindowTitle(HipRenderer.window, (to!string(fps)~" FPS\0").ptr);
+        if(string s = watcher.update())
+        {
+            recompileReloadExternalScene();
+        }
         dispatcher.handleEvent();
 
         if(hasFinished || dispatcher.hasQuit)
@@ -188,6 +198,7 @@ class GameSystem
         {
             if(HipremeEngineGameDestroy != null)
                 HipremeEngineGameDestroy();
+            destroy(watcher);
             scenes.length = 0;
             externalScene = null;
             hotload.dispose();

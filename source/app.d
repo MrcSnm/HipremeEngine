@@ -285,5 +285,6 @@ export extern(C) void log(string log)
 
 import math.api;
 import event.api;
+import systems.compilewatcher;
 mixin ExportMathAPI;
 mixin ExportInputAPI!sys;

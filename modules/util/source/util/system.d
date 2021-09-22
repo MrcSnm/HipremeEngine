@@ -14,6 +14,7 @@ import std.conv:to;
 import std.system:os;
 import core.stdc.string;
 import std.array:replace;
+public import fswatch;
 
 pure nothrow string sanitizePath(string path)
 {
