@@ -124,10 +124,10 @@ public struct Vector2
     }
     static Vector2 zero(){return Vector2(0,0);}
     private float[2] values;
-    scope ref float x() return {return values[0];}
-    scope ref float y() return {return values[1];}
+    auto ref float x() return {return values[0];}
+    auto ref float y() return {return values[1];}
 
-    ref auto opIndex(size_t index){return values[index];}
+    auto ref opIndex(size_t index){return values[index];}
 }
 
 public struct Vector3
@@ -195,10 +195,10 @@ public struct Vector3
     static Vector3 Zero(){return Vector3(0,0,0);}
     private float[3] values;
 
-    scope ref float x() return {return values[0];}
-    scope ref float y() return {return values[1];}
-    scope ref float z() return {return values[2];}
-    ref auto opIndex(size_t index){return values[index];}
+    auto ref float x() return {return values[0];}
+    auto ref float y() return {return values[1];}
+    auto ref float z() return {return values[2];}
+    auto ref opIndex(size_t index){return values[index];}
 }
 
 public struct Vector4
@@ -255,9 +255,9 @@ public struct Vector4
     static Vector4 Zero(){return Vector4(0,0,0,0);}
     private float[4] values;
 
-    scope ref float x() return {return values[0];}
-    scope ref float y() return {return values[1];}
-    scope ref float z() return {return values[2];}
-    scope ref float w() return {return values[3];}
-    ref auto opIndex(size_t index){return values[index];}
+    auto ref float x() return {return values[0];}
+    auto ref float y() return {return values[1];}
+    auto ref float z() return {return values[2];}
+    auto ref float w() return {return values[3];}
+    auto ref opIndex(size_t index){return values[index];}
 }

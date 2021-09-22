@@ -17,7 +17,7 @@ else
     extern(C) bool function(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) isMouseButtonPressed;
     extern(C) bool function(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) isMouseButtonJustPressed;
     extern(C) bool function(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) isMouseButtonJustReleased;
-    extern(C) Vector2 function(uint id=0) getTouchPosition;
+    extern(C) immutable(Vector2*) function(uint id = 0) getTouchPosition;
     extern(C) Vector2 function(uint id=0) getTouchDeltaPosition;
     extern(C) Vector3 function(uint id=0) getScroll;
     void initInput()
