@@ -284,6 +284,6 @@ export extern(C) void log(string log)
 }
 
 import math.api;
-// import event.api;
+import event.api;
 mixin ExportMathAPI;
-// mixin ExportInputAPI!sys;
+mixin ExportInputAPI!sys;

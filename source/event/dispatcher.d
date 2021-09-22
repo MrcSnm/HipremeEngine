@@ -17,9 +17,9 @@ private:
 
 public:
     import systems.input;
-    // import hipengine.api.input.keyboard;
-    // import hipengine.api.input.button;
-    // import hipengine.api.input.mouse;
+    import hipengine.api.input.keyboard;
+    import hipengine.api.input.button;
+    import hipengine.api.input.mouse;
 
 
 /** 
@@ -146,17 +146,17 @@ class EventDispatcher
     }
 
     ///Public API
-    // immutable(Vector2*) getTouchPosition(uint id = 0){return mouse.getPosition(id);}
-    // Vector2 getTouchDeltaPosition(uint id = 0){return mouse.getDeltaPosition(id);}
-    // bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isPressed(btn);}
-    // bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isJustPressed(btn);}
-    // bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isJustReleased(btn);}
-    // Vector3 getScroll(){return mouse.getScroll();}
-    // bool isKeyPressed(char key, uint id = 0){return keyboard.isKeyPressed(key);}
-    // bool isKeyJustPressed(char key, uint id = 0){return keyboard.isKeyJustPressed(key);}
-    // bool isKeyJustReleased(char key, uint id = 0){return keyboard.isKeyJustReleased(key);}
-    // float getKeyDownTime(char key, uint id = 0){return keyboard.getKeyDownTime(key);}
-    // float getKeyUpTime(char key, uint id = 0){return keyboard.getKeyUpTime(key);}
+    immutable(Vector2*) getTouchPosition(uint id = 0){return mouse.getPosition(id);}
+    Vector2 getTouchDeltaPosition(uint id = 0){return mouse.getDeltaPosition(id);}
+    bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isPressed(btn);}
+    bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isJustPressed(btn);}
+    bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isJustReleased(btn);}
+    Vector3 getScroll(){return mouse.getScroll();}
+    bool isKeyPressed(char key, uint id = 0){return keyboard.isKeyPressed(key);}
+    bool isKeyJustPressed(char key, uint id = 0){return keyboard.isKeyJustPressed(key);}
+    bool isKeyJustReleased(char key, uint id = 0){return keyboard.isKeyJustReleased(key);}
+    float getKeyDownTime(char key, uint id = 0){return keyboard.getKeyDownTime(key);}
+    float getKeyUpTime(char key, uint id = 0){return keyboard.getKeyUpTime(key);}
 
     void postUpdate()
     {
