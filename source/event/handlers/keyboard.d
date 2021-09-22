@@ -16,6 +16,7 @@ import bindbc.sdl;
 
 import event.handlers.keyboard_layout;
 public import event.handlers.button;
+public import hipengine.api.input.keyboard;
 
 import util.data_structures;
 import error.handler;
@@ -51,7 +52,7 @@ private char toUppercase(char a)
  *
  *  Controls what text has been typed in the current frame, useful for Label or Text objects.
  */
-class KeyboardHandler
+class KeyboardHandler : IHipKeyboard
 {
     private HipButton[][int] listeners;
     private int[int] listenersCount;
@@ -172,7 +173,12 @@ class KeyboardHandler
         }
     }
 
-    pragma(inline, true) bool isKeyPressed(char key){return metadatas[key]._isPressed;}
+    bool isKeyPressed(char key){return metadatas[key]._isPressed;}
+    bool isKeyJustPressed(char key){return metadatas[key].isJustPressed;}
+    bool isKeyJustReleased(char key){return metadatas[key].isJustReleased;}
+    float getKeyDownTime(char key){return metadatas[key].getDownTimeDuration();}
+    float getKeyUpTime(char key){return metadatas[key].getUpTimeDuration();}
+
     
     /**
     *   Updates the metadata
@@ -188,7 +194,7 @@ class KeyboardHandler
                 keyListeners[i].onDown();
         }
     }
-
+    
     static string getInputText(KeyboardLayout layout)
     {
         KeyboardLayout.KeyState state = KeyboardLayout.KeyState.NONE;
@@ -202,7 +208,7 @@ class KeyboardHandler
         int i = 0;
         while(pressedKeys[i] != 0)
         {
-            const float pressTime = metadatas[pressedKeys[i]].getDowntimeDuration();
+            const float pressTime = metadatas[pressedKeys[i]].getDownTimeDuration();
             if(pressTime >= keyRepeatDelay || metadatas[pressedKeys[i]]._isNewState)
                 ret~= layout.getKey(toUppercase(cast(char)pressedKeys[i]), state);
             i++;
@@ -212,14 +218,6 @@ class KeyboardHandler
 
     void update()
     {
-        //HipInput.isActionButtonPressed("jump")
-        //HipInput.isActionButtonReleased("jump")
-        //HipInput.isActionButtonReleased("menu")
-        //HipInput.getTouchPosition(0) ==  HipInput.getMousePosition
-        //HipInput.getTouchDeltaPosition(0)
-        //HipInput.getScroll() -> Returns Vector3 for X, Y, Z
-        //HipInput.getTouchCount
-        //HipInput.
         int i = 0;
         while(pressedKeys[i] != 0)
         {

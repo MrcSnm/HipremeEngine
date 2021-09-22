@@ -14,7 +14,7 @@ abstract class AHipButtonMetadata
 {
     int id;
     this(int id){this.id = id;}
-    public abstract float getDowntimeDuration();
+    public abstract float getDownTimeDuration();
     public abstract float getLastDownTimeDuration();
     public abstract float getUpTimeDuration();
     public abstract float getLastUpTimeDuration();
