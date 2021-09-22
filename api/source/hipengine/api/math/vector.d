@@ -126,8 +126,8 @@ public struct Vector2
     private float[2] values;
     scope ref float x() return {return values[0];}
     scope ref float y() return {return values[1];}
-    alias values this;
 
+    ref auto opIndex(size_t index){return values[index];}
 }
 
 public struct Vector3
@@ -198,7 +198,7 @@ public struct Vector3
     scope ref float x() return {return values[0];}
     scope ref float y() return {return values[1];}
     scope ref float z() return {return values[2];}
-    alias values this;
+    ref auto opIndex(size_t index){return values[index];}
 }
 
 public struct Vector4
@@ -259,5 +259,5 @@ public struct Vector4
     scope ref float y() return {return values[1];}
     scope ref float z() return {return values[2];}
     scope ref float w() return {return values[3];}
-    alias values this;
+    ref auto opIndex(size_t index){return values[index];}
 }
