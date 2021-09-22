@@ -18,7 +18,7 @@ final class HipButtonMetadata : AHipButtonMetadata
     this(int key){super(key);}
     this(SDL_Keycode key){super(cast(int)key);}
 
-    override float getDowntimeDuration()
+    override float getDownTimeDuration()
     {
         if(_isPressed)
             return (HipTime.getCurrentTimeAsMilliseconds() - downTimeStamp) / 1000;
@@ -38,7 +38,7 @@ final class HipButtonMetadata : AHipButtonMetadata
         {
             if(_isPressed)
             {
-                lastDownTime = getDowntimeDuration();
+                lastDownTime = getDownTimeDuration();
                 upTimeStamp = HipTime.getCurrentTimeAsMilliseconds();
             }
             else
