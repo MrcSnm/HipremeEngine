@@ -10,6 +10,9 @@ version(HipremeEngineDef)
 else:
 void initMath()
 {
-    Random.initRandom();
-    initVector();
+    version(Script)
+    {
+        Random.initRandom();
+        initVector();
+    }
 }

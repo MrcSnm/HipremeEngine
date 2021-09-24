@@ -65,70 +65,92 @@ class GameSystem
 
     void loadGame(string gameDll)
     {
-        import std.path:buildNormalizedPath;
-        import util.system;
-        import util.string:indexOf;
-        import std.stdio;
-
-        if(gameDll.indexOf("projects/") == -1)
+        version(Standalone){}
+        else
         {
-            projectDir = buildNormalizedPath("projects", gameDll);
-            gameDll = buildNormalizedPath("projects", gameDll, gameDll);
+            import std.path:buildNormalizedPath;
+            import util.system;
+            import util.string:indexOf;
+            import std.stdio;
+
+            if(gameDll.indexOf("projects/") == -1)
+            {
+                projectDir = buildNormalizedPath("projects", gameDll);
+                gameDll = buildNormalizedPath("projects", gameDll, gameDll);
+            }
+
+            watcher = new CompileWatcher(projectDir, null, ["d"]).run;
+
+            hotload = new HotloadableDLL(gameDll, (void* lib)
+            {
+                assert(lib != null, "No library " ~ gameDll ~ " was found");
+                HipremeEngineGameInit = 
+                    cast(typeof(HipremeEngineGameInit))
+                    dynamicLibrarySymbolLink(lib, "HipremeEngineGameInit");
+                assert(HipremeEngineGameInit != null,
+                "HipremeEngineGameInit wasn't found when looking into "~gameDll);
+                HipremeEngineGameDestroy = 
+                    cast(typeof(HipremeEngineGameDestroy))
+                    dynamicLibrarySymbolLink(lib, "HipremeEngineGameDestroy");
+                assert(HipremeEngineGameDestroy != null,
+                "HipremeEngineGameDestroy wasn't found when looking into "~gameDll);
+            });
         }
-
-        watcher = new CompileWatcher(projectDir, null, ["d"]).run;
-
-        hotload = new HotloadableDLL(gameDll, (void* lib)
-        {
-            assert(lib != null, "No library " ~ gameDll ~ " was found");
-            HipremeEngineGameInit = 
-                cast(typeof(HipremeEngineGameInit))
-                dynamicLibrarySymbolLink(lib, "HipremeEngineGameInit");
-            assert(HipremeEngineGameInit != null,
-            "HipremeEngineGameInit wasn't found when looking into "~gameDll);
-            HipremeEngineGameDestroy = 
-                cast(typeof(HipremeEngineGameDestroy))
-                dynamicLibrarySymbolLink(lib, "HipremeEngineGameDestroy");
-            assert(HipremeEngineGameDestroy != null,
-            "HipremeEngineGameDestroy wasn't found when looking into "~gameDll);
-        });
     }
 
     void recompileGame()
     {
-        import std.process:executeShell;
-        auto dub = executeShell("cd "~projectDir~" && dub");
-        
-        //2 == up to date
-        string err;
-        if(getDubError(dub, err))
+        version(Standalone){}
+        else
         {
-            import core.sys.windows.windows;
-            import std.stdio;
-            MessageBoxA(null, (err~"\0").ptr, "GameDLL Compilation Failure\0".ptr,  MB_ICONERROR | MB_OK);
+            import std.process:executeShell;
+            auto dub = executeShell("cd "~projectDir~" && dub");
+            
+            //2 == up to date
+            string err;
+            if(getDubError(dub, err))
+            {
+                import core.sys.windows.windows;
+                import std.stdio;
+                MessageBoxA(null, (err~"\0").ptr, "GameDLL Compilation Failure\0".ptr,  MB_ICONERROR | MB_OK);
+            }
+            hotload.reload();
         }
-        hotload.reload();
     }
 
     void startExternalGame()
     {
-        assert(HipremeEngineGameInit != null, "No game was loaded");
-        externalScene = HipremeEngineGameInit();
-        addScene(externalScene);
+        version(Standalone)
+        {
+            import hipengine;
+            mixin("import ", HipEngineMainModule);
+            externalScene = new StartScene();
+            addScene(externalScene);
+        }
+        else
+        {
+            assert(HipremeEngineGameInit != null, "No game was loaded");
+            externalScene = HipremeEngineGameInit();
+            addScene(externalScene);
+        }
     }
 
     void recompileReloadExternalScene()
     {
-        import util.array:remove;
-        import console.log;
-        if(hotload)
+        version(Standalone){}
+        else
         {
-            rawlog("Recompiling game");
-            HipremeEngineGameDestroy();
-            scenes.remove(externalScene);
-            externalScene = null;
-            recompileGame(); // Calls hotload.reload();
-            startExternalGame();
+            import util.array:remove;
+            import console.log;
+            if(hotload)
+            {
+                rawlog("Recompiling game");
+                HipremeEngineGameDestroy();
+                scenes.remove(externalScene);
+                externalScene = null;
+                recompileGame(); // Calls hotload.reload();
+                startExternalGame();
+            }
         }
     }
 
@@ -140,12 +162,16 @@ class GameSystem
             override void onDown(){hasFinished = true;}
             override void onUp(){}
         });
-
-        keyboard.addKeyListener(SDLK_F5, new class HipButton
+        version(Standalone){}
+        else
         {
-            override void onDown(){}
-            override void onUp(){recompileReloadExternalScene();}
-        });
+            keyboard.addKeyListener(SDLK_F5, new class HipButton
+            {
+                override void onDown(){}
+                override void onUp(){recompileReloadExternalScene();}
+            });
+        }
+
         dispatcher = new EventDispatcher(&keyboard);
         dispatcher.addOnResizeListener((uint width, uint height)
         {
@@ -194,14 +220,18 @@ class GameSystem
     
     void quit()
     {
-        if(hotload !is null)
+        version(Standalone){}
+        else
         {
-            if(HipremeEngineGameDestroy != null)
-                HipremeEngineGameDestroy();
-            destroy(watcher);
-            scenes.length = 0;
-            externalScene = null;
-            hotload.dispose();
+            if(hotload !is null)
+            {
+                if(HipremeEngineGameDestroy != null)
+                    HipremeEngineGameDestroy();
+                destroy(watcher);
+                scenes.length = 0;
+                externalScene = null;
+                hotload.dispose();
+            }
         }
         SDL_Quit();
     }
