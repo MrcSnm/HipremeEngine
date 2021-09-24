@@ -13,14 +13,15 @@
 			"name": "script",
 			"versions": [
 				"Script"
-			]
+			],
+			"targetType": "library"
 		},
 		{
 			"name": "hipengine",
 			"importPaths": [
-				"source",
-				"../modules/math/source"
-			]
+				"source"
+			],
+			"targetType": "sourceLibrary"
 		}
 	],
 	"license": "proprietary",

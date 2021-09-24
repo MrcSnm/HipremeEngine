@@ -2,13 +2,32 @@ module hipengine.api.input;
 public import hipengine.api.math.vector;
 public import hipengine.api.input.mouse;
 
-version(HipremeEngineDef)
-{
 
+void initInput()
+{
+    version(Script)
+    {
+        import hipengine.internal;
+        loadSymbol!isKeyPressed;
+        loadSymbol!isKeyJustPressed;
+        loadSymbol!isKeyJustReleased;
+        loadSymbol!getKeyDownTime;
+        loadSymbol!getKeyUpTime;
+        loadSymbol!isMouseButtonPressed;
+        loadSymbol!isMouseButtonJustPressed;
+        loadSymbol!isMouseButtonJustReleased;
+        loadSymbol!getTouchPosition;
+        loadSymbol!getTouchDeltaPosition;
+        loadSymbol!getScroll;
+    }
+}
+
+version(Have_hipreme_engine)
+{
+    public import event.api;
 }
 else
 {
-
     extern(C) bool function(char key, uint id = 0) isKeyPressed;
     extern(C) bool function(char key, uint id = 0) isKeyJustPressed;
     extern(C) bool function(char key, uint id = 0) isKeyJustReleased;
@@ -20,22 +39,4 @@ else
     extern(C) immutable(Vector2*) function(uint id = 0) getTouchPosition;
     extern(C) Vector2 function(uint id=0) getTouchDeltaPosition;
     extern(C) Vector3 function(uint id=0) getScroll;
-    void initInput()
-    {
-        version(Script)
-        {
-            import hipengine.internal;
-            loadSymbol!isKeyPressed;
-            loadSymbol!isKeyJustPressed;
-            loadSymbol!isKeyJustReleased;
-            loadSymbol!getKeyDownTime;
-            loadSymbol!getKeyUpTime;
-            loadSymbol!isMouseButtonPressed;
-            loadSymbol!isMouseButtonJustPressed;
-            loadSymbol!isMouseButtonJustReleased;
-            loadSymbol!getTouchPosition;
-            loadSymbol!getTouchDeltaPosition;
-            loadSymbol!getScroll;
-        }
-    }
 }

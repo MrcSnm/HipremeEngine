@@ -58,7 +58,8 @@ class GameSystem
     string projectDir;
     protected static AScene externalScene;
     protected static HotloadableDLL hotload;
-    static CompileWatcher watcher;
+
+    version(Standalone){} else {static CompileWatcher watcher;}
     bool hasFinished;
     float fps;
 
@@ -122,9 +123,8 @@ class GameSystem
     {
         version(Standalone)
         {
-            import hipengine;
-            mixin("import ", HipEngineMainModule);
-            externalScene = new StartScene();
+            import script.entry;
+            externalScene = new HipEngineMainScene();
             addScene(externalScene);
         }
         else
@@ -190,12 +190,11 @@ class GameSystem
 
     bool update(float deltaTime)
     {
-        fps = cast(float)cast(uint)(1/deltaTime);
-        import std.conv:to;
-        SDL_SetWindowTitle(HipRenderer.window, (to!string(fps)~" FPS\0").ptr);
-        if(string s = watcher.update())
+        version(Standalone){}
+        else
         {
-            recompileReloadExternalScene();
+            if(watcher.update())
+                recompileReloadExternalScene();
         }
         dispatcher.handleEvent();
 

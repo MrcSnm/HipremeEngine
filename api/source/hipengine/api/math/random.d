@@ -12,21 +12,28 @@ Distributed under the MIT Software License.
 */
 
 
-version(HipremeEngineDef)
+version(Have_hipreme_engine)
 {
 	public import math.random;
 }
 else:
-extern(C) int function(int min, int max) range;
-extern(C) uint function(uint min, uint max) rangeu;
-extern(C) ubyte function(ubyte min, ubyte max) rangeub;
-extern(C) float function(float min, float max) rangef;
+
+version(Script)
+{
+	extern(C) int function(int min, int max) range;
+	extern(C) uint function(uint min, uint max) rangeu;
+	extern(C) ubyte function(ubyte min, ubyte max) rangeub;
+	extern(C) float function(float min, float max) rangef;
+}
 
 package void initRandom()
 {
-    import hipengine.internal;
-    loadSymbol!range;
-	loadSymbol!rangeu;
-	loadSymbol!rangeub;
-	loadSymbol!rangef;
+	version(Script)
+	{
+		import hipengine.internal;
+		loadSymbol!range;
+		loadSymbol!rangeu;
+		loadSymbol!rangeub;
+		loadSymbol!rangef;
+	}
 }
