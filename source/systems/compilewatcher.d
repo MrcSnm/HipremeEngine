@@ -1,4 +1,7 @@
 module systems.compilewatcher;
+
+version(Standalone){}
+else:
 import std.concurrency;
 import std.path;
 import std.datetime.stopwatch;

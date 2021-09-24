@@ -1,55 +1,59 @@
 module event.api;
+public import global.gamedef;
 
-
-mixin template ExportInputAPI(alias game) //GameSystem
+private enum Define(string code)
 {
-    import hipengine.api.math.vector;
-    import hipengine.api.input.mouse;
-    import event.dispatcher;
-    import systems.game;
-
-    export extern(C) bool isKeyPressed(char key, uint id = 0) 
-    {
-        return game.dispatcher.isKeyPressed(key, id);
-    }
-    export extern(C) bool isKeyJustPressed(char key, uint id = 0) 
-    {
-        return game.dispatcher.isKeyJustPressed(key, id);
-    }
-    export extern(C) bool isKeyJustReleased(char key, uint id = 0) 
-    {
-        return game.dispatcher.isKeyJustReleased(key, id);
-    }
-    export extern(C) float getKeyDownTime(char key, uint id = 0) 
-    {
-        return game.dispatcher.getKeyDownTime(key, id);
-    }
-    export extern(C) float getKeyUpTime(char key, uint id = 0) 
-    {
-        return game.dispatcher.getKeyUpTime(key, id);
-    }
-    export extern(C) bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) 
-    {
-        return game.dispatcher.isMouseButtonPressed(btn, id);
-    }
-    export extern(C) bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) 
-    {
-        return game.dispatcher.isMouseButtonJustPressed(btn, id);
-    }
-    export extern(C) bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) 
-    {
-        return game.dispatcher.isMouseButtonJustReleased(btn, id);
-    }
-    export extern(C) immutable(Vector2*) getTouchPosition(uint id=0) 
-    {
-        return game.dispatcher.getTouchPosition(id);
-    }
-    export extern(C) Vector2 getTouchDeltaPosition(uint id=0) 
-    {
-        return game.dispatcher.getTouchDeltaPosition(id);
-    }
-    export extern(C) Vector3 getScroll() 
-    {
-        return game.dispatcher.getScroll();
-    }
+    version(Standalone)
+        return "pragma(inline) "~code;
+    else
+        return "export extern(C) "~code;
 }
+import hipengine.api.math.vector;
+import hipengine.api.input.mouse;
+import event.dispatcher;
+import systems.game;
+
+mixin(Define(q{bool isKeyPressed(char key, uint id = 0) 
+{
+    return sys.dispatcher.isKeyPressed(key, id);
+}}));
+mixin(Define(q{bool isKeyJustPressed(char key, uint id = 0) 
+{
+    return sys.dispatcher.isKeyJustPressed(key, id);
+}}));
+mixin(Define(q{bool isKeyJustReleased(char key, uint id = 0) 
+{
+    return sys.dispatcher.isKeyJustReleased(key, id);
+}}));
+mixin(Define(q{float getKeyDownTime(char key, uint id = 0) 
+{
+    return sys.dispatcher.getKeyDownTime(key, id);
+}}));
+mixin(Define(q{float getKeyUpTime(char key, uint id = 0) 
+{
+    return sys.dispatcher.getKeyUpTime(key, id);
+}}));
+mixin(Define(q{bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) 
+{
+    return sys.dispatcher.isMouseButtonPressed(btn, id);
+}}));
+mixin(Define(q{bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) 
+{
+    return sys.dispatcher.isMouseButtonJustPressed(btn, id);
+}}));
+mixin(Define(q{bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) 
+{
+    return sys.dispatcher.isMouseButtonJustReleased(btn, id);
+}}));
+mixin(Define(q{immutable(Vector2*) getTouchPosition(uint id=0) 
+{
+    return sys.dispatcher.getTouchPosition(id);
+}}));
+mixin(Define(q{Vector2 getTouchDeltaPosition(uint id=0) 
+{
+    return sys.dispatcher.getTouchDeltaPosition(id);
+}}));
+mixin(Define(q{Vector3 getScroll() 
+{
+    return sys.dispatcher.getScroll();
+}}));
