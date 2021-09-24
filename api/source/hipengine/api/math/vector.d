@@ -17,7 +17,7 @@ version(HipremeEngineDef)
 else: //version(Script):
 
 // import internal;
-struct VectorImpl
+private struct VectorImpl
 {
     extern(C):
     //Vector2
@@ -124,10 +124,10 @@ public struct Vector2
     }
     static Vector2 zero(){return Vector2(0,0);}
     private float[2] values;
-    auto ref float x() return {return values[0];}
-    auto ref float y() return {return values[1];}
+    inout float x() return {return values[0];}
+    inout float y() return {return values[1];}
 
-    auto ref opIndex(size_t index){return values[index];}
+    inout opIndex(size_t index){return values[index];}
 }
 
 public struct Vector3
@@ -195,10 +195,10 @@ public struct Vector3
     static Vector3 Zero(){return Vector3(0,0,0);}
     private float[3] values;
 
-    auto ref float x() return {return values[0];}
-    auto ref float y() return {return values[1];}
-    auto ref float z() return {return values[2];}
-    auto ref opIndex(size_t index){return values[index];}
+    inout float x() return {return values[0];}
+    inout float y() return {return values[1];}
+    inout float z() return {return values[2];}
+    inout opIndex(size_t index){return values[index];}
 }
 
 public struct Vector4
@@ -255,9 +255,9 @@ public struct Vector4
     static Vector4 Zero(){return Vector4(0,0,0,0);}
     private float[4] values;
 
-    auto ref float x() return {return values[0];}
-    auto ref float y() return {return values[1];}
-    auto ref float z() return {return values[2];}
-    auto ref float w() return {return values[3];}
-    auto ref opIndex(size_t index){return values[index];}
+    inout float x() return {return values[0];}
+    inout float y() return {return values[1];}
+    inout float z() return {return values[2];}
+    inout float w() return {return values[3];}
+    inout opIndex(size_t index){return values[index];}
 }

@@ -21,6 +21,7 @@ enum WatchFSDelay = 250;
 void watchFs(Tid tid, string watchDir,
 immutable(string[]) acceptedExtensions, immutable(string[]) ignoreDirs)
 {
+    import core.thread.osthread:Thread;
     bool shouldWatchFS = true;
     FileWatch watcher = FileWatch(watchDir, true);
     auto stopwatch = StopWatch(AutoStart.yes);
@@ -56,6 +57,8 @@ immutable(string[]) acceptedExtensions, immutable(string[]) ignoreDirs)
         // if (event.type == FileChangeEventType.rename) (Rename should not compile, it is not important)
         // else if (event.type == FileChangeEventType.createSelf) The folder should not be created while watching
         // else if (event.type == FileChangeEventType.removeSelf) It should not be removed while watching
+
+        Thread.sleep(dur!"msecs"(30)); //Saves a lot of CPU Time
     }
     stopwatch.stop();
     send(tid, true);

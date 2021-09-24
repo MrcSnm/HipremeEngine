@@ -22,17 +22,20 @@ else
     extern(C) Vector3 function(uint id=0) getScroll;
     void initInput()
     {
-        import hipengine.internal;
-        loadSymbol!isKeyPressed;
-        loadSymbol!isKeyJustPressed;
-        loadSymbol!isKeyJustReleased;
-        loadSymbol!getKeyDownTime;
-        loadSymbol!getKeyUpTime;
-        loadSymbol!isMouseButtonPressed;
-        loadSymbol!isMouseButtonJustPressed;
-        loadSymbol!isMouseButtonJustReleased;
-        loadSymbol!getTouchPosition;
-        loadSymbol!getTouchDeltaPosition;
-        loadSymbol!getScroll;
+        version(Script)
+        {
+            import hipengine.internal;
+            loadSymbol!isKeyPressed;
+            loadSymbol!isKeyJustPressed;
+            loadSymbol!isKeyJustReleased;
+            loadSymbol!getKeyDownTime;
+            loadSymbol!getKeyUpTime;
+            loadSymbol!isMouseButtonPressed;
+            loadSymbol!isMouseButtonJustPressed;
+            loadSymbol!isMouseButtonJustReleased;
+            loadSymbol!getTouchPosition;
+            loadSymbol!getTouchDeltaPosition;
+            loadSymbol!getScroll;
+        }
     }
 }

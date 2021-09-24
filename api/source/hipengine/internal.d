@@ -1,19 +1,25 @@
 module hipengine.internal;
-private __gshared void* _dll;
+
+
+version(Script){private __gshared void* _dll;}
 
 void initializeHip()
 {
-	version(Windows)
+	version(Script)
 	{
-		import core.sys.windows.windows;
-		_dll = GetModuleHandle(null);
-	}
-	else
-	{
-		import core.sys.posix.dlfcn:dlopen, RTLD_LAZY;
-		_dll = dlopen(null, RTLD_LAZY);
+		version(Windows)
+		{
+			import core.sys.windows.windows;
+			_dll = GetModuleHandle(null);
+		}
+		else
+		{
+			import core.sys.posix.dlfcn:dlopen, RTLD_LAZY;
+			_dll = dlopen(null, RTLD_LAZY);
+		}
 	}
 }
+version(Script):
 version(Windows)
 {
 	import core.sys.windows.windows:GetProcAddress;
@@ -35,4 +41,22 @@ void loadSymbol(alias s)()
 typeof(s) getSymbol(alias s)()
 {
     return cast(typeof(s))_loadSymbol(_dll, (s.stringof~"\0").ptr);
+}
+
+
+/**
+*	This function receives a function alias and the module name to represent.
+*
+*	Example:
+*	```d
+*	void function() someFunction;
+*	dlangGetFuncName!(someFunction, "hipengine.api.something");
+*	```
+* 
+*	PS: Won't import isFunction for mantaining binary minimal
+*/
+package string dlangGetFuncName(alias func, string _module)()
+{
+	// import core.demangle;
+	return mangleFunc!(typeof(func))(_module);
 }
