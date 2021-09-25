@@ -14,7 +14,18 @@
 			"targetType": "executable",
 			"versions": [
 				"Desktop"
+			],
+			"versions-windows" : [
+				"FSWUsesWin32"
 			]
+		},
+		{
+			"name": "release_game",
+			"targetPath": "bin/desktop",
+			"targetType": "executable",
+			"versions": ["Standalone", "Desktop"],
+			
+			"sourcePaths": ["build/release_game/source"]
 		},
 		{
 			"name": "uwp",
