@@ -108,6 +108,7 @@ class HipSpriteBatch
         }
         mesh.setVertices(vertices);
         mesh.setIndices(indices);
+        setTexture(Texture.getPixelTexture());
     }
 
     void setShader(Shader s)

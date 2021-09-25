@@ -122,11 +122,11 @@ class EventDispatcher
                     break;
                 case HipEventQueue.EventType.keyDown:
                     auto k = ev.get!(HipEventQueue.Key);
-                    keyboard.handleKeyDown(cast(SDL_Keycode)k.id);
+                    keyboard.handleKeyDown(cast(SDL_Keycode)(cast(char)k.id).toUppercase);
                     break;
                 case HipEventQueue.EventType.keyUp:
                     auto k = ev.get!(HipEventQueue.Key);
-                    keyboard.handleKeyUp(cast(SDL_Keycode)k.id);
+                    keyboard.handleKeyUp(cast(SDL_Keycode)(cast(char)k.id).toUppercase);
                     break;
                 case HipEventQueue.EventType.exit:
                     hasQuit = true;
@@ -152,11 +152,11 @@ class EventDispatcher
     bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isJustPressed(btn);}
     bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isJustReleased(btn);}
     Vector3 getScroll(){return mouse.getScroll();}
-    bool isKeyPressed(char key, uint id = 0){return keyboard.isKeyPressed(key);}
-    bool isKeyJustPressed(char key, uint id = 0){return keyboard.isKeyJustPressed(key);}
-    bool isKeyJustReleased(char key, uint id = 0){return keyboard.isKeyJustReleased(key);}
-    float getKeyDownTime(char key, uint id = 0){return keyboard.getKeyDownTime(key);}
-    float getKeyUpTime(char key, uint id = 0){return keyboard.getKeyUpTime(key);}
+    bool isKeyPressed(char key, uint id = 0){return keyboard.isKeyPressed(key.toUppercase);}
+    bool isKeyJustPressed(char key, uint id = 0){return keyboard.isKeyJustPressed(key.toUppercase);}
+    bool isKeyJustReleased(char key, uint id = 0){return keyboard.isKeyJustReleased(key.toUppercase);}
+    float getKeyDownTime(char key, uint id = 0){return keyboard.getKeyDownTime(key.toUppercase);}
+    float getKeyUpTime(char key, uint id = 0){return keyboard.getKeyUpTime(key.toUppercase);}
 
     void postUpdate()
     {

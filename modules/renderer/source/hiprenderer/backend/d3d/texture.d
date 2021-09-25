@@ -99,6 +99,7 @@ class Hip_D3D11_Texture : ITexture
         _hip_d3d_device.CreateTexture2D(&desc, &data, &texture);
         _hip_d3d_device.CreateShaderResourceView(texture, cast(D3D11_SHADER_RESOURCE_VIEW_DESC*)null, &resource);
         updateSamplerState();
+        bind();
         return false;
     }
     void bind()

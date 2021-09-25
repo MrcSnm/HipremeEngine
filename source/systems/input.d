@@ -11,27 +11,42 @@ version(Android)
     alias HipAndroidInput = javaGetPackage!("com.hipremeengine.app.HipInput");
     @JavaFunc!(HipAndroidInput) void onMotionEventActionMove(int pointerId, float x, float y)
 	{
-        HipInput.post(0, HipInput.InputType.touchMove, HipInput.Touch(cast(ushort)pointerId, x,y));
+        HipEventQueue.post(0, HipEventQueue.EventType.touchMove, HipEventQueue.Touch(cast(ushort)pointerId, x,y));
 	}
 
     @JavaFunc!(HipAndroidInput) void onMotionEventActionPointerDown(int pointerId, float x, float y)
 	{
-        HipInput.post(0, HipInput.InputType.touchDown, HipInput.Touch(cast(ushort)pointerId, x,y));
+        HipEventQueue.post(0, HipEventQueue.EventType.touchDown, HipEventQueue.Touch(cast(ushort)pointerId, x,y));
 	}
     @JavaFunc!(HipAndroidInput) void onMotionEventActionPointerUp(int pointerId, float x, float y)
 	{
-        HipInput.post(0, HipInput.InputType.touchUp, HipInput.Touch(cast(ushort)pointerId, x,y));
+        HipEventQueue.post(0, HipEventQueue.EventType.touchUp, HipEventQueue.Touch(cast(ushort)pointerId, x,y));
 	}
     @JavaFunc!(HipAndroidInput) void onMotionEventActionScroll(float x, float y)
 	{
-        HipInput.post(0, HipInput.InputType.touchScroll, HipInput.Touch(ushort.max, x,y));
+        HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Touch(ushort.max, x,y));
 	}
 
     mixin javaGenerateModuleMethodsForPackage!(HipAndroidInput, systems.input, false);
 }
-else
+else version(UWP)
 {
-
+    export extern(C) void HipInputOnTouchPressed(uint id, float x, float y)
+    {
+        HipEventQueue.post(0, HipEventQueue.EventType.touchDown, HipEventQueue.Touch(cast(ushort)id, x, y));
+    }
+    export extern(C) void HipInputOnTouchMoved(uint id, float x, float y)
+    {
+        HipEventQueue.post(0, HipEventQueue.EventType.touchMove, HipEventQueue.Touch(cast(ushort)id, x, y));
+    }
+    export extern(C) void HipInputOnKeyDown(uint virtualKey)
+    {
+        HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)virtualKey));
+    }
+    export extern(C) void HipInputOnKeyUp(uint virtualKey)
+    {
+        HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)virtualKey));
+    }
 } 
 
 /**

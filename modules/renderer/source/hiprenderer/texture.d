@@ -26,6 +26,23 @@ class Texture
     Image img;
     uint width,height;
     TextureFilter min, mag;
+    private static Texture pixelTexture;
+    public static Texture getPixelTexture()
+    {
+        if(pixelTexture is null)
+        {
+            pixelTexture = new Texture();
+            pixelTexture.img = new Image("pixel");
+            ubyte[4] pixel = IHipImageDecoder.getPixel();
+            ubyte[] temp = pixel;
+            pixelTexture.img.pixels = cast(void*)temp.ptr;
+            pixelTexture.img.width = 1;
+            pixelTexture.img.height = 1;
+            pixelTexture.img.bytesPerPixel = 4;
+            pixelTexture.textureImpl.load(pixelTexture.img);
+        }
+        return pixelTexture;
+    }
 
     /**
     *   Make it available for implementors

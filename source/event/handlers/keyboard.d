@@ -35,7 +35,7 @@ enum KeyCodes
     SEMICOLON = 186, EQUAL, COMMA, MINUS, PERIOD = 190, SLASH, BACKQUOTE, BRACKET_LEFT = 219, BACKSLASH, BRACKET_RIGHT, QUOTE
 }
 
-private char toUppercase(char a)
+char toUppercase(char a)
 {
     ubyte charV = ubyte(a);
     if(charV >= KeyCodes.A+32 && charV <= KeyCodes.Z+32)
