@@ -9,7 +9,8 @@ Distributed under the MIT Software License.
 	https://opensource.org/licenses/MIT)
 */
 
-module global.consts;
+module global.gamedef;
+import systems.game;
 import bindbc.sdl;
 
 public:
@@ -18,4 +19,7 @@ public:
     static int SCREEN_HEIGHT = 600;
     static SDL_Window* gWindow = null;
     static SDL_Surface* gScreenSurface = null;
+    ///Globally shared for accessing it on Android Game Thread
+   __gshared GameSystem sys;
+   __gshared float g_deltaTime = 0;
 

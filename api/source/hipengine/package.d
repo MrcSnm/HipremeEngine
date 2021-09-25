@@ -14,47 +14,56 @@ version (HipremeG2D)
 	public import hipengine.api.renderer.texture;
 	public import hipengine.api.graphics.g2d.hipsprite;
 }
-public import hipengine.api.data.image;
-public import hipengine.api.graphics.color;
-public import hipengine.api.renderer.texture;
-public import hipengine.api.graphics.g2d.hipsprite;
+//View + Renderer
+public import hipengine.api.graphics.g2d.renderer2d;
 public import hipengine.api.view;
 
 
-void function(string s) log;
-void initConsole()
+version(HipremeEngineDef)
 {
-    import core.sys.windows.windows;
-    log = cast(typeof(log))GetProcAddress(GetModuleHandle(null), "log\0".ptr);
+	public import hipengine.api.math;
+	// public import math.vector;
+	
+	//Input
+	public import HipInput = hipengine.api.input;
+	alias initInput = HipInput.initInput;
+
+	import hipengine.internal;
+	public import hipengine.internal:initializeHip;
+}
+else
+{
+
+	//Math
+	public import hipengine.api.math;
+
+	//Input
+	public import HipInput = hipengine.api.input;
+	alias initInput = HipInput.initInput;
+
+	import hipengine.internal;
+	public import hipengine.internal:initializeHip;
 }
 
-
-void function() beginSprite;
-void function() endSprite;
-void function() beginGeometry;
-void function() endGeometry;
-void function(HipColor color) setGeometryColor;
-void function(int x, int y) drawPixel;
-void function(int x, int y, int w, int h) drawRectangle;
-void function(int x1, int y1, int x2, int y2, int x3, int y3) drawTriangle;
-void function(int x1, int y1, int x2, int y2) drawLine;
-void function(IHipSprite sprite) drawSprite;
-IHipSprite function(string texturePath) newSprite;
-
-
-void initG2D()
+version(Script) void function(string s) log;
+void initConsole()
 {
-	import core.sys.windows.windows;
-	void* lh = GetModuleHandle(null);
-	beginSprite = cast(typeof(beginSprite))GetProcAddress(lh, "beginSprite");
-	endSprite = cast(typeof(endSprite))GetProcAddress(lh, "endSprite");
-	beginGeometry = cast(typeof(beginGeometry))GetProcAddress(lh, "beginGeometry");
-	endGeometry = cast(typeof(endGeometry))GetProcAddress(lh, "endGeometry");
-	setGeometryColor = cast(typeof(setGeometryColor))GetProcAddress(lh, "setGeometryColor");
-	drawPixel = cast(typeof(drawPixel))GetProcAddress(lh, "drawPixel");
-	drawRectangle = cast(typeof(drawRectangle))GetProcAddress(lh, "drawRectangle");
-	drawTriangle = cast(typeof(drawTriangle))GetProcAddress(lh, "drawTriangle");
-	drawLine = cast(typeof(drawLine))GetProcAddress(lh, "drawLine");
-	drawSprite = cast(typeof(drawSprite))GetProcAddress(lh, "drawSprite");
-	newSprite = cast(typeof(newSprite))GetProcAddress(lh, "newSprite");
+	version(Script){loadSymbol!log;}
+}
+
+mixin template HipEngineMain(alias StartScene)
+{
+	version(Script)
+	{
+		__gshared AScene _exportedScene;
+		version(Windows)
+		{
+			import core.sys.windows.dll;
+			mixin SimpleDllMain;
+		}
+		export extern(C) AScene HipremeEngineGameInit(){return _exportedScene = new StartScene();}
+		export extern(C) void HipremeEngineGameDestroy(){if(_exportedScene)destroy(_exportedScene);_exportedScene=null;}
+	}
+	else
+		alias HipEngineMainScene  = StartScene;
 }

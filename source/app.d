@@ -13,7 +13,7 @@ import console.console;
 import bind.external;
 import data.hipfs;
 import error.handler;
-import global.consts;
+import global.gamedef;
 import hipaudio.audio;
 version(Android)
 {
@@ -83,9 +83,6 @@ static void initEngine(bool audio3D = false)
 	}
 }
 
-///Globally shared for accessing it on Android Game Thread
-__gshared GameSystem sys;
-__gshared float g_deltaTime = 0;
 enum float FRAME_TIME = 1000/60; //60 frames per second
 
 extern(C)int SDL_main()
@@ -282,3 +279,7 @@ export extern(C) void log(string log)
 	import console.log;
 	rawlog(log);
 }
+
+import math.api;
+
+mixin ExportMathAPI;

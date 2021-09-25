@@ -29,6 +29,13 @@ bool isLiteral(alias variable)(string var = variable.stringof)
     return (isNumeric(var) || count(var, "\"") == 2);
 }
 
+
+ulong enumLength(T)()
+if(is(T == enum))
+{
+    return __traits(allMembers, T).length;
+}
+
 T nullCheck(string expression, T, Q)(T defaultValue, Q target)
 {
     import std.traits:ReturnType;

@@ -56,10 +56,11 @@ pure long indexOf(in string str,in string toFind, int startIndex = 0)
     return -1;
 }
 
-pure long lastIndexOf(in string str,in string toFind)
+pure long lastIndexOf(in string str,in string toFind, long startIndex = -1)
 {
     long z = 1;
-    for(long i = str.length-1; i >= 0; i--)
+    if(startIndex == -1) startIndex = str.length-1;
+    for(long i = startIndex; i >= 0; i--)
     {
         while(str[i-z+1] == toFind[$-z])
         {

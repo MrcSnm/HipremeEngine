@@ -7,6 +7,23 @@
 	"sourcePaths": [
 		"source"
 	],
+	"configurations": 
+	[
+		{
+			"name": "script",
+			"versions": [
+				"Script"
+			],
+			"targetType": "library"
+		},
+		{
+			"name": "hipengine",
+			"importPaths": [
+				"source"
+			],
+			"targetType": "sourceLibrary"
+		}
+	],
 	"license": "proprietary",
 	"name": "hipengine_api"
 }

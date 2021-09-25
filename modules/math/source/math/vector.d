@@ -12,7 +12,6 @@ Distributed under the MIT Software License.
 module math.vector;
 import core.math : sqrt, sin, cos;
 
-
 public struct Vector2
 {
     this(float x, float y)
@@ -71,13 +70,6 @@ public struct Vector2
     {
         mixin("return Vector2(values[0] "~ op ~ "rhs , values[1] "~ op ~ "rhs);");
     }
-
-    float opIndexAssign(float value, size_t index)
-    {
-        values[index] = value;
-        return value;
-    }
-    
     ref Vector2 opAssign(Vector2 other) return
     {
         values[0] = other[0];
@@ -88,10 +80,9 @@ public struct Vector2
     static Vector2 zero(){return Vector2(0,0);}
     private float[2] values;
 
-    scope ref float x() return {return values[0];}
-    scope ref float y() return {return values[1];}
-    ref float opIndex(size_t index) return {return values[index];}
-
+    auto ref float x() return {return values[0];}
+    auto ref float y() return {return values[1];}
+    auto ref opIndex(size_t index){return values[index];}
 }
 
 
@@ -144,7 +135,7 @@ public struct Vector3
     }
 
     pragma(inline, true)
-    auto axisAngle(const ref Vector3 axis, float angle)
+    auto axisAngle(const ref Vector3 axis, float angle) const
     {
         auto n = axis.unit;
         auto proj = n* axis.dot(n);
@@ -193,13 +184,6 @@ public struct Vector3
         mixin("this.z"~op~"= value;");
         return this;
     }
-
-    float opIndexAssign(float value, size_t index)
-    {
-        values[index] = value;
-        return value;
-    }
-    
     ref Vector3 opAssign(Vector3 other) return
     {
         values[0] = other[0];
@@ -218,11 +202,10 @@ public struct Vector3
     static Vector3 Zero(){return Vector3(0,0,0);}
     private float[3] values;
 
-    scope ref float x() return {return values[0];}
-    scope ref float y() return {return values[1];}
-    scope ref float z() return {return values[2];}
-    ref float opIndex(size_t index) return {return values[index];}
-
+    auto ref float x() return {return values[0];}
+    auto ref float y() return {return values[1];}
+    auto ref float z() return {return values[2];}
+    auto ref opIndex(size_t index){return values[index];}
 }
 
 public struct Vector4
@@ -278,12 +261,6 @@ public struct Vector4
         values[2] "~ op~"rhs,
         values[3] "~ op~"rhs);");
     }
-
-    float opIndexAssign(float value, size_t index)
-    {
-        values[index] = value;
-        return value;
-    }
     
     ref Vector4 opAssign(Vector4 other) return
     {
@@ -305,14 +282,10 @@ public struct Vector4
     static Vector4 Zero(){return Vector4(0,0,0,0);}
     private float[4] values;
 
-    scope ref float x() return {return values[0];}
-    scope ref float y() return {return values[1];}
-    scope ref float z() return {return values[2];}
-    scope ref float w() return {return values[3];}
-    ref float opIndex(size_t index) return {return values[index];}
+    auto ref float x() return {return values[0];}
+    auto ref float y() return {return values[1];}
+    auto ref float z() return {return values[2];}
+    auto ref float w() return {return values[3];}
+    auto ref opIndex(size_t index){return values[index];}
 
 }
-
-
-
-// alias Vectord = Vector!double;
