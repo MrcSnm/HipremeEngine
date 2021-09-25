@@ -10,6 +10,7 @@ public interface IHipImageDecoder
     ubyte getBytesPerPixel();
     ubyte[] getPalette();
     final ushort getBitsPerPixel(){return getBytesPerPixel()*8;}
+    static ubyte[4] getPixel(){return cast(ubyte[4])[255,255,255,255];}
     ///Dispose the pixels
     void dispose();
 }

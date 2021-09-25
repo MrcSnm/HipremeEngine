@@ -66,6 +66,7 @@ final class HipSDLImageDecoder : IHipAnyImageDecoder
         }
         return palette;
     }
+
     ///Dispose the pixels
     void dispose(){if(img != null){SDL_FreeSurface(img);img = null;}}
 }

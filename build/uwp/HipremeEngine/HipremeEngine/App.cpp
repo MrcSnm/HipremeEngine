@@ -173,9 +173,8 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
 
     }
 
-    void Uninitialize()
-    {
-    }
+    void Uninitialize(){}
+    void PointerPressed(CoreWindow* window, PointerEventArgs* args){}
 
     void Run()
     {
@@ -185,7 +184,7 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
         CoreDispatcher dispatcher = window.Dispatcher();
         while (!m_windowClosed)
         {
-            dispatcher.ProcessEvents(CoreProcessEventsOption::ProcessOneIfPresent);
+            dispatcher.ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
             HipremeUpdate();
             HipremeRender();
         }
@@ -203,6 +202,8 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
         m_visuals = root.Children();
 
         window.PointerPressed({ this, &App::OnPointerPressed });
+        window.KeyDown({ this, &App::OnKeyDown });
+        window.KeyUp({ this, &App::OnKeyUp });
         window.PointerMoved({ this, &App::OnPointerMoved });
         window.Closed({ this, &App::OnWindowClosed });
 
@@ -217,8 +218,26 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
 
     }
 
-    void OnPointerPressed(IInspectable const &, PointerEventArgs const & args){}
-    void OnPointerMoved(IInspectable const &, PointerEventArgs const & args){}
+    void OnPointerPressed(IInspectable const &, PointerEventArgs const & args)
+    {
+        winrt::Windows::UI::Input::PointerPoint p = args.CurrentPoint();
+        winrt::Windows::Foundation::Point point = p.Position();
+        HipInputOnTouchPressed(p.PointerId()-1, point.X, point.Y);
+    }
+    void OnPointerMoved(IInspectable const &, PointerEventArgs const & args)
+    {
+        winrt::Windows::UI::Input::PointerPoint p = args.CurrentPoint();
+        winrt::Windows::Foundation::Point point = p.Position();
+        HipInputOnTouchMoved(p.PointerId()-1, point.X, point.Y);
+    }
+    void OnKeyDown(IInspectable const&, KeyEventArgs const& args)
+    {
+        HipInputOnKeyDown((uint32_t)args.VirtualKey());
+    }
+    void OnKeyUp(IInspectable const&, KeyEventArgs const& args)
+    {
+        HipInputOnKeyUp((uint32_t)args.VirtualKey());
+    }
 };
 
 int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)

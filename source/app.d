@@ -281,5 +281,9 @@ export extern(C) void log(string log)
 }
 
 import math.api;
-
+version(UWP)
+{
+	import core.sys.windows.dll;
+	mixin SimpleDllMain;
+}
 mixin ExportMathAPI;
