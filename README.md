@@ -71,6 +71,14 @@ The engine mantains some global options which you can modify it on source/global
 - Pack: HapFile(Hipreme Asset Packing File)
 - Settings: INI/CONF parser
 
+### Coding
+
+- Scripting support ( Using D-lang ), check api module for reference
+- Filewatcher for recompiling the script
+- Live reload ( no engine restart for coding )
+  
+
+
 ## Next steps
 
 - GLSL to HLSL transpiler
@@ -83,4 +91,4 @@ The engine mantains some global options which you can modify it on source/global
 
 ## Issues list
 
-- D3DReflect needs to link to D3dcompiler_43 instead of _47
+- ~~D3DReflect needs to link to D3dcompiler_43 instead of _47~~ -> Fixed, directx-d D3DReflect had a wrong GUID

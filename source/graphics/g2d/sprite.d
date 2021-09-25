@@ -13,7 +13,7 @@ module graphics.g2d.sprite;
 import graphics.g2d.spritebatch;
 import hiprenderer.texture;
 import debugging.gui;
-import hipengine.api.graphics.g2d.hipsprite;
+public import hipengine.api.graphics.g2d.hipsprite;
 
 @InterfaceImplementation(function(ref void* data)
 {

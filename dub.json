@@ -11,7 +11,21 @@
 		{
 			"name": "desktop",
 			"targetPath": "bin/desktop",
-			"targetType": "executable"
+			"targetType": "executable",
+			"versions": [
+				"Desktop"
+			],
+			"versions-windows" : [
+				"FSWUsesWin32"
+			]
+		},
+		{
+			"name": "release_game",
+			"targetPath": "bin/desktop",
+			"targetType": "executable",
+			"versions": ["Standalone", "Desktop"],
+			
+			"sourcePaths": ["build/release_game/source"]
 		},
 		{
 			"name": "uwp",
@@ -71,6 +85,9 @@
 		"renderer"  : {"path" : "./modules/renderer"},
 		"audio" 	: {"path" : "./modules/audio"}
 	},
+	"subConfigurations": {
+		"hipengine_api" : "hipengine"
+	},
 	"description": "Open-Source D Game Engine",
 	"dflags": [
 		"-J=."
@@ -93,6 +110,7 @@
 	],
 	"versions": [
 		"HIPREME_DEBUG",
+		"HipremeEngineDef",
 		"SDL_208",
 		"BindSDL_Mixer",
 		"BindSDL_TTF",

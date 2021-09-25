@@ -15,6 +15,9 @@ import std.system:os;
 import core.stdc.string;
 import std.array:replace;
 
+version(Standalone){}
+else{public import fswatch;}
+
 pure nothrow string sanitizePath(string path)
 {
     switch(os)
@@ -69,20 +72,29 @@ bool dynamicLibraryIsLibNameValid(string libName)
         return true;
 }
 
+///It will open the current executable if libName == null
 void* dynamicLibraryLoad(string libName)
 {
     void* ret;
     version(Windows)
     {
-        ret = LoadLibraryA((libName~"\0").ptr);
+        if(libName == null)
+            ret = GetModuleHandle(null);
+        else
+            ret = LoadLibraryA((libName~"\0").ptr);
     }
     else version(Posix)
     {
         import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
-        ret = dlopen((dllName~"\0").ptr, RTLD_LAZY);
+        if(libName == null)
+            ret = dlopen(null, RTLD_LAZY);
+        else
+            ret = dlopen((libName~"\0").ptr, RTLD_LAZY);
     }
     return ret;
 }
+
+version(Windows) private const (char)* err;
 void* dynamicLibrarySymbolLink(void* dll, const (char)* symbolName)
 {
     void* ret;
@@ -94,13 +106,12 @@ void* dynamicLibrarySymbolLink(void* dll, const (char)* symbolName)
     }
     else version(Posix)
     {
-        import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
-        ret = dlopen(dllName, RTLD_LAZY);
+        import core.sys.posix.dlfcn : dlsym;
+        ret = dlsym(dll, symbolName);
     }
     return ret;
 }
 
-version(Windows) private const (char)* err;
 
 string dynamicLibraryError()
 {
@@ -128,5 +139,4 @@ bool dynamicLibraryRelease(void* dll)
         return dlclose(dll) == 0;
     }
     else static assert(0, "Platform not supported");
-        
 }
