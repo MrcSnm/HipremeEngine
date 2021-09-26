@@ -63,6 +63,34 @@ class GameSystem
     bool hasFinished;
     float fps;
 
+    this()
+    {
+        keyboard = new KeyboardHandler();
+        keyboard.addKeyListener(SDLK_ESCAPE, new class HipButton
+        {
+            override void onDown(){hasFinished = true;}
+            override void onUp(){}
+        });
+        version(Standalone){}
+        else
+        {
+            keyboard.addKeyListener(SDLK_F5, new class HipButton
+            {
+                override void onDown(){}
+                override void onUp(){recompileReloadExternalScene();}
+            });
+        }
+
+        dispatcher = new EventDispatcher(&keyboard);
+        dispatcher.addOnResizeListener((uint width, uint height)
+        {
+            HipRenderer.width = width;
+            HipRenderer.height = height;
+            foreach (AScene s; scenes)
+                s.onResize(width, height);
+        });
+    }
+
 
     void loadGame(string gameDll)
     {
@@ -154,33 +182,7 @@ class GameSystem
         }
     }
 
-    this()
-    {
-        keyboard = new KeyboardHandler();
-        keyboard.addKeyListener(SDLK_ESCAPE, new class HipButton
-        {
-            override void onDown(){hasFinished = true;}
-            override void onUp(){}
-        });
-        version(Standalone){}
-        else
-        {
-            keyboard.addKeyListener(SDLK_F5, new class HipButton
-            {
-                override void onDown(){}
-                override void onUp(){recompileReloadExternalScene();}
-            });
-        }
-
-        dispatcher = new EventDispatcher(&keyboard);
-        dispatcher.addOnResizeListener((uint width, uint height)
-        {
-            HipRenderer.width = width;
-            HipRenderer.height = height;
-            foreach (AScene s; scenes)
-                s.onResize(width, height);
-        });
-    }
+    
 
     void addScene(AScene s)
     {

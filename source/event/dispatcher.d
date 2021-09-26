@@ -44,6 +44,7 @@ class EventDispatcher
         keyboard = kb;
         mouse = new HipMouse();
         HipEventQueue.newController(); //Creates controller 0
+        initXboxGamepadInput();
     }
     
     bool hasQuit = false;
@@ -111,6 +112,8 @@ class EventDispatcher
                 case HipEventQueue.EventType.touchDown:
                     auto t = ev.get!(HipEventQueue.Touch);
                     mouse.setPressed(HipMouseButton.LEFT, true);
+                    foreach (g; gamepads)
+                        g.poll();
                     break;
                 case HipEventQueue.EventType.touchUp:
                     auto t = ev.get!(HipEventQueue.Touch);
@@ -132,12 +135,25 @@ class EventDispatcher
                     auto k = ev.get!(HipEventQueue.Key);
                     keyboard.handleKeyUp(cast(SDL_Keycode)(cast(char)k.id).toUppercase);
                     break;
+                case HipEventQueue.EventType.gamepadConnected:
+                    import console.log;rawlog("Gamepad connected");
+                    auto g = ev.get!(HipEventQueue.Gamepad);
+                    if(g.id+1 > gamepads.length)
+                        gamepads~= new HipGamePad();
+                    gamepads[g.id].setConnected(true);
+                    break;
+                case HipEventQueue.EventType.gamepadDisconnected:
+                    import console.log;rawlog("Gamepad disconnected");
+                    auto g = ev.get!(HipEventQueue.Gamepad);
+                    gamepads[g.id].setConnected(false);
+                    break;
                 case HipEventQueue.EventType.exit:
                     hasQuit = true;
                     break;
                 default:break;
             }
         }
+     
         keyboard.update();
         frameCount++;
     }

@@ -1,6 +1,10 @@
 #pragma once
 #include "Def.h"
 
+using namespace winrt;
+using namespace Windows;
+using namespace Windows::Gaming::Input;
+
 struct HipInputXboxGamepadState
 {
     int buttons;
@@ -49,19 +53,19 @@ d_import void HipInputGamepadSetXboxGamepadVibration(
 /// that slot will be populated with the gamepad
 /// </summary>
 /// <param name="gamepad"></param>
-void AddGamepad(Gamepad* gamepad);
+void AddGamepad(Gamepad gamepad);
 
 /// <summary>
 /// Returns 255 if no gamepad is found
 /// </summary>
 /// <param name="gamepad"></param>
 /// <returns></returns>
-ubyte GetGamepadID(Gamepad* gamepad);
+ubyte GetGamepadID(Gamepad gamepad);
 
 /// <summary>
 /// Remove gamepad from the internal managed list. It won't change the list order.
 /// It will set it to null and reassign to that slot on the next gamepad added.
 /// </summary>
 /// <param name="gamepad"></param>
-void RemoveGamepad(Gamepad* gamepad);
+void RemoveGamepad(Gamepad gamepad);
 void DestroyGamepads();

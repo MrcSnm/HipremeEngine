@@ -58,11 +58,11 @@ else version(UWP)
     {
         HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)virtualKey));
     }
-    export extern(C) void HipInputOnGamepadConnected(uint id)
+    export extern(C) void HipInputOnGamepadConnected(ubyte id)
     {
         HipEventQueue.post(0, HipEventQueue.EventType.gamepadConnected, HipEventQueue.Gamepad(id));
     }
-    export extern(C) void HipInputOnGamepadDisconnected(uint id)
+    export extern(C) void HipInputOnGamepadDisconnected(ubyte id)
     {
         HipEventQueue.post(0, HipEventQueue.EventType.gamepadDisconnected, HipEventQueue.Gamepad(id));
     }
