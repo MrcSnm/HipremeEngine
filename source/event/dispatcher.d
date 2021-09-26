@@ -18,6 +18,7 @@ private:
 
 public:
     import systems.input;
+    import hipengine.api.math.vector;
     import hipengine.api.input.keyboard;
     import hipengine.api.input.button;
     import hipengine.api.input.mouse;
@@ -112,8 +113,6 @@ class EventDispatcher
                 case HipEventQueue.EventType.touchDown:
                     auto t = ev.get!(HipEventQueue.Touch);
                     mouse.setPressed(HipMouseButton.LEFT, true);
-                    foreach (g; gamepads)
-                        g.poll();
                     break;
                 case HipEventQueue.EventType.touchUp:
                     auto t = ev.get!(HipEventQueue.Touch);
@@ -153,7 +152,8 @@ class EventDispatcher
                 default:break;
             }
         }
-     
+        foreach (g; gamepads)
+            g.poll();
         keyboard.update();
         frameCount++;
     }
@@ -178,6 +178,21 @@ class EventDispatcher
     float getKeyDownTime(char key, uint id = 0){return keyboard.getKeyDownTime(key.toUppercase);}
     float getKeyUpTime(char key, uint id = 0){return keyboard.getKeyUpTime(key.toUppercase);}
     ubyte getGamepadCount(){return cast(ubyte)gamepads.length;}
+    AHipGamepad getGamepad(ubyte id)
+    {
+        if(id >= gamepads.length)return null;
+        return gamepads[id];
+    }
+    Vector3 getAnalog(HipGamepadAnalogs analog, ubyte id = 0)
+    {
+        if(id >= gamepads.length) return Vector3.Zero;
+        return gamepads[id].getAnalogState(analog);
+    }
+    bool isGamepadButtonPressed(HipGamepadButton btn, ubyte id = 0)
+    {
+        if(id >= gamepads.length) return false;
+        return gamepads[id].isButtonPressed(btn);
+    }
 
     void postUpdate()
     {

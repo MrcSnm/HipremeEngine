@@ -8,8 +8,7 @@ private enum Define(string code)
     else
         return "export extern(C) "~code;
 }
-import hipengine.api.math.vector;
-import hipengine.api.input.mouse;
+
 import event.dispatcher;
 import systems.game;
 
@@ -61,4 +60,19 @@ mixin(Define(q{Vector3 getScroll()
 mixin(Define(q{ubyte getGamepadCount()
 {
     return sys.dispatcher.getGamepadCount();
+}}));
+
+mixin(Define(q{AHipGamepad getGamepad(ubyte id)
+{
+    return sys.dispatcher.getGamepad(id);
+}}));
+
+mixin(Define(q{Vector3 getAnalog(HipGamepadAnalogs analog, ubyte id = 0)
+{
+    return sys.dispatcher.getAnalog(analog);
+}}));
+
+mixin(Define(q{bool isGamepadButtonPressed(HipGamepadButton btn, ubyte id = 0)
+{
+    return sys.dispatcher.isGamepadButtonPressed(btn, id);
 }}));
