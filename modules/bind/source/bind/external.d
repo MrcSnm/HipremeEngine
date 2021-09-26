@@ -18,12 +18,12 @@ version(UWP)
     extern(Windows) nothrow @system 
     {
         HWND function() getCoreWindowHWND;
-        void function(wchar* wcstr) OutputUWP;
+        void function(const(wchar*) wcstr) OutputUWP;
     }
     void uwpPrint(string str)
     {
-        import std.conv:to;
-        OutputUWP(cast(wchar*)to!wstring(str).ptr);
+        import std.utf:toUTF16z;
+        OutputUWP(toUTF16z(str));
     } 
 }
 alias myFunPtr = extern(Windows) nothrow @system int function();

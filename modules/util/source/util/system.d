@@ -47,10 +47,12 @@ version(Windows)
             moduleHandle = GetModuleHandle(null);
         return GetProcAddress(moduleHandle, (name~"\0").ptr);
     }
-
-    void dll_import_varS(alias varSymbol)()
+    void dll_import_varS(alias varSymbol, string s = "")()
     {
-        varSymbol = cast(typeof(varSymbol))dll_import_var(varSymbol.stringof);
+        static if(s == "")
+            varSymbol = cast(typeof(varSymbol))dll_import_var(varSymbol.stringof);
+        else
+            varSymbol = cast(typeof(varSymbol))dll_import_var(s);
     }
 }
 
@@ -139,4 +141,16 @@ bool dynamicLibraryRelease(void* dll)
         return dlclose(dll) == 0;
     }
     else static assert(0, "Platform not supported");
+}
+
+/** 
+*   Used for setting correctly external mangling based on version.
+*   Remember calling extern(D): after making the definitions
+*/
+string external()
+{
+    version(UWP)
+        return "extern(Windows) nothrow @system: ";
+    else
+        return "extern(C) nothrow: ";
 }

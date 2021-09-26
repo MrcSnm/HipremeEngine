@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <CoreWindow.h>
 #include "d_game.h"
+#include "input.hpp"
 #include "Def.h"
 
 using namespace winrt;
@@ -10,7 +11,7 @@ using namespace Windows::Foundation::Numerics;
 using namespace Windows::UI;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Composition;
-
+using namespace Windows::Gaming::Input;
 
 ID3D11Device* g_D3D11Device;
 HWND g_CoreWindowHWND;
@@ -174,7 +175,6 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
     }
 
     void Uninitialize(){}
-    void PointerPressed(CoreWindow* window, PointerEventArgs* args){}
 
     void Run()
     {
@@ -192,7 +192,7 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
     }
     void OnWindowClosed(const CoreWindow& sender, const CoreWindowEventArgs& args){m_windowClosed = true;}
 
-    void SetWindow(CoreWindow const & wnd)
+    void SetWindow(CoreWindow const& wnd)
     {
         window = wnd;
         Compositor compositor;
@@ -202,15 +202,18 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
         m_visuals = root.Children();
 
         window.PointerPressed({ this, &App::OnPointerPressed });
+        window.PointerMoved({ this, &App::OnPointerMoved });
+        window.PointerReleased({ this , &App::OnPointerReleased });
+        window.PointerWheelChanged({ this , &App::OnPointerWheelChanged});
+        
+        Gamepad::GamepadAdded({ this, &App::OnGamepadAdded });
+        Gamepad::GamepadRemoved({ this, &App::OnGamepadRemoved });
+        
+
         window.KeyDown({ this, &App::OnKeyDown });
         window.KeyUp({ this, &App::OnKeyUp });
-        window.PointerMoved({ this, &App::OnPointerMoved });
         window.Closed({ this, &App::OnWindowClosed });
 
-        window.PointerReleased([&](auto && ...)
-        {
-            m_selected = nullptr;
-        });
 
         HMODULE lib = LoadDLL(L"hipreme_engine.dll");
         if (d_game_LoadDLL(lib) != 0)
@@ -230,6 +233,26 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
         winrt::Windows::Foundation::Point point = p.Position();
         HipInputOnTouchMoved(p.PointerId()-1, point.X, point.Y);
     }
+    void OnPointerReleased(IInspectable const&, PointerEventArgs const& args)
+    {
+        winrt::Windows::UI::Input::PointerPoint p = args.CurrentPoint();
+        winrt::Windows::Foundation::Point point = p.Position();
+        HipInputOnTouchReleased(p.PointerId() - 1, point.X, point.Y);
+    }
+
+    void OnPointerWheelChanged(IInspectable const&, PointerEventArgs const& args)
+    {
+        winrt::Windows::UI::Input::PointerPoint p = args.CurrentPoint();
+        winrt::Windows::UI::Input::PointerPointProperties prop = p.Properties();
+
+        float val = (float)prop.MouseWheelDelta();
+
+        if (prop.IsHorizontalMouseWheel())
+            HipInputOnTouchScroll(val, 0, 0);
+        else
+            HipInputOnTouchScroll(0, val, 0);
+    }
+
     void OnKeyDown(IInspectable const&, KeyEventArgs const& args)
     {
         HipInputOnKeyDown((uint32_t)args.VirtualKey());
@@ -237,6 +260,25 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
     void OnKeyUp(IInspectable const&, KeyEventArgs const& args)
     {
         HipInputOnKeyUp((uint32_t)args.VirtualKey());
+    }
+
+    void OnGamepadAdded(IInspectable const& obj, Windows::Gaming::Input::Gamepad const & gamepad)
+    {
+        ubyte id = GetGamepadID(&gamepad);
+        if (id == 255)
+            AddGamepad(&gamepad);
+
+        HipInputOnGamepadConnected(GetGamepadID(&gamepad));
+    }
+    void OnGamepadRemoved(IInspectable const& obj, Windows::Gaming::Input::Gamepad const & gamepad)
+    {
+        ubyte id = GetGamepadID(&gamepad);
+        if (id == 255)
+        {
+            OutputDebugString(L"Something really wrong has happenned.");
+            return;
+        }
+        HipInputOnGamepadDisconnected(GetGamepadID(&gamepad));
     }
 };
 
