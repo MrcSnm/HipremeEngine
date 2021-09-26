@@ -13,6 +13,7 @@ module event.dispatcher;
 private:
     import event.handlers.keyboard;
     import event.handlers.mouse;
+    import systems.gamepad;
     import bindbc.sdl;
 
 public:
@@ -20,8 +21,11 @@ public:
     import hipengine.api.input.keyboard;
     import hipengine.api.input.button;
     import hipengine.api.input.mouse;
+    import hipengine.api.input.gamepad;
 
 
+
+package __gshared HipGamePad[] gamepads;
 /** 
  * Class used to dispatch the events for the each specific handler.
  *
@@ -157,6 +161,7 @@ class EventDispatcher
     bool isKeyJustReleased(char key, uint id = 0){return keyboard.isKeyJustReleased(key.toUppercase);}
     float getKeyDownTime(char key, uint id = 0){return keyboard.getKeyDownTime(key.toUppercase);}
     float getKeyUpTime(char key, uint id = 0){return keyboard.getKeyUpTime(key.toUppercase);}
+    ubyte getGamepadCount(){return cast(ubyte)gamepads.length;}
 
     void postUpdate()
     {

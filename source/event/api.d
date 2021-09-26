@@ -57,3 +57,8 @@ mixin(Define(q{Vector3 getScroll()
 {
     return sys.dispatcher.getScroll();
 }}));
+
+mixin(Define(q{ubyte getGamepadCount()
+{
+    return sys.dispatcher.getGamepadCount();
+}}));

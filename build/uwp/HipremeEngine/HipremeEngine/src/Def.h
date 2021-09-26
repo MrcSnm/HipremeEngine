@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 ///Loads a given asset DLL and check for errors
 HMODULE LoadDLL(LPCWSTR str);
@@ -14,3 +15,8 @@ char pBuffer[1000];\
 sprintf_s(pBuffer, format, __VA_ARGS__);\
 OutputDebugStringA(pBuffer);\
 }
+
+typedef uint8_t ubyte;
+typedef uint16_t ushort;
+typedef uint32_t uint;
+typedef uint64_t ulong;

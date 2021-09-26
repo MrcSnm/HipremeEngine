@@ -39,4 +39,5 @@ else
     extern(C) immutable(Vector2*) function(uint id = 0) getTouchPosition;
     extern(C) Vector2 function(uint id=0) getTouchDeltaPosition;
     extern(C) Vector3 function(uint id=0) getScroll;
+    extern(C) ubyte function() getGamepadCount;
 }

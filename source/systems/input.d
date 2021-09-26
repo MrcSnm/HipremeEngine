@@ -39,13 +39,32 @@ else version(UWP)
     {
         HipEventQueue.post(0, HipEventQueue.EventType.touchMove, HipEventQueue.Touch(cast(ushort)id, x, y));
     }
+    export extern(C) void HipInputOnTouchReleased(uint id, float x, float y)
+    {
+        HipEventQueue.post(0, HipEventQueue.EventType.touchUp, HipEventQueue.Touch(cast(ushort)id, x, y));
+    }
+    export extern(C) void HipInputOnTouchScroll(float x, float y, float z)
+    {
+        HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Scroll(x,y,z));
+    }
     export extern(C) void HipInputOnKeyDown(uint virtualKey)
     {
+        static int i = 0;
+        import console.log;
+        rawlog(virtualKey, " ", i++);
         HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)virtualKey));
     }
     export extern(C) void HipInputOnKeyUp(uint virtualKey)
     {
         HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)virtualKey));
+    }
+    export extern(C) void HipInputOnGamepadConnected(uint id)
+    {
+        HipEventQueue.post(0, HipEventQueue.EventType.gamepadConnected, HipEventQueue.Gamepad(id));
+    }
+    export extern(C) void HipInputOnGamepadDisconnected(uint id)
+    {
+        HipEventQueue.post(0, HipEventQueue.EventType.gamepadDisconnected, HipEventQueue.Gamepad(id));
     }
 } 
 
@@ -68,6 +87,10 @@ class HipEventQueue : EventQueue
         touchScroll,
         keyDown,
         keyUp,
+
+        gamepadConnected,
+        gamepadDisconnected,
+
         ///When user returns to application
         focusReceived,
         ///When user exists the application
@@ -97,6 +120,9 @@ class HipEventQueue : EventQueue
         float  xPos;
         float  yPos;
     }
+
+    struct Gamepad{ubyte id;}
+
     struct Scroll
     {
         float x, y,z;
