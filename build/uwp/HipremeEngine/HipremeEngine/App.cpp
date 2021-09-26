@@ -67,7 +67,6 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
         com_ptr<ICoreWindowInterop> interop;
         assertOk(window.as<::IUnknown>()->QueryInterface(interop.put()), "Could not get window Interop interface");
         interop->get_WindowHandle(&g_CoreWindowHWND);
-        HipremeInit();
         HipremeMain();
 
         //CreateD3D11Device();
@@ -194,12 +193,17 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
 
     void SetWindow(CoreWindow const& wnd)
     {
+        HMODULE lib = LoadDLL(L"hipreme_engine.dll");
+        if (d_game_LoadDLL(lib) != 0)
+            OutputDebugString(L"Error ocurred when loading D libs");
+        HipremeInit();
         window = wnd;
         Compositor compositor;
         ContainerVisual root = compositor.CreateContainerVisual();
         m_target = compositor.CreateTargetForCurrentView();
         m_target.Root(root);
         m_visuals = root.Children();
+
 
         window.PointerPressed({ this, &App::OnPointerPressed });
         window.PointerMoved({ this, &App::OnPointerMoved });
@@ -215,9 +219,7 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
         window.Closed({ this, &App::OnWindowClosed });
 
 
-        HMODULE lib = LoadDLL(L"hipreme_engine.dll");
-        if (d_game_LoadDLL(lib) != 0)
-            OutputDebugString(L"Error ocurred when loading D libs");
+    
 
     }
 
@@ -262,23 +264,23 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
         HipInputOnKeyUp((uint32_t)args.VirtualKey());
     }
 
-    void OnGamepadAdded(IInspectable const& obj, Windows::Gaming::Input::Gamepad const & gamepad)
+    void OnGamepadAdded(IInspectable const& obj, Gamepad const & gamepad)
     {
-        ubyte id = GetGamepadID(&gamepad);
+        ubyte id = GetGamepadID(gamepad);
         if (id == 255)
-            AddGamepad(&gamepad);
+            AddGamepad(gamepad);
 
-        HipInputOnGamepadConnected(GetGamepadID(&gamepad));
+        HipInputOnGamepadConnected(GetGamepadID(gamepad));
     }
-    void OnGamepadRemoved(IInspectable const& obj, Windows::Gaming::Input::Gamepad const & gamepad)
+    void OnGamepadRemoved(IInspectable const& obj, Gamepad const & gamepad)
     {
-        ubyte id = GetGamepadID(&gamepad);
+        ubyte id = GetGamepadID(gamepad);
         if (id == 255)
         {
             OutputDebugString(L"Something really wrong has happenned.");
             return;
         }
-        HipInputOnGamepadDisconnected(GetGamepadID(&gamepad));
+        HipInputOnGamepadDisconnected(GetGamepadID(gamepad));
     }
 };
 

@@ -127,7 +127,7 @@ extern(C)int SDL_main()
 	//Audio.play(sc);
 	
 	// ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	sys = new GameSystem();
+	
 	sys.loadGame("TestScene");
 	sys.startExternalGame();
 	version(UWP){}
@@ -209,13 +209,18 @@ version(Android)
 	}
 }  
 
-///Initializes the D runtime and import external functions
+/**
+*	Initializes the D runtime, import external functions
+*	and initializes GameSystem, as it will handle external API's
+*
+*/
 export extern(C) void HipremeInit()
 {
 	version(dll)
 	{
 		rt_init();
 		importExternal();
+		sys = new GameSystem();
 	}
 }
 /**

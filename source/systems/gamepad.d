@@ -80,20 +80,25 @@ void function(
 
 extern(D):
 
-void initGamepadInput()
+void initXboxGamepadInput()
 {
+    static bool hasInit = false;
+    if(hasInit)
+        return;
     dll_import_varS!HipInputGamepadCheckConnectedGamepads;
     dll_import_varS!HipInputGamepadGetBatteryStatus;
     dll_import_varS!HipInputGamepadGetXboxGamepadState;
     dll_import_varS!HipInputGamepadIsWireless;
     dll_import_varS!HipInputGamepadQueryConnectedGamepadsCount;
     dll_import_varS!HipInputGamepadSetXboxGamepadVibration;
+
+    hasInit = true;
 }
 
 
 //////// End External API ////////
 
-pragma(inline) void pollXbox(HipGamePad pad, HipInputXboxGamepadState state)
+private pragma(inline) void pollXbox(HipGamePad pad, HipInputXboxGamepadState state)
 {
     with(pad)
     {
@@ -157,8 +162,12 @@ class HipGamePad : AHipGamePad
     ubyte getId(){return id;}
     void poll()
     {
-        if(_isConnected)
+        if(_isConnected) 
+		{
+            import console.log;
+            rawlog("Polled!");
             pollXbox(this, HipInputGamepadGetXboxGamepadState(getId));
+		}
     }
     bool setVibrating(float vibrationPower, float time)
     {
