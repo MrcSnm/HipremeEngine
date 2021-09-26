@@ -1,6 +1,7 @@
 module hipengine.api.input;
 public import hipengine.api.math.vector;
 public import hipengine.api.input.mouse;
+public import hipengine.api.input.gamepad;
 
 
 void initInput()
@@ -19,6 +20,12 @@ void initInput()
         loadSymbol!getTouchPosition;
         loadSymbol!getTouchDeltaPosition;
         loadSymbol!getScroll;
+
+        //Gamepad
+        loadSymbol!getGamepadCount;
+        loadSymbol!getGamepad;
+        loadSymbol!getAnalog;
+        loadSymbol!isGamepadButtonPressed;
     }
 }
 
@@ -40,4 +47,7 @@ else
     extern(C) Vector2 function(uint id=0) getTouchDeltaPosition;
     extern(C) Vector3 function(uint id=0) getScroll;
     extern(C) ubyte function() getGamepadCount;
+    extern(C) AHipGamepad function(ubyte id = 0) getGamepad;
+    extern(C) Vector3 function(HipGamepadAnalogs analog, ubyte id = 0) getAnalog;
+    extern(C) bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonPressed;
 }

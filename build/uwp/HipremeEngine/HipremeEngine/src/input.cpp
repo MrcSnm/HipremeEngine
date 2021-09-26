@@ -71,7 +71,6 @@ HipInputXboxGamepadState HipInputGamepadGetXboxGamepadState(uint8_t id)
 {
     HipInputXboxGamepadState ret;
     Gamepad gp = gamepads[id];
-    dprint("%p", gamepads[id]);
     GamepadReading read = gp.GetCurrentReading();
     ret.buttons = (int)read.Buttons;
     ret.leftAnalogX = read.LeftThumbstickX;

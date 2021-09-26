@@ -147,7 +147,7 @@ private pragma(inline) void pollXbox(HipGamePad pad, HipInputXboxGamepadState st
 }
 
 
-class HipGamePad : AHipGamePad
+class HipGamePad : AHipGamepad
 {
     HipInputGamepadBatteryStatus status;
     Vector3 leftAnalog;
@@ -163,11 +163,7 @@ class HipGamePad : AHipGamePad
     void poll()
     {
         if(_isConnected) 
-		{
-            import console.log;
-            rawlog("Polled!");
             pollXbox(this, HipInputGamepadGetXboxGamepadState(getId));
-		}
     }
     bool setVibrating(float vibrationPower, float time)
     {

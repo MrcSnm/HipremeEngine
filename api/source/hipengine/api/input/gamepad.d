@@ -78,7 +78,7 @@ interface IHipGamepad
 
 }
 
-abstract class AHipGamePad : IHipGamepad
+abstract class AHipGamepad : IHipGamepad
 {
     protected float vibrationPower;
     protected float vibrationTime;
