@@ -8,9 +8,9 @@ using namespace Windows::Gaming::Input;
 
 
 std::vector<Gamepad> gamepads;
-std::vector<ubyte> emptySlots;
+std::deque<ubyte> emptySlots;
 
-void HipInputGamepadSetXboxGamepadVibration(
+void HipGamepadSetXboxGamepadVibration(
     ubyte id,
     double leftMotor,
     double rightMotor,
@@ -27,15 +27,15 @@ void HipInputGamepadSetXboxGamepadVibration(
     gp.Vibration(vib);
 }
 
-ubyte HipInputGamepadQueryConnectedGamepadsCount()
+ubyte HipGamepadQueryConnectedGamepadsCount()
 {
     return (ubyte)Gamepad::Gamepads().Size();
 }
 
-bool HipInputGamepadIsWireless(ubyte id) { return gamepads[id].IsWireless(); }
-HipInputGamepadBatteryStatus HipInputGamepadGetBatteryStatus(ubyte id)
+bool HipGamepadIsWireless(ubyte id) { return gamepads[id].IsWireless(); }
+HipGamepadBatteryStatus HipGamepadGetBatteryStatus(ubyte id)
 {
-    HipInputGamepadBatteryStatus ret;
+    HipGamepadBatteryStatus ret;
     Windows::Devices::Power::BatteryReport bat = gamepads[id].TryGetBatteryReport();
 
     Windows::Foundation::IReference<int32_t> temp = bat.ChargeRateInMilliwatts();
@@ -67,7 +67,7 @@ HipInputGamepadBatteryStatus HipInputGamepadGetBatteryStatus(ubyte id)
 /// </summary>
 /// <param name="id"></param>
 /// <returns></returns>
-HipInputXboxGamepadState HipInputGamepadGetXboxGamepadState(uint8_t id)
+HipInputXboxGamepadState HipGamepadGetXboxGamepadState(uint8_t id)
 {
     HipInputXboxGamepadState ret;
     Gamepad gp = gamepads[id];
@@ -84,16 +84,13 @@ HipInputXboxGamepadState HipInputGamepadGetXboxGamepadState(uint8_t id)
 
 void AddGamepad(Gamepad gamepad)
 {
-    for (int i = 0; i < gamepads.size(); i++)
+    if (emptySlots.size() > 0)
     {
-        if (gamepads[i] == nullptr)
-        {
-            OutputDebugString(L"Omg");
-            gamepads[i] = gamepad;
-            return;
-        }
+        gamepads[emptySlots[0]] = gamepad;
+        emptySlots.pop_front();
     }
-    gamepads.push_back(gamepad);
+    else
+        gamepads.push_back(gamepad);
 }
 
 ubyte GetGamepadID(Gamepad gamepad)
@@ -106,19 +103,14 @@ ubyte GetGamepadID(Gamepad gamepad)
 
 void RemoveGamepad(Gamepad gamepad)
 {
-    for (int i = 0; i < gamepads.size(); i++)
-    {
-        if (gamepads[i] == gamepad)
-        {
-            OutputDebugString(L"Omg");
+    ubyte id = GetGamepadID(gamepad);
+    if (id != 255)
+        emptySlots.push_back(id);
 
-            gamepads[i] = nullptr;
-            return;
-        }
-    }
 }
 
 void DestroyGamepads()
 {
     gamepads.clear();
+    emptySlots.clear();
 }

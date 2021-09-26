@@ -275,12 +275,8 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
     void OnGamepadRemoved(IInspectable const& obj, Gamepad const & gamepad)
     {
         ubyte id = GetGamepadID(gamepad);
-        if (id == 255)
-        {
-            OutputDebugString(L"Something really wrong has happenned.");
-            return;
-        }
-        HipInputOnGamepadDisconnected(GetGamepadID(gamepad));
+        RemoveGamepad(gamepad);
+        HipInputOnGamepadDisconnected(id);
     }
 };
 

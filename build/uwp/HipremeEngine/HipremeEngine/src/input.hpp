@@ -26,7 +26,7 @@ enum HipInputGamepadBatteryState
 };
 
 ///Struct based on winrt::Windows::Devices::Power::BatteryReport
-struct HipInputGamepadBatteryStatus
+struct HipGamepadBatteryStatus
 {
     int chargeRateInMilliwatts;
     int remainingCapacityInMilliwattHours;
@@ -35,11 +35,11 @@ struct HipInputGamepadBatteryStatus
 };
 
 
-d_import HipInputXboxGamepadState HipInputGamepadGetXboxGamepadState(uint8_t id);
-d_import bool HipInputGamepadIsWireless(ubyte id);
-d_import HipInputGamepadBatteryStatus HipInputGamepadGetBatteryStatus(ubyte id);
-d_import ubyte HipInputGamepadQueryConnectedGamepadsCount();
-d_import void HipInputGamepadSetXboxGamepadVibration(
+d_import HipInputXboxGamepadState HipGamepadGetXboxGamepadState(uint8_t id);
+d_import bool HipGamepadIsWireless(ubyte id);
+d_import HipGamepadBatteryStatus HipGamepadGetBatteryStatus(ubyte id);
+d_import ubyte HipGamepadQueryConnectedGamepadsCount();
+d_import void HipGamepadSetXboxGamepadVibration(
     ubyte id,
     double leftMotor,
     double rightMotor,

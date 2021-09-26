@@ -142,15 +142,3 @@ bool dynamicLibraryRelease(void* dll)
     }
     else static assert(0, "Platform not supported");
 }
-
-/** 
-*   Used for setting correctly external mangling based on version.
-*   Remember calling extern(D): after making the definitions
-*/
-string external()
-{
-    version(UWP)
-        return "extern(Windows) nothrow @system: ";
-    else
-        return "extern(C) nothrow: ";
-}
