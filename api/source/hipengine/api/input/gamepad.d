@@ -45,6 +45,23 @@ enum HipGamepadButton : ubyte
     count
 }
 
+///Based on https://docs.microsoft.com/en-us/uwp/api/windows.system.power.batterystatus?view=winrt-20348
+enum HipGamepadBatteryState : ubyte
+{
+    notPresent = 0,
+    discharging,
+    idle,
+    charging,
+}
+///Struct based on winrt::Windows::Devices::Power::BatteryReport
+struct HipGamepadBatteryStatus
+{
+    int chargeRateInMilliwatts;
+    int remainingCapacityInMilliwattHours;
+    int fullChargeCapacityInMilliwattHours;
+    HipGamepadBatteryState state;
+}
+
 interface IHipGamepad
 {
     /** Returns wether it is vibrating. Receives a time to stop vibrating */
@@ -53,8 +70,10 @@ interface IHipGamepad
     /** Returns the Id for this controller, usually the order in which it was connected*/
     ubyte getId();
 
-    /** Completely implementation dependent*/
-    void poll();
+    /** Completely implementation dependent, 
+    *   deltaTime is used for it auto stop vibrating
+    */
+    void poll(float deltaTime);
 
     /** Returns a Vector3 containing the current state of the analog */
     Vector3 getAnalogState(HipGamepadAnalogs analog = HipGamepadAnalogs.leftStick);

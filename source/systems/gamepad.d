@@ -40,34 +40,19 @@ struct HipInputXboxGamepadState
     double rightTrigger;
 }
 
-///Based on https://docs.microsoft.com/en-us/uwp/api/windows.system.power.batterystatus?view=winrt-20348
-enum HipInputGamepadBatteryState : ubyte
-{
-    notPresent = 0,
-    discharging,
-    idle,
-    charging,
-}
-///Struct based on winrt::Windows::Devices::Power::BatteryReport
-struct HipInputGamepadBatteryStatus
-{
-    int chargeRateInMilliwatts;
-    int remainingCapacityInMilliwattHours;
-    int fullChargeCapacityInMilliwattHours;
-    HipInputGamepadBatteryState state;
-}
+
 
 
 //////// External API ////////
 
 import util.system;
 
-mixin(external);
-ubyte* function() HipInputGamepadCheckConnectedGamepads;
-HipInputGamepadBatteryStatus function(ubyte id) HipInputGamepadGetBatteryStatus;
-HipInputXboxGamepadState function(ubyte id) HipInputGamepadGetXboxGamepadState;
-bool function(ubyte id) HipInputGamepadIsWireless;
-ubyte function() HipInputGamepadQueryConnectedGamepadsCount;
+extern(System):
+ubyte* function() HipGamepadCheckConnectedGamepads;
+HipGamepadBatteryStatus function(ubyte id) HipGamepadGetBatteryStatus;
+HipInputXboxGamepadState function(ubyte id) HipGamepadGetXboxGamepadState;
+bool function(ubyte id) HipGamepadIsWireless;
+ubyte function() HipGamepadQueryConnectedGamepadsCount;
 
 void function(
     ubyte id,
@@ -75,22 +60,21 @@ void function(
     double rightMotor,
     double leftTrigger,
     double rightTrigger
-) HipInputGamepadSetXboxGamepadVibration;
+) HipGamepadSetXboxGamepadVibration;
 
 
 extern(D):
-
 void initXboxGamepadInput()
 {
     static bool hasInit = false;
     if(hasInit)
         return;
-    dll_import_varS!HipInputGamepadCheckConnectedGamepads;
-    dll_import_varS!HipInputGamepadGetBatteryStatus;
-    dll_import_varS!HipInputGamepadGetXboxGamepadState;
-    dll_import_varS!HipInputGamepadIsWireless;
-    dll_import_varS!HipInputGamepadQueryConnectedGamepadsCount;
-    dll_import_varS!HipInputGamepadSetXboxGamepadVibration;
+    dll_import_varS!HipGamepadCheckConnectedGamepads;
+    dll_import_varS!HipGamepadGetBatteryStatus;
+    dll_import_varS!HipGamepadGetXboxGamepadState;
+    dll_import_varS!HipGamepadIsWireless;
+    dll_import_varS!HipGamepadQueryConnectedGamepadsCount;
+    dll_import_varS!HipGamepadSetXboxGamepadVibration;
 
     hasInit = true;
 }
@@ -149,28 +133,44 @@ private pragma(inline) void pollXbox(HipGamePad pad, HipInputXboxGamepadState st
 
 class HipGamePad : AHipGamepad
 {
-    HipInputGamepadBatteryStatus status;
+    HipGamepadBatteryStatus status;
     Vector3 leftAnalog;
     Vector3 rightAnalog;
     float leftTrigger;
     float rightTrigger;
     ubyte id;
     static ubyte instanceCount = 0;
+    protected float vibrationAccumulator = 0;
 
     this(){id = instanceCount++;}
 
     ubyte getId(){return id;}
-    void poll()
+    void poll(float deltaTime)
     {
+        if(vibrationTime != 0)
+        {
+            vibrationAccumulator+= deltaTime;
+            if(vibrationAccumulator >= vibrationTime)
+                setVibrating(0,0);
+        }
+
         if(_isConnected) 
-            pollXbox(this, HipInputGamepadGetXboxGamepadState(getId));
+            pollXbox(this, HipGamepadGetXboxGamepadState(getId));
     }
     bool setVibrating(float vibrationPower, float time)
     {
-        HipInputGamepadSetXboxGamepadVibration(getId, vibrationPower,vibrationPower,vibrationPower,vibrationPower);
+        HipGamepadSetXboxGamepadVibration(getId, 
+            cast(double)vibrationPower,
+            cast(double)vibrationPower,
+            cast(double)vibrationPower,
+            cast(double)vibrationPower
+        );
+        this.vibrationPower = vibrationPower;
+        vibrationAccumulator = 0;
+        vibrationTime = time;
         return true;
     }
-    bool isWireless(){return HipInputGamepadIsWireless(getId);}
+    bool isWireless(){return HipGamepadIsWireless(getId);}
     Vector3 getAnalogState(HipGamepadAnalogs analog)
     {
         final switch(analog)
@@ -183,7 +183,9 @@ class HipGamePad : AHipGamepad
     }
     float getBatteryStatus()
     {
-        status = HipInputGamepadGetBatteryStatus(getId());
+        status = HipGamepadGetBatteryStatus(getId());
+        import console.log;
+        rawlog(status);
         return cast(float)status.remainingCapacityInMilliwattHours
             / status.fullChargeCapacityInMilliwattHours;
     }

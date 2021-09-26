@@ -198,7 +198,7 @@ class GameSystem
             if(watcher.update())
                 recompileReloadExternalScene();
         }
-        dispatcher.handleEvent();
+        dispatcher.handleEvent(deltaTime);
 
         if(hasFinished || dispatcher.hasQuit)
             return false;

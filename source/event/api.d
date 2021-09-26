@@ -6,7 +6,7 @@ private enum Define(string code)
     version(Standalone)
         return "pragma(inline) "~code;
     else
-        return "export extern(C) "~code;
+        return "export extern(System) "~code;
 }
 
 import event.dispatcher;
@@ -67,6 +67,11 @@ mixin(Define(q{AHipGamepad getGamepad(ubyte id)
     return sys.dispatcher.getGamepad(id);
 }}));
 
+mixin(Define(q{bool setGamepadVibrating(float vibrationPower, float time, ubyte id = 0)
+{
+    return sys.dispatcher.setGamepadVibrating(vibrationPower, time, id);
+}}));
+
 mixin(Define(q{Vector3 getAnalog(HipGamepadAnalogs analog, ubyte id = 0)
 {
     return sys.dispatcher.getAnalog(analog);
@@ -75,4 +80,14 @@ mixin(Define(q{Vector3 getAnalog(HipGamepadAnalogs analog, ubyte id = 0)
 mixin(Define(q{bool isGamepadButtonPressed(HipGamepadButton btn, ubyte id = 0)
 {
     return sys.dispatcher.isGamepadButtonPressed(btn, id);
+}}));
+
+mixin(Define(q{float getGamepadBatteryStatus(ubyte id = 0)
+{
+    return sys.dispatcher.getGamepadBatteryStatus(id);
+}}));
+
+mixin(Define(q{bool isGamepadWireless(ubyte id = 0)
+{
+    return sys.dispatcher.isGamepadWireless(id);
 }}));

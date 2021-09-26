@@ -50,7 +50,7 @@ class EventDispatcher
     
     bool hasQuit = false;
 
-    void handleEvent()
+    void handleEvent(float deltaTime)
     {
         ///Use SDL to populate our Input Queue
         SDL_Event e;
@@ -153,7 +153,7 @@ class EventDispatcher
             }
         }
         foreach (g; gamepads)
-            g.poll();
+            g.poll(deltaTime);
         keyboard.update();
         frameCount++;
     }
@@ -192,6 +192,21 @@ class EventDispatcher
     {
         if(id >= gamepads.length) return false;
         return gamepads[id].isButtonPressed(btn);
+    }
+    bool isGamepadWireless(ubyte id = 0)
+    {
+        if(id >= gamepads.length) return false;
+        return gamepads[id].isWireless();
+    }
+    bool setGamepadVibrating(float vibrationPower, float time, ubyte id = 0)
+    {
+        if(id >= gamepads.length) return false;
+        return gamepads[id].setVibrating(vibrationPower, time);
+    }
+    float getGamepadBatteryStatus(ubyte id = 0)
+    {
+        if(id >= gamepads.length) return 0;
+        return gamepads[id].getBatteryStatus();
     }
 
     void postUpdate()
