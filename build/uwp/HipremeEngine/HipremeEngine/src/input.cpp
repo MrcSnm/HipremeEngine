@@ -106,7 +106,6 @@ void RemoveGamepad(Gamepad gamepad)
     ubyte id = GetGamepadID(gamepad);
     if (id != 255)
         emptySlots.push_back(id);
-
 }
 
 void DestroyGamepads()

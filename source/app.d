@@ -235,7 +235,13 @@ export extern(C) void HipremeInit()
 *	- HipAudio
 *
 */
-export extern(C) int HipremeMain(){return SDL_main();}
+export extern(C) int HipremeMain()
+{
+	version(dll){}
+	else
+		sys = new GameSystem();
+	return SDL_main();
+}
 version(dll){}
 else{void main(){HipremeMain();}}
 

@@ -15,9 +15,16 @@ module bind.external;
 version(UWP)
 {
     import core.sys.windows.windows;
+    struct HipExternalCoreWindow
+    {
+        IUnknown coreWindow;
+        uint logicalWidth;
+        uint logicalHeight;
+    }
     extern(Windows) nothrow @system 
     {
         HWND function() getCoreWindowHWND;
+        HipExternalCoreWindow function() getCoreWindow;
         void function(const(wchar*) wcstr) OutputUWP;
     }
     void uwpPrint(string str)
@@ -34,6 +41,7 @@ void importExternal()
     version(UWP)
     {
         dll_import_varS!getCoreWindowHWND;
+        dll_import_varS!getCoreWindow;
         dll_import_varS!OutputUWP;
     }
 }
