@@ -195,6 +195,8 @@ class HipRenderer
                 return false;
         }
         bool ret = rendererImpl.initExternal();
+        if(!ret)
+            ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");
         afterInit();
         return ret;
     }

@@ -23,3 +23,14 @@ public:
    __gshared GameSystem sys;
    __gshared float g_deltaTime = 0;
 
+
+
+float getDisplayDPI(uint displayIndex = 0)
+{
+   float diagonalDPI;
+   float verticalDPI;
+   float horizontalDPI;
+   SDL_GetDisplayDPI(displayIndex, &diagonalDPI, &horizontalDPI, &verticalDPI);
+
+   return horizontalDPI;
+}
