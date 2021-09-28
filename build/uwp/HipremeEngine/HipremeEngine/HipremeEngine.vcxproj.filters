@@ -14,6 +14,7 @@
 <Filter Include="UWPResources\audio"/>
 <Filter Include="UWPResources\fonts"/>
 <Filter Include="UWPResources\graphics"/>
+<Filter Include="UWPResources\graphics\atlases"/>
 <Filter Include="UWPResources\graphics\sprites"/>
 <Filter Include="UWPResources\graphics\tilesets"/>
 <Filter Include="UWPResources\maps"/>
@@ -69,6 +70,12 @@
 <Image Include="$(ProjectDir)\UWPResources\fonts\tnroman.png">
 	<Filter>UWPResources\fonts</Filter>
 </Image>
+<Text Include="$(ProjectDir)\UWPResources\graphics\atlases\UI.json">
+	<Filter>UWPResources\graphics\atlases</Filter>
+</Text>
+<Image Include="$(ProjectDir)\UWPResources\graphics\atlases\UI.png">
+	<Filter>UWPResources\graphics\atlases</Filter>
+</Image>
 <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\gUqMLK.png">
 	<Filter>UWPResources\graphics\sprites</Filter>
 </Image>
@@ -76,6 +83,9 @@
 	<Filter>UWPResources\graphics\sprites</Filter>
 </Image>
 <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\rex.png">
+	<Filter>UWPResources\graphics\sprites</Filter>
+</Image>
+<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\shaun.png">
 	<Filter>UWPResources\graphics\sprites</Filter>
 </Image>
 <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\sprite.png">

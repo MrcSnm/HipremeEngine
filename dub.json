@@ -40,6 +40,16 @@
 			]
 		},
 		{
+			"name": "release_uwp",
+			"targetPath": "bin/uwp",
+			"targetType": "dynamicLibrary",
+			"versions": ["Standalone", "dll", "UWP"],
+			"sourcePaths": ["build/release_game/source"],
+			"postBuildCommands": [
+				"cd .\\build && rdmd insertresourceuwp.d .\\uwp\\HipremeEngine\\HipremeEngine ..\\assets"
+			]
+		},
+		{
 			"name": "android",
 			"dflags": [
 				"-g"

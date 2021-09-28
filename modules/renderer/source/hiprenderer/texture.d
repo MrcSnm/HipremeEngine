@@ -1,14 +1,13 @@
 /*
-Copyright: Marcelo S. N. Mancini, 2018 - 2021
-License:   [https://opensource.org/licenses/MIT|MIT License].
+Copyright: Marcelo S. N. Mancini (Hipreme|MrcSnm), 2018 - 2021
+License:   [https://creativecommons.org/licenses/by/4.0/|CC BY-4.0 License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the MIT Software License.
+Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
-	https://opensource.org/licenses/MIT)
+	https://creativecommons.org/licenses/by/4.0/
 */
-
 /**
 *   This class will be only a wrapper for importing the correct backend
 */
@@ -26,6 +25,23 @@ class Texture
     Image img;
     uint width,height;
     TextureFilter min, mag;
+    private static Texture pixelTexture;
+    public static Texture getPixelTexture()
+    {
+        if(pixelTexture is null)
+        {
+            pixelTexture = new Texture();
+            pixelTexture.img = new Image("pixel");
+            ubyte[4] pixel = IHipImageDecoder.getPixel();
+            ubyte[] temp = pixel;
+            pixelTexture.img.pixels = cast(void*)temp.ptr;
+            pixelTexture.img.width = 1;
+            pixelTexture.img.height = 1;
+            pixelTexture.img.bytesPerPixel = 4;
+            pixelTexture.textureImpl.load(pixelTexture.img);
+        }
+        return pixelTexture;
+    }
 
     /**
     *   Make it available for implementors

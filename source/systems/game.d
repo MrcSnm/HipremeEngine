@@ -1,12 +1,12 @@
 /*
-Copyright: Marcelo S. N. Mancini, 2018 - 2021
-License:   [https://opensource.org/licenses/MIT|MIT License].
+Copyright: Marcelo S. N. Mancini (Hipreme|MrcSnm), 2018 - 2021
+License:   [https://creativecommons.org/licenses/by/4.0/|CC BY-4.0 License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the MIT Software License.
+Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
-	https://opensource.org/licenses/MIT)
+	https://creativecommons.org/licenses/by/4.0/
 */
 
 module systems.game;
@@ -62,6 +62,34 @@ class GameSystem
     version(Standalone){} else {static CompileWatcher watcher;}
     bool hasFinished;
     float fps;
+
+    this()
+    {
+        keyboard = new KeyboardHandler();
+        keyboard.addKeyListener(SDLK_ESCAPE, new class HipButton
+        {
+            override void onDown(){hasFinished = true;}
+            override void onUp(){}
+        });
+        version(Standalone){}
+        else
+        {
+            keyboard.addKeyListener(SDLK_F5, new class HipButton
+            {
+                override void onDown(){}
+                override void onUp(){recompileReloadExternalScene();}
+            });
+        }
+
+        dispatcher = new EventDispatcher(&keyboard);
+        dispatcher.addOnResizeListener((uint width, uint height)
+        {
+            HipRenderer.width = width;
+            HipRenderer.height = height;
+            foreach (AScene s; scenes)
+                s.onResize(width, height);
+        });
+    }
 
 
     void loadGame(string gameDll)
@@ -154,33 +182,7 @@ class GameSystem
         }
     }
 
-    this()
-    {
-        keyboard = new KeyboardHandler();
-        keyboard.addKeyListener(SDLK_ESCAPE, new class HipButton
-        {
-            override void onDown(){hasFinished = true;}
-            override void onUp(){}
-        });
-        version(Standalone){}
-        else
-        {
-            keyboard.addKeyListener(SDLK_F5, new class HipButton
-            {
-                override void onDown(){}
-                override void onUp(){recompileReloadExternalScene();}
-            });
-        }
-
-        dispatcher = new EventDispatcher(&keyboard);
-        dispatcher.addOnResizeListener((uint width, uint height)
-        {
-            HipRenderer.width = width;
-            HipRenderer.height = height;
-            foreach (AScene s; scenes)
-                s.onResize(width, height);
-        });
-    }
+    
 
     void addScene(AScene s)
     {
@@ -196,7 +198,7 @@ class GameSystem
             if(watcher.update())
                 recompileReloadExternalScene();
         }
-        dispatcher.handleEvent();
+        dispatcher.handleEvent(deltaTime);
 
         if(hasFinished || dispatcher.hasQuit)
             return false;

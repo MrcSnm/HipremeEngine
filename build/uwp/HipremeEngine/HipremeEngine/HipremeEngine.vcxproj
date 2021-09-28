@@ -68,9 +68,12 @@
 <None Include="$(ProjectDir)\UWPResources\fonts\fa-solid-900.ttf"/>
 <Text Include="$(ProjectDir)\UWPResources\fonts\tnroman.fnt"/>
 <Image Include="$(ProjectDir)\UWPResources\fonts\tnroman.png"/>
+<Text Include="$(ProjectDir)\UWPResources\graphics\atlases\UI.json"/>
+<Image Include="$(ProjectDir)\UWPResources\graphics\atlases\UI.png"/>
 <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\gUqMLK.png"/>
 <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\nineSlicePanel.png"/>
 <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\rex.png"/>
+<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\shaun.png"/>
 <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\sprite.png"/>
 <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\tese.bmp"/>
 <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\teste.bmp"/>

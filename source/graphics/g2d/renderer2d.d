@@ -11,7 +11,7 @@ private __gshared GeometryBatch geoBatch;
 
 void initialize()
 {
-    spBatch = new HipSpriteBatch();
+    // spBatch = new HipSpriteBatch();
     geoBatch = new GeometryBatch();
 }
 
