@@ -10,7 +10,6 @@ Distributed under the CC BY-4.0 License.
 */
 module util.system;
 import std.conv:to;
-import std.system:os;
 import core.stdc.string;
 import std.array:replace;
 
@@ -19,14 +18,10 @@ else{public import fswatch;}
 
 pure nothrow string sanitizePath(string path)
 {
-    switch(os)
-    {
-        case os.win32:
-        case os.win64:
-            return replace(path, "/", "\\");
-        default:
-            return replace(path, "\\", "/");
-    }
+    version(Windows)
+        return replace(path, "/", "\\");
+    else
+        return replace(path, "\\", "/");
 }
 pure nothrow bool isPathUnixStyle(string path)
 {
@@ -35,6 +30,21 @@ pure nothrow bool isPathUnixStyle(string path)
             return true;
     return false;
 }
+string buildPath(string[] args...)
+{
+    if(args.length == 0)
+        return null;
+    string ret;
+    for(int i = 0; i < cast(int)args.length-1; i++)
+    {
+        version(Windows)
+            ret~= args[i]~'\\';
+        else
+        	ret~= args[i]~'/';
+    }
+    return ret~args[$-1];
+}
+
 version(Windows)
 {
     import core.sys.windows.dll;
