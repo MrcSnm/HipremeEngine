@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include "Def.h"
 
 extern void (*HipremeInit)();
 extern int  (*HipremeMain)();

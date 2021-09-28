@@ -2,6 +2,12 @@
 x64
 ARM
 HipremeEngine/Generated*
+HipremeEngine/BundleArtifacts
+HipremeEngine/VTune Profiler Results
 HipremeEngine/HipremeEngine.aps
 HipremeEngine/x64
 HipremeEngine/UWPResources
+MSIXPackager/bin
+MSIXPackager/AppPackages
+MSIXPackager/BundleArtifacts
+
