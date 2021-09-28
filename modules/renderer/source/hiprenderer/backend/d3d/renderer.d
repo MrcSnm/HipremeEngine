@@ -1,14 +1,13 @@
 /*
-Copyright: Marcelo S. N. Mancini, 2018 - 2021
-License:   [https://opensource.org/licenses/MIT|MIT License].
+Copyright: Marcelo S. N. Mancini (Hipreme|MrcSnm), 2018 - 2021
+License:   [https://creativecommons.org/licenses/by/4.0/|CC BY-4.0 License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the MIT Software License.
+Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
-	https://opensource.org/licenses/MIT)
+	https://creativecommons.org/licenses/by/4.0/
 */
-
 module hiprenderer.backend.d3d.renderer;
 version(Windows):
 
@@ -196,20 +195,13 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         ,"Could not get IDXGIFactory4");
         
         IDXGISwapChain1 swapChain;
-
-        import console.log;
-        // rawlog(Hip_D3D11_GetErrorMessage(r));
-        
-        HRESULT r = factory.CreateSwapChainForCoreWindow (
+        assertExit(factory.CreateSwapChainForCoreWindow (
             cast(IUnknown)_hip_d3d_device,
             cast(IUnknown)wnd.coreWindow,
             &dsc,
             cast(IDXGIOutput)null,
             &swapChain
-        );
-
-
-
+        ), "Could not create swap chain for CoreWindow");
 
         swapChain.QueryInterface(&IID_IDXGISwapChain3, cast(void**)&_hip_d3d_swapChain);
     }
