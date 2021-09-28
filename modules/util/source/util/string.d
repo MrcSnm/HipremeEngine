@@ -1,14 +1,13 @@
 /*
-Copyright: Marcelo S. N. Mancini, 2018 - 2021
-License:   [https://opensource.org/licenses/MIT|MIT License].
+Copyright: Marcelo S. N. Mancini (Hipreme|MrcSnm), 2018 - 2021
+License:   [https://creativecommons.org/licenses/by/4.0/|CC BY-4.0 License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the MIT Software License.
+Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
-	https://opensource.org/licenses/MIT)
+	https://creativecommons.org/licenses/by/4.0/
 */
-
 module util.string;
 public import std.conv:to;
 
@@ -82,6 +81,51 @@ T toDefault(T)(string s, T defaultValue = T.init)
     try{v = to!(T)(s);}
     catch(Exception e){}
     return v;
+}
+
+pure string fromStringz(const char* cstr)
+{
+    import core.stdc.string:strlen;
+    size_t len = strlen(cstr);
+    return (len) ? cstr[0..len] : null;
+}
+
+
+///Temp?
+string toString(int x)
+{
+    import core.stdc.stdlib:malloc;
+    import core.stdc.stdio:snprintf;
+    ulong length = snprintf(null, 0, "%d", x);
+    char[] str;
+    str.length = length+1;
+    snprintf(str.ptr, length+1, "%d", x);
+    return cast(string)str.ptr[0..length];
+}
+
+int toInt(string str)
+{
+    import core.stdc.stdlib:strtol;
+    return strtol(str.ptr, null, 10);
+}
+float toFloat(string str)
+{
+    import core.stdc.stdlib:strtof;
+    return strtof(str.ptr, null);
+}
+
+string toString(T)(T struct_)
+{
+    string s = "(";
+    bool isFirst = true;
+    static foreach(m; __traits(allMembers, T))
+    {
+        if(!isFirst)
+            s~= ", ";
+        isFirst = false;
+        s~= mixin("struct_."~m~".toString");
+    }
+    return typeof(struct_).stringof~s~")";
 }
 
 unittest
