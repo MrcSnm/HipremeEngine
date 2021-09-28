@@ -1,14 +1,13 @@
 /*
-Copyright: Marcelo S. N. Mancini, 2018 - 2021
-License:   [https://opensource.org/licenses/MIT|MIT License].
+Copyright: Marcelo S. N. Mancini (Hipreme|MrcSnm), 2018 - 2021
+License:   [https://creativecommons.org/licenses/by/4.0/|CC BY-4.0 License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the MIT Software License.
+Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
-	https://opensource.org/licenses/MIT)
+	https://creativecommons.org/licenses/by/4.0/
 */
-
 /* dstep -I/path/to/ndk-r9d/toolchains/llvm-3.4/prebuilt/linux-x86/lib/clang/3.4/include /path/to/ndk-r9d/platforms/android-9/arch-x86/usr/include/android/log.h -o log.d*/
 
 module jni.android.log;

@@ -1,14 +1,13 @@
 /*
-Copyright: Marcelo S. N. Mancini, 2018 - 2021
-License:   [https://opensource.org/licenses/MIT|MIT License].
+Copyright: Marcelo S. N. Mancini (Hipreme|MrcSnm), 2018 - 2021
+License:   [https://creativecommons.org/licenses/by/4.0/|CC BY-4.0 License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the MIT Software License.
+Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
-	https://opensource.org/licenses/MIT)
+	https://creativecommons.org/licenses/by/4.0/
 */
-
 module hiprenderer.renderer;
 public import hiprenderer.config;
 public import hiprenderer.shader;
@@ -195,6 +194,8 @@ class HipRenderer
                 return false;
         }
         bool ret = rendererImpl.initExternal();
+        if(!ret)
+            ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");
         afterInit();
         return ret;
     }

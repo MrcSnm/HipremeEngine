@@ -1,12 +1,12 @@
 /*
 Copyright: Marcelo S. N. Mancini, 2018 - 2021
-License:   [https://opensource.org/licenses/MIT|MIT License].
+License:   [https://creativecommons.org/licenses/by/4.0/|CC BY-4.0 License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the MIT Software License.
+Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
-	https://opensource.org/licenses/MIT)
+	https://creativecommons.org/licenses/by/4.0/
 */
 import console.log;
 import console.console;
@@ -127,7 +127,7 @@ extern(C)int SDL_main()
 	//Audio.play(sc);
 	
 	// ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	sys = new GameSystem();
+	
 	sys.loadGame("TestScene");
 	sys.startExternalGame();
 	version(UWP){}
@@ -209,13 +209,18 @@ version(Android)
 	}
 }  
 
-///Initializes the D runtime and import external functions
+/**
+*	Initializes the D runtime, import external functions
+*	and initializes GameSystem, as it will handle external API's
+*
+*/
 export extern(C) void HipremeInit()
 {
 	version(dll)
 	{
 		rt_init();
 		importExternal();
+		sys = new GameSystem();
 	}
 }
 /**
@@ -230,7 +235,13 @@ export extern(C) void HipremeInit()
 *	- HipAudio
 *
 */
-export extern(C) int HipremeMain(){return SDL_main();}
+export extern(C) int HipremeMain()
+{
+	version(dll){}
+	else
+		sys = new GameSystem();
+	return SDL_main();
+}
 version(dll){}
 else{void main(){HipremeMain();}}
 
@@ -281,5 +292,9 @@ export extern(C) void log(string log)
 }
 
 import math.api;
-
+version(UWP)
+{
+	import core.sys.windows.dll;
+	mixin SimpleDllMain;
+}
 mixin ExportMathAPI;

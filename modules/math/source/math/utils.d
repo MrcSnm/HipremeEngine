@@ -19,6 +19,17 @@ int getClosestMultiple(int from, int to)
     }
 }
 
+enum dipsPerInch = 96.0f;
+int convertDipsToPixels(float dips, float dpi = 96.0f) //96 is Windows convention
+{
+    return cast(int)(dips * dpi / dipsPerInch + 0.5f); //Round to nearest integer
+}
+
+float physicalPixelToDIPs(int pixels, float dpi = 96.0f)
+{
+    return pixels/(dpi/dipsPerInch);
+}
+
 enum AxisNavigation{xy, yz, xz, zx, zy, yx}
 
 Vector3 toCircleBounds(Vector3 v, float angle, AxisNavigation axis=AxisNavigation.xy)

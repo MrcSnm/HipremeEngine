@@ -1,27 +1,31 @@
 /*
-Copyright: Marcelo S. N. Mancini, 2018 - 2021
-License:   [https://opensource.org/licenses/MIT|MIT License].
+Copyright: Marcelo S. N. Mancini (Hipreme|MrcSnm), 2018 - 2021
+License:   [https://creativecommons.org/licenses/by/4.0/|CC BY-4.0 License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the MIT Software License.
+Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
-	https://opensource.org/licenses/MIT)
+	https://creativecommons.org/licenses/by/4.0/
 */
-
 module event.dispatcher;
 private:
     import event.handlers.keyboard;
     import event.handlers.mouse;
+    import systems.gamepad;
     import bindbc.sdl;
 
 public:
     import systems.input;
+    import hipengine.api.math.vector;
     import hipengine.api.input.keyboard;
     import hipengine.api.input.button;
     import hipengine.api.input.mouse;
+    import hipengine.api.input.gamepad;
 
 
+
+package __gshared HipGamePad[] gamepads;
 /** 
  * Class used to dispatch the events for the each specific handler.
  *
@@ -40,11 +44,12 @@ class EventDispatcher
         keyboard = kb;
         mouse = new HipMouse();
         HipEventQueue.newController(); //Creates controller 0
+        initXboxGamepadInput();
     }
     
     bool hasQuit = false;
 
-    void handleEvent()
+    void handleEvent(float deltaTime)
     {
         ///Use SDL to populate our Input Queue
         SDL_Event e;
@@ -122,11 +127,23 @@ class EventDispatcher
                     break;
                 case HipEventQueue.EventType.keyDown:
                     auto k = ev.get!(HipEventQueue.Key);
-                    keyboard.handleKeyDown(cast(SDL_Keycode)k.id);
+                    keyboard.handleKeyDown(cast(SDL_Keycode)(cast(char)k.id).toUppercase);
                     break;
                 case HipEventQueue.EventType.keyUp:
                     auto k = ev.get!(HipEventQueue.Key);
-                    keyboard.handleKeyUp(cast(SDL_Keycode)k.id);
+                    keyboard.handleKeyUp(cast(SDL_Keycode)(cast(char)k.id).toUppercase);
+                    break;
+                case HipEventQueue.EventType.gamepadConnected:
+                    import console.log;rawlog("Gamepad connected");
+                    auto g = ev.get!(HipEventQueue.Gamepad);
+                    if(g.id+1 > gamepads.length)
+                        gamepads~= new HipGamePad();
+                    gamepads[g.id].setConnected(true);
+                    break;
+                case HipEventQueue.EventType.gamepadDisconnected:
+                    import console.log;rawlog("Gamepad disconnected");
+                    auto g = ev.get!(HipEventQueue.Gamepad);
+                    gamepads[g.id].setConnected(false);
                     break;
                 case HipEventQueue.EventType.exit:
                     hasQuit = true;
@@ -134,6 +151,8 @@ class EventDispatcher
                 default:break;
             }
         }
+        foreach (g; gamepads)
+            g.poll(deltaTime);
         keyboard.update();
         frameCount++;
     }
@@ -152,11 +171,42 @@ class EventDispatcher
     bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isJustPressed(btn);}
     bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isJustReleased(btn);}
     Vector3 getScroll(){return mouse.getScroll();}
-    bool isKeyPressed(char key, uint id = 0){return keyboard.isKeyPressed(key);}
-    bool isKeyJustPressed(char key, uint id = 0){return keyboard.isKeyJustPressed(key);}
-    bool isKeyJustReleased(char key, uint id = 0){return keyboard.isKeyJustReleased(key);}
-    float getKeyDownTime(char key, uint id = 0){return keyboard.getKeyDownTime(key);}
-    float getKeyUpTime(char key, uint id = 0){return keyboard.getKeyUpTime(key);}
+    bool isKeyPressed(char key, uint id = 0){return keyboard.isKeyPressed(key.toUppercase);}
+    bool isKeyJustPressed(char key, uint id = 0){return keyboard.isKeyJustPressed(key.toUppercase);}
+    bool isKeyJustReleased(char key, uint id = 0){return keyboard.isKeyJustReleased(key.toUppercase);}
+    float getKeyDownTime(char key, uint id = 0){return keyboard.getKeyDownTime(key.toUppercase);}
+    float getKeyUpTime(char key, uint id = 0){return keyboard.getKeyUpTime(key.toUppercase);}
+    ubyte getGamepadCount(){return cast(ubyte)gamepads.length;}
+    AHipGamepad getGamepad(ubyte id)
+    {
+        if(id >= gamepads.length)return null;
+        return gamepads[id];
+    }
+    Vector3 getAnalog(HipGamepadAnalogs analog, ubyte id = 0)
+    {
+        if(id >= gamepads.length) return Vector3.Zero;
+        return gamepads[id].getAnalogState(analog);
+    }
+    bool isGamepadButtonPressed(HipGamepadButton btn, ubyte id = 0)
+    {
+        if(id >= gamepads.length) return false;
+        return gamepads[id].isButtonPressed(btn);
+    }
+    bool isGamepadWireless(ubyte id = 0)
+    {
+        if(id >= gamepads.length) return false;
+        return gamepads[id].isWireless();
+    }
+    bool setGamepadVibrating(float vibrationPower, float time, ubyte id = 0)
+    {
+        if(id >= gamepads.length) return false;
+        return gamepads[id].setVibrating(vibrationPower, time);
+    }
+    float getGamepadBatteryStatus(ubyte id = 0)
+    {
+        if(id >= gamepads.length) return 0;
+        return gamepads[id].getBatteryStatus();
+    }
 
     void postUpdate()
     {
