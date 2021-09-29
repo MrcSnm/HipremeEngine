@@ -32,6 +32,8 @@ abstract class AHipButtonMetadata
     public abstract bool isPressed();
     ///Useful for looking justPressed and justRelease
     public abstract bool isNewState();
+    ///User API is not expected to call that function. It is used for controlling the input flow
+    public abstract void setPressed(bool press);
     public final bool isJustReleased(){return !isPressed && isNewState;}
     public final bool isJustPressed(){return isPressed && isNewState;}
 }

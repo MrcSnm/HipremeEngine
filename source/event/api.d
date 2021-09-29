@@ -82,6 +82,16 @@ mixin(Define(q{bool isGamepadButtonPressed(HipGamepadButton btn, ubyte id = 0)
     return sys.dispatcher.isGamepadButtonPressed(btn, id);
 }}));
 
+mixin(Define(q{bool isGamepadButtonJustPressed(HipGamepadButton btn, ubyte id = 0)
+{
+    return sys.dispatcher.isGamepadButtonJustPressed(btn, id);
+}}));
+
+mixin(Define(q{bool isGamepadButtonJustReleased(HipGamepadButton btn, ubyte id = 0)
+{
+    return sys.dispatcher.isGamepadButtonJustReleased(btn, id);
+}}));
+
 mixin(Define(q{float getGamepadBatteryStatus(ubyte id = 0)
 {
     return sys.dispatcher.getGamepadBatteryStatus(id);

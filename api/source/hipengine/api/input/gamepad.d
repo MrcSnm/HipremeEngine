@@ -11,6 +11,7 @@ Distributed under the CC BY-4.0 License.
 
 module hipengine.api.input.gamepad;
 public import hipengine.api.math.vector;
+public import hipengine.api.input.button;
 
 enum HipGamepadAnalogs : ubyte
 {
@@ -56,6 +57,21 @@ enum HipGamepadButton : ubyte
     count
 }
 
+
+HipGamepadButton gamepadButtonFromString(string str)
+{
+    switch(str)
+    {
+        static foreach(btn; __traits(allMembers, HipGamepadButton))
+        {
+            case btn:
+                return mixin("HipGamepadButton."~btn);
+        }
+        default:
+            return HipGamepadButton.count;
+    }
+}
+
 ///Based on https://docs.microsoft.com/en-us/uwp/api/windows.system.power.batterystatus?view=winrt-20348
 enum HipGamepadBatteryState : ubyte
 {
@@ -99,6 +115,10 @@ interface IHipGamepad
 
     /** Receives a gamepad button*/
     bool isButtonPressed(HipGamepadButton btn);
+    bool isButtonJustPressed(HipGamepadButton btn);
+    bool isButtonJustReleased(HipGamepadButton btn);
+
+    final bool isButtonPressed(string btn){return isButtonPressed(gamepadButtonFromString(btn));}
     /** After first created, gamepads are never destroyed, use this property for using it or not*/
     bool isConnected();
 
@@ -114,12 +134,9 @@ abstract class AHipGamepad : IHipGamepad
     protected float vibrationTime;
     protected bool _isConnected;
     protected float deadZone;
-    protected bool[HipGamepadButton.count] buttons;
 
     void setDeadzone(float threshold = 0.2){deadZone = threshold;}
     bool isVibrating(){return vibrationPower==0;}
-    void setButtonPressed(HipGamepadButton btn, bool pressed){buttons[btn] = pressed;}
-    bool isButtonPressed(HipGamepadButton btn){return buttons[btn];}
     bool isConnected(){return _isConnected;}
     void setConnected(bool connected){_isConnected = connected;}
 

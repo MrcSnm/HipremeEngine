@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module systems.gamepad;
 
+import event.handlers.button;
 public import hipengine.api.input.gamepad;
 
 ///Refer to https://docs.microsoft.com/en-us/uwp/api/windows.gaming.input.gamepadbuttons?view=winrt-20348
@@ -126,21 +127,18 @@ private pragma(inline) void pollXbox(HipGamePad pad, HipInputXboxGamepadState st
         setButtonPressed(HipGamepadButton.select, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.view));
     }
 
-    //Engine task:
-    //Check gamepad count
-    //Poll every connected gamepad every frame
-    //Should always return false for every function on disconnected gamepads
-    
-    //Game task:
-    //Check gamepad count
-    //Decide what will do with connected gamepads
-    
-
-
-
+   
 }
 
-
+/** Engine task:
+* Send gamepad connect and disconnect events
+* Poll every connected gamepad every frame
+* Should always return a neutral state for every disconnected gamepad
+*
+* Game task:
+* Check gamepad count
+* Decide what will do with connected gamepads
+*/
 class HipGamePad : AHipGamepad
 {
     HipGamepadBatteryStatus status;
@@ -151,10 +149,21 @@ class HipGamePad : AHipGamepad
     ubyte id;
     static ubyte instanceCount = 0;
     protected float vibrationAccumulator = 0;
-
-    this(){id = instanceCount++;}
+    protected HipButtonMetadata[HipGamepadButton.count] buttons;
 
     ubyte getId(){return id;}
+    this()
+    {
+        id = instanceCount++;
+        for(int i = 0; i < buttons.length; i++)
+            buttons[i] = new HipButtonMetadata(i);
+    }
+
+    void setButtonPressed(HipGamepadButton btn, bool pressed){buttons[btn].setPressed(pressed);}
+    bool isButtonPressed(HipGamepadButton btn){return buttons[btn].isPressed;}
+    bool isButtonJustPressed(HipGamepadButton btn){return buttons[btn].isJustPressed;}
+    bool isButtonJustReleased(HipGamepadButton btn){return buttons[btn].isJustReleased;}
+
     void poll(float deltaTime)
     {
         if(vibrationTime != 0)
@@ -166,6 +175,12 @@ class HipGamePad : AHipGamepad
 
         if(_isConnected) 
             pollXbox(this, HipGamepadGetXboxGamepadState(getId));
+    }
+
+    void postUpdate()
+    {
+        for(int i =0; i < buttons.length; i++)
+            buttons[i]._isNewState = false;
     }
     bool setVibrating(float vibrationPower, float time)
     {
@@ -180,6 +195,7 @@ class HipGamePad : AHipGamepad
         vibrationTime = time;
         return true;
     }
+    
     bool isWireless(){return HipGamepadIsWireless(getId);}
     Vector3 getAnalogState(HipGamepadAnalogs analog)
     {
@@ -194,8 +210,6 @@ class HipGamePad : AHipGamepad
     float getBatteryStatus()
     {
         status = HipGamepadGetBatteryStatus(getId());
-        import console.log;
-        rawlog(status);
         return cast(float)status.remainingCapacityInMilliwattHours
             / status.fullChargeCapacityInMilliwattHours;
     }
