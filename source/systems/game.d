@@ -12,39 +12,42 @@ Distributed under the CC BY-4.0 License.
 module systems.game;
 import bindbc.sdl;
 import hiprenderer.renderer;
-import systems.hotload;
-import systems.compilewatcher;
+import global.gamedef;
 private import event.dispatcher;
 private import event.handlers.keyboard;
-import std.typecons:Tuple;
 import view;
 
 
-private bool getDubError(Tuple!(int, "status", string, "output") dubObj, out string err)
+version(Standalone){}
+else
 {
-    import console.log;
-    if(dubObj.status != 2)
+    import systems.hotload;
+    import systems.compilewatcher;
+    import std.typecons:Tuple;
+    private bool getDubError(Tuple!(int, "status", string, "output") dubObj, out string err)
     {
-        import core.stdc.stdlib:exit;
-        rawlog("Dub error: ", dubObj);
-        exit(1);
+        import console.log;
+        if(dubObj.status != 2)
+        {
+            import core.stdc.stdlib:exit;
+            rawlog("Dub error: ", dubObj);
+            exit(1);
+        }
+        else
+        {
+            import util.string:indexOf, lastIndexOf;
+            long errInd = dubObj.output.indexOf("Warning:");
+            if(errInd == -1)
+                errInd = dubObj.output.indexOf("Error:"); //Check first for warnings
+            if(errInd == -1) return false;
+            errInd = dubObj.output.lastIndexOf("\n", errInd)-1;
+            err = dubObj.output[errInd..$];
+            return true;
+        }
     }
-    else
-    {
-        import util.string:indexOf, lastIndexOf;
-        long errInd = dubObj.output.indexOf("Warning:");
-        if(errInd == -1)
-            errInd = dubObj.output.indexOf("Error:"); //Check first for warnings
-        if(errInd == -1) return false;
-        errInd = dubObj.output.lastIndexOf("\n", errInd)-1;
-        err = dubObj.output[errInd..$];
-        return true;
-    }
+    extern(C) AScene function() HipremeEngineGameInit;
+    extern(C) void function() HipremeEngineGameDestroy;
 }
-
-extern(C) AScene function() HipremeEngineGameInit;
-extern(C) void function() HipremeEngineGameDestroy;
-
 
 
 class GameSystem
@@ -57,14 +60,20 @@ class GameSystem
     AScene[] scenes;
     string projectDir;
     protected static AScene externalScene;
-    protected static HotloadableDLL hotload;
 
-    version(Standalone){} else {static CompileWatcher watcher;}
+    version(Standalone){} else 
+    {
+        static CompileWatcher watcher;
+        protected static HotloadableDLL hotload;
+    }
     bool hasFinished;
     float fps;
 
-    this()
+    float targetFPS;
+
+    this(float targetFPS)
     {
+        this.targetFPS = targetFPS;
         keyboard = new KeyboardHandler();
         keyboard.addKeyListener(SDLK_ESCAPE, new class HipButton
         {
@@ -90,7 +99,6 @@ class GameSystem
                 s.onResize(width, height);
         });
     }
-
 
     void loadGame(string gameDll)
     {
@@ -198,7 +206,8 @@ class GameSystem
             if(watcher.update())
                 recompileReloadExternalScene();
         }
-        dispatcher.handleEvent(deltaTime);
+        dispatcher.handleEvent();
+        dispatcher.pollGamepads(deltaTime);
 
         if(hasFinished || dispatcher.hasQuit)
             return false;

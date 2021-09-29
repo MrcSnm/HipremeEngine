@@ -17,6 +17,7 @@ private:
 
 public:
     import systems.input;
+    import util.time;
     import hipengine.api.math.vector;
     import hipengine.api.input.keyboard;
     import hipengine.api.input.button;
@@ -26,6 +27,8 @@ public:
 
 
 package __gshared HipGamePad[] gamepads;
+
+
 /** 
  * Class used to dispatch the events for the each specific handler.
  *
@@ -49,7 +52,7 @@ class EventDispatcher
     
     bool hasQuit = false;
 
-    void handleEvent(float deltaTime)
+    void handleEvent()
     {
         ///Use SDL to populate our Input Queue
         SDL_Event e;
@@ -102,7 +105,14 @@ class EventDispatcher
                 }
             }
         }
+        handleHipEvent();
+        frameCount++;
+    }
 
+
+    void handleHipEvent()
+    {
+        
         //Now poll the cross platform input queue
         HipEventQueue.InputEvent* ev;
         while((ev = HipEventQueue.poll(0)) != null)
@@ -151,10 +161,13 @@ class EventDispatcher
                 default:break;
             }
         }
+        
+        keyboard.update();
+    }
+    void pollGamepads(float deltaTime)
+    {
         foreach (g; gamepads)
             g.poll(deltaTime);
-        keyboard.update();
-        frameCount++;
     }
 
     void addOnResizeListener(void delegate(uint width, uint height) onResize)
@@ -192,6 +205,16 @@ class EventDispatcher
         if(id >= gamepads.length) return false;
         return gamepads[id].isButtonPressed(btn);
     }
+    bool isGamepadButtonJustPressed(HipGamepadButton btn, ubyte id = 0)
+    {
+        if(id >= gamepads.length) return false;
+        return gamepads[id].isButtonJustPressed(btn);
+    }
+    bool isGamepadButtonJustReleased(HipGamepadButton btn, ubyte id = 0)
+    {
+        if(id >= gamepads.length) return false;
+        return gamepads[id].isButtonJustReleased(btn);
+    }
     bool isGamepadWireless(ubyte id = 0)
     {
         if(id >= gamepads.length) return false;
@@ -211,6 +234,8 @@ class EventDispatcher
     void postUpdate()
     {
         keyboard.postUpdate();
+        foreach(g; gamepads)
+            g.postUpdate();
     }
 }
 

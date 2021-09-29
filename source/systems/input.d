@@ -59,9 +59,6 @@ else version(UWP)
     }
     export extern(C) void HipInputOnKeyDown(uint virtualKey)
     {
-        static int i = 0;
-        import console.log;
-        rawlog(virtualKey, " ", i++);
         HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)virtualKey));
     }
     export extern(C) void HipInputOnKeyUp(uint virtualKey)

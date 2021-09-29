@@ -37,6 +37,8 @@ void initInput()
         loadSymbol!getGamepad;
         loadSymbol!getAnalog;
         loadSymbol!isGamepadButtonPressed;
+        loadSymbol!isGamepadButtonJustPressed;
+        loadSymbol!isGamepadButtonJustReleased;
         loadSymbol!setGamepadVibrating;
         loadSymbol!getGamepadBatteryStatus;
         loadSymbol!isGamepadWireless;
@@ -70,6 +72,8 @@ else
         AHipGamepad function(ubyte id = 0) getGamepad;
         Vector3 function(HipGamepadAnalogs analog, ubyte id = 0) getAnalog;
         bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonPressed;
+        bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustPressed;
+        bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustReleased;
         bool function(float vibrationPower, float time, ubyte id = 0) setGamepadVibrating;
         float function(ubyte id = 0) getGamepadBatteryStatus;
         bool function(ubyte id = 0) isGamepadWireless;

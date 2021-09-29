@@ -30,12 +30,12 @@ final class HipButtonMetadata : AHipButtonMetadata
             return (HipTime.getCurrentTimeAsMilliseconds() - upTimeStamp) / 1000;
         return 0;
     }
-    void setPressed(bool press)
+    override void setPressed(bool press)
     {
-        if(press && !_isPressed)
-            _isNewState = true;
+        _isNewState = false;
         if(press != _isPressed)
         {
+            _isNewState = true;
             if(_isPressed)
             {
                 lastDownTime = getDownTimeDuration();
