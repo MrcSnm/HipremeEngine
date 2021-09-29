@@ -50,48 +50,42 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-  </ItemGroup>
-  <ItemGroup Label="ResourceCopyInit">
-    <Audio Include="$(ProjectDir)\UWPResources\audio\active_matrix_edited.wav" />
-    <Image Include="$(ProjectDir)\UWPResources\audio\AlbumArtSmall.jpg" />
-    <Image Include="$(ProjectDir)\UWPResources\audio\AlbumArt_{B5020207-474E-4720-8B97-B815F21B9B00}_Large.jpg" />
-    <Image Include="$(ProjectDir)\UWPResources\audio\AlbumArt_{B5020207-474E-4720-8B97-B815F21B9B00}_Small.jpg" />
-    <Image Include="$(ProjectDir)\UWPResources\audio\Folder.jpg" />
-    <Audio Include="$(ProjectDir)\UWPResources\audio\junkyard-a-class.mp3" />
-    <Audio Include="$(ProjectDir)\UWPResources\audio\StrategicZone.mp3" />
-    <Audio Include="$(ProjectDir)\UWPResources\audio\the-sound-of-silence.wav" />
-    <Audio Include="$(ProjectDir)\UWPResources\audio\wind-sfx.mp3" />
-    <Text Include="$(ProjectDir)\UWPResources\fonts\arial.fnt" />
-    <Image Include="$(ProjectDir)\UWPResources\fonts\arial.png" />
-    <Text Include="$(ProjectDir)\UWPResources\fonts\consolas.fnt" />
-    <Image Include="$(ProjectDir)\UWPResources\fonts\consolas.png" />
-    <None Include="$(ProjectDir)\UWPResources\fonts\fa-regular-400.ttf" />
-    <None Include="$(ProjectDir)\UWPResources\fonts\fa-solid-900.ttf" />
-    <Text Include="$(ProjectDir)\UWPResources\fonts\tnroman.fnt" />
-    <Image Include="$(ProjectDir)\UWPResources\fonts\tnroman.png" />
-    <Text Include="$(ProjectDir)\UWPResources\graphics\atlases\UI.json" />
-    <Image Include="$(ProjectDir)\UWPResources\graphics\atlases\UI.png" />
-    <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\gUqMLK.png" />
-    <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\nineSlicePanel.png" />
-    <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\rex.png" />
-    <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\shaun.png" />
-    <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\sprite.png" />
-    <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\tese.bmp" />
-    <Image Include="$(ProjectDir)\UWPResources\graphics\sprites\teste.bmp" />
-    <Image Include="$(ProjectDir)\UWPResources\graphics\tilesets\generic_platformer_tiles.png" />
-    <Image Include="$(ProjectDir)\UWPResources\graphics\tilesets\terrain-v7.png" />
-    <Text Include="$(ProjectDir)\UWPResources\maps\minitest.tmx" />
-    <Text Include="$(ProjectDir)\UWPResources\maps\terrain-v7.tsx" />
-    <Text Include="$(ProjectDir)\UWPResources\maps\Test.tmx" />
-    <Text Include="$(ProjectDir)\UWPResources\text\renderer.conf" />
-  </ItemGroup>
-  <ItemGroup Label="ResourceCopyEnd">
-    <SDKReference Include="Microsoft.VCLibs.Desktop, Version=14.0" />
-  </ItemGroup>
-  <ItemGroup Label="ResourceCopyEnd">
-  </ItemGroup>
-  <ItemGroup Label="ResourceCopyEnd">
-  </ItemGroup>
+  </ItemGroup><ItemGroup Label="ResourceCopyInit">
+<Audio Include="$(ProjectDir)\UWPResources\audio\active_matrix_edited.wav"/>
+<Image Include="$(ProjectDir)\UWPResources\audio\AlbumArtSmall.jpg"/>
+<Image Include="$(ProjectDir)\UWPResources\audio\AlbumArt_{B5020207-474E-4720-8B97-B815F21B9B00}_Large.jpg"/>
+<Image Include="$(ProjectDir)\UWPResources\audio\AlbumArt_{B5020207-474E-4720-8B97-B815F21B9B00}_Small.jpg"/>
+<Image Include="$(ProjectDir)\UWPResources\audio\Folder.jpg"/>
+<Audio Include="$(ProjectDir)\UWPResources\audio\junkyard-a-class.mp3"/>
+<Audio Include="$(ProjectDir)\UWPResources\audio\StrategicZone.mp3"/>
+<Audio Include="$(ProjectDir)\UWPResources\audio\the-sound-of-silence.wav"/>
+<Audio Include="$(ProjectDir)\UWPResources\audio\wind-sfx.mp3"/>
+<Text Include="$(ProjectDir)\UWPResources\data\input\input.json"/>
+<Text Include="$(ProjectDir)\UWPResources\fonts\arial.fnt"/>
+<Image Include="$(ProjectDir)\UWPResources\fonts\arial.png"/>
+<Text Include="$(ProjectDir)\UWPResources\fonts\consolas.fnt"/>
+<Image Include="$(ProjectDir)\UWPResources\fonts\consolas.png"/>
+<None Include="$(ProjectDir)\UWPResources\fonts\fa-regular-400.ttf"/>
+<None Include="$(ProjectDir)\UWPResources\fonts\fa-solid-900.ttf"/>
+<Text Include="$(ProjectDir)\UWPResources\fonts\tnroman.fnt"/>
+<Image Include="$(ProjectDir)\UWPResources\fonts\tnroman.png"/>
+<Text Include="$(ProjectDir)\UWPResources\graphics\atlases\UI.json"/>
+<Image Include="$(ProjectDir)\UWPResources\graphics\atlases\UI.png"/>
+<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\gUqMLK.png"/>
+<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\nineSlicePanel.png"/>
+<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\rex.png"/>
+<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\shaun.png"/>
+<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\sprite.png"/>
+<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\tese.bmp"/>
+<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\teste.bmp"/>
+<Image Include="$(ProjectDir)\UWPResources\graphics\tilesets\generic_platformer_tiles.png"/>
+<Image Include="$(ProjectDir)\UWPResources\graphics\tilesets\terrain-v7.png"/>
+<Text Include="$(ProjectDir)\UWPResources\maps\minitest.tmx"/>
+<Text Include="$(ProjectDir)\UWPResources\maps\terrain-v7.tsx"/>
+<Text Include="$(ProjectDir)\UWPResources\maps\Test.tmx"/>
+<Text Include="$(ProjectDir)\UWPResources\text\renderer.conf"/>
+</ItemGroup><ItemGroup Label="ResourceCopyEnd"></ItemGroup>
+  
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
