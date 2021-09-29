@@ -15,6 +15,8 @@
   </ItemGroup><ItemGroup Label="ResourceCopyInit">
 <Filter Include="UWPResources"/>
 <Filter Include="UWPResources\audio"/>
+<Filter Include="UWPResources\data"/>
+<Filter Include="UWPResources\data\input"/>
 <Filter Include="UWPResources\fonts"/>
 <Filter Include="UWPResources\graphics"/>
 <Filter Include="UWPResources\graphics\atlases"/>
@@ -49,6 +51,9 @@
 <Audio Include="$(ProjectDir)\UWPResources\audio\wind-sfx.mp3">
 	<Filter>UWPResources\audio</Filter>
 </Audio>
+<Text Include="$(ProjectDir)\UWPResources\data\input\input.json">
+	<Filter>UWPResources\data\input</Filter>
+</Text>
 <Text Include="$(ProjectDir)\UWPResources\fonts\arial.fnt">
 	<Filter>UWPResources\fonts</Filter>
 </Text>
