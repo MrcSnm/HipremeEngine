@@ -42,23 +42,25 @@ void loadAudio()
         import hipengine.internal;
         import core.sys.windows.windows;
         enum Class = "hipaudio.audio.HipAudio";
-
-        loadSymbol!(resume);
-        loadSymbol!(play,                dlangGetStaticClassFuncName!play(Class));
-        loadSymbol!(pause,               dlangGetStaticClassFuncName!pause(Class));
-        loadSymbol!(play_streamed,       dlangGetStaticClassFuncName!play_streamed(Class));
-        loadSymbol!(resume,              dlangGetStaticClassFuncName!resume(Class));
-        loadSymbol!(stop,                dlangGetStaticClassFuncName!stop(Class));
-        loadSymbol!(load,                dlangGetStaticClassFuncName!load(Class));
-        loadSymbol!(loadStreamed,        dlangGetStaticClassFuncName!loadStreamed(Class));
-        loadSymbol!(updateStream,        dlangGetStaticClassFuncName!updateStream(Class));
-        loadSymbol!(getSource,           dlangGetStaticClassFuncName!getSource(Class));
-        loadSymbol!(setPitch,            dlangGetStaticClassFuncName!setPitch(Class));
-        loadSymbol!(setPanning,          dlangGetStaticClassFuncName!setPanning(Class));
-        loadSymbol!(setVolume,           dlangGetStaticClassFuncName!setVolume(Class));
-        loadSymbol!(setReferenceDistance,dlangGetStaticClassFuncName!setReferenceDistance(Class));
-        loadSymbol!(setRolloffFactor,    dlangGetStaticClassFuncName!setRolloffFactor(Class));
-        loadSymbol!(setMaxDistance,      dlangGetStaticClassFuncName!setMaxDistance(Class));
-        loadSymbol!(update,              dlangGetStaticClassFuncName!update(Class));
+        //Create an instance per unique type
+        mixin(loadSymbolsForStaticClass!(Class,
+            resume,
+            play,
+            pause,
+            play_streamed,
+            resume,
+            stop,
+            load,
+            loadStreamed,
+            updateStream,
+            getSource,
+            setPitch,
+            setPanning,
+            setVolume,
+            setReferenceDistance,
+            setRolloffFactor,
+            setMaxDistance,
+            update
+        ));
     }
 }

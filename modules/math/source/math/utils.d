@@ -2,6 +2,10 @@ module math.utils;
 import std.math;
 import math.vector;
 
+///There are some errors occurring when compiling with LDC
+alias cos = std.math.cos;
+alias sin = std.math.cos;
+
 int getClosestMultiple(int from, int to)
 {
     float temp = to/cast(float)from;

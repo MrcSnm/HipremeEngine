@@ -2,7 +2,7 @@ module hipaudio.backend.openal.source;
 import hipaudio.backend.openal.clip;
 import error.handler;
 import hipaudio.audio;
-import hipaudio.backend.audiosource;
+import hipaudio.audiosource;
 import debugging.gui;
 import util.memory;
 import bindbc.openal;
@@ -93,7 +93,7 @@ import bindbc.openal;
         alGetSourcei(id, AL_BUFFERS_PROCESSED, &b);
         if(b == 0)
             return null;
-        return clip.findBuffer(&b);
+        return (cast(HipAudioClip)clip).findBuffer(&b);
     }
     
 

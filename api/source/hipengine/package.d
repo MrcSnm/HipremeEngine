@@ -58,7 +58,7 @@ else
 version(Script) void function(string s) log;
 void initConsole()
 {
-	version(Script){loadSymbol!log;}
+	version(Script){mixin(loadSymbol("log"));}
 }
 
 mixin template HipEngineMain(alias StartScene)

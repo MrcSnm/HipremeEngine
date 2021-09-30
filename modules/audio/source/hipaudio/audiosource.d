@@ -8,7 +8,7 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hipaudio.backend.audiosource;
+module hipaudio.audiosource;
 import bindbc.openal;
 import hipaudio.audioclip : HipAudioClip;
 import hipaudio.audio;
@@ -54,17 +54,17 @@ import imgui.fonts.icons;
     //Functions
         void attachToPosition(){}
         void attachOnDestroy(){}
-        float getProgress(){return time/length;}
+        override float getProgress(){return time/length;}
         void pullStreamData(){}
         void setClip(HipAudioClip clip){this.clip = clip;}
         HipAudioBufferWrapper* getFreeBuffer(){return null;}
 
         final void sendAvailableBuffer(void* buffer)
         {
-            clip.setBufferAvailable(buffer);
+            (cast(HipAudioClip)clip).setBufferAvailable(buffer);
         }
 
-        HipAudioSource clean()
+        override HipAudioSource clean()
         {
             isLooping = false;
             isPlaying = false;

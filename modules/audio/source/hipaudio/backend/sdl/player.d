@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hipaudio.backend.sdl.player;
 import hipaudio.backend.sdl.clip;
-import hipaudio.backend.audiosource;
+import hipaudio.audiosource;
 import hipaudio.audio;
 import error.handler;
 import console.log;
@@ -50,8 +50,9 @@ class HipSDLAudioPlayer : IHipAudioPlayer
 
     bool play(HipAudioSource src)
     {
-        HipSDL_MixerDecoder dec = cast(HipSDL_MixerDecoder)src.clip.decoder;
-        if(src.clip.type == HipAudioType.SFX)   
+        HipAudioClip clip = (cast(HipAudioClip)src.clip);
+        HipSDL_MixerDecoder dec = cast(HipSDL_MixerDecoder)clip.decoder;
+        if(clip.type == HipAudioType.SFX)   
             return Mix_PlayChannel(-1, dec.getChunk(), 1) == 1;
         else
             return Mix_PlayMusic(dec.getMusic(), -1) == 1;
