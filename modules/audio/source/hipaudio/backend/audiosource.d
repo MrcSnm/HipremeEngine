@@ -9,12 +9,15 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hipaudio.backend.audiosource;
-import math.vector;
+import bindbc.openal;
 import hipaudio.audioclip : HipAudioClip;
 import hipaudio.audio;
-import bindbc.openal;
+public import hipengine.api.audio.audiosource;
+
+import math.vector;
 import debugging.gui;
 import imgui.fonts.icons;
+
 /** 
 *   Wraps properties for the AudioPlayer. The closest graphical represetantion
 *   to that would be the Material class, but for Audios.
@@ -45,7 +48,7 @@ import imgui.fonts.icons;
         HipAudio.update(*src);
     }
 
-}) public class HipAudioSource
+}) public class HipAudioSource : AHipAudioSource
 {
     public:
     //Functions
@@ -60,24 +63,6 @@ import imgui.fonts.icons;
         {
             clip.setBufferAvailable(buffer);
         }
-
-    //Properties
-
-        ///Where the audio data is stored
-        HipAudioClip clip;
-        bool isLooping;
-        bool isPlaying;
-
-        float time;
-        float length;
-        float pitch = 1;
-        float panning = 0;
-        float volume = 1;
-
-        //3D Audio Only
-        float maxDistance = 0;
-        float rolloffFactor = 0;
-        float referenceDistance = 0;
 
         HipAudioSource clean()
         {
