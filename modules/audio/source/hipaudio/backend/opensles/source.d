@@ -5,7 +5,7 @@ import bindbc.sdl;
 import hipaudio.audioclip;
 import hipaudio.backend.sles;
 import util.time;
-import hipaudio.backend.audiosource;
+import hipaudio.audiosource;
 
 version(Android):
 

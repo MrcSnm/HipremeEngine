@@ -39,21 +39,13 @@ version(Windows)
 else
 {
 	import core.sys.posix.dlfcn:dlsym;
-	private alias _loadSymbol = dlsym;
-}
-
-private void _loadSymbolEnd(void* targetFunc, const char* name)
-{
-	*cast(void**)targetFunc = cast(void*)_loadSymbol(_dll, name);
+	alias _loadSymbol = dlsym;
 }
 
 ///Loads the symbol directly inside 's'
-void loadSymbol(alias s, string symName = "")()
+string loadSymbol(string s)
 {
-	static if(symName == "")
-		s = cast(typeof(s))_loadSymbol(_dll, (s.stringof~"\0").ptr);
-	else
-		s = cast(typeof(s))_loadSymbol(_dll, (symName~"\0").ptr);
+	return s ~ " = cast(typeof(" ~ s ~"))_loadSymbol(_dll, (\""~s~"\").ptr);";
 }
 /**
 *	Prefer using that function instead of loadSymbol, as compile
@@ -66,6 +58,20 @@ void loadSymbols(Ts...)()
 {
 	static foreach(s; Ts)
 		s = cast(typeof(s))_loadSymbol(_dll, s.stringof);
+}
+
+template loadSymbolsForStaticClass(string staticClassPath, Ts...)
+{
+	enum names = simpleManglerFuncs!(staticClassPath, Ts);
+	enum funcToMix()
+	{
+		string ret;
+		static foreach(i,s; Ts)
+			ret~= s.stringof ~"= cast(typeof("~s.stringof~ " ))_loadSymbol(_dll, (\""~names[i]~"\\0\").ptr);";
+		return ret;
+	}
+	enum loadSymbolsForStaticClass = funcToMix;
+
 }
 
 
@@ -87,13 +93,84 @@ typeof(s) getSymbol(alias s)()
 * 
 *	PS: Won't import isFunction for mantaining binary minimal
 */
-string dlangGetFuncName(alias func)(string _module)
-{
-	import core.demangle;
-	return mangleFunc!(typeof(func))(_module);
-}
+alias dlangGetFuncName = simpleMangler;
+
 
 string dlangGetStaticClassFuncName(alias func)(string _module)
 {
-	return dlangGetFuncName!(func)(_module~"."~func.stringof);
+	return cast(string)mangleFunc!(typeof(func))(_module~"."~func.stringof);
+}
+
+string[] dlangGetStaticClassFuncNames(Ts...)(string _module)
+{
+	string[] ret;
+	static foreach(func; Ts)
+		ret~= cast(string)mangleFunc!(typeof(func))(_module~"."~func.stringof);
+	return ret;
+}
+
+string toString(ulong x){return toString(cast(int)x);}
+string toString(int x)
+{
+    enum numbers = "0123456789";
+    int div = 10;
+    int length = 1;
+    int count = 1;
+    while(div < x)
+    {
+        div*=10;
+        length++;
+    }
+    char[] ret = new char[](length);
+    div = 10;
+    while(div < x)
+    {
+        count++;
+        ret[length-count]=numbers[(x/div)%10];
+        div*=10;
+    }
+    ret[length-1] = numbers[x%10];
+    return cast(string)ret;
+}
+
+
+
+string simpleManglerModule(string mod)
+{
+	string ret = "_D";
+	string temp;
+	int counter = 0;
+	for(ulong i = 0; i < mod.length; i++)
+	{
+		if(mod[i] == '.')
+		{
+			ret~= toString(counter)~temp;
+			counter = 0;
+			temp = null;
+			continue;
+		}
+		counter++;
+		temp~= mod[i];
+	}
+	if(counter != 0)
+		ret~= toString(counter)~temp;
+	return ret;
+}
+
+template simpleMangler(alias func, string mod)
+{
+	enum simpleMangler = simpleManglerModule(mod) ~ func.stringof.length.stringof[0..$-2] ~ func.stringof ~ typeof(func).mangleof;
+}
+
+template simpleManglerFuncs(string mod, Ts...)
+{
+	enum modMangle = simpleManglerModule(mod);
+	enum helper = ()
+	{
+		string[Ts.length] ret;
+		static foreach(i,t;Ts)
+			ret[i]= modMangle~ t.stringof.length.stringof[0..$-2]~t.stringof ~ typeof(t).mangleof;
+		return ret;
+	}();
+	enum simpleManglerFuncs = helper;
 }

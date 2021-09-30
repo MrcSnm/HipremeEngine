@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hipaudio.backend.nullaudio;
 import hipaudio.audio;
-import hipaudio.backend.audiosource;
+import hipaudio.audiosource;
 import data.audio.audio;
 
 

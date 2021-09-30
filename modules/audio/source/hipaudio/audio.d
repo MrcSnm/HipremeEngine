@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hipaudio.audio;
 
 public import hipaudio.audioclip;
-public import hipaudio.backend.audiosource;
+public import hipaudio.audiosource;
 public import data.audio.audioconfig;
 public import hipengine.api.audio;
 import hipaudio.backend.openal.player;

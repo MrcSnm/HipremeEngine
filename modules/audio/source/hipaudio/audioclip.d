@@ -14,7 +14,7 @@ import data.hipfs;
 import error.handler;
 import data.audio.audio;
 import hipaudio.audio;
-import hipaudio.backend.audiosource;
+import hipaudio.audiosource;
 public import hipengine.api.audio.audioclip;
 
 ///Wraps an audio buffer by saving the specific API inside 

@@ -2,7 +2,7 @@ module hipaudio.backend.opensles.player;
 version(Android):
 import hipaudio.backend.opensles.source;
 import hipaudio.backend.opensles.clip;
-import hipaudio.backend.audiosource;
+import hipaudio.audiosource;
 import data.audio.audioconfig;
 import hipaudio.backend.sles;
 import config.opts : HIP_OPENSLES_OPTIMAL, HIP_OPENSLES_FAST_MIXER;

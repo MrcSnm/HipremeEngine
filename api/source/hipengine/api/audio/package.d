@@ -51,4 +51,5 @@ enum HipAudioType
 }
 
 
-public import HipAudio = hipengine.api.audio.audio;
+version(Script)
+    public import HipAudio = hipengine.api.audio.audio;
