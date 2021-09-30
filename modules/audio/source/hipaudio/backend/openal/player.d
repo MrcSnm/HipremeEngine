@@ -35,14 +35,14 @@ package ALenum getFormatAsOpenAL(AudioConfig cfg)
 {
     if(cfg.channels == 1)
     {
-        if(cfg.format == SDL_AudioFormat.AUDIO_S16 || cfg.format == SDL_AudioFormat.AUDIO_S16LSB || cfg.format == SDL_AudioFormat.AUDIO_S16MSB)
+        if(cfg.format == AudioFormat.signed16Little || cfg.format == AudioFormat.signed16Big)
             return AL_FORMAT_MONO16;
         else
             return AL_FORMAT_MONO8;
     }
     else
     {
-        if(cfg.format == SDL_AudioFormat.AUDIO_S16 || cfg.format == SDL_AudioFormat.AUDIO_S16LSB || cfg.format == SDL_AudioFormat.AUDIO_S16MSB)
+        if(cfg.format == AudioFormat.signed16Little || cfg.format == AudioFormat.signed16Big)
             return AL_FORMAT_STEREO16;
         else
             return AL_FORMAT_STEREO8;
@@ -87,7 +87,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
 {
     public this(AudioConfig cfg)
     {
-        HipSDL_SoundDecoder.initDecoder(cfg, AudioConfig.defaultBufferSize);
+        HipSDL_SoundDecoder.initDecoder(cfg, audioConfigDefaultBufferSize);
         initializeOpenAL();
         config = cfg;
     }

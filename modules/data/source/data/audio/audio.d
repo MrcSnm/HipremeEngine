@@ -5,36 +5,9 @@ import bindbc.sdl;
 import sdl_sound;
 import error.handler;
 
+public import hipengine.api.data.audio;
 
-enum HipAudioEncoding
-{
-    WAV,
-    MP3,
-    OGG,
-    MIDI, //Probably won't support
-    FLAC
-}
-enum HipAudioType
-{
-    SFX,
-    MUSIC
-}
 
-HipAudioEncoding getEncodingFromName(string name)
-{
-    import std.string : lastIndexOf;
-    string temp = name[name.lastIndexOf(".")+1..$];
-    switch(temp)
-    {
-        case "wav":return HipAudioEncoding.WAV;
-        case "ogg":return HipAudioEncoding.OGG;
-        case "mp3":return HipAudioEncoding.MP3;
-        case "flac":return HipAudioEncoding.FLAC;
-        case "mid":
-        case "midi":return HipAudioEncoding.MIDI;
-        default: assert(false, "Encoding from file '"~name~"', "~temp~", is not supported.");
-    }
-}
 private char* getNameFromEncoding(HipAudioEncoding encoding)
 {
     final switch(encoding)
@@ -45,21 +18,6 @@ private char* getNameFromEncoding(HipAudioEncoding encoding)
         case HipAudioEncoding.OGG:return cast(char*)"ogg\0".ptr;
         case HipAudioEncoding.WAV:return cast(char*)"wav\0".ptr;
     }
-}
-
-interface IHipAudioDecoder
-{
-    bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type);
-    uint startDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
-    in (chunkSize > 0 , "Chunk size must be greater than 0");
-    uint updateDecoding(void* outputDecodedData);
-    AudioConfig getAudioConfig();
-    void* getClipData();
-    ulong getClipSize();
-    ///Don't apply to streamed audio. Gets the duration in seconds
-    float getDuration();
-
-    void dispose();
 }
 
 class HipSDL_MixerDecoder : IHipAudioDecoder
@@ -231,7 +189,7 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
             Sound_AudioInfo info = sample.actual;
             ret.channels = info.channels;
             ret.sampleRate = info.rate;
-            ret.format = info.format;
+            ret.format = getFormatFromSDL_AudioFormat(info.format);
         }
         return ret;
     }

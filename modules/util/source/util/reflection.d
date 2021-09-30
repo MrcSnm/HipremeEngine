@@ -28,6 +28,38 @@ bool isLiteral(alias variable)(string var = variable.stringof)
     return (isNumeric(var) || count(var, "\"") == 2);
 }
 
+auto inverseLookup(alias lookupTable)()
+{
+    alias O = typeof(lookupTable.keys[0]);
+    alias I = typeof(lookupTable.values[0]);
+    O[I] output;
+    static foreach(k, v; lookupTable)
+        output[v] = k;
+    return output;
+}
+
+/** 
+*   Generates a function that executes a switch case from the associative array.
+*
+*   Pass true as the second parameter if reverse is desired.
+*/
+template aaToSwitch(alias aa, bool reverse = false)
+{
+    auto aaToSwitch(T)(T value)
+    {
+        switch(value)
+        {
+            static foreach(k, v; aa)
+                static if(reverse)
+                    case v: return k;
+                else
+                    case k: return v;                
+            default:
+                return typeof(return).init;
+        }
+    }
+}
+
 
 ulong enumLength(T)()
 if(is(T == enum))

@@ -1,5 +1,3 @@
-module data.audio.audioconfig;
-
 /*
 Copyright: Marcelo S. N. Mancini (Hipreme|MrcSnm), 2018 - 2021
 License:   [https://creativecommons.org/licenses/by/4.0/|CC BY-4.0 License].
@@ -10,75 +8,44 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-import error.handler;
-import std.conv:to;
-import bindbc.sdl.mixer;
+
+module data.audio.audioconfig;
 import bindbc.sdl : SDL_AudioFormat;
+import util.reflection;
 import sdl_sound;
+public import hipengine.api.data.audio;
+
+private enum SDL_AudioFormat[AudioFormat] _getFormatAsSDL_AudioFormat =
+[
+    AudioFormat.unsigned8       : SDL_AudioFormat.AUDIO_U8,
+    AudioFormat.signed8         : SDL_AudioFormat.AUDIO_S8,
+    AudioFormat.signed16Little  : SDL_AudioFormat.AUDIO_S16LSB,
+    AudioFormat.signed16Big     : SDL_AudioFormat.AUDIO_S16MSB,
+    AudioFormat.unsigned16Little: SDL_AudioFormat.AUDIO_U16LSB,
+    AudioFormat.unsigned16Big   : SDL_AudioFormat.AUDIO_U16MSB,
+    AudioFormat.signed32Little  : SDL_AudioFormat.AUDIO_S32LSB,
+    AudioFormat.signed32Big     : SDL_AudioFormat.AUDIO_S32MSB,
+    AudioFormat.float32Little   : SDL_AudioFormat.AUDIO_F32LSB,
+    AudioFormat.float32Big      : SDL_AudioFormat.AUDIO_F32MSB
+];
 
 
-package SDL_AudioFormat getFormatAsSDL_AudioFormat(AudioConfig cfg)
-{
-    if(cfg.format == MIX_DEFAULT_FORMAT)
-    {
-        version(LittleEndian) return SDL_AudioFormat.AUDIO_S16LSB;
-        else return SDL_AudioFormat.AUDIO_S16MSB;
-    }
-    return SDL_AudioFormat.AUDIO_S16;
-}
+/**
+*   Params:
+*       value =  AudioFormat
+*   Returns: SDL_AudioFormat
+*/
+alias getFormatAsSDL_AudioFormat = aaToSwitch!_getFormatAsSDL_AudioFormat;
+
+
+/** 
+ *  Params: 
+ *       value = SDL_AudioFormat
+ *  Returns: AudioFormat
+ */
+alias getFormatFromSDL_AudioFormat = aaToSwitch!(_getFormatAsSDL_AudioFormat, true);
+
 package Sound_AudioInfo getSDL_SoundInfo(AudioConfig cfg)
 {
-    return Sound_AudioInfo(cfg.getFormatAsSDL_AudioFormat, cast(ubyte)cfg.channels, cfg.sampleRate);
-}
-
-struct AudioConfig
-{
-    int sampleRate;
-    ushort format;
-    int channels;
-    int bufferSize;
-    public immutable static uint defaultBufferSize = 4096;
-
-    /**
-    *   Returns a default audio configuration for 2D
-    */
-    static AudioConfig musicConfig()
-    {
-        AudioConfig cfg;
-        cfg.sampleRate = 44_100;
-        cfg.format = MIX_DEFAULT_FORMAT;
-        cfg.channels = 2U;
-        cfg.bufferSize = 4096;
-        return cfg;
-    }
-    static AudioConfig lightweightConfig()
-    {
-        AudioConfig cfg;
-        cfg.sampleRate = 22_050;
-        cfg.format = MIX_DEFAULT_FORMAT;
-        cfg.channels = 1U;
-        cfg.bufferSize = 2048;
-        return cfg;
-    }
-
-    uint getBitDepth()
-    {
-        switch(format)
-        {
-            case SDL_AudioFormat.AUDIO_U8:
-            case SDL_AudioFormat.AUDIO_S8:
-                return 8;
-            case SDL_AudioFormat.AUDIO_S16LSB:
-            case SDL_AudioFormat.AUDIO_S16MSB:
-            case SDL_AudioFormat.AUDIO_U16LSB:
-            case SDL_AudioFormat.AUDIO_U16MSB:
-                return 16;
-            case SDL_AudioFormat.AUDIO_S32LSB:
-            case SDL_AudioFormat.AUDIO_S32MSB:
-            case SDL_AudioFormat.AUDIO_F32LSB:
-            case SDL_AudioFormat.AUDIO_F32MSB:
-                return 32;
-            default:return 0;
-        }
-    }
+    return Sound_AudioInfo(getFormatAsSDL_AudioFormat(cfg.format), cast(ubyte)cfg.channels, cfg.sampleRate);
 }

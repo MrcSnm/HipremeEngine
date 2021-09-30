@@ -12,7 +12,7 @@ Distributed under the CC BY-4.0 License.
 module hipengine.internal;
 
 
-version(Script){private __gshared void* _dll;}
+version(Script){__gshared void* _dll;}
 
 void initializeHip()
 {
@@ -34,7 +34,7 @@ version(Script):
 version(Windows)
 {
 	import core.sys.windows.windows:GetProcAddress;
-	private alias _loadSymbol = GetProcAddress;
+	alias _loadSymbol = GetProcAddress;
 }
 else
 {
@@ -42,16 +42,37 @@ else
 	private alias _loadSymbol = dlsym;
 }
 
-///Loads the symbol directly inside 's'
-void loadSymbol(alias s)()
+private void _loadSymbolEnd(void* targetFunc, const char* name)
 {
-	s = cast(typeof(s))_loadSymbol(_dll, (s.stringof~"\0").ptr);
+	*cast(void**)targetFunc = cast(void*)_loadSymbol(_dll, name);
 }
+
+///Loads the symbol directly inside 's'
+void loadSymbol(alias s, string symName = "")()
+{
+	static if(symName == "")
+		s = cast(typeof(s))_loadSymbol(_dll, (s.stringof~"\0").ptr);
+	else
+		s = cast(typeof(s))_loadSymbol(_dll, (symName~"\0").ptr);
+}
+/**
+*	Prefer using that function instead of loadSymbol, as compile
+*	time sequences reduced the binary size in almost 100kb.
+*
+*	The problem is not yet solved, but it is a lot better than doing several
+*	template instantiations
+*/
+void loadSymbols(Ts...)()
+{
+	static foreach(s; Ts)
+		s = cast(typeof(s))_loadSymbol(_dll, s.stringof);
+}
+
 
 ///Gets the symbol from 's' casted to 's' type ( useful when not loading directly into the function pointers)
 typeof(s) getSymbol(alias s)()
 {
-    return cast(typeof(s))_loadSymbol(_dll, (s.stringof~"\0").ptr);
+    return cast(typeof(s))_loadSymbol(_dll, s.stringof);
 }
 
 
@@ -66,8 +87,13 @@ typeof(s) getSymbol(alias s)()
 * 
 *	PS: Won't import isFunction for mantaining binary minimal
 */
-package string dlangGetFuncName(alias func, string _module)()
+string dlangGetFuncName(alias func)(string _module)
 {
-	// import core.demangle;
+	import core.demangle;
 	return mangleFunc!(typeof(func))(_module);
+}
+
+string dlangGetStaticClassFuncName(alias func)(string _module)
+{
+	return dlangGetFuncName!(func)(_module~"."~func.stringof);
 }

@@ -20,28 +20,32 @@ void initInput()
     version(Script)
     {
         import hipengine.internal;
-        loadSymbol!isKeyPressed;
-        loadSymbol!isKeyJustPressed;
-        loadSymbol!isKeyJustReleased;
-        loadSymbol!getKeyDownTime;
-        loadSymbol!getKeyUpTime;
-        loadSymbol!isMouseButtonPressed;
-        loadSymbol!isMouseButtonJustPressed;
-        loadSymbol!isMouseButtonJustReleased;
-        loadSymbol!getTouchPosition;
-        loadSymbol!getTouchDeltaPosition;
-        loadSymbol!getScroll;
 
-        //Gamepad
-        loadSymbol!getGamepadCount;
-        loadSymbol!getGamepad;
-        loadSymbol!getAnalog;
-        loadSymbol!isGamepadButtonPressed;
-        loadSymbol!isGamepadButtonJustPressed;
-        loadSymbol!isGamepadButtonJustReleased;
-        loadSymbol!setGamepadVibrating;
-        loadSymbol!getGamepadBatteryStatus;
-        loadSymbol!isGamepadWireless;
+        loadSymbols!(
+            isKeyPressed,
+            isKeyJustPressed,
+            isKeyJustReleased,
+            getKeyDownTime,
+            getKeyUpTime,
+            isMouseButtonPressed,
+            isMouseButtonJustPressed,
+            isMouseButtonJustReleased,
+            getTouchPosition,
+            getTouchDeltaPosition,
+            getScroll,
+
+            //Gamepad
+            getGamepadCount,
+            getGamepad,
+            getAnalog,
+            isGamepadButtonPressed,
+            isGamepadButtonJustPressed,
+            isGamepadButtonJustReleased,
+            setGamepadVibrating,
+            getGamepadBatteryStatus,
+            isGamepadWireless
+        );
+        
     }
 }
 

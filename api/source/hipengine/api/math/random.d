@@ -30,9 +30,12 @@ package void initRandom()
 	version(Script)
 	{
 		import hipengine.internal;
-		loadSymbol!range;
-		loadSymbol!rangeu;
-		loadSymbol!rangeub;
-		loadSymbol!rangef;
+		loadSymbols!
+		(
+			range,
+			rangeu,
+			rangeub,
+			rangef
+		);
 	}
 }
