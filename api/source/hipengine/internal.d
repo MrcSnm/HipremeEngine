@@ -71,7 +71,20 @@ template loadSymbolsForStaticClass(string staticClassPath, Ts...)
 		return ret;
 	}
 	enum loadSymbolsForStaticClass = funcToMix;
+}
 
+template loadSymbolsFromExportD(string exportedClass, Ts...)
+{
+	enum impl = ()
+	{
+		enum e = '"'~exportedClass~"_\"";
+		string ret;
+		static foreach(i, s; Ts)
+			ret~= s.stringof ~"= cast(typeof("~s.stringof~ " ))_loadSymbol(_dll, ("~e~"~\""~s.stringof~"\\0\").ptr);";
+		return ret;
+	}();
+
+	enum loadSymbolsFromExportD = impl;
 }
 
 
@@ -95,19 +108,6 @@ typeof(s) getSymbol(alias s)()
 */
 alias dlangGetFuncName = simpleMangler;
 
-
-string dlangGetStaticClassFuncName(alias func)(string _module)
-{
-	return cast(string)mangleFunc!(typeof(func))(_module~"."~func.stringof);
-}
-
-string[] dlangGetStaticClassFuncNames(Ts...)(string _module)
-{
-	string[] ret;
-	static foreach(func; Ts)
-		ret~= cast(string)mangleFunc!(typeof(func))(_module~"."~func.stringof);
-	return ret;
-}
 
 string toString(ulong x){return toString(cast(int)x);}
 string toString(int x)
@@ -159,7 +159,20 @@ string simpleManglerModule(string mod)
 
 template simpleMangler(alias func, string mod)
 {
-	enum simpleMangler = simpleManglerModule(mod) ~ func.stringof.length.stringof[0..$-2] ~ func.stringof ~ typeof(func).mangleof;
+	import std.traits:moduleName;
+	enum modSize = simpleManglerModule(moduleName!func).length;
+	enum funcLength = func.stringof.length.stringof[0..$-2];
+	enum mangle = func.mangleof[modSize..$];
+	enum simpleMangler = simpleManglerModule(mod) ~ funcLength ~ func.stringof ~ mangle;
+}
+
+template simpleMangler(alias func, string mod, string funcName)
+{
+	import std.traits:moduleName;
+	enum modSize = simpleManglerModule(moduleName!func).length;
+	enum funcLength = func.stringof.length.stringof[0..$-2];
+	enum mangle = func.mangleof[modSize..$];
+	enum simpleMangler = simpleManglerModule(mod) ~funcLength ~ funcName ~ mangle;
 }
 
 template simpleManglerFuncs(string mod, Ts...)
@@ -173,4 +186,35 @@ template simpleManglerFuncs(string mod, Ts...)
 		return ret;
 	}();
 	enum simpleManglerFuncs = helper;
+}
+
+long indexOf(string content, string what, ulong start = 0)
+{
+	ulong matchIndex = 0;
+	for(ulong i = start; i < content.length; i++)
+	{
+		while(content[i+matchIndex] == what[matchIndex])
+		{
+			matchIndex++;
+			if(matchIndex == what.length)
+				return i;
+		}
+		matchIndex = 0;
+	}
+	return -1;
+}
+string strip(string reference, string what)
+{
+	long ind = reference.indexOf(what);
+	if(ind != -1)
+		reference = reference[0..ind]~reference[ind+what.length..$];
+	return reference;
+}
+string join(string[] args, string separator)
+{
+	if(args.length == 0) return "";
+	string ret = args[0];
+	for(int i = 1; i < args.length; i++)
+		ret~=separator~args[i];
+	return ret;
 }

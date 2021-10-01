@@ -55,9 +55,9 @@ import imgui.fonts.icons;
         void attachToPosition(){}
         void attachOnDestroy(){}
         override float getProgress(){return time/length;}
-        void pullStreamData(){}
-        void setClip(HipAudioClip clip){this.clip = clip;}
-        HipAudioBufferWrapper* getFreeBuffer(){return null;}
+        override void pullStreamData(){}
+        void setClip(IHipAudioClip clip){this.clip = clip;}
+        override HipAudioBufferWrapper* getFreeBuffer(){return null;}
 
         final void sendAvailableBuffer(void* buffer)
         {

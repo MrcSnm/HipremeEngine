@@ -15,6 +15,9 @@ abstract class AHipAudioSource
     float volume = 1;
     abstract float getProgress();
     abstract AHipAudioSource clean();
+    abstract void pullStreamData();
+    abstract void* getFreeBuffer();
+
 
     //3D Audio Only
     float maxDistance = 0;

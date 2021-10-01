@@ -108,8 +108,6 @@ extern(C)int SDL_main()
 
 	import event.handlers.inputmap;
 
-	global.gamedef.map = HipInputMap.parseInputMap("data/input/input.json");
-
 	//Initialize 2D context
 	import graphics.g2d;
 	HipRenderer2D.initialize();

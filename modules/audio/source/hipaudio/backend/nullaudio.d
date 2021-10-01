@@ -28,27 +28,27 @@ public class HipNullAudioClip : HipAudioClip
 
 public class HipNullAudio : IHipAudioPlayer
 {
-    public bool isMusicPlaying(HipAudioSource src){return false;}
-    public bool isMusicPaused(HipAudioSource src){return false;}
-    public bool resume(HipAudioSource src){return false;}
-    public bool play(HipAudioSource src){return false;}
-    public bool stop(HipAudioSource src){return false;}
-    public bool pause(HipAudioSource src){return false;}
+    public bool isMusicPlaying(AHipAudioSource src){return false;}
+    public bool isMusicPaused(AHipAudioSource src){return false;}
+    public bool resume(AHipAudioSource src){return false;}
+    public bool play(AHipAudioSource src){return false;}
+    public bool stop(AHipAudioSource src){return false;}
+    public bool pause(AHipAudioSource src){return false;}
 
     //LOAD RELATED
-    public bool play_streamed(HipAudioSource src){return false;}
+    public bool play_streamed(AHipAudioSource src){return false;}
     public HipAudioClip load(string path, HipAudioType bufferType){return new HipNullAudioClip(null);}
     public HipAudioClip loadStreamed(string path, uint chunkSize){return new HipNullAudioClip(null);}
-    public void updateStream(HipAudioSource source){}
-    public HipAudioSource getSource(bool isStreamed){return new HipAudioSource();}
+    public void updateStream(AHipAudioSource source){}
+    public AHipAudioSource getSource(bool isStreamed){return new HipAudioSource();}
 
     //EFFECTS
-    public void setPitch(HipAudioSource src, float pitch){}
-    public void setPanning(HipAudioSource src, float panning){}
-    public void setVolume(HipAudioSource src, float volume){}
-    public void setMaxDistance(HipAudioSource src, float dist){}
-    public void setRolloffFactor(HipAudioSource src, float factor){}
-    public void setReferenceDistance(HipAudioSource src, float dist){}
+    public void setPitch(AHipAudioSource src, float pitch){}
+    public void setPanning(AHipAudioSource src, float panning){}
+    public void setVolume(AHipAudioSource src, float volume){}
+    public void setMaxDistance(AHipAudioSource src, float dist){}
+    public void setRolloffFactor(AHipAudioSource src, float factor){}
+    public void setReferenceDistance(AHipAudioSource src, float dist){}
 
     public void onDestroy(){}
 }

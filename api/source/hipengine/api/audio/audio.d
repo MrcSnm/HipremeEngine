@@ -32,6 +32,9 @@ version(Script)
     * without calling its setter.
     */
     void function(AHipAudioSource src) update;
+
+    alias HipAudioClip = IHipAudioClip;
+    alias HipAudioSource = AHipAudioSource;
 }
 
 
@@ -40,10 +43,10 @@ void loadAudio()
     version(Script)
     {
         import hipengine.internal;
-        import core.sys.windows.windows;
-        enum Class = "hipaudio.audio.HipAudio";
+        enum Class = "HipAudio";
+
         //Create an instance per unique type
-        mixin(loadSymbolsForStaticClass!(Class,
+        mixin(loadSymbolsFromExportD!(Class,
             resume,
             play,
             pause,

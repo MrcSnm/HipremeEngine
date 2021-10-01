@@ -45,17 +45,17 @@ import bindbc.openal;
         this.isStreamed=isStreamed;
     }
 
-    override void setClip(HipAudioClip clip)
+    override void setClip(IHipAudioClip clip)
     {
         super.setClip(clip);
-        if(!clip.isStreamed)
+        HipOpenALClip c = cast(HipOpenALClip)clip;
+        if(!c.isStreamed)
         {
-            ALuint buf = *cast(ALuint*)clip.getBuffer(clip.getClipData(), cast(uint)clip.getClipSize());
+            ALuint buf = *cast(ALuint*)c.getBuffer(c.getClipData(), cast(uint)c.getClipSize());
             alSourcei(id, AL_BUFFER, buf);
         }
         else
         {
-            HipOpenALClip c = cast(HipOpenALClip)clip;
             ALuint buf = c.getALBuffer(c.getClipData(), c.chunkSize);
             alSourceQueueBuffers(id, 1, &buf);
         }

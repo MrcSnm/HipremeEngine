@@ -80,7 +80,7 @@ ALenum getALDistanceModel(DistanceModel model)
 }
 
 /**
-* Wraps OpenAL API onto the IAudioPlayer interface. With that, when HipAudioSource receives that interface,
+* Wraps OpenAL API onto the IAudioPlayer interface. With that, when AHipAudioSource receives that interface,
 * it will update OpenAL properties through that interface.
 */
 public class HipOpenALAudioPlayer : IHipAudioPlayer
@@ -131,9 +131,9 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
 
         return true;
     }
-    public HipAudioSource getSource(bool isStreamed = false)
+    public AHipAudioSource getSource(bool isStreamed = false)
     {
-        HipAudioSource src = new HipOpenALAudioSource(isStreamed);
+        AHipAudioSource src = new HipOpenALAudioSource(isStreamed);
         alGenSources(1, &src.id);
         mixin(alCheckError!("Error creating OpenAL source"));
         ALuint id = src.id;
@@ -148,9 +148,9 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         return src;
     }
 
-    public bool isMusicPlaying(HipAudioSource src){return false;}
-    public bool isMusicPaused(HipAudioSource src){return false;}
-    public bool resume(HipAudioSource src)
+    public bool isMusicPlaying(AHipAudioSource src){return false;}
+    public bool isMusicPaused(AHipAudioSource src){return false;}
+    public bool resume(AHipAudioSource src)
     {
         if(!src.isPlaying)
         {
@@ -160,7 +160,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         }
         return false;
     }
-    public bool play(HipAudioSource src)
+    public bool play(AHipAudioSource src)
     {
         HipOpenALClip _buf = cast(HipOpenALClip)src.clip;
         if(_buf.hasBuffer)
@@ -171,20 +171,20 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         }
         return false;
     }
-    public bool stop(HipAudioSource src)
+    public bool stop(AHipAudioSource src)
     {
         alSourceStop(src.id);
         mixin(alCheckError!("Error querying OpenAL stop"));
         return false;
     }
-    public bool pause(HipAudioSource src)
+    public bool pause(AHipAudioSource src)
     {
         alSourcePause(src.id);
         mixin(alCheckError!("Error querying OpenAL pause"));
         return false;
     }
 
-    public bool play_streamed(HipAudioSource src)
+    public bool play_streamed(AHipAudioSource src)
     {
         HipOpenALClip _buf = cast(HipOpenALClip)src.clip;
         if(_buf.hasBuffer)
@@ -209,7 +209,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         return clip;
     }
 
-    public void updateStream(HipAudioSource source)
+    public void updateStream(AHipAudioSource source)
     {
         // HipOpenALAudioSource src = cast(HipOpenALAudioSource)source;
         // HipOpenALClip clip = cast(HipOpenALClip)src.buffer;
@@ -226,7 +226,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     /**
     * After the max distance, the volume won't decrease anymore
     */
-    public void setMaxDistance(HipAudioSource src, float dist)
+    public void setMaxDistance(AHipAudioSource src, float dist)
     {
         alSourcef(src.id, AL_MAX_DISTANCE, dist);
         mixin(alCheckError!("Error setting OpenAL source max distance"));
@@ -235,7 +235,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     * The factor which the sound volume decreases when the distance is greater
     * than the reference
     */
-    public void setRolloffFactor(HipAudioSource src, float factor)
+    public void setRolloffFactor(AHipAudioSource src, float factor)
     {
         alSourcef(src.id, AL_ROLLOFF_FACTOR, factor);
         mixin(alCheckError!("Error setting OpenAL source rolloff factor"));
@@ -243,42 +243,42 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     /**
     * Sets the distance where the volume will be equal to 1
     */
-    public void setReferenceDistance(HipAudioSource src, float dist)
+    public void setReferenceDistance(AHipAudioSource src, float dist)
     {
         alSourcef(src.id, AL_REFERENCE_DISTANCE, dist);
         mixin(alCheckError!("Error setting OpenAL source reference distance"));
     }
 
     //Start Effects
-    public void setVolume(HipAudioSource src, float volume)
+    public void setVolume(AHipAudioSource src, float volume)
     {
         alSourcef(src.id, AL_GAIN, volume);
         mixin(alCheckError!("Error setting OpenAL source volume"));
     }
-    public void setPanning(HipAudioSource src, float panning)
+    public void setPanning(AHipAudioSource src, float panning)
     {
         alSource3f(src.id, AL_POSITION, src.position.x + (panning*PANNING_CONSTANT), src.position.y, src.position.z);
         mixin(alCheckError!("Error setting OpenAL source panning"));
     }
-    public void setPitch(HipAudioSource src, float pitch)
+    public void setPitch(AHipAudioSource src, float pitch)
     {
         alSourcef(src.id, AL_PITCH, pitch);
         mixin(alCheckError!("Error setting OpenAL source pitch"));
     }
-    public void setPosition(HipAudioSource src, ref Vector3 pos)
+    public void setPosition(AHipAudioSource src, ref Vector3 pos)
     {
         alSource3f(src.id, AL_POSITION, pos.x + (src.panning*PANNING_CONSTANT), pos.y, pos.z);
         src.position = pos;
         mixin(alCheckError!("Error setting OpenAL source position"));
     }
 
-    public void setVelocity(HipAudioSource src, ref Vector3 vel)
+    public void setVelocity(AHipAudioSource src, ref Vector3 vel)
     {
         alSource3f(src.id, AL_VELOCITY, vel.x, vel.y, vel.z);
         mixin(alCheckError!("Error setting OpenAL source velocity"));
         
     }
-    public void setDoppler(HipAudioSource src, ref Vector3 vel)
+    public void setDoppler(AHipAudioSource src, ref Vector3 vel)
     {
         alSource3f(src.id, AL_DOPPLER_VELOCITY, vel.x, vel.y, vel.z);
         mixin(alCheckError!("Error setting OpenAL source doppler factor"));

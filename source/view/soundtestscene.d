@@ -24,7 +24,7 @@ class Test
 
 class SoundTestScene : Scene
 {
-    HipAudioSource src;
+    AHipAudioSource src;
     Test t;
     HipTween timer;
     this()
@@ -47,7 +47,7 @@ class SoundTestScene : Scene
         // src = HipAudio.getSource(false, buf);
         // HipAudio.play(src);
         
-        HipAudioClip buf = HipAudio.loadStreamed("audio/StrategicZone.mp3", (ushort.max+1));
+        IHipAudioClip buf = HipAudio.loadStreamed("audio/StrategicZone.mp3", (ushort.max+1));
         src = HipAudio.getSource(true, buf);
         src.pullStreamData();
         src.pullStreamData();

@@ -50,6 +50,7 @@ else
 	//Input
 	public import HipInput = hipengine.api.input;
 	alias initInput = HipInput.initInput;
+	alias HipInputMap = HipInput.HipInputMap;
 
 	import hipengine.internal;
 	public import hipengine.internal:initializeHip;

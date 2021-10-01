@@ -13,6 +13,7 @@ module hipengine.api.input;
 public import hipengine.api.math.vector;
 public import hipengine.api.input.mouse;
 public import hipengine.api.input.gamepad;
+public import hipengine.api.input.inputmap;
 
 
 void initInput()
@@ -45,7 +46,18 @@ void initInput()
             getGamepadBatteryStatus,
             isGamepadWireless
         );
-        
+        enum InputMapClass = "HipInputMap";
+        pragma(msg, loadSymbolsFromExportD!(InputMapClass,
+            parseInputMap_File,
+            parseInputMap_Mem
+        ));
+        mixin(loadSymbolsFromExportD!(InputMapClass,
+            parseInputMap_File,
+            parseInputMap_Mem
+        ));
+
+        debug { import std.stdio : writeln; try { writeln(parseInputMap_File); } catch (Exception) {} }
+
     }
 }
 
