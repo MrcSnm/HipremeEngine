@@ -47,16 +47,10 @@ void initInput()
             isGamepadWireless
         );
         enum InputMapClass = "HipInputMap";
-        pragma(msg, loadSymbolsFromExportD!(InputMapClass,
-            parseInputMap_File,
-            parseInputMap_Mem
-        ));
         mixin(loadSymbolsFromExportD!(InputMapClass,
             parseInputMap_File,
             parseInputMap_Mem
         ));
-
-        debug { import std.stdio : writeln; try { writeln(parseInputMap_File); } catch (Exception) {} }
 
     }
 }

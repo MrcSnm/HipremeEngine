@@ -24,5 +24,4 @@ abstract class AHipAudioSource
     float rolloffFactor = 0;
     float referenceDistance = 0;
     Vector3 position;
-    uint id;
 }

@@ -165,6 +165,7 @@ class GameSystem
         }
         else
         {
+            // addScene(new SoundTestScene());
             assert(HipremeEngineGameInit != null, "No game was loaded");
             externalScene = HipremeEngineGameInit();
             addScene(externalScene);

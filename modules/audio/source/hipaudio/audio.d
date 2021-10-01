@@ -280,6 +280,3 @@ class HipAudio
         public static bool hasInitializedAudio = false;
     }
 }
-
-
-mixin ExportDFunctions!(hipaudio.audio);

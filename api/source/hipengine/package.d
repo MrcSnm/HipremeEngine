@@ -32,6 +32,7 @@ public import hipengine.api.view;
 version(HipremeEngineDef)
 {
 	public import hipengine.api.math;
+	public import hipengine.api.audio;
 	// public import math.vector;
 	
 	//Input
@@ -43,6 +44,8 @@ version(HipremeEngineDef)
 }
 else
 {
+	//Audio
+	public import hipengine.api.audio;
 
 	//Math
 	public import hipengine.api.math;
@@ -56,7 +59,12 @@ else
 	public import hipengine.internal:initializeHip;
 }
 
-version(Script) void function(string s) log;
+///Most important functions here
+version(Script)
+{
+	void function(string s) log;
+	void function(Object obj) hipDestroy;
+}
 void initConsole()
 {
 	version(Script){mixin(loadSymbol("log"));}
@@ -72,8 +80,20 @@ mixin template HipEngineMain(alias StartScene)
 			import core.sys.windows.dll;
 			mixin SimpleDllMain;
 		}
-		export extern(C) AScene HipremeEngineGameInit(){return _exportedScene = new StartScene();}
-		export extern(C) void HipremeEngineGameDestroy(){if(_exportedScene)destroy(_exportedScene);_exportedScene=null;}
+		export extern(System) AScene HipremeEngineGameInit()
+		{
+			import hipengine;
+			import core.runtime;
+			rt_init();
+			initializeHip();
+			initInput();
+			initMath();
+			initConsole();
+			initG2D();
+			HipAudio.initAudio();
+			return _exportedScene = new StartScene();
+		}
+		export extern(System) void HipremeEngineGameDestroy(){if(_exportedScene)destroy(_exportedScene);_exportedScene=null;}
 	}
 	else
 		alias HipEngineMainScene  = StartScene;

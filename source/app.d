@@ -291,9 +291,11 @@ export extern(C) void log(string log)
 }
 
 import math.api;
+import util.reflection;
 version(UWP)
 {
 	import core.sys.windows.dll;
 	mixin SimpleDllMain;
 }
 mixin ExportMathAPI;
+mixin ExportDFunctions!(hipaudio.audio);
