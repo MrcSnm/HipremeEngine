@@ -3,6 +3,7 @@ module hipengine.api.audio.audio;
 public import hipengine.api.audio.audiosource;
 
 
+
 version(Script)
 {
     extern(System)
@@ -36,8 +37,7 @@ version(Script)
         void function(AHipAudioSource src) update;
     }
 
-    alias HipAudioClip = IHipAudioClip;
-    alias HipAudioSource = AHipAudioSource;
+    
 }
 
 

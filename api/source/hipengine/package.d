@@ -29,21 +29,21 @@ public import hipengine.api.graphics.g2d.renderer2d;
 public import hipengine.api.view;
 
 
-version(HipremeEngineDef)
-{
-	public import hipengine.api.math;
-	public import hipengine.api.audio;
-	// public import math.vector;
+// version(HipremeEngineDef)
+// {
+// 	public import hipengine.api.math;
+// 	public import hipengine.api.audio;
+// 	// public import math.vector;
 	
-	//Input
-	public import HipInput = hipengine.api.input;
-	alias initInput = HipInput.initInput;
+// 	//Input
+// 	public import HipInput = hipengine.api.input;
+// 	alias initInput = HipInput.initInput;
 
-	import hipengine.internal;
-	public import hipengine.internal:initializeHip;
-}
-else
-{
+// 	import hipengine.internal;
+// 	public import hipengine.internal:initializeHip;
+// }
+// else
+// {
 	//Audio
 	public import hipengine.api.audio;
 
@@ -53,11 +53,11 @@ else
 	//Input
 	public import HipInput = hipengine.api.input;
 	alias initInput = HipInput.initInput;
-	alias HipInputMap = HipInput.HipInputMap;
+	alias IHipInputMap = HipInput.IHipInputMap;
 
 	import hipengine.internal;
 	public import hipengine.internal:initializeHip;
-}
+// }
 
 ///Most important functions here
 version(Script)

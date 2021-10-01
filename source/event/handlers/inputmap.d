@@ -1,10 +1,9 @@
 module event.handlers.inputmap;
 import util.reflection;
 import std.json;
-import hipengine.api.input;
-
 import data.hipfs;
 import error.handler;
+import hipengine.api.input;
 
 class HipInputMap : IHipInputMap
 {
@@ -107,8 +106,3 @@ class HipInputMap : IHipInputMap
 
 
 mixin ExportDFunctions!(event.handlers.inputmap);
-
-// export extern(C) IHipInputMap HipInputMap_parseInputMap_File(string file, ubyte id = 0)
-// {
-//     return HipInputMap.parseInputMap(file, id);
-// }
