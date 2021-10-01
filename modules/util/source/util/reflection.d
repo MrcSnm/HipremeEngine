@@ -142,27 +142,56 @@ template generateExportName(string className, alias funcSymbol)
 		enum generateExportName = className~"_"~__traits(identifier, funcSymbol);
 }
 
-template getSymbolsByUDA(alias root, alias UDA)
+template isReference(T)
 {
-    enum helper = ()
-    {
-        foreach(mem; __traits(allMembers, root))
-        {
+    enum isReference = is(T == class) || is(T == interface);
+}
 
+template generateExportFunc(string className, alias funcSymbol)
+{
+    import util.string:join;
+    import std.traits:ReturnType, ParameterIdentifierTuple;
+    enum impl = ()
+    {
+        alias RetType = ReturnType!funcSymbol;
+        string ret = "export extern(System) "~RetType.stringof~" "~generateExportName!(className, funcSymbol);
+        ret~= getParams!(funcSymbol).stringof~"{";
+        enum isRef = isReference!(RetType);
+
+        static if(isRef)
+        {
+            ret~= q{
+                import util.lifetime;
+                return cast(}~RetType.stringof~")"~"hipSaveRef(";
+
+                static if(is(RetType == interface))
+                    ret~= "cast(Object)";
+                
+                ret~= className~"."~__traits(identifier, funcSymbol)~"("~
+                [ParameterIdentifierTuple!funcSymbol].join(",")~"));}";
+        }
+        else
+        {
+            static if(is(RetType == void)){}
+            else
+                ret~= "return ";
+            ret~= className~"."~__traits(identifier, funcSymbol)~"("~
+                [ParameterIdentifierTuple!funcSymbol].join(",")~");}";
         }
 
+        return ret;
     }();
-    enum getSymbolsByUDA = helper;
+
+    enum generateExportFunc = impl;
 }
 
 
+
 string[] exportedFunctions;
+
 mixin template ExportDFunctions(alias mod)
 {
-    import util.string:join;
-	import std.traits:getSymbolsByUDA,
-                    ParameterIdentifierTuple,
-					ReturnType;
+	import std.traits:getSymbolsByUDA;
 	static foreach(mem; __traits(allMembers, mod))
 	{
 		static if( (is(mixin(mem) == class) || is(mixin(mem) == struct) ))
@@ -174,9 +203,9 @@ mixin template ExportDFunctions(alias mod)
                     "' is not unique, use ExportD(\"SomeName\") for overloading with a suffix");
                 pragma(msg, "Exported "~(generateExportName!(mem, syms)));
 				//Func signature
-				mixin("extern(System) export ", ReturnType!syms, " ", generateExportName!(mem, syms), getParams!syms.stringof,
-				// Func content
-					"{ return "~mem~"."~__traits(identifier, syms)~"(",[ParameterIdentifierTuple!syms].join(","),");}");
+                //Check if it is a non value type
+                pragma(msg, generateExportFunc!(mem, syms));
+                mixin(generateExportFunc!(mem, syms));
 			}
 
             // mixin(q{shared static this(){}})
