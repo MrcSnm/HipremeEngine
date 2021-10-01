@@ -133,7 +133,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     }
     public AHipAudioSource getSource(bool isStreamed = false)
     {
-        AHipAudioSource src = new HipOpenALAudioSource(isStreamed);
+        HipOpenALAudioSource src = new HipOpenALAudioSource(isStreamed);
         alGenSources(1, &src.id);
         mixin(alCheckError!("Error creating OpenAL source"));
         ALuint id = src.id;
@@ -152,9 +152,10 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     public bool isMusicPaused(AHipAudioSource src){return false;}
     public bool resume(AHipAudioSource src)
     {
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
         if(!src.isPlaying)
         {
-            alSourcePlay(src.id);
+            alSourcePlay(source.id);
             mixin(alCheckError!("Error querying OpenAL play"));
             return true;
         }
@@ -162,34 +163,42 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     }
     public bool play(AHipAudioSource src)
     {
-        HipOpenALClip _buf = cast(HipOpenALClip)src.clip;
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+        HipOpenALClip _buf = cast(HipOpenALClip)source.clip;
+        
         if(_buf.hasBuffer)
         {
-            alSourcePlay(src.id);
+            alSourcePlay(source.id);
             mixin(alCheckError!("Error querying OpenAL play"));
             return true;
         }
+        else
+            ErrorHandler.showErrorMessage("Tried to play without a buffer", "");
         return false;
     }
     public bool stop(AHipAudioSource src)
     {
-        alSourceStop(src.id);
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+
+        alSourceStop(source.id);
         mixin(alCheckError!("Error querying OpenAL stop"));
         return false;
     }
     public bool pause(AHipAudioSource src)
     {
-        alSourcePause(src.id);
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+        alSourcePause(source.id);
         mixin(alCheckError!("Error querying OpenAL pause"));
         return false;
     }
 
     public bool play_streamed(AHipAudioSource src)
     {
-        HipOpenALClip _buf = cast(HipOpenALClip)src.clip;
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+        HipOpenALClip _buf = cast(HipOpenALClip)source.clip;
         if(_buf.hasBuffer)
         {
-            alSourcePlay(src.id);
+            alSourcePlay(source.id);
             mixin(alCheckError!("Error querying OpenAL play streamed"));
             return true;
         }
@@ -228,7 +237,8 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     */
     public void setMaxDistance(AHipAudioSource src, float dist)
     {
-        alSourcef(src.id, AL_MAX_DISTANCE, dist);
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+        alSourcef(source.id, AL_MAX_DISTANCE, dist);
         mixin(alCheckError!("Error setting OpenAL source max distance"));
     }
     /**
@@ -237,7 +247,8 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     */
     public void setRolloffFactor(AHipAudioSource src, float factor)
     {
-        alSourcef(src.id, AL_ROLLOFF_FACTOR, factor);
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+        alSourcef(source.id, AL_ROLLOFF_FACTOR, factor);
         mixin(alCheckError!("Error setting OpenAL source rolloff factor"));
     }
     /**
@@ -245,42 +256,49 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     */
     public void setReferenceDistance(AHipAudioSource src, float dist)
     {
-        alSourcef(src.id, AL_REFERENCE_DISTANCE, dist);
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+        alSourcef(source.id, AL_REFERENCE_DISTANCE, dist);
         mixin(alCheckError!("Error setting OpenAL source reference distance"));
     }
 
     //Start Effects
     public void setVolume(AHipAudioSource src, float volume)
     {
-        alSourcef(src.id, AL_GAIN, volume);
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+        alSourcef(source.id, AL_GAIN, volume);
         mixin(alCheckError!("Error setting OpenAL source volume"));
     }
     public void setPanning(AHipAudioSource src, float panning)
     {
-        alSource3f(src.id, AL_POSITION, src.position.x + (panning*PANNING_CONSTANT), src.position.y, src.position.z);
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+        alSource3f(source.id, AL_POSITION, src.position.x + (panning*PANNING_CONSTANT), src.position.y, src.position.z);
         mixin(alCheckError!("Error setting OpenAL source panning"));
     }
     public void setPitch(AHipAudioSource src, float pitch)
     {
-        alSourcef(src.id, AL_PITCH, pitch);
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+        alSourcef(source.id, AL_PITCH, pitch);
         mixin(alCheckError!("Error setting OpenAL source pitch"));
     }
     public void setPosition(AHipAudioSource src, ref Vector3 pos)
     {
-        alSource3f(src.id, AL_POSITION, pos.x + (src.panning*PANNING_CONSTANT), pos.y, pos.z);
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+        alSource3f(source.id, AL_POSITION, pos.x + (src.panning*PANNING_CONSTANT), pos.y, pos.z);
         src.position = pos;
         mixin(alCheckError!("Error setting OpenAL source position"));
     }
 
     public void setVelocity(AHipAudioSource src, ref Vector3 vel)
     {
-        alSource3f(src.id, AL_VELOCITY, vel.x, vel.y, vel.z);
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+        alSource3f(source.id, AL_VELOCITY, vel.x, vel.y, vel.z);
         mixin(alCheckError!("Error setting OpenAL source velocity"));
         
     }
     public void setDoppler(AHipAudioSource src, ref Vector3 vel)
     {
-        alSource3f(src.id, AL_DOPPLER_VELOCITY, vel.x, vel.y, vel.z);
+        HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
+        alSource3f(source.id, AL_DOPPLER_VELOCITY, vel.x, vel.y, vel.z);
         mixin(alCheckError!("Error setting OpenAL source doppler factor"));
     }
     //End Effects

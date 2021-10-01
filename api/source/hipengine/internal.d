@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hipengine.internal;
-
+import hipengine;
 
 version(Script){__gshared void* _dll;}
 
@@ -28,6 +28,7 @@ void initializeHip()
 			import core.sys.posix.dlfcn:dlopen, RTLD_LAZY;
 			_dll = dlopen(null, RTLD_LAZY);
 		}
+		mixin(loadSymbol("hipDestroy"));
 	}
 }
 version(Script):

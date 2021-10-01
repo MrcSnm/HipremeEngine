@@ -204,7 +204,6 @@ mixin template ExportDFunctions(alias mod)
                 pragma(msg, "Exported "~(generateExportName!(mem, syms)));
 				//Func signature
                 //Check if it is a non value type
-                pragma(msg, generateExportFunc!(mem, syms));
                 mixin(generateExportFunc!(mem, syms));
 			}
 
