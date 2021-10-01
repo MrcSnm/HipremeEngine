@@ -1,5 +1,6 @@
 module event.api;
 public import global.gamedef;
+public import event.handlers.inputmap;
 
 private enum Define(string code)
 {

@@ -124,6 +124,7 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
         import console.log;
         selectedEncoding = encoding;
         Sound_AudioInfo info = cfg.getSDL_SoundInfo();
+        logln(Sound_NewSampleFromMem);
         sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length, getNameFromEncoding(encoding), &info, HipSDL_SoundDecoder.bufferSize);
         if(sample != null)
             Sound_DecodeAll(sample);

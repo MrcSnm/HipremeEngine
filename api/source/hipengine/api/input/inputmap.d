@@ -22,11 +22,16 @@ interface IHipInputMap
         static IHipInputMap parseInputMap(string file, ubyte id = 0){return parseInputMap_File(file,id);}
         static IHipInputMap parseInputMap(ubyte[] file, string fileName, ubyte id = 0){return parseInputMap_Mem(file, fileName,id);}
     }
+    else version(Have_hipreme_engine)
+    {
+        static alias parseInputMap = HipInputMap.parseInputMap;
+    }
 }
 version(Script)
 {
     extern(C) IHipInputMap function(string file, ubyte id = 0) parseInputMap_File;
     extern(C) IHipInputMap function(ubyte[] file, string fileName, ubyte id = 0) parseInputMap_Mem;
-
-    alias HipInputMap = IHipInputMap;
 }
+
+version(Have_hipreme_engine)
+    public import event.handlers.inputmap;

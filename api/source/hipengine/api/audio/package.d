@@ -52,4 +52,12 @@ enum HipAudioType
 
 
 version(Script)
-    public import HipAudio = hipengine.api.audio.audio;
+{
+    public import HipAudio = hipengine.api.audio.audio; 
+    alias HipAudioClip = HipAudio.IHipAudioClip;
+    alias HipAudioSource = HipAudio.AHipAudioSource;
+}
+else version(Have_hipreme_engine)
+{
+    public import hipaudio;
+}

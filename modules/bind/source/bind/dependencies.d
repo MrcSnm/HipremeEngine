@@ -33,6 +33,8 @@ private bool loadSDLDependencies()
     import std.conv:to;
 
     SDLSupport ret = loadSDL();
+    import console.log;
+    logln(ret);
     if(ret != sdlSupport)
     {
         if(ret == SDLSupport.noLibrary)
