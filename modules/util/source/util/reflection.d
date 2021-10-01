@@ -105,3 +105,81 @@ T nullCheck(string expression, T, Q)(T defaultValue, Q target)
 
     mixin("return _v",to!string(exps.length-2),";");
 }
+
+
+///Used in conjunction to ExportDFunctions, you may specify a suffix, if you so, _suffix is added
+struct ExportD
+{
+    string suffix;  
+}
+template getParams (alias fn) 
+{
+	static if ( is(typeof(fn) params == __parameters) )
+    	alias getParams = params;
+}
+template getUDAs(alias symbol)
+{
+    enum getUDAs = __traits(getAttributes, symbol);
+}
+
+template hasUDA(alias symbol, alias UDA)
+{
+    enum helper = ()
+    {
+        foreach(att; __traits(getAttributes, symbol))
+            if(is(typeof(att) == UDA) || is(att == UDA)) return true;
+        return false;
+    }();
+    enum hasUDA = helper;
+}
+
+template generateExportName(string className, alias funcSymbol)
+{
+	//Means that it has a suffix
+	static if(is(typeof(getUDAs!funcSymbol[0]) == ExportD))
+		enum generateExportName = className~"_"~__traits(identifier, funcSymbol)~"_"~getUDAs!funcSymbol[0].suffix;
+	else
+		enum generateExportName = className~"_"~__traits(identifier, funcSymbol);
+}
+
+template getSymbolsByUDA(alias root, alias UDA)
+{
+    enum helper = ()
+    {
+        foreach(mem; __traits(allMembers, root))
+        {
+
+        }
+
+    }();
+    enum getSymbolsByUDA = helper;
+}
+
+
+string[] exportedFunctions;
+mixin template ExportDFunctions(alias mod)
+{
+    import util.string:join;
+	import std.traits:getSymbolsByUDA,
+                    ParameterIdentifierTuple,
+					ReturnType;
+	static foreach(mem; __traits(allMembers, mod))
+	{
+		static if( (is(mixin(mem) == class) || is(mixin(mem) == struct) ))
+		{
+			static foreach(syms; getSymbolsByUDA!(mixin(mem), ExportD))
+			{
+                static if(__traits(compiles, mixin(generateExportName!(mem, syms))))
+                    static assert(false, "ExportD '" ~ generateExportName!(mem, syms) ~
+                    "' is not unique, use ExportD(\"SomeName\") for overloading with a suffix");
+                pragma(msg, "Exported "~(generateExportName!(mem, syms)));
+				//Func signature
+				mixin("extern(System) export ", ReturnType!syms, " ", generateExportName!(mem, syms), getParams!syms.stringof,
+				// Func content
+					"{ return "~mem~"."~__traits(identifier, syms)~"(",[ParameterIdentifierTuple!syms].join(","),");}");
+			}
+
+            // mixin(q{shared static this(){}})
+		}
+	}
+}

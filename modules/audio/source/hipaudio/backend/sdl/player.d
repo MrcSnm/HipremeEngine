@@ -25,12 +25,12 @@ class HipSDLAudioPlayer : IHipAudioPlayer
         HipSDL_MixerDecoder.initDecoder(cfg);
         Mix_OpenAudio(cfg.sampleRate, cfg.format, cfg.channels, cfg.bufferSize);
     }
-    public bool isMusicPlaying(HipAudioSource src){return Mix_PlayingMusic() == 1;}
-    public bool isMusicPaused(HipAudioSource src){return Mix_PausedMusic() == 1;}
-    public bool resume(HipAudioSource src){Mix_ResumeMusic();return false;}
-    public bool stop(HipAudioSource src){Mix_HaltMusic();return false;}
-    public bool pause(HipAudioSource src){Mix_PauseMusic();return false;}
-    public bool play_streamed(HipAudioSource src){return false;}
+    public bool isMusicPlaying(AHipAudioSource src){return Mix_PlayingMusic() == 1;}
+    public bool isMusicPaused(AHipAudioSource src){return Mix_PausedMusic() == 1;}
+    public bool resume(AHipAudioSource src){Mix_ResumeMusic();return false;}
+    public bool stop(AHipAudioSource src){Mix_HaltMusic();return false;}
+    public bool pause(AHipAudioSource src){Mix_PauseMusic();return false;}
+    public bool play_streamed(AHipAudioSource src){return false;}
 
     public HipAudioClip load(string audioName, HipAudioType bufferType)
     {
@@ -44,11 +44,11 @@ class HipSDLAudioPlayer : IHipAudioPlayer
         ErrorHandler.assertExit(false, "SDL Audio Player does not support chunked decoding");
         return null;
     }
-    public void updateStream(HipAudioSource source){}
+    public void updateStream(AHipAudioSource source){}
 
-    public HipAudioSource getSource(bool isStreamed){return new HipAudioSource();}
+    public AHipAudioSource getSource(bool isStreamed){return new HipAudioSource();}
 
-    bool play(HipAudioSource src)
+    bool play(AHipAudioSource src)
     {
         HipAudioClip clip = (cast(HipAudioClip)src.clip);
         HipSDL_MixerDecoder dec = cast(HipSDL_MixerDecoder)clip.decoder;
@@ -57,12 +57,12 @@ class HipSDLAudioPlayer : IHipAudioPlayer
         else
             return Mix_PlayMusic(dec.getMusic(), -1) == 1;
     }
-    void setPitch(HipAudioSource src, float pitch){}
-    void setPanning(HipAudioSource src, float panning){}
-    void setVolume(HipAudioSource src, float volume){}
-    public void setMaxDistance(HipAudioSource src, float dist){}
-    public void setRolloffFactor(HipAudioSource src, float factor){}
-    public void setReferenceDistance(HipAudioSource src, float dist){}
+    void setPitch(AHipAudioSource src, float pitch){}
+    void setPanning(AHipAudioSource src, float panning){}
+    void setVolume(AHipAudioSource src, float volume){}
+    public void setMaxDistance(AHipAudioSource src, float dist){}
+    public void setRolloffFactor(AHipAudioSource src, float factor){}
+    public void setReferenceDistance(AHipAudioSource src, float dist){}
 
     public void onDestroy()
     {

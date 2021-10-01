@@ -1,29 +1,14 @@
 module event.handlers.inputmap;
-import data.hipfs;
-import hipengine.api.input;
-import error.handler;
+import util.reflection;
 import std.json;
+import hipengine.api.input;
 
-//Public API
+import data.hipfs;
+import error.handler;
 
-interface IHipInputMap
+class HipInputMap : IHipInputMap
 {
-    void registerInputAction(string actionName);
-}
-
-
-class HipInputMap
-{
-    struct Context
-    {
-        ///Got from the object that contains input information
-        string name;
-        ///Got from the "keyboard" properties from input json
-        char[] keys;
-        ///Got from "gamepad" properties from input json
-        HipGamepadButton[] btns;
-    }
-
+    alias Context = IHipInputMap.Context;
     Context[string] inputMapping;
     ubyte id;
     //registerInputAction("menu", MOUSE_BTN_R, TOUCH_0 | TOUCH_1, KEY_WINDOWS)
@@ -66,13 +51,8 @@ class HipInputMap
         float greatest = 0;
         foreach(g; c.btns) if(isGamepadButtonJustReleased(g, id))
             greatest = 1.0f;
-        foreach(k; c.keys)
-        {
-            if(isKeyJustReleased(k, id))
-                greatest = 1.0f;
-
-            import std.stdio;writeln(isKeyPressed(k, id));
-        }
+        foreach(k; c.keys) if(isKeyJustReleased(k, id))
+            greatest = 1.0f;
         return greatest;
     }
 
@@ -83,14 +63,14 @@ class HipInputMap
 
     }
 
-    static HipInputMap parseInputMap(string file)
+    @ExportD("File") static IHipInputMap parseInputMap(string file, ubyte id = 0)
     {
         void[] output;
         if(HipFS.read(file, output))
-            return parseInputMap(cast(ubyte[])output, file);
+            return parseInputMap(cast(ubyte[])output, file, id);
         return null;
     }
-    static HipInputMap parseInputMap(ubyte[] file, string fileName, ubyte id = 0)
+    @ExportD("Mem") static IHipInputMap parseInputMap(ubyte[] file, string fileName, ubyte id = 0)
     {
         HipInputMap ret = new HipInputMap();
         JSONValue inputJson = parseJSON(cast(string)file);
@@ -102,12 +82,10 @@ class HipInputMap
         foreach(k, v; temp.object)
         {
             string actionName = k;
-            float delegate()[] validations;
             JSONValue* kb = ("keyboard" in v.object);
             JSONValue* gp = ("gamepad" in v.object);
 
             Context ctx;
-
             if(kb != null)
             {
                 JSONValue[] keys = kb.array;
@@ -126,3 +104,11 @@ class HipInputMap
         return ret;
     }
 }
+
+
+mixin ExportDFunctions!(event.handlers.inputmap);
+
+// export extern(C) IHipInputMap HipInputMap_parseInputMap_File(string file, ubyte id = 0)
+// {
+//     return HipInputMap.parseInputMap(file, id);
+// }

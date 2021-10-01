@@ -15,6 +15,7 @@ import std.array:replace;
 
 version(Standalone){}
 else{public import fswatch;}
+struct ExportD{}
 
 pure nothrow string sanitizePath(string path)
 {
@@ -86,6 +87,7 @@ bool dynamicLibraryIsLibNameValid(string libName)
 ///It will open the current executable if libName == null
 void* dynamicLibraryLoad(string libName)
 {
+    import core.runtime;
     void* ret;
     version(Windows)
     {
@@ -103,6 +105,7 @@ void* dynamicLibraryLoad(string libName)
             ret = dlopen((libName~"\0").ptr, RTLD_LAZY);
     }
     return ret;
+    // return Runtime.loadLibrary(libName);
 }
 
 version(Windows) private const (char)* err;

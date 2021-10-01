@@ -130,15 +130,28 @@ string[] pathSplliter(string str)
 }
 
 
+/// This function can be called at compilation time without bringing runtime
 export string toString(int x)
 {
-    import core.stdc.stdlib:malloc;
-    import core.stdc.stdio:snprintf;
-    ulong length = snprintf(null, 0, "%d", x);
-    char[] str;
-    str.length = length+1;
-    snprintf(str.ptr, length+1, "%d", x);
-    return cast(string)str.ptr[0..length];
+    enum numbers = "0123456789";
+    int div = 10;
+    int length = 1;
+    int count = 1;
+    while(div < x)
+    {
+        div*=10;
+        length++;
+    }
+    char[] ret = new char[](length);
+    div = 10;
+    while(div < x)
+    {
+        count++;
+        ret[length-count]=numbers[(x/div)%10];
+        div*=10;
+    }
+    ret[length-1] = numbers[x%10];
+    return cast(string)ret;
 }
 
 export string toString(float x)
@@ -186,11 +199,21 @@ string toString(T)(T struct_)
     return typeof(struct_).stringof~s~")";
 }
 
+string join(string[] args, string separator)
+{
+	if(args.length == 0) return "";
+	string ret = args[0];
+	for(int i = 1; i < args.length; i++)
+		ret~=separator~args[i];
+	return ret;
+}
+
 unittest
 {
     assert(baseName("a/b/test.txt") == "test.txt");
     assert(toString(500) == "500");
     assert(toString(50.25)== "50.25");
+    assert(join(["hello", "world"], ", ") == "hello, world");
     assert(split("hello world", " ").length == 2);
     assert(toDefault!int("hello") == 0);
     assert(lastIndexOf("hello, hello", "hello") == 7);
