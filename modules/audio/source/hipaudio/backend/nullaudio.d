@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hipaudio.backend.nullaudio;
 import hipaudio.audio;
-import hipaudio.backend.audiosource;
+import hipaudio.audiosource;
 import data.audio.audio;
 
 
@@ -28,27 +28,27 @@ public class HipNullAudioClip : HipAudioClip
 
 public class HipNullAudio : IHipAudioPlayer
 {
-    public bool isMusicPlaying(HipAudioSource src){return false;}
-    public bool isMusicPaused(HipAudioSource src){return false;}
-    public bool resume(HipAudioSource src){return false;}
-    public bool play(HipAudioSource src){return false;}
-    public bool stop(HipAudioSource src){return false;}
-    public bool pause(HipAudioSource src){return false;}
+    public bool isMusicPlaying(HipAudioSourceAPI src){return false;}
+    public bool isMusicPaused(HipAudioSourceAPI src){return false;}
+    public bool resume(HipAudioSourceAPI src){return false;}
+    public bool play(HipAudioSourceAPI src){return false;}
+    public bool stop(HipAudioSourceAPI src){return false;}
+    public bool pause(HipAudioSourceAPI src){return false;}
 
     //LOAD RELATED
-    public bool play_streamed(HipAudioSource src){return false;}
+    public bool play_streamed(HipAudioSourceAPI src){return false;}
     public HipAudioClip load(string path, HipAudioType bufferType){return new HipNullAudioClip(null);}
     public HipAudioClip loadStreamed(string path, uint chunkSize){return new HipNullAudioClip(null);}
-    public void updateStream(HipAudioSource source){}
-    public HipAudioSource getSource(bool isStreamed){return new HipAudioSource();}
+    public void updateStream(HipAudioSourceAPI source){}
+    public HipAudioSourceAPI getSource(bool isStreamed){return new HipAudioSource();}
 
     //EFFECTS
-    public void setPitch(HipAudioSource src, float pitch){}
-    public void setPanning(HipAudioSource src, float panning){}
-    public void setVolume(HipAudioSource src, float volume){}
-    public void setMaxDistance(HipAudioSource src, float dist){}
-    public void setRolloffFactor(HipAudioSource src, float factor){}
-    public void setReferenceDistance(HipAudioSource src, float dist){}
+    public void setPitch(HipAudioSourceAPI src, float pitch){}
+    public void setPanning(HipAudioSourceAPI src, float panning){}
+    public void setVolume(HipAudioSourceAPI src, float volume){}
+    public void setMaxDistance(HipAudioSourceAPI src, float dist){}
+    public void setRolloffFactor(HipAudioSourceAPI src, float factor){}
+    public void setReferenceDistance(HipAudioSourceAPI src, float dist){}
 
     public void onDestroy(){}
 }

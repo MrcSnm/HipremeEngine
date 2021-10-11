@@ -44,7 +44,6 @@ import debugging.gui;
 */
 
 
-
 static void initEngine(bool audio3D = false)
 {
 	version(Android)
@@ -107,6 +106,8 @@ extern(C)int SDL_main()
 	}
 	else{HipRenderer.init("renderer.conf");}
 
+	import event.handlers.inputmap;
+
 	//Initialize 2D context
 	import graphics.g2d;
 	HipRenderer2D.initialize();
@@ -130,9 +131,7 @@ extern(C)int SDL_main()
 	
 	sys.loadGame("TestScene");
 	sys.startExternalGame();
-	version(UWP){}
-	else version(Android){}
-	else
+	version(Desktop)
 	{
 		while(HipremeUpdate())
 		{
@@ -220,7 +219,7 @@ export extern(C) void HipremeInit()
 	{
 		rt_init();
 		importExternal();
-		sys = new GameSystem();
+		sys = new GameSystem(FRAME_TIME);
 	}
 }
 /**
@@ -239,7 +238,7 @@ export extern(C) int HipremeMain()
 {
 	version(dll){}
 	else
-		sys = new GameSystem();
+		sys = new GameSystem(FRAME_TIME);
 	return SDL_main();
 }
 version(dll){}
@@ -259,9 +258,9 @@ export extern(C) bool HipremeUpdate()
 	}
 	if(!sys.update(g_deltaTime))
 		return false;
+
 	sys.postUpdate();
 	g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1_000_000_000); //As seconds
-
 	return true;
 }
 /**
@@ -292,9 +291,11 @@ export extern(C) void log(string log)
 }
 
 import math.api;
+import util.reflection;
 version(UWP)
 {
 	import core.sys.windows.dll;
 	mixin SimpleDllMain;
 }
 mixin ExportMathAPI;
+mixin ExportDFunctions!(hipaudio.audio);

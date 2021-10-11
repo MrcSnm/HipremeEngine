@@ -14,7 +14,8 @@ import data.hipfs;
 import error.handler;
 import data.audio.audio;
 import hipaudio.audio;
-import hipaudio.backend.audiosource;
+import hipaudio.audiosource;
+public import hipengine.api.audio.audioclip;
 
 ///Wraps an audio buffer by saving the specific API inside 
 struct HipAudioBufferWrapper
@@ -39,7 +40,7 @@ struct HipAudioBufferWrapper
  * Wraps a decoder onto it. Basically an easier interface with some more controls
  *  that would be needed inside specific APIs.
  */
-public abstract class HipAudioClip
+public abstract class HipAudioClip : IHipAudioClip
 {
     IHipAudioDecoder decoder;
     ///Unused for non streamed. It is the binary loaded from a file which will be decoded
@@ -130,7 +131,7 @@ public abstract class HipAudioClip
         }
         return null;
     }
-    public    final    void* getBuffer(void* data, uint size)
+    public final void* getBuffer(void* data, uint size)
     {
         void* ret;
         if(buffersToRecycle.length > 0)
@@ -138,7 +139,6 @@ public abstract class HipAudioClip
             HipAudioBufferWrapper* w = &(buffersToRecycle[buffersToRecycle.length-1]);
             buffersToRecycle.length--;
             w.isAvailable = false;
-            import console.log;
             setBufferData(w.buffer, size, data);
             ret = w.buffer;
             return ret;
@@ -224,6 +224,4 @@ public abstract class HipAudioClip
             outBuffer = null;
         }
     }
-
-
 }

@@ -33,6 +33,8 @@ private bool loadSDLDependencies()
     import std.conv:to;
 
     SDLSupport ret = loadSDL();
+    import console.log;
+    logln(ret);
     if(ret != sdlSupport)
     {
         if(ret == SDLSupport.noLibrary)
@@ -53,7 +55,7 @@ Crashes may happen");
 
     //Load Font support
     // ErrorHandler.assertErrorMessage(loadSDLTTF() == sdlTTFSupport, "Could not load library", "SDL TTF library hasn't been able to load");
-    if(ErrorHandler.assertErrorMessage(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0, "SDL Initialization",  "SDL could not initialize\nSDL Error: " ~ to!string(SDL_GetError())))
+    if(ErrorHandler.assertErrorMessage(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) == 0, "SDL Initialization",  "SDL could not initialize\nSDL Error: " ~ to!string(SDL_GetError())))
         return false;
     return true;
 

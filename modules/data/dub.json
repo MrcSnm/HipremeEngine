@@ -9,8 +9,10 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
+		"audio-formats": "~>1.3.4",
 		"hipengine_api": {"path": "../../api"}, 
 		"bindbc-sdl": "~>1.0.1",
+		"bind": {"path": "../bind"},
 		"math": {"path": "../math"},
 		"sdl_sound": {"path": "../../dependencies/sdl_sound"},
 		"console": {

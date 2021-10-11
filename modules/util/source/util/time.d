@@ -25,16 +25,16 @@ class HipTime
         stopwatch = StopWatch(AutoStart.yes);
     }
 
-    static long getCurrentTime()
+    static long getCurrentTime() nothrow
     {
         return stopwatch.peek.total!"nsecs";
     }
 
-    static float getCurrentTimeAsMilliseconds()
+    static float getCurrentTimeAsMilliseconds() nothrow
     {
         return stopwatch.peek.total!"nsecs" / 1_000_000;
     }
-    static float getCurrentTimeAsSeconds()
+    static float getCurrentTimeAsSeconds() nothrow
     {
         return stopwatch.peek.total!"nsecs" / 1_000_000_000;
     }

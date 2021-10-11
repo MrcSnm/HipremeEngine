@@ -1,13 +1,14 @@
 /*
-Copyright: Marcelo S. N. Mancini (Hipreme|MrcSnm), 2018 - 2021
-License:   [https://creativecommons.org/licenses/by/4.0/|CC BY-4.0 License].
+Copyright: Marcelo S. N. Mancini, 2018 - 2021
+License:   [https://opensource.org/licenses/MIT|MIT License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the CC BY-4.0 License.
+Distributed under the MIT Software License.
    (See accompanying file LICENSE.txt or copy at
-	https://creativecommons.org/licenses/by/4.0/
+	https://opensource.org/licenses/MIT)
 */
+
 module event.handlers.keyboard;
 
 import std.algorithm;
@@ -231,9 +232,8 @@ class KeyboardHandler : IHipKeyboard
 
     void postUpdate()
     {
-        int i = 0;
-        while(pressedKeys[i] != 0)
-            metadatas[pressedKeys[i++]]._isNewState = false;
+        for(int i = 0; i < metadatas.length; i++)
+            metadatas[i]._isNewState = false;
         frameText = "";
     }
 

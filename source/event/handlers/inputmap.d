@@ -1,47 +1,108 @@
 module event.handlers.inputmap;
-import hipengine.api.input;
+import util.reflection;
+import std.json;
+import data.hipfs;
 import error.handler;
+import hipengine.api.input;
 
-//Public API
-
-interface IHipInputMap
+class HipInputMap : IHipInputMap
 {
-    void registerInputAction(string actionName);
-
-}
-
-class HipInputMap
-{
-
+    alias Context = IHipInputMap.Context;
+    Context[string] inputMapping;
+    ubyte id;
     //registerInputAction("menu", MOUSE_BTN_R, TOUCH_0 | TOUCH_1, KEY_WINDOWS)
-
-    float function()[string] inputMapping;
-    void registerInputAction(string actionName, float function() actionHappenned)
+    private pragma(inline) Context* getAction(string actionName)
     {
-        mixin(ErrorHandler.assertReturn!q{actionName != ""}("Register Input Action should contain a name"));
-        inputMapping[actionName] = actionHappenned;
-
-        registerInputAction("left", ()
+        Context* ctx = actionName in inputMapping;
+        if(ctx == null)
         {
-            if(isGamepadButtonPressed(HipGamepadButton.dPadLeft) || isKeyPressed('a'))
-                return 1.0f;
-            return getAnalog(HipGamepadAnalogs.leftStick).x;
-        });
-
-        registerInputAction("right", ()
-        {
-            return isGamepadButtonPressed(HipGamepadButton.dPadRight) || isKeyPressed('d');
-        });
-        registerInputAction("up", ()
-        {
-            return isGamepadButtonPressed(HipGamepadButton.dPadUp) || isKeyPressed('w');
-        });
-        registerInputAction("down", ()
-        {
-            return isGamepadButtonPressed(HipGamepadButton.dPadDown) || isKeyPressed('s');
-        });
+            ErrorHandler.showErrorMessage("HipInputMap action getter error",
+            '"'~actionName~"' does not exists on input mapping");
+        }
+        return ctx;
+    }
+    float isActionPressed(string actionName)
+    {
+        Context* c = getAction(actionName);
+        if(!c) return 0.0f;
+        float greatest = 0;
+        foreach(g; c.btns) if(isGamepadButtonPressed(g, id))
+            greatest = 1.0f;
+        foreach(k; c.keys) if(isKeyPressed(k, id))
+            greatest = 1.0f;
+        return greatest;
+    }
+    float isActionJustPressed(string actionName)
+    {
+        Context* c = getAction(actionName);
+        if(!c) return 0.0f;
+        float greatest = 0;
+        foreach(g; c.btns) if(isGamepadButtonJustPressed(g, id))
+            greatest = 1.0f;
+        foreach(k; c.keys) if(isKeyJustPressed(k, id))
+            greatest = 1.0f;
+        return greatest;
+    }
+    float isActionJustReleased(string actionName)
+    {
+        Context* c = getAction(actionName);
+        if(!c) return 0.0f;
+        float greatest = 0;
+        foreach(g; c.btns) if(isGamepadButtonJustReleased(g, id))
+            greatest = 1.0f;
+        foreach(k; c.keys) if(isKeyJustReleased(k, id))
+            greatest = 1.0f;
+        return greatest;
     }
 
+    void registerInputAction(string actionName, Context ctx)
+    {
+        mixin(ErrorHandler.assertReturn!q{actionName != ""}("Register Input Action should contain a name"));
+        inputMapping[actionName] = ctx;
 
+    }
 
+    @ExportD("File") static IHipInputMap parseInputMap(string file, ubyte id = 0)
+    {
+        void[] output;
+        if(HipFS.read(file, output))
+            return parseInputMap(cast(ubyte[])output, file, id);
+        return null;
+    }
+    @ExportD("Mem") static IHipInputMap parseInputMap(ubyte[] file, string fileName, ubyte id = 0)
+    {
+        HipInputMap ret = new HipInputMap();
+        JSONValue inputJson = parseJSON(cast(string)file);
+
+        JSONValue* temp = ("actions" in inputJson.object);
+        ErrorHandler.assertErrorMessage(temp != null, "HipInputMap wrong formatting", 
+        "\"actions\" not found in "~fileName);
+
+        foreach(k, v; temp.object)
+        {
+            string actionName = k;
+            JSONValue* kb = ("keyboard" in v.object);
+            JSONValue* gp = ("gamepad" in v.object);
+
+            Context ctx;
+            if(kb != null)
+            {
+                JSONValue[] keys = kb.array;
+                foreach(key; keys)
+                    ctx.keys~= key.str[0];
+            }
+            if(gp != null)
+            {
+                JSONValue[] btns = gp.array;
+                foreach(btn; btns)
+                    ctx.btns ~=  gamepadButtonFromString(btn.str);
+            }
+            ret.inputMapping[actionName] = ctx;
+            ctx.name = actionName;
+        }
+        return ret;
+    }
 }
+
+
+mixin ExportDFunctions!(event.handlers.inputmap);

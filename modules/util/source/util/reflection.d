@@ -28,6 +28,38 @@ bool isLiteral(alias variable)(string var = variable.stringof)
     return (isNumeric(var) || count(var, "\"") == 2);
 }
 
+auto inverseLookup(alias lookupTable)()
+{
+    alias O = typeof(lookupTable.keys[0]);
+    alias I = typeof(lookupTable.values[0]);
+    O[I] output;
+    static foreach(k, v; lookupTable)
+        output[v] = k;
+    return output;
+}
+
+/** 
+*   Generates a function that executes a switch case from the associative array.
+*
+*   Pass true as the second parameter if reverse is desired.
+*/
+template aaToSwitch(alias aa, bool reverse = false)
+{
+    auto aaToSwitch(T)(T value)
+    {
+        switch(value)
+        {
+            static foreach(k, v; aa)
+                static if(reverse)
+                    case v: return k;
+                else
+                    case k: return v;                
+            default:
+                return typeof(return).init;
+        }
+    }
+}
+
 
 ulong enumLength(T)()
 if(is(T == enum))
@@ -72,4 +104,110 @@ T nullCheck(string expression, T, Q)(T defaultValue, Q target)
     }
 
     mixin("return _v",to!string(exps.length-2),";");
+}
+
+
+///Used in conjunction to ExportDFunctions, you may specify a suffix, if you so, _suffix is added
+struct ExportD
+{
+    string suffix;  
+}
+template getParams (alias fn) 
+{
+	static if ( is(typeof(fn) params == __parameters) )
+    	alias getParams = params;
+}
+template getUDAs(alias symbol)
+{
+    enum getUDAs = __traits(getAttributes, symbol);
+}
+
+template hasUDA(alias symbol, alias UDA)
+{
+    enum helper = ()
+    {
+        foreach(att; __traits(getAttributes, symbol))
+            if(is(typeof(att) == UDA) || is(att == UDA)) return true;
+        return false;
+    }();
+    enum hasUDA = helper;
+}
+
+template generateExportName(string className, alias funcSymbol)
+{
+	//Means that it has a suffix
+	static if(is(typeof(getUDAs!funcSymbol[0]) == ExportD))
+		enum generateExportName = className~"_"~__traits(identifier, funcSymbol)~"_"~getUDAs!funcSymbol[0].suffix;
+	else
+		enum generateExportName = className~"_"~__traits(identifier, funcSymbol);
+}
+
+template isReference(T)
+{
+    enum isReference = is(T == class) || is(T == interface);
+}
+
+template generateExportFunc(string className, alias funcSymbol)
+{
+    import util.string:join;
+    import std.traits:ReturnType, ParameterIdentifierTuple;
+    enum impl = ()
+    {
+        alias RetType = ReturnType!funcSymbol;
+        string ret = "export extern(System) "~RetType.stringof~" "~generateExportName!(className, funcSymbol);
+        ret~= getParams!(funcSymbol).stringof~"{";
+        enum isRef = isReference!(RetType);
+
+        static if(isRef)
+        {
+            ret~= q{
+                import util.lifetime;
+                return cast(}~RetType.stringof~")"~"hipSaveRef(";
+
+                static if(is(RetType == interface))
+                    ret~= "cast(Object)";
+                
+                ret~= className~"."~__traits(identifier, funcSymbol)~"("~
+                [ParameterIdentifierTuple!funcSymbol].join(",")~"));}";
+        }
+        else
+        {
+            static if(is(RetType == void)){}
+            else
+                ret~= "return ";
+            ret~= className~"."~__traits(identifier, funcSymbol)~"("~
+                [ParameterIdentifierTuple!funcSymbol].join(",")~");}";
+        }
+
+        return ret;
+    }();
+
+    enum generateExportFunc = impl;
+}
+
+
+
+string[] exportedFunctions;
+
+mixin template ExportDFunctions(alias mod)
+{
+	import std.traits:getSymbolsByUDA;
+	static foreach(mem; __traits(allMembers, mod))
+	{
+		static if( (is(mixin(mem) == class) || is(mixin(mem) == struct) ))
+		{
+			static foreach(syms; getSymbolsByUDA!(mixin(mem), ExportD))
+			{
+                static if(__traits(compiles, mixin(generateExportName!(mem, syms))))
+                    static assert(false, "ExportD '" ~ generateExportName!(mem, syms) ~
+                    "' is not unique, use ExportD(\"SomeName\") for overloading with a suffix");
+                pragma(msg, "Exported "~(generateExportName!(mem, syms)));
+				//Func signature
+                //Check if it is a non value type
+                mixin(generateExportFunc!(mem, syms));
+			}
+
+            // mixin(q{shared static this(){}})
+		}
+	}
 }

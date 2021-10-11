@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hipaudio.backend.openal.clip;
 import data.audio.audio;
 import hipaudio.audio;
-import hipaudio.backend.audiosource;
+import hipaudio.audiosource;
 import data.audio.audioconfig;
 import hipaudio.backend.openal.player;
 import bindbc.openal;

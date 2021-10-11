@@ -8,13 +8,16 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hipaudio.backend.audiosource;
-import math.vector;
+module hipaudio.audiosource;
+import bindbc.openal;
 import hipaudio.audioclip : HipAudioClip;
 import hipaudio.audio;
-import bindbc.openal;
+public import hipengine.api.audio.audiosource;
+
+import math.vector;
 import debugging.gui;
 import imgui.fonts.icons;
+
 /** 
 *   Wraps properties for the AudioPlayer. The closest graphical represetantion
 *   to that would be the Material class, but for Audios.
@@ -45,41 +48,23 @@ import imgui.fonts.icons;
         HipAudio.update(*src);
     }
 
-}) public class HipAudioSource
+}) public class HipAudioSource : AHipAudioSource
 {
     public:
     //Functions
         void attachToPosition(){}
         void attachOnDestroy(){}
-        float getProgress(){return time/length;}
-        void pullStreamData(){}
-        void setClip(HipAudioClip clip){this.clip = clip;}
-        HipAudioBufferWrapper* getFreeBuffer(){return null;}
+        override float getProgress(){return time/length;}
+        override void pullStreamData(){}
+        void setClip(IHipAudioClip clip){this.clip = clip;}
+        override HipAudioBufferWrapper* getFreeBuffer(){return null;}
 
         final void sendAvailableBuffer(void* buffer)
         {
-            clip.setBufferAvailable(buffer);
+            (cast(HipAudioClip)clip).setBufferAvailable(buffer);
         }
 
-    //Properties
-
-        ///Where the audio data is stored
-        HipAudioClip clip;
-        bool isLooping;
-        bool isPlaying;
-
-        float time;
-        float length;
-        float pitch = 1;
-        float panning = 0;
-        float volume = 1;
-
-        //3D Audio Only
-        float maxDistance = 0;
-        float rolloffFactor = 0;
-        float referenceDistance = 0;
-
-        HipAudioSource clean()
+        override HipAudioSource clean()
         {
             isLooping = false;
             isPlaying = false;

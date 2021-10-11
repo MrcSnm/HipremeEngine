@@ -1,14 +1,13 @@
 /*
-Copyright: Marcelo S. N. Mancini, 2018 - 2021
-License:   [https://opensource.org/licenses/MIT|MIT License].
+Copyright: Marcelo S. N. Mancini (Hipreme|MrcSnm), 2018 - 2021
+License:   [https://creativecommons.org/licenses/by/4.0/|CC BY-4.0 License].
 Authors: Marcelo S. N. Mancini
 
 	Copyright Marcelo S. N. Mancini 2018 - 2021.
-Distributed under the MIT Software License.
+Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
-	https://opensource.org/licenses/MIT)
+	https://creativecommons.org/licenses/by/4.0/
 */
-
 import std.stdio;
 import std.conv:to;
 import std.process;
@@ -40,9 +39,9 @@ enum vcxItemTypes =
     ".tmx" : "Text",
     ".xml" : "Text",
     ///Audio
-    ".wav" : "Audio",
-    ".mp3" : "Audio",
-    ".ogg" : "Audio"
+    ".wav" : "None",
+    ".mp3" : "None",
+    ".ogg" : "None"
 ];
 
 
@@ -50,6 +49,8 @@ enum wordToFind = "</ItemGroup>";
 
 enum copyInit = "<ItemGroup Label=\"ResourceCopyInit\">";
 enum copyEnd  = "</ItemGroup><ItemGroup Label=\"ResourceCopyEnd\"></ItemGroup>";
+
+
 
 string getType(string fileName)
 {
@@ -63,6 +64,19 @@ string getType(string fileName)
     return *uwpType;
 }
 
+///Use that instead of countUntil because visual studio may break the copyend line in two
+long findEndIndex(string res)
+{
+    long ret = -1;
+
+    for(ulong i = 0; i < res.length; i++)
+    {
+
+    }
+
+    return ret;
+}
+
 bool stripLastRes(ref string res)
 {
     long start = res.countUntil(copyInit);
@@ -74,7 +88,7 @@ bool stripLastRes(ref string res)
     long end = res[cast(uint)start..$].countUntil(copyEnd);
     if(end == -1)
     {
-        writeln("Malformed input on. Won't do anything with vcxproj");
+        writeln("Malformed input .vcxproj. Won't do anything.");
         return false;
     }
 
@@ -95,7 +109,7 @@ bool stripLastResFilter(ref string res)
     long end = res[cast(uint)start..$].countUntil(copyEnd);
     if(end == -1)
     {
-        writeln("Malformed input. Won't do anything with vcxproj.filters");
+        writeln("Malformed input on .vcxproj.filters. Won't do anything with vcxproj.filters");
         return false;
     }
 

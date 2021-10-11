@@ -10,12 +10,27 @@
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
 		"bindbc-openal": "~>1.0.0",
-		"bindbc-sdl": "~>1.0.1", 
-		"data" : {"path": "../data"},
-		"math" : {"path": "../math"},
-		"imgui": {"path": "../imgui"},
-		"sles": {"path": "../../dependencies/sles"},
-		"sdl_sound": {"path": "../../dependencies/sdl_sound"}
+		"bindbc-sdl": "~>1.0.1",
+		"data": {
+			"path": "../data",
+			"version": ">=0.0.0"
+		},
+		"imgui": {
+			"path": "../imgui",
+			"version": ">=0.0.0"
+		},
+		"math": {
+			"path": "../math",
+			"version": ">=0.0.0"
+		},
+		"sdl_sound": {
+			"path": "../../dependencies/sdl_sound",
+			"version": ">=0.0.0"
+		},
+		"sles": {
+			"path": "../../dependencies/sles",
+			"version": ">=0.0.0"
+		}
 	},
 	"description": "HipremeEngine audio module",
 	"license": "proprietary",
