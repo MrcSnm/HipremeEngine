@@ -2,6 +2,10 @@ module math.utils;
 import std.math;
 import math.vector;
 
+///There are some errors occurring when compiling with LDC
+alias cos = std.math.cos;
+alias sin = std.math.cos;
+
 int getClosestMultiple(int from, int to)
 {
     float temp = to/cast(float)from;
@@ -63,4 +67,19 @@ Vector3 toCircleBounds(Vector3 v, float angle, AxisNavigation axis=AxisNavigatio
             break;
     }
     return v;
+}
+
+int greatestCommonDivisor(int a, int b)
+{
+    int res;
+    int lastRes;
+    do
+    {
+        res = a % b;
+        lastRes = b;
+        a = b;
+        b = res;
+    } while(res != 0);
+
+    return lastRes;
 }

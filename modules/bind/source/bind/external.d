@@ -25,6 +25,25 @@ version(UWP)
         HWND function() getCoreWindowHWND;
         HipExternalCoreWindow function() getCoreWindow;
         void function(const(wchar*) wcstr) OutputUWP;
+
+        HANDLE function(
+        LPCWSTR               lpFileName,
+        DWORD                 dwDesiredAccess,
+        DWORD                 dwShareMode,
+        LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+        DWORD                 dwCreationDisposition,
+        DWORD                 dwFlagsAndAttributes,
+        HANDLE                hTemplateFile
+        ) UWPCreateFileFromAppW;
+
+        BOOL function(LPCWSTR lpFileName
+        ) UWPDeleteFileFromAppW;
+
+        BOOL function(
+        LPCWSTR                lpFileName,
+        GET_FILEEX_INFO_LEVELS fInfoLevelId,
+        LPVOID                 lpFileInformation
+        ) UWPGetFileAttributesExFromAppW;
     }
     void uwpPrint(string str)
     {
@@ -39,8 +58,14 @@ void importExternal()
     import util.system;
     version(UWP)
     {
+        ///App.cpp
         dll_import_varS!getCoreWindowHWND;
         dll_import_varS!getCoreWindow;
         dll_import_varS!OutputUWP;
+
+        ///uwpfs.h
+        dll_import_varS!UWPCreateFileFromAppW;
+        dll_import_varS!UWPDeleteFileFromAppW;
+        dll_import_varS!UWPGetFileAttributesExFromAppW;
     }
 }

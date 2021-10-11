@@ -2,7 +2,7 @@ module hipaudio.backend.opensles.player;
 version(Android):
 import hipaudio.backend.opensles.source;
 import hipaudio.backend.opensles.clip;
-import hipaudio.backend.audiosource;
+import hipaudio.audiosource;
 import data.audio.audioconfig;
 import hipaudio.backend.sles;
 import config.opts : HIP_OPENSLES_OPTIMAL, HIP_OPENSLES_FAST_MIXER;
@@ -182,32 +182,32 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
         ),
         "Error creating OpenSLES context.", sliGetErrorMessages());
     }
-    public bool isMusicPlaying(HipAudioSource src)
+    public bool isMusicPlaying(HipAudioSourceAPI src)
     {
         return (cast(HipOpenSLESAudioSource)src).audioPlayer.isPlaying;
     }
-    public bool isMusicPaused(HipAudioSource src){return false;}
-    public bool resume(HipAudioSource src)
+    public bool isMusicPaused(HipAudioSourceAPI src){return false;}
+    public bool resume(HipAudioSourceAPI src)
     {
         HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
         SLIAudioPlayer.resume(*source.audioPlayer);
         return false;
     }
-    public bool play(HipAudioSource src)
+    public bool play(HipAudioSourceAPI src)
     {
         HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
         SLIAudioPlayer.play(*source.audioPlayer);
 
         return true;
     }
-    public bool stop(HipAudioSource src)
+    public bool stop(HipAudioSourceAPI src)
     {
         HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
         SLIAudioPlayer.stop(*source.audioPlayer);
         source.audioPlayer = null; //?
         return false;
     }
-    public bool pause(HipAudioSource src)
+    public bool pause(HipAudioSourceAPI src)
     {
         HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
         SLIAudioPlayer.pause(*source.audioPlayer);
@@ -215,7 +215,7 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     }
 
     //LOAD RELATED
-    public bool play_streamed(HipAudioSource src)
+    public bool play_streamed(HipAudioSourceAPI src)
     {
         HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
         static if(HIP_OPENSLES_OPTIMAL)
@@ -226,34 +226,34 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
         SLIAudioPlayer.play(*source.audioPlayer);
         return true;
     }
-    public HipAudioClip load(string path, HipAudioType type)
+    public HipAudioClipAPI load(string path, HipAudioType type)
     {
-        HipAudioClip buffer = new HipOpenSLESAudioClip(new HipSDL_SoundDecoder());
+        HipAudioClipAPI buffer = new HipOpenSLESAudioClip(new HipSDL_SoundDecoder());
         buffer.load(path, getEncodingFromName(path), type);
         return buffer;
     }
-    public HipAudioClip loadStreamed(string path, uint chunkSize)
+    public HipAudioClipAPI loadStreamed(string path, uint chunkSize)
     {
-        HipAudioClip buffer = new HipOpenSLESAudioClip(new HipSDL_SoundDecoder(), chunkSize);
+        HipAudioClipAPI buffer = new HipOpenSLESAudioClip(new HipSDL_SoundDecoder(), chunkSize);
         buffer.loadStreamed(path, getEncodingFromName(path));
         return buffer;
     }
-    void updateStream(HipAudioSource source){}
-    public void updateStreamed(HipAudioSource source){}
+    void updateStream(HipAudioSourceAPI source){}
+    public void updateStreamed(HipAudioSourceAPI source){}
     
-    public HipAudioSource getSource(bool isStreamed)
+    public HipAudioSourceAPI getSource(bool isStreamed)
     {
         SLIAudioPlayer* p = hipGetPlayerFromPool();
         return new HipOpenSLESAudioSource(p, isStreamed);
     }
 
     //EFFECTS
-    public void setPitch(HipAudioSource src, float pitch){}
-    public void setPanning(HipAudioSource src, float panning){}
-    public void setVolume(HipAudioSource src, float volume){}
-    public void setMaxDistance(HipAudioSource src, float dist){}
-    public void setRolloffFactor(HipAudioSource src, float factor){}
-    public void setReferenceDistance(HipAudioSource src, float dist){}
+    public void setPitch(HipAudioSourceAPI src, float pitch){}
+    public void setPanning(HipAudioSourceAPI src, float panning){}
+    public void setVolume(HipAudioSourceAPI src, float volume){}
+    public void setMaxDistance(HipAudioSourceAPI src, float dist){}
+    public void setRolloffFactor(HipAudioSourceAPI src, float factor){}
+    public void setReferenceDistance(HipAudioSourceAPI src, float dist){}
 
     public void onDestroy(){sliDestroyContext();}
 }

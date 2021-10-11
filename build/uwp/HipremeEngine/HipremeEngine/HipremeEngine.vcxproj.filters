@@ -3,15 +3,20 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="src\Def.cpp">
+    <ClCompile Include="d_game.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="d_game.cpp">
+    <ClCompile Include="src\input.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Def.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup><ItemGroup Label="ResourceCopyInit">
 <Filter Include="UWPResources"/>
 <Filter Include="UWPResources\audio"/>
+<Filter Include="UWPResources\data"/>
+<Filter Include="UWPResources\data\input"/>
 <Filter Include="UWPResources\fonts"/>
 <Filter Include="UWPResources\graphics"/>
 <Filter Include="UWPResources\graphics\atlases"/>
@@ -46,6 +51,9 @@
 <Audio Include="$(ProjectDir)\UWPResources\audio\wind-sfx.mp3">
 	<Filter>UWPResources\audio</Filter>
 </Audio>
+<Text Include="$(ProjectDir)\UWPResources\data\input\input.json">
+	<Filter>UWPResources\data\input</Filter>
+</Text>
 <Text Include="$(ProjectDir)\UWPResources\fonts\arial.fnt">
 	<Filter>UWPResources\fonts</Filter>
 </Text>
@@ -116,17 +124,18 @@
 	<Filter>UWPResources\text</Filter>
 </Text>
 </ItemGroup><ItemGroup Label="ResourceCopyEnd"></ItemGroup>
-  <ItemGroup Label="ResourceCopyEnd">
-  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="src\Def.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="d_game.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="src\input.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Def.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Wide310x150Logo.scale-200.png">
@@ -160,9 +169,6 @@
     </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{b57741db-a0a2-42c2-89fe-c4f5c0787a56}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Test">
-      <UniqueIdentifier>{68ce3828-a7af-4e6d-937b-a370f625f33f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -234,6 +240,7 @@
     <None Include="D:\HipremeEngine\bin\uwp\hipreme_engine.dll">
       <Filter>Assets</Filter>
     </None>
+    <None Include="HipremeEngine_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />

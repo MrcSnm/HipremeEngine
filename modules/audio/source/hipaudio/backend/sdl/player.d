@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hipaudio.backend.sdl.player;
 import hipaudio.backend.sdl.clip;
-import hipaudio.backend.audiosource;
+import hipaudio.audiosource;
 import hipaudio.audio;
 import error.handler;
 import console.log;
@@ -25,12 +25,12 @@ class HipSDLAudioPlayer : IHipAudioPlayer
         HipSDL_MixerDecoder.initDecoder(cfg);
         Mix_OpenAudio(cfg.sampleRate, cfg.format, cfg.channels, cfg.bufferSize);
     }
-    public bool isMusicPlaying(HipAudioSource src){return Mix_PlayingMusic() == 1;}
-    public bool isMusicPaused(HipAudioSource src){return Mix_PausedMusic() == 1;}
-    public bool resume(HipAudioSource src){Mix_ResumeMusic();return false;}
-    public bool stop(HipAudioSource src){Mix_HaltMusic();return false;}
-    public bool pause(HipAudioSource src){Mix_PauseMusic();return false;}
-    public bool play_streamed(HipAudioSource src){return false;}
+    public bool isMusicPlaying(HipAudioSourceAPI src){return Mix_PlayingMusic() == 1;}
+    public bool isMusicPaused(HipAudioSourceAPI src){return Mix_PausedMusic() == 1;}
+    public bool resume(HipAudioSourceAPI src){Mix_ResumeMusic();return false;}
+    public bool stop(HipAudioSourceAPI src){Mix_HaltMusic();return false;}
+    public bool pause(HipAudioSourceAPI src){Mix_PauseMusic();return false;}
+    public bool play_streamed(HipAudioSourceAPI src){return false;}
 
     public HipAudioClip load(string audioName, HipAudioType bufferType)
     {
@@ -44,24 +44,25 @@ class HipSDLAudioPlayer : IHipAudioPlayer
         ErrorHandler.assertExit(false, "SDL Audio Player does not support chunked decoding");
         return null;
     }
-    public void updateStream(HipAudioSource source){}
+    public void updateStream(HipAudioSourceAPI source){}
 
-    public HipAudioSource getSource(bool isStreamed){return new HipAudioSource();}
+    public HipAudioSourceAPI getSource(bool isStreamed){return new HipAudioSource();}
 
-    bool play(HipAudioSource src)
+    bool play(HipAudioSourceAPI src)
     {
-        HipSDL_MixerDecoder dec = cast(HipSDL_MixerDecoder)src.clip.decoder;
-        if(src.clip.type == HipAudioType.SFX)   
+        HipAudioClip clip = (cast(HipAudioClip)src.clip);
+        HipSDL_MixerDecoder dec = cast(HipSDL_MixerDecoder)clip.decoder;
+        if(clip.type == HipAudioType.SFX)   
             return Mix_PlayChannel(-1, dec.getChunk(), 1) == 1;
         else
             return Mix_PlayMusic(dec.getMusic(), -1) == 1;
     }
-    void setPitch(HipAudioSource src, float pitch){}
-    void setPanning(HipAudioSource src, float panning){}
-    void setVolume(HipAudioSource src, float volume){}
-    public void setMaxDistance(HipAudioSource src, float dist){}
-    public void setRolloffFactor(HipAudioSource src, float factor){}
-    public void setReferenceDistance(HipAudioSource src, float dist){}
+    void setPitch(HipAudioSourceAPI src, float pitch){}
+    void setPanning(HipAudioSourceAPI src, float panning){}
+    void setVolume(HipAudioSourceAPI src, float volume){}
+    public void setMaxDistance(HipAudioSourceAPI src, float dist){}
+    public void setRolloffFactor(HipAudioSourceAPI src, float factor){}
+    public void setReferenceDistance(HipAudioSourceAPI src, float dist){}
 
     public void onDestroy()
     {

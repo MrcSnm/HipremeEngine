@@ -8,8 +8,24 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-
 module hipengine;
+
+/**
+* For building the API some rules must be followed:
+*
+*	1: Public Interfaces, Structs and Abstract Classes must always be declared somewhere at hipengine.api;
+*	2: Methods will most of the time return an interface when dealing it at scripting time, at release
+*	build, the can return the entire class.
+*	3: The User API will contain classes named as the same as those defined at the HipremeEngine, so
+*	the user will actually use some aliass.
+*	4: When building for release (version(Have_hipreme_engine)), api should publicly import the actual
+*	class definition.
+*	5: For maintaining consistency, this package may declare some public imports that should be delegated
+*	to the actual API when that API is an aliased import.
+*/
+
+
+
 // version (HipremeAudio)
 // {
 // 	public import hipaudio;
@@ -29,20 +45,23 @@ public import hipengine.api.graphics.g2d.renderer2d;
 public import hipengine.api.view;
 
 
-version(HipremeEngineDef)
-{
-	public import hipengine.api.math;
-	// public import math.vector;
+// version(HipremeEngineDef)
+// {
+// 	public import hipengine.api.math;
+// 	public import hipengine.api.audio;
+// 	// public import math.vector;
 	
-	//Input
-	public import HipInput = hipengine.api.input;
-	alias initInput = HipInput.initInput;
+// 	//Input
+// 	public import HipInput = hipengine.api.input;
+// 	alias initInput = HipInput.initInput;
 
-	import hipengine.internal;
-	public import hipengine.internal:initializeHip;
-}
-else
-{
+// 	import hipengine.internal;
+// 	public import hipengine.internal:initializeHip;
+// }
+// else
+// {
+	//Audio
+	public import hipengine.api.audio;
 
 	//Math
 	public import hipengine.api.math;
@@ -50,15 +69,24 @@ else
 	//Input
 	public import HipInput = hipengine.api.input;
 	alias initInput = HipInput.initInput;
+	alias IHipInputMap = HipInput.IHipInputMap;
+
+	version(Have_hipreme_engine) //Aliased import fix
+		public import event.handlers.inputmap;
 
 	import hipengine.internal;
 	public import hipengine.internal:initializeHip;
-}
+// }
 
-version(Script) void function(string s) log;
+///Most important functions here
+version(Script)
+{
+	void function(string s) log;
+	void function(Object obj) hipDestroy;
+}
 void initConsole()
 {
-	version(Script){loadSymbol!log;}
+	version(Script){mixin(loadSymbol("log"));}
 }
 
 mixin template HipEngineMain(alias StartScene)
@@ -71,8 +99,20 @@ mixin template HipEngineMain(alias StartScene)
 			import core.sys.windows.dll;
 			mixin SimpleDllMain;
 		}
-		export extern(C) AScene HipremeEngineGameInit(){return _exportedScene = new StartScene();}
-		export extern(C) void HipremeEngineGameDestroy(){if(_exportedScene)destroy(_exportedScene);_exportedScene=null;}
+		export extern(System) AScene HipremeEngineGameInit()
+		{
+			import hipengine;
+			import core.runtime;
+			rt_init();
+			initializeHip();
+			initInput();
+			initMath();
+			initConsole();
+			initG2D();
+			HipAudio.initAudio();
+			return _exportedScene = new StartScene();
+		}
+		export extern(System) void HipremeEngineGameDestroy(){if(_exportedScene)destroy(_exportedScene);_exportedScene=null;}
 	}
 	else
 		alias HipEngineMainScene  = StartScene;

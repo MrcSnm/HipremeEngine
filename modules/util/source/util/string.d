@@ -87,22 +87,83 @@ pure string fromStringz(const char* cstr)
 {
     import core.stdc.string:strlen;
     size_t len = strlen(cstr);
-    return (len) ? cstr[0..len] : null;
+    return (len) ? cast(string)cstr[0..len] : null;
+}
+string[] split(string str, string separator)
+{
+    string[] ret;
+    string curr;
+    int equalCount = 0;
+    for(int i = 0; i < str.length; i++)
+    {
+        while(str[i+equalCount] == separator[equalCount])
+        {
+            equalCount++;
+            if(equalCount == separator.length)
+            {
+                i+= equalCount;
+                ret~= curr;
+                curr = null;
+                break;
+            }
+        }
+        equalCount = 0;
+        curr~= str[i];
+    }
+    return ret ~ curr;
+}
+string[] pathSplliter(string str)
+{
+    string[] ret;
+
+    string curr;
+    for(ulong i = 0; i < str.length; i++)
+        if(str[i] == '/' || str[i] == '\\')
+        {
+            ret~= curr;
+            curr = null;
+        }
+        else
+            curr~= str[i];
+    ret~= curr;
+    return ret;
 }
 
 
-///Temp?
-string toString(int x)
+/// This function can be called at compilation time without bringing runtime
+export string toString(int x)
+{
+    enum numbers = "0123456789";
+    int div = 10;
+    int length = 1;
+    int count = 1;
+    while(div < x)
+    {
+        div*=10;
+        length++;
+    }
+    char[] ret = new char[](length);
+    div = 10;
+    while(div < x)
+    {
+        count++;
+        ret[length-count]=numbers[(x/div)%10];
+        div*=10;
+    }
+    ret[length-1] = numbers[x%10];
+    return cast(string)ret;
+}
+
+export string toString(float x)
 {
     import core.stdc.stdlib:malloc;
     import core.stdc.stdio:snprintf;
-    ulong length = snprintf(null, 0, "%d", x);
+    ulong length = snprintf(null, 0, "%f", x);
     char[] str;
     str.length = length+1;
-    snprintf(str.ptr, length+1, "%d", x);
+    snprintf(str.ptr, length+1, "%f", x);
     return cast(string)str.ptr[0..length];
 }
-
 int toInt(string str)
 {
     import core.stdc.stdlib:strtol;
@@ -112,6 +173,16 @@ float toFloat(string str)
 {
     import core.stdc.stdlib:strtof;
     return strtof(str.ptr, null);
+}
+
+string baseName(string path)
+{
+    ulong lastIndex = 0;
+    for(ulong i = 0; i < path.length; i++)
+        if(path[i] == '/' || path[i] == '\\')
+            lastIndex = i+1;
+
+    return path[lastIndex..$];
 }
 
 string toString(T)(T struct_)
@@ -128,10 +199,32 @@ string toString(T)(T struct_)
     return typeof(struct_).stringof~s~")";
 }
 
+string join(string[] args, string separator)
+{
+	if(args.length == 0) return "";
+	string ret = args[0];
+	for(int i = 1; i < args.length; i++)
+		ret~=separator~args[i];
+	return ret;
+}
+
 unittest
 {
+    assert(baseName("a/b/test.txt") == "test.txt");
+    assert(toString(500) == "500");
+    assert(toString(50.25)== "50.25");
+    assert(join(["hello", "world"], ", ") == "hello, world");
+    assert(split("hello world", " ").length == 2);
     assert(toDefault!int("hello") == 0);
     assert(lastIndexOf("hello, hello", "hello") == 7);
     assert(indexOf("hello, hello", "hello") == 0);
     assert(replaceAll("\nTest\n", '\n') == "Test");
+}
+
+static foreach(mem; __traits(allMembers, util.string))
+{
+    // static if(__traits(getOverloads, util.string, mem).length > 0)
+    static foreach(i, overload; __traits(getOverloads, util.string, mem))
+        pragma(msg, overload.mangleof);
+        // pragma(msg, mem);
 }

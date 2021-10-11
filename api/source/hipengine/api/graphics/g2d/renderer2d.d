@@ -44,19 +44,22 @@ void initG2D()
 {
     version(Script)
     {
-        loadSymbol!beginSprite;
-        loadSymbol!endSprite;
-        loadSymbol!beginGeometry;
-        loadSymbol!endGeometry;
-        loadSymbol!setGeometryColor;
-        loadSymbol!drawPixel;
-        loadSymbol!drawRectangle;
-        loadSymbol!drawTriangle;
-        loadSymbol!fillRectangle;
-        loadSymbol!fillTriangle;
-        loadSymbol!drawLine;
-        loadSymbol!drawSprite;
-        loadSymbol!newSprite;
-        loadSymbol!destroySprite;
+        loadSymbols!
+        (
+            beginSprite,
+            endSprite,
+            beginGeometry,
+            endGeometry,
+            setGeometryColor,
+            drawPixel,
+            drawRectangle,
+            drawTriangle,
+            fillRectangle,
+            fillTriangle,
+            drawLine,
+            drawSprite,
+            newSprite,
+            destroySprite
+        );
     }
 }

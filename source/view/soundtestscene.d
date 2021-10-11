@@ -48,45 +48,28 @@ class SoundTestScene : Scene
         // HipAudio.play(src);
         
         HipAudioClip buf = HipAudio.loadStreamed("audio/StrategicZone.mp3", (ushort.max+1));
-        src = HipAudio.getSource(true, buf);
-        src.pullStreamData();
-        src.pullStreamData();
+        src = HipAudio.getSource(false, buf);
         HipAudio.play_streamed(src);
+        src.pullStreamData();
+        src.pullStreamData();
+        // HipAudio.play_streamed(src);
 
 
     }
     override void update(float dt)
     {
-        import console.log;
-        timer.tick(0.01);
-        rawlog("X: ", t.x, " Y: ", t.y);
+        // import console.log;
+        // timer.tick(0.01);
+        // rawlog("X: ", t.x, " Y: ", t.y);
         // if(!HipAudio.isMusicPlaying(src))
             // HipAudio.resume(src);
         import systems.input;
         import hipaudio.backend.opensles;
-
-        HipEventQueue.InputEvent* ev;
-        while((ev = HipEventQueue.poll(0)) != null)
-        {
-            switch(ev.type)
-            {
-                case HipEventQueue.EventType.touchDown:
-
-                    logln("Resuming audiosurce");
-                    
-                    // HipAudio.resume(src);
-                // case HipInput.InputType.TOUCH_UP:
-                // case HipInput.InputType.TOUCH_MOVE:
-                // case HipInput.InputType.TOUCH_SCROLL:
-                    break;
-                default:break;
-            }
-        }
         // ((cast(HipOpenSLESAudioSource)src).audioPlayer).update();
-        if(src.getFreeBuffer() != null)
-        {
-            src.pullStreamData();
-        }
+        // if(src.getFreeBuffer() != null)
+        // {
+        //     src.pullStreamData();
+        // }
     }
 
     override void render()

@@ -60,6 +60,7 @@
 <Audio Include="$(ProjectDir)\UWPResources\audio\StrategicZone.mp3"/>
 <Audio Include="$(ProjectDir)\UWPResources\audio\the-sound-of-silence.wav"/>
 <Audio Include="$(ProjectDir)\UWPResources\audio\wind-sfx.mp3"/>
+<Text Include="$(ProjectDir)\UWPResources\data\input\input.json"/>
 <Text Include="$(ProjectDir)\UWPResources\fonts\arial.fnt"/>
 <Image Include="$(ProjectDir)\UWPResources\fonts\arial.png"/>
 <Text Include="$(ProjectDir)\UWPResources\fonts\consolas.fnt"/>
@@ -84,8 +85,7 @@
 <Text Include="$(ProjectDir)\UWPResources\maps\Test.tmx"/>
 <Text Include="$(ProjectDir)\UWPResources\text\renderer.conf"/>
 </ItemGroup><ItemGroup Label="ResourceCopyEnd"></ItemGroup>
-  <ItemGroup Label="ResourceCopyEnd">
-  </ItemGroup>
+  
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
@@ -111,9 +111,23 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="PropertySheet.props" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="UserMacros">
+    <PackageCertificateThumbprint>265466C509D85090B62BB7FA3A8442B5B9003A15</PackageCertificateThumbprint>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
+    <AppInstallerUri>D:\HipremeEngine\bin\uwp</AppInstallerUri>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\Hipreme\source\repos\HipremeEngine\HipremeEngine\src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)src;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(ProjectDir)src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -151,6 +165,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\Def.h" />
+    <ClInclude Include="src\input.hpp" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -173,6 +188,7 @@
     </ClCompile>
     <ClCompile Include="d_game.cpp" />
     <ClCompile Include="src\Def.cpp" />
+    <ClCompile Include="src\input.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="D:\HipremeEngine\bin\desktop\cimgui.dll">
@@ -242,6 +258,7 @@
     <None Include="D:\HipremeEngine\bin\uwp\hipreme_engine.dll">
       <DeploymentContent>true</DeploymentContent>
     </None>
+    <None Include="HipremeEngine_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="PropertySheet.props" />
     <Text Include="readme.txt">

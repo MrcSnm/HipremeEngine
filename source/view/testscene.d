@@ -33,8 +33,6 @@ class TestScene : Scene
     override void update(float dt)
     {
         super.update(dt);
-        import console.log;
-        // rawlog("Comi sua mae");
     }
 
     override void render()

@@ -13,6 +13,7 @@ module hipengine.api.input;
 public import hipengine.api.math.vector;
 public import hipengine.api.input.mouse;
 public import hipengine.api.input.gamepad;
+public import hipengine.api.input.inputmap;
 
 
 void initInput()
@@ -20,26 +21,37 @@ void initInput()
     version(Script)
     {
         import hipengine.internal;
-        loadSymbol!isKeyPressed;
-        loadSymbol!isKeyJustPressed;
-        loadSymbol!isKeyJustReleased;
-        loadSymbol!getKeyDownTime;
-        loadSymbol!getKeyUpTime;
-        loadSymbol!isMouseButtonPressed;
-        loadSymbol!isMouseButtonJustPressed;
-        loadSymbol!isMouseButtonJustReleased;
-        loadSymbol!getTouchPosition;
-        loadSymbol!getTouchDeltaPosition;
-        loadSymbol!getScroll;
 
-        //Gamepad
-        loadSymbol!getGamepadCount;
-        loadSymbol!getGamepad;
-        loadSymbol!getAnalog;
-        loadSymbol!isGamepadButtonPressed;
-        loadSymbol!setGamepadVibrating;
-        loadSymbol!getGamepadBatteryStatus;
-        loadSymbol!isGamepadWireless;
+        loadSymbols!(
+            isKeyPressed,
+            isKeyJustPressed,
+            isKeyJustReleased,
+            getKeyDownTime,
+            getKeyUpTime,
+            isMouseButtonPressed,
+            isMouseButtonJustPressed,
+            isMouseButtonJustReleased,
+            getTouchPosition,
+            getTouchDeltaPosition,
+            getScroll,
+
+            //Gamepad
+            getGamepadCount,
+            getGamepad,
+            getAnalog,
+            isGamepadButtonPressed,
+            isGamepadButtonJustPressed,
+            isGamepadButtonJustReleased,
+            setGamepadVibrating,
+            getGamepadBatteryStatus,
+            isGamepadWireless
+        );
+        enum InputMapClass = "HipInputMap";
+        mixin(loadSymbolsFromExportD!(InputMapClass,
+            parseInputMap_File,
+            parseInputMap_Mem
+        ));
+
     }
 }
 
@@ -70,6 +82,8 @@ else
         AHipGamepad function(ubyte id = 0) getGamepad;
         Vector3 function(HipGamepadAnalogs analog, ubyte id = 0) getAnalog;
         bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonPressed;
+        bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustPressed;
+        bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustReleased;
         bool function(float vibrationPower, float time, ubyte id = 0) setGamepadVibrating;
         float function(ubyte id = 0) getGamepadBatteryStatus;
         bool function(ubyte id = 0) isGamepadWireless;
