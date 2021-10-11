@@ -35,14 +35,18 @@ package ALenum getFormatAsOpenAL(AudioConfig cfg)
 {
     if(cfg.channels == 1)
     {
-        if(cfg.format == AudioFormat.signed16Little || cfg.format == AudioFormat.signed16Big)
+        if(cfg.format == AudioFormat.float32Big || cfg.format == AudioFormat.float32Little)
+            return AL_FORMAT_MONO_FLOAT32;
+        else if(cfg.format == AudioFormat.signed16Little || cfg.format == AudioFormat.signed16Big)
             return AL_FORMAT_MONO16;
         else
             return AL_FORMAT_MONO8;
     }
     else
     {
-        if(cfg.format == AudioFormat.signed16Little || cfg.format == AudioFormat.signed16Big)
+        if(cfg.format == AudioFormat.float32Big || cfg.format == AudioFormat.float32Little)
+            return AL_FORMAT_STEREO_FLOAT32;
+        else if(cfg.format == AudioFormat.signed16Little || cfg.format == AudioFormat.signed16Big)
             return AL_FORMAT_STEREO16;
         else
             return AL_FORMAT_STEREO8;
@@ -85,9 +89,12 @@ ALenum getALDistanceModel(DistanceModel model)
 */
 public class HipOpenALAudioPlayer : IHipAudioPlayer
 {
+    // alias Decoder = HipSDL_SoundDecoder;
+    alias Decoder = HipAudioFormatsDecoder;
+
     public this(AudioConfig cfg)
     {
-        HipSDL_SoundDecoder.initDecoder(cfg, audioConfigDefaultBufferSize);
+        // HipSDL_SoundDecoder.initDecoder(cfg, audioConfigDefaultBufferSize);
         initializeOpenAL();
         config = cfg;
     }
@@ -207,13 +214,13 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     
     public HipAudioClip load(string path, HipAudioType clipType)
     {
-        HipOpenALClip clip = new HipOpenALClip(new HipSDL_SoundDecoder());
+        HipOpenALClip clip = new HipOpenALClip(new Decoder());
         clip.load(path, getEncodingFromName(path), clipType);
         return clip;
     }
     public HipAudioClip loadStreamed(string path, uint chunkSize)
     {
-        HipAudioClip clip = new HipOpenALClip(new HipSDL_SoundDecoder(), chunkSize);
+        HipAudioClip clip = new HipOpenALClip(new Decoder(), chunkSize);
         clip.loadStreamed(path, getEncodingFromName(path));
         return clip;
     }

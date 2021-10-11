@@ -4,6 +4,8 @@ import std.format;
 import bindbc.sdl;
 import sdl_sound;
 import error.handler;
+import audioformats;
+import dplug.core;
 
 public import hipengine.api.data.audio;
 
@@ -121,10 +123,8 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
     }
     bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type)
     {
-        import console.log;
         selectedEncoding = encoding;
         Sound_AudioInfo info = cfg.getSDL_SoundInfo();
-        logln(Sound_NewSampleFromMem);
         sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length, getNameFromEncoding(encoding), &info, HipSDL_SoundDecoder.bufferSize);
         if(sample != null)
             Sound_DecodeAll(sample);
@@ -212,4 +212,133 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
             Sound_FreeSample(sample);       
     }
     
+}
+
+
+T* monoToStereo(T)(T* data, ulong framesLength)
+{
+    import core.stdc.stdlib;
+    T* ret = cast(T*)malloc(framesLength*2 * T.sizeof);
+
+    for(ulong i = 0; i < framesLength; i++)
+    {
+        ret[i*2]    = data[i];
+        ret[i*2+1]  = data[i];
+    }
+    return ret;
+}
+
+T[] monoToStereo(T)(T[] data)
+{
+    T[] ret = new T[data.length*2];
+    for(ulong i = 0; i < data.length; i++)
+    {
+        ret[i*2]    = data[i];
+        ret[i*2+1]  = data[i];
+    }
+    return ret;
+}
+
+class HipAudioFormatsDecoder : IHipAudioDecoder
+{
+    AudioStream input;
+    float sampleRate;
+    int channels;
+    float duration;
+    ulong clipSize;
+    uint chunkSize;
+
+    float[] buffer;
+    float[] decodedBuffer;
+
+
+    bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type)
+    {
+        import std.stdio;
+        input.openFromMemory(cast(ubyte[])data);
+
+        long lengthFrames = input.getLengthInFrames();
+        channels = input.getNumChannels();
+        sampleRate = input.getSamplerate();
+
+        bool decodeSuccesful;
+
+        if(lengthFrames == audiostreamUnknownLength)
+        {
+            uint bytesRead = 0;
+        
+            decodedBuffer.length = audioConfigDefaultBufferSize;
+            void* output = decodedBuffer.ptr;
+            startDecoding(data, output, audioConfigDefaultBufferSize, encoding);
+            while((bytesRead = updateDecoding(output)) != 0)
+            {
+                bytesRead/= float.sizeof;
+                decodedBuffer.length+= bytesRead;
+                output+= bytesRead;
+            }
+            duration = (clipSize / channels) / sampleRate;
+        }
+        else
+        {
+            duration = lengthFrames/cast(double)sampleRate;
+            decodedBuffer = new float[lengthFrames*channels];
+            int bytesRead = input.readSamplesFloat(decodedBuffer);
+            clipSize = decodedBuffer.length*float.sizeof;
+            decodeSuccesful = bytesRead == lengthFrames;
+        }
+        if(decodeSuccesful)
+        {
+            if(channels == 1)
+            {
+                decodedBuffer = monoToStereo(decodedBuffer);
+                clipSize+=clipSize;
+            }
+            // if(sampleRate != 44_100)
+            // {
+            //     decodedBuffer = resampleBuffer(decodedBuffer, sampleRate, 44_100);
+            // }
+        }
+
+        input.cleanUp();
+
+        return decodeSuccesful;
+    }
+    uint startDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
+    {
+        input.openFromMemory(cast(ubyte[])data);
+        channels = input.getNumChannels();
+        sampleRate = input.getSamplerate();
+
+        chunkSize = (chunkSize / channels) / float.sizeof;
+        buffer = new float[chunkSize];
+        this.chunkSize = chunkSize;
+        
+        return updateDecoding(outputDecodedData);
+    }
+    uint updateDecoding(void* outputDecodedData)
+    {
+        import core.stdc.string:memcpy;
+        int framesRead = 0;
+        uint currentRead = 0;
+        do
+        {
+            framesRead = input.readSamplesFloat(buffer);
+            if(framesRead != 0)
+                memcpy(currentRead + outputDecodedData,
+                buffer.ptr, framesRead * channels * float.sizeof);
+            
+            currentRead += framesRead  * channels * float.sizeof;
+        } while(framesRead > 0 && currentRead <= chunkSize);
+        
+
+        clipSize+= currentRead;
+        return currentRead;
+    }
+    AudioConfig getAudioConfig(){return AudioConfig.init;}
+    void* getClipData(){return cast(void*)decodedBuffer.ptr;}
+    ulong getClipSize(){return clipSize;}
+    ///Don't apply to streamed audio. Gets the duration in seconds
+    float getDuration(){return duration;}
+
+    void dispose(){input.cleanUp();}
 }
