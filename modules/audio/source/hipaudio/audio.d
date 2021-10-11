@@ -22,6 +22,17 @@ import math.utils:getClosestMultiple;
 import util.reflection;
 import error.handler;
 
+version(Standalone)
+{
+    alias HipAudioSourceAPI = HipAudioSource;
+    alias HipAudioClipAPI = HipAudioClip;
+}
+else
+{
+    alias HipAudioSourceAPI = AHipAudioSource;
+    alias HipAudioClipAPI = IHipAudioClip;
+}
+
 /** 
  * This is an interface that should be created only once inside the application.
  *  Every audio function is global, meaning that every AudioSource will refer to the player
@@ -29,29 +40,29 @@ import error.handler;
 public interface IHipAudioPlayer
 {
     //COMMON TASK
-    public bool isMusicPlaying(AHipAudioSource src);
-    public bool isMusicPaused(AHipAudioSource src);
-    public bool resume(AHipAudioSource src);
-    public bool play(AHipAudioSource src);
-    public bool stop(AHipAudioSource src);
-    public bool pause(AHipAudioSource src);
+    public bool isMusicPlaying(HipAudioSourceAPI src);
+    public bool isMusicPaused(HipAudioSourceAPI src);
+    public bool resume(HipAudioSourceAPI src);
+    public bool play(HipAudioSourceAPI src);
+    public bool stop(HipAudioSourceAPI src);
+    public bool pause(HipAudioSourceAPI src);
 
     //LOAD RELATED
-    public bool play_streamed(AHipAudioSource src);
-    public IHipAudioClip load(string path, HipAudioType type);
-    public IHipAudioClip loadStreamed(string path, uint chunkSize);
-    public void updateStream(AHipAudioSource source);
-    public AHipAudioSource getSource(bool isStreamed);
-    public final IHipAudioClip loadMusic(string mus){return load(mus, HipAudioType.MUSIC);}
-    public final IHipAudioClip loadSfx(string sfx){return load(sfx, HipAudioType.SFX);}
+    public bool play_streamed(HipAudioSourceAPI src);
+    public HipAudioClipAPI load(string path, HipAudioType type);
+    public HipAudioClipAPI loadStreamed(string path, uint chunkSize);
+    public void updateStream(HipAudioSourceAPI source);
+    public HipAudioSourceAPI getSource(bool isStreamed);
+    public final HipAudioClipAPI loadMusic(string mus){return load(mus, HipAudioType.MUSIC);}
+    public final HipAudioClipAPI loadSfx(string sfx){return load(sfx, HipAudioType.SFX);}
 
     //EFFECTS
-    public void setPitch(AHipAudioSource src, float pitch);
-    public void setPanning(AHipAudioSource src, float panning);
-    public void setVolume(AHipAudioSource src, float volume);
-    public void setMaxDistance(AHipAudioSource src, float dist);
-    public void setRolloffFactor(AHipAudioSource src, float factor);
-    public void setReferenceDistance(AHipAudioSource src, float dist);
+    public void setPitch(HipAudioSourceAPI src, float pitch);
+    public void setPanning(HipAudioSourceAPI src, float panning);
+    public void setVolume(HipAudioSourceAPI src, float volume);
+    public void setMaxDistance(HipAudioSourceAPI src, float dist);
+    public void setRolloffFactor(HipAudioSourceAPI src, float factor);
+    public void setReferenceDistance(HipAudioSourceAPI src, float dist);
 
     public void onDestroy();
 }
@@ -100,7 +111,7 @@ class HipAudio
         return ErrorHandler.stopListeningForErrors();
     }
 
-    @ExportD static bool play(AHipAudioSource src)
+    @ExportD static bool play(HipAudioSourceAPI src)
     {
         if(audioInterface.play(src))
         {
@@ -110,36 +121,35 @@ class HipAudio
         }
         return false;
     }
-    @ExportD static bool pause(AHipAudioSource src)
+    @ExportD static bool pause(HipAudioSourceAPI src)
     {
         audioInterface.pause(src);
         src.isPlaying = false;
         return false;
     }
-    @ExportD static bool play_streamed(AHipAudioSource src)
+    @ExportD static bool play_streamed(HipAudioSourceAPI src)
     {
         audioInterface.play_streamed(src);
         src.isPlaying = true;
         return false;
     }
-    @ExportD static bool resume(AHipAudioSource src)
+    @ExportD static bool resume(HipAudioSourceAPI src)
     {
         audioInterface.resume(src);
         src.isPlaying = true;
         return false;
     }
-    @ExportD static bool stop(AHipAudioSource src)
+    @ExportD static bool stop(HipAudioSourceAPI src)
     {
         audioInterface.stop(src);
         return false;
     }
 
-
     /**
     *   If forceLoad is set to true, you will need to manage it's destruction yourself
     *   Just call audioBufferInstance.unload()
     */
-    @ExportD static IHipAudioClip load(string path, HipAudioType bufferType, bool forceLoad = false)
+    @ExportD static HipAudioClipAPI load(string path, HipAudioType bufferType, bool forceLoad = false)
     {
         //Creates a buffer compatible with the target interface
         version(HIPREME_DEBUG)
@@ -162,7 +172,7 @@ class HipAudio
     /**
     *   Loads a file from disk, sets the chunkSize for streaming and does one decoding frame
     */
-    @ExportD static IHipAudioClip loadStreamed(string path, uint chunkSize = ushort.max+1)
+    @ExportD static HipAudioClipAPI loadStreamed(string path, uint chunkSize = ushort.max+1)
     {
         chunkSize = getClosestMultiple(optimalBufferSize, chunkSize);
         HipAudioClip buf = cast(HipAudioClip)audioInterface.loadStreamed(path, chunkSize);
@@ -173,7 +183,7 @@ class HipAudio
     {
         audioInterface.updateStream(source);
     }
-    @ExportD static AHipAudioSource getSource(bool isStreamed = false, IHipAudioClip clip = null)
+    @ExportD static HipAudioSourceAPI getSource(bool isStreamed = false, HipAudioClipAPI clip = null)
     {
         if(isStreamed) ErrorHandler.assertExit(clip !is null, "Can't get streamed source without any buffer");
         HipAudioSource ret;
