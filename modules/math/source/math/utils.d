@@ -68,3 +68,18 @@ Vector3 toCircleBounds(Vector3 v, float angle, AxisNavigation axis=AxisNavigatio
     }
     return v;
 }
+
+int greatestCommonDivisor(int a, int b)
+{
+    int res;
+    int lastRes;
+    do
+    {
+        res = a % b;
+        lastRes = b;
+        a = b;
+        b = res;
+    } while(res != 0);
+
+    return lastRes;
+}

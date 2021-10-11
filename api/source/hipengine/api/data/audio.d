@@ -71,7 +71,7 @@ struct AudioConfig
     */
     static AudioConfig musicConfig()
     {
-        return AudioConfig(44_100, AudioFormat._default, 2, audioConfigDefaultBufferSize);
+        return AudioConfig(44_100, AudioFormat.float32Little, 2, audioConfigDefaultBufferSize);
     }
     static AudioConfig lightweightConfig()
     {
