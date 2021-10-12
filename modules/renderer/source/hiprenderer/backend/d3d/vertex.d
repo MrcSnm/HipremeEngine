@@ -20,7 +20,6 @@ import util.system;
 import core.sys.windows.windows;
 import hiprenderer;
 import hiprenderer.backend.d3d.renderer;
-import hiprenderer.backend.d3d.utils;
 import hiprenderer.shader;
 import hiprenderer.backend.d3d.shader;
 import hiprenderer.vertex;
