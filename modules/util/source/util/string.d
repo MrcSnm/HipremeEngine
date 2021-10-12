@@ -154,6 +154,7 @@ export string toString(int x)
     return cast(string)ret;
 }
 
+
 export string toString(float x)
 {
     import core.stdc.stdlib:malloc;
@@ -166,13 +167,84 @@ export string toString(float x)
 }
 int toInt(string str)
 {
-    import core.stdc.stdlib:strtol;
-    return strtol(str.ptr, null, 10);
+    if(str.length == 0) return 0;
+
+
+    int i = (cast(int)str.length)-1;
+
+    int last = 0;
+    int multiplier = 1;
+    int ret = 0;
+    if(str[0] == '-')
+    {
+        last++;
+        multiplier*= -1;
+    }
+    for(; i >= last; i--)
+    {
+        if(str[i] >= '0' && str[i] <= '9')
+            ret+= (str[i] - '0') * multiplier;
+        else
+            return ret;
+        multiplier*= 10;
+    }
+    return ret;
 }
+
+
 float toFloat(string str)
 {
-    import core.stdc.stdlib:strtof;
-    return strtof(str.ptr, null);
+    if(str.length == 0) return 0;
+
+    int i = 0;
+    int integerPart = 0;
+    int decimalPart = 0;
+    
+    bool isNegative = str[0] == '-';
+    if(isNegative) i = 1;
+
+    bool isDecimal = false;
+    for(; i < str.length; i++)
+    {
+        if(str[i] =='.')
+        {
+            isDecimal = true;
+            continue;
+        }
+        if(isDecimal)
+            decimalPart++;
+        else
+            integerPart++;
+    }
+    if(decimalPart == 0)
+        return cast(float)str.toInt;
+
+    i = (isNegative ? 1 : 0);
+    float decimal= 0;
+    float integer  = 0;
+    int integerMultiplier = 1;
+    float floatMultiplier = 1.0f/10.0f;
+
+    int integerPartBackup = integerPart;
+    if(isNegative)
+        integerPartBackup++;
+
+    while(integerPart > 0)
+    {
+        integer+= (str[integerPartBackup-i] - '0') * integerMultiplier;
+        integerMultiplier*= 10;
+        integerPart--;
+        i++;
+    }
+    i++; //Jump the .
+    while(decimalPart > 0)
+    {
+        decimal+= (str[i] - '0') * floatMultiplier;
+        floatMultiplier/= 10;
+        decimalPart--;
+        i++;
+    }
+    return (integer + decimal) * (isNegative ? -1 : 1);
 }
 
 string baseName(string path)

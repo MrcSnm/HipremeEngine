@@ -9,9 +9,9 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module util.system;
-import std.conv:to;
 import core.stdc.string;
 import std.array:replace;
+import std.string:fromStringz;
 
 version(Standalone){}
 else{public import fswatch;}
@@ -63,6 +63,14 @@ version(Windows)
             varSymbol = cast(typeof(varSymbol))dll_import_var(varSymbol.stringof);
         else
             varSymbol = cast(typeof(varSymbol))dll_import_var(s);
+    }
+
+    string getWindowsErrorMessage(HRESULT hr)
+    {
+        wchar[4096] buffer;
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        null, hr, 0u, buffer.ptr, buffer.length, null);
+        return buffer.ptr.fromStringz;
     }
 }
 
@@ -116,7 +124,7 @@ void* dynamicLibrarySymbolLink(void* dll, const (char)* symbolName)
     {
         ret = GetProcAddress(dll, symbolName);
         if(!ret)
-            err = ("Could not link symbol "~to!string(symbolName)).ptr;
+            err = ("Could not link symbol "~symbolName.fromStringz).ptr;
     }
     else version(Posix)
     {
@@ -133,12 +141,12 @@ string dynamicLibraryError()
     {
         const(char)* ret = err;
         err = null;
-        return to!string(ret);
+        return cast(string)fromStringz(ret);
     }
     else version(Posix)
     {
         import core.sys.posix.dlfcn;
-        return to!string(dlerror());
+        return cast(string)fromStringz(dlerror());
     }
     else static assert(0, "Platform not supported");
 }

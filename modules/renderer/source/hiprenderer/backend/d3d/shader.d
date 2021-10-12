@@ -15,7 +15,7 @@ import config.opts;
 import hiprenderer.renderer;
 import hiprenderer.shader;
 import hiprenderer.backend.d3d.renderer;
-import hiprenderer.backend.d3d.utils;
+import util.system:getWindowsErrorMessage;
 import directx.d3d11;
 import directx.d3dcompiler;
 import directx.d3d11shader;
@@ -252,7 +252,7 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
         if(FAILED(hres))
         {
             ErrorHandler.showErrorMessage("D3D11 ShaderProgram initialization", 
-            "Could not get the reflection interface from the vertex shader, error: "~ Hip_D3D11_GetErrorMessage(hres));
+            "Could not get the reflection interface from the vertex shader, error: "~ getWindowsErrorMessage(hres));
             return false;
         }
         hres = D3DReflect(fs.shader.GetBufferPointer(),
@@ -260,7 +260,7 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
         if(FAILED(hres))
         {
             ErrorHandler.showErrorMessage("D3D11 ShaderProgram initialization", 
-            "Could not get the reflection interface from the pixel shader, error: "~ Hip_D3D11_GetErrorMessage(hres));
+            "Could not get the reflection interface from the pixel shader, error: "~ getWindowsErrorMessage(hres));
             return false;
         }
         return true;
@@ -352,7 +352,7 @@ class Hip_D3D11_ShaderImpl : IShader
             vs.shader.GetBufferSize(), null, &vs.vs);
             if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Vertex shader creation error", "Creation failed"))
             {
-                ErrorHandler.showErrorMessage("Vertex Shader Error:", Hip_D3D11_GetErrorMessage(res));
+                ErrorHandler.showErrorMessage("Vertex Shader Error:", getWindowsErrorMessage(res));
                 res = false;
             }
         }
@@ -367,7 +367,7 @@ class Hip_D3D11_ShaderImpl : IShader
             auto res = _hip_d3d_device.CreatePixelShader(fs.shader.GetBufferPointer(), fs.shader.GetBufferSize(), null, &fs.fs);
             if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Fragment/Pixel shader creation error", "Creation failed"))
             {
-                ErrorHandler.showErrorMessage("Fragment Shader Error:", Hip_D3D11_GetErrorMessage(res));
+                ErrorHandler.showErrorMessage("Fragment Shader Error:", getWindowsErrorMessage(res));
                 ret = false;
             }
         }

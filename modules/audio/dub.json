@@ -30,7 +30,8 @@
 		"sles": {
 			"path": "../../dependencies/sles",
 			"version": ">=0.0.0"
-		}
+		},
+		"directx-d":{"path" : "../../dependencies/directx-d"}
 	},
 	"description": "HipremeEngine audio module",
 	"license": "proprietary",
@@ -38,6 +39,7 @@
 	"versions": [
 		"SDL_208",
 		"BindSDL_Mixer",
+		"XAUDIO_2_9",
 		"AL_EFX"
 	]
 }

@@ -19,7 +19,7 @@ pragma(lib, "dxgi");
 
 import core.stdc.string;
 import core.sys.windows.windows;
-import std.conv:to;
+import std.string:fromStringz;
 
 import directx.d3d11;
 import directx.d3d11_3;
@@ -27,6 +27,7 @@ import directx.dxgi1_4;
 import bindbc.sdl;
 
 
+import util.system;
 import config.opts;
 import error.handler;
 
@@ -39,7 +40,6 @@ import hiprenderer.framebuffer;
 import hiprenderer.backend.d3d.shader;
 import hiprenderer.backend.d3d.framebuffer;
 import hiprenderer.backend.d3d.vertex;
-import hiprenderer.backend.d3d.utils;
 
 
 version(UWP)
@@ -85,7 +85,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     string file = __FILE__, size_t line = __LINE__,
     string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
     {
-        ErrorHandler.assertExit(SUCCEEDED(hres), msg~":\n\t"~Hip_D3D11_GetErrorMessage(hres),file,line,mod,func);
+        ErrorHandler.assertExit(SUCCEEDED(hres), msg~":\n\t"~getWindowsErrorMessage(hres),file,line,mod,func);
     }
 
     protected void createD3DDevice()
@@ -223,7 +223,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
             if(FAILED(hres))
             {
                 ErrorHandler.showErrorMessage("DXGI Error", "Could not get the IDXGIInfoQueue interface. \nError: " ~
-                Hip_D3D11_GetErrorMessage(hres) ~ "\nDebug layer will be aborted.");
+                getWindowsErrorMessage(hres) ~ "\nDebug layer will be aborted.");
             }
             else
                 hasDebugAvailable = true;
@@ -236,11 +236,11 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         ID3D11Texture2D pBackBuffer;
 
         res = _hip_d3d_swapChain.GetBuffer(0, &IID_ID3D11Texture2D, cast(void**)&pBackBuffer);
-        ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Error creating D3D11Texture2D", Hip_D3D11_GetErrorMessage(res));
+        ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Error creating D3D11Texture2D", getWindowsErrorMessage(res));
 
         //Use back buffer address to create a render target
         res = _hip_d3d_device.CreateRenderTargetView(pBackBuffer, null, &_hip_d3d_mainRenderTarget);
-        ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Error creating render target view", Hip_D3D11_GetErrorMessage(res));
+        ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Error creating render target view", getWindowsErrorMessage(res));
         pBackBuffer.Release();
 
         _hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_mainRenderTarget, null);
@@ -306,7 +306,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         device.QueryInterface(&IID_ID3D11Device3, cast(void**)&_hip_d3d_device);
 
 
-        if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "D3D11: Error creating device and swap chain", Hip_D3D11_GetErrorMessage(res)))
+        if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "D3D11: Error creating device and swap chain", getWindowsErrorMessage(res)))
         {
             Hip_D3D11_Dispose();
             return;
@@ -365,7 +365,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
                 if(msg.pDescription !is null || msg.Severity == DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR)
                 {
                     hasError = true;
-                    err~= to!string(msg.pDescription)~"\n";
+                    err~= msg.pDescription.fromStringz~"\n";
                 }
                 free(msg);
             }
@@ -374,7 +374,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         else
         {
             HRESULT hres = GetLastError();
-            err = Hip_D3D11_GetErrorMessage(hres);
+            err = getWindowsErrorMessage(hres);
             return FAILED(hres);
         }
     }

@@ -1002,7 +1002,7 @@ interface IDWriteRenderingParams : IUnknown
 
 // Forward declarations of D2D types
 //interface ID2D1SimplifiedGeometrySink;
-
+static import directx.d2d1;
 alias IDWriteGeometrySink = directx.d2d1.ID2D1SimplifiedGeometrySink;
 
 /// <summary>

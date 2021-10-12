@@ -51,6 +51,8 @@ public class HipOpenALClip : HipAudioClip
             // buffer = getNextBuffer();
         // loadALBuffer(buffer, this.outBuffer, decoded);
     }
+
+    /** Allocates ALuint in the bufferwrapper */
     override HipAudioBufferWrapper createBuffer(void* data, uint bufferSize)
     {
         import core.stdc.stdlib:malloc;

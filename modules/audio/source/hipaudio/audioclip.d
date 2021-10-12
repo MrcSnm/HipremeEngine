@@ -29,7 +29,7 @@ struct HipAudioBufferWrapper
         import core.stdc.string:memcmp;
         static if(is(R == void*))
             return memcmp(other, buffer, bufferSize) == 0;
-        else static if(is(R == typeof(this)))
+        else static if(is(R == HipAudioBufferWrapper))
             return memcmp(other.buffer, this.buffer, bufferSize) == 0;
         else
             return &this == other;
@@ -37,9 +37,15 @@ struct HipAudioBufferWrapper
 }
 
 /** 
- * Wraps a decoder onto it. Basically an easier interface with some more controls
- *  that would be needed inside specific APIs.
- */
+* Wraps a decoder onto it. Basically an easier interface with some more controls
+*  that would be needed inside specific APIs.
+*
+*   AudioClip flow basically consists in: 
+*   1. Initialize the audio clip with the current decoder.
+*   2. Call `.load`, which calls `.decode`
+*   3. HipAudioSource calls `.setClip`, which should call `clip.getBuffer`, which gets the buffer
+*   wrapped by the current implementation `createBuffer`, and then the buffer is enqueued.
+*/
 public abstract class HipAudioClip : IHipAudioClip
 {
     IHipAudioDecoder decoder;
@@ -102,7 +108,8 @@ public abstract class HipAudioClip : IHipAudioClip
     ///Event method called when the stream is updated
     protected abstract void  onUpdateStream(void* data, uint decodedSize);
     /**
-    *   Always alocates a pointer to the buffer data. So, after getting its content. Free the pointer
+    *   Always alocates a pointer to the buffer data. So, after getting its content. Send it to the
+    *   recyclable buffers
     */
     protected abstract HipAudioBufferWrapper createBuffer(void* data, uint size);
     protected abstract void  destroyBuffer(void* buffer);
@@ -113,6 +120,14 @@ public abstract class HipAudioClip : IHipAudioClip
                 return &b;
         return null;
     }
+
+    /** The buffer is actually any kind of external API buffer, it is the buffer contained in
+    *   HipAudioBufferWrapper.
+    *
+    *   OpenAL: `int` containing the buffer ID
+    *   OpenSL ES: `SLIBuffer`
+    *   XAudio2: To be thought?
+    */
     public    abstract void  setBufferData(void* buffer, uint size, void* data);
     /**
     *   Attempts to get a buffer from the buffer recycler. 

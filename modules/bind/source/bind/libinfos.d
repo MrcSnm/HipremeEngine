@@ -13,7 +13,7 @@ import bindbc.openal;
 import bindbc.opengl;
 import console.log;
 import core.stdc.string:strlen;
-import std.conv:to;
+import std.string:fromStringz;
 
 void list_audio_devices(const ALCchar *devices)
 {
@@ -25,7 +25,7 @@ void list_audio_devices(const ALCchar *devices)
 	rawlog("----------\n");
 	while (device && *device != '\0' && next && *next != '\0') 
 	{
-		rawlog!"%s\n"(to!string(device));
+		rawlog!"%s\n"(device.fromStringz);
 		len = strlen(device);
 		device += (len + 1);
 		next += (len + 2);
@@ -40,12 +40,12 @@ void show_sdl_sound_info()
     Sound_DecoderInfo** info = cast(Sound_DecoderInfo**)Sound_AvailableDecoders();
     while(*info != null)
     {
-        toPrint~="\n\t"~to!string((*info).description);
-        toPrint~="\n\tURL:"~to!string((*info).url);
+        toPrint~="\n\t"~fromStringz((*info).description);
+        toPrint~="\n\tURL:"~fromStringz((*info).url);
         toPrint~="\n\tExtensions: ";
         for(int i = 0; (*info).extensions[i] != null; i++)
         {
-            toPrint~= to!string((*info).extensions[i]) ~" ";
+            toPrint~= fromStringz((*info).extensions[i]) ~" ";
         }
         toPrint~="\n";
         info++;
@@ -66,9 +66,9 @@ void show_opengl_info()
 	rawlog!`OpenGL Infos:
     Vendor:   %s
     Renderer: %s
-    Version:  %s`(to!string(glGetString(GL_VENDOR)),
-    to!string(glGetString(GL_RENDERER)),
-    to!string(glGetString(GL_VERSION)));
+    Version:  %s`(fromStringz(glGetString(GL_VENDOR)),
+    fromStringz(glGetString(GL_RENDERER)),
+    fromStringz(glGetString(GL_VERSION)));
 }
 
 
