@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module error.handler;
 import console.log;
-import std.conv;
+import util.conv;
 version(Android)
 {
     import jni.helper.androidlog;

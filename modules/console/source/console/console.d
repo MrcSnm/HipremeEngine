@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module console.console;
 import config.opts;
 import util.reflection : isLiteral;
-import std.conv:to;
+import util.conv:to;
 import std.format : format;
 import std.string : toStringz;
 import debugging.gui:InterfaceImplementation;

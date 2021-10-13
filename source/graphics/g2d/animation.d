@@ -122,7 +122,7 @@ class HipAnimation
 
     static HipAnimation fromAtlas(TextureAtlas atlas, string which, uint fps, bool shouldLoop=false)
     {
-        import std.conv:to;
+        import util.conv:to;
         HipAnimation ret = new HipAnimation(which);
         HipAnimationTrack track = new HipAnimationTrack(which, fps, shouldLoop);
         AtlasFrame* frame;

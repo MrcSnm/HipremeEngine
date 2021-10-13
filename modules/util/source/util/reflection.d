@@ -28,6 +28,26 @@ bool isLiteral(alias variable)(string var = variable.stringof)
     return (isNumeric(var) || count(var, "\"") == 2);
 }
 
+
+///Copy pasted from std.traits for not importing too many things
+template isFunction(X...)
+if (X.length == 1)
+{
+    static if (is(typeof(&X[0]) U : U*) && is(U == function) ||
+               is(typeof(&X[0]) U == delegate))
+    {
+        // x is a (nested) function symbol.
+        enum isFunction = true;
+    }
+    else static if (is(X[0] T))
+    {
+        // x is a type.  Take the type of it and examine.
+        enum isFunction = is(T == function);
+    }
+    else
+        enum isFunction = false;
+}
+
 auto inverseLookup(alias lookupTable)()
 {
     alias O = typeof(lookupTable.keys[0]);
@@ -70,7 +90,7 @@ if(is(T == enum))
 T nullCheck(string expression, T, Q)(T defaultValue, Q target)
 {
     import std.traits:ReturnType;
-    import std.conv:to;
+    import util.conv:to;
     import std.string:split;
 
     enum exps = expression.split(".");

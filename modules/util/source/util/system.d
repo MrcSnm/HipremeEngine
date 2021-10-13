@@ -9,13 +9,13 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module util.system;
+import util.conv;
 import core.stdc.string;
 import std.array:replace;
 import std.string:fromStringz;
 
 version(Standalone){}
 else{public import fswatch;}
-struct ExportD{}
 
 pure nothrow string sanitizePath(string path)
 {
@@ -70,7 +70,7 @@ version(Windows)
         wchar[4096] buffer;
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
         null, hr, 0u, buffer.ptr, buffer.length, null);
-        return buffer.ptr.fromStringz;
+        return fromUTF16(cast(wstring)buffer);
     }
 }
 

@@ -13,7 +13,6 @@ import hiprenderer.backend.gl.renderer;
 import hiprenderer.shader;
 import hiprenderer.renderer;
 import hiprenderer.shader.shadervar;
-import std.conv:to;
 import std.format:format;
 import error.handler;
 
@@ -279,7 +278,7 @@ class Hip_GL3_ShaderImpl : IShader
         if(ErrorHandler.assertErrorMessage(success==true, "Shader compilation error", "Compilation failed"))
         {
             glGetShaderInfoLog(shaderID, 512, null, infoLog.ptr);
-            ErrorHandler.showErrorMessage("Compilation error:", to!string(infoLog));
+            ErrorHandler.showErrorMessage("Compilation error:", cast(string)(infoLog));
         }
         return success==true;
     }
@@ -308,7 +307,7 @@ class Hip_GL3_ShaderImpl : IShader
         if(ErrorHandler.assertErrorMessage(success==true, "Shader linking error", "Linking failed"))
         {
             glGetProgramInfoLog(prog, 512, null, infoLog.ptr);
-            ErrorHandler.showErrorMessage("Linking error: ", to!string(infoLog));
+            ErrorHandler.showErrorMessage("Linking error: ", cast(string)(infoLog));
         }
         
         return success==true;

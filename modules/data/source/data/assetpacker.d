@@ -15,7 +15,7 @@ import util.file;
 import std.algorithm : countUntil, map, min, sort;
 import core.stdc.stdio;
 import std.array : split, array;
-import std.conv:to;
+import util.conv:to;
 import core.stdc.string;
 import std.stdio : File;
 import std.path;

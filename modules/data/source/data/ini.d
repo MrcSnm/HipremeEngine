@@ -9,7 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module data.ini;
-import std.conv:to;
+import util.conv:to;
 import util.file;
 import std.array:split;
 

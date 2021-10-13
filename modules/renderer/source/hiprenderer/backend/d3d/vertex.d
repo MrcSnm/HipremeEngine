@@ -13,7 +13,7 @@ module hiprenderer.backend.d3d.vertex;
 version(Windows):
 import std.format;
 import core.stdc.string;
-import std.conv:to;
+import util.conv:to;
 import error.handler;
 import directx.d3d11;
 import util.system;
