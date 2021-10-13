@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module math.matrix;
 import core.math;
+import util.conv;
 
 enum MatrixType
 {
@@ -111,7 +112,6 @@ struct Matrix3
 
     string toString()
     {
-        import std.conv:to;
         string ret = "[";
         for(uint i = 0; i < 9; i++)
         {
@@ -302,7 +302,6 @@ struct Matrix4
 
     string toString()
     {
-        import std.conv:to;
         string ret = "[";
         for(uint i = 0; i < 16; i++)
         {

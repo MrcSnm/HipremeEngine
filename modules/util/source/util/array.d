@@ -9,7 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module util.array;
-private import std.conv : to;
+private import util.conv : to;
 
 /**
 * Uses accessor on the array to find an element

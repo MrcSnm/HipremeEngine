@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module console.log;
 import console.console;
-import std.conv:to;
+import util.conv:to;
 import std.format:format;
 
 private string[] logHistory = [];

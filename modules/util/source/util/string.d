@@ -9,7 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module util.string;
-public import std.conv:to;
+public import util.conv:to;
 
 pure string replaceAll(string str, char what, string replaceWith = "")
 {
@@ -83,12 +83,18 @@ T toDefault(T)(string s, T defaultValue = T.init)
     return v;
 }
 
-pure string fromStringz(const char* cstr)
+string fromStringz(const char* cstr) pure nothrow
 {
     import core.stdc.string:strlen;
     size_t len = strlen(cstr);
     return (len) ? cast(string)cstr[0..len] : null;
 }
+
+const(char*) toStringz(string str) pure nothrow
+{
+    return (str~"\0").ptr;
+}
+
 string[] split(string str, string separator)
 {
     string[] ret;
@@ -130,122 +136,6 @@ string[] pathSplliter(string str)
 }
 
 
-/// This function can be called at compilation time without bringing runtime
-export string toString(int x)
-{
-    enum numbers = "0123456789";
-    int div = 10;
-    int length = 1;
-    int count = 1;
-    while(div < x)
-    {
-        div*=10;
-        length++;
-    }
-    char[] ret = new char[](length);
-    div = 10;
-    while(div < x)
-    {
-        count++;
-        ret[length-count]=numbers[(x/div)%10];
-        div*=10;
-    }
-    ret[length-1] = numbers[x%10];
-    return cast(string)ret;
-}
-
-
-export string toString(float x)
-{
-    import core.stdc.stdlib:malloc;
-    import core.stdc.stdio:snprintf;
-    ulong length = snprintf(null, 0, "%f", x);
-    char[] str;
-    str.length = length+1;
-    snprintf(str.ptr, length+1, "%f", x);
-    return cast(string)str.ptr[0..length];
-}
-int toInt(string str)
-{
-    if(str.length == 0) return 0;
-
-
-    int i = (cast(int)str.length)-1;
-
-    int last = 0;
-    int multiplier = 1;
-    int ret = 0;
-    if(str[0] == '-')
-    {
-        last++;
-        multiplier*= -1;
-    }
-    for(; i >= last; i--)
-    {
-        if(str[i] >= '0' && str[i] <= '9')
-            ret+= (str[i] - '0') * multiplier;
-        else
-            return ret;
-        multiplier*= 10;
-    }
-    return ret;
-}
-
-
-float toFloat(string str)
-{
-    if(str.length == 0) return 0;
-
-    int i = 0;
-    int integerPart = 0;
-    int decimalPart = 0;
-    
-    bool isNegative = str[0] == '-';
-    if(isNegative) i = 1;
-
-    bool isDecimal = false;
-    for(; i < str.length; i++)
-    {
-        if(str[i] =='.')
-        {
-            isDecimal = true;
-            continue;
-        }
-        if(isDecimal)
-            decimalPart++;
-        else
-            integerPart++;
-    }
-    if(decimalPart == 0)
-        return cast(float)str.toInt;
-
-    i = (isNegative ? 1 : 0);
-    float decimal= 0;
-    float integer  = 0;
-    int integerMultiplier = 1;
-    float floatMultiplier = 1.0f/10.0f;
-
-    int integerPartBackup = integerPart;
-    if(isNegative)
-        integerPartBackup++;
-
-    while(integerPart > 0)
-    {
-        integer+= (str[integerPartBackup-i] - '0') * integerMultiplier;
-        integerMultiplier*= 10;
-        integerPart--;
-        i++;
-    }
-    i++; //Jump the .
-    while(decimalPart > 0)
-    {
-        decimal+= (str[i] - '0') * floatMultiplier;
-        floatMultiplier/= 10;
-        decimalPart--;
-        i++;
-    }
-    return (integer + decimal) * (isNegative ? -1 : 1);
-}
 
 string baseName(string path)
 {
@@ -257,19 +147,7 @@ string baseName(string path)
     return path[lastIndex..$];
 }
 
-string toString(T)(T struct_)
-{
-    string s = "(";
-    bool isFirst = true;
-    static foreach(m; __traits(allMembers, T))
-    {
-        if(!isFirst)
-            s~= ", ";
-        isFirst = false;
-        s~= mixin("struct_."~m~".toString");
-    }
-    return typeof(struct_).stringof~s~")";
-}
+
 
 string join(string[] args, string separator)
 {
@@ -283,8 +161,6 @@ string join(string[] args, string separator)
 unittest
 {
     assert(baseName("a/b/test.txt") == "test.txt");
-    assert(toString(500) == "500");
-    assert(toString(50.25)== "50.25");
     assert(join(["hello", "world"], ", ") == "hello, world");
     assert(split("hello world", " ").length == 2);
     assert(toDefault!int("hello") == 0);

@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module util.file;
 import std.stdio;
-import std.conv:to;
+import util.conv:to;
 import std.path;
 import std.array:array, join;
 import std.file;

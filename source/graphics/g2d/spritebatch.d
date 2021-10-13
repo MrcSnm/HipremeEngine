@@ -55,7 +55,7 @@ class HipSpriteBatch
 
     this(index_t maxQuads = 10_900)
     {
-        import std.conv:to;
+        import util.conv:to;
         ErrorHandler.assertExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
         this.maxQuads = maxQuads;
         indices = new index_t[maxQuads*6];

@@ -87,11 +87,10 @@ ALuint loadReverb(ref ReverbProperties r)
     int err = alGetError();
     if(err != AL_NO_ERROR)
     {
-        import std.format:format;
-        import std.conv:to;
+        import util.conv:to;
         
         string str = to!string(alGetString(err));
-        ErrorHandler.showErrorMessage(format!"OpenAL error: %s\n"(str), "Reverb Error");
+        ErrorHandler.showErrorMessage("OpenAL error: "~str~"\n", "Reverb Error");
         if(alIsEffect(effect))
             alDeleteEffects(1, &effect);
         return 0;

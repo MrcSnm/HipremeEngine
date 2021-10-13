@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module graphics.g2d.textureatlas;
 import util.file;
-import std.conv:to;
+import util.conv:to;
 import std.algorithm : countUntil;
 import util.string;
 import std.file;

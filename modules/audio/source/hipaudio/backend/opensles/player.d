@@ -7,7 +7,7 @@ import data.audio.audioconfig;
 import hipaudio.backend.sles;
 import config.opts : HIP_OPENSLES_OPTIMAL, HIP_OPENSLES_FAST_MIXER;
 import data.audio.audio;
-import std.conv:to;
+import util.conv:to;
 import opensles.sles;
 import error.handler;
 import hipaudio.audio;
