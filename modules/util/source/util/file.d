@@ -9,12 +9,13 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module util.file;
+import std.path:asNormalizedPath;
 import std.stdio;
 import util.conv:to;
-import std.path;
-import std.array:array, join;
+import util.array:join, array;
 import std.file;
 import util.system;
+import util.path;
 import util.string;
 
 string getFileContent(string path, bool noCarriageReturn = true)
@@ -22,18 +23,23 @@ string getFileContent(string path, bool noCarriageReturn = true)
     path = sanitizePath(path);
     if(!exists(path))
         return "";
-    string content = readText(path);
+    File f = File(path);
+    char[] buffer;
+    buffer.length = f.size();
+    f.rawRead(buffer);
+
+    string content = cast(string)buffer;
     return (noCarriageReturn) ? content.replaceAll('\r') : content;
 }
 
 string replaceFileName(string path, string newFileName)
 {
-    string[] p = pathSplitter(path).array;
+    string[] p = pathSplitter(path);
     p[$-1] = newFileName;
     return p.join("/").asNormalizedPath.array;
 }
 
-string getFileNameFromPath(string path){return pathSplitter(path).array[$-1];}
+string getFileNameFromPath(string path){return pathSplitter(path)[$-1];}
 
 string stripLineBreaks(string content)
 {
@@ -42,11 +48,11 @@ string stripLineBreaks(string content)
     return content;
 }
 
-string getFileContentFromBasePath(string path, string basePath, bool noCarriageReturn = true)
-{
-    string finalPath = relativePath(sanitizePath(path), sanitizePath(basePath));
-    return getFileContent(finalPath, noCarriageReturn);
-}
+// string getFileContentFromBasePath(string path, string basePath, bool noCarriageReturn = true)
+// {
+//     string finalPath = relativePath(sanitizePath(path), sanitizePath(basePath));
+//     return getFileContent(finalPath, noCarriageReturn);
+// }
 string joinPath(string[] paths ...){return joinPath(paths);}
 string joinPath(string[] paths)
 {

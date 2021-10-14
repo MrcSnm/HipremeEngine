@@ -31,7 +31,7 @@ else
         {
             import core.stdc.stdlib:exit;
             rawlog("Dub error: ", dubObj);
-            exit(1);
+            exit(1); 
         }
         else
         {

@@ -123,6 +123,30 @@ pragma(inline, true)
 bool isEmpty(T)(ref T[] arr){return arr.length == 0;}
 
 
+import std.traits:ForeachType;
+ForeachType!(T)[] array(T)(T range)
+{
+    typeof(return) ret;
+    foreach(r;range)
+        ret~= r;
+    return ret;
+}
+
+string join(T)(T[] arr, string separator = "")
+{
+    import util.conv;
+    string ret;
+    if(arr.length == 0) return "";
+
+    ret = toString(arr[0]);
+    for(int i = 1; i < arr.length; i++)
+    {
+        ret~= separator;
+        ret~= arr[i];
+    }
+    return ret;
+}
+
 
 void printArrayWithoutValues(T)(const T[] arr, T[] ignoreValues...)
 {
