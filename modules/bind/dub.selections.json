@@ -9,6 +9,7 @@
 		"console": {"path":"../console"},
 		"debugging": {"path":"../debugging"},
 		"error": {"path":"../error"},
+		"fswatch": "0.6.0",
 		"jni": {"path":"../jni"},
 		"sdl_sound": {"path":"../../dependencies/sdl_sound"},
 		"util": {"path":"../util"}

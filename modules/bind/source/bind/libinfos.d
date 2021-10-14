@@ -15,25 +15,27 @@ import console.log;
 import core.stdc.string:strlen;
 import std.string:fromStringz;
 
-void list_audio_devices(const ALCchar *devices)
+string get_audio_devices_list(const ALCchar *devices)
 {
+    string ret;
 	const(char)* device = devices;
 	const(char)* next = devices + 1;
 	size_t len = 0;
 
-	rawlog("Devices list:\n");
-	rawlog("----------\n");
+	ret~= "Devices list:\n";
+	ret~= "----------\n";
 	while (device && *device != '\0' && next && *next != '\0') 
 	{
-		rawlog!"%s\n"(device.fromStringz);
+        ret~= device.fromStringz~"\n";
 		len = strlen(device);
 		device += (len + 1);
 		next += (len + 2);
 	}
-	rawlog("----------\n");
+	ret~= "----------\n";
+    return ret;
 }
 
-void show_sdl_sound_info()
+string get_sdl_sound_info()
 {
     import sdl_sound;
     string toPrint = "SDL2_Sound Available Decoders:\n";
@@ -50,25 +52,25 @@ void show_sdl_sound_info()
         toPrint~="\n";
         info++;
     }
-    rawlog(toPrint);
+    return toPrint;
 }
 
-void show_opengl_info()
+string show_opengl_info()
 {
+    string ret;
 	version(Android){}
 	else{
 		if(!isOpenGLLoaded())
 		{
-			rawlog("OpenGL is not loaded for being able to show info!");
-			return;
+			return "OpenGL is not loaded for being able to show info!";
 		}
 	}
-	rawlog!`OpenGL Infos:
-    Vendor:   %s
-    Renderer: %s
-    Version:  %s`(fromStringz(glGetString(GL_VENDOR)),
-    fromStringz(glGetString(GL_RENDERER)),
-    fromStringz(glGetString(GL_VERSION)));
+	ret~= "OpenGL Infos:
+    Vendor:   "     ~fromStringz(glGetString(GL_VENDOR))~
+    "\n\tRenderer: "~fromStringz(glGetString(GL_RENDERER))~
+    "\n\tVersion:  "~fromStringz(glGetString(GL_VERSION));
+
+    return ret;
 }
 
 
