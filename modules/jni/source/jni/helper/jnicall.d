@@ -1,5 +1,5 @@
 module jni.helper.jnicall;
-import std.conv:to;
+import util.conv:to;
 import std.format:format;
 import std.ascii:toUpper;
 import std.string:toStringz;

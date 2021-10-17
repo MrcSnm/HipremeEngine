@@ -13,7 +13,7 @@ import graphics.g2d;
 import graphics.mesh;
 import util.data_structures;
 import std.algorithm.comparison : max;
-import std.conv:to;
+import util.conv:to;
 import error.handler;
 import console.log;
 import math.matrix;
@@ -118,7 +118,7 @@ class HipBitmapFont
         format = "page id=%d file=\"%[^\"]%512s\n";
         fscanf(f, format.ptr, &pageId, file.ptr);
 
-        atlasTexturePath = to!string(file)[0..strlen(file.ptr)];
+        atlasTexturePath = (cast(string)file)[0..strlen(file.ptr)];
         //Count
         fscanf(f, "chars count=%d\n", &count);
 

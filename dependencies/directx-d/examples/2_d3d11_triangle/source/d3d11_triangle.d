@@ -41,7 +41,7 @@ bool _FAILED(HRESULT res, string f = __PRETTY_FUNCTION__, uint l = __LINE__)
     import std.conv:to;
     bool ret = FAILED(res);
     if(ret)
-        writeln("Fodeu at " ~ f ~ ":" ~ to!string(l));
+        writeln(f ~ ":" ~ to!string(l));
     return ret;
 }
 

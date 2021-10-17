@@ -13,62 +13,64 @@ import bindbc.openal;
 import bindbc.opengl;
 import console.log;
 import core.stdc.string:strlen;
-import std.conv:to;
+import std.string:fromStringz;
 
-void list_audio_devices(const ALCchar *devices)
+string get_audio_devices_list(const ALCchar *devices)
 {
+    string ret;
 	const(char)* device = devices;
 	const(char)* next = devices + 1;
 	size_t len = 0;
 
-	rawlog("Devices list:\n");
-	rawlog("----------\n");
+	ret~= "Devices list:\n";
+	ret~= "----------\n";
 	while (device && *device != '\0' && next && *next != '\0') 
 	{
-		rawlog!"%s\n"(to!string(device));
+        ret~= device.fromStringz~"\n";
 		len = strlen(device);
 		device += (len + 1);
 		next += (len + 2);
 	}
-	rawlog("----------\n");
+	ret~= "----------\n";
+    return ret;
 }
 
-void show_sdl_sound_info()
+string get_sdl_sound_info()
 {
     import sdl_sound;
     string toPrint = "SDL2_Sound Available Decoders:\n";
     Sound_DecoderInfo** info = cast(Sound_DecoderInfo**)Sound_AvailableDecoders();
     while(*info != null)
     {
-        toPrint~="\n\t"~to!string((*info).description);
-        toPrint~="\n\tURL:"~to!string((*info).url);
+        toPrint~="\n\t"~fromStringz((*info).description);
+        toPrint~="\n\tURL:"~fromStringz((*info).url);
         toPrint~="\n\tExtensions: ";
         for(int i = 0; (*info).extensions[i] != null; i++)
         {
-            toPrint~= to!string((*info).extensions[i]) ~" ";
+            toPrint~= fromStringz((*info).extensions[i]) ~" ";
         }
         toPrint~="\n";
         info++;
     }
-    rawlog(toPrint);
+    return toPrint;
 }
 
-void show_opengl_info()
+string show_opengl_info()
 {
+    string ret;
 	version(Android){}
 	else{
 		if(!isOpenGLLoaded())
 		{
-			rawlog("OpenGL is not loaded for being able to show info!");
-			return;
+			return "OpenGL is not loaded for being able to show info!";
 		}
 	}
-	rawlog!`OpenGL Infos:
-    Vendor:   %s
-    Renderer: %s
-    Version:  %s`(to!string(glGetString(GL_VENDOR)),
-    to!string(glGetString(GL_RENDERER)),
-    to!string(glGetString(GL_VERSION)));
+	ret~= "OpenGL Infos:
+    Vendor:   "     ~fromStringz(glGetString(GL_VENDOR))~
+    "\n\tRenderer: "~fromStringz(glGetString(GL_RENDERER))~
+    "\n\tVersion:  "~fromStringz(glGetString(GL_VERSION));
+
+    return ret;
 }
 
 

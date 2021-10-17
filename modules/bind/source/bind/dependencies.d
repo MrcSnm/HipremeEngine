@@ -30,7 +30,7 @@ private void showDLLMissingError(string dllName)
 
 private bool loadSDLDependencies()
 {
-    import std.conv:to;
+    import util.conv:to;
 
     SDLSupport ret = loadSDL();
     import console.log;
