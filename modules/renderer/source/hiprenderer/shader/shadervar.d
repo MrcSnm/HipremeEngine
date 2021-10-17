@@ -402,8 +402,8 @@ class ShaderVariablesLayout
 
 private bool isShaderVarNameValid(ref string varName)
 {
-    import std.algorithm : countUntil;
+    import util.string : indexOf;
     
     return varName.length > 0 && 
-    varName.countUntil(" ") == -1;
+    varName.indexOf(" ") == -1;
 }

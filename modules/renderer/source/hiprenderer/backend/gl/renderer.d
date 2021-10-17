@@ -15,6 +15,7 @@ import hiprenderer.shader;
 import hiprenderer.backend.gl.framebuffer;
 import hiprenderer.backend.gl.shader;
 import hiprenderer.viewport;
+import util.conv;
 import math.rect;
 import error.handler;
 import bindbc.sdl;
@@ -153,43 +154,42 @@ class Hip_GL3Renderer : IHipRendererImpl
     }
     public bool hasErrorOccurred(out string err, string file = __FILE__, int line =__LINE__)
     {
-        import std.format:format;
         GLenum errorCode = glGetError();
         static enum GL_STACK_OVERFLOW = 0x0503;
         static enum GL_STACK_UNDERFLOW = 0x0504;
         switch(errorCode)
         {
             case GL_NO_ERROR:
-                err = format!`GL_NO_ERROR at %s:%s:
-    No error has been recorded. The value of this symbolic constant is guaranteed to be 0.`(file, line);
+                err = `GL_NO_ERROR at `~file~":"~to!string(line)~`:
+    No error has been recorded. The value of this symbolic constant is guaranteed to be 0.`;
                     break;
             case GL_INVALID_ENUM:
-                err = format!`GL_INVALID_ENUM at %s:%s:
-    An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag.`(file, line);
+                err = `GL_INVALID_ENUM at `~file~":"~to!string(line)~`:
+    An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag.`;
                 break;
             case GL_INVALID_VALUE:
-                err = format!`GL_INVALID_VALUE at %s:%s:
-    A numeric argument is out of range. The offending command is ignored and has no other side effect than to set the error flag.`(file, line);
+                err = `GL_INVALID_VALUE at `~file~":"~to!string(line)~`:
+    A numeric argument is out of range. The offending command is ignored and has no other side effect than to set the error flag.`;
                 break;
             case GL_INVALID_OPERATION:
-                err = format!`GL_INVALID_OPERATION at %s:%s:
-    The specified operation is not allowed in the current state. The offending command is ignored and has no other side effect than to set the error flag.`(file, line);
+                err = `GL_INVALID_OPERATION at `~file~":"~to!string(line)~`:
+    The specified operation is not allowed in the current state. The offending command is ignored and has no other side effect than to set the error flag.`;
                 break;
             case GL_INVALID_FRAMEBUFFER_OPERATION:
-                err = format!`GL_INVALID_FRAMEBUFFER_OPERATION at %s:%s:
-    The framebuffer object is not complete. The offending command is ignored and has no other side effect than to set the error flag.`(file, line);
+                err = `GL_INVALID_FRAMEBUFFER_OPERATION at `~file~":"~to!string(line)~`:
+    The framebuffer object is not complete. The offending command is ignored and has no other side effect than to set the error flag.`;
                 break;
             case GL_OUT_OF_MEMORY:
-                err = format!`GL_OUT_OF_MEMORY at %s:%s:
-    There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded.`(file, line);
+                err = `GL_OUT_OF_MEMORY at `~file~":"~to!string(line)~`:
+    There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded.`;
                 break;
             case GL_STACK_UNDERFLOW:
-                err = format!`GL_STACK_UNDERFLOW at %s:%s:
-    An attempt has been made to perform an operation that would cause an internal stack to underflow.`(file, line);
+                err = `GL_STACK_UNDERFLOW at `~file~":"~to!string(line)~`:
+    An attempt has been made to perform an operation that would cause an internal stack to underflow.`;
                 break;
             case GL_STACK_OVERFLOW:
-                err = format!`GL_STACK_OVERFLOW at %s:%s:
-    An attempt has been made to perform an operation that would cause an internal stack to overflow.`(file, line);
+                err = `GL_STACK_OVERFLOW at `~file~":"~to!string(line)~`:
+    An attempt has been made to perform an operation that would cause an internal stack to overflow.`;
                 break;
             default:
                 err = "Unknown error code";
