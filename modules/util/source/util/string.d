@@ -190,6 +190,21 @@ const(char*) toStringz(string str) pure nothrow
 {
     return (str~"\0").ptr;
 }
+char toLowerCase(char c) pure nothrow @safe
+{
+    if(c < 'A' || c > 'Z')
+        return c;
+    return cast(char)(c + ('a' - 'A'));
+}
+
+string toLowerCase(string str)
+{
+    string ret;
+    ret.reserve(str.length);
+    for(ulong i = 0; i < str.length; i++)
+        ret~= str[i].toLowerCase;
+    return ret;
+}
 
 string[] split(string str, char separator) pure nothrow
 {
