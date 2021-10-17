@@ -18,6 +18,7 @@ import hiprenderer.backend.gl.shader;
 import hiprenderer.shader;
 import hiprenderer.renderer;
 import util.file;
+import util.string:split;
 
 enum ShaderStatus
 {
@@ -236,7 +237,6 @@ public class Shader
 
     protected ShaderVar* findByName(string name)
     {
-        import std.array : split;
         string[] names = name.split(".");
         bool isDefault = names[0] == "";
 

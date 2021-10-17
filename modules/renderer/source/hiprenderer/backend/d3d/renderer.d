@@ -19,7 +19,7 @@ pragma(lib, "dxgi");
 
 import core.stdc.string;
 import core.sys.windows.windows;
-import std.string:fromStringz;
+import util.string:fromStringz;
 
 import directx.d3d11;
 import directx.d3d11_3;
@@ -357,7 +357,6 @@ class Hip_D3D11_Renderer : IHipRendererImpl
             len = dxgiQueue.GetNumStoredMessages(DXGI_DEBUG_DX);
             i < len; i++)
             {
-                import std.stdio;
                 import core.stdc.stdlib;
                 dxgiQueue.GetMessage(DXGI_DEBUG_DX, i, null, &msgSize);
                 msg = cast(DXGI_INFO_QUEUE_MESSAGE*)malloc(msgSize);

@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hiprenderer.backend.d3d.vertex;
 
 version(Windows):
-import std.format;
+import util.string:toStringz;
 import core.stdc.string;
 import util.conv:to;
 import error.handler;
@@ -74,7 +74,10 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
     }
     void updateData(int offset, ulong size, const void* data)
     {
-        ErrorHandler.assertExit(size+offset <= this.size, format!"Tried to set data with size %s and offset %s for vertex buffer with size %s"(size, offset, this.size));
+        
+        ErrorHandler.assertExit(size+offset <= this.size,
+        "Tried to set data with size "~to!string(size)~" and offset "~to!string(offset)~
+        "for vertex buffer with size "~to!string(this.size));
         D3D11_MAPPED_SUBRESOURCE resource;
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
         memcpy(resource.pData+offset, data, size);
@@ -139,7 +142,9 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
     }
     void updateData(int offset, index_t count, const index_t* data)
     {
-        ErrorHandler.assertExit(count*index_t.sizeof+offset <= this.size, format!"Tried to set data with size %s and offset %s for vertex buffer with size %s"(count*index_t.sizeof, offset, this.size));
+        ErrorHandler.assertExit(count*index_t.sizeof+offset <= this.size, 
+        "Tried to set data with size "~to!string(count*index_t.sizeof)~" and offset "~to!string(offset)~
+        "for vertex buffer with size "~to!string(this.size));
         D3D11_MAPPED_SUBRESOURCE resource;
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
         memcpy(resource.pData+offset, data, count*index_t.sizeof);
@@ -177,7 +182,6 @@ class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
     }
     void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride)
     {
-        import std.string:toStringz;
         this.stride = stride;
         D3D11_INPUT_ELEMENT_DESC desc;
         desc.SemanticName = info.name.toStringz;

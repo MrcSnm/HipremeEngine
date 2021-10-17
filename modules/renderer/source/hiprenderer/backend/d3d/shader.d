@@ -70,21 +70,17 @@ class Hip_D3D11_FragmentShader : FragmentShader
     override final string getSpriteBatchFragment()
     {
         int sup = HipRenderer.getMaxSupportedShaderTextures();
-        import std.format:format;
         string textureSlotSwitchCase = "switch(tid)\n{\n"; //Switch textureID
         for(int i = 1; i < sup; i++)
         {
             textureSlotSwitchCase~= "case "~ to!string(i)~": "~
-            format!q{   return uTex1[%s].Sample(state[%s], texST) * inVertexColor * uBatchColor;
-            }(i,i);
+            "return uTex1["~to!string(i)~"].Sample(state["~to!string(i)~"], texST) * inVexterColor * uBatchColor";
         }
         textureSlotSwitchCase~= "\ndefault:\n\treturn uTex1[0].Sample(state[0], texST) * inVertexColor * uBatchColor;";
         textureSlotSwitchCase~= "}";
 
-        return format!q{
-
-            Texture2D uTex1[%s];
-            SamplerState state[%s];
+        return "Texture2D uTex1["~to!string(sup)~"];
+        SamplerState state["~to!string(sup)~q{
 
             cbuffer input
             {
@@ -92,16 +88,15 @@ class Hip_D3D11_FragmentShader : FragmentShader
             };
 
             float4 main(float4 inVertexColor : inColor, float2 texST : inTexST, float inTexID : inTexID) : SV_TARGET
-            {
+        }~"{"~
+        q{
                 // return uBatchColor * uTex1.Sample(state, inTexST);
                 int tid = int(inTexID);
 
                 //switch(tid)...
                 //case 1:
                     //return uTex1[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
-                %s
-            }
-        }(sup,sup, textureSlotSwitchCase);
+        } ~ textureSlotSwitchCase ~ "}";
     }
     override final string getBitmapTextFragment()
     {
