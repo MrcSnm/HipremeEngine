@@ -11,6 +11,102 @@ Distributed under the CC BY-4.0 License.
 module util.string;
 public import util.conv:to;
 
+
+struct String
+{
+    import core.stdc.string;
+    import core.stdc.stdlib;
+    char* chars;
+    uint length;
+
+    static auto opCall(const(char)* str)
+    {
+        String s;
+        uint l = cast(uint)strlen(str);
+        s.chars = cast(char*)malloc(l);
+        memcpy(s.chars, str, l);
+        s.length = l;
+        return s;
+    }
+
+    auto opOpAssign(string op, T)(T value)
+    {
+        static if(op == "~")
+        {
+            uint l = 0;
+            immutable (char)* chs;
+            static if(is(T == String))
+            {
+                l = value.length;
+                chs = cast(char*)value.chars;
+            }
+            else static if (is(T == string))
+            {
+                l = cast(uint)value.length;
+                chs = value.ptr;
+            }
+            else static if(is(T == immutable(char)*))
+            {
+                l+= cast(uint)strlen(value);
+                chs = value;
+            }
+            free(chars);
+            chars = cast(char*)realloc(chars, l);
+            memcpy(chars+length, chs, l);
+            length+= l;
+        }
+        return this;
+    }
+
+    auto opAssign(T)(T value)
+    {
+        static if(is(T == String))
+        {
+            if(value.length > length && chars != null)
+                free(chars);
+
+            chars = cast(char*)malloc(value.length);
+            memcpy(chars, value.chars, value.length);
+            length = value.length;
+        }
+        else static if(is(T == string))
+        {
+            if(value.length > length && chars != null)
+                free(chars);
+            uint l = cast(uint)value.length;
+            chars = cast(char*)malloc(l);
+            memcpy(chars, value.ptr, l);
+            length = l;
+        }
+        else static if(is(T == immutable(char)*))
+        {
+            uint l = cast(uint)strlen(value);
+            if(l > length && chars != null)
+                free(chars);
+            chars = cast(char*)malloc(l);
+            memcpy(chars, value, l);
+            length = l;
+        }
+        else static assert(0, "String can only assigned to String or string");
+        return this;
+    }
+
+    T opCast(T)() const
+    {
+        static assert(is(T == string), "String can only be casted to string");
+        return cast(string)chars[0..length];
+    }
+    char[] toString() const {return cast(char[])chars[0..length];}
+
+    ~this()
+    {
+        if(chars != null)
+            free(chars);
+    }
+
+}
+
+
 pure string replaceAll(string str, char what, string replaceWith = "")
 {
     string ret;
@@ -55,10 +151,10 @@ pure long indexOf(in string str,in string toFind, int startIndex = 0)
     return -1;
 }
 
-pure long lastIndexOf(in string str,in string toFind, long startIndex = -1)
+long lastIndexOf(in string str,in string toFind, long startIndex = -1) pure nothrow
 {
     long z = 1;
-    if(startIndex == -1) startIndex = str.length-1;
+    if(startIndex == -1) startIndex = cast(int)(str.length)-1;
     for(long i = startIndex; i >= 0; i--)
     {
         while(str[i-z+1] == toFind[$-z])
@@ -95,7 +191,13 @@ const(char*) toStringz(string str) pure nothrow
     return (str~"\0").ptr;
 }
 
-string[] split(string str, string separator)
+string[] split(string str, char separator) pure nothrow
+{
+    char[1] sep = [separator];
+    return split(str, cast(string)sep);
+}
+
+string[] split(string str, string separator) pure nothrow
 {
     string[] ret;
     string curr;
@@ -167,12 +269,4 @@ unittest
     assert(lastIndexOf("hello, hello", "hello") == 7);
     assert(indexOf("hello, hello", "hello") == 0);
     assert(replaceAll("\nTest\n", '\n') == "Test");
-}
-
-static foreach(mem; __traits(allMembers, util.string))
-{
-    // static if(__traits(getOverloads, util.string, mem).length > 0)
-    static foreach(i, overload; __traits(getOverloads, util.string, mem))
-        pragma(msg, overload.mangleof);
-        // pragma(msg, mem);
 }

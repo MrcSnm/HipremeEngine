@@ -1,8 +1,9 @@
 module data.audio.audio;
 import data.audio.audioconfig;
-import std.format;
 import bindbc.sdl;
 import sdl_sound;
+import util.string;
+import util.conv;
 import error.handler;
 import audioformats;
 import dplug.core;
@@ -140,7 +141,7 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
         ErrorHandler.assertExit(sample != null, "SDL_Sound could not create a sample from memory.");
         if(Sound_SetBufferSize(sample, chunkSize) == 0)
             ErrorHandler.showErrorMessage("SDL_Sound decoding error",
-            format!"Could not set sample with chunk size %s"(chunkSize));
+            "Could not set sample with chunk size "~to!string(chunkSize));
 
         import math.utils:getClosestMultiple;
         uint decodeSize = Sound_Decode(sample);
@@ -161,12 +162,12 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
             decodedTotal+= ret;
             duration+= ret;
             ErrorHandler.assertExit(decodedTotal <= chunkSize, "SDL_Sound decoding error", 
-            format!"Chunk size %s is invalid for decoding step %s"(chunkSize, ret));
+            "Chunk size "~ to!string(chunkSize) ~ "is invalid for decoding step "~ to!string(ret));
 
         }
         if(sample.flags & Sound_SampleFlags.SOUND_SAMPLEFLAG_ERROR)
             ErrorHandler.showErrorMessage("SDL_Sound decoding error",
-            format!"Error decoding sample.\nReason: %s"(Sound_GetError()));
+            "Error decoding sample.\nReason: "~ Sound_GetError().fromStringz);
         return decodedTotal;
     }
     float getDuration()

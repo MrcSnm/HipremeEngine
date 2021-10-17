@@ -12,9 +12,10 @@ module data.hipfs;
 import error.handler;
 import util.file:joinPath;
 import std.stdio : File;
-import std.string:lastIndexOf, toStringz, representation;
+import util.string;
+import util.array:lastIndexOf;
 import std.utf:toUTF16z;
-import std.array:split;
+import util.string:split;
 import util.system;
 static import std.file;
 ///Less dependencies
@@ -216,7 +217,10 @@ class HipStdFileSystemInteraction : IHipFileSystemInteraction
     {
         if(ErrorHandler.assertErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
             return false;
-        output = std.file.read(path);
+
+        auto f = File(path);
+        output.length = f.size;
+        f.rawRead(output);
         return true;
     }
     bool write(string path, void[] data){std.file.write(path, data);return true;}

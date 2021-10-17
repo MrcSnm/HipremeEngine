@@ -12,9 +12,9 @@ module data.assetpacker;
 import console.log;
 import util.string;
 import util.file;
-import std.algorithm : countUntil, map, min, sort;
+import core.stdc.stdlib:qsort;
 import core.stdc.stdio;
-import std.array : split, array;
+import util.array;
 import util.conv:to;
 import core.stdc.string;
 import std.stdio : File;
@@ -40,6 +40,13 @@ struct HapChunk
     ubyte[] bin;
 
     alias bin this;
+}
+
+private extern(C) int sortChunk(const(void*) a, const(void*) b)
+{
+    long startPosA = (cast(HapChunk*)a).startPosition;
+    long startPosB = (cast(HapChunk*)b).startPosition;
+    return cast(int)(startPosA - startPosB);
 }
 
 class HapFile
@@ -128,7 +135,9 @@ bool writeAssetPack(string outputFileName, string[] assetPaths, string basePath 
 
         if(exists(path))
         {
-            void[] fileData = read(path);
+            auto _f = File(path);
+            void[] fileData = new void[](_f.size);
+            _f.rawRead(fileData);
             dataLength+= fileData.length;
             plainData.length = dataLength;
             toAppend~= path~", "~to!string(dataLength-fileData.length)~"\n";
@@ -224,7 +233,10 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
     string[] toAppend;
     HapChunk[] chunks = getHapChunks(hapData, headerStart);
 
-    string[] fileNames = chunks.map!"a.fileName".array();
+
+    string[] fileNames;
+    foreach(a; chunks) 
+        fileNames~= a.fileName;
 
     ulong lowestStartPosition = ulong.max;
 
@@ -238,18 +250,20 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
             rawlog("File '"~path~"' does not exists");
             continue;
         }
-        long pathIndex = countUntil(fileNames, path);
+        long pathIndex = indexOf(fileNames, path);
         if(pathIndex != -1)
         {
             HapChunk* f = &chunks[pathIndex];
-            lowestStartPosition = min(lowestStartPosition, f.startPosition);
+            if(f.startPosition < lowestStartPosition)
+                lowestStartPosition = f.startPosition;
             ubyte[] fileData = cast(ubyte[])read(path);
             f.bin = fileData;
         }
         else
             toAppend~= path;
     }
-    chunks = chunks.sort!"a.startPosition < b.startPosition".array();
+
+    qsort(cast(void*)chunks.ptr, chunks.length, chunks[0].sizeof, &sortChunk);
 
     target.seek(lowestStartPosition);
 
@@ -258,7 +272,7 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
     {
         if(chunks[i].startPosition >= lowestStartPosition)
         {
-            rawlog("Updating "~chunks[i].fileName);
+            //rawlog("Updating "~chunks[i].fileName);
             target.rawWrite(chunks[i].bin);
             chunks[i].startPosition = nextStartPosition;
             nextStartPosition+= chunks[i].bin.length;
