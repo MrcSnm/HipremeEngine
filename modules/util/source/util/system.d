@@ -12,6 +12,7 @@ module util.system;
 import util.conv;
 import core.stdc.string;
 import util.string:fromStringz;
+import util.path:pathSeparator;
 
 version(Standalone){}
 else{public import fswatch;}
@@ -53,12 +54,7 @@ string buildPath(string[] args...)
         return null;
     string ret;
     for(int i = 0; i < cast(int)args.length-1; i++)
-    {
-        version(Windows)
-            ret~= args[i]~'\\';
-        else
-        	ret~= args[i]~'/';
-    }
+        ret~= args[i]~pathSeparator;
     return ret~args[$-1];
 }
 

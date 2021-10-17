@@ -29,9 +29,9 @@ else version(Posix)
     enum defaultCaseSensitivity = true;
 
 version(Windows)
-    enum pathSep = '\\';
+    enum pathSeparator = '\\';
 else
-    enum pathSep = '/';
+    enum pathSeparator = '/';
 
 string relativePath(string path, string base, bool caseSensitive = defaultCaseSensitivity) pure nothrow
 {
@@ -47,7 +47,7 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
                 isEqual = false;
                 break;
             }
-           	else if(base[i] == pathSep)
+           	else if(base[i] == pathSeparator)
             	commonIndex = cast(int)i;
         }
     }
@@ -60,7 +60,7 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
                 isEqual = false;
                 break;
             }
-           	else if(base[i] == pathSep)
+           	else if(base[i] == pathSeparator)
             	commonIndex = cast(int)i;
         }
     }
@@ -69,7 +69,7 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
     else if(isEqual)
     {
         ret = path[base.length..$];
-        if(ret[0] == pathSep)
+        if(ret[0] == pathSeparator)
             return ret[1..$];
        	return ret;
     }
@@ -82,13 +82,13 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
         
     for(ulong i = commonIndex; i < base.length; i++)
     {
-        if(base[i] == pathSep)
+        if(base[i] == pathSeparator)
         {
             pathCount++;
-            ret~= ".."~pathSep;
+            ret~= ".."~pathSeparator;
         }
     }
-    ret~= path[0] == pathSep ? path[commonIndex+1..$] : path[commonIndex..$];	
+    ret~= path[0] == pathSeparator ? path[commonIndex+1..$] : path[commonIndex..$];	
     return ret;
 }
 
