@@ -2,7 +2,6 @@ module hipaudio.backend.sles;
 import error.handler;
 import console.log;
 import util.conv:to;
-import std.format:format;
 import core.atomic;
 import std.algorithm:count;
 import opensles.sles;
@@ -45,7 +44,7 @@ struct SLIEngine
         {
             if(sliCall((*engineCapabilities).QueryAPIVersion(engineCapabilities, &engineMajor, &engineMinor, &enginePatch),
             "Could not query OpenSLES version"))
-                rawlog(format!"OpenSL Version: %s.%s.%s"(engineMajor, engineMinor, enginePatch));
+                rawlog("OpenSL Version: "~to!string(engineMajor)~"."~to!string(engineMinor)~"."~to!string(enginePatch));
             else if(sliErrorMessages.length == 1)
                 sliClearErrors();
         }
@@ -126,7 +125,7 @@ bool sliError(SLresult res, lazy string errMessage, string file = __FILE__, stri
     if(res != SL_RESULT_SUCCESS)
     {
         sliErrorQueue~= res;
-        rawerror(format!("'OpenSL ES' Error: '%s' at file %s:%s at %s\n\t%s")(sliGetError(res), file, line, func, errMessage));
+        rawerror("'OpenSL ES' Error: '"~sliGetError(res)~"' at file "~file~":"~to!string(line)~ " at "~func~"\n\t"~errMessage);
     }
     return res != SL_RESULT_SUCCESS;
 }
