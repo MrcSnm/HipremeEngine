@@ -69,7 +69,7 @@ struct Array(T)
 
     string toString()
     {
-        import std.conv:to;
+        import util.conv:to;
         string ret="[";
         for(int i = 0; i < length; i++)
         {

@@ -8,30 +8,31 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module math.random;
-static import std.random;
+module modules.math.temp.random;
+import std.random;
 
-public static class Random
+class Random
 {
     private static std.random.Random randomGenerator;
     static this()
     {
         randomGenerator = std.random.Random(std.random.unpredictableSeed());
     }
+    static float rangef(float min, float max)
+    {
+        return std.random.uniform(cast(int)min, cast(int)max, randomGenerator);
+    }
     static int range(int min, int max)
     {
-        return std.random.uniform(min, max, randomGenerator);
+        return cast(int)rangef(min, max);
     }
     static uint rangeu(uint min, uint max)
     {
-        return std.random.uniform(min, max, randomGenerator);
+        return cast(uint)rangef(min, max);
     }
     static ubyte rangeub(ubyte min, ubyte max)
     {
-        return std.random.uniform(min, max, randomGenerator);
+        return cast(ubyte)rangef(min, max);
     }
-    static float rangef(float min, float max)
-    {
-        return std.random.uniform(min, max, randomGenerator);
-    }
+    
 }

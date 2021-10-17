@@ -12,7 +12,7 @@ module hiprenderer.shader.shadervar;
 import hiprenderer.shader.shader;
 import hiprenderer.renderer;
 import error.handler;
-import std.conv:to;
+import util.conv:to;
 import math.matrix;
 
 enum ShaderHint : uint
@@ -402,8 +402,8 @@ class ShaderVariablesLayout
 
 private bool isShaderVarNameValid(ref string varName)
 {
-    import std.algorithm : countUntil;
+    import util.string : indexOf;
     
     return varName.length > 0 && 
-    varName.countUntil(" ") == -1;
+    varName.indexOf(" ") == -1;
 }

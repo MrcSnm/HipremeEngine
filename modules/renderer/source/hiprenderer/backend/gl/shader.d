@@ -13,8 +13,7 @@ import hiprenderer.backend.gl.renderer;
 import hiprenderer.shader;
 import hiprenderer.renderer;
 import hiprenderer.shader.shadervar;
-import std.conv:to;
-import std.format:format;
+import util.conv;
 import error.handler;
 
 version(Android)
@@ -34,9 +33,8 @@ class Hip_GL3_FragmentShader : FragmentShader
     uint shader;
     override final string getDefaultFragment()
     {
-        return format!q{
-            %s
-            %s
+        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+            
             uniform vec4 globalColor;
             in vec4 vertexColor;
             in vec2 tex_uv;
@@ -47,13 +45,12 @@ class Hip_GL3_FragmentShader : FragmentShader
             {
                 outPixelColor = vertexColor*globalColor*texture(tex1, tex_uv);
             }
-        }(shaderVersion, floatPrecision);
+        };
     }
     override final string getFrameBufferFragment()
     {
-        return format!q{
-            %s
-            %s
+        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+            
 
             in vec2 inTexST;
             uniform sampler2D uBufferTexture;
@@ -66,16 +63,15 @@ class Hip_GL3_FragmentShader : FragmentShader
                 float grey = (col.r+col.g+col.b)/3.0;
                 outPixelColor = grey * uColor;
             }
-        }(shaderVersion, floatPrecision);
+        };
     }
     override final string getSpriteBatchFragment()
     {
-        return format!q{
-            %s
-            %s
+        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+            
+            uniform sampler2D uTex1[}~to!string(HipRenderer.getMaxSupportedShaderTextures())~q{];
 
             uniform vec4 uBatchColor;
-            uniform sampler2D uTex1[%s];
 
             in vec4 inVertexColor;
             in vec2 inTexST;
@@ -88,14 +84,13 @@ class Hip_GL3_FragmentShader : FragmentShader
                 outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
                 // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
             }
-        }(shaderVersion, floatPrecision, HipRenderer.getMaxSupportedShaderTextures());
+        };
     }
 
     override final string getGeometryBatchFragment()
     {
-        return format!q{
-            %s
-            %s
+        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+            
 
             uniform vec4 uGlobalColor;
             in vec4 inVertexColor;
@@ -105,14 +100,13 @@ class Hip_GL3_FragmentShader : FragmentShader
             {
                 outPixelColor = inVertexColor * uGlobalColor;
             }
-        }(shaderVersion, floatPrecision);
+        };
     }
 
     override final string getBitmapTextFragment()
     {
-        return format!q{
-            %s
-            %s
+        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+            
 
             uniform vec4 uColor;
             uniform sampler2D uTex;
@@ -123,7 +117,7 @@ class Hip_GL3_FragmentShader : FragmentShader
             {
                 outPixelColor = texture(uTex, inTexST)*uColor;
             }
-        }(shaderVersion, floatPrecision);
+        };
     }
 }
 class Hip_GL3_VertexShader : VertexShader
@@ -132,9 +126,8 @@ class Hip_GL3_VertexShader : VertexShader
 
     override final string getDefaultVertex()
     {
-        return format!q{
-            %s
-            %s
+        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+            
             layout (location = 0) in vec3 position;
             layout (location = 1) in vec4 color;
             layout (location = 2) in vec2 texCoord;
@@ -150,13 +143,12 @@ class Hip_GL3_VertexShader : VertexShader
                 vertexColor = color;
                 tex_uv = texCoord;
             }
-        }(shaderVersion, floatPrecision);
+        };
     }
     override final string getFrameBufferVertex()
     {
-        return format!q{
-            %s
-            %s
+        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+            
             layout (location = 0) in vec2 vPosition;
             layout (location = 1) in vec2 vTexST;
 
@@ -167,13 +159,12 @@ class Hip_GL3_VertexShader : VertexShader
                 gl_Position = vec4(vPosition, 0.0, 1.0);
                 inTexST = vTexST;
             }
-        }(shaderVersion, floatPrecision);
+        };
     }
     override final string getSpriteBatchVertex()
     {
-        return format!q{
-            %s
-            %s
+        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+            
             layout (location = 0) in vec3 vPosition;
             layout (location = 1) in vec4 vColor;
             layout (location = 2) in vec2 vTexST;
@@ -194,13 +185,12 @@ class Hip_GL3_VertexShader : VertexShader
                 inTexST = vTexST;
                 inTexID = vTexID;
             }
-        }(shaderVersion, floatPrecision);
+        };
     }
     override final string getGeometryBatchVertex()
     {
-        return format!q{
-            %s
-            %s
+        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+            
             layout (location = 0) in vec3 vPosition;
             layout (location = 1) in vec4 vColor;
 
@@ -215,14 +205,13 @@ class Hip_GL3_VertexShader : VertexShader
                 gl_Position = uProj*uView*uModel*vec4(vPosition, 1.0f);
                 inVertexColor = vColor;
             }
-        }(shaderVersion, floatPrecision);
+        };
     }
 
     override final string getBitmapTextVertex()
     {
-        return format!q{
-            %s
-            %s
+        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+            
             layout (location = 0) in vec2 vPos;
             layout (location = 1) in vec2 vTexST;
 
@@ -237,7 +226,7 @@ class Hip_GL3_VertexShader : VertexShader
                 gl_Position = uProj * uView * uModel * vec4(vPos, 1.0, 1.0);
                 inTexST = vTexST;
             }
-        }(shaderVersion, floatPrecision);
+        };
     }
 }
 class Hip_GL3_ShaderProgram : ShaderProgram{uint program;}
@@ -279,7 +268,7 @@ class Hip_GL3_ShaderImpl : IShader
         if(ErrorHandler.assertErrorMessage(success==true, "Shader compilation error", "Compilation failed"))
         {
             glGetShaderInfoLog(shaderID, 512, null, infoLog.ptr);
-            ErrorHandler.showErrorMessage("Compilation error:", to!string(infoLog));
+            ErrorHandler.showErrorMessage("Compilation error:", cast(string)(infoLog));
         }
         return success==true;
     }
@@ -308,7 +297,7 @@ class Hip_GL3_ShaderImpl : IShader
         if(ErrorHandler.assertErrorMessage(success==true, "Shader linking error", "Linking failed"))
         {
             glGetProgramInfoLog(prog, 512, null, infoLog.ptr);
-            ErrorHandler.showErrorMessage("Linking error: ", to!string(infoLog));
+            ErrorHandler.showErrorMessage("Linking error: ", cast(string)(infoLog));
         }
         
         return success==true;

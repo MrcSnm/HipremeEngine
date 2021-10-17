@@ -7,6 +7,10 @@
 		"debugInfo",
 		"debugInfoC"
 	],
+	"dependencies": 
+	{
+		"util" : {"path" : "../util"}
+	},
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "HipremeEngine JNI module",
 	"license": "proprietary",

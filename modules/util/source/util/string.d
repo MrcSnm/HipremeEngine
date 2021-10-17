@@ -9,7 +9,103 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module util.string;
-public import std.conv:to;
+public import util.conv:to;
+
+
+struct String
+{
+    import core.stdc.string;
+    import core.stdc.stdlib;
+    char* chars;
+    uint length;
+
+    static auto opCall(const(char)* str)
+    {
+        String s;
+        uint l = cast(uint)strlen(str);
+        s.chars = cast(char*)malloc(l);
+        memcpy(s.chars, str, l);
+        s.length = l;
+        return s;
+    }
+
+    auto opOpAssign(string op, T)(T value)
+    {
+        static if(op == "~")
+        {
+            uint l = 0;
+            immutable (char)* chs;
+            static if(is(T == String))
+            {
+                l = value.length;
+                chs = cast(char*)value.chars;
+            }
+            else static if (is(T == string))
+            {
+                l = cast(uint)value.length;
+                chs = value.ptr;
+            }
+            else static if(is(T == immutable(char)*))
+            {
+                l+= cast(uint)strlen(value);
+                chs = value;
+            }
+            free(chars);
+            chars = cast(char*)realloc(chars, l);
+            memcpy(chars+length, chs, l);
+            length+= l;
+        }
+        return this;
+    }
+
+    auto opAssign(T)(T value)
+    {
+        static if(is(T == String))
+        {
+            if(value.length > length && chars != null)
+                free(chars);
+
+            chars = cast(char*)malloc(value.length);
+            memcpy(chars, value.chars, value.length);
+            length = value.length;
+        }
+        else static if(is(T == string))
+        {
+            if(value.length > length && chars != null)
+                free(chars);
+            uint l = cast(uint)value.length;
+            chars = cast(char*)malloc(l);
+            memcpy(chars, value.ptr, l);
+            length = l;
+        }
+        else static if(is(T == immutable(char)*))
+        {
+            uint l = cast(uint)strlen(value);
+            if(l > length && chars != null)
+                free(chars);
+            chars = cast(char*)malloc(l);
+            memcpy(chars, value, l);
+            length = l;
+        }
+        else static assert(0, "String can only assigned to String or string");
+        return this;
+    }
+
+    T opCast(T)() const
+    {
+        static assert(is(T == string), "String can only be casted to string");
+        return cast(string)chars[0..length];
+    }
+    char[] toString() const {return cast(char[])chars[0..length];}
+
+    ~this()
+    {
+        if(chars != null)
+            free(chars);
+    }
+
+}
+
 
 pure string replaceAll(string str, char what, string replaceWith = "")
 {
@@ -55,10 +151,10 @@ pure long indexOf(in string str,in string toFind, int startIndex = 0)
     return -1;
 }
 
-pure long lastIndexOf(in string str,in string toFind, long startIndex = -1)
+long lastIndexOf(in string str,in string toFind, long startIndex = -1) pure nothrow
 {
     long z = 1;
-    if(startIndex == -1) startIndex = str.length-1;
+    if(startIndex == -1) startIndex = cast(int)(str.length)-1;
     for(long i = startIndex; i >= 0; i--)
     {
         while(str[i-z+1] == toFind[$-z])
@@ -83,13 +179,40 @@ T toDefault(T)(string s, T defaultValue = T.init)
     return v;
 }
 
-pure string fromStringz(const char* cstr)
+string fromStringz(const char* cstr) pure nothrow
 {
     import core.stdc.string:strlen;
     size_t len = strlen(cstr);
     return (len) ? cast(string)cstr[0..len] : null;
 }
-string[] split(string str, string separator)
+
+const(char*) toStringz(string str) pure nothrow
+{
+    return (str~"\0").ptr;
+}
+char toLowerCase(char c) pure nothrow @safe
+{
+    if(c < 'A' || c > 'Z')
+        return c;
+    return cast(char)(c + ('a' - 'A'));
+}
+
+string toLowerCase(string str)
+{
+    string ret;
+    ret.reserve(str.length);
+    for(ulong i = 0; i < str.length; i++)
+        ret~= str[i].toLowerCase;
+    return ret;
+}
+
+string[] split(string str, char separator) pure nothrow
+{
+    char[1] sep = [separator];
+    return split(str, cast(string)sep);
+}
+
+string[] split(string str, string separator) pure nothrow
 {
     string[] ret;
     string curr;
@@ -130,50 +253,6 @@ string[] pathSplliter(string str)
 }
 
 
-/// This function can be called at compilation time without bringing runtime
-export string toString(int x)
-{
-    enum numbers = "0123456789";
-    int div = 10;
-    int length = 1;
-    int count = 1;
-    while(div < x)
-    {
-        div*=10;
-        length++;
-    }
-    char[] ret = new char[](length);
-    div = 10;
-    while(div < x)
-    {
-        count++;
-        ret[length-count]=numbers[(x/div)%10];
-        div*=10;
-    }
-    ret[length-1] = numbers[x%10];
-    return cast(string)ret;
-}
-
-export string toString(float x)
-{
-    import core.stdc.stdlib:malloc;
-    import core.stdc.stdio:snprintf;
-    ulong length = snprintf(null, 0, "%f", x);
-    char[] str;
-    str.length = length+1;
-    snprintf(str.ptr, length+1, "%f", x);
-    return cast(string)str.ptr[0..length];
-}
-int toInt(string str)
-{
-    import core.stdc.stdlib:strtol;
-    return strtol(str.ptr, null, 10);
-}
-float toFloat(string str)
-{
-    import core.stdc.stdlib:strtof;
-    return strtof(str.ptr, null);
-}
 
 string baseName(string path)
 {
@@ -185,19 +264,7 @@ string baseName(string path)
     return path[lastIndex..$];
 }
 
-string toString(T)(T struct_)
-{
-    string s = "(";
-    bool isFirst = true;
-    static foreach(m; __traits(allMembers, T))
-    {
-        if(!isFirst)
-            s~= ", ";
-        isFirst = false;
-        s~= mixin("struct_."~m~".toString");
-    }
-    return typeof(struct_).stringof~s~")";
-}
+
 
 string join(string[] args, string separator)
 {
@@ -211,20 +278,10 @@ string join(string[] args, string separator)
 unittest
 {
     assert(baseName("a/b/test.txt") == "test.txt");
-    assert(toString(500) == "500");
-    assert(toString(50.25)== "50.25");
     assert(join(["hello", "world"], ", ") == "hello, world");
     assert(split("hello world", " ").length == 2);
     assert(toDefault!int("hello") == 0);
     assert(lastIndexOf("hello, hello", "hello") == 7);
     assert(indexOf("hello, hello", "hello") == 0);
     assert(replaceAll("\nTest\n", '\n') == "Test");
-}
-
-static foreach(mem; __traits(allMembers, util.string))
-{
-    // static if(__traits(getOverloads, util.string, mem).length > 0)
-    static foreach(i, overload; __traits(getOverloads, util.string, mem))
-        pragma(msg, overload.mangleof);
-        // pragma(msg, mem);
 }

@@ -92,7 +92,11 @@ version(XAUDIO_2_8)
 	// XAudio 2.8 ( Windows 8 )
 	mixin(uuid!(IXAudio2, "60d8dac8-5aa1-4e8e-b597-2f5e2883d484"));
 }
-
+version(XAUDIO_2_9)
+{
+	mixin(uuid!(IXAudio2, "2B02E3CF-2E0B-4ec3-BE45-1B2A3FE7210D"));
+    // mixin(uuid!(IXAudio2Extension, "84ac29bb-d619-44d2-b197-e4acf7df3ed6"));
+}
 
 // Ignore the rest of this header if only the GUID definitions were requested
 version(GUID_DEFS_ONLY)
@@ -159,6 +163,11 @@ else
 	enum XAUDIO2_PLAY_TAILS              = 0x0020;         // Used in IXAudio2SourceVoice::Stop
 	enum XAUDIO2_END_OF_STREAM           = 0x0040;         // Used in XAUDIO2_BUFFER.Flags
 	enum XAUDIO2_SEND_USEFILTER          = 0x0080;         // Used in XAUDIO2_SEND_DESCRIPTOR.Flags
+	enum XAUDIO2_VOICE_NOSAMPLESPLAYED   = 0x0100;	       // Used in IXAudio2SourceVoice::GetState
+	enum XAUDIO2_STOP_ENGINE_WHEN_IDLE   = 0x2000;	       // Used in XAudio2Create to force the engine to Stop when no source voices are Started, and Start when a voice is Started
+	enum XAUDIO2_1024_QUANTUM            = 0x8000;	       // Used in XAudio2Create to specify nondefault processing quantum of 21.33 ms (1024 samples at 48KHz)
+	enum XAUDIO2_NO_VIRTUAL_AUDIO_CLIENT = 0x10000;	       // Used in CreateMasteringVoice to create a virtual audio client
+
 
 	// Default parameters for the built-in filter
 	enum XAUDIO2_DEFAULT_FILTER_TYPE      = LowPassFilter;
@@ -927,7 +936,9 @@ else
 	interface IXAudio2MasteringVoice : IXAudio2Voice
 	{
 		version(XAUDIO_2_8)
-		HRESULT GetChannelMask(DWORD* pChannelmask);
+			HRESULT GetChannelMask(DWORD* pChannelmask);
+		else version(XAUDIO_2_9)
+			HRESULT GetChannelMask(DWORD* pChannelmask);
 	}
 
 
@@ -1107,8 +1118,13 @@ else
 		}
 		else version(XAUDIO_2_8)
 		{
-		HRESULT XAudio2Create(out IXAudio2 ppXAudio2, UINT32 Flags = 0,
-								XAUDIO2_PROCESSOR XAudio2Processor = XAUDIO2_DEFAULT_PROCESSOR);
+			HRESULT XAudio2Create(out IXAudio2 ppXAudio2, UINT32 Flags = 0,
+					XAUDIO2_PROCESSOR XAudio2Processor = XAUDIO2_DEFAULT_PROCESSOR);
+		}
+		else version(XAUDIO_2_9)
+		{
+			HRESULT XAudio2Create(out IXAudio2 ppXAudio2, UINT32 Flags = 0,
+					XAUDIO2_PROCESSOR XAudio2Processor = XAUDIO2_DEFAULT_PROCESSOR);
 		}
 
 	}

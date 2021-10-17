@@ -15,14 +15,42 @@ import util.data_structures;
 import util.time;
 import core.time:Duration, dur;
 import data.image;
-import std.concurrency;
+import core.thread;
 
 
-private void loadImageAsyncImpl(Tid tid, string imagePath)
+class AssetLoaderThread : Thread
 {
+    void* function(void* context) loaderFunction;
+    void* loadedData;
+    bool hasFinishedLoading = false;
+    void* context;
+    this(void* function(void* context) loaderFunction)
+    {
+        super(&run);
+        this.loaderFunction = loaderFunction;
+    }
+
+    void load(void* ctx)
+    {
+        context = ctx;
+        start();
+    }
+
+    void run()
+    {
+        loadedData = loaderFunction(context);
+        hasFinishedLoading = true;
+    }
+}
+// import std.concurrency;
+
+
+void* loadImageAsyncImpl(void* context)
+{
+    string imagePath = *(cast(string*)context);
     Image img = new Image(imagePath);
     img.loadFromFile();
-    send(tid, cast(shared)img);
+    return cast(void*)img;
 }
 
 private alias Callback(T) = void delegate(T obj);
@@ -30,7 +58,8 @@ private alias AssetPair(T) = Pair!(T, Callback!T);
 
 class HipAssetManager
 {
-    protected static Tid[] workerPool;
+    // protected static Tid[] workerPool;
+    protected static AssetLoaderThread[] workerPool;
     static float currentTime;
     static immutable Duration timeout = dur!"nsecs"(-1);
 
@@ -52,7 +81,10 @@ class HipAssetManager
         currentTime = HipTime.getCurrentTimeAsMilliseconds();
         if(async)
         {
-            workerPool~= spawn(&loadImageAsyncImpl, thisTid, imagePath);
+            AssetLoaderThread t = new AssetLoaderThread(&loadImageAsyncImpl);
+            t.load(cast(void*)imagePath);
+            // workerPool~= spawn(&loadImageAsyncImpl, thisTid, imagePath);
+            workerPool~= t;
             images[sanitizePath(imagePath)] = AssetPair!(Image)(null, cb);
         }
         else
@@ -70,18 +102,25 @@ class HipAssetManager
     {
         if(workerPool.length > 0)
         {
-            receiveTimeout(HipAssetManager.timeout,
-                (shared Image img)
+            foreach(w; workerPool)
+            {
+                if(w.hasFinishedLoading)
                 {
-                    logln(img.imagePath ~" decoded in ");
-                    logln(HipTime.getCurrentTimeAsMilliseconds()-HipAssetManager.currentTime, " ms.");
-
-                    images[img.imagePath].first = cast(Image)img;
-                    AssetPair!Image p = images[img.imagePath];
-                    if(p.second !is null)
-                        p.second(cast(Image)img);
+                    logln("Finished loading image " ~ (*cast(string*)w.context));
                 }
-            );
+            }
+            // receiveTimeout(HipAssetManager.timeout,
+            //     (shared Image img)
+            //     {
+            //         logln(img.imagePath ~" decoded in ");
+            //         logln(HipTime.getCurrentTimeAsMilliseconds()-HipAssetManager.currentTime, " ms.");
+
+            //         images[img.imagePath].first = cast(Image)img;
+            //         AssetPair!Image p = images[img.imagePath];
+            //         if(p.second !is null)
+            //             p.second(cast(Image)img);
+            //     }
+            // );
         }
     }
 }

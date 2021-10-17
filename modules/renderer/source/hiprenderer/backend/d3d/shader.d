@@ -15,11 +15,11 @@ import config.opts;
 import hiprenderer.renderer;
 import hiprenderer.shader;
 import hiprenderer.backend.d3d.renderer;
-import hiprenderer.backend.d3d.utils;
+import util.system:getWindowsErrorMessage;
 import directx.d3d11;
 import directx.d3dcompiler;
 import directx.d3d11shader;
-import std.conv:to;
+import util.conv:to;
 import error.handler;
 
 
@@ -70,21 +70,17 @@ class Hip_D3D11_FragmentShader : FragmentShader
     override final string getSpriteBatchFragment()
     {
         int sup = HipRenderer.getMaxSupportedShaderTextures();
-        import std.format:format;
         string textureSlotSwitchCase = "switch(tid)\n{\n"; //Switch textureID
         for(int i = 1; i < sup; i++)
         {
             textureSlotSwitchCase~= "case "~ to!string(i)~": "~
-            format!q{   return uTex1[%s].Sample(state[%s], texST) * inVertexColor * uBatchColor;
-            }(i,i);
+            "return uTex1["~to!string(i)~"].Sample(state["~to!string(i)~"], texST) * inVexterColor * uBatchColor";
         }
         textureSlotSwitchCase~= "\ndefault:\n\treturn uTex1[0].Sample(state[0], texST) * inVertexColor * uBatchColor;";
         textureSlotSwitchCase~= "}";
 
-        return format!q{
-
-            Texture2D uTex1[%s];
-            SamplerState state[%s];
+        return "Texture2D uTex1["~to!string(sup)~"];
+        SamplerState state["~to!string(sup)~q{
 
             cbuffer input
             {
@@ -92,16 +88,15 @@ class Hip_D3D11_FragmentShader : FragmentShader
             };
 
             float4 main(float4 inVertexColor : inColor, float2 texST : inTexST, float inTexID : inTexID) : SV_TARGET
-            {
+        }~"{"~
+        q{
                 // return uBatchColor * uTex1.Sample(state, inTexST);
                 int tid = int(inTexID);
 
                 //switch(tid)...
                 //case 1:
                     //return uTex1[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
-                %s
-            }
-        }(sup,sup, textureSlotSwitchCase);
+        } ~ textureSlotSwitchCase ~ "}";
     }
     override final string getBitmapTextFragment()
     {
@@ -252,7 +247,7 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
         if(FAILED(hres))
         {
             ErrorHandler.showErrorMessage("D3D11 ShaderProgram initialization", 
-            "Could not get the reflection interface from the vertex shader, error: "~ Hip_D3D11_GetErrorMessage(hres));
+            "Could not get the reflection interface from the vertex shader, error: "~ getWindowsErrorMessage(hres));
             return false;
         }
         hres = D3DReflect(fs.shader.GetBufferPointer(),
@@ -260,7 +255,7 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
         if(FAILED(hres))
         {
             ErrorHandler.showErrorMessage("D3D11 ShaderProgram initialization", 
-            "Could not get the reflection interface from the pixel shader, error: "~ Hip_D3D11_GetErrorMessage(hres));
+            "Could not get the reflection interface from the pixel shader, error: "~ getWindowsErrorMessage(hres));
             return false;
         }
         return true;
@@ -352,7 +347,7 @@ class Hip_D3D11_ShaderImpl : IShader
             vs.shader.GetBufferSize(), null, &vs.vs);
             if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Vertex shader creation error", "Creation failed"))
             {
-                ErrorHandler.showErrorMessage("Vertex Shader Error:", Hip_D3D11_GetErrorMessage(res));
+                ErrorHandler.showErrorMessage("Vertex Shader Error:", getWindowsErrorMessage(res));
                 res = false;
             }
         }
@@ -367,7 +362,7 @@ class Hip_D3D11_ShaderImpl : IShader
             auto res = _hip_d3d_device.CreatePixelShader(fs.shader.GetBufferPointer(), fs.shader.GetBufferSize(), null, &fs.fs);
             if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Fragment/Pixel shader creation error", "Creation failed"))
             {
-                ErrorHandler.showErrorMessage("Fragment Shader Error:", Hip_D3D11_GetErrorMessage(res));
+                ErrorHandler.showErrorMessage("Fragment Shader Error:", getWindowsErrorMessage(res));
                 ret = false;
             }
         }

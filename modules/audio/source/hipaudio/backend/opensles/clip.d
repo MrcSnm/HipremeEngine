@@ -21,6 +21,8 @@ class HipOpenSLESAudioClip : HipAudioClip
         return ret;
     }
     override void onUpdateStream(void* data, uint decodedSize){}
+
+    /** Allocates SLIBuffer* in the wrapper*/
     override HipAudioBufferWrapper createBuffer(void* data, uint size)
     {
         HipAudioBufferWrapper w;

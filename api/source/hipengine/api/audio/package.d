@@ -32,7 +32,8 @@ enum HipAudioImplementation
 {
     OPENAL,
     SDL,
-    OPENSLES
+    OPENSLES,
+    XAUDIO2
 }
 
 

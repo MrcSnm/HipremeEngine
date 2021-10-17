@@ -167,7 +167,7 @@ struct Sound_Version
     int patch;
 }
 
-static if(staticBinding)
+version(SDL_Sound_Static)
 {
     /**
 * Get a list of sound formats supported by this version of SDL_sound.

@@ -9,20 +9,37 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module util.system;
-import std.conv:to;
+import util.conv;
 import core.stdc.string;
-import std.array:replace;
+import util.string:fromStringz;
+import util.path:pathSeparator;
 
 version(Standalone){}
 else{public import fswatch;}
-struct ExportD{}
 
 pure nothrow string sanitizePath(string path)
 {
-    version(Windows)
-        return replace(path, "/", "\\");
-    else
-        return replace(path, "\\", "/");
+    string ret;
+    ret.reserve(path.length);
+
+    for(ulong i = 0; i < path.length; i++)
+    {
+        version(Windows)
+        {
+            if(path[i] == '/')
+                ret~= '\\';
+            else
+                ret~= path[i];
+        }
+        else
+        {
+            if(path[i] == '\\')
+                ret~= '/';
+            else
+                ret~= path[i];
+        }
+    }
+    return ret;
 }
 pure nothrow bool isPathUnixStyle(string path)
 {
@@ -37,12 +54,7 @@ string buildPath(string[] args...)
         return null;
     string ret;
     for(int i = 0; i < cast(int)args.length-1; i++)
-    {
-        version(Windows)
-            ret~= args[i]~'\\';
-        else
-        	ret~= args[i]~'/';
-    }
+        ret~= args[i]~pathSeparator;
     return ret~args[$-1];
 }
 
@@ -63,6 +75,14 @@ version(Windows)
             varSymbol = cast(typeof(varSymbol))dll_import_var(varSymbol.stringof);
         else
             varSymbol = cast(typeof(varSymbol))dll_import_var(s);
+    }
+
+    string getWindowsErrorMessage(HRESULT hr)
+    {
+        wchar[4096] buffer;
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        null, hr, 0u, buffer.ptr, buffer.length, null);
+        return fromUTF16(cast(wstring)buffer);
     }
 }
 
@@ -116,7 +136,7 @@ void* dynamicLibrarySymbolLink(void* dll, const (char)* symbolName)
     {
         ret = GetProcAddress(dll, symbolName);
         if(!ret)
-            err = ("Could not link symbol "~to!string(symbolName)).ptr;
+            err = ("Could not link symbol "~symbolName.fromStringz).ptr;
     }
     else version(Posix)
     {
@@ -133,12 +153,12 @@ string dynamicLibraryError()
     {
         const(char)* ret = err;
         err = null;
-        return to!string(ret);
+        return cast(string)fromStringz(ret);
     }
     else version(Posix)
     {
         import core.sys.posix.dlfcn;
-        return to!string(dlerror());
+        return cast(string)fromStringz(dlerror());
     }
     else static assert(0, "Platform not supported");
 }

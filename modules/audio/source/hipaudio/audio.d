@@ -14,9 +14,14 @@ public import hipaudio.audioclip;
 public import hipaudio.audiosource;
 public import data.audio.audioconfig;
 public import hipengine.api.audio;
+
+//Backends
 import hipaudio.backend.openal.player;
 import hipaudio.backend.sdl.player;
 version(Android){import hipaudio.backend.opensles.player;}
+version(Windows){import hipaudio.backend.xaudio.player;}
+
+
 import data.audio.audio;
 import math.utils:getClosestMultiple;
 import util.reflection;
@@ -98,6 +103,10 @@ class HipAudio
                 }
             case HipAudioImplementation.SDL:
                 audioInterface = new HipSDLAudioPlayer(AudioConfig.lightweightConfig);
+                break;
+            case HipAudioImplementation.XAUDIO2:
+                version(Windows)
+                    audioInterface = new HipXAudioPlayer(AudioConfig.musicConfig);
                 break;
             case HipAudioImplementation.OPENAL:
             default:

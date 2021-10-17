@@ -13,53 +13,71 @@
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
-				"Desktop"
+				"Desktop",
+				"Standalone",
+				"Test"
 			],
-			"versions-windows" : [
+			"versions-windows": [
 				"FSWUsesWin32"
 			]
 		},
 		{
 			"name": "game",
+			"sourcePaths": [
+				"build/release_game/source"
+			],
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
-			"versions": ["Standalone", "Desktop"],
-			
-			"sourcePaths": ["build/release_game/source"]
+			"versions": [
+				"Standalone",
+				"Desktop"
+			]
 		},
 		{
+			"buildOptions": [
+				"releaseMode",
+				"optimize"
+			],
 			"name": "game_optimize",
+			"sourcePaths": [
+				"build/release_game/source"
+			],
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
-			"versions": ["Standalone", "Desktop"],
-			"buildOptions": ["releaseMode", "optimize"],
-			
-			"sourcePaths": ["build/release_game/source"]
+			"versions": [
+				"Standalone",
+				"Desktop"
+			]
 		},
 		{
 			"name": "uwp",
+			"postBuildCommands": [
+				"cd .\\build && rdmd insertresourceuwp.d .\\uwp\\HipremeEngine\\HipremeEngine ..\\assets"
+			],
 			"targetPath": "bin/uwp/",
 			"targetType": "dynamicLibrary",
 			"versions": [
 				"dll",
 				"UWP"
-			],
-			"postBuildCommands": [
-				"cd .\\build && rdmd insertresourceuwp.d .\\uwp\\HipremeEngine\\HipremeEngine ..\\assets"
 			]
 		},
 		{
 			"name": "release_uwp",
-			"targetPath": "bin/uwp",
-			"targetType": "dynamicLibrary",
-			"versions": ["Standalone", "dll", "UWP"],
-			"sourcePaths": ["build/release_game/source"],
 			"postBuildCommands": [
 				"cd .\\build && rdmd insertresourceuwp.d .\\uwp\\HipremeEngine\\HipremeEngine ..\\assets"
+			],
+			"sourcePaths": [
+				"build/release_game/source"
+			],
+			"targetPath": "bin/uwp",
+			"targetType": "dynamicLibrary",
+			"versions": [
+				"Standalone",
+				"dll",
+				"UWP"
 			]
 		},
 		{
-			"name": "android",
 			"dflags": [
 				"-g"
 			],
@@ -70,6 +88,7 @@
 				"EGL",
 				"GLESv3"
 			],
+			"name": "android",
 			"postBuildCommands": [
 				"copy /B .\\bin\\android\\libhipreme_engine.so .\\build\\android\\project\\app\\src\\main\\jniLibs\\arm64-v8a\\libhipreme_engine.so",
 				"cd .\\build && rdmd copyresources.d ..\\assets .\\android\\project\\app\\src\\main\\assets",
@@ -88,31 +107,66 @@
 	"copyright": "Copyright © 2018 - 2021, Hipreme",
 	"dependencies": {
 		"arsd-official:dom": "~>10.2.0",
+		"audio": {
+			"path": "./modules/audio",
+			"version": ">=0.0.0"
+		},
+		"bind": {
+			"path": "./modules/bind",
+			"version": ">=0.0.0"
+		},
 		"bindbc-cimgui": "~>1.84.1",
 		"bindbc-sdl": "~>1.0.1",
-		"hipengine_api" : {"path": "./api"},
-		"bind"		: {"path" : "./modules/bind"},
-		"config"	: {"path" : "./modules/config"},
-		"console"	: {"path" : "./modules/console"},
-		"data"		: {"path" : "./modules/data"},
-		"debugging"	: {"path" : "./modules/debugging"},
-		"error"		: {"path" : "./modules/error"},
-		"imgui"		: {"path" : "./modules/imgui"},
-		"jni"		: {"path" : "./modules/jni"},
-		"math"		: {"path" : "./modules/math"},
-		"util"		: {"path" : "./modules/util"},
-		"renderer"  : {"path" : "./modules/renderer"},
-		"audio" 	: {"path" : "./modules/audio"}
-	},
-	"subConfigurations": {
-		"hipengine_api" : "hipengine"
+		"config": {
+			"path": "./modules/config",
+			"version": ">=0.0.0"
+		},
+		"console": {
+			"path": "./modules/console",
+			"version": ">=0.0.0"
+		},
+		"data": {
+			"path": "./modules/data",
+			"version": ">=0.0.0"
+		},
+		"debugging": {
+			"path": "./modules/debugging",
+			"version": ">=0.0.0"
+		},
+		"error": {
+			"path": "./modules/error",
+			"version": ">=0.0.0"
+		},
+		"hipengine_api": {
+			"path": "./api",
+			"version": ">=0.0.0"
+		},
+		"imgui": {
+			"path": "./modules/imgui",
+			"version": ">=0.0.0"
+		},
+		"jni": {
+			"path": "./modules/jni",
+			"version": ">=0.0.0"
+		},
+		"math": {
+			"path": "./modules/math",
+			"version": ">=0.0.0"
+		},
+		"renderer": {
+			"path": "./modules/renderer",
+			"version": ">=0.0.0"
+		},
+		"util": {
+			"path": "./modules/util",
+			"version": ">=0.0.0"
+		}
 	},
 	"description": "Open-Source D Game Engine",
 	"dflags": [
 		"-J=."
 	],
-	"importPaths-ldc" :
-	[
+	"importPaths-ldc": [
 		"C:/ldc2/import"
 	],
 	"libs-windows": [
@@ -127,6 +181,9 @@
 	"sourcePaths": [
 		"source"
 	],
+	"subConfigurations": {
+		"hipengine_api": "hipengine"
+	},
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipremeEngineDef",

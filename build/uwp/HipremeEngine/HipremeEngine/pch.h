@@ -9,6 +9,7 @@
 #include <winrt/Windows.UI.Input.h>
 #include <winrt/Windows.Gaming.Input.h>
 #include <winrt/Windows.Devices.Power.h>
+#include <fileapifromapp.h>
 #include <d2d1_1.h>
 #include <d3d11.h>
 #include <d3d11_4.h>
