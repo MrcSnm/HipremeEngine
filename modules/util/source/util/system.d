@@ -11,18 +11,34 @@ Distributed under the CC BY-4.0 License.
 module util.system;
 import util.conv;
 import core.stdc.string;
-import std.array:replace;
-import std.string:fromStringz;
+import util.string:fromStringz;
 
 version(Standalone){}
 else{public import fswatch;}
 
 pure nothrow string sanitizePath(string path)
 {
-    version(Windows)
-        return replace(path, "/", "\\");
-    else
-        return replace(path, "\\", "/");
+    string ret;
+    ret.reserve(path.length);
+
+    for(ulong i = 0; i < path.length; i++)
+    {
+        version(Windows)
+        {
+            if(path[i] == '/')
+                ret~= '\\';
+            else
+                ret~= path[i];
+        }
+        else
+        {
+            if(path[i] == '\\')
+                ret~= '/';
+            else
+                ret~= path[i];
+        }
+    }
+    return ret;
 }
 pure nothrow bool isPathUnixStyle(string path)
 {

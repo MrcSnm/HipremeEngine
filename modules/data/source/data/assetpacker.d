@@ -18,7 +18,7 @@ import util.array;
 import util.conv:to;
 import core.stdc.string;
 import std.stdio : File;
-import std.path;
+import util.path;
 import std.file;
 
 enum HapHeaderStart = "1HZ00ZH9";
