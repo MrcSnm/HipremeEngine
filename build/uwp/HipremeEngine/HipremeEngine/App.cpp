@@ -2,6 +2,7 @@
 #include <CoreWindow.h>
 #include "d_game.h"
 #include "input.hpp"
+#include "uwpfs.h"
 #include "Def.h"
 
 using namespace winrt;
@@ -272,6 +273,8 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
     void SetWindow(CoreWindow const& wnd)
     {
         HMODULE lib = LoadDLL(L"hipreme_engine.dll");
+        HMODULE sound = LoadDLL(L"SDL2_Sound.dll");
+        dprint("Marcelo\n\n%p", sound);
         if (d_game_LoadDLL(lib) != 0)
             OutputDebugString(L"Error ocurred when loading D libs");
         window = wnd;
