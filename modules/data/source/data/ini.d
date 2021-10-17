@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module data.ini;
 import util.conv:to;
 import util.file;
-import std.array:split;
+import util.string:split;
 
 struct IniVar
 {

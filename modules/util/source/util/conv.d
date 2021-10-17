@@ -3,20 +3,37 @@ import util.string;
 import std.typecons;
 
 
-string toString(T)(T struct_) pure nothrow
+string toString(T)(T structOrTuple) pure nothrow
 {
-    import util.reflection:isFunction;
-    string s = "(";
-    bool isFirst = true;
-    static foreach(i, alias m; T.tupleof)
+    static if(isTuple!T)
     {
-        if(!isFirst)
-            s~= ", ";
-        isFirst = false;
-        s~= mixin("toString(struct_."~m.stringof~")");
+        alias tupl = structOrTuple;
+        string ret;
+        foreach(i, v; tupl)
+        {
+            if(i > 0)
+                ret~= ", ";
+            ret~= to!string(v);
+        }
+        return T.stringof~"("~ret~")";
     }
-    return T.stringof~s~")";
+    else //For structs declaration
+    {
+        alias struct_ = structOrTuple;
+        string s = "(";
+        bool isFirst = true;
+        static foreach(i, alias m; T.tupleof)
+        {
+            if(!isFirst)
+                s~= ", ";
+            isFirst = false;
+            s~= mixin("toString(struct_."~m.stringof~")");
+        }
+        return T.stringof~s~")";
+    }
 }
+
+
 
 T toStruct(T)(string struc) pure nothrow
 {
