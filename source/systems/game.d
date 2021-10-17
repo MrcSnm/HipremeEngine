@@ -157,13 +157,17 @@ class GameSystem
 
     void startExternalGame()
     {
-        version(Standalone)
+        version(Test)
+        {
+            addScene(new SoundTestScene());
+        }
+        else version(Standalone)
         {
             import script.entry;
             externalScene = new HipEngineMainScene();
             addScene(externalScene);
         }
-        else
+        else //Load as script
         {
             // addScene(new SoundTestScene());
             assert(HipremeEngineGameInit != null, "No game was loaded");
