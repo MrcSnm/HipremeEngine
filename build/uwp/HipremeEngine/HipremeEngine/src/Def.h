@@ -2,6 +2,7 @@
 #include "pch.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <wchar.h>
 
 ///Loads a given asset DLL and check for errors
 HMODULE LoadDLL(LPCWSTR str);
