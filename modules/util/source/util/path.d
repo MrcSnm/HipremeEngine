@@ -1,6 +1,19 @@
 module util.path;
 import util.string;
 
+
+version(Windows) 
+    enum defaultCaseSensitivity = false;
+else version(Darwin) 
+    enum defaultCaseSensitivity = false;
+else version(Posix) 
+    enum defaultCaseSensitivity = true;
+
+version(Windows)
+    enum pathSeparator = '\\';
+else
+    enum pathSeparator = '/';
+
 string[] pathSplitter(string path)
 {
     string[] ret;
@@ -21,17 +34,29 @@ string[] pathSplitter(string path)
 }
 
 
-version(Windows) 
-    enum defaultCaseSensitivity = false;
-else version(Darwin) 
-    enum defaultCaseSensitivity = false;
-else version(Posix) 
-    enum defaultCaseSensitivity = true;
+string baseName(string path)
+{
+    int lastSepIndex = -1;
+    int preLastSepIndex = -1;
 
-version(Windows)
-    enum pathSeparator = '\\';
-else
-    enum pathSeparator = '/';
+    for(ulong i = 0; i < path.length; i++)
+    {
+        if(path[i] == pathSeparator)
+        {
+            if(preLastSepIndex == -1)
+                preLastSepIndex = lastSepIndex;
+            lastSepIndex = cast(int)i;
+        }
+    }
+    
+    if(lastSepIndex == path.length)
+        return path[preLastSepIndex..$-1];
+    else if(lastSepIndex == -1)
+        return path;
+    return path[lastSepIndex..$];
+}
+
+
 
 string relativePath(string path, string base, bool caseSensitive = defaultCaseSensitivity) pure nothrow
 {
@@ -91,6 +116,7 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
     ret~= path[0] == pathSeparator ? path[commonIndex+1..$] : path[commonIndex..$];	
     return ret;
 }
+
 
 
 ///Copied from dmd.

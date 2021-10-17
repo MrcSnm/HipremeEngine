@@ -55,18 +55,22 @@ package ALenum getFormatAsOpenAL(AudioConfig cfg)
 
 package string alCheckError(string title="", string message="")()
 {
-    import std.format:format;
     static if(message != "")
         message = "\n"~message;
-    return format!q{version(HIPREME_DEBUG)
+
+    enum t = "\"OpenAL Error: "~title~"\"";
+    enum m = "alGetErrorString(alCheckError_err) ~ \""~message~"\"";
+
+    return `version(HIPREME_DEBUG)
     {
         static if(!is(typeof(alCheckError_err)))
             ALenum alCheckError_err = alGetError();
         else
             alCheckError_err = alGetError();
         if(alCheckError_err != AL_NO_ERROR)
-            ErrorHandler.showErrorMessage("OpenAL Error: %s", alGetErrorString(alCheckError_err)~"%s");
-    }}(title, message);
+            ErrorHandler.showErrorMessage(
+    ` ~t~", " ~ m  ~");
+    }";
 }
 
 ALenum getALDistanceModel(DistanceModel model)

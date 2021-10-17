@@ -1,7 +1,6 @@
 module hipaudio.decoder;
 import data.audio.audio;
 import core.time;
-import std.concurrency: receiveTimeout;
 
 alias HipDecodingResult = ubyte[];
 
@@ -21,11 +20,11 @@ class HipAudioDecoder
 
     void updateDecodingStatus()
     {
-        receiveTimeout(Duration.zero, 
-            (uint decodeResult)
-            {
+        // receiveTimeout(Duration.zero, 
+        //     (uint decodeResult)
+        //     {
 
-            }
-        );
+        //     }
+        // );
     }
 }
