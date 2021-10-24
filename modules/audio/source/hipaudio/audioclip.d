@@ -159,6 +159,7 @@ public abstract class HipAudioClip : IHipAudioClip
             return ret;
         }
         HipAudioBufferWrapper w = createBuffer(data, size);
+        setBufferData(w.buffer, size, data);
         ret = w.buffer;
         buffersCreated~=w;
         return ret;

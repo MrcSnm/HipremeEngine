@@ -3,6 +3,7 @@ module hipaudio.backend.xaudio.source;
 version(Windows):
 
 import hipaudio.backend.xaudio.player;
+import hipaudio.backend.xaudio.clip;
 import hipaudio.audiosource;
 import directx.xaudio2;
 import directx.win32;
@@ -37,22 +38,30 @@ class HipXAudioSource : HipAudioSource
         }
         fmt.wFormatTag      = format;
         fmt.nChannels       = cast(ushort)cfg.channels;
-        fmt.nAvgBytesPerSec = cast(ushort)cfg.sampleRate;
+        fmt.nAvgBytesPerSec = cfg.sampleRate * (cfg.getBitDepth/8) * cfg.channels;
         fmt.nSamplesPerSec  = cfg.sampleRate;
         fmt.nBlockAlign     = cast(ushort)(cfg.channels * cfg.getBitDepth())/8;
         fmt.wBitsPerSample  = cast(ushort)cfg.getBitDepth;
         fmt.cbSize          = 0;
-
         HRESULT hr = player.xAudio.CreateSourceVoice(&sourceVoice, &fmt);
-        ErrorHandler.assertExit(SUCCEEDED(hr), "Could not create source voice: \n\t"~getWindowsErrorMessage(hr));
+
+        
+        ErrorHandler.assertExit(SUCCEEDED(hr), "Could not create source voice: \n\t"~HipXAudioPlayer.getError(hr));
         
     }
 
     override void setClip(IHipAudioClip clip)
     {
         super.setClip(clip);
-        //HipXAudioClip c = cast(HipXAudioClip)clip;
-        // sourceVoice.SubmitSourceBuffer(c.buffer, null);
+        HipXAudioClip c = cast(HipXAudioClip)clip;
+        XAUDIO2_BUFFER* buffer = cast(XAUDIO2_BUFFER*)c.getBuffer(c.getClipData(), cast(uint)c.getClipSize());
+        HRESULT hr = sourceVoice.SubmitSourceBuffer(buffer, null);
+        debug
+        {
+            import console.log;
+            ErrorHandler.assertExit(SUCCEEDED(hr),
+            "Could not submit XAudio2 source voice:\n\t"~HipXAudioPlayer.getError(hr));
+        }
     }
     
 

@@ -25,4 +25,24 @@ class HipXAudioClip : HipAudioClip
         this.buffer.AudioBytes = size;
         this.buffer.pAudioData = cast(ubyte*)data;
     }
+    
+    ///Nothing to do
+    override protected void onUpdateStream(void* data, uint decodedSize){}
+
+    ///Wraps an XAudio buffer    
+    override protected HipAudioBufferWrapper createBuffer(void* data, uint size)
+    {
+        HipAudioBufferWrapper ret; // TODO: implement
+        ret.buffer = &buffer;
+        ret.bufferSize = buffer.sizeof;
+        return ret;
+    }
+
+
+    ///Calls XAudio2.9 specific buffer destroy
+    override protected void destroyBuffer(void* buffer)
+    {
+        
+    }
+
 }
