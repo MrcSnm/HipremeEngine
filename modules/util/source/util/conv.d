@@ -106,7 +106,10 @@ TO to(TO, FROM)(FROM f) pure nothrow
 export string toString(int x) pure nothrow
 {
     enum numbers = "0123456789";
-    int div = 10;
+    bool isNegative = x < 0;
+    if(isNegative)
+        x*= -1;
+    ulong div = 10;
     int length = 1;
     int count = 1;
     while(div < x)
@@ -114,7 +117,10 @@ export string toString(int x) pure nothrow
         div*=10;
         length++;
     }
+    if(isNegative) length++;
     char[] ret = new char[](length);
+    if(isNegative)
+        ret[0] = '-';
     div = 10;
     while(div < x)
     {
