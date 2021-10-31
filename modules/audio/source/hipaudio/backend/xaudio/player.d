@@ -27,8 +27,15 @@ class HipXAudioPlayer : IHipAudioPlayer
     public this(AudioConfig cfg)
     {
         this.config = cfg;
-        HRESULT hr = CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
-        ErrorHandler.assertExit(SUCCEEDED(hr), "Could not CoInitialize\n\t"~HipXAudioPlayer.getError(hr));
+
+        HRESULT hr;
+        version(UWP)
+        {}
+        else
+        {
+            CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+            ErrorHandler.assertExit(SUCCEEDED(hr), "Could not CoInitialize\n\t"~HipXAudioPlayer.getError(hr));
+        } 
 
         UINT32 flags;
         version(HIPREME_DEBUG)
@@ -49,6 +56,7 @@ class HipXAudioPlayer : IHipAudioPlayer
             xAudio.SetDebugConfiguration(&debugConfig);
         }
 
+    
 
     }
 
@@ -66,8 +74,26 @@ class HipXAudioPlayer : IHipAudioPlayer
     public bool isMusicPlaying(HipAudioSourceAPI src){return false;}
     public bool isMusicPaused(HipAudioSourceAPI src){return false;}
     public bool resume(HipAudioSourceAPI src){return false;}
-    public bool stop(HipAudioSourceAPI src){return false;}
-    public bool pause(HipAudioSourceAPI src){return false;}
+    public bool stop(HipAudioSourceAPI src)
+    {
+        HipXAudioSource s = (cast(HipXAudioSource)src);
+        //May need to use XAUDIO2_PLAY_TAILS for outputting reverb too.
+        auto hr = s.sourceVoice.Stop(XAUDIO2_PLAY_TAILS);
+        ///Makes it return to 0
+        s.sourceVoice.FlushSourceBuffers();
+
+        debug
+            ErrorHandler.assertErrorMessage(SUCCEEDED(hr), "XAudio2 stop failure", HipXAudioPlayer.getError(hr));
+
+        return SUCCEEDED(hr);
+    }
+    public bool pause(HipAudioSourceAPI src)
+    {
+        HipXAudioSource s = (cast(HipXAudioSource)src);
+        //May need to use XAUDIO2_PLAY_TAILS for outputting reverb too.
+        
+        return SUCCEEDED(s.sourceVoice.Stop(XAUDIO2_PLAY_TAILS));
+    }
     public bool play_streamed(HipAudioSourceAPI src){return false;}
 
     public HipAudioClip load(string audioName, HipAudioType bufferType)
@@ -88,6 +114,10 @@ class HipXAudioPlayer : IHipAudioPlayer
     bool play(HipAudioSourceAPI src)
     {
         HipXAudioSource s = (cast(HipXAudioSource)src);
+        stop(src);
+        ///'stop' flushes the buffer, so there is a need to set the clip again
+        s.setClip(s.clip);
+
         HRESULT hr = s.sourceVoice.Start(0);
         debug
         {
