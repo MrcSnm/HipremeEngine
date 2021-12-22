@@ -2,6 +2,7 @@
 	"fileVersion": 1,
 	"versions": {
 		"bindbc-loader": "1.0.1",
+		"bindbc-lua": "0.4.1",
 		"bindbc-openal": "1.0.0",
 		"bindbc-opengl": "1.0.0",
 		"bindbc-sdl": "1.0.1",

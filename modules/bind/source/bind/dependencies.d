@@ -71,6 +71,17 @@ bool loadEngineDependencies()
 
     void function(SharedLib) implementation = null;
 
+    version(HipremeEngineLua)
+    {
+        import bindbc.lua;
+        LuaSupport l = loadLua();
+        if(l != luaSupport)
+        {
+            ErrorHandler.assertExit(l != luaSupport.noLibrary, "Could not find any lua library");
+            ErrorHandler.showErrorMessage("Bad Lua Library", "Unknown lua version found");
+        }
+    }
+
 
     version(CIMGUI)
     {
