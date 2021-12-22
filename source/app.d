@@ -88,6 +88,10 @@ extern(C)int SDL_main()
 {
 	import data.ini;
 	initEngine(true);
+	//After initializing engine, every dependency has been load
+	import bind.interpreters;
+	startLuaInterpreter("source/scripting/lua/main.lua");
+
 	version(Android)
 		HipAudio.initialize(HipAudioImplementation.OPENSLES, 
 		HipAndroid.javaCall!(bool, "hasProFeature"),
