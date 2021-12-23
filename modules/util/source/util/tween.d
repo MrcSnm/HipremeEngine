@@ -15,7 +15,7 @@ private enum d1 = 2.75f;
 */
 enum HipEasing : float function(float x)
 {
-    identity        = null,
+    identity        = (x) => x,
     easeInSine      = (x) => 1 - cos((x*PI)/2),
     easeOutSine     = (x) => sin((x*PI)/2),
     easeInOutSine   = (x) => -(cos(PI*x) - 1)/2,
