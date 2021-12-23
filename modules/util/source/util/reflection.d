@@ -128,10 +128,8 @@ T nullCheck(string expression, T, Q)(T defaultValue, Q target)
 
 
 ///Used in conjunction to ExportDFunctions, you may specify a suffix, if you so, _suffix is added
-struct ExportD
-{
-    string suffix;  
-}
+struct ExportD{string suffix;}
+
 template getParams (alias fn) 
 {
 	static if ( is(typeof(fn) params == __parameters) )
@@ -167,6 +165,8 @@ template isReference(T)
     enum isReference = is(T == class) || is(T == interface);
 }
 
+
+
 template generateExportFunc(string className, alias funcSymbol)
 {
     import util.string:join;
@@ -192,8 +192,7 @@ template generateExportFunc(string className, alias funcSymbol)
         }
         else
         {
-            static if(is(RetType == void)){}
-            else
+            static if(!is(RetType == void))
                 ret~= "return ";
             ret~= className~"."~__traits(identifier, funcSymbol)~"("~
                 [ParameterIdentifierTuple!funcSymbol].join(",")~");}";
@@ -209,25 +208,31 @@ template generateExportFunc(string className, alias funcSymbol)
 
 string[] exportedFunctions;
 
+/**
+*   Iterates through a module and generates `export` function declaration for each
+*   @ExportD function found on it.
+*/
 mixin template ExportDFunctions(alias mod)
 {
 	import std.traits:getSymbolsByUDA;
 	static foreach(mem; __traits(allMembers, mod))
 	{
+        //Currently only supported on classes and structs
 		static if( (is(mixin(mem) == class) || is(mixin(mem) == struct) ))
 		{
 			static foreach(syms; getSymbolsByUDA!(mixin(mem), ExportD))
 			{
-                static if(__traits(compiles, mixin(generateExportName!(mem, syms))))
-                    static assert(false, "ExportD '" ~ generateExportName!(mem, syms) ~
-                    "' is not unique, use ExportD(\"SomeName\") for overloading with a suffix");
+                //Assert that the symbol to generate does not exists yet
+                static assert(__traits(compiles, mixin(generateExportName!(mem, syms))),
+                "ExportD '" ~ generateExportName!(mem, syms) ~
+                "' is not unique, use ExportD(\"SomeName\") for overloading with a suffix");
+
                 pragma(msg, "Exported "~(generateExportName!(mem, syms)));
 				//Func signature
                 //Check if it is a non value type
                 mixin(generateExportFunc!(mem, syms));
 			}
 
-            // mixin(q{shared static this(){}})
 		}
 	}
 }

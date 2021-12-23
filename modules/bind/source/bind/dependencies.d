@@ -55,7 +55,7 @@ Crashes may happen");
 
     //Load Font support
     // ErrorHandler.assertErrorMessage(loadSDLTTF() == sdlTTFSupport, "Could not load library", "SDL TTF library hasn't been able to load");
-    if(ErrorHandler.assertErrorMessage(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) == 0, "SDL Initialization",  "SDL could not initialize\nSDL Error: " ~ to!string(SDL_GetError())))
+    if(ErrorHandler.assertErrorMessage(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) == 0, "SDL Initialization",  "SDL could not initialize\nSDL Error: " ~ to!string(SDL_GetError())))
         return false;
     return true;
 
@@ -70,6 +70,17 @@ bool loadEngineDependencies()
         ErrorHandler.showErrorMessage("SDL2 Loading error", "Could not load all SDL2 dependencies");
 
     void function(SharedLib) implementation = null;
+
+    version(HipremeEngineLua)
+    {
+        import bindbc.lua;
+        LuaSupport l = loadLua();
+        if(l != luaSupport)
+        {
+            ErrorHandler.assertExit(l != luaSupport.noLibrary, "Could not find any lua library");
+            ErrorHandler.showErrorMessage("Bad Lua Library", "Unknown lua version found");
+        }
+    }
 
 
     version(CIMGUI)

@@ -17,6 +17,8 @@ import util.path:pathSeparator;
 version(Standalone){}
 else{public import fswatch;}
 
+enum debugger = "asm {int 3;}";
+
 pure nothrow string sanitizePath(string path)
 {
     string ret;
@@ -79,10 +81,19 @@ version(Windows)
 
     string getWindowsErrorMessage(HRESULT hr)
     {
-        wchar[4096] buffer;
-        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        null, hr, 0u, buffer.ptr, buffer.length, null);
-        return fromUTF16(cast(wstring)buffer);
+        wchar* buffer;
+        HRESULT fmt = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | 
+        FORMAT_MESSAGE_IGNORE_INSERTS |
+        FORMAT_MESSAGE_ALLOCATE_BUFFER,
+        null, hr, 0u, cast(LPWSTR)&buffer, 0, null);
+
+        if(fmt == 0)
+            return "Error code '"~util.conv.toString(hr)~"' not found";
+        string ret = fromUTF16(cast(wstring)buffer[0..fmt]);
+
+        LocalFree(buffer);
+
+        return ret;
     }
 }
 

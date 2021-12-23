@@ -41,17 +41,18 @@ class SoundTestScene : Scene
         HipTween.to!(["x"])(15, t, 0)
         );
 
+
         timer.play();
 
-        // HipAudioClip buf = HipAudio.load("audio/the-sound-of-silence.wav", HipAudioType.SFX);
-        // src = HipAudio.getSource(false, buf);
-        // HipAudio.play(src);
-        
-        HipAudioClip buf = HipAudio.loadStreamed("audio/StrategicZone.mp3", (ushort.max+1));
+        HipAudioClip buf = HipAudio.load("audio/the-sound-of-silence.wav", HipAudioType.SFX);
         src = HipAudio.getSource(false, buf);
-        HipAudio.play_streamed(src);
-        src.pullStreamData();
-        src.pullStreamData();
+        HipAudio.play(src);
+        
+        // HipAudioClip buf = HipAudio.loadStreamed("audio/StrategicZone.mp3", (ushort.max+1));
+        // src = HipAudio.getSource(false, buf);
+        // HipAudio.play_streamed(src);
+        // src.pullStreamData();
+        // src.pullStreamData();
         // HipAudio.play_streamed(src);
 
 
