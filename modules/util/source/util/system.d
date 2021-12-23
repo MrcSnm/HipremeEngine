@@ -17,6 +17,8 @@ import util.path:pathSeparator;
 version(Standalone){}
 else{public import fswatch;}
 
+enum debugger = "asm {int 3;}";
+
 pure nothrow string sanitizePath(string path)
 {
     string ret;

@@ -1,10 +1,21 @@
 
-function helloWorld()
-    return 50, 100, 200;
+local x = 0;
+local y = 200;
+
+function HipInitialize()
+
+
+end
+
+function HipUpdate()
+    
+    x = x+1
+    y = y+1
 end
 
 
-print(hello());
-print("Hello World");
+function HipRender()
 
-print("Ultra test from Lua");
+    fillRectangle(x, y, 400, 300);
+    endGeometry();
+end

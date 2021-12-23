@@ -88,9 +88,6 @@ extern(C)int SDL_main()
 {
 	import data.ini;
 	initEngine(true);
-	//After initializing engine, every dependency has been load
-	import bind.interpreters;
-	startLuaInterpreter("source/scripting/lua/main.lua");
 
 	version(Android)
 		HipAudio.initialize(HipAudioImplementation.OPENSLES, 
@@ -114,7 +111,13 @@ extern(C)int SDL_main()
 
 	//Initialize 2D context
 	import graphics.g2d;
+	import bind.interpreters;
+
+
+	startInterpreter(HipInterpreter.lua);
 	HipRenderer2D.initialize();
+	loadInterpreterEntry(HipInterpreter.lua, "source/scripting/lua/main.lua");
+	//After initializing engine, every dependency has been load
 	
 
 	//AudioSource sc = Audio.getSource(buf);
@@ -139,6 +142,7 @@ extern(C)int SDL_main()
 	{
 		while(HipremeUpdate())
 		{
+			updateInterpreter();
 			HipremeRender();
 		}
 		HipremeDestroy();
@@ -274,9 +278,11 @@ export extern(C) bool HipremeUpdate()
 */
 export extern(C) void HipremeRender()
 {
+	import bind.interpreters;
 	HipRenderer.begin();
 	HipRenderer.clear(0,0,0,255);
 	sys.render();
+	renderInterpreter();
 	HipRenderer.end();
 }
 export extern(C) void HipremeDestroy()
