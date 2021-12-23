@@ -26,7 +26,7 @@ class HipOpenSLESAudioClip : HipAudioClip
     override HipAudioBufferWrapper createBuffer(void* data, uint size)
     {
         HipAudioBufferWrapper w;
-        w.buffer = sliGenBuffer(data, size);
+        w.buffer = sliGenBuffer(null, size); //Null init buffer
         w.bufferSize = (SLIBuffer*).sizeof;
         hasBuffer = true;
         return w;

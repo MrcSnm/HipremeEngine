@@ -88,6 +88,8 @@ class HipAudio
         import console.log;
         HipAudio.is3D = is3D;
         config = AudioConfig.lightweightConfig;
+
+        implementation = HipAudioImplementation.XAUDIO2;
         
         switch(implementation)
         {
