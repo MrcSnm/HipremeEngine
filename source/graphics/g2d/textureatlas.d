@@ -164,7 +164,7 @@ class TextureAtlas
 
     static bool read(string fileName)
     {
-        import std.string : lastIndexOf;
+        import util.string : lastIndexOf;
         long ind = fileName.lastIndexOf(".");
         if(ind == -1)
             return false;

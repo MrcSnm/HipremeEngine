@@ -110,7 +110,7 @@ Vector3 pathFollow(Vector3 position, ref PathFollowerStatus status, float speed,
 {
     status.checkAdvance(position, minRange);
     if(status.hasFinished)
-        return Vector3.Zero;
+        return Vector3.zero;
     return seekAndStop(status.getWaypoint, position, speed, dt);
 }
 
@@ -123,7 +123,7 @@ void flocking(
 )
 {
 
-    Vector3 alignmentSteering = Vector3.Zero;
+    Vector3 alignmentSteering = Vector3.zero;
     ulong groupSize = 0;
     for(ulong i = 0; i < groupPosition.length; i++)
     {

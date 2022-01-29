@@ -165,10 +165,10 @@ class HipBitmapFont
 
     void readTexture(string texturePath = "")
     {
-        import std.string : lastIndexOf;
+        import util.string : lastIndexOf;
         if(texturePath == "" && atlasTexturePath != "")
         {
-            const long ind = atlasPath.lastIndexOf('/');
+            const long ind = atlasPath.lastIndexOf("/");
             if(ind != -1)
                 texturePath = atlasPath[0..ind+1]~ atlasTexturePath;
             else

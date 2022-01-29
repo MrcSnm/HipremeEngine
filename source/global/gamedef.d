@@ -10,7 +10,8 @@ Distributed under the CC BY-4.0 License.
 */
 module global.gamedef;
 import systems.game;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlvideo;
+import bindbc.sdl.bind.sdlsurface;
 import event.handlers.inputmap;
 
 public:
