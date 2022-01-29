@@ -13,7 +13,11 @@ private:
     import event.handlers.keyboard;
     import event.handlers.mouse;
     import systems.gamepad;
-    import bindbc.sdl;
+    import bindbc.sdl.bind.sdlevents;
+    import bindbc.sdl.bind.sdlkeyboard;
+    import bindbc.sdl.bind.sdlkeycode;
+    import bindbc.sdl.bind.sdlmouse;
+    import bindbc.sdl.bind.sdlvideo;
 
 public:
     import systems.input;
@@ -197,7 +201,7 @@ class EventDispatcher
     }
     Vector3 getAnalog(HipGamepadAnalogs analog, ubyte id = 0)
     {
-        if(id >= gamepads.length) return Vector3.Zero;
+        if(id >= gamepads.length) return Vector3.zero;
         return gamepads[id].getAnalogState(analog);
     }
     bool isGamepadButtonPressed(HipGamepadButton btn, ubyte id = 0)

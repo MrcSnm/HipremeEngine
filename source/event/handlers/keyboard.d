@@ -12,7 +12,7 @@ Distributed under the MIT Software License.
 module event.handlers.keyboard;
 
 import std.algorithm;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlkeycode;
 
 import event.handlers.keyboard_layout;
 public import event.handlers.button;

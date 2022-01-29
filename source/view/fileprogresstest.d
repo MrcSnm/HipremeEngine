@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module view.fileprogresstest;
-import std.stdio;
+import std.stdio : File;
 import console.log;
 import util.file;
 import util.time;

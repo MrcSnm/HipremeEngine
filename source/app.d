@@ -25,7 +25,7 @@ version(Android)
 }
 version(Windows)
 {
-	import hiprenderer.backend.d3d.renderer;
+	import hiprenderer.backend.d3d.d3drenderer;
 }
 version(dll)
 {
@@ -35,6 +35,7 @@ import hiprenderer.renderer;
 import view;
 import systems.game;
 import debugging.gui;
+import bind.interpreters;
 /**
 * Compiling instructions:
 
@@ -42,6 +43,36 @@ import debugging.gui;
 * UWP: dub build -c uwp
 * Android: dub build -c android --compiler=ldc2 -a aarch64--linux-android
 */
+
+
+__gshared bool isUsingInterpreter = false;
+__gshared HipInterpreterEntry interpreterEntry;
+
+
+/** 
+ * What this function does is basically parse the arguments for the
+ * engine entry point:
+ *
+ *	- lua specified: Automatically initialize lua interpreter, and loads source/scripting/lua/main.lua
+ *	- lua source specified: Automatically initialize lua interpreter and loads the source specified
+ */
+void HipremeHandleArguments(string[] args)
+{
+	if(args.length < 2)
+		return;
+	if(args[1] == "lua")
+	{
+		interpreterEntry.intepreter = HipInterpreter.lua;
+		interpreterEntry.sourceEntry = "source/scripting/lua/main.lua";
+		isUsingInterpreter = true;
+	}
+	else if(args[1][$-4..$] == ".lua")
+	{
+		interpreterEntry.intepreter = HipInterpreter.lua;
+		interpreterEntry.sourceEntry = args[1];
+		isUsingInterpreter = true;
+	}
+}
 
 
 static void initEngine(bool audio3D = false)
@@ -82,12 +113,15 @@ static void initEngine(bool audio3D = false)
 	}
 }
 
+
 enum float FRAME_TIME = 1000/60; //60 frames per second
 
 extern(C)int SDL_main()
 {
 	import data.ini;
 	initEngine(true);
+	if(isUsingInterpreter)
+		startInterpreter(interpreterEntry.intepreter);
 
 	version(Android)
 		HipAudio.initialize(HipAudioImplementation.OPENSLES, 
@@ -111,12 +145,10 @@ extern(C)int SDL_main()
 
 	//Initialize 2D context
 	import graphics.g2d;
-	import bind.interpreters;
 
-
-	startInterpreter(HipInterpreter.lua);
-	HipRenderer2D.initialize();
-	loadInterpreterEntry(HipInterpreter.lua, "source/scripting/lua/main.lua");
+	HipRenderer2D.initialize(interpreterEntry);
+	if(isUsingInterpreter)
+		loadInterpreterEntry(interpreterEntry.intepreter, interpreterEntry.sourceEntry);
 	//After initializing engine, every dependency has been load
 	
 
@@ -142,7 +174,8 @@ extern(C)int SDL_main()
 	{
 		while(HipremeUpdate())
 		{
-			updateInterpreter();
+			if(isUsingInterpreter)
+				updateInterpreter();
 			HipremeRender();
 		}
 		HipremeDestroy();
@@ -214,7 +247,7 @@ version(Android)
 		HipAndroid.setEnv(null);
 		HipremeDestroy();
 	}
-}  
+}
 
 /**
 *	Initializes the D runtime, import external functions
@@ -249,8 +282,18 @@ export extern(C) int HipremeMain()
 		sys = new GameSystem(FRAME_TIME);
 	return SDL_main();
 }
-version(dll){}
-else{void main(){HipremeMain();}}
+version(dll)
+{
+
+}
+else
+{
+	int main(string[] args)
+	{
+		HipremeHandleArguments(args);
+		return HipremeMain();
+	}
+}
 
 ///Steps an engine frame
 export extern(C) bool HipremeUpdate()
@@ -282,7 +325,8 @@ export extern(C) void HipremeRender()
 	HipRenderer.begin();
 	HipRenderer.clear(0,0,0,255);
 	sys.render();
-	renderInterpreter();
+	if(isUsingInterpreter)
+		renderInterpreter();
 	HipRenderer.end();
 }
 export extern(C) void HipremeDestroy()
