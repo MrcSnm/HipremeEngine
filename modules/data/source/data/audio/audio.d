@@ -1,6 +1,7 @@
 module data.audio.audio;
 import data.audio.audioconfig;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlrwops;
+import bindbc.sdl.mixer;
 import sdl_sound;
 import util.string;
 import util.conv;
@@ -255,7 +256,6 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
 
     bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type)
     {
-        import std.stdio;
         input.openFromMemory(cast(ubyte[])data);
 
         long lengthFrames = input.getLengthInFrames();

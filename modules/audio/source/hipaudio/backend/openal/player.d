@@ -8,7 +8,6 @@ import error.handler;
 import data.audio.audio;
 import math.vector;
 import bindbc.openal;
-import bindbc.sdl;
 
 package string alGetErrorString(ALenum err)
 {

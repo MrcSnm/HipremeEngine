@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module data.audio.audioconfig;
-import bindbc.sdl : SDL_AudioFormat;
+import bindbc.sdl.bind.sdlaudio;
 import util.reflection;
 import sdl_sound;
 public import hipengine.api.data.audio;

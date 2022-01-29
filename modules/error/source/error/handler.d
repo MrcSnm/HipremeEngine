@@ -147,7 +147,7 @@ public static class ErrorHandler
      *   errorMessage = Error Message
      * Returns: If the error happenned
      */
-    public static bool assertErrorMessage(bool expression, string errorTitle, string errorMessage, bool isFatal = false,
+    public static bool assertErrorMessage(bool expression, lazy string errorTitle, lazy string errorMessage, bool isFatal = false,
     string file = __FILE__, size_t line =__LINE__, string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
     {
         version(HIPREME_DEBUG)
@@ -164,7 +164,7 @@ public static class ErrorHandler
         return expression;
     }
 
-    public static void assertExit(bool expression, string onAssertionFailure = "Assertion Failure",
+    public static void assertExit(bool expression, lazy string onAssertionFailure = "Assertion Failure",
     string file = __FILE__, size_t line = __LINE__, string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
     {
         if(ErrorHandler.assertErrorMessage(expression, "HipAssertion", onAssertionFailure, true,
@@ -176,9 +176,8 @@ public static class ErrorHandler
     }
     static immutable(string) assertReturn(string expression)(string onAssertionFailureMessage)
     {
-        import std.format:format;
-        return format!q{if(ErrorHandler.assertErrorMessage(%s, "HipAssertion", "%s"))return;}
-            (expression, onAssertionFailureMessage);
+        return `if(ErrorHandler.assertErrorMessage(`~expression~`, "HipAssertion", "`~onAssertionFailureMessage~
+        `"))return;`;
     }
 
     public static void showEveryError()

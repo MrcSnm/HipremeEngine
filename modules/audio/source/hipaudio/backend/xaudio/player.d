@@ -7,7 +7,8 @@ import hipaudio.backend.xaudio.clip;
 import data.audio.audio;
 import error.handler;
 import hipaudio.audio;
-import core.sys.windows.windows;
+import core.sys.windows.windef;
+import core.sys.windows.objbase;
 import directx.xaudio2;
 
 
@@ -46,7 +47,7 @@ class HipXAudioPlayer : IHipAudioPlayer
 
     
         hr = xAudio.CreateMasteringVoice(&masterVoice, cfg.channels,  cfg.sampleRate);
-        ErrorHandler.assertExit(SUCCEEDED(hr), "Could create mastering voice:\n\t"~HipXAudioPlayer.getError(hr));
+        ErrorHandler.assertExit(SUCCEEDED(hr), "Could not create mastering voice:\n\t"~HipXAudioPlayer.getError(hr));
 
         version(HIPREME_DEBUG)
         {

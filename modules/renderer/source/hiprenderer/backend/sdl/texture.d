@@ -13,7 +13,7 @@ import hiprenderer.renderer;
 import hiprenderer.texture;
 
 import data.image;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlrender;
 
 public class Hip_SDL_Texture : ITexture
 {

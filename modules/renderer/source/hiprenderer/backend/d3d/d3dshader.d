@@ -8,13 +8,13 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hiprenderer.backend.d3d.shader;
+module hiprenderer.backend.d3d.d3dshader;
 
 version(Windows):
 import config.opts;
 import hiprenderer.renderer;
 import hiprenderer.shader;
-import hiprenderer.backend.d3d.renderer;
+import hiprenderer.backend.d3d.d3drenderer;
 import util.system:getWindowsErrorMessage;
 import directx.d3d11;
 import directx.d3dcompiler;

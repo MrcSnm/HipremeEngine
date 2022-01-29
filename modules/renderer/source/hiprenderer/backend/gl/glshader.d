@@ -8,8 +8,8 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hiprenderer.backend.gl.shader;
-import hiprenderer.backend.gl.renderer;
+module hiprenderer.backend.gl.glshader;
+import hiprenderer.backend.gl.glrenderer;
 import hiprenderer.shader;
 import hiprenderer.renderer;
 import hiprenderer.shader.shadervar;

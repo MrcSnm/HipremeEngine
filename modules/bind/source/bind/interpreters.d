@@ -32,11 +32,7 @@ import bindbc.lua;
 enum checkLuaState = "if(L == null) assert(false, \"No Lua State is loaded\");";
 alias LuaVoid = InterpreterVoid;
 
-struct LuaFunction
-{
-    string name;
-    nothrow int function(lua_State* L) func;
-}
+alias LuaFunction = extern(C) nothrow int function(lua_State* L);
 
 void luaPushVar(T)(lua_State* L, T arg)
 {
@@ -148,7 +144,7 @@ InterpreterResult!T luaCallFunc(T, Args...)(lua_State* L, string funcName, Args 
         return InterpreterResult!T(valid, getFromIndex!T(LUA_TOP));
 }
 
-int externLua(alias Func)(lua_State* L) nothrow
+extern(C) int externLua(alias Func)(lua_State* L) nothrow
 {
     import std.traits:Parameters, ReturnType;
     
@@ -187,6 +183,8 @@ int externLua(alias Func)(lua_State* L) nothrow
 class LuaInterpreter
 {
     public lua_State* L;
+    private string currentFile;
+    private LuaFunction[string] funcList;
 
     public this()
     {
@@ -197,12 +195,18 @@ class LuaInterpreter
 
     public bool loadFile(string fileName)
     {
+        currentFile = fileName;
         if(luaL_dofile(L, (fileName~"\0").ptr) != LUA_OK)
         {
             luaL_error(L, "HipremeEngine Lua interpreter error: %s:\n", lua_tostring(L, -1));
             return false;
         }
         return true;
+    }
+    public void reload()
+    {
+        mixin(checkLuaState);
+        loadFile(currentFile);
     }
 
     void push(T)(T arg)
@@ -224,13 +228,11 @@ class LuaInterpreter
     }
 
 
-    public void expose(alias func)(string name = "")
+    public void expose(alias func)(string name)
     {
         immutable(char)* fName;
-        if(name == "")
-            fName = (__traits(identifier, func)~'\0').ptr;
-        else
-            fName = (name~'\0').ptr;
+        fName = (name~'\0').ptr;
+        funcList[name] = &func;
 
         mixin(checkLuaState);
 
@@ -339,6 +341,12 @@ void sendInterpreterFunc(alias func)(HipInterpreter interpreter)
 }
 
 
+void reloadInterpreter()
+{
+    if(_lua !is null)
+        _lua.reload();
+}
+
 void renderInterpreter()
 {
     if(_lua !is null)
@@ -349,4 +357,10 @@ void updateInterpreter()
 {
     if(_lua !is null)
         _lua.call!(LuaVoid)("HipUpdate");
+}
+
+struct HipInterpreterEntry
+{
+    HipInterpreter intepreter;
+    string sourceEntry;
 }

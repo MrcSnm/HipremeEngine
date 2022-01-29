@@ -80,7 +80,7 @@ void fileTruncate(File file, long offset)
 {
     version (Windows) 
     {
-        import core.sys.windows.windows: SetEndOfFile;
+        import util.windows;
         file.seek(offset);
         if(!SetEndOfFile(file.windowsHandle()))
             throw new FileException(file.name, "SetEndOfFile error");

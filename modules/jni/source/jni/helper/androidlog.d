@@ -11,8 +11,7 @@ Distributed under the CC BY-4.0 License.
 module jni.helper.androidlog;
 version(Android):
 import jni.android.log;
-import std.conv : to;
-import std.string : toStringz;
+import util.string : toStringz;
 import core.stdc.stdarg : va_end, va_list, va_start;
 
 //INFORMATION SECTION

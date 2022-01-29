@@ -10,8 +10,10 @@ Distributed under the CC BY-4.0 License.
 */
 module bind.dependencies;
 import error.handler;
-import bindbc.sdl;
-import bindbc.sdl.ttf;
+import bindbc.sdl.config;
+import bindbc.sdl.bind.sdlerror;
+import bindbc.sdl.bind.sdl;
+import bindbc.sdl.dynload;
 import bindbc.sdl.image;
 import bindbc.loader : SharedLib;
 

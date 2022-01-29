@@ -18,7 +18,7 @@ string[] pathSplitter(string path)
 {
     string[] ret;
     string current;
-    for(ulong i = 0; i < path.length; i++)
+    for(uint i = 0; i < path.length; i++)
     {
         if(path[i] == '/' || path[i] == '\\')
         {
@@ -39,7 +39,7 @@ string baseName(string path)
     int lastSepIndex = -1;
     int preLastSepIndex = -1;
 
-    for(ulong i = 0; i < path.length; i++)
+    for(uint i = 0; i < path.length; i++)
     {
         if(path[i] == pathSeparator)
         {

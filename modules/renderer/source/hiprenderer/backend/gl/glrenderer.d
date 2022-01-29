@@ -8,17 +8,19 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hiprenderer.backend.gl.renderer;
+module hiprenderer.backend.gl.glrenderer;
 import hiprenderer.renderer;
 import hiprenderer.framebuffer;
 import hiprenderer.shader;
-import hiprenderer.backend.gl.framebuffer;
-import hiprenderer.backend.gl.shader;
+import hiprenderer.backend.gl.glframebuffer;
+import hiprenderer.backend.gl.glshader;
 import hiprenderer.viewport;
 import util.conv;
 import math.rect;
 import error.handler;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlrect;
+import bindbc.sdl.bind.sdlvideo;
+import bindbc.sdl.bind.sdlrender;
 version(Android)
 {
     public import gles.gl30;

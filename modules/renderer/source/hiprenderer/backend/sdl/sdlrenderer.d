@@ -15,7 +15,10 @@ import hiprenderer.framebuffer;
 import hiprenderer.viewport;
 import math.rect;
 import error.handler;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlvideo;
+import bindbc.sdl.bind.sdlrender;
+import bindbc.sdl.bind.sdlrect;
+import bindbc.sdl.image;
 import bindbc.opengl;
 import console.log;
 
