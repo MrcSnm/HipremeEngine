@@ -21,14 +21,14 @@ import bindbc.sdl;
 import console.log;
 import core.stdc.stdlib:exit;
 
-public import hiprenderer.backend.gl.renderer;
+public import hiprenderer.backend.gl.glrenderer;
 
 version(Windows)
 {
-    import hiprenderer.backend.d3d.renderer;
-    import hiprenderer.backend.d3d.texture;
+    import hiprenderer.backend.d3d.d3drenderer;
+    import hiprenderer.backend.d3d.d3dtexture;
 }
-import hiprenderer.backend.gl.texture;
+import hiprenderer.backend.gl.gltexture;
 import hiprenderer.backend.sdl.texture;
 
 enum HipWindowMode

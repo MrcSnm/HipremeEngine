@@ -8,7 +8,7 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hiprenderer.backend.d3d.renderer;
+module hiprenderer.backend.d3d.d3drenderer;
 version(Windows):
 
 pragma(lib, "ole32");
@@ -18,13 +18,16 @@ pragma(lib, "d3d11");
 pragma(lib, "dxgi");
 
 import core.stdc.string;
-import core.sys.windows.windows;
 import util.string:fromStringz;
 
 import directx.d3d11;
 import directx.d3d11_3;
 import directx.dxgi1_4;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlsyswm;
+import bindbc.sdl.bind.sdlhints;
+import bindbc.sdl.bind.sdlvideo;
+import bindbc.sdl.bind.sdlrender;
+import bindbc.sdl.bind.sdlrect;
 
 
 import util.system;
@@ -37,9 +40,9 @@ import hiprenderer.viewport;
 import hiprenderer.renderer;
 import hiprenderer.framebuffer;
 
-import hiprenderer.backend.d3d.shader;
-import hiprenderer.backend.d3d.framebuffer;
-import hiprenderer.backend.d3d.vertex;
+import hiprenderer.backend.d3d.d3dshader;
+import hiprenderer.backend.d3d.d3dframebuffer;
+import hiprenderer.backend.d3d.d3dvertex;
 
 
 version(UWP)
@@ -210,7 +213,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         static if(HIP_DEBUG)
         {
-            import core.sys.windows.dll;
+            import util.windows;
             HRESULT hres;
             DXGIGetDebugInterface = cast(_DXGIGetDebugInterface)GetProcAddress(GetModuleHandle("Dxgidebug.dll"), "DXGIGetDebugInterface");
             if(DXGIGetDebugInterface is null)

@@ -47,8 +47,14 @@ struct String
             }
             else static if(is(T == immutable(char)*))
             {
-                l+= cast(uint)strlen(value);
+                l = cast(uint)strlen(value);
                 chs = value;
+            }
+            else
+            {
+                string temp = to!string(value);
+                l = temp.length;
+                chs = temp.ptr;
             }
             free(chars);
             chars = cast(char*)realloc(chars, l);
@@ -122,7 +128,7 @@ pure string replaceAll(string str, string what, string replaceWith = "")
 {
     string ret;
     ulong z = 0;
-    for(ulong i = 0; i < str.length; i++)
+    for(uint i = 0; i < str.length; i++)
     {
         while(z < what.length && str[i+z] == what[z])
             z++;
@@ -137,7 +143,7 @@ pure string replaceAll(string str, string what, string replaceWith = "")
     return ret;
 }
 
-pure long indexOf(in string str,in string toFind, int startIndex = 0)
+pure long indexOf(in string str,in string toFind, int startIndex = 0) nothrow @nogc
 {
     long z = 0;
     for(long i = startIndex; i < str.length; i++)
@@ -151,7 +157,30 @@ pure long indexOf(in string str,in string toFind, int startIndex = 0)
     return -1;
 }
 
-long lastIndexOf(in string str,in string toFind, long startIndex = -1) pure nothrow
+pure long count(in string str, in string countWhat) nothrow @nogc @safe
+{
+    int ret = 0;
+    int checker = 0;
+    for(int i = 0; i < str.length; i++)
+    {
+        while(str[i+checker] == countWhat[checker])
+        {
+            checker++;
+            if(checker == countWhat.length)
+            {
+                i+= checker;
+                ret++;
+                break;
+            }
+        }
+        checker = 0;
+    }
+    return ret;
+}
+
+alias countUntil = indexOf;
+
+long lastIndexOf(in string str,in string toFind, long startIndex = -1) pure nothrow @nogc
 {
     long z = 1;
     if(startIndex == -1) startIndex = cast(int)(str.length)-1;
@@ -179,7 +208,7 @@ T toDefault(T)(string s, T defaultValue = T.init)
     return v;
 }
 
-string fromStringz(const char* cstr) pure nothrow
+string fromStringz(const char* cstr) pure nothrow @nogc
 {
     import core.stdc.string:strlen;
     size_t len = strlen(cstr);
@@ -190,14 +219,14 @@ const(char*) toStringz(string str) pure nothrow
 {
     return (str~"\0").ptr;
 }
-char toLowerCase(char c) pure nothrow @safe
+pragma(inline) char toLowerCase(char c) pure nothrow @safe @nogc 
 {
     if(c < 'A' || c > 'Z')
         return c;
     return cast(char)(c + ('a' - 'A'));
 }
 
-string toLowerCase(string str)
+string toLowerCase(string str) pure nothrow @safe
 {
     string ret;
     ret.reserve(str.length);
@@ -212,7 +241,7 @@ string[] split(string str, char separator) pure nothrow
     return split(str, cast(string)sep);
 }
 
-string[] split(string str, string separator) pure nothrow
+string[] split(string str, string separator) pure nothrow @safe
 {
     string[] ret;
     string curr;
@@ -235,6 +264,25 @@ string[] split(string str, string separator) pure nothrow
     }
     return ret ~ curr;
 }
+
+pragma(inline) bool isAlpha(char c) pure nothrow @safe @nogc
+{
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
+
+pragma(inline) bool isEndOfLine(char c) pure nothrow @safe @nogc
+{
+    return c == '\n' || c == '\r';
+}
+
+pragma(inline) bool isNumeric(char c) pure nothrow @safe @nogc
+{
+    return (c >= '0' && c <= '9') || (c == '-');
+}
+pragma(inline) bool isWhitespace(char c) pure nothrow @safe @nogc
+{
+    return (c == ' ' || c == '\t' || c.isEndOfLine);
+}
 string[] pathSplliter(string str)
 {
     string[] ret;
@@ -254,7 +302,7 @@ string[] pathSplliter(string str)
 
 
 
-string baseName(string path)
+string baseName(string path) pure nothrow @safe @nogc
 {
     ulong lastIndex = 0;
     for(ulong i = 0; i < path.length; i++)

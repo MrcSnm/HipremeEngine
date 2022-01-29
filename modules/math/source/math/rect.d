@@ -9,7 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module math.rect;
-// import bindbc.sdl;
 
 struct Size
 {
@@ -30,6 +29,7 @@ struct Rect
 }
 
 
+pure nothrow @nogc @safe
 bool overlaps(Rect r1, Rect r2)
 {
     const float r1x2 = r1.x+r1.w;

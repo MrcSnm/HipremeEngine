@@ -11,27 +11,15 @@
 	"dependencies": {
 		"bindbc-openal": "~>1.0.0",
 		"bindbc-sdl": "~>1.0.1",
-		"data": {
-			"path": "../data",
-			"version": ">=0.0.0"
-		},
-		"imgui": {
-			"path": "../imgui",
-			"version": ">=0.0.0"
-		},
-		"math": {
-			"path": "../math",
-			"version": ">=0.0.0"
-		},
-		"sdl_sound": {
-			"path": "../../dependencies/sdl_sound",
-			"version": ">=0.0.0"
-		},
-		"sles": {
-			"path": "../../dependencies/sles",
-			"version": ">=0.0.0"
-		},
+		"data": {"path": "../data"},
+		"imgui": {"path": "../imgui"},
+		"math": {"path": "../math"},
+		"sdl_sound": {"path": "../../dependencies/sdl_sound"},
+		"sles": {"path": "../../dependencies/sles"},
 		"directx-d":{"path" : "../../dependencies/directx-d"}
+	},
+	"subConfigurations": {
+		"hipengine_api":"hipengine"
 	},
 	"description": "HipremeEngine audio module",
 	"license": "proprietary",

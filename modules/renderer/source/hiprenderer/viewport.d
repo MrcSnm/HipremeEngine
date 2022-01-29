@@ -12,7 +12,7 @@ module hiprenderer.viewport;
 import math.vector;
 import math.scaling;
 import hiprenderer.renderer;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlrect;
 
 public class Viewport
 {

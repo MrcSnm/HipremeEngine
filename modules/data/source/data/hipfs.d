@@ -231,7 +231,7 @@ class HipStdFileSystemInteraction : IHipFileSystemInteraction
 
 version(UWP)
 {
-    import core.sys.windows.windows;
+    import core.sys.windows.windef;
     import bind.external : UWPCreateFileFromAppW,
                         UWPDeleteFileFromAppW,
                         UWPGetFileAttributesExFromAppW;

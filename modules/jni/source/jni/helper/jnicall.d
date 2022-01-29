@@ -1,11 +1,10 @@
 module jni.helper.jnicall;
 import util.conv:to;
-import std.format:format;
+import util.format;
 import std.ascii:toUpper;
-import std.string:toStringz;
+import util.string;
 import std.traits : isArray;
 import std.array:split, join;
-import std.algorithm:countUntil;
 import jni.jni;
 
 version(Android):
@@ -121,7 +120,6 @@ jclass javaGetClass(JNIEnv* env, string path)
 }
 string javaGetMethodName(string where)
 {
-    import std.string:lastIndexOf;
     long ind = lastIndexOf(where, '.');
     bool isMethodOnly = ind == -1;
 

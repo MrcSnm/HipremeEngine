@@ -15,7 +15,7 @@ module hiprenderer.texture;
 import data.assetmanager;
 import error.handler;
 import hiprenderer.renderer;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlrect;
 import data.image;
 public import util.data_structures:Array2D;
 public import hipengine.api.renderer.texture;

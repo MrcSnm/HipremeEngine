@@ -16,18 +16,12 @@
 		"gles" : {"path": "../../dependencies/gles"},
 		"data" : {"path": "../data"},
 		"bind" : {"path": "../bind"},
-		"config": {
-			"path": "../config",
-			"version": ">=0.0.0"
-		},
-		"error": {
-			"path": "../error",
-			"version": ">=0.0.0"
-		},
-		"math": {
-			"path": "../math",
-			"version": ">=0.0.0"
-		}
+		"config": {"path": "../config"},
+		"error": {"path": "../error"},
+		"math": {"path": "../math"}
+	},
+	"subConfigurations": {
+		"hipengine_api":"hipengine"
 	},
 	"versions": [
 		"SDL_208",
