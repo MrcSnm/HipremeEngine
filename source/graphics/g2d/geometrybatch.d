@@ -32,7 +32,6 @@ class GeometryBatch
     protected index_t verticesCount;
     protected index_t indicesCount;
     protected HipColor currentColor;
-    HipRendererMode mode;
     float[] vertices;
     index_t[] indices;
     
@@ -168,10 +167,10 @@ class GeometryBatch
 
     void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24)
     {
-        if(mode != HipRendererMode.LINE)
+        if(HipRenderer.getMode != HipRendererMode.LINE)
         {
             flush();
-            mode = HipRendererMode.LINE;
+            HipRenderer.setRendererMode(HipRendererMode.LINE);
         }   
         float angle_mult = (1.0/precision) * degrees * (PI/180.0);
         checkVerticesCount(1);
@@ -194,20 +193,20 @@ class GeometryBatch
     ///With this default precision, the circle should be smooth enough
     void fillEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24)
     {
-        if(mode != HipRendererMode.TRIANGLES)
+        if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
         {
             flush();
-            mode = HipRendererMode.TRIANGLES;
+            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
         }
         fillEllipseVertices(x, y, radiusW, radiusH, degrees, precision);
     }
 
     void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
     {
-        if(mode != HipRendererMode.TRIANGLES)
+        if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
         {
             flush();
-            mode = HipRendererMode.TRIANGLES;
+            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
         }
         triangleVertices(x1,y1,x2,y2,x3,y3);
     }
@@ -218,11 +217,10 @@ class GeometryBatch
     }
     void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
     {
-        if(mode != HipRendererMode.LINE_STRIP)
+        if(HipRenderer.getMode != HipRendererMode.LINE_STRIP)
         {
             flush();
-            mode = HipRendererMode.LINE_STRIP;
-            HipRenderer.setRendererMode(mode);
+            HipRenderer.setRendererMode(HipRendererMode.LINE_STRIP);
         }
         triangleVertices(x1, y1, x2, y2, x3, y3);
     }
@@ -233,11 +231,10 @@ class GeometryBatch
     }
     void drawLine(int x1, int y1, int x2, int y2)
     {
-        if(mode != HipRendererMode.LINE)
+        if(HipRenderer.getMode != HipRendererMode.LINE)
         {
             flush();
-            mode = HipRendererMode.LINE;
-            HipRenderer.setRendererMode(mode);
+            HipRenderer.setRendererMode(HipRendererMode.LINE);
         }
         checkVerticesCount(2);
         addVertex(x1, y1, 0);
@@ -258,11 +255,10 @@ class GeometryBatch
 
     void drawPixel(int x, int y)
     {
-        if(mode != HipRendererMode.POINT)
+        if(HipRenderer.getMode != HipRendererMode.POINT)
         {
             flush();
-            mode = HipRendererMode.POINT;
-            HipRenderer.setRendererMode(mode);
+            HipRenderer.setRendererMode(HipRendererMode.POINT);
         }
         checkVerticesCount(1);
         addVertex(x, y, 0);
@@ -302,11 +298,10 @@ class GeometryBatch
 
     void drawRectangle(int x, int y, int w, int h)
     {
-        if(mode != HipRendererMode.LINE_STRIP)
+        if(HipRenderer.getMode != HipRendererMode.LINE_STRIP)
         {
             flush();
-            mode = HipRendererMode.LINE_STRIP;
-            HipRenderer.setRendererMode(mode);
+            HipRenderer.setRendererMode(HipRendererMode.LINE_STRIP);
         }
         rectangleVertices(x,y,w,h);
     }
@@ -318,11 +313,10 @@ class GeometryBatch
 
     void fillRectangle(int x, int y, int w, int h)
     {
-        if(mode != HipRendererMode.TRIANGLES)
+        if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
         {
             flush();
-            mode = HipRendererMode.TRIANGLES;
-            HipRenderer.setRendererMode(mode);
+            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
         }
         rectangleVertices(x,y,w,h);
     }
@@ -334,7 +328,6 @@ class GeometryBatch
 
     void flush()
     {
-        HipRenderer.setRendererMode(mode);
         const uint count = this.currentIndex;
         verticesCount = 0;
         currentIndex = 0;

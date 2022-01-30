@@ -134,7 +134,7 @@ export string toString(int x) pure nothrow @safe
     ulong div = 10;
     int length = 1;
     int count = 1;
-    while(div < x)
+    while(div <= x)
     {
         div*=10;
         length++;
@@ -144,7 +144,7 @@ export string toString(int x) pure nothrow @safe
     if(isNegative)
         ret[0] = '-';
     div = 10;
-    while(div < x)
+    while(div <= x)
     {
         count++;
         ret[length-count]=numbers[(x/div)%10];
@@ -272,6 +272,7 @@ unittest
 {
     assert(toString(500) == "500");
     assert(toFloat("50.5" == 50.5f));
+    assert(toString(100.0) == "100");
     assert(toInt("-500") == -500);
     assert(toString("Hello") == "Hello");
     assert(toString(true) == "true");
