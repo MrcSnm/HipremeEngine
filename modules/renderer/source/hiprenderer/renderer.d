@@ -127,6 +127,7 @@ class HipRenderer
     protected static Viewport currentViewport = null;
     protected static Viewport mainViewport = null;
     protected static IHipRendererImpl rendererImpl;
+    protected static HipRendererMode rendererMode;
     protected Statistics stats;
     public static SDL_Renderer* renderer = null;
     public static SDL_Window* window = null;
@@ -327,10 +328,12 @@ class HipRenderer
 
     public static void setRendererMode(HipRendererMode mode)
     {
+        rendererMode = mode;
         rendererImpl.setRendererMode(mode);
         HipRenderer.exitOnError();
         stats.drawCalls++;
     }
+    public static HipRendererMode getMode(){return rendererMode;}
 
     public static void drawIndexed(index_t count, uint offset = 0)
     {

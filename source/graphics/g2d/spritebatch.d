@@ -123,6 +123,9 @@ class HipSpriteBatch
         hasBegun = true;
     }
 
+    /**
+    *   Sets the texture slot/index for the current quad and points it to the next quad
+    */
     void addQuad(ref float[HipSpriteVertex.quadCount] quad, int slot)
     {
         if(quadsCount+1 > maxQuads)
@@ -151,6 +154,9 @@ class HipSpriteBatch
         currentTextures[usingTexturesCount] = t;
         return usingTexturesCount++;
     }
+    /**
+    *   Sets the current texture in use on the sprite batch and returns its slot.
+    */
     protected int setTexture(Texture texture)
     {
         int slot = getNextTextureID(texture);
@@ -262,6 +268,7 @@ class HipSpriteBatch
 
     void flush()
     {
+        HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
         // mesh.shader.bind();
         // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
         // material.bind();
@@ -291,6 +298,10 @@ class HipSpriteBatch
 
 enum
 {
+    //X, Y, Z (Position)
+    //R, G, B, A (Color)
+    //U, V (Texture Coordinates)
+    //T (Texture Slot/Index)
     X1 = 0,
     Y1,
     Z1,

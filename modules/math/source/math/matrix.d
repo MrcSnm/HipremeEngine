@@ -21,6 +21,14 @@ enum MatrixType
 struct Matrix3
 {
     float[9] values;
+    pragma(inline) inout ref auto opIndex(size_t i) return
+    {
+        return values[i];
+    }
+    pragma(inline) inout ref auto opIndex(size_t i, size_t j) return
+    {
+        return values[i*3+j];
+    }
     pragma(inline, true)
     static Matrix3 translation(float x, float y)
     {
@@ -28,6 +36,14 @@ struct Matrix3
             1, 0, 0,
             0, 1, 0,
             x, y, 1
+        ]);
+    }
+    static Matrix3 identity()
+    {
+        return Matrix3([
+            1,0,0,
+            0,1,0,
+            0,0,1
         ]);
     }
     Matrix3 translate(float x, float y)
@@ -148,6 +164,14 @@ struct Matrix4
             0, 0, 1, 0,
             0, 0, 0, 1
         ]);
+    }
+    pragma(inline) inout ref auto opIndex(size_t i) return
+    {
+        return values[i];
+    }
+    pragma(inline) inout ref auto opIndex(size_t i, size_t j) return
+    {
+        return values[i*4+j];
     }
     pragma(inline, true)
     static Matrix4 translation(float x, float y, float z)
