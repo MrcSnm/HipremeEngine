@@ -31,7 +31,7 @@ class TilemapTestScene : Scene
         batch = new HipSpriteBatch();
 
 
-        map = Tilemap.readTiledTMX("maps/Test.tmx");
+        // map = Tilemap.readTiledTMX("maps/Test.tmx");
         spr = new HipSprite(map.tilesets[0].texture);
         sprite = new HipSprite("graphics/sprites/sprite.png");
         sprite2 = new HipSprite("graphics/sprites/shaun.png");

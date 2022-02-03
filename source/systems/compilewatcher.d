@@ -14,7 +14,7 @@ module systems.compilewatcher;
 version(Standalone){}
 else:
 import std.concurrency;
-import std.path;
+import util.path;
 import std.datetime.stopwatch;
 import core.time:Duration,dur;
 import util.system;

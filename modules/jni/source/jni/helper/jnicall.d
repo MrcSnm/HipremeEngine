@@ -1,10 +1,8 @@
 module jni.helper.jnicall;
 import util.conv:to;
 import util.format;
-import std.ascii:toUpper;
 import util.string;
 import std.traits : isArray;
-import std.array:split, join;
 import jni.jni;
 
 version(Android):
@@ -88,7 +86,6 @@ private string getArgs(Args...)()
 
 string javaGetClassPath(string path)
 {
-    import std.ascii:isUpper;
     string className;
 
     bool hasClass = false;

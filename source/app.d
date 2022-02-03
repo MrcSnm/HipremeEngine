@@ -140,6 +140,9 @@ extern(C)int SDL_main()
 		}
 	}
 	else{HipRenderer.init("renderer.conf");}
+	version(dll){}
+	else
+		sys = new GameSystem(FRAME_TIME);
 
 	import event.handlers.inputmap;
 
@@ -277,9 +280,6 @@ export extern(C) void HipremeInit()
 */
 export extern(C) int HipremeMain()
 {
-	version(dll){}
-	else
-		sys = new GameSystem(FRAME_TIME);
 	return SDL_main();
 }
 version(dll)

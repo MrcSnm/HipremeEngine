@@ -112,7 +112,7 @@ else if(res.type == ResultTypes._string)
 class HipDecisionTree
 {
     Condition[string] conditions;
-    import std.array:split;
+    import util.string : split;
     string name;
     this(string name)
     {

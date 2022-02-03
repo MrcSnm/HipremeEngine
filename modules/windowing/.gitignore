@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/windowing
+windowing.so
+windowing.dylib
+windowing.dll
+windowing.a
+windowing.lib
+windowing-test-*
+*.exe
+*.o
+*.obj
+*.lst

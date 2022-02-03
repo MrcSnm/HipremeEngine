@@ -71,9 +71,9 @@ else
         float function(char key, uint id = 0) getKeyUpTime;
 
         //Mouse/Touch functions
-        bool function(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) isMouseButtonPressed;
-        bool function(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) isMouseButtonJustPressed;
-        bool function(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) isMouseButtonJustReleased;
+        bool function(HipMouseButton btn = HipMouseButton.left, uint id = 0) isMouseButtonPressed;
+        bool function(HipMouseButton btn = HipMouseButton.left, uint id = 0) isMouseButtonJustPressed;
+        bool function(HipMouseButton btn = HipMouseButton.left, uint id = 0) isMouseButtonJustReleased;
         immutable(Vector2*) function(uint id = 0) getTouchPosition;
         Vector2 function(uint id=0) getTouchDeltaPosition;
         Vector3 function(uint id=0) getScroll;

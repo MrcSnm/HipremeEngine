@@ -44,20 +44,51 @@ int lastIndexOf(T)(T[] arr, T element, int startIndex = -1)
     return -1;
 }
 
+/**
+*   Should work only for numerics
+*/
+int binarySearch(T)(in T[] arr, T element) @nogc @safe nothrow
+{
+    uint l = 0;
+    uint r = arr.length;
+    uint m;
+    while(l <= r)
+    {
+        m = cast(uint)((l+r)/2);
+        if(arr[m] < element)
+            l = m + 1;
+        else if(arr[m] > element)
+            r = m - 1;
+        else if(arr[m] == element)
+            return m;
+    }
+
+    return -1;
+}
+
+bool swapAt(T)(T[] arr, int index1, int index2) @nogc @safe nothrow
+{
+    if(index1 == index2 || index1 < 0 || index1 >= arr.length || index2 < 0 || index2 >= arr.length)
+        return false;
+    T temp  = arr[index1];
+    arr[index1] = arr[index2];
+    arr[index2] = temp;
+    return true;
+}
 
 /**
 *  Returns if swap was succesful
 */
-bool swapElementsFromArray(T)(T[] arr, T element1, T element2)
+bool swapElementsFromArray(T)(T[] arr, T element1, T element2) @nogc @safe nothrow
 {
-    import std.algorithm : countUntil, swapAt;
-
     long index1 = arr.indexOf(element1);
     long index2 = arr.indexOf(element2);
 
     if(index1 != -1 && index2 != 1)
     {
-        swapAt(arr, index1, index2);
+        T temp = arr[index1];
+        arr[index1] = arr[index2];
+        arr[index2] = temp;
         return true;
     }
     return false;
@@ -70,7 +101,7 @@ bool popFront(T)(ref T[] arr, out T val)
     if(arr.length == 0)
         return false;
     val = arr[0];
-    memcpy(arr.ptr, arr.ptr+1, (arr.length-1)*T.sizeof);
+    memcpy(arr.ptr, arr.ptr+1, (cast(int)arr.length-1)*T.sizeof);
     arr.length--;
     return true;
 }
@@ -88,14 +119,14 @@ bool remove(T)(ref T[] arr, T val)
     for(ulong i = 0; i < arr.length; i++)
         if(arr[i] == val)
         {
-            for(ulong z = 0; z+i < arr.length-1; z++)
+            for(ulong z = 0; z+i < cast(int)arr.length-1; z++)
                 arr[z+i] = arr[z+i+1];
             arr.length--;
             return true;
         }
     return false;
 }
-pragma(inline, true)
+pragma(inline)
 bool contains(T)(ref T[] arr, T val){return arr.indexOf(val) != -1;} 
 
 
@@ -119,8 +150,7 @@ pragma(inline, true) bool contains(string accessorA, string accessorB, T, Q)(ref
     return false;
 }
 
-pragma(inline, true)
-bool isEmpty(T)(ref T[] arr){return arr.length == 0;}
+pragma(inline) bool isEmpty(T)(in T[] arr){return arr.length == 0;}
 
 
 import std.traits:ForeachType;
@@ -145,6 +175,12 @@ string join(T)(T[] arr, string separator = "")
         ret~= arr[i];
     }
     return ret;
+}
+
+string join(T)(T[] arr, char separator)
+{
+    char[1] temp = separator;
+    return join(arr, cast(string)temp);
 }
 
 

@@ -15,7 +15,7 @@ module hiprenderer.texture;
 import data.assetmanager;
 import error.handler;
 import hiprenderer.renderer;
-import bindbc.sdl.bind.sdlrect;
+import hipengine.api.math.rect;
 import data.image;
 public import util.data_structures:Array2D;
 public import hipengine.api.renderer.texture;
@@ -92,8 +92,7 @@ class Texture
         textureImpl.setTextureFilter(min, mag);
     }
     
-    SDL_Rect getBounds(){return SDL_Rect(0,0,width,height);}
-    void render(int x, int y){HipRenderer.draw(this, x, y);}
+    Rect getBounds(){return Rect(0,0,width,height);}
 
     /**
     *   Returns whether the load was successful
