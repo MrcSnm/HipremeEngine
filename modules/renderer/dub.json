@@ -11,7 +11,7 @@
 	"dependencies": {
 		"hipengine_api": {"path": "../../api"},
 		"bindbc-opengl": "~>1.0.0",
-		"bindbc-sdl": "~>1.0.1",
+		"windowing" : {"path" : "../windowing"},
 		"directx-d": {"path": "../../dependencies/directx-d"},
 		"gles" : {"path": "../../dependencies/gles"},
 		"data" : {"path": "../data"},

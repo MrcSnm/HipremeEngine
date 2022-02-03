@@ -1,5 +1,5 @@
 module math.quaternion;
-import std.math;
+import std.math : sin,  cos, sqrt;
 import math.vector;
 import math.matrix;
 

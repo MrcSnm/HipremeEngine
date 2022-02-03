@@ -69,6 +69,33 @@ Vector3 toCircleBounds(Vector3 v, float angle, AxisNavigation axis=AxisNavigatio
     return v;
 }
 
+T min(T)(T[] values ...) pure nothrow @safe @nogc
+{
+    T v = values[0];
+    for(int i = 1; i < values.length; i++)
+        if(values[i] < v)
+            v = values[i];
+    return v;
+}
+
+T max(T)(T[] values ...) pure nothrow @safe @nogc
+{
+    T v = values[0];
+    for(int i = 1; i < values.length; i++)
+        if(values[i] > v)
+            v = values[i];
+    return v;
+}
+
+T sum(T)(T[] values ...) pure nothrow @safe @nogc
+{
+    T sum = 0;
+    foreach(v; values) sum+= v;
+    return sum;
+}
+
+pragma(inline)T abs(T)(in T value){if(value < 0) return -value; return value;}
+
 int greatestCommonDivisor(int a, int b)
 {
     int res;

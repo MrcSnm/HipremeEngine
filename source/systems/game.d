@@ -17,6 +17,7 @@ import global.gamedef;
 private import event.dispatcher;
 private import event.handlers.keyboard;
 import view;
+import windowing.events;
 
 
 version(Standalone){}
@@ -98,7 +99,7 @@ class GameSystem
             });
         }
 
-        dispatcher = new EventDispatcher(&keyboard);
+        dispatcher = new EventDispatcher(HipRenderer.window, &keyboard);
         dispatcher.addOnResizeListener((uint width, uint height)
         {
             HipRenderer.width = width;
@@ -113,14 +114,14 @@ class GameSystem
         version(Standalone){}
         else
         {
-            import std.path:buildNormalizedPath;
+            import util.path;
             import util.system;
             import util.string:indexOf;
 
             if(gameDll.indexOf("projects/") == -1)
             {
-                projectDir = buildNormalizedPath("projects", gameDll);
-                gameDll = buildNormalizedPath("projects", gameDll, gameDll);
+                projectDir = joinPath("projects", gameDll);
+                gameDll = joinPath("projects", gameDll, gameDll);
             }
 
             watcher = new CompileWatcher(projectDir, null, ["d"]).run;

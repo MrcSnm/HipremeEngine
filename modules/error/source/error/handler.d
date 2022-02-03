@@ -15,7 +15,6 @@ version(Android)
 {
     import jni.helper.androidlog;
 }
-import std.system;
 
 /** 
  * Base clas for documenting errors
@@ -126,7 +125,7 @@ public static class ErrorHandler
     }
     public static void showWarningMessage(string warningTitle, string warningMessage)
     {
-        static if(os == OS.android)
+        version(Android)
         {
             alogw("HipremeEngine", "\nWarning: " ~ warningTitle);
             alogw("HipremeEngine", warningMessage);

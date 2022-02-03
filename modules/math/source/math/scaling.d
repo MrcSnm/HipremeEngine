@@ -9,7 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module math.scaling;
-import std.algorithm:min;
 import math.vector;
 
 class Scaling

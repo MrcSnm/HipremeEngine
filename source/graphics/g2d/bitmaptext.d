@@ -12,7 +12,7 @@ module graphics.g2d.bitmaptext;
 import graphics.g2d;
 import graphics.mesh;
 import util.data_structures;
-import std.algorithm.comparison : max;
+import math.utils : max;
 import util.conv:to;
 import error.handler;
 import console.log;

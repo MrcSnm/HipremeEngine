@@ -157,6 +157,12 @@ pure long indexOf(in string str,in string toFind, int startIndex = 0) nothrow @n
     return -1;
 }
 
+pure long indexOf(in string str, char ch, int startIndex = 0) nothrow @nogc
+{
+    char[1] temp = [ch];
+    return indexOf(str,  cast(string)temp, startIndex);
+}
+
 pure long count(in string str, in string countWhat) nothrow @nogc @safe
 {
     int ret = 0;
@@ -232,6 +238,22 @@ string toLowerCase(string str) pure nothrow @safe
     ret.reserve(str.length);
     for(ulong i = 0; i < str.length; i++)
         ret~= str[i].toLowerCase;
+    return ret;
+}
+
+pragma(inline) char toUpper(char c) pure nothrow @safe @nogc 
+{
+    if(c < 'a' || c > 'z')
+        return c;
+    return cast(char)(c - ('a' - 'A'));
+}
+
+string toUpper(string str) pure nothrow @safe
+{
+    string ret;
+    ret.reserve(str.length);
+    for(ulong i = 0; i < str.length; i++)
+        ret~= str[i].toUpper;
     return ret;
 }
 

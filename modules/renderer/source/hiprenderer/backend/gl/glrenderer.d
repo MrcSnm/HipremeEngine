@@ -15,12 +15,10 @@ import hiprenderer.shader;
 import hiprenderer.backend.gl.glframebuffer;
 import hiprenderer.backend.gl.glshader;
 import hiprenderer.viewport;
+import windowing.window;
 import util.conv;
 import math.rect;
 import error.handler;
-import bindbc.sdl.bind.sdlrect;
-import bindbc.sdl.bind.sdlvideo;
-import bindbc.sdl.bind.sdlrender;
 version(Android)
 {
     public import gles.gl30;
@@ -32,30 +30,40 @@ else
 import console.log;
 
 
-private SDL_Window* createSDL_GL_Window(uint width, uint height)
+private HipWindow createSDL_GL_Window(uint width, uint height)
 {
     version(Android){return null;}
     else
     {
-        SDL_GL_LoadLibrary(null);
-
-        //Set GL Version
-        SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_ACCELERATED_VISUAL, 1);
-        SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MINOR_VERSION, 5);
-        //Create window type
-        SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DEPTH_SIZE, 24);
-        SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
-        uint flags = (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-
-        SDL_Window* window = SDL_CreateWindow("GL Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, cast(SDL_WindowFlags)flags);
-        SDL_GLContext ctx = SDL_GL_CreateContext(window);
-        SDL_GL_MakeCurrent(window, ctx);
-        GLSupport ver = loadOpenGL();
-        SDL_GL_SetSwapInterval(1);
-        return window;
+        HipWindow wnd = new HipWindow(width, height, 
+            HipWindowFlags.RESIZABLE | HipWindowFlags.MINIMIZABLE | HipWindowFlags.MAXIMIZABLE);
+        wnd.start();
+        return wnd;
     }
+    // else
+    // {
+    //     // SDL_GL_LoadLibrary(null);
+
+    //     // //Set GL Version
+    //     // SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_ACCELERATED_VISUAL, 1);
+    //     // SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    //     // SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MINOR_VERSION, 5);
+    //     // //Create window type
+    //     // SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
+    //     // SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DEPTH_SIZE, 24);
+    //     // SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
+    //     // uint flags = (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+
+    //     // SDL_Window* window = SDL_CreateWindow("GL Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, cast(SDL_WindowFlags)flags);
+    //     // SDL_GLContext ctx = SDL_GL_CreateContext(window);
+    //     // SDL_GL_MakeCurrent(window, ctx);
+
+    //     HipWindow wnd = new HipWindow(width, height, 
+    //         HipWindowFlags.RESIZABLE | HipWindowFlags.MINIMIZABLE | HipWindowFlags.MAXIMIZABLE);
+    //     wnd.start();
+    //     // SDL_GL_SetSwapInterval(1);
+    //     return wnd;
+    // }
 }
 
 
@@ -67,30 +75,33 @@ private SDL_Window* createSDL_GL_Window(uint width, uint height)
 */
 class Hip_GL3Renderer : IHipRendererImpl
 {
-    SDL_Window* window;
-    SDL_Renderer* renderer;
+    HipWindow window;
     Shader currentShader;
     protected static bool isGLBlendEnabled = false;
     protected static GLenum mode;
 
     public final bool isRowMajor(){return true;}
 
-    SDL_Window* createWindow(uint width, uint height)
+    HipWindow createWindow(uint width, uint height)
     {
-        return createSDL_GL_Window(width, height);
-    }
-    SDL_Renderer* createRenderer(SDL_Window* window)
-    {
-        return SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        version(Android){return null;}
+        else
+        {
+            HipWindow wnd = new HipWindow(width, height, 
+                HipWindowFlags.RESIZABLE | HipWindowFlags.MINIMIZABLE | HipWindowFlags.MAXIMIZABLE);
+            wnd.start();
+            return wnd;
+        }
     }
     Shader createShader()
     {
         return new Shader(new Hip_GL3_ShaderImpl());
     }
-    public bool init(SDL_Window* window, SDL_Renderer* renderer)
+    public bool init(HipWindow window)
     {
         this.window = window;
-        this.renderer = renderer;
+        window.startOpenGLContext();
+        GLSupport ver = loadOpenGL();
         setColor();
         HipRenderer.rendererType = HipRendererType.GL3;
         return true;
@@ -137,7 +148,7 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public void setViewport(Viewport v)
     {
-        glViewport(v.x, v.y, v.w, v.h);
+        glViewport(cast(int)v.x, cast(int)v.y, cast(int)v.w, cast(int)v.h);
         
     }
     public bool setWindowMode(HipWindowMode mode)
@@ -211,18 +222,11 @@ class Hip_GL3Renderer : IHipRendererImpl
         version(Android){}
         else
         {
-            SDL_GL_SwapWindow(window);
-            // SDL_RenderPresent(renderer);
+            window.rendererPresent();
+            glFlush();
+            glFinish();
         }
     }
-
-    public void draw(Texture t, int x, int y){}
-    public void draw(Texture t, int x, int y, SDL_Rect* clip = null)
-    {
-        t.bind();
-        
-    }
-
 
     pragma(inline, true)
     public void clear()
@@ -337,19 +341,12 @@ class Hip_GL3Renderer : IHipRendererImpl
         }
         glBlendEquation(getGLBlendEquation(eq));
     }
-    public void drawRect(){}
-    public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3){}
-    public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3){}
-    public void drawRect(int x, int y, int w, int h){}
-    public void fillRect(int x, int y, int width, int height){}
-    public void drawLine(int x1, int y1, int x2, int y2){}
-    public void drawPixel(int x, int y ){}
 
     public void dispose()
     {
-        if(window != null)
+        if(window !is null)
         {
-            SDL_GL_DeleteContext(SDL_GL_GetCurrentContext());
+            window.destroyOpenGLContext();
         }
     }
 }

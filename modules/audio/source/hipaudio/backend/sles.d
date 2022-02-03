@@ -3,7 +3,6 @@ import error.handler;
 import console.log;
 import util.conv:to;
 import core.atomic;
-import std.algorithm:count;
 import opensles.sles;
 version(Android)
 {

@@ -23,11 +23,6 @@ import util.string:fromStringz;
 import directx.d3d11;
 import directx.d3d11_3;
 import directx.dxgi1_4;
-import bindbc.sdl.bind.sdlsyswm;
-import bindbc.sdl.bind.sdlhints;
-import bindbc.sdl.bind.sdlvideo;
-import bindbc.sdl.bind.sdlrender;
-import bindbc.sdl.bind.sdlrect;
 
 
 import util.system;
@@ -57,8 +52,8 @@ ID3D11RenderTargetView _hip_d3d_mainRenderTarget = null;
 
 class Hip_D3D11_Renderer : IHipRendererImpl
 {
-    public static SDL_Renderer* renderer = null;
-    public static SDL_Window* window = null;
+    import windowing.window;
+    public static HipWindow window = null;
     protected static bool hasDebugAvailable;
     protected static Viewport currentViewport;
     public static Shader currentShader;
@@ -70,18 +65,19 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     }
     
 
-    public SDL_Window* createWindow(uint width, uint height)
+    public HipWindow createWindow(uint width, uint height)
     {
-        SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d11");
-        static if(HIP_DEBUG)
-        {
-            SDL_SetHint(SDL_HINT_RENDER_DIRECT3D11_DEBUG, "1");
-        }
-        uint flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
-        SDL_Window* window = SDL_CreateWindow("DX Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        width, height, cast(SDL_WindowFlags)flags);
+        HipWindow wnd = new HipWindow(width, height, HipWindowFlags.DEFAULT);
+        // SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d11");
+        // static if(HIP_DEBUG)
+        // {
+        //     SDL_SetHint(SDL_HINT_RENDER_DIRECT3D11_DEBUG, "1");
+        // }
+        // uint flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+        // SDL_Window* window = SDL_CreateWindow("DX Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        // width, height, cast(SDL_WindowFlags)flags);
 
-        return window;
+        return wnd;
     }
 
     static void assertExit(HRESULT hres, string msg,
@@ -341,13 +337,6 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     }
     public final bool isRowMajor(){return false;}
 
-    public SDL_Renderer* createRenderer(SDL_Window* window)
-    {
-        //D3D Cannot create any sdl renderer
-        return null;
-        // return SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
-    }
-
     public bool hasErrorOccurred(out string err, string file = __FILE__, int line = __LINE__)
     {
         if(hasDebugAvailable)
@@ -417,15 +406,14 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         return new Shader(new Hip_D3D11_ShaderImpl());
     }
-    public bool init(SDL_Window* window, SDL_Renderer* renderer)
+    public bool init(HipWindow window)
     {
         this.window = window;
-        this.renderer = renderer;
-        SDL_SysWMinfo wmInfo;
-        SDL_GetWindowWMInfo(window, &wmInfo);
+        // SDL_SysWMinfo wmInfo;
+        // SDL_GetWindowWMInfo(window, &wmInfo);
 
         HipRendererConfig cfg = HipRenderer.getCurrentConfig();
-        initD3DFowHWND(cast(HWND)wmInfo.info.win.window, &cfg);
+        initD3DFowHWND(window.hwnd, &cfg);
         HipRenderer.rendererType = HipRendererType.D3D11;
         // setShader(createShader(true));
 
@@ -516,16 +504,6 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         _hip_d3d_context.DrawIndexed(indicesSize, offset, 0);
     }
-    public void drawRect(){}
-    public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3){}
-    public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3){}
-    public void drawRect(int x, int y, int w, int h){}
-    public void draw(Texture t, int x, int y){}
-    public void draw(Texture t, int x, int y, SDL_Rect* rect){}
-    public void fillRect(int x, int y, int width, int height){}
-    public void drawLine(int x1, int y1, int x2, int y2){}
-    public void drawPixel(int x, int y ){}
-
     void clear(){}
     
     void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)

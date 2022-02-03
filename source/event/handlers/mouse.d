@@ -42,7 +42,7 @@ class HipMouse
         scroll.y=y;
         scroll.z=z;
     }
-    bool isPressed(HipMouseButton btn = HipMouseButton.LEFT){return metadatas[btn].isPressed;}
+    bool isPressed(HipMouseButton btn = HipMouseButton.left){return metadatas[btn].isPressed;}
 
     ///Use the ID for getting the touch, may return null
     immutable(Vector2*) getPosition(uint id = 0)

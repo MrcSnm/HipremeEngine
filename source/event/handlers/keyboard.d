@@ -11,7 +11,6 @@ Distributed under the MIT Software License.
 
 module event.handlers.keyboard;
 
-import std.algorithm;
 import bindbc.sdl.bind.sdlkeycode;
 
 import event.handlers.keyboard_layout;
@@ -84,7 +83,7 @@ class KeyboardHandler : IHipKeyboard
     {
         HipButton[] currentListener = listeners[k.meta.id];
         int currentCount = listenersCount[k.meta.id];
-        int index = cast(int)countUntil(currentListener, k);
+        int index = cast(int)indexOf(currentListener, k);
         if(index != -1)
         {
             swapAt(currentListener, index, currentCount - 1);

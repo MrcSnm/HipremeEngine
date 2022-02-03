@@ -9,7 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module util.file;
-import std.path:asNormalizedPath;
 import std.stdio;
 import util.conv:to;
 import util.array:join, array;
@@ -32,14 +31,7 @@ string getFileContent(string path, bool noCarriageReturn = true)
     return (noCarriageReturn) ? content.replaceAll('\r') : content;
 }
 
-string replaceFileName(string path, string newFileName)
-{
-    string[] p = pathSplitter(path);
-    p[$-1] = newFileName;
-    return p.join("/").asNormalizedPath.array;
-}
 
-string getFileNameFromPath(string path){return pathSplitter(path)[$-1];}
 
 string stripLineBreaks(string content)
 {
@@ -53,26 +45,6 @@ string stripLineBreaks(string content)
 //     string finalPath = relativePath(sanitizePath(path), sanitizePath(basePath));
 //     return getFileContent(finalPath, noCarriageReturn);
 // }
-string joinPath(string[] paths ...){return joinPath(paths);}
-string joinPath(string[] paths)
-{
-    if(paths.length == 1)
-        return paths[0];
-    string output;
-    char charType = isPathUnixStyle(paths[0]) ? '/' : '\\';
-    for(int i = 0; i < paths.length; i++)
-    {
-        if(paths[i] == "")
-            continue;
-        output~=paths[i];
-        if(i+1 != paths.length &&
-        paths[i+1].length != 0 &&
-        paths[i+1][0] != charType &&
-        paths[i][$-1] != charType)
-            output~=charType;
-    }
-    return output;
-}
 
 
 
