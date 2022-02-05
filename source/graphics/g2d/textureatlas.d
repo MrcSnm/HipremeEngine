@@ -11,7 +11,6 @@ Distributed under the CC BY-4.0 License.
 module graphics.g2d.textureatlas;
 import util.file;
 import util.conv:to;
-import std.algorithm : countUntil;
 import util.string;
 import std.file;
 import data.hipfs;
@@ -94,7 +93,7 @@ class TextureAtlas
 
     static TextureAtlas readAtlas(string atlasPath)
     {
-        import std.array : split;
+        import util.string : split;
         TextureAtlas ret = new TextureAtlas();
         ret.atlasPath = atlasPath;
         string[] lines;
@@ -164,7 +163,7 @@ class TextureAtlas
 
     static bool read(string fileName)
     {
-        import std.string : lastIndexOf;
+        import util.string : lastIndexOf;
         long ind = fileName.lastIndexOf(".");
         if(ind == -1)
             return false;

@@ -5,8 +5,7 @@
 	"buildOptions": [
 		"debugMode",
 		"debugInfo",
-		"debugInfoC",
-		"optimize"
+		"debugInfoC"
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {

@@ -10,8 +10,10 @@ Distributed under the CC BY-4.0 License.
 */
 module bind.dependencies;
 import error.handler;
-import bindbc.sdl;
-import bindbc.sdl.ttf;
+import bindbc.sdl.config;
+import bindbc.sdl.bind.sdlerror;
+import bindbc.sdl.bind.sdl;
+import bindbc.sdl.dynload;
 import bindbc.sdl.image;
 import bindbc.loader : SharedLib;
 
@@ -77,8 +79,8 @@ bool loadEngineDependencies()
         LuaSupport l = loadLua();
         if(l != luaSupport)
         {
-            ErrorHandler.assertExit(l != luaSupport.noLibrary, "Could not find any lua library");
-            ErrorHandler.showErrorMessage("Bad Lua Library", "Unknown lua version found");
+            // ErrorHandler.assertExit(l != luaSupport.noLibrary, "Could not find any lua library");
+            // ErrorHandler.showErrorMessage("Bad Lua Library", "Unknown lua version found");
         }
     }
 

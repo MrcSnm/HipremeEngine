@@ -13,6 +13,10 @@ hipremeengine.a
 hipremeengine.lib
 hipremeengine-test-*
 build/.cache
+dependencies/directx-d/*.a
+dependencies/directx-d/*.lib
+dependencies/sdl_sound/*.lib
+dependencies/sdl_sound/*.a
 dependencies/gles/lib/*.a
 dependencies/gles/lib/*.lib
 build/android/SDL2*

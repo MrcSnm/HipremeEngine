@@ -9,9 +9,32 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hipaudio.backend.sdl.player;
+
+import hipaudio.audio;
+class HipSDLAudioPlayer : IHipAudioPlayer{
+public this(AudioConfig cfg){}
+public bool isMusicPlaying(HipAudioSourceAPI src){return bool.init;} // TODO: implement}
+public bool isMusicPaused(HipAudioSourceAPI src){return bool.init;} // TODO: implement}
+public bool resume(HipAudioSourceAPI src){return bool.init;} // TODO: implement}
+public bool play(HipAudioSourceAPI src){return bool.init;} // TODO: implement}
+public bool stop(HipAudioSourceAPI src){return bool.init;} // TODO: implement}
+public bool pause(HipAudioSourceAPI src){return bool.init;} // TODO: implement}
+public bool play_streamed(HipAudioSourceAPI src){return bool.init;} // TODO: implement}
+public HipAudioClipAPI load(string path, HipAudioType type){return HipAudioClipAPI.init;} // TODO: implement}
+public HipAudioClipAPI loadStreamed(string path, uint chunkSize){return HipAudioClipAPI.init;} // TODO: implement}
+public void updateStream(HipAudioSourceAPI source){}
+public HipAudioSourceAPI getSource(bool isStreamed){return HipAudioSourceAPI.init;} // TODO: implement}
+public void setPitch(HipAudioSourceAPI src, float pitch){}
+public void setPanning(HipAudioSourceAPI src, float panning){}
+public void setVolume(HipAudioSourceAPI src, float volume){}
+public void setMaxDistance(HipAudioSourceAPI src, float dist){}
+public void setRolloffFactor(HipAudioSourceAPI src, float factor){}
+public void setReferenceDistance(HipAudioSourceAPI src, float dist){}
+public void onDestroy(){}
+}
+version(none):
 import hipaudio.backend.sdl.clip;
 import hipaudio.audiosource;
-import hipaudio.audio;
 import error.handler;
 import console.log;
 import data.audio.audio;

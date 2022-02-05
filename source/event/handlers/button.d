@@ -1,7 +1,7 @@
 module event.handlers.button;
 
 public import hipengine.api.input.button;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlkeycode;
 import util.time;
 
 final class HipButtonMetadata : AHipButtonMetadata

@@ -13,7 +13,7 @@ import bindbc.openal;
 import bindbc.opengl;
 import console.log;
 import core.stdc.string:strlen;
-import std.string:fromStringz;
+import util.string : fromStringz;
 
 string get_audio_devices_list(const ALCchar *devices)
 {

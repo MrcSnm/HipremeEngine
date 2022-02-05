@@ -1,0 +1,11 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"config": {"path":"../config"},
+		"console": {"path":"../console"},
+		"debugging": {"path":"../debugging"},
+		"fswatch": "0.6.0",
+		"jni": {"path":"../jni"},
+		"util": {"path":"../util"}
+	}
+}

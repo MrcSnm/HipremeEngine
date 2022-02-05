@@ -62,8 +62,11 @@ string buildPath(string[] args...)
 
 version(Windows)
 {
-    import core.sys.windows.dll;
-    import core.sys.windows.windows;
+    // import core.sys.windows.winbase;
+    // import core.sys.windows.windef;
+
+    import util.windows;
+
     private HMODULE moduleHandle;
     extern(Windows) nothrow @system void* dll_import_var(string name)
     {

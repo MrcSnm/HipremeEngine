@@ -12,9 +12,9 @@ module console.console;
 import config.opts;
 import util.reflection : isLiteral;
 import util.conv:to;
-import std.format : format;
-import std.string : toStringz;
+import util.string : toStringz;
 import debugging.gui:InterfaceImplementation;
+import util.format;
 
 
 enum Platforms
@@ -35,29 +35,6 @@ __gshared void function(string toPrint) _warn;
 __gshared void function(string toPrint) _err;
 __gshared void function(string toPrint) _fatal;
 
-static string _format(alias fmt, Args...)(Args a){return format!fmt(a);}
-static string _format(Args...)(Args args)
-{
-    import std.traits : isIntegral, isBoolean;
-    import std.conv : to;
-    string ret = "";
-
-    foreach(i, arg; args)
-    {
-        alias T = typeof(arg);
-        static if(__traits(hasMember, arg, "toString")
-        && is(typeof(arg.toString) == string))
-            ret~= arg.toString;
-        else
-        {
-            static if(is(T == string))
-                ret~= arg;
-            else
-                ret~= to!string(arg);
-        }
-    }
-    return ret;
-}
 
 @InterfaceImplementation(function(ref void* console)
 {
@@ -87,12 +64,9 @@ static string _format(Args...)(Args args)
     bool useTab = true;
     bool isShowing = true;
     static __gshared Console DEFAULT;
-    import core.sync.mutex:Mutex;
-    static __gshared Mutex mtx;
     static this()
     {
         DEFAULT = new Console("Output", 99);
-        mtx = new Mutex();
     }
 
     static void install(Platforms p = Platforms.DEFAULT, void function(string) printFunc = null)
@@ -163,7 +137,7 @@ static string _format(Args...)(Args args)
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             //mtx.lock();
-            string toLog = _format!(fmt, a);
+            string toLog = format!(fmt, a);
             _log(toLog);
             //mtx.unlock();
         }
@@ -186,7 +160,7 @@ static string _format(Args...)(Args args)
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             //mtx.lock();
-            string toLog = _format!(fmt, a);
+            string toLog = format!(fmt, a);
             _formatLog(toLog);
             _log(toLog);
             //mtx.unlock();
@@ -198,7 +172,7 @@ static string _format(Args...)(Args args)
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             //mtx.lock();
-            string toLog = _format!(fmt, a);
+            string toLog = format!(fmt, a);
             _formatLog(toLog);
             _log(toLog);
             //mtx.unlock();
@@ -209,7 +183,7 @@ static string _format(Args...)(Args args)
         static if(!HE_NO_LOG)
         {
             //mtx.lock();
-            string toLog = _format!(fmt, a);
+            string toLog = format!(fmt, a);
             _formatLog(toLog);
             _err(toLog);
             //mtx.unlock();
@@ -234,7 +208,7 @@ static string _format(Args...)(Args args)
         static if(!HE_NO_LOG)
         {
             //mtx.lock();
-            string toLog = _format!(fmt, a);
+            string toLog = format!(fmt, a);
             _formatLog(toLog);
             _fatal(toLog);
             //mtx.unlock();

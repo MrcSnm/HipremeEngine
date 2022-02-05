@@ -25,8 +25,8 @@ static if(CIMGUI_USER_DEFINED_IMPLEMENTATION)
         static if(CIMGUI_VIEWPORT_BRANCH)
         {
             pragma(lib, "user32");
-            import core.sys.windows.windows : GetWindowLong, LONG, HWND, SetWindowLong,
-                ShowWindow, SW_SHOWNA, GWL_EXSTYLE, WS_EX_APPWINDOW, WS_EX_TOOLWINDOW;
+            import core.sys.windows.winuser;
+            import core.sys.windows.windef;
         }
     }
 

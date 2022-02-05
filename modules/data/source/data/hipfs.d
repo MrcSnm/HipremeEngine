@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module data.hipfs;
 import error.handler;
-import util.file:joinPath;
+import util.path:joinPath;
 import std.stdio : File;
 import util.string;
 import util.array:lastIndexOf;
@@ -231,7 +231,7 @@ class HipStdFileSystemInteraction : IHipFileSystemInteraction
 
 version(UWP)
 {
-    import core.sys.windows.windows;
+    import core.sys.windows.windef;
     import bind.external : UWPCreateFileFromAppW,
                         UWPDeleteFileFromAppW,
                         UWPGetFileAttributesExFromAppW;

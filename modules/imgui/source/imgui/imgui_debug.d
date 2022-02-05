@@ -13,7 +13,7 @@ version(CIMGUI):
 import std.traits : getUDAs;
 import bindbc.cimgui;
 import hipaudio.audio;
-import std.string:toStringz;
+import util.string:toStringz;
 import core.stdc.string:strlen;
 import debugging.gui;
 

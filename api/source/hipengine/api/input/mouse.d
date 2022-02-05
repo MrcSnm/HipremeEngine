@@ -14,17 +14,19 @@ public import hipengine.api.math.vector;
 
 enum HipMouseButton : ubyte
 {
-    LEFT,
-    MIDDLE,
-    RIGHT
+    left,
+    middle,
+    right,
+    button1,
+    button2,
+    invalid
 }
-
 interface IHipMouse
 {
     immutable(Vector2*) getPosition(uint id = 0);
     Vector2 getDeltaPosition(uint id = 0);
-    bool isPressed(HipMouseButton btn = HipMouseButton.LEFT);
-    bool isJustPressed(HipMouseButton btn = HipMouseButton.LEFT);
-    bool isJustReleased(HipMouseButton btn = HipMouseButton.LEFT);
+    bool isPressed(HipMouseButton btn = HipMouseButton.left);
+    bool isJustPressed(HipMouseButton btn = HipMouseButton.left);
+    bool isJustReleased(HipMouseButton btn = HipMouseButton.left);
     Vector3 getScroll();
 }

@@ -11,13 +11,13 @@ Distributed under the CC BY-4.0 License.
 module console.log;
 import console.console;
 import util.conv:to;
-import std.format:format;
+import util.format;
 
 private string[] logHistory = [];
 
-private string formatPrettyFunction(string f)
+private string _formatPrettyFunction(string f)
 {
-    import std.string:lastIndexOf;
+    import util.string : lastIndexOf;
 
     return f[0..f.lastIndexOf("(")];
 }
@@ -28,7 +28,7 @@ void logln(alias fmt, string file = __FILE__,
 string func = __PRETTY_FUNCTION__,
 ulong line = __LINE__,  Args...)(Args a)
 {
-    string toLog = format!fmt(a) ~ "\t\t"~file~":"~to!string(line)~" at "~func.formatPrettyFunction;
+    string toLog = format!fmt(a) ~ "\t\t"~file~":"~to!string(line)~" at "~func._formatPrettyFunction;
     logHistory~= toLog;
     Console.DEFAULT.log(toLog~"\n");
 }
@@ -40,7 +40,7 @@ ulong line = __LINE__, Args...)(Args a)
     string toLog = "";
     foreach(arg; a)
         toLog~= to!string(arg);
-    toLog~= "\t\t"~file~":"~to!string(line)~" at "~func.formatPrettyFunction;
+    toLog~= "\t\t"~file~":"~to!string(line)~" at "~func._formatPrettyFunction;
     logHistory~= toLog;
     Console.DEFAULT.log(toLog~"\n");
 }

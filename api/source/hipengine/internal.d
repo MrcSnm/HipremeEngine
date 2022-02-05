@@ -13,6 +13,17 @@ module hipengine.internal;
 import hipengine;
 
 version(Script){__gshared void* _dll;}
+version(Windows)
+{
+	@nogc nothrow extern(Windows)
+	{
+		void* GetModuleHandleW(const(wchar)* str);
+		void* GetProcAddress(void* mod, const(char)* func);
+		void* FreeLibrary(void* lib);
+		uint GetLastError();
+	}
+	alias GetModuleHandle = GetModuleHandleW;
+}
 
 void initializeHip()
 {
@@ -20,7 +31,6 @@ void initializeHip()
 	{
 		version(Windows)
 		{
-			import core.sys.windows.windows;
 			_dll = GetModuleHandle(null);
 		}
 		else
@@ -34,7 +44,6 @@ void initializeHip()
 version(Script):
 version(Windows)
 {
-	import core.sys.windows.windows:GetProcAddress;
 	alias _loadSymbol = GetProcAddress;
 }
 else
@@ -48,6 +57,7 @@ string loadSymbol(string s)
 {
 	return s ~ " = cast(typeof(" ~ s ~"))_loadSymbol(_dll, (\""~s~"\").ptr);";
 }
+
 /**
 *	Prefer using that function instead of loadSymbol, as compile
 *	time sequences reduced the binary size in almost 100kb.

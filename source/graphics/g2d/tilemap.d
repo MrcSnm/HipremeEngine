@@ -15,7 +15,6 @@ import math.rect;
 import graphics.g2d.spritebatch;
 import util.string;
 import std.file;
-import arsd.dom;
 import util.file;
 import std.json;
 import error.handler;
@@ -161,77 +160,194 @@ class Tileset
         this.tileCount = tileCount;
     }
 
-    static Tileset fromTSX(ubyte[] tsxData, string tsxPath, bool autoLoadTexture = true)
+    version(HipTSX)
     {
-        string xmlFile = cast(string)tsxData;
-        auto document = new XmlDocument(xmlFile);
-        auto tileset = document.querySelector("tileset");
-        return Tileset.fromXMLElement(tileset, tsxPath, autoLoadTexture);
-    }
-
-    static Tileset fromXMLElement(Element tileset, string tsxPath="", bool autoLoadTexture=true)
-    {
-        auto image   = tileset.querySelector("image");
-
-        const uint tileCount = to!uint(tileset.getAttribute("tilecount"));
-        Tileset ret = new Tileset(tileCount);
-        ret.path = tsxPath;
-
-        //Tileset
-        ret.name        =         tileset.getAttribute("name");
-        ret.tileWidth   = to!uint(tileset.getAttribute("tilewidth"));
-        ret.tileHeight  = to!uint(tileset.getAttribute("tileheight"));
-        ret.columns     = to!uint(tileset.getAttribute("columns"));
-
-        //Image
-        ret.texturePath   =         image.getAttribute("source");
-        ret.textureWidth  = to!uint(image.getAttribute("width"));
-        ret.textureHeight = to!uint(image.getAttribute("height"));
-
-        if(autoLoadTexture)
-            ret.loadTexture();
-        
-        Element[] tiles = tileset.querySelectorAll("tile");
-
-        foreach(t; tiles)
+        import arsd.dom;
+        static Tileset fromTSX(ubyte[] tsxData, string tsxPath, bool autoLoadTexture = true)
         {
-            Tile tile;
-            tile.id = to!ushort(t.getAttribute("id"));
-            Element anim = t.querySelector("animation");
-            if(anim !is null)
-            {
-                Element[] frames = anim.querySelectorAll("frame");
-                tile.animation = new TileAnimationFrame[frames.length];
-
-                foreach(f; frames)
-                {
-                    TileAnimationFrame tFrame;
-                    tFrame.id       = to!ushort(f.getAttribute("tileid"));
-                    tFrame.duration =    to!int(f.getAttribute("duration"));
-                }
-            }
+            string xmlFile = cast(string)tsxData;
+            auto document = new XmlDocument(xmlFile);
+            auto tileset = document.querySelector("tileset");
+            return Tileset.fromXMLElement(tileset, tsxPath, autoLoadTexture);
         }
 
-        return ret;
-    }
+        
+        static Tileset fromXMLElement(Element tileset, string tsxPath="", bool autoLoadTexture=true)
+        {
+            auto image   = tileset.querySelector("image");
+
+            const uint tileCount = to!uint(tileset.getAttribute("tilecount"));
+            Tileset ret = new Tileset(tileCount);
+            ret.path = tsxPath;
+
+            //Tileset
+            ret.name        =         tileset.getAttribute("name");
+            ret.tileWidth   = to!uint(tileset.getAttribute("tilewidth"));
+            ret.tileHeight  = to!uint(tileset.getAttribute("tileheight"));
+            ret.columns     = to!uint(tileset.getAttribute("columns"));
+
+            //Image
+            ret.texturePath   =         image.getAttribute("source");
+            ret.textureWidth  = to!uint(image.getAttribute("width"));
+            ret.textureHeight = to!uint(image.getAttribute("height"));
+
+            if(autoLoadTexture)
+                ret.loadTexture();
+            
+            Element[] tiles = tileset.querySelectorAll("tile");
+
+            foreach(t; tiles)
+            {
+                Tile tile;
+                tile.id = to!ushort(t.getAttribute("id"));
+                Element anim = t.querySelector("animation");
+                if(anim !is null)
+                {
+                    Element[] frames = anim.querySelectorAll("frame");
+                    tile.animation = new TileAnimationFrame[frames.length];
+
+                    foreach(f; frames)
+                    {
+                        TileAnimationFrame tFrame;
+                        tFrame.id       = to!ushort(f.getAttribute("tileid"));
+                        tFrame.duration =    to!int(f.getAttribute("duration"));
+                    }
+                }
+            }
+
+            return ret;
+        }
 
 
-    static Tileset fromTSX(string tsxPath, bool autoLoadTexture = true)
-    {
-        void[] tsxData;
-        HipFS.read(tsxPath, tsxData);
-        return fromTSX(cast(ubyte[])tsxData, tsxPath, autoLoadTexture);
+        static Tileset fromTSX(string tsxPath, bool autoLoadTexture = true)
+        {
+            void[] tsxData;
+            HipFS.read(tsxPath, tsxData);
+            return fromTSX(cast(ubyte[])tsxData, tsxPath, autoLoadTexture);
+        }
+
+        protected static TileLayer tileLayerFromElement(Element l)
+        {
+            import util.string:split;
+            import util.file:stripLineBreaks;
+            TileLayer layer = new TileLayer();
+            layer.type    = TileLayerType.TILE_LAYER;
+            layer.id      = to!ushort(l.getAttribute("id"));
+            layer.name    =           l.getAttribute("name");
+            layer.width   =   to!uint(l.getAttribute("width"));
+            layer.height  =   to!uint(l.getAttribute("height"));
+            string[] data = l.querySelector("data").innerText.stripLineBreaks.split(",");
+            layer.tiles.reserve(data.length);
+            for(int i = 0; i < data.length;i++)
+                layer.tiles~=to!ushort(data[i]);
+            
+            return layer;
+        }
+
+        protected static TileLayer objectLayerFromElement(Element objgroup)
+        {
+            TileLayer layer = new TileLayer();
+            layer.type = TileLayerType.OBJECT_LAYER;
+            layer.id   = toDefault!(ushort)(objgroup.getAttribute("id"));
+            layer.name = objgroup.getAttribute("name");
+            Element[] objs = objgroup.querySelectorAll("object");
+            foreach(o; objs)
+            {
+                TileLayerObject obj;
+                obj.gid     = toDefault!(ushort)(o.getAttribute("gid"));
+                obj.height  =   toDefault!(uint)(o.getAttribute("height"));
+                obj.id      = toDefault!(ushort)(o.getAttribute("id"));
+                obj.name    =            (o.getAttribute("name"));
+                obj.rotation=    toDefault!(int)(o.getAttribute("rotation"));
+                obj.type    =            (o.getAttribute("type"));
+                obj.visible =   toDefault!(bool)(o.getAttribute("visible"));
+                obj.width   =   toDefault!(uint)(o.getAttribute("width"));
+                obj.x       =    toDefault!(int)(o.getAttribute("x"));
+                obj.y       =    toDefault!(int)(o.getAttribute("y"));
+                Element[] props = o.querySelectorAll("properties");
+                foreach(p; props)
+                {
+                    TileProperty tp;
+                    tp.name  = p.getAttribute("name");
+                    tp.type  = p.getAttribute("type");
+                    tp.value = p.getAttribute("value");
+                    obj.properties[tp.name] = tp;
+                }
+            }
+            return layer;
+        }
+        static Tilemap readTiledTMX(string tiledPath)
+        {
+            import console.log;
+            void[] tmxData;
+            rawlog(tiledPath);
+            HipFS.read(tiledPath, tmxData);
+            rawlog(tiledPath);
+            return readTiledTMX(cast(ubyte[])tmxData, tiledPath);
+        }
+
+        static Tilemap readTiledTMX(ubyte[] tiledData, string tiledPath, bool autoLoadTexture = true)
+        {
+            Tilemap ret = new Tilemap();
+            string xmlFile = cast(string)tiledData;
+            auto document = new XmlDocument(xmlFile);
+            auto map = document.querySelector("map");
+            ret.path = tiledPath;
+
+            ret.tiled_version =         map.getAttribute("tiledVersion");
+            ret.orientation   =         map.getAttribute("orientation");
+            ret.width         = to!uint(map.getAttribute("width"));
+            ret.height        = to!uint(map.getAttribute("height"));
+            ret.tileWidth     = to!uint(map.getAttribute("tilewidth"));
+            ret.tileHeight    = to!uint(map.getAttribute("tileheight"));
+            ret.isInfinite    = (to!uint(map.getAttribute("infinite")) == 1);
+            ret.renderorder   =         map.getAttribute("renderorder");
+
+            auto tileset = document.querySelectorAll("tileset");
+
+            foreach(t; tileset)
+            {
+                string tsxPath = t.getAttribute("source");
+                Tileset set;
+                if(tsxPath != null)
+                    set = Tileset.fromTSX(ret.getTSXPath(tsxPath), autoLoadTexture);
+                else
+                {
+                    set = Tileset.fromXMLElement(t, ret.getTSXPath("null"));
+                    //Using getTSXPath with any string, as it will be replaced later 
+                    //For the texture path
+                }
+                set.firstGid = to!uint(t.getAttribute("firstgid"));
+                ret.tilesets~=set;
+            }
+
+            auto layers = document.querySelectorAll("map > layer");
+            foreach(l; layers)
+            {
+                TileLayer layer = Tilemap.tileLayerFromElement(l);
+                ret.layersArray~= layer;
+                ret.layers[layer.name] = layer;
+            }
+
+            Element[] objGroups = document.querySelectorAll("map > objectgroup");
+            foreach(objGroup; objGroups)
+            {
+                TileLayer layer = Tilemap.objectLayerFromElement(objGroup);
+                ret.layers[layer.name] = layer;
+            }
+
+            return ret;
+        }
+
+
     }
 
     void loadTexture()
     {
-        import std.path:pathSplitter, asNormalizedPath;
-        import std.array:array, join;
+        import util.path:replaceFileName;
         ErrorHandler.assertExit(texturePath != "", "No texture path for loading tilemap texture");
 
-        string[] temp = pathSplitter(path).array;
-        temp[$-1] = texturePath;
-        string texPath = temp.join("/").asNormalizedPath.array;
+        string texPath = replaceFileName(path, texturePath);
 
         texture = new Texture(texPath);
 
@@ -274,11 +390,8 @@ class Tilemap
 
     string getTSXPath(string tsxName)
     {
-        import std.path:pathSplitter, buildPath;
-        import std.array:array;
-        string[] tsxPath = pathSplitter(path).array;
-        tsxPath[$-1] = tsxName;
-        return tsxPath.buildPath;
+        import util.path : replaceFileName;
+        return replaceFileName(path, tsxName);
     }
 
     void render(HipSpriteBatch batch)
@@ -304,119 +417,7 @@ class Tilemap
     }
     Tile* getTileForID(ushort id){return getTilesetForID(id).getTile(id);}
 
-    static Tilemap readTiledTMX(ubyte[] tiledData, string tiledPath, bool autoLoadTexture = true)
-    {
-        Tilemap ret = new Tilemap();
-        string xmlFile = cast(string)tiledData;
-        auto document = new XmlDocument(xmlFile);
-        auto map = document.querySelector("map");
-        ret.path = tiledPath;
-
-        ret.tiled_version =         map.getAttribute("tiledVersion");
-        ret.orientation   =         map.getAttribute("orientation");
-        ret.width         = to!uint(map.getAttribute("width"));
-        ret.height        = to!uint(map.getAttribute("height"));
-        ret.tileWidth     = to!uint(map.getAttribute("tilewidth"));
-        ret.tileHeight    = to!uint(map.getAttribute("tileheight"));
-        ret.isInfinite    = (to!uint(map.getAttribute("infinite")) == 1);
-        ret.renderorder   =         map.getAttribute("renderorder");
-
-        auto tileset = document.querySelectorAll("tileset");
-
-        foreach(t; tileset)
-        {
-            string tsxPath = t.getAttribute("source");
-            Tileset set;
-            if(tsxPath != null)
-                set = Tileset.fromTSX(ret.getTSXPath(tsxPath), autoLoadTexture);
-            else
-            {
-                set = Tileset.fromXMLElement(t, ret.getTSXPath("null"));
-                //Using getTSXPath with any string, as it will be replaced later 
-                //For the texture path
-            }
-            set.firstGid = to!uint(t.getAttribute("firstgid"));
-            ret.tilesets~=set;
-        }
-
-        auto layers = document.querySelectorAll("map > layer");
-        foreach(l; layers)
-        {
-            TileLayer layer = Tilemap.tileLayerFromElement(l);
-            ret.layersArray~= layer;
-            ret.layers[layer.name] = layer;
-        }
-
-        Element[] objGroups = document.querySelectorAll("map > objectgroup");
-        foreach(objGroup; objGroups)
-        {
-            TileLayer layer = Tilemap.objectLayerFromElement(objGroup);
-            ret.layers[layer.name] = layer;
-        }
-
-        return ret;
-    }
-
-    protected static TileLayer tileLayerFromElement(Element l)
-    {
-        import std.array:split;
-        import util.file:stripLineBreaks;
-        TileLayer layer = new TileLayer();
-        layer.type    = TileLayerType.TILE_LAYER;
-        layer.id      = to!ushort(l.getAttribute("id"));
-        layer.name    =           l.getAttribute("name");
-        layer.width   =   to!uint(l.getAttribute("width"));
-        layer.height  =   to!uint(l.getAttribute("height"));
-        string[] data = l.querySelector("data").innerText.stripLineBreaks.split(",");
-        layer.tiles.reserve(data.length);
-        for(int i = 0; i < data.length;i++)
-            layer.tiles~=to!ushort(data[i]);
-        
-        return layer;
-    }
-
-    protected static TileLayer objectLayerFromElement(Element objgroup)
-    {
-        TileLayer layer = new TileLayer();
-        layer.type = TileLayerType.OBJECT_LAYER;
-        layer.id   = toDefault!(ushort)(objgroup.getAttribute("id"));
-        layer.name = objgroup.getAttribute("name");
-        Element[] objs = objgroup.querySelectorAll("object");
-        foreach(o; objs)
-        {
-            TileLayerObject obj;
-            obj.gid     = toDefault!(ushort)(o.getAttribute("gid"));
-            obj.height  =   toDefault!(uint)(o.getAttribute("height"));
-            obj.id      = toDefault!(ushort)(o.getAttribute("id"));
-            obj.name    =            (o.getAttribute("name"));
-            obj.rotation=    toDefault!(int)(o.getAttribute("rotation"));
-            obj.type    =            (o.getAttribute("type"));
-            obj.visible =   toDefault!(bool)(o.getAttribute("visible"));
-            obj.width   =   toDefault!(uint)(o.getAttribute("width"));
-            obj.x       =    toDefault!(int)(o.getAttribute("x"));
-            obj.y       =    toDefault!(int)(o.getAttribute("y"));
-            Element[] props = o.querySelectorAll("properties");
-            foreach(p; props)
-            {
-                TileProperty tp;
-                tp.name  = p.getAttribute("name");
-                tp.type  = p.getAttribute("type");
-                tp.value = p.getAttribute("value");
-                obj.properties[tp.name] = tp;
-            }
-        }
-        return layer;
-    }
-    static Tilemap readTiledTMX(string tiledPath)
-    {
-        import console.log;
-        void[] tmxData;
-        rawlog(tiledPath);
-        HipFS.read(tiledPath, tmxData);
-        rawlog(tiledPath);
-        return readTiledTMX(cast(ubyte[])tmxData, tiledPath);
-    }
-
+    
     static Tilemap readTiledJSON(ubyte[] tiledData)
     {
         Tilemap ret = new Tilemap();
@@ -513,7 +514,12 @@ class Tilemap
 
             const(JSONValue)* source = ("source" in t);
             if(source !is null)
-                tileset = Tileset.fromTSX(source.str);
+            {
+                version(HipTSX)
+                    tileset = Tileset.fromTSX(source.str);
+                else
+                    assert(0, "No TSX support");
+            }
             else
             {
                 tileset = new Tileset(tileCount);

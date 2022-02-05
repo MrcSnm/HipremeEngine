@@ -8,7 +8,7 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hiprenderer.backend.d3d.vertex;
+module hiprenderer.backend.d3d.d3dvertex;
 
 version(Windows):
 import util.string:toStringz;
@@ -17,11 +17,10 @@ import util.conv:to;
 import error.handler;
 import directx.d3d11;
 import util.system;
-import core.sys.windows.windows;
 import hiprenderer;
-import hiprenderer.backend.d3d.renderer;
+import hiprenderer.backend.d3d.d3drenderer;
 import hiprenderer.shader;
-import hiprenderer.backend.d3d.shader;
+import hiprenderer.backend.d3d.d3dshader;
 import hiprenderer.vertex;
 import config.opts;
 

@@ -23,9 +23,8 @@ int asInt(alias enumMember)()
 
 bool isLiteral(alias variable)(string var = variable.stringof)
 {
-    import std.string : isNumeric;
-    import std.algorithm : count;
-    return (isNumeric(var) || count(var, "\"") == 2);
+    import util.string : isNumeric;
+    return (isNumeric(var) || (var[0] == '"' && var[$-1] == '"'));
 }
 
 
@@ -91,7 +90,7 @@ T nullCheck(string expression, T, Q)(T defaultValue, Q target)
 {
     import std.traits:ReturnType;
     import util.conv:to;
-    import std.string:split;
+    import util.string:split;
 
     enum exps = expression.split(".");
     enum firstExp = exps[0]~"."~exps[1];

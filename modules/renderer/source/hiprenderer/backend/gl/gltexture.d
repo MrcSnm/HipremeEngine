@@ -8,12 +8,11 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hiprenderer.backend.gl.texture;
+module hiprenderer.backend.gl.gltexture;
 import hiprenderer.texture;
-import hiprenderer.backend.gl.renderer;
+import hiprenderer.backend.gl.glrenderer;
 import error.handler;
 import data.image;
-import bindbc.sdl;
 
 class Hip_GL3_Texture : ITexture
 {

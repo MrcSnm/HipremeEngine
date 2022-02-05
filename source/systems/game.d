@@ -10,12 +10,14 @@ Distributed under the CC BY-4.0 License.
 */
 
 module systems.game;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdl;
+import bindbc.sdl.bind.sdlkeycode;
 import hiprenderer.renderer;
 import global.gamedef;
 private import event.dispatcher;
 private import event.handlers.keyboard;
 import view;
+import windowing.events;
 
 
 version(Standalone){}
@@ -80,6 +82,13 @@ class GameSystem
             override void onDown(){hasFinished = true;}
             override void onUp(){}
         });
+
+        keyboard.addKeyListener(SDLK_F1, new class HipButton
+        {
+            override void onDown(){}
+            override void onUp(){import bind.interpreters; reloadInterpreter();}
+        });
+
         version(Standalone){}
         else
         {
@@ -90,7 +99,7 @@ class GameSystem
             });
         }
 
-        dispatcher = new EventDispatcher(&keyboard);
+        dispatcher = new EventDispatcher(HipRenderer.window, &keyboard);
         dispatcher.addOnResizeListener((uint width, uint height)
         {
             HipRenderer.width = width;
@@ -105,15 +114,14 @@ class GameSystem
         version(Standalone){}
         else
         {
-            import std.path:buildNormalizedPath;
+            import util.path;
             import util.system;
             import util.string:indexOf;
-            import std.stdio;
 
             if(gameDll.indexOf("projects/") == -1)
             {
-                projectDir = buildNormalizedPath("projects", gameDll);
-                gameDll = buildNormalizedPath("projects", gameDll, gameDll);
+                projectDir = joinPath("projects", gameDll);
+                gameDll = joinPath("projects", gameDll, gameDll);
             }
 
             watcher = new CompileWatcher(projectDir, null, ["d"]).run;
@@ -147,8 +155,7 @@ class GameSystem
             string err;
             if(getDubError(dub, err))
             {
-                import core.sys.windows.windows;
-                import std.stdio;
+                import core.sys.windows.winuser;
                 MessageBoxA(null, (err~"\0").ptr, "GameDLL Compilation Failure\0".ptr,  MB_ICONERROR | MB_OK);
             }
             hotload.reload();
@@ -159,7 +166,7 @@ class GameSystem
     {
         version(Test)
         {
-            addScene(new SoundTestScene());
+            addScene(new AnimationTestScene());
         }
         else version(Standalone)
         {
@@ -170,6 +177,7 @@ class GameSystem
         else //Load as script
         {
             // addScene(new SoundTestScene());
+            // addScene(new ChainTestScene());
             assert(HipremeEngineGameInit != null, "No game was loaded");
             externalScene = HipremeEngineGameInit();
             addScene(externalScene);
