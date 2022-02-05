@@ -80,12 +80,15 @@ void initXboxGamepadInput()
     static bool hasInit = false;
     if(hasInit)
         return;
-    dll_import_varS!HipGamepadCheckConnectedGamepads;
-    dll_import_varS!HipGamepadGetBatteryStatus;
-    dll_import_varS!HipGamepadGetXboxGamepadState;
-    dll_import_varS!HipGamepadIsWireless;
-    dll_import_varS!HipGamepadQueryConnectedGamepadsCount;
-    dll_import_varS!HipGamepadSetXboxGamepadVibration;
+    version(Windows)
+    {
+        dll_import_varS!HipGamepadCheckConnectedGamepads;
+        dll_import_varS!HipGamepadGetBatteryStatus;
+        dll_import_varS!HipGamepadGetXboxGamepadState;
+        dll_import_varS!HipGamepadIsWireless;
+        dll_import_varS!HipGamepadQueryConnectedGamepadsCount;
+        dll_import_varS!HipGamepadSetXboxGamepadVibration;
+    }
 
     hasInit = true;
 }

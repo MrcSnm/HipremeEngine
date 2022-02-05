@@ -23,4 +23,5 @@ public import
     view.steeringtest,
     view.pathfindingtest,
     view.chaintest,
+    view.geometrytestscene,
     view.spritetestscene;

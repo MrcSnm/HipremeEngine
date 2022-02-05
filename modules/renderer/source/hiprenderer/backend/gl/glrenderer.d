@@ -102,6 +102,9 @@ class Hip_GL3Renderer : IHipRendererImpl
         this.window = window;
         window.startOpenGLContext();
         GLSupport ver = loadOpenGL();
+        rawlog("GL Renderer: ",  glGetString(GL_RENDERER));
+        rawlog("GL Version: ",  glGetString(GL_VERSION));
+        rawlog("GLSL Version: ",  glGetString(GL_SHADING_LANGUAGE_VERSION));
         setColor();
         HipRenderer.rendererType = HipRendererType.GL3;
         return true;

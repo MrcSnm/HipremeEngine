@@ -301,17 +301,22 @@ export extern(C) bool HipremeUpdate()
 	import util.time;
 	import core.thread.osthread;
 	long initTime = HipTime.getCurrentTime();
-	if(g_deltaTime != 0)
+	// version(Windows) //For some reason, it seems that on Linux it is always 60 FPS
 	{
-		long sleepTime = cast(long)(FRAME_TIME - g_deltaTime);
-		if(sleepTime > 0)
-			Thread.sleep(dur!"msecs"(sleepTime));
+		if(g_deltaTime != 0)
+		{
+			long sleepTime = cast(long)(FRAME_TIME - g_deltaTime);
+			if(sleepTime > 0)
+				Thread.sleep(dur!"msecs"(sleepTime));
+		}
 	}
 	if(!sys.update(g_deltaTime))
 		return false;
 
 	sys.postUpdate();
 	g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1_000_000_000); //As seconds
+	import console.log;
+	rawlog(1.0/g_deltaTime);
 	return true;
 }
 /**

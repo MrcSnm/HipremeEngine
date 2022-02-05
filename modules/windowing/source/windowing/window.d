@@ -1,5 +1,8 @@
 module windowing.window;
 
+version(Posix)
+    version = X11;
+
 enum HipWindowFlags
 {
     RESIZABLE   = 1,
@@ -24,6 +27,10 @@ class HipWindow
         import windowing.platforms.windows;
         HWND hwnd;
     }
+    else version(X11)
+    {
+        import windowing.platforms.x11;
+    }
 
     this(int width, int height, HipWindowFlags flags)
     {
@@ -35,6 +42,12 @@ class HipWindow
     {
         version(Windows)
             openWindow(hwnd, width, height);
+        version(X11)
+        {
+            version(SharedX11)
+                loadX11();
+            openWindow(width, height);
+        }
     }
     bool startOpenGLContext(){return initializeOpenGL();}
     bool destroyOpenGLContext(){return destroy_GL_Context();}
@@ -42,7 +55,11 @@ class HipWindow
     void rendererPresent(){swapBuffer();}
     void show(){}
     void hide(){}
-    void exit(){} 
+    void exit()
+    {
+        version(SharedX11)
+            unloadX11();
+    } 
 
 
 }
