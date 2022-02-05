@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2022, Hipreme",
+	"description": "Windowing module for the Hipreme Engine",
+	"license": "CC-BY 4.0",
+	"name": "windowing"
+}

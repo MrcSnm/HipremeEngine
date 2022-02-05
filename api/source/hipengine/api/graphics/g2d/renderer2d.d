@@ -62,4 +62,5 @@ void initG2D()
             destroySprite
         );
     }
+
 }

@@ -1,11 +1,8 @@
 module jni.helper.jnicall;
 import util.conv:to;
-import std.format:format;
-import std.ascii:toUpper;
-import std.string:toStringz;
+import util.format;
+import util.string;
 import std.traits : isArray;
-import std.array:split, join;
-import std.algorithm:countUntil;
 import jni.jni;
 
 version(Android):
@@ -89,7 +86,6 @@ private string getArgs(Args...)()
 
 string javaGetClassPath(string path)
 {
-    import std.ascii:isUpper;
     string className;
 
     bool hasClass = false;
@@ -121,7 +117,6 @@ jclass javaGetClass(JNIEnv* env, string path)
 }
 string javaGetMethodName(string where)
 {
-    import std.string:lastIndexOf;
     long ind = lastIndexOf(where, '.');
     bool isMethodOnly = ind == -1;
 

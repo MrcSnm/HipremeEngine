@@ -12,11 +12,11 @@ module hiprenderer.viewport;
 import math.vector;
 import math.scaling;
 import hiprenderer.renderer;
-import bindbc.sdl;
+import hipengine.api.math.rect;
 
 public class Viewport
 {
-    SDL_Rect bounds;
+    Rect bounds;
     this(){}
 
     this(int x, int y, uint width, uint height)
@@ -43,7 +43,7 @@ public class Viewport
     }
     void update()
     {
-        this.setSize(this.w, this.h);
+        this.setSize(cast(uint)this.w, cast(uint)this.h);
         if(HipRenderer.getCurrentViewport() == this)
             this.setAsCurrentViewport();
     }

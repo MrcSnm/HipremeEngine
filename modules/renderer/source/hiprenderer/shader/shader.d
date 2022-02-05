@@ -14,7 +14,7 @@ import error.handler;
 import hiprenderer.shader.shadervar;
 public import hiprenderer.shader.shadervar :
 ShaderHint, ShaderVariablesLayout, ShaderVar;
-import hiprenderer.backend.gl.shader;
+import hiprenderer.backend.gl.glshader;
 import hiprenderer.shader;
 import hiprenderer.renderer;
 import util.file;

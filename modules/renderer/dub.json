@@ -11,23 +11,17 @@
 	"dependencies": {
 		"hipengine_api": {"path": "../../api"},
 		"bindbc-opengl": "~>1.0.0",
-		"bindbc-sdl": "~>1.0.1",
+		"windowing" : {"path" : "../windowing"},
 		"directx-d": {"path": "../../dependencies/directx-d"},
 		"gles" : {"path": "../../dependencies/gles"},
 		"data" : {"path": "../data"},
 		"bind" : {"path": "../bind"},
-		"config": {
-			"path": "../config",
-			"version": ">=0.0.0"
-		},
-		"error": {
-			"path": "../error",
-			"version": ">=0.0.0"
-		},
-		"math": {
-			"path": "../math",
-			"version": ">=0.0.0"
-		}
+		"config": {"path": "../config"},
+		"error": {"path": "../error"},
+		"math": {"path": "../math"}
+	},
+	"subConfigurations": {
+		"hipengine_api":"hipengine"
 	},
 	"versions": [
 		"SDL_208",

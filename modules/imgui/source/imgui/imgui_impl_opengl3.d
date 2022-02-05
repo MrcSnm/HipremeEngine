@@ -12,7 +12,6 @@ module imgui.imgui_impl_opengl3;
 version(CIMGUI):
 import bindbc.cimgui;
 
-import std.conv:to;
 import core.stdc.stdio;
 
 import core.stdc.string;

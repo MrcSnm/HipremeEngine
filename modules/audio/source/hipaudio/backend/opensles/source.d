@@ -1,7 +1,6 @@
 module hipaudio.backend.opensles.source;
 version(Android):
 import error.handler;
-import bindbc.sdl;
 import hipaudio.audioclip;
 import hipaudio.backend.sles;
 import util.time;

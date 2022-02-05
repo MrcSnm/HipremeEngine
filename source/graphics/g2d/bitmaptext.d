@@ -12,7 +12,7 @@ module graphics.g2d.bitmaptext;
 import graphics.g2d;
 import graphics.mesh;
 import util.data_structures;
-import std.algorithm.comparison : max;
+import math.utils : max;
 import util.conv:to;
 import error.handler;
 import console.log;
@@ -165,10 +165,10 @@ class HipBitmapFont
 
     void readTexture(string texturePath = "")
     {
-        import std.string : lastIndexOf;
+        import util.string : lastIndexOf;
         if(texturePath == "" && atlasTexturePath != "")
         {
-            const long ind = atlasPath.lastIndexOf('/');
+            const long ind = atlasPath.lastIndexOf("/");
             if(ind != -1)
                 texturePath = atlasPath[0..ind+1]~ atlasTexturePath;
             else

@@ -89,7 +89,7 @@ class HipAudio
         HipAudio.is3D = is3D;
         config = AudioConfig.lightweightConfig;
 
-        implementation = HipAudioImplementation.XAUDIO2;
+        implementation = HipAudioImplementation.OPENAL;
         
         switch(implementation)
         {

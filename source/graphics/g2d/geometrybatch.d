@@ -14,7 +14,8 @@ import hiprenderer.shader;
 import error.handler;
 import graphics.mesh;
 import math.matrix;
-import std.format:format;
+import util.format;
+import std.math;
 public import hipengine.api.graphics.color;
 
 
@@ -31,11 +32,10 @@ class GeometryBatch
     protected index_t verticesCount;
     protected index_t indicesCount;
     protected HipColor currentColor;
-    HipRendererMode mode;
     float[] vertices;
     index_t[] indices;
     
-    this(index_t verticesCount=19_000, index_t indicesCount=19_000)
+    this(index_t verticesCount=64_000, index_t indicesCount=64_000)
     {
         Shader s = HipRenderer.newShader(HipShaderPresets.GEOMETRY_BATCH); 
         s.addVarLayout(new ShaderVariablesLayout("Geom", ShaderTypes.VERTEX, 0)
@@ -69,15 +69,20 @@ class GeometryBatch
         mesh.setShader(s);
     }
 
+    protected pragma(inline) void checkVerticesCount(int howMuch)
+    {
+        if(verticesCount+howMuch <= this.vertices.length/7)
+            ErrorHandler.assertExit(verticesCount + howMuch <= this.vertices.length/7,
+            format!"Too many vertices (%s) for a buffer of size %s"(verticesCount+howMuch, this.vertices.length/7)
+            );
+    }
+
+
     /**
     * Adds a vertex to the structure and return its current index.
     */
     index_t addVertex(float x, float y, float z)
     {
-        ErrorHandler.assertExit(verticesCount+1 <= this.vertices.length/7,
-            format!"Too many vertices (%s) for a buffer of size %s"(verticesCount+1, this.vertices.length/7)
-        );
-
         alias c = currentColor;
         vertices[currentVertex++] = x;
         vertices[currentVertex++] = y;
@@ -90,12 +95,15 @@ class GeometryBatch
         return verticesCount++;
     }
     pragma(inline, true)
-    void addIndex(index_t index)
+    void addIndex(index_t[] newIndices ...)
     {
-        ErrorHandler.assertExit(currentIndex+1 <= this.indices.length,
+        if(currentIndex+newIndices.length >= this.indices.length)
+            ErrorHandler.assertExit(false,
             format!"Too many indices (%s) for a buffer of size %s"(currentIndex+1, this.indices.length)
-        );
-        indices[currentIndex++] = index;
+            );
+
+        foreach(index; newIndices)
+            indices[currentIndex++] = index;
     }
     void setColor(HipColor c)
     {
@@ -104,19 +112,101 @@ class GeometryBatch
     pragma(inline, true)
     protected void triangleVertices(int x1, int y1, int x2, int y2, int x3, int y3)
     {
+        checkVerticesCount(3);
         addVertex(x1, y1, 0);
         addVertex(x2, y2, 0);
         addVertex(x3, y3, 0);
-        addIndex(cast(index_t)(verticesCount-3));
-        addIndex(cast(index_t)(verticesCount-2));
-        addIndex(cast(index_t)(verticesCount-1));
+        addIndex(
+            cast(index_t)(verticesCount-3),
+            cast(index_t)(verticesCount-2),
+            cast(index_t)(verticesCount-1)
+        );
     }
-    void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
+
+
+    pragma(inline)
+    protected void fillEllipseVertices(int x, int y, int radiusW, int radiusH, int degrees, int precision)
     {
-        if(mode != HipRendererMode.TRIANGLES)
+        assert(precision >= 3, "Can't have a circle with less than 3 vertices");
+
+        //Normalize the precision for iterating it on the loop,
+        //Multiply by degrees * DEG_TO_RAD
+        float angle_mult = (1.0/precision) * degrees * (PI/180.0);
+
+        checkVerticesCount(2);
+        index_t centerIndex = addVertex(x, y, 0);
+        //The first vertex
+        index_t lastVert = addVertex(x + radiusW*cos(0.0), y + radiusH*sin(0.0), 0);
+        index_t firstVert = lastVert;
+        
+        checkVerticesCount(precision);
+        for(int i = 0; i < precision; i++)
+        {
+            //Divide degrees for the total iterations
+            float nextAngle = (i+1)*angle_mult;
+
+            //Use a temporary variable to hold the new lastVert for more performance
+            //on addIndex calls
+            index_t tempNewLastVert = addVertex(x+radiusW*cos(nextAngle), y + radiusH*sin(nextAngle), 0);
+            
+            addIndex(
+                centerIndex, //Puts the center first
+                lastVert, //Appends the vertex from the last iteration
+                tempNewLastVert//Appends the next vertex
+            );
+            //Updates the last iteration with the next vertex
+            lastVert = tempNewLastVert;
+        }
+
+        addIndex(
+            centerIndex,
+            lastVert,
+            firstVert
+        );
+    }
+
+    void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24)
+    {
+        if(HipRenderer.getMode != HipRendererMode.LINE)
         {
             flush();
-            mode = HipRendererMode.TRIANGLES;
+            HipRenderer.setRendererMode(HipRendererMode.LINE);
+        }   
+        float angle_mult = (1.0/precision) * degrees * (PI/180.0);
+        checkVerticesCount(1);
+        index_t currVert = addVertex(x+ radiusW*cos(0.0), y + radiusH*sin(0.0), 0);
+        index_t firstVert = currVert;
+
+        checkVerticesCount(precision);
+        for(int i = 1; i < precision+1; i++)
+        {
+            float nextAngle = angle_mult * i;
+            index_t tempNextVert = addVertex(x + radiusW * cos(nextAngle), y + radiusH*sin(nextAngle), 0);
+
+            addIndex(currVert, tempNextVert);
+            currVert = tempNextVert;
+        }
+
+        addIndex(firstVert, currVert);
+    }
+
+    ///With this default precision, the circle should be smooth enough
+    void fillEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24)
+    {
+        if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
+        {
+            flush();
+            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+        }
+        fillEllipseVertices(x, y, radiusW, radiusH, degrees, precision);
+    }
+
+    void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
+    {
+        if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
+        {
+            flush();
+            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
         }
         triangleVertices(x1,y1,x2,y2,x3,y3);
     }
@@ -127,11 +217,10 @@ class GeometryBatch
     }
     void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
     {
-        if(mode != HipRendererMode.LINE_STRIP)
+        if(HipRenderer.getMode != HipRendererMode.LINE_STRIP)
         {
             flush();
-            mode = HipRendererMode.LINE_STRIP;
-            HipRenderer.setRendererMode(mode);
+            HipRenderer.setRendererMode(HipRendererMode.LINE_STRIP);
         }
         triangleVertices(x1, y1, x2, y2, x3, y3);
     }
@@ -142,18 +231,22 @@ class GeometryBatch
     }
     void drawLine(int x1, int y1, int x2, int y2)
     {
-        if(mode != HipRendererMode.LINE)
+        if(HipRenderer.getMode != HipRendererMode.LINE)
         {
             flush();
-            mode = HipRendererMode.LINE;
-            HipRenderer.setRendererMode(mode);
+            HipRenderer.setRendererMode(HipRendererMode.LINE);
         }
+        checkVerticesCount(2);
         addVertex(x1, y1, 0);
         addVertex(x2, y2, 0);
 
-        addIndex(cast(index_t)(verticesCount-2));
-        addIndex(cast(index_t)(verticesCount-1));
+        addIndex(
+            cast(index_t)(verticesCount-2),
+            cast(index_t)(verticesCount-1)
+        );
     }
+
+
     void drawLine(int x1, int y1, int x2, int y2, HipColor color)
     {
         currentColor = color;
@@ -162,12 +255,12 @@ class GeometryBatch
 
     void drawPixel(int x, int y)
     {
-        if(mode != HipRendererMode.POINT)
+        if(HipRenderer.getMode != HipRendererMode.POINT)
         {
             flush();
-            mode = HipRendererMode.POINT;
-            HipRenderer.setRendererMode(mode);
+            HipRenderer.setRendererMode(HipRendererMode.POINT);
         }
+        checkVerticesCount(1);
         addVertex(x, y, 0);
         addIndex(verticesCount);
     }
@@ -190,28 +283,25 @@ class GeometryBatch
     pragma(inline, true)
     protected void rectangleVertices(int x, int y, int w, int h)
     {
+        checkVerticesCount(4);
         index_t topLeft = addVertex(x, y, 0);
         index_t botLeft = addVertex(x, y+h, 0);
         index_t botRight= addVertex(x+w, y+h, 0);
         index_t topRight= addVertex(x+w, y, 0);
-
-        addIndex(topLeft);
-        addIndex(botLeft);
-        addIndex(botRight);
-
-        addIndex(botRight);
-        addIndex(topRight);
-        addIndex(topLeft);
+ 
+        addIndex(
+            topLeft, botLeft, botRight,
+            botRight, topRight, topLeft
+        );
 
     }
 
     void drawRectangle(int x, int y, int w, int h)
     {
-        if(mode != HipRendererMode.LINE_STRIP)
+        if(HipRenderer.getMode != HipRendererMode.LINE_STRIP)
         {
             flush();
-            mode = HipRendererMode.LINE_STRIP;
-            HipRenderer.setRendererMode(mode);
+            HipRenderer.setRendererMode(HipRendererMode.LINE_STRIP);
         }
         rectangleVertices(x,y,w,h);
     }
@@ -223,11 +313,10 @@ class GeometryBatch
 
     void fillRectangle(int x, int y, int w, int h)
     {
-        if(mode != HipRendererMode.TRIANGLES)
+        if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
         {
             flush();
-            mode = HipRendererMode.TRIANGLES;
-            HipRenderer.setRendererMode(mode);
+            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
         }
         rectangleVertices(x,y,w,h);
     }

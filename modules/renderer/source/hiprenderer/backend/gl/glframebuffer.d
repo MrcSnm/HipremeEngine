@@ -8,7 +8,7 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hiprenderer.backend.gl.framebuffer;
+module hiprenderer.backend.gl.glframebuffer;
 import bindbc.opengl;
 
 import error.handler;
@@ -16,7 +16,7 @@ import hiprenderer.renderer;
 import hiprenderer.framebuffer;
 import hiprenderer.shader;
 import hiprenderer.texture;
-import hiprenderer.backend.gl.texture;
+import hiprenderer.backend.gl.gltexture;
 
 
 class Hip_GL3_FrameBuffer : IHipFrameBuffer

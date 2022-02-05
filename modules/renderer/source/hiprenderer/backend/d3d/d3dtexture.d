@@ -8,12 +8,11 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hiprenderer.backend.d3d.texture;
+module hiprenderer.backend.d3d.d3dtexture;
 version(Windows):
-import hiprenderer.backend.d3d.renderer;
+import hiprenderer.backend.d3d.d3drenderer;
 import data.image;
 import directx.d3d11;
-import bindbc.sdl;
 import error.handler;
 import hiprenderer.texture;
 

@@ -15,8 +15,13 @@ import data.asset;
 import error.handler;
 import util.system;
 import console.log;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlsurface;
+import bindbc.sdl.bind.sdlrwops;
+import bindbc.sdl.bind.sdlpixels;
+import bindbc.sdl.image;
 public import hipengine.api.data.image;
+
+import arsd.image;
 
 
 IHipBMPDecoder bmp;
@@ -69,8 +74,62 @@ final class HipSDLImageDecoder : IHipAnyImageDecoder
     ///Dispose the pixels
     void dispose(){if(img != null){SDL_FreeSurface(img);img = null;}}
 }
+
+final class HipARSDImageDecoder : IHipAnyImageDecoder
+{
+    MemoryImage img;
+    TrueColorImage trueImg;
+    bool startDecoding(void[] data)
+    {
+        img = loadImageFromMemory(data);
+        if(img !is null)
+            trueImg = img.getAsTrueColorImage;
+
+        return (img !is null) && (trueImg !is null);
+    }
+
+    uint getWidth()
+    {
+        if(img !is null)
+            return img.width;
+        return 0;
+    }
+
+    uint getHeight()
+    {
+        if(img !is null)
+            return img.height;
+        return 0;
+    }
+
+    void* getPixels()
+    {
+        if(img !is null)
+            return trueImg.imageData.bytes.ptr;
+        return null;
+    }
+
+    ubyte getBytesPerPixel()
+    {
+        //Every true image color has 4 bytes per pixel
+        return 4;
+    }
+
+    ubyte[] getPalette()
+    {
+        return null;
+    }
+
+    void dispose()
+    {
+        img.clearInternal;
+        destroy(trueImg);
+        destroy(img);
+    }
+}
+
 ///Use that alias for supporting more platforms
-alias HipPlatformImageDecoder = HipSDLImageDecoder;
+alias HipPlatformImageDecoder = HipARSDImageDecoder;
 
 /**
 *   This class represents pixel data on RAM (CPU Powered)

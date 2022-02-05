@@ -1,4 +1,6 @@
-module hiprenderer.backend.d3d.framebuffer;
+module hiprenderer.backend.d3d.d3dframebuffer;
+
+version(Windows):
 
 import directx.d3d11;
 
@@ -7,8 +9,8 @@ import hiprenderer.texture;
 import hiprenderer.renderer;
 import hiprenderer.framebuffer;
 import hiprenderer.shader;
-import hiprenderer.backend.d3d.renderer;
-import hiprenderer.backend.d3d.texture;
+import hiprenderer.backend.d3d.d3drenderer;
+import hiprenderer.backend.d3d.d3dtexture;
 
 
 private __gshared ID3D11RenderTargetView nullRenderTargetView = null;

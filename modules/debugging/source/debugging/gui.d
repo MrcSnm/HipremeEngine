@@ -15,7 +15,7 @@ public struct InterfaceImplementation{void function(ref void* u_data) interfaceF
 
 version(CIMGUI):
 import bindbc.cimgui;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlvideo;
 import error.handler;
 import implementations.imgui.imgui_impl_opengl3;
 import implementations.imgui.imgui_impl_sdl;

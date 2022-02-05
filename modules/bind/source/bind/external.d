@@ -13,7 +13,8 @@ module bind.external;
 
 version(UWP)
 {
-    import core.sys.windows.windows;
+    // import core.sys.windows.windows;
+    import core.sys.windows.windef;
     struct HipExternalCoreWindow
     {
         IUnknown coreWindow;

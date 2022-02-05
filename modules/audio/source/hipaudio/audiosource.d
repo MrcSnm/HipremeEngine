@@ -76,7 +76,7 @@ import imgui.fonts.icons;
             HipAudio.setMaxDistance(this, 0f);
             HipAudio.setRolloffFactor(this, 1f);
             HipAudio.setReferenceDistance(this, 0f);
-            position = Vector3.Zero();
+            position = Vector3.zero();
             id = 0;
             clip = null;
             return this;

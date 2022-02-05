@@ -14,7 +14,7 @@
 			"versions": [
 				"Script"
 			],
-			"targetType": "library"
+			"targetType": "sourceLibrary"
 		},
 		{
 			"name": "hipengine",

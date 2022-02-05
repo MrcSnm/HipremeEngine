@@ -33,15 +33,15 @@ mixin(Define(q{float getKeyUpTime(char key, uint id = 0)
 {
     return sys.dispatcher.getKeyUpTime(key, id);
 }}));
-mixin(Define(q{bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) 
+mixin(Define(q{bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.left, uint id = 0) 
 {
     return sys.dispatcher.isMouseButtonPressed(btn, id);
 }}));
-mixin(Define(q{bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) 
+mixin(Define(q{bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.left, uint id = 0) 
 {
     return sys.dispatcher.isMouseButtonJustPressed(btn, id);
 }}));
-mixin(Define(q{bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0) 
+mixin(Define(q{bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.left, uint id = 0) 
 {
     return sys.dispatcher.isMouseButtonJustReleased(btn, id);
 }}));

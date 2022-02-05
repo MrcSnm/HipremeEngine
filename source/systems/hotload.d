@@ -9,9 +9,10 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module systems.hotload;
-import std.path;
-import std.file;
+import std.file : copy;
+import data.hipfs;
 import util.system;
+import util.path;
 
 class HotloadableDLL
 {
@@ -31,7 +32,7 @@ class HotloadableDLL
     }
     protected bool load(string path)
     {
-        if(!exists(path))
+        if(!HipFS.exists(path))
             return false;
         tempPath = getTempName(path);
         copy(path, tempPath);
@@ -46,7 +47,7 @@ class HotloadableDLL
         string d = dirName(path);
         string n = baseName(path);
         string ext = extension(path);
-        return buildNormalizedPath(d, n~"_hiptemp"~ext);
+        return joinPath(d, n~"_hiptemp"~ext);
     }
     void reload()
     {
@@ -62,6 +63,6 @@ class HotloadableDLL
         if(lib != null)
             dynamicLibraryRelease(lib);
         if(tempPath)
-            remove(tempPath);
+            HipFS.remove(tempPath);
     }
 }

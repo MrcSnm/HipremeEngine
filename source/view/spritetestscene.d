@@ -10,8 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module view.spritetestscene;
-import bindbc.sdl;
-import hiprenderer.backend.gl.renderer;
+import hiprenderer.backend.gl.glrenderer;
 import hiprenderer.shader;
 import graphics.g2d;
 import hiprenderer.renderer;

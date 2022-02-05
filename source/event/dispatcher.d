@@ -13,7 +13,12 @@ private:
     import event.handlers.keyboard;
     import event.handlers.mouse;
     import systems.gamepad;
-    import bindbc.sdl;
+    import windowing.window;
+    import bindbc.sdl.bind.sdlevents;
+    import bindbc.sdl.bind.sdlkeyboard;
+    import bindbc.sdl.bind.sdlkeycode;
+    import bindbc.sdl.bind.sdlmouse;
+    import bindbc.sdl.bind.sdlvideo;
 
 public:
     import systems.input;
@@ -40,14 +45,61 @@ class EventDispatcher
     ulong frameCount;
     KeyboardHandler* keyboard = null;
     HipMouse mouse = null;
+    HipWindow window;
     protected void delegate(uint width, uint height)[] resizeListeners;
 
-    this(KeyboardHandler *kb)
+    this(HipWindow window, KeyboardHandler *kb)
     {
+        this.window = window;
         keyboard = kb;
         mouse = new HipMouse();
         HipEventQueue.newController(); //Creates controller 0
         initXboxGamepadInput();
+        import windowing.events;
+
+        onKeyDown = (wchar key)
+        {
+            try
+            {
+                HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)key));
+                debug { import std.stdio : writeln; try { writeln(key); } catch (Exception) {} }
+            }
+            catch(Exception e){assert(false);}
+        };
+        onKeyUp = (wchar key)
+        {
+            try{HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)key));}
+            catch(Exception e){assert(false);}
+        };
+        onMouseMove = (int x, int y)
+        {
+            try{HipEventQueue.post(0, HipEventQueue.EventType.touchMove, HipEventQueue.Touch(0, x, y));}
+            catch(Exception e){assert(false);}
+        };
+        onMouseUp = (ubyte btn, int x, int y)
+        {
+            try{HipEventQueue.post(0, HipEventQueue.EventType.touchUp, HipEventQueue.Touch(0, x, y));}
+            catch(Exception e){assert(false);}
+        };
+        onMouseDown = (ubyte btn, int x, int y)
+        {
+            try{HipEventQueue.post(0, HipEventQueue.EventType.touchDown, HipEventQueue.Touch(0, x, y));}
+            catch(Exception e){assert(false);}
+        };
+
+        onWindowResize = (uint width, uint height)
+        {
+            // try{foreach(r; resizeListeners)
+            //     r(width, height);
+            // }
+            // catch(Exception e){assert(false);}
+        };
+        onWindowClosed = ()
+        {
+            try{HipEventQueue.post(0, HipEventQueue.EventType.exit, true);}
+            catch(Exception e){assert(false);}
+        };
+
     }
     
     bool hasQuit = false;
@@ -55,56 +107,57 @@ class EventDispatcher
     void handleEvent()
     {
         ///Use SDL to populate our Input Queue
-        SDL_Event e;
-        version(Desktop)
-        {
-            while(SDL_PollEvent(&e) != 0)
-            {
-                switch(e.type) with (SDL_EventType)
-                {
-                    case SDL_KEYDOWN:
-                        HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)e.key.keysym.sym));
-                        break;
-                    case SDL_KEYUP:
-                        HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)e.key.keysym.sym));
-                        break;
-                    case SDL_MOUSEMOTION:
-                        int x, y;
-                        SDL_GetMouseState(&x,&y);
-                        HipEventQueue.post(0, HipEventQueue.EventType.touchMove, HipEventQueue.Touch(0, x, y));
-                        break;
-                    case SDL_MOUSEBUTTONUP:
-                        int x, y;
-                        SDL_GetMouseState(&x,&y);
-                        HipEventQueue.post(0, HipEventQueue.EventType.touchUp, HipEventQueue.Touch(0, x, y));
-                        break;
-                    case SDL_MOUSEBUTTONDOWN:
-                        int x, y;
-                        SDL_GetMouseState(&x,&y);
-                        HipEventQueue.post(0, HipEventQueue.EventType.touchDown, HipEventQueue.Touch(0, x, y));
-                        break;
-                    case SDL_MOUSEWHEEL:
-                        HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Scroll(e.wheel.x, e.wheel.y, 0));
-                        break;
-                    case SDL_WINDOWEVENT:
-                        SDL_WindowEvent wnd = e.window;
-                        switch(wnd.event) with(SDL_WindowEventID)
-                        {
-                            case SDL_WINDOWEVENT_RESIZED:
-                                // HipEventQueue.post(0, HipEventQueue.EventType.windowResize, HipEventQueue.Key(e.key.keysym.sym));
-                                foreach(r; resizeListeners)
-                                    r(wnd.data1, wnd.data2);
-                                break;
-                            default:break;
-                        }
-                        break;
-                    case SDL_QUIT:
-                        HipEventQueue.post(0, HipEventQueue.EventType.exit, true);
-                        break;
-                    default:break;
-                }
-            }
-        }
+        // SDL_Event e;
+        window.pollWindowEvents();
+        // version(Desktop)
+        // {
+        //     while(SDL_PollEvent(&e) != 0)
+        //     {
+        //         switch(e.type) with (SDL_EventType)
+        //         {
+        //             case SDL_KEYDOWN:
+        //                 HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)e.key.keysym.sym));
+        //                 break;
+        //             case SDL_KEYUP:
+        //                 HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)e.key.keysym.sym));
+        //                 break;
+        //             case SDL_MOUSEMOTION:
+        //                 int x, y;
+        //                 SDL_GetMouseState(&x,&y);
+        //                 HipEventQueue.post(0, HipEventQueue.EventType.touchMove, HipEventQueue.Touch(0, x, y));
+        //                 break;
+        //             case SDL_MOUSEBUTTONUP:
+        //                 int x, y;
+        //                 SDL_GetMouseState(&x,&y);
+        //                 HipEventQueue.post(0, HipEventQueue.EventType.touchUp, HipEventQueue.Touch(0, x, y));
+        //                 break;
+        //             case SDL_MOUSEBUTTONDOWN:
+        //                 int x, y;
+        //                 SDL_GetMouseState(&x,&y);
+        //                 HipEventQueue.post(0, HipEventQueue.EventType.touchDown, HipEventQueue.Touch(0, x, y));
+        //                 break;
+        //             case SDL_MOUSEWHEEL:
+        //                 HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Scroll(e.wheel.x, e.wheel.y, 0));
+        //                 break;
+        //             case SDL_WINDOWEVENT:
+        //                 SDL_WindowEvent wnd = e.window;
+        //                 switch(wnd.event) with(SDL_WindowEventID)
+        //                 {
+        //                     case SDL_WINDOWEVENT_RESIZED:
+        //                         // HipEventQueue.post(0, HipEventQueue.EventType.windowResize, HipEventQueue.Key(e.key.keysym.sym));
+        //                         foreach(r; resizeListeners)
+        //                             r(wnd.data1, wnd.data2);
+        //                         break;
+        //                     default:break;
+        //                 }
+        //                 break;
+        //             case SDL_QUIT:
+        //                 HipEventQueue.post(0, HipEventQueue.EventType.exit, true);
+        //                 break;
+        //             default:break;
+        //         }
+        //     }
+        // }
         handleHipEvent();
         frameCount++;
     }
@@ -121,11 +174,11 @@ class EventDispatcher
             {
                 case HipEventQueue.EventType.touchDown:
                     auto t = ev.get!(HipEventQueue.Touch);
-                    mouse.setPressed(HipMouseButton.LEFT, true);
+                    mouse.setPressed(HipMouseButton.left, true);
                     break;
                 case HipEventQueue.EventType.touchUp:
                     auto t = ev.get!(HipEventQueue.Touch);
-                    mouse.setPressed(HipMouseButton.LEFT, false);
+                    mouse.setPressed(HipMouseButton.left, false);
                     break;
                 case HipEventQueue.EventType.touchMove:
                     auto t = ev.get!(HipEventQueue.Touch);
@@ -180,9 +233,9 @@ class EventDispatcher
     ///Public API
     immutable(Vector2*) getTouchPosition(uint id = 0){return mouse.getPosition(id);}
     Vector2 getTouchDeltaPosition(uint id = 0){return mouse.getDeltaPosition(id);}
-    bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isPressed(btn);}
-    bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isJustPressed(btn);}
-    bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.LEFT, uint id = 0){return mouse.isJustReleased(btn);}
+    bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.left, uint id = 0){return mouse.isPressed(btn);}
+    bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.left, uint id = 0){return mouse.isJustPressed(btn);}
+    bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.left, uint id = 0){return mouse.isJustReleased(btn);}
     Vector3 getScroll(){return mouse.getScroll();}
     bool isKeyPressed(char key, uint id = 0){return keyboard.isKeyPressed(key.toUppercase);}
     bool isKeyJustPressed(char key, uint id = 0){return keyboard.isKeyJustPressed(key.toUppercase);}
@@ -197,7 +250,7 @@ class EventDispatcher
     }
     Vector3 getAnalog(HipGamepadAnalogs analog, ubyte id = 0)
     {
-        if(id >= gamepads.length) return Vector3.Zero;
+        if(id >= gamepads.length) return Vector3.zero;
         return gamepads[id].getAnalogState(analog);
     }
     bool isGamepadButtonPressed(HipGamepadButton btn, ubyte id = 0)

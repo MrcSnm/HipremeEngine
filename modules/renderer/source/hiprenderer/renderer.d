@@ -15,21 +15,21 @@ public import hiprenderer.texture;
 public import hiprenderer.vertex;
 import hiprenderer.framebuffer;
 import hiprenderer.viewport;
+import windowing.window;
 import math.rect;
 import error.handler;
 import bindbc.sdl;
 import console.log;
 import core.stdc.stdlib:exit;
 
-public import hiprenderer.backend.gl.renderer;
+public import hiprenderer.backend.gl.glrenderer;
 
 version(Windows)
 {
-    import hiprenderer.backend.d3d.renderer;
-    import hiprenderer.backend.d3d.texture;
+    import hiprenderer.backend.d3d.d3drenderer;
+    import hiprenderer.backend.d3d.d3dtexture;
 }
-import hiprenderer.backend.gl.texture;
-import hiprenderer.backend.sdl.texture;
+import hiprenderer.backend.gl.gltexture;
 
 enum HipWindowMode
 {
@@ -41,7 +41,6 @@ enum HipRendererType
 {
     GL3,
     D3D11,
-    SDL,
     NONE
 }
 
@@ -84,11 +83,10 @@ enum HipBlendEquation
 
 interface IHipRendererImpl
 {
-    public bool init(SDL_Window* window, SDL_Renderer* renderer);
+    public bool init(HipWindow window);
     version(dll){public bool initExternal();}
     public bool isRowMajor();
-    public SDL_Window* createWindow(uint width, uint height);
-    public SDL_Renderer* createRenderer(SDL_Window* window);
+    public HipWindow createWindow(uint width, uint height);
     public Shader createShader();
     public IHipFrameBuffer createFrameBuffer(int width, int height);
     public IHipVertexArrayImpl  createVertexArray();
@@ -106,14 +104,6 @@ interface IHipRendererImpl
     public void end();
     public void clear();
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
-    public void fillRect(int x, int y, int width, int height);
-    public void drawRect(int x, int y, int w, int h);
-    public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3);
-    public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3);
-    public void drawLine(int x1, int y1, int x2, int y2);
-    public void drawPixel(int x, int y); 
-    public void draw(Texture t, int x, int y);
-    public void draw(Texture t, int x, int y, SDL_Rect* rect);
     public void dispose();
 }
 
@@ -127,9 +117,9 @@ class HipRenderer
     protected static Viewport currentViewport = null;
     protected static Viewport mainViewport = null;
     protected static IHipRendererImpl rendererImpl;
+    protected static HipRendererMode rendererMode;
     protected Statistics stats;
-    public static SDL_Renderer* renderer = null;
-    public static SDL_Window* window = null;
+    public static HipWindow window = null;
     public static Shader currentShader;
     package static HipRendererType rendererType = HipRendererType.NONE;
 
@@ -213,14 +203,14 @@ class HipRenderer
             currentConfig = *config;
         rendererImpl = impl;
         window = rendererImpl.createWindow(width, height);
-        ErrorHandler.assertErrorMessage(window != null, "Error creating window", "Could not create SDL GL Window");
-        // renderer = rendererImpl.createRenderer(window);
+        ErrorHandler.assertErrorMessage(window !is null, "Error creating window", "Could not create SDL GL Window");
         // ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
-        rendererImpl.init(window, renderer);
+        rendererImpl.init(window);
         HipRenderer.width = width;
         HipRenderer.height = height;
         int w, h;
-        SDL_GetWindowSize(window, &w, &h);
+        w = window.width;
+        h = window.height;
         afterInit();
 
         return ErrorHandler.stopListeningForErrors();
@@ -230,7 +220,6 @@ class HipRenderer
     public static int getMaxSupportedShaderTextures(){return rendererImpl.queryMaxSupportedPixelShaderTextures();}
     public static ITexture getTextureImplementation()
     {
-        
         switch(HipRenderer.getRendererType())
         {
             case HipRendererType.GL3:
@@ -240,8 +229,6 @@ class HipRenderer
                     return new Hip_D3D11_Texture();
                 else
                     return null;
-            case HipRendererType.SDL:
-                return new Hip_SDL_Texture();
             default:
                 ErrorHandler.showErrorMessage("No renderer implementation active",
                 "Can't create a texture without a renderer implementation active");
@@ -327,10 +314,12 @@ class HipRenderer
 
     public static void setRendererMode(HipRendererMode mode)
     {
+        rendererMode = mode;
         rendererImpl.setRendererMode(mode);
         HipRenderer.exitOnError();
         stats.drawCalls++;
     }
+    public static HipRendererMode getMode(){return rendererMode;}
 
     public static void drawIndexed(index_t count, uint offset = 0)
     {
@@ -370,47 +359,12 @@ class HipRenderer
         rendererImpl.clear(r,g,b,a);
         stats.drawCalls++;
     }
-    public static void fillRect(int x, int y, int width, int height)
-    {
-        rendererImpl.fillRect(x,y,width,height);
-    }
-    public static void draw(Texture t, int x, int y)
-    {
-        rendererImpl.draw(t, x, y);
-    }
-    public static void draw(Texture t, int x, int y, SDL_Rect* rect)
-    {
-        rendererImpl.draw(t,x, y,rect);
-    }
-    public static void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
-    {
-        rendererImpl.drawTriangle(x1,y1,x2,y2,x3,y3);
-    }
-    public static void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
-    {
-        rendererImpl.fillTriangle(x1,y1,x2,y2,x3,y3);
-    }
-    public static void drawRect(int x, int y, int w, int h)
-    {
-        rendererImpl.drawRect(x,y,w,h);
-    }
-    public static void drawLine(int x1, int y1, int x2, int y2)
-    {
-        rendererImpl.drawLine(x1,y1,x2,y2);
-    }
-    public static void drawPixel(int x, int y)
-    {
-        rendererImpl.drawPixel(x,y);
-    }
     
     public static void dispose()
     {
         rendererImpl.dispose();
-        if(renderer != null)
-            SDL_DestroyRenderer(renderer);
-        if(window != null)
-            SDL_DestroyWindow(window);
-        renderer = null;
+        if(window !is null)
+            window.exit();
         window = null;
         IMG_Quit();
     }

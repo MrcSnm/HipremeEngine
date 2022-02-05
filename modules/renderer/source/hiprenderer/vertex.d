@@ -19,7 +19,7 @@ module hiprenderer.vertex;
 import hiprenderer.renderer;
 import error.handler;
 import console.log;
-public import hiprenderer.backend.gl.vertex;
+public import hiprenderer.backend.gl.glvertex;
 // version(Android){alias index_t = ushort;}
 // else{alias index_t = uint;}
 alias index_t = ushort;

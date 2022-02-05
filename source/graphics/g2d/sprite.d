@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module graphics.g2d.sprite;
 import graphics.g2d.spritebatch;
+import std.math;
 import hiprenderer.texture;
 import debugging.gui;
 public import hipengine.api.graphics.g2d.hipsprite;
@@ -36,6 +37,9 @@ public import hipengine.api.graphics.g2d.hipsprite;
     float scaleX, scaleY;
     float scrollX, scrollY;
     float rotation;
+    int tilingX, tilingY;
+
+    float u1, v1, u2, v2;
     uint width, height;
 
     protected bool isDirty;
@@ -45,9 +49,12 @@ public import hipengine.api.graphics.g2d.hipsprite;
 
     this()
     {
+        scrollX = 0; scrollY = 0;
+        u1 = 0; v1 = 0; u2 = 0; v2 = 0;
+        x = 0; y = 0;
+        //Tiling == 1 for consistency, 0 the image would disappear
+        tilingX = 1; tilingY = 1;
         vertices[] = 0;
-        x = 0;
-        y = 0;
         rotation = 0;
         scaleX = 1f;
         scaleY = 1f;
@@ -80,9 +87,13 @@ public import hipengine.api.graphics.g2d.hipsprite;
         height = texture.regionHeight;
         setRegion(region.u1, region.v1, region.u2, region.v2);
     }
-    void setRegion(float x1, float y1, float x2, float y2)
+    void setRegion(float u1, float v1, float u2, float v2)
     {
-        texture.setRegion(x1, y1, x2, y2);
+        this.u1 = u1;
+        this.u2 = u2;
+        this.v1 = v1;
+        this.v2 = v2;
+        texture.setRegion(u1, v1, u2, v2);
         const float[] v = texture.getVertices();
         vertices[U1] = v[0];
         vertices[V1] = v[1];
@@ -132,24 +143,51 @@ public import hipengine.api.graphics.g2d.hipsprite;
     {
         if(isDirty)
         {
-            float x2 = x+width*scaleX;
-            float y2 = y+height*scaleY;
+            
+            if(rotation == 0)
+            {
+                float x2 = x+ (width*scaleX * tilingX);
+                float y2 = y+ (height*scaleY * tilingY);
+                //Top left
+                vertices[X1] = x;
+                vertices[Y1] = y;
 
-            //Top left
-            vertices[X1] = x;
-            vertices[Y1] = y;
+                //Top right
+                vertices[X2] = x2;
+                vertices[Y2] = y;
 
-            //Top right
-            vertices[X2] = x2;
-            vertices[Y2] = y;
+                //Bot right
+                vertices[X3] = x2;
+                vertices[Y3] = y2;
 
-            //Bot right
-            vertices[X3] = x2;
-            vertices[Y3] = y2;
+                //Bot left
+                vertices[X4] = x;
+                vertices[Y4] = y2;
+            }
+            else
+            {
+                float x = -cast(float)width/2;
+                float y = -cast(float)height/2;
+                float x2 = x+(width * tilingX);
+                float y2 = y+(height * tilingY); 
+                float c = cos(rotation);
+                float s = sin(rotation);
+                //Top left
+                vertices[X1] = c*x - s*y + this.x;
+                vertices[Y1] = c*y + s*x + this.y;
 
-            //Bot left
-            vertices[X4] = x;
-            vertices[Y4] = y2;
+                //Top right
+                vertices[X2] = c*x2 - s*y + this.x;
+                vertices[Y2] = c*y + s*x2 + this.y;
+
+                //Bot right
+                vertices[X3] = c*x2 - s*y2 + this.x;
+                vertices[Y3] = c*y2 + s*x2 + this.y;
+
+                //Bot left
+                vertices[X4] = c*x - s*y2 + this.x;
+                vertices[Y4] = c*y2 + s*x + this.y;
+            }
         }
 
         return vertices;
@@ -191,10 +229,37 @@ public import hipengine.api.graphics.g2d.hipsprite;
         isDirty = true;
     }
 
+    /**
+    * This function is most useful for single images. For instance backgrounds, probably, if you have a
+    * texture atlas or a spritesheet, this function is not useful
+    */
     void setScroll(float x, float y)
     {
+        setRegion(
+            -scrollX + x + u1,
+            -scrollY + y + v1,
+            -scrollX + x + u2,
+            -scrollY + y + v2
+        );
         scrollX = x;
         scrollY = y;
+    }
+
+    /**
+    *   Sets the tiling factor for this sprite. Default is 1.
+    */
+    void setTiling(int x = 1, int y = 1)
+    {
+        assert(x != 0 && y != 0, "Tiling factor equals 0 will disappear the sprite image");
+
+        setRegion(
+            u1 / tilingX * x,
+            v1 / tilingY * y,
+            u2 / tilingX * x,
+            v2 / tilingY * y
+        );
+        tilingX = x;
+        tilingY = y;
     }
 }
 

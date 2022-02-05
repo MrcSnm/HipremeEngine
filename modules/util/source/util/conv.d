@@ -1,9 +1,22 @@
 module util.conv;
 import util.string;
 import std.typecons;
+import std.math.traits:isNaN, isInfinity;
+import std.traits:isArray;
 
+string toString(T)(T[] arr) pure nothrow @safe
+{
+    string ret = "[";
+    for(int i = 0; i < arr.length; i++)
+    {
+        ret~= toString(arr[i]);
+        if(i != cast(int)arr.length - 1)
+            ret~= ",";
+    }
+    return ret~"]";
+}
 
-string toString(T)(T structOrTuple) pure nothrow
+string toString(T)(T structOrTuple) pure nothrow @safe if(!isArray!T)
 {
     static if(isTuple!T)
     {
@@ -17,22 +30,32 @@ string toString(T)(T structOrTuple) pure nothrow
         }
         return T.stringof~"("~ret~")";
     }
-    else //For structs declaration
+    else static if(is(T == struct))//For structs declaration
     {
         alias struct_ = structOrTuple;
         string s = "(";
-        bool isFirst = true;
         static foreach(i, alias m; T.tupleof)
         {
-            if(!isFirst)
+            if(i > 0)
                 s~= ", ";
-            isFirst = false;
-            s~= mixin("toString(struct_."~m.stringof~")");
+            s~= toString(struct_.tupleof[i]);
         }
         return T.stringof~s~")";
     }
+    else static assert(0, "Not implemented for "~T.stringof);
 }
 
+
+string dumpStructToString(T)(T struc) if(is(T == struct))
+{
+    string s = "\n(";
+    static foreach(i, alias m; T.tupleof)
+    {
+        s~= "\n\t "~m.stringof~": ";
+        s~= toString(struc.tupleof[i]);
+    }
+    return T.stringof~s~"\n)";
+}
 
 
 T toStruct(T)(string struc) pure nothrow
@@ -70,11 +93,11 @@ T toStruct(T)(string struc) pure nothrow
 }
 
 
-bool toBool(string str) pure nothrow {return str == "true";}
+bool toBool(string str) pure nothrow @safe @nogc {return str == "true";}
 
 ///Use that for making toStruct easier
-string toString(string str) pure nothrow {return str;}
-string toString(bool b) pure nothrow
+string toString(string str) pure nothrow @safe @nogc {return str;}
+string toString(bool b) pure nothrow @safe @nogc
 {
     if(b) return "true";
     return "false";
@@ -82,7 +105,6 @@ string toString(bool b) pure nothrow
 
 TO to(TO, FROM)(FROM f) pure nothrow
 {
-    import std.traits:isArray;
     static if(is(TO == string))
     {
         static if(is(FROM == const(char)*) || is(FROM == char*))
@@ -103,7 +125,7 @@ TO to(TO, FROM)(FROM f) pure nothrow
 }
 
 /// This function can be called at compilation time without bringing runtime
-export string toString(int x) pure nothrow
+export string toString(int x) pure nothrow @safe
 {
     enum numbers = "0123456789";
     bool isNegative = x < 0;
@@ -112,7 +134,7 @@ export string toString(int x) pure nothrow
     ulong div = 10;
     int length = 1;
     int count = 1;
-    while(div < x)
+    while(div <= x)
     {
         div*=10;
         length++;
@@ -122,21 +144,30 @@ export string toString(int x) pure nothrow
     if(isNegative)
         ret[0] = '-';
     div = 10;
-    while(div < x)
+    while(div <= x)
     {
         count++;
         ret[length-count]=numbers[(x/div)%10];
         div*=10;
     }
     ret[length-1] = numbers[x%10];
-    return cast(string)ret;
+    return ret[0..$];
 }
 
 
-export string toString(float f) pure nothrow
+export string toString(float f) pure nothrow @safe 
 {
+    if(f.isNaN) return "nan";
+    if(f.isInfinity) return "inf";
+
+    bool isNegative = f < 0;
+    if(isNegative)
+        f = -f;
     float decimal = f%10;
     string ret = (cast(int)f).toString;
+    if(isNegative)
+        ret = "-"~ret;
+    
     if(decimal == 0)
         return ret;
    
@@ -152,7 +183,7 @@ string fromUTF16(wstring str) pure nothrow
     return ret;
 }
 
-int toInt(string str) pure nothrow
+int toInt(string str) pure nothrow @safe @nogc
 {
     if(str.length == 0) return 0;
 
@@ -179,9 +210,11 @@ int toInt(string str) pure nothrow
 }
 
 
-float toFloat(string str) pure nothrow
+float toFloat(string str) pure nothrow @safe @nogc
 {
     if(str.length == 0) return 0;
+    if(str == "nan" || str == "NaN") return float.init;
+    if(str == "inf" || str == "infinity" || str == "Infinity") return float.infinity;
 
     int i = 0;
     int integerPart = 0;
@@ -239,6 +272,7 @@ unittest
 {
     assert(toString(500) == "500");
     assert(toFloat("50.5" == 50.5f));
+    assert(toString(100.0) == "100");
     assert(toInt("-500") == -500);
     assert(toString("Hello") == "Hello");
     assert(toString(true) == "true");

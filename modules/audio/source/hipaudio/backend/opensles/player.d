@@ -11,7 +11,7 @@ import util.conv:to;
 import opensles.sles;
 import error.handler;
 import hipaudio.audio;
-import bindbc.sdl;
+import bindbc.sdl.bind.sdlaudio;
 
 version(Android):
 private SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)

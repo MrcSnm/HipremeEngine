@@ -25,6 +25,7 @@ public interface IHipImageDecoder
     ///Dispose the pixels
     void dispose();
 }
+
 //In progress?
 public interface IHipPNGDecoder  : IHipImageDecoder{}
 public interface IHipJPEGDecoder : IHipImageDecoder{}
