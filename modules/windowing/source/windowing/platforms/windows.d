@@ -121,6 +121,12 @@ version(Windows)
     }
 
     extern(Windows) nothrow @nogc HGLRC wglCreateContextAttribs(HDC, DWORD, HWND);
+    extern(Windows) nothrow @nogc BOOL wglChoosePixelFormatARB(
+        HDC hdc, const(int)* piAttribFList, const float* pfAttribIList, uint nMaxFormats,
+        int* piFormats, uint* nNumFormats
+    );
+    extern(Windows) nothrow @nogc void* wglGetProcAddress(const(char)* funcName);
+
     extern(Windows) nothrow @nogc bool initializeOpenGL()
     {
         PIXELFORMATDESCRIPTOR pfd =

@@ -53,6 +53,11 @@ class HipWindow
     bool destroyOpenGLContext(){return destroy_GL_Context();}
     void pollWindowEvents(){poll();}
     void rendererPresent(){swapBuffer();}
+    void setName(string name){}
+    void setSize(uint width, uint height){}
+    void setVSyncActive(bool active){}
+    void setFullscreen(bool fullscreen){}
+    
     void show(){}
     void hide(){}
     void exit()
