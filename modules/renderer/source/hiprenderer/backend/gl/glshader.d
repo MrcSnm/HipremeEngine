@@ -67,9 +67,20 @@ class Hip_GL3_FragmentShader : FragmentShader
     }
     override final string getSpriteBatchFragment()
     {
+        int sup = HipRenderer.getMaxSupportedShaderTextures();
+        //Push the line breaks for easier debugging on gpu debugger
+        string textureSlotSwitchCase = "switch(texId)\n{\n"; 
+        for(int i = 0; i < sup; i++)
+        {
+            string strI = to!string(i);
+            textureSlotSwitchCase~="case "~strI~": "~
+            "\t\toutPixelColor = texture(uTex1["~strI~"], inTexST)*inVertexColor*uBatchColor;break;\n";
+        }
+        textureSlotSwitchCase~="}\n";
+
         return shaderVersion~"\n"~floatPrecision~"\n"~q{
             
-            uniform sampler2D uTex1[}~to!string(HipRenderer.getMaxSupportedShaderTextures())~q{];
+            uniform sampler2D uTex1[}~to!string(sup)~q{];
 
             uniform vec4 uBatchColor;
 
@@ -79,12 +90,11 @@ class Hip_GL3_FragmentShader : FragmentShader
 
             out vec4 outPixelColor;
             void main()
-            {
+            }~"{"~q{
                 int texId = int(inTexID);
-                outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
+            } ~textureSlotSwitchCase~"}";
+                // outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
                 // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
-            }
-        };
     }
 
     override final string getGeometryBatchFragment()
@@ -268,6 +278,7 @@ class Hip_GL3_ShaderImpl : IShader
         if(ErrorHandler.assertErrorMessage(success==true, "Shader compilation error", "Compilation failed"))
         {
             glGetShaderInfoLog(shaderID, 512, null, infoLog.ptr);
+            ErrorHandler.showErrorMessage("Error on shader source: ", shaderSource);
             ErrorHandler.showErrorMessage("Compilation error:", cast(string)(infoLog));
         }
         return success==true;

@@ -1,5 +1,7 @@
 module hiprenderer.backend.d3d.d3dframebuffer;
 
+version(Windows):
+
 import directx.d3d11;
 
 import error.handler;

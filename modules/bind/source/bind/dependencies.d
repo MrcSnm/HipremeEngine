@@ -79,8 +79,8 @@ bool loadEngineDependencies()
         LuaSupport l = loadLua();
         if(l != luaSupport)
         {
-            ErrorHandler.assertExit(l != luaSupport.noLibrary, "Could not find any lua library");
-            ErrorHandler.showErrorMessage("Bad Lua Library", "Unknown lua version found");
+            // ErrorHandler.assertExit(l != luaSupport.noLibrary, "Could not find any lua library");
+            // ErrorHandler.showErrorMessage("Bad Lua Library", "Unknown lua version found");
         }
     }
 

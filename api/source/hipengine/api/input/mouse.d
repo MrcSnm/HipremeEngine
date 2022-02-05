@@ -18,7 +18,8 @@ enum HipMouseButton : ubyte
     middle,
     right,
     button1,
-    button2
+    button2,
+    invalid
 }
 interface IHipMouse
 {

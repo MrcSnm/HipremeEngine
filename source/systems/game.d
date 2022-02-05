@@ -166,7 +166,7 @@ class GameSystem
     {
         version(Test)
         {
-            addScene(new ChainTestScene());
+            addScene(new AnimationTestScene());
         }
         else version(Standalone)
         {
