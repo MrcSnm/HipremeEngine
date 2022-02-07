@@ -149,7 +149,7 @@ class HipRenderer
                     version(Windows)
                         return init(new Hip_D3D11_Renderer(), &cfg, width, height);
                     else
-                        return false;
+                        goto case "GL3";
                 default:
                     ErrorHandler.showErrorMessage("Invalid renderer '"~renderer~"'",
                     `
@@ -167,7 +167,6 @@ class HipRenderer
 
     version(dll) public static bool initExternal(HipRendererType type)
     {
-        import hiprenderer.backend.sdl.sdlrenderer;
         HipRenderer.rendererType = type;
         final switch(type)
         {
@@ -176,9 +175,6 @@ class HipRenderer
                 else{return false;}
             case HipRendererType.GL3:
                 rendererImpl = new Hip_GL3Renderer();
-                break;
-            case HipRendererType.SDL:
-                rendererImpl = new Hip_SDL_Renderer();
                 break;
             case HipRendererType.NONE:
                 return false;

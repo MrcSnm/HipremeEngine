@@ -68,6 +68,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     public HipWindow createWindow(uint width, uint height)
     {
         HipWindow wnd = new HipWindow(width, height, HipWindowFlags.DEFAULT);
+        wnd.start();
         // SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d11");
         // static if(HIP_DEBUG)
         // {
