@@ -284,6 +284,8 @@ string[] split(string str, string separator) pure nothrow @safe
         equalCount = 0;
         curr~= str[i];
     }
+    if(curr == separator)
+        curr = null;
     return ret ~ curr;
 }
 

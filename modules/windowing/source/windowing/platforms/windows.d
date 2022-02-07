@@ -121,13 +121,20 @@ version(Windows)
     }
 
     extern(Windows) nothrow @nogc HGLRC wglCreateContextAttribs(HDC, DWORD, HWND);
-    extern(Windows) nothrow @nogc BOOL wglChoosePixelFormatARB(
+    alias wglChoosePixelFormatARBProc = extern(Windows) nothrow @nogc BOOL function(
         HDC hdc, const(int)* piAttribFList, const float* pfAttribIList, uint nMaxFormats,
-        int* piFormats, uint* nNumFormats
+        int* piFormats, uint* nNumFormats);
+
+    alias wglCreateContextAttribsARBProc = extern(Windows) nothrow @nogc HGLRC function(
+        HDC hdc, HGLRC hShareContext,const int* attribList
     );
+
+
+    wglChoosePixelFormatARBProc wglChoosePixelFormatARB;
+    wglCreateContextAttribsARBProc wglCreateContextAttribsARB;
     extern(Windows) nothrow @nogc void* wglGetProcAddress(const(char)* funcName);
 
-    extern(Windows) nothrow @nogc bool initializeOpenGL()
+    extern(Windows) nothrow @nogc bool initializeOpenGL(ref HWND hwnd, int majorVersion, int minorVersion)
     {
         PIXELFORMATDESCRIPTOR pfd =
         {
@@ -149,31 +156,131 @@ version(Windows)
             0, 0, 0
         };
         int formatIndex = ChoosePixelFormat(hdc, &pfd);
-        SetPixelFormat(hdc, formatIndex, &pfd);
+        if(formatIndex == 0)
+        {
+            MessageBox(NULL, "Could not choose pixel format!", "Error!", MB_ICONERROR | MB_OK);
+            return false;
+        }
+        if(!SetPixelFormat(hdc, formatIndex, &pfd))
+        {
+            MessageBox(NULL, "Could not set pixel format!", "Error!", MB_ICONERROR | MB_OK);
+            return false;
+        }
         glContext = wglCreateContext(hdc);
-        wglMakeCurrent(hdc, glContext);
-        if(!GetPixelFormat(hdc))
+        if(glContext is null)
         {
-            MessageBox(NULL, "Could not get window pixel format!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+            MessageBox(NULL, "Could not create OpenGL Context", "Error!", MB_ICONERROR | MB_OK);
             return false;
         }
-        if(!DescribePixelFormat(hdc, formatIndex, pfd.sizeof, &pfd))
+        if(!wglMakeCurrent(hdc, glContext))
         {
-            MessageBox(NULL, "Could not get describe pixel format!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+            MessageBox(NULL, "Coult not set OpenGL Context", "Error!", MB_ICONERROR | MB_OK);
             return false;
         }
-        if((pfd.dwFlags & PFD_SUPPORT_OPENGL) != PFD_SUPPORT_OPENGL)
+        if(majorVersion < 3 && minorVersion < 3) //This is not actually tested
         {
-            MessageBox(NULL, "PixelFormatDescriptor does not support opengl!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+            if(!GetPixelFormat(hdc))
+            {
+                MessageBox(NULL, "Could not get window pixel format!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+                return false;
+            }
+            if(!DescribePixelFormat(hdc, formatIndex, pfd.sizeof, &pfd))
+            {
+                MessageBox(NULL, "Could not get describe pixel format!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+                return false;
+            }
+            if((pfd.dwFlags & PFD_SUPPORT_OPENGL) != PFD_SUPPORT_OPENGL)
+            {
+                MessageBox(NULL, "PixelFormatDescriptor does not support opengl!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+                return false;
+            }
+            return true;
+        }
+        else
+            return initializeModernOpenGL(hwnd, majorVersion, minorVersion);
+    }
+
+    package bool initializeModernOpenGL(ref HWND hwnd, int majorVersion, int minorVersion) nothrow @nogc
+    {
+        //Load Function Pointers
+        wglChoosePixelFormatARB = cast(wglChoosePixelFormatARBProc)wglGetProcAddress("wglChoosePixelFormatARB");
+        if(wglChoosePixelFormatARB is null)
+        {
+            MessageBox(NULL, "Could not load wglChoosePixelFormatARB", "Error", MB_ICONERROR | MB_OK);
+            return false;
+        }
+        wglCreateContextAttribsARB = cast(wglCreateContextAttribsARBProc)wglGetProcAddress("wglCreateContextAttribsARB");
+        if(wglCreateContextAttribsARB is null)
+        {
+            MessageBox(NULL, "Could not load wglCreateContextAttribsARB", "Error", MB_ICONERROR | MB_OK);
+            return false;
+        }
+        //Now, for the modern OpenGL
+        const int[19] attribList =
+        [
+            WGL_DRAW_TO_WINDOW_ARB, true,
+            WGL_SUPPORT_OPENGL_ARB, true,
+            WGL_DOUBLE_BUFFER_ARB, true,
+            WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+            WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+            WGL_COLOR_BITS_ARB, 32,
+            WGL_DEPTH_BITS_ARB, 24,
+            WGL_STENCIL_BITS_ARB, 8,
+            WGL_ALPHA_BITS_ARB, 8,
+            0, // End
+        ];
+
+        int pixelFormat;
+        uint numFormats;
+
+        if(!wglChoosePixelFormatARB(hdc, attribList.ptr, null, 1, &pixelFormat, &numFormats) || numFormats == 0)
+        {
+            MessageBox(NULL, "Could notchoose pixel format", "Error", MB_ICONERROR | MB_OK);
+            return false;
+        }
+        RECT r;
+
+        auto oldHwnd = hwnd;
+        HDC oldHDC = hdc;
+        HGLRC oldGLContext = glContext;
+        GetWindowRect(hwnd, &r);
+        hwnd = createWindow(r.right - r.left, r.bottom - r.top);
+
+        hdc = GetDC(hwnd);
+
+        PIXELFORMATDESCRIPTOR newPFD;
+        DescribePixelFormat(hdc, pixelFormat, newPFD.sizeof, &newPFD);
+        SetPixelFormat(hdc, pixelFormat, &newPFD);
+
+        int[7] contextAttribs = 
+        [
+            WGL_CONTEXT_MAJOR_VERSION_ARB, majorVersion,
+            WGL_CONTEXT_MINOR_VERSION_ARB, minorVersion,
+            WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+            0
+        ];
+        glContext = wglCreateContextAttribsARB(hdc, null, contextAttribs.ptr);
+        if(glContext is null)
+        {
+            MessageBox(null, "Could not create Modern OpenGL Context", "Error!", MB_ICONERROR | MB_OK);
+            return false;
+        }
+        wglMakeCurrent(null, null);
+        wglDeleteContext(oldGLContext);
+        ReleaseDC(oldHwnd, oldHDC);
+        DestroyWindow(oldHwnd);
+        if(!wglMakeCurrent(hdc, glContext))
+        {
+            MessageBox(null, "Could not set Modern OpenGL Context", "Error!", MB_ICONERROR | MB_OK);
             return false;
         }
         return true;
+
     }
 
-    extern(Windows) LRESULT openWindow(out HWND hwnd, int width, int height)
+    bool registerClass()
     {
         HINSTANCE hInstance = GetModuleHandle(null);
-        int nCmdShow = SW_NORMAL;
         WNDCLASS wc;
         //Register window class
 
@@ -198,16 +305,31 @@ version(Windows)
             wstring str = cast(wstring)buffer[0..size];
             MessageBox(NULL, ("Window Registration Failed with message: "~str).ptr, "Error!", MB_ICONEXCLAMATION | MB_OK);
             LocalFree(buffer);
-            return 0;
+            return false;
         }
-        
-        hwnd = CreateWindowEx(
+        return true;
+    }
+    package HWND createWindow(int width, int height) @nogc nothrow
+    {
+        return CreateWindowEx(
             0,
             winClassName,
             winClassName, //Title
             WS_OVERLAPPEDWINDOW | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_VISIBLE,
             CW_USEDEFAULT, CW_USEDEFAULT,
-            width, height, HWND_DESKTOP, null, hInstance, null);
+            width, height, HWND_DESKTOP, null, GetModuleHandle(null), null
+        );
+    }
+
+    extern(Windows) LRESULT openWindow(out HWND hwnd, int width, int height)
+    {
+        static bool registeredClass = false;
+        if(!registeredClass)
+        {
+            if(!registerClass())
+                return 0;
+        }
+        hwnd = createWindow(width, height);
         if(hwnd == null)
         {
             MessageBox(NULL, "Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
@@ -215,10 +337,8 @@ version(Windows)
         }
         
         hdc = GetDC(hwnd);
-        if(!initializeOpenGL())
-            return 0;
 
-        ShowWindow(hwnd, nCmdShow);
+        ShowWindow(hwnd, SW_NORMAL);
         if(!UpdateWindow(hwnd))
         {
             MessageBox(NULL, "Could not update the window!", "Error!", MB_ICONEXCLAMATION | MB_OK);
@@ -259,3 +379,74 @@ version(Windows)
         return true;
     }
 }
+
+
+
+enum WGL_ARB_pixel_format= 1;
+enum WGL_NUMBER_PIXEL_FORMATS_ARB     = 0x2000;
+enum WGL_DRAW_TO_WINDOW_ARB           = 0x2001;
+enum WGL_DRAW_TO_BITMAP_ARB           = 0x2002;
+enum WGL_ACCELERATION_ARB             = 0x2003;
+enum WGL_NEED_PALETTE_ARB             = 0x2004;
+enum WGL_NEED_SYSTEM_PALETTE_ARB      = 0x2005;
+enum WGL_SWAP_LAYER_BUFFERS_ARB       = 0x2006;
+enum WGL_SWAP_METHOD_ARB              = 0x2007;
+enum WGL_NUMBER_OVERLAYS_ARB          = 0x2008;
+enum WGL_NUMBER_UNDERLAYS_ARB         = 0x2009;
+enum WGL_TRANSPARENT_ARB              = 0x200A;
+enum WGL_TRANSPARENT_RED_VALUE_ARB    = 0x2037;
+enum WGL_TRANSPARENT_GREEN_VALUE_ARB  = 0x2038;
+enum WGL_TRANSPARENT_BLUE_VALUE_ARB   = 0x2039;
+enum WGL_TRANSPARENT_ALPHA_VALUE_ARB  = 0x203A;
+enum WGL_TRANSPARENT_INDEX_VALUE_ARB  = 0x203B;
+enum WGL_SHARE_DEPTH_ARB              = 0x200C;
+enum WGL_SHARE_STENCIL_ARB            = 0x200D;
+enum WGL_SHARE_ACCUM_ARB              = 0x200E;
+enum WGL_SUPPORT_GDI_ARB              = 0x200F;
+enum WGL_SUPPORT_OPENGL_ARB           = 0x2010;
+enum WGL_DOUBLE_BUFFER_ARB            = 0x2011;
+enum WGL_STEREO_ARB                   = 0x2012;
+enum WGL_PIXEL_TYPE_ARB               = 0x2013;
+enum WGL_COLOR_BITS_ARB               = 0x2014;
+enum WGL_RED_BITS_ARB                 = 0x2015;
+enum WGL_RED_SHIFT_ARB                = 0x2016;
+enum WGL_GREEN_BITS_ARB               = 0x2017;
+enum WGL_GREEN_SHIFT_ARB              = 0x2018;
+enum WGL_BLUE_BITS_ARB                = 0x2019;
+enum WGL_BLUE_SHIFT_ARB               = 0x201A;
+enum WGL_ALPHA_BITS_ARB               = 0x201B;
+enum WGL_ALPHA_SHIFT_ARB              = 0x201C;
+enum WGL_ACCUM_BITS_ARB               = 0x201D;
+enum WGL_ACCUM_RED_BITS_ARB           = 0x201E;
+enum WGL_ACCUM_GREEN_BITS_ARB         = 0x201F;
+enum WGL_ACCUM_BLUE_BITS_ARB          = 0x2020;
+enum WGL_ACCUM_ALPHA_BITS_ARB         = 0x2021;
+enum WGL_DEPTH_BITS_ARB               = 0x2022;
+enum WGL_STENCIL_BITS_ARB             = 0x2023;
+enum WGL_AUX_BUFFERS_ARB              = 0x2024;
+enum WGL_NO_ACCELERATION_ARB          = 0x2025;
+enum WGL_GENERIC_ACCELERATION_ARB     = 0x2026;
+enum WGL_FULL_ACCELERATION_ARB        = 0x2027;
+enum WGL_SWAP_EXCHANGE_ARB            = 0x2028;
+enum WGL_SWAP_COPY_ARB                = 0x2029;
+enum WGL_SWAP_UNDEFINED_ARB           = 0x202A;
+enum WGL_TYPE_RGBA_ARB                = 0x202B;
+enum WGL_TYPE_COLORINDEX_ARB          = 0x202C;
+
+
+enum WGL_CONTEXT_MAJOR_VERSION_ARB           = 0x2091;
+enum WGL_CONTEXT_MINOR_VERSION_ARB           = 0x2092;
+enum WGL_CONTEXT_LAYER_PLANE_ARB             = 0x2093;
+enum WGL_CONTEXT_FLAGS_ARB                   = 0x2094;
+enum WGL_CONTEXT_PROFILE_MASK_ARB            = 0x9126;
+
+
+enum WGL_CONTEXT_DEBUG_BIT_ARB               = 0x0001;
+enum WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB  = 0x0002;
+
+enum WGL_CONTEXT_CORE_PROFILE_BIT_ARB         = 0x00000001;
+enum WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB  = 0x00000002;
+
+
+enum ERROR_INVALID_VERSION_ARB               = 0x2095;
+enum ERROR_INVALID_PROFILE_ARB               = 0x2096;
