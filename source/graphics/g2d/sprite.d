@@ -37,7 +37,7 @@ public import hipengine.api.graphics.g2d.hipsprite;
     float scaleX, scaleY;
     float scrollX, scrollY;
     float rotation;
-    int tilingX, tilingY;
+    float tilingX, tilingY;
 
     float u1, v1, u2, v2;
     uint width, height;
@@ -229,6 +229,9 @@ public import hipengine.api.graphics.g2d.hipsprite;
         isDirty = true;
     }
 
+    int getTextureWidth(){return texture.texture.width;}
+    int getTextureHeight(){return texture.texture.height;}
+
     /**
     * This function is most useful for single images. For instance backgrounds, probably, if you have a
     * texture atlas or a spritesheet, this function is not useful
@@ -248,7 +251,7 @@ public import hipengine.api.graphics.g2d.hipsprite;
     /**
     *   Sets the tiling factor for this sprite. Default is 1.
     */
-    void setTiling(int x = 1, int y = 1)
+    void setTiling(float x = 1, float y = 1)
     {
         assert(x != 0 && y != 0, "Tiling factor equals 0 will disappear the sprite image");
 
