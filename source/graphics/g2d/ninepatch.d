@@ -3,15 +3,22 @@ public import hiprenderer.texture;
 public import graphics.g2d.spritebatch;
 import graphics.g2d.sprite;
 
+enum NinePatchType
+{
+    SCALED,
+    TILED //I Think this effect is quite ugly, but maybe it'll be useful at some time
+}
+
 class NinePatch
 {
     uint width, height;
     float x, y;
-     HipSprite[9] sprites;
+    protected HipSprite[9] sprites;
     protected float[HipSpriteVertex.quadCount*9] vertices;
     Texture texture;
+    NinePatchType stretchStrategy;
 
-    this(uint width, uint height, Texture tex)
+    this(uint width, uint height, Texture tex, NinePatchType type = NinePatchType.SCALED)
     {
         this.width = width;
         this.height = height;
@@ -19,12 +26,15 @@ class NinePatch
         y = 0;
         vertices[] = 0;
         texture = tex;
+        stretchStrategy = type;
         for(int i = 0; i < 9; i++)
             sprites[i] = new HipSprite(tex);
 
         setupTextureRegions();
         build();
     }
+
+
 
     void setupTextureRegions()
     {
@@ -48,6 +58,9 @@ class NinePatch
         sprites[BOT_RIGHT].setRegion(xw2, yh2, xw3, yh3);
     }
 
+    /**
+    *   Use this function instead of build for less overhead
+    */
     protected void updatePosition()
     {
         uint spWidth = sprites[TOP_LEFT].width;
@@ -97,20 +110,32 @@ class NinePatch
 
         //Now, those which scales in only one direction
         sprites[TOP_MID].setPosition(x+spWidth, y);
-        sprites[TOP_MID].setScale(xScalingFactor, 1);
-
         sprites[MID_LEFT].setPosition(x, y+spHeight);
-        sprites[MID_LEFT].setScale(1, yScalingFactor);
-
         sprites[MID_RIGHT].setPosition(x+width-spWidth, y+spHeight);
-        sprites[MID_RIGHT].setScale(1, yScalingFactor);
-
         sprites[BOT_MID].setPosition(x+spWidth, y + (height-spHeight));
-        sprites[BOT_MID].setScale(xScalingFactor, 1);
-
-        //The last one
         sprites[MID_MID].setPosition(spWidth+x, spHeight+y);
-        sprites[MID_MID].setScale(xScalingFactor,  yScalingFactor);
+
+
+        if(stretchStrategy == NinePatchType.SCALED)
+        {
+            sprites[TOP_MID].setScale(xScalingFactor, 1);
+            sprites[MID_LEFT].setScale(1, yScalingFactor);
+            sprites[MID_RIGHT].setScale(1, yScalingFactor);
+            sprites[BOT_MID].setScale(xScalingFactor, 1);
+
+            //The last one
+            sprites[MID_MID].setScale(xScalingFactor,  yScalingFactor);
+        }
+        else
+        {
+            sprites[TOP_MID].setTiling(xScalingFactor, 1);
+            sprites[MID_LEFT].setTiling(1, yScalingFactor);
+            sprites[MID_RIGHT].setTiling(1, yScalingFactor);
+            sprites[BOT_MID].setTiling(xScalingFactor, 1);
+
+            //The last one
+            sprites[MID_MID].setTiling(xScalingFactor,  yScalingFactor);
+        }
 
         for(int i = 0; i < HipSpriteVertex.quadCount; i++)
         {
