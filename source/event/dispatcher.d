@@ -231,7 +231,7 @@ class EventDispatcher
     }
 
     ///Public API
-    immutable(Vector2*) getTouchPosition(uint id = 0){return mouse.getPosition(id);}
+    Vector2 getTouchPosition(uint id = 0){return mouse.getPosition(id);}
     Vector2 getTouchDeltaPosition(uint id = 0){return mouse.getDeltaPosition(id);}
     bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.left, uint id = 0){return mouse.isPressed(btn);}
     bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.left, uint id = 0){return mouse.isJustPressed(btn);}

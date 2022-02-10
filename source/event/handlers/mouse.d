@@ -45,10 +45,10 @@ class HipMouse
     bool isPressed(HipMouseButton btn = HipMouseButton.left){return metadatas[btn].isPressed;}
 
     ///Use the ID for getting the touch, may return null
-    immutable(Vector2*) getPosition(uint id = 0)
+    Vector2 getPosition(uint id = 0)
     {
-        if(id > positions.length) return null;
-        return cast(immutable(Vector2*))(&positions[id]);
+        if(id > positions.length) return Vector2.zero;
+        return positions[id];
     }
     Vector2 getDeltaPosition(uint id = 0)
     {

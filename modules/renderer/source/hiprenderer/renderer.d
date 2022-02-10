@@ -202,6 +202,7 @@ class HipRenderer
         ErrorHandler.assertErrorMessage(window !is null, "Error creating window", "Could not create SDL GL Window");
         // ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
         rendererImpl.init(window);
+        window.show();
         HipRenderer.width = width;
         HipRenderer.height = height;
         int w, h;

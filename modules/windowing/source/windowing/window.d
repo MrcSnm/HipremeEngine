@@ -65,7 +65,13 @@ class HipWindow
     void setVSyncActive(bool active){}
     void setFullscreen(bool fullscreen){}
     
-    void show(){}
+    void show()
+    {
+        version(Windows)
+            return windowing.platforms.windows.show(hwnd);
+        else
+            return windowing.platforms.x11.show();
+    }
     void hide(){}
     void exit()
     {

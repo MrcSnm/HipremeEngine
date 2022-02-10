@@ -88,5 +88,6 @@ else
         float function(ubyte id = 0) getGamepadBatteryStatus;
         bool function(ubyte id = 0) isGamepadWireless;
     }
-    
 }
+alias getMousePosition = getTouchPosition;
+alias getMouseDeltaPosition = getTouchDeltaPosition;

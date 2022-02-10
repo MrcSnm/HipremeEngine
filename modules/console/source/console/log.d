@@ -30,7 +30,7 @@ ulong line = __LINE__,  Args...)(Args a)
 {
     string toLog = format!fmt(a) ~ "\t\t"~file~":"~to!string(line)~" at "~func._formatPrettyFunction;
     logHistory~= toLog;
-    Console.DEFAULT.log(toLog~"\n");
+    Console.DEFAULT.log(toLog);
 }
 
 void logln(string file = __FILE__,
@@ -42,13 +42,13 @@ ulong line = __LINE__, Args...)(Args a)
         toLog~= to!string(arg);
     toLog~= "\t\t"~file~":"~to!string(line)~" at "~func._formatPrettyFunction;
     logHistory~= toLog;
-    Console.DEFAULT.log(toLog~"\n");
+    Console.DEFAULT.log(toLog);
 }
 
 void rawlog(alias fmt, Args... )(Args a)
 {
     string toLog = format!fmt(a);
-    Console.DEFAULT.log(toLog~"\n");
+    Console.DEFAULT.log(toLog);
 }
 
 void rawlog(Args... )(Args a)
@@ -56,14 +56,14 @@ void rawlog(Args... )(Args a)
     string toLog = "";
     foreach(arg; a)
         toLog~= to!string(arg);
-    Console.DEFAULT.log(toLog~"\n");
+    Console.DEFAULT.log(toLog);
 }
 
 
 void rawerror(alias fmt, Args... )(Args a)
 {
     string toLog = format!fmt(a);
-    Console.DEFAULT.error(toLog~"\n");
+    Console.DEFAULT.error(toLog);
 }
 
 void rawerror(Args... )(Args a)
@@ -71,13 +71,13 @@ void rawerror(Args... )(Args a)
     string toLog = "";
     foreach(arg; a)
         toLog~= to!string(arg);
-    Console.DEFAULT.error(toLog~"\n");
+    Console.DEFAULT.error(toLog);
 }
 
 void rawfatal(alias fmt, Args... )(Args a)
 {
     string toLog = format!fmt(a);
-    Console.DEFAULT.fatal(toLog~"\n");
+    Console.DEFAULT.fatal(toLog);
 }
 
 void rawfatal(Args... )(Args a)
@@ -85,5 +85,5 @@ void rawfatal(Args... )(Args a)
     string toLog = "";
     foreach(arg; a)
         toLog~= to!string(arg);
-    Console.DEFAULT.fatal(toLog~"\n");
+    Console.DEFAULT.fatal(toLog);
 }
