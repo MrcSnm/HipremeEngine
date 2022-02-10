@@ -141,6 +141,31 @@ class HipSpriteBatch
         
         quadsCount++;
     }
+
+    void addQuads(uint count)(ref float[count] quadsVertices, int slot)
+    {
+        static assert(count % HipSpriteVertex.quadCount == 0, "Count must be divisible by 40");
+        enum int countOfQuads = cast(int)(count /HipSpriteVertex.quadCount);
+
+        for(int i = 0; i < quadsCount; i++)
+        {
+            quadsVertices[i*HipSpriteVertex.quadCount + T1] = slot;
+            quadsVertices[i*HipSpriteVertex.quadCount + T2] = slot;
+            quadsVertices[i*HipSpriteVertex.quadCount + T3] = slot;
+            quadsVertices[i*HipSpriteVertex.quadCount + T4] = slot;
+        }
+
+
+        uint index = 0;
+        uint startCopyIndex = cast(uint)(HipSpriteVertex.quadCount*this.quadsCount);
+
+        while(index < count)
+        {
+            vertices[startCopyIndex + index] = quadsVertices[index];
+            index++;
+        }
+        this.quadsCount+= countOfQuads;
+    }
     
     pragma(inline, true)
     private int getNextTextureID(Texture t)
@@ -174,12 +199,20 @@ class HipSpriteBatch
     }
     protected int setTexture(TextureRegion reg){return setTexture(reg.texture);}
 
-    void draw(Texture t, ref float[HipSpriteVertex.quadCount] vertices)
+    void draw(uint count)(Texture t, ref float[count] vertices)
     {
+        static assert(count % HipSpriteVertex.quadCount == 0,
+        mixin("\"Quads count to draw must be divisible by ", count, "\""));
+
+
         ErrorHandler.assertExit(t.width != 0 && t.height != 0, "Tried to draw 0 bounds sprite");
         int slot = setTexture(t);
         ErrorHandler.assertExit(slot != -1, "Texture slot can't be -1 on draw phase");
-        addQuad(vertices, slot);
+
+        static if((count / HipSpriteVertex.quadCount) == 1)
+            addQuad(vertices, slot);
+        else
+            addQuads(vertices, slot);
     }
     void draw(HipSprite s)
     {

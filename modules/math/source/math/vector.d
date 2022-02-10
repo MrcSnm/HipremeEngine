@@ -259,14 +259,14 @@ public struct Vector(uint N, T)
             return this;
         }
 
-        ref VectorN opAssign(VectorN other) return
+        ref VectorN opAssign(in VectorN other) return
         {
              for(ulong i = 0; i < N; i++)
                 data[i] = other[i];
             return this;
         }
 
-        ref VectorN opAssign(T[N] other) return
+        ref VectorN opAssign(in T[N] other) return
         {
             for(ulong i = 0; i < N; i++)
                 data[i] = other[i];

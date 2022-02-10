@@ -199,6 +199,8 @@ nothrow @nogc bool initializeOpenGL(int majorVersion, int minorVersion)
 
     return true;
 }
+
+void show(){}
 void swapBuffer()
 {
     glXSwapBuffers(x11win.display, x11win.window);

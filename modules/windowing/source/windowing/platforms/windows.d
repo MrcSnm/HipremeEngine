@@ -72,6 +72,12 @@ version(Windows)
             {
                 break;
             }
+            case WM_MOUSEMOVE:
+            {
+                if(onMouseMove != null)
+                    onMouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+                break;
+            }
             case WM_LBUTTONDOWN:
                 if(onMouseDown != null)
                     onMouseDown(HipMouseButton.left, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
@@ -111,8 +117,10 @@ version(Windows)
                     );
                 break;
             case WM_MOUSEWHEEL:
-                break;
-            case WM_MOUSEMOVE:
+                if(onMouseWheel != null)
+                    onMouseWheel(
+                        HIWORD(wParam), 0
+                    );
                 break;
             default:
                 return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -140,7 +148,7 @@ version(Windows)
         {
             PIXELFORMATDESCRIPTOR.sizeof,
             1,
-            PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,    // Flags
+            PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER ,    // Flags
             PFD_TYPE_RGBA,        // The kind of framebuffer. RGBA or palette.
             32,                   // Colordepth of the framebuffer.
             0, 0, 0, 0, 0, 0,
@@ -335,17 +343,15 @@ version(Windows)
             MessageBox(NULL, "Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
             return 0;
         }
-        
         hdc = GetDC(hwnd);
-
-        ShowWindow(hwnd, SW_NORMAL);
-        if(!UpdateWindow(hwnd))
-        {
-            MessageBox(NULL, "Could not update the window!", "Error!", MB_ICONEXCLAMATION | MB_OK);
-            return 0;
-        }
         
         return 1;
+    }
+
+    void show(HWND hwnd)
+    {
+        ShowWindow(hwnd, SW_NORMAL);
+        UpdateWindow(hwnd);
     }
 
     void poll()

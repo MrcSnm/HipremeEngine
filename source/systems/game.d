@@ -166,7 +166,7 @@ class GameSystem
     {
         version(Test)
         {
-            addScene(new AnimationTestScene());
+            addScene(new NinePatchSceneTest());
         }
         else version(Standalone)
         {

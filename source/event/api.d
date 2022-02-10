@@ -45,7 +45,7 @@ mixin(Define(q{bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButto
 {
     return sys.dispatcher.isMouseButtonJustReleased(btn, id);
 }}));
-mixin(Define(q{immutable(Vector2*) getTouchPosition(uint id=0) 
+mixin(Define(q{Vector2 getTouchPosition(uint id=0) 
 {
     return sys.dispatcher.getTouchPosition(id);
 }}));
