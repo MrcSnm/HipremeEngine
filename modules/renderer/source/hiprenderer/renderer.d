@@ -187,7 +187,7 @@ class HipRenderer
     }
     private static afterInit()
     {
-        mainViewport = new Viewport(0,0,800, 600);
+        mainViewport = new Viewport(0,0, 1280, 720);
         setViewport(mainViewport);
         HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
     }

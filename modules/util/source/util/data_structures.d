@@ -19,6 +19,72 @@ struct Pair(A, B)
     alias b = second;
 }
 
+struct RangeMap(K, V)
+{
+    import std.traits:isNumeric;
+    static assert(isNumeric!K, "RangeMap key must be a numeric type");
+    K[] ranges;
+    V[] values;
+    V _default;
+
+    RangeMap setDefault(V _default)
+    {
+        this._default = _default;
+        return this;
+    }
+    RangeMap setRange(K a, K b, V value)
+    {
+        int rLength = cast(int)ranges.length;
+        ranges.reserve(ranges.length+2);
+        if(a > b)
+        {
+            K temp = a;
+            a = b;
+            b = temp;
+        }
+        if(rLength != 0 && ranges[rLength-1] > a) //Silently ignore for now
+            return this;
+        ranges~=a;
+        ranges~=b;
+        values~=value;
+        return this;
+    }
+
+    V get(K value)
+    {
+        int l = 0;
+        int length = cast(int)ranges.length;
+        int r = length-1;
+
+        while(l < r)
+        {
+            int m = cast(int)((l+r)/2);
+            if(m % 2 != 0)
+                m--;
+            K k = ranges[m];
+            if(m+1 < length && value >= k && value <= ranges[m+1])
+                return values[cast(int)(m/2)];
+            else if(k < value)
+                l = m + 1;
+            else if(m > value)
+                r = m - 1;
+            else if(m+1 < length && k > value && ranges[m+1] > value)
+                break;
+        }
+        return _default;
+    }
+
+    auto opSliceAssign(V)(V value, K start, K end)
+    {
+        setRange(start, end, value);
+        return value;
+    }
+    V opIndex(K index)
+    {
+        return get(index);
+    }
+}
+
 struct Array(T)
 {
     ulong length;

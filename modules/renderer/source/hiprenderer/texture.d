@@ -23,7 +23,7 @@ public import hipengine.api.renderer.texture;
 class Texture
 {
     Image img;
-    uint width,height;
+    int width,height;
     TextureFilter min, mag;
     private static Texture pixelTexture;
     public static Texture getPixelTexture()
@@ -174,8 +174,8 @@ class TextureRegion
         this.u2 = u2;
         this.v1 = v1;
         this.v2 = v2;
-        regionWidth =  cast(uint)((texture.width*u2) -(texture.width*u1));
-        regionHeight = cast(uint)((texture.height*v2)-(texture.height*v1));
+        regionWidth =  cast(uint)((u2 - u1) * texture.width);
+        regionHeight = cast(uint)((v2 - v1) * texture.height);
 
         //Top left
         vertices[0] = u1;
@@ -194,7 +194,13 @@ class TextureRegion
         vertices[7] = v2;
     }
 
-    ///Sets the region based on the width and height for it being more friendly
+    /**
+    *   The uint variant from the setRegion receives arguments in a non normalized way to setup
+    *   the UV coordinates.
+    *   It is better if you wish to just pass where it start and ends.
+    *   The region is divided by the width and height
+    *   
+    */
     void setRegion(uint width, uint height, uint u1, uint v1, uint u2, uint v2)
     {
         float fu1 = u1/cast(float)width;
@@ -204,6 +210,9 @@ class TextureRegion
         setRegion(fu1, fv1, fu2, fv2);
     }
 
+    /**
+    *   The UV coordinates passed are divided by the current texture width and height
+    */
     void setRegion(uint u1, uint v1, uint u2, uint v2)
     {
         if(texture)
