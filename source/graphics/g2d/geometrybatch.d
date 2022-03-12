@@ -9,13 +9,15 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module graphics.g2d.geometrybatch;
+import graphics.orthocamera;
 import hiprenderer.renderer;
 import hiprenderer.shader;
 import error.handler;
 import graphics.mesh;
 import math.matrix;
 import util.format;
-import std.math;
+import math.utils;
+import math.vector;
 public import hipengine.api.graphics.color;
 
 
@@ -26,16 +28,16 @@ public import hipengine.api.graphics.color;
 class GeometryBatch
 {
     protected Mesh mesh;
-    protected Shader currentShader;
     protected index_t currentIndex;
     protected index_t currentVertex;
     protected index_t verticesCount;
     protected index_t indicesCount;
     protected HipColor currentColor;
+    HipOrthoCamera camera;
     float[] vertices;
     index_t[] indices;
     
-    this(index_t verticesCount=64_000, index_t indicesCount=64_000)
+    this(HipOrthoCamera camera = null, index_t verticesCount=64_000, index_t indicesCount=64_000)
     {
         Shader s = HipRenderer.newShader(HipShaderPresets.GEOMETRY_BATCH); 
         s.addVarLayout(new ShaderVariablesLayout("Geom", ShaderTypes.VERTEX, 0)
@@ -47,7 +49,6 @@ class GeometryBatch
         .append("uGlobalColor", cast(float[4])[1,1,1,1]));
 
         mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_VAO(), s);
-        setShader(s);
         vertices = new float[verticesCount*7]; //XYZ, RGBA
         indices = new index_t[indicesCount];
         indices[] = 0;
@@ -61,12 +62,10 @@ class GeometryBatch
         mesh.sendAttributes();
         this.setColor(HipColor(1,1,1,1));
 
-    }
+        if(camera is null)
+            camera = new HipOrthoCamera();
+        this.camera = camera;
 
-    void setShader(Shader s)
-    {
-        currentShader = s;
-        mesh.setShader(s);
     }
 
     protected pragma(inline) void checkVerticesCount(int howMuch)
@@ -191,8 +190,10 @@ class GeometryBatch
     }
 
     ///With this default precision, the circle should be smooth enough
-    void fillEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24)
+    void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, int precision = 24)
     {
+        if(radiusH == -1)
+            radiusH = radiusW;
         if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
         {
             flush();
@@ -244,6 +245,33 @@ class GeometryBatch
             cast(index_t)(verticesCount-2),
             cast(index_t)(verticesCount-1)
         );
+    }
+
+    pragma(inline) void drawLine(float x1, float y1, float x2, float y2)
+    {
+        drawLine(
+            cast(int)x1,
+            cast(int)y1,
+            cast(int)x2,
+            cast(int)y2
+        );
+    }
+
+    void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24)
+    {
+        Vector2 last = Vector2(x0, y0);
+
+        float precisionMultiplier = 1.0f/precision;
+
+        for(int i = 0; i <= precision; i++)
+        {
+            float t = cast(float)i*precisionMultiplier;
+            float tNext = t+precisionMultiplier;
+            Vector2 bz = quadraticBezier(x0, y0, x1, y1, x2, y2, tNext);
+            drawLine(last.x, last.y, bz.x, bz.y);
+            last = bz;
+        }
+        drawLine(last.x, last.y, x2, y2);
     }
 
 
@@ -329,20 +357,21 @@ class GeometryBatch
     void flush()
     {
         const uint count = this.currentIndex;
+        if(count == 0)
+            return;
         verticesCount = 0;
         currentIndex = 0;
         currentVertex = 0;
         this.mesh.updateVertices(this.vertices);
         this.mesh.updateIndices(this.indices);
 
-        currentShader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1]);
-        static float t = 0;
-        t-= 0.001;
-        currentShader.setVertexVar("Geom.uProj", Matrix4.orthoLH(0, 800, 600, 0, 0.1, 1));
-        currentShader.setVertexVar("Geom.uModel",Matrix4.identity());
-        currentShader.setVertexVar("Geom.uView", Matrix4.identity());
-        currentShader.bind();
-        currentShader.sendVars();
+        mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1]);
+        mesh.shader.setVertexVar("Geom.uProj",  camera.proj);
+        mesh.shader.setVertexVar("Geom.uModel", Matrix4.identity());
+        mesh.shader.setVertexVar("Geom.uView",  camera.view);
+
+        mesh.shader.bind();
+        mesh.shader.sendVars();
         //Vertices to render = indices.length
         
         this.mesh.draw(count);

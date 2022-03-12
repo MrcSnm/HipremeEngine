@@ -57,4 +57,10 @@ class HipMouse
         return positions[id] - lastPositions[id];
     }
     Vector3 getScroll(){return scroll;}
+
+    void postUpdate()
+    {
+        for(int i = 0; i < metadatas.length; i++)
+            metadatas[i]._isNewState = false;
+    }
 }

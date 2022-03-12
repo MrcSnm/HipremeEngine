@@ -150,8 +150,8 @@ extern(C)int SDL_main()
 
 	//Initialize 2D context
 	import graphics.g2d;
-
-	HipRenderer2D.initialize(interpreterEntry);
+	HipRenderer2D.initialize(interpreterEntry, true);
+	
 	if(isUsingInterpreter)
 		loadInterpreterEntry(interpreterEntry.intepreter, interpreterEntry.sourceEntry);
 	//After initializing engine, every dependency has been load

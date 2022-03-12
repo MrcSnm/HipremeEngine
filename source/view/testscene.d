@@ -25,7 +25,7 @@ class TestScene : Scene
     float a;
     override void init()
     {
-        geom = new GeometryBatch(5000, 5000);
+        geom = new GeometryBatch(null, 5000, 5000);
         a = 0;
         geom.setColor(HipColor(0, 1, 0, 1));
         HipRenderer.setViewport(new Viewport(0,0, 800, 600));

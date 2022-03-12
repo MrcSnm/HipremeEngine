@@ -246,12 +246,21 @@ version(Windows)
             MessageBox(NULL, "Could notchoose pixel format", "Error", MB_ICONERROR | MB_OK);
             return false;
         }
-        RECT r;
 
         auto oldHwnd = hwnd;
         HDC oldHDC = hdc;
         HGLRC oldGLContext = glContext;
-        GetWindowRect(hwnd, &r);
+
+        RECT rBorders;
+        GetWindowRect(hwnd, &rBorders);
+        RECT rNoBorders;
+        GetClientRect(hwnd, &rNoBorders);
+        RECT r;
+        r.left = rBorders.left*2 - rNoBorders.left;
+        r.right = rBorders.right*2 - rNoBorders.right;
+        r.top = rBorders.top*2 - rNoBorders.top;
+        r.bottom = rBorders.bottom*2 - rNoBorders.bottom;
+        //Create 
         hwnd = createWindow(r.right - r.left, r.bottom - r.top);
 
         hdc = GetDC(hwnd);
