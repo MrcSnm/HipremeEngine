@@ -89,10 +89,8 @@ class EventDispatcher
 
         onWindowResize = (uint width, uint height)
         {
-            // try{foreach(r; resizeListeners)
-            //     r(width, height);
-            // }
-            // catch(Exception e){assert(false);}
+            try{HipEventQueue.post(0, HipEventQueue.EventType.windowResize, HipEventQueue.Resize(width, height));}
+            catch(Exception e){assert(false);}
         };
         onWindowClosed = ()
         {
@@ -172,6 +170,11 @@ class EventDispatcher
         {
             switch(ev.type)
             {
+                case HipEventQueue.EventType.windowResize:
+                    auto w = ev.get!(HipEventQueue.Resize);
+                    foreach(r; resizeListeners)
+                        r(w.width, w.height);
+                    break;
                 case HipEventQueue.EventType.touchDown:
                     auto t = ev.get!(HipEventQueue.Touch);
                     mouse.setPressed(HipMouseButton.left, true);
@@ -231,7 +234,7 @@ class EventDispatcher
     }
 
     ///Public API
-    immutable(Vector2*) getTouchPosition(uint id = 0){return mouse.getPosition(id);}
+    Vector2 getTouchPosition(uint id = 0){return mouse.getPosition(id);}
     Vector2 getTouchDeltaPosition(uint id = 0){return mouse.getDeltaPosition(id);}
     bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.left, uint id = 0){return mouse.isPressed(btn);}
     bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.left, uint id = 0){return mouse.isJustPressed(btn);}
@@ -287,6 +290,7 @@ class EventDispatcher
     void postUpdate()
     {
         keyboard.postUpdate();
+        mouse.postUpdate();
         foreach(g; gamepads)
             g.postUpdate();
     }

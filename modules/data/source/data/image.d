@@ -141,7 +141,7 @@ public class Image : HipAsset, IImage
     protected shared bool _ready;
     IHipImageDecoder decoder;
     string imagePath;
-    uint width, height;
+    int width, height;
     ubyte bytesPerPixel;
     ushort bitsPerPixel;
     void* pixels;

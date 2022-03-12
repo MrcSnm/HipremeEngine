@@ -68,6 +68,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     public HipWindow createWindow(uint width, uint height)
     {
         HipWindow wnd = new HipWindow(width, height, HipWindowFlags.DEFAULT);
+        wnd.start();
         // SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d11");
         // static if(HIP_DEBUG)
         // {
@@ -468,8 +469,8 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         memset(&vp, 0, D3D11_VIEWPORT.sizeof);
         vp.Width = v.w;
         vp.Height = v.h;
-        vp.TopLeftX = 0;
-        vp.TopLeftY = 0;
+        vp.TopLeftX = v.x;
+        vp.TopLeftY = v.y;
         // vp.MinDepth = 0;
         // vp.MaxDepth = 1;
 

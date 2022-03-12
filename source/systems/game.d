@@ -18,6 +18,7 @@ private import event.dispatcher;
 private import event.handlers.keyboard;
 import view;
 import windowing.events;
+import graphics.g2d.renderer2d;
 
 
 version(Standalone){}
@@ -104,9 +105,11 @@ class GameSystem
         {
             HipRenderer.width = width;
             HipRenderer.height = height;
+            resizeRenderer2D(width, height);
             foreach (AScene s; scenes)
                 s.onResize(width, height);
         });
+        
     }
 
     void loadGame(string gameDll)
@@ -166,7 +169,7 @@ class GameSystem
     {
         version(Test)
         {
-            addScene(new AnimationTestScene());
+            addScene(new CurveScene());
         }
         else version(Standalone)
         {

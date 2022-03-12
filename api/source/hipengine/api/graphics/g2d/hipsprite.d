@@ -19,6 +19,8 @@ interface IHipSprite
     void setColor(HipColor color);
     void setRotation(float rotation);
     void setScroll(float x, float y);
-    void setTiling(int x, int y);
+    void setTiling(float x, float y);
     void setRegion(float x1, float y1, float x2, float y2);
+    int getTextureWidth();
+    int getTextureHeight();
 }

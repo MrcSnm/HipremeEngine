@@ -70,33 +70,32 @@ class Hip_D3D11_FragmentShader : FragmentShader
     override final string getSpriteBatchFragment()
     {
         int sup = HipRenderer.getMaxSupportedShaderTextures();
-        string textureSlotSwitchCase = "switch(tid)\n{\n"; //Switch textureID
+        string textureSlotSwitchCase = "\tswitch(tid)\n\t{\n"; //Switch textureID
         for(int i = 1; i < sup; i++)
         {
-            textureSlotSwitchCase~= "case "~ to!string(i)~": "~
-            "return uTex1["~to!string(i)~"].Sample(state["~to!string(i)~"], texST) * inVexterColor * uBatchColor";
+            textureSlotSwitchCase~= "\t\tcase "~ to!string(i)~": "~
+            "return uTex1["~to!string(i)~"].Sample(state["~to!string(i)~"], texST) * inVertexColor * uBatchColor;\n";
         }
-        textureSlotSwitchCase~= "\ndefault:\n\treturn uTex1[0].Sample(state[0], texST) * inVertexColor * uBatchColor;";
-        textureSlotSwitchCase~= "}";
+        textureSlotSwitchCase~= "\t\tdefault: return uTex1[0].Sample(state[0], texST) * inVertexColor * uBatchColor;";
+        textureSlotSwitchCase~= "\n\t}";
 
         return "Texture2D uTex1["~to!string(sup)~"];
-        SamplerState state["~to!string(sup)~q{
+SamplerState state["~to!string(sup)~"];"~q{
+cbuffer input
+{
+    float4 uBatchColor: uBatchColor;
+};
 
-            cbuffer input
-            {
-                float4 uBatchColor: uBatchColor;
-            };
+float4 main(float4 inVertexColor : inColor, float2 texST : inTexST, float inTexID : inTexID) : SV_TARGET
+}~"{"~
+q{
+        // return uBatchColor * uTex1.Sample(state, inTexST);
+        int tid = int(inTexID);
 
-            float4 main(float4 inVertexColor : inColor, float2 texST : inTexST, float inTexID : inTexID) : SV_TARGET
-        }~"{"~
-        q{
-                // return uBatchColor * uTex1.Sample(state, inTexST);
-                int tid = int(inTexID);
-
-                //switch(tid)...
-                //case 1:
-                    //return uTex1[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
-        } ~ textureSlotSwitchCase ~ "}";
+        //switch(tid)...
+        //case 1:
+            //return uTex1[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
+} ~ textureSlotSwitchCase ~ "\n}";
     }
     override final string getBitmapTextFragment()
     {
@@ -294,6 +293,8 @@ class Hip_D3D11_ShaderImpl : IShader
     bool compileShader(ref ID3DBlob shaderPtr, string shaderPrefix, string shaderSource)
     {
         shaderSource~="\0";
+
+        string shaderType = shaderPrefix == "ps" ? "Pixel Shader" : "Vertex Shader";
         char* source = cast(char*)shaderSource.ptr; 
 
         //No #includes
@@ -323,11 +324,12 @@ class Hip_D3D11_ShaderImpl : IShader
         defines.ptr, null, "main",  shaderPrefix.ptr, compile_flags, effects_flags, &shader, &error);
         shaderPtr = shader;
 
-        if(ErrorHandler.assertErrorMessage(SUCCEEDED(hr), "Shader compilation error", "Compilation failed"))
+        if(ErrorHandler.assertErrorMessage(SUCCEEDED(hr), shaderType~" compilation error", "Compilation failed"))
         {
             if(error !is null)
             {
                 string errMessage = to!string(cast(char*)error.GetBufferPointer());
+                ErrorHandler.showErrorMessage("Shader Source Error: ", shaderSource);
                 ErrorHandler.showErrorMessage("Compilation error:", errMessage);
                 error.Release();
             }
@@ -340,33 +342,33 @@ class Hip_D3D11_ShaderImpl : IShader
     bool compileShader(VertexShader _vs, string shaderSource)
     {
         Hip_D3D11_VertexShader vs = cast(Hip_D3D11_VertexShader)_vs;
-        bool ret = compileShader(vs.shader, "vs", shaderSource);
-        if(ret)
+        bool compiledCorrectly = compileShader(vs.shader, "vs", shaderSource);
+        if(compiledCorrectly)
         {
             auto res = _hip_d3d_device.CreateVertexShader(vs.shader.GetBufferPointer(),
             vs.shader.GetBufferSize(), null, &vs.vs);
             if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Vertex shader creation error", "Creation failed"))
             {
                 ErrorHandler.showErrorMessage("Vertex Shader Error:", getWindowsErrorMessage(res));
-                res = false;
+                compiledCorrectly = false;
             }
         }
-        return ret;
+        return compiledCorrectly;
     }
     bool compileShader(FragmentShader _fs, string shaderSource)
     {
         auto fs = cast(Hip_D3D11_FragmentShader)_fs;
-        bool ret = compileShader(fs.shader, "ps", shaderSource);
-        if(ret)
+        bool compiledCorrectly = compileShader(fs.shader, "ps", shaderSource);
+        if(compiledCorrectly)
         {
             auto res = _hip_d3d_device.CreatePixelShader(fs.shader.GetBufferPointer(), fs.shader.GetBufferSize(), null, &fs.fs);
             if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Fragment/Pixel shader creation error", "Creation failed"))
             {
                 ErrorHandler.showErrorMessage("Fragment Shader Error:", getWindowsErrorMessage(res));
-                ret = false;
+                compiledCorrectly = false;
             }
         }
-        return ret;
+        return compiledCorrectly;
     }
 
     bool linkProgram(ref ShaderProgram _program, VertexShader vs,  FragmentShader fs)

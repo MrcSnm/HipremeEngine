@@ -49,11 +49,29 @@ class HipWindow
             openWindow(width, height);
         }
     }
-    bool startOpenGLContext(){return initializeOpenGL();}
+    bool startOpenGLContext(int majorVersion = 3, int minorVersion = 3)
+    {
+        //Windows must reinitialize the window if it uses modern gl, so, it must update the window here
+        version(Windows)
+            return windowing.platforms.windows.initializeOpenGL(hwnd, majorVersion, minorVersion);
+        else
+            return windowing.platforms.x11.initializeOpenGL(majorVersion, minorVersion);
+    }
     bool destroyOpenGLContext(){return destroy_GL_Context();}
     void pollWindowEvents(){poll();}
     void rendererPresent(){swapBuffer();}
-    void show(){}
+    void setName(string name){}
+    void setSize(uint width, uint height){}
+    void setVSyncActive(bool active){}
+    void setFullscreen(bool fullscreen){}
+    
+    void show()
+    {
+        version(Windows)
+            return windowing.platforms.windows.show(hwnd);
+        else
+            return windowing.platforms.x11.show();
+    }
     void hide(){}
     void exit()
     {

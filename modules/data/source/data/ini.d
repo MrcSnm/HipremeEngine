@@ -56,6 +56,7 @@ class IniFile
     string path;
     bool configFound = false;
     bool noError = true;
+    string[] errors;
 
     /**
     *   Simple parser for the .conf or .ini files commonly found.
@@ -80,16 +81,16 @@ class IniFile
             {
                 import util.string : replaceAll;
                 string capture = "";
-                while(content[++i] != ']'){capture~=content[i];}
+                while(i < content.length && content[++i] != ']'){capture~=content[i];}
                 if(i >= content.length)
-                {
-                    ret.noError = false;
-                    break;
-                }
+                    return ret;
+
                 IniBlock block;
                 block.name = capture;
                 capture = "";
+                //Read until finding a key.
                 while(++i < content.length && (c = content[i]) != '['){capture~=c;}
+                
                 string[] lines = capture.split("\n");
                 foreach(l; lines)
                 {
@@ -98,6 +99,7 @@ class IniFile
                     string[] kv = l.split("=");
                     if(kv.length < 2)
                     {
+                        ret.errors~= "No value for key "~to!string(cast(int)kv[0][0]);
                         ret.noError = false;
                         break;
                     }

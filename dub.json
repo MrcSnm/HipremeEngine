@@ -17,6 +17,28 @@
 				"Standalone",
 				"Test"
 			],
+			"buildOptions": [
+				"debugMode",
+				"debugInfo",
+				"debugInfoC"
+			],
+			"versions-windows": [
+				"FSWUsesWin32"
+			]
+		},
+		{
+			"name" : "time_trace",
+			"targetPath": "bin/desktop",
+			"dflags-ldc": [
+				"--ftime-trace"
+			],
+			"targetType": "executable",
+			"versions": [
+				"Desktop",
+				"Standalone",
+				"Test",
+				"TimeTrace"
+			],
 			"versions-windows": [
 				"FSWUsesWin32"
 			]
@@ -78,9 +100,6 @@
 			]
 		},
 		{
-			"dflags": [
-				"-g"
-			],
 			"libs": [
 				"log",
 				"android",
@@ -106,75 +125,52 @@
 	],
 	"copyright": "Copyright © 2018 - 2021, Hipreme",
 	"dependencies": {
-		"arsd-official:dom": "~>10.2.0",
-		"audio": {
-			"path": "./modules/audio",
-			"version": ">=0.0.0"
-		},
-		"bind": {
-			"path": "./modules/bind",
-			"version": ">=0.0.0"
-		},
+		"arsd-official:dom": "~>10.5.0",
+		"audio": {"path": "./modules/audio"},
+		"bind": {"path": "./modules/bind"},
 		"bindbc-cimgui": "~>1.84.1",
 		"bindbc-sdl": "~>1.0.1",
-		"config": {
-			"path": "./modules/config",
-			"version": ">=0.0.0"
-		},
-		"console": {
-			"path": "./modules/console",
-			"version": ">=0.0.0"
-		},
-		"data": {
-			"path": "./modules/data",
-			"version": ">=0.0.0"
-		},
-		"debugging": {
-			"path": "./modules/debugging",
-			"version": ">=0.0.0"
-		},
-		"error": {
-			"path": "./modules/error",
-			"version": ">=0.0.0"
-		},
-		"hipengine_api": {
-			"path": "./api",
-			"version": ">=0.0.0"
-		},
-		"imgui": {
-			"path": "./modules/imgui",
-			"version": ">=0.0.0"
-		},
-		"jni": {
-			"path": "./modules/jni",
-			"version": ">=0.0.0"
-		},
-		"math": {
-			"path": "./modules/math",
-			"version": ">=0.0.0"
-		},
-		"renderer": {
-			"path": "./modules/renderer",
-			"version": ">=0.0.0"
-		},
-		"util": {
-			"path": "./modules/util",
-			"version": ">=0.0.0"
-		}
+		"config": {"path": "./modules/config"},
+		"console": {"path": "./modules/console"},
+		"data": {"path": "./modules/data"},
+		"debugging": {"path": "./modules/debugging"},
+		"error": {"path": "./modules/error"},
+		"hipengine_api": {"path": "./api"},
+		"imgui": {"path": "./modules/imgui"},
+		"jni": {"path": "./modules/jni"},
+		"math": {"path": "./modules/math"},
+		"renderer": {"path": "./modules/renderer"},
+		"util": {"path": "./modules/util"}
 	},
 	"description": "Open-Source D Game Engine",
 	"dflags": [
 		"-J=."
-	],
-	"importPaths-ldc": [
-		"C:/ldc2/import"
 	],
 	"libs-windows": [
 		"ole32",
 		"user32",
 		"dxgi",
 		"d3d11",
-		"d3dcompiler"
+		"d3dcompiler",
+		"xaudio2",
+
+
+		"modules/audio/audio",
+		"modules/bind/bind",
+		"modules/config/config",
+		"modules/console/console",
+		"modules/data/data",
+		"modules/debugging/debugging",
+		"modules/error/error",
+		"modules/imgui/imgui",
+		"modules/jni/jni",
+		"modules/math/math",
+		"modules/renderer/renderer",
+		"modules/util/util"
+	],
+	"libs-linux" : [
+		"X11",
+		"gl"
 	],
 	"license": "CC BY-4.0",
 	"name": "hipreme_engine",
@@ -184,8 +180,10 @@
 	"subConfigurations": {
 		"hipengine_api": "hipengine"
 	},
+	
 	"versions": [
 		"HIPREME_DEBUG",
+		"HipremeEngineLua",
 		"HipremeEngineDef",
 		"SDL_208",
 		"BindSDL_Mixer",

@@ -3,8 +3,7 @@ import std.math;
 import math.vector;
 
 ///There are some errors occurring when compiling with LDC
-alias cos = std.math.cos;
-alias sin = std.math.cos;
+public import std.math: cos, sin, PI, PI_2, PI_4;
 
 int getClosestMultiple(int from, int to)
 {
@@ -21,6 +20,19 @@ int getClosestMultiple(int from, int to)
         else
             return from*(tempI+1);
     }
+}
+
+///Bit twiddling hacks
+uint roundPow2(uint n)
+{
+    if(n == 0) return 1;
+    n--;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    return n + 1;
 }
 
 enum dipsPerInch = 96.0f;
@@ -94,7 +106,7 @@ T sum(T)(T[] values ...) pure nothrow @safe @nogc
     return sum;
 }
 
-pragma(inline)T abs(T)(in T value){if(value < 0) return -value; return value;}
+pragma(inline)T abs(T)(in T value){return value < 0 ? -value : value;}
 
 int greatestCommonDivisor(int a, int b)
 {
@@ -109,4 +121,37 @@ int greatestCommonDivisor(int a, int b)
     } while(res != 0);
 
     return lastRes;
+}
+
+Vector2 quadraticBezier(float x0, float y0, float x1, float y1, float x2, float y2, float t)
+{
+    float dtT = (1.0f-t);
+    float dtTSquare = dtT*dtT;
+    float tSq = t*t;
+    return Vector2(dtTSquare*x0 + 2*t*dtT*x1 + tSq*x2, 
+    dtTSquare*y0 + 2*t*dtT*y1 + tSq*y2);
+}
+
+pragma(inline) Vector2 quadraticBezier(Vector2 p0, Vector2 p1, Vector2 p2, float t)
+{
+    return quadraticBezier(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t);
+}
+
+Vector2 cubicBezier(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3, float t)
+{
+    float dtT = 1.0f-t;
+    float dtTSq = dtT*dtT;
+    float dtTCub = dtTSq*dtT;
+    float tSq = t*t;
+    float tCub = tSq*t;
+
+    return Vector2(
+        dtTCub*x0 + 3*t*dtTSq*x1 + 3*tSq*dtT*x2 + tCub*x3,
+        dtTCub*y0 + 3*t*dtTSq*y1 + 3*tSq*dtT*y2 + tCub*y3,
+    );
+}
+
+pragma(inline) Vector2 cubicBezier(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t)
+{
+    return cubicBezier(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t);
 }
