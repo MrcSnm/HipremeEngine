@@ -40,7 +40,11 @@ public import hipengine.api.graphics.g2d.hipsprite;
     float tilingX, tilingY;
 
     float u1, v1, u2, v2;
-    uint width, height;
+
+    ///Width of the texture region, (u2-u1) * texture.width
+    uint width;
+    ///Height of the texture region, (v2-v1) * texture.height
+    uint height;
 
     protected bool isDirty;
 
@@ -287,7 +291,7 @@ class HipSpriteAnimation : HipSprite
         setFrame(animation.getCurrentFrame());
     }
 
-    void setBounds(uint width, uint height)
+    void setBounds(int width, int height)
     {
         this.width = width;
         this.height = height;

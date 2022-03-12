@@ -13,12 +13,11 @@ public import hiprenderer.config;
 public import hiprenderer.shader;
 public import hiprenderer.texture;
 public import hiprenderer.vertex;
-import hiprenderer.framebuffer;
-import hiprenderer.viewport;
+public import hiprenderer.framebuffer;
+public import hiprenderer.viewport;
 import windowing.window;
 import math.rect;
 import error.handler;
-import bindbc.sdl;
 import console.log;
 import core.stdc.stdlib:exit;
 
@@ -187,7 +186,7 @@ class HipRenderer
     }
     private static afterInit()
     {
-        mainViewport = new Viewport(0,0, 1280, 720);
+        mainViewport = new Viewport(0,0, window.width, window.height);
         setViewport(mainViewport);
         HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
     }
@@ -242,7 +241,11 @@ class HipRenderer
     {
         this.currentViewport = v;
         rendererImpl.setViewport(v);
-        // SDL_RenderSetViewport(renderer, &v.bounds);
+    }
+
+    public static void setCamera()
+    {
+        
     }
     /**
     * Fixes the matrix order based on the config and renderer.
@@ -363,6 +366,5 @@ class HipRenderer
         if(window !is null)
             window.exit();
         window = null;
-        IMG_Quit();
     }
 }

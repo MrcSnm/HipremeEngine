@@ -18,7 +18,19 @@ struct Pair(A, B)
     alias a = first;
     alias b = second;
 }
-
+/** 
+ * RangeMap allows specifying a range in which a value spams, quite useful for defining outcomes
+ *  based on an input, experience gain progression, etc. Example Usage:
+ *  ```d
+ *  RangeMap!(int, string) colorRanges;
+ *  colorRanges.setDefault("White");
+ *  colorRanges[0..9] = "Red";
+ *  colorRanges[10..19] = "Green";
+ *  colorRanges[20..29] = "Blue"
+ *  
+ *  writeln(colorRanges[5]); //Prints "Red"
+ *  ```
+ */
 struct RangeMap(K, V)
 {
     import std.traits:isNumeric;
@@ -27,11 +39,17 @@ struct RangeMap(K, V)
     V[] values;
     V _default;
 
+    /**
+    *   When the value is out of range, the value returned is the _default one.
+    */
     RangeMap setDefault(V _default)
     {
         this._default = _default;
         return this;
     }
+    /** 
+     * Alternative to the slice syntax
+     */
     RangeMap setRange(K a, K b, V value)
     {
         int rLength = cast(int)ranges.length;
@@ -50,6 +68,9 @@ struct RangeMap(K, V)
         return this;
     }
 
+    /**
+    *   Uses binary search for finding the value range.
+    */
     V get(K value)
     {
         int l = 0;
@@ -62,35 +83,34 @@ struct RangeMap(K, V)
             if(m % 2 != 0)
                 m--;
             K k = ranges[m];
+            //Check if value is between a[m] and a[m-1]
             if(m+1 < length && value >= k && value <= ranges[m+1])
                 return values[cast(int)(m/2)];
             else if(k < value)
                 l = m + 1;
             else if(m > value)
                 r = m - 1;
+            //Check if both values on the right is greater than value
             else if(m+1 < length && k > value && ranges[m+1] > value)
                 break;
         }
         return _default;
     }
 
-    auto opSliceAssign(V)(V value, K start, K end)
+    pragma(inline) V opSliceAssign(V value, K start, K end)
     {
         setRange(start, end, value);
         return value;
     }
-    V opIndex(K index)
-    {
-        return get(index);
-    }
+    pragma(inline) V opIndex(K index){return get(index);}
 }
 
-struct Array(T)
+struct Array(T) 
 {
     ulong length;
     T* data;
 
-    static Array!T create(ulong length = 0)
+    static Array!T create(ulong length = 0) @nogc
     {
         import core.stdc.stdlib:malloc;
         Array!T ret;
@@ -98,33 +118,37 @@ struct Array(T)
         ret.data = cast(T*)malloc(T.sizeof*length);
         return ret;
     }
-    static Array!T fromDynamicArray(T[] arr)
+    static Array!T fromDynamicArray(in T[] arr) @nogc
     {
         import core.stdc.string:memcpy;
         Array!T ret = Array!(T).create(arr.length);
         memcpy(ret.data, arr.ptr, ret.length*T.sizeof);
         return ret;
     }
-    void dispose()
+    void dispose() @nogc
     {
         import core.stdc.stdlib:free;
         free(data);
         data = null;
         length = 0;
     }
-    ulong opDollar(){return length;}
-    auto opSliceAssign(T)(T value, size_t start, size_t end)
+    ulong opDollar() @nogc {return length;}
+    T[] opSlice(uint start, uint end) @nogc
+    {
+        return data[start..end];
+    }
+    auto opSliceAssign(T)(T value, size_t start, size_t end) @nogc
     {
         for(int i = start; i < end; i++)data[i]=value;
         return this;
     }
 
-    ref auto opIndex(size_t index)
+    ref auto opIndex(size_t index) @nogc
     {
         assert(index < length, "Array out of bounds");
         return data[index];
     }
-    auto opOpAssign(string op, T)(T value)
+    auto opOpAssign(string op, T)(T value) @nogc
     {
         static assert(op == "~", "Operator not supported on Array");
         import core.stdc.stdlib:realloc;
@@ -149,8 +173,10 @@ struct Array(T)
 }
 
 /**
-*   By using Array2D instead of T[][], only one array instance is created, not "i" arrays. So it is a lot
+*   By using Array2D instead of T[][], only one array instance is created, not "n" arrays. So it is a lot
 *   faster when you use that instead of array of arrays.
+*   
+*   Its main usage is for avoiding a[i][j] static array, and not needing to deal with array of arrays.
 */
 struct Array2D(T)
 {
@@ -164,14 +190,16 @@ struct Array2D(T)
         height = lengthHeight;
         width = lengthWidth;
     }
-    pragma(inline, true):
-    ref auto opIndex(size_t i,  size_t j){return data[i*width+j];}
-    ref auto opIndex(size_t i)
+    pragma(inline, true)
     {
-        ulong temp = i*width;
-        return data[temp..temp+width];
+        ref auto opIndex(size_t i,  size_t j){return data[i*width+j];}
+        ref auto opIndex(size_t i)
+        {
+            ulong temp = i*width;
+            return data[temp..temp+width];
+        }
+        auto opIndexAssign(T)(T value, size_t i, size_t j){return data[i*width+j] = value;}
     }
-    auto opIndexAssign(T)(T value, size_t i, size_t j){return data[i*width+j] = value;}
 }
 
 struct RingBuffer(T, uint Length)

@@ -151,8 +151,7 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public void setViewport(Viewport v)
     {
-        glViewport(cast(int)v.x, cast(int)v.y, cast(int)v.w, cast(int)v.h);
-        
+        glViewport(cast(int)v.x, cast(int)v.y, cast(GLsizei)v.w, cast(GLsizei)v.h);
     }
     public bool setWindowMode(HipWindowMode mode)
     {

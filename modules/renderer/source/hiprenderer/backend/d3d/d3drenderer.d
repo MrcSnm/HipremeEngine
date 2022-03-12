@@ -469,8 +469,8 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         memset(&vp, 0, D3D11_VIEWPORT.sizeof);
         vp.Width = v.w;
         vp.Height = v.h;
-        vp.TopLeftX = 0;
-        vp.TopLeftY = 0;
+        vp.TopLeftX = v.x;
+        vp.TopLeftY = v.y;
         // vp.MinDepth = 0;
         // vp.MaxDepth = 1;
 

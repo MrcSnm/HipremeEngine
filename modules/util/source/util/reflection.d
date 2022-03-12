@@ -204,9 +204,6 @@ template generateExportFunc(string className, alias funcSymbol)
 }
 
 
-
-string[] exportedFunctions;
-
 /**
 *   Iterates through a module and generates `export` function declaration for each
 *   @ExportD function found on it.
@@ -234,4 +231,35 @@ mixin template ExportDFunctions(alias mod)
 
 		}
 	}
+}
+
+
+
+mixin template GenerateRuntimeAccessors()
+{
+    T* getProperty(T)(string prop)
+    {
+        alias T_this = typeof(this);
+
+        switch(prop)
+        {
+            static foreach(member; __traits(allMembers, T_this))
+            {
+                static if(is(typeof(__traits(getMember, T_this, member)) == T))
+                {
+                    case member:
+                        return &__traits(getMember, T_this, member);
+                }
+            }
+            default:
+                return null;
+        }
+    }
+
+    void setProperty(T)(string propName, T value)
+    {
+        T* prop = getProperty!T(propName);
+        if(prop !is null)
+            *prop = value;
+    }
 }

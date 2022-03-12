@@ -19,7 +19,7 @@ public class Viewport
     Rect bounds;
     this(){}
 
-    this(int x, int y, uint width, uint height)
+    this(int x, int y, int width, int height)
     {
         this.setBounds(x,y,width,height);
     }
@@ -34,37 +34,46 @@ public class Viewport
         bounds.x=x;
         bounds.y=y;
     }
-    void setBounds(int x, int y, uint width, uint height)
+    void setBounds(int x, int y, int width, int height)
     {
         bounds.x=x;
         bounds.y=y;
         bounds.w=width;
         bounds.h=height;
+        sanityCheck();
     }
     void update()
     {
-        this.setSize(cast(uint)this.w, cast(uint)this.h);
+        this.setSize(cast(int)this.w, cast(int)this.h);
         if(HipRenderer.getCurrentViewport() == this)
             this.setAsCurrentViewport();
     }
-    void setSize(uint width, uint height)
+    void setSize(int width, int height)
     {
         this.w = width;
         this.h = height;
+        sanityCheck();
+    }
+    protected void sanityCheck()
+    {
+        assert(width > 0, "Can't have viewport with width less than 0");
+        assert(height > 0, "Can't have viewport with height less than 0");
     }
     alias bounds this;
 }
 
 public class FitViewport : Viewport
 {
-    uint worldWidth, worldHeight;    
-    this(int x, int y, uint worldWidth, uint worldHeight)
+    int worldWidth, worldHeight;    
+    this(int x, int y, int worldWidth, int worldHeight)
     {
-        super();
+        super(x, y, worldWidth,worldHeight);
+        this.worldWidth = worldWidth;
+        this.worldHeight = worldHeight;
         this.setSize(worldWidth, worldHeight);
     }
     this(int worldWidth, int worldHeight){this(0,0,worldWidth,worldHeight);}
-    override void setSize(uint width, uint height)
+    override void setSize(int width, int height)
     {
         this.worldWidth = worldWidth;
         this.worldHeight = worldHeight;
@@ -72,7 +81,8 @@ public class FitViewport : Viewport
         this.setBounds(
             (HipRenderer.width - cast(int)scale.x)/2,
             (HipRenderer.height- cast(int)scale.y)/2,
-            cast(uint)scale.x, cast(uint)scale.y
+            cast(int)scale.x, cast(int)scale.y
         );
+        sanityCheck();
     }
 }

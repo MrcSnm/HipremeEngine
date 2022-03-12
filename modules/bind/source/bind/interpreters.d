@@ -29,7 +29,6 @@ version(HipremeEngineLua):
 private enum LUA_TOP = -1;
 import bindbc.lua;
 
-enum checkLuaState = "if(L == null) assert(false, \"No Lua State is loaded\");";
 alias LuaVoid = InterpreterVoid;
 
 alias LuaFunction = extern(C) nothrow int function(lua_State* L);
@@ -203,48 +202,49 @@ class LuaInterpreter
         }
         return true;
     }
+    pragma(inline) void checkLuaState()
+    {
+        assert(L != null,"No Lua State is loaded");
+    }
     public void reload()
     {
-        mixin(checkLuaState);
+        checkLuaState();
         loadFile(currentFile);
     }
 
     void push(T)(T arg)
     {
-        mixin(checkLuaState);
+        checkLuaState();
         luaPushVar(L, arg);
     }
 
     private T getFromIndex(T)(int ind)
     {
-        mixin(checkLuaState);
+        checkLuaState();
         return luaGetFromIndex!T(L, ind);
     }
 
     public InterpreterResult!T call(T, Args...)(string funcName, Args args)
     {
-        mixin(checkLuaState);
+        checkLuaState();
         return luaCallFunc!T(L, funcName, args);
     }
 
 
-    public void expose(alias func)(string name)
+    public void expose(string name, LuaFunction func)
     {
         immutable(char)* fName;
         fName = (name~'\0').ptr;
-        funcList[name] = &func;
+        funcList[name] = func;
 
-        mixin(checkLuaState);
-
-        // {
-            lua_pushcfunction(L, &func);
-            lua_setglobal(L, fName);
-        // }
+        checkLuaState();
+        lua_pushcfunction(L, func);
+        lua_setglobal(L, fName);
 
     }
     public bool hasFunction(string funcName)
     {
-        mixin(checkLuaState);
+        checkLuaState();
         lua_getglobal(L, (funcName~'\0').ptr);
         return lua_isfunction(L, LUA_TOP);
     }
@@ -254,7 +254,7 @@ class LuaInterpreter
     */  
     public T get(T)(string varName)
     {
-        mixin(checkLuaState);
+        checkLuaState();
         if(lua_getglobal(L, (varName~'\0').ptr) != LUA_OK)
         {
             luaL_error(L, "Variable not existent");
@@ -333,7 +333,7 @@ void sendInterpreterFunc(alias func)(HipInterpreter interpreter)
     final switch(interpreter)
     {
         case HipInterpreter.lua:
-            _lua.expose!(externLua!func)(__traits(identifier, func));
+            _lua.expose(__traits(identifier, func), &externLua!func);
             break;
         case HipInterpreter.none:
             break;

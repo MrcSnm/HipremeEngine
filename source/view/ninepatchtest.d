@@ -9,7 +9,7 @@ class NinePatchSceneTest : Scene
 {
     NinePatch ninepatch;
     HipSpriteBatch batch;
-    Vector2 lastPos;
+    Vector2 startPatch;
     this()
     {
         ninepatch = new NinePatch(800, 600, new Texture("graphics/sprites/nineSlicePanel.png"));
@@ -18,11 +18,17 @@ class NinePatchSceneTest : Scene
 
     override void update(float dt)
     {
-        import console.log;
+        // import console.log;
+        // logln(ninepatch.width);
         if(HipInput.isMouseButtonJustPressed())
         {
-            lastPos = HipInput.getMousePosition();
-            ninepatch.setPosition(lastPos.x, lastPos.y);
+            startPatch = HipInput.getMousePosition();
+            ninepatch.setPosition(startPatch.x, startPatch.y);
+        }
+        else if(HipInput.isMouseButtonPressed())
+        {
+            Vector2 delta = HipInput.getMousePosition() - startPatch;
+            ninepatch.setSize(cast(int)delta.x, cast(int)delta.y);
         }
         
     }

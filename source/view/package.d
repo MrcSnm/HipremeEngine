@@ -25,4 +25,5 @@ public import
     view.chaintest,
     view.geometrytestscene,
     view.ninepatchtest,
+    view.curvetest,
     view.spritetestscene;

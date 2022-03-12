@@ -33,9 +33,9 @@ ulong line = __LINE__,  Args...)(Args a)
     Console.DEFAULT.log(toLog);
 }
 
-void logln(string file = __FILE__,
+void logln(Args...)(Args a, string file = __FILE__,
 string func = __PRETTY_FUNCTION__,
-ulong line = __LINE__, Args...)(Args a)
+ulong line = __LINE__)
 {
     string toLog = "";
     foreach(arg; a)
