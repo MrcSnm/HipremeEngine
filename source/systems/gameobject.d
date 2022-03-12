@@ -13,18 +13,21 @@ version(HIPREME_DEBUG){import error.handler;}
 
 abstract class HipComponent
 {
-    private bool hasStarted;
-    private HipGameObject owner;
+    package bool hasStarted = false;
+    private HipGameObject _owner;
     abstract void onStart();
     private void _onStart(HipGameObject go)
     {
         hasStarted = true;
-        owner = go;
+        _owner = go;
         onStart();
     }
 
+    pragma(inline)
+    protected HipGameObject owner(){return _owner;} 
+
     pragma(inline, true)
-    public T getComponent(T)(){return owner.getComponent!T;}
+    public T getComponent(T)(){return _owner.getComponent!T;}
 
 
     abstract void onRemove();
@@ -78,9 +81,10 @@ class HipGameObject
 {
     ulong id;
     string tag;
-    bool isActive;
+    bool isActive = true;
 
-    protected HipGameObject[] children;
+    public HipGameObject parent;
+    public HipGameObject[] children;
     protected HipComponent[] components;
 
     mixin ComponentSpecialization!(HipSpriteRendererComponent);
@@ -88,6 +92,7 @@ class HipGameObject
     final public void addChild(HipGameObject go)
     {
         children~= go;
+        go.parent = this;
     }
 
     final public this(string tag)
@@ -103,7 +108,7 @@ class HipGameObject
         components~= comp;
         return comp;
     }
-    HipComponent getComponent(T : HipComponent)()
+    T getComponent(T : HipComponent)()
     {
         foreach(c; components)
         {

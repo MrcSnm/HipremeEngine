@@ -13,6 +13,16 @@ import hiprenderer.viewport;
 import hiprenderer;
 import math.matrix;
 
+/**
+*   Orthographic Projection camera. 
+*   A good resource to understand how orthographic projection works follows on:
+*   http://learnwebgl.brown37.net/08_projections/projections_ortho.html
+*
+*   But basically:
+*   1. Translate the center to the origin of the screen(top left)
+*   2. Scale the screen size by 2 (remember that we lost the -1..0 range)
+*   3. Alternate the handeness if necessary
+*/
 class HipOrthoCamera
 {
     Matrix4 view;
@@ -24,8 +34,18 @@ class HipOrthoCamera
     this()
     {
         view = Matrix4.identity;
+        proj = Matrix4.identity;
+        viewProj = Matrix4.identity;
+        updateFromViewport();
+    }
+    void updateFromViewport()
+    {
         Viewport v = HipRenderer.getCurrentViewport();
         proj = Matrix4.orthoLH(v.x, v.w, v.h, v.y, znear, zfar);
+    }
+    void setSize(uint width, uint height)
+    {
+        proj = Matrix4.orthoLH(0, width, height, 0, znear, zfar);
     }
     void translate(float x, float y, float z)
     {

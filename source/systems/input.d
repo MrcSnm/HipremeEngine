@@ -127,6 +127,11 @@ class HipEventQueue : EventQueue
         float  xPos;
         float  yPos;
     }
+    struct Resize
+    {
+        uint width;
+        uint height;
+    }
 
     struct Gamepad{ubyte id;}
 

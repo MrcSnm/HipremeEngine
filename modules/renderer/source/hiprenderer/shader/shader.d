@@ -171,7 +171,7 @@ public class Shader
         if(status != ShaderStatus.SUCCESS)
         {
             import console.log;
-            logln("Failed loading shaders with status ", status, " at preset ", preset);
+            logln("Failed loading shaders with status ", status, " at preset ", preset, " on "~fragmentShaderPath);
         }
     }
 

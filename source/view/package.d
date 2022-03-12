@@ -24,4 +24,6 @@ public import
     view.pathfindingtest,
     view.chaintest,
     view.geometrytestscene,
+    view.ninepatchtest,
+    view.curvetest,
     view.spritetestscene;

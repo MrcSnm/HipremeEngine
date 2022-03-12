@@ -100,8 +100,8 @@ __gshared void function(string toPrint) _fatal;
             default:
                 _log = function(string s)
                 {
-                    import std.stdio;
-                    writeln(s);
+                    import core.stdc.stdio:printf;
+                    printf("%.*s\n", cast(int)s.length, s.ptr);
                 };
                 _warn = _log;
                 _err = _log;

@@ -138,8 +138,10 @@ extern(C)int SDL_main()
 		{
 			HipRenderer.initExternal(HipRendererType.GL3);
 		}
+		else static assert(false, "No renderer for this platform");
 	}
-	else{HipRenderer.init("renderer.conf");}
+	else
+		HipRenderer.init("renderer.conf");
 	version(dll){}
 	else
 		sys = new GameSystem(FRAME_TIME);
@@ -148,8 +150,8 @@ extern(C)int SDL_main()
 
 	//Initialize 2D context
 	import graphics.g2d;
-
-	HipRenderer2D.initialize(interpreterEntry);
+	HipRenderer2D.initialize(interpreterEntry, true);
+	
 	if(isUsingInterpreter)
 		loadInterpreterEntry(interpreterEntry.intepreter, interpreterEntry.sourceEntry);
 	//After initializing engine, every dependency has been load
@@ -315,8 +317,6 @@ export extern(C) bool HipremeUpdate()
 
 	sys.postUpdate();
 	g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1_000_000_000); //As seconds
-	import console.log;
-	rawlog(1.0/g_deltaTime);
 	return true;
 }
 /**

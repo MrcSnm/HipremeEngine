@@ -12,24 +12,59 @@ module util.string;
 public import util.conv:to;
 
 
+/** 
+ *  RefCounted, @nogc string, OutputRange compatible, 
+ */
 struct String
 {
+    @nogc:
     import core.stdc.string;
     import core.stdc.stdlib;
     char* chars;
     uint length;
+    private int _capacity;
+    private int* countPtr;
+
+    this(this){*countPtr = *countPtr + 1;}
 
     static auto opCall(const(char)* str)
     {
         String s;
         uint l = cast(uint)strlen(str);
         s.chars = cast(char*)malloc(l);
+        s.countPtr = cast(int*)malloc(int.sizeof);
         memcpy(s.chars, str, l);
+        *s.countPtr = 0;
         s.length = l;
+        s._capacity = l;
+        return s;
+    }
+    static auto opCall(string str)
+    {
+        String s;
+        s.chars = cast(char*)malloc(str.length);
+        s.countPtr = cast(int*)malloc(int.sizeof);
+        s.length = cast(uint)str.length;
+        s._capacity = s.length;
+        *s.countPtr = 0;
+        memcpy(s.chars, str.ptr, s.length);
+        return s;
+    }
+    static auto opCall(Args...)(Args args)
+    {
+        import util.conv:toStringRange;
+        String s;
+        s._capacity = 128;
+        s.chars = cast(char*)malloc(128);
+        s.countPtr = cast(int*)malloc(int.sizeof);
+        s.length = 0;
+        *s.countPtr = 0;
+        foreach(a; args)
+            toStringRange(s, a);
         return s;
     }
 
-    auto opOpAssign(string op, T)(T value)
+    auto ref opOpAssign(string op, T)(T value)
     {
         static if(op == "~")
         {
@@ -56,15 +91,14 @@ struct String
                 l = temp.length;
                 chs = temp.ptr;
             }
-            free(chars);
-            chars = cast(char*)realloc(chars, l);
+            resize(l);
             memcpy(chars+length, chs, l);
             length+= l;
         }
         return this;
     }
 
-    auto opAssign(T)(T value)
+    auto ref opAssign(T)(T value)
     {
         static if(is(T == String))
         {
@@ -102,15 +136,112 @@ struct String
         static assert(is(T == string), "String can only be casted to string");
         return cast(string)chars[0..length];
     }
-    char[] toString() const {return cast(char[])chars[0..length];}
+    string toString() const {return cast(string)chars[0..length];}
+
+    pragma(inline) private void resize(uint newSize)
+    {
+        chars = cast(char*)realloc(chars, newSize);
+        _capacity = newSize;
+    }
+    ///Make this struct OutputRange compatible
+    void put(char c)
+    {
+        if(this.length + 1 >= this._capacity)
+            resize(this.length+1);
+        chars[length] = c;
+        length++;
+    }
+    
+    /**
+    *   This function serves to allocate before put. This will make less allocations occur while iterating
+    * this struct as an OutputRange.
+    */
+    void preAllocate(uint howMuch)
+    {
+        this._capacity+= howMuch;
+        chars = cast(char*)realloc(chars, this._capacity);
+    }
+    void preAllocate(ulong howMuch){preAllocate(cast(uint)howMuch);}
 
     ~this()
     {
-        if(chars != null)
+        *countPtr = *countPtr - 1;
+        if(*countPtr <= 0 && chars != null)
+        {
             free(chars);
+            free(countPtr);
+        }
     }
 
 }
+
+struct StringBuilder
+{
+    private char[] builtString;
+    private uint builtLength;
+    string[] strings;
+    private uint stringsPtr = 0;
+    
+    void append(T)(T value)
+    {
+        if(stringsPtr == strings.length)
+        {
+            if(strings.length == 0x10000) //65K (This will guarantee a reasonable amount of allocations)
+                toString();
+            else
+            {
+                //128 is a reasonable start, this way, no really small operation should matter on performance
+                strings.length = strings.length == 0 ? 128 : strings.length * 2;
+            }
+        }
+        strings[stringsPtr++] = value;
+    }
+    string toString()
+    {
+        import core.stdc.string:memcpy;
+        if(stringsPtr == 0) return cast(string)builtString[0..builtLength];
+        uint count = builtLength;
+        uint i = builtLength;
+        foreach(s;strings[0..stringsPtr])
+            count+= s.length;
+        builtString.length = count;
+        
+        foreach(s; strings[0..stringsPtr])
+        {
+            memcpy(builtString.ptr+i, s.ptr, s.length);
+            i+= s.length;
+        }
+        builtLength = count;
+        stringsPtr = 0;
+        return cast(string)builtString[0..builtLength];
+    }
+    auto ref opAssign(T)(T value) if(is(T == string))
+    {
+        builtString.length = value.length;
+        foreach(i, c; s)
+            builtString[i] = c;
+        stringsPtr = 0;
+        builtLength = cast(typeof(builtLength))value.length;
+
+        return this;
+    }
+    auto ref opOpAssign(string op, T)(T value) if(op == "~")
+    {
+        import std.traits:isArray;
+        static if(isArray!T && !is(T == string))
+            foreach(v; value) append(v);
+        else
+            append(value);
+        return this;
+    }
+    ref auto opIndex(size_t index){return toString()[index];}
+    ulong length(){return builtLength;}
+    ~this(){strings.length = 0;}
+
+    ///Interface for OutputRange
+    alias put = append;
+}
+
 
 
 pure string replaceAll(string str, char what, string replaceWith = "")
@@ -284,6 +415,8 @@ string[] split(string str, string separator) pure nothrow @safe
         equalCount = 0;
         curr~= str[i];
     }
+    if(curr == separator)
+        curr = null;
     return ret ~ curr;
 }
 

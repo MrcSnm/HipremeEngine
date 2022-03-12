@@ -159,10 +159,10 @@ struct Matrix4
     static Matrix4 identity()
     {
         return Matrix4([
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
+            1.0, 0, 0, 0,
+            0, 1.0, 0, 0,
+            0, 0, 1.0, 0,
+            0, 0, 0, 1.0
         ]);
     }
     pragma(inline) inout ref auto opIndex(size_t i) return
@@ -306,6 +306,7 @@ struct Matrix4
     */
     static Matrix4 orthoLH(float left, float right, float bottom, float top, float znear, float zfar)
     {
+        
         return Matrix4([
             2/(right-left), 0, 0, 0,
             0, 2/(top-bottom), 0, 0,
