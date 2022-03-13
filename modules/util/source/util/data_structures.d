@@ -104,42 +104,84 @@ struct RangeMap(K, V)
     }
     pragma(inline) V opIndex(K index){return get(index);}
 }
-
+public import util.string: String;
+/**
+*   RefCounted, Array @nogc, OutputRange compatible, it aims to bring the same result as one would have by using
+*   int[], Array!int should be equivalent, any different behaviour should be contacted. 
+*/
 struct Array(T) 
 {
-    ulong length;
+    size_t length;
     T* data;
+    private int* countPtr;
+    import core.stdc.stdlib:malloc;
+    import core.stdc.string:memcpy, memset;
+    import core.stdc.stdlib:realloc;
 
-    static Array!T create(ulong length = 0) @nogc
+    this(this) @nogc
     {
-        import core.stdc.stdlib:malloc;
+        *countPtr = *countPtr + 1;
+    }
+    alias _opApplyFn = int delegate(ref T) @nogc;
+    int opApply(scope _opApplyFn dg) @nogc
+    {
+        int result = 0;
+        for(int i = 0; i < length && result; i++)
+            result = dg(data[i]);
+        return result;
+    }
+
+    static Array!T opCall(size_t length = 0) @nogc
+    {
         Array!T ret;
         ret.length = length;
+        ret.countPtr = cast(int*)malloc(int.sizeof);
+        *ret.countPtr = 1;
         ret.data = cast(T*)malloc(T.sizeof*length);
         return ret;
     }
-    static Array!T fromDynamicArray(in T[] arr) @nogc
+    static Array!T opCall(in T[] arr) @nogc
     {
-        import core.stdc.string:memcpy;
-        Array!T ret = Array!(T).create(arr.length);
+        Array!T ret = Array!(T)(arr.length);
+        memcpy(ret.data, arr.ptr, ret.length*T.sizeof);
+        return ret;
+    }
+    static Array!T opCall(T[] arr...) @nogc
+    {
+        Array!T ret = Array!(T)(arr.length);
         memcpy(ret.data, arr.ptr, ret.length*T.sizeof);
         return ret;
     }
     void dispose() @nogc
     {
         import core.stdc.stdlib:free;
-        free(data);
-        data = null;
-        length = 0;
+        if(data != null)
+        {
+            free(data);
+            data = null;
+            free(countPtr);
+            countPtr = null;
+            length = 0;
+        }
     }
-    ulong opDollar() @nogc {return length;}
-    T[] opSlice(uint start, uint end) @nogc
+    size_t opDollar() @nogc {return length;}
+    T[] opSlice(size_t start, size_t end) @nogc
     {
         return data[start..end];
     }
     auto opSliceAssign(T)(T value, size_t start, size_t end) @nogc
     {
-        for(int i = start; i < end; i++)data[i]=value;
+        data[start..end] = value;
+        return this;
+    }
+    auto ref opAssign(Q)(Q value) @nogc
+    {
+        if(data == null)
+            data = cast(T*)malloc(T.sizeof*value.length);
+        else
+            data = cast(T*)realloc(data, T.sizeof*value.length);
+        length = value.length;
+        memcpy(data, value.ptr, T.sizeof*value.length);
         return this;
     }
 
@@ -148,26 +190,32 @@ struct Array(T)
         assert(index < length, "Array out of bounds");
         return data[index];
     }
-    auto opOpAssign(string op, T)(T value) @nogc
+    auto opOpAssign(string op, Q)(Q value) @nogc if(op == "~")
     {
-        static assert(op == "~", "Operator not supported on Array");
-        import core.stdc.stdlib:realloc;
-        data = cast(T*)realloc(data, (length+1)*T.sizeof);
-        data[length++] = value;
+        static if(is(Q == T))
+        {
+            data = cast(T*)realloc(data, (length+1)*T.sizeof);
+            data[length++] = value;
+        }
+        else static if(is(Q == T[]) || is(Q == Array!T))
+        {
+            data = cast(T*)realloc(data, (length+values.length)*T.sizeof);
+            memcpy(data+length, values.ptr, T.sizeof*values.length);
+            length+= values.length;    
+        }
         return this;
     }
 
-    string toString()
+    String toString() @nogc
     {
-        import util.conv:to;
-        string ret="[";
-        for(int i = 0; i < length; i++)
-        {
-            if(i != 0)
-                ret~=", ";
-            ret~=to!string(data[i]);
-        }
-        return ret~']';
+        return String(this[0..$]);
+    }
+    void put(T data) @nogc {this~= data;}
+    ~this() @nogc
+    {
+        *countPtr = *countPtr - 1;
+        if(*countPtr <= 0)
+            dispose();
     }
 
 }
@@ -251,7 +299,10 @@ struct RingBuffer(T, uint Length)
         readCursor = 0;
     }
 
-    ~this(){dispose();}
+    ~this()
+    {
+        dispose();
+    }
 }
 
 /**
