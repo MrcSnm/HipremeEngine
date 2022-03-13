@@ -73,7 +73,10 @@ The engine mantains some global options which you can modify it on source/global
 
 ### Coding
 
-- Scripting support ( Using D-lang ), check api module for reference
+- Scripting:
+
+1. Lua
+2. D ( check api module for reference )
 - Filewatcher for recompiling the script
 - Live reload ( no engine restart for coding )
   
