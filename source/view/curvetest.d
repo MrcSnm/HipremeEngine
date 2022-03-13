@@ -34,13 +34,13 @@ class CurveScene : Scene
         logln(goChild.getComponent!HipTransformComponent.worldTransform);
 
         import util.string;
-        String s = String("Hello World ", 500, " are you okay there? ", " my dear friend!! ", 1, "*", 2, " = ", 2);
+        import util.data_structures;
         import console.log;
-        logln("Test");
-    
 
-
-
+        Array!int arr = Array!int(50, 100, 200);
+        String arrStr = arr.toString;
+        logln(arrStr);
+        
     }
     override void render()
     {

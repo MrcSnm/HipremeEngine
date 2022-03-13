@@ -12,7 +12,7 @@ module console.console;
 import config.opts;
 import util.reflection : isLiteral;
 import util.conv:to;
-import util.string : toStringz;
+import util.string : toStringz, String;
 import debugging.gui:InterfaceImplementation;
 import util.format;
 
@@ -131,100 +131,50 @@ __gshared void function(string toPrint) _fatal;
         if(lines.length > maxLines)
             lines = lines[1..$];
     }
-    
-    void log(alias fmt, Args...)(Args a)
+    private String formatArguments(Args...)(Args a)
     {
-        static if(!HE_NO_LOG && !HE_ERR_ONLY)
-        {
-            //mtx.lock();
-            string toLog = format!(fmt, a);
-            _log(toLog);
-            //mtx.unlock();
-        }
+        String toLog = String(a);
+        // _formatLog(toLog);
+        return toLog;
     }
+    
+    
     void log(Args...)(Args a)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             //mtx.lock();
-            string toLog = "";
-            foreach(_a; a) toLog~= to!string(_a);
-            _formatLog(toLog);
-            _log(toLog);
+            _log(formatArguments(a).toString);
             //mtx.unlock();
         }
     }
 
-    void warn(alias fmt, Args...)(Args a)
-    {
-        static if(!HE_NO_LOG && !HE_ERR_ONLY)
-        {
-            //mtx.lock();
-            string toLog = format!(fmt, a);
-            _formatLog(toLog);
-            _log(toLog);
-            //mtx.unlock();
-        }
-        
-    }
     void warn(Args...)(Args a)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             //mtx.lock();
-            string toLog = format!(fmt, a);
-            _formatLog(toLog);
-            _log(toLog);
+            _warn(formatArguments(a).toString);
             //mtx.unlock();
         }
     }
-    void error(alias fmt, Args...)(Args a)
-    {
-        static if(!HE_NO_LOG)
-        {
-            //mtx.lock();
-            string toLog = format!(fmt, a);
-            _formatLog(toLog);
-            _err(toLog);
-            //mtx.unlock();
-        }
-        
-    }
+    
     void error(Args...)(Args a)
     {
         static if(!HE_NO_LOG)
         {
             //mtx.lock();
-            string toLog;
-            static foreach(arg; a)
-                toLog~= to!string(arg);
-            _formatLog(toLog);
-            _err(toLog);
+            _err(formatArguments(a).toString);
             //mtx.unlock();
         }
     }
-    void fatal(alias fmt, Args...)(Args a)
-    {
-        static if(!HE_NO_LOG)
-        {
-            //mtx.lock();
-            string toLog = format!(fmt, a);
-            _formatLog(toLog);
-            _fatal(toLog);
-            //mtx.unlock();
-        }
-        
-    }
+  
     void fatal(Args...)(Args a)
     {
         static if(!HE_NO_LOG)
         {
             //mtx.lock();
-            string toLog;
-            static foreach(arg; a)
-                toLog~= to!string(arg);
-            _formatLog(toLog);
-            _fatal(toLog);
+            _fatal(formatArguments(a).toString);
             //mtx.unlock();
         }
     }

@@ -34,10 +34,16 @@ struct String
         s.chars = cast(char*)malloc(l);
         s.countPtr = cast(int*)malloc(int.sizeof);
         memcpy(s.chars, str, l);
-        *s.countPtr = 0;
+        *s.countPtr = 1;
         s.length = l;
         s._capacity = l;
         return s;
+    }
+    static auto opCall(String str)
+    {
+        import std.stdio;
+        debug { import std.stdio : writeln; try { writeln("HERE"); } catch (Exception) {} }
+        return str;
     }
     static auto opCall(string str)
     {
@@ -46,7 +52,7 @@ struct String
         s.countPtr = cast(int*)malloc(int.sizeof);
         s.length = cast(uint)str.length;
         s._capacity = s.length;
-        *s.countPtr = 0;
+        *s.countPtr = 1;
         memcpy(s.chars, str.ptr, s.length);
         return s;
     }
@@ -58,10 +64,25 @@ struct String
         s.chars = cast(char*)malloc(128);
         s.countPtr = cast(int*)malloc(int.sizeof);
         s.length = 0;
-        *s.countPtr = 0;
-        foreach(a; args)
-            toStringRange(s, a);
+        *s.countPtr = 1;
+        static foreach(a; args)
+        {
+            static if(is(typeof(a) == String))
+                s~= a;
+            else static if(__traits(hasMember, a, "toString"))
+                s~= a.toString;
+            else
+                toStringRange(s, a);
+        }
         return s;
+    }
+    alias _opApplyFn = int delegate(char c) @nogc;
+    int opApply(scope _opApplyFn dg)
+    {
+        int result = 0;
+        for(int i = 0; i < length && result; i++)
+            result = dg(chars[i]);
+        return result;
     }
 
     auto ref opOpAssign(string op, T)(T value)
@@ -73,7 +94,7 @@ struct String
             static if(is(T == String))
             {
                 l = value.length;
-                chs = cast(char*)value.chars;
+                chs = cast(immutable(char)*)value.chars;
             }
             else static if (is(T == string))
             {
@@ -85,13 +106,18 @@ struct String
                 l = cast(uint)strlen(value);
                 chs = value;
             }
+            else static if(is(T == char))
+            {
+                l = 1;
+                chs = cast(immutable(char*))&value;
+            }
             else
             {
                 string temp = to!string(value);
                 l = temp.length;
                 chs = temp.ptr;
             }
-            resize(l);
+            resize(l + this.length);
             memcpy(chars+length, chs, l);
             length+= l;
         }
