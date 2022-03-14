@@ -155,6 +155,20 @@ void   toStringRange(Sink)(auto ref Sink sink, string str) if(isOutputRange!(Sin
         sink.preAllocate(str.length);
     put(sink, str);
 }
+void   toStringRange(Sink)(auto ref Sink sink, const(char)* str) if(isOutputRange!(Sink, char))
+{
+    import core.stdc.string:strlen;
+    size_t length = strlen(str);
+    static if(__traits(compiles, sink.preAllocate))
+        sink.preAllocate(length);
+    for(int i = 0; i < length; i++)
+        put(sink, str[i]);
+}
+
+void toStringRange(Sink)(auto ref Sink sink, void* ptr) if(isOutputRange!(Sink, char))
+{
+    toHex(sink, cast(size_t)ptr);
+}
 string toString(bool b) pure nothrow @safe @nogc
 {
     if(b) return "true";
@@ -305,7 +319,7 @@ void toStringRange(Sink)(auto ref Sink sink, float f)
         put(sink, '-');
     }
     float decimal = f - cast(int)f;
-    toString(sink, cast(int)f);
+    toStringRange(sink, cast(int)f);
     if(decimal == 0)
         return;
    
@@ -314,6 +328,52 @@ void toStringRange(Sink)(auto ref Sink sink, float f)
 
     put(sink, '.');
     toStringRange(sink, cast(int)decimal);
+}
+
+void toHex(Sink)(auto ref Sink sink, size_t n)
+if(isOutputRange!(Sink, char))
+{
+    enum numbers = "0123456789ABCDEF";
+    int preAllocSize = 1;
+    size_t div = 16;
+    while(div <= n)
+    {
+        div*= 16;
+        preAllocSize++;
+    }
+    div/= 16;
+    static if(__traits(hasMember, sink, "preAllocate"))
+        sink.preAllocate(preAllocSize);
+
+    while(div >= 16)
+    {
+        put(sink, numbers[(n/div)%16]);
+        div/= 16;
+    }
+    put(sink, numbers[n%16]);
+}
+
+string toHex(size_t n)
+{
+    enum numbers = "0123456789ABCDEF";
+    int preAllocSize = 1;
+    size_t div = 16;
+    while(div <= n)
+    {
+        div*= 16;
+        preAllocSize++;
+    }
+    div/= 16;
+    char[] ret = new char[](preAllocSize);
+    int i = 0;
+
+    while(div >= 16)
+    {
+        ret[i++] = numbers[(n/div)%16];
+        div/= 16;
+    }
+    ret[i] = numbers[n%16];
+    return cast(string)ret;
 }
 
 
