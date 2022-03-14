@@ -38,8 +38,7 @@ class CurveScene : Scene
         import console.log;
 
         Array!int arr = Array!int(50, 100, 200);
-        String arrStr = arr.toString;
-        logln(arrStr);
+        logln(arr);
         
     }
     override void render()

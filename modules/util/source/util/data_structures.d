@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module util.data_structures;
+public import util.string: String;
 
 struct Pair(A, B)
 {
@@ -18,12 +19,13 @@ struct Pair(A, B)
     alias a = first;
     alias b = second;
 }
+
+
 /** 
  * RangeMap allows specifying a range in which a value spams, quite useful for defining outcomes
  *  based on an input, experience gain progression, etc. Example Usage:
  *  ```d
- *  RangeMap!(int, string) colorRanges;
- *  colorRanges.setDefault("White");
+ *  RangeMap!(int, string) colorRanges = "White"; //Default is "White"
  *  colorRanges[0..9] = "Red";
  *  colorRanges[10..19] = "Green";
  *  colorRanges[20..29] = "Blue"
@@ -34,15 +36,16 @@ struct Pair(A, B)
 struct RangeMap(K, V)
 {
     import std.traits:isNumeric;
+    @nogc:
     static assert(isNumeric!K, "RangeMap key must be a numeric type");
-    K[] ranges;
-    V[] values;
-    V _default;
+    protected Array!K ranges;
+    protected Array!V values;
+    protected V _default;
 
     /**
     *   When the value is out of range, the value returned is the _default one.
     */
-    RangeMap setDefault(V _default)
+    ref RangeMap setDefault(V _default)
     {
         this._default = _default;
         return this;
@@ -50,8 +53,14 @@ struct RangeMap(K, V)
     /** 
      * Alternative to the slice syntax
      */
-    RangeMap setRange(K a, K b, V value)
+    ref RangeMap setRange(K a, K b, V value)
     {
+        if(ranges == null)
+        {
+            debug { import std.stdio : writeln; try { writeln("Started ranges"); } catch (Exception) {} }
+            ranges = Array!K(8);
+            values = Array!V(8);
+        }
         int rLength = cast(int)ranges.length;
         ranges.reserve(ranges.length+2);
         if(a > b)
@@ -97,6 +106,11 @@ struct RangeMap(K, V)
         return _default;
     }
 
+    pragma(inline) auto ref opAssign(V value)
+    {
+        setDefault(value);
+        return this;
+    }
     pragma(inline) V opSliceAssign(V value, K start, K end)
     {
         setRange(start, end, value);
@@ -104,15 +118,16 @@ struct RangeMap(K, V)
     }
     pragma(inline) V opIndex(K index){return get(index);}
 }
-public import util.string: String;
 /**
 *   RefCounted, Array @nogc, OutputRange compatible, it aims to bring the same result as one would have by using
 *   int[], Array!int should be equivalent, any different behaviour should be contacted. 
+*   It may use more memory than requested for not making reallocation a big bottleneck
 */
 struct Array(T) 
 {
     size_t length;
     T* data;
+    private size_t capacity;
     private int* countPtr;
     import core.stdc.stdlib:malloc;
     import core.stdc.string:memcpy, memset;
@@ -123,21 +138,27 @@ struct Array(T)
         *countPtr = *countPtr + 1;
     }
     alias _opApplyFn = int delegate(ref T) @nogc;
-    int opApply(scope _opApplyFn dg) @nogc
+    pragma(inline) int opApply(scope _opApplyFn dg) @nogc
     {
         int result = 0;
         for(int i = 0; i < length && result; i++)
             result = dg(data[i]);
         return result;
     }
+    private void initialize(size_t length) @nogc
+    {
+        this.data = cast(T*)malloc(T.sizeof*length);
+        this.length = length;
+        this.capacity = length;
+        this.countPtr = cast(int*)malloc(int.sizeof);
+        *this.countPtr = 1;
+        this[0..length] = T.init;
+    }
 
-    static Array!T opCall(size_t length = 0) @nogc
+    static Array!T opCall(size_t length) @nogc
     {
         Array!T ret;
-        ret.length = length;
-        ret.countPtr = cast(int*)malloc(int.sizeof);
-        *ret.countPtr = 1;
-        ret.data = cast(T*)malloc(T.sizeof*length);
+        ret.initialize(length);
         return ret;
     }
     static Array!T opCall(in T[] arr) @nogc
@@ -148,9 +169,20 @@ struct Array(T)
     }
     static Array!T opCall(T[] arr...) @nogc
     {
+        static if(isNumeric!T)
+        {
+            if(arr.length == 1)
+                return Array!(T)(cast(size_t)arr[0]);
+        }
         Array!T ret = Array!(T)(arr.length);
         memcpy(ret.data, arr.ptr, ret.length*T.sizeof);
         return ret;
+    }
+
+    pragma(inline) bool opEquals(R)(const R other) const
+    if(is(R == typeof(null)))
+    {
+        return data == null;
     }
     void dispose() @nogc
     {
@@ -158,50 +190,83 @@ struct Array(T)
         if(data != null)
         {
             free(data);
-            data = null;
             free(countPtr);
+            data = null;
             countPtr = null;
-            length = 0;
+            length = capacity = 0;
         }
     }
+    immutable(T*) ptr(){return cast(immutable(T*))data;}
     size_t opDollar() @nogc {return length;}
     T[] opSlice(size_t start, size_t end) @nogc
     {
         return data[start..end];
     }
-    auto opSliceAssign(T)(T value, size_t start, size_t end) @nogc
+    auto ref opSliceAssign(T)(T value, size_t start, size_t end) @nogc
     {
         data[start..end] = value;
         return this;
     }
+    import std.traits:isArray, isNumeric;
     auto ref opAssign(Q)(Q value) @nogc
+    if(isArray!Q)
     {
         if(data == null)
             data = cast(T*)malloc(T.sizeof*value.length);
         else
             data = cast(T*)realloc(data, T.sizeof*value.length);
         length = value.length;
+        capacity = value.length;
         memcpy(data, value.ptr, T.sizeof*value.length);
         return this;
     }
 
     ref auto opIndex(size_t index) @nogc
     {
-        assert(index < length, "Array out of bounds");
+        assert(index>= 0 && index < length, "Array out of bounds");
         return data[index];
     }
-    auto opOpAssign(string op, Q)(Q value) @nogc if(op == "~")
+
+    pragma(inline) private void resize(uint newSize) @nogc
     {
+        if(data == null || capacity == 0)
+            initialize(newSize);
+        else
+        {
+            data = cast(T*)realloc(data, newSize*T.sizeof);
+            capacity = newSize;
+        }
+    }
+    ///Guarantee that no allocation will occur for the specified reserve amount of memory
+    void reserve(size_t newSize){if(newSize > capacity)resize(cast(uint)newSize);}
+    auto ref opOpAssign(string op, Q)(Q value) @nogc if(op == "~")
+    {
+        if(*countPtr != 1)
+        {
+            //Save old data
+            T* oldData = data;
+            //Remove from the ref counter
+            *countPtr = *countPtr - 1;
+            //Re initialize
+            initialize(length);
+            memcpy(data, oldData, T.sizeof*length);
+        }
         static if(is(Q == T))
         {
-            data = cast(T*)realloc(data, (length+1)*T.sizeof);
+            if(data == null)
+                initialize(1);
+            if(length + 1 >= capacity)
+                resize(cast(uint)((length+1)*1.5));
             data[length++] = value;
         }
         else static if(is(Q == T[]) || is(Q == Array!T))
         {
-            data = cast(T*)realloc(data, (length+values.length)*T.sizeof);
-            memcpy(data+length, values.ptr, T.sizeof*values.length);
-            length+= values.length;    
+            if(data == null)
+                initialize(value.length);
+            if(length + value.length >= capacity)
+                resize(cast(uint)((length+value.length)*1.5));
+            memcpy(data+length, value.ptr, T.sizeof*value.length);
+            length+= value.length;    
         }
         return this;
     }
@@ -213,11 +278,14 @@ struct Array(T)
     void put(T data) @nogc {this~= data;}
     ~this() @nogc
     {
-        *countPtr = *countPtr - 1;
-        if(*countPtr <= 0)
-            dispose();
+        if(countPtr != null)
+        {
+            *countPtr = *countPtr - 1;
+            if(*countPtr <= 0)
+                dispose();
+            countPtr = null;
+        }
     }
-
 }
 
 /**
@@ -228,13 +296,21 @@ struct Array(T)
 */
 struct Array2D(T)
 {
-    private T[] data;
+    @nogc:
+    private T* data;
     private uint height;
     private uint width;
+    import core.stdc.stdlib;
+
+    private int* countPtr;
+
+    this(this){*countPtr = *countPtr + 1;}
 
     this(uint lengthHeight, uint lengthWidth)
     {
-        data = new T[](lengthHeight*lengthWidth);
+        data = cast(T*)malloc((lengthHeight*lengthWidth)*T.sizeof);
+        countPtr = cast(int*)malloc(int.sizeof);
+        *countPtr = 0;
         height = lengthHeight;
         width = lengthWidth;
     }
@@ -248,12 +324,24 @@ struct Array2D(T)
         }
         auto opIndexAssign(T)(T value, size_t i, size_t j){return data[i*width+j] = value;}
     }
+    ~this()
+    {
+        *countPtr = *countPtr - 1;
+        if(*countPtr <= 0)
+        {
+            free(data);
+            free(countPtr);
+            data = null;
+            countPtr = null;
+            width = height = 0;
+        }
+    }
 }
 
 struct RingBuffer(T, uint Length)
 {
-    import core.stdc.stdlib:malloc, free;
     import util.concurrency:Volatile;
+    @nogc:
 
     T[Length] data;
     private Volatile!uint writeCursor;
@@ -314,6 +402,7 @@ struct RingBuffer(T, uint Length)
 class EventQueue
 {
     import util.memory;
+    @nogc:
     
     struct Event
     {
@@ -389,7 +478,7 @@ class EventQueue
 
 struct Signal(A...)
 {
-    void function(A)[] listeners;
+    Array!(void function(A)) listeners;
     void dispatch(A a)
     {
         foreach (void function(A) l; listeners)

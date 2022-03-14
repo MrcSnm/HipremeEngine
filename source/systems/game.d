@@ -169,7 +169,7 @@ class GameSystem
     {
         version(Test)
         {
-            addScene(new CurveScene());
+            addScene(new AssetTest());
         }
         else version(Standalone)
         {
