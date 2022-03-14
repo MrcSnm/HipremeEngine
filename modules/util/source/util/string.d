@@ -21,33 +21,35 @@ struct String
     import core.stdc.string;
     import core.stdc.stdlib;
     char* chars;
-    uint length;
-    private int _capacity;
+    size_t length;
+    private size_t _capacity;
     private int* countPtr;
 
     this(this){*countPtr = *countPtr + 1;}
 
+    private void initialize(size_t length)
+    {
+        this.chars = cast(char*)malloc(length);
+        this.countPtr = cast(int*)malloc(int.sizeof);
+        this._capacity = length;
+        *countPtr = 1;
+    }
+
     static auto opCall(const(char)* str)
     {
         String s;
-        uint l = cast(uint)strlen(str);
-        s.chars = cast(char*)malloc(l);
-        s.countPtr = cast(int*)malloc(int.sizeof);
-        memcpy(s.chars, str, l);
-        *s.countPtr = 1;
+        size_t l = strlen(str);
+        s.initialize(l);
         s.length = l;
-        s._capacity = l;
+        memcpy(s.chars, str, l);
         return s;
     }
     static auto opCall(String str){return str;}
     static auto opCall(string str)
     {
         String s;
-        s.chars = cast(char*)malloc(str.length);
-        s.countPtr = cast(int*)malloc(int.sizeof);
-        s.length = cast(uint)str.length;
-        s._capacity = s.length;
-        *s.countPtr = 1;
+        s.initialize(str.length);
+        s.length = str.length;
         memcpy(s.chars, str.ptr, s.length);
         return s;
     }
@@ -55,11 +57,7 @@ struct String
     {
         import util.conv:toStringRange;
         String s;
-        s._capacity = 128;
-        s.chars = cast(char*)malloc(128);
-        s.countPtr = cast(int*)malloc(int.sizeof);
-        s.length = 0;
-        *s.countPtr = 1;
+        s.initialize(128);
         static foreach(a; args)
         {
             static if(is(typeof(a) == String))
@@ -80,87 +78,106 @@ struct String
         return result;
     }
 
-    auto ref opOpAssign(string op, T)(T value)
+    bool updateBorrowed(size_t length)
     {
-        static if(op == "~")
-        {
-            uint l = 0;
-            immutable (char)* chs;
-            static if(is(T == String))
-            {
-                l = value.length;
-                chs = cast(immutable(char)*)value.chars;
-            }
-            else static if (is(T == string))
-            {
-                l = cast(uint)value.length;
-                chs = value.ptr;
-            }
-            else static if(is(T == immutable(char)*))
-            {
-                l = cast(uint)strlen(value);
-                chs = value;
-            }
-            else static if(is(T == char))
-            {
-                l = 1;
-                chs = cast(immutable(char*))&value;
-            }
-            else
-            {
-                string temp = to!string(value);
-                l = temp.length;
-                chs = temp.ptr;
-            }
-            if(l + this.length >= this._capacity)
-                resize(cast(uint)((l + this.length)*1.5));
-            memcpy(chars+length, chs, l);
-            length+= l;
+        if(countPtr == null) //Not initialized
+        {  
+            initialize(length);
+            return true;
         }
-        return this;
+        else if(*countPtr != 1) //If it is borrowed
+        {
+            char* oldChars = chars;
+            *countPtr = *countPtr - 1;
+            initialize(length+this.length);
+            memcpy(chars, oldChars, this.length);
+            return true;
+        }
+        return false;
     }
 
-    auto ref opAssign(T)(T value)
+    auto ref opOpAssign(string op, T)(T value)
+    if(op == "~")
     {
+        size_t l = 0;
+        immutable (char)* chs;
         static if(is(T == String))
         {
-            if(value.length > length && chars != null)
-                free(chars);
-
-            chars = cast(char*)malloc(value.length);
-            memcpy(chars, value.chars, value.length);
-            length = value.length;
+            l = value.length;
+            chs = cast(immutable(char)*)value.chars;
         }
-        else static if(is(T == string))
+        else static if (is(T == string))
         {
-            if(value.length > length && chars != null)
-                free(chars);
-            uint l = cast(uint)value.length;
-            chars = cast(char*)malloc(l);
-            memcpy(chars, value.ptr, l);
-            length = l;
+            l = cast(size_t)value.length;
+            chs = value.ptr;
         }
         else static if(is(T == immutable(char)*))
         {
-            uint l = cast(uint)strlen(value);
-            if(l > length && chars != null)
-                free(chars);
-            chars = cast(char*)malloc(l);
-            memcpy(chars, value, l);
-            length = l;
+            l = cast(size_t)strlen(value);
+            chs = value;
         }
-        else static assert(0, "String can only assigned to String or string");
+        else static if(is(T == char))
+        {
+            l = 1;
+            chs = cast(immutable(char*))&value;
+        }
+        else
+        {
+            string temp = to!string(value);
+            l = temp.length;
+            chs = temp.ptr;
+        }
+        if(!updateBorrowed(l) && l + this.length >= this._capacity) //New size is greater than capacity
+            resize(cast(uint)((l + this.length)*1.5));
+        memcpy(chars+length, chs, l);
+        length+= l;
         return this;
     }
 
-    T opCast(T)() const
+    auto ref opAssign(string value)
     {
-        static assert(is(T == string), "String can only be casted to string");
+        bool resized = updateBorrowed(value.length);
+        if(!resized)
+        {
+            if(chars == null)
+            {
+                chars = cast(char*)malloc(value.length);
+                _capacity = value.length;
+            }
+            else if(value.length > _capacity)
+                resize(value.length);
+        }
+        memcpy(chars, value.ptr, value.length);
+        length = value.length;
+        return this;
+    }
+
+    auto ref opAssign(immutable(char)* value)
+    {
+        size_t l = cast(size_t)strlen(value);
+        bool resized = updateBorrowed(l);
+        if(!resized)
+        {
+            if(chars == null)
+            {
+                chars = cast(char*)malloc(l);
+                _capacity = l;
+            }
+            else if(l > _capacity)
+                resize(l);
+        }
+        length = l;
+        memcpy(chars, value, l);
+        return this;
+    }
+
+    string opCast() const
+    {
         return cast(string)chars[0..length];
     }
     string toString() const {return cast(string)chars[0..length];}
 
-    pragma(inline) private void resize(uint newSize)
+    pragma(inline) private void resize(size_t newSize)
     {
         chars = cast(char*)realloc(chars, newSize);
         _capacity = newSize;
