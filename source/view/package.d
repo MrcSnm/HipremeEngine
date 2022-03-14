@@ -26,4 +26,5 @@ public import
     view.geometrytestscene,
     view.ninepatchtest,
     view.curvetest,
+    view.assettest,
     view.spritetestscene;

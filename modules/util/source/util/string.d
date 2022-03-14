@@ -39,12 +39,7 @@ struct String
         s._capacity = l;
         return s;
     }
-    static auto opCall(String str)
-    {
-        import std.stdio;
-        debug { import std.stdio : writeln; try { writeln("HERE"); } catch (Exception) {} }
-        return str;
-    }
+    static auto opCall(String str){return str;}
     static auto opCall(string str)
     {
         String s;
@@ -117,7 +112,8 @@ struct String
                 l = temp.length;
                 chs = temp.ptr;
             }
-            resize(l + this.length);
+            if(l + this.length >= this._capacity)
+                resize(cast(uint)((l + this.length)*1.5));
             memcpy(chars+length, chs, l);
             length+= l;
         }
@@ -173,9 +169,17 @@ struct String
     void put(char c)
     {
         if(this.length + 1 >= this._capacity)
-            resize(this.length+1);
+            resize(cast(uint)((this.length+1)*1.5));
         chars[length] = c;
         length++;
+    }
+    bool opEquals(R)(const R other) const
+    {
+        static if(is(R == typeof(null)))
+            return chars == null;
+        else static if(is(R == string))
+            return toString == other;
+        else static assert(false, "Invalid comparison between String and "~R.stringof);
     }
     
     /**
@@ -184,10 +188,19 @@ struct String
     */
     void preAllocate(uint howMuch)
     {
-        this._capacity+= howMuch;
-        chars = cast(char*)realloc(chars, this._capacity);
+        if(length + howMuch > _capacity)
+        {
+            this._capacity+= howMuch;
+            chars = cast(char*)realloc(chars, this._capacity);
+        }
     }
     void preAllocate(ulong howMuch){preAllocate(cast(uint)howMuch);}
+
+    ref auto opIndex(size_t index)
+    {
+        assert(index < length, "Index out of bounds");
+        return chars[index];
+    }
 
     ~this()
     {
