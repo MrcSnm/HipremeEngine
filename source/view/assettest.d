@@ -12,7 +12,7 @@ class AssetTest : Scene
     this()
     {
         RangeMap!(int, int) playerStrengthProgression;
-        playerStrengthProgression.setDefault(0);
+        playerStrengthProgression = 0;
 
         playerStrengthProgression[0..4] = 2;
         playerStrengthProgression[5..14] = 5;
@@ -20,13 +20,13 @@ class AssetTest : Scene
         playerStrengthProgression[27..99] = 15;
 
         RangeMap!(int, string) rankingReward;
-        rankingReward.setDefault("");
+        rankingReward = "";
         rankingReward[0..0]   = "Platinum Medal";
         rankingReward[1..1]   = "Golden Medal";
         rankingReward[2..2]   = "Silver Medal";
         rankingReward[3..3]   = "Bronze Medal";
         rankingReward[4..9]   = "Motivation Medal";
         rankingReward[10..32] = "Loser Sign";
-        
+
     }
 }

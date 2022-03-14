@@ -88,7 +88,7 @@ struct ShaderVar
             alias _t = typeof(T.init[0]);
             Array!(_t)* arr = cast(Array!(_t)*)data;
             arr.dispose();
-            Array!(_t) temp = Array!(_t).fromDynamicArray(value);
+            Array!(_t) temp = Array!(_t)(value);
             memcpy(data, &temp, varSize);
         }
         else
@@ -185,17 +185,17 @@ struct ShaderVar
     static ShaderVar* create(ShaderTypes t, string varName, float[16] data){return ShaderVar.create(t, varName, &data, UniformType.floating4x4, data.sizeof, data[0].sizeof);}
     static ShaderVar* create(ShaderTypes t, string varName, int[] data)
     {
-        Array!int dRef = Array!int.fromDynamicArray(data);
+        Array!int dRef = Array!int(data);
         return ShaderVar.create(t, varName, &dRef, UniformType.integer_array, dRef.sizeof, dRef[0].sizeof, true);
     }
     static ShaderVar* create(ShaderTypes t, string varName, uint[] data)
     {
-        Array!uint dRef = Array!uint.fromDynamicArray(data);
+        Array!uint dRef = Array!uint(data);
         return ShaderVar.create(t, varName, &dRef, UniformType.uinteger_array, dRef.sizeof, dRef[0].sizeof, true);
     }
     static ShaderVar* create(ShaderTypes t, string varName, float[] data)
     {
-        Array!float dRef = Array!float.fromDynamicArray(data);
+        Array!float dRef = Array!float(data);
         return ShaderVar.create(t, varName, &dRef, UniformType.floating_array, dRef.sizeof, dRef[0].sizeof, true);
     }
 

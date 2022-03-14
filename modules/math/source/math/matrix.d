@@ -11,6 +11,7 @@ Distributed under the CC BY-4.0 License.
 module math.matrix;
 import core.math;
 import util.conv;
+import util.string;
 
 enum MatrixType
 {
@@ -126,9 +127,9 @@ struct Matrix3
         return ret;
     }
 
-    string toString()
+    String toString() @nogc
     {
-        string ret = "[";
+        String ret = '[';
         for(uint i = 0; i < 9; i++)
         {
             if(i != 0)
@@ -137,10 +138,11 @@ struct Matrix3
                     ret~= "]\n[";
                 else
                     ret~=", ";
-            }            
-            ret~= to!string(this[i]);
+            }
+            toStringRange(ret, this[i]);
         }
-        return ret~"]";
+        ret~= ']';
+        return ret;
     }
 
     T opCast(T)() const
@@ -325,9 +327,10 @@ struct Matrix4
         ]) * mat;
     }
 
-    string toString()
+    String toString() @nogc
     {
-        string ret = "[";
+        String ret = "[";
+
         for(uint i = 0; i < 16; i++)
         {
             if(i != 0)
@@ -337,9 +340,10 @@ struct Matrix4
                 else
                     ret~=", ";
             }            
-            ret~= to!string(this[i]);
+            toStringRange(ret, this[i]);
         }
-        return ret~"]";
+        ret~= ']';
+        return ret;
     }
 
     alias values this;
