@@ -9,12 +9,10 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module data.assetmanager;
-import console.log;
+public import data.image;
+public import util.data_structures : Pair;
 import util.system;
-import util.data_structures;
-import util.time;
 import core.time:Duration, dur;
-import data.image;
 import core.thread;
 
 
@@ -42,7 +40,7 @@ class AssetLoaderThread : Thread
         hasFinishedLoading = true;
     }
 }
-// import std.concurrency;
+
 
 
 void* loadImageAsyncImpl(void* context)
@@ -78,6 +76,8 @@ class HipAssetManager
 
     static void loadImage(string imagePath, Callback!Image cb, bool async = true)
     {
+        import console.log;
+        import util.time;
         currentTime = HipTime.getCurrentTimeAsMilliseconds();
         if(async)
         {
@@ -100,6 +100,7 @@ class HipAssetManager
 
     static void checkLoad()
     {
+        import console.log;
         if(workerPool.length > 0)
         {
             foreach(w; workerPool)

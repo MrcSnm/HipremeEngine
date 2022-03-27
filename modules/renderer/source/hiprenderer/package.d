@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hiprenderer;
 
+
 public import hiprenderer.renderer;
 public import hiprenderer.shader;
 public import hiprenderer.texture;

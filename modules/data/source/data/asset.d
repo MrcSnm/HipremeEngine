@@ -9,7 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module data.asset;
-import util.time;
 
 /** Controls the asset ids for every game asset
 *   0 is reserved for errors.
@@ -46,12 +45,14 @@ abstract class HipAsset
 
     void startLoading()
     {
+        import util.time;
         startLoadingTimestamp = HipTime.getCurrentTimeAsMilliseconds();
         load();
     }
 
     void finishLoading()
     {
+        import util.time;
         if(isReady())
         {
             onFinishLoading();

@@ -9,12 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module data.image;
-import data.hipfs;
-import util.concurrency;
 import data.asset;
-import error.handler;
-import util.system;
-import console.log;
 import bindbc.sdl.bind.sdlsurface;
 import bindbc.sdl.bind.sdlrwops;
 import bindbc.sdl.bind.sdlpixels;
@@ -151,6 +146,11 @@ public class Image : HipAsset, IImage
     this(in string path)
     {
         super("Image_"~path);
+        initialize(path);
+    }
+    private void initialize(in string path)
+    {
+        import util.system : sanitizePath;
         decoder = new HipPlatformImageDecoder();
         imagePath = sanitizePath(path);
     }
@@ -163,6 +163,7 @@ public class Image : HipAsset, IImage
 
     bool loadFromMemory(ref ubyte[] data)
     {
+        import error.handler;
         if(ErrorHandler.assertErrorMessage(decoder.startDecoding(data),
         "Decoding Image: ", "Could not load image " ~ imagePath))
             return false;
@@ -177,6 +178,7 @@ public class Image : HipAsset, IImage
     void* convertPalettizedToRGBA()
     {
         import core.stdc.stdlib:malloc;
+        import error.handler;
         if(convertedPixels != null)
             return convertedPixels;
         ubyte* pix = cast(ubyte*)malloc(4*width*height); //RGBA for each pixel
@@ -205,9 +207,10 @@ public class Image : HipAsset, IImage
 
     bool loadFromFile()
     {
-        ubyte[] data;
-        HipFS.read(imagePath, data);
-        return loadFromMemory(data);
+        import data.hipfs;
+        ubyte[] data_;
+        HipFS.read(imagePath, data_);
+        return loadFromMemory(data_);
     }
 
     override bool load()

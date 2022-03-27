@@ -9,17 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module data.assetpacker;
-import console.log;
-import util.string;
 import util.file;
-import core.stdc.stdlib:qsort;
-import core.stdc.stdio;
-import util.array;
-import util.conv:to;
-import core.stdc.string;
-import std.stdio : File;
-import util.path;
-import std.file;
 
 enum HapHeaderStart = "1HZ00ZH9";
 enum HapHeaderEnd   = "9HZ00ZH1";
@@ -77,6 +67,7 @@ class HapFile
 
     string getText(string chunkName, bool removeCarriageReturn = true)
     {
+        import util.string : replaceAll;
         HapChunk* ch = (chunkName in chunks);
         if(ch is null)
             return "";
@@ -117,6 +108,12 @@ private string reverse(string s)
 */
 bool writeAssetPack(string outputFileName, string[] assetPaths, string basePath = "")
 {
+    import console.log;
+    import util.conv:to;
+    import util.path : relativePath;
+    import core.stdc.string : memcpy;
+    import std.file;
+    import std.stdio : File;
     if(exists(outputFileName~".hap"))
     {
         rawlog(outputFileName~".hap already exists");
@@ -162,6 +159,13 @@ bool writeAssetPack(string outputFileName, string[] assetPaths, string basePath 
 */
 HapHeaderStatus appendAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
 {
+    import console.log;
+    import util.conv:to;
+    import util.path : relativePath;
+    import core.stdc.string : memcpy;
+    import std.file : exists, read;
+    import std.stdio : File;
+
     if(!exists(hapFile))
         return HapHeaderStatus.DOES_NOT_EXIST;
 
@@ -220,6 +224,13 @@ HapHeaderStatus appendAssetInPack(string hapFile, string[] assetPaths, string ba
 */
 HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
 {
+    import console.log;
+    import util.conv:to;
+    import util.array : indexOf;
+    import util.path : relativePath;
+    import std.file : exists, read;
+    import std.stdio : File;
+
     if(!exists(hapFile))
         return HapHeaderStatus.DOES_NOT_EXIST;
     File target = File(hapFile, "r+");
@@ -263,6 +274,7 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
             toAppend~= path;
     }
 
+    import core.stdc.stdlib:qsort;
     qsort(cast(void*)chunks.ptr, chunks.length, chunks[0].sizeof, &sortChunk);
 
     target.seek(lowestStartPosition);
@@ -293,6 +305,7 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
 
 ulong getHeaderStart (string hapFile)
 {
+    import std.file : exists, read;
     if(exists(hapFile))
     {
         ubyte[] hapData = cast(ubyte[])read(hapFile);
@@ -327,6 +340,9 @@ ulong getHeaderStart (ref ubyte[] fileData)
 
 HapChunk[] getHapChunks(ref ubyte[] hapFile, ulong headerStart)
 {
+    import util.string : split;
+    import util.conv : to;
+    import core.stdc.string : memcpy;
     HapChunk[] ret;
     string hap = "";
     for(ulong i = headerStart; i < hapFile.length-HapHeaderStart.length; i++)
@@ -362,6 +378,7 @@ HapChunk[] getHapChunks(ref ubyte[] hapFile, ulong headerStart)
 
 HapChunk[] getHapChunks(string hapFilePath)
 {
+    import std.stdio : File;
     File f = File(hapFilePath);
     ubyte[] hapFile = new ubyte[f.size];
     f.rawRead(hapFile);

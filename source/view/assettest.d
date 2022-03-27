@@ -1,6 +1,7 @@
 module view.assettest;
 import util.data_structures;
 import view.scene;
+import data.image;
 
 
 /**
@@ -27,6 +28,23 @@ class AssetTest : Scene
         rankingReward[3..3]   = "Bronze Medal";
         rankingReward[4..9]   = "Motivation Medal";
         rankingReward[10..32] = "Loser Sign";
+
+        Map!(string, int) tester;
+
+        tester["ops"] = 500;
+        tester["Hello World"] = 1500;
+
+        debug { import std.stdio : writeln; try { writeln(tester["Hello World"]); } catch (Exception) {} }
+
+        Map!(int, String) tester2;
+
+        tester2[523] = String("Oops");
+        tester2[522] = String("Eba");
+
+        debug { import std.stdio : writeln; try { writeln(tester2[523]); } catch (Exception) {} }
+        debug { import std.stdio : writeln; try { writeln(tester2[522]); } catch (Exception) {} }
+        tester2[523] = String("Ie me");
+        debug { import std.stdio : writeln; try { writeln(tester2[523]); } catch (Exception) {} }
 
     }
 }
