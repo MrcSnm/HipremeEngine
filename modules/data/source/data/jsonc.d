@@ -1,5 +1,5 @@
 module data.jsonc;
-import std.json;
+public import std.json;
 
 JSONValue parseJSONC(string jsonc)
 {

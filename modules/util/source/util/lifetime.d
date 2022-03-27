@@ -1,5 +1,37 @@
 module util.lifetime;
 
+
+/** 
+ * Not yet complete. Need more work.
+ */
+mixin template RefCounted()
+{
+    private int* countPtr;
+    this(this)
+    {
+        if(countPtr != null)
+            *countPtr = *countPtr + 1;
+    }
+    void startRefCount()
+    {
+        import core.stdc.stdlib:malloc;
+        countPtr = malloc(int.sizeof);
+        *countPtr = 1;
+    }
+    ~this()
+    {
+        if(countPtr != null)
+        {
+            *countPtr = *countPtr - 1;
+            if(*countPtr == 0)
+                dispose();
+            import core.stdc.stdlib: free;
+            free(countPtr);
+            countPtr = null;
+        }
+    }
+}
+
 /**
 *   Use this function to export 
 */

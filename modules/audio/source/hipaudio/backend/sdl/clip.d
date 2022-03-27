@@ -1,4 +1,6 @@
 module hipaudio.backend.sdl.clip;
+
+version(HipSDLMixer):
 import hipaudio.audioclip;
 import data.audio.audio;
 

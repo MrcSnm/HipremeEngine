@@ -10,8 +10,6 @@ Distributed under the CC BY-4.0 License.
 */
 module data.ini;
 import util.conv:to;
-import util.file;
-import util.string:split;
 
 struct IniVar
 {
@@ -63,6 +61,8 @@ class IniFile
     */
     static IniFile parse(string path)
     {
+        import util.string:split;
+        import util.file : getFileContent;
         IniFile ret = new IniFile();
         ret.path = path;
         string content = getFileContent(path);
@@ -126,6 +126,7 @@ class IniFile
 
     public T tryGet(T)(string varPath, T defaultVal = T.init)
     {
+        import util.string:split;
         string[] accessors = varPath.split(".");
         if(accessors.length < 2)
             return defaultVal;

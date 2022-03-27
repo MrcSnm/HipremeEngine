@@ -25,7 +25,11 @@ struct String
     private size_t _capacity;
     private int* countPtr;
 
-    this(this){*countPtr = *countPtr + 1;}
+    this(this)
+    {
+        if(countPtr !is null)
+            *countPtr = *countPtr + 1;
+    }
 
     private void initialize(size_t length)
     {
@@ -196,6 +200,8 @@ struct String
             return chars == null;
         else static if(is(R == string))
             return toString == other;
+        else static if(is(R == String))
+            return toString == other.toString;
         else static assert(false, "Invalid comparison between String and "~R.stringof);
     }
     
@@ -221,11 +227,17 @@ struct String
 
     ~this()
     {
-        *countPtr = *countPtr - 1;
-        if(*countPtr <= 0 && chars != null)
+        if(countPtr != null)
         {
-            free(chars);
-            free(countPtr);
+            *countPtr = *countPtr - 1;
+            if(*countPtr == 0 && chars != null)
+            {
+                free(chars);
+                free(countPtr);
+            }
+            assert(*countPtr >= 0);
+            countPtr = null;
+            chars = null;
         }
     }
 

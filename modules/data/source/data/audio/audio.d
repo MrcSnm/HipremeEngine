@@ -1,13 +1,6 @@
 module data.audio.audio;
 import data.audio.audioconfig;
-import bindbc.sdl.bind.sdlrwops;
-import bindbc.sdl.mixer;
 import sdl_sound;
-import util.string;
-import util.conv;
-import error.handler;
-import audioformats;
-import dplug.core;
 
 public import hipengine.api.data.audio;
 
@@ -24,12 +17,14 @@ private char* getNameFromEncoding(HipAudioEncoding encoding)
     }
 }
 
-class HipSDL_MixerDecoder : IHipAudioDecoder
+version(HipSDLMixer) class HipSDL_MixerDecoder : IHipAudioDecoder
 {
     protected static AudioConfig cfg;
+    //import bindbc.sdl.mixer; Unused?
 
     public static bool initDecoder(AudioConfig cfg)
     {
+        import error.handler;
         SDLMixerSupport sup = loadSDLMixer();
         if(sup == SDLMixerSupport.badLibrary)
             ErrorHandler.showErrorMessage("Bad SDL_Mixer support", "Unknown version of SDL_Mixer");
@@ -116,6 +111,7 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
 
     public static bool initDecoder(AudioConfig cfg, int bufferSize)
     {
+        import error.handler;
         bool ret = ErrorHandler.assertErrorMessage(loadSDLSound(), "Error Loading SDL_Sound", "SDL_Sound not found");
         if(!ret)
             Sound_Init();
@@ -134,6 +130,8 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
     }
     uint startDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
     {
+        import error.handler;
+        import util.conv;
         Sound_AudioInfo info = cfg.getSDL_SoundInfo();
         this.selectedEncoding = encoding;
         this.sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length,
@@ -155,6 +153,10 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
     uint updateDecoding(void* outputDecodedData)
     {
         import core.stdc.string:memcpy;
+        import error.handler;
+        import util.conv;
+        import util.string;
+
         uint ret = 0;
         uint decodedTotal = 0;
         while(decodedTotal != chunkSize && (ret = Sound_Decode(sample)) != 0)
@@ -241,9 +243,56 @@ T[] monoToStereo(T)(T[] data)
     return ret;
 }
 
+private struct _AudioStreamImpl
+{
+    void* block;
+    void initialize()
+    {
+        import core.stdc.stdlib:malloc;
+        import audioformats;
+        block = malloc(AudioStream.sizeof);
+    }
+
+    void openFromMemory(in ubyte[] inputData)
+    {
+        if(block == null)
+            initialize();
+        import audioformats;
+        (cast(AudioStream*)block).openFromMemory(inputData);
+    }
+    long getLengthInFrames()
+    {
+        import audioformats;
+        return (cast(AudioStream*)block).getLengthInFrames();
+    }
+    int getNumChannels()
+    {
+        import audioformats;
+        return (cast(AudioStream*)block).getNumChannels();
+    }
+    float getSamplerate()
+    {
+        import audioformats;
+        return (cast(AudioStream*)block).getSamplerate();
+    }
+    int readSamplesFloat(float[] outputBuffer)
+    {
+        import audioformats;
+        return (cast(AudioStream*)block).readSamplesFloat(outputBuffer);
+    }
+    void cleanUp()
+    {
+        import audioformats;
+        import core.stdc.stdlib;
+        (cast(AudioStream*)block).cleanUp();
+        free(block);
+        block = null;
+    }
+}
+
 class HipAudioFormatsDecoder : IHipAudioDecoder
 {
-    AudioStream input;
+    _AudioStreamImpl input;
     float sampleRate;
     int channels;
     float duration;
@@ -256,6 +305,7 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
 
     bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type)
     {
+        import audioformats : audiostreamUnknownLength;
         input.openFromMemory(cast(ubyte[])data);
 
         long lengthFrames = input.getLengthInFrames();

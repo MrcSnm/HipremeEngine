@@ -9,15 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module data.hipfs;
-import error.handler;
-import util.path:joinPath;
-import std.stdio : File;
-import util.string;
-import util.array:lastIndexOf;
-import std.utf:toUTF16z;
-import util.string:split;
-import util.system;
-static import std.file;
+public import std.stdio : File;
 ///Less dependencies
 enum
 {
@@ -31,6 +23,10 @@ enum
 
 private pure bool validatePath(string initial, string toAppend)
 {
+    import util.array:lastIndexOf;
+    import util.string:split;
+    import util.system : sanitizePath;
+
     if(initial.length != 0 && initial[$-1] == '/')
         initial = initial[0..$-1];
     string newPath = initial.sanitizePath;
@@ -215,6 +211,7 @@ class HipStdFileSystemInteraction : IHipFileSystemInteraction
 {
     bool read(string path, out void[] output)
     {
+        import error.handler;
         if(ErrorHandler.assertErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
             return false;
 
@@ -223,9 +220,21 @@ class HipStdFileSystemInteraction : IHipFileSystemInteraction
         f.rawRead(output);
         return true;
     }
-    bool write(string path, void[] data){std.file.write(path, data);return true;}
-    bool exists(string path){return std.file.exists(path);}
-    bool remove(string path){std.file.remove(path);return true;}
+    bool write(string path, void[] data)
+    {
+        static import std.file; 
+        std.file.write(path, data);return true;
+    }
+    bool exists(string path)
+    {
+        static import std.file;
+        return std.file.exists(path);
+    }
+    bool remove(string path)
+    {
+        static import std.file;
+        std.file.remove(path);return true;
+    }
 }
 
 
@@ -238,6 +247,7 @@ version(UWP)
     class HipUWPFile : HipFile
     {
         HANDLE fp;
+        import std.utf:toUTF16z;
         @disable this();
         this(string path, FileMode mode)
         {
@@ -356,12 +366,14 @@ version(UWP)
         }
         bool exists(string path)
         {
+            import std.utf:toUTF16z;
             WIN32_FILE_ATTRIBUTE_DATA info;
             UWPGetFileAttributesExFromAppW(path.toUTF16z, GET_FILEEX_INFO_LEVELS.GetFileExInfoStandard, &info);
             return info.dwFileAttributes != INVALID_FILE_ATTRIBUTES;
         }
         bool remove(string path)
         {
+            import std.utf:toUTF16z;
             if(!exists(path)) return false;
             return cast(bool)DeleteFile(path.toUTF16z);
         }
@@ -384,6 +396,7 @@ class HipFileSystem
     public static void install(string path,
     bool function(string path, out string errMessage)[] validations ...)
     {
+        import util.system : sanitizePath;
         if(!hasSetInitial)
         {
             initialPath = path.sanitizePath;
@@ -395,10 +408,17 @@ class HipFileSystem
             hasSetInitial = true;
         }
     }
-    public static string getPath(string path){return joinPath(combinedPath, path.sanitizePath);}
+    public static string getPath(string path)
+    {
+        import util.path:joinPath;
+        import util.system : sanitizePath;
+        return joinPath(combinedPath, path.sanitizePath);
+    }
     public static bool isPathValid(string path){return validatePath(initialPath, defPath~path);}
     public static bool isPathValidExtra(string path)
     {
+        import error.handler;
+        import util.system : sanitizePath;
         path = path.sanitizePath;
         string err;
         foreach (bool function(string, out string) validation; extraValidations)
@@ -415,6 +435,8 @@ class HipFileSystem
 
     public static bool setPath(string path)
     {
+        import util.path:joinPath;
+        import util.system : sanitizePath;
         defPath = path.sanitizePath;
         combinedPath = joinPath(initialPath, defPath);
         return validatePath(initialPath, combinedPath);
@@ -473,6 +495,7 @@ class HipFileSystem
 
     public static string writeCache(string cacheName, void[] data)
     {
+        import util.path:joinPath;
         string p = joinPath(initialPath, ".cache", cacheName);
         write(p, data);
         return p;

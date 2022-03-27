@@ -7,6 +7,7 @@
 		"debugInfo",
 		"debugInfoC"
 	],
+	"targetType": "library",
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
 		"arsd-official:image_files": "~>10.5.0",
@@ -20,6 +21,12 @@
 		"sdl_sound": {"path": "../../dependencies/sdl_sound"},
 		"util": {"path": "../util"}
 	},
+	"configurations": [
+		{
+			"name": "header",
+			"dflags": ["-H", "-Hdimport", "-op"]
+		}
+	],
 	"description": "HipremeEngine data module",
 	"license": "proprietary",
 	"name": "data",

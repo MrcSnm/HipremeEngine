@@ -202,6 +202,11 @@ struct Array(T)
     {
         return data[start..end];
     }
+    auto ref opSliceAssign(T)(T value) @nogc
+    {
+        data[0..length] = value;
+        return this;
+    }
     auto ref opSliceAssign(T)(T value, size_t start, size_t end) @nogc
     {
         data[start..end] = value;
@@ -336,7 +341,187 @@ struct Array2D(T)
             width = height = 0;
         }
     }
+
 }
+
+private uint hash_fnv1(T)(T value)
+{
+    import std.traits:isArray, isPointer;
+    enum fnv_offset_basis = 0x811c9dc5;
+    enum fnv_prime = 0x01000193;
+
+    byte[] data;
+    static if(isArray!T)
+        data = (cast(byte*)value.ptr)[0..value.length*T.sizeof];
+    else static if(is(T == interface) || is(T == class) || isPointer!T)
+        data = cast(byte[])(cast(void*)value)[0..(void*).sizeof];
+    else //Value types: int, float, struct, etc
+        data = (cast(byte*)&value)[0..T.sizeof];
+
+    typeof(return) hash = fnv_offset_basis;
+
+    foreach(byteFromData; data)
+    {
+        hash*= fnv_prime;
+        hash^= byteFromData;
+    }
+    return hash;
+}
+
+struct Map(K, V)
+{
+    import core.stdc.stdlib;
+    static enum initializationLength = 128;
+    private static enum increasingFactor = 1.5;
+    private static enum increasingThreshold = 0.7;
+    private alias hashFunc = hash_fnv1;
+
+    private struct MapData
+    {
+        K key;
+        V value;
+    }
+    private struct MapBucket
+    {
+        MapData data;
+        MapBucket* next;
+    }
+    private Array!MapBucket dataSet;
+
+    private int* countPtr;
+
+    this(this)
+    {
+        if(countPtr !is null)
+            *countPtr = *countPtr + 1;
+    }
+
+    private int entriesCount;
+
+    private void initialize() @nogc
+    {
+        dataSet = Array!(MapBucket)(initializationLength);
+        dataSet.length = initializationLength;
+        dataSet[] = MapBucket.init;
+        countPtr = cast(int*)malloc(int.sizeof);
+        *countPtr = 0;
+    }
+    static auto opCall() @nogc
+    {
+        Map!(K, V) ret;
+        ret.initialize();
+        return ret;
+    }
+
+
+
+    void clear() @nogc 
+    {
+        entriesCount = 0;
+        for(int i = 0; i < dataSet.length; i++)
+        {
+            if(dataSet[i] != MapBucket.init)
+            {
+                MapBucket* buck = dataSet[i].next;
+                while(buck != null)
+                {
+                    MapBucket copy = *buck;
+                    free(buck);
+                    buck = copy.next;
+                }
+            }
+        }
+    }
+    //Called when array is filled at least increasingThreshold
+    private void recalculateHashes() @nogc
+    {
+        size_t newSize = cast(size_t)(dataSet.capacity * increasingFactor);
+        Array!MapBucket newArray = Array!MapBucket(newSize);
+
+        for(int i = 0; i < dataSet.length; i++)
+        {
+            if(dataSet[i] != MapBucket.init)
+            {
+                newArray[hashFunc(dataSet[i].data.key) % newSize] = dataSet[i];
+            }
+        }
+
+        dataSet = newArray;
+    }
+    
+    bool has(K key) @nogc {return dataSet[getIndex(key)] != MapBucket.init;}
+    pragma(inline) uint getIndex(K key) @nogc {return hashFunc(key) % dataSet.length;}
+
+
+    ref auto opIndex(K index) @nogc
+    {
+        if(dataSet.length == 0)
+            initialize();
+        return dataSet[getIndex(index)].data.value;
+    }
+    ref auto opIndexAssign(V value, K key) @nogc
+    {
+        if(dataSet.length == 0)
+            initialize();
+        uint i = getIndex(key);
+        //Unexisting bucket
+        if(dataSet[i] == MapBucket.init)
+        {
+            entriesCount++;
+            dataSet[i] = MapBucket(MapData(key, value), null);
+            if(entriesCount > dataSet.length * increasingThreshold)
+                recalculateHashes();
+        }
+        else //Existing bucket
+        {
+            MapBucket* curr = &dataSet[i];
+            do
+            {
+                //Check if the key is the same as the other.
+                if(curr.data.key == key)
+                {
+                    curr.data.value = value;
+                    return this;
+                }
+                else if(curr.next != null)
+                    curr = curr.next;
+            }
+            while(curr.next != null);
+            curr.next = cast(MapBucket*)malloc(MapBucket.sizeof);
+            *curr.next = MapBucket(MapData(key, value), null);
+
+        }
+        return this;
+    }
+
+    auto opBinaryRight(string op, L)(const L lhs) const @nogc
+    if(op == "in")
+    {
+        if(dataSet.length == 0)
+            initialize();
+        uint i = getIndex(key);
+        if(dataSet[i] == MapBucket.init)
+            return null;
+        return &dataSet[i];
+    }
+
+    ~this() @nogc
+    {
+        if(countPtr !is null)
+        {
+            *countPtr = *countPtr - 1;
+            if(*countPtr == 0)
+            {
+                //Dispose
+                clear();
+                free(countPtr);
+            }
+            countPtr = null;
+        }
+    }
+
+}
+alias AArray = Map;
 
 struct RingBuffer(T, uint Length)
 {
