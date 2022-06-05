@@ -23,6 +23,9 @@
 	},
 	"configurations": [
 		{
+			"name": "default"
+		},
+		{
 			"name": "header",
 			"dflags": ["-H", "-Hdimport", "-op"]
 		}
