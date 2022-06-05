@@ -8,34 +8,34 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-import console.log;
-import console.console;
-import bind.external;
-import data.hipfs;
-import error.handler;
-import global.gamedef;
-import hipaudio.audio;
+import hip.console.log;
+import hip.console.console;
+import hip.bind.external;
+import hip.data.hipfs;
+import hip.error.handler;
+import hip.global.gamedef;
+import hip.hipaudio.audio;
 version(Android)
 {
-	import jni.helper.androidlog;
-	import jni.jni;
-	import jni.helper.jnicall;
+	import hip.jni.helper.androidlog;
+	import hip.jni.jni;
+	import hip.jni.helper.jnicall;
 	///Setups an Android Package for HipremeEngine
 	alias HipAndroid = javaGetPackage!("com.hipremeengine.app.HipremeEngine");
 }
 version(Windows)
 {
-	import hiprenderer.backend.d3d.d3drenderer;
+	import hip.hiprenderer.backend.d3d.d3drenderer;
 }
 version(dll)
 {
 	import core.runtime;
 }
-import hiprenderer.renderer;
-import view;
-import systems.game;
-import debugging.gui;
-import bind.interpreters;
+import hip.hiprenderer.renderer;
+import hip.view;
+import hip.systems.game;
+import hip.debugging.gui;
+import hip.bind.interpreters;
 /**
 * Compiling instructions:
 
@@ -107,7 +107,7 @@ static void initEngine(bool audio3D = false)
 	version(BindSDL_Static){}
 	else
 	{
-		import bind.dependencies;
+		import hip.bind.dependencies;
 		rawlog("Initializing SDL");
 		loadEngineDependencies();
 	}
@@ -118,7 +118,7 @@ enum float FRAME_TIME = 1000/60; //60 frames per second
 
 extern(C)int SDL_main()
 {
-	import data.ini;
+	import hip.data.ini;
 	initEngine(true);
 	if(isUsingInterpreter)
 		startInterpreter(interpreterEntry.intepreter);
@@ -146,10 +146,10 @@ extern(C)int SDL_main()
 	else
 		sys = new GameSystem(FRAME_TIME);
 
-	import event.handlers.inputmap;
+	import hip.event.handlers.inputmap;
 
 	//Initialize 2D context
-	import graphics.g2d;
+	import hip.graphics.g2d;
 	HipRenderer2D.initialize(interpreterEntry, true);
 	
 	if(isUsingInterpreter)
@@ -159,9 +159,9 @@ extern(C)int SDL_main()
 
 	//AudioSource sc = Audio.getSource(buf);
 	//Audio.setPitch(sc, 1);
-	// import debugging.runtime;
-	// import imgui.fonts.icons;
-	// import implementations.imgui.imgui_impl_opengl3;
+	// import hip.debugging.runtime;
+	// import hip.imgui.fonts.icons;
+	// import hip.implementations.imgui.imgui_impl_opengl3;
 	// DI.start(HipRenderer.window);
 	// ImFontConfig cfg = DI.getDefaultFontConfig("Default + Icons");
 	// ImFontAtlas_AddFontDefault(igGetIO().Fonts, &cfg);
@@ -191,7 +191,7 @@ extern(C)int SDL_main()
 	// DI.begin();
 	// static bool open = true;
 	// igShowDemoWindow(&open);
-	// import implementations.imgui.imgui_debug;
+	// import hip.implementations.imgui.imgui_debug;
 	// addDebug!(s);
 
 	// if(igButton("Viewport flag".ptr, ImVec2(0,0)))
@@ -221,7 +221,7 @@ static void destroyEngine()
 
 version(Android)
 {
-	import systems.input;
+	import hip.systems.input;
 	
 	extern(C) void Java_com_hipremeengine_app_HipremeEngine_HipremeInit(JNIEnv* env, jclass clazz)
 	{
@@ -234,7 +234,7 @@ version(Android)
 	extern(C) jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
 	{
 		int ret = HipremeMain();
-		import hiprenderer.viewport;
+		import hip.hiprenderer.viewport;
 		int[2] wsize = HipAndroid.javaCall!(int[2], "getWindowSize");
 		HipRenderer.setViewport(new Viewport(0, 0, wsize[0], wsize[1]));
 		return ret;
@@ -255,7 +255,7 @@ version(Android)
 }
 
 /**
-*	Initializes the D runtime, import external functions
+*	Initializes the D runtime, import hip.external functions
 *	and initializes GameSystem, as it will handle external API's
 *
 */
@@ -300,7 +300,7 @@ else
 ///Steps an engine frame
 export extern(C) bool HipremeUpdate()
 {
-	import util.time;
+	import hip.util.time;
 	import core.thread.osthread;
 	long initTime = HipTime.getCurrentTime();
 	// version(Windows) //For some reason, it seems that on Linux it is always 60 FPS
@@ -326,7 +326,7 @@ export extern(C) bool HipremeUpdate()
 */
 export extern(C) void HipremeRender()
 {
-	import bind.interpreters;
+	import hip.bind.interpreters;
 	HipRenderer.begin();
 	HipRenderer.clear(0,0,0,255);
 	sys.render();
@@ -345,16 +345,16 @@ export extern(C) void HipremeDestroy()
 
 export extern(C) void log(string log)
 {
-	import console.log;
+	import hip.console.log;
 	rawlog(log);
 }
 
-import math.api;
-import util.reflection;
+import hip.math.api;
+import hip.util.reflection;
 version(UWP)
 {
 	import core.sys.windows.dll;
 	mixin SimpleDllMain;
 }
 mixin ExportMathAPI;
-mixin ExportDFunctions!(hipaudio.audio);
+mixin ExportDFunctions!(hip.hipaudio.audio);
