@@ -6,7 +6,7 @@ version(Windows)
     enum defaultCaseSensitivity = false;
 else version(Darwin) 
     enum defaultCaseSensitivity = false;
-else version(Posix) 
+else// version(Posix) 
     enum defaultCaseSensitivity = true;
 
 version(Windows)
@@ -39,7 +39,7 @@ string baseName(string path)
     int lastSepIndex = -1;
     int preLastSepIndex = -1;
 
-    for(uint i = 0; i < path.length; i++)
+    foreach(i, v; path)
     {
         if(path[i] == pathSeparator)
         {
@@ -66,7 +66,7 @@ string extension(string pathOrFilename)
     auto ind = pathOrFilename.lastIndexOf(".");
     if(ind == -1)
         return "";
-    return pathOrFilename[ind+1..$];
+    return pathOrFilename[cast(uint)ind+1..$];
 }
 
 
@@ -78,7 +78,7 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
     bool isEqual = true;
     if(caseSensitive)
     {
-        for(ulong i = 0; i < base.length; i++)
+        foreach(i, v; base)
         {
             if(base[i] != path[i])
             {
@@ -91,7 +91,7 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
     }
     else
     {
-        for(ulong i = 0; i < base.length; i++)
+        foreach(i, v; base)
         {
             if(base[i].toLowerCase != path[i].toLowerCase)
             {
@@ -118,7 +118,7 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
 
     uint pathCount = 0;
         
-    for(ulong i = commonIndex; i < base.length; i++)
+    for(uint i = commonIndex; i < base.length; i++)
     {
         if(base[i] == pathSeparator)
         {

@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.math.vector;
+
 import core.math : sqrt, sin, cos;
 import core.simd;
 
@@ -265,6 +266,12 @@ public struct Vector(uint N, T)
                 data[i] = other[i];
             return this;
         }
+
+        ref T[N] opCast() const
+        {
+            return data;
+        }
+
 
         ref VectorN opAssign(in T[N] other) return
         {

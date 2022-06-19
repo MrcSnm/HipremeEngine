@@ -30,6 +30,7 @@ class HipTimer
         this.name = name;
         this.durationSeconds = durationSeconds;
         this.type = type;
+        assert(type == TimerType.oneShot || type == TimerType.progressive, "Invalid timer type");
         this.loops = loops;
         stop();
     }
@@ -70,7 +71,7 @@ class HipTimer
             this.deltaTime = dt;
             accumulator = dt+accumulator;
             if(accumulator>durationSeconds)accumulator = durationSeconds;
-            final switch(type)
+            switch(type)
             {
                 case TimerType.oneShot:
                     if(accumulator == durationSeconds)
@@ -101,6 +102,7 @@ class HipTimer
                         }
                     }
                     break;
+                default:break;
             }
         }
         return false;

@@ -11,6 +11,13 @@ Distributed under the CC BY-4.0 License.
 
 module hip.hipengine.api.input.button;
 
+version(HipInputAPI)
+    version = HasHipInput;
+else version(Have_hipreme_engine)
+    version = HasHipInput;
+
+version(HasHipInput):
+
 /** 
  * Handler for any kind of button
  */

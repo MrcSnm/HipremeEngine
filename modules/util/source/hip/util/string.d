@@ -303,7 +303,7 @@ struct StringBuilder
         return this;
     }
     ref auto opIndex(size_t index){return toString()[index];}
-    ulong length(){return builtLength;}
+    uint length(){return builtLength;}
     ~this(){strings.length = 0;}
 
     ///Interface for OutputRange
@@ -326,7 +326,7 @@ pure string replaceAll(string str, char what, string replaceWith = "")
 pure string replaceAll(string str, string what, string replaceWith = "")
 {
     string ret;
-    ulong z = 0;
+    uint z = 0;
     for(uint i = 0; i < str.length; i++)
     {
         while(z < what.length && str[i+z] == what[z])
@@ -342,10 +342,10 @@ pure string replaceAll(string str, string what, string replaceWith = "")
     return ret;
 }
 
-pure long indexOf(in string str,in string toFind, int startIndex = 0) nothrow @nogc
+pure int indexOf(in string str,in string toFind, int startIndex = 0) nothrow @nogc
 {
-    long z = 0;
-    for(long i = startIndex; i < str.length; i++)
+    int z = 0;
+    for(int i = startIndex; i < str.length; i++)
     {
         while(i+z < str.length && z < toFind.length && str[i+z] == toFind[z])
         	z++;
@@ -356,13 +356,13 @@ pure long indexOf(in string str,in string toFind, int startIndex = 0) nothrow @n
     return -1;
 }
 
-pure long indexOf(in string str, char ch, int startIndex = 0) nothrow @nogc
+pure int indexOf(in string str, char ch, int startIndex = 0) nothrow @nogc
 {
     char[1] temp = [ch];
     return indexOf(str,  cast(string)temp, startIndex);
 }
 
-pure long count(in string str, in string countWhat) nothrow @nogc @safe
+pure int count(in string str, in string countWhat) nothrow @nogc @safe
 {
     int ret = 0;
     int checker = 0;
@@ -385,11 +385,11 @@ pure long count(in string str, in string countWhat) nothrow @nogc @safe
 
 alias countUntil = indexOf;
 
-long lastIndexOf(in string str,in string toFind, long startIndex = -1) pure nothrow @nogc
+int lastIndexOf(in string str,in string toFind, int startIndex = -1) pure nothrow @nogc
 {
-    long z = 1;
+    int z = 1;
     if(startIndex == -1) startIndex = cast(int)(str.length)-1;
-    for(long i = startIndex; i >= 0; i--)
+    for(int i = startIndex; i >= 0; i--)
     {
         while(str[i-z+1] == toFind[$-z])
         {
@@ -397,7 +397,7 @@ long lastIndexOf(in string str,in string toFind, long startIndex = -1) pure noth
             if(z > toFind.length)break;
         }
         if(z-1 == toFind.length)
-            return i-toFind.length+1;
+            return i-cast(int)(toFind.length+1);
         z = 1;
     }
     return -1;
@@ -435,7 +435,7 @@ string toLowerCase(string str) pure nothrow @safe
 {
     string ret;
     ret.reserve(str.length);
-    for(ulong i = 0; i < str.length; i++)
+    for(uint i = 0; i < str.length; i++)
         ret~= str[i].toLowerCase;
     return ret;
 }
@@ -451,7 +451,7 @@ string toUpper(string str) pure nothrow @safe
 {
     string ret;
     ret.reserve(str.length);
-    for(ulong i = 0; i < str.length; i++)
+    for(uint i = 0; i < str.length; i++)
         ret~= str[i].toUpper;
     return ret;
 }
@@ -511,7 +511,7 @@ string[] pathSplliter(string str)
     string[] ret;
 
     string curr;
-    for(ulong i = 0; i < str.length; i++)
+    for(uint i = 0; i < str.length; i++)
         if(str[i] == '/' || str[i] == '\\')
         {
             ret~= curr;
@@ -527,8 +527,8 @@ string[] pathSplliter(string str)
 
 string baseName(string path) pure nothrow @safe @nogc
 {
-    ulong lastIndex = 0;
-    for(ulong i = 0; i < path.length; i++)
+    uint lastIndex = 0;
+    for(uint i = 0; i < path.length; i++)
         if(path[i] == '/' || path[i] == '\\')
             lastIndex = i+1;
 

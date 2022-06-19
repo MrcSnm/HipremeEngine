@@ -8,18 +8,9 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hip.data.hipfs;
+module hip.filesystem.hipfs;
 public import std.stdio : File;
-///Less dependencies
-enum
-{
-    /// Offset is relative to the beginning
-    SEEK_SET,
-    /// Offset is relative to the current position
-    SEEK_CUR,
-    /// Offset is relative to the end
-    SEEK_END
-}
+public import hip.hipengine.api.filesystem.hipfs;
 
 private pure bool validatePath(string initial, string toAppend)
 {
@@ -54,32 +45,6 @@ private pure bool validatePath(string initial, string toAppend)
     return true;
 }
 
-enum FileMode
-{
-    READ,
-    WRITE,
-    APPEND,
-    READ_WRITE,
-    READ_APPEND
-}
-
-
-interface IHipFileItf
-{
-    bool open(string path, FileMode mode);
-    int read(void* buffer, ulong count);
-    ///Whence is the same from stdio
-    int seek(long count, int whence);
-    ulong getSize();
-    void close();
-}
-interface IHipFileSystemInteraction
-{
-    bool read(string path, out void[] output);
-    bool write(string path, void[] data);
-    bool exists(string path);
-    bool remove(string path);
-}
 
 abstract class HipFile : IHipFileItf
 {

@@ -1,0 +1,23 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"buildOptions": [
+		"debugMode",
+		"debugInfo",
+		"debugInfoC"
+	],
+	"sourcePaths": ["source", "../../api/source/hip/hipengine/api/filesystem"],
+	"importPaths": ["source", "../../api/source"],
+	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"error": {"path": "../error", "version": "*"},
+		"util": {"path": "../util", "version": "*"}
+	},
+	"versions": [
+		"HipFileAPI"
+	],
+	"description": "HipremeEngine bind module",
+	"license": "proprietary",
+	"name": "filesystem"
+}

@@ -12,7 +12,7 @@ module hip.hiprenderer.viewport;
 import hip.math.vector;
 import hip.math.scaling;
 import hip.hiprenderer.renderer;
-import hip.hipengine.api.math.rect;
+import hip.math.rect;
 
 public class Viewport
 {

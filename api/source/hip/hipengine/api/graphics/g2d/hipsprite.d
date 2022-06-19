@@ -10,6 +10,9 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.hipengine.api.graphics.g2d.hipsprite;
+
+version(HipGraphicsAPI):
+
 public import hip.hipengine.api.graphics.color;
 
 interface IHipSprite

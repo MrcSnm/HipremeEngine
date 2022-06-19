@@ -3,10 +3,10 @@ version(Android):
 import hip.hipaudio.backend.opensles.source;
 import hip.hipaudio.backend.opensles.clip;
 import hip.hipaudio.audiosource;
-import hip.data.audio.audioconfig;
+import hip.audio_decoding.config;
 import hip.hipaudio.backend.sles;
 import hip.config.opts : HIP_OPENSLES_OPTIMAL, HIP_OPENSLES_FAST_MIXER;
-import hip.data.audio.audio;
+import hip.audio_decoding.audio;
 import hip.util.conv:to;
 import opensles.sles;
 import hip.error.handler;

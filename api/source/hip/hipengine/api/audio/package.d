@@ -1,5 +1,13 @@
 module hip.hipengine.api.audio;
 
+//Low weight shared data
+enum HipAudioType
+{
+    SFX,
+    MUSIC
+}
+
+version(HipAudioAPI):
 /**
 * Controls how the gain will falloff
 */
@@ -36,25 +44,9 @@ enum HipAudioImplementation
     XAUDIO2
 }
 
-
-enum HipAudioEncoding
-{
-    WAV,
-    MP3,
-    OGG,
-    MIDI, //Probably won't support
-    FLAC
-}
-enum HipAudioType
-{
-    SFX,
-    MUSIC
-}
-
-
 version(Script)
 {
-    public import HipAudio = hipengine.api.audio.audio; 
+    public import HipAudio = hip.hipengine.api.audio.audio; 
     alias HipAudioClip = HipAudio.IHipAudioClip;
     alias HipAudioSource = HipAudio.AHipAudioSource;
 }

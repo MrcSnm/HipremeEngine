@@ -1,4 +1,11 @@
 module hip.hipengine.api.input.inputmap;
+
+version(HipInputAPI)
+    version = HasHipInput;
+else version(Have_hipreme_engine)
+    version = HasHipInput;
+
+version(HasHipInput):
 public import hip.hipengine.api.input.gamepad;
 
 interface IHipInputMap

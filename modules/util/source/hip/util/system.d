@@ -14,17 +14,13 @@ import core.stdc.string;
 import hip.util.string:fromStringz;
 import hip.util.path:pathSeparator;
 
-version(Standalone){}
-else{public import hip.fswatch;}
-
 enum debugger = "asm {int 3;}";
 
 pure nothrow string sanitizePath(string path)
 {
-    string ret;
-    ret.reserve(path.length);
+    string ret = new string(path.length);
 
-    for(ulong i = 0; i < path.length; i++)
+    for(uint i = 0; i < path.length; i++)
     {
         version(Windows)
         {
@@ -105,7 +101,7 @@ string dynamicLibraryGetLibName(string libName)
 {
     version(Windows) return libName~".dll";
     else version(Posix) return "lib"~libName~".so";
-    else static assert(0, "Platform not supported");
+    else assert(0, "Platform not supported");
 }
 
 bool dynamicLibraryIsLibNameValid(string libName)
@@ -115,7 +111,7 @@ bool dynamicLibraryIsLibNameValid(string libName)
     else version(Posix)
         return libName[0..3] == "lib" && libName[$-3..$] == ".so";
     else
-        return true;
+        return false;
 }
 
 ///It will open the current executable if libName == null
@@ -138,6 +134,7 @@ void* dynamicLibraryLoad(string libName)
         else
             ret = dlopen((libName~"\0").ptr, RTLD_LAZY);
     }
+    else assert(0, "Platform not supported");
     return ret;
     // return Runtime.loadLibrary(libName);
 }
@@ -157,6 +154,7 @@ void* dynamicLibrarySymbolLink(void* dll, const (char)* symbolName)
         import core.sys.posix.dlfcn : dlsym;
         ret = dlsym(dll, symbolName);
     }
+    else assert(0, "Platform not supported");
     return ret;
 }
 
@@ -174,7 +172,7 @@ string dynamicLibraryError()
         import core.sys.posix.dlfcn;
         return cast(string)fromStringz(dlerror());
     }
-    else static assert(0, "Platform not supported");
+    else assert(0, "Platform not supported");
 }
 
 bool dynamicLibraryRelease(void* dll)
@@ -186,5 +184,5 @@ bool dynamicLibraryRelease(void* dll)
         import core.sys.posix.dlfcn;
         return dlclose(dll) == 0;
     }
-    else static assert(0, "Platform not supported");
+    else assert(0, "Platform not supported");
 }

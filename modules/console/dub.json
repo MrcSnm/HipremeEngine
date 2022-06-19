@@ -11,8 +11,8 @@
 	"dependencies": {
 		"debugging" : {"path": "../debugging"},
 		"config": {"path": "../config"},
-		"jni" : {"path": "../jni"},
-		"util" : {"path": "../util"}
+		"util" : {"path": "../util"},
+		"jni" : {"path": "../jni", "optional": true, "default": true}
 	},
 	"description": "HipremeEngine console module",
 	"license": "proprietary",

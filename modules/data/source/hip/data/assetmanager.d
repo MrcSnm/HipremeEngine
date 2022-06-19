@@ -9,12 +9,12 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.data.assetmanager;
-public import hip.data.image;
-public import hip.util.data_structures : Pair;
 import hip.util.system;
 import core.time:Duration, dur;
 import core.thread;
 
+public import hip.data.assets.image;
+public import hip.util.data_structures : Pair;
 
 class AssetLoaderThread : Thread
 {
@@ -42,7 +42,7 @@ class AssetLoaderThread : Thread
 }
 
 
-
+/**
 void* loadImageAsyncImpl(void* context)
 {
     string imagePath = *(cast(string*)context);
@@ -50,6 +50,7 @@ void* loadImageAsyncImpl(void* context)
     img.loadFromFile();
     return cast(void*)img;
 }
+**/
 
 private alias Callback(T) = void delegate(T obj);
 private alias AssetPair(T) = Pair!(T, Callback!T);
@@ -61,6 +62,8 @@ class HipAssetManager
     static float currentTime;
     static immutable Duration timeout = dur!"nsecs"(-1);
 
+    static void checkLoad(){}
+    /**
     protected static AssetPair!Image[string] images;
 
     static Image getImage(string imagePath)
@@ -124,4 +127,6 @@ class HipAssetManager
             // );
         }
     }
+
+    **/
 }

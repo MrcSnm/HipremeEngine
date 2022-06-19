@@ -1,4 +1,7 @@
 module hip.hipengine.api.audio.audioclip;
+
+version(HipAudioAPI):
+public import hip.hipengine.api.audio;
 public import hip.hipengine.api.data.audio;
 
 interface IHipAudioClip

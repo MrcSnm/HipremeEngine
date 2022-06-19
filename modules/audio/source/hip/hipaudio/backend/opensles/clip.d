@@ -2,7 +2,7 @@ module hip.hipaudio.backend.opensles.clip;
 version(Android):
 import hip.hipaudio.backend.sles;
 import hip.hipaudio.audioclip;
-import hip.data.audio.audio;
+import hip.audio_decoding.audio;
 
 class HipOpenSLESAudioClip : HipAudioClip
 {

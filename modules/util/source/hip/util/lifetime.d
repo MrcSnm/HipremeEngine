@@ -44,6 +44,7 @@ enum HipExportedTargets
 }
 
 
+
 /**
 *   That may be changed to an associative array in case of slowdowns
 */
@@ -51,7 +52,7 @@ private __gshared Object[][HipExportedTargets.count] _hipExportedSharedUserData;
 
 export extern(C) void hipDestroy(Object reference, int target = HipExportedTargets.nativeScript_D)
 {
-    for(ulong i = 0; i < _hipExportedSharedUserData.length; i++)
+    for(uint i = 0; i < _hipExportedSharedUserData.length; i++)
     {
         if(_hipExportedSharedUserData[target][i] == reference)
         {
@@ -63,7 +64,7 @@ export extern(C) void hipDestroy(Object reference, int target = HipExportedTarge
 
 Object hipSaveRef(Object reference, int target = HipExportedTargets.nativeScript_D)
 {
-    for(ulong i = 0; i < _hipExportedSharedUserData.length; i++)
+    for(uint i = 0; i < _hipExportedSharedUserData.length; i++)
     {
         if(_hipExportedSharedUserData[target][i] is null)
         {

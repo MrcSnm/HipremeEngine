@@ -1,11 +1,11 @@
 module hip.util.conv;
 import hip.util.string;
 import std.typecons;
-import std.math.traits:isNaN, isInfinity;
 import std.traits:isArray;
 
 string toString(T)(T[] arr) pure nothrow @safe
 {
+    
     string ret = "[";
     for(int i = 0; i < arr.length; i++)
     {
@@ -278,8 +278,8 @@ if(isOutputRange!(Sink, char))
 
 export string toString(float f) pure nothrow @safe 
 {
-    if(f.isNaN) return "nan";
-    if(f.isInfinity) return "inf";
+    if(f != f) return "nan";
+    if(f == float.infinity) return "inf";
 
     bool isNegative = f < 0;
     if(isNegative)
@@ -299,14 +299,14 @@ export string toString(float f) pure nothrow @safe
 
 void toStringRange(Sink)(auto ref Sink sink, float f)
 {
-    if(f.isNaN)
+    if(f != f) //nan
     {
         static if(__traits(hasMember, sink, "preAllocate"))
             sink.preAllocate("nan".length);
         put(sink, "nan");
         return;
     } 
-    if(f.isInfinity)
+    if(f == float.infinity)
     {
         static if(__traits(hasMember, sink, "preAllocate"))
             sink.preAllocate("inf".length);

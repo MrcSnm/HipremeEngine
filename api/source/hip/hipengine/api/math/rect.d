@@ -11,6 +11,8 @@ Distributed under the CC BY-4.0 License.
 
 module hip.hipengine.api.math.rect;
 
+version(HipMathAPI):
+
 struct Size
 {
     uint w, h;

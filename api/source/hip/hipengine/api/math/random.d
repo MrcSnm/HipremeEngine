@@ -11,6 +11,7 @@ Distributed under the CC BY-4.0 License.
 
 module hip.hipengine.api.math.random;
 
+version(HipMathAPI):
 version(Have_hipreme_engine)
 {
 	public import hip.math.random;

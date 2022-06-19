@@ -12,7 +12,7 @@ module hip.hipaudio.audio;
 
 public import hip.hipaudio.audioclip;
 public import hip.hipaudio.audiosource;
-public import hip.data.audio.audioconfig;
+public import hip.audio_decoding.config;
 public import hip.hipengine.api.audio;
 
 //Backends
@@ -22,7 +22,7 @@ version(Android){import hip.hipaudio.backend.opensles.player;}
 version(Windows){import hip.hipaudio.backend.xaudio.player;}
 
 
-import hip.data.audio.audio;
+import hip.audio_decoding.audio;
 import hip.math.utils:getClosestMultiple;
 import hip.util.reflection;
 import hip.error.handler;

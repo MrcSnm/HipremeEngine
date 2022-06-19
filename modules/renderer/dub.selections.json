@@ -18,7 +18,6 @@
 		"error": {"path":"../error"},
 		"fswatch": "0.6.0",
 		"gles": {"path":"../../dependencies/gles"},
-		"hipengine_api": {"path":"../../api"},
 		"intel-intrinsics": "1.6.2",
 		"jni": {"path":"../jni"},
 		"math": {"path":"../math"},

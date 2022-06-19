@@ -10,7 +10,13 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.hipengine.api.input;
-public import hip.hipengine.api.math.vector;
+
+version(HipInputAPI)
+    version = HasHipInput;
+else version(Have_hipreme_engine)
+    version = HasHipInput;
+
+version(HasHipInput):
 public import hip.hipengine.api.input.mouse;
 public import hip.hipengine.api.input.gamepad;
 public import hip.hipengine.api.input.inputmap;
@@ -74,13 +80,13 @@ else
         bool function(HipMouseButton btn = HipMouseButton.left, uint id = 0) isMouseButtonPressed;
         bool function(HipMouseButton btn = HipMouseButton.left, uint id = 0) isMouseButtonJustPressed;
         bool function(HipMouseButton btn = HipMouseButton.left, uint id = 0) isMouseButtonJustReleased;
-        immutable(Vector2*) function(uint id = 0) getTouchPosition;
-        Vector2 function(uint id=0) getTouchDeltaPosition;
-        Vector3 function(uint id=0) getScroll;
+        immutable(int[2]*) function(uint id = 0) getTouchPosition;
+        int[2] function(uint id=0) getTouchDeltaPosition;
+        float[3] function(uint id=0) getScroll;
         //Gamepad Functions
         ubyte function() getGamepadCount;
         AHipGamepad function(ubyte id = 0) getGamepad;
-        Vector3 function(HipGamepadAnalogs analog, ubyte id = 0) getAnalog;
+        float[3] function(HipGamepadAnalogs analog, ubyte id = 0) getAnalog;
         bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonPressed;
         bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustPressed;
         bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustReleased;

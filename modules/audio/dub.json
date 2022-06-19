@@ -11,15 +11,13 @@
 	"dependencies": {
 		"bindbc-openal": "~>1.0.0",
 		"bindbc-sdl": "~>1.0.1",
-		"data": {"path": "../data"},
 		"imgui": {"path": "../imgui"},
 		"math": {"path": "../math"},
+		"filesystem": {"path": "../filesystem"},
+		"audio_decoding": {"path": "../audio_decoding"},
 		"sdl_sound": {"path": "../../dependencies/sdl_sound"},
 		"sles": {"path": "../../dependencies/sles"},
 		"directx-d":{"path" : "../../dependencies/directx-d"}
-	},
-	"subConfigurations": {
-		"hipengine_api":"hipengine"
 	},
 	"description": "HipremeEngine audio module",
 	"license": "proprietary",
@@ -28,6 +26,8 @@
 		"SDL_208",
 		"BindSDL_Mixer",
 		"XAUDIO_2_9",
+		"HipAudioAPI",
+		"HipAudioDecoderAPI",
 		"AL_EFX"
 	]
 }

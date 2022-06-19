@@ -10,9 +10,9 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hipaudio.audioclip;
 import hip.util.path : baseName;
-import hip.data.hipfs;
+import hip.filesystem.hipfs;
 import hip.error.handler;
-import hip.data.audio.audio;
+import hip.audio_decoding.audio;
 import hip.hipaudio.audio;
 import hip.hipaudio.audiosource;
 public import hip.hipengine.api.audio.audioclip;
@@ -202,7 +202,7 @@ public abstract class HipAudioClip : IHipAudioClip
     public float getDuration(){return decoder.getDuration();}
     public final float getDecodedDuration()
     {
-        import hip.data.audio.audioconfig;
+        import hip.audio_decoding.config;
         AudioConfig cfg = decoder.getAudioConfig();
         import hip.console.log;
         rawlog(cfg.getBitDepth, cfg.channels, cfg.sampleRate);

@@ -9,9 +9,11 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 
-module hip.data.audio.audioconfig;
-import bindbc.sdl.bind.sdlaudio;
+module hip.audio_decoding.config;
+
+version(HipSDLSound):
 import hip.util.reflection;
+import bindbc.sdl.bind.sdlaudio;
 import sdl_sound;
 public import hip.hipengine.api.data.audio;
 

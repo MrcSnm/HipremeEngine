@@ -12,7 +12,7 @@ module hip.hiprenderer.backend.gl.gltexture;
 import hip.hiprenderer.texture;
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
-import hip.data.image;
+import hip.image;
 
 class Hip_GL3_Texture : ITexture
 {

@@ -1,0 +1,41 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"buildOptions": [
+		"debugMode",
+		"debugInfo",
+		"debugInfoC"
+	],
+	"sourcePaths": [
+		"source/",
+		"../../api/source/hip/hipengine/api/data"
+	],
+	"importPaths": [
+		"source",
+		"../../api/source/"
+	],
+	"targetType": "library",
+	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"audio-formats": "~>1.3.4",
+		"bindbc-sdl": "~>1.0.1",
+		"sdl_sound": {"path": "../../dependencies/sdl_sound", "optional": true, "default": true}
+	},
+	"configurations": [
+		{
+			"name": "default"
+		},
+		{
+			"name": "header",
+			"dflags": ["-H", "-Hdimport", "-op"]
+		}
+	],
+	"description": "HipremeEngine data module",
+	"license": "proprietary",
+	"name": "audio_decoding",
+	"versions": [
+		"BindSDL_Mixer",
+		"HipAudioDecoderAPI"
+	]
+}

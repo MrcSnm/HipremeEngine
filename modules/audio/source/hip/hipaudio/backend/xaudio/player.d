@@ -4,7 +4,7 @@ version(Windows):
 import hip.util.system:getWindowsErrorMessage;
 import hip.hipaudio.backend.xaudio.source;
 import hip.hipaudio.backend.xaudio.clip;
-import hip.data.audio.audio;
+import hip.audio_decoding.audio;
 import hip.error.handler;
 import hip.hipaudio.audio;
 import core.sys.windows.windef;
