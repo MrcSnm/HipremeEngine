@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.hipengine.internal;
+
 import hip.hipengine;
 
 version(Script){__gshared void* _dll;}

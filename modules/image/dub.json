@@ -1,0 +1,35 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"buildOptions": [
+		"debugMode",
+		"debugInfo",
+		"debugInfoC"
+	],
+	"targetType": "library",
+	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"arsd-official:image_files": "~>10.5.0",
+		"filesystem": {"path": "../filesystem", "version": "*"},
+		"error": {"path": "../error", "version": "*"},
+		"util": {"path": "../util", "version": "*"},
+		"bindbc-sdl": "~>1.0.1"
+	},
+	"configurations": [
+		{
+			"name": "default"
+		},
+		{
+			"name": "header",
+			"dflags": ["-H", "-Hdimport", "-op"]
+		}
+	],
+	"description": "HipremeEngine data module",
+	"license": "proprietary",
+	"name": "image",
+	"versions": [
+		"BindSDL_Image",
+		"HipImageAPI"
+	]
+}

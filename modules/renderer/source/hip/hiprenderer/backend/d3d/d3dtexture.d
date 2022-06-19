@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.hiprenderer.backend.d3d.d3dtexture;
 version(Windows):
 import hip.hiprenderer.backend.d3d.d3drenderer;
-import hip.data.image;
+import hip.image;
 import directx.d3d11;
 import hip.error.handler;
 import hip.hiprenderer.texture;

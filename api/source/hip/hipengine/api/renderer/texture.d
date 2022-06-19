@@ -10,6 +10,8 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.hipengine.api.renderer.texture;
+
+version(HipRendererAPI):
 public import hip.hipengine.api.data.image;
 public import hip.hipengine.api.graphics.color;
 

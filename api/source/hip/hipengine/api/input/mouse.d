@@ -10,7 +10,13 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.hipengine.api.input.mouse;
-public import hip.hipengine.api.math.vector;
+
+version(HipInputAPI)
+    version = HasHipInput;
+else version(Have_hipreme_engine)
+    version = HasHipInput;
+
+version(HasHipInput):
 
 enum HipMouseButton : ubyte
 {
@@ -23,10 +29,10 @@ enum HipMouseButton : ubyte
 }
 interface IHipMouse
 {
-    Vector2 getPosition(uint id = 0);
-    Vector2 getDeltaPosition(uint id = 0);
+    int[2] getPosition(uint id = 0);
+    int[2] getDeltaPosition(uint id = 0);
     bool isPressed(HipMouseButton btn = HipMouseButton.left);
     bool isJustPressed(HipMouseButton btn = HipMouseButton.left);
     bool isJustReleased(HipMouseButton btn = HipMouseButton.left);
-    Vector3 getScroll();
+    float[3] getScroll();
 }

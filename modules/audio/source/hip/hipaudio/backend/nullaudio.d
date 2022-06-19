@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.hipaudio.backend.nullaudio;
 import hip.hipaudio.audio;
 import hip.hipaudio.audiosource;
-import hip.data.audio.audio;
+import hip.audio_decoding.audio;
 
 
 public class HipNullAudioClip : HipAudioClip

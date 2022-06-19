@@ -1,5 +1,5 @@
 module hip.hipaudio.decoder;
-import hip.data.audio.audio;
+import hip.hipengine.api.audio.audio;
 import core.time;
 
 alias HipDecodingResult = ubyte[];

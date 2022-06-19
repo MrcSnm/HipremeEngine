@@ -10,12 +10,14 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.data.asset;
 
+import hip.hipengine.api.data.commons;
+
 /** Controls the asset ids for every game asset
 *   0 is reserved for errors.
 */
 private __gshared uint currentAssetID = 0;
 
-abstract class HipAsset
+abstract class HipAsset : ILoadable
 {
     /** Use it to insert into an asset pool, alias*/
     string name;
@@ -32,10 +34,6 @@ abstract class HipAsset
         assetID = ++currentAssetID;
     }
 
-    /** Should return if the load was successful */
-    abstract bool load();
-    /** Should return if the asset is ready for use*/
-    abstract bool isReady();
     /**
     * Action for when the asset finishes loading
     * Proabably be executed on the main thread

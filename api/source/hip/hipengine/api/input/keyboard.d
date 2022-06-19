@@ -11,7 +11,12 @@ Distributed under the CC BY-4.0 License.
 
 module hip.hipengine.api.input.keyboard;
 
+version(HipInputAPI)
+    version = HasHipInput;
+else version(Have_hipreme_engine)
+    version = HasHipInput;
 
+version(HasHipInput):
 interface IHipKeyboard
 {
     bool isKeyPressed(char key);

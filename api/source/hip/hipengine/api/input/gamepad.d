@@ -10,6 +10,14 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.hipengine.api.input.gamepad;
+
+version(HipInputAPI)
+    version = HasHipInput;
+else version(Have_hipreme_engine)
+    version = HasHipInput;
+
+version(HasHipInput):
+
 public import hip.hipengine.api.math.vector;
 public import hip.hipengine.api.input.button;
 
@@ -103,7 +111,7 @@ interface IHipGamepad
     void poll(float deltaTime);
 
     /** Returns a Vector3 containing the current state of the analog */
-    Vector3 getAnalogState(HipGamepadAnalogs analog = HipGamepadAnalogs.leftStick);
+    float[3] getAnalogState(HipGamepadAnalogs analog = HipGamepadAnalogs.leftStick);
     /** This will set a deadzone for making gamepad doesn't issue any kind of event until the threshold*/
     void setDeadzone(float threshold = 0.2);
 

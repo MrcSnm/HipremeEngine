@@ -1,8 +1,8 @@
-module hip.data.audio.audio;
-import hip.data.audio.audioconfig;
-import sdl_sound;
-
+module hip.audio_decoding.audio;
+import hip.audio_decoding.config;
+public import hip.hipengine.api.audio;
 public import hip.hipengine.api.data.audio;
+
 
 
 private char* getNameFromEncoding(HipAudioEncoding encoding)
@@ -100,8 +100,9 @@ version(HipSDLMixer) class HipSDL_MixerDecoder : IHipAudioDecoder
 /**
 *   SDL_Sound decoder does suport resampling too. So, it won't be needed to implement
 */
-class HipSDL_SoundDecoder : IHipAudioDecoder
+version(HipSDLSound) class HipSDL_SoundDecoder : IHipAudioDecoder
 {
+    import sdl_sound;
     Sound_Sample* sample;
     HipAudioEncoding selectedEncoding;
     uint chunkSize;
@@ -175,7 +176,7 @@ class HipSDL_SoundDecoder : IHipAudioDecoder
     }
     float getDuration()
     {
-        import hip.data.audio.format_utils;
+        import hip.audio_decoding.format_utils;
         if(duration != 0)
             return duration;
         if(sample != null)

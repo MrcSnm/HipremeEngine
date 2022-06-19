@@ -9,16 +9,16 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.util.file;
-import std.stdio;
 import hip.util.conv:to;
 import hip.util.array:join, array;
-import std.file;
 import hip.util.system;
 import hip.util.path;
 import hip.util.string;
 
-string getFileContent(string path, bool noCarriageReturn = true)
+
+version(HipFileAPI) string getFileContent(string path, bool noCarriageReturn = true)
 {
+    import std.file;
     path = sanitizePath(path);
     if(!exists(path))
         return "";
@@ -48,26 +48,31 @@ string stripLineBreaks(string content)
 
 
 
-void fileTruncate(File file, long offset) 
+version(HipFileAPI)
 {
-    version (Windows) 
+    import std.stdio:File;
+    import std.file;
+    void fileTruncate(File file, long offset) 
     {
-        import hip.util.windows;
-        file.seek(offset);
-        if(!SetEndOfFile(file.windowsHandle()))
-            throw new FileException(file.name, "SetEndOfFile error");
-    }
+        version (Windows) 
+        {
+            import hip.util.windows;
+            file.seek(offset);
+            if(!SetEndOfFile(file.windowsHandle()))
+                throw new FileException(file.name, "SetEndOfFile error");
+        }
 
-    version (Posix) 
-    {
-        import core.sys.posix.unistd: ftruncate;
-        int res = ftruncate(file.fileno(), offset);
-        if(res != 0)
-            throw new FileException(file.name, "ftruncate error with code "~to!string(res));
+        version (Posix) 
+        {
+            import core.sys.posix.unistd: ftruncate;
+            int res = ftruncate(file.fileno(), offset);
+            if(res != 0)
+                throw new FileException(file.name, "ftruncate error with code "~to!string(res));
+        }
     }
 }
 
-class FileProgression
+version(HipFileAPI) class FileProgression
 {
     protected ulong progress;
     protected uint stepSize;

@@ -8,14 +8,8 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hip.data.image;
-import hip.data.asset;
-import bindbc.sdl.bind.sdlsurface;
-import bindbc.sdl.bind.sdlrwops;
-import bindbc.sdl.bind.sdlpixels;
-import bindbc.sdl.image;
+module hip.image;
 public import hip.hipengine.api.data.image;
-
 import arsd.image;
 
 
@@ -24,8 +18,14 @@ IHipJPEGDecoder jpeg;
 IHipPNGDecoder png;
 IHipWebPDecoder webP;
 
+
+version(HipSDLImage)
 final class HipSDLImageDecoder : IHipAnyImageDecoder
 {
+    import bindbc.sdl.bind.sdlsurface;
+    import bindbc.sdl.bind.sdlrwops;
+    import bindbc.sdl.bind.sdlpixels;
+    import bindbc.sdl.image;
     this()
     {
         bmp = this; jpeg = this; png = this; webP = this;
@@ -126,12 +126,8 @@ final class HipARSDImageDecoder : IHipAnyImageDecoder
 ///Use that alias for supporting more platforms
 alias HipPlatformImageDecoder = HipARSDImageDecoder;
 
-/**
-*   This class represents pixel data on RAM (CPU Powered)
-*   this is useful for loading images on another thread and then
-*   sending it to the GPU
-*/
-public class Image : HipAsset, IImage
+
+class Image : IImage
 {
     protected shared bool _ready;
     IHipImageDecoder decoder;
@@ -140,12 +136,13 @@ public class Image : HipAsset, IImage
     ubyte bytesPerPixel;
     ushort bitsPerPixel;
     void* pixels;
+    string name;
 
     protected void* convertedPixels;
 
     this(in string path)
     {
-        super("Image_"~path);
+        name = "Image_"~path;
         initialize(path);
     }
     private void initialize(in string path)
@@ -207,7 +204,7 @@ public class Image : HipAsset, IImage
 
     bool loadFromFile()
     {
-        import hip.data.hipfs;
+        import hip.filesystem.hipfs;
         ubyte[] data_;
         HipFS.read(imagePath, data_);
         return loadFromMemory(data_);
@@ -237,7 +234,7 @@ public class Image : HipAsset, IImage
             convertedPixels = null;
         }
     }
-    override void onFinishLoading(){}
+    void onFinishLoading(){}
     alias w = width;
     alias h = height;
 }

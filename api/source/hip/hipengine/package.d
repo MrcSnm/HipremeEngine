@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hipengine;
 
+
 /**
 * For building the API some rules must be followed:
 *
@@ -45,38 +46,30 @@ public import hip.hipengine.api.graphics.g2d.renderer2d;
 public import hip.hipengine.api.view;
 
 
-// version(HipremeEngineDef)
-// {
-// 	public import hipengine.api.math;
-// 	public import hipengine.api.audio;
-// 	// public import math.vector;
-	
-// 	//Input
-// 	public import HipInput = hipengine.api.input;
-// 	alias initInput = HipInput.initInput;
+//Audio
+public import hip.hipengine.api.audio;
 
-// 	import hipengine.internal;
-// 	public import hipengine.internal:initializeHip;
-// }
-// else
-// {
-	//Audio
-	public import hip.hipengine.api.audio;
+//Math
+public import hip.hipengine.api.math;
 
-	//Math
-	public import hip.hipengine.api.math;
+//Input
 
-	//Input
+version(Have_hipreme_engine)
+	version = HasInputAPI;
+else version(HipInputAPI)
+	version = HasInputAPI;
+
+version(HasInputAPI)
+{
 	public import HipInput = hip.hipengine.api.input;
-	alias initInput = HipInput.initInput;
 	alias IHipInputMap = HipInput.IHipInputMap;
+}
 
-	version(Have_hipreme_engine) //Aliased import fix
-		public import hip.event.handlers.inputmap;
+version(Have_hipreme_engine) //Aliased import fix
+	public import hip.event.handlers.inputmap;
 
-	import hip.hipengine.internal;
-	public import hip.hipengine.internal:initializeHip;
-// }
+import hip.hipengine.internal;
+public import hip.hipengine.internal:initializeHip;
 
 ///Most important functions here
 version(Script)
@@ -105,7 +98,7 @@ mixin template HipEngineMain(alias StartScene)
 			import core.runtime;
 			rt_init();
 			initializeHip();
-			initInput();
+			HipInput.initInput();
 			initMath();
 			initConsole();
 			initG2D();

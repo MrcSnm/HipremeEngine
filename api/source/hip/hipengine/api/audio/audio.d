@@ -1,9 +1,8 @@
 module hip.hipengine.api.audio.audio;
 
+version(HipAudioAPI):
+
 public import hip.hipengine.api.audio.audiosource;
-
-
-
 version(Script)
 {
     extern(System)

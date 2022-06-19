@@ -2,7 +2,7 @@ module hip.hipaudio.backend.sdl.clip;
 
 version(HipSDLMixer):
 import hip.hipaudio.audioclip;
-import hip.data.audio.audio;
+import hip.audio_decoding.audio;
 
 class HipSDL_MixerAudioClip : HipAudioClip
 {

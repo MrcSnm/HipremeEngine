@@ -11,6 +11,8 @@ Distributed under the CC BY-4.0 License.
 
 module hip.hipengine.api.data.image;
 
+version(HipImageAPI):
+
 public interface IHipImageDecoder
 {
     ///Use that for decoding from memory, returns wether decode was successful

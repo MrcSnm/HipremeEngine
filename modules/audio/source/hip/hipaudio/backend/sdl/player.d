@@ -37,9 +37,9 @@ import hip.hipaudio.backend.sdl.clip;
 import hip.hipaudio.audiosource;
 import hip.error.handler;
 import hip.console.log;
-import hip.data.audio.audio;
+import hip.audio_decoding.audio;
 import bindbc.sdl.mixer;
-import hip.data.audio.audioconfig;
+import hip.audio_decoding.config;
 
 class HipSDLAudioPlayer : IHipAudioPlayer
 {

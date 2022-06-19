@@ -9,10 +9,10 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hipaudio.backend.openal.clip;
-import hip.data.audio.audio;
+import hip.audio_decoding.audio;
 import hip.hipaudio.audio;
 import hip.hipaudio.audiosource;
-import hip.data.audio.audioconfig;
+import hip.audio_decoding.config;
 import hip.hipaudio.backend.openal.player;
 import bindbc.openal;
 

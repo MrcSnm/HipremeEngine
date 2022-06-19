@@ -1,6 +1,16 @@
 module hip.hipengine.api.data.audio;
 
-public import hip.hipengine.api.audio;
+version(HipAudioDecoderAPI):
+import hip.hipengine.api.audio;
+
+enum HipAudioEncoding
+{
+    WAV,
+    MP3,
+    OGG,
+    MIDI, //Probably won't support
+    FLAC
+}
 
 HipAudioEncoding getEncodingFromName(string name)
 {

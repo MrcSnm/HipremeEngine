@@ -1,11 +1,11 @@
 module hip.hipaudio.backend.openal.player;
 import hip.hipaudio.backend.openal.clip;
-import hip.data.audio.audioconfig;
+import hip.audio_decoding.config;
 import hip.hipaudio.backend.openal.source;
 import hip.hipaudio.audio;
-import hip.data.audio.audioconfig;
+import hip.audio_decoding.config;
 import hip.error.handler;
-import hip.data.audio.audio;
+import hip.audio_decoding.audio;
 import hip.math.vector;
 import bindbc.openal;
 
