@@ -9,6 +9,8 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.data.assetmanager;
+
+version(HipAssetAPI):
 import hip.util.system;
 import core.time:Duration, dur;
 import core.thread;

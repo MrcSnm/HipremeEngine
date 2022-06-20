@@ -1,4 +1,7 @@
 module gles.gl32;
+
+version(GLES32):
+
 import core.stdc.config;
 
 extern (C):

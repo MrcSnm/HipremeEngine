@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.systems.hotload;
 import std.file : copy;
-import hip.data.hipfs;
+import hip.filesystem.hipfs;
 import hip.util.system;
 import hip.util.path;
 

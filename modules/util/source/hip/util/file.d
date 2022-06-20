@@ -16,7 +16,7 @@ import hip.util.path;
 import hip.util.string;
 
 
-version(HipFileAPI) string getFileContent(string path, bool noCarriageReturn = true)
+version(HipDStdFile) string getFileContent(string path, bool noCarriageReturn = true)
 {
     import std.file;
     path = sanitizePath(path);
@@ -48,7 +48,7 @@ string stripLineBreaks(string content)
 
 
 
-version(HipFileAPI)
+version(HipDStdFile)
 {
     import std.stdio:File;
     import std.file;
@@ -72,7 +72,7 @@ version(HipFileAPI)
     }
 }
 
-version(HipFileAPI) class FileProgression
+version(HipDStdFile) class FileProgression
 {
     protected ulong progress;
     protected uint stepSize;

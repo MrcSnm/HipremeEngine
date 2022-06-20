@@ -17,22 +17,18 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"bindbc-opengl": "~>1.0.0",
 		"windowing" : {"path" : "../windowing"},
-		"directx-d": {"path": "../../dependencies/directx-d"},
-		"gles" : {"path": "../../dependencies/gles"},
+		"bindbc-opengl": {"version": "~>1.0.0", "optional": true},
+		"directx-d": {"path": "../../dependencies/directx-d", "optional": true},
+		"gles" : {"path": "../../dependencies/gles", "optional": true},
 		"data" : {"path": "../data"},
 		"image" : {"path": "../image"},
-		"bind" : {"path": "../bind"},
+		"bind" : {"path": "../bind", "optional": true},
 		"config": {"path": "../config"},
 		"error": {"path": "../error"},
 		"math": {"path": "../math"}
 	},
 	"versions": [
-		"SDL_208",
-		"BindSDL_Mixer",
-		"BindSDL_TTF",
-		"BindSDL_Image",
 		"GL_45",
 		"GL_ARB",
 		"HipRendererAPI"

@@ -16,7 +16,7 @@ class UwpTestScene : Scene
 {
     this()
     {
-        import hip.data.hipfs;
+        import hip.filesystem.hipfs;
         string strData;
 
         HipFS.readText("assets/graphics/sprite.png", strData);

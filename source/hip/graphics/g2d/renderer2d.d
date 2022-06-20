@@ -6,6 +6,7 @@ import hip.hiprenderer;
 import hip.bind.interpreters;
 public import hip.hipengine.api.graphics.color;
 public import hip.hipengine.api.graphics.g2d.hipsprite;
+public import hip.hipengine.api.math;
 public import hip.graphics.g2d.sprite;
 
 private __gshared HipSpriteBatch spBatch;

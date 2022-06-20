@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 import hip.console.log;
 import hip.console.console;
 import hip.bind.external;
-import hip.data.hipfs;
+import hip.filesystem.hipfs;
 import hip.error.handler;
 import hip.global.gamedef;
 import hip.hipaudio.audio;
@@ -119,6 +119,7 @@ enum float FRAME_TIME = 1000/60; //60 frames per second
 extern(C)int SDL_main()
 {
 	import hip.data.ini;
+	Console.initialize();
 	initEngine(true);
 	if(isUsingInterpreter)
 		startInterpreter(interpreterEntry.intepreter);
@@ -136,6 +137,8 @@ extern(C)int SDL_main()
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
 		else version(Android)
 		{
+			version(Have_gles){}
+			else{static assert(false, "Android build requires GLES on its dependencies.");}
 			HipRenderer.initExternal(HipRendererType.GL3);
 		}
 		else static assert(false, "No renderer for this platform");
@@ -356,5 +359,6 @@ version(UWP)
 	import core.sys.windows.dll;
 	mixin SimpleDllMain;
 }
+
 mixin ExportMathAPI;
 mixin ExportDFunctions!(hip.hipaudio.audio);

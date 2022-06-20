@@ -13,7 +13,7 @@ import hip.util.file;
 import hip.util.conv:to;
 import hip.util.string;
 import std.file;
-import hip.data.hipfs;
+import hip.filesystem.hipfs;
 import hip.hiprenderer.texture;
 import hip.math.rect;
 

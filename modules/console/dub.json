@@ -12,7 +12,7 @@
 		"debugging" : {"path": "../debugging"},
 		"config": {"path": "../config"},
 		"util" : {"path": "../util"},
-		"jni" : {"path": "../jni", "optional": true, "default": true}
+		"jni" : {"path": "../jni", "optional": true}
 	},
 	"description": "HipremeEngine console module",
 	"license": "proprietary",
