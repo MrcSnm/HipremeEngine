@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 
 module hip.view.paralleltestscene;
 import hip.hiprenderer;
-import hip.data.image;
+import hip.image;
 import hip.graphics.g2d;
 import hip.data.assetpacker;
 import hip.data.assetmanager;
@@ -34,7 +34,7 @@ class ParallelTestScene : Scene
     }
     override void render()
     {
-        HipAssetManager.checkLoad();
+        // HipAssetManager.checkLoad();
         batch.begin();
         if(spr.texture.texture.img !is null)
         {

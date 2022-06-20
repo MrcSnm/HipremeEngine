@@ -25,7 +25,7 @@ class SpriteTestScene : Scene
     {
         import hip.console.log;
         batch = new HipSpriteBatch();
-        import hip.data.hipfs;
+        import hip.filesystem.hipfs;
         string output;
 
 

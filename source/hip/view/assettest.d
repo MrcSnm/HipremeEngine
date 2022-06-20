@@ -1,7 +1,7 @@
 module hip.view.assettest;
 import hip.util.data_structures;
 import hip.view.scene;
-import hip.data.image;
+import hip.image;
 
 
 /**

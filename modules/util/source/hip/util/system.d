@@ -117,7 +117,6 @@ bool dynamicLibraryIsLibNameValid(string libName)
 ///It will open the current executable if libName == null
 void* dynamicLibraryLoad(string libName)
 {
-    import core.runtime;
     void* ret;
     version(Windows)
     {

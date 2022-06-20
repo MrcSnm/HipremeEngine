@@ -19,7 +19,6 @@ import hip.windowing.window;
 import hip.math.rect;
 import hip.error.handler;
 import hip.console.log;
-import core.stdc.stdlib:exit;
 
 public import hip.hiprenderer.backend.gl.glrenderer;
 
@@ -298,6 +297,7 @@ class HipRenderer
 
     public static void exitOnError(string file = __FILE__, int line = __LINE__)
     {
+        import core.stdc.stdlib:exit;
         string err;
         if(hasErrorOccurred(err, file, line))
         {

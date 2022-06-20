@@ -1,7 +1,7 @@
 module hip.event.handlers.inputmap;
 import hip.util.reflection;
 import std.json;
-import hip.data.hipfs;
+import hip.filesystem.hipfs;
 import hip.error.handler;
 import hip.hipengine.api.input;
 

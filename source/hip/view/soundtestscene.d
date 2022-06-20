@@ -10,10 +10,10 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.view.soundtestscene;
-import hip.data.hipfs;
+import hip.filesystem.hipfs;
 import hip.hipaudio.audio;
 // import hip.hipaudio.backend.openal.source;
-import hip.data.audio.audio;
+import hip.audio_decoding.audio;
 import hip.view.scene;
 import hip.util.tween;
 

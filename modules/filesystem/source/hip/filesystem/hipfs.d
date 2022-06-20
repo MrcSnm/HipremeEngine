@@ -9,7 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.filesystem.hipfs;
-public import std.stdio : File;
 public import hip.hipengine.api.filesystem.hipfs;
 
 private pure bool validatePath(string initial, string toAppend)
@@ -34,7 +33,7 @@ private pure bool validatePath(string initial, string toAppend)
             long lastInd = newPath.lastIndexOf('/');
             if(lastInd == -1)
                 continue;
-            newPath = newPath[0..lastInd];
+            newPath = newPath[0..cast(uint)lastInd];
         }
         else
             newPath~= "/"~a;
@@ -172,8 +171,74 @@ version(Android)
     }
 }
 
-class HipStdFileSystemInteraction : IHipFileSystemInteraction
+
+/**
+*   All those string allocations should be removed or turnt into @nogc somehow. The better cached, the best.
+*
+*/
+class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
 {
+    bool read(string path, out void[] output)
+    {
+        import core.stdc.stdio;
+        import hip.error.handler;
+        if(ErrorHandler.assertErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
+            return false;
+
+        auto f = fopen((path~"\0").ptr, "r");
+        fseek(f, 0, SEEK_END);
+        auto size = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        output.length = cast(typeof(output.length))size;
+
+        scope(exit)
+            fclose(f);
+        if(fread(output.ptr, size, 1, f) != size)
+            return false;
+
+        return true;
+    }
+    bool write(string path, void[] data)
+    {
+        import core.stdc.stdio;
+        if(exists(path))
+        {
+            auto file = fopen((path~'\0').ptr, "w");
+            scope(exit)
+                fclose(file);
+            if(fwrite(data.ptr, 1, data.length, file) != data.length)
+            {
+                return fflush(file) == 0;
+            }
+            return true;
+        }
+        return false;
+    }
+    bool exists(string path)
+    {
+        import core.stdc.stdio;
+        if(auto file = fopen((path~'\0').ptr, "r"))
+        {
+            fclose(file);
+            return true;
+        }
+        return false;
+    }
+    bool remove(string path)
+    {
+        static import core.stdc.stdio;
+        if(exists(path))
+        {
+            return core.stdc.stdio.remove((path~'\0').ptr) == 0;
+        }
+
+        return false;
+    }
+}
+
+version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteraction
+{
+    import std.stdio : File;
     bool read(string path, out void[] output)
     {
         import hip.error.handler;
@@ -367,7 +432,12 @@ class HipFileSystem
             initialPath = path.sanitizePath;
             version(Android){fs = new HipAndroidFileSystemInteraction();}
             // else version(UWP){fs = new HipUWPileSystemInteraction();}
-            else{fs = new HipStdFileSystemInteraction();}
+            else version(PSVita){fs = new HipCStdioFileSystemInteraction();}
+            else
+            {
+                version(HipDStdFile){}else{static assert(false, "HipDStdFile should be marked to be used.");}
+                fs = new HipStdFileSystemInteraction();
+            }
             setPath("");
             foreach (v; validations){extraValidations~=v;}
             hasSetInitial = true;
@@ -430,13 +500,18 @@ class HipFileSystem
         return ret;
     }
 
-    public static bool getFile(string path, string opts, out File file)
+    version(HipDStdFile)
     {
-        if(!isPathValid(path) || !isPathValidExtra(path))
-            return false;
-        file = File(getPath(path), opts);
-        return true;
-    }
+        import std.stdio:File;
+        public static bool getFile(string path, string opts, out File file)
+        {
+            if(!isPathValid(path) || !isPathValidExtra(path))
+                return false;
+            file = File(getPath(path), opts);
+            return true;
+        }
+
+    } 
 
     public static bool write(string path, void[] data)
     {

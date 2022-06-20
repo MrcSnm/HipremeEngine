@@ -17,7 +17,7 @@
 		"audio_decoding": {"path": "../audio_decoding"},
 		"sdl_sound": {"path": "../../dependencies/sdl_sound"},
 		"sles": {"path": "../../dependencies/sles"},
-		"directx-d":{"path" : "../../dependencies/directx-d"}
+		"directx-d":{"path" : "../../dependencies/directx-d", "optional": true}
 	},
 	"description": "HipremeEngine audio module",
 	"license": "proprietary",

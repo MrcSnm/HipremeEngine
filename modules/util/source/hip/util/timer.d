@@ -1,4 +1,6 @@
 module hip.util.timer;
+
+version(HipTimerAPI):
 class HipTimer
 {
     enum TimerType

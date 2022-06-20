@@ -56,6 +56,8 @@ __gshared void function(string toPrint) _fatal;
 
     static ushort idCount = 0;
     ushort id;
+
+    private uint logCounter = 0;
     
     string indentation;
     int indentationCount;
@@ -64,7 +66,7 @@ __gshared void function(string toPrint) _fatal;
     bool useTab = true;
     bool isShowing = true;
     static __gshared Console DEFAULT;
-    static this()
+    static void initialize()
     {
         DEFAULT = new Console("Output", 99);
     }
@@ -112,14 +114,14 @@ __gshared void function(string toPrint) _fatal;
     }
     private this(string consoleName, ushort id)
     {
-        lines.reserve(255);
+        lines = new string[](maxLines);
         name = consoleName;
         this.id = id;
     }
 
     this(string consoleName)
     {
-        lines.reserve(255);
+        lines = new string[](maxLines);
         name = consoleName;
         id = idCount;
         idCount++;
@@ -128,9 +130,12 @@ __gshared void function(string toPrint) _fatal;
     private void _formatLog(ref string log)
     {
         log~= indentation;
-        lines~= log;
-        if(lines.length > maxLines)
+        lines[logCounter++] = log;
+        if(logCounter > maxLines)
+        {
             lines = lines[1..$];
+            logCounter--;
+        }
     }
     private String formatArguments(Args...)(Args a)
     {

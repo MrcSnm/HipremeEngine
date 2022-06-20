@@ -1,8 +1,8 @@
 module hip.util.windows;
 
-import core.stdc.stdarg;
 
 version(Windows):
+import core.stdc.stdarg;
 
 	
 @nogc nothrow extern(Windows)

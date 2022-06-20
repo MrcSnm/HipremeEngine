@@ -1,5 +1,5 @@
 module hip.math.quaternion;
-import std.math : sin,  cos, sqrt;
+import core.stdc.math : sin,  cos, sqrt;
 import hip.math.vector;
 import hip.math.matrix;
 

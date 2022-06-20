@@ -1,5 +1,7 @@
 module gles.gl2;
 
+version(GLES20):
+
 extern (C):
 
 enum __gles2_gl2_h_ = 1;

@@ -15,56 +15,31 @@ import hip.hiprenderer.shader;
 import hip.hiprenderer.backend.gl.glframebuffer;
 import hip.hiprenderer.backend.gl.glshader;
 import hip.hiprenderer.viewport;
+
+version(Android)
+    version = NoWindow;
+else version(Have_windowing)
+    version = HasWindow;
+else
+    version = NoWindow;
+
 import hip.windowing.window;
 import hip.util.conv;
 import hip.math.rect;
 import hip.error.handler;
 version(Android)
 {
-    public import hip.gles.gl30;
+    public import gles.gl30;
+}
+else version(PSVita)
+{
+    public import gles;
 }
 else
 {
     public import bindbc.opengl;
 }
 import hip.console.log;
-
-
-private HipWindow createSDL_GL_Window(uint width, uint height)
-{
-    version(Android){return null;}
-    else
-    {
-        HipWindow wnd = new HipWindow(width, height, 
-            HipWindowFlags.RESIZABLE | HipWindowFlags.MINIMIZABLE | HipWindowFlags.MAXIMIZABLE);
-        wnd.start();
-        return wnd;
-    }
-    // else
-    // {
-    //     // SDL_GL_LoadLibrary(null);
-
-    //     // //Set GL Version
-    //     // SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_ACCELERATED_VISUAL, 1);
-    //     // SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    //     // SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MINOR_VERSION, 5);
-    //     // //Create window type
-    //     // SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
-    //     // SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DEPTH_SIZE, 24);
-    //     // SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
-    //     // uint flags = (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-
-    //     // SDL_Window* window = SDL_CreateWindow("GL Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, cast(SDL_WindowFlags)flags);
-    //     // SDL_GLContext ctx = SDL_GL_CreateContext(window);
-    //     // SDL_GL_MakeCurrent(window, ctx);
-
-    //     HipWindow wnd = new HipWindow(width, height, 
-    //         HipWindowFlags.RESIZABLE | HipWindowFlags.MINIMIZABLE | HipWindowFlags.MAXIMIZABLE);
-    //     wnd.start();
-    //     // SDL_GL_SetSwapInterval(1);
-    //     return wnd;
-    // }
-}
 
 
 /**
@@ -84,8 +59,8 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     HipWindow createWindow(uint width, uint height)
     {
-        version(Android){return null;}
-        else
+        version(NoWindow){return null;}
+        else version(HasWindow)
         {
             HipWindow wnd = new HipWindow(width, height, 
                 HipWindowFlags.RESIZABLE | HipWindowFlags.MINIMIZABLE | HipWindowFlags.MAXIMIZABLE);

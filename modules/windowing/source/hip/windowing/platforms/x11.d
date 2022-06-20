@@ -1,15 +1,19 @@
 module hip.windowing.platforms.x11;
+
+version(Posix)
+    version = X11;
+
+version(X11):
+
+import core.stdc.stdio;
+
 import hip.windowing.platforms.x11lib.glx;
 import hip.windowing.platforms.x11lib.x11;
 import hip.windowing.events;
 import hip.windowing.input;
 
-import core.stdc.stdio;
-version(Posix)
-    version = X11;
 public import hip.windowing.platforms.x11lib.x11;
 
-version(X11):
 
 package struct X11WindowData
 {

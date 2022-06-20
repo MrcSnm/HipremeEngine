@@ -11,7 +11,6 @@ Distributed under the CC BY-4.0 License.
 module hip.util.string;
 public import hip.util.conv:to;
 
-
 /** 
  *  RefCounted, @nogc string, OutputRange compatible, 
  */
@@ -413,6 +412,7 @@ T toDefault(T)(string s, T defaultValue = T.init)
     return v;
 }
 
+version(all):
 string fromStringz(const char* cstr) pure nothrow @nogc
 {
     import core.stdc.string:strlen;
@@ -433,10 +433,9 @@ pragma(inline) char toLowerCase(char c) pure nothrow @safe @nogc
 
 string toLowerCase(string str) pure nothrow @safe
 {
-    string ret;
-    ret.reserve(str.length);
+    char[] ret = new char[](str.length);
     for(uint i = 0; i < str.length; i++)
-        ret~= str[i].toLowerCase;
+        ret[i] = str[i].toLowerCase;
     return ret;
 }
 
@@ -449,10 +448,9 @@ pragma(inline) char toUpper(char c) pure nothrow @safe @nogc
 
 string toUpper(string str) pure nothrow @safe
 {
-    string ret;
-    ret.reserve(str.length);
+    char[] ret = new char[](str.length);
     for(uint i = 0; i < str.length; i++)
-        ret~= str[i].toUpper;
+        ret[i] = str[i].toUpper;
     return ret;
 }
 
