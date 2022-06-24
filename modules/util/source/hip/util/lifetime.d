@@ -45,6 +45,7 @@ enum HipExportedTargets
 
 
 
+version(HipScriptingAPI):
 /**
 *   That may be changed to an associative array in case of slowdowns
 */

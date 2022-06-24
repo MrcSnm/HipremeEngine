@@ -7,6 +7,15 @@
 		"debugInfo",
 		"debugInfoC"
 	],
+	"configurations": [
+		{
+			"name": "default"
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
+		}
+	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "HipremeEngine debugging module",
 	"license": "proprietary",

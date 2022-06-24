@@ -1,6 +1,5 @@
 module hip.util.windows;
 
-
 version(Windows):
 import core.stdc.stdarg;
 

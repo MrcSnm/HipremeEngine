@@ -10,12 +10,21 @@
 	"sourcePaths": ["source", "../../api/source/hip/hipengine/api/filesystem"],
 	"importPaths": ["source", "../../api/source"],
 	"copyright": "Copyright © 2021, Hipreme",
-	"dependencies": {
-		"error": {"path": "../error", "version": "*"},
-		"util": {"path": "../util", "version": "*"}
-	},
 	"versions": [
 		"HipFileAPI"
+	],
+	"configurations": [
+		{
+			"name": "default",
+			"dependencies": {
+				"error": {"path": "../error", "version": "*"},
+				"util": {"path": "../util", "version": "*"}
+			}
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
+		}
 	],
 	"description": "HipremeEngine bind module",
 	"license": "proprietary",

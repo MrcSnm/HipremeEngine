@@ -16,16 +16,23 @@ import hip.util.path;
 import hip.util.string;
 
 
-version(HipDStdFile) string getFileContent(string path, bool noCarriageReturn = true)
+string getFileContent(string path, bool noCarriageReturn = true)
 {
-    import std.file;
+    import core.stdc.stdio;
     path = sanitizePath(path);
-    if(!exists(path))
+    FILE* file = fopen((path~"\0").ptr, "r");
+    if(!file)
         return "";
-    File f = File(path);
     char[] buffer;
-    buffer.length = f.size();
-    f.rawRead(buffer);
+
+    fseek(file, 0, SEEK_END);
+    auto size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    buffer.length = cast(typeof(buffer.length))size;
+    fread(buffer.ptr, cast(size_t)size, 1, file);
+
+    fclose(file);
 
     string content = cast(string)buffer;
     return (noCarriageReturn) ? content.replaceAll('\r') : content;

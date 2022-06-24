@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.filesystem.hipfs;
+
 public import hip.hipengine.api.filesystem.hipfs;
 
 private pure bool validatePath(string initial, string toAppend)
@@ -45,7 +46,7 @@ private pure bool validatePath(string initial, string toAppend)
 }
 
 
-abstract class HipFile : IHipFileItf
+version(none) abstract class HipFile : IHipFileItf
 {
     immutable FileMode mode;
     immutable string path;
@@ -188,12 +189,15 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
         auto f = fopen((path~"\0").ptr, "r");
         fseek(f, 0, SEEK_END);
         auto size = ftell(f);
+
+        if(size <= 0)
+            return false;
         fseek(f, 0, SEEK_SET);
         output.length = cast(typeof(output.length))size;
 
         scope(exit)
             fclose(f);
-        if(fread(output.ptr, size, 1, f) != size)
+        if(fread(output.ptr, cast(size_t)size, 1, f) != size)
             return false;
 
         return true;
@@ -410,6 +414,7 @@ version(UWP)
     }
 }
 
+
 /**
 * FileSystem access for specific platforms.
 */
@@ -423,8 +428,8 @@ class HipFileSystem
 
     protected static bool function(string path, out string errMessage)[] extraValidations;
  
-    public static void install(string path,
-    bool function(string path, out string errMessage)[] validations ...)
+    
+    public static void install(string path)
     {
         import hip.util.system : sanitizePath;
         if(!hasSetInitial)
@@ -439,8 +444,20 @@ class HipFileSystem
                 fs = new HipStdFileSystemInteraction();
             }
             setPath("");
-            foreach (v; validations){extraValidations~=v;}
             hasSetInitial = true;
+        }
+    }
+
+    
+    version(FunctionArrayAvailable)
+    public static void install(string path,
+    bool function(string path, out string errMessage)[] validations ...)
+    {
+        import hip.util.system : sanitizePath;
+        if(!hasSetInitial)
+        {
+            install(path);
+            foreach (v; validations){extraValidations~=v;}
         }
     }
     public static string getPath(string path)

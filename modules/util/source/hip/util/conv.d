@@ -29,7 +29,10 @@ if(isOutputRange!(Sink, char) && !is(T[] == string)) //There is a better match f
     for(int i = 0; i < arr.length; i++)
     {
         if(i != 0)
-            put(sink, ", ");
+        {
+            foreach(character; " ")
+                put(sink, character);
+        }
         toStringRange(sink, arr[i]);
     }
     put(sink, ']');
@@ -153,7 +156,8 @@ void   toStringRange(Sink)(auto ref Sink sink, string str) if(isOutputRange!(Sin
 {
     static if(__traits(compiles, sink.preAllocate))
         sink.preAllocate(str.length);
-    put(sink, str);
+    foreach(character; str)
+        put(sink, character);
 }
 void   toStringRange(Sink)(auto ref Sink sink, const(char)* str) if(isOutputRange!(Sink, char))
 {
@@ -303,14 +307,16 @@ void toStringRange(Sink)(auto ref Sink sink, float f)
     {
         static if(__traits(hasMember, sink, "preAllocate"))
             sink.preAllocate("nan".length);
-        put(sink, "nan");
+        foreach(v; "nan")
+            put(sink, v);
         return;
     } 
     if(f == float.infinity)
     {
         static if(__traits(hasMember, sink, "preAllocate"))
             sink.preAllocate("inf".length);
-        put(sink, "inf");
+        foreach(v; "inf")
+            put(sink, v);
         return;
     }
     if(f < 0)

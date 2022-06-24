@@ -199,7 +199,7 @@ struct ShaderVar
         return ShaderVar.create(t, varName, &dRef, UniformType.floating_array, dRef.sizeof, dRef[0].sizeof, true);
     }
 
-    protected static ShaderVar* create(ShaderTypes t, string varName, void* varData, UniformType type, ulong varSize, ulong singleSize, bool isDynamicArrayReference=false)
+    protected static ShaderVar* create(ShaderTypes t, string varName, void* varData, UniformType type, size_t varSize, size_t singleSize, bool isDynamicArrayReference=false)
     {
         import core.stdc.string : memcpy;
         import core.stdc.stdlib : malloc;
@@ -256,6 +256,7 @@ class ShaderVariablesLayout
     private string[] namesOrder;
     string name;
     ShaderTypes shaderType;
+    //Single block representation of variables content
     protected void* data;
     protected void* additionalData;
     protected bool isAdditionalAllocated;
@@ -367,7 +368,7 @@ class ShaderVariablesLayout
 
         return this;
     }
-    final ulong getLayoutSize(){return lastPosition;}
+    final size_t getLayoutSize(){return lastPosition;}
     final void setAdditionalData(void* d, bool isAllocated)
     {
         this.additionalData = d;

@@ -8,10 +8,19 @@
 		"debugInfoC"
 	],
 	"copyright": "Copyright © 2021, Hipreme",
-	"dependencies": {
-		"util": {"path": "../util"},
-		"console": {"path":"../console"}
-	},
+	"configurations": [
+		{
+			"name": "default",
+			"dependencies": {
+				"util": {"path": "../util"},
+				"console": {"path":"../console"}
+			}
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
+		}
+	],
 	"description": "HipremeEngine error module",
 	"license": "proprietary",
 	"name": "error"

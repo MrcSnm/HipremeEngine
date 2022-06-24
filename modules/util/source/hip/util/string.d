@@ -412,7 +412,6 @@ T toDefault(T)(string s, T defaultValue = T.init)
     return v;
 }
 
-version(all):
 string fromStringz(const char* cstr) pure nothrow @nogc
 {
     import core.stdc.string:strlen;

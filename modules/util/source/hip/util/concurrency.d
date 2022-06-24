@@ -10,6 +10,8 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.util.concurrency;
 
+version(HipConcurrency):
+
 /**
 *   Creates a function definition for shared an unshared.
 */
