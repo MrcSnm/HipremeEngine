@@ -10,7 +10,7 @@
 		"GL_ARB",
 		"SDL_208"
 	],
-	"importPaths": [
+	"sourcePaths": [
 		"source"
 	],
 	"description": "Hipreme Engine editor",

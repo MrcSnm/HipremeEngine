@@ -19,16 +19,16 @@ struct TemplateInfo
 
 struct DubProjectInfo
 {
-	string author="HipremeEngine",
-	projectName="Hipreme Engine Test",
-	desc = "Hipreme Engine test scene";
+	string author = "HipremeEngine";
+	string projectName = "Hipreme Engine Test";
+	string desc = "Hipreme Engine test scene";
 }
 
 string generateCodeTemplate(TemplateInfo info = TemplateInfo())
 {
 	return format!q{
 module script.entry;
-import hipengine;
+import hip.hipengine;
 
 class MainScene : IScene
 {
@@ -66,8 +66,8 @@ string generateDubProject(DubProjectInfo info)
 {
 	import std.uni:toLower;
 	import std.algorithm:map;
-	string outputName = info.projectName.split(" ").join("_").array;
-	string name = outputName.map!(character => character.toLower);
+	dstring outputName = info.projectName.split(" ").join("_").array;
+	dstring name = outputName.map!(character => character.toLower).array;
 	return format!q{
 {
 	"authors": ["%s"],
@@ -104,7 +104,7 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
     //Project folder
     mkdirRecurse(projectPath);
     //Source Folder
-    mkdirRecurse(buildNormalizedPath(projectPath, "source"));
+    mkdirRecurse(buildNormalizedPath(projectPath, "source", "script"));
 	//Assets Folder
 	mkdirRecurse(buildNormalizedPath(projectPath, "assets"));
 
