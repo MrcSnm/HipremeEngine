@@ -7,24 +7,28 @@
 		"debugInfo",
 		"debugInfoC"
 	],
+	"targetType": "library",
 	"copyright": "Copyright © 2021, Hipreme",
-	"dependencies": {
-		"arsd-official:image_files": "~>10.5.0",
-		"audio-formats": "~>1.3.4",
-		"bind": {"path": "../bind"},
-		"bindbc-sdl": "~>1.0.1",
-		"console": {"path": "../console"},
-		"error": {"path": "../error"},
-		"hipengine_api": {"path": "../../api"},
-		"math": {"path": "../math"},
-		"sdl_sound": {"path": "../../dependencies/sdl_sound"},
-		"util": {"path": "../util"}
-	},
+	"configurations": [
+		{
+			"name": "default",
+			"dependencies": {
+				"console": {"path": "../console"},
+				"error": {"path": "../error"},
+				"filesystem": {"path": "../filesystem"},
+				"util": {"path": "../util"}
+			}
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
+		},
+		{
+			"name": "header",
+			"dflags": ["-H", "-Hdimport", "-op"]
+		}
+	],
 	"description": "HipremeEngine data module",
 	"license": "proprietary",
-	"name": "data",
-	"versions": [
-		"BindSDL_Image",
-		"BindSDL_Mixer"
-	]
+	"name": "data"
 }

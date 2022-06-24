@@ -18,7 +18,6 @@
 		"dplug": "12.3.1",
 		"error": {"path":"../error"},
 		"fswatch": "0.6.0",
-		"hipengine_api": {"path":"../../api"},
 		"imgui": {"path":"../imgui"},
 		"intel-intrinsics": "1.6.2",
 		"jni": {"path":"../jni"},

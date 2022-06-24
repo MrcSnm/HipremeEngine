@@ -8,9 +8,16 @@
 		"debugInfoC"
 	],
 	"copyright": "Copyright © 2021, Hipreme",
-	"dependencies": {
-		"fswatch": "~>0.6.0"
-	},
+	"configurations": [
+		{
+			"name": "default",
+			"targetType": "staticLibrary"
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
+		}
+	],
 	"description": "HipremeEngine data module",
 	"license": "proprietary",
 	"name": "util"

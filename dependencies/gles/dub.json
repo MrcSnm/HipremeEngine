@@ -5,7 +5,16 @@
 	"targetType": "library",
 	"targetPath": "lib",
 	"copyright": "Copyright © 2021, Hipreme",
-	"description": "DPP converted opengl es3.2 header",
+	"description": "DStep converted gles bindings",
+	"configurations": [
+		{
+			"name": "default"
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
+		}
+	],
 	"license": "proprietary",
 	"name": "gles"
 }

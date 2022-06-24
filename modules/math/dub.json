@@ -7,7 +7,20 @@
 		"debugInfo",
 		"debugInfoC"
 	],
-	"dependencies": {"util" : {"path": "../util"}},
+	"configurations": 
+	[
+		{
+			"name": "default",
+			"dependencies": 
+			{
+				"util" : {"path": "../util"}
+			}
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
+		}
+	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "HipremeEngine math module",
 	"license": "proprietary",

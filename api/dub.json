@@ -17,6 +17,13 @@
 			"targetType": "sourceLibrary"
 		},
 		{
+			"name": "singledef",
+			"targetType": "library",
+			"importPaths": [
+				"source"
+			]
+		},
+		{
 			"name": "hipengine",
 			"importPaths": [
 				"source"
