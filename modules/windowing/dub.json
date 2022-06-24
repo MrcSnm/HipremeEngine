@@ -2,6 +2,15 @@
 	"authors": [
 		"Hipreme"
 	],
+	"configurations": [
+		{
+			"name": "default"
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
+		}
+	],
 	"copyright": "Copyright © 2022, Hipreme",
 	"description": "Windowing module for the Hipreme Engine",
 	"license": "CC-BY 4.0",

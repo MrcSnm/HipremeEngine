@@ -1,0 +1,2 @@
+module std.math.hardware;
+

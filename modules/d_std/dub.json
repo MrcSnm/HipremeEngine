@@ -1,0 +1,15 @@
+{
+	"authors": [
+		"Marcelo"
+	],
+	"copyright": "Copyright © 2022, Marcelo",
+	"description": "A minimal D application.",
+	"configurations": [
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
+		}
+	],
+	"license": "proprietary",
+	"name": "d_std"
+}

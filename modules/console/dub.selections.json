@@ -3,7 +3,6 @@
 	"versions": {
 		"config": {"path":"../config"},
 		"debugging": {"path":"../debugging"},
-		"fswatch": "0.6.0",
 		"jni": {"path":"../jni"},
 		"util": {"path":"../util"}
 	}
