@@ -15,14 +15,6 @@ import hip.hiprenderer.shader;
 import hip.hiprenderer.backend.gl.glframebuffer;
 import hip.hiprenderer.backend.gl.glshader;
 import hip.hiprenderer.viewport;
-
-version(Android)
-    version = NoWindow;
-else version(Have_windowing)
-    version = HasWindow;
-else
-    version = NoWindow;
-
 import hip.windowing.window;
 import hip.util.conv;
 import hip.math.rect;
@@ -42,6 +34,7 @@ else
 import hip.console.log;
 
 
+
 /**
 *
 *   Those functions here present are fairly inneficient as there is not batch ocurring,
@@ -59,8 +52,8 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     HipWindow createWindow(uint width, uint height)
     {
-        version(NoWindow){return null;}
-        else version(HasWindow)
+        version(Android){return null;}
+        else
         {
             HipWindow wnd = new HipWindow(width, height, 
                 HipWindowFlags.RESIZABLE | HipWindowFlags.MINIMIZABLE | HipWindowFlags.MAXIMIZABLE);
@@ -70,13 +63,18 @@ class Hip_GL3Renderer : IHipRendererImpl
     }
     Shader createShader()
     {
-        return new Shader(new Hip_GL3_ShaderImpl());
+        version(HipGL3)
+            return new Shader(new Hip_GL3_ShaderImpl());
+        else
+            return new Shader(new Hip_GL_ShaderImpl());
     }
     public bool init(HipWindow window)
     {
         this.window = window;
-        window.startOpenGLContext();
-        GLSupport ver = loadOpenGL();
+        if(window !is null)
+            window.startOpenGLContext();
+        version(Have_bindbc_opengl)
+            GLSupport ver = loadOpenGL();
         rawlog("GL Renderer: ",  glGetString(GL_RENDERER));
         rawlog("GL Version: ",  glGetString(GL_VERSION));
         rawlog("GLSL Version: ",  glGetString(GL_SHADING_LANGUAGE_VERSION));
@@ -87,7 +85,7 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     version(dll)public bool initExternal()
     {
-        return init(null, null);
+        return init(null);
     }
 
     void setShader(Shader s)
@@ -113,7 +111,10 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public IHipVertexArrayImpl createVertexArray()
     {
-        return new Hip_GL3_VertexArrayObject();
+        version(HipGL3)
+            return new Hip_GL3_VertexArrayObject();
+        else
+            return new Hip_GL_VertexArrayObject();
     }
     public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
     {

@@ -1,0 +1,2 @@
+module core.stdc.stdarg;
+

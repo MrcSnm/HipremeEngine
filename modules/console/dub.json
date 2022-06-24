@@ -8,12 +8,27 @@
 		"debugInfoC"
 	],
 	"copyright": "Copyright © 2021, Hipreme",
-	"dependencies": {
-		"debugging" : {"path": "../debugging"},
-		"config": {"path": "../config"},
-		"util" : {"path": "../util"},
-		"jni" : {"path": "../jni", "optional": true}
-	},
+	"configurations": [
+		{
+			"name": "default",
+			"dependencies": {
+				"debugging" : {"path": "../debugging"},
+				"config": {"path": "../config"},
+				"util" : {"path": "../util"},
+				"jni" : {"path": "../jni", "optional": true}
+			}
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary",
+			"importPaths": [
+				"source",
+				"../debugging/source",
+				"../config/source",
+				"../util/source"
+			]
+		}
+	],
 	"description": "HipremeEngine console module",
 	"license": "proprietary",
 	"name": "console"

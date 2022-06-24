@@ -14,7 +14,6 @@ import hip.windowing.input;
 
 public import hip.windowing.platforms.x11lib.x11;
 
-
 package struct X11WindowData
 {
     Display* display;

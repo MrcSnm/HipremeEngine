@@ -16,19 +16,42 @@
 		"../../api/source/hip/hipengine/api/renderer"
 	],
 	"copyright": "Copyright © 2021, Hipreme",
-	"dependencies": {
-		"windowing" : {"path" : "../windowing"},
-		"bindbc-opengl": {"version": "~>1.0.0", "optional": true},
-		"directx-d": {"path": "../../dependencies/directx-d", "optional": true},
-		"gles" : {"path": "../../dependencies/gles", "optional": true},
-		"data" : {"path": "../data"},
-		"image" : {"path": "../image"},
-		"bind" : {"path": "../bind", "optional": true},
-		"config": {"path": "../config"},
-		"error": {"path": "../error"},
-		"math": {"path": "../math"}
-	},
+	"configurations": [
+		{
+			"name": "default",
+			"dependencies": {
+				"bindbc-opengl": {"version": "~>1.0.0", "optional": true},
+				"windowing" : {"path" : "../windowing"},
+				"directx-d": {"path": "../../dependencies/directx-d", "optional": true},
+				"gles" : {"path": "../../dependencies/gles", "optional": true},
+				"data" : {"path": "../data"},
+				"image" : {"path": "../image"},
+				"bind" : {"path": "../bind", "optional": true},
+				"config": {"path": "../config"},
+				"error": {"path": "../error"},
+				"math": {"path": "../math"}
+			}
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary",
+			"importPaths": [
+				"source",
+				"../windowing/source",
+				"../../dependencies/gles/source",
+				"../data/source",
+				"../image/source",
+				"../config/source",
+				"../error/source",
+				"../math/source"
+			]
+		}
+	],
 	"versions": [
+		"SDL_208",
+		"BindSDL_Mixer",
+		"BindSDL_TTF",
+		"BindSDL_Image",
 		"GL_45",
 		"GL_ARB",
 		"HipRendererAPI"

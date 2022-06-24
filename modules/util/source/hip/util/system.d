@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.util.system;
+
 import hip.util.conv;
 import core.stdc.string;
 import hip.util.string:fromStringz;
@@ -101,7 +102,7 @@ string dynamicLibraryGetLibName(string libName)
 {
     version(Windows) return libName~".dll";
     else version(Posix) return "lib"~libName~".so";
-    else assert(0, "Platform not supported");
+    else static assert(0, "Platform not supported");
 }
 
 bool dynamicLibraryIsLibNameValid(string libName)
@@ -111,7 +112,7 @@ bool dynamicLibraryIsLibNameValid(string libName)
     else version(Posix)
         return libName[0..3] == "lib" && libName[$-3..$] == ".so";
     else
-        return false;
+        return true;
 }
 
 ///It will open the current executable if libName == null
@@ -133,7 +134,6 @@ void* dynamicLibraryLoad(string libName)
         else
             ret = dlopen((libName~"\0").ptr, RTLD_LAZY);
     }
-    else assert(0, "Platform not supported");
     return ret;
     // return Runtime.loadLibrary(libName);
 }
@@ -153,7 +153,6 @@ void* dynamicLibrarySymbolLink(void* dll, const (char)* symbolName)
         import core.sys.posix.dlfcn : dlsym;
         ret = dlsym(dll, symbolName);
     }
-    else assert(0, "Platform not supported");
     return ret;
 }
 
@@ -171,7 +170,7 @@ string dynamicLibraryError()
         import core.sys.posix.dlfcn;
         return cast(string)fromStringz(dlerror());
     }
-    else assert(0, "Platform not supported");
+    else static assert(0, "Platform not supported");
 }
 
 bool dynamicLibraryRelease(void* dll)
@@ -183,5 +182,5 @@ bool dynamicLibraryRelease(void* dll)
         import core.sys.posix.dlfcn;
         return dlclose(dll) == 0;
     }
-    else assert(0, "Platform not supported");
+    else static assert(0, "Platform not supported");
 }

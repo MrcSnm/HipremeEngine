@@ -239,13 +239,17 @@ class Hip_GL3_VertexShader : VertexShader
         };
     }
 }
-class Hip_GL3_ShaderProgram : ShaderProgram{uint program;}
+class Hip_GL3_ShaderProgram : ShaderProgram
+{
+    bool isUsingUbo;
+    uint program;
+}
 
-class Hip_GL3_ShaderImpl : IShader
+
+class Hip_GL_ShaderImpl : IShader
 {
     import hip.util.data_structures:Pair;
     protected ShaderVariablesLayout[] layouts;
-    protected Pair!(ShaderVariablesLayout, uint)[] ubos;
     FragmentShader createFragmentShader()
     {
         Hip_GL3_FragmentShader fs = new Hip_GL3_FragmentShader();
@@ -315,7 +319,8 @@ class Hip_GL3_ShaderImpl : IShader
     }
     int getId(ref ShaderProgram prog, string name)
     {
-        int varID = glGetUniformLocation((cast(Hip_GL3_ShaderProgram)prog).program, name.ptr);
+        
+        int varID = glGetUniformLocation((cast(Hip_GL3_ShaderProgram)prog).program, cast(char*)name.ptr); //Immutable anyway
         if(varID < 0)
         {
             ErrorHandler.showErrorMessage("Uniform not found",
@@ -414,29 +419,15 @@ class Hip_GL3_ShaderImpl : IShader
     {
         setCurrentShader(prog);
         int varID = getId(prog, varName);
-        int[] temp = new int[](slotsCount);
+        scope int[] temp = new int[](slotsCount);
         for(int i = 0; i < slotsCount; i++)
             temp[i] = i;
         glUniform1iv(varID, slotsCount, temp.ptr);
-        destroy(temp);
     }
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
         if(layout.hint & ShaderHint.GL_USE_BLOCK)
-        {
-            uint ubo;
-            glGenBuffers(1, &ubo);
-            glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-            glBufferData(GL_UNIFORM_BUFFER, layout.getLayoutSize(), null, GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_UNIFORM_BUFFER, 0);
-            ubos~= Pair!(ShaderVariablesLayout, uint)(layout, ubo);
-        }
-    }
-    protected void updateUbo(ref Pair!(ShaderVariablesLayout, int) ubo)
-    {
-        glBindBuffer(GL_UNIFORM_BUFFER, ubo.b);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, ubo.a.getLayoutSize(), ubo.a.getBlockData());
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            ErrorHandler.assertExit(false, "Use HipGL3 for Uniform Block support.");
     }
 
     void deleteShader(FragmentShader* _fs)
@@ -453,9 +444,72 @@ class Hip_GL3_ShaderImpl : IShader
     {
         Hip_GL3_ShaderProgram p = cast(Hip_GL3_ShaderProgram)prog;
         glDeleteProgram(p.program);
+    }
+}
 
+
+version(HipGL3) class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
+{
+    import hip.util.data_structures:Pair;
+    protected Pair!(ShaderVariablesLayout, uint)[] ubos;
+
+    override int getId(ref ShaderProgram prog, string name)
+    {
+        // auto glProg = cast(Hip_GL3_ShaderProgram)prog;
+        //if(glProg.isUsingUbo)
+          //  return getUboId()
+        //else
+        return super.getId(prog, name);
+    }
+
+    override void createVariablesBlock(ref ShaderVariablesLayout layout)
+    {
+        if(layout.hint & ShaderHint.GL_USE_BLOCK)
+        {
+            uint ubo;
+            glGenBuffers(1, &ubo);
+            glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+            glBufferData(GL_UNIFORM_BUFFER, layout.getLayoutSize(), null, GL_DYNAMIC_DRAW);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            ubos~= Pair!(ShaderVariablesLayout, uint)(layout, ubo);
+        }
+    }
+    protected uint getUboId(ref Pair!(ShaderVariablesLayout, int) ubo, string name)
+    {
+        return glGetUniformBlockIndex(ubo.b, cast(char*)name.ptr);
+    }
+    protected void bindUbo(ref Pair!(ShaderVariablesLayout, int) ubo, int index = 0)
+    {
+        glBindBufferBase(GL_UNIFORM_BUFFER, index, ubo.second);
+    }
+    protected void updateUbo(ref Pair!(ShaderVariablesLayout, int) ubo)
+    {
+        import core.stdc.string;
+        glBindBuffer(GL_UNIFORM_BUFFER, ubo.b);
+        GLvoid* ptr = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+        memcpy(ptr, ubo.a.getBlockData(), ubo.a.getLayoutSize());
+        glUnmapBuffer(GL_UNIFORM_BUFFER);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+    
+
+
+    override void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts)
+    {
+        Hip_GL3_ShaderProgram glProg = cast(Hip_GL3_ShaderProgram)prog;
+        if(!glProg.isUsingUbo)
+        {
+            super.sendVars(prog, layouts);
+            return;
+        }
+        assert(false, "UBO binding is still not in use.");
+    }
+
+    override void dispose(ref ShaderProgram prog)
+    {
         foreach (ub; ubos)
             glDeleteBuffers(1, &ub.b);
         ubos.length = 0;
+        super.dispose(prog);
     }
 }

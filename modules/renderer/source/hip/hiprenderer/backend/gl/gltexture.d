@@ -27,13 +27,14 @@ class Hip_GL3_Texture : ITexture
             case TextureWrapMode.CLAMP_TO_EDGE: return GL_CLAMP_TO_EDGE;
             case TextureWrapMode.REPEAT: return GL_REPEAT;
             case TextureWrapMode.MIRRORED_REPEAT: return GL_MIRRORED_REPEAT;
-            // import gles.gl30;
-            // version(GLES30){}
-            // else
-            // {
-            //     case TextureWrapMode.MIRRORED_CLAMP_TO_EDGE: return GL_MIRROR_CLAMP_TO_EDGE;
-            //     case TextureWrapMode.CLAMP_TO_BORDER: return GL_CLAMP_TO_BORDER;
-            // }
+            version(Android){}
+            else version(PSVita){}
+            else
+            {
+                //assert here would be better, as simply returning a default can be misleading.
+                case TextureWrapMode.MIRRORED_CLAMP_TO_EDGE: return GL_MIRROR_CLAMP_TO_EDGE;
+                case TextureWrapMode.CLAMP_TO_BORDER: return GL_CLAMP_TO_BORDER;
+            }
             default: return GL_REPEAT;
         }
     }

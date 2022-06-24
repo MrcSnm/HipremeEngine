@@ -9,16 +9,25 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.util.data_structures;
-public import hip.util.string: String;
 
-struct Pair(A, B)
+public import hip.util.string: String;
+struct Pair(A, B, string aliasA = "", string aliasB = "")
 {
+
     A first;
     B second;
 
     alias a = first;
     alias b = second;
+
+    static if(aliasA != "")
+        mixin("alias "~aliasA~" = first;");
+    static if(aliasB != "")
+        mixin("alias "~aliasB~" = second;");
 }
+
+version(HipDataStructures):
+
 
 
 /** 
@@ -57,7 +66,6 @@ struct RangeMap(K, V)
     {
         if(ranges == null)
         {
-            debug { import std.stdio : writeln; try { writeln("Started ranges"); } catch (Exception) {} }
             ranges = Array!K(8);
             values = Array!V(8);
         }
@@ -324,7 +332,7 @@ struct Array2D(T)
         ref auto opIndex(size_t i,  size_t j){return data[i*width+j];}
         ref auto opIndex(size_t i)
         {
-            ulong temp = i*width;
+            size_t temp = i*width;
             return data[temp..temp+width];
         }
         auto opIndexAssign(T)(T value, size_t i, size_t j){return data[i*width+j] = value;}

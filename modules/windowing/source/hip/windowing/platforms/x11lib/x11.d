@@ -1,4 +1,5 @@
 module hip.windowing.platforms.x11lib.x11;
+
 version(Posix)
     version = X11;
 version(X11):
@@ -8,6 +9,7 @@ import core.stdc.config;
 pragma(lib, "X11");
 
 extern(C):
+
 
 /**
 *   I'll define here a minimal set of x11 functions.

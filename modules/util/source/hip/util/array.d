@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.util.array;
+private import hip.util.conv : to;
 
 /**
 * Uses accessor on the array to find an element
@@ -186,7 +187,6 @@ string join(T)(T[] arr, char separator)
 void printArrayWithoutValues(T)(const T[] arr, T[] ignoreValues...)
 {
     import hip.console.log;
-    import hip.util.conv : to;
     string str = "[";
     MainLoop: foreach (val; arr)
     {

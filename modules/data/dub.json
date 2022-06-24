@@ -9,15 +9,19 @@
 	],
 	"targetType": "library",
 	"copyright": "Copyright © 2021, Hipreme",
-	"dependencies": {
-		"console": {"path": "../console"},
-		"error": {"path": "../error"},
-		"filesystem": {"path": "../filesystem"},
-		"util": {"path": "../util"}
-	},
 	"configurations": [
 		{
-			"name": "default"
+			"name": "default",
+			"dependencies": {
+				"console": {"path": "../console"},
+				"error": {"path": "../error"},
+				"filesystem": {"path": "../filesystem"},
+				"util": {"path": "../util"}
+			}
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
 		},
 		{
 			"name": "header",

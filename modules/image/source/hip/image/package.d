@@ -10,7 +10,6 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.image;
 public import hip.hipengine.api.data.image;
-import arsd.image;
 
 
 IHipBMPDecoder bmp;
@@ -70,8 +69,10 @@ final class HipSDLImageDecoder : IHipAnyImageDecoder
     void dispose(){if(img != null){SDL_FreeSurface(img);img = null;}}
 }
 
+version(HipARSDImage)
 final class HipARSDImageDecoder : IHipAnyImageDecoder
 {
+    import arsd.image;
     MemoryImage img;
     TrueColorImage trueImg;
     bool startDecoding(void[] data)
@@ -123,8 +124,25 @@ final class HipARSDImageDecoder : IHipAnyImageDecoder
     }
 }
 
+final class HipNullImageDecoder : IHipAnyImageDecoder
+{
+    bool startDecoding(void[] data){return false;}
+    uint getWidth(){return 0;}
+    uint getHeight(){return 0;}
+    void* getPixels(){return null;}
+    ubyte getBytesPerPixel(){return 0;}
+    ubyte[] getPalette(){return null;}
+    void dispose(){}
+}
+
 ///Use that alias for supporting more platforms
-alias HipPlatformImageDecoder = HipARSDImageDecoder;
+version(HipSDLImageDecoder)
+    alias HipPlatformImageDecoder = HipSDLImageDecoder;
+else 
+version(HipARSDImageDecoder)
+    alias HipPlatformImageDecoder = HipARSDImageDecoder;
+else
+    alias HipPlatformImageDecoder = HipNullImageDecoder;
 
 
 class Image : IImage
@@ -183,7 +201,7 @@ class Image : IImage
         convertedPixels = pix;
 
         uint pixelsLength = width*height;
-        ubyte[] palette = decoder.getPalette();
+        scope ubyte[] palette = decoder.getPalette();
 
         uint colorIndex;
         uint z;
@@ -196,8 +214,6 @@ class Image : IImage
             pix[z++] = palette[colorIndex+2]; //B
             pix[z++] = palette[colorIndex+3]; //A
         }
-
-        destroy(palette);
 
         return cast(void*)pix;
     }

@@ -9,7 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.math.vector;
-
 import core.math : sqrt, sin, cos;
 import core.simd;
 
@@ -213,7 +212,7 @@ public struct Vector(uint N, T)
             else static if(op != "/")
             {
                 VectorN ret;
-                for(ulong i = 0; i < N; i++)   
+                for(size_t i = 0; i < N; i++)   
                     mixin("ret[i] = data[i] "~op~"rhs[i];");
                 return ret;
             }
@@ -221,7 +220,7 @@ public struct Vector(uint N, T)
         VectorN opBinary(string op)(float rhs) inout
         {
             VectorN ret;
-            for(ulong i = 0; i < N; i++)
+            for(size_t i = 0; i < N; i++)
                 mixin("ret[i] = data[i] "~op~"rhs;");
             return ret;
         }
@@ -233,7 +232,7 @@ public struct Vector(uint N, T)
         //     else static if(op != "/")
         //     {
         //         VectorN ret;
-        //         for(ulong i = 0; i < N; i++)   
+        //         for(size_t i = 0; i < N; i++)   
         //             mixin("ret[i] = lhs[i] "~op~"data[i];");
         //         return ret;
         //     }
@@ -241,41 +240,35 @@ public struct Vector(uint N, T)
         // VectorN opBinaryRight(string op)(float lhs) inout
         // {
         //     VectorN ret;
-        //     for(ulong i = 0; i < N; i++)
+        //     for(size_t i = 0; i < N; i++)
         //         mixin("ret[i] = lhs "~op~"data[i];");
         //     return ret;
         // }
 
         auto opOpAssign(string op)(VectorN other) return
         {
-            for(ulong i = 0; i < N; i++)
+            for(size_t i = 0; i < N; i++)
                 mixin("data[i]"~op~"= other[i];");
             return this;
         }
 
         auto opOpAssign(string op)(float value) return
         {
-            for(ulong i = 0; i < N; i++)
+            for(size_t i = 0; i < N; i++)
                 mixin("data[i]"~op~"= value;");
             return this;
         }
 
         ref VectorN opAssign(in VectorN other) return
         {
-             for(ulong i = 0; i < N; i++)
+             for(size_t i = 0; i < N; i++)
                 data[i] = other[i];
             return this;
         }
 
-        ref T[N] opCast() const
-        {
-            return data;
-        }
-
-
         ref VectorN opAssign(in T[N] other) return
         {
-            for(ulong i = 0; i < N; i++)
+            for(size_t i = 0; i < N; i++)
                 data[i] = other[i];
             return this;
         }

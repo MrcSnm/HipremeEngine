@@ -29,12 +29,15 @@ version(Windows)
 }
 import hip.hiprenderer.backend.gl.gltexture;
 
+///Could later be moved to windowing
 enum HipWindowMode
 {
     WINDOWED,
     FULLSCREEN,
     BORDERLESS_FULLSCREEN
 }
+
+///Which API is being used
 enum HipRendererType
 {
     GL3,
@@ -42,6 +45,7 @@ enum HipRendererType
     NONE
 }
 
+/// Primitive which the renderer will use
 enum HipRendererMode
 {
     POINT,
@@ -51,6 +55,7 @@ enum HipRendererMode
     TRIANGLE_STRIP
 }
 
+/// Those are fairly known functions in the graphics programming world
 enum HipBlendFunction
 {
     ZERO,
@@ -69,6 +74,10 @@ enum HipBlendFunction
     ONE_MINUS_CONSTANT_ALPHA,
 }
 
+/** 
+ * The equation is made by:
+ * HipBlendEquation(HipBlendFunction, HipBlendFunction)
+ */
 enum HipBlendEquation
 {
     ADD,
@@ -79,6 +88,9 @@ enum HipBlendEquation
 }
 
 
+/**
+*   Minimal interface for another API implementation
+*/
 interface IHipRendererImpl
 {
     public bool init(HipWindow window);
