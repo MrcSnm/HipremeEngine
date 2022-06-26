@@ -341,66 +341,77 @@ pure string replaceAll(string str, string what, string replaceWith = "")
     return ret;
 }
 
-pure int indexOf(in string str,in string toFind, int startIndex = 0) nothrow @nogc
+pure int indexOf(in string str,in string toFind, int startIndex = 0) nothrow @nogc @safe
 {
-    int z = 0;
+    int left = 0;
+    if(!toFind.length)
+        return -1;
+
     for(int i = startIndex; i < str.length; i++)
     {
-        while(i+z < str.length && z < toFind.length && str[i+z] == toFind[z])
-        	z++;
-        if(z == toFind.length)
-            return i;
-        z = 0;
+        if(str[i] == toFind[left])
+        {
+            left++;
+            if(left == toFind.length)
+                return (i+1) - left; //Remember that left is already out of bounds
+        }
+        else if(left > 0)
+            left--;
     }
     return -1;
 }
 
-pure int indexOf(in string str, char ch, int startIndex = 0) nothrow @nogc
+pure int indexOf(in string str, char ch, int startIndex = 0) nothrow @nogc @trusted
 {
     char[1] temp = [ch];
     return indexOf(str,  cast(string)temp, startIndex);
 }
 
+
 pure int count(in string str, in string countWhat) nothrow @nogc @safe
 {
     int ret = 0;
-    int checker = 0;
-    for(int i = 0; i < str.length; i++)
+    int index = 0;
+
+    //Navigates using indexOf
+    while((index = str.indexOf(countWhat, index)) != -1)
     {
-        while(str[i+checker] == countWhat[checker])
-        {
-            checker++;
-            if(checker == countWhat.length)
-            {
-                i+= checker;
-                ret++;
-                break;
-            }
-        }
-        checker = 0;
+        index+= countWhat.length;
+        ret++;
     }
     return ret;
 }
 
 alias countUntil = indexOf;
 
-int lastIndexOf(in string str,in string toFind, int startIndex = -1) pure nothrow @nogc
+int lastIndexOf(in string str,in string toFind, int startIndex = -1) pure nothrow @nogc @safe
 {
-    int z = 1;
     if(startIndex == -1) startIndex = cast(int)(str.length)-1;
+
+    int maxToFind = cast(int)toFind.length - 1;
+    int right = maxToFind;
+    if(right < 0) return -1; //Empty string case 
+    
+    
     for(int i = startIndex; i >= 0; i--)
     {
-        while(str[i-z+1] == toFind[$-z])
+        if(str[i] == toFind[right])
         {
-            z++;
-            if(z > toFind.length)break;
+            right--;
+            if(right == -1)
+                return i;
         }
-        if(z-1 == toFind.length)
-            return i-cast(int)(toFind.length+1);
-        z = 1;
+        else if(right < maxToFind)
+            right++;
     }
     return -1;
 }
+int lastIndexOf(in string str, in char ch, int startIndex = -1) pure nothrow @nogc @trusted
+{
+    char[1] temp = [ch];
+    return lastIndexOf(str, cast(string)temp, startIndex);
+}
+
 T toDefault(T)(string s, T defaultValue = T.init)
 {
     if(s == "")
@@ -483,6 +494,16 @@ string[] split(string str, string separator) pure nothrow @safe
     if(curr == separator)
         curr = null;
     return ret ~ curr;
+}
+
+
+pragma(inline) bool isUpperCase(char c) pure nothrow @safe @nogc
+{
+    return c >= 'A' && c <= 'Z';
+}
+pragma(inline) bool isLowercase(char c) pure nothrow @safe @nogc
+{
+    return c >= 'a' && c <= 'z';
 }
 
 pragma(inline) bool isAlpha(char c) pure nothrow @safe @nogc

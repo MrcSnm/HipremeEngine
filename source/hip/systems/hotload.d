@@ -24,8 +24,14 @@ class HotloadableDLL
     this(string path, void delegate (void* libPointer) onDllLoad)
     {
         assert(path, "DLL path should not be null");
+        import hip.console.log;
+        logln(path.filenameNoExt);
+        if(HipFS.isDir(path))
+            path = joinPath(path, path.filenameNoExt);
+
         if(!dynamicLibraryIsLibNameValid(path))
             path = dynamicLibraryGetLibName(path);
+        logln(path);
         trueLibPath = path;
         this.onDllLoad = onDllLoad;
         load(path);
