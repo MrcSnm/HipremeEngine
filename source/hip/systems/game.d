@@ -21,8 +21,7 @@ import hip.windowing.events;
 import hip.graphics.g2d.renderer2d;
 
 
-version(Standalone){}
-else
+version(LoadScript)
 {
     import hip.systems.hotload;
     import hip.systems.compilewatcher;
@@ -33,13 +32,14 @@ else
         if(dubObj.status != 2)
         {
             import core.stdc.stdlib:exit;
-            rawlog("Dub error: ", dubObj);
+            import std.stdio;
+            writeln("Dub error: ", dubObj);
             exit(1); 
         }
         else
         {
             import hip.util.string:indexOf, lastIndexOf;
-            long errInd = dubObj.output.indexOf("Warning:");
+            int errInd = dubObj.output.indexOf("Warning:");
             if(errInd == -1)
                 errInd = dubObj.output.indexOf("Error:"); //Check first for warnings
             if(errInd == -1) return false;
@@ -64,7 +64,7 @@ class GameSystem
     string projectDir;
     protected static AScene externalScene;
 
-    version(Standalone){} else 
+    version(LoadScript)
     {
         static CompileWatcher watcher;
         protected static HotloadableDLL hotload;
@@ -114,14 +114,20 @@ class GameSystem
 
     void loadGame(string gameDll)
     {
-        version(Standalone){}
-        else
+        version(LoadScript)
         {
+            import hip.console.log;
             import hip.util.path;
             import hip.util.system;
             import hip.util.string:indexOf;
+            
+            logln(gameDll);
 
-            if(gameDll.indexOf("projects/") == -1)
+            if(gameDll.isAbsolutePath)
+            {
+                projectDir = pathSplitter(gameDll)[0..$-1].joinPath;
+            }
+            else if(gameDll.indexOf("projects/") == -1)
             {
                 projectDir = joinPath("projects", gameDll);
                 gameDll = joinPath("projects", gameDll, gameDll);
@@ -148,8 +154,7 @@ class GameSystem
 
     void recompileGame()
     {
-        version(Standalone){}
-        else
+        version(LoadScript)
         {
             import std.process:executeShell;
             auto dub = executeShell("cd "~projectDir~" && dub");
@@ -169,7 +174,15 @@ class GameSystem
     {
         version(Test)
         {
+            // addScene(new SoundTestScene());
+            // addScene(new ChainTestScene());
             addScene(new AssetTest());
+        }
+        else version(LoadScript)
+        {
+            assert(HipremeEngineGameInit != null, "No game was loaded");
+            externalScene = HipremeEngineGameInit();
+            addScene(externalScene);
         }
         else version(Standalone)
         {
@@ -177,20 +190,11 @@ class GameSystem
             externalScene = new HipEngineMainScene();
             addScene(externalScene);
         }
-        else //Load as script
-        {
-            // addScene(new SoundTestScene());
-            // addScene(new ChainTestScene());
-            assert(HipremeEngineGameInit != null, "No game was loaded");
-            externalScene = HipremeEngineGameInit();
-            addScene(externalScene);
-        }
     }
 
     void recompileReloadExternalScene()
     {
-        version(Standalone){}
-        else
+        version(LoadScript)
         {
             import hip.util.array:remove;
             import hip.console.log;
@@ -218,8 +222,7 @@ class GameSystem
 
     bool update(float deltaTime)
     {
-        version(Standalone){}
-        else
+        version(LoadScript)
         {
             if(watcher.update())
                 recompileReloadExternalScene();
@@ -248,8 +251,7 @@ class GameSystem
     
     void quit()
     {
-        version(Standalone){}
-        else
+        version(LoadScript)
         {
             if(hotload !is null)
             {

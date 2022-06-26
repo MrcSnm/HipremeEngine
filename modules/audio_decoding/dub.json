@@ -36,6 +36,6 @@
 	"name": "audio_decoding",
 	"versions": [
 		"BindSDL_Mixer",
-		"HipAudioDecoderAPI"
+		"HipAudioAPI"
 	]
 }

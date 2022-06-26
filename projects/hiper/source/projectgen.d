@@ -6,12 +6,7 @@ import std.array:join,split,array;
 
 struct TemplateInfo
 {
-	string init=q{
-		//NEVER REMOVE THAT LINE
-		initializeHip();
-		initConsole();
-		initG2D();
-	},
+	string initMethod="",
 	update="",
 	render="",
 	dispose="";
@@ -30,7 +25,7 @@ string generateCodeTemplate(TemplateInfo info = TemplateInfo())
 module script.entry;
 import hip.hipengine;
 
-class MainScene : IScene
+class MainScene : AScene
 {
 	
 	/** Constructor */
@@ -59,7 +54,7 @@ class MainScene : IScene
 }
 
 mixin HipEngineMain!MainScene;
-	}(info.init, info.update, info.render, info.dispose);
+	}(info.initMethod, info.update, info.render, info.dispose);
 }
 
 string generateDubProject(DubProjectInfo info)
@@ -76,18 +71,28 @@ string generateDubProject(DubProjectInfo info)
 	"targetName" : "%s",
 	"name" : "%s",
 	"sourcePaths"  : ["source"],
+	"dependencies": 
+	{
+		"hipengine_api": {"path": "../../api"},
+		"math": {"path": "../modules/math"}
+	},
 	"configurations": 
 	[
 		{
 			"name" : "script",
 			"targetType": "dynamicLibrary",
-			"dependencies": {"hipengine_api": {"path": "../../api"}},
 			"subConfigurations": {"hipengine_api" : "script"},
 			"versions": ["Script"]
+		},
+		{
+			"name": "run",
+			"postBuildCommands": ["set PROJECT=%CD% && cd %HIPREME_ENGINE% && dub -- %PROJECT%"]
 		}
 	],
 	"versions" : [
-		"HipremeRenderer",
+		"HipGraphicsAPI",
+		"HipInputAPI",
+		"HipAudioAPI",
 		"HipremeG2D",
 		"HipremeAudio"
 	]
@@ -101,17 +106,19 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
 	string dubProj = generateDubProject(dubInfo);
 	string codeTemplate = generateCodeTemplate(templateInfo);
 
-    //Project folder
-    mkdirRecurse(projectPath);
-    //Source Folder
-    mkdirRecurse(buildNormalizedPath(projectPath, "source", "script"));
-	//Assets Folder
-	mkdirRecurse(buildNormalizedPath(projectPath, "assets"));
+	try
+	{
+	    //Project folder
+		mkdirRecurse(projectPath);
+		//Source Folder
+		mkdirRecurse(buildNormalizedPath(projectPath, "source", "script"));
+		//Assets Folder
+		mkdirRecurse(buildNormalizedPath(projectPath, "assets"));
 
-    std.file.write(buildNormalizedPath(projectPath, "source", "script", "entry.d"), codeTemplate);
-    std.file.write(buildNormalizedPath(projectPath, "dub.json"), dubProj);
+		std.file.write(buildNormalizedPath(projectPath, "source", "script", "entry.d"), codeTemplate);
+		std.file.write(buildNormalizedPath(projectPath, "dub.json"), dubProj);
 
-	std.file.write(buildNormalizedPath(projectPath, ".gitignore"),  q{
+		std.file.write(buildNormalizedPath(projectPath, ".gitignore"),  q{
 .dub
 .vs
 bin
@@ -120,4 +127,10 @@ bin
 *.so
 *.lib
 });
+	}
+	catch(Exception e)
+	{
+		import std.stdio;
+		writeln(e.toString);
+	}
 }
