@@ -56,12 +56,12 @@ string baseName(string path)
     return path[lastSepIndex..$];
 }
 
-///Will get the directory name until a trailing separator
+///Will get the directory name until a trailing separator or return 
 string dirName(string path) pure nothrow @nogc
 {
     int last = path.lastIndexOf(pathSeparator);
     if(last == -1)
-        return "";
+        return path;
     return path[0..last];
 }
 

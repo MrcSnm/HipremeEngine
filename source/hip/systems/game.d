@@ -121,19 +121,23 @@ class GameSystem
     {
         version(LoadScript)
         {
+            import hip.filesystem.hipfs;
             import hip.util.path;
             import hip.util.system;
             import hip.util.string:indexOf;
-            
-            if(gameDll.isAbsolutePath)
+
+
+            if(gameDll.isAbsolutePath && HipFS.absoluteIsFile(gameDll))
             {
-                projectDir = pathSplitter(gameDll)[0..$-1].joinPath;
+                projectDir = gameDll.dirName;
             }
-            else if(gameDll.indexOf("projects/") == -1)
+            else if(!gameDll.extension && gameDll.indexOf("projects/") == -1)
             {
                 projectDir = joinPath("projects", gameDll);
                 gameDll = joinPath("projects", gameDll, gameDll);
             }
+            else
+                projectDir = gameDll;
 
             watcher = new CompileWatcher(projectDir, null, ["d"]).run;
 
@@ -159,7 +163,11 @@ class GameSystem
         version(LoadScript)
         {
             import std.process:executeShell;
+            import std.stdio;
             auto dub = executeShell("cd "~projectDir~" && dub");
+
+            writeln(projectDir);
+            writeln(dub);
             
             //2 == up to date
             string err;

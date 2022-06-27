@@ -576,7 +576,6 @@ class HipFileSystem
         return fs.write(getPath(path), data);
     }
     public static bool exists(string path){return isPathValid(path) && fs.exists(getPath(path));}
-    public static bool existsAbsolute(string path){return fs.exists(path);}
     public static bool remove(string path)
     {
         if(!isPathValid(path) || !isPathValidExtra(path))
@@ -588,8 +587,12 @@ class HipFileSystem
         return getPath("");
     }
 
-    public static bool isDir(string path){return fs.isDir(path);}
-    public static bool isFile(string path){return fs.isFile(path);}
+    public static bool absoluteExists(string path){return fs.exists(path);}
+    public static bool absoluteIsDir(string path){return fs.isDir(path);}
+    public static bool absoluteIsFile(string path){return fs.isFile(path);}
+
+    public static bool isDir(string path){return isPathValid(path) && fs.isDir(getPath(path));}
+    public static bool isFile(string path){return isPathValid(path) && fs.isFile(getPath(path));}
 
     public static string writeCache(string cacheName, void[] data)
     {
