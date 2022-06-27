@@ -78,25 +78,30 @@ class GameSystem
     {
         this.targetFPS = targetFPS;
         keyboard = new KeyboardHandler();
-        keyboard.addKeyListener(SDLK_ESCAPE, new class HipButton
+        keyboard.addKeyListener(HipKey.ESCAPE, new class HipButton
         {
             override void onDown(){hasFinished = true;}
             override void onUp(){}
         });
 
-        keyboard.addKeyListener(SDLK_F1, new class HipButton
+        keyboard.addKeyListener(HipKey.F1, new class HipButton
         {
             override void onDown(){}
             override void onUp(){import hip.bind.interpreters; reloadInterpreter();}
         });
 
-        version(Standalone){}
-        else
+        version(LoadScript)
         {
-            keyboard.addKeyListener(SDLK_F5, new class HipButton
+            keyboard.addKeyListener(HipKey.F5, new class HipButton
             {
-                override void onDown(){}
-                override void onUp(){recompileReloadExternalScene();}
+                override void onDown()
+                {}
+                override void onUp()
+                {
+                    import hip.console.log;
+                    rawlog("Recompiling and Reloading game ");
+                    recompileReloadExternalScene();
+                }
             });
         }
 
@@ -116,13 +121,10 @@ class GameSystem
     {
         version(LoadScript)
         {
-            import hip.console.log;
             import hip.util.path;
             import hip.util.system;
             import hip.util.string:indexOf;
             
-            logln(gameDll);
-
             if(gameDll.isAbsolutePath)
             {
                 projectDir = pathSplitter(gameDll)[0..$-1].joinPath;
@@ -232,8 +234,6 @@ class GameSystem
 
         if(hasFinished || dispatcher.hasQuit)
             return false;
-        version(Android){}
-        else {keyboard.update();}
         foreach(s; scenes)
             s.update(deltaTime);
 

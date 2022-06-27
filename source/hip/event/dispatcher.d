@@ -61,14 +61,13 @@ class EventDispatcher
         {
             try
             {
-                HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)key));
-                debug { import std.stdio : writeln; try { writeln(key); } catch (Exception) {} }
+                HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(getHipKeyFromSystem(key)));
             }
             catch(Exception e){assert(false);}
         };
         onKeyUp = (wchar key)
         {
-            try{HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)key));}
+            try{HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(getHipKeyFromSystem(key)));}
             catch(Exception e){assert(false);}
         };
         onMouseMove = (int x, int y)
@@ -104,58 +103,7 @@ class EventDispatcher
 
     void handleEvent()
     {
-        ///Use SDL to populate our Input Queue
-        // SDL_Event e;
         window.pollWindowEvents();
-        // version(Desktop)
-        // {
-        //     while(SDL_PollEvent(&e) != 0)
-        //     {
-        //         switch(e.type) with (SDL_EventType)
-        //         {
-        //             case SDL_KEYDOWN:
-        //                 HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)e.key.keysym.sym));
-        //                 break;
-        //             case SDL_KEYUP:
-        //                 HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)e.key.keysym.sym));
-        //                 break;
-        //             case SDL_MOUSEMOTION:
-        //                 int x, y;
-        //                 SDL_GetMouseState(&x,&y);
-        //                 HipEventQueue.post(0, HipEventQueue.EventType.touchMove, HipEventQueue.Touch(0, x, y));
-        //                 break;
-        //             case SDL_MOUSEBUTTONUP:
-        //                 int x, y;
-        //                 SDL_GetMouseState(&x,&y);
-        //                 HipEventQueue.post(0, HipEventQueue.EventType.touchUp, HipEventQueue.Touch(0, x, y));
-        //                 break;
-        //             case SDL_MOUSEBUTTONDOWN:
-        //                 int x, y;
-        //                 SDL_GetMouseState(&x,&y);
-        //                 HipEventQueue.post(0, HipEventQueue.EventType.touchDown, HipEventQueue.Touch(0, x, y));
-        //                 break;
-        //             case SDL_MOUSEWHEEL:
-        //                 HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Scroll(e.wheel.x, e.wheel.y, 0));
-        //                 break;
-        //             case SDL_WINDOWEVENT:
-        //                 SDL_WindowEvent wnd = e.window;
-        //                 switch(wnd.event) with(SDL_WindowEventID)
-        //                 {
-        //                     case SDL_WINDOWEVENT_RESIZED:
-        //                         // HipEventQueue.post(0, HipEventQueue.EventType.windowResize, HipEventQueue.Key(e.key.keysym.sym));
-        //                         foreach(r; resizeListeners)
-        //                             r(wnd.data1, wnd.data2);
-        //                         break;
-        //                     default:break;
-        //                 }
-        //                 break;
-        //             case SDL_QUIT:
-        //                 HipEventQueue.post(0, HipEventQueue.EventType.exit, true);
-        //                 break;
-        //             default:break;
-        //         }
-        //     }
-        // }
         handleHipEvent();
         frameCount++;
     }
@@ -193,11 +141,11 @@ class EventDispatcher
                     break;
                 case HipEventQueue.EventType.keyDown:
                     auto k = ev.get!(HipEventQueue.Key);
-                    keyboard.handleKeyDown(cast(SDL_Keycode)(cast(char)k.id).toUppercase);
+                    keyboard.handleKeyDown(cast(HipKey)(k.id));
                     break;
                 case HipEventQueue.EventType.keyUp:
                     auto k = ev.get!(HipEventQueue.Key);
-                    keyboard.handleKeyUp(cast(SDL_Keycode)(cast(char)k.id).toUppercase);
+                    keyboard.handleKeyUp(cast(HipKey)(k.id));
                     break;
                 case HipEventQueue.EventType.gamepadConnected:
                     import hip.console.log;rawlog("Gamepad connected");
@@ -296,3 +244,127 @@ class EventDispatcher
     }
 }
 
+
+version(Windows)
+{
+    private HipKey getHipKeyFromSystem(wchar key)
+    {
+        import core.sys.windows.winuser;
+        ushort k = ushort(key);
+        assert(k > 0 && k < ubyte.max, "Key out of range");
+        switch(k)
+        {
+            case VK_BACK: return HipKey.BACKSPACE;
+            case VK_TAB: return HipKey.TAB;
+            case VK_ESCAPE: return HipKey.ESCAPE;
+
+            case VK_SHIFT: return HipKey.SHIFT;
+            case VK_CONTROL: return HipKey.CTRL;
+            case VK_MENU: return HipKey.ALT;
+            
+            case VK_RETURN: return HipKey.ENTER;
+            case VK_CAPITAL: return HipKey.CAPSLOCK;
+            case VK_SPACE: return HipKey.SPACE;
+            case VK_PRIOR: return HipKey.PAGE_UP;
+            case VK_NEXT: return HipKey.PAGE_UP;
+            case VK_END: return HipKey.END;
+            case VK_HOME: return HipKey.HOME;
+            case VK_LEFT: return HipKey.ARROW_LEFT;
+            case VK_UP: return HipKey.ARROW_UP;
+            case VK_RIGHT: return HipKey.ARROW_RIGHT;
+            case VK_DOWN: return HipKey.ARROW_DOWN;
+            case VK_INSERT: return HipKey.INSERT;
+            case VK_DELETE: return HipKey.DELETE;
+            //A
+            case 0x30: return HipKey._0;
+            case 0x31: return HipKey._1;
+            case 0x32: return HipKey._2;
+            case 0x33: return HipKey._3;
+            case 0x34: return HipKey._4;
+            case 0x35: return HipKey._5;
+            case 0x36: return HipKey._6;
+            case 0x37: return HipKey._7;
+            case 0x38: return HipKey._8;
+            case 0x39: return HipKey._9;
+
+            case 0x41: return HipKey.A;
+            case 0x42: return HipKey.B;
+            case 0x43: return HipKey.C;
+            case 0x44: return HipKey.D;
+            case 0x45: return HipKey.E;
+            case 0x46: return HipKey.F;
+            case 0x47: return HipKey.G;
+            case 0x48: return HipKey.H;
+            case 0x49: return HipKey.I;
+            case 0x4A: return HipKey.J;
+            case 0x4B: return HipKey.K;
+            case 0x4C: return HipKey.L;
+            case 0x4D: return HipKey.M;
+            case 0x4E: return HipKey.N;
+            case 0x4F: return HipKey.O;
+            case 0x50: return HipKey.P;
+            case 0x51: return HipKey.Q;
+            case 0x52: return HipKey.R;
+            case 0x53: return HipKey.S;
+            case 0x54: return HipKey.T;
+            case 0x55: return HipKey.U;
+            case 0x56: return HipKey.V;
+            case 0x57: return HipKey.W;
+            case 0x58: return HipKey.X;
+            case 0x59: return HipKey.Y;
+            case 0x5A: return HipKey.Z;
+            case VK_LWIN: return HipKey.META_LEFT;
+            case VK_RWIN: return HipKey.META_RIGHT;
+            //Maybe there's a need to change?
+            case VK_NUMPAD0: return HipKey._0;
+            case VK_NUMPAD1: return HipKey._1;
+            case VK_NUMPAD2: return HipKey._2;
+            case VK_NUMPAD3: return HipKey._3;
+            case VK_NUMPAD4: return HipKey._4;
+            case VK_NUMPAD5: return HipKey._5;
+            case VK_NUMPAD6: return HipKey._6;
+            case VK_NUMPAD7: return HipKey._7;
+            case VK_NUMPAD8: return HipKey._8;
+            case VK_NUMPAD9: return HipKey._9;
+
+            case VK_F1: return HipKey.F1;
+            case VK_F2: return HipKey.F2;
+            case VK_F3: return HipKey.F3;
+            case VK_F4: return HipKey.F4;
+            case VK_F5: return HipKey.F5;
+            case VK_F6: return HipKey.F6;
+            case VK_F7: return HipKey.F7;
+            case VK_F8: return HipKey.F8;
+            case VK_F9: return HipKey.F9;
+            case VK_F10: return HipKey.F10;
+            case VK_F11: return HipKey.F11;
+            case VK_F12: return HipKey.F12;
+
+            case VK_LSHIFT: return HipKey.SHIFT;
+            case VK_RSHIFT: return HipKey.SHIFT;
+
+            case VK_LCONTROL: return HipKey.CTRL;
+            case VK_RCONTROL: return HipKey.CTRL;
+            
+            case VK_LMENU: return HipKey.ALT;
+            case VK_RMENU: return HipKey.ALT;
+
+            case VK_OEM_1: return HipKey.SEMICOLON;
+
+            case VK_OEM_COMMA: return HipKey.COMMA;
+            case VK_OEM_MINUS: return HipKey.MINUS;
+            case VK_OEM_PERIOD: return HipKey.PERIOD;
+
+            case VK_OEM_2: return HipKey.SLASH;
+            
+            case VK_OEM_4: return HipKey.BRACKET_LEFT;
+            case VK_OEM_5: return HipKey.BACKSLASH;
+            case VK_OEM_6: return HipKey.BRACKET_RIGHT;
+            case VK_OEM_7: return HipKey.QUOTE;
+
+            default:
+                import hip.util.conv:to;
+                assert(false, "Unknown key received ("~to!string(k)~")");
+        }
+    }
+}
