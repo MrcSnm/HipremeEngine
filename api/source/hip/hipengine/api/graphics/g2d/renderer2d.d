@@ -20,6 +20,7 @@ public import hip.hipengine.api.renderer.texture;
 public import hip.hipengine.api.graphics.g2d.hipsprite;
 
 
+
 version(Script)
 {
     extern(C)
@@ -40,6 +41,7 @@ version(Script)
         void function(ref IHipSprite sprite) destroySprite;
     }
 }
+//Use directly 
 else version(Have_hipreme_engine)
 {
     public import hip.graphics.g2d.renderer2d;
