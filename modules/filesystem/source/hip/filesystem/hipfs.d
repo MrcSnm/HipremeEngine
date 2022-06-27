@@ -169,6 +169,12 @@ version(Android)
             std.file.remove(path);
             return true;
         }
+        
+        bool isDir(string path)
+        {
+            return false; 
+        }
+        
     }
 }
 
@@ -179,6 +185,8 @@ version(Android)
 */
 class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
 {
+    version(Windows)
+        pragma(lib, "Shlwapi.lib"); //PathIsDirectory
     bool read(string path, out void[] output)
     {
         import core.stdc.stdio;
@@ -207,7 +215,7 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
         import core.stdc.stdio;
         if(exists(path))
         {
-            auto file = fopen((path~'\0').ptr, "w");
+            auto file = fopen(cachedStringz(path), "w");
             scope(exit)
                 fclose(file);
             if(fwrite(data.ptr, 1, data.length, file) != data.length)
@@ -221,7 +229,7 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
     bool exists(string path)
     {
         import core.stdc.stdio;
-        if(auto file = fopen((path~'\0').ptr, "r"))
+        if(auto file = fopen(cachedStringz(path), "r"))
         {
             fclose(file);
             return true;
@@ -233,11 +241,29 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
         static import core.stdc.stdio;
         if(exists(path))
         {
-            return core.stdc.stdio.remove((path~'\0').ptr) == 0;
+            return core.stdc.stdio.remove(cachedStringz(path)) == 0;
         }
 
         return false;
     }
+    version(Posix)
+        import core.sys.posix.sys.stat;
+    else version(Windows)
+        import core.sys.windows.shlwapi : PathIsDirectoryA;
+    bool isDir(string path)
+    {
+        version(Windows)
+        {
+            return PathIsDirectoryA(cachedStringz(path)) == 1;
+        }
+        else version(Posix)
+        {
+            stat_t st;
+            stat(cachedStringz(path), &st);
+            return S_ISDIR(st.st_mode);
+        }
+    }
+    
 }
 
 version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteraction
@@ -269,6 +295,13 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
         static import std.file;
         std.file.remove(path);return true;
     }
+    
+    bool isDir(string path)
+    {
+        static import std.file;
+        return std.file.isDir(path);
+    }
+    
 }
 
 
@@ -411,6 +444,12 @@ version(UWP)
             if(!exists(path)) return false;
             return cast(bool)DeleteFile(path.toUTF16z);
         }
+        
+        bool isDir(string path)
+        {
+            return false;
+        }
+        
     }
 }
 
@@ -548,7 +587,12 @@ class HipFileSystem
         return getPath("");
     }
 
+    public static bool absoluteExists(string path){return fs.exists(path);}
+    public static bool absoluteIsDir(string path){return fs.isDir(path);}
+    public static bool absoluteIsFile(string path){return fs.isFile(path);}
 
+    public static bool isDir(string path){return isPathValid(path) && fs.isDir(getPath(path));}
+    public static bool isFile(string path){return isPathValid(path) && fs.isFile(getPath(path));}
 
     public static string writeCache(string cacheName, void[] data)
     {

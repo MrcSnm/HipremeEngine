@@ -45,6 +45,7 @@ import hip.bind.interpreters;
 */
 
 
+__gshared string projectToLoad;
 __gshared bool isUsingInterpreter = false;
 __gshared HipInterpreterEntry interpreterEntry;
 
@@ -55,12 +56,20 @@ __gshared HipInterpreterEntry interpreterEntry;
  *
  *	- lua specified: Automatically initialize lua interpreter, and loads source/scripting/lua/main.lua
  *	- lua source specified: Automatically initialize lua interpreter and loads the source specified
+ *	- Project Path specified: Loads the DLL found in the project path
+ *
  */
 void HipremeHandleArguments(string[] args)
 {
 	if(args.length < 2)
 		return;
-	if(args[1] == "lua")
+
+	if(args.length == 2) //Project Path
+	{
+		import hip.util.path;
+		projectToLoad = args[1];
+	}
+	else if(args[1] == "lua")
 	{
 		interpreterEntry.intepreter = HipInterpreter.lua;
 		interpreterEntry.sourceEntry = "source/scripting/lua/main.lua";
@@ -116,7 +125,7 @@ static void initEngine(bool audio3D = false)
 
 enum float FRAME_TIME = 1000/60; //60 frames per second
 
-extern(C)int SDL_main()
+extern(C) int HipremeMain()
 {
 	import hip.data.ini;
 	Console.initialize();
@@ -149,7 +158,6 @@ extern(C)int SDL_main()
 	else
 		sys = new GameSystem(FRAME_TIME);
 
-	import hip.event.handlers.inputmap;
 
 	//Initialize 2D context
 	import hip.graphics.g2d;
@@ -158,25 +166,7 @@ extern(C)int SDL_main()
 	if(isUsingInterpreter)
 		loadInterpreterEntry(interpreterEntry.intepreter, interpreterEntry.sourceEntry);
 	//After initializing engine, every dependency has been load
-	
-
-	//AudioSource sc = Audio.getSource(buf);
-	//Audio.setPitch(sc, 1);
-	// import hip.debugging.runtime;
-	// import hip.imgui.fonts.icons;
-	// import hip.implementations.imgui.imgui_impl_opengl3;
-	// DI.start(HipRenderer.window);
-	// ImFontConfig cfg = DI.getDefaultFontConfig("Default + Icons");
-	// ImFontAtlas_AddFontDefault(igGetIO().Fonts, &cfg);
-	// DI.mergeFont("assets/fonts/"~FontAwesomeSolid, 16, FontAwesomeRange, &cfg);
-	// ImGui_ImplOpenGL3_CreateFontsTexture();
-
-	
-	//Audio.play(sc);
-	
-	// ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	
-	sys.loadGame("TestScene");
+	sys.loadGame(projectToLoad);
 	sys.startExternalGame();
 	version(Desktop)
 	{
@@ -189,23 +179,6 @@ extern(C)int SDL_main()
 		HipremeDestroy();
 	}
 	return 0;
-	///////////START IMGUI
-	// Start the Dear ImGui frame
-	// DI.begin();
-	// static bool open = true;
-	// igShowDemoWindow(&open);
-	// import hip.implementations.imgui.imgui_debug;
-	// addDebug!(s);
-
-	// if(igButton("Viewport flag".ptr, ImVec2(0,0)))
-	// {
-	// 	//logln!(igGetIO().ConfigFlags);
-	// 	igGetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-	// }
-
-	// // Rendering
-	// DI.end();
-	// Cleanup
 }
 
 /** 
@@ -283,10 +256,6 @@ export extern(C) void HipremeInit()
 *	- HipAudio
 *
 */
-export extern(C) int HipremeMain()
-{
-	return SDL_main();
-}
 version(dll)
 {
 
@@ -304,6 +273,7 @@ else
 export extern(C) bool HipremeUpdate()
 {
 	import hip.util.time;
+	import core.time:dur;
 	import core.thread.osthread;
 	long initTime = HipTime.getCurrentTime();
 	// version(Windows) //For some reason, it seems that on Linux it is always 60 FPS

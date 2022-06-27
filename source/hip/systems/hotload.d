@@ -24,6 +24,9 @@ class HotloadableDLL
     this(string path, void delegate (void* libPointer) onDllLoad)
     {
         assert(path, "DLL path should not be null");
+        if(HipFS.absoluteIsDir(path))
+            path = joinPath(path, path.filenameNoExt);
+
         if(!dynamicLibraryIsLibNameValid(path))
             path = dynamicLibraryGetLibName(path);
         trueLibPath = path;
@@ -32,11 +35,17 @@ class HotloadableDLL
     }
     protected bool load(string path)
     {
-        if(!HipFS.exists(path))
+        import std.file;
+        if(!HipFS.absoluteExists(path))
+        {
+            import hip.console.log;
+            rawlog("Does not exists ", path);
             return false;
+        }
         tempPath = getTempName(path);
         copy(path, tempPath);
         lib = dynamicLibraryLoad(tempPath);
+
         if(onDllLoad && lib != null)
             onDllLoad(lib);
         return lib != null;

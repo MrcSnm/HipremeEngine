@@ -26,6 +26,6 @@ void initMath()
     version(Script)
     {
         Random.initRandom();
-        initVector();
+        // initVector();
     }
 }

@@ -13,6 +13,7 @@ private enum Define(string code)
 import hip.event.dispatcher;
 import hip.systems.game;
 
+
 mixin(Define(q{bool isKeyPressed(char key, uint id = 0) 
 {
     return sys.dispatcher.isKeyPressed(key, id);

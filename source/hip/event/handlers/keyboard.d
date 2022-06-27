@@ -21,7 +21,7 @@ import hip.util.data_structures;
 import hip.error.handler;
 import hip.util.time, hip.util.array;
 
-enum KeyCodes
+enum HipKey : ushort
 {
     BACKSPACE = 8, TAB, ENTER = 13, SHIFT = 16, CTRL, ALT, PAUSE_BREAK, CAPSLOCK,
     ESCAPE = 27, SPACE = 32, PAGE_UP, PAGE_DOWN, END, HOME, ARROW_LEFT, ARROW_UP, ARROW_RIGHT, ARROW_DOWN,
@@ -37,7 +37,7 @@ enum KeyCodes
 char toUppercase(char a)
 {
     ubyte charV = ubyte(a);
-    if(charV >= KeyCodes.A+32 && charV <= KeyCodes.Z+32)
+    if(charV >= HipKey.A+32 && charV <= HipKey.Z+32)
         return cast(char)(charV-32);
     return a;
 }
@@ -79,7 +79,7 @@ class KeyboardHandler : IHipKeyboard
      *   kCode = New key code
      * Returns: Rebinded was succesful
      */
-    bool rebind(HipButton k, SDL_Keycode kCode)
+    bool rebind(HipButton k, HipKey kCode)
     {
         HipButton[] currentListener = listeners[k.meta.id];
         int currentCount = listenersCount[k.meta.id];
@@ -99,7 +99,7 @@ class KeyboardHandler : IHipKeyboard
      *   key = id for being assigned with the Key object
      *   k = Key object reference
      */
-    void addKeyListener(SDL_Keycode keyCode, HipButton k)
+    void addKeyListener(HipKey keyCode, HipButton k)
     {
         ubyte key = cast(ubyte)keyCode;
         if((key in listeners) == null) //Initialization for new key
@@ -118,7 +118,7 @@ class KeyboardHandler : IHipKeyboard
     /**
     * Takes care of the pressed keys array
     */
-    private void setPressed(SDL_Keycode key, bool press)
+    private void setPressed(HipKey key, bool press)
     {
         ubyte Key = cast(ubyte)key;
         metadatas[Key].setPressed(press);
@@ -142,16 +142,13 @@ class KeyboardHandler : IHipKeyboard
         }
         switch(key)
         {
-            case SDL_Keycode.SDLK_LALT:
-            case SDL_Keycode.SDLK_RALT:
+            case HipKey.ALT:
                 altPressed = press;
                 break;
-            case SDL_Keycode.SDLK_LCTRL:
-            case SDL_Keycode.SDLK_RCTRL:
+            case HipKey.CTRL:
                 ctrlPressed = press;
                 break;
-            case SDL_Keycode.SDLK_LSHIFT:
-            case SDL_Keycode.SDLK_RSHIFT:
+            case HipKey.SHIFT:
                 shiftPressed = press;
                 break;
             default:
@@ -160,7 +157,7 @@ class KeyboardHandler : IHipKeyboard
 
     }
 
-    void handleKeyUp(SDL_Keycode key)
+    void handleKeyUp(HipKey key)
     {
         setPressed(key, false);
         if((key in listeners) != null)
@@ -182,7 +179,7 @@ class KeyboardHandler : IHipKeyboard
     /**
     *   Updates the metadata
     */
-    void handleKeyDown(SDL_Keycode key)
+    void handleKeyDown(HipKey key)
     {
         setPressed(key, true);
         if((key in listeners) != null)
@@ -237,3 +234,5 @@ class KeyboardHandler : IHipKeyboard
     }
 
 }
+
+

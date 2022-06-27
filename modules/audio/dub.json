@@ -27,7 +27,6 @@
 		"BindSDL_Mixer",
 		"XAUDIO_2_9",
 		"HipAudioAPI",
-		"HipAudioDecoderAPI",
 		"AL_EFX"
 	]
 }

@@ -1,19 +1,21 @@
 {
-
-	"targetPath": "bin",
 	"authors": [
 		"Hipreme"
 	],
 	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"arsd-official:minigui": "~>10.8.4"
+	},
+	"description": "Hipreme Engine editor",
+	"license": "proprietary",
+	"name": "hiper",
+	"sourcePaths": [
+		"source"
+	],
+	"targetPath": "bin",
 	"versions": [
 		"GL_45",
 		"GL_ARB",
 		"SDL_208"
-	],
-	"importPaths": [
-		"source"
-	],
-	"description": "Hipreme Engine editor",
-	"license": "proprietary",
-	"name": "hiper"
+	]
 }

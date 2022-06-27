@@ -2,16 +2,12 @@ module projectgen;
 import std.path:buildNormalizedPath;
 import std.file;
 import std.format:format;
+import std.process;
 import std.array:join,split,array;
 
 struct TemplateInfo
 {
-	string init=q{
-		//NEVER REMOVE THAT LINE
-		initializeHip();
-		initConsole();
-		initG2D();
-	},
+	string initMethod="",
 	update="",
 	render="",
 	dispose="";
@@ -19,18 +15,18 @@ struct TemplateInfo
 
 struct DubProjectInfo
 {
-	string author="HipremeEngine",
-	projectName="Hipreme Engine Test",
-	desc = "Hipreme Engine test scene";
+	string author = "HipremeEngine";
+	string projectName = "Hipreme Engine Test";
+	string desc = "Hipreme Engine test scene";
 }
 
 string generateCodeTemplate(TemplateInfo info = TemplateInfo())
 {
 	return format!q{
 module script.entry;
-import hipengine;
+import hip.hipengine;
 
-class MainScene : IScene
+class MainScene : AScene
 {
 	
 	/** Constructor */
@@ -59,15 +55,33 @@ class MainScene : IScene
 }
 
 mixin HipEngineMain!MainScene;
-	}(info.init, info.update, info.render, info.dispose);
+	}(info.initMethod, info.update, info.render, info.dispose);
 }
 
-string generateDubProject(DubProjectInfo info)
+
+string escapeWindowsPathSep(string input)
 {
+	string output = "";
+	foreach(ch; input)
+		if(ch == '\\')
+			output~="\\\\";
+		else
+			output~= ch;
+	return output;
+}
+
+string generateDubProject(DubProjectInfo info, string projectPath)
+{
+	import std.conv;
 	import std.uni:toLower;
 	import std.algorithm:map;
-	string outputName = info.projectName.split(" ").join("_").array;
-	string name = outputName.map!(character => character.toLower);
+	dstring outputName = info.projectName.split(" ").join("_").array;
+	dstring name = outputName.map!(character => character.toLower).array;
+
+	string hipEnginePath = environment["HIPREME_ENGINE"].escapeWindowsPathSep;
+	projectPath = projectPath.escapeWindowsPathSep;
+
+
 	return format!q{
 {
 	"authors": ["%s"],
@@ -76,42 +90,56 @@ string generateDubProject(DubProjectInfo info)
 	"targetName" : "%s",
 	"name" : "%s",
 	"sourcePaths"  : ["source"],
+	"dependencies": 
+	{
+		"hipengine_api": {"path": "%s/api"},
+		"math": {"path": "%s/modules/math"}
+	},
 	"configurations": 
 	[
 		{
 			"name" : "script",
 			"targetType": "dynamicLibrary",
-			"dependencies": {"hipengine_api": {"path": "../../api"}},
 			"subConfigurations": {"hipengine_api" : "script"},
 			"versions": ["Script"]
+		},
+		{
+			"name": "run",
+			"postBuildCommands": ["cd %s && dub -c script -- %s"]
 		}
 	],
 	"versions" : [
 		"HipremeRenderer",
-		"HipremeG2D",
-		"HipremeAudio"
+		"HipGraphicsAPI",
+		"HipInputAPI",
+		"HipAudioAPI",
+		"HipMathAPI",
+		"HipremeAudio",
+		"HipremeG2D"
 	]
 }
-	}(info.author, info.desc, outputName, name);
+	}(info.author, info.desc, outputName, name, hipEnginePath, hipEnginePath, hipEnginePath, projectPath);
 }
 
 void generateProject(string projectPath,
 DubProjectInfo dubInfo, TemplateInfo templateInfo)
 {
-	string dubProj = generateDubProject(dubInfo);
+	string dubProj = generateDubProject(dubInfo, projectPath);
 	string codeTemplate = generateCodeTemplate(templateInfo);
 
-    //Project folder
-    mkdirRecurse(projectPath);
-    //Source Folder
-    mkdirRecurse(buildNormalizedPath(projectPath, "source"));
-	//Assets Folder
-	mkdirRecurse(buildNormalizedPath(projectPath, "assets"));
+	try
+	{
+	    //Project folder
+		mkdirRecurse(projectPath);
+		//Source Folder
+		mkdirRecurse(buildNormalizedPath(projectPath, "source", "script"));
+		//Assets Folder
+		mkdirRecurse(buildNormalizedPath(projectPath, "assets"));
 
-    std.file.write(buildNormalizedPath(projectPath, "source", "script", "entry.d"), codeTemplate);
-    std.file.write(buildNormalizedPath(projectPath, "dub.json"), dubProj);
+		std.file.write(buildNormalizedPath(projectPath, "source", "script", "entry.d"), codeTemplate);
+		std.file.write(buildNormalizedPath(projectPath, "dub.json"), dubProj);
 
-	std.file.write(buildNormalizedPath(projectPath, ".gitignore"),  q{
+		std.file.write(buildNormalizedPath(projectPath, ".gitignore"),  q{
 .dub
 .vs
 bin
@@ -120,4 +148,10 @@ bin
 *.so
 *.lib
 });
+	}
+	catch(Exception e)
+	{
+		import std.stdio;
+		writeln(e.toString);
+	}
 }

@@ -11,8 +11,6 @@ Distributed under the CC BY-4.0 License.
 
 module hip.hipengine.api.graphics.color;
 
-version(HipGraphicsAPI):
-
 struct HipColor
 {
     float r =0, g = 0, b = 0, a = 0;
