@@ -15,7 +15,32 @@
 			"versions": [
 				"Desktop",
 				"Standalone",
-				"Test"
+				"Test",
+				"NO_GLES",
+				"NO_SLES"
+			],
+			"buildOptions": [
+				"debugMode",
+				"debugInfo",
+				"debugInfoC"
+			],
+			"versions-windows": [
+				"FSWUsesWin32"
+			]
+		},
+		{
+			"name": "script",
+			"targetPath": "bin/desktop",
+			"targetType": "executable",
+			"dependencies": {
+				"fswatch": "~>0.6.0"
+			},
+			"versions": [
+				"Desktop",
+				"LoadScript",
+				"Standalone",
+				"NO_GLES",
+				"NO_SLES"
 			],
 			"buildOptions": [
 				"debugMode",
@@ -135,6 +160,7 @@
 		"data": {"path": "./modules/data", "version": "*"},
 		"debugging": {"path": "./modules/debugging", "version": "*"},
 		"error": {"path": "./modules/error", "version": "*"},
+		"filesystem": {"path": "./modules/filesystem", "version": "*"},
 		"hipengine_api": {"path": "./api", "version": "*"},
 		"imgui": {"path": "./modules/imgui", "version": "*"},
 		"jni": {"path": "./modules/jni", "version": "*"},
@@ -152,21 +178,7 @@
 		"dxgi",
 		"d3d11",
 		"d3dcompiler",
-		"xaudio2",
-
-
-		"modules/audio/audio",
-		"modules/bind/bind",
-		"modules/config/config",
-		"modules/console/console",
-		"modules/data/data",
-		"modules/debugging/debugging",
-		"modules/error/error",
-		"modules/imgui/imgui",
-		"modules/jni/jni",
-		"modules/math/math",
-		"modules/renderer/renderer",
-		"modules/util/util"
+		"xaudio2"
 	],
 	"libs-linux" : [
 		"X11",
@@ -184,11 +196,17 @@
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipremeEngineLua",
-		"HipremeEngineDef",
-		"SDL_208",
-		"BindSDL_Mixer",
-		"BindSDL_TTF",
+		"HipGL3",
+		"HipCheckUnknownKeycode",
 		"BindSDL_Image",
+		"HipDataStructures",
+		"HipGraphicsAPI",
+		"HipInputAPI",
+		"HipMathAPI",
+		"HipTweenAPI",
+		"HipTimerAPI",
+		"HipDStdFile",
+		"HipScriptingAPI",
 		"GL_45",
 		"GL_ARB",
 		"AL_EFX"

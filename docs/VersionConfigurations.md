@@ -10,6 +10,7 @@
 |**HipAssets**| Activates asset manager and asset packer on the data module | data module | [Loading and Packing Assets]() |
 |**HipJSON**| Activates the JSON/JSONC reader on the data module | data module | None |
 |**FunctionArrayAvailable**| Activates function arrays on some classes, HipFS contains extra validations that depends on that feature | Function Array implementation | None |
+|**HipCheckUnknownKeycode**| Will assert(false) when receving a key code that is not registered withing HpKey | None | [How to use Keyboard]() |
 |**HipSDLImage**| HipSDLImage decoder, removal planned | bindbc-sdl | None |
 |**HipARSDImage**| Use arsd.image as the implementation for the image decoder | arsd-official:image_files dependency | None |
 |**HipGL3**| Uses the OpenGL3 implementation, making uniform buffer objects available | bindbc-opengl or gles dependency | None |
