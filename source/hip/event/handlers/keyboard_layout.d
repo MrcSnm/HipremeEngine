@@ -60,7 +60,7 @@ abstract class KeyboardLayout
 
     final void generateDefaults()
     {
-        with(KeyCodes)
+        with(HipKey)
         {
             addKeyAnyState(SPACE, " ");
             addKeyAnyState(ENTER, "\n");
@@ -85,7 +85,7 @@ class KeyboardLayoutABNT2 : KeyboardLayout
     override void initialize()
     {
         generateDefaults();
-        with(KeyCodes)
+        with(HipKey)
         {
             addKey(A, "a");
             addKey(B, "b");
