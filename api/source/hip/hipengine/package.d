@@ -27,14 +27,6 @@ module hip.hipengine;
 
 
 
-// version (HipremeAudio)
-// {
-// 	public import hipaudio;
-// }
-// version (HipremeRenderer)
-// {
-// 	public import hiprenderer;
-// }
 version (HipremeG2D)
 {
 	public import hip.hipengine.api.graphics.color;
@@ -94,7 +86,7 @@ mixin template HipEngineMain(alias StartScene)
 		}
 		export extern(System) AScene HipremeEngineGameInit()
 		{
-			import hipengine;
+			import hip.hipengine;
 			import core.runtime;
 			rt_init();
 			initializeHip();

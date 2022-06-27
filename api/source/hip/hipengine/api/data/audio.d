@@ -1,6 +1,6 @@
 module hip.hipengine.api.data.audio;
 
-version(HipAudioDecoderAPI):
+version(HipAudioAPI):
 import hip.hipengine.api.audio;
 
 enum HipAudioEncoding

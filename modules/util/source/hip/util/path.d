@@ -56,12 +56,17 @@ string baseName(string path)
     return path[lastSepIndex..$];
 }
 
-string dirName(string path)
+///Will get the directory name until a trailing separator or return 
+string dirName(string path) pure nothrow @nogc
 {
-    return joinPath(pathSplitter(path)[0..$-1]);
+    int last = path.lastIndexOf(pathSeparator);
+    if(last == -1)
+        return path;
+    return path[0..last];
 }
 
-string extension(string pathOrFilename)
+
+string extension(string pathOrFilename) pure nothrow @nogc
 {
     auto ind = pathOrFilename.lastIndexOf(".");
     if(ind == -1)
@@ -131,13 +136,52 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
 }
 
 
+bool isAbsolutePath(string path) pure nothrow @nogc
+{
+    if(path == null)
+        return false;
+    version(Posix)
+        if(path[0] != '/')
+            return false;
+    version(Windows)
+    {
+        if(path.length < 3)
+            return false;
+        if(!(path[0].isUpperCase && path[1] == ':' && path[2] == '\\'))
+            return false;
+    }
+    for(size_t i = 0; i < path.length; i++)
+        if(i + 2 < path.length && path[i] == '.' && path[i+1] == '.' && path[i+2] == pathSeparator)
+            return false;
+    return true;
+}
+
+
 string replaceFileName(string path, string newFileName)
 {
     string[] p = pathSplitter(path);
     p[$-1] = newFileName;
     return joinPath(p);
 }
-string getFileNameFromPath(string path){return pathSplitter(path)[$-1];}
+string filename(string path)
+{
+    int last = path.lastIndexOf(pathSeparator);
+    if(last == -1)
+        return path;
+    return path[last+1..$];
+}
+
+string filenameNoExt(string path)
+{
+    string f = path.filename;
+    if(f == "")
+        return "";
+    int last = path.lastIndexOf(".");
+    if(last == -1)
+        return f;
+    return f[0..last];
+}
+
 string joinPath(string[] paths ...){return joinPath(paths);}
 string joinPath(string[] paths)
 {
@@ -164,9 +208,13 @@ string joinPath(string[] paths)
 @safe unittest
 {
     assert(relativePath("foo") == "foo");
+    assert(filenameNoExt("helloWorld.zip") == "helloWorld");
 
     version (Posix)
     {
+        assert(filename("/something/here/yet.txt"), "yet.txt");
+        assert(filenameNoExt("/something/here/yet.txt"), "yet");
+
         assert(relativePath("foo", "/bar") == "foo");
         assert(relativePath("/foo/bar", "/foo/bar") == ".");
         assert(relativePath("/foo/bar", "/foo/baz") == "../bar");
@@ -175,6 +223,9 @@ string joinPath(string[] paths)
     }
     version (Windows)
     {
+        assert(filename(`c:\something\here\yet.txt`), "yet.txt");
+        assert(filenameNoExt(`c:\something\here\yet.txt`) == "yet");
+
         assert(relativePath("foo", `c:\bar`) == "foo");
         assert(relativePath(`c:\foo\bar`, `c:\foo\bar`) == ".");
         assert(relativePath(`c:\foo\bar`, `c:\foo\baz`) == `..\bar`);

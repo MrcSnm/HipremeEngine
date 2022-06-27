@@ -21,7 +21,7 @@ pure nothrow string sanitizePath(string path)
 {
     string ret = new string(path.length);
 
-    for(uint i = 0; i < path.length; i++)
+    for(size_t i = 0; i < path.length; i++)
     {
         version(Windows)
         {
@@ -42,7 +42,7 @@ pure nothrow string sanitizePath(string path)
 }
 pure nothrow bool isPathUnixStyle(string path)
 {
-    for(int i = 0; i < path.length; i++)
+    for(size_t i = 0; i < path.length; i++)
         if(path[i] == '/')
             return true;
     return false;
