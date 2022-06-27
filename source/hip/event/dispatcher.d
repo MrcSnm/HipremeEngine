@@ -363,8 +363,13 @@ version(Windows)
             case VK_OEM_7: return HipKey.QUOTE;
 
             default:
-                import hip.util.conv:to;
-                assert(false, "Unknown key received ("~to!string(k)~")");
+                version(HipCheckUnknownKeycode)
+                {
+                    import hip.util.conv:to;
+                    assert(false, "Unknown key received ("~to!string(k)~")");
+                }
+                else
+                    return cast(HipKey)k;
         }
     }
 }
