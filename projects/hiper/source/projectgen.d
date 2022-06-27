@@ -2,6 +2,7 @@ module projectgen;
 import std.path:buildNormalizedPath;
 import std.file;
 import std.format:format;
+import std.process;
 import std.array:join,split,array;
 
 struct TemplateInfo
@@ -57,12 +58,30 @@ mixin HipEngineMain!MainScene;
 	}(info.initMethod, info.update, info.render, info.dispose);
 }
 
-string generateDubProject(DubProjectInfo info)
+
+string escapeWindowsPathSep(string input)
 {
+	string output = "";
+	foreach(ch; input)
+		if(ch == '\\')
+			output~="\\\\";
+		else
+			output~= ch;
+	return output;
+}
+
+string generateDubProject(DubProjectInfo info, string projectPath)
+{
+	import std.conv;
 	import std.uni:toLower;
 	import std.algorithm:map;
 	dstring outputName = info.projectName.split(" ").join("_").array;
 	dstring name = outputName.map!(character => character.toLower).array;
+
+	string hipEnginePath = environment["HIPREME_ENGINE"].escapeWindowsPathSep;
+	projectPath = projectPath.escapeWindowsPathSep;
+
+
 	return format!q{
 {
 	"authors": ["%s"],
@@ -73,8 +92,8 @@ string generateDubProject(DubProjectInfo info)
 	"sourcePaths"  : ["source"],
 	"dependencies": 
 	{
-		"hipengine_api": {"path": "../../api"},
-		"math": {"path": "../modules/math"}
+		"hipengine_api": {"path": "%s/api"},
+		"math": {"path": "%s/modules/math"}
 	},
 	"configurations": 
 	[
@@ -86,24 +105,26 @@ string generateDubProject(DubProjectInfo info)
 		},
 		{
 			"name": "run",
-			"postBuildCommands": ["set PROJECT=%CD% && cd %HIPREME_ENGINE% && dub -- %PROJECT%"]
+			"postBuildCommands": ["cd %s && dub -c script -- %s"]
 		}
 	],
 	"versions" : [
+		"HipremeRenderer",
 		"HipGraphicsAPI",
 		"HipInputAPI",
 		"HipAudioAPI",
-		"HipremeG2D",
-		"HipremeAudio"
+		"HipMathAPI",
+		"HipremeAudio",
+		"HipremeG2D"
 	]
 }
-	}(info.author, info.desc, outputName, name);
+	}(info.author, info.desc, outputName, name, hipEnginePath, hipEnginePath, hipEnginePath, projectPath);
 }
 
 void generateProject(string projectPath,
 DubProjectInfo dubInfo, TemplateInfo templateInfo)
 {
-	string dubProj = generateDubProject(dubInfo);
+	string dubProj = generateDubProject(dubInfo, projectPath);
 	string codeTemplate = generateCodeTemplate(templateInfo);
 
 	try
