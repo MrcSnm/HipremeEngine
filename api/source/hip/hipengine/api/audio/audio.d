@@ -1,7 +1,5 @@
 module hip.hipengine.api.audio.audio;
 
-version(HipAudioAPI):
-
 public import hip.hipengine.api.audio.audiosource;
 version(Script)
 {
@@ -42,9 +40,9 @@ version(Script)
 
 void initAudio()
 {
-    version(Script)
+    version(Script) version(HipAudioAPI)
     {
-        import hipengine.internal;
+        import hip.hipengine.internal;
         enum Class = "HipAudio";
 
         //Create an instance per unique type

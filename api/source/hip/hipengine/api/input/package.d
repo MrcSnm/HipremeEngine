@@ -26,7 +26,7 @@ void initInput()
 {
     version(Script)
     {
-        import hipengine.internal;
+        import hip.hipengine.internal;
 
         loadSymbols!(
             isKeyPressed,

@@ -576,6 +576,7 @@ class HipFileSystem
         return fs.write(getPath(path), data);
     }
     public static bool exists(string path){return isPathValid(path) && fs.exists(getPath(path));}
+    public static bool existsAbsolute(string path){return fs.exists(path);}
     public static bool remove(string path)
     {
         if(!isPathValid(path) || !isPathValidExtra(path))
