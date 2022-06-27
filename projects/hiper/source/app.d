@@ -21,7 +21,15 @@ bool isProjectNameValid(string name)
 
 int main(string[] args)
 {
+	import std.process;
+	if(!("HIPREME_ENGINE" in environment))
+	{
+		writeln("Please setup HIPREME_ENGINE environment variable to hiper being able to correctly generate your project");
+		return 1;
+	}
+
 	string path;
+
 	if(args.length < 2)
 	{
 		bool hasCancel = false;
