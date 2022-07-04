@@ -234,7 +234,7 @@ void setWindowName(Display* display, Window window, char* name)
 
 pragma(inline) wchar convertKeycodeToScancode(XKeyEvent* ev)
 {
-    char[2] buffer;
+    char[2] buffer = '\0';
     KeySym ks;
     int allocated = XLookupString(ev, buffer.ptr, buffer.length, &ks, null);
     if(allocated > 1)
