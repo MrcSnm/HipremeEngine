@@ -229,12 +229,12 @@ struct String
         if(countPtr != null)
         {
             *countPtr = *countPtr - 1;
+            assert(*countPtr >= 0);
             if(*countPtr == 0 && chars != null)
             {
                 free(chars);
                 free(countPtr);
             }
-            assert(*countPtr >= 0);
             countPtr = null;
             chars = null;
         }
