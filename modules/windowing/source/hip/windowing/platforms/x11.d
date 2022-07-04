@@ -108,6 +108,8 @@ nothrow @nogc bool initializeOpenGL(int majorVersion, int minorVersion)
     windowAttribs.event_mask = PointerMotionMask |
                              ButtonPressMask |
                              ButtonReleaseMask |
+	    		     KeyPressMask |
+	    		     KeyReleaseMask |
                              EnterWindowMask |
                              LeaveWindowMask |
                              ExposureMask;
