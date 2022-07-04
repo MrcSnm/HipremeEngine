@@ -669,6 +669,65 @@ class EventQueue
     }
 }
 
+class Node(T)
+{
+    T data;
+    Node!(T)[] children;
+    Node!T parent;
+
+    this(T data){this.data = data;}
+
+    pragma(inline) bool isRoot() const @nogc nothrow {return parent is null;}
+    pragma(inline) bool hasChildren() const @nogc nothrow {return children.length != 0;}
+    Node!T get(T data)
+    {
+        foreach(node; this)
+        {
+            if(node.data == data)
+                return node;
+        }
+        return null;
+    }
+    pragma(inline) Node!T addChild(T data)
+    {
+        Node!T ret = new Node(data);
+        children~= ret;
+        return ret;
+    }
+    
+    int opApply(scope int delegate(E) cb)
+    {
+        foreach(child; children)
+        {
+            if(cb(child) || child.opApply(cb))
+                return 1;
+        }
+        return 0;
+    }
+}
+
+class DirectoryTree : Node!string
+{
+    alias addFolder = addChild;
+    void addFile(string fileName)
+    {
+        addChild(fileName);
+    }
+
+    Node!string getFolder(string folder)
+    {
+        import hip.util.string:split;
+        Node!string ret = this;
+        foreach(part; folder.split("/"))
+        {
+            ret = ret.get(part);
+            if(ret is null)
+                return null;
+        }
+        return ret;
+    }
+}
+
 struct Signal(A...)
 {
     Array!(void function(A)) listeners;
