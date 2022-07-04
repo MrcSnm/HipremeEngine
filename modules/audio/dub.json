@@ -13,7 +13,7 @@
 		"bindbc-sdl": "~>1.0.1",
 		"imgui": {"path": "../imgui"},
 		"math": {"path": "../math"},
-		"filesystem": {"path": "../filesystem"},
+		"filesystem": {"path": "../filesystem", "version": "*"},
 		"audio_decoding": {"path": "../audio_decoding"},
 		"sdl_sound": {"path": "../../dependencies/sdl_sound"},
 		"sles": {"path": "../../dependencies/sles"},
