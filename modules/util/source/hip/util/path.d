@@ -33,15 +33,15 @@ string[] pathSplitter(string path)
     return ret;
 }
 
-auto pathSplitterRange(string path)
+auto pathSplitterRange(string path) pure nothrow @nogc
 {
     struct PathRange
     {
         string path;
         size_t indexRight = 0;
 
-        bool empty(){return indexRight >= path.length;}
-        string front()
+        bool empty() pure nothrow @nogc {return indexRight >= path.length;}
+        string front() pure nothrow @nogc
         {
             size_t i = indexRight;
             while(i < path.length && path[i] != '\\' && path[i] != '/')
@@ -49,7 +49,7 @@ auto pathSplitterRange(string path)
             indexRight = i;
             return path[0..indexRight];
         }
-        void popFront()
+        void popFront() pure nothrow @nogc
         {
             if(indexRight+1 < path.length)
             {
@@ -62,6 +62,21 @@ auto pathSplitterRange(string path)
     }
 
     return PathRange(path);
+}
+
+bool isRootOf(string theRoot, string ofWhat) pure nothrow @nogc
+{
+    auto pathA = pathSplitterRange(theRoot);
+    auto pathB = pathSplitterRange(ofWhat);
+
+    for(; !pathA.empty && !pathB.empty; pathA.popFront, pathB.popFront)
+    {
+        string compA = pathA.front;
+        string compB = pathB.front;
+        if(compA != compB)
+            return false;
+    }
+    return true;
 }
 
 
