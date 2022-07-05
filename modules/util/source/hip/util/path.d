@@ -1,6 +1,8 @@
 module hip.util.path;
 import hip.util.string;
 import hip.util.system;
+//Node required for buildFolderTree
+public import hip.util.data_structures: Node;
 
 version(Windows) 
     enum defaultCaseSensitivity = false;
@@ -249,12 +251,60 @@ string joinPath(string[] paths)
     return output;
 }
 
+public Node!string buildFolderTree(string[] filesList)
+{
+    alias DirNode = Node!string;
+    DirNode root = new DirNode(filesList[0]);
+
+    scope DirNode[] dirStack = [root];
+    
+    for(size_t i = 1; i < filesList.length; i++)
+    {
+        int currStack = 0;
+        foreach(pathPart; pathSplitterRange(filesList[i]))
+        {
+            if(pathPart.extension != "") //It is a leaf if it has an extension
+            {
+                dirStack[$-1].addChild(pathPart);
+            }
+            else if(currStack >= dirStack.length) //If we have more parts than the stack has children, add to the stack
+            {
+                //Add child to the last
+                dirStack~= dirStack[$-1].addChild(pathPart);
+                currStack++;
+            }
+            else if(dirStack[currStack].data != pathPart) //If both they are the same, check for the next part
+            {
+                dirStack = dirStack[0..$-1];
+                currStack--;
+            }
+            else if(dirStack[currStack].data == pathPart) //If both they are the same, check for the next part
+                currStack++;
+        }
+    }
+    return root;
+}
+string buildPath(Node!string node)
+{
+    string ret = node.data;
+    while(node.parent !is null)
+    {
+        node = node.parent;
+        if(node)
+        {
+            ret = node.data~"/"~ret;
+        }
+    }
+    return ret;
+}
+
 
 ///Copied from dmd.
 @safe unittest
 {
     assert(relativePath("foo") == "foo");
     assert(filenameNoExt("helloWorld.zip") == "helloWorld");
+    assert("/hello/test/again".isRootOf("/hello/test/again/something/is/here.txt"));
 
     version (Posix)
     {
