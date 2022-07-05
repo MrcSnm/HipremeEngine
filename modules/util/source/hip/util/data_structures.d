@@ -691,11 +691,20 @@ class Node(T)
     pragma(inline) Node!T addChild(T data)
     {
         Node!T ret = new Node(data);
+        ret.parent = this;
         children~= ret;
         return ret;
     }
+
+    Node!T getRoot()
+    {
+        Node!T ret = this;
+        while(ret.parent !is null)
+            ret = ret.parent;
+        return ret;
+    }
     
-    int opApply(scope int delegate(E) cb)
+    int opApply(scope int delegate(Node!T) cb)
     {
         foreach(child; children)
         {
@@ -703,28 +712,6 @@ class Node(T)
                 return 1;
         }
         return 0;
-    }
-}
-
-class DirectoryTree : Node!string
-{
-    alias addFolder = addChild;
-    void addFile(string fileName)
-    {
-        addChild(fileName);
-    }
-
-    Node!string getFolder(string folder)
-    {
-        import hip.util.string:split;
-        Node!string ret = this;
-        foreach(part; folder.split("/"))
-        {
-            ret = ret.get(part);
-            if(ret is null)
-                return null;
-        }
-        return ret;
     }
 }
 
