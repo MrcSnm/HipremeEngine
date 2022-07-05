@@ -18,14 +18,14 @@ string repeat(string str, size_t repeatQuant)
     return ret;
 }
 
-private string buildFolderTree(string code, Node!string node, int depth = 0)
+private string buildFolderTree(Node!string node, string code = "", int depth = 0)
 {
-    if(node.hasChildren && node.data.extension == "")
+    if(node.hasChildren)
     {
         code = "\t".repeat(depth)~"class " ~ node.data~ "\n"~"\t".repeat(depth)~"{\n";
         foreach(child; node.children)
         {
-            code~= "\t".repeat(depth)~buildFolderTree(code, child, depth+1)~"\n";
+            code~= "\t".repeat(depth)~buildFolderTree(child, code, depth+1)~"\n";
         }
         code~="\n"~"\t".repeat(depth)~"}\n";
     }
@@ -34,7 +34,15 @@ private string buildFolderTree(string code, Node!string node, int depth = 0)
         string propName = node.data[0..$-(node.data.extension.length+1)];
         return "\tpublic static enum "~propName~" = `"~node.buildPath~"`;";
     }
+    else if(!node.hasChildren && node.data.extension == "")
+        return "";
     return code;
+}
+
+mixin template HipAssetsGenerateEnum(string filePath)
+{
+    import hip.util.path;
+    mixin(buildFolderTree(import(filePath).split('\n'));
 }
 
 
