@@ -33,6 +33,37 @@ string[] pathSplitter(string path)
     return ret;
 }
 
+auto pathSplitterRange(string path)
+{
+    struct PathRange
+    {
+        string path;
+        size_t indexRight = 0;
+
+        bool empty(){return indexRight >= path.length;}
+        string front()
+        {
+            size_t i = indexRight;
+            while(i < path.length && path[i] != '\\' && path[i] != '/')
+                i++;
+            indexRight = i;
+            return path[0..indexRight];
+        }
+        void popFront()
+        {
+            if(indexRight+1 < path.length)
+            {
+                path = path[indexRight+1..$];
+                indexRight = 0;
+            }
+            else 
+                indexRight+= 1; //Guarantees empty
+        }
+    }
+
+    return PathRange(path);
+}
+
 
 string baseName(string path)
 {
