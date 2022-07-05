@@ -10,6 +10,34 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.data.assetmanager;
 
+string repeat(string str, size_t repeatQuant)
+{
+    string ret;
+    for(int i = 0; i < repeatQuant; i++)
+        ret~= str;
+    return ret;
+}
+
+private string buildFolderTree(string code, Node!string node, int depth = 0)
+{
+    if(node.hasChildren && node.data.extension == "")
+    {
+        code = "\t".repeat(depth)~"class " ~ node.data~ "\n"~"\t".repeat(depth)~"{\n";
+        foreach(child; node.children)
+        {
+            code~= "\t".repeat(depth)~buildFolderTree(code, child, depth+1)~"\n";
+        }
+        code~="\n"~"\t".repeat(depth)~"}\n";
+    }
+    else if(!node.hasChildren && node.data.extension != "")
+    {
+        string propName = node.data[0..$-(node.data.extension.length+1)];
+        return "\tpublic static enum "~propName~" = `"~node.buildPath~"`;";
+    }
+    return code;
+}
+
+
 version(HipAssets)
 {
 
