@@ -111,3 +111,38 @@ class HipWorkerThread : Thread
         }
     }
 }
+
+class HipWorkerPool
+{
+    HipWorkerThread[] threads;
+    this(size_t poolSize)
+    {
+        threads = new HipWorkerThread[](poolSize);
+        for(size_t i = 0; i < poolSize; i++)
+            threads[i] = new HipWorkerThread();
+    }
+    void await()
+    {
+        foreach(thread; threads)
+            thread.await();
+        for(size_t i = 0; i < threads.length; i++)
+        {
+            destroy(threads[i]);
+            threads[i] = new HipWorkerThread();
+        }
+    }
+    void pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null)
+    {
+        foreach(thread; threads)
+        {
+            if(thread.isIdle)
+            {
+                thread.pushTask(name, task, onTaskFinish);
+                return;
+            }
+        }
+        task();
+        if(onTaskFinish != null)
+            onTaskFinish(name);
+    }
+}
