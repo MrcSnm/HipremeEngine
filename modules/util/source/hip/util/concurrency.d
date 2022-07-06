@@ -53,3 +53,61 @@ struct Volatile(T)
     private @property synchronized T v(){return volatileLoad(value);}
     alias v this;   
 }
+
+import core.thread;
+import core.sync.semaphore:Semaphore;
+
+class HipWorkerThread : Thread
+{
+    private struct WorkerJob
+    {
+        string name;
+        void delegate() task;
+        void delegate(string taskName) onTaskFinish;
+    }
+    private __gshared WorkerJob[] jobsQueue;
+    private __gshared Semaphore semaphore;
+    private __gshared bool isAlive;
+
+
+    this()
+    {
+        super(&run);
+        isAlive = true;
+        semaphore = new Semaphore;
+    }
+
+    void finish(){isAlive = false;}
+    bool isIdle(){return jobsQueue.length == 0;}
+
+    void pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null)
+    {
+        assert(isAlive, "Can't push a task to a worker that is has finished/awaited");
+        jobsQueue~= WorkerJob(name, task, onTaskFinish);
+        if(!isRunning)
+            start();
+        semaphore.notify();
+    }
+    
+    void await(bool rethrow = true)
+    {
+        pushTask("await", () => finish);
+        join(rethrow);
+    }
+
+    void run()
+    {
+        while(isAlive)
+        {
+            if(!isIdle)
+            {
+                WorkerJob job = jobsQueue[0];
+                job.task();
+                if(job.onTaskFinish != null)
+                    job.onTaskFinish(job.name);
+                jobsQueue = jobsQueue[1..$];
+            }
+            semaphore.wait();
+        }
+    }
+}
