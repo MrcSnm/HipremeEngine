@@ -459,13 +459,13 @@ version(UWP)
 */
 class HipFileSystem
 {
-    protected static string defPath;
-    protected static string initialPath = "";
-    protected static string combinedPath;
-    protected static bool hasSetInitial;
-    protected static IHipFileSystemInteraction fs;
+    protected __gshared static string defPath;
+    protected __gshared static string initialPath = "";
+    protected __gshared static string combinedPath;
+    protected __gshared static bool hasSetInitial;
+    protected __gshared static IHipFileSystemInteraction fs;
 
-    protected static bool function(string path, out string errMessage)[] extraValidations;
+    protected __gshared static bool function(string path, out string errMessage)[] extraValidations;
  
     
     public static void install(string path)
@@ -535,9 +535,9 @@ class HipFileSystem
 
     public static bool read(string path, out void[] output)
     {
+        path = getPath(path);
         if(!isPathValid(path) || !isPathValidExtra(path))
             return false;
-        path = getPath(path);
         return fs.read(path, output);
     }
     public static bool read(string path, out ubyte[] output)

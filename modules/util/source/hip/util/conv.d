@@ -417,19 +417,18 @@ int toInt(string str) pure nothrow @safe @nogc
 }
 
 
-float toFloat(string str) pure nothrow @safe @nogc
+float toFloat(string str)
 {
     if(str.length == 0) return 0;
     if(str == "nan" || str == "NaN") return float.init;
     if(str == "inf" || str == "infinity" || str == "Infinity") return float.infinity;
 
-    int i = 0;
     int integerPart = 0;
     int decimalPart = 0;
-    
+    int i = 0;    
     bool isNegative = str[0] == '-';
-    if(isNegative) i = 1;
-
+    if(isNegative)
+        str = str[1..$];
     bool isDecimal = false;
     for(; i < str.length; i++)
     {
@@ -443,22 +442,20 @@ float toFloat(string str) pure nothrow @safe @nogc
         else
             integerPart++;
     }
+    
     if(decimalPart == 0)
-        return cast(float)str.toInt;
+        return (isNegative ? -1 : 1) * cast(float)str.toInt;
 
-    i = (isNegative ? 1 : 0);
+    i = 0;
     float decimal= 0;
     float integer  = 0;
     int integerMultiplier = 1;
     float floatMultiplier = 1.0f/10.0f;
 
-    int integerPartBackup = integerPart;
-    if(isNegative)
-        integerPartBackup++;
-
     while(integerPart > 0)
     {
-        integer+= (str[integerPartBackup-i] - '0') * integerMultiplier;
+        //Iterate the number from backwards towards the greatest value
+        integer+= (str[integerPart - 1] - '0') * integerMultiplier;
         integerMultiplier*= 10;
         integerPart--;
         i++;
@@ -474,11 +471,10 @@ float toFloat(string str) pure nothrow @safe @nogc
     return (integer + decimal) * (isNegative ? -1 : 1);
 }
 
-
 unittest
 {
     assert(toString(500) == "500");
-    assert(toFloat("50.5" == 50.5f));
+    assert(toFloat("50.5") == 50.5);
     assert(toString(100.0) == "100");
     assert(toInt("-500") == -500);
     assert(toString("Hello") == "Hello");

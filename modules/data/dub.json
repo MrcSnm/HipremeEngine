@@ -16,6 +16,7 @@
 				"console": {"path": "../console"},
 				"error": {"path": "../error"},
 				"filesystem": {"path": "../filesystem"},
+				"image": {"path": "../image"},
 				"util": {"path": "../util"}
 			}
 		},

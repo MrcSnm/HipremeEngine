@@ -207,5 +207,5 @@ unittest
 {
     assert(indexOf([2, 3, 4], 3) == 1);
     assert(swapElementsFromArray([5, 10, 9], 10, 9));
-    assert(lastIndexOf([2, 3, 3, 4], 4) == 2);
+    assert(lastIndexOf([2, 3, 3, 4], 4) == 3);
 }

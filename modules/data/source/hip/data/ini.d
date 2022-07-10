@@ -61,7 +61,6 @@ class IniFile
     */
     static IniFile parse(string path)
     {
-        import hip.util.string:split;
         import hip.util.file : getFileContent;
         IniFile ret = new IniFile();
         ret.path = path;
@@ -79,7 +78,7 @@ class IniFile
             }
             else if(c == '[')
             {
-                import hip.util.string : replaceAll;
+                import hip.util.string : replaceAll, split, splitRange;
                 string capture = "";
                 while(i < content.length && content[++i] != ']'){capture~=content[i];}
                 if(i >= content.length)
@@ -91,8 +90,7 @@ class IniFile
                 //Read until finding a key.
                 while(++i < content.length && (c = content[i]) != '['){capture~=c;}
                 
-                string[] lines = capture.split("\n");
-                foreach(l; lines)
+                foreach(l; capture.splitRange("\n"))
                 {
                     if(l == "")
                         continue;
@@ -106,13 +104,15 @@ class IniFile
                     string name = kv[0].replaceAll(' ', "");
                     string _val  = kv[1];
                     string val = "";
-                    for(int z = 0; z < _val.length; z++)
+
+                    foreach(ch; _val)
                     {
-                        if(_val[z] == '#' || _val[z] == ';')
+                        if(ch == '#' || ch == ';')
                             break;
-                        val~= _val[z];
+                        if(ch == ' ')
+                            continue;
+                        val~= ch;
                     }
-                    val = val.replaceAll(' ', "");
 
                     block.vars[name] =  IniVar(name, val);
                 }

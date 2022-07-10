@@ -15,7 +15,7 @@ module hip.hiprenderer.texture;
 import hip.error.handler;
 import hip.hiprenderer.renderer;
 import hip.math.rect;
-import hip.image;
+import hip.data.assets.image;
 public import hip.util.data_structures:Array2D;
 public import hip.hipengine.api.renderer.texture;
 
@@ -98,15 +98,18 @@ class Texture
     */
     public bool load(string path)
     {
-        /*
         import hip.data.assetmanager;
-        HipAssetManager.loadImage(path, (Image img)
-        {
-            this.img = img;
+        HipAssetLoadTask task = HipAssetManager.loadImage(path);
+        task.await;
+        Image loadedImage = cast(Image)task.asset;
+
+        // HipAssetManager.loadImage(path, (Image img)
+        // {
+            this.img = loadedImage;
             this.width = img.w;
             this.height = img.h;
-            this.textureImpl.load(img);
-        }, false);*/
+            this.textureImpl.load(loadedImage);
+        // }, false);
         return this.width != 0;
     }
 }
