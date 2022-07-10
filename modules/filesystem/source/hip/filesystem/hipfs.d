@@ -535,9 +535,9 @@ class HipFileSystem
 
     public static bool read(string path, out void[] output)
     {
+        path = getPath(path);
         if(!isPathValid(path) || !isPathValidExtra(path))
             return false;
-        path = getPath(path);
         return fs.read(path, output);
     }
     public static bool read(string path, out ubyte[] output)

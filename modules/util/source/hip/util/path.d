@@ -16,7 +16,7 @@ version(Windows)
 else
     enum pathSeparator = '/';
 
-string[] pathSplitter(string path)
+string[] pathSplitter(string path) @safe pure nothrow
 {
     string[] ret;
     string current;
@@ -82,7 +82,7 @@ bool isRootOf(string theRoot, string ofWhat) pure nothrow @nogc
 }
 
 
-string baseName(string path)
+string baseName(string path) @safe
 {
     int lastSepIndex = -1;
     int preLastSepIndex = -1;
@@ -105,7 +105,7 @@ string baseName(string path)
 }
 
 ///Will get the directory name until a trailing separator or return 
-string dirName(string path) pure nothrow @nogc
+string dirName(string path) pure nothrow @nogc @safe
 {
     int last = path.lastIndexOf(pathSeparator);
     if(last == -1)
@@ -114,7 +114,7 @@ string dirName(string path) pure nothrow @nogc
 }
 
 
-string extension(string pathOrFilename) pure nothrow @nogc
+string extension(string pathOrFilename) pure nothrow @nogc @safe
 {
     auto ind = pathOrFilename.lastIndexOf(".");
     if(ind == -1)
@@ -124,7 +124,7 @@ string extension(string pathOrFilename) pure nothrow @nogc
 
 
 
-string relativePath(string path, string base, bool caseSensitive = defaultCaseSensitivity) pure nothrow
+string relativePath(string path, string base, bool caseSensitive = defaultCaseSensitivity) pure nothrow @safe
 {
     string ret;
     int commonIndex = 0;
@@ -184,7 +184,7 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
 }
 
 
-bool isAbsolutePath(string path) pure nothrow @nogc
+bool isAbsolutePath(string path) pure nothrow @nogc @safe
 {
     if(path == null)
         return false;
@@ -205,13 +205,13 @@ bool isAbsolutePath(string path) pure nothrow @nogc
 }
 
 
-string replaceFileName(string path, string newFileName)
+string replaceFileName(string path, string newFileName) @safe pure nothrow
 {
     string[] p = pathSplitter(path);
     p[$-1] = newFileName;
     return joinPath(p);
 }
-string filename(string path)
+string filename(string path) @safe pure nothrow @nogc
 {
     int last = path.lastIndexOf(pathSeparator);
     if(last == -1)
@@ -219,37 +219,40 @@ string filename(string path)
     return path[last+1..$];
 }
 
-string filenameNoExt(string path)
+string filenameNoExt(string path) @safe pure nothrow @nogc
 {
     string f = path.filename;
     if(f == "")
         return "";
-    int last = path.lastIndexOf(".");
+    int last = f.lastIndexOf(".");
     if(last == -1)
         return f;
     return f[0..last];
 }
 
-string joinPath(string[] paths ...){return joinPath(paths);}
-string joinPath(string[] paths)
+string joinPath(string[] paths ...)@safe pure nothrow {return joinPath(paths);}
+string joinPath(string[] paths) @safe pure nothrow
 {
     if(paths.length == 1)
         return paths[0];
     string output;
     char charType = isPathUnixStyle(paths[0]) ? '/' : '\\';
+
     for(int i = 0; i < paths.length; i++)
     {
-        if(paths[i] == "")
+        string path = paths[i];
+        string next = i+1 < paths.length ? paths[i+1] : "";
+        if(path == "")
             continue;
+        
         output~=paths[i];
-        if(i+1 != paths.length &&
-        paths[i+1].length != 0 &&
-        paths[i+1][0] != charType &&
+        if(next != "" && next[0] != charType  &&
         paths[i][$-1] != charType)
             output~=charType;
     }
     return output;
 }
+
 
 public Node!string buildFolderTree(string[] filesList)
 {
@@ -300,9 +303,9 @@ string buildPath(Node!string node)
 
 
 ///Copied from dmd.
-@safe unittest
+unittest
 {
-    assert(relativePath("foo") == "foo");
+    assert(relativePath("foo", "") == "foo");
     assert(filenameNoExt("helloWorld.zip") == "helloWorld");
     assert("/hello/test/again".isRootOf("/hello/test/again/something/is/here.txt"));
 

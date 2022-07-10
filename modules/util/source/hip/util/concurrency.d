@@ -145,4 +145,11 @@ class HipWorkerPool
         if(onTaskFinish != null)
             onTaskFinish(name);
     }
+    bool isIdle()
+    {
+        size_t count = 0;
+        foreach(thread; threads)
+            count+= int(thread.isIdle);
+        return count == threads.length;
+    }
 }
