@@ -68,6 +68,7 @@ class HipWorkerThread : Thread
     private __gshared WorkerJob[] jobsQueue;
     private __gshared Semaphore semaphore;
     private __gshared bool isAlive;
+    protected int currentTask = 0;
 
 
     this()
@@ -78,17 +79,16 @@ class HipWorkerThread : Thread
     }
 
     void finish(){isAlive = false;}
-    bool isIdle(){return jobsQueue.length == 0;}
+    bool isIdle(){return jobsQueue.length == currentTask;}
 
     void pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null)
     {
         assert(isAlive, "Can't push a task to a worker that is has finished/awaited");
         jobsQueue~= WorkerJob(name, task, onTaskFinish);
+        semaphore.notify();
         if(!isRunning)
             start();
-        semaphore.notify();
     }
-    
     void await(bool rethrow = true)
     {
         pushTask("await", () => finish);
@@ -99,15 +99,18 @@ class HipWorkerThread : Thread
     {
         while(isAlive)
         {
+            import std.stdio;
             if(!isIdle)
             {
-                WorkerJob job = jobsQueue[0];
+                WorkerJob job = jobsQueue[currentTask];
                 job.task();
                 if(job.onTaskFinish != null)
                     job.onTaskFinish(job.name);
-                jobsQueue = jobsQueue[1..$];
+                currentTask++;
+                writeln("Finished ", job.name);
             }
-            semaphore.wait();
+            else
+                semaphore.wait();
         }
     }
 }
@@ -115,6 +118,7 @@ class HipWorkerThread : Thread
 class HipWorkerPool
 {
     HipWorkerThread[] threads;
+    protected Semaphore awaitSemaphore;
     this(size_t poolSize)
     {
         threads = new HipWorkerThread[](poolSize);
@@ -123,26 +127,41 @@ class HipWorkerPool
     }
     void await()
     {
+        uint idleCount = 0;
         foreach(thread; threads)
-            thread.await();
-        for(size_t i = 0; i < threads.length; i++)
         {
-            destroy(threads[i]);
-            threads[i] = new HipWorkerThread();
+            if(!thread.isIdle)
+            {
+                thread.pushTask("Await", (){awaitSemaphore.notify;});
+                idleCount++;
+            }
+        }
+        if(idleCount != 0)
+        {
+            awaitSemaphore = new Semaphore(idleCount);
+            awaitSemaphore.wait();
         }
     }
-    void pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null)
+    HipWorkerThread pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null)
     {
         foreach(thread; threads)
         {
             if(thread.isIdle)
             {
                 thread.pushTask(name, task, onTaskFinish);
-                return;
+                return thread;
             }
         }
         task();
         if(onTaskFinish != null)
             onTaskFinish(name);
+        return null;
+    }
+    bool isIdle()
+    {
+        size_t count = 0;
+        foreach(thread; threads)
+            count+= int(thread.isIdle);
+        return count == threads.length;
     }
 }

@@ -1,7 +1,6 @@
 module hip.data.assets.image;
 
 //Reserved for future implementation.
-__EOF__
 import hip.data.asset;
 import hip.image;
 
@@ -34,6 +33,20 @@ public class Image : HipAsset, IImage
         decoder = new HipPlatformImageDecoder();
         imagePath = sanitizePath(path);
     }
+    static immutable(Image) getPixelImage()
+    {
+        static Image img; 
+        static ubyte[4] pixel = IHipImageDecoder.getPixel();
+        if(img is null)
+        {
+            img = new Image("pixel");
+            img.pixels = cast(void*)pixel.ptr;
+            img.width = 1;
+            img.height = 1;
+            img.bytesPerPixel = 4;
+        }
+        return cast(immutable)img;
+    }
     string getName(){return name;}
     uint getWidth(){return width;}
     uint getHeight(){return height;}
@@ -44,6 +57,8 @@ public class Image : HipAsset, IImage
     bool loadFromMemory(ref ubyte[] data)
     {
         import hip.error.handler;
+        if(ErrorHandler.assertErrorMessage(data.length != 0, "No data was passed to load Image.", "Could not load image"))
+            return false;
         if(ErrorHandler.assertErrorMessage(decoder.startDecoding(data),
         "Decoding Image: ", "Could not load image " ~ imagePath))
             return false;

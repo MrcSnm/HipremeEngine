@@ -69,7 +69,7 @@ final class HipSDLImageDecoder : IHipAnyImageDecoder
     void dispose(){if(img != null){SDL_FreeSurface(img);img = null;}}
 }
 
-version(HipARSDImage)
+version(HipARSDImageDecoder)
 final class HipARSDImageDecoder : IHipAnyImageDecoder
 {
     import arsd.image;
@@ -138,119 +138,10 @@ final class HipNullImageDecoder : IHipAnyImageDecoder
 ///Use that alias for supporting more platforms
 version(HipSDLImageDecoder)
     alias HipPlatformImageDecoder = HipSDLImageDecoder;
-else 
-version(HipARSDImageDecoder)
+else version(HipARSDImageDecoder)
     alias HipPlatformImageDecoder = HipARSDImageDecoder;
 else
-    alias HipPlatformImageDecoder = HipNullImageDecoder;
-
-
-class Image : IImage
 {
-    protected shared bool _ready;
-    IHipImageDecoder decoder;
-    string imagePath;
-    int width, height;
-    ubyte bytesPerPixel;
-    ushort bitsPerPixel;
-    void* pixels;
-    string name;
-
-    protected void* convertedPixels;
-
-    this(in string path)
-    {
-        name = "Image_"~path;
-        initialize(path);
-    }
-    private void initialize(in string path)
-    {
-        import hip.util.system : sanitizePath;
-        decoder = new HipPlatformImageDecoder();
-        imagePath = sanitizePath(path);
-    }
-    string getName(){return name;}
-    uint getWidth(){return width;}
-    uint getHeight(){return height;}
-    ushort getBytesPerPixel(){return bytesPerPixel;}
-    void* getPixels(){return pixels;}
-
-
-    bool loadFromMemory(ref ubyte[] data)
-    {
-        import hip.error.handler;
-        if(ErrorHandler.assertErrorMessage(decoder.startDecoding(data),
-        "Decoding Image: ", "Could not load image " ~ imagePath))
-            return false;
-        width         = decoder.getWidth();
-        height        = decoder.getHeight();
-        bitsPerPixel  = decoder.getBitsPerPixel();
-        bytesPerPixel = decoder.getBytesPerPixel();
-        pixels        = decoder.getPixels();
-        return true;
-    }
-
-    void* convertPalettizedToRGBA()
-    {
-        import core.stdc.stdlib:malloc;
-        import hip.error.handler;
-        if(convertedPixels != null)
-            return convertedPixels;
-        ubyte* pix = cast(ubyte*)malloc(4*width*height); //RGBA for each pixel
-        ErrorHandler.assertExit(pix != null, "Out of memory when converting palette pixels to RGBA");
-        convertedPixels = pix;
-
-        uint pixelsLength = width*height;
-        scope ubyte[] palette = decoder.getPalette();
-
-        uint colorIndex;
-        uint z;
-        for(uint i = 0; i < pixelsLength; i++)
-        {
-            //Palette r color = palette[pixels[i]*4]
-            colorIndex = (cast(ubyte*)pixels)[i]*4;
-            pix[z++]   = palette[colorIndex]; //R
-            pix[z++] = palette[colorIndex+1]; //G
-            pix[z++] = palette[colorIndex+2]; //B
-            pix[z++] = palette[colorIndex+3]; //A
-        }
-
-        return cast(void*)pix;
-    }
-
-    bool loadFromFile()
-    {
-        import hip.filesystem.hipfs;
-        ubyte[] data_;
-        HipFS.read(imagePath, data_);
-        return loadFromMemory(data_);
-    }
-
-    override bool load()
-    {
-        _ready = loadFromFile();
-        return _ready;
-    }
-
-    override bool isReady(){return _ready;}
-    bool load(void function() onLoad)
-    {
-        bool ret = loadFromFile();
-        if(ret)
-            onLoad();
-        return ret;
-    }
-    override void onDispose()
-    {
-        import core.stdc.stdlib:free;
-        decoder.dispose();
-        if(convertedPixels != null)
-        {
-            free(convertedPixels);
-            convertedPixels = null;
-        }
-    }
-    void onFinishLoading(){}
-    alias w = width;
-    alias h = height;
+    alias HipPlatformImageDecoder = HipNullImageDecoder;
+    pragma(msg, "WARNING: Using NullImageDecoder.");
 }

@@ -9,23 +9,19 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.data.assetmanager;
+import hip.util.concurrency;
+import hip.util.data_structures: Node;
 
-string repeat(string str, size_t repeatQuant)
+private string buildConstantsFromFolderTree(string code, Node!string node, int depth = 0)
 {
-    string ret;
-    for(int i = 0; i < repeatQuant; i++)
-        ret~= str;
-    return ret;
-}
-
-private string buildFolderTree(Node!string node, string code = "", int depth = 0)
-{
-    if(node.hasChildren)
+    import hip.util.path;
+    import hip.util.string;
+    if(node.hasChildren && node.data.extension == "")
     {
         code = "\t".repeat(depth)~"class " ~ node.data~ "\n"~"\t".repeat(depth)~"{\n";
         foreach(child; node.children)
         {
-            code~= "\t".repeat(depth)~buildFolderTree(child, code, depth+1)~"\n";
+            code~= "\t".repeat(depth)~buildConstantsFromFolderTree(code, child, depth+1)~"\n";
         }
         code~="\n"~"\t".repeat(depth)~"}\n";
     }
@@ -34,140 +30,131 @@ private string buildFolderTree(Node!string node, string code = "", int depth = 0
         string propName = node.data[0..$-(node.data.extension.length+1)];
         return "\tpublic static enum "~propName~" = `"~node.buildPath~"`;";
     }
-    else if(!node.hasChildren && node.data.extension == "")
-        return "";
     return code;
 }
 
 mixin template HipAssetsGenerateEnum(string filePath)
 {
     import hip.util.path;
-    mixin(buildFolderTree(import(filePath).split('\n'));
+    mixin(buildConstantsFromFolderTree("", buildFolderTree(import(filePath).split('\n'))));
 }
 
 
-version(HipAssets)
+version(HipAssets):
+
+import hip.util.system;
+import hip.data.asset;
+import hip.util.concurrency;
+public import hip.data.asset;
+public import hip.data.assets.image;
+
+
+enum HipAssetResult
 {
+    cantLoad,
+    loading,
+    loaded
+}
 
-    import hip.util.system;
-    import core.time:Duration, dur;
-    import core.thread;
+interface IHipAssetLoadTask
+{
+    bool hasFinishedLoading();
+    void await();
+}
 
-    public import hip.data.assets.image;
-    public import hip.util.data_structures : Pair;
 
-    class AssetLoaderThread : Thread
+class HipAssetLoadTask : IHipAssetLoadTask
+{
+    string name;
+    HipAssetResult result = HipAssetResult.cantLoad;
+    HipAsset asset = null;
+    protected HipWorkerThread worker;
+
+    this(string name, HipAsset asset)
     {
-        void* function(void* context) loaderFunction;
-        void* loadedData;
-        bool hasFinishedLoading = false;
-        void* context;
-        this(void* function(void* context) loaderFunction)
-        {
-            super(&run);
-            this.loaderFunction = loaderFunction;
-        }
+        this.name = name;
+        this.asset = asset; 
+        if(asset is null)
+            result = HipAssetResult.cantLoad;
+        else
+            result = HipAssetResult.loaded;
+    }
 
-        void load(void* ctx)
-        {
-            context = ctx;
-            start();
-        }
+    bool hasFinishedLoading(){return result == HipAssetResult.loaded;}
+    bool opCast(T : bool)() const{return hasFinishedLoading;}
+    
+    void await(){HipAssetManager.awaitTask(this);}
+    
+}
 
-        void run()
+
+class HipAssetManager
+{
+    protected static HipWorkerPool workerPool;
+    static float currentTime;
+    protected static HipAsset[string] assets;
+    protected static HipAssetLoadTask[string] loadQueue;
+
+    static this()
+    {
+        workerPool = new HipWorkerPool(8);
+    }
+    static bool isAsync = true;
+
+    static HipAsset getAsset(string name)
+    {
+        if(HipAsset* asset = name in assets)
+            return *asset;
+        return null;
+    }
+    static pragma(inline, true) T getAsset(T : HipAsset)(string name) {return cast(T)getAsset(name);}
+    static bool isLoading(){return workerPool.isIdle;}
+    static void awaitLoad(){workerPool.await;}
+
+    static void awaitTask(HipAssetLoadTask task)
+    {
+        import core.sync.semaphore;
+        import std.stdio;
+        auto semaphore = new Semaphore(0);
+        task.worker.pushTask("Await Single", ()
         {
-            loadedData = loaderFunction(context);
-            hasFinishedLoading = true;
-        }
+            import std.stdio;
+            writeln("Notifying semaphore");
+            semaphore.notify;
+        });
+        semaphore.wait;
+        destroy(semaphore);
+    }
+
+    private static HipWorkerThread load(void delegate() loadFn)
+    {
+        if(isAsync)
+            return workerPool.pushTask("Load", loadFn);
+        else
+            loadFn();
+        return null;
     }
 
 
-    /**
-    void* loadImageAsyncImpl(void* context)
+
+
+    static HipAssetLoadTask loadImage(string imagePath)
     {
-        string imagePath = *(cast(string*)context);
-        Image img = new Image(imagePath);
-        img.loadFromFile();
-        return cast(void*)img;
-    }
-    **/
+        HipAsset asset = getAsset(imagePath);
+        if(asset !is null){return new HipAssetLoadTask(imagePath, asset);}
+        else if(HipAssetLoadTask* task = imagePath in loadQueue){return *task;}
 
-    private alias Callback(T) = void delegate(T obj);
-    private alias AssetPair(T) = Pair!(T, Callback!T, "asset", "callback");
-
-    class HipAssetManager
-    {
-        // protected static Tid[] workerPool;
-        protected static AssetLoaderThread[] workerPool;
-        static float currentTime;
-        static immutable Duration timeout = dur!"nsecs"(-1);
-
-        static void checkLoad(){}
-        /**
-        protected static AssetPair!Image[string] images;
-
-        static Image getImage(string imagePath)
+        auto task = new HipAssetLoadTask(imagePath, null);
+        task.result = HipAssetResult.loading;
+        
+        task.worker = load(()
         {
-            AssetPair!Image* img = (imagePath in images);
-            if(img !is null)
-            {
-                if(img.first !is null)
-                    return img.first;
-            }
-            return null;
-        }
-
-        static void loadImage(string imagePath, Callback!Image cb, bool async = true)
-        {
-            import hip.console.log;
-            import hip.util.time;
-            currentTime = HipTime.getCurrentTimeAsMilliseconds();
-            if(async)
-            {
-                AssetLoaderThread t = new AssetLoaderThread(&loadImageAsyncImpl);
-                t.load(cast(void*)imagePath);
-                // workerPool~= spawn(&loadImageAsyncImpl, thisTid, imagePath);
-                workerPool~= t;
-                images[sanitizePath(imagePath)] = AssetPair!(Image)(null, cb);
-            }
-            else
-            {
-                Image img = new Image(imagePath);
-                img.loadFromFile();
-                logln(HipTime.getCurrentTimeAsMilliseconds()-HipAssetManager.currentTime, "ms");
-                images[imagePath] = AssetPair!(Image)(img, cb);
-                cb(img);
-            }
-
-        }
-
-        static void checkLoad()
-        {
-            import hip.console.log;
-            if(workerPool.length > 0)
-            {
-                foreach(w; workerPool)
-                {
-                    if(w.hasFinishedLoading)
-                    {
-                        logln("Finished loading image " ~ (*cast(string*)w.context));
-                    }
-                }
-                // receiveTimeout(HipAssetManager.timeout,
-                //     (shared Image img)
-                //     {
-                //         logln(img.imagePath ~" decoded in ");
-                //         logln(HipTime.getCurrentTimeAsMilliseconds()-HipAssetManager.currentTime, " ms.");
-
-                //         images[img.imagePath].first = cast(Image)img;
-                //         AssetPair!Image p = images[img.imagePath];
-                //         if(p.second !is null)
-                //             p.second(cast(Image)img);
-                //     }
-                // );
-            }
-        }
-
-        **/
+            Image img = new Image(imagePath);
+            img.loadFromFile();
+            task.asset = img;
+            task.result = HipAssetResult.loaded;
+        });
+        loadQueue[imagePath] = task;
+        return task;
     }
 }

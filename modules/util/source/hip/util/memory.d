@@ -3,12 +3,17 @@ module hip.util.memory;
 public import core.stdc.stdlib:free, malloc, realloc;
 public import core.stdc.string:memcpy, memcmp, memset;
 
-T* alloc(T)(uint count = 1)
+T* alloc(T)(size_t count = 1)
 {
     static if(is(T == void))
         return cast(void*)malloc(count);
     else
         return cast(T*)malloc(T.sizeof*count);
+}
+
+T[] allocSlice(T)(size_t count)
+{
+    return alloc!T(count)[0..count];
 }
 
 void* toHeap(T)(T data)
