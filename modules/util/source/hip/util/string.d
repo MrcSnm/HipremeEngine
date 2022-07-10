@@ -180,7 +180,7 @@ struct String
     }
     string toString() const {return cast(string)chars[0..length];}
 
-    pragma(inline) private void resize(size_t newSize)
+    pragma(inline, true) private void resize(size_t newSize)
     {
         chars = cast(char*)realloc(chars, newSize);
         _capacity = newSize;
@@ -368,6 +368,14 @@ pure int indexOf(in string str, char ch, int startIndex = 0) nothrow @nogc @trus
 }
 
 
+string repeat(string str, size_t repeatQuant)
+{
+    string ret;
+    for(int i = 0; i < repeatQuant; i++)
+        ret~= str;
+    return ret;
+}
+
 pure int count(in string str, in string countWhat) nothrow @nogc @safe
 {
     int ret = 0;
@@ -434,7 +442,7 @@ const(char*) toStringz(string str) pure nothrow
 {
     return (str~"\0").ptr;
 }
-pragma(inline) char toLowerCase(char c) pure nothrow @safe @nogc 
+pragma(inline, true) char toLowerCase(char c) pure nothrow @safe @nogc 
 {
     if(c < 'A' || c > 'Z')
         return c;
@@ -449,7 +457,7 @@ string toLowerCase(string str) pure nothrow @safe
     return ret;
 }
 
-pragma(inline) char toUpper(char c) pure nothrow @safe @nogc 
+pragma(inline, true) char toUpper(char c) pure nothrow @safe @nogc 
 {
     if(c < 'a' || c > 'z')
         return c;
@@ -473,54 +481,46 @@ string[] split(string str, char separator) pure nothrow
 string[] split(string str, string separator) pure nothrow @safe
 {
     string[] ret;
-    string curr;
-    int equalCount = 0;
-    for(int i = 0; i < str.length; i++)
+    int last = 0;
+    int index = 0;
+    do
     {
-        while(str[i+equalCount] == separator[equalCount])
+        index = str.indexOf(separator, index);
+        if(index != -1)
         {
-            equalCount++;
-            if(equalCount == separator.length)
-            {
-                i+= equalCount;
-                ret~= curr;
-                curr = null;
-                break;
-            }
+            ret~= str[last..index];
+        	last = index+= separator.length;
         }
-        equalCount = 0;
-        curr~= str[i];
     }
-    if(curr == separator)
-        curr = null;
-    return ret ~ curr;
+    while(index != -1);
+    return ret;
 }
 
 
-pragma(inline) bool isUpperCase(char c) pure nothrow @safe @nogc
+pragma(inline, true) bool isUpperCase(char c) pure nothrow @safe @nogc
 {
     return c >= 'A' && c <= 'Z';
 }
-pragma(inline) bool isLowercase(char c) pure nothrow @safe @nogc
+pragma(inline, true) bool isLowercase(char c) pure nothrow @safe @nogc
 {
     return c >= 'a' && c <= 'z';
 }
 
-pragma(inline) bool isAlpha(char c) pure nothrow @safe @nogc
+pragma(inline, true) bool isAlpha(char c) pure nothrow @safe @nogc
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
-pragma(inline) bool isEndOfLine(char c) pure nothrow @safe @nogc
+pragma(inline, true) bool isEndOfLine(char c) pure nothrow @safe @nogc
 {
     return c == '\n' || c == '\r';
 }
 
-pragma(inline) bool isNumeric(char c) pure nothrow @safe @nogc
+pragma(inline, true) bool isNumeric(char c) pure nothrow @safe @nogc
 {
     return (c >= '0' && c <= '9') || (c == '-');
 }
-pragma(inline) bool isWhitespace(char c) pure nothrow @safe @nogc
+pragma(inline, true) bool isWhitespace(char c) pure nothrow @safe @nogc
 {
     return (c == ' ' || c == '\t' || c.isEndOfLine);
 }

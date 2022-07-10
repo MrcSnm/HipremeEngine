@@ -17,37 +17,37 @@ import hip.util.path:pathSeparator;
 
 enum debugger = "asm {int 3;}";
 
-pure nothrow string sanitizePath(string path)
+string sanitizePath(string path) @safe pure nothrow
 {
-    string ret = new string(path.length);
+    char[] ret = new char[](path.length);
 
-    for(size_t i = 0; i < path.length; i++)
+    foreach(i, c; path)
     {
         version(Windows)
         {
-            if(path[i] == '/')
-                ret~= '\\';
+            if(c == '/')
+                ret[i] = '\\';
             else
-                ret~= path[i];
+                ret[i] = c;
         }
         else
         {
-            if(path[i] == '\\')
-                ret~= '/';
+            if(c == '\\')
+                ret[i] = '/';
             else
-                ret~= path[i];
+                ret[i] = c;
         }
     }
     return ret;
 }
-pure nothrow bool isPathUnixStyle(string path)
+bool isPathUnixStyle(string path) @safe pure nothrow 
 {
     for(size_t i = 0; i < path.length; i++)
         if(path[i] == '/')
             return true;
     return false;
 }
-string buildPath(string[] args...)
+string buildPath(string[] args...) @safe pure nothrow
 {
     if(args.length == 0)
         return null;
