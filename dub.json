@@ -5,7 +5,11 @@
 	"buildOptions": [
 		"debugMode",
 		"debugInfo",
-		"debugInfoC"
+		"debugInfoC",
+		"warnings"
+	],
+	"dflags-dmd": [
+		"-checkaction=halt"
 	],
 	"configurations": [
 		{
@@ -160,6 +164,7 @@
 		"data": {"path": "./modules/data", "version": "*"},
 		"debugging": {"path": "./modules/debugging", "version": "*"},
 		"error": {"path": "./modules/error", "version": "*"},
+		"ttf": {"path": "./modules/ttf", "version": "*"},
 		"filesystem": {"path": "./modules/filesystem", "version": "*"},
 		"hipengine_api": {"path": "./api", "version": "*"},
 		"imgui": {"path": "./modules/imgui", "version": "*"},
@@ -198,6 +203,8 @@
 		"HipremeEngineLua",
 		"HipGL3",
 		"HipCheckUnknownKeycode",
+		"HipARSDImageDecoder",
+		"HipAsync",
 		"BindSDL_Image",
 		"HipDataStructures",
 		"HipGraphicsAPI",
@@ -205,6 +212,8 @@
 		"HipMathAPI",
 		"HipTweenAPI",
 		"HipTimerAPI",
+		"HipAssets",
+		"HipConcurrency",
 		"HipDStdFile",
 		"HipScriptingAPI",
 		"GL_45",
