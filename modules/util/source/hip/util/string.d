@@ -493,7 +493,48 @@ string[] split(string str, string separator) pure nothrow @safe
         }
     }
     while(index != -1);
+    if(last != 0)
+        ret~= str[last..$];
     return ret;
+}
+
+auto splitRange(string str, string separator) pure nothrow @safe @nogc
+{
+    struct SplitRange
+    {
+        string strToSplit;
+        string sep;
+        string frontStr;
+        int last, index;
+
+        bool empty(){return frontStr == "" && index == -1 && last == -1;}
+        string front()
+        {
+            if(frontStr == "") popFront();
+            return frontStr;
+        }
+        void popFront()
+        {
+            if(index == -1 && last == -1)
+            {
+                frontStr = "";
+                return;
+            }
+            index = strToSplit.indexOf(sep, index);
+            if(index != -1)
+            {
+                frontStr = strToSplit[last..index];
+                last = index+= sep.length;
+            }
+            else if(last != 0)
+            {
+                frontStr = strToSplit[last..$];
+                last = -1;
+            }
+        }
+    }
+
+    return SplitRange(str, separator);
 }
 
 
@@ -540,6 +581,7 @@ string[] pathSplliter(string str)
     ret~= curr;
     return ret;
 }
+
 
 
 

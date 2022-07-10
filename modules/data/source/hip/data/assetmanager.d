@@ -65,52 +65,25 @@ interface IHipAssetLoadTask
 
 class HipAssetLoadTask : IHipAssetLoadTask
 {
+    string name;
     HipAssetResult result = HipAssetResult.cantLoad;
     HipAsset asset = null;
-    immutable bool isAsync;
+    protected HipWorkerThread worker;
 
-    version(HipAsync)
+    this(string name, HipAsset asset)
     {
-        protected HipWorkerThread worker;
-    }
-
-    this(HipAsset asset)
-    {
-        this.asset = asset;
-        isAsync = false;
-        result = HipAssetResult.loaded;
-    }
-
-    this(HipAsset delegate() loadTask, bool isAsync = true)
-    {
-        //Force false async 
-        version(HipAsync)
-        {
-            if(isAsync)
-            {
-                worker.pushTask("Load Asset", ()
-                {
-                    asset = loadTask();
-                    result = HipAssetResult.loaded;
-                });
-            }
-        } 
+        this.name = name;
+        this.asset = asset; 
+        if(asset is null)
+            result = HipAssetResult.cantLoad;
         else
-        {
-            isAsync = false;
-            asset = loadTask();
             result = HipAssetResult.loaded;
-        }
-        this.isAsync = isAsync;
     }
 
     bool hasFinishedLoading(){return result == HipAssetResult.loaded;}
     bool opCast(T : bool)() const{return hasFinishedLoading;}
-    void await()
-    {
-        version(HipAsync) if(isAsync)
-            worker.await();
-    }
+    
+    void await(){HipAssetManager.awaitTask(this);}
     
 }
 
@@ -126,6 +99,7 @@ class HipAssetManager
     {
         workerPool = new HipWorkerPool(8);
     }
+    static bool isAsync = true;
 
     static HipAsset getAsset(string name)
     {
@@ -137,19 +111,49 @@ class HipAssetManager
     static bool isLoading(){return workerPool.isIdle;}
     static void awaitLoad(){workerPool.await;}
 
+    static void awaitTask(HipAssetLoadTask task)
+    {
+        import core.sync.semaphore;
+        import std.stdio;
+        auto semaphore = new Semaphore(0);
+        task.worker.pushTask("Await Single", ()
+        {
+            import std.stdio;
+            writeln("Notifying semaphore");
+            semaphore.notify;
+        });
+        semaphore.wait;
+        destroy(semaphore);
+    }
+
+    private static HipWorkerThread load(void delegate() loadFn)
+    {
+        if(isAsync)
+            return workerPool.pushTask("Load", loadFn);
+        else
+            loadFn();
+        return null;
+    }
+
+
+
 
     static HipAssetLoadTask loadImage(string imagePath)
     {
         HipAsset asset = getAsset(imagePath);
-        if(asset !is null){return new HipAssetLoadTask(asset);}
+        if(asset !is null){return new HipAssetLoadTask(imagePath, asset);}
         else if(HipAssetLoadTask* task = imagePath in loadQueue){return *task;}
 
-        auto task = new HipAssetLoadTask(()
+        auto task = new HipAssetLoadTask(imagePath, null);
+        task.result = HipAssetResult.loading;
+        
+        task.worker = load(()
         {
             Image img = new Image(imagePath);
             img.loadFromFile();
-            return img;
-        }, true);
+            task.asset = img;
+            task.result = HipAssetResult.loaded;
+        });
         loadQueue[imagePath] = task;
         return task;
     }
