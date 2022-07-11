@@ -30,8 +30,9 @@ string getFileContent(string path, bool noCarriageReturn = true)
     fseek(file, 0, SEEK_SET);
 
     buffer.length = cast(typeof(buffer.length))size;
-    fread(buffer.ptr, cast(size_t)size, 1, file);
-
+    size_t readSize = fread(buffer.ptr, cast(size_t)size, 1, file);
+    if(readSize != buffer.length)
+        buffer.length = readSize;
     fclose(file);
 
     string content = cast(string)buffer;
