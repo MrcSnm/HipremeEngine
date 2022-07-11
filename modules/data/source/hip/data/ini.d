@@ -80,9 +80,16 @@ class IniFile
             {
                 import hip.util.string : replaceAll, split, splitRange;
                 string capture = "";
-                while(i < content.length && content[++i] != ']'){capture~=content[i];}
-                if(i >= content.length)
-                    return ret;
+                while(i < content.length)
+                {
+                    i++;
+                    if(i >= content.length)
+                        return ret;
+                    else if(content[i] == ']')
+                        break;
+                    else
+                        capture~=content[i];
+                }
 
                 IniBlock block;
                 block.name = capture;
