@@ -17,6 +17,7 @@ import hip.util.conv:to;
 import hip.error.handler;
 import hip.console.log;
 import hip.math.matrix;
+import hip.hipengine.api.data.font;
 import hip.hiprenderer;
 
 
@@ -29,46 +30,20 @@ enum HipTextAlign
     BOTTOM
 }
 
-interface IHipBitmapText
-{
-
-}
-
-
-struct HipBitmapChar
-{
-    ///Not meant to support more than ushort right now
-    uint id;
-    ///Those are in absolute values
-    int x, y, width, height;
-
-    int xoffset, yoffset, xadvance, page, chnl; 
-
-
-    ///Normalized values
-    float normalizedX, normalizedY, normalizedWidth, normalizedHeight;
-}
-
-class HipBitmapFont
+class HipBitmapFont : HipFont
 {
     Texture texture;
     ///The atlas path is saved inside the class
     string atlasPath;
     ///This variable is defined when the atlas is being read
     string atlasTexturePath;
-    HipBitmapChar[] characters;
 
     ///Use that property to know how many characters was read inside the atlas
     uint charactersCount;
-    
-    ///Saves the space width for the bitmap text process the ' '. If the original spaceWidth is == 0, it won't draw a quad
-    uint spaceWidth;
-
-    ///How much the line break will offset in Y the next char
-    uint lineBreakHeight;
 
 
-    Pair!(int, int)[][int] kerning;
+    HipFontKerning kerning;
+    // Pair!(int, int)[][int] kerning;
 
     void readAtlas(string atlasPath)
     {
@@ -126,14 +101,13 @@ class HipBitmapFont
         
         size_t memSize = (count > 256 ? count : 256);
 
-        HipBitmapChar[] ch = new HipBitmapChar[memSize];
+        scope HipFontChar[] ch = new HipFontChar[memSize];
         charactersCount = count;
-        characters = ch;
 
         uint maxWidth = 0;
         for(int i = 0; i < count; i++)
         {
-            HipBitmapChar c;
+            HipFontChar c;
             fscanf(f, "char id=%u x=%d y=%d width=%d height=%d xoffset=%d yoffset=%d xadvance=%d page=%d chnl=%d\n",
             &c.id, &c.x, &c.y, &c.width, &c.height, &c.xoffset, &c.yoffset, &c.xadvance, &c.page, &c.chnl);
             ch[c.id] = c;
@@ -148,19 +122,22 @@ class HipBitmapFont
         lineBreakHeight = lineHeight;
         
         int kerningCount = 0;
-        int k1, k2, kv;
 
         fscanf(f, "kernings count=%d\n", &kerningCount);
         
+        int kFirst, kSecond, kValue;
         for(int i = 0; i < kerningCount; i++)
         {
-            fscanf(f, "kerning first=%d second=%d amount=%d\n", &k1, &k2, &kv);
-            if((k1 in kerning) is null)
-                kerning[k1] = [];
-            kerning[k1]~= Pair!(int, int)(k2, kv);
+            fscanf(f, "kerning first=%d second=%d amount=%d\n", &kFirst, &kSecond, &kValue);
+            if((kFirst in kerning) is null)
+                kerning[kFirst] = HipCharKerning.init;
+            kerning[kFirst][kSecond] = kValue;
         }
-
         fclose(f);
+        foreach(HipFontChar hChar; ch)
+            characters[hChar.id] = hChar;
+        
+
     }
 
     void readTexture(string texturePath = "")
@@ -199,6 +176,18 @@ class HipBitmapFont
         ret.readTexture(texturePath);
         return ret;
     }
+    
+    override int getKerning(dchar current, dchar next)
+    {
+        HipCharKerning* chKerning = current in kerning;
+        if(chKerning is null)
+            return 0;
+        int* kerningValue = next in (*chKerning);
+        if(kerningValue is null)
+            return 0;
+        return *kerningValue;
+    }
+    
 
 }
 
@@ -207,7 +196,7 @@ private Shader bmTextShader = null;
 
 class HipBitmapText
 {
-    HipBitmapFont font;
+    HipFont font;
     Mesh mesh;
     ///For controlling easier without having to mess with align
     int x, y;
@@ -297,7 +286,7 @@ class HipBitmapText
 
     float[] getVertices()
     {
-        HipBitmapChar ch;
+        HipFontChar ch;
         int yoffset = 0;
         int xoffset = 0;
         //4 floats(vec2 pos, vec2 texst) and 4 vertices per character
@@ -331,18 +320,8 @@ class HipBitmapText
                     goto default;
                 default:
                     //Find kerning
-                    Pair!(int, int)[]* pair = lastCharacter in font.kerning;
-                    if(pair !is null)
-                    {
-                        foreach(p; *pair)
-                        {
-                            if(p.first == ch.id)
-                            {
-                                kerningAmount = p.second;
-                                break;
-                            }
-                        }
-                    }
+
+                    kerningAmount = font.getKerning(lastCharacter, ch.id);
                     xoffset+= ch.xoffset+kerningAmount;
                     yoffset+= ch.yoffset;
                     //Gen vertices 
@@ -387,9 +366,9 @@ class HipBitmapText
         int w, h;
         int lastMaxW = 0;
         int lineCount = 0;
-        HipBitmapChar[] ch = font.characters;
         for(int i = 0; i < text.length; i++)
         {
+            HipFontChar ch = font.characters[cast(dchar)text[i]];
             switch(text[i])
             {
                 case '\n':
@@ -406,7 +385,7 @@ class HipBitmapText
                     w+= font.spaceWidth;
                     break;
                 default:
-                    w+= ch[text[i]].xadvance;
+                    w+= ch.xadvance;
                     break;
             }
         }
