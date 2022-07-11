@@ -19,7 +19,7 @@ import hip.data.assets.image;
 public import hip.util.data_structures:Array2D;
 public import hip.hipengine.api.renderer.texture;
 
-class Texture
+class Texture : ITexture
 {
     Image img;
     int width,height;
@@ -103,15 +103,18 @@ class Texture
         task.await;
         Image loadedImage = cast(Image)task.asset;
 
-        // HipAssetManager.loadImage(path, (Image img)
-        // {
-            this.img = loadedImage;
-            this.width = img.w;
-            this.height = img.h;
-            this.textureImpl.load(loadedImage);
-        // }, false);
-        return this.width != 0;
+        return load(loadedImage);
     }
+    
+    bool load(IImage img)
+    {
+        this.img = cast(Image)img;
+        this.width = img.getWidth;
+        this.height = img.getHeight;
+        this.textureImpl.load(cast(Image)img);
+        return width != 0;
+    }
+    
 }
 
 
