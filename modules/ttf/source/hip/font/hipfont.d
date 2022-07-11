@@ -10,33 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.font.hipfont;
 import hip.filesystem.hipfs;
-
-
-struct HipFontChar
-{
-    ///Not meant to support more than ushort right now
-    uint id;
-    ///Those are in absolute values
-    int x, y, width, height;
-
-    int xoffset, yoffset, xadvance, page, chnl; 
-
-
-    ///Normalized values
-    float normalizedX, normalizedY, normalizedWidth, normalizedHeight;
-}
-
-abstract class HipFont
-{
-    HipFontChar[dchar] characters;
-    ///Saves the space width for the bitmap text process the ' '. If the original spaceWidth is == 0, it won't draw a quad
-    uint spaceWidth;
-    ///How much the line break will offset in Y the next char
-    uint lineBreakHeight;
-
-    int getKerning(dchar current, dchar next);
-}
-
+import hip.hipengine.api.data.font;
 
 private struct RenderizedChar
 {
@@ -64,18 +38,20 @@ private struct RenderizedChar
     {
         if(data.ptr != null)
         {
+            import arsd.ttf;
             stbtt_FreeBitmap(data.ptr, null);
             data = null;
         }
     }
 }
+
 class Hip_TTF_Font : HipFont
 {
     import arsd.ttf;
     protected float fontScale;
     protected TtfFont font;
     protected ubyte[] generatedTexture;
-    public static immutable dstring defaultCharset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\\|'\"`/*-+,.;_=!@#$%&()[]{}~^?";
+    public static immutable dstring defaultCharset = "áéíóúãñçabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\\|'\"`/*-+,.;_=!@#$%&()[]{}~^?";
 
     this(string path)
     {
@@ -95,6 +71,14 @@ class Hip_TTF_Font : HipFont
         rch.data = font.renderCharacter(ch, size, rch.width, rch.height, shift_x, shift_y);
         return rch;
     }
+
+    public void loadTexture()
+    {
+        assert(generatedTexture !is null, "Must first generate a texture before uploading to GPU");
+        import hip.hiprenderer.texture;
+
+    }
+
     /**
     *   I'm no good packer. The image will be at least 2048xMinPowOf2
     */
@@ -121,9 +105,15 @@ class Hip_TTF_Font : HipFont
         enum vSpacing = 1;
         float x = 1;
         float y = 0;
+        int xAdvance, xOffset, yOffset;
         int largestHeightInRow = 0;
         foreach(fontCh; sort!"a.height > b.height"(fontChars))
         {
+            characters[fontCh.ch] = HipFontChar(fontCh.ch, cast(int)x, cast(int)y, fontCh.width, fontCh.height, 
+                xOffset, yOffset, xAdvance, 0, 0,
+                cast(float)x/maxWidth, cast(float)y/maxHeight,
+                cast(float)fontCh.width/maxWidth, cast(float)fontCh.height/maxHeight, 
+            );
             if(x + fontCh.width + hSpacing > maxWidth)
             {
                 x = hSpacing;
