@@ -246,7 +246,7 @@ class HipBitmapText
         mesh.createIndexBuffer("DEFAULT".length*6, HipBufferUsage.DYNAMIC);
         mesh.sendAttributes();
     }
-    void setBitmapFont(HipBitmapFont font)
+    void setFont(HipFont font)
     {
         this.font = font;
     }
