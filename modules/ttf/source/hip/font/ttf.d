@@ -8,42 +8,9 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hip.font.hipfont;
+module hip.font.ttf;
 import hip.filesystem.hipfs;
 import hip.hipengine.api.data.font;
-
-private struct RenderizedChar
-{
-    dchar ch;
-    int size;
-    int width;
-    int height;
-
-    ubyte[] data;
-
-    void blitToTexture(ref ubyte[] texture, int startX, int startY, int textureWidth, int textureHeight)
-    {
-        assert(startX + width < textureWidth, "Out of X boundaries");
-        for(size_t i = 0; i < height; i++)
-        {
-            size_t pos = (startY+i)*textureWidth + startX;
-            assert(startY + i < textureHeight, "Out of Y boundaries");
-            texture[pos..pos+width] = data[i*width..(i+1)*width];
-        }
-    }
-
-
-
-    void dispose()
-    {
-        if(data.ptr != null)
-        {
-            import arsd.ttf;
-            stbtt_FreeBitmap(data.ptr, null);
-            data = null;
-        }
-    }
-}
 
 class Hip_TTF_Font : HipFont
 {
@@ -177,6 +144,38 @@ class Hip_TTF_Font : HipFont
         free(texture.ptr);
         texture = null;
     }
+}
 
 
+private struct RenderizedChar
+{
+    dchar ch;
+    int size;
+    int width;
+    int height;
+
+    ubyte[] data;
+
+    void blitToTexture(ref ubyte[] texture, int startX, int startY, int textureWidth, int textureHeight)
+    {
+        assert(startX + width < textureWidth, "Out of X boundaries");
+        for(size_t i = 0; i < height; i++)
+        {
+            size_t pos = (startY+i)*textureWidth + startX;
+            assert(startY + i < textureHeight, "Out of Y boundaries");
+            texture[pos..pos+width] = data[i*width..(i+1)*width];
+        }
+    }
+
+
+
+    void dispose()
+    {
+        if(data.ptr != null)
+        {
+            import arsd.ttf;
+            stbtt_FreeBitmap(data.ptr, null);
+            data = null;
+        }
+    }
 }
