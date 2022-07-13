@@ -11,6 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.filesystem.hipfs;
 
 public import hip.hipengine.api.filesystem.hipfs;
+import hip.util.reflection;
 
 private pure bool validatePath(string initial, string toAppend)
 {
@@ -499,14 +500,14 @@ class HipFileSystem
             foreach (v; validations){extraValidations~=v;}
         }
     }
-    public static string getPath(string path)
+    @ExportD public static string getPath(string path)
     {
         import hip.util.path:joinPath;
         import hip.util.system : sanitizePath;
         return joinPath(combinedPath, path.sanitizePath);
     }
-    public static bool isPathValid(string path){return validatePath(initialPath, defPath~path);}
-    public static bool isPathValidExtra(string path)
+    @ExportD public static bool isPathValid(string path){return validatePath(initialPath, defPath~path);}
+    @ExportD public static bool isPathValidExtra(string path)
     {
         import hip.error.handler;
         import hip.util.system : sanitizePath;
@@ -524,7 +525,7 @@ class HipFileSystem
         return true;
     }
 
-    public static bool setPath(string path)
+    @ExportD public static bool setPath(string path)
     {
         import hip.util.path:joinPath;
         import hip.util.system : sanitizePath;
@@ -533,21 +534,21 @@ class HipFileSystem
         return validatePath(initialPath, combinedPath);
     }
 
-    public static bool read(string path, out void[] output)
+    @ExportD public static bool read(string path, out void[] output)
     {
         path = getPath(path);
         if(!isPathValid(path) || !isPathValidExtra(path))
             return false;
         return fs.read(path, output);
     }
-    public static bool read(string path, out ubyte[] output)
+    @ExportD public static bool read(string path, out ubyte[] output)
     {
         void[] data;
         bool ret = read(path, data);
         output = cast(ubyte[])data;
         return ret;
     }
-    public static bool readText(string path, out string output)
+    @ExportD public static bool readText(string path, out string output)
     {
         void[] data;
         bool ret = read(path, data);
@@ -569,32 +570,32 @@ class HipFileSystem
 
     } 
 
-    public static bool write(string path, void[] data)
+    @ExportD public static bool write(string path, void[] data)
     {
         if(!isPathValid(path))
             return false;
         return fs.write(getPath(path), data);
     }
-    public static bool exists(string path){return isPathValid(path) && fs.exists(getPath(path));}
-    public static bool remove(string path)
+    @ExportD public static bool exists(string path){return isPathValid(path) && fs.exists(getPath(path));}
+    @ExportD public static bool remove(string path)
     {
         if(!isPathValid(path) || !isPathValidExtra(path))
             return false;
         return fs.remove(getPath(path));
     }
-    public static string getcwd()
+    @ExportD public static string getcwd()
     {
         return getPath("");
     }
 
-    public static bool absoluteExists(string path){return fs.exists(path);}
-    public static bool absoluteIsDir(string path){return fs.isDir(path);}
-    public static bool absoluteIsFile(string path){return fs.isFile(path);}
+    @ExportD public static bool absoluteExists(string path){return fs.exists(path);}
+    @ExportD public static bool absoluteIsDir(string path){return fs.isDir(path);}
+    @ExportD public static bool absoluteIsFile(string path){return fs.isFile(path);}
 
-    public static bool isDir(string path){return isPathValid(path) && fs.isDir(getPath(path));}
-    public static bool isFile(string path){return isPathValid(path) && fs.isFile(getPath(path));}
+    @ExportD public static bool isDir(string path){return isPathValid(path) && fs.isDir(getPath(path));}
+    @ExportD public static bool isFile(string path){return isPathValid(path) && fs.isFile(getPath(path));}
 
-    public static string writeCache(string cacheName, void[] data)
+    @ExportD public static string writeCache(string cacheName, void[] data)
     {
         import hip.util.path:joinPath;
         string p = joinPath(initialPath, ".cache", cacheName);
