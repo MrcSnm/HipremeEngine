@@ -213,7 +213,17 @@ class HipBitmapText
     HipTextAlign alignv = HipTextAlign.TOP;
     index_t[] indices;
     float[] vertices;
-    string text;
+
+    dstring text;
+
+    //Debugging?
+
+    protected bool shouldRenderSpace = false;
+    protected bool shouldRenderLineBreak = false;
+
+    //Caching
+    protected size_t lastTextLength = 0;
+    protected bool shouldUpdateText = true;
 
     this()
     {
@@ -286,38 +296,38 @@ class HipBitmapText
 
     float[] getVertices()
     {
-        HipFontChar ch;
         int yoffset = 0;
         int xoffset = 0;
         //4 floats(vec2 pos, vec2 texst) and 4 vertices per character
         float[] v = new float[text.length*4*4];
-        int vI = 0;
+        int vI = 0; //vertex buffer index
 
-        int lastCharacter = 0;
+        dchar lastCharacter = 0;
         int kerningAmount = 0;
         int lineBreakCount = 0;
         updateAlign(0);
+        HipFontChar* ch;
         for(int i = 0; i < text.length; i++)
         {
-            ch = font.characters[text[i]];
-            switch(ch.id)
+            ch = text[i] in font.characters;
+            switch(text[i])
             {
                 case '\n':
-                    if(ch.height == 0)
+                    xoffset = 0;
+                    updateAlign(++lineBreakCount);
+                    if(ch && ch.width != 0 && ch.height != 0 && shouldRenderLineBreak)
+                        goto default;
+                    else
                     {
-                        yoffset+= font.lineBreakHeight;
-                        xoffset = 0;
-                        updateAlign(++lineBreakCount);
-                        break;
+                        yoffset+= ch && ch.height != 0 ? ch.height : font.lineBreakHeight;
                     }
                     break;
                 case ' ':
-                    if(ch.width == 0)
-                    {
-                        xoffset+= font.spaceWidth;
-                        break;
-                    }
-                    goto default;
+                    if(shouldRenderSpace)
+                        goto default;
+                    else
+                        xoffset+= ch && ch.width != 0 ? ch.width : font.spaceWidth;
+                    break;
                 default:
                     //Find kerning
 
@@ -355,34 +365,47 @@ class HipBitmapText
                     xoffset+= ch.xadvance;
 
             }
-            lastCharacter = ch.id;
+            lastCharacter = text[i];
 
         }
         return v;
     }
 
-    void setText(string text)
+    
+
+    //Defers a call to updateText
+    void setText(dstring newText)
+    {
+        if(text != newText)
+        {
+            lastTextLength = text.length;
+            text = newText;
+            this.shouldUpdateText = true;
+        }
+    }
+
+
+    protected void recalculateTextBounds()
     {
         int w, h;
         int lastMaxW = 0;
-        int lineCount = 0;
+        int lineIndex = 0;
+
         for(int i = 0; i < text.length; i++)
         {
-            HipFontChar ch = font.characters[cast(dchar)text[i]];
+            HipFontChar* ch = text[i] in font.characters;
             switch(text[i])
             {
                 case '\n':
-                    h+=font.lineBreakHeight;
+                    h+= ch && ch.height != 0 ? ch.height : font.lineBreakHeight;
                     lastMaxW = max(w, lastMaxW);
-                    lineCount++;
-                    if(linesWidths.length == lineCount)
-                        linesWidths~= w;
-                    else
-                        linesWidths[lineCount] = w;
+                    if(lineIndex + 1 > linesWidths.length)
+                        linesWidths.length = lineIndex + 1;
+                    linesWidths[lineIndex++] = w;
                     w = 0;
                     break;
                 case ' ':
-                    w+= font.spaceWidth;
+                    w+= ch && ch.width != 0 ? ch.width : font.spaceWidth;
                     break;
                 default:
                     w+= ch.xadvance;
@@ -390,14 +413,18 @@ class HipBitmapText
             }
         }
         width = max(w, lastMaxW);
-        linesWidths[lineCount] = w;
+        if(lineIndex >= linesWidths.length)
+            linesWidths.length++;
+        linesWidths[lineIndex] = w;
         height = h;
-        if(text.length > this.text.length)
+    }
+
+    public void updateText()
+    {
+        recalculateTextBounds();
+        if(text.length > lastTextLength)
         {
-            if(indices is null)
-                indices = new index_t[text.length*6];
-            else
-                indices.length = (text.length*6);
+            indices.length = (text.length*6);
             index_t index = 0;
             for(index_t i = 0; i < text.length; i++)
             {
@@ -412,13 +439,15 @@ class HipBitmapText
             }
             mesh.setIndices(indices);
         }
-        this.text = text;
         vertices = getVertices();
         mesh.setVertices(vertices);
+        shouldUpdateText = false;
     }
 
     void render()
     {
+        if(shouldUpdateText)
+            updateText();
         this.font.texture.bind();
         mesh.draw(indices.length);
     }
