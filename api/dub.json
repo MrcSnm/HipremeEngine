@@ -17,18 +17,12 @@
 			"targetType": "sourceLibrary"
 		},
 		{
-			"name": "singledef",
-			"targetType": "library",
-			"importPaths": [
-				"source"
-			]
-		},
-		{
 			"name": "hipengine",
 			"importPaths": [
-				"source"
+				"source",
+				"../modules/math/source"
 			],
-			"targetType": "sourceLibrary"
+			"targetType": "library"
 		}
 	],
 	"license": "proprietary",

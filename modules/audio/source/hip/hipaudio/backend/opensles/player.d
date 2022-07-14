@@ -1,4 +1,6 @@
 module hip.hipaudio.backend.opensles.player;
+
+
 version(Android):
 import hip.hipaudio.backend.opensles.source;
 import hip.hipaudio.backend.opensles.clip;
@@ -11,9 +13,7 @@ import hip.util.conv:to;
 import opensles.sles;
 import hip.error.handler;
 import hip.hipaudio.audio;
-import bindbc.sdl.bind.sdlaudio;
 
-version(Android):
 private SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)
 {
     SLDataFormat_PCM ret;
@@ -28,30 +28,30 @@ private SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)
     switch(cfg.format)
     {
         //Big
-        case SDL_AudioFormat.AUDIO_S16MSB:
+        case AudioFormat.signed16Big:
             ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
             ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
             ret.endianness = SL_BYTEORDER_BIGENDIAN;
             break;
-        case SDL_AudioFormat.AUDIO_S32MSB:
+        case AudioFormat.signed32Big:
             ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_32;
             ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_32;
             ret.endianness = SL_BYTEORDER_BIGENDIAN;
             break;
 
-        case SDL_AudioFormat.AUDIO_S8:
+        case AudioFormat.signed8:
             ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_8;
             ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_8;
             ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
             break;
         default:
-        case SDL_AudioFormat.AUDIO_S16LSB:
+        case AudioFormat.signed16Little:
             ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
             ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
             ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
             break;
         //Little
-        case SDL_AudioFormat.AUDIO_S32LSB:
+        case AudioFormat.signed32Little:
             ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_32;
             ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_32;
             ret.endianness = SL_BYTEORDER_LITTLEENDIAN;

@@ -1,7 +1,6 @@
 module hip.event.handlers.button;
 
 public import hip.hipengine.api.input.button;
-import bindbc.sdl.bind.sdlkeycode;
 import hip.util.time;
 
 final class HipButtonMetadata : AHipButtonMetadata
@@ -16,7 +15,6 @@ final class HipButtonMetadata : AHipButtonMetadata
     override float getLastUpTimeDuration(){return lastUpTime;}
 
     this(int key){super(key);}
-    this(SDL_Keycode key){super(cast(int)key);}
 
     override float getDownTimeDuration()
     {

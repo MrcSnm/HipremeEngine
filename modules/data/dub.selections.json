@@ -10,9 +10,7 @@
 		"dplug": "12.1.16",
 		"error": {"path":"../error"},
 		"intel-intrinsics": "1.6.0",
-		"jni": {"path":"../jni"},
 		"math": {"path":"../math"},
-		"sdl_sound": {"path":"../../dependencies/sdl_sound"},
 		"util": {"path":"../util"}
 	}
 }

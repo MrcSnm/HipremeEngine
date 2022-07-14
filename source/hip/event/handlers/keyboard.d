@@ -11,8 +11,6 @@ Distributed under the MIT Software License.
 
 module hip.event.handlers.keyboard;
 
-import bindbc.sdl.bind.sdlkeycode;
-
 import hip.event.handlers.keyboard_layout;
 public import hip.event.handlers.button;
 public import hip.hipengine.api.input.keyboard;
