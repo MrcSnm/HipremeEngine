@@ -24,6 +24,8 @@ public import hip.hiprenderer.backend.gl.glvertex;
 // else{alias index_t = uint;}
 alias index_t = ushort;
 
+
+
 enum InternalVertexAttribute
 {
     POSITION = 0,
@@ -112,6 +114,31 @@ class HipVertexArrayObject
         isBonded = false;
         this.VAO = HipRenderer.createVertexArray();
     }
+
+    /**
+    *   Populates a buffer with indices forming quads
+    *   Returns if the output can contain the size
+    */
+    static bool putQuadBatchIndices(ref index_t[] output, size_t countQuads)
+    {
+        assert(output.length >= countQuads*6, "Out of bounds");
+        if(output.length < countQuads*6)
+            return false;
+        index_t index = 0;
+        for(index_t i = 0; i < countQuads; i++)
+        {
+            output[index+0] = cast(index_t)(i*4+0);
+            output[index+1] = cast(index_t)(i*4+1);
+            output[index+2] = cast(index_t)(i*4+2);
+
+            output[index+3] = cast(index_t)(i*4+2);
+            output[index+4] = cast(index_t)(i*4+3);
+            output[index+5] = cast(index_t)(i*4+0);
+            index+=6;
+        }
+        return true;
+    }
+
     /**
     *   Creates and binds an index buffer.
     */

@@ -271,19 +271,8 @@ class HipTextRenderer
         recalculateTextBounds();
         if(text.length > lastTextLength)
         {
-            indices.length = (text.length*6);
-            index_t index = 0;
-            for(index_t i = 0; i < text.length; i++)
-            {
-                indices[index+0] = cast(index_t)(i*4+0);
-                indices[index+1] = cast(index_t)(i*4+1);
-                indices[index+2] = cast(index_t)(i*4+2);
-
-                indices[index+3] = cast(index_t)(i*4+2);
-                indices[index+4] = cast(index_t)(i*4+3);
-                indices[index+5] = cast(index_t)(i*4+0);
-                index+=6;
-            }
+            indices.length = text.length*6;
+            HipVertexArrayObject.putQuadBatchIndices(indices, text.length);
             mesh.setIndices(indices);
         }
         vertices = getVertices();
