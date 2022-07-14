@@ -109,8 +109,13 @@ class Hip_GL3_Texture : ITexture
         switch(image.getBytesPerPixel)
         {
             case 1:
-                pixels = image.convertPalettizedToRGBA();
-                mode = GL_RGBA;
+                if(image.hasPalette)
+                {
+                    pixels = image.convertPalettizedToRGBA();
+                    mode = GL_RGBA;
+                }
+                else
+                    mode = GL_RED;
                 break;
             case 3:
                 mode = GL_RGB;
