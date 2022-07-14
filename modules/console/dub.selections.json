@@ -3,7 +3,6 @@
 	"versions": {
 		"config": {"path":"../config"},
 		"debugging": {"path":"../debugging"},
-		"jni": {"path":"../jni"},
 		"util": {"path":"../util"}
 	}
 }

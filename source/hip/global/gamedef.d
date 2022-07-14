@@ -10,16 +10,12 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.global.gamedef;
 import hip.systems.game;
-import bindbc.sdl.bind.sdlvideo;
-import bindbc.sdl.bind.sdlsurface;
 import hip.event.handlers.inputmap;
 
 public:
     immutable static enum ENGINE_NAME = "Hipreme Engine";
     static int SCREEN_WIDTH = 800;
     static int SCREEN_HEIGHT = 600;
-    __gshared SDL_Window* gWindow = null;
-    __gshared SDL_Surface* gScreenSurface = null;
     ///Globally shared for accessing it on Android Game Thread
    __gshared GameSystem sys;
    __gshared float g_deltaTime = 0;
@@ -33,7 +29,7 @@ float getDisplayDPI(uint displayIndex = 0)
    float diagonalDPI;
    float verticalDPI;
    float horizontalDPI;
-   SDL_GetDisplayDPI(displayIndex, &diagonalDPI, &horizontalDPI, &verticalDPI);
+   // SDL_GetDisplayDPI(displayIndex, &diagonalDPI, &horizontalDPI, &verticalDPI);
 
    return horizontalDPI;
 }

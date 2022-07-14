@@ -90,16 +90,18 @@ class ChainTestScene : Scene
 
         foreach(ref p; particles) 
         {
-            p.addForce(Forces.dragForce(p.velocity, 0.01));
+            // p.addForce(Forces.dragForce(p.velocity, 0.01));
             p.addForce(Vector2(0, 9.8)); //Apply weight force
         }
-        Vector2 firstForce = Forces.springForce(anchors[0], particles[0].position, springLength, springiness);
+        Vector2 firstForce ;
+        // Forces.springForce(anchors[0], particles[0].position, springLength, springiness);
         particles[0].addForce(firstForce);
 
         for(int i = 1; i < particles.length; i++)
         {
-            Vector2 spForce = Forces.springForce(particles[i-1].position,
-            particles[i].position, springLength, springiness);
+            Vector2 spForce ;
+            // Forces.springForce(particles[i-1].position,
+            // particles[i].position, springLength, springiness);
 
             particles[i-1].addForce(-spForce);
             particles[i].addForce(spForce);

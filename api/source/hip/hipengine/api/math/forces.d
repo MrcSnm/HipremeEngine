@@ -2,6 +2,7 @@ module hip.hipengine.api.math.forces;
 
 
 version(HipMathAPI):
+version(none):
 import hip.hipengine.api.math.vector;
 
 struct Forces
