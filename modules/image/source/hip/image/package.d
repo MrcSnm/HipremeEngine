@@ -18,57 +18,6 @@ IHipPNGDecoder png;
 IHipWebPDecoder webP;
 
 
-version(HipSDLImage)
-final class HipSDLImageDecoder : IHipAnyImageDecoder
-{
-    import bindbc.sdl.bind.sdlsurface;
-    import bindbc.sdl.bind.sdlrwops;
-    import bindbc.sdl.bind.sdlpixels;
-    import bindbc.sdl.image;
-    this()
-    {
-        bmp = this; jpeg = this; png = this; webP = this;
-    }
-    SDL_Surface* img;
-    bool startDecoding(void[] data)
-    {
-        SDL_RWops* rw = SDL_RWFromMem(data.ptr, cast(int)data.length);
-        img = IMG_Load_RW(rw, 1); //Free SDL_RWops
-        // if(img != null && rgbColorKey != -1)
-        //     SDL_SetColorKey(img, SDL_TRUE, SDL_MapRGB(img.format,
-        //     cast(ubyte)(rgbColorKey >> 16), //R
-        //     cast(ubyte)((rgbColorKey >> 8) & 255), //G
-        //     cast(ubyte)(rgbColorKey & 255))); //B
-        return img != null;
-    }
-    uint getWidth(){return (img == null) ? 0 : img.w;}
-    uint getHeight(){return (img == null) ? 0 : img.h;}
-    void* getPixels(){return (img == null) ? null : img.pixels;}
-    ubyte getBytesPerPixel(){return (img == null) ? 0 : img.format.BytesPerPixel;}
-    ubyte[] getPalette()
-    {
-        ubyte[] palette = new ubyte[](img.format.palette.ncolors*4);
-        palette[0] = 0;
-        palette[1] = 0;
-        palette[2] = 0;
-        palette[3] = 0;
-        uint z; //Palette index
-        for(int i = 1; i < img.format.palette.ncolors; i++)
-        {
-            SDL_Color c = img.format.palette.colors[i];
-            z = i*4;
-            palette[z] = c.r;
-            palette[z+1] = c.g;
-            palette[z+2] = c.b;
-            palette[z+3] = c.a;
-        }
-        return palette;
-    }
-
-    ///Dispose the pixels
-    void dispose(){if(img != null){SDL_FreeSurface(img);img = null;}}
-}
-
 version(HipARSDImageDecoder)
 final class HipARSDImageDecoder : IHipAnyImageDecoder
 {

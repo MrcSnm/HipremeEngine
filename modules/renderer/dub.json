@@ -48,10 +48,6 @@
 		}
 	],
 	"versions": [
-		"SDL_208",
-		"BindSDL_Mixer",
-		"BindSDL_TTF",
-		"BindSDL_Image",
 		"GL_45",
 		"GL_ARB",
 		"HipRendererAPI"
