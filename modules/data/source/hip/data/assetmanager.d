@@ -114,12 +114,9 @@ class HipAssetManager
     static void awaitTask(HipAssetLoadTask task)
     {
         import core.sync.semaphore;
-        import std.stdio;
         auto semaphore = new Semaphore(0);
         task.worker.pushTask("Await Single", ()
         {
-            import std.stdio;
-            writeln("Notifying semaphore");
             semaphore.notify;
         });
         semaphore.wait;
