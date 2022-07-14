@@ -47,6 +47,8 @@ version(HipAssets)
     class HapFile
     {
         HapChunk[string] chunks;
+        immutable string path;
+        uint fileSteps;
         protected FileProgression fp;
 
         /**
@@ -59,15 +61,19 @@ version(HipAssets)
             return f;
         }
 
+
         this(string filePath, uint fileSteps = 10)
         {
-            fp = new FileProgression(filePath, fileSteps);
-            fp.setOnFinish((ref ubyte[] data)
-            {
-                HapChunk[] ch = getHapChunks(data, getHeaderStart(data));
-                foreach(c;ch)
-                    chunks[c.fileName] = c;
-            });
+            this.path = filePath;
+            this.fileSteps = fileSteps;
+        }
+
+        bool loadFromMemory(in ubyte[] data)
+        {
+            HapChunk[] ch = getHapChunks(data, getHeaderStart(data));
+            foreach(c;ch)
+                chunks[c.fileName] = c;
+            return ch.length != 0;
         }
 
         string getText(string chunkName, bool removeCarriageReturn = true)
@@ -318,7 +324,7 @@ version(HipAssets)
         }
         return 0;
     }
-    ulong getHeaderStart (ref ubyte[] fileData)
+    ulong getHeaderStart (in ubyte[] fileData)
     {
         string header = "";
         ulong i;
@@ -343,7 +349,7 @@ version(HipAssets)
         return i+1;
     }
 
-    HapChunk[] getHapChunks(ref ubyte[] hapFile, ulong headerStart)
+    HapChunk[] getHapChunks(in ubyte[] hapFile, ulong headerStart)
     {
         import hip.util.string : split;
         import hip.util.conv : to;

@@ -9,7 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.font.ttf;
-import hip.filesystem.hipfs;
 import hip.hipengine.api.data.font;
 
 class Hip_TTF_Font : HipFont
@@ -17,16 +16,18 @@ class Hip_TTF_Font : HipFont
     import arsd.ttf;
     protected float fontScale;
     protected TtfFont font;
+    string path;
     protected ubyte[] generatedTexture;
     public static immutable dstring defaultCharset = " \náéíóúãñçabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\\|'\"`/*-+,.;_=!@#$%&()[]{}~^?";
 
     this(string path)
     {
-        ubyte[] output;
-        if(HipFS.read(path, output))
-        {
-            font = TtfFont(output);
-        }
+        this.path = path;
+    }
+    bool loadFromMemory(in ubyte[] data)
+    {
+        font = TtfFont(data);
+        return true;
     }
     override int getKerning(dchar current, dchar next)
     {

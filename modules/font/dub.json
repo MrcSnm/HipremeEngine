@@ -11,7 +11,6 @@
 		{
 			"dependencies": {
 				"error": {"path": "../error","version": "*"},
-				"filesystem": {"path": "../filesystem", "version": "*"},
 				"hipengine_api": {"path": "../../api", "version": "*"},
 				"renderer": {"path": "../renderer", "version": "*"},
 				"util": {"path": "../util","version": "*"}

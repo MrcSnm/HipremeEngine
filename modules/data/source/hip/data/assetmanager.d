@@ -147,7 +147,8 @@ class HipAssetManager
         task.worker = load(()
         {
             Image img = new Image(imagePath);
-            img.loadFromFile();
+            pragma(msg, __FILE__, " Should change img.loadFromFile");
+            // img.loadFromFile();
             task.asset = img;
             task.result = HipAssetResult.loaded;
         });

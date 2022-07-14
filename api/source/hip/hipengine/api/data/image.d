@@ -48,7 +48,6 @@ public interface IImage : IImageBase
     bool loadFromMemory(ref ubyte[] data);
     void* convertPalettizedToRGBA();
     void* monochromeToRGBA();
-    bool loadFromFile();
     bool load();
     bool load(void function() onLoad);
     bool isReady();

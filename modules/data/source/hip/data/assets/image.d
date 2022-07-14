@@ -134,27 +134,21 @@ public class Image : HipAsset, IImage
         return cast(void*)pix;
     }
 
-    bool loadFromFile()
-    {
-        import hip.filesystem.hipfs;
-        ubyte[] data_;
-        HipFS.read(imagePath, data_);
-        return loadFromMemory(data_);
-    }
-
     override bool load()
     {
-        _ready = loadFromFile();
+        pragma(msg, __FILE__, " Should change img.loadFromFile");
+        // _ready = loadFromFile();
         return _ready;
     }
 
     override bool isReady(){return _ready;}
     bool load(void function() onLoad)
     {
-        bool ret = loadFromFile();
-        if(ret)
+        pragma(msg, __FILE__, " Should change img.loadFromFile");
+        // bool ret = loadFromFile();
+        if(false)
             onLoad();
-        return ret;
+        return false;
     }
     override void onDispose()
     {
