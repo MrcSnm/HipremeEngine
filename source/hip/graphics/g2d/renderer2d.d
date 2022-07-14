@@ -8,12 +8,20 @@ public import hip.hipengine.api.graphics.color;
 public import hip.hipengine.api.graphics.g2d.hipsprite;
 public import hip.hipengine.api.math;
 public import hip.graphics.g2d.sprite;
+public import hip.graphics.g2d.textrenderer;
 
-private __gshared HipSpriteBatch spBatch;
-private __gshared GeometryBatch geoBatch;
-private __gshared HipOrthoCamera camera;
-private __gshared FitViewport viewport;
-private __gshared bool autoUpdateCameraAndViewport;
+public import hip.hipengine.api.data.font;
+
+private __gshared
+{
+    HipSpriteBatch spBatch;
+    GeometryBatch geoBatch;
+    HipTextRenderer dbgText;
+    HipOrthoCamera camera;
+    FitViewport viewport;
+    HipTextRenderer textRenderer;
+    bool autoUpdateCameraAndViewport;
+}
 
 
 void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewport = true)
@@ -27,6 +35,7 @@ void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewpor
 
     spBatch = new HipSpriteBatch(camera);
     geoBatch = new GeometryBatch(camera);
+    dbgText = new HipTextRenderer();
     setGeometryColor(HipColor.white);
 
     version(HipremeEngineLua)
@@ -73,32 +82,47 @@ void resizeRenderer2D(uint width, uint height)
             
     }
 }
-export extern(C) void beginSprite(){spBatch.begin;}
-export extern(C) void endSprite(){spBatch.end;}
-export extern(C) void beginGeometry(){geoBatch.flush;}
-export extern(C) void endGeometry(){geoBatch.flush;}
-export extern(C) void setGeometryColor(HipColor color){geoBatch.setColor(color);}
-export extern(C) void drawPixel(int x, int y){geoBatch.drawPixel(x, y);}
-export extern(C) void drawRectangle(int x, int y, int w, int h){geoBatch.drawRectangle(x,y,w,h);}
-export extern(C) void drawTriangle(int x1, int y1, int x2,  int y2, int x3, int y3){geoBatch.drawTriangle(x1,y1,x2,y2,x3,y3);}
-export extern(C) void fillRectangle(int x, int y, int w, int h)
+
+export extern(C):
+
+void beginSprite(){spBatch.begin;}
+void endSprite(){spBatch.end;}
+void beginGeometry(){geoBatch.flush;}
+void endGeometry(){geoBatch.flush;}
+void setGeometryColor(HipColor color){geoBatch.setColor(color);}
+void drawPixel(int x, int y){geoBatch.drawPixel(x, y);}
+void drawRectangle(int x, int y, int w, int h){geoBatch.drawRectangle(x,y,w,h);}
+void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3){geoBatch.drawTriangle(x1,y1,x2,y2,x3,y3);}
+void fillRectangle(int x, int y, int w, int h)
 {
     geoBatch.fillRectangle(x,y,w,h);
 }
-export extern(C) void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, int precision = 24){geoBatch.fillEllipse(x,y,radiusW,radiusH,degrees,precision);}
-export extern(C) void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24){geoBatch.drawEllipse(x,y,radiusW,radiusH,degrees,precision);}
-export extern(C) void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3){geoBatch.fillTriangle(x1,y1,x2,y2,x3,y3);}
-export extern(C) void drawLine(int x1, int y1, int x2, int y2){geoBatch.drawLine(x1,y1,x2,y2);}
-export extern(C) void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24){geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision);}
-export extern(C) void drawSprite(IHipSprite sprite){spBatch.draw(cast(HipSprite)sprite);}
+void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, int precision = 24){geoBatch.fillEllipse(x,y,radiusW,radiusH,degrees,precision);}
+void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24){geoBatch.drawEllipse(x,y,radiusW,radiusH,degrees,precision);}
+void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3){geoBatch.fillTriangle(x1,y1,x2,y2,x3,y3);}
+void drawLine(int x1, int y1, int x2, int y2){geoBatch.drawLine(x1,y1,x2,y2);}
+void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24){geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision);}
+void drawSprite(IHipSprite sprite){spBatch.draw(cast(HipSprite)sprite);}
+
+void setFont(HipFont font){dbgText.setFont(font);}
+void drawText(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER)
+{
+    dbgText.x = x;
+    dbgText.y = y;
+    dbgText.alignh = alignH;
+    dbgText.alignv = alignV;
+    dbgText.setText(text);
+    dbgText.render();
+}
 
 private __gshared IHipSprite[] _sprites;
-export extern(C) IHipSprite newSprite(string texturePath)
+IHipSprite newSprite(string texturePath)
 {
     _sprites~= new HipSprite(texturePath);
     return _sprites[$-1];
 }
-export extern(C) void destroySprite(ref IHipSprite sprite)
+
+void destroySprite(ref IHipSprite sprite)
 {
     import hip.util.array:remove;
     _sprites.remove(sprite);

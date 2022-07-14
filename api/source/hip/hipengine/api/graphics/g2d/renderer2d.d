@@ -18,7 +18,8 @@ public import hip.hipengine.api.data.image;
 public import hip.hipengine.api.graphics.color;
 public import hip.hipengine.api.renderer.texture;
 public import hip.hipengine.api.graphics.g2d.hipsprite;
-
+public import hip.hipengine.api.data.font;
+public import hip.hipengine.api.graphics.text;
 
 
 version(Script)
@@ -36,7 +37,10 @@ version(Script)
         void function(int x, int y, int w, int h) fillRectangle;
         void function(int x1, int y1, int x2, int y2, int x3, int y3) fillTriangle;
         void function(int x1, int y1, int x2, int y2) drawLine;
+        void function(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24) drawQuadraticBezierLine;
         void function(IHipSprite sprite) drawSprite;
+        void function (HipFont font) setFont;
+        void function(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER) drawText;
         IHipSprite function(string texturePath) newSprite;
         void function(ref IHipSprite sprite) destroySprite;
     }
@@ -65,7 +69,10 @@ void initG2D()
             fillRectangle,
             fillTriangle,
             drawLine,
+            drawQuadraticBezierLine,
             drawSprite,
+            setFont,
+            drawText,
             newSprite,
             destroySprite
         );

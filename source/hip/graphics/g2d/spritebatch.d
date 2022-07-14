@@ -26,10 +26,10 @@ import hip.math.vector;
 */
 @HipShaderInputLayout struct HipSpriteVertex
 {
-    @HipVertexVar Vector3 position;
-    @HipVertexVar HipColor color;
-    @HipVertexVar Vector2 tex_uv;
-    @HipVertexVar int texID;
+    Vector3 position;
+    HipColor color;
+    Vector2 tex_uv;
+    int texID;
 
     static enum floatCount = cast(ulong)(HipSpriteVertex.sizeof/float.sizeof);
     static enum quadCount = floatCount*4;
