@@ -368,3 +368,12 @@ version(Windows)
         }
     }
 }
+else version(Posix)
+{
+    private HipKey getHipKeyFromSystem(wchar key)
+    {
+        import hip.console.log;
+        logln("Key: ", key);
+        return cast(HipKey)ushort(key);
+    }
+}
