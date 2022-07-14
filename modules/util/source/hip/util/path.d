@@ -104,27 +104,7 @@ string baseName(string path) @safe
     return path[lastSepIndex..$];
 }
 
-///Will get the directory name until a trailing separator or return 
-string dirName(string path) pure nothrow @nogc @safe
-{
-    int last = path.lastIndexOf(pathSeparator);
-    if(last == -1)
-        return path;
-    return path[0..last];
-}
-
-
-string extension(string pathOrFilename) pure nothrow @nogc @safe
-{
-    auto ind = pathOrFilename.lastIndexOf(".");
-    if(ind == -1)
-        return "";
-    return pathOrFilename[cast(uint)ind+1..$];
-}
-
-
-
-string relativePath(string path, string base, bool caseSensitive = defaultCaseSensitivity) pure nothrow @safe
+string relativePath(string filePath, string base, bool caseSensitive = defaultCaseSensitivity) pure nothrow @safe
 {
     string ret;
     int commonIndex = 0;
@@ -133,7 +113,7 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
     {
         foreach(i, v; base)
         {
-            if(base[i] != path[i])
+            if(base[i] != filePath[i])
             {
                 isEqual = false;
                 break;
@@ -146,7 +126,7 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
     {
         foreach(i, v; base)
         {
-            if(base[i].toLowerCase != path[i].toLowerCase)
+            if(base[i].toLowerCase != filePath[i].toLowerCase)
             {
                 isEqual = false;
                 break;
@@ -155,19 +135,19 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
             	commonIndex = cast(int)i;
         }
     }
-    if(isEqual && path.length == base.length)
+    if(isEqual && filePath.length == base.length)
         return ".";
     else if(isEqual)
     {
-        ret = path[base.length..$];
+        ret = filePath[base.length..$];
         if(ret[0] == pathSeparator)
             return ret[1..$];
        	return ret;
     }
     else if(commonIndex == base.length)
-        return path[commonIndex..$];
+        return filePath[commonIndex..$];
     else if(commonIndex == 0)
-        return path;
+        return filePath;
 
     uint pathCount = 0;
         
@@ -179,49 +159,58 @@ string relativePath(string path, string base, bool caseSensitive = defaultCaseSe
             ret~= ".."~pathSeparator;
         }
     }
-    ret~= path[0] == pathSeparator ? path[commonIndex+1..$] : path[commonIndex..$];	
+    ret~= filePath[0] == pathSeparator ? filePath[commonIndex+1..$] : filePath[commonIndex..$];	
     return ret;
 }
 
 
-bool isAbsolutePath(string path) pure nothrow @nogc @safe
+bool isAbsolutePath(string fPath) pure nothrow @nogc @safe
 {
-    if(path == null)
+    if(fPath == null)
         return false;
     version(Posix)
-        if(path[0] != '/')
+        if(fPath[0] != '/')
             return false;
     version(Windows)
     {
-        if(path.length < 3)
+        if(fPath.length < 3)
             return false;
-        if(!(path[0].isUpperCase && path[1] == ':' && path[2] == '\\'))
+        if(!(fPath[0].isUpperCase && fPath[1] == ':' && fPath[2] == '\\'))
             return false;
     }
-    for(size_t i = 0; i < path.length; i++)
-        if(i + 2 < path.length && path[i] == '.' && path[i+1] == '.' && path[i+2] == pathSeparator)
+    for(size_t i = 0; i < fPath.length; i++)
+        if(i + 2 < fPath.length && fPath[i] == '.' && fPath[i+1] == '.' && fPath[i+2] == pathSeparator)
             return false;
     return true;
 }
 
 
-string replaceFileName(string path, string newFileName) @safe pure nothrow
+///Will get the directory name until a trailing separator or return 
+string dirName(string filePath) pure nothrow @nogc @safe
 {
-    string[] p = pathSplitter(path);
-    p[$-1] = newFileName;
-    return joinPath(p);
-}
-string filename(string path) @safe pure nothrow @nogc
-{
-    int last = path.lastIndexOf(pathSeparator);
+    int last = filePath.lastIndexOf(pathSeparator);
     if(last == -1)
-        return path;
-    return path[last+1..$];
+        return filePath;
+    return filePath[0..last];
 }
 
-string filenameNoExt(string path) @safe pure nothrow @nogc
+
+string filename(string filePath) @safe pure nothrow @nogc
 {
-    string f = path.filename;
+    int last = filePath.lastIndexOf(pathSeparator);
+    if(last == -1)
+        return filePath;
+    return filePath[last+1..$];
+}
+
+ref string filename(return ref string filePath, string newFileName) @safe pure nothrow
+{
+    return filePath = replaceFileName(filePath, newFileName);
+}
+
+string filenameNoExt(string filePath) @safe pure nothrow @nogc
+{
+    string f = filePath.filename;
     if(f == "")
         return "";
     int last = f.lastIndexOf(".");
@@ -229,6 +218,51 @@ string filenameNoExt(string path) @safe pure nothrow @nogc
         return f;
     return f[0..last];
 }
+
+string replaceFileName(string filePath, string newFileName) @safe pure nothrow
+{
+    string[] p = pathSplitter(filePath);
+    p[$-1] = newFileName;
+    return joinPath(p);
+}
+
+
+
+/**
+*   Extension getter
+*/
+string extension(string pathOrFilename) pure nothrow @nogc @safe
+{
+    auto ind = pathOrFilename.lastIndexOf(".");
+    if(ind == -1)
+        return "";
+    return pathOrFilename[cast(uint)ind+1..$];
+}
+
+/**
+*   Extension setter.
+*   Usage:
+```d
+   string test = "test.png"
+   test.extension = "txt";
+   writeln(test); //test.txt
+```
+*/
+ref string extension(return ref string pathOrFilename, string newExt)
+{
+    auto ind = pathOrFilename.lastIndexOf(".");    
+    if(ind != -1 && ind != pathOrFilename.length)
+    {
+        if(newExt.length == 0)
+            pathOrFilename = pathOrFilename[0..ind];
+        else if(newExt[0] != '.')
+            pathOrFilename = pathOrFilename[0..ind+1]~newExt;
+        else
+            pathOrFilename = pathOrFilename[0..ind]~newExt[1..$];
+    }
+    return pathOrFilename;
+}
+
 
 string joinPath(string[] paths ...)@safe pure nothrow {return joinPath(paths);}
 string joinPath(string[] paths) @safe pure nothrow
@@ -240,9 +274,9 @@ string joinPath(string[] paths) @safe pure nothrow
 
     for(int i = 0; i < paths.length; i++)
     {
-        string path = paths[i];
+        string filePath = paths[i];
         string next = i+1 < paths.length ? paths[i+1] : "";
-        if(path == "")
+        if(filePath == "")
             continue;
         
         output~=paths[i];

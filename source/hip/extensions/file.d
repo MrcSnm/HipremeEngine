@@ -1,17 +1,11 @@
 module hip.extensions.file;
 
 import hip.filesystem.hipfs;
+import hip.filesystem.extension;
 
-
-//Definitions
 import hip.data.assets.image;
-bool loadFromFile(Image image, string path)
-{
-    ubyte[] data;
-    if(!HipFS.read(path, data))
-        return false;
-    return image.loadFromMemory(data);
-}
+mixin HipFSExtend!(Image) mxImg;
+alias loadFromFile = mxImg.loadFromFile;
 
 import hip.hiprenderer.texture;
 bool loadFromFile(Texture texture, string path)
@@ -38,15 +32,9 @@ bool loadFromFile(HipBitmapFont font, string atlasPath)
 }
 
 import hip.font.ttf;
-bool loadFromFile(Hip_TTF_Font font, string path)
-{
-    ubyte[] data;
-    if(!HipFS.read(path, data))
-        return false;
-    return font.loadFromMemory(data);
-}
-
-bool load(Hip_TTF_Font font){return font.loadFromFile(font.path);}
+mixin HipFSExtend!(Hip_TTF_Font, "path") mxTtf;
+alias loadFromFile = mxTtf.loadFromFile;
+alias load = mxTtf.load;
 
 import hip.data.ini;
 bool loadFromFile(out IniFile ini, string path)

@@ -117,21 +117,9 @@ class HipBitmapFont : HipFont
 
     }
 
-    void readTexture(string texturePath = "")
+    void loadTexture(Texture t)
     {
-        import hip.util.string : lastIndexOf;
-        if(texturePath == "" && atlasTexturePath != "")
-        {
-            const long ind = atlasPath.lastIndexOf("/");
-            if(ind != -1)
-                texturePath = atlasPath[0..ind+1]~ atlasTexturePath;
-            else
-                texturePath = atlasTexturePath;
-        }
-        auto t = new Texture();
-        ErrorHandler.assertErrorMessage(t.load(texturePath), "BitmapFontError", "Could not load texture at path "~texturePath);
         texture = t;
-
         for(int i = 0; i < characters.length; i++)
         {
             auto ch = &characters[i];
@@ -143,6 +131,20 @@ class HipBitmapFont : HipFont
                 ch.normalizedHeight = cast(float)ch.height/texture.height;
             }
         }
+    }
+    void readTexture(string texturePath = "")
+    {
+        import hip.util.path;
+        if(texturePath == "" && atlasTexturePath != "")
+        {
+            if(atlasPath.dirName != atlasPath)
+                texturePath = atlasPath.dirName.joinPath(atlasTexturePath);
+            else
+                texturePath = atlasTexturePath;
+        }
+        auto t = new Texture();
+        t.load(texturePath);
+        loadTexture(t);
     }
 
 
