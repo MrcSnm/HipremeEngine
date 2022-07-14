@@ -87,6 +87,14 @@ enum HipBlendEquation
     MAX
 }
 
+//////////////////////////////////////////Metadata//////////////////////////////////////////
+
+//Shaders
+enum HipShaderInputLayout;
+enum HipVertexVar;
+enum HipFragmentVar;
+alias HipPixelVar = HipFragmentVar;
+
 
 /**
 *   Minimal interface for another API implementation

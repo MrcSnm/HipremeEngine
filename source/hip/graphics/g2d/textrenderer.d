@@ -30,6 +30,13 @@ enum HipTextAlign
     BOTTOM
 }
 
+@HipShaderInputLayout struct HipTextRendererVertex
+{
+    import hip.math.vector;
+    Vector2 vPos;
+    Vector2 vTexST;
+}
+
 
 
 private Shader bmTextShader = null;
@@ -89,7 +96,7 @@ class HipTextRenderer
         }
         linesWidths.length = 1;
         text = "";
-        mesh = new Mesh(HipVertexArrayObject.getXY_ST_VAO(), bmTextShader);
+        mesh = new Mesh(HipVertexArrayObject.getVAO!HipTextRendererVertex, bmTextShader);
         //4 vertices per quad
         mesh.createVertexBuffer("DEFAULT".length*4, HipBufferUsage.DYNAMIC);
         //6 indices per quad
