@@ -14,7 +14,6 @@
 		"dplug": "12.7.3",
 		"error": {"path":"../error"},
 		"intel-intrinsics": "1.10.2",
-		"jni": {"path":"../jni"},
 		"math": {"path":"../math"},
 		"util": {"path":"../util"}
 	}

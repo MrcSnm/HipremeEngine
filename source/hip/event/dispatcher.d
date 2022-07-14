@@ -14,11 +14,6 @@ private:
     import hip.event.handlers.mouse;
     import hip.systems.gamepad;
     import hip.windowing.window;
-    import bindbc.sdl.bind.sdlevents;
-    import bindbc.sdl.bind.sdlkeyboard;
-    import bindbc.sdl.bind.sdlkeycode;
-    import bindbc.sdl.bind.sdlmouse;
-    import bindbc.sdl.bind.sdlvideo;
 
 public:
     import hip.systems.input;

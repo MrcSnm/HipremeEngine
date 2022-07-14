@@ -19,7 +19,6 @@
 		"fswatch": "0.6.0",
 		"imgui": {"path":"../imgui"},
 		"intel-intrinsics": "1.6.2",
-		"jni": {"path":"../jni"},
 		"math": {"path":"../math"},
 		"sles": {"path":"../../dependencies/sles"},
 		"util": {"path":"../util"}

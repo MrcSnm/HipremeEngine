@@ -3,12 +3,10 @@ import hip.error.handler;
 import hip.console.log;
 import hip.util.conv:to;
 import core.atomic;
-import opensles.sles;
-version(Android)
-{
-    import opensles.android;
-}
+
 version(Android):
+import opensles.android;
+import opensles.sles;
 /**
 *   OpenSL ES Debuggability
 */

@@ -10,7 +10,6 @@
 		"debugging": {"path":"../debugging"},
 		"error": {"path":"../error"},
 		"fswatch": "0.6.0",
-		"jni": {"path":"../jni"},
 		"util": {"path":"../util"}
 	}
 }
