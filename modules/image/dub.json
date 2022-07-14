@@ -14,7 +14,7 @@
 			"name": "default",
 			"dependencies": {
 				"arsd-official:image_files": {"version" : "~>10.8.4", "optional": true},
-				"filesystem": {"path": "../filesystem", "version": "*"},
+				"hipengine_api": {"path": "../../api", "version": "*"},
 				"error": {"path": "../error", "version": "*"},
 				"util": {"path": "../util", "version": "*"}
 			}

@@ -184,7 +184,9 @@ class GameSystem
         {
             // addScene(new SoundTestScene());
             // addScene(new ChainTestScene());
-            addScene(new AssetTest());
+            // addScene(new AssetTest());
+            import hip.view.ttftestscene;
+            addScene(new TTFTestScene());
         }
         else version(LoadScript)
         {

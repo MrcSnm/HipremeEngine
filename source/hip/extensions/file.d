@@ -1,6 +1,5 @@
 module hip.extensions.file;
 
-version(none):
 import hip.filesystem.hipfs;
 
 
@@ -17,10 +16,13 @@ bool loadFromFile(Image image, string path)
 import hip.hiprenderer.texture;
 bool loadFromFile(Texture texture, string path)
 {
-    ubyte[] data;
-    if(!HipFS.read(path, data))
+    Image img = new Image(path);
+    if(!img.loadFromFile(path))
+    {
+        destroy(img);
         return false;
-    return texture.load(null);
+    }
+    return texture.load(img);
 }
 
 
@@ -44,6 +46,8 @@ bool loadFromFile(Hip_TTF_Font font, string path)
     return font.loadFromMemory(data);
 }
 
+bool load(Hip_TTF_Font font){return font.loadFromFile(font.path);}
+
 import hip.data.ini;
 bool loadFromFile(out IniFile ini, string path)
 {
@@ -57,9 +61,10 @@ bool loadFromFile(out IniFile ini, string path)
 import hip.data.assetpacker;
 bool loadFromFile(HapFile hapFile, string path)
 {
-    void[] data;
+    ubyte[] data;
     if(!HipFS.read(path, data))
         return false;
-    hapFile = new HapFile(data);
+    hapFile = new HapFile(path);
+    hapFile.loadFromMemory(data);
     return true;
 }

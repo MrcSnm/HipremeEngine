@@ -21,8 +21,9 @@ class TTFTestScene : Scene
         txt = new HipTextRenderer();
         txt.x = HipRenderer.width/2;
         txt.alignh = HipTextAlign.CENTER;
-
+        import hip.extensions.file;
         auto fnt = new Hip_TTF_Font("fonts/arial.ttf");
+        fnt.load();
         ubyte[] texture = fnt.generateTexture(32);
         fnt.loadTexture;
         txt.y+= 100;
