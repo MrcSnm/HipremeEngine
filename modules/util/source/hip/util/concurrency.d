@@ -55,6 +55,7 @@ struct Volatile(T)
 }
 
 import core.thread;
+import core.sync.mutex : Mutex;
 import core.sync.semaphore:Semaphore;
 
 class HipWorkerThread : Thread
@@ -65,10 +66,12 @@ class HipWorkerThread : Thread
         void delegate() task;
         void delegate(string taskName) onTaskFinish;
     }
-    private __gshared WorkerJob[] jobsQueue;
-    private __gshared Semaphore semaphore;
-    private __gshared bool isAlive;
-    protected int currentTask = 0;
+    private WorkerJob[] jobsQueue;
+    private Semaphore semaphore;
+    private bool isAlive;
+    private int currentTask = 0;
+    private Mutex mutex;
+
 
 
     this()
@@ -76,41 +79,56 @@ class HipWorkerThread : Thread
         super(&run);
         isAlive = true;
         semaphore = new Semaphore;
+        mutex = new Mutex();
     }
 
-    void finish(){isAlive = false;}
-    bool isIdle(){return jobsQueue.length == currentTask;}
-
+    void finish()
+    {
+        mutex.lock;
+        isAlive = false;
+        mutex.unlock;
+    }
+    bool isIdle()
+    {
+        mutex.lock();
+        bool ret = jobsQueue.length == currentTask;
+        mutex.unlock();
+        return ret;
+    }
+    /**
+    *   Synchronized push on queue
+    */
     void pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null)
     {
+        mutex.lock();
         assert(isAlive, "Can't push a task to a worker that is has finished/awaited");
         jobsQueue~= WorkerJob(name, task, onTaskFinish);
         semaphore.notify();
         if(!isRunning)
             start();
+        mutex.unlock();
     }
     void await(bool rethrow = true)
     {
-        pushTask("await", () => finish);
-        join(rethrow);
+        // pushTask("await", () => finish);
+        // join(rethrow);
     }
 
     void run()
     {
         while(isAlive)
         {
-            import std.stdio;
             if(!isIdle)
             {
+                mutex.lock();
                 WorkerJob job = jobsQueue[currentTask];
+                mutex.unlock();
                 job.task();
                 if(job.onTaskFinish != null)
                     job.onTaskFinish(job.name);
                 currentTask++;
-                writeln("Finished ", job.name);
             }
-            else
-                semaphore.wait();
+            semaphore.wait;
         }
     }
 }

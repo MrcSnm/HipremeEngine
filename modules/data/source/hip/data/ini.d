@@ -108,6 +108,7 @@ class IniFile
                         ret.noError = false;
                         break;
                     }
+                    import std.stdio;
                     string name = kv[0].replaceAll(' ', "");
                     string _val  = kv[1];
                     string val = "";

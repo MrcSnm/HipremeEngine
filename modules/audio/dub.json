@@ -11,12 +11,11 @@
 	"dependencies": {
 		"bindbc-openal": "~>1.0.0",
 		"bindbc-sdl": "~>1.0.1",
-		"imgui": {"path": "../imgui"},
 		"math": {"path": "../math"},
 		"filesystem": {"path": "../filesystem", "version": "*"},
 		"audio_decoding": {"path": "../audio_decoding"},
-		"sdl_sound": {"path": "../../dependencies/sdl_sound"},
-		"sles": {"path": "../../dependencies/sles"},
+		"sdl_sound": {"path": "../../dependencies/sdl_sound", "optional": true},
+		"sles": {"path": "../../dependencies/sles", "optional": true},
 		"directx-d":{"path" : "../../dependencies/directx-d", "optional": true}
 	},
 	"description": "HipremeEngine audio module",
