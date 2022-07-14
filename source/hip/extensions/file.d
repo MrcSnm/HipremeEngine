@@ -1,4 +1,6 @@
 module hip.extensions.file;
+
+version(none):
 import hip.filesystem.hipfs;
 
 

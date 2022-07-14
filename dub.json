@@ -136,6 +136,11 @@
 				"EGL",
 				"GLESv3"
 			],
+			"dependencies": {
+				"jni": {"path": "./modules/jni", "version": "*"},
+				"sles": {"path": "./dependencies/sles", "version": "*"},
+				"gles" : {"path": "./dependencies/gles", "version": "*"}
+			},
 			"name": "android",
 			"postBuildCommands": [
 				"copy /B .\\bin\\android\\libhipreme_engine.so .\\build\\android\\project\\app\\src\\main\\jniLibs\\arm64-v8a\\libhipreme_engine.so",
@@ -154,21 +159,18 @@
 	],
 	"copyright": "Copyright © 2018 - 2021, Hipreme",
 	"dependencies": {
-		"arsd-official:dom": "~>10.5.0",
+		"arsd-official:dom": "~>10.8.4",
 		"audio": {"path": "./modules/audio", "version": "*"},
 		"bind": {"path": "./modules/bind", "version": "*"},
-		"bindbc-cimgui": "~>1.84.1",
 		"bindbc-sdl": "~>1.0.1",
 		"config": {"path": "./modules/config", "version": "*"},
 		"console": {"path": "./modules/console", "version": "*"},
 		"data": {"path": "./modules/data", "version": "*"},
 		"debugging": {"path": "./modules/debugging", "version": "*"},
 		"error": {"path": "./modules/error", "version": "*"},
-		"ttf": {"path": "./modules/ttf", "version": "*"},
+		"font": {"path": "./modules/font", "version": "*"},
 		"filesystem": {"path": "./modules/filesystem", "version": "*"},
 		"hipengine_api": {"path": "./api", "version": "*"},
-		"imgui": {"path": "./modules/imgui", "version": "*"},
-		"jni": {"path": "./modules/jni", "version": "*"},
 		"math": {"path": "./modules/math", "version": "*"},
 		"renderer": {"path": "./modules/renderer", "version": "*"},
 		"util": {"path": "./modules/util", "version": "*"}
