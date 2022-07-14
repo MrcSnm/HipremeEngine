@@ -20,7 +20,7 @@ string getFileContent(string path, bool noCarriageReturn = true)
 {
     import core.stdc.stdio;
     path = sanitizePath(path);
-    FILE* file = fopen((path~"\0").ptr, "rb");
+    FILE* file = fopen((path~"\0").ptr, "r");
     if(!file)
         return "";
     char[] buffer;
@@ -29,9 +29,10 @@ string getFileContent(string path, bool noCarriageReturn = true)
     auto size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    buffer.length = cast(size_t)size;
-    fread(buffer.ptr, cast(size_t)size, 1, file);
-
+    buffer.length = cast(typeof(buffer.length))size;
+    size_t readSize = fread(buffer.ptr, cast(size_t)size, 1, file);
+    if(readSize != buffer.length)
+        buffer.length = readSize;
     fclose(file);
 
     string content = cast(string)buffer;

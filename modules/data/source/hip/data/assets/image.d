@@ -22,6 +22,7 @@ public class Image : HipAsset, IImage
 
     protected void* convertedPixels;
 
+
     this(in string path)
     {
         super("Image_"~path);
@@ -50,8 +51,18 @@ public class Image : HipAsset, IImage
     string getName(){return name;}
     uint getWidth(){return width;}
     uint getHeight(){return height;}
-    ushort getBytesPerPixel(){return bytesPerPixel;}
+    ubyte getBytesPerPixel(){return bytesPerPixel;}
+    ubyte[] getPalette(){return decoder.getPalette;}
     void* getPixels(){return pixels;}
+
+    void loadRaw(in ubyte[] pixels, int width, int height, ubyte bytesPerPixel)
+    {
+        this.width = width;
+        this.height = height;
+        this.pixels = cast(void*)pixels.ptr;
+        this.bytesPerPixel = bytesPerPixel;
+        this.bitsPerPixel = cast(ubyte)(bytesPerPixel*8);
+    }
 
 
     bool loadFromMemory(ref ubyte[] data)
@@ -68,6 +79,29 @@ public class Image : HipAsset, IImage
         bytesPerPixel = decoder.getBytesPerPixel();
         pixels        = decoder.getPixels();
         return true;
+    }
+
+    void* monochromeToRGBA()
+    {
+        import core.stdc.stdlib;
+        import hip.error.handler;
+        ubyte* pix = cast(ubyte*)malloc(4*width*height); //RGBA for each pixel
+        ErrorHandler.assertExit(pix != null, "Out of memory when converting monochrome to RGBA");
+        convertedPixels = pix;
+        uint pixelsLength = width*height;
+        ubyte color;
+        uint z;
+        for(uint i = 0; i < pixelsLength; i++)
+        {
+            //Palette r color = palette[pixels[i]*4]
+            color = (cast(ubyte*)pixels)[i];
+            pix[z++] = color; //R
+            pix[z++] = color; //G
+            pix[z++] = color; //B
+            pix[z++] = color; //A
+        }
+
+        return cast(void*)pix;
     }
 
     void* convertPalettizedToRGBA()

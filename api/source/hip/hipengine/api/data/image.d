@@ -13,16 +13,22 @@ module hip.hipengine.api.data.image;
 
 version(HipImageAPI):
 
-public interface IHipImageDecoder
+public interface IImageBase
 {
-    ///Use that for decoding from memory, returns wether decode was successful
-    bool startDecoding(void[] data);
     uint getWidth();
     uint getHeight();
     void* getPixels();
     ubyte getBytesPerPixel();
-    ubyte[] getPalette();
     final ushort getBitsPerPixel(){return getBytesPerPixel()*8;}
+    ubyte[] getPalette();
+    final bool hasPalette(){return getPalette.length != 0;}
+}
+
+public interface IHipImageDecoder : IImageBase
+{
+    ///Use that for decoding from memory, returns wether decode was successful
+    bool startDecoding(void[] data);
+    
     static ubyte[4] getPixel(){return cast(ubyte[4])[255,255,255,255];}
     ///Dispose the pixels
     void dispose();
@@ -36,18 +42,14 @@ public interface IHipBMPDecoder  : IHipImageDecoder{}
 public interface IHipAnyImageDecoder : IHipPNGDecoder, IHipJPEGDecoder, IHipWebPDecoder, IHipBMPDecoder{}
 
 
-public interface IImage
+public interface IImage : IImageBase
 {
     string getName();
     bool loadFromMemory(ref ubyte[] data);
     void* convertPalettizedToRGBA();
+    void* monochromeToRGBA();
     bool loadFromFile();
     bool load();
     bool load(void function() onLoad);
     bool isReady();
-    uint getWidth();
-    uint getHeight();
-    ushort getBytesPerPixel();
-    void* getPixels();
-    void onDispose();
 }

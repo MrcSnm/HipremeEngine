@@ -8,221 +8,138 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-/**
-*   This class will be only a wrapper for importing the correct backend
-*/
-module hip.hiprenderer.texture;
+module hip.hiprenderer.backend.gl.gltexture;
+import hip.hiprenderer.texture;
+import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
-import hip.hiprenderer.renderer;
-import hip.math.rect;
-import hip.data.assets.image;
-public import hip.util.data_structures:Array2D;
-public import hip.hipengine.api.renderer.texture;
+import hip.image;
 
-class Texture
+class Hip_GL3_Texture : ITexture
 {
-    Image img;
-    int width,height;
-    TextureFilter min, mag;
-    private static Texture pixelTexture;
-    public static Texture getPixelTexture()
+    GLuint textureID = 0;
+    int width, height;
+    uint currentSlot;
+
+    protected int getGLWrapMode(TextureWrapMode mode)
     {
-        if(pixelTexture is null)
+        switch(mode)
         {
-            pixelTexture = new Texture();
-            pixelTexture.img = new Image("pixel");
-            ubyte[4] pixel = IHipImageDecoder.getPixel();
-            ubyte[] temp = pixel;
-            pixelTexture.img.pixels = cast(void*)temp.ptr;
-            pixelTexture.img.width = 1;
-            pixelTexture.img.height = 1;
-            pixelTexture.img.bytesPerPixel = 4;
-            pixelTexture.textureImpl.load(pixelTexture.img);
+            case TextureWrapMode.CLAMP_TO_EDGE: return GL_CLAMP_TO_EDGE;
+            case TextureWrapMode.REPEAT: return GL_REPEAT;
+            case TextureWrapMode.MIRRORED_REPEAT: return GL_MIRRORED_REPEAT;
+            version(Android){}
+            else version(PSVita){}
+            else
+            {
+                //assert here would be better, as simply returning a default can be misleading.
+                case TextureWrapMode.MIRRORED_CLAMP_TO_EDGE: return GL_MIRROR_CLAMP_TO_EDGE;
+                case TextureWrapMode.CLAMP_TO_BORDER: return GL_CLAMP_TO_BORDER;
+            }
+            default: return GL_REPEAT;
         }
-        return pixelTexture;
     }
-
-    /**
-    *   Make it available for implementors
-    */
-    package ITexture textureImpl;
-    /**
-    *   Initializes with the current renderer type
-    */
-    protected this()
+    protected int getGLMinMagFilter(TextureFilter filter)
     {
-        textureImpl = HipRenderer.getTextureImplementation();
+        switch(filter) with(TextureFilter)
+        {
+            case LINEAR:
+                return GL_LINEAR;
+            case NEAREST:
+                return GL_NEAREST;
+            case NEAREST_MIPMAP_NEAREST:
+                return GL_NEAREST_MIPMAP_NEAREST;
+            case LINEAR_MIPMAP_NEAREST:
+                return GL_LINEAR_MIPMAP_NEAREST;
+            case NEAREST_MIPMAP_LINEAR:
+                return GL_NEAREST_MIPMAP_LINEAR;
+            case LINEAR_MIPMAP_LINEAR:
+                return GL_LINEAR_MIPMAP_LINEAR;
+            default:
+                return -1;
+        }
     }
 
-
-    this(string path = "")
+    void bind()
     {
-        this();
-        if(path != "")
-            load(path);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureID);
     }
-    /** Binds as the texture target on the renderer. */
-    public void bind()
+    void unbind()
     {
-        textureImpl.bind();
-        HipRenderer.exitOnError();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
-    ///Binds texture to the specific slot
-    public void bind(int slot)
+
+    void bind(int slot)
     {
-        textureImpl.bind(slot);
-        HipRenderer.exitOnError();
+        currentSlot = slot;
+        glActiveTexture(GL_TEXTURE0+slot);
+        glBindTexture(GL_TEXTURE_2D, textureID);
     }
-    public void unbind()
+
+    void unbind(int slot)
     {
-        textureImpl.unbind();
-        HipRenderer.exitOnError();
+        currentSlot = slot;
+        glActiveTexture(GL_TEXTURE0+slot);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
-    public void unbind(int slot)
+
+    void setWrapMode(TextureWrapMode mode)
     {
-        textureImpl.unbind(slot);
-        HipRenderer.exitOnError();
+        int mod = getGLWrapMode(mode);
+        bind(currentSlot);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mod);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mod);
     }
-    public void setWrapMode(TextureWrapMode mode){textureImpl.setWrapMode(mode);}
-    public void setTextureFilter(TextureFilter min, TextureFilter mag)
+
+    void setTextureFilter(TextureFilter min, TextureFilter mag)
     {
-        this.min = min;
-        this.mag = mag;
-        textureImpl.setTextureFilter(min, mag);
+        int min_filter = getGLMinMagFilter(min);
+        int mag_filter = getGLMinMagFilter(mag);
+        bind(currentSlot);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
     }
-    
-    Rect getBounds(){return Rect(0,0,width,height);}
 
-    /**
-    *   Returns whether the load was successful
-    */
-    public bool load(string path)
+    bool load(IImage image)
     {
-        import hip.data.assetmanager;
-        HipAssetLoadTask task = HipAssetManager.loadImage(path);
-        task.await;
-        Image loadedImage = cast(Image)task.asset;
+        import std.stdio;
+        writeln(image.getBytesPerPixel, image.getName);
+        glGenTextures(1, &textureID);
+        int mode;
+        void* pixels = image.getPixels;
+        switch(image.getBytesPerPixel)
+        {
+            case 1:
+                // pixels = image.convertPalettizedToRGBA();
+                if(image.hasPalette)
+                {
+                    pixels = image.convertPalettizedToRGBA();
+                    mode = GL_RGBA;
+                }
+                else
+                {
+                    mode = GL_RED;
+                }
+                break;
+            case 3:
+                mode = GL_RGB;
+                break;
+            case 4:
+                mode = GL_RGBA;
+                break;
+            case 2:
+            default:
+                ErrorHandler.assertExit(false, "GL Pixel format unsupported");
+        }
+        bind(currentSlot);
+        glTexImage2D(GL_TEXTURE_2D, 0, mode, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, pixels);
+        width = image.getWidth;
+        height = image.getHeight;
 
-        // HipAssetManager.loadImage(path, (Image img)
-        // {
-            this.img = loadedImage;
-            this.width = img.w;
-            this.height = img.h;
-            this.textureImpl.load(loadedImage);
-        // }, false);
-        return this.width != 0;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        setWrapMode(TextureWrapMode.REPEAT);
+        return true;
     }
-}
-
-
-
-class TextureRegion
-{
-    Texture texture;
-    public float u1, v1, u2, v2;
-    protected float[8] vertices;
-    int regionWidth, regionHeight;
-
-    this(string texturePath, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
-    {
-        texture = new Texture(texturePath);
-        setRegion(u1,v1,u2,v2);
-    }
-
-    this(Texture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
-    {
-        this.texture = texture;
-        setRegion(u1,v1,u2,v2);
-    }
-    this(Texture texture, uint u1, uint v1, uint u2, uint v2)
-    {
-        this.texture = texture;
-        setRegion(texture.width, texture.height, u1,  v1, u2, v2);
-    }
-
-    ///By passing the width and height values, you'll be able to crop useless frames
-    public static Array2D!TextureRegion spritesheet(
-        Texture t,
-        uint frameWidth, uint frameHeight,
-        uint width, uint height,
-        uint offsetX, uint offsetY,
-        uint offsetXPerFrame, uint offsetYPerFrame)
-    {
-        uint lengthW = width/(frameWidth+offsetXPerFrame);
-        uint lengthH = height/(frameHeight+offsetYPerFrame);
-
-        Array2D!TextureRegion ret = Array2D!TextureRegion(lengthH, lengthW);
-
-        for(int i = 0, fh = 0; fh < height; i++, fh+= frameHeight+offsetXPerFrame)
-            for(int j = 0, fw = 0; fw < width; j++, fw+= frameWidth+offsetYPerFrame)
-                ret[i,j] = new TextureRegion(t, offsetX+fw , offsetY+fh, offsetX+fw+frameWidth, offsetY+fh+frameHeight);
-
-        return ret;
-    }
-    ///Default spritesheet method that makes a spritesheet from the entire texture
-    static Array2D!TextureRegion spritesheet(Texture t, uint frameWidth, uint frameHeight)
-    {
-        return spritesheet(t,frameWidth,frameHeight, t.width, t.height, 0, 0, 0, 0);
-    }
-
-     /**
-    *   Defines a region for the texture in the following order:
-    *   Top-left
-    *   Top-Right
-    *   Bot-Right
-    *   Bot-Left
-    */
-    public void setRegion(float u1, float v1, float u2, float v2)
-    {
-        this.u1 = u1;
-        this.u2 = u2;
-        this.v1 = v1;
-        this.v2 = v2;
-        regionWidth =  cast(uint)((u2 - u1) * texture.width);
-        regionHeight = cast(uint)((v2 - v1) * texture.height);
-
-        //Top left
-        vertices[0] = u1;
-        vertices[1] = v1;
-
-        //Top right
-        vertices[2] = u2;
-        vertices[3] = v1;
-        
-        //Bot right
-        vertices[4] = u2;
-        vertices[5] = v2;
-
-        //Bot left
-        vertices[6] = u1;
-        vertices[7] = v2;
-    }
-
-    /**
-    *   The uint variant from the setRegion receives arguments in a non normalized way to setup
-    *   the UV coordinates.
-    *   It is better if you wish to just pass where it start and ends.
-    *   The region is divided by the width and height
-    *   
-    */
-    void setRegion(uint width, uint height, uint u1, uint v1, uint u2, uint v2)
-    {
-        float fu1 = u1/cast(float)width;
-        float fu2 = u2/cast(float)width;
-        float fv1 = v1/cast(float)height;
-        float fv2 = v2/cast(float)height;
-        setRegion(fu1, fv1, fu2, fv2);
-    }
-
-    /**
-    *   The UV coordinates passed are divided by the current texture width and height
-    */
-    void setRegion(uint u1, uint v1, uint u2, uint v2)
-    {
-        if(texture)
-            setRegion(texture.width, texture.height, u1, v1, u2, v2);
-    }
-
-
-    public ref float[8] getVertices(){return vertices;}
 }
