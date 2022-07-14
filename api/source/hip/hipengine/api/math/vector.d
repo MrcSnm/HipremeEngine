@@ -16,10 +16,10 @@ version(Have_math)
 {
     public import hip.math.vector;
 }
-// version(HipMathAPI)
-// {
-//     public import hip.math.vector;
-// }
+version(HipMathAPI)
+{
+    public import hip.math.vector;
+}
 else:
 
 // import internal;
@@ -61,35 +61,39 @@ private alias impl = VectorImpl;
 
 package void initVector()
 {
-    import hipengine.internal;
-    impl.dot = getSymbol!(VectorImpl.dot);
-    impl.mag = getSymbol!(VectorImpl.mag);
-    impl.mag = getSymbol!(VectorImpl.magSquare);
-    impl.normalize = getSymbol!(VectorImpl.normalize);
-    impl.unit = getSymbol!(VectorImpl.unit);
-    impl.project = getSymbol!(VectorImpl.project);
-    impl.rotate = getSymbol!(VectorImpl.rotate);
+    import hip.hipengine.internal;
+    version(Script)
+    {
+
+        impl.dot = getSymbol!(VectorImpl.dot);
+        impl.mag = getSymbol!(VectorImpl.mag);
+        impl.mag = getSymbol!(VectorImpl.magSquare);
+        impl.normalize = getSymbol!(VectorImpl.normalize);
+        impl.unit = getSymbol!(VectorImpl.unit);
+        impl.project = getSymbol!(VectorImpl.project);
+        impl.rotate = getSymbol!(VectorImpl.rotate);
 
 
-    //Vector3
-    impl.dot_3 = getSymbol!(VectorImpl.dot_3);
-    impl.mag_3 = getSymbol!(VectorImpl.mag_3);
-    impl.mag_3 = getSymbol!(VectorImpl.magSquare_3);
-    impl.normalize_3 = getSymbol!(VectorImpl.normalize_3);
-    impl.distance_3 = getSymbol!(VectorImpl.distance_3);
-    impl.unit_3 = getSymbol!(VectorImpl.unit_3);
-    impl.rotateZ_3 = getSymbol!(VectorImpl.rotateZ_3);
-    impl.project_3 = getSymbol!(VectorImpl.project_3);
-    impl.axisAngle = getSymbol!(VectorImpl.axisAngle);
-    impl.cross = getSymbol!(VectorImpl.cross);
+        //Vector3
+        impl.dot_3 = getSymbol!(VectorImpl.dot_3);
+        impl.mag_3 = getSymbol!(VectorImpl.mag_3);
+        impl.mag_3 = getSymbol!(VectorImpl.magSquare_3);
+        impl.normalize_3 = getSymbol!(VectorImpl.normalize_3);
+        impl.distance_3 = getSymbol!(VectorImpl.distance_3);
+        impl.unit_3 = getSymbol!(VectorImpl.unit_3);
+        impl.rotateZ_3 = getSymbol!(VectorImpl.rotateZ_3);
+        impl.project_3 = getSymbol!(VectorImpl.project_3);
+        impl.axisAngle = getSymbol!(VectorImpl.axisAngle);
+        impl.cross = getSymbol!(VectorImpl.cross);
 
-    //Vector4
-    impl.dot_4 = getSymbol!(VectorImpl.dot_4);
-    impl.mag_4 = getSymbol!(VectorImpl.mag_4);
-    impl.mag_4 = getSymbol!(VectorImpl.magSquare_4);
-    impl.normalize_4 = getSymbol!(VectorImpl.normalize_4);
-    impl.unit_4 = getSymbol!(VectorImpl.unit_4);
-    impl.project_4 = getSymbol!(VectorImpl.project_4);
+        //Vector4
+        impl.dot_4 = getSymbol!(VectorImpl.dot_4);
+        impl.mag_4 = getSymbol!(VectorImpl.mag_4);
+        impl.mag_4 = getSymbol!(VectorImpl.magSquare_4);
+        impl.normalize_4 = getSymbol!(VectorImpl.normalize_4);
+        impl.unit_4 = getSymbol!(VectorImpl.unit_4);
+        impl.project_4 = getSymbol!(VectorImpl.project_4);
+    }
 }
 
 public struct Vector2

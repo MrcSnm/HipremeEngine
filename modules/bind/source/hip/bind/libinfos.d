@@ -35,25 +35,6 @@ string get_audio_devices_list(const ALCchar *devices)
     return ret;
 }
 
-string get_sdl_sound_info()
-{
-    import sdl_sound;
-    string toPrint = "SDL2_Sound Available Decoders:\n";
-    Sound_DecoderInfo** info = cast(Sound_DecoderInfo**)Sound_AvailableDecoders();
-    while(*info != null)
-    {
-        toPrint~="\n\t"~fromStringz((*info).description);
-        toPrint~="\n\tURL:"~fromStringz((*info).url);
-        toPrint~="\n\tExtensions: ";
-        for(int i = 0; (*info).extensions[i] != null; i++)
-        {
-            toPrint~= fromStringz((*info).extensions[i]) ~" ";
-        }
-        toPrint~="\n";
-        info++;
-    }
-    return toPrint;
-}
 
 string show_opengl_info()
 {

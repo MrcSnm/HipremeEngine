@@ -10,11 +10,9 @@
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
 		"bindbc-openal": "~>1.0.0",
-		"bindbc-sdl": "~>1.0.1",
 		"math": {"path": "../math"},
 		"filesystem": {"path": "../filesystem", "version": "*"},
 		"audio_decoding": {"path": "../audio_decoding"},
-		"sdl_sound": {"path": "../../dependencies/sdl_sound", "optional": true},
 		"sles": {"path": "../../dependencies/sles", "optional": true},
 		"directx-d":{"path" : "../../dependencies/directx-d", "optional": true}
 	},
@@ -22,8 +20,6 @@
 	"license": "proprietary",
 	"name": "audio",
 	"versions": [
-		"SDL_208",
-		"BindSDL_Mixer",
 		"XAUDIO_2_9",
 		"HipAudioAPI",
 		"AL_EFX"
