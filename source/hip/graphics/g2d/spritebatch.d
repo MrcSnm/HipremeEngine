@@ -10,7 +10,6 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.graphics.g2d.spritebatch;
 import hip.graphics.mesh;
-import core.stdc.string:memcpy;
 import hip.graphics.orthocamera;
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
@@ -25,12 +24,12 @@ import hip.math.vector;
 /**
 *   This is what to expect in each vertex sent to the sprite batch
 */
-struct HipSpriteVertex
+@HipShaderInputLayout struct HipSpriteVertex
 {
-    Vector3 position;
-    HipColor color;
-    Vector2 tex_uv;
-    int texID;
+    @HipVertexVar Vector3 position;
+    @HipVertexVar HipColor color;
+    @HipVertexVar Vector2 tex_uv;
+    @HipVertexVar int texID;
 
     static enum floatCount = cast(ulong)(HipSpriteVertex.sizeof/float.sizeof);
     static enum quadCount = floatCount*4;

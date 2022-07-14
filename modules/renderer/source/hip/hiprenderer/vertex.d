@@ -151,6 +151,34 @@ class HipVertexArrayObject
         dataCount+= count;
         return this;
     }
+
+    HipVertexArrayObject appendAttribute(T)(string infoName)
+    {
+        uint count = 1;
+        HipAttributeType type = HipAttributeType.FLOAT;
+        uint typeSize = float.sizeof;
+        import hip.math.vector;
+
+        static if(is(T == Vector2))
+            count = 2;
+        else static if(is(T == Vector3))
+            count = 3;
+        else static if(is(T == Vector4) || is(T == HipColor))
+            count = 4;
+        else
+        {
+            static if(is(T == int))
+                type = HipAttributeType.INT;
+            else static if(is(T == bool))
+                type = HipAttributeType.BOOL;
+            else
+                static assert(is(T == float), "Unrecognized type for attribute: "~T.stringof);
+
+            typeSize = T.sizeof;
+        }
+        return appendAttribute(count, type, typeSize ,infoName);
+    }
+
     /**
     *   Sets the attribute infos that were appended to this object. This function must only be called
     *   after binding/creating a VBO, or it will fail
@@ -246,6 +274,25 @@ class HipVertexArrayObject
         {
             obj.appendAttribute(2, FLOAT, float.sizeof, "vPosition") //X, Y
                .appendAttribute(2, FLOAT, float.sizeof, "vTexST"); //ST
+        }
+        return obj;
+    }
+    /**
+    * Receives a struct and creates a VAO based on its member types and names.
+    */
+    static HipVertexArrayObject getVAO(T)() if(is(T == struct))
+    {
+        import std.traits:isFunction;
+        HipVertexArrayObject obj = new HipVertexArrayObject();
+        static foreach(member; __traits(allMembers, T))
+        {
+            static if(!isFunction!(__traits(getMember, T, member)))
+            {
+                obj.appendAttribute!((typeof(__traits(getMember, T, member))))
+                (
+                    member
+                );
+            }
         }
         return obj;
     }
