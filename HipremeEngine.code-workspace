@@ -6,11 +6,17 @@
 	],
 	"settings": 
 	{
+		"d.disabledRootGlobs": [
+			"dependencies/directx-d/examples/**/*"
+		],
+		"d.manyProjectsThreshold": 64,
 		"files.exclude": 
 		{
 			"**/.dub" : true,
 			"**/*.lib": true,
 			"**/*.a" : true,
+			"build/android/project/.idea/" : true,
+			"build/android/project/gradle/" : true,
 			"building":true,
 			"*.hap" : true,
 			"imgui.ini" : true,
@@ -23,9 +29,6 @@
 			"settings.config":true,
 			".dub":true,
 			"bin":true,
-			"Win32":true,
-			"Win64":true,
-			"linuxlib":true,
 			"dub.selections.json":true,
 			".history":true,
 			"*.so" : true,

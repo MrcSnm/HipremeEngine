@@ -18,10 +18,11 @@ version(Windows)
 }
 else
 {
+    import core.stdc.config:c_long;
     struct timespec
     {
         int tv_sec; //Seconds
-        int tv_nsec; //Nanoseconds
+        c_long tv_nsec; //Nanoseconds
     }
     extern(C) int clock_gettime(int clock_id, timespec* tm) nothrow;
 }
@@ -36,7 +37,6 @@ private size_t getSystemTime() nothrow
     }
     else
     {
-        import core.stdc.time;
         timespec tm;
         if(clock_gettime(0, &tm))
             return 0;
