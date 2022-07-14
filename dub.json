@@ -105,6 +105,9 @@
 			"postBuildCommands": [
 				"cd .\\build && rdmd insertresourceuwp.d .\\uwp\\HipremeEngine\\HipremeEngine ..\\assets"
 			],
+			"subConfigurations": {
+				"audio": "uwp"
+			},
 			"targetPath": "bin/uwp/",
 			"targetType": "dynamicLibrary",
 			"versions": [
@@ -120,6 +123,9 @@
 			"sourcePaths": [
 				"build/release_game/source"
 			],
+			"subConfigurations": {
+				"audio": "uwp"
+			},
 			"targetPath": "bin/uwp",
 			"targetType": "dynamicLibrary",
 			"versions": [
@@ -140,6 +146,11 @@
 				"jni": {"path": "./modules/jni", "version": "*"},
 				"sles": {"path": "./dependencies/sles", "version": "*"},
 				"gles" : {"path": "./dependencies/gles", "version": "*"}
+			},
+			"subConfigurations": {
+				"audio": "android",
+				"console": "android",
+				"renderer": "android"
 			},
 			"name": "android",
 			"postBuildCommands": [

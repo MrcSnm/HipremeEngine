@@ -8,13 +8,18 @@
 		"debugInfoC"
 	],
 	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"debugging" : {"path": "../debugging"},
+		"config": {"path": "../config"},
+		"util" : {"path": "../util"}
+	},
 	"configurations": [
 		{
-			"name": "default",
+			"name": "default"
+		},
+		{
+			"name": "android",
 			"dependencies": {
-				"debugging" : {"path": "../debugging"},
-				"config": {"path": "../config"},
-				"util" : {"path": "../util"},
 				"jni" : {"path": "../jni", "optional": true}
 			}
 		},

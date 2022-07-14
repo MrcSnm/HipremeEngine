@@ -10,8 +10,6 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.systems.game;
-import bindbc.sdl.bind.sdl;
-import bindbc.sdl.bind.sdlkeycode;
 import hip.hiprenderer.renderer;
 import hip.global.gamedef;
 private import hip.event.dispatcher;
@@ -271,6 +269,5 @@ class GameSystem
                 hotload.dispose();
             }
         }
-        SDL_Quit();
     }
 }

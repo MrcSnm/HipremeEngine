@@ -117,7 +117,6 @@ static void initEngine(bool audio3D = false)
 	else
 	{
 		import hip.bind.dependencies;
-		rawlog("Initializing SDL");
 		loadEngineDependencies();
 	}
 }

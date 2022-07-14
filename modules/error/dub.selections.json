@@ -4,7 +4,6 @@
 		"config": {"path":"../config"},
 		"console": {"path":"../console"},
 		"debugging": {"path":"../debugging"},
-		"jni": {"path":"../jni"},
 		"util": {"path":"../util"}
 	}
 }

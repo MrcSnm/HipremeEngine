@@ -11,12 +11,13 @@ Distributed under the CC BY-4.0 License.
 module hip.systems.input;
 import hip.util.data_structures;
 import hip.error.handler;
-import hip.jni.helper.androidlog;
-import hip.jni.jni;
-import hip.jni.helper.jnicall;
 
 version(Android)
 {
+    import hip.jni.helper.androidlog;
+    import hip.jni.jni;
+    import hip.jni.helper.jnicall;
+
     ///Setups an Android Package for HipremeEngine
     alias HipAndroidInput = javaGetPackage!("com.hipremeengine.app.HipInput");
     @JavaFunc!(HipAndroidInput) void onMotionEventActionMove(int pointerId, float x, float y)

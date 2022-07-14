@@ -9,13 +9,31 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"bindbc-openal": "~>1.0.0",
 		"math": {"path": "../math"},
 		"filesystem": {"path": "../filesystem", "version": "*"},
-		"audio_decoding": {"path": "../audio_decoding"},
-		"sles": {"path": "../../dependencies/sles", "optional": true},
-		"directx-d":{"path" : "../../dependencies/directx-d", "optional": true}
+		"audio_decoding": {"path": "../audio_decoding"}
 	},
+	"configurations": [
+		{
+			"name": "default",
+			"dependencies": {
+				"bindbc-openal": "~>1.0.0",
+				"directx-d":{"path" : "../../dependencies/directx-d", "optional": true}
+			}
+		},
+		{
+			"name": "uwp",
+			"dependencies": {
+				"directx-d":{"path" : "../../dependencies/directx-d"}
+			}
+		},
+		{
+			"name": "android",
+			"dependencies": {
+				"sles": {"path": "../../dependencies/sles"}
+			}
+		}
+	],
 	"description": "HipremeEngine audio module",
 	"license": "proprietary",
 	"name": "audio",
