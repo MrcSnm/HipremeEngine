@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.graphics.g2d;
 
-public import hip.graphics.g2d.bitmaptext,
+public import hip.graphics.g2d.textrenderer,
     hip.graphics.g2d.geometrybatch,
     hip.graphics.g2d.spritebatch,
     hip.graphics.g2d.sprite,

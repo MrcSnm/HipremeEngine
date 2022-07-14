@@ -18,17 +18,18 @@ import hip.graphics.mesh;
 import hip.event.handlers.keyboard;
 import hip.console.log;
 import hip.view.scene;
+import hip.font.bmfont;
 
 
 class BitmapTestScene : Scene
 {
-    HipBitmapText txt;
+    HipTextRenderer txt;
     static KeyboardLayout abnt2;
     this()
     {
-        txt = new HipBitmapText();
+        txt = new HipTextRenderer();
         abnt2 = new KeyboardLayoutABNT2();
-        txt.setBitmapFont(HipBitmapFont.fromFile("assets/fonts/arial.fnt"));
+        txt.setFont(HipBitmapFont.fromFile("assets/fonts/arial.fnt"));
         txt.x = HipRenderer.width/2;
         txt.alignh = HipTextAlign.CENTER;
     }
@@ -37,10 +38,10 @@ class BitmapTestScene : Scene
     {
         HipRenderer.setColor(0,0,0,255);
         HipRenderer.clear(); 
-        string _txt = txt.text;
-        string input = KeyboardHandler.getInputText(abnt2);
-        _txt~= input;
-        txt.setText(_txt);
+        // string _txt = txt.text;
+        // string input = KeyboardHandler.getInputText(abnt2);
+        // _txt~= input;
+        // txt.setText(_txt);
         txt.render();
         txt.mesh.shader.setFragmentVar("FragBuf.uColor", cast(float[4])[1.0, 1.0, 0.0, 1.0]);
     }

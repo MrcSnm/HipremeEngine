@@ -16,7 +16,6 @@ public import hip.hipengine.api.audio.audiosource;
 
 import hip.math.vector;
 import hip.debugging.gui;
-import hip.imgui.fonts.icons;
 
 /** 
 *   Wraps properties for the AudioPlayer. The closest graphical represetantion
@@ -28,6 +27,7 @@ import hip.imgui.fonts.icons;
 {
     version(CIMGUI)
     {
+        import hip.imgui.fonts.icons;
         import bindbc.cimgui;
         HipAudioSource* src = cast(HipAudioSource*)data;
         igBeginGroup();

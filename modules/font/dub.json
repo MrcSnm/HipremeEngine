@@ -34,11 +34,12 @@
 		"../../api/source"
 	],
 	"license": "proprietary",
-	"name": "ttf",
+	"name": "font",
 	"sourcePaths": [
 		"source"
 	],
 	"versions": [
-		"HipTTFAPI"
+		"HipTTFAPI",
+		"HipBMFontAPI"
 	]
 }
