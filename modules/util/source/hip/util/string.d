@@ -311,7 +311,7 @@ struct StringBuilder
 
 
 
-pure string replaceAll(string str, char what, string replaceWith = "")
+pure TString replaceAll(TString, TChar)(TString str, TChar what, TString replaceWith = "")
 {
     string ret;
     for(int i = 0; i < str.length; i++)
@@ -322,9 +322,9 @@ pure string replaceAll(string str, char what, string replaceWith = "")
     return ret;
 }
 
-pure string replaceAll(string str, string what, string replaceWith = "")
+pure TString replaceAll(TString)(TString str, TString what, TString replaceWith = "")
 {
-    string ret;
+    TString ret;
     uint z = 0;
     for(uint i = 0; i < str.length; i++)
     {
@@ -341,7 +341,7 @@ pure string replaceAll(string str, string what, string replaceWith = "")
     return ret;
 }
 
-pure int indexOf(in string str,in string toFind, int startIndex = 0) nothrow @nogc @safe
+pure int indexOf(TString)(in TString str,in TString toFind, int startIndex = 0) nothrow @nogc @safe
 {
     int left = 0;
     if(!toFind.length)
@@ -361,22 +361,22 @@ pure int indexOf(in string str,in string toFind, int startIndex = 0) nothrow @no
     return -1;
 }
 
-pure int indexOf(in string str, char ch, int startIndex = 0) nothrow @nogc @trusted
+pure int indexOf(TChar)(in TChar[] str, TChar ch, int startIndex = 0) nothrow @nogc @trusted
 {
     char[1] temp = [ch];
-    return indexOf(str,  cast(string)temp, startIndex);
+    return indexOf(str, cast(TChar[])temp, startIndex);
 }
 
 
-string repeat(string str, size_t repeatQuant)
+TString repeat(TString)(TString str, size_t repeatQuant)
 {
-    string ret;
+    TString ret;
     for(int i = 0; i < repeatQuant; i++)
         ret~= str;
     return ret;
 }
 
-pure int count(in string str, in string countWhat) nothrow @nogc @safe
+pure int count(TString)(in TString str, in TString countWhat) nothrow @nogc @safe
 {
     int ret = 0;
     int index = 0;
@@ -392,7 +392,7 @@ pure int count(in string str, in string countWhat) nothrow @nogc @safe
 
 alias countUntil = indexOf;
 
-int lastIndexOf(in string str,in string toFind, int startIndex = -1) pure nothrow @nogc @safe
+int lastIndexOf(TString)(in TString str,in TString toFind, int startIndex = -1) pure nothrow @nogc @safe
 {
     if(startIndex == -1) startIndex = cast(int)(str.length)-1;
 
@@ -414,10 +414,10 @@ int lastIndexOf(in string str,in string toFind, int startIndex = -1) pure nothro
     }
     return -1;
 }
-int lastIndexOf(in string str, in char ch, int startIndex = -1) pure nothrow @nogc @trusted
+int lastIndexOf(TString, TChar)(TString str, TChar ch, int startIndex = -1) pure nothrow @nogc @trusted
 {
-    char[1] temp = [ch];
-    return lastIndexOf(str, cast(string)temp, startIndex);
+    TChar[1] temp = [ch];
+    return lastIndexOf(str, cast(TString)temp, startIndex);
 }
 
 T toDefault(T)(string s, T defaultValue = T.init)
@@ -449,15 +449,15 @@ pragma(inline, true) char toLowerCase(char c) pure nothrow @safe @nogc
     return cast(char)(c + ('a' - 'A'));
 }
 
-string toLowerCase(string str) pure nothrow @safe
+string toLowerCase(string str)
 {
     char[] ret = new char[](str.length);
     for(uint i = 0; i < str.length; i++)
         ret[i] = str[i].toLowerCase;
-    return ret;
+    return cast(string)ret;
 }
 
-pragma(inline, true) char toUpper(char c) pure nothrow @safe @nogc 
+pragma(inline, true) enum toUpper(char c)
 {
     if(c < 'a' || c > 'z')
         return c;
@@ -472,15 +472,15 @@ string toUpper(string str) pure nothrow @safe
     return ret;
 }
 
-string[] split(string str, char separator) pure nothrow
+TChar[][] split(TChar)(TChar[] str, TChar separator) pure nothrow
 {
-    char[1] sep = [separator];
-    return split(str, cast(string)sep);
+    TChar[1] sep = [separator];
+    return split(str, cast(TChar[])sep);
 }
 
-string[] split(string str, string separator) pure nothrow @safe
+TString[] split(TString)(TString str, TString separator) pure nothrow @safe
 {
-    string[] ret;
+    TString[] ret;
     int last = 0;
     int index = 0;
     do
@@ -498,17 +498,17 @@ string[] split(string str, string separator) pure nothrow @safe
     return ret;
 }
 
-auto splitRange(string str, string separator) pure nothrow @safe @nogc
+auto splitRange(TString)(TString str, TString separator) pure nothrow @safe @nogc
 {
     struct SplitRange
     {
-        string strToSplit;
-        string sep;
-        string frontStr;
+        TString strToSplit;
+        TString sep;
+        TString frontStr;
         int last, index;
 
         bool empty(){return frontStr == "" && index == -1 && last == -1;}
-        string front()
+        TString front()
         {
             if(frontStr == "") popFront();
             return frontStr;
@@ -538,38 +538,39 @@ auto splitRange(string str, string separator) pure nothrow @safe @nogc
 }
 
 
-pragma(inline, true) bool isUpperCase(char c) pure nothrow @safe @nogc
+pragma(inline, true) enum isUpperCase(TChar)(TChar c)
 {
     return c >= 'A' && c <= 'Z';
 }
-pragma(inline, true) bool isLowercase(char c) pure nothrow @safe @nogc
+pragma(inline, true) enum isLowercase(TChar)(TChar c)
 {
     return c >= 'a' && c <= 'z';
 }
 
-pragma(inline, true) bool isAlpha(char c) pure nothrow @safe @nogc
+pragma(inline, true) enum isAlpha(TChar)(TChar c)
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
-pragma(inline, true) bool isEndOfLine(char c) pure nothrow @safe @nogc
+pragma(inline, true) enum isEndOfLine(TChar)(TChar c)
 {
     return c == '\n' || c == '\r';
 }
 
-pragma(inline, true) bool isNumeric(char c) pure nothrow @safe @nogc
+pragma(inline, true) enum isNumeric(TChar)(TChar c)
 {
     return (c >= '0' && c <= '9') || (c == '-');
 }
-pragma(inline, true) bool isWhitespace(char c) pure nothrow @safe @nogc
+pragma(inline, true) enum isWhitespace(TChar)(TChar c)
 {
     return (c == ' ' || c == '\t' || c.isEndOfLine);
 }
-string[] pathSplliter(string str)
-{
-    string[] ret;
 
-    string curr;
+TString[] pathSplliter(TString)(TString str)
+{
+    TString[] ret;
+
+    TString curr;
     for(uint i = 0; i < str.length; i++)
         if(str[i] == '/' || str[i] == '\\')
         {
@@ -583,24 +584,26 @@ string[] pathSplliter(string str)
 }
 
 
-
-
-string baseName(string path) pure nothrow @safe @nogc
+TString trim(TString)(TString str) pure nothrow @safe @nogc
 {
-    uint lastIndex = 0;
-    for(uint i = 0; i < path.length; i++)
-        if(path[i] == '/' || path[i] == '\\')
-            lastIndex = i+1;
-
-    return path[lastIndex..$];
+    if(str.length == 0)
+        return str;
+    
+    size_t start = 0;
+    size_t end = str.length - 1;
+    while(str[start].isWhitespace && start < str.length)
+        start++;
+   
+    while(end > 0 && str[end].isWhitespace)
+        end--;
+    
+    return str[start..end+1];
 }
 
-
-
-string join(string[] args, string separator)
+TString join(TString)(TString[] args, TString separator)
 {
 	if(args.length == 0) return "";
-	string ret = args[0];
+	TString ret = args[0];
 	for(int i = 1; i < args.length; i++)
 		ret~=separator~args[i];
 	return ret;
