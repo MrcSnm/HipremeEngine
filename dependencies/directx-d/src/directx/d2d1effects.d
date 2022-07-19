@@ -8,7 +8,7 @@ module directx.d2d1effects;
 //---------------------------------------------------------------------------
 
 version(Windows):
-
+version(Direct2D_Effects):
 import core.sys.windows.com;
 
 // Built in effect CLSIDs

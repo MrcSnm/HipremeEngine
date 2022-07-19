@@ -8,7 +8,15 @@ module directx.dwrite;
 //
 //----------------------------------------------------------------------------
 
+version(Direct2D_1_3)
+    version = Direct2D_1_2;
+version(Direct2D_1_2)
+    version = Direct2D_1_1;
+version(Direct2D_1_1):
+    version = Direct2D_1_0;
+
 version(Windows):
+version(DirectWrite):
 
 public import directx.com;
 public import directx.dcommon;
@@ -1002,8 +1010,12 @@ interface IDWriteRenderingParams : IUnknown
 
 // Forward declarations of D2D types
 //interface ID2D1SimplifiedGeometrySink;
-static import directx.d2d1;
-alias IDWriteGeometrySink = directx.d2d1.ID2D1SimplifiedGeometrySink;
+
+version(Direct2D_1_0)
+{
+    static import directx.d2d1;
+    alias IDWriteGeometrySink = directx.d2d1.ID2D1SimplifiedGeometrySink;
+}
 
 /// <summary>
 /// The interface that represents an absolute reference to a font face.

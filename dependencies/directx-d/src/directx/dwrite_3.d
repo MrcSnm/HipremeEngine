@@ -9,6 +9,7 @@ module directx.dwrite_3;
 //----------------------------------------------------------------------------
 
 version(Windows):
+version(DirectWrite):
 
 public import directx.dwrite_2;
 

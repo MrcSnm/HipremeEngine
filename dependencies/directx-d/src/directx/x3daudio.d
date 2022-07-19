@@ -1,6 +1,7 @@
 module directx.x3daudio;
 
 version(Windows):
+version(X3DAudio):
 
 import directx.win32;
 

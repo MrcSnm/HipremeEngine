@@ -9,6 +9,8 @@ module directx.d2d1effectauthor_1;
 
 version(Windows):
 
+version(Direct2D_Effects):
+
 public import directx.d2d1_3;
 public import directx.d2d1effectauthor;
 

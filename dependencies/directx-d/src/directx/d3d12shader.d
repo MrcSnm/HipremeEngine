@@ -9,6 +9,7 @@ module directx.d3d12shader;
 //////////////////////////////////////////////////////////////////////////////
 
 version(Windows):
+version(Direct3D_12):
 
 public import directx.d3dcommon;
 

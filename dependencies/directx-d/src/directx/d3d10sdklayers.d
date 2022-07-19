@@ -6,6 +6,7 @@ module directx.d3d10sdklayers;
  *-------------------------------------------------------------------------------------*/
 
 version(Windows):
+version(Direct3D_10):
 
 public import directx.dxgi;
 
