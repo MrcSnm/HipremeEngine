@@ -9,6 +9,7 @@ module directx.xinput;
  ***************************************************************************/
 
 version(Windows):
+version(XInput):
 
 import directx.win32;
 

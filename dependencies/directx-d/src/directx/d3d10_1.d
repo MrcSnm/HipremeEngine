@@ -6,6 +6,7 @@ module directx.d3d10_1;
  *-------------------------------------------------------------------------------------*/
 
 version(Windows):
+version(Direct3D_10):
 
 public import directx.d3d10;
 public import directx.d3d10misc;

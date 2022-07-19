@@ -1,6 +1,7 @@
 module directx.d3d8;
 
 version(Windows):
+version(Direct3D_8):
 
 import directx.win32;
 import directx.com;

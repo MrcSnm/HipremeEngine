@@ -8,7 +8,7 @@ module directx.d2d1effects_1;
 //---------------------------------------------------------------------------
 
 version(Windows):
-
+version(Direct2D_Effects):
 public import directx.d2d1effects;
 
 // TODO:

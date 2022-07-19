@@ -9,6 +9,7 @@ module directx.d3dx11;
 //////////////////////////////////////////////////////////////////////////////
 
 version(Windows):
+version(Direct3D_11):
 
 enum D3DX11_DEFAULT            = (cast(UINT) -1);
 enum D3DX11_FROM_FILE          = (cast(UINT) -3);

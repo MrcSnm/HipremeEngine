@@ -8,6 +8,7 @@ module directx.d2d1effectauthor;
 //---------------------------------------------------------------------------
 
 version(Windows):
+version(Direct2D_Effects):
 
 public import directx.d2d1_1;
 

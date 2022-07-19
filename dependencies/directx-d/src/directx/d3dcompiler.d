@@ -10,6 +10,17 @@ module directx.d3dcompiler;
 
 version(Windows):
 
+version(Direct3D_9)
+	version = Direct3D;
+version(Direct3D_10)
+	version = Direct3D;
+version(Direct3D_11)
+	version = Direct3D;
+version(Direct3D_12)
+	version = Direct3D;
+
+version(Direct3D):
+
 public import directx.d3d11shader;
 public import directx.d3d12shader;
 

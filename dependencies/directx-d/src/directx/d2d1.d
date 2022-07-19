@@ -9,6 +9,18 @@ module directx.d2d1;
 
 version(Windows):
 
+
+version(Direct2D_1_3)
+    version = Direct2D_1_2;
+version(Direct2D_1_2)
+    version = Direct2D_1_1;
+version(Direct2D_1_1):
+    version = Direct2D_1_0;
+
+version(DirectWrite):
+version(Direct2D_1_0):
+
+
 public import directx.dcommon;
 public import directx.d2derr;
 public import directx.d2dbasetypes;
@@ -2698,6 +2710,7 @@ interface ID2D1RenderTarget : ID2D1Resource
     //
     // Create a D2D bitmap by copying a WIC bitmap.
     //
+    version(WinCodec)
     HRESULT CreateBitmapFromWicBitmap(
         IWICBitmapSource wicBitmapSource,
         const(D2D1_BITMAP_PROPERTIES)* bitmapProperties,
@@ -3825,6 +3838,7 @@ interface ID2D1Factory : IUnknown
     //
     // Creates a render target which is a source of bitmaps.
     //
+    version(WinCodec)
     HRESULT CreateWicBitmapRenderTarget(
         IWICBitmap target,
         const(D2D1_RENDER_TARGET_PROPERTIES)* renderTargetProperties,
