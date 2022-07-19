@@ -31,13 +31,13 @@ class TTFTestScene : Scene
     {
         HipRenderer.setColor(0,0,0,255);
         HipRenderer.clear(); 
-        // string _txt = txt.text;
-        // string input = KeyboardHandler.getInputText(abnt2);
-        // _txt~= input;
-        // txt.setText(_txt);
-        txt.addText(100, 100, "Hello World");
-        txt.addText(200, 200, "Reft Aligned", HipTextAlign.LEFT);
-        txt.addText(300, 300, "Right Aligned", HipTextAlign.RIGHT);
+        txt.addText(300, 100, "Hello World{}??");
+        txt.addText(300, 200, "Left", HipTextAlign.LEFT);
+        txt.addText(300, 300, "Right", HipTextAlign.RIGHT);
+        txt.addText(300, 400, "abcdefghijklmnopqrstuvwxyz");
+        txt.addText(300, 500, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        txt.addText(300, 600, "0123456789");
+        txt.addText(300, 700, "1 + 1 - 1 * 1 / 1 = 1");
         txt.render;
         txt.mesh.shader.setFragmentVar("FragBuf.uColor", cast(float[4])[1.0, 1.0, 0.0, 1.0]);
     }
