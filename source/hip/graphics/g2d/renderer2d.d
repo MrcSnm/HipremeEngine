@@ -107,12 +107,12 @@ void drawSprite(IHipSprite sprite){spBatch.draw(cast(HipSprite)sprite);}
 void setFont(HipFont font){dbgText.setFont(font);}
 void drawText(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER)
 {
-    dbgText.x = x;
-    dbgText.y = y;
-    dbgText.alignh = alignH;
-    dbgText.alignv = alignV;
-    dbgText.setText(text);
-    dbgText.render();
+    // dbgText.x = x;
+    // dbgText.y = y;
+    // dbgText.alignh = alignH;
+    // dbgText.alignv = alignV;
+    // dbgText.setText(text);
+    // dbgText.render();
 }
 
 private __gshared IHipSprite[] _sprites;

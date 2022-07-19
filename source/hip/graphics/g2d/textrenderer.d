@@ -19,6 +19,7 @@ import hip.console.log;
 import hip.math.matrix;
 import hip.hipengine.api.data.font;
 import hip.hiprenderer;
+import hip.graphics.g2d.text;
 
 
 enum HipTextAlign
@@ -30,6 +31,10 @@ enum HipTextAlign
     BOTTOM
 }
 
+
+/**
+*   Don't change those names. If the variable names are changed, the shaders should stop working
+*/
 @HipShaderInputLayout struct HipTextRendererVertex
 {
     import hip.math.vector;
@@ -41,38 +46,22 @@ enum HipTextAlign
 
 private Shader bmTextShader = null;
 
+/**
+*   This class oculd be refactored in the future to actually
+* use a spritebatch for its drawing.
+*/
 class HipTextRenderer
 {
     HipFont font;
     Mesh mesh;
-    ///For controlling easier without having to mess with align
-    int x, y;
-    ///Where it is actually rendered
-    int displayX, displayY;
-
-    ///Update dynamically based on the font, the text scale and the text length
-    uint width, height;
-
-    //Line widths, containing width for each line for correctly aplying text align
-    uint[] linesWidths;
-
-    HipTextAlign alignh = HipTextAlign.LEFT;
-    HipTextAlign alignv = HipTextAlign.TOP;
     index_t[] indices;
     float[] vertices;
 
-    dstring text;
+    private HipText[] textPool;
+    private int poolActive;
+    private uint quadsCount;
 
-    //Debugging?
-
-    protected bool shouldRenderSpace = false;
-    protected bool shouldRenderLineBreak = false;
-
-    //Caching
-    protected size_t lastTextLength = 0;
-    protected bool shouldUpdateText = true;
-
-    this()
+    this(ushort maxIndices = index_t_maxQuadIndices)
     {
         if(bmTextShader is null)
         {
@@ -94,197 +83,66 @@ class HipTextRenderer
             bmTextShader.bind();
             bmTextShader.sendVars();
         }
-        linesWidths.length = 1;
-        text = "";
         mesh = new Mesh(HipVertexArrayObject.getVAO!HipTextRendererVertex, bmTextShader);
         //4 vertices per quad
         mesh.createVertexBuffer("DEFAULT".length*4, HipBufferUsage.DYNAMIC);
         //6 indices per quad
-        mesh.createIndexBuffer("DEFAULT".length*6, HipBufferUsage.DYNAMIC);
+        indices = new index_t[](maxIndices);
+        mesh.createIndexBuffer(maxIndices, HipBufferUsage.STATIC);
         mesh.sendAttributes();
+        HipVertexArrayObject.putQuadBatchIndices(indices, maxIndices / 6);
+        mesh.setIndices(indices);
     }
     void setFont(HipFont font)
     {
         this.font = font;
     }
-    protected void updateAlign(int lineNumber)
-    {
-        uint w = linesWidths[lineNumber];
-        displayX = x;
-        displayY = y;
-        with(HipTextAlign)
-        {
-            switch(alignh)
-            {
-                case CENTER:
-                    displayX-= w/2;
-                    break;
-                case RIGHT:
-                    displayX-= w;
-                    break;
-                case LEFT:
-                default:
-                    break;
-            }
-            switch(alignv)
-            {
-                case CENTER:
-                    displayY+= height/2;
-                    break;
-                case BOTTOM:
-                    displayY+= height;
-                    break;
-                case TOP:
-                default:
-                    break;
-            }
-        }
-    }
 
-    float[] getVertices()
-    {
-        int yoffset = 0;
-        int xoffset = 0;
-        //4 floats(vec2 pos, vec2 texst) and 4 vertices per character
-        float[] v = new float[text.length*4*4];
-        int vI = 0; //vertex buffer index
-
-        dchar lastCharacter = 0;
-        int kerningAmount = 0;
-        int lineBreakCount = 0;
-        updateAlign(0);
-        HipFontChar* ch;
-        for(int i = 0; i < text.length; i++)
-        {
-            ch = text[i] in font.characters;
-            switch(text[i])
-            {
-                case '\n':
-                    xoffset = 0;
-                    updateAlign(++lineBreakCount);
-                    if(ch && ch.width != 0 && ch.height != 0 && shouldRenderLineBreak)
-                        goto default;
-                    else
-                    {
-                        yoffset+= ch && ch.height != 0 ? ch.height : font.lineBreakHeight;
-                    }
-                    break;
-                case ' ':
-                    if(shouldRenderSpace)
-                        goto default;
-                    else
-                        xoffset+= ch && ch.width != 0 ? ch.width : font.spaceWidth;
-                    break;
-                default:
-                    //Find kerning
-
-                    kerningAmount = font.getKerning(lastCharacter, ch.id);
-                    xoffset+= ch.xoffset+kerningAmount;
-                    yoffset+= ch.yoffset;
-                    //Gen vertices 
-
-                    //Top left
-                    v[vI++] = xoffset+displayX; //X
-                    v[vI++] = yoffset+displayY; //Y
-                    v[vI++] = ch.normalizedX; //S
-                    v[vI++] = ch.normalizedY; //T
-
-                    //Top Right
-                    v[vI++] = xoffset+displayX+ch.width; //X+W
-                    v[vI++] = yoffset+displayY; //Y
-                    v[vI++] = ch.normalizedX + ch.normalizedWidth; //S+W
-                    v[vI++] = ch.normalizedY; //T
-
-                    //Bot right
-                    v[vI++] = xoffset+displayX+ch.width; //X+W
-                    v[vI++] = yoffset+displayY + ch.height; //Y
-                    v[vI++] = ch.normalizedX + ch.normalizedWidth; //S+W
-                    v[vI++] = ch.normalizedY + ch.normalizedHeight; //T
-
-                    //Bot left
-                    v[vI++] = xoffset+displayX; //X
-                    v[vI++] = yoffset+displayY + ch.height; //Y+H
-                    v[vI++] = ch.normalizedX; //S
-                    v[vI++] = ch.normalizedY + ch.normalizedHeight; //T+H
-
-                    yoffset-= ch.yoffset;
-                    xoffset-= ch.xoffset+kerningAmount;
-                    xoffset+= ch.xadvance;
-
-            }
-            lastCharacter = text[i];
-
-        }
-        return v;
-    }
-
-    
 
     //Defers a call to updateText
-    void setText(dstring newText)
+    void addText(int x, int y, dstring newText, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER)
     {
-        if(text != newText)
+        HipText obj;
+        if(poolActive <= textPool.length)
         {
-            lastTextLength = text.length;
-            text = newText;
-            this.shouldUpdateText = true;
+            textPool.length = ++poolActive;
+            obj = textPool[$-1] = new HipText();
         }
+        else
+            obj = textPool[poolActive++];
+        obj.text = newText;
+        obj.setFont(font);
+        obj.x = x;
+        obj.y = y;
+        obj.alignh = alignh;
+        obj.alignv = alignv;
+
+    }
+
+    void draw(HipText text)
+    {
+        float[] verts = text.getVertices;
+        uint beforeCount = quadsCount;
+        quadsCount+= text.text.length;
+
+
+        if(vertices.length < quadsCount*4*4) //4 floats, 4 vertices
+            vertices.length = quadsCount*4*4;
+        
+        vertices[beforeCount*4*4..quadsCount*4*4] = verts[0..$];
     }
 
 
-    protected void recalculateTextBounds()
-    {
-        int w, h;
-        int lastMaxW = 0;
-        int lineIndex = 0;
-
-        for(int i = 0; i < text.length; i++)
-        {
-            HipFontChar* ch = text[i] in font.characters;
-            switch(text[i])
-            {
-                case '\n':
-                    h+= ch && ch.height != 0 ? ch.height : font.lineBreakHeight;
-                    lastMaxW = max(w, lastMaxW);
-                    if(lineIndex + 1 > linesWidths.length)
-                        linesWidths.length = lineIndex + 1;
-                    linesWidths[lineIndex++] = w;
-                    w = 0;
-                    break;
-                case ' ':
-                    w+= ch && ch.width != 0 ? ch.width : font.spaceWidth;
-                    break;
-                default:
-                    w+= ch.xadvance;
-                    break;
-            }
-        }
-        width = max(w, lastMaxW);
-        if(lineIndex >= linesWidths.length)
-            linesWidths.length++;
-        linesWidths[lineIndex] = w;
-        height = h;
-    }
-
-    public void updateText()
-    {
-        recalculateTextBounds();
-        if(text.length > lastTextLength)
-        {
-            indices.length = text.length*6;
-            HipVertexArrayObject.putQuadBatchIndices(indices, text.length);
-            mesh.setIndices(indices);
-        }
-        vertices = getVertices();
-        mesh.setVertices(vertices);
-        shouldUpdateText = false;
-    }
 
     void render()
     {
-        if(shouldUpdateText)
-            updateText();
+        foreach(i; 0..poolActive)
+            draw(textPool[i]);
         this.font.texture.bind();
-        mesh.draw(indices.length);
+        mesh.setVertices(vertices);
+        mesh.draw(quadsCount*6);
+
+        poolActive = 0;
+        quadsCount = 0;
     }
 }
