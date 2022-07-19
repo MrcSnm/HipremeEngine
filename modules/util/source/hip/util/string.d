@@ -414,10 +414,10 @@ int lastIndexOf(TString)(in TString str,in TString toFind, int startIndex = -1) 
     }
     return -1;
 }
-int lastIndexOf(TString, TChar)(TString str, TChar ch, int startIndex = -1) pure nothrow @nogc @trusted
+int lastIndexOf(TChar)(TChar[] str, TChar ch, int startIndex = -1) pure nothrow @nogc @trusted
 {
     TChar[1] temp = [ch];
-    return lastIndexOf(str, cast(TString)temp, startIndex);
+    return lastIndexOf(str, cast(TChar[])temp, startIndex);
 }
 
 T toDefault(T)(string s, T defaultValue = T.init)
