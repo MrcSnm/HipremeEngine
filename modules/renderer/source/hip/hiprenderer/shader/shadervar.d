@@ -85,11 +85,21 @@ struct ShaderVar
 
         static if(isDynamicArray!T)
         {
-            alias _t = typeof(T.init[0]);
-            Array!(_t)* arr = cast(Array!(_t)*)data;
-            arr.dispose();
-            Array!(_t) temp = Array!(_t)(value);
-            memcpy(data, &temp, varSize);
+            if(isDynamicArrayReference)
+            {
+                import hip.util.memory;
+                alias TI = typeof(T.init[0]);
+                if(data != null)
+                {
+                    Array!(TI)* arr = cast(Array!(TI)*)data;
+                    arr.dispose();
+                    free(data);
+                }
+                auto temp = Array!TI(value);
+                data = temp.getRef;
+            }
+            else
+                memcpy(data, value.ptr, varSize);
         }
         else
             memcpy(data, &value, varSize);
@@ -206,7 +216,7 @@ struct ShaderVar
         ErrorHandler.assertExit(isShaderVarNameValid(varName), "Variable '"~varName~"' is invalid.");
         ShaderVar* s = new ShaderVar();
         s.data = malloc(varSize);
-        memcpy(s.data, varData, varSize);
+        memcpy(s.data, varData, varSize);   
         ErrorHandler.assertExit(s.data !is null, "Out of memory");
         s.name = varName;
         s.shaderType = t;
@@ -354,20 +364,28 @@ class ShaderVariablesLayout
         return data;
     }
 
-    ShaderVariablesLayout append(T)(string varName, T data)
+    protected ShaderVariablesLayout append(string varName, ShaderVar* v)
     {
         import core.stdc.stdlib:realloc;
         ErrorHandler.assertExit((varName in variables) is null, "Variable named "~varName~" is already in the layout "~name);
         ErrorHandler.assertExit(!isLocked, "Can't append ShaderVariable after it has been locked");
-        ShaderVar* v = ShaderVar.create(this.shaderType, varName, data);
         variables[varName] = ShaderVarLayout(v, 0, 0);
         namesOrder~= varName;
         calcAlignment();
         this.data = realloc(this.data, getLayoutSize());
         ErrorHandler.assertExit(this.data != null, "Out of memory");
-
         return this;
     }
+
+    /**
+    *   Appends a new variable to this layout.
+    *   Type is inferred.
+    */
+    ShaderVariablesLayout append(T)(string varName, T data)
+    {
+        return append(varName, ShaderVar.create(this.shaderType, varName, data));
+    }
+
     final size_t getLayoutSize(){return lastPosition;}
     final void setAdditionalData(void* d, bool isAllocated)
     {
