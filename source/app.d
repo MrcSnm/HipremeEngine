@@ -152,7 +152,11 @@ extern(C) int HipremeMain()
 		else static assert(false, "No renderer for this platform");
 	}
 	else
-		HipRenderer.init("renderer.conf");
+	{
+		string confFile;
+		HipFS.absoluteReadText("renderer.conf", confFile); //Ignore return, renderer can handle no conf.
+		HipRenderer.init(confFile, "renderer.conf");
+	}
 	version(dll){}
 	else
 		sys = new GameSystem(FRAME_TIME);

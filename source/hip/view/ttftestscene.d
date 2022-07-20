@@ -39,6 +39,8 @@ class TTFTestScene : Scene
         txt.addText(300, 600, "0123456789");
         txt.addText(300, 700, "1 + 1 - 1 * 1 / 1 = 1");
         txt.render;
-        txt.mesh.shader.setFragmentVar("FragBuf.uColor", [1.0, 1.0, 0.0, 1.0]);
+        txt.mesh.shader.uColor = cast(float[4])[0.0, 1.0, 0.0, 1.0];
+        txt.mesh.shader.bind;
+        txt.mesh.shader.sendVars;
     }
 }

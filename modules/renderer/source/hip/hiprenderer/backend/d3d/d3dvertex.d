@@ -198,6 +198,8 @@ class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
         if(ErrorHandler.assertErrorMessage(s !is null, "D3D11 VAO Error", "Error at creating input layout"))
             return;
         Hip_D3D11_VertexShader vs = cast(Hip_D3D11_VertexShader)s.vertexShader;
+
+        
         _hip_d3d_device.CreateInputLayout(descs.ptr, cast(uint)descs.length,
         vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), &inputLayout);
         HipRenderer.exitOnError();

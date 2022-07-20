@@ -38,7 +38,7 @@ enum HipTextAlign
 @HipShaderInputLayout struct HipTextRendererVertex
 {
     import hip.math.vector;
-    Vector2 vPos;
+    Vector2 vPosition;
     Vector2 vTexST;
 }
 
@@ -71,15 +71,16 @@ class HipTextRenderer
             .append("uView", Matrix4.identity)
             .append("uProj", Matrix4.identity)
             );
-            bmTextShader.addVarLayout(new ShaderVariablesLayout("FragBuf", ShaderTypes.FRAGMENT, 0)
+            bmTextShader.addVarLayout(new ShaderVariablesLayout("FragVars", ShaderTypes.FRAGMENT, 0)
             .append("uColor", cast(float[4])[1.0,1.0,1.0,1.0])
             );
 
-            bmTextShader.setFragmentVar("FragBuf.uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
+            bmTextShader.setFragmentVar("FragVars.uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
             bmTextShader.uModel = Matrix4.identity;
             const Viewport v = HipRenderer.getCurrentViewport();
             bmTextShader.uView = Matrix4.identity;
             bmTextShader.uProj = Matrix4.orthoLH(0, v.w, v.h, 0, 0.01, 100);
+            bmTextShader.setDefaultBlock("FragVars");
             bmTextShader.bind();
             bmTextShader.sendVars();
         }

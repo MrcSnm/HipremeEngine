@@ -54,15 +54,11 @@ class Hip_D3D11_Texture : ITexture
         wrap = Hip_D3D11_getWrapMode(mode);
         updateSamplerState();
     }
-    // protected DXGI_FORMAT getFromFromSurface(SDL_Surface* surface)
-    // {
-    //     return DXGI_FORMAT_R8G8B8A8_UNORM;
-    // }
+
     public bool load(IImage image)
     {
         D3D11_TEXTURE2D_DESC desc;
         // desc.Format = getFromFromSurface(surface);
-        desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         desc.Usage = D3D11_USAGE_IMMUTABLE;
         desc.CPUAccessFlags = 0;
         desc.MipLevels = 1;
@@ -74,23 +70,36 @@ class Hip_D3D11_Texture : ITexture
 
         void* pixels;
         ushort Bpp = 0;
+        int format;
 
         switch(image.getBytesPerPixel)
         {
             case 1:
-                pixels = image.convertPalettizedToRGBA();
-                Bpp = 4;
+                if(image.hasPalette)
+                {
+                    pixels = image.convertPalettizedToRGBA();
+                    Bpp = 4;
+                    format = DXGI_FORMAT_R8G8B8A8_UNORM;
+                }
+                else
+                {
+                    pixels = image.getPixels;
+                    Bpp = 1;
+                    format = DXGI_FORMAT_R8_UNORM;
+                }
                 break;
             case 3:
             case 4:
                 pixels = image.getPixels;
                 Bpp = image.getBytesPerPixel;
+                format = DXGI_FORMAT_R8G8B8A8_UNORM;
                 break;
             case 2:
             default:
                 ErrorHandler.assertExit(false, 
                 "Unsopported bytes per pixel for D3D11 Texture named '"~image.getName~"'");
         }
+        desc.Format = format;
         data.pSysMem = pixels;
         data.SysMemPitch = image.getWidth*Bpp;
 
