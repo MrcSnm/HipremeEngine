@@ -1,6 +1,7 @@
 module directx.wincodec;
 
 version(Windows):
+version(WinCodec):
 
 public import directx.dxgiformat, directx.dxgitype;
 public import directx.dcommon, directx.com;

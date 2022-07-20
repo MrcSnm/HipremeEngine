@@ -42,7 +42,7 @@ bool loadFromFile(out IniFile ini, string path)
     string data;
     if(!HipFS.readText(path, data))
         return false;
-    ini = IniFile.parse(cast(string)data);
+    ini = IniFile.parse(cast(string)data, path);
     return ini.noError;
 }
 

@@ -7,6 +7,7 @@ version(Windows):
 
 public import directx.dxgiformat;
 
+import directx.win32;
 import directx.d3dcommon;
 
 enum _FACDXGI   = 0x87a;
@@ -51,7 +52,12 @@ struct DXGI_RGB
     float Blue;
 }
 
-alias D3DCOLORVALUE DXGI_RGBA;
+struct DXGI_RGBA {
+    float r;
+    float g;
+    float b;
+    float a;
+}
 
 struct DXGI_GAMMA_CONTROL
 {

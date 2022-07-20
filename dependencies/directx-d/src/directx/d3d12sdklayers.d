@@ -6,6 +6,7 @@ module directx.d3d12sdklayers;
  *-------------------------------------------------------------------------------------*/
 
 version(Windows):
+version(Direct3D_12):
 
 import directx.d3d12;
 

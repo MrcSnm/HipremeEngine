@@ -9,6 +9,7 @@ module directx.d3dx11core;
 ///////////////////////////////////////////////////////////////////////////
 
 version(Windows):
+version(Direct3D_11):
 
 import directx.win32;
 import directx.com;

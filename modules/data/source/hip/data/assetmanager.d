@@ -97,7 +97,7 @@ class HipAssetManager
 
     static this()
     {
-        workerPool = new HipWorkerPool(8);
+        // workerPool = new HipWorkerPool(8);
     }
     static bool isAsync = true;
 

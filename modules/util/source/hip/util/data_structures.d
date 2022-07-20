@@ -186,6 +186,11 @@ struct Array(T)
         memcpy(ret.data, arr.ptr, ret.length*T.sizeof);
         return ret;
     }
+    void* getRef()
+    {
+        countPtr++;
+        return cast(void*)&this;
+    }
 
     pragma(inline) bool opEquals(R)(const R other) const
     if(is(R == typeof(null)))

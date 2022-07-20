@@ -101,12 +101,20 @@ q{
     {
         return q{
 
+            cbuffer FragVars
+            {
+                float4 uColor : uColor;
+            };
+
             Texture2D uSampler1;
             SamplerState state;
 
             float4 main(float2 inTexST : inTexST) : SV_TARGET
             {
-                return uSampler1.Sample(state, inTexST);
+                //The texture is read as monochromatic
+                float r = uSampler1.Sample(state, inTexST)[0];
+
+                return float4(r,r,r,r) * uColor;
             }
         };
     }

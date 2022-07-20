@@ -3,6 +3,19 @@ import hip.util.string;
 import std.typecons;
 import std.traits:isArray;
 
+
+string toString(dstring dstr) pure nothrow @safe
+{
+    try
+    {
+        string ret;
+        foreach(ch; dstr)
+            ret~= ch;
+        return ret;
+    }
+    catch(Exception e){return "";}
+}
+
 string toString(T)(T[] arr) pure nothrow @safe
 {
     
@@ -204,15 +217,40 @@ TO to(TO, FROM)(FROM f) pure nothrow
             return toString(f);
     }
     else static if(is(TO == int))
-        return toInt(f);
+    {
+        static if(!is(FROM == string))
+            return toInt(f.toString);
+        else
+            return toInt(f);
+    }
     else static if(is(TO == uint) || is(TO == ulong) || is(TO == ubyte) || is(TO == ushort))
-        return cast(TO)toInt(f);
+    {
+        static if(!is(FROM == string))
+            return cast(TO)toInt(f.toString);
+        else
+            return cast(TO)toInt(f);
+    }
     else static if(is(TO == float))
-        return toFloat(f);
+    {
+        static if(!is(FROM == string))
+            return toFloat(f.toString);
+        else
+            return toFloat(f);
+    }
     else static if(is(TO == bool))
-        return toBool(f);
+    {
+        static if(!is(FROM == string))
+            return toBool(f.toString);
+        else
+            return toBool(f);
+    }
     else
-        return toStruct!TO(f);
+    {
+        static if(!is(FROM == string))
+            return toStruct!TO(f.toString);
+        else
+            return toStruct!TO(f);
+    }
 }
 
 /// This function can be called at compilation time without bringing runtime
@@ -417,7 +455,7 @@ int toInt(string str) pure nothrow @safe @nogc
 }
 
 
-float toFloat(string str)
+float toFloat(string str) pure nothrow @safe
 {
     if(str.length == 0) return 0;
     if(str == "nan" || str == "NaN") return float.init;

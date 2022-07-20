@@ -18,7 +18,7 @@ import hip.hiprenderer.backend.gl.glshader;
 import hip.hiprenderer.shader;
 import hip.hiprenderer.renderer;
 import hip.util.file;
-import hip.util.string:split;
+import hip.util.string:indexOf;
 
 enum ShaderStatus
 {
@@ -235,23 +235,23 @@ public class Shader
             ));
     }
 
-    protected ShaderVar* findByName(string name)
+    protected ShaderVar* findByName(string name) @nogc
     {
-        string[] names = name.split(".");
-        bool isDefault = names[0] == "";
+        int accessorSeparatorIndex = name.indexOf(".");
 
+        bool isDefault = accessorSeparatorIndex == -1;
         if(isDefault)
         {
-            ShaderVarLayout* sL = names[1] in defaultLayout.variables;
+            ShaderVarLayout* sL = name in defaultLayout.variables;
             if(sL !is null)
                 return sL.sVar;
         }
         else
         {
-            ShaderVariablesLayout* l = (names[0] in layouts);
+            ShaderVariablesLayout* l = (name[0..accessorSeparatorIndex] in layouts);
             if(l !is null)
             {
-                ShaderVarLayout* sL = names[1] in l.variables;
+                ShaderVarLayout* sL = name[accessorSeparatorIndex+1..$] in l.variables;
                 if(sL !is null)
                     return sL.sVar;
             }

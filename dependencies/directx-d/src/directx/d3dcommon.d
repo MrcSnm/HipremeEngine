@@ -1,6 +1,20 @@
 module directx.d3dcommon;
 
 version(Windows):
+version(Direct3D_7)
+	version = Direct3D;
+version(Direct3D_8)
+	version = Direct3D;
+version(Direct3D_9)
+	version = Direct3D;
+version(Direct3D_10)
+	version = Direct3D;
+version(Direct3D_11)
+	version = Direct3D;
+version(Direct3D_12)
+	version = Direct3D;
+
+version(Direct3D):
 
 public import directx.com;
 

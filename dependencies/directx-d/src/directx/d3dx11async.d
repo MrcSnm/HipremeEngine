@@ -9,6 +9,7 @@ module directx.d3dx11async;
 //////////////////////////////////////////////////////////////////////////////
 
 version(Windows):
+version(Direct3D_11):
 
 import directx.d3d11;
 import directx.d3dcommon;

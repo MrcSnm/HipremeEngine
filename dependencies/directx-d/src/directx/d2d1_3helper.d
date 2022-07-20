@@ -13,6 +13,17 @@ module directx.d2d1_3helper;
 
 version(Windows):
 
+version(Direct2D_1_3)
+    version = Direct2D_1_2;
+version(Direct2D_1_2)
+    version = Direct2D_1_1;
+version(Direct2D_1_1):
+    version = Direct2D_1_0;
+
+version(DirectWrite):
+version(WinCodec):
+version(Direct2D_1_3):
+
 public import directx.d2d1_3;
 
 // TODO:
