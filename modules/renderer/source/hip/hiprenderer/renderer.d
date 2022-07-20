@@ -144,10 +144,10 @@ class HipRenderer
     public static uint width, height;
     protected static HipRendererConfig currentConfig;
 
-    public static bool init(string confPath)
+    public static bool init(string confData, string confPath)
     {
         import hip.data.ini;
-        IniFile ini = IniFile.parse(confPath);
+        IniFile ini = IniFile.parse(confData, confPath);
         HipRendererConfig cfg;
         if(ini.configFound && ini.noError)
         {
@@ -178,7 +178,16 @@ class HipRenderer
                     `);
                     goto case "GL3";
             }
-
+        }
+        else
+        {
+            if(!ini.configFound)
+                logln("No renderer.conf found, defaulting renderer to OpenGL3");
+            else
+            {
+                logln("Renderer.conf parsing error, defaulting renderer to OpenGL3");
+                rawlog(ini.errors);
+            }
         }
         return init(new Hip_GL3Renderer(), &cfg, 1280, 720);
     }

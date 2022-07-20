@@ -591,7 +591,7 @@ TString trim(TString)(TString str) pure nothrow @safe @nogc
     
     size_t start = 0;
     size_t end = str.length - 1;
-    while(str[start].isWhitespace && start < str.length)
+    while(start < str.length && str[start].isWhitespace)
         start++;
    
     while(end > 0 && str[end].isWhitespace)

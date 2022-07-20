@@ -94,6 +94,13 @@ class HipText
         for(int i = 0; i < str.length; i++)
         {
             ch = str[i] in font.characters;
+            if(ch is null)
+            {
+                import hip.error.handler;
+                import hip.util.conv;
+                ErrorHandler.showWarningMessage("Unrecognized character found", "Unrecognized: "~to!string(str[i]));
+                continue;
+            }
             switch(str[i])
             {
                 case '\n':
