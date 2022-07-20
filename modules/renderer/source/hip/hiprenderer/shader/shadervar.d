@@ -14,6 +14,7 @@ import hip.hiprenderer.renderer;
 import hip.error.handler;
 import hip.util.conv:to;
 import hip.math.matrix;
+import hip.hipengine.api.graphics.color;
 
 enum ShaderHint : uint
 {
@@ -75,7 +76,7 @@ struct ShaderVar
         import core.stdc.string;
         static assert(isNumeric!T ||
         isBoolean!T || isStaticArray!T || isDynamicArray!T ||
-        is(T == Matrix3) || is(T == Matrix4), "Invalid type "~T.stringof);
+        is(T == Matrix3) || is(T == Matrix4) || is(T == HipColor), "Invalid type "~T.stringof);
 
         static if(is(T == Matrix3) || is(T == Matrix4))
             value = HipRenderer.getMatrix(value);

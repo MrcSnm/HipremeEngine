@@ -22,7 +22,7 @@ class TTFTestScene : Scene
         import hip.extensions.file;
         auto fnt = new Hip_TTF_Font("fonts/arial.ttf");
         fnt.load();
-        ubyte[] texture = fnt.generateTexture(32);
+        ubyte[] texture = fnt.generateTexture(48);
         fnt.loadTexture;
         txt.setFont(fnt);
     }
@@ -38,9 +38,7 @@ class TTFTestScene : Scene
         txt.addText(300, 500, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
         txt.addText(300, 600, "0123456789");
         txt.addText(300, 700, "1 + 1 - 1 * 1 / 1 = 1");
+        txt.setColor(HipColor.green);
         txt.render;
-        txt.mesh.shader.uColor = cast(float[4])[0.0, 1.0, 0.0, 1.0];
-        txt.mesh.shader.bind;
-        txt.mesh.shader.sendVars;
     }
 }

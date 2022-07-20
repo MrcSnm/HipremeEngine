@@ -99,6 +99,11 @@ class HipTextRenderer
         this.font = font;
     }
 
+    void setColor(HipColor color)
+    {
+        bmTextShader.uColor = color;
+    }
+
 
     //Defers a call to updateText
     void addText(int x, int y, dstring newText, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER)
@@ -140,6 +145,8 @@ class HipTextRenderer
         foreach(i; 0..poolActive)
             draw(textPool[i]);
         this.font.texture.bind();
+        bmTextShader.bind();
+        bmTextShader.sendVars();
         mesh.setVertices(vertices);
         mesh.draw(quadsCount*6);
 

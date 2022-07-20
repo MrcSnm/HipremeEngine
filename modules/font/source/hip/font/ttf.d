@@ -83,6 +83,7 @@ class Hip_TTF_Font : HipFont
         enum vSpacing = 1;
         float x = 1;
         float y = 0;
+        float optY = 0;
         float scale = stbtt_ScaleForPixelHeight(&font.font, size);
 
         //Setting details
