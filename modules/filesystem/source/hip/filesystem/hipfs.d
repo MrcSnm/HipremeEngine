@@ -172,6 +172,8 @@ class HipFileSystem
         return validatePath(initialPath, combinedPath);
     }
 
+    
+
     @ExportD public static bool read(string path, out void[] output)
     {
         path = getPath(path);
@@ -194,6 +196,8 @@ class HipFileSystem
             output = cast(string)data;
         return ret;
     }
+
+    
 
     version(HipDStdFile)
     {
@@ -229,6 +233,28 @@ class HipFileSystem
     @ExportD public static bool absoluteExists(string path){return fs.exists(path);}
     @ExportD public static bool absoluteIsDir(string path){return fs.isDir(path);}
     @ExportD public static bool absoluteIsFile(string path){return fs.isFile(path);}
+
+    @ExportD public static bool absoluteRead(string path, out void[] output)
+    {
+        return fs.read(path, output);
+    }
+    @ExportD public static bool absoluteRead(string path, out ubyte[] output)
+    {
+        void[] data;
+        bool ret = absoluteRead(path, data);
+        output = cast(ubyte[])data;
+        return ret;
+    }
+
+    @ExportD public static bool absoluteReadText(string path, out string output)
+    {
+        void[] data;
+        bool ret = absoluteRead(path, data);
+        if(ret)
+            output = cast(string)data;
+        return ret;
+    }
+
 
     @ExportD public static bool isDir(string path){return isPathValid(path) && fs.isDir(getPath(path));}
     @ExportD public static bool isFile(string path){return isPathValid(path) && fs.isFile(getPath(path));}

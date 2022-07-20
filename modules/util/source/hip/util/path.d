@@ -82,7 +82,7 @@ bool isRootOf(string theRoot, string ofWhat) pure nothrow @nogc
 }
 
 
-string baseName(string path) @safe
+string baseName(string path) @safe pure nothrow @nogc
 {
     int lastSepIndex = -1;
     int preLastSepIndex = -1;

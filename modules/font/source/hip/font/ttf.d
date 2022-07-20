@@ -83,6 +83,7 @@ class Hip_TTF_Font : HipFont
         enum vSpacing = 1;
         float x = 1;
         float y = 0;
+        float optY = 0;
         float scale = stbtt_ScaleForPixelHeight(&font.font, size);
 
         //Setting details
@@ -116,17 +117,19 @@ class Hip_TTF_Font : HipFont
                     spaceWidth = fontCh.width;
             }
 
-            characters[fontCh.ch] = HipFontChar(fontCh.ch, cast(int)x, cast(int)y, fontCh.width, fontCh.height, 
-                xOffset, yOffset, cast(int)(xAdvance*scale), 0, 0,
-                cast(float)x/maxWidth, cast(float)y/maxHeight,
-                cast(float)fontCh.width/maxWidth, cast(float)fontCh.height/maxHeight, 
-            );
             if(x + fontCh.width + hSpacing > maxWidth)
             {
                 x = hSpacing;
                 y+= largestHeightInRow + vSpacing;
                 largestHeightInRow = 0;
             }
+
+
+            characters[fontCh.ch] = HipFontChar(fontCh.ch, cast(int)x, cast(int)y, fontCh.width, fontCh.height, 
+                xOffset, yOffset, cast(int)(xAdvance*scale), 0, 0,
+                cast(float)x/maxWidth, cast(float)y/maxHeight,
+                cast(float)fontCh.width/maxWidth, cast(float)fontCh.height/maxHeight, 
+            );
             fontCh.blitToTexture(texture, cast(int)(x), cast(int)(y), maxWidth, maxHeight);
             x+= fontCh.width + hSpacing;
 

@@ -16,6 +16,12 @@ module directx.xaudio2;
 
 version(Windows):
 
+version(XAUDIO_2_8)
+	version = XAudio;
+version(XAUDIO_2_9)
+	version = XAudio;
+version(XAudio):
+
 import std.math;
 
 import directx.com;

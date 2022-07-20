@@ -125,7 +125,8 @@ class Hip_GL3_FragmentShader : FragmentShader
 
             void main()
             {
-                outPixelColor = texture(uTex, inTexST)*uColor;
+                float r = texture(uTex, inTexST).r;
+                outPixelColor = vec4(r,r,r,r)*uColor;
             }
         };
     }
@@ -222,7 +223,7 @@ class Hip_GL3_VertexShader : VertexShader
     {
         return shaderVersion~"\n"~floatPrecision~"\n"~q{
             
-            layout (location = 0) in vec2 vPos;
+            layout (location = 0) in vec2 vPosition;
             layout (location = 1) in vec2 vTexST;
 
             uniform mat4 uModel;
@@ -233,7 +234,7 @@ class Hip_GL3_VertexShader : VertexShader
 
             void main()
             {
-                gl_Position = uProj * uView * uModel * vec4(vPos, 1.0, 1.0);
+                gl_Position = uProj * uView * uModel * vec4(vPosition, 1.0, 1.0);
                 inTexST = vTexST;
             }
         };

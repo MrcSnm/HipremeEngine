@@ -19,14 +19,11 @@ class TTFTestScene : Scene
     {
         abnt2 = new KeyboardLayoutABNT2();
         txt = new HipTextRenderer();
-        txt.x = HipRenderer.width/2;
-        txt.alignh = HipTextAlign.CENTER;
         import hip.extensions.file;
         auto fnt = new Hip_TTF_Font("fonts/arial.ttf");
         fnt.load();
-        ubyte[] texture = fnt.generateTexture(32);
+        ubyte[] texture = fnt.generateTexture(48);
         fnt.loadTexture;
-        txt.y+= 100;
         txt.setFont(fnt);
     }
 
@@ -34,12 +31,14 @@ class TTFTestScene : Scene
     {
         HipRenderer.setColor(0,0,0,255);
         HipRenderer.clear(); 
-        // string _txt = txt.text;
-        // string input = KeyboardHandler.getInputText(abnt2);
-        // _txt~= input;
-        // txt.setText(_txt);
-        txt.setText("Hello\nHello\nWorld");
-        txt.render();
-        txt.mesh.shader.setFragmentVar("FragBuf.uColor", cast(float[4])[1.0, 1.0, 0.0, 1.0]);
+        txt.addText(300, 100, "Hello World{}??");
+        txt.addText(300, 200, "Left", HipTextAlign.LEFT);
+        txt.addText(300, 300, "Right", HipTextAlign.RIGHT);
+        txt.addText(300, 400, "abcdefghijklmnopqrstuvwxyz");
+        txt.addText(300, 500, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        txt.addText(300, 600, "0123456789");
+        txt.addText(300, 700, "1 + 1 - 1 * 1 / 1 = 1");
+        txt.setColor(HipColor.green);
+        txt.render;
     }
 }

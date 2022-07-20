@@ -30,8 +30,6 @@ class BitmapTestScene : Scene
         txt = new HipTextRenderer();
         abnt2 = new KeyboardLayoutABNT2();
         txt.setFont(HipBitmapFont.fromFile("assets/fonts/arial.fnt"));
-        txt.x = HipRenderer.width/2;
-        txt.alignh = HipTextAlign.CENTER;
     }
 
     override void render()
@@ -42,6 +40,7 @@ class BitmapTestScene : Scene
         // string input = KeyboardHandler.getInputText(abnt2);
         // _txt~= input;
         // txt.setText(_txt);
+        txt.addText(0, 0,"Hello World");
         txt.render();
         txt.mesh.shader.setFragmentVar("FragBuf.uColor", cast(float[4])[1.0, 1.0, 0.0, 1.0]);
     }

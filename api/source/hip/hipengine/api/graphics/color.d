@@ -11,9 +11,19 @@ Distributed under the CC BY-4.0 License.
 
 module hip.hipengine.api.graphics.color;
 
+/**
+*   This construct is compatible with float[4] when setting a shader variable.
+*/
 struct HipColor
 {
-    float r =0, g = 0, b = 0, a = 0;
+    union
+    {
+        struct
+        {
+            float r =0, g = 0, b = 0, a = 0;
+        }
+        float[4] values;
+    }
 
     this(float r, float g, float b, float a)
     {
@@ -29,13 +39,15 @@ struct HipColor
             cast(float)(color & 255)/255
         );
     }
+    
+    static immutable white   = HipColor(1,1,1,1);
+    static immutable black   = HipColor(0,0,0,0);
+    static immutable red     = HipColor(1,0,0,1);
+    static immutable green   = HipColor(0,1,0,1);
+    static immutable blue    = HipColor(0,0,1,1);
+    static immutable yellow  = HipColor(1,1,0,1);
+    static immutable purple  = HipColor(1,0,1,1);
+    static immutable teal    = HipColor(0,1,1,1);
 
-    static enum white   = HipColor(1,1,1,1);
-    static enum black   = HipColor(0,0,0,0);
-    static enum red     = HipColor(1,0,0,1);
-    static enum green   = HipColor(0,1,0,1);
-    static enum blue    = HipColor(0,0,1,1);
-    static enum yellow  = HipColor(1,1,0,1);
-    static enum purple  = HipColor(1,0,1,1);
-    static enum teal    = HipColor(0,1,1,1);
+    alias values this;
 }

@@ -6,6 +6,8 @@ module directx.d3d11on12;
  *-------------------------------------------------------------------------------------*/
 
 version(Windows):
+version(Direct3D_11):
+version(Direct3D_12):
 
 public import directx.d3d11;
 public import directx.d3d12;

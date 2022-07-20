@@ -59,12 +59,10 @@ class IniFile
     /**
     *   Simple parser for the .conf or .ini files commonly found.
     */
-    static IniFile parse(string path)
+    static IniFile parse(string content, string path = "")
     {
-        import hip.util.file : getFileContent;
         IniFile ret = new IniFile();
         ret.path = path;
-        string content = getFileContent(path);
         if(content != "")
             ret.configFound = true;
 
@@ -78,7 +76,8 @@ class IniFile
             }
             else if(c == '[')
             {
-                import hip.util.string : replaceAll, split, splitRange;
+                import hip.util.string : replaceAll, trim, splitRange;
+                import hip.util.algorithm:put;
                 string capture = "";
                 while(i < content.length)
                 {
@@ -96,33 +95,23 @@ class IniFile
                 capture = "";
                 //Read until finding a key.
                 while(++i < content.length && (c = content[i]) != '['){capture~=c;}
+
                 
                 foreach(l; capture.splitRange("\n"))
                 {
+                    l = l.trim;
                     if(l == "")
                         continue;
-                    string[] kv = l.split("=");
-                    if(kv.length < 2)
+                    string k, v;
+                    l.splitRange("=").put(&k, &v);
+                    if(v == "")
                     {
-                        ret.errors~= "No value for key "~to!string(cast(int)kv[0][0]);
+                        ret.errors~= "No value for key '"~k~"'";
                         ret.noError = false;
                         break;
                     }
-                    import std.stdio;
-                    string name = kv[0].replaceAll(' ', "");
-                    string _val  = kv[1];
-                    string val = "";
-
-                    foreach(ch; _val)
-                    {
-                        if(ch == '#' || ch == ';')
-                            break;
-                        if(ch == ' ')
-                            continue;
-                        val~= ch;
-                    }
-
-                    block.vars[name] =  IniVar(name, val);
+                    string name = k.replaceAll(' ', "");
+                    block.vars[name] =  IniVar(name, formatValue(v));
                 }
                 ret.blocks[block.name] = block;
                 i--;
@@ -131,17 +120,20 @@ class IniFile
         return ret;
     }
 
-
     public T tryGet(T)(string varPath, T defaultVal = T.init)
     {
-        import hip.util.string:split;
-        string[] accessors = varPath.split(".");
-        if(accessors.length < 2)
+        import hip.util.string:splitRange;
+        import hip.util.algorithm;
+        
+        string accessorA, accessorB;
+        varPath.splitRange(".").put(&accessorA, &accessorB);
+        if(accessorB == "")
             return defaultVal;
-        IniBlock* b = (accessors[0] in this);
+
+        IniBlock* b = (accessorA in this);
         if(b is null)
             return defaultVal;
-        IniVar* v = (accessors[1] in *b);
+        IniVar* v = (accessorB in *b);
         if(v is null)
             return defaultVal;
         return v.get!T;
@@ -152,4 +144,21 @@ class IniFile
         return blocks[member];
     }
     alias blocks this;
+}
+
+/**
+*   Remove comments and spaces from the Value from KeyValue pair
+*/
+private string formatValue(string unformattedValue)
+{
+    string ret;
+    foreach(ch; unformattedValue)
+    {
+        if(ch == '#' || ch == ';') //Remove comments
+            break;
+        if(ch == ' ') //Remove spaces for to!int and friends working correctly
+            continue;
+        ret~= ch;
+    }
+    return ret;
 }
