@@ -15,7 +15,8 @@ public import hip.view.layer;
 
 class Scene : AScene
 {
-    public void init(){}
+    final this(){}
+    public void initialize(){}
     public void pushLayer(Layer l)
     {
         layerStack~= l;

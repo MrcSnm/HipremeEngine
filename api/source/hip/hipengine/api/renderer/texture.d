@@ -43,4 +43,7 @@ interface ITexture
     void bind(int slot);
     void unbind();
     void unbind(int slot);
+
+    int getWidth();
+    int getHeight();
 }

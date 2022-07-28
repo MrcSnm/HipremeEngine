@@ -93,10 +93,13 @@ class HipTextRenderer
         mesh.sendAttributes();
         HipVertexArrayObject.putQuadBatchIndices(indices, maxIndices / 6);
         mesh.setIndices(indices);
+
+        import hip.global.gamedef;
+        setFont(HipDefaultAssets.font);
     }
-    void setFont(HipFont font)
+    void setFont(in HipFont font)
     {
-        this.font = font;
+        this.font = cast(HipFont)font;
     }
 
     void setColor(HipColor color)

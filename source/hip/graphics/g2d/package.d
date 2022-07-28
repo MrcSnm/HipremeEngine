@@ -17,6 +17,7 @@ public import hip.graphics.g2d.textrenderer,
     hip.graphics.g2d.animation,
     hip.graphics.g2d.textureatlas,
     hip.hiprenderer.viewport,
+    hip.assets.texture,
     hip.graphics.g2d.tilemap;
 
 

@@ -173,7 +173,6 @@ class HipFileSystem
     }
 
     
-
     @ExportD public static bool read(string path, out void[] output)
     {
         path = getPath(path);
@@ -188,6 +187,16 @@ class HipFileSystem
         output = cast(ubyte[])data;
         return ret;
     }
+
+    
+    @ExportD public static ubyte[] read(string path)
+    {
+        ubyte[] output;
+        if(read(path, output))
+            return output;
+        return [];
+    }
+
     @ExportD public static bool readText(string path, out string output)
     {
         void[] data;

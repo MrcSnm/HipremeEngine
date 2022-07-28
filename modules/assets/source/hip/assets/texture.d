@@ -8,28 +8,30 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
+
 /**
-*   This class will be only a wrapper for importing the correct backend
+*   Asset representation of a texture
 */
-module hip.hiprenderer.texture;
+module hip.assets.texture;
+import hip.asset;
 import hip.error.handler;
 import hip.hiprenderer.renderer;
 import hip.math.rect;
-import hip.data.assets.image;
+import hip.assets.image;
 public import hip.util.data_structures:Array2D;
 public import hip.hipengine.api.renderer.texture;
 
-class Texture : ITexture
+class HipTexture : HipAsset, ITexture
 {
     Image img;
     int width,height;
     TextureFilter min, mag;
-    private static Texture pixelTexture;
-    public static Texture getPixelTexture()
+    private static HipTexture pixelTexture;
+    public static HipTexture getPixelTexture()
     {
         if(pixelTexture is null)
         {
-            pixelTexture = new Texture();
+            pixelTexture = new HipTexture();
             pixelTexture.img = new Image("pixel");
             ubyte[4] pixel = IHipImageDecoder.getPixel();
             ubyte[] temp = pixel;
@@ -51,6 +53,8 @@ class Texture : ITexture
     */
     protected this()
     {
+        super("Texture");
+        typeID = assetTypeID!HipTexture;
         textureImpl = HipRenderer.getTextureImplementation();
     }
 
@@ -60,6 +64,12 @@ class Texture : ITexture
         this();
         if(path != "")
             load(path);
+    }
+    this(IImage image)
+    {
+        this();
+        if(image !is null)
+            load(image);
     }
     /** Binds as the texture target on the renderer. */
     public void bind()
@@ -98,7 +108,7 @@ class Texture : ITexture
     */
     public bool load(string path)
     {
-        import hip.data.assetmanager;
+        import hip.assetmanager;
         HipAssetLoadTask task = HipAssetManager.loadImage(path);
         task.await;
         Image loadedImage = cast(Image)task.asset;
@@ -115,37 +125,49 @@ class Texture : ITexture
         return width != 0;
     }
     
+    override void onFinishLoading(){}
+    override void onDispose(){}
+    bool load(){return bool.init; // TODO: implement
+    }
+    
+    bool isReady(){
+        return bool.init; // TODO: implement
+    }
+    
+    int getWidth(){return width;}
+    int getHeight(){return height;}
+    
 }
 
 
 
-class TextureRegion
+class HipTextureRegion
 {
-    Texture texture;
+    HipTexture texture;
     public float u1, v1, u2, v2;
     protected float[8] vertices;
     int regionWidth, regionHeight;
 
     this(string texturePath, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
     {
-        texture = new Texture(texturePath);
+        texture = new HipTexture(texturePath);
         setRegion(u1,v1,u2,v2);
     }
 
-    this(Texture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
+    this(HipTexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
     {
         this.texture = texture;
         setRegion(u1,v1,u2,v2);
     }
-    this(Texture texture, uint u1, uint v1, uint u2, uint v2)
+    this(HipTexture texture, uint u1, uint v1, uint u2, uint v2)
     {
         this.texture = texture;
         setRegion(texture.width, texture.height, u1,  v1, u2, v2);
     }
 
     ///By passing the width and height values, you'll be able to crop useless frames
-    public static Array2D!TextureRegion spritesheet(
-        Texture t,
+    public static Array2D!HipTextureRegion spritesheet(
+        HipTexture t,
         uint frameWidth, uint frameHeight,
         uint width, uint height,
         uint offsetX, uint offsetY,
@@ -154,16 +176,16 @@ class TextureRegion
         uint lengthW = width/(frameWidth+offsetXPerFrame);
         uint lengthH = height/(frameHeight+offsetYPerFrame);
 
-        Array2D!TextureRegion ret = Array2D!TextureRegion(lengthH, lengthW);
+        Array2D!HipTextureRegion ret = Array2D!HipTextureRegion(lengthH, lengthW);
 
         for(int i = 0, fh = 0; fh < height; i++, fh+= frameHeight+offsetXPerFrame)
             for(int j = 0, fw = 0; fw < width; j++, fw+= frameWidth+offsetYPerFrame)
-                ret[i,j] = new TextureRegion(t, offsetX+fw , offsetY+fh, offsetX+fw+frameWidth, offsetY+fh+frameHeight);
+                ret[i,j] = new HipTextureRegion(t, offsetX+fw , offsetY+fh, offsetX+fw+frameWidth, offsetY+fh+frameHeight);
 
         return ret;
     }
     ///Default spritesheet method that makes a spritesheet from the entire texture
-    static Array2D!TextureRegion spritesheet(Texture t, uint frameWidth, uint frameHeight)
+    static Array2D!HipTextureRegion spritesheet(HipTexture t, uint frameWidth, uint frameHeight)
     {
         return spritesheet(t,frameWidth,frameHeight, t.width, t.height, 0, 0, 0, 0);
     }

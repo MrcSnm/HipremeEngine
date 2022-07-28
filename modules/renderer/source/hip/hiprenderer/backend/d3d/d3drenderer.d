@@ -30,7 +30,6 @@ import hip.config.opts;
 import hip.error.handler;
 
 import hip.hiprenderer.shader;
-import hip.hiprenderer.texture;
 import hip.hiprenderer.viewport;
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;

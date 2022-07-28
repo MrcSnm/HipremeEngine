@@ -12,7 +12,7 @@ class CurveScene : Scene
     Vector2 ctP;
     HipGameObject goParen;
     HipGameObject goChild;
-    override void init()
+    override void initialize()
     {
         goParen = new HipGameObject("TransformTest");
         goParen.addComponent!HipTransformComponent;

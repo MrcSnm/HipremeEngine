@@ -14,7 +14,7 @@ import hip.hiprenderer;
 import hip.image;
 import hip.graphics.g2d;
 import hip.data.assetpacker;
-import hip.data.assetmanager;
+import hip.assetmanager;
 import hip.view.scene;
 
 class ParallelTestScene : Scene

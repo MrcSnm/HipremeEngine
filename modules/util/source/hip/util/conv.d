@@ -455,7 +455,7 @@ int toInt(string str) pure nothrow @safe @nogc
 }
 
 
-float toFloat(string str) pure nothrow @safe
+float toFloat(string str) pure nothrow @safe @nogc
 {
     if(str.length == 0) return 0;
     if(str == "nan" || str == "NaN") return float.init;

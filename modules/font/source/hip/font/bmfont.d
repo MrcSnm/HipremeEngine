@@ -1,12 +1,11 @@
 module hip.font.bmfont;
 import hip.hipengine.api.data.font;
-import hip.hiprenderer.texture;
+import hip.hipengine.api.renderer.texture;
 import hip.error.handler;
 
 
 class HipBitmapFont : HipFont
 {
-    Texture texture;
     ///The atlas path is saved inside the class
     string atlasPath;
     ///This variable is defined when the atlas is being read
@@ -117,20 +116,20 @@ class HipBitmapFont : HipFont
 
     }
 
-    void loadTexture(Texture t)
+    void loadTexture(ITexture t)
     {
         texture = t;
-        for(int i = 0; i < characters.length; i++)
-        {
-            auto ch = &characters[i];
-            if(ch.id != 0)
-            {
-                ch.normalizedX = cast(float)ch.x/texture.width;
-                ch.normalizedY = cast(float)ch.y/texture.height;
-                ch.normalizedWidth = cast(float)ch.width/texture.width;
-                ch.normalizedHeight = cast(float)ch.height/texture.height;
-            }
-        }
+        // for(int i = 0; i < characters.length; i++)
+        // {
+        //     auto ch = &characters[i];
+        //     if(ch.id != 0)
+        //     {
+        //         ch.normalizedX = cast(float)ch.x/texture.width;
+        //         ch.normalizedY = cast(float)ch.y/texture.height;
+        //         ch.normalizedWidth = cast(float)ch.width/texture.width;
+        //         ch.normalizedHeight = cast(float)ch.height/texture.height;
+        //     }
+        // }
     }
     void readTexture(string texturePath = "")
     {
@@ -142,9 +141,9 @@ class HipBitmapFont : HipFont
             else
                 texturePath = atlasTexturePath;
         }
-        auto t = new Texture();
-        t.load(texturePath);
-        loadTexture(t);
+        // auto t = new HipTexture();
+        // t.load(texturePath);
+        // loadTexture(t);
     }
 
 

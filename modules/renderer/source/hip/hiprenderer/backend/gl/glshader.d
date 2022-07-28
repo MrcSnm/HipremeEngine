@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.backend.gl.glshader;
+import hip.hipengine.api.renderer.texture;
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.hiprenderer.shader;
 import hip.hiprenderer.renderer;
@@ -416,7 +417,7 @@ class Hip_GL_ShaderImpl : IShader
                 
     }
 
-    void initTextureSlots(ref ShaderProgram prog, Texture texture, string varName, int slotsCount)
+    void initTextureSlots(ref ShaderProgram prog, ITexture texture, string varName, int slotsCount)
     {
         setCurrentShader(prog);
         int varID = getId(prog, varName);
