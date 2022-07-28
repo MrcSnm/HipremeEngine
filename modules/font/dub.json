@@ -10,6 +10,7 @@
 	"configurations": [
 		{
 			"dependencies": {
+				"assets": {"path": "../assets", "version": "*"},
 				"error": {"path": "../error","version": "*"},
 				"hipengine_api": {"path": "../../api", "version": "*"},
 				"renderer": {"path": "../renderer", "version": "*"},

@@ -18,7 +18,11 @@ import std.file;
 import hip.util.file;
 import std.json;
 import hip.error.handler;
-import hip.hiprenderer.texture;
+import hip.assets.texture;
+
+
+import hip.util.reflection;
+enum hasTSXSupport = Version.HipTSX && hasModule!"arsd.dom";
 
 enum TileLayerType
 {
@@ -68,7 +72,7 @@ struct Tile
 {
     ushort id;
     ushort currentFrame;
-    TextureRegion region;
+    HipTextureRegion region;
     TileProperty[string] properties;
     TileAnimationFrame[] animation;
     alias properties this;
@@ -95,7 +99,7 @@ class TileLayer
         uint th = map.tileHeight, tw = map.tileWidth;
 
         ushort lastId;
-        TextureRegion lastTexture;
+        HipTextureRegion lastTexture;
 
 
         for(int i = 0, _y = y; i < w; i++, _y+= th)
@@ -140,7 +144,7 @@ class Tileset
     ///"imagewidth" in tiled 
     uint  textureWidth; 
 
-    Texture texture;
+    HipTexture texture;
     int margin;
     string name;
 
@@ -160,9 +164,11 @@ class Tileset
         this.tileCount = tileCount;
     }
 
-    version(HipTSX)
+    
+    static if(hasTSXSupport)
     {
         import arsd.dom;
+
         static Tileset fromTSX(ubyte[] tsxData, string tsxPath, bool autoLoadTexture = true)
         {
             string xmlFile = cast(string)tsxData;
@@ -341,6 +347,10 @@ class Tileset
 
 
     }
+    else static if(Version.HipTSX)
+    {
+        static assert(false, `Please call dub add arsd-official:dom for using TSX parser`);
+    }
 
     void loadTexture()
     {
@@ -349,19 +359,19 @@ class Tileset
 
         string texPath = replaceFileName(path, texturePath);
 
-        texture = new Texture(texPath);
+        texture = new HipTexture(texPath);
 
         int i = 0;
         for(int y = 0; y < textureHeight; y+= tileHeight)
             for(int x = 0; x < textureWidth; x+= tileWidth)
             {
                 Tile* t = &tiles[i];
-                t.region = new TextureRegion(texture, x, y, x+tileWidth, y+tileHeight);
+                t.region = new HipTextureRegion(texture, x, y, x+tileWidth, y+tileHeight);
                 i++;
             }
     }
 
-    TextureRegion getTextureRegion(ushort id)
+    HipTextureRegion getTextureRegion(ushort id)
     {
         return tiles[id - firstGid].region;
     }
@@ -411,7 +421,7 @@ class Tilemap
         }
         return tilesets[$-1];
     }
-    TextureRegion getTextureRegionForID(ushort id)
+    HipTextureRegion getTextureRegionForID(ushort id)
     {
         return getTilesetForID(id).getTextureRegion(id);
     }

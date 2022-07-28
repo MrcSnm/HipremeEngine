@@ -11,7 +11,8 @@ Distributed under the CC BY-4.0 License.
 module hip.graphics.g2d.sprite;
 import hip.graphics.g2d.spritebatch;
 import std.math;
-import hip.hiprenderer.texture;
+import hip.assets.texture;
+import hip.assetmanager;
 import hip.debugging.gui;
 public import hip.hipengine.api.graphics.g2d.hipsprite;
 
@@ -31,7 +32,7 @@ public import hip.hipengine.api.graphics.g2d.hipsprite;
 
 })class HipSprite : IHipSprite
 {
-    TextureRegion texture;
+    HipTextureRegion texture;
     HipColor color;
     float x, y;
     float scaleX, scaleY;
@@ -51,6 +52,8 @@ public import hip.hipengine.api.graphics.g2d.hipsprite;
     static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
     protected float[HipSpriteVertex.floatCount * 4] vertices;
 
+    mixin(HipDeferredLoad);
+
     this()
     {
         scrollX = 0; scrollY = 0;
@@ -69,21 +72,18 @@ public import hip.hipengine.api.graphics.g2d.hipsprite;
     this(string texturePath)
     {
         this();
-        texture = new TextureRegion(texturePath);
+        texture = new HipTextureRegion(texturePath);
         width  = texture.regionWidth;
         height = texture.regionHeight;
         setRegion(texture.u1, texture.v1, texture.u2, texture.v2);
     }
 
-    this(Texture texture)
+    this(HipTexture texture)
     {
         this();
-        this.texture = new TextureRegion(texture);
-        width  = texture.width;
-        height = texture.height;
-        setRegion(this.texture.u1, this.texture.v1, this.texture.u2, this.texture.v2);
+        setTexture(texture);
     }
-    this(TextureRegion region)
+    this(HipTextureRegion region)
     {
         this();
         this.texture = region;
@@ -91,6 +91,16 @@ public import hip.hipengine.api.graphics.g2d.hipsprite;
         height = texture.regionHeight;
         setRegion(region.u1, region.v1, region.u2, region.v2);
     }
+    
+    
+    void setTexture(HipTexture texture)
+    {
+        this.texture = new HipTextureRegion(texture);
+        width  = texture.width;
+        height = texture.height;
+        setRegion(this.texture.u1, this.texture.v1, this.texture.u2, this.texture.v2);
+    }
+
     void setRegion(float u1, float v1, float u2, float v2)
     {
         this.u1 = u1;

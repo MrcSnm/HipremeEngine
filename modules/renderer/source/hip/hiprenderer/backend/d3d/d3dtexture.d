@@ -11,10 +11,11 @@ Distributed under the CC BY-4.0 License.
 module hip.hiprenderer.backend.d3d.d3dtexture;
 version(Windows):
 import hip.hiprenderer.backend.d3d.d3drenderer;
+public import hip.hipengine.api.renderer.texture;
+
 import hip.image;
 import directx.d3d11;
 import hip.error.handler;
-import hip.hiprenderer.texture;
 
 
 private __gshared ID3D11ShaderResourceView nullSRV = null;
@@ -25,6 +26,7 @@ class Hip_D3D11_Texture : ITexture
     ID3D11Texture2D texture;
     ID3D11ShaderResourceView resource;
     ID3D11SamplerState sampler;
+    int width, height;
     float[4] borderColor;
     int filter = Hip_D3D11_getTextureFilter(TextureFilter.NEAREST, TextureFilter.NEAREST);
     int wrap = Hip_D3D11_getWrapMode(TextureWrapMode.REPEAT);
@@ -63,8 +65,8 @@ class Hip_D3D11_Texture : ITexture
         desc.CPUAccessFlags = 0;
         desc.MipLevels = 1;
         desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-        desc.Width = image.getWidth;
-        desc.Height = image.getHeight;
+        desc.Width = width = image.getWidth;
+        desc.Height = height = image.getHeight;
 
         D3D11_SUBRESOURCE_DATA data;
 
@@ -130,6 +132,10 @@ class Hip_D3D11_Texture : ITexture
         _hip_d3d_context.PSSetSamplers(slot, 1, &nullSamplerState);
         _hip_d3d_context.PSSetShaderResources(slot, 1, &nullSRV);
     }
+    
+    int getWidth(){return width;}
+    int getHeight(){return height;}
+    
 }
 
 

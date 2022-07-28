@@ -23,7 +23,7 @@ class TestScene : Scene
     GeometryBatch geom;
     Shader shader;
     float a;
-    override void init()
+    override void initialize()
     {
         geom = new GeometryBatch(null, 5000, 5000);
         a = 0;

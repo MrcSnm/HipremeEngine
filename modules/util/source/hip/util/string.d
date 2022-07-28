@@ -24,6 +24,7 @@ struct String
     private size_t _capacity;
     private int* countPtr;
 
+    import std.stdio;
     this(this)
     {
         if(countPtr !is null)
@@ -35,6 +36,7 @@ struct String
         this.chars = cast(char*)malloc(length);
         this.countPtr = cast(int*)malloc(int.sizeof);
         this._capacity = length;
+        this.chars[0..length] = '\0';
         *countPtr = 1;
     }
 
@@ -56,6 +58,9 @@ struct String
         memcpy(s.chars, str.ptr, s.length);
         return s;
     }
+
+    private enum isAppendable(T) = is(T == String) || is(T == string) || is(T == immutable(char)*) || is(T == char);
+    
     static auto opCall(Args...)(Args args)
     {
         import hip.util.conv:toStringRange;
@@ -63,7 +68,7 @@ struct String
         s.initialize(128);
         static foreach(a; args)
         {
-            static if(is(typeof(a) == String))
+            static if(isAppendable!(typeof(a)))
                 s~= a;
             else static if(__traits(hasMember, a, "toString"))
                 s~= a.toString;
@@ -90,6 +95,7 @@ struct String
         }
         else if(*countPtr != 1) //If it is borrowed
         {
+            //Remove that old reference and initialize itself (something like when slices shares a common array)
             char* oldChars = chars;
             *countPtr = *countPtr - 1;
             initialize(length+this.length);
@@ -109,7 +115,7 @@ struct String
             l = value.length;
             chs = cast(immutable(char)*)value.chars;
         }
-        else static if (is(T == string))
+        else static if (is(T == string)) 
         {
             l = cast(size_t)value.length;
             chs = value.ptr;
@@ -228,6 +234,7 @@ struct String
     {
         if(countPtr != null)
         {
+
             *countPtr = *countPtr - 1;
             assert(*countPtr >= 0);
             if(*countPtr == 0 && chars != null)

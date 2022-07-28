@@ -1,5 +1,5 @@
 module hip.graphics.g2d.ninepatch;
-public import hip.hiprenderer.texture;
+public import hip.assets.texture;
 public import hip.graphics.g2d.spritebatch;
 import hip.graphics.g2d.sprite;
 
@@ -16,10 +16,10 @@ class NinePatch
     float scaleX, scaleY;
     protected HipSprite[9] sprites;
     protected float[HipSpriteVertex.quadCount*9] vertices;
-    Texture texture;
+    HipTexture texture;
     NinePatchType stretchStrategy;
 
-    this(uint width, uint height, Texture tex, NinePatchType type = NinePatchType.SCALED)
+    this(uint width, uint height, HipTexture tex, NinePatchType type = NinePatchType.SCALED)
     {
         this.width = width;
         this.height = height;

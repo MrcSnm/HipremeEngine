@@ -8,7 +8,7 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hip.data.asset;
+module hip.asset;
 
 import hip.hipengine.api.data.commons;
 
@@ -23,6 +23,9 @@ abstract class HipAsset : ILoadable
     string name;
     /**Currently not in use */
     uint assetID;
+    /** Usage inside asset manager */
+    uint typeID;
+
     ///When it started loading
     float startLoadingTimestamp;
     ///How much time it took to load, in millis
@@ -69,4 +72,16 @@ abstract class HipAsset : ILoadable
     }
     ///Use it to clear the engine. 
     abstract void onDispose();
+}
+
+
+private __gshared int assetIds = 0;
+int assetTypeID(T : HipAsset)()
+{
+    static int id = -1;
+    if(id == -1)
+    {
+        id = ++assetIds;
+    }
+    return id;
 }
