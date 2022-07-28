@@ -81,11 +81,14 @@ class HipWorkerThread : Thread
         semaphore = new Semaphore;
         mutex = new Mutex();
     }
-
+    /**
+    *   This thread goes into an invalid state after finishing it. It should not be used anymore
+    */
     void finish()
     {
         mutex.lock;
         isAlive = false;
+        semaphore.notify;
         mutex.unlock;
     }
     bool isIdle()
@@ -131,15 +134,25 @@ class HipWorkerThread : Thread
             semaphore.wait;
         }
     }
+    void dispose()
+    {
+        finish();
+        destroy(semaphore);
+        destroy(mutex);
+    }
 }
 
 class HipWorkerPool
 {
     HipWorkerThread[] threads;
     protected Semaphore awaitSemaphore;
+    protected void delegate()[] finishHandlersOnMainThread;
+    protected Mutex handlersMutex;
+
     this(size_t poolSize)
     {
         threads = new HipWorkerThread[](poolSize);
+        handlersMutex = new Mutex();
         for(size_t i = 0; i < poolSize; i++)
             threads[i] = new HipWorkerThread();
     }
@@ -160,13 +173,16 @@ class HipWorkerPool
             awaitSemaphore.wait();
         }
     }
-    HipWorkerThread pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null)
+    HipWorkerThread pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null, bool isOnFinishOnMainThread = false)
     {
         foreach(thread; threads)
         {
             if(thread.isIdle)
             {
-                thread.pushTask(name, task, onTaskFinish);
+                if(onTaskFinish !is null && isOnFinishOnMainThread)
+                    thread.pushTask(name, task, notifyOnFinish(onTaskFinish));
+                else
+                    thread.pushTask(name, task, onTaskFinish);
                 return thread;
             }
         }
@@ -175,11 +191,46 @@ class HipWorkerPool
             onTaskFinish(name);
         return null;
     }
+
+    void delegate(string name) notifyOnFinish(void delegate(string taskName) onFinish)
+    {
+        return (name)
+        {
+            imported!"std.stdio".writeln("Finished ", name);
+
+            handlersMutex.lock();
+                finishHandlersOnMainThread~= (){onFinish(name);};
+            handlersMutex.unlock();
+        };
+    }
+
     bool isIdle()
     {
-        size_t count = 0;
         foreach(thread; threads)
-            count+= int(thread.isIdle);
-        return count == threads.length;
+            if(!thread.isIdle)
+                return false;
+        return true;
+    }
+
+    void pollFinished()
+    {
+        handlersMutex.lock();
+            foreach(finishHandler; finishHandlersOnMainThread)
+                finishHandler();
+            if(finishHandlersOnMainThread.length)
+            {
+                finishHandlersOnMainThread.length = 0;
+            }
+        handlersMutex.unlock();
+
+    }
+
+    void dispose()
+    {
+        foreach(thread; threads)
+            thread.dispose();
+        destroy(threads);
+        destroy(awaitSemaphore);
+        destroy(handlersMutex);
     }
 }

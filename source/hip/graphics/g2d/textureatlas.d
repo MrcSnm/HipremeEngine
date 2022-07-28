@@ -14,7 +14,7 @@ import hip.util.conv:to;
 import hip.util.string;
 import std.file;
 import hip.filesystem.hipfs;
-import hip.hiprenderer.texture;
+import hip.assets.texture;
 import hip.math.rect;
 
 struct AtlasFrame
@@ -26,7 +26,7 @@ struct AtlasFrame
     Rect frame;
     Rect spriteSourceSize;
     Size sourceSize;
-    TextureRegion region;
+    HipTextureRegion region;
 
     alias region this;
 }
@@ -36,7 +36,7 @@ class TextureAtlas
     string atlasPath;
     string[] texturePaths;
     AtlasFrame[string] frames;
-    Texture texture;
+    HipTexture texture;
 
     static TextureAtlas readJSON(ubyte[] data, string atlasPath, string texturePath)
     {
@@ -45,7 +45,7 @@ class TextureAtlas
         ret.texturePaths~= texturePath;
         ret.atlasPath = atlasPath;
 
-        ret.texture = new Texture(texturePath);
+        ret.texture = new HipTexture(texturePath);
 
         JSONValue json = parseJSON(cast(string)data);
         JSONValue[] frames = json["frames"].array;
@@ -71,7 +71,7 @@ class TextureAtlas
             );
             frameRect = f["sourceSize"].object;
             a.sourceSize = Size(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
-            a.region = new TextureRegion(ret.texture,
+            a.region = new HipTextureRegion(ret.texture,
             cast(uint)a.frame.x,
             cast(uint)a.frame.y,
             cast(uint)a.frame.x + cast(uint)a.frame.w,

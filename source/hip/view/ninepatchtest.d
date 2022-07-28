@@ -12,7 +12,7 @@ class NinePatchSceneTest : Scene
     Vector2 startPatch;
     this()
     {
-        ninepatch = new NinePatch(800, 600, new Texture("graphics/sprites/nineSlicePanel.png"));
+        ninepatch = new NinePatch(800, 600, new HipTexture("graphics/sprites/nineSlicePanel.png"));
         batch = new HipSpriteBatch();
     }
 

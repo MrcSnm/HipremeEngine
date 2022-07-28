@@ -11,6 +11,23 @@ Distributed under the CC BY-4.0 License.
 module hip.global.gamedef;
 import hip.systems.game;
 import hip.event.handlers.inputmap;
+import hip.config.opts;
+import hip.hipengine.api.data.font;
+import hip.hipengine.api.data.image;
+
+//Default assets
+struct HipDefaultAssets
+{
+   private __gshared IImage _texture;
+   private __gshared HipFont _font;
+
+   static const(IImage) texture(){return cast(const)_texture;}
+   static const(HipFont) font(){return cast(const)_font;}
+
+   immutable static string textureData = import(HIP_DEFAULT_TEXTURE);
+   immutable static string fontData = import(HIP_DEFAULT_FONT);
+}
+
 
 public:
     immutable static enum ENGINE_NAME = "Hipreme Engine";
@@ -18,10 +35,32 @@ public:
     static int SCREEN_HEIGHT = 600;
     ///Globally shared for accessing it on Android Game Thread
    __gshared GameSystem sys;
-   __gshared float g_deltaTime = 0;
    __gshared HipInputMap map;
 
+   __gshared float g_deltaTime = 0;
 
+
+
+
+bool loadDefaultAssets()
+{
+   import hip.font.ttf;
+   import hip.assets.image;
+
+   auto font = new Hip_TTF_Font(HIP_DEFAULT_FONT);
+   if(!font.loadFromMemory(cast(ubyte[])HipDefaultAssets.fontData))
+      return false;
+   font.generateTexture(HIP_DEFAULT_FONT_SIZE);
+   font.loadTexture();
+   HipDefaultAssets._font = font;
+
+   auto image = new Image(HIP_DEFAULT_TEXTURE);
+   if(!image.loadFromMemory(cast(ubyte[])HipDefaultAssets.textureData))
+      return false;
+
+   HipDefaultAssets._texture = image;
+   return true;   
+}
 
 
 float getDisplayDPI(uint displayIndex = 0)
@@ -33,3 +72,4 @@ float getDisplayDPI(uint displayIndex = 0)
 
    return horizontalDPI;
 }
+

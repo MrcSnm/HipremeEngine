@@ -14,7 +14,7 @@ public import hip.hipengine.api.view.layer;
 
 interface IScene
 {
-    void init();
+    void initialize();
     void pushLayer(Layer l);
     void update(float dt);
     void render();

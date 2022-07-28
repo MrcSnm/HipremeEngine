@@ -36,7 +36,7 @@ class FrameBufferTestScene : Scene
         fb.unbind();
 
         batch.begin();
-        batch.draw(new TextureRegion(fb.getTexture), 0, 0);
+        // batch.draw(new HipTextureRegion(fb.getTexture), 0, 0);
         batch.end();
         // fb.currentShader.bind();
         // fb.currentShader.setFragmentVar("uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);

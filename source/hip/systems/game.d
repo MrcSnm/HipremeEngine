@@ -221,17 +221,24 @@ class GameSystem
     }
 
     
-
+    /**
+    *   Adding a scene will initialize them, while checking for assets referencing for auto loading them.
+    */
     void addScene(AScene s)
     {
         import hip.console.log;
+        import hip.assetmanager;
         logln("Initializing scene ", s.getName);
-    	s.init();
+        HipAssetManager.startCheckingReferences();
+    	s.initialize();
+        HipAssetManager.stopCheckingReferences();
         scenes~= s;
     }
 
     bool update(float deltaTime)
     {
+        import hip.assetmanager;
+        HipAssetManager.update();
         version(LoadScript)
         {
             if(watcher.update())
@@ -271,5 +278,8 @@ class GameSystem
                 hotload.dispose();
             }
         }
+        import hip.assetmanager;
+        HipAssetManager.dispose();
+ 
     }
 }

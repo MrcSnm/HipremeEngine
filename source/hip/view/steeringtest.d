@@ -9,7 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.view.steeringtest;
-import hip.hiprenderer.texture;
+import hip.assets.texture;
 import hip.graphics.g2d.sprite;
 import hip.graphics.g2d.spritebatch;
 import hip.ai.steering;

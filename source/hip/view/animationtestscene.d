@@ -16,6 +16,7 @@ import hip.util.tween;
 import hip.graphics.g2d.animation;
 import hip.graphics.g2d.sprite;
 import hip.graphics.g2d.spritebatch;
+import hip.assets.texture;
 
 class AnimationTestScene : Scene
 {
@@ -28,8 +29,8 @@ class AnimationTestScene : Scene
     this()
     {
         batch = new HipSpriteBatch();
-        Texture t = new Texture("graphics/sprites/sprite.png");
-        Array2D!TextureRegion sheet = TextureRegion.spritesheet(t, 32, 32, 96, 128, 0, 0, 0, 0);
+        HipTexture t = new HipTexture("graphics/sprites/sprite.png");
+        Array2D!HipTextureRegion sheet = HipTextureRegion.spritesheet(t, 32, 32, 96, 128, 0, 0, 0, 0);
         anim = new HipAnimation("Character");
 
         anim

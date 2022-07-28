@@ -45,7 +45,7 @@ public interface IHipAnyImageDecoder : IHipPNGDecoder, IHipJPEGDecoder, IHipWebP
 public interface IImage : IImageBase
 {
     string getName();
-    bool loadFromMemory(ref ubyte[] data);
+    bool loadFromMemory(ubyte[] data);
     void* convertPalettizedToRGBA();
     void* monochromeToRGBA();
     bool load();

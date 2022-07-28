@@ -9,7 +9,8 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.backend.gl.gltexture;
-import hip.hiprenderer.texture;
+public import hip.hipengine.api.renderer.texture;
+
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
 import hip.image;
@@ -125,7 +126,8 @@ class Hip_GL3_Texture : ITexture
                 break;
             case 2:
             default:
-                ErrorHandler.assertExit(false, "GL Pixel format unsupported");
+                import hip.util.conv;
+                ErrorHandler.assertExit(false, "GL Pixel format unsupported on image "~image.getName~", bytesPerPixel: "~to!string(image.getBytesPerPixel));
         }
         bind(currentSlot);
         glTexImage2D(GL_TEXTURE_2D, 0, mode, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, pixels);
@@ -137,4 +139,8 @@ class Hip_GL3_Texture : ITexture
         setWrapMode(TextureWrapMode.REPEAT);
         return true;
     }
+    
+    int getWidth(){return width;}
+    int getHeight(){return height;}
+    
 }

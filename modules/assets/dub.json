@@ -1,0 +1,26 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"description": "HipremeEngine assets module",
+	"configurations": [
+		{
+			"dependencies": {
+				"hipengine_api": {"path": "../../api", "version": "*"},
+				"filesystem": {"path": "../filesystem", "version": "*"},
+				"util": {"path": "../util", "version": "*"},
+				"image": {"path": "../image", "version": "*"},
+				"renderer": {"path": "../renderer", "version": "*"}
+			},
+			"name": "default"
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
+		}
+	],
+	"license": "proprietary",
+	"dflags": ["-g"],
+	"name": "assets"
+}

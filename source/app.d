@@ -36,6 +36,9 @@ import hip.view;
 import hip.systems.game;
 import hip.debugging.gui;
 import hip.bind.interpreters;
+import hip.config.opts;
+
+
 /**
 * Compiling instructions:
 
@@ -157,6 +160,8 @@ extern(C) int HipremeMain()
 		HipFS.absoluteReadText("renderer.conf", confFile); //Ignore return, renderer can handle no conf.
 		HipRenderer.init(confFile, "renderer.conf");
 	}
+	loadDefaultAssets();
+	
 	version(dll){}
 	else
 		sys = new GameSystem(FRAME_TIME);

@@ -188,7 +188,7 @@ struct Array(T)
     }
     void* getRef()
     {
-        countPtr++;
+        *countPtr = *countPtr + 1;
         return cast(void*)&this;
     }
 

@@ -14,14 +14,13 @@ import hip.error.handler;
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
 import hip.hiprenderer.shader;
-import hip.hiprenderer.texture;
 import hip.hiprenderer.backend.gl.gltexture;
 
 
 class Hip_GL3_FrameBuffer : IHipFrameBuffer
 {
     ///Texture to be returned. It is filled with the opengl framebuffer contents
-    Texture retTexture;
+    Hip_GL3_Texture retTexture;
     uint rbo;
     uint fbo;
     uint texture;
@@ -66,11 +65,8 @@ class Hip_GL3_FrameBuffer : IHipFrameBuffer
 
         ErrorHandler.assertErrorMessage(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE,
         "GL Framebuffer creation", "Framebuffer was unable to complete its creations");
-        retTexture = new Texture();
-        retTexture.width = width;
-        retTexture.height = height;
-        Hip_GL3_Texture t = cast(Hip_GL3_Texture)(retTexture.textureImpl);
-        t.textureID = texture;
+        retTexture = new Hip_GL3_Texture();
+        retTexture.textureID = texture;
 
         //Reset to defaults
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -87,7 +83,7 @@ class Hip_GL3_FrameBuffer : IHipFrameBuffer
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    Texture getTexture(){return retTexture;}
+    ITexture getTexture(){return retTexture;}
 
     void draw()
     {
