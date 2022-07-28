@@ -3,12 +3,12 @@ module hip.extensions.file;
 import hip.filesystem.hipfs;
 import hip.filesystem.extension;
 
-import hip.data.assets.image;
+import hip.assets.image;
 mixin HipFSExtend!(Image) mxImg;
 alias loadFromFile = mxImg.loadFromFile;
 
-import hip.hiprenderer.texture;
-bool loadFromFile(Texture texture, string path)
+import hip.assets.texture;
+bool loadFromFile(HipTexture texture, string path)
 {
     Image img = new Image(path);
     if(!img.loadFromFile(path))

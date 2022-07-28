@@ -1,6 +1,6 @@
 module hip.graphics.g2d.threepatch;
 
-import hip.hiprenderer.texture;
+import hip.assets.texture;
 import hip.graphics.g2d.spritebatch;
 import hip.graphics.g2d.sprite;
 
@@ -23,9 +23,9 @@ class ThreePatch
 
     this(string texturePath, ThreePatchOrientation orientation = ThreePatchOrientation.infered)
     {
-        this(new Texture(texturePath), width, height, orientation);
+        this(new HipTexture(texturePath), width, height, orientation);
     }
-    this(Texture texture, int width, int height, ThreePatchOrientation orientation = ThreePatchOrientation.infered)
+    this(HipTexture texture, int width, int height, ThreePatchOrientation orientation = ThreePatchOrientation.infered)
     {
         for(int i = 0; i < 3; i++)
             sprites[i] = new HipSprite(texture);

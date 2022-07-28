@@ -1,7 +1,7 @@
-module hip.data.assets.image;
+module hip.assets.image;
 
 //Reserved for future implementation.
-import hip.data.asset;
+import hip.asset;
 import hip.image;
 
 
@@ -26,6 +26,7 @@ public class Image : HipAsset, IImage
     this(in string path)
     {
         super("Image_"~path);
+        typeID = assetTypeID!Image;
         initialize(path);
     }
     private void initialize(in string path)
@@ -65,7 +66,7 @@ public class Image : HipAsset, IImage
     }
 
 
-    bool loadFromMemory(ref ubyte[] data)
+    bool loadFromMemory(ubyte[] data)
     {
         import hip.error.handler;
         if(ErrorHandler.assertErrorMessage(data.length != 0, "No data was passed to load Image.", "Could not load image"))

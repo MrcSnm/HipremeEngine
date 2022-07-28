@@ -21,6 +21,29 @@ int asInt(alias enumMember)()
 }
 
 
+import std.meta:Alias;
+//For usage on match!
+alias Case = Alias;
+void match(alias reference, matches...)()
+{
+    import std.range:iota;
+    static foreach(i; iota(0, matches.length, 2))
+    {
+        static if(i + 1 < matches.length)
+        {
+            if(reference == matches[i])
+            {
+                matches[i+1]();
+                return;
+            }
+        }
+    }
+    static if(matches.length % 2 != 0)
+        matches[$-1]();
+}
+
+
+
 bool isLiteral(alias variable)(string var = variable.stringof)
 {
     import hip.util.string : isNumeric;
@@ -45,6 +68,40 @@ if (X.length == 1)
     }
     else
         enum isFunction = false;
+}
+
+template getParams (alias fn) 
+{
+	static if ( is(typeof(fn) params == __parameters) )
+    	alias getParams = params;
+}
+alias Parameters = getParams;
+enum hasModule(string modulePath) = (is(typeof((){mixin("import ", modulePath, ";");})));
+enum hasType(string TypeName) = __traits(compiles, {mixin(TypeName, " _;");});
+
+
+template getUDAs(alias symbol)
+{
+    enum getUDAs = __traits(getAttributes, symbol);
+}
+
+template hasUDA(alias symbol, alias UDA)
+{
+    enum helper = ()
+    {
+        foreach(att; __traits(getAttributes, symbol))
+            if(is(typeof(att) == UDA) || is(att == UDA)) return true;
+        return false;
+    }();
+    enum hasUDA = helper;
+}
+template isReference(T)
+{
+    enum isReference = is(T == class) || is(T == interface);
+}
+template hasMethod(T, string method, Params...)
+{
+    enum hasMethod = __traits(hasMember, T, method) && is(getParams!(__traits(getMember, T, method)) == Params);
 }
 
 auto inverseLookup(alias lookupTable)()
@@ -129,26 +186,6 @@ T nullCheck(string expression, T, Q)(T defaultValue, Q target)
 ///Used in conjunction to ExportDFunctions, you may specify a suffix, if you so, _suffix is added
 struct ExportD{string suffix;}
 
-template getParams (alias fn) 
-{
-	static if ( is(typeof(fn) params == __parameters) )
-    	alias getParams = params;
-}
-template getUDAs(alias symbol)
-{
-    enum getUDAs = __traits(getAttributes, symbol);
-}
-
-template hasUDA(alias symbol, alias UDA)
-{
-    enum helper = ()
-    {
-        foreach(att; __traits(getAttributes, symbol))
-            if(is(typeof(att) == UDA) || is(att == UDA)) return true;
-        return false;
-    }();
-    enum hasUDA = helper;
-}
 
 template generateExportName(string className, alias funcSymbol)
 {
@@ -157,11 +194,6 @@ template generateExportName(string className, alias funcSymbol)
 		enum generateExportName = className~"_"~__traits(identifier, funcSymbol)~"_"~getUDAs!funcSymbol[0].suffix;
 	else
 		enum generateExportName = className~"_"~__traits(identifier, funcSymbol);
-}
-
-template isReference(T)
-{
-    enum isReference = is(T == class) || is(T == interface);
 }
 
 
@@ -202,6 +234,16 @@ template generateExportFunc(string className, alias funcSymbol)
 
     enum generateExportFunc = impl;
 }
+
+
+struct Version
+{
+    template opDispatch(string s)
+    {
+        mixin(`version(`~s~`)enum opDispatch=true;else enum opDispatch=false;`);
+    }
+}
+
 
 
 /**

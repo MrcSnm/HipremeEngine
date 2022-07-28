@@ -31,6 +31,11 @@ enum HE_ERR_ONLY = false;
 ///Unused yet?
 enum HIP_OPTIMIZE = false;
 
+///////////////////////////////// Default Asset Files /////////////////////////////////
+enum HIP_DEFAULT_FONT = "assets/fonts/WarsawGothic-BnBV.otf";
+enum HIP_DEFAULT_FONT_SIZE = 32;
+enum HIP_DEFAULT_TEXTURE = "assets/graphics/sprites/default.png";
+
 /**
 *	Will use OpenSL ES optimal sample rate for output and buffer size multiple. 
 */

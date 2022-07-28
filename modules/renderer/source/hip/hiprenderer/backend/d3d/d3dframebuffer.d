@@ -5,7 +5,6 @@ version(Windows):
 import directx.d3d11;
 
 import hip.error.handler;
-import hip.hiprenderer.texture;
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
 import hip.hiprenderer.shader;
@@ -17,7 +16,7 @@ private __gshared ID3D11RenderTargetView nullRenderTargetView = null;
 
 class Hip_D3D11_FrameBuffer : IHipFrameBuffer
 {
-    Texture retTexture;
+    Hip_D3D11_Texture retTexture;
     ID3D11Texture2D renderTargetTexture;
 	ID3D11RenderTargetView renderTargetView;
 	ID3D11ShaderResourceView shaderResourceView;
@@ -73,15 +72,10 @@ class Hip_D3D11_FrameBuffer : IHipFrameBuffer
         HipRenderer.exitOnError();
         ErrorHandler.stopListeningForErrors();
 
-        retTexture = new Texture();
-        retTexture.width = width;
-        retTexture.height = height;
-        Hip_D3D11_Texture t = cast(Hip_D3D11_Texture)retTexture.textureImpl;
-
-        t.resource = shaderResourceView;
-        t.texture = renderTargetTexture;
-        t.updateSamplerState();
-
+        retTexture = new Hip_D3D11_Texture();
+        retTexture.resource = shaderResourceView;
+        retTexture.texture = renderTargetTexture;
+        retTexture.updateSamplerState();
         
     }
     void resize(uint width, uint height){}
@@ -101,7 +95,7 @@ class Hip_D3D11_FrameBuffer : IHipFrameBuffer
         _hip_d3d_context.ClearRenderTargetView(renderTargetView, color.ptr);
     }
 
-    Texture getTexture(){return retTexture;}
+    ITexture getTexture(){return retTexture;}
     void draw(){}
     void dispose()
     {

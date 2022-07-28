@@ -46,11 +46,11 @@ class Hip_TTF_Font : HipFont
     public void loadTexture()
     {
         assert(generatedTexture !is null, "Must first generate a texture before uploading to GPU");
-        import hip.data.assets.image;
-        import hip.hiprenderer.texture;
+        import hip.assets.image;
+        import hip.assets.texture;
         Image img = new Image("Font");
         img.loadRaw(generatedTexture, 800, 600, 1);
-        Texture t = new Texture();
+        HipTexture t = new HipTexture();
         t.load(img);
 
         texture = t;
