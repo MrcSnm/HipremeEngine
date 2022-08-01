@@ -24,7 +24,7 @@ class TTFTestScene : Scene
         txt = new HipTextRenderer();
         sprite = new HipSprite();
         sprite.x = 200;
-        txt.setFont(HipAssetManager.loadFont("fonts/arial.ttf", 48));
+        txt.setFont(HipAssetManager.loadFont("fonts/consolas.fnt", 48));
         sprite.setTexture(HipAssetManager.loadTexture("graphics/sprites/default.png"));
 
     }

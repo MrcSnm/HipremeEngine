@@ -12,9 +12,15 @@ else// version(Posix)
     enum defaultCaseSensitivity = true;
 
 version(Windows)
+{
     enum pathSeparator = '\\';
+    enum otherSeparator = '/';
+}
 else
+{
     enum pathSeparator = '/';
+    enum otherSeparator = '\\';
+}
 
 string[] pathSplitter(string path) @safe pure nothrow
 {
@@ -185,10 +191,22 @@ bool isAbsolutePath(string fPath) pure nothrow @nogc @safe
 }
 
 
+
+char determineSeparator(string filePath) pure nothrow @nogc @safe
+{
+    size_t i = 0;
+    while(i < filePath.length && filePath[i] != '/' && filePath[i] != '\\')
+        i++;
+    return i < filePath.length ? filePath[i] : '\0';
+}
+
 ///Will get the directory name until a trailing separator or return 
 string dirName(string filePath) pure nothrow @nogc @safe
 {
-    int last = filePath.lastIndexOf(pathSeparator);
+    char sep = determineSeparator(filePath);
+    if(sep == '\0')
+        return filePath;
+    int last = filePath.lastIndexOf(sep);
     if(last == -1)
         return filePath;
     return filePath[0..last];
@@ -197,7 +215,10 @@ string dirName(string filePath) pure nothrow @nogc @safe
 
 string filename(string filePath) @safe pure nothrow @nogc
 {
-    int last = filePath.lastIndexOf(pathSeparator);
+    char sep = determineSeparator(filePath);
+    if(sep == '\0')
+        return filePath;
+    int last = filePath.lastIndexOf(sep);
     if(last == -1)
         return filePath;
     return filePath[last+1..$];
