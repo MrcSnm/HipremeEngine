@@ -368,6 +368,7 @@ class HipAssetManager
         switch(fontPath.extension)
         {
             case "bmfont":
+            case "fnt":
                 return loadBMFont(fontPath);
             case "ttf":
                 return loadTTF(fontPath, fontSize);
@@ -410,9 +411,58 @@ class HipAssetManager
         });
         return task;
     }
-    private static HipAssetLoadTask loadBMFont(string ttfPath)
+
+    private static HipAssetLoadTask loadBMFont(string fontPath)
     {
-        return null;
+        import hip.font.bmfont;
+        import hip.assets.font;
+        import hip.image;
+        import hip.util.memory;
+
+        class IntermediaryData
+        {
+            HipBitmapFont font;
+            HipImageImpl img;
+            this(HipBitmapFont fnt, HipImageImpl img){font = fnt; this.img = img;}
+        }
+
+            import std.stdio;
+        HipAssetLoadTask task = loadComplex(fontPath, (pathOrLocation)
+        {
+            import hip.filesystem.hipfs;
+            HipBitmapFont font = new HipBitmapFont();
+
+            if(!font.loadAtlas(HipFS.readText(fontPath), fontPath))
+            {
+                writeln("Could not read atlas");
+                return null;
+            }
+            HipImageImpl img = new HipImageImpl();
+            if(!img.loadFromMemory(HipFS.read(font.getTexturePath)))
+            {
+                writeln("Could not read image");
+                return null;
+            }
+            return toHeapSlice(new IntermediaryData(font, img));
+        }, (partialData)
+        {
+            if(partialData is null)
+            {
+                writeln("No partial data");
+                return null;
+            }
+            scope(exit) freeGCMemory(partialData);
+
+            IntermediaryData i = (cast(IntermediaryData)partialData.ptr);
+            if(!i.font.loadTexture(new HipTexture(i.img)))
+            {
+                writeln("Could not read texture");
+                return null;
+            }
+            HipFontAsset fnt = new HipFontAsset(i.font);
+            return fnt;
+        });
+        return task;
     }
     
 
