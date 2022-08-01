@@ -1,5 +1,6 @@
 module hip.hipengine.api.data.font;
-import hip.hipengine.api.renderer.texture;
+public import hip.hipengine.api.renderer.texture;
+
 
 alias HipCharKerning = int[dchar];
 alias HipFontKerning = HipCharKerning[dchar];
@@ -23,7 +24,8 @@ interface IHipFont
 {
     int getKerning(dchar current, dchar next);
     void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int maxWidth, out int height);
-    HipFontChar[dchar] characters();
+    ref HipFontChar[dchar] characters();
+    ref ITexture texture();
     uint spaceWidth();
     uint spaceWidth(uint newWidth);
     uint lineBreakHeight();
@@ -36,7 +38,7 @@ abstract class HipFont : IHipFont
     abstract int getKerning(dchar current, dchar next);
 
     ///Underlying GPU texture
-    ITexture texture;
+    ITexture _texture;
     HipFontChar[dchar] _characters;
     ///Saves the space width for the bitmap text process the ' '. If the original spaceWidth is == 0, it won't draw a quad
     uint _spaceWidth;
@@ -45,6 +47,7 @@ abstract class HipFont : IHipFont
 
     ///////Properties///////
     final ref HipFontChar[dchar] characters(){return _characters;}
+    final ref ITexture texture(){return _texture;}
     final uint spaceWidth(){return _spaceWidth;}
     final uint spaceWidth(uint newWidth){return _spaceWidth = newWidth;}
     final uint lineBreakHeight(){return _lineBreakHeight;}

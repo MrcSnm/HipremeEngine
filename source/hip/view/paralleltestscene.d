@@ -35,7 +35,7 @@ class ParallelTestScene : Scene
     override void render()
     {
         // HipAssetManager.checkLoad();
-        if(spr.texture.texture.img !is null)
+        if(spr.texture !is null)
         {
             batch.draw(spr);
         }
