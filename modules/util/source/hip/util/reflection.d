@@ -280,7 +280,7 @@ enum GetFunctionDeclareStatement(alias func, string funcName)()
 {
     import std.traits:ReturnType;
     import hip.util.string:join;
-    return (ReturnType!func).stringof ~ " " ~ funcName ~ (getParams!func).stringof ~ " " ~  [__traits(getFunctionAttributes, func)].join(" ");
+    return [__traits(getFunctionAttributes, func)].join(" ") ~ " " ~ (ReturnType!func).stringof ~ " " ~ funcName ~ (getParams!func).stringof;
 }
 
 enum ForwardFunc(alias func, string funcName, string member)()
@@ -316,7 +316,14 @@ enum isMethodImplemented(T, string member, FuncType)()
     return ret;
 }
 
-///Futurely, it should be changed to use `alias member` instead of getting its string.
+/**
+*   This function receives a string containing the member name which implements the interface I.   
+*   
+*   So, whenever something calls the interface.memberFunction, it will forward the call to that member by doing
+*   `void memberFunction(){member.memberFunction();}`, if the function is already defined, it will be ignored.
+*
+*   [Dev: Futurely, it should be changed to use `alias member` instead of getting its string.]
+*/
 enum ForwardInterface(string member, I)() if(is(I == interface))
 {
     import hip.util.string:replaceAll;

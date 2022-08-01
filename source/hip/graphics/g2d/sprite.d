@@ -86,13 +86,11 @@ public import hip.hipengine.api.graphics.g2d.hipsprite;
     }
     
     
-    void setTexture(HipTexture texture)
+    void setTexture(ITexture texture)
     {
-        import std.stdio;
         this.texture = new HipTextureRegion(texture);
-        writeln("Loaded TEXTURE ", texture.width);
-        width  = texture.width;
-        height = texture.height;
+        width  = texture.getWidth;
+        height = texture.getHeight;
         setRegion(this.texture.u1, this.texture.v1, this.texture.u2, this.texture.v2);
     }
 
@@ -238,8 +236,8 @@ public import hip.hipengine.api.graphics.g2d.hipsprite;
         isDirty = true;
     }
 
-    int getTextureWidth(){return texture.texture.width;}
-    int getTextureHeight(){return texture.texture.height;}
+    int getTextureWidth(){return texture.texture.getWidth;}
+    int getTextureHeight(){return texture.texture.getHeight;}
 
     /**
     * This function is most useful for single images. For instance backgrounds, probably, if you have a

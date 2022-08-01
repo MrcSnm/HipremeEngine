@@ -28,6 +28,7 @@ import hip.util.reflection;
 class HipTexture : HipAsset, ITexture
 {
     mixin(ForwardInterface!("textureImpl", ITexture));
+    
     IImage img;
     int width,height;
     public ITexture textureImpl;
@@ -109,7 +110,7 @@ class HipTexture : HipAsset, ITexture
 
 class HipTextureRegion : HipAsset
 {
-    HipTexture texture;
+    ITexture texture;
     public float u1, v1, u2, v2;
     protected float[8] vertices;
     int regionWidth, regionHeight;
@@ -121,22 +122,22 @@ class HipTextureRegion : HipAsset
         setRegion(u1,v1,u2,v2);
     }
 
-    this(HipTexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
+    this(ITexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
     {
         super("TextureRegion");
         this.texture = texture;
         setRegion(u1,v1,u2,v2);
     }
-    this(HipTexture texture, uint u1, uint v1, uint u2, uint v2)
+    this(ITexture texture, uint u1, uint v1, uint u2, uint v2)
     {
         super("TextureRegion");
         this.texture = texture;
-        setRegion(texture.width, texture.height, u1,  v1, u2, v2);
+        setRegion(texture.getWidth, texture.getHeight, u1,  v1, u2, v2);
     }
 
     ///By passing the width and height values, you'll be able to crop useless frames
     public static Array2D!HipTextureRegion spritesheet(
-        HipTexture t,
+        ITexture t,
         uint frameWidth, uint frameHeight,
         uint width, uint height,
         uint offsetX, uint offsetY,
@@ -154,9 +155,9 @@ class HipTextureRegion : HipAsset
         return ret;
     }
     ///Default spritesheet method that makes a spritesheet from the entire texture
-    static Array2D!HipTextureRegion spritesheet(HipTexture t, uint frameWidth, uint frameHeight)
+    static Array2D!HipTextureRegion spritesheet(ITexture t, uint frameWidth, uint frameHeight)
     {
-        return spritesheet(t,frameWidth,frameHeight, t.width, t.height, 0, 0, 0, 0);
+        return spritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
     }
 
      /**
@@ -172,8 +173,8 @@ class HipTextureRegion : HipAsset
         this.u2 = u2;
         this.v1 = v1;
         this.v2 = v2;
-        regionWidth =  cast(uint)((u2 - u1) * texture.width);
-        regionHeight = cast(uint)((v2 - v1) * texture.height);
+        regionWidth =  cast(uint)((u2 - u1) * texture.getWidth);
+        regionHeight = cast(uint)((v2 - v1) * texture.getHeight);
 
         //Top left
         vertices[0] = u1;
@@ -214,7 +215,7 @@ class HipTextureRegion : HipAsset
     void setRegion(uint u1, uint v1, uint u2, uint v2)
     {
         if(texture)
-            setRegion(texture.width, texture.height, u1, v1, u2, v2);
+            setRegion(texture.getWidth, texture.getHeight, u1, v1, u2, v2);
     }
 
 

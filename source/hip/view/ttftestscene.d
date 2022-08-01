@@ -14,24 +14,17 @@ import hip.assetmanager;
 
 class TTFTestScene : Scene
 {
-    static KeyboardLayout abnt2;
     HipTextRenderer txt;
     HipSpriteBatch batch;
     HipSprite sprite;
 
     override void initialize()
     {
-        // HipAssetManager.getAsset!Hip_TTF_Font("fonts/arial.ttf");
         batch = new HipSpriteBatch();
-        abnt2 = new KeyboardLayoutABNT2();
         txt = new HipTextRenderer();
         sprite = new HipSprite();
         sprite.x = 200;
-        import hip.extensions.file;
-        auto fnt = new Hip_TTF_Font("fonts/arial.ttf", 48);
-        fnt.load();
-            
-
+        txt.setFont(HipAssetManager.loadFont("fonts/arial.ttf", 48));
         sprite.setTexture(HipAssetManager.loadTexture("graphics/sprites/default.png"));
 
     }

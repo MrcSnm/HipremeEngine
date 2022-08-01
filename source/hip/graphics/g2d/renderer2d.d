@@ -102,7 +102,7 @@ void drawLine(int x1, int y1, int x2, int y2){geoBatch.drawLine(x1,y1,x2,y2);}
 void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24){geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision);}
 void drawSprite(IHipSprite sprite){spBatch.draw(cast(HipSprite)sprite);}
 
-void setFont(const(HipFont) font){dbgText.setFont(font);}
+void setFont(IHipFont font){dbgText.setFont(font);}
 void drawText(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER)
 {
     // dbgText.x = x;

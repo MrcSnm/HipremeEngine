@@ -52,7 +52,9 @@ private Shader bmTextShader = null;
 */
 class HipTextRenderer
 {
-    HipFont font;
+    import hip.assetmanager;
+    mixin(HipDeferredLoad);
+    IHipFont font;
     Mesh mesh;
     index_t[] indices;
     float[] vertices;
@@ -95,11 +97,13 @@ class HipTextRenderer
         mesh.setIndices(indices);
 
         import hip.global.gamedef;
-        setFont(HipDefaultAssets.font);
+        //Promise it won't modify
+        setFont(cast(IHipFont)HipDefaultAssets.font);
     }
-    void setFont(in HipFont font)
+
+    void setFont(IHipFont font)
     {
-        this.font = cast(HipFont)font;
+        this.font = font;
     }
 
     void setColor(HipColor color)

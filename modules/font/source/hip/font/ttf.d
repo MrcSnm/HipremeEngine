@@ -26,7 +26,6 @@ class Hip_TTF_Font : HipFont
     protected float fontScale;
     protected TtfFont font;
     string path;
-    protected ubyte[] generatedTexture;
     protected uint fontSize = 32;
     public static immutable dstring defaultCharset = " \náéíóúãñçabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\\|'\"`/*-+,.;_=!@#$%&()[]{}~^?";
 
@@ -35,13 +34,26 @@ class Hip_TTF_Font : HipFont
         this.path = path;
         this.fontSize = fontSize;
     }
+    /**
+    *   This will cause a full load of the .ttf file, image generation and GPU upload. Should only be used
+    *   If you don't care about async
+    */
     bool loadFromMemory(in ubyte[] data)
     {
         font = TtfFont(data);
-        generateTexture(fontSize, defaultCharset);
-        loadTexture();
+        return loadTexture(
+            generateImage(fontSize, defaultCharset)
+        );
+    }
+
+    bool partialLoad(in ubyte[] data, out ubyte[] rawImage)
+    {
+        font = TtfFont(data);
+        rawImage = generateImage(fontSize);
         return true;
     }
+
+
     override int getKerning(dchar current, dchar next)
     {
         return cast(int)(fontScale*stbtt_GetCodepointKernAdvance(&font.font, int(current), int(next)));
@@ -58,28 +70,29 @@ class Hip_TTF_Font : HipFont
 
 
 
-    protected void loadTexture()
+    bool loadTexture(ubyte[] rawImage)
     {
-        assert(generatedTexture !is null, "Must first generate a texture before uploading to GPU");
+        assert(rawImage !is null, "Must first generate a texture before uploading to GPU");
         import hip.image;
         import hip.hiprenderer.texture;
         import hip.error.handler;
         HipImageImpl img = new HipImageImpl();
-        img.loadRaw(generatedTexture, 800, 600, 1);
+        img.loadRaw(rawImage, 800, 600, 1);
         HipTexture t = new HipTexture();
 
-        ErrorHandler.assertErrorMessage(t.load(img), "Loading TTF", "Could not create texture for TTF");
+        bool ret = t.load(img);
+        ErrorHandler.assertErrorMessage(ret, "Loading TTF", "Could not create texture for TTF");
         texture = t;
+        return ret;
     }
 
     /**
     *   I'm no good packer. The image will be at least 2048xMinPowOf2
     */
-    protected ubyte[] generateTexture(int size, dstring charset = defaultCharset, uint maxWidth = 800, uint maxHeight = 600)
+    ubyte[] generateImage(int size, dstring charset = defaultCharset, uint maxWidth = 800, uint maxHeight = 600)
     {
-        import hip.util.memory;
         //First guarantee the big size
-        ubyte[] texture = allocSlice!ubyte(maxWidth*maxHeight);
+        ubyte[] image = new ubyte[](maxWidth*maxHeight);
 
         scope RenderizedChar[] fontChars;
 
@@ -145,23 +158,15 @@ class Hip_TTF_Font : HipFont
                 cast(float)x/maxWidth, cast(float)y/maxHeight,
                 cast(float)fontCh.width/maxWidth, cast(float)fontCh.height/maxHeight, 
             );
-            fontCh.blitToTexture(texture, cast(int)(x), cast(int)(y), maxWidth, maxHeight);
+            fontCh.blitToImage(image, cast(int)(x), cast(int)(y), maxWidth, maxHeight);
             x+= fontCh.width + hSpacing;
 
             if(fontCh.height > largestHeightInRow)
                 largestHeightInRow = fontCh.height;
         }
-        generatedTexture = texture;
-        return texture;
+        return image;
     }
 
-
-    void dispose(ubyte[] texture)
-    {
-        import core.stdc.stdlib;
-        free(texture.ptr);
-        texture = null;
-    }
 }
 
 
@@ -174,7 +179,7 @@ private struct RenderizedChar
 
     ubyte[] data;
 
-    void blitToTexture(ref ubyte[] texture, int startX, int startY, int textureWidth, int textureHeight)
+    void blitToImage(ref ubyte[] texture, int startX, int startY, int textureWidth, int textureHeight)
     {
         assert(startX + width < textureWidth, "Out of X boundaries");
         for(size_t i = 0; i < height; i++)
