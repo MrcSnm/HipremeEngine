@@ -14,64 +14,39 @@ import hip.assetmanager;
 
 class TTFTestScene : Scene
 {
-    static KeyboardLayout abnt2;
     HipTextRenderer txt;
     HipSpriteBatch batch;
     HipSprite sprite;
 
-    this()
+    override void initialize()
     {
-        // HipAssetManager.getAsset!Hip_TTF_Font("fonts/arial.ttf");
         batch = new HipSpriteBatch();
-        abnt2 = new KeyboardLayoutABNT2();
         txt = new HipTextRenderer();
-
         sprite = new HipSprite();
-
-        sprite.setTexture(HipAssetManager.loadTexture("graphics/sprites/sprite.png"));
-
-        // txt.setFont(HipAssetManager.getAsset!Hip_TTF_Font("fonts/arial.ttf"));
-
-        //fonts/arial.ttf referenced
-        //sprites/char.png referenced
-
-        import hip.extensions.file;
-        auto fnt = new Hip_TTF_Font("fonts/arial.ttf");
-
-        fnt.load();
-        ubyte[] texture = fnt.generateTexture(48);
-        fnt.loadTexture;
+        sprite.x = 200;
+        txt.setFont(HipAssetManager.loadFont("fonts/consolas.fnt", 48));
+        sprite.setTexture(HipAssetManager.loadTexture("graphics/sprites/default.png"));
 
     }
-    //foreach referenced
-    //  startLoading(ref)
-    //  loadTask
-    // if(path.extension == ".png")
-    //      asset = new Image(path)
-    //  return loadTask(asset, loading)
-    //
-
 
     override void render()
     {
-        // if(HipAssetManager.isLoading)
-            // return;
+        if(HipAssetManager.isLoading)
+            return;
         
-        HipRenderer.setColor(0,0,0,255);
-        HipRenderer.clear(); 
-        txt.addText(300, 100, "Hello World{}??");
-        txt.addText(300, 200, "Left", HipTextAlign.LEFT);
-        txt.addText(300, 300, "Right", HipTextAlign.RIGHT);
-        txt.addText(300, 400, "abcdefghijklmnopqrstuvwxyz");
-        txt.addText(300, 500, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-        txt.addText(300, 600, "0123456789");
-        txt.addText(300, 700, "1 + 1 - 1 * 1 / 1 = 1");
+        HipRenderer.clear(HipColor.black); 
         txt.setColor(HipColor.green);
+        txt.draw(300, 100, "Hello World{}??");
+        txt.draw(300, 200, "Left", HipTextAlign.LEFT);
+        txt.draw(300, 300, "Right", HipTextAlign.RIGHT);
+        txt.draw(300, 400, "abcdefghijklmnopqrstuvwxyz");
+        txt.draw(300, 500, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        txt.draw(300, 600, "0123456789");
+        txt.draw(300, 700, "1 + 1 - 1 * 1 / 1 = 1");
         txt.render;
 
-        batch.begin;
         if(sprite.texture)
             batch.draw(sprite);
-        batch.end;
+        batch.render;
     }
 }

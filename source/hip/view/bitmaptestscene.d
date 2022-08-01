@@ -40,7 +40,7 @@ class BitmapTestScene : Scene
         // string input = KeyboardHandler.getInputText(abnt2);
         // _txt~= input;
         // txt.setText(_txt);
-        txt.addText(0, 0,"Hello World");
+        txt.draw(0, 0,"Hello World");
         txt.render();
         txt.mesh.shader.setFragmentVar("FragBuf.uColor", cast(float[4])[1.0, 1.0, 0.0, 1.0]);
     }

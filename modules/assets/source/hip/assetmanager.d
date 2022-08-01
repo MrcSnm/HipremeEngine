@@ -48,6 +48,7 @@ import hip.util.concurrency;
 public import hip.asset;
 public import hip.assets.image;
 public import hip.assets.texture;
+public import hip.assets.font;
 
 
 enum HipAssetResult
@@ -105,7 +106,6 @@ class HipAssetLoadTask : IHipAssetLoadTask
 
 
 
-import hip.hipengine.api.data.commons : HipDeferrableTypes;
 import hip.hipengine.api.data.font;
 mixin template HipDeferredLoadImpl()
 {
@@ -124,21 +124,19 @@ mixin template HipDeferredLoadImpl()
             }, task);
     }
 
-
-    pragma(msg, typeof(this).stringof, " ", hasType!"HipTexture");
-    pragma(msg, typeof(this).stringof, " ", hasType!"hip.assets.texture.HipTexture");
-    static if(hasType!"hip.assets.texture.HipTexture" && hasMethod!(typeof(this), "setTexture", HipTexture))
+    pragma(msg, typeof(this).stringof, hasType!"hip.assets.texture.HipTexture",  hasMethod!(typeof(this), "setTexture", ITexture));
+    static if(hasType!"hip.assets.texture.HipTexture" && hasMethod!(typeof(this), "setTexture", ITexture))
     {
-        void setTexture(HipAssetLoadTask task)
+        final void setTexture(HipAssetLoadTask task)
         {
             deferredLoad!(HipTexture, "setTexture")(task);
         }
     }
-    static if(hasType!"hip.hipengine.api.font.HipFont" && hasMethod!(typeof(this), "setFont", HipFont))
+    static if(hasType!"hip.hipengine.api.data.font.IHipFont" && hasMethod!(typeof(this), "setFont", IHipFont))
     {
-        void setFont(HipAssetLoadTask task)
+        final void setFont(HipAssetLoadTask task)
         {
-            deferredLoad!(HipFont, "setFont")(task);
+            deferredLoad!(HipFontAsset, "setFont")(task);
         }
     }
 }
@@ -218,7 +216,7 @@ class HipAssetManager
         
     }
 
-    static bool isLoading(){return workerPool.isIdle;}
+    static bool isLoading(){return !workerPool.isIdle;}
     static void awaitLoad(){workerPool.await;}
 
     static void awaitTask(HipAssetLoadTask task)
@@ -293,7 +291,7 @@ class HipAssetManager
     /**
     *   loadSimple must be used when the asset can be totally constructed on the worker thread and then returned to the main thread
     */
-    private static HipAssetLoadTask loadSimple(string path, HipAsset function(string pathOrLocation) loadAsset)
+    private static HipAssetLoadTask loadSimple(string path, HipAsset delegate(string pathOrLocation) loadAsset)
     {
         HipAssetLoadTask task;
         task = loadBase(path, loadWorker(()
@@ -311,7 +309,7 @@ class HipAssetManager
     /**
     *   loadComplex is used when part of the asset can be constructed on worker thread, but for completing the load, it must finish on main thread
     */
-    private static HipAssetLoadTask loadComplex(string path, void[] function(string pathOrLocation) loadAsset, HipAsset delegate(void[] partialData) onWorkerLoadComplete)
+    private static HipAssetLoadTask loadComplex(string path, void[] delegate(string pathOrLocation) loadAsset, HipAsset delegate(void[] partialData) onWorkerLoadComplete)
     {
         HipAssetLoadTask task;
         task = loadBase(path, loadWorker(()
@@ -335,7 +333,8 @@ class HipAssetManager
         {
             import hip.filesystem.hipfs;
             auto ret = new Image(pathOrLocation);
-            ret.loadFromMemory(HipFS.read(pathOrLocation));
+            if(!ret.loadFromMemory(HipFS.read(pathOrLocation)))
+                return null;
             return ret;
         });
         return task;
@@ -348,10 +347,13 @@ class HipAssetManager
         {
             import hip.filesystem.hipfs;
             Image img = new Image(pathOrLocation);
-            img.loadFromMemory(HipFS.read(pathOrLocation));
+            if(!img.loadFromMemory(HipFS.read(pathOrLocation)))
+                return null;
             return toHeapSlice(img);
         }, (partialData)
         {
+            if(partialData is null)
+                return null;
             Image img = cast(Image)partialData.ptr;
             HipTexture ret = new HipTexture(img);
             freeGCMemory(partialData);
@@ -359,6 +361,110 @@ class HipAssetManager
         });
         return task;
     }
+
+    static HipAssetLoadTask loadFont(string fontPath, int fontSize = 48)
+    {
+        import hip.util.path;
+        switch(fontPath.extension)
+        {
+            case "bmfont":
+            case "fnt":
+                return loadBMFont(fontPath);
+            case "ttf":
+                return loadTTF(fontPath, fontSize);
+            default: return null;
+        }
+    }
+
+    private static HipAssetLoadTask loadTTF(string ttfPath, int fontSize)
+    {
+        import hip.font.ttf;
+        import hip.assets.font;
+        import hip.util.memory;
+
+        class IntermediaryData
+        {
+            Hip_TTF_Font font;
+            ubyte[] rawImage;
+            this(Hip_TTF_Font fnt, ubyte[] img){font = fnt; rawImage = img;}
+        }
+
+        HipAssetLoadTask task = loadComplex(ttfPath, (pathOrLocation)
+        {
+            import hip.filesystem.hipfs;
+            Hip_TTF_Font font = new Hip_TTF_Font(pathOrLocation, fontSize);
+            ubyte[] rawImage;
+            if(!font.partialLoad(HipFS.read(pathOrLocation), rawImage))
+                return null;
+            return toHeapSlice(new IntermediaryData(font, rawImage));
+        }, (partialData)
+        {
+            if(partialData is null)
+                return null;
+            scope(exit) freeGCMemory(partialData);
+
+            IntermediaryData i = (cast(IntermediaryData)partialData.ptr);
+            if(!i.font.loadTexture(i.rawImage))
+                return null;
+            HipFontAsset fnt = new HipFontAsset(i.font);
+            return fnt;
+        });
+        return task;
+    }
+
+    private static HipAssetLoadTask loadBMFont(string fontPath)
+    {
+        import hip.font.bmfont;
+        import hip.assets.font;
+        import hip.image;
+        import hip.util.memory;
+
+        class IntermediaryData
+        {
+            HipBitmapFont font;
+            HipImageImpl img;
+            this(HipBitmapFont fnt, HipImageImpl img){font = fnt; this.img = img;}
+        }
+
+            import std.stdio;
+        HipAssetLoadTask task = loadComplex(fontPath, (pathOrLocation)
+        {
+            import hip.filesystem.hipfs;
+            HipBitmapFont font = new HipBitmapFont();
+
+            if(!font.loadAtlas(HipFS.readText(fontPath), fontPath))
+            {
+                writeln("Could not read atlas");
+                return null;
+            }
+            HipImageImpl img = new HipImageImpl();
+            if(!img.loadFromMemory(HipFS.read(font.getTexturePath)))
+            {
+                writeln("Could not read image");
+                return null;
+            }
+            return toHeapSlice(new IntermediaryData(font, img));
+        }, (partialData)
+        {
+            if(partialData is null)
+            {
+                writeln("No partial data");
+                return null;
+            }
+            scope(exit) freeGCMemory(partialData);
+
+            IntermediaryData i = (cast(IntermediaryData)partialData.ptr);
+            if(!i.font.loadTexture(new HipTexture(i.img)))
+            {
+                writeln("Could not read texture");
+                return null;
+            }
+            HipFontAsset fnt = new HipFontAsset(i.font);
+            return fnt;
+        });
+        return task;
+    }
+    
 
    
     /** 

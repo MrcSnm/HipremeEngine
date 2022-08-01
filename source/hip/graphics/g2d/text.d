@@ -16,7 +16,7 @@ class HipText
     HipTextAlign alignh = HipTextAlign.LEFT;
     HipTextAlign alignv = HipTextAlign.TOP;
 
-    HipFont font;
+    IHipFont font;
 
     int x, y;
     ///Update dynamically based on the font, the text scale and the text length
@@ -72,9 +72,9 @@ class HipText
     {
         getAlign(x, y, linesWidths[lineNumber], height, alignh, alignv, displayX, displayY);
     }
-    public void setFont(HipFont font){this.font = font;}
+    public void setFont(IHipFont font){this.font = font;}
 
-    package void updateText(HipFont font)
+    package void updateText(IHipFont font)
     {
         HipTextStopConfig.parseText(_text, processedText, textConfig);
         font.calculateTextBounds(processedText, linesWidths, width, height);

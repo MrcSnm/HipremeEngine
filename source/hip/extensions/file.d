@@ -26,7 +26,7 @@ bool loadFromFile(HipBitmapFont font, string atlasPath)
     ubyte[] data;
     if(!HipFS.read(atlasPath, data))
         return false;
-    font.readAtlas(atlasPath);
+    font.loadAtlas(cast(string)data, atlasPath);
     font.readTexture();
     return true;
 }

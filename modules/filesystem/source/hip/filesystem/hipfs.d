@@ -205,6 +205,12 @@ class HipFileSystem
             output = cast(string)data;
         return ret;
     }
+    @ExportD public static string readText(string path)
+    {
+        string output;
+        readText(path, output);
+        return output;
+    }
 
     
 

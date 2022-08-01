@@ -35,10 +35,9 @@ class NinePatchSceneTest : Scene
 
     override void render()
     {
-        batch.begin();
         batch.draw(ninepatch.texture, ninepatch.getVertices());
         // foreach(sp; ninepatch.sprites)
             // batch.draw(sp);
-        batch.end();
+        batch.render();
     }
 }

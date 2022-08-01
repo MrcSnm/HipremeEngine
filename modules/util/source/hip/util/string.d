@@ -318,7 +318,7 @@ struct StringBuilder
 
 
 
-pure TString replaceAll(TString, TChar)(TString str, TChar what, TString replaceWith = "")
+pure TString replaceAll(TChar, TString = TChar[])(TString str, TChar what, TString replaceWith = "")
 {
     string ret;
     for(int i = 0; i < str.length; i++)
