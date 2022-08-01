@@ -32,7 +32,6 @@
 	"license": "proprietary",
 	"name": "image",
 	"versions": [
-		"BindSDL_Image",
 		"HipImageAPI"
 	]
 }

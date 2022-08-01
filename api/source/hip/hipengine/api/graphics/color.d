@@ -30,6 +30,11 @@ struct HipColor
         this.r=r;this.g=g;this.b=b;this.a=a;
     }
 
+    ubyte[4] unpackRGBA()
+    {
+        return [cast(ubyte)(r*255), cast(ubyte)(g*255), cast(ubyte)(b*255), cast(ubyte)(a*255)];
+    }
+
     static HipColor fromInt(int color)
     {
         return HipColor(

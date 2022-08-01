@@ -38,7 +38,7 @@ interface ITexture
 {
     void setWrapMode(TextureWrapMode mode);
     void setTextureFilter(TextureFilter min, TextureFilter mag);
-    bool load(IImage img);
+    bool load(in IImage img);
     void bind();
     void bind(int slot);
     void unbind();

@@ -276,6 +276,75 @@ mixin template ExportDFunctions(alias mod)
 }
 
 
+enum GetFunctionDeclareStatement(alias func, string funcName)()
+{
+    import std.traits:ReturnType;
+    import hip.util.string:join;
+    return [__traits(getFunctionAttributes, func)].join(" ") ~ " " ~ (ReturnType!func).stringof ~ " " ~ funcName ~ (getParams!func).stringof;
+}
+
+enum ForwardFunc(alias func, string funcName, string member)()
+{
+    import hip.util.string;
+    import std.traits:ParameterIdentifierTuple, ReturnType;
+
+    return GetFunctionDeclareStatement!(func, funcName) ~
+         "{" ~ (!is(ReturnType!func == void) ? "return ": "") ~ member ~ "." ~funcName ~ "(" ~ [ParameterIdentifierTuple!func].join(",") ~");}";
+}
+
+template hasOverload(T,string member, OverloadType)
+{
+    enum impl()
+    {
+        bool ret = false;
+        static foreach(ov; __traits(getVirtualMethods, T, member))
+            static if(is(typeof(ov) == OverloadType))
+                ret = true;
+        return ret;
+    }
+
+    enum hasOverload = impl;
+}
+
+
+enum isMethodImplemented(T, string member, FuncType)()
+{
+    bool ret;
+    static foreach(overload; __traits(getVirtualMethods, T, member))
+        if(is(typeof(overload) == FuncType) && !__traits(isAbstractFunction, overload))
+            ret = true;
+    return ret;
+}
+
+/**
+*   This function receives a string containing the member name which implements the interface I.   
+*   
+*   So, whenever something calls the interface.memberFunction, it will forward the call to that member by doing
+*   `void memberFunction(){member.memberFunction();}`, if the function is already defined, it will be ignored.
+*
+*   [Dev: Futurely, it should be changed to use `alias member` instead of getting its string.]
+*/
+enum ForwardInterface(string member, I)() if(is(I == interface))
+{
+    import hip.util.string:replaceAll;
+
+    return q{
+        import hip.util.reflection:isMethodImplemented, ForwardFunc;
+
+        static assert(is(typeof($member) : $I),
+            "For forwarding the interface, the member $member should be or implement $I"
+        );
+
+        static foreach(m; __traits(allMembers, $I)) 
+        static foreach(ov; __traits(getVirtualMethods, $I, m))
+        {
+            //Check for overloads here
+            static if(!isMethodImplemented!(typeof(this), m, typeof(ov)))
+                mixin(ForwardFunc!(ov, m, $member.stringof));
+        }
+    }.replaceAll("$I", I.stringof).replaceAll("$member", member);
+}
+
 /**
 * This mixin is able to generate runtime accessors. That means that by having a string, it is
 *possible to modify 

@@ -11,7 +11,8 @@
 				"filesystem": {"path": "../filesystem", "version": "*"},
 				"util": {"path": "../util", "version": "*"},
 				"image": {"path": "../image", "version": "*"},
-				"renderer": {"path": "../renderer", "version": "*"}
+				"renderer": {"path": "../renderer", "version": "*"},
+				"font": {"path": "../font", "version": "*"}
 			},
 			"name": "default"
 		},

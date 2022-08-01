@@ -10,6 +10,7 @@ mixin template HipFSExtend(T, string pathProperty = "")
     bool loadFromFile(T instance, string path)
     {
         ubyte[] data;
+        import std.stdio;
         if(!HipFS.read(path, data))
             return false;
         return instance.loadFromMemory(data);

@@ -57,7 +57,7 @@ class Hip_D3D11_Texture : ITexture
         updateSamplerState();
     }
 
-    public bool load(IImage image)
+    public bool load(in IImage image)
     {
         D3D11_TEXTURE2D_DESC desc;
         // desc.Format = getFromFromSurface(surface);
@@ -70,7 +70,7 @@ class Hip_D3D11_Texture : ITexture
 
         D3D11_SUBRESOURCE_DATA data;
 
-        void* pixels;
+        const(void)[] pixels;
         ushort Bpp = 0;
         int format;
 
@@ -102,7 +102,7 @@ class Hip_D3D11_Texture : ITexture
                 "Unsopported bytes per pixel for D3D11 Texture named '"~image.getName~"'");
         }
         desc.Format = format;
-        data.pSysMem = pixels;
+        data.pSysMem = cast(void*)pixels.ptr;
         data.SysMemPitch = image.getWidth*Bpp;
 
         _hip_d3d_device.CreateTexture2D(&desc, &data, &texture);
