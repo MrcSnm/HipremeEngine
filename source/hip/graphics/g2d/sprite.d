@@ -34,13 +34,14 @@ public import hip.hipengine.api.graphics.g2d.hipsprite;
 {
     HipTextureRegion texture;
     HipColor color;
-    float x, y;
-    float scaleX, scaleY;
-    float scrollX, scrollY;
-    float rotation;
-    float tilingX, tilingY;
+    float x = 0, y = 0;
+    float scrollX = 0, scrollY = 0;
+    float rotation = 0;
+    //Tiling == 1 for consistency, 0 the image would disappear
+    float tilingX = 1, tilingY = 1;
+    float scaleX = 1, scaleY = 1;
 
-    float u1, v1, u2, v2;
+    float u1 = 0, v1 = 0, u2 = 0, v2 = 0;
 
     ///Width of the texture region, (u2-u1) * texture.width
     uint width;
@@ -56,15 +57,7 @@ public import hip.hipengine.api.graphics.g2d.hipsprite;
 
     this()
     {
-        scrollX = 0; scrollY = 0;
-        u1 = 0; v1 = 0; u2 = 0; v2 = 0;
-        x = 0; y = 0;
-        //Tiling == 1 for consistency, 0 the image would disappear
-        tilingX = 1; tilingY = 1;
         vertices[] = 0;
-        rotation = 0;
-        scaleX = 1f;
-        scaleY = 1f;
         isDirty = true;
         setColor(HipColor.white);
     }
@@ -95,7 +88,9 @@ public import hip.hipengine.api.graphics.g2d.hipsprite;
     
     void setTexture(HipTexture texture)
     {
+        import std.stdio;
         this.texture = new HipTextureRegion(texture);
+        writeln("Loaded TEXTURE ", texture.width);
         width  = texture.width;
         height = texture.height;
         setRegion(this.texture.u1, this.texture.v1, this.texture.u2, this.texture.v2);

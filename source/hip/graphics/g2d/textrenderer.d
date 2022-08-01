@@ -109,7 +109,7 @@ class HipTextRenderer
 
 
     //Defers a call to updateText
-    void addText(int x, int y, dstring newText, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER)
+    void draw(int x, int y, dstring newText, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER)
     {
         HipText obj;
         if(poolActive <= textPool.length)

@@ -30,14 +30,12 @@ class FrameBufferTestScene : Scene
     override void render()
     {
         fb.bind();
-        batch.begin();
         batch.draw(sp);
-        batch.end();
+        batch.render();
         fb.unbind();
 
-        batch.begin();
         // batch.draw(new HipTextureRegion(fb.getTexture), 0, 0);
-        batch.end();
+        batch.render();
         // fb.currentShader.bind();
         // fb.currentShader.setFragmentVar("uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
         // fb.draw();  

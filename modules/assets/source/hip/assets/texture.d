@@ -21,33 +21,28 @@ import hip.assets.image;
 public import hip.util.data_structures:Array2D;
 public import hip.hipengine.api.renderer.texture;
 
+
+import renderer = hip.hiprenderer.texture;
+import hip.util.reflection;
+
 class HipTexture : HipAsset, ITexture
 {
-    Image img;
+    mixin(ForwardInterface!("textureImpl", ITexture));
+    IImage img;
     int width,height;
-    TextureFilter min, mag;
-    private static HipTexture pixelTexture;
+    public ITexture textureImpl;
+
     public static HipTexture getPixelTexture()
     {
+        static HipTexture pixelTexture;
         if(pixelTexture is null)
         {
             pixelTexture = new HipTexture();
-            pixelTexture.img = new Image("pixel");
-            ubyte[4] pixel = IHipImageDecoder.getPixel();
-            ubyte[] temp = pixel;
-            pixelTexture.img.pixels = cast(void*)temp.ptr;
-            pixelTexture.img.width = 1;
-            pixelTexture.img.height = 1;
-            pixelTexture.img.bytesPerPixel = 4;
+            pixelTexture.img = cast(IImage)Image.getPixelImage; //Cast the immutable away, promise it is immutable
             pixelTexture.textureImpl.load(pixelTexture.img);
         }
         return pixelTexture;
     }
-
-    /**
-    *   Make it available for implementors
-    */
-    package ITexture textureImpl;
     /**
     *   Initializes with the current renderer type
     */
@@ -58,77 +53,48 @@ class HipTexture : HipAsset, ITexture
         textureImpl = HipRenderer.getTextureImplementation();
     }
 
-
-    this(string path = "")
+    /**
+    *   Only use this style of initializing HipTexture if you wish to avoid HipAssetManager usage. 
+    *   This is not really recommended as instantiating as simply new HipTexture("path.png") won't add to the asset manager cache.
+    */
+    this(string path)
     {
         this();
-        if(path != "")
-            load(path);
+        load(path);
     }
+
     this(IImage image)
     {
         this();
         if(image !is null)
             load(image);
     }
-    /** Binds as the texture target on the renderer. */
-    public void bind()
-    {
-        textureImpl.bind();
-        HipRenderer.exitOnError();
-    }
-    ///Binds texture to the specific slot
-    public void bind(int slot)
-    {
-        textureImpl.bind(slot);
-        HipRenderer.exitOnError();
-    }
-    public void unbind()
-    {
-        textureImpl.unbind();
-        HipRenderer.exitOnError();
-    }
-    public void unbind(int slot)
-    {
-        textureImpl.unbind(slot);
-        HipRenderer.exitOnError();
-    }
-    public void setWrapMode(TextureWrapMode mode){textureImpl.setWrapMode(mode);}
-    public void setTextureFilter(TextureFilter min, TextureFilter mag)
-    {
-        this.min = min;
-        this.mag = mag;
-        textureImpl.setTextureFilter(min, mag);
-    }
-    
-    Rect getBounds(){return Rect(0,0,width,height);}
+
 
     /**
     *   Returns whether the load was successful
     */
     public bool load(string path)
     {
-        import hip.assetmanager;
-        HipAssetLoadTask task = HipAssetManager.loadImage(path);
-        task.await;
-        Image loadedImage = cast(Image)task.asset;
+        import hip.filesystem.hipfs;
+        ubyte[] buffer;
+        if(!HipFS.read(path, buffer))
+            return false;
 
+        Image loadedImage = new Image(path);
         return load(loadedImage);
     }
-    
-    bool load(IImage img)
+
+    bool load(in IImage img)
     {
-        this.img = cast(Image)img;
-        this.width = img.getWidth;
-        this.height = img.getHeight;
-        this.textureImpl.load(cast(Image)img);
-        return width != 0;
+        bool ret = textureImpl.load(img);
+        width = textureImpl.getWidth;
+        height = textureImpl.getHeight;
+        return ret;
     }
     
     override void onFinishLoading(){}
     override void onDispose(){}
-    bool load(){return bool.init; // TODO: implement
-    }
     
     bool isReady(){
         return bool.init; // TODO: implement
@@ -141,7 +107,7 @@ class HipTexture : HipAsset, ITexture
 
 
 
-class HipTextureRegion
+class HipTextureRegion : HipAsset
 {
     HipTexture texture;
     public float u1, v1, u2, v2;
@@ -150,17 +116,20 @@ class HipTextureRegion
 
     this(string texturePath, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
     {
+        super("TextureRegion");
         texture = new HipTexture(texturePath);
         setRegion(u1,v1,u2,v2);
     }
 
     this(HipTexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
     {
+        super("TextureRegion");
         this.texture = texture;
         setRegion(u1,v1,u2,v2);
     }
     this(HipTexture texture, uint u1, uint v1, uint u2, uint v2)
     {
+        super("TextureRegion");
         this.texture = texture;
         setRegion(texture.width, texture.height, u1,  v1, u2, v2);
     }
@@ -250,4 +219,19 @@ class HipTextureRegion
 
 
     public ref float[8] getVertices(){return vertices;}
+    
+    override void onFinishLoading(){}
+    
+    override void onDispose(){}
+    
+    bool load()
+    {
+        return bool.init; // TODO: implement
+    }
+    
+    bool isReady()
+    {
+        return bool.init; // TODO: implement
+    }
+    
 }

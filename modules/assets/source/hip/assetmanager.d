@@ -105,7 +105,6 @@ class HipAssetLoadTask : IHipAssetLoadTask
 
 
 
-import hip.hipengine.api.data.commons : HipDeferrableTypes;
 import hip.hipengine.api.data.font;
 mixin template HipDeferredLoadImpl()
 {
@@ -129,14 +128,14 @@ mixin template HipDeferredLoadImpl()
     pragma(msg, typeof(this).stringof, " ", hasType!"hip.assets.texture.HipTexture");
     static if(hasType!"hip.assets.texture.HipTexture" && hasMethod!(typeof(this), "setTexture", HipTexture))
     {
-        void setTexture(HipAssetLoadTask task)
+        final void setTexture(HipAssetLoadTask task)
         {
             deferredLoad!(HipTexture, "setTexture")(task);
         }
     }
     static if(hasType!"hip.hipengine.api.font.HipFont" && hasMethod!(typeof(this), "setFont", HipFont))
     {
-        void setFont(HipAssetLoadTask task)
+        final void setFont(HipAssetLoadTask task)
         {
             deferredLoad!(HipFont, "setFont")(task);
         }
@@ -218,7 +217,7 @@ class HipAssetManager
         
     }
 
-    static bool isLoading(){return workerPool.isIdle;}
+    static bool isLoading(){return !workerPool.isIdle;}
     static void awaitLoad(){workerPool.await;}
 
     static void awaitTask(HipAssetLoadTask task)

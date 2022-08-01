@@ -75,8 +75,7 @@ class AnimationTestScene : Scene
         v.setSize(800, 600);
         v.update();
         batch.camera.setScale(2, 2);
-        batch.begin();
         batch.draw(spr);
-        batch.end();
+        batch.render();
     }
 }

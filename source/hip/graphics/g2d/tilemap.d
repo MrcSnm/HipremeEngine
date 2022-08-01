@@ -91,10 +91,8 @@ class TileLayer
     float opacity;
 
 
-    void render(Tilemap map, HipSpriteBatch batch, bool shouldEndBatch = false)
+    void render(Tilemap map, HipSpriteBatch batch, bool shouldRenderBatch = false)
     {
-        if(!batch.hasBegun)
-            batch.begin();
         uint w = width, h = height;
         uint th = map.tileHeight, tw = map.tileWidth;
 
@@ -124,8 +122,8 @@ class TileLayer
                 batch.draw(lastTexture, _x, _y);
             }
 
-        if(shouldEndBatch)
-            batch.end();
+        if(shouldRenderBatch)
+            batch.render();
     }
     
 }

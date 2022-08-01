@@ -15,13 +15,13 @@ version(HipImageAPI):
 
 public interface IImageBase
 {
-    uint getWidth();
-    uint getHeight();
-    void* getPixels();
-    ubyte getBytesPerPixel();
-    final ushort getBitsPerPixel(){return getBytesPerPixel()*8;}
-    ubyte[] getPalette();
-    final bool hasPalette(){return getPalette.length != 0;}
+    uint getWidth() const;
+    uint getHeight() const;
+    const(void[]) getPixels() const;
+    ubyte getBytesPerPixel() const;
+    final ushort getBitsPerPixel() const {return getBytesPerPixel()*8;}
+    const(ubyte[]) getPalette() const;
+    final bool hasPalette() const {return getPalette.length != 0;}
 }
 
 public interface IHipImageDecoder : IImageBase
@@ -29,7 +29,7 @@ public interface IHipImageDecoder : IImageBase
     ///Use that for decoding from memory, returns wether decode was successful
     bool startDecoding(void[] data);
     
-    static ubyte[4] getPixel(){return cast(ubyte[4])[255,255,255,255];}
+    static const(ubyte[4]) getPixel(){return cast(ubyte[4])[255,255,255,255];}
     ///Dispose the pixels
     void dispose();
 }
@@ -44,11 +44,9 @@ public interface IHipAnyImageDecoder : IHipPNGDecoder, IHipJPEGDecoder, IHipWebP
 
 public interface IImage : IImageBase
 {
-    string getName();
+    string getName() const;
+    void loadRaw(in ubyte[] pixels, int width, int height, ubyte bytesPerPixel);
     bool loadFromMemory(ubyte[] data);
-    void* convertPalettizedToRGBA();
-    void* monochromeToRGBA();
-    bool load();
-    bool load(void function() onLoad);
-    bool isReady();
+    void[] convertPalettizedToRGBA() const;
+    void[] monochromeToRGBA() const;
 }

@@ -19,16 +19,37 @@ struct HipFontChar
     float normalizedX, normalizedY, normalizedWidth, normalizedHeight;
 }
 
-abstract class HipFont
+interface IHipFont
 {
-    ITexture texture;
-    HipFontChar[dchar] characters;
-    ///Saves the space width for the bitmap text process the ' '. If the original spaceWidth is == 0, it won't draw a quad
-    uint spaceWidth;
-    ///How much the line break will offset in Y the next char
-    uint lineBreakHeight;
-
     int getKerning(dchar current, dchar next);
+    void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int maxWidth, out int height);
+    HipFontChar[dchar] characters();
+    uint spaceWidth();
+    uint spaceWidth(uint newWidth);
+    uint lineBreakHeight();
+    uint lineBreakHeight(uint newHeight);
+}
+
+abstract class HipFont : IHipFont
+{
+    
+    abstract int getKerning(dchar current, dchar next);
+
+    ///Underlying GPU texture
+    ITexture texture;
+    HipFontChar[dchar] _characters;
+    ///Saves the space width for the bitmap text process the ' '. If the original spaceWidth is == 0, it won't draw a quad
+    uint _spaceWidth;
+    ///How much the line break will offset in Y the next char
+    uint _lineBreakHeight;
+
+    ///////Properties///////
+    final ref HipFontChar[dchar] characters(){return _characters;}
+    final uint spaceWidth(){return _spaceWidth;}
+    final uint spaceWidth(uint newWidth){return _spaceWidth = newWidth;}
+    final uint lineBreakHeight(){return _lineBreakHeight;}
+    final uint lineBreakHeight(uint newHeight){return _lineBreakHeight = newHeight;}
+
 
     final void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int maxWidth, out int height)
     {
