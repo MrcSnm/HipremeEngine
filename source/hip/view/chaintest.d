@@ -55,9 +55,8 @@ class ChainTestScene : Scene
         }
         endGeometry();
 
-        beginSprite();
         drawSprite(sp);
-        endSprite();
+        renderSprites();
 
         setGeometryColor(HipColor.yellow);
         for(int i = 1; i < cast(int)particles.length; i++)

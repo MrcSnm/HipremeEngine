@@ -49,7 +49,6 @@ class HipSpriteBatch
     index_t maxQuads;
     index_t[] indices;
     float[] vertices;
-    bool hasBegun;
 
     protected bool hasInitTextureSlots;
     protected Shader spriteBatchShader;
@@ -132,15 +131,6 @@ class HipSpriteBatch
             // fbTexRegion = new HipTextureRegion(fb.getTexture());
         }
         this.ppShader = s;
-    }
-
-    void begin()
-    {
-        if(hasBegun)
-            return;
-        if(ppShader !is null)
-            fb.bind();
-        hasBegun = true;
     }
 
     /**
@@ -311,10 +301,10 @@ class HipSpriteBatch
         return ret;
     }
 
-    void end()
+    void render()
     {
-        if(!hasBegun)
-            return;
+        if(ppShader !is null)
+            fb.bind();
         this.flush();
         if(ppShader !is null)
         {
@@ -322,7 +312,6 @@ class HipSpriteBatch
             draw(fbTexRegion, 0,0 );
             flush();
         }
-        hasBegun = false;
     }
 
     void flush()

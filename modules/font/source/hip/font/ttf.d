@@ -11,6 +11,15 @@ Distributed under the CC BY-4.0 License.
 module hip.font.ttf;
 import hip.hipengine.api.data.font;
 
+/**
+*   Check the unicode table: https://unicode-table.com/en/blocks/
+*   There is a lot of character ranges that defines a set of characters in a language, such as:
+*   0000—007F Basic Latin 
+*   0080—00FF Latin-1 Supplement 
+*   0100—017F Latin Extended-A 
+*   0180—024F Latin Extended-B 
+*   Maybe it will prove more useful than having a default charset
+*/
 class Hip_TTF_Font : HipFont
 {
     import arsd.ttf;
@@ -18,15 +27,19 @@ class Hip_TTF_Font : HipFont
     protected TtfFont font;
     string path;
     protected ubyte[] generatedTexture;
+    protected uint fontSize = 32;
     public static immutable dstring defaultCharset = " \náéíóúãñçabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\\|'\"`/*-+,.;_=!@#$%&()[]{}~^?";
 
-    this(string path)
+    this(string path, uint fontSize = 32)
     {
         this.path = path;
+        this.fontSize = fontSize;
     }
     bool loadFromMemory(in ubyte[] data)
     {
         font = TtfFont(data);
+        generateTexture(fontSize, defaultCharset);
+        loadTexture();
         return true;
     }
     override int getKerning(dchar current, dchar next)
@@ -43,24 +56,26 @@ class Hip_TTF_Font : HipFont
         return rch;
     }
 
-    public void loadTexture()
+
+
+    protected void loadTexture()
     {
         assert(generatedTexture !is null, "Must first generate a texture before uploading to GPU");
-        import hip.assets.image;
-        import hip.assets.texture;
-        Image img = new Image("Font");
+        import hip.image;
+        import hip.hiprenderer.texture;
+        import hip.error.handler;
+        HipImageImpl img = new HipImageImpl();
         img.loadRaw(generatedTexture, 800, 600, 1);
         HipTexture t = new HipTexture();
-        t.load(img);
 
+        ErrorHandler.assertErrorMessage(t.load(img), "Loading TTF", "Could not create texture for TTF");
         texture = t;
-
     }
 
     /**
     *   I'm no good packer. The image will be at least 2048xMinPowOf2
     */
-    ubyte[] generateTexture(int size, dstring charset = defaultCharset, uint maxWidth = 800, uint maxHeight = 600)
+    protected ubyte[] generateTexture(int size, dstring charset = defaultCharset, uint maxWidth = 800, uint maxHeight = 600)
     {
         import hip.util.memory;
         //First guarantee the big size
@@ -135,7 +150,6 @@ class Hip_TTF_Font : HipFont
 
             if(fontCh.height > largestHeightInRow)
                 largestHeightInRow = fontCh.height;
-
         }
         generatedTexture = texture;
         return texture;

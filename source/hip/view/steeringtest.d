@@ -66,9 +66,8 @@ class SteeringTest : Scene
     }
     override void render()
     {
-        b.begin();
         b.draw(main);
         b.draw(target);
-        b.end();
+        b.render();
     }
 }

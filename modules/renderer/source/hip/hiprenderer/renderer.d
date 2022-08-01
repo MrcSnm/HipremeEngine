@@ -382,6 +382,12 @@ class HipRenderer
         rendererImpl.clear();
         stats.drawCalls++;
     }
+    public static void clear(HipColor color)
+    {
+        auto rgba = color.unpackRGBA;
+        rendererImpl.clear(rgba[0], rgba[1], rgba[2], rgba[3]);
+        stats.drawCalls++;
+    }
     public static void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         rendererImpl.clear(r,g,b,a);

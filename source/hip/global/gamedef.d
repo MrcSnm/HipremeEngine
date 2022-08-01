@@ -47,11 +47,9 @@ bool loadDefaultAssets()
    import hip.font.ttf;
    import hip.assets.image;
 
-   auto font = new Hip_TTF_Font(HIP_DEFAULT_FONT);
+   auto font = new Hip_TTF_Font(HIP_DEFAULT_FONT, HIP_DEFAULT_FONT_SIZE);
    if(!font.loadFromMemory(cast(ubyte[])HipDefaultAssets.fontData))
       return false;
-   font.generateTexture(HIP_DEFAULT_FONT_SIZE);
-   font.loadTexture();
    HipDefaultAssets._font = font;
 
    auto image = new Image(HIP_DEFAULT_TEXTURE);

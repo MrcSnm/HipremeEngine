@@ -45,9 +45,8 @@ class SpriteTestScene : Scene
         // batch.begin();
         // batch.draw(sprite);
         // batch.end();
-        HipRenderer2D.beginSprite();
         HipRenderer2D.drawSprite(sprite);
-        HipRenderer2D.endSprite();
+        HipRenderer2D.renderSprites();
     }
 
     public override void onResize(uint width, uint height)

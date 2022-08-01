@@ -102,11 +102,11 @@ class Hip_GL3_Texture : ITexture
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
     }
 
-    bool load(IImage image)
+    bool load(in IImage image)
     {
         glGenTextures(1, &textureID);
         int mode;
-        void* pixels = image.getPixels;
+        const(void)[] pixels = image.getPixels;
         switch(image.getBytesPerPixel)
         {
             case 1:
@@ -130,7 +130,7 @@ class Hip_GL3_Texture : ITexture
                 ErrorHandler.assertExit(false, "GL Pixel format unsupported on image "~image.getName~", bytesPerPixel: "~to!string(image.getBytesPerPixel));
         }
         bind(currentSlot);
-        glTexImage2D(GL_TEXTURE_2D, 0, mode, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, pixels);
+        glTexImage2D(GL_TEXTURE_2D, 0, mode, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, pixels.ptr);
         width = image.getWidth;
         height = image.getHeight;
 

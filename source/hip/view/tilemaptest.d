@@ -44,10 +44,9 @@ class TilemapTestScene : Scene
     {
         import hip.util.time;
         HipRenderer.clear(255, 0, 0, 255);
-        batch.begin();
         batch.draw(sprite);
         // batch.draw(sprite2);
         // map.render(batch);
-        batch.end();
+        batch.render();
     }
 }

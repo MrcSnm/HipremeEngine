@@ -34,8 +34,7 @@ class TextureAtlasScene : Scene
     override void render()
     {
         batch.camera.setScale(4,4);
-        batch.begin();
         batch.draw(emerald.getCurrentFrame().region, 0, 0);
-        batch.end();
+        batch.render();
     }
 }
