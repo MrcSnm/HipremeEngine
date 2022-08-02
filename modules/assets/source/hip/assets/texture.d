@@ -19,7 +19,7 @@ import hip.hiprenderer.renderer;
 import hip.math.rect;
 import hip.assets.image;
 public import hip.util.data_structures:Array2D;
-public import hip.hipengine.api.renderer.texture;
+public import hip.api.renderer.texture;
 
 
 import renderer = hip.hiprenderer.texture;

@@ -12,7 +12,7 @@ module hip.hiprenderer.shader.shader;
 public import hip.hiprenderer.shader.shadervar :
 ShaderHint, ShaderVariablesLayout, ShaderVar;
 
-import hip.hipengine.api.renderer.texture;
+import hip.api.renderer.texture;
 import hip.math.matrix;
 import hip.error.handler;
 import hip.hiprenderer.shader.shadervar;

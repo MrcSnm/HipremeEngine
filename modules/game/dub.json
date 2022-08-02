@@ -1,0 +1,39 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"buildOptions": [
+		"debugMode",
+		"debugInfo",
+		"debugInfoC"
+	],
+	"configurations": [
+		{
+			"dependencies": {
+				"hipengine_api": {"path": "../../api", "version": "*"},
+				"util": {"path": "../util","version": "*"}
+			},
+			"name": "default",
+			"targetType": "library"
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
+		}
+	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"description": "HipremeEngine game module",
+	"importPaths": [
+		"source",
+		"../../api/source"
+	],
+	"license": "proprietary",
+	"name": "game",
+	"sourcePaths": [
+		"source"
+	],
+	"versions": [
+		"HipTimerAPI",
+		"HipTweenAPI"
+	]
+}

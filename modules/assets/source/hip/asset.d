@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.asset;
 
-import hip.hipengine.api.data.commons;
+import hip.api.data.commons;
 
 /** Controls the asset ids for every game asset
 *   0 is reserved for errors.

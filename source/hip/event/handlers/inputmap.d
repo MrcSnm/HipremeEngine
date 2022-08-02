@@ -3,7 +3,7 @@ import hip.util.reflection;
 import std.json;
 import hip.filesystem.hipfs;
 import hip.error.handler;
-import hip.hipengine.api.input;
+import hip.api.input;
 
 class HipInputMap : IHipInputMap
 {

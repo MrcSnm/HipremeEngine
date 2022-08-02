@@ -2,7 +2,7 @@ module hip.assets.font;
 import hip.asset;
 import hip.font.ttf;
 import hip.font.bmfont;
-public import hip.hipengine.api.data.font;
+public import hip.api.data.font;
 
 
 class HipFontAsset : HipAsset, IHipFont

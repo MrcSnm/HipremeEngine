@@ -14,7 +14,7 @@ import hip.hiprenderer.renderer;
 import hip.error.handler;
 import hip.util.conv:to;
 import hip.math.matrix;
-import hip.hipengine.api.graphics.color;
+import hip.api.graphics.color;
 
 enum ShaderHint : uint
 {

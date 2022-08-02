@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.filesystem.hipfs;
 
-public import hip.hipengine.api.filesystem.hipfs;
+public import hip.api.filesystem.hipfs;
 import hip.util.reflection;
 
 private pure bool validatePath(string initial, string toAppend)

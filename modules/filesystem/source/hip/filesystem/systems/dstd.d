@@ -1,5 +1,5 @@
 module hip.filesystem.systems.dstd;
-import hip.hipengine.api.filesystem.hipfs;
+import hip.api.filesystem.hipfs;
 
 version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteraction
 {

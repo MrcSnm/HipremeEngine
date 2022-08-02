@@ -15,7 +15,7 @@ version(HipSDLSound):
 import hip.util.reflection;
 import bindbc.sdl.bind.sdlaudio;
 import sdl_sound;
-public import hip.hipengine.api.data.audio;
+public import hip.api.data.audio;
 
 private enum SDL_AudioFormat[AudioFormat] _getFormatAsSDL_AudioFormat =
 [

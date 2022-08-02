@@ -1,8 +1,8 @@
 module hip.view.chaintest;
 import hip.hiprenderer.renderer;
-import hip.hipengine;
+import hip.api;
 import hip.console.log;
-import hip.hipengine.api.math.forces;
+import hip.api.math.forces;
 
 import hip.math.vector;
 import hip.math.quaternion;

@@ -1,5 +1,5 @@
 module hip.view.curvetest;
-import hip.hipengine;
+import hip.api;
 import hip.hiprenderer;
 import hip.console.log;
 import hip.view.scene;

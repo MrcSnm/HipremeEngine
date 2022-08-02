@@ -14,7 +14,7 @@ import std.math;
 import hip.assets.texture;
 import hip.assetmanager;
 import hip.debugging.gui;
-public import hip.hipengine.api.graphics.g2d.hipsprite;
+public import hip.api.graphics.g2d.hipsprite;
 
 @InterfaceImplementation(function(ref void* data)
 {

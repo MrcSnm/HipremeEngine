@@ -15,7 +15,7 @@ import hip.hipaudio.audio;
 // import hip.hipaudio.backend.openal.source;
 import hip.audio_decoding.audio;
 import hip.view.scene;
-import hip.util.tween;
+import hip.game.tween;
 
 class Test
 {
