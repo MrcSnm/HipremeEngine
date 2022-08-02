@@ -3,11 +3,13 @@ module hip.api.graphics.g2d.binding;
 import hip.api.graphics.color;
 import hip.api.graphics.g2d.hipsprite;
 import hip.api.data.font;
+import hip.api.graphics.text;
 
 void initG2D()
 {
     version(Script)
     {
+        import hip.api.internal;
         loadSymbols!
         (
             beginSprite,

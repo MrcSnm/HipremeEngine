@@ -49,6 +49,7 @@ else
     public import hip.api.input.button;
     public import hip.api.input.gamepad;
     public import hip.api.input.mouse;
+    public import hip.api.input.inputmap;
     extern(System)
     {
         //Keyboard functions
