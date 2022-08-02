@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.math.rect;
 
 version(Have_hipengine_api)
-    public import hip.hipengine.api.math.rect;
+    public import hip.api.math.rect;
 else
 {
 

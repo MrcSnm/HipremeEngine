@@ -12,7 +12,7 @@ module hip.hipaudio.audiosource;
 import bindbc.openal;
 import hip.hipaudio.audioclip : HipAudioClip;
 import hip.hipaudio.audio;
-public import hip.hipengine.api.audio.audiosource;
+public import hip.api.audio.audiosource;
 
 import hip.math.vector;
 import hip.debugging.gui;

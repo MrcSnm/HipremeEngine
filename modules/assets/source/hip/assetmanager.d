@@ -106,7 +106,7 @@ class HipAssetLoadTask : IHipAssetLoadTask
 
 
 
-import hip.hipengine.api.data.font;
+import hip.api.data.font;
 mixin template HipDeferredLoadImpl()
 {
     import hip.util.reflection;
@@ -132,7 +132,7 @@ mixin template HipDeferredLoadImpl()
             deferredLoad!(HipTexture, "setTexture")(task);
         }
     }
-    static if(hasType!"hip.hipengine.api.data.font.IHipFont" && hasMethod!(typeof(this), "setFont", IHipFont))
+    static if(hasType!"hip.api.data.font.IHipFont" && hasMethod!(typeof(this), "setFont", IHipFont))
     {
         final void setFont(HipAssetLoadTask task)
         {
@@ -371,6 +371,7 @@ class HipAssetManager
             case "fnt":
                 return loadBMFont(fontPath);
             case "ttf":
+            case "otf":
                 return loadTTF(fontPath, fontSize);
             default: return null;
         }

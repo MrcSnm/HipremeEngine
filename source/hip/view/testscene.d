@@ -14,7 +14,7 @@ import hip.graphics.g2d.geometrybatch;
 import hip.hiprenderer.shader;
 import hip.hiprenderer;
 import hip.hiprenderer.viewport;
-import hip.hipengine.api.graphics.color;
+import hip.api.graphics.color;
 import std.math;
 import hip.view.scene;
 

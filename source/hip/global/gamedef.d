@@ -12,8 +12,8 @@ module hip.global.gamedef;
 import hip.systems.game;
 import hip.event.handlers.inputmap;
 import hip.config.opts;
-import hip.hipengine.api.data.font;
-import hip.hipengine.api.data.image;
+import hip.api.data.font;
+import hip.api.data.image;
 
 //Default assets
 struct HipDefaultAssets

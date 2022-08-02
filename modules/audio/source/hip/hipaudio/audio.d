@@ -13,7 +13,7 @@ module hip.hipaudio.audio;
 public import hip.hipaudio.audioclip;
 public import hip.hipaudio.audiosource;
 public import hip.audio_decoding.config;
-public import hip.hipengine.api.audio;
+public import hip.api.audio;
 
 //Backends
 import hip.hipaudio.backend.openal.player;

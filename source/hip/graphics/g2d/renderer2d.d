@@ -4,13 +4,13 @@ import hip.graphics.g2d.geometrybatch;
 import hip.graphics.orthocamera;
 import hip.hiprenderer;
 import hip.bind.interpreters;
-public import hip.hipengine.api.graphics.color;
-public import hip.hipengine.api.graphics.g2d.hipsprite;
-public import hip.hipengine.api.math;
+public import hip.api.graphics.color;
+public import hip.api.graphics.g2d.hipsprite;
+public import hip.api.math;
 public import hip.graphics.g2d.sprite;
 public import hip.graphics.g2d.textrenderer;
 
-public import hip.hipengine.api.data.font;
+public import hip.api.data.font;
 
 private __gshared
 {

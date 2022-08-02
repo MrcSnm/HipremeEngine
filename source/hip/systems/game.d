@@ -10,12 +10,15 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.systems.game;
-import hip.hiprenderer.renderer;
 import hip.global.gamedef;
-private import hip.event.dispatcher;
-private import hip.event.handlers.keyboard;
+
 import hip.view;
+import hip.game.scheduler;
+import hip.event.dispatcher;
+import hip.event.handlers.keyboard;
 import hip.windowing.events;
+
+import hip.hiprenderer.renderer;
 import hip.graphics.g2d.renderer2d;
 
 
@@ -58,6 +61,7 @@ class GameSystem
      */
     EventDispatcher dispatcher;
     KeyboardHandler keyboard;
+    HipGameScheduler scheduler;
     AScene[] scenes;
     string projectDir;
     protected static AScene externalScene;
@@ -75,6 +79,7 @@ class GameSystem
     this(float targetFPS)
     {
         this.targetFPS = targetFPS;
+        scheduler = new HipGameScheduler();
         keyboard = new KeyboardHandler();
         keyboard.addKeyListener(HipKey.ESCAPE, new class HipButton
         {
@@ -238,7 +243,9 @@ class GameSystem
     bool update(float deltaTime)
     {
         import hip.assetmanager;
+        scheduler.update(deltaTime);
         HipAssetManager.update();
+        
         version(LoadScript)
         {
             if(watcher.update())

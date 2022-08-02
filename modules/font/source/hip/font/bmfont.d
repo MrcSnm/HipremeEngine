@@ -1,6 +1,6 @@
 module hip.font.bmfont;
-import hip.hipengine.api.data.font;
-import hip.hipengine.api.renderer.texture;
+import hip.api.data.font;
+import hip.api.renderer.texture;
 import hip.error.handler;
 
 

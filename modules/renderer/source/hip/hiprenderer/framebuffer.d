@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.hiprenderer.framebuffer;
 import hip.hiprenderer.shader;
 import hip.hiprenderer.renderer;
-import hip.hipengine.api.renderer.texture;
+import hip.api.renderer.texture;
 
 
 

@@ -13,7 +13,7 @@ module hip.hiprenderer.backend.d3d.d3dshader;
 version(Windows):
 import hip.config.opts;
 import hip.hiprenderer.renderer;
-import hip.hipengine.api.renderer.texture;
+import hip.api.renderer.texture;
 import hip.hiprenderer.shader;
 import hip.hiprenderer.backend.d3d.d3drenderer;
 import hip.util.system:getWindowsErrorMessage;

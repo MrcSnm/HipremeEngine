@@ -18,7 +18,7 @@ import hip.math.matrix;
 import hip.util.format;
 import hip.math.utils;
 import hip.math.vector;
-public import hip.hipengine.api.graphics.color;
+public import hip.api.graphics.color;
 
 
 /**
