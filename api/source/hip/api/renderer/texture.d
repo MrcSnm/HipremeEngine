@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 
 module hip.api.renderer.texture;
 
-version(HipRendererAPI):
+version(HipGraphicsAPI):
 public import hip.api.data.image;
 public import hip.api.graphics.color;
 
