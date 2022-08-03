@@ -93,15 +93,14 @@ mixin template HipEngineMain(alias StartScene)
 			import core.runtime;
 			rt_init();
 			initializeHip();
-			HipInput.initInput();
-			initMath();
 			initConsole();
+			initMath();
 			initG2D();
-			
+			HipAudio.initAudio();
+			HipInput.initInput();
 			import hip.api.game.binding;
 			initGameAPI();
-
-			HipAudio.initAudio();
+			
 			return _exportedScene = new StartScene();
 		}
 		export extern(System) void HipremeEngineGameDestroy(){if(_exportedScene)destroy(_exportedScene);_exportedScene=null;}

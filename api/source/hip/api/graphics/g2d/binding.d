@@ -5,30 +5,13 @@ import hip.api.graphics.g2d.hipsprite;
 import hip.api.data.font;
 import hip.api.graphics.text;
 
+alias thisModule = __traits(parent, {});
 void initG2D()
 {
     version(Script)
     {
         import hip.api.internal;
-        loadSymbols!
-        (
-            renderSprites,
-            renderGeometries,
-            renderTexts,
-            setGeometryColor,
-            drawPixel,
-            drawRectangle,
-            drawTriangle,
-            fillRectangle,
-            fillTriangle,
-            drawLine,
-            drawQuadraticBezierLine,
-            drawSprite,
-            setFont,
-            drawText,
-            newSprite,
-            destroySprite
-        );
+        loadModuleFunctionPointers!thisModule;
     }
 }
 
@@ -63,7 +46,7 @@ version(Script)
         ///Sets the font for the next drawText commands
         void function (HipFont font) setFont;
         ///Draws a text using the last font set
-        void function(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.LEFT, HipTextAlign alignV = HipTextAlign.CENTER) drawText;
+        void function(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER) drawText;
         ///Gets a sprite instance
         IHipSprite function(string texturePath) newSprite;
         ///Destroy a sprite instance
