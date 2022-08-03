@@ -53,6 +53,8 @@ else
 	alias _loadSymbol = dlsym;
 }
 
+
+enum bool isFunctionPointer(alias T) = is(typeof(*T) == function);
 ///Loads the symbol directly inside 's'
 string loadSymbol(string s)
 {
@@ -66,10 +68,23 @@ string loadSymbol(string s)
 *	The problem is not yet solved, but it is a lot better than doing several
 *	template instantiations
 */
-void loadSymbols(Ts...)()
+enum loadSymbols(Ts...)()
 {
 	static foreach(s; Ts)
 		s = cast(typeof(s))_loadSymbol(_dll, s.stringof);
+}
+
+/**
+*	This function will load all function pointers defined in the module passed.
+*/
+enum loadModuleFunctionPointers(alias currentModule)()
+{
+	static foreach(member; __traits(allMembers, currentModule))
+	{{
+		alias f = __traits(getMember, currentModule, member);
+		static if(isFunctionPointer!(f))
+			f = cast(typeof(f))_loadSymbol(_dll, member);
+	}}
 }
 
 template loadSymbolsForStaticClass(string staticClassPath, Ts...)

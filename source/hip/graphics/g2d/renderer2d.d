@@ -87,6 +87,7 @@ export extern(C):
 
 void renderSprites(){spBatch.render;}
 void renderGeometries(){geoBatch.flush;}
+void renderTexts(){dbgText.render();}
 void setGeometryColor(HipColor color){geoBatch.setColor(color);}
 void drawPixel(int x, int y){geoBatch.drawPixel(x, y);}
 void drawRectangle(int x, int y, int w, int h){geoBatch.drawRectangle(x,y,w,h);}
@@ -103,17 +104,11 @@ void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int
 void drawSprite(IHipSprite sprite){spBatch.draw(cast(HipSprite)sprite);}
 
 void setFont(IHipFont font){dbgText.setFont(font);}
-void drawText(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER)
+void drawText(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.LEFT, HipTextAlign alignV = HipTextAlign.CENTER)
 {
     dbgText.setColor(color);
     dbgText.draw(x, y, text, alignH, alignV);
 }
-
-void renderTexts()
-{
-    dbgText.render();
-}
-
 
 private __gshared IHipSprite[] _sprites;
 IHipSprite newSprite(string texturePath)
