@@ -72,6 +72,6 @@ class HotloadableDLL
         if(lib != null)
             dynamicLibraryRelease(lib);
         if(tempPath)
-            HipFS.remove(tempPath);
+            HipFS.absoluteRemove(tempPath);
     }
 }

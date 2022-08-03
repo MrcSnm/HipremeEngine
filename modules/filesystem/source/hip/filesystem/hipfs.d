@@ -240,6 +240,7 @@ class HipFileSystem
             return false;
         return fs.remove(getPath(path));
     }
+
     @ExportD public static string getcwd()
     {
         return getPath("");
@@ -248,6 +249,7 @@ class HipFileSystem
     @ExportD public static bool absoluteExists(string path){return fs.exists(path);}
     @ExportD public static bool absoluteIsDir(string path){return fs.isDir(path);}
     @ExportD public static bool absoluteIsFile(string path){return fs.isFile(path);}
+    @ExportD public static bool absoluteRemove(string path){return fs.remove(path);}
 
     @ExportD public static bool absoluteRead(string path, out void[] output)
     {

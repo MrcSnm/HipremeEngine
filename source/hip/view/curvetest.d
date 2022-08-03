@@ -46,7 +46,6 @@ class CurveScene : Scene
         
         ctP = HipInput.getMousePosition();
         
-        beginGeometry();
 
         fillRectangle(0, 0, 40, 40);
         // fillRectangle(0, 400, 8, 8);
@@ -56,6 +55,6 @@ class CurveScene : Scene
         // drawQuadraticBezierLine(0, 400, cast(int)ctP.x, cast(int)ctP.y, 800, 400, 50);
 
 
-        endGeometry();
+        renderGeometries();
     }
 }

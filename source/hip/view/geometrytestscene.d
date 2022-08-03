@@ -21,7 +21,7 @@ class GeometryTestScene : Scene
     {
         setGeometryColor(HipColor.white);
         fillRectangle(0, 0, 200, 200);
-        endGeometry();
+        renderGeometries();
 
         
     }

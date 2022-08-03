@@ -43,8 +43,8 @@ void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewpor
         if(entry != HipInterpreterEntry.init)
         {
             sendInterpreterFunc!(renderSprites)(entry.intepreter);
-            sendInterpreterFunc!(beginGeometry)(entry.intepreter);
-            sendInterpreterFunc!(endGeometry)(entry.intepreter);
+            sendInterpreterFunc!(renderGeometries)(entry.intepreter);
+            sendInterpreterFunc!(renderTexts)(entry.intepreter);
             sendInterpreterFunc!(setGeometryColor)(entry.intepreter);
             sendInterpreterFunc!(drawPixel)(entry.intepreter);
             sendInterpreterFunc!(drawRectangle)(entry.intepreter);
@@ -55,6 +55,7 @@ void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewpor
             sendInterpreterFunc!(fillTriangle)(entry.intepreter);
             sendInterpreterFunc!(drawLine)(entry.intepreter);
             sendInterpreterFunc!(drawQuadraticBezierLine)(entry.intepreter);
+            // sendInterpreterFunc!(drawText)(entry.intepreter); not supported yet
             sendInterpreterFunc!(drawSprite)(entry.intepreter);
             sendInterpreterFunc!(newSprite)(entry.intepreter);
             sendInterpreterFunc!(destroySprite)(entry.intepreter);
@@ -85,8 +86,7 @@ void resizeRenderer2D(uint width, uint height)
 export extern(C):
 
 void renderSprites(){spBatch.render;}
-void beginGeometry(){geoBatch.flush;}
-void endGeometry(){geoBatch.flush;}
+void renderGeometries(){geoBatch.flush;}
 void setGeometryColor(HipColor color){geoBatch.setColor(color);}
 void drawPixel(int x, int y){geoBatch.drawPixel(x, y);}
 void drawRectangle(int x, int y, int w, int h){geoBatch.drawRectangle(x,y,w,h);}
@@ -105,13 +105,15 @@ void drawSprite(IHipSprite sprite){spBatch.draw(cast(HipSprite)sprite);}
 void setFont(IHipFont font){dbgText.setFont(font);}
 void drawText(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER)
 {
-    // dbgText.x = x;
-    // dbgText.y = y;
-    // dbgText.alignh = alignH;
-    // dbgText.alignv = alignV;
-    // dbgText.setText(text);
-    // dbgText.render();
+    dbgText.setColor(color);
+    dbgText.draw(x, y, text, alignH, alignV);
 }
+
+void renderTexts()
+{
+    dbgText.render();
+}
+
 
 private __gshared IHipSprite[] _sprites;
 IHipSprite newSprite(string texturePath)
