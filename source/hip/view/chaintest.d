@@ -53,7 +53,7 @@ class ChainTestScene : Scene
                 cast(int)p.position.y,
             5, 5);
         }
-        endGeometry();
+        renderGeometries();
 
         drawSprite(sp);
         renderSprites();
@@ -68,7 +68,7 @@ class ChainTestScene : Scene
                 cast(int)particles[i].position.y
             );
         }
-        endGeometry();
+        renderGeometries();
 
         
     }
