@@ -38,15 +38,14 @@ public import hip.api.graphics.g2d.renderer2d;
 public import hip.api.view;
 
 
+//Assets
+public import hip.api.assets;
 //Audio
 public import hip.api.audio;
-
 //Math
 public import hip.api.math;
-
-
+//Game
 public import hip.api.game.timer;
-
 //Input
 
 version(Have_hipreme_engine)
@@ -98,6 +97,7 @@ mixin template HipEngineMain(alias StartScene)
 			initG2D();
 			HipAudio.initAudio();
 			HipInput.initInput();
+			HipAssetManager.initAssetManager();
 			import hip.api.game.binding;
 			initGameAPI();
 			

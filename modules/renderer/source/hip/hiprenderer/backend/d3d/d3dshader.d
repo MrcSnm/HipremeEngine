@@ -454,7 +454,7 @@ class Hip_D3D11_ShaderImpl : IShader
         }
     }
 
-    void initTextureSlots(ref ShaderProgram prog, ITexture texture, string varName, int slotsCount)
+    void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount)
     {
         for(int i = 0; i < slotsCount; i++)
             texture.bind(i);

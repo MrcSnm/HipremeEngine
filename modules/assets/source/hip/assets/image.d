@@ -19,7 +19,7 @@ public class Image : HipAsset, IImage
     this(in string path)
     {
         super("Image_"~path);
-        typeID = assetTypeID!Image;
+        _typeID = assetTypeID!Image;
         initialize(path);
     }
     private void initialize(string path)

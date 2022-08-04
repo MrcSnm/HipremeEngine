@@ -44,7 +44,10 @@ version(Script)
         ///Draws the target sprite instance
         void function(IHipSprite sprite) drawSprite;
         ///Sets the font for the next drawText commands
-        void function (HipFont font) setFont;
+        package void function (HipFont font) _setFont;
+        package void function (typeof(null) _) setFontNull;
+        ///Sets the font using HipAssetManager.loadFont
+        package void function (IHipAssetLoadTask font) setFontDeferred;
         ///Draws a text using the last font set
         void function(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER) drawText;
         ///Gets a sprite instance

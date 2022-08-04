@@ -14,7 +14,7 @@ class HipFontAsset : HipAsset, IHipFont
     this(IHipFont font)
     {
         super("Font");
-        this.typeID = assetTypeID!HipFontAsset;
+        this._typeID = assetTypeID!HipFontAsset;
         this.font = font;
     }
     override void onFinishLoading()

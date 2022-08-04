@@ -22,7 +22,7 @@ struct HipDefaultAssets
    private __gshared HipFont _font;
 
    static const(IImage) texture(){return cast(const)_texture;}
-   static const(HipFont) font(){return cast(const)_font;}
+   static const(IHipFont) font(){return cast(const)_font;}
 
    immutable static string textureData = import(HIP_DEFAULT_TEXTURE);
    immutable static string fontData = import(HIP_DEFAULT_FONT);

@@ -241,7 +241,7 @@ class HipRenderer
     public static HipRendererType getRendererType(){return rendererType;}
     public static HipRendererConfig getCurrentConfig(){return currentConfig;}
     public static int getMaxSupportedShaderTextures(){return rendererImpl.queryMaxSupportedPixelShaderTextures();}
-    public static ITexture getTextureImplementation()
+    public static IHipTexture getTextureImplementation()
     {
         switch(HipRenderer.getRendererType())
         {
