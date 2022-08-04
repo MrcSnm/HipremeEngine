@@ -86,7 +86,7 @@ public import hip.api.graphics.g2d.hipsprite;
     }
     
     
-    void setTexture(ITexture texture)
+    void setTexture(IHipTexture texture)
     {
         this.texture = new HipTextureRegion(texture);
         width  = texture.getWidth;

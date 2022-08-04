@@ -83,7 +83,7 @@ class Hip_GL3_FrameBuffer : IHipFrameBuffer
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    ITexture getTexture(){return retTexture;}
+    IHipTexture getTexture(){return retTexture;}
 
     void draw()
     {

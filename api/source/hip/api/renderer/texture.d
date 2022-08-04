@@ -34,7 +34,8 @@ enum TextureFilter
     NEAREST_MIPMAP_LINEAR,
     LINEAR_MIPMAP_LINEAR
 }
-interface ITexture
+
+interface IHipTexture
 {
     void setWrapMode(TextureWrapMode mode);
     void setTextureFilter(TextureFilter min, TextureFilter mag);

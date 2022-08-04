@@ -16,7 +16,7 @@ import hip.image;
 public import hip.util.data_structures:Array2D;
 public import hip.api.renderer.texture;
 
-class HipTexture : ITexture
+class HipTexture : IHipTexture
 {
     IImage img;
     int width,height;
@@ -36,7 +36,7 @@ class HipTexture : ITexture
     /**
     *   Make it available for implementors
     */
-    package ITexture textureImpl;
+    package IHipTexture textureImpl;
     /**
     *   Initializes with the current renderer type
     */

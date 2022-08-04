@@ -331,7 +331,7 @@ class HipBitmapFont : HipFont
         return true;
     }
 
-    bool loadTexture(ITexture t)
+    bool loadTexture(IHipTexture t)
     {
         texture = t;
         int width = t.getWidth;

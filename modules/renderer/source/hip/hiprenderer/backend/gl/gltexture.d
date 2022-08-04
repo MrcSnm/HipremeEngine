@@ -15,7 +15,7 @@ import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
 import hip.image;
 
-class Hip_GL3_Texture : ITexture
+class Hip_GL3_Texture : IHipTexture
 {
     GLuint textureID = 0;
     int width, height;

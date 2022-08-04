@@ -40,7 +40,10 @@ class Hip_TTF_Font : HipFont
     */
     bool loadFromMemory(in ubyte[] data)
     {
-        font = TtfFont(data);
+        if(data == null || data.length == 0)
+            return false;
+        try{font = TtfFont(data);}
+        catch(Exception e){return false;}
         return loadTexture(
             generateImage(fontSize, defaultCharset)
         );

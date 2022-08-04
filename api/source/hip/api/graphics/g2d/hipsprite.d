@@ -14,9 +14,12 @@ module hip.api.graphics.g2d.hipsprite;
 version(HipGraphicsAPI):
 
 public import hip.api.graphics.color;
+public import hip.api.renderer.texture;
+public import hip.api.data.commons;
 
-interface IHipSprite
+interface IHipSprite : IHipDeferrableTexture
 {
+    void setTexture(IHipTexture texture);
     void setPosition(float x, float y);
     void setScale(float x, float y);
     void setColor(HipColor color);

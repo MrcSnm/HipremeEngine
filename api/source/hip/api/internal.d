@@ -77,13 +77,19 @@ enum loadSymbols(Ts...)()
 /**
 *	This function will load all function pointers defined in the module passed.
 */
-enum loadModuleFunctionPointers(alias currentModule)()
+enum loadModuleFunctionPointers(alias currentModule, string exportedClass = "")()
 {
+	static if(exportedClass != "")
+		enum prefix = exportedClass~"_";
 	static foreach(member; __traits(allMembers, currentModule))
 	{{
+		string targetName = member;
+		static if(exportedClass != "")
+			targetName = prefix~targetName~'\0';
 		alias f = __traits(getMember, currentModule, member);
 		static if(isFunctionPointer!(f))
-			f = cast(typeof(f))_loadSymbol(_dll, member);
+
+			f = cast(typeof(f))_loadSymbol(_dll, targetName.ptr);
 	}}
 }
 

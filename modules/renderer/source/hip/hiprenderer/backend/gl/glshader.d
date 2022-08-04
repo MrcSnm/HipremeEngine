@@ -417,7 +417,7 @@ class Hip_GL_ShaderImpl : IShader
                 
     }
 
-    void initTextureSlots(ref ShaderProgram prog, ITexture texture, string varName, int slotsCount)
+    void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount)
     {
         setCurrentShader(prog);
         int varID = getId(prog, varName);

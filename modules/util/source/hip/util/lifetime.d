@@ -63,10 +63,15 @@ export extern(C) void hipDestroy(Object reference, int target = HipExportedTarge
     }
 }
 
+/** 
+ * Guarantees that the reference won't be destroyed after some time by saving the object in the exportedSharedUserData array.
+ */
 Object hipSaveRef(Object reference, int target = HipExportedTargets.nativeScript_D)
 {
     for(uint i = 0; i < _hipExportedSharedUserData.length; i++)
     {
+        if(i >= _hipExportedSharedUserData[target].length)
+            break;
         if(_hipExportedSharedUserData[target][i] is null)
         {
             _hipExportedSharedUserData[target][i] = reference;
