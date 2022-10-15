@@ -1,5 +1,5 @@
 module hip.filesystem.systems.uwp;
-import hip.hipengine.api.filesystem.hipfs;
+import hip.api.filesystem.hipfs;
 
 version(UWP)
 {

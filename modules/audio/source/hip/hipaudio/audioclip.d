@@ -15,7 +15,7 @@ import hip.error.handler;
 import hip.audio_decoding.audio;
 import hip.hipaudio.audio;
 import hip.hipaudio.audiosource;
-public import hip.hipengine.api.audio.audioclip;
+public import hip.api.audio.audioclip;
 
 ///Wraps an audio buffer by saving the specific API inside 
 struct HipAudioBufferWrapper

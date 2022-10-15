@@ -1,7 +1,7 @@
 module hip.audio_decoding.audio;
 import hip.audio_decoding.config;
-public import hip.hipengine.api.audio;
-public import hip.hipengine.api.data.audio;
+public import hip.api.audio;
+public import hip.api.data.audio;
 
 
 

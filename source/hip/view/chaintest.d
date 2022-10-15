@@ -1,8 +1,8 @@
 module hip.view.chaintest;
 import hip.hiprenderer.renderer;
-import hip.hipengine;
+import hip.api;
 import hip.console.log;
-import hip.hipengine.api.math.forces;
+import hip.api.math.forces;
 
 import hip.math.vector;
 import hip.math.quaternion;
@@ -53,7 +53,7 @@ class ChainTestScene : Scene
                 cast(int)p.position.y,
             5, 5);
         }
-        endGeometry();
+        renderGeometries();
 
         drawSprite(sp);
         renderSprites();
@@ -68,7 +68,7 @@ class ChainTestScene : Scene
                 cast(int)particles[i].position.y
             );
         }
-        endGeometry();
+        renderGeometries();
 
         
     }

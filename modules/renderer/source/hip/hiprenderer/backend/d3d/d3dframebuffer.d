@@ -95,7 +95,7 @@ class Hip_D3D11_FrameBuffer : IHipFrameBuffer
         _hip_d3d_context.ClearRenderTargetView(renderTargetView, color.ptr);
     }
 
-    ITexture getTexture(){return retTexture;}
+    IHipTexture getTexture(){return retTexture;}
     void draw(){}
     void dispose()
     {

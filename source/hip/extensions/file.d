@@ -26,9 +26,12 @@ bool loadFromFile(HipBitmapFont font, string atlasPath)
     ubyte[] data;
     if(!HipFS.read(atlasPath, data))
         return false;
-    font.loadAtlas(cast(string)data, atlasPath);
-    font.readTexture();
-    return true;
+    if(!font.loadAtlas(cast(string)data, atlasPath))
+        return false;
+    Image img = new Image(font.getTexturePath);
+    if(!img.loadFromMemory(HipFS.read(font.getTexturePath)))
+        return false;
+    return font.loadTexture(new HipTexture(img));
 }
 
 import hip.font.ttf;

@@ -15,6 +15,8 @@ import hip.filesystem.hipfs;
 import hip.error.handler;
 import hip.global.gamedef;
 import hip.hipaudio.audio;
+import hip.assetmanager;
+
 version(Android)
 {
 	import hip.jni.helper.androidlog;
@@ -114,7 +116,10 @@ static void initEngine(bool audio3D = false)
 	{
 		import std.file:getcwd;
 		Console.install();
-		HipFS.install(getcwd()~"/assets");
+		if(projectToLoad != "")
+			HipFS.install(projectToLoad~"/assets");
+		else
+			HipFS.install(getcwd()~"/assets");
 	}
 	version(BindSDL_Static){}
 	else
@@ -340,3 +345,4 @@ version(UWP)
 
 mixin ExportMathAPI;
 mixin ExportDFunctions!(hip.hipaudio.audio);
+mixin ExportDFunctions!(hip.assetmanager);

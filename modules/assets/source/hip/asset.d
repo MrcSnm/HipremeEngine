@@ -10,21 +10,21 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.asset;
 
-import hip.hipengine.api.data.commons;
+import hip.api.data.commons;
 
 /** Controls the asset ids for every game asset
 *   0 is reserved for errors.
 */
 private __gshared uint currentAssetID = 0;
 
-abstract class HipAsset : ILoadable
+abstract class HipAsset : ILoadable, IHipAsset
 {
     /** Use it to insert into an asset pool, alias*/
-    string name;
+    protected string _name;
     /**Currently not in use */
-    uint assetID;
+    protected uint _assetID;
     /** Usage inside asset manager */
-    uint typeID;
+    protected uint _typeID;
 
     ///When it started loading
     float startLoadingTimestamp;
@@ -34,8 +34,13 @@ abstract class HipAsset : ILoadable
     this(string assetName)
     {
         this.name = assetName;
-        assetID = ++currentAssetID;
+        _assetID = ++currentAssetID;
     }
+
+    string name() const{return _name;}
+    string name(string newName) {return _name = newName;}
+    uint assetID() const {return _assetID;}
+    uint typeID() const { return _typeID;}
 
     /**
     * Action for when the asset finishes loading
@@ -66,7 +71,7 @@ abstract class HipAsset : ILoadable
     */
     final void dispose()
     {
-        this.assetID = 0;
+        _assetID = 0;
         onDispose();
     }
     ///Use it to clear the engine. 

@@ -1,5 +1,5 @@
 module hip.event.handlers.mouse;
-public import hip.hipengine.api.input.mouse;
+public import hip.api.input.mouse;
 import hip.math.vector;
 import hip.event.handlers.button;
 import hip.error.handler;

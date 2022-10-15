@@ -12,7 +12,7 @@ module hip.hiprenderer.shader.shader;
 public import hip.hiprenderer.shader.shadervar :
 ShaderHint, ShaderVariablesLayout, ShaderVar;
 
-import hip.hipengine.api.renderer.texture;
+import hip.api.renderer.texture;
 import hip.math.matrix;
 import hip.error.handler;
 import hip.hiprenderer.shader.shadervar;
@@ -72,7 +72,7 @@ interface IShader
     void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts);
 
     ///This function is actually required when working with multiple slots on D3D11.
-    void initTextureSlots(ref ShaderProgram prog, ITexture texture, string varName, int slotsCount);
+    void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount);
     void dispose(ref ShaderProgram);
 }
 
@@ -319,7 +319,7 @@ public class Shader
         HipRenderer.exitOnError();
     }
 
-    void initTextureSlots(ITexture texture, string varName, int slotsCount)
+    void initTextureSlots(IHipTexture texture, string varName, int slotsCount)
     {
         shaderImpl.initTextureSlots(shaderProgram, texture, varName, slotsCount);
         HipRenderer.exitOnError();

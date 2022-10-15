@@ -4,13 +4,13 @@ import hip.graphics.g2d.geometrybatch;
 import hip.graphics.orthocamera;
 import hip.hiprenderer;
 import hip.bind.interpreters;
-public import hip.hipengine.api.graphics.color;
-public import hip.hipengine.api.graphics.g2d.hipsprite;
-public import hip.hipengine.api.math;
+public import hip.api.graphics.color;
+public import hip.api.graphics.g2d.hipsprite;
+public import hip.api.math;
 public import hip.graphics.g2d.sprite;
 public import hip.graphics.g2d.textrenderer;
 
-public import hip.hipengine.api.data.font;
+public import hip.api.data.font;
 
 private __gshared
 {
@@ -43,8 +43,8 @@ void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewpor
         if(entry != HipInterpreterEntry.init)
         {
             sendInterpreterFunc!(renderSprites)(entry.intepreter);
-            sendInterpreterFunc!(beginGeometry)(entry.intepreter);
-            sendInterpreterFunc!(endGeometry)(entry.intepreter);
+            sendInterpreterFunc!(renderGeometries)(entry.intepreter);
+            sendInterpreterFunc!(renderTexts)(entry.intepreter);
             sendInterpreterFunc!(setGeometryColor)(entry.intepreter);
             sendInterpreterFunc!(drawPixel)(entry.intepreter);
             sendInterpreterFunc!(drawRectangle)(entry.intepreter);
@@ -55,6 +55,7 @@ void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewpor
             sendInterpreterFunc!(fillTriangle)(entry.intepreter);
             sendInterpreterFunc!(drawLine)(entry.intepreter);
             sendInterpreterFunc!(drawQuadraticBezierLine)(entry.intepreter);
+            // sendInterpreterFunc!(drawText)(entry.intepreter); not supported yet
             sendInterpreterFunc!(drawSprite)(entry.intepreter);
             sendInterpreterFunc!(newSprite)(entry.intepreter);
             sendInterpreterFunc!(destroySprite)(entry.intepreter);
@@ -85,8 +86,8 @@ void resizeRenderer2D(uint width, uint height)
 export extern(C):
 
 void renderSprites(){spBatch.render;}
-void beginGeometry(){geoBatch.flush;}
-void endGeometry(){geoBatch.flush;}
+void renderGeometries(){geoBatch.flush;}
+void renderTexts(){dbgText.render();}
 void setGeometryColor(HipColor color){geoBatch.setColor(color);}
 void drawPixel(int x, int y){geoBatch.drawPixel(x, y);}
 void drawRectangle(int x, int y, int w, int h){geoBatch.drawRectangle(x,y,w,h);}
@@ -102,15 +103,30 @@ void drawLine(int x1, int y1, int x2, int y2){geoBatch.drawLine(x1,y1,x2,y2);}
 void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24){geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision);}
 void drawSprite(IHipSprite sprite){spBatch.draw(cast(HipSprite)sprite);}
 
-void setFont(IHipFont font){dbgText.setFont(font);}
-void drawText(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER)
+void setFontNull(typeof(null) _)
 {
-    // dbgText.x = x;
-    // dbgText.y = y;
-    // dbgText.alignh = alignH;
-    // dbgText.alignv = alignV;
-    // dbgText.setText(text);
-    // dbgText.render();
+    import hip.global.gamedef;
+    dbgText.setFont(cast(IHipFont)HipDefaultAssets.font);
+}
+void setFont(IHipFont font)
+{
+    if(font is null)
+        setFontNull(null);
+    else
+        dbgText.setFont(font);
+}
+void setFontDeferred(IHipAssetLoadTask task)
+{
+    if(task is null)
+        setFontNull(null);
+    else
+        dbgText.setFont(task);
+}
+
+void drawText(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.LEFT, HipTextAlign alignV = HipTextAlign.CENTER)
+{
+    dbgText.setColor(color);
+    dbgText.draw(x, y, text, alignH, alignV);
 }
 
 private __gshared IHipSprite[] _sprites;

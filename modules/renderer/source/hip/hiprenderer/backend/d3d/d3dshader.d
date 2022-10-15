@@ -13,7 +13,7 @@ module hip.hiprenderer.backend.d3d.d3dshader;
 version(Windows):
 import hip.config.opts;
 import hip.hiprenderer.renderer;
-import hip.hipengine.api.renderer.texture;
+import hip.api.renderer.texture;
 import hip.hiprenderer.shader;
 import hip.hiprenderer.backend.d3d.d3drenderer;
 import hip.util.system:getWindowsErrorMessage;
@@ -454,7 +454,7 @@ class Hip_D3D11_ShaderImpl : IShader
         }
     }
 
-    void initTextureSlots(ref ShaderProgram prog, ITexture texture, string varName, int slotsCount)
+    void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount)
     {
         for(int i = 0; i < slotsCount; i++)
             texture.bind(i);

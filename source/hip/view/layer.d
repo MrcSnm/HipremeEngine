@@ -10,4 +10,4 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.view.layer;
-public import hip.hipengine.api.view.layer;
+public import hip.api.view.layer;

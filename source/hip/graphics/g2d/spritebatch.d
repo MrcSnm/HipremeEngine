@@ -19,7 +19,7 @@ import hip.error.handler;
 import hip.hiprenderer.shader;
 import hip.graphics.material;
 import hip.graphics.g2d.sprite;
-import hip.hipengine.api.graphics.color;
+import hip.api.graphics.color;
 import hip.math.vector;
 
 /**
@@ -63,7 +63,7 @@ class HipSpriteBatch
     Mesh mesh;
     Material material;
 
-    protected ITexture[] currentTextures;
+    protected IHipTexture[] currentTextures;
     int usingTexturesCount;
 
     uint quadsCount;
@@ -76,7 +76,7 @@ class HipSpriteBatch
         indices = new index_t[maxQuads*6];
         vertices = new float[maxQuads*HipSpriteVertex.quadCount]; //XYZ -> 3, RGBA -> 4, ST -> 2, TexID 3+4+2+1=10
         vertices[] = 0;
-        currentTextures = new ITexture[](HipRenderer.getMaxSupportedShaderTextures());
+        currentTextures = new IHipTexture[](HipRenderer.getMaxSupportedShaderTextures());
         usingTexturesCount = 0;
 
         this.spriteBatchShader = HipRenderer.newShader(HipShaderPresets.SPRITE_BATCH);
@@ -178,7 +178,7 @@ class HipSpriteBatch
     }
     
     pragma(inline, true)
-    private int getNextTextureID(ITexture t)
+    private int getNextTextureID(IHipTexture t)
     {
         for(int i = 0; i < usingTexturesCount; i++)
             if(currentTextures[i] == t)
@@ -192,7 +192,7 @@ class HipSpriteBatch
     /**
     *   Sets the current texture in use on the sprite batch and returns its slot.
     */
-    protected int setTexture (ITexture texture)
+    protected int setTexture (IHipTexture texture)
     {
         int slot = getNextTextureID(texture);
         if(slot == -1)

@@ -2,7 +2,7 @@ module hip.assets.font;
 import hip.asset;
 import hip.font.ttf;
 import hip.font.bmfont;
-public import hip.hipengine.api.data.font;
+public import hip.api.data.font;
 
 
 class HipFontAsset : HipAsset, IHipFont
@@ -14,7 +14,7 @@ class HipFontAsset : HipAsset, IHipFont
     this(IHipFont font)
     {
         super("Font");
-        this.typeID = assetTypeID!HipFontAsset;
+        this._typeID = assetTypeID!HipFontAsset;
         this.font = font;
     }
     override void onFinishLoading()

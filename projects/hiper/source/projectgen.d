@@ -24,13 +24,13 @@ string generateCodeTemplate(TemplateInfo info = TemplateInfo())
 {
 	return format!q{
 module script.entry;
-import hip.hipengine;
+import hip.api;
 
 class MainScene : AScene
 {
 	
 	/** Constructor */
-	override void init()
+	override void initialize()
 	{
 		%s
 	}
@@ -111,11 +111,13 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 	"versions" : [
 		"HipremeRenderer",
 		"HipGraphicsAPI",
+		"HipImageAPI",
 		"HipInputAPI",
 		"HipAudioAPI",
 		"HipMathAPI",
 		"HipremeAudio",
-		"HipremeG2D"
+		"HipremeG2D",
+		"HipDataStructures"
 	]
 }
 	}(info.author, info.desc, outputName, name, hipEnginePath, hipEnginePath, hipEnginePath, projectPath);

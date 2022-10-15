@@ -1,6 +1,6 @@
 module hip.graphics.g2d.animation;
 import hip.graphics.g2d.textureatlas;
-import hip.hipengine.api.graphics.color;
+import hip.api.graphics.color;
 import hip.math.vector;
 import hip.assets.texture : HipTextureRegion;
 import hip.error.handler;

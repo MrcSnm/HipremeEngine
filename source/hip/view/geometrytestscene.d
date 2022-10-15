@@ -1,8 +1,8 @@
 module hip.view.geometrytestscene;
 import hip.hiprenderer.renderer;
-import hip.hipengine;
+import hip.api;
 import hip.console.log;
-import hip.hipengine.api.math.forces;
+import hip.api.math.forces;
 
 import hip.math.vector;
 import hip.math.quaternion;
@@ -21,7 +21,7 @@ class GeometryTestScene : Scene
     {
         setGeometryColor(HipColor.white);
         fillRectangle(0, 0, 200, 200);
-        endGeometry();
+        renderGeometries();
 
         
     }
