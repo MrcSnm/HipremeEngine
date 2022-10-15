@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.hiprenderer.backend.d3d.d3dtexture;
 version(Windows):
 import hip.hiprenderer.backend.d3d.d3drenderer;
-public import hip.hipengine.api.renderer.texture;
+public import hip.api.renderer.texture;
 
 import hip.image;
 import directx.d3d11;
@@ -21,7 +21,7 @@ import hip.error.handler;
 private __gshared ID3D11ShaderResourceView nullSRV = null;
 private __gshared ID3D11SamplerState nullSamplerState = null;
 
-class Hip_D3D11_Texture : ITexture
+class Hip_D3D11_Texture : IHipTexture
 {
     ID3D11Texture2D texture;
     ID3D11ShaderResourceView resource;

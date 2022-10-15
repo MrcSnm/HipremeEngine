@@ -1,6 +1,6 @@
 module hip.event.handlers.button;
 
-public import hip.hipengine.api.input.button;
+public import hip.api.input.button;
 import hip.util.time;
 
 final class HipButtonMetadata : AHipButtonMetadata

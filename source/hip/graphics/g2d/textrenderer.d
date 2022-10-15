@@ -9,17 +9,12 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.graphics.g2d.textrenderer;
-import hip.graphics.g2d;
 import hip.graphics.mesh;
-import hip.util.data_structures;
-import hip.math.utils : max;
-import hip.util.conv:to;
-import hip.error.handler;
-import hip.console.log;
 import hip.math.matrix;
-import hip.hipengine.api.data.font;
+import hip.api.data.font;
 import hip.hiprenderer;
 import hip.graphics.g2d.text;
+import hip.assetmanager;
 
 
 enum HipTextAlign
@@ -50,9 +45,8 @@ private Shader bmTextShader = null;
 *   This class oculd be refactored in the future to actually
 * use a spritebatch for its drawing.
 */
-class HipTextRenderer
+class HipTextRenderer : IHipDeferrableText
 {
-    import hip.assetmanager;
     mixin(HipDeferredLoad);
     IHipFont font;
     Mesh mesh;

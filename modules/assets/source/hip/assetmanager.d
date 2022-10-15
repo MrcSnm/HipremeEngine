@@ -11,6 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.assetmanager;
 import hip.util.concurrency;
 import hip.util.data_structures: Node;
+import hip.util.reflection;
 
 private string buildConstantsFromFolderTree(string code, Node!string node, int depth = 0)
 {
@@ -49,41 +50,30 @@ public import hip.asset;
 public import hip.assets.image;
 public import hip.assets.texture;
 public import hip.assets.font;
+public import hip.api.data.commons;
 
 
-enum HipAssetResult
-{
-    cantLoad,
-    loading,
-    loaded
-}
-
-interface IHipAssetLoadTask
-{
-    bool hasFinishedLoading();
-    void await();
-}
 
 
 class HipAssetLoadTask : IHipAssetLoadTask
 {
     string name;
-    HipAssetResult result = HipAssetResult.cantLoad;
-    HipAsset asset = null;
+    HipAssetResult _result = HipAssetResult.cantLoad;
+    HipAsset _asset = null;
     protected HipWorkerThread worker;
     protected void[] partialData;
 
     this(string name, HipAsset asset)
     {
         this.name = name;
-        this.asset = asset; 
+        this._asset = _asset; 
         if(asset is null)
-            result = HipAssetResult.cantLoad;
+            _result = HipAssetResult.cantLoad;
         else
-            result = HipAssetResult.loaded;
+            _result = HipAssetResult.loaded;
     }
 
-    bool hasFinishedLoading(){return result == HipAssetResult.loaded;}
+    bool hasFinishedLoading() const{return result == HipAssetResult.loaded;}
     bool opCast(T : bool)() const{return hasFinishedLoading;}
     
     void await(){HipAssetManager.awaitTask(this);}
@@ -101,17 +91,23 @@ class HipAssetLoadTask : IHipAssetLoadTask
             throw new Error("No partial data was set before taking it");
         return partialData;
     }
+    
+    HipAssetResult result() const {return _result;}
+    IHipAsset asset(){return _asset;}
+    HipAssetResult result(HipAssetResult newResult){return _result = newResult;}
+    IHipAsset asset(IHipAsset newAsset){return _asset = cast(HipAsset)newAsset;}
+    
 
 }
 
 
 
-import hip.hipengine.api.data.font;
+import hip.api.data.font;
 mixin template HipDeferredLoadImpl()
 {
     import hip.util.reflection;
     
-    private void deferredLoad(T, string funcName)(HipAssetLoadTask task)
+    private void deferredLoad(T, string funcName)(IHipAssetLoadTask task)
     {
         alias func = __traits(getMember, typeof(this), funcName);
         if(task.asset !is null)
@@ -124,17 +120,17 @@ mixin template HipDeferredLoadImpl()
             }, task);
     }
 
-    pragma(msg, typeof(this).stringof, hasType!"hip.assets.texture.HipTexture",  hasMethod!(typeof(this), "setTexture", ITexture));
-    static if(hasType!"hip.assets.texture.HipTexture" && hasMethod!(typeof(this), "setTexture", ITexture))
+    pragma(msg, typeof(this).stringof, hasType!"hip.assets.texture.HipTexture",  hasMethod!(typeof(this), "setTexture", IHipTexture));
+    static if(hasType!"hip.assets.texture.HipTexture" && hasMethod!(typeof(this), "setTexture", IHipTexture))
     {
-        final void setTexture(HipAssetLoadTask task)
+        final void setTexture(IHipAssetLoadTask task)
         {
             deferredLoad!(HipTexture, "setTexture")(task);
         }
     }
-    static if(hasType!"hip.hipengine.api.data.font.IHipFont" && hasMethod!(typeof(this), "setFont", IHipFont))
+    static if(hasType!"hip.api.data.font.IHipFont" && hasMethod!(typeof(this), "setFont", IHipFont))
     {
-        final void setFont(HipAssetLoadTask task)
+        final void setFont(IHipAssetLoadTask task)
         {
             deferredLoad!(HipFontAsset, "setFont")(task);
         }
@@ -216,8 +212,8 @@ class HipAssetManager
         
     }
 
-    static bool isLoading(){return !workerPool.isIdle;}
-    static void awaitLoad(){workerPool.await;}
+    @ExportD static bool isLoading(){return !workerPool.isIdle;}
+    @ExportD static void awaitLoad(){workerPool.await;}
 
     static void awaitTask(HipAssetLoadTask task)
     {
@@ -243,37 +239,6 @@ class HipAssetManager
         }
         return null;
     }
-
-
-    // private static HipAsset delegate() getLoadable(string path)
-    // {
-    //     import hip.util.path;
-    //     string ext = path.extension;
-
-    //     switch(ext)
-    //     {
-    //         case ".png":
-    //         case ".jpg":
-    //         case ".bmp":
-    //         case ".tga":
-    //         case ".targa":
-    //             return (){
-    //                 Image img = new Image(path);
-    //                 return img;
-    //             };
-    //         case ".ttf":
-    //             return (){
-    //                 return new Hip_TTF_Font(path);
-    //             };
-    //         case ".bmfont":
-    //         case ".fnt":
-    //             return (){
-    //                 return new HipBitmapFont(path);
-    //             };
-    //         default:
-    //             return null;
-    //     }
-    // }
 
     private static HipAssetLoadTask loadBase(string path, HipWorkerThread worker)
     {
@@ -327,7 +292,7 @@ class HipAssetManager
         return task;
     }
 
-    static HipAssetLoadTask loadImage(string imagePath)
+    @ExportD static IHipAssetLoadTask loadImage(string imagePath)
     {
         HipAssetLoadTask task = loadSimple(imagePath, (pathOrLocation)
         {
@@ -340,7 +305,7 @@ class HipAssetManager
         return task;
     }
 
-    static HipAssetLoadTask loadTexture(string texturePath)
+    @ExportD static IHipAssetLoadTask loadTexture(string texturePath)
     {
         import hip.util.memory;
         HipAssetLoadTask task = loadComplex(texturePath, (pathOrLocation)
@@ -362,7 +327,7 @@ class HipAssetManager
         return task;
     }
 
-    static HipAssetLoadTask loadFont(string fontPath, int fontSize = 48)
+    @ExportD static IHipAssetLoadTask loadFont(string fontPath, int fontSize = 48)
     {
         import hip.util.path;
         switch(fontPath.extension)
@@ -371,6 +336,7 @@ class HipAssetManager
             case "fnt":
                 return loadBMFont(fontPath);
             case "ttf":
+            case "otf":
                 return loadTTF(fontPath, fontSize);
             default: return null;
         }
@@ -480,9 +446,9 @@ class HipAssetManager
         }
     }
 
-    static void addOnCompleteHandler(void delegate(HipAsset) onComplete, HipAssetLoadTask task)
+    static void addOnCompleteHandler(void delegate(HipAsset) onComplete, IHipAssetLoadTask task)
     {
-        completeHandlers[task]~= onComplete;
+        completeHandlers[cast(HipAssetLoadTask)task]~= onComplete;
     }
 
     /**
@@ -500,7 +466,7 @@ class HipAssetManager
                     if(auto handlers = task in completeHandlers)
                     {
                         foreach(handler; *handlers)
-                            handler(task.asset);
+                            handler(task._asset);
                     }
                 }
                 completeQueue.length = 0;

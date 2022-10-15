@@ -7,8 +7,6 @@
 		"debugInfo",
 		"debugInfoC"
 	],
-	"sourcePaths": ["source", "../../api/source/hip/hipengine/api/filesystem"],
-	"importPaths": ["source", "../../api/source"],
 	"copyright": "Copyright © 2021, Hipreme",
 	"versions": [
 		"HipFileAPI"
@@ -18,6 +16,7 @@
 			"name": "default",
 			"dependencies": {
 				"error": {"path": "../error", "version": "*"},
+				"hipengine_api": {"path": "../../api", "version": "*"},
 				"util": {"path": "../util", "version": "*"}
 			}
 		},

@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.hiprenderer.framebuffer;
 import hip.hiprenderer.shader;
 import hip.hiprenderer.renderer;
-import hip.hipengine.api.renderer.texture;
+import hip.api.renderer.texture;
 
 
 
@@ -34,7 +34,7 @@ interface IHipFrameBuffer
     void clear();
 
     ///Gets the texture containing the framebuffer data
-    ITexture getTexture();
+    IHipTexture getTexture();
 
     void dispose();
 }
@@ -70,7 +70,7 @@ class HipFrameBuffer : IHipFrameBuffer
         this.impl.clear();
         HipRenderer.exitOnError();
     }
-    ITexture getTexture(){return impl.getTexture();}
+    IHipTexture getTexture(){return impl.getTexture();}
 
     void draw()
     {

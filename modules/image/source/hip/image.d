@@ -9,7 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.image;
-public import hip.hipengine.api.data.image;
+public import hip.api.data.image;
 
 
 IHipBMPDecoder bmp;

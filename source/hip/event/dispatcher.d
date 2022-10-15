@@ -18,11 +18,11 @@ private:
 public:
     import hip.systems.input;
     import hip.util.time;
-    import hip.hipengine.api.math.vector;
-    import hip.hipengine.api.input.keyboard;
-    import hip.hipengine.api.input.button;
-    import hip.hipengine.api.input.mouse;
-    import hip.hipengine.api.input.gamepad;
+    import hip.api.math.vector;
+    import hip.api.input.keyboard;
+    import hip.api.input.button;
+    import hip.api.input.mouse;
+    import hip.api.input.gamepad;
 
 
 

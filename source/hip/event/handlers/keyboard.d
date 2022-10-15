@@ -13,7 +13,7 @@ module hip.event.handlers.keyboard;
 
 import hip.event.handlers.keyboard_layout;
 public import hip.event.handlers.button;
-public import hip.hipengine.api.input.keyboard;
+public import hip.api.input.keyboard;
 
 import hip.util.data_structures;
 import hip.error.handler;

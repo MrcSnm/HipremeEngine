@@ -19,19 +19,19 @@ import hip.hiprenderer.renderer;
 import hip.math.rect;
 import hip.assets.image;
 public import hip.util.data_structures:Array2D;
-public import hip.hipengine.api.renderer.texture;
+public import hip.api.renderer.texture;
 
 
 import renderer = hip.hiprenderer.texture;
 import hip.util.reflection;
 
-class HipTexture : HipAsset, ITexture
+class HipTexture : HipAsset, IHipTexture
 {
-    mixin(ForwardInterface!("textureImpl", ITexture));
+    mixin(ForwardInterface!("textureImpl", IHipTexture));
     
     IImage img;
     int width,height;
-    public ITexture textureImpl;
+    public IHipTexture textureImpl;
 
     public static HipTexture getPixelTexture()
     {
@@ -50,7 +50,7 @@ class HipTexture : HipAsset, ITexture
     protected this()
     {
         super("Texture");
-        typeID = assetTypeID!HipTexture;
+        _typeID = assetTypeID!HipTexture;
         textureImpl = HipRenderer.getTextureImplementation();
     }
 
@@ -110,7 +110,7 @@ class HipTexture : HipAsset, ITexture
 
 class HipTextureRegion : HipAsset
 {
-    ITexture texture;
+    IHipTexture texture;
     public float u1, v1, u2, v2;
     protected float[8] vertices;
     int regionWidth, regionHeight;
@@ -122,13 +122,13 @@ class HipTextureRegion : HipAsset
         setRegion(u1,v1,u2,v2);
     }
 
-    this(ITexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
+    this(IHipTexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
     {
         super("TextureRegion");
         this.texture = texture;
         setRegion(u1,v1,u2,v2);
     }
-    this(ITexture texture, uint u1, uint v1, uint u2, uint v2)
+    this(IHipTexture texture, uint u1, uint v1, uint u2, uint v2)
     {
         super("TextureRegion");
         this.texture = texture;
@@ -137,7 +137,7 @@ class HipTextureRegion : HipAsset
 
     ///By passing the width and height values, you'll be able to crop useless frames
     public static Array2D!HipTextureRegion spritesheet(
-        ITexture t,
+        IHipTexture t,
         uint frameWidth, uint frameHeight,
         uint width, uint height,
         uint offsetX, uint offsetY,
@@ -155,7 +155,7 @@ class HipTextureRegion : HipAsset
         return ret;
     }
     ///Default spritesheet method that makes a spritesheet from the entire texture
-    static Array2D!HipTextureRegion spritesheet(ITexture t, uint frameWidth, uint frameHeight)
+    static Array2D!HipTextureRegion spritesheet(IHipTexture t, uint frameWidth, uint frameHeight)
     {
         return spritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
     }

@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.systems.gamepad;
 
 import hip.event.handlers.button;
-public import hip.hipengine.api.input.gamepad;
+public import hip.api.input.gamepad;
 
 ///Refer to https://docs.microsoft.com/en-us/uwp/api/windows.gaming.input.gamepadbuttons?view=winrt-20348
 enum HipXboxGamepadButton : int

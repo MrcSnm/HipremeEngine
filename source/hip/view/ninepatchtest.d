@@ -2,7 +2,7 @@ module hip.view.ninepatchtest;
 import hip.graphics.g2d.renderer2d;
 import hip.graphics.g2d.spritebatch;
 import hip.graphics.g2d.ninepatch;
-import hip.hipengine;
+import hip.api;
 import hip.view.scene;
 
 class NinePatchSceneTest : Scene

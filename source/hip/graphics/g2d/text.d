@@ -1,7 +1,7 @@
 module hip.graphics.g2d.text;
 
 import hip.graphics.g2d.textrenderer;
-import hip.hipengine.api.data.font;
+import hip.api.data.font;
 
 
 /**
@@ -168,7 +168,7 @@ class HipText
 */
 package struct HipTextStopConfig
 {
-    import hip.hipengine.api.graphics.color;
+    import hip.api.graphics.color;
     int startIndex;
     HipColor color;
 

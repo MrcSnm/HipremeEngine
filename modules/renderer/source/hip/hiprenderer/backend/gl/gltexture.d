@@ -9,13 +9,13 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.backend.gl.gltexture;
-public import hip.hipengine.api.renderer.texture;
+public import hip.api.renderer.texture;
 
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
 import hip.image;
 
-class Hip_GL3_Texture : ITexture
+class Hip_GL3_Texture : IHipTexture
 {
     GLuint textureID = 0;
     int width, height;

@@ -9,7 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.font.ttf;
-import hip.hipengine.api.data.font;
+import hip.api.data.font;
 
 /**
 *   Check the unicode table: https://unicode-table.com/en/blocks/
@@ -40,7 +40,10 @@ class Hip_TTF_Font : HipFont
     */
     bool loadFromMemory(in ubyte[] data)
     {
-        font = TtfFont(data);
+        if(data == null || data.length == 0)
+            return false;
+        try{font = TtfFont(data);}
+        catch(Exception e){return false;}
         return loadTexture(
             generateImage(fontSize, defaultCharset)
         );
