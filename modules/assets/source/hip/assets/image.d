@@ -16,11 +16,18 @@ public class Image : HipAsset, IImage
     HipImageImpl impl;
     string imagePath;
     int width,height;
+
     this(in string path)
     {
         super("Image_"~path);
         _typeID = assetTypeID!Image;
         initialize(path);
+    }
+
+    this(in string path, ubyte[] buffer)
+    {
+        this(path);
+        loadFromMemory(buffer);
     }
     private void initialize(string path)
     {

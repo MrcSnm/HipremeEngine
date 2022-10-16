@@ -31,6 +31,9 @@ class Hip_D3D11_Texture : IHipTexture
     int filter = Hip_D3D11_getTextureFilter(TextureFilter.NEAREST, TextureFilter.NEAREST);
     int wrap = Hip_D3D11_getWrapMode(TextureWrapMode.REPEAT);
 
+
+    bool hasSuccessfullyLoaded(){return width > 0;}
+
     void setTextureFilter(TextureFilter mag, TextureFilter min)
     {
         filter = Hip_D3D11_getTextureFilter(min, mag);
@@ -57,7 +60,7 @@ class Hip_D3D11_Texture : IHipTexture
         updateSamplerState();
     }
 
-    public bool load(in IImage image)
+    protected bool loadImpl(in IImage image)
     {
         D3D11_TEXTURE2D_DESC desc;
         // desc.Format = getFromFromSurface(surface);

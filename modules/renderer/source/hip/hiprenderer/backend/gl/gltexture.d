@@ -21,6 +21,7 @@ class Hip_GL3_Texture : IHipTexture
     int width, height;
     uint currentSlot;
 
+    bool hasSuccessfullyLoaded(){return width > 0;}
     protected int getGLWrapMode(TextureWrapMode mode)
     {
         switch(mode)
@@ -102,7 +103,7 @@ class Hip_GL3_Texture : IHipTexture
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
     }
 
-    bool load(in IImage image)
+    protected bool loadImpl(in IImage image)
     {
         glGenTextures(1, &textureID);
         int mode;

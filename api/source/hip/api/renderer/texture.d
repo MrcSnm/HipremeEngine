@@ -39,11 +39,22 @@ interface IHipTexture
 {
     void setWrapMode(TextureWrapMode mode);
     void setTextureFilter(TextureFilter min, TextureFilter mag);
-    bool load(in IImage img);
+
+
+
+    protected bool loadImpl(in IImage img);
+    final bool load(in IImage img)
+    {
+        if(img.hasLoadedData)
+            return loadImpl(img);
+        return false;
+    }
     void bind();
     void bind(int slot);
     void unbind();
     void unbind(int slot);
+
+    bool hasSuccessfullyLoaded();
 
     int getWidth();
     int getHeight();
