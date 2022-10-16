@@ -314,6 +314,20 @@ struct Array(T)
 */
 struct Array2D(T)
 {
+
+    ///This can trigger GC freely
+    int opApply(scope int delegate(ref T) dg)
+    {
+        int result = 0;
+        for(int i = 0; i < width*height; i++)
+        {
+            result = dg(data[i]);
+            if (result)
+                break;
+        }
+        return result;
+    }
+
     @nogc:
     private T* data;
     private uint height;
@@ -323,6 +337,9 @@ struct Array2D(T)
     private int* countPtr;
 
     this(this){*countPtr = *countPtr + 1;}
+
+    int getWidth() const {return width;}
+    int getHeight() const {return height;}
 
     this(uint lengthHeight, uint lengthWidth)
     {
@@ -341,12 +358,30 @@ struct Array2D(T)
             return data[temp..temp+width];
         }
         auto opIndexAssign(T)(T value, size_t i, size_t j){return data[i*width+j] = value;}
+
+        T[] opSlice(size_t start, size_t end)
+        {
+            if(end < start)
+            {
+                size_t temp = end;
+                end = start; end = temp;
+            }
+            if(end > width*height)
+                end = width*height;
+            return data[start..end];
+        }
+        size_t opDollar(){return width*height;}
+        bool opCast() const{return data !is null;}
     }
     ~this()
     {
+        if(countPtr == null)
+            return;
         *countPtr = *countPtr - 1;
         if(*countPtr <= 0)
         {
+            import std.stdio;
+            debug writeln("Destroyed");
             free(data);
             free(countPtr);
             data = null;

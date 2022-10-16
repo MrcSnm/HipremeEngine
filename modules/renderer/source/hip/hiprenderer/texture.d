@@ -93,6 +93,6 @@ class HipTexture : IHipTexture
         this.textureImpl.load(img);
         return width != 0;
     }
-    int getWidth(){return width;}
-    int getHeight(){return height;}
+    int getWidth() const {return width;}
+    int getHeight() const {return height;}
 }

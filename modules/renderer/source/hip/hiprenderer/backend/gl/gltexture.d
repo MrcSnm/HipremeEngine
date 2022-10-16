@@ -141,7 +141,7 @@ class Hip_GL3_Texture : IHipTexture
         return true;
     }
     
-    int getWidth(){return width;}
-    int getHeight(){return height;}
+    int getWidth() const {return width;}
+    int getHeight() const {return height;}
     
 }

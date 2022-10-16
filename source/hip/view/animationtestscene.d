@@ -30,7 +30,7 @@ class AnimationTestScene : Scene
     {
         batch = new HipSpriteBatch();
         HipTexture t = new HipTexture("graphics/sprites/sprite.png");
-        Array2D!HipTextureRegion sheet = HipTextureRegion.spritesheet(t, 32, 32, 96, 128, 0, 0, 0, 0);
+        auto sheet = HipTextureRegion.spritesheet(t, 32, 32, 96, 128, 0, 0, 0, 0);
         anim = new HipAnimation("Character");
 
         anim
