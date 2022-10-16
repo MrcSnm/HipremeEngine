@@ -32,6 +32,9 @@ class HipTexture : HipAsset, IHipTexture
     IImage img;
     int width,height;
     public IHipTexture textureImpl;
+    private bool successfullyLoaded;
+    public bool hasSuccessfullyLoaded(){return successfullyLoaded;}
+
 
     public static HipTexture getPixelTexture()
     {
@@ -71,6 +74,7 @@ class HipTexture : HipAsset, IHipTexture
             load(image);
     }
 
+    alias load = IHipTexture.load;
 
     /**
     *   Returns whether the load was successful
@@ -79,19 +83,19 @@ class HipTexture : HipAsset, IHipTexture
     {
         import hip.filesystem.hipfs;
         ubyte[] buffer;
-        if(!HipFS.read(path, buffer))
+        if(!HipFS.read(path, buffer))            
             return false;
 
-        Image loadedImage = new Image(path);
+        Image loadedImage = new Image(path, buffer);
         return load(loadedImage);
     }
 
-    bool load(in IImage img)
+    protected bool loadImpl(in IImage img)
     {
-        bool ret = textureImpl.load(img);
+        successfullyLoaded = textureImpl.load(img);
         width = textureImpl.getWidth;
         height = textureImpl.getHeight;
-        return ret;
+        return successfullyLoaded;
     }
     
     override void onFinishLoading(){}
@@ -114,6 +118,8 @@ class HipTextureRegion : HipAsset
     public float u1, v1, u2, v2;
     protected float[8] vertices;
     int regionWidth, regionHeight;
+
+    bool hasSuccessfullyLoaded(){return texture && texture.hasSuccessfullyLoaded;}
 
     this(string texturePath, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
     {

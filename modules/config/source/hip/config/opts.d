@@ -31,6 +31,9 @@ enum HE_ERR_ONLY = false;
 ///Unused yet?
 enum HIP_OPTIMIZE = false;
 
+///If it is true, alpha blend will be enabled by default
+enum HIP_ALPHA_BLEND_DEFAULT = true;
+
 ///////////////////////////////// Default Asset Files /////////////////////////////////
 enum HIP_DEFAULT_FONT = "assets/fonts/WarsawGothic-BnBV.otf";
 enum HIP_DEFAULT_FONT_SIZE = 32;

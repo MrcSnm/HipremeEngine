@@ -25,7 +25,7 @@ version(Script)
 {
 	///Sets the font for the next drawText commands
 	void setFont(HipFont font){hip.api.graphics.g2d.binding._setFont(font);}
-	///Sets the font for the next drawText commands
+	///Sets the font to the default font set on hip.global.gamedef
 	void setFont(typeof(null) _){hip.api.graphics.g2d.binding.setFontNull(null);}
 	///Sets the font using HipAssetManager.loadFont
 	void setFont(IHipAssetLoadTask task){hip.api.graphics.g2d.binding.setFontDeferred(task);}

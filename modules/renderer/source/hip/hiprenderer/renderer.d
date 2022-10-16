@@ -113,6 +113,9 @@ interface IHipRendererImpl
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void setViewport(Viewport v);
     public bool setWindowMode(HipWindowMode mode);
+    public bool isBlendingEnabled() const;
+    public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst);
+    public void setBlendingEquation(HipBlendEquation eq);
     public bool hasErrorOccurred(out string err, string line = __FILE__, int line =__LINE__);
     public void begin();
     public void setRendererMode(HipRendererMode mode);
@@ -213,9 +216,14 @@ class HipRenderer
     }
     private static afterInit()
     {
+        import hip.config.opts;
         mainViewport = new Viewport(0,0, window.width, window.height);
         setViewport(mainViewport);
         HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+        static if(HIP_ALPHA_BLEND_DEFAULT)
+        {
+            activateAlphaBlending();
+        }
     }
 
     public static bool init(IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height)
@@ -263,6 +271,21 @@ class HipRenderer
     {
         rendererImpl.setColor(r,g,b,a);
     }
+
+    public static bool isBlendingEnabled()
+    {
+        return rendererImpl.isBlendingEnabled();
+    }
+    public static void setBlendFunction(HipBlendFunction sourceFunction, HipBlendFunction destinationFunction)
+    {
+        rendererImpl.setBlendFunction(sourceFunction, destinationFunction);
+    }
+
+    static final void activateAlphaBlending()
+    {
+        rendererImpl.setBlendFunction(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA);
+    }
+
     public static Viewport getCurrentViewport(){return currentViewport;}
     public static void setViewport(Viewport v)
     {

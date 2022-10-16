@@ -146,6 +146,8 @@ public class HipImageImpl : IImage
         return true;
     }
 
+    bool hasLoadedData() const {return pixels !is null;}
+
     void[] monochromeToRGBA() const
     {
         import core.stdc.stdlib;
