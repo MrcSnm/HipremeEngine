@@ -207,7 +207,7 @@ class HipSpriteBatch
         }
         return slot;
     }
-    protected int setTexture(HipTextureRegion reg){return setTexture(reg.texture);}
+    protected int setTexture(IHipTextureRegion reg){return setTexture(reg.getTexture());}
 
     void draw(uint count)(HipTexture t, ref float[count] vertices)
     {
@@ -235,10 +235,10 @@ class HipSpriteBatch
     }
 
 
-    void draw(HipTextureRegion reg, int x, int y, int z = 0, HipColor color = HipColor.white)
+    void draw(IHipTextureRegion reg, int x, int y, int z = 0, HipColor color = HipColor.white)
     {
         float[HipSpriteVertex.quadCount] v = getTextureRegionVertices(reg,x,y,z,color);
-        ErrorHandler.assertExit(reg.regionWidth != 0 && reg.regionHeight != 0, "Tried to draw 0 bounds region");
+        ErrorHandler.assertExit(reg.getWidth() != 0 && reg.getHeight() != 0, "Tried to draw 0 bounds region");
         int slot = setTexture(reg);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
 
@@ -247,25 +247,28 @@ class HipSpriteBatch
         addQuad(v, slot);
     }
 
-    static float[HipSpriteVertex.quadCount] getTextureRegionVertices(HipTextureRegion reg,
+    static float[HipSpriteVertex.quadCount] getTextureRegionVertices(IHipTextureRegion reg,
     int x, int y, int z = 0, HipColor color = HipColor.white)
     {
         float[HipSpriteVertex.quadCount] ret;
+
+        int regionWidth = reg.getWidth();
+        int regionHeight = reg.getHeight();
         
         ret[X1] = x;
         ret[Y1] = y;
         ret[Z1] = z;
 
-        ret[X2] = x+reg.regionWidth;
+        ret[X2] = x+regionWidth;
         ret[Y2] = y;
         ret[Z2] = z;
         
-        ret[X3] = x+reg.regionWidth;
-        ret[Y3] = y+reg.regionHeight;
+        ret[X3] = x+regionWidth;
+        ret[Y3] = y+regionHeight;
         ret[Z3] = z;
 
         ret[X4] = x;
-        ret[Y4] = y+reg.regionHeight;
+        ret[Y4] = y+regionHeight;
         ret[Z4] = z;
 
         const float[8] v = reg.getVertices();

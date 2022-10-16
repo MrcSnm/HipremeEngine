@@ -32,7 +32,7 @@ public import hip.api.graphics.g2d.hipsprite;
 
 })class HipSprite : IHipSprite
 {
-    HipTextureRegion texture;
+    IHipTextureRegion texture;
     HipColor color;
     float x = 0, y = 0;
     float scrollX = 0, scrollY = 0;
@@ -66,41 +66,58 @@ public import hip.api.graphics.g2d.hipsprite;
     {
         this();
         texture = new HipTextureRegion(texturePath);
-        width  = texture.regionWidth;
-        height = texture.regionHeight;
-        setRegion(texture.u1, texture.v1, texture.u2, texture.v2);
+        import hip.error.handler;
+        if(!(cast(HipTextureRegion)texture).hasSuccessfullyLoaded)
+        {
+            ErrorHandler.showErrorMessage(
+                "Error loading texture for Sprite",
+                "Error loading texture at path: "~texturePath
+            );
+        }
+        width  = texture.getWidth();
+        height = texture.getHeight();
+        setRegion(texture.getRegion());
     }
 
-    this(HipTexture texture)
+    this(IHipTexture texture)
     {
         this();
         setTexture(texture);
     }
-    this(HipTextureRegion region)
+    this(IHipTextureRegion region)
     {
         this();
         this.texture = region;
-        width  = texture.regionWidth;
-        height = texture.regionHeight;
-        setRegion(region.u1, region.v1, region.u2, region.v2);
+        width  = region.getWidth();
+        height = region.getHeight();
+        setRegion(region.getRegion());
     }
-    
-    
+
     void setTexture(IHipTexture texture)
     {
         this.texture = new HipTextureRegion(texture);
         width  = texture.getWidth;
         height = texture.getHeight;
-        setRegion(this.texture.u1, this.texture.v1, this.texture.u2, this.texture.v2);
+        setRegion(this.texture.getRegion());
     }
 
-    void setRegion(float u1, float v1, float u2, float v2)
+    IHipTextureRegion getTextureRegion() {return texture;}
+
+    alias setRegion = IHipSprite.setRegion;
+    void setRegion(IHipTextureRegion region)
     {
-        this.u1 = u1;
-        this.u2 = u2;
-        this.v1 = v1;
-        this.v2 = v2;
-        texture.setRegion(u1, v1, u2, v2);
+        width = region.getWidth();
+        height = region.getHeight();
+        texture = region;
+        setRegion(region.getRegion());
+    }
+    void setRegion(TextureCoordinatesQuad c)
+    {
+        this.u1 = c.u1;
+        this.u2 = c.u2;
+        this.v1 = c.v1;
+        this.v2 = c.v2;
+        texture.setRegion(c.u1, c.v1, c.u2, c.v2);
         const float[] v = texture.getVertices();
         vertices[U1] = v[0];
         vertices[V1] = v[1];
@@ -236,8 +253,10 @@ public import hip.api.graphics.g2d.hipsprite;
         isDirty = true;
     }
 
-    int getTextureWidth(){return texture.texture.getWidth;}
-    int getTextureHeight(){return texture.texture.getHeight;}
+    int getWidth() const {return width;}
+    int getHeight() const {return height;}
+    int getTextureWidth() const {return texture.getTextureWidth();}
+    int getTextureHeight() const {return texture.getTextureHeight();}
 
     /**
     * This function is most useful for single images. For instance backgrounds, probably, if you have a
@@ -304,8 +323,8 @@ class HipSpriteAnimation : HipSprite
     {
         this.currentFrame = frame;
         this.texture = frame.region;
-        setBounds(frame.region.regionWidth, frame.region.regionHeight);
-        setRegion(texture.u1, texture.v1, texture.u2, texture.v2);
+        setBounds(frame.region.getWidth(), frame.region.getHeight());
+        setRegion(texture.getRegion());
     }
 
     void update(float dt)

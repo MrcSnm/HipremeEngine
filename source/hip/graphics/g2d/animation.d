@@ -1,6 +1,7 @@
 module hip.graphics.g2d.animation;
 import hip.graphics.g2d.textureatlas;
 import hip.api.graphics.color;
+import hip.api.renderer.texture;
 import hip.math.vector;
 import hip.assets.texture : HipTextureRegion;
 import hip.error.handler;
@@ -12,11 +13,11 @@ import hip.error.handler;
 struct HipAnimationFrame
 {
     import hip.util.data_structures:Array2D;
-    HipTextureRegion region;
+    IHipTextureRegion region;
     HipColor color = HipColor(1,1,1,1);
     Vector2 offset = Vector2(0,0);
 
-    static HipAnimationFrame[] fromTextureRegions(Array2D!HipTextureRegion reg, uint startY, uint startX, uint endY, uint endX)
+    static HipAnimationFrame[] fromTextureRegions(Array2D!IHipTextureRegion reg, uint startY, uint startX, uint endY, uint endX)
     {
         HipAnimationFrame[] ret;
 
