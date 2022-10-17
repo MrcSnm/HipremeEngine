@@ -213,7 +213,11 @@ class HipAssetManager
     }
 
     @ExportD static bool isLoading(){return !workerPool.isIdle;}
-    @ExportD static void awaitLoad(){workerPool.await;}
+    @ExportD static void awaitLoad()
+    {
+        workerPool.await;
+        update();
+    }
 
     static void awaitTask(HipAssetLoadTask task)
     {
@@ -227,19 +231,24 @@ class HipAssetManager
         destroy(semaphore);
     }
 
-    private static HipWorkerThread loadWorker(void delegate() loadFn, void delegate(string taskName) onFinish = null, bool onMainThread = false)
+    private static HipWorkerThread loadWorker(string taskName, void delegate() loadFn, void delegate(string taskName) onFinish = null, bool onMainThread = false)
     {
         if(isAsync)
-            return workerPool.pushTask("Load", loadFn, onFinish, onMainThread);
+            return workerPool.pushTask(taskName, loadFn, onFinish, onMainThread);
         else
         {
             loadFn();
             if(onFinish !is null)
-                onFinish("Load");
+                onFinish(taskName);
         }
         return null;
     }
 
+    /** 
+     * Checks whether the file has been loaded already or not:
+     *  if has: returns its previous task
+     *  else: Put a new one on load cache and retunr
+     */
     private static HipAssetLoadTask loadBase(string path, HipWorkerThread worker)
     {
         HipAsset asset = getAsset(path);
@@ -256,10 +265,10 @@ class HipAssetManager
     /**
     *   loadSimple must be used when the asset can be totally constructed on the worker thread and then returned to the main thread
     */
-    private static HipAssetLoadTask loadSimple(string path, HipAsset delegate(string pathOrLocation) loadAsset)
+    private static HipAssetLoadTask loadSimple(string taskName, string path, HipAsset delegate(string pathOrLocation) loadAsset)
     {
         HipAssetLoadTask task;
-        task = loadBase(path, loadWorker(()
+        task = loadBase(path, loadWorker(taskName~path, ()
         {
             task.asset = loadAsset(path);
             if(task.asset !is null)
@@ -274,10 +283,13 @@ class HipAssetManager
     /**
     *   loadComplex is used when part of the asset can be constructed on worker thread, but for completing the load, it must finish on main thread
     */
-    private static HipAssetLoadTask loadComplex(string path, void[] delegate(string pathOrLocation) loadAsset, HipAsset delegate(void[] partialData) onWorkerLoadComplete)
+    private static HipAssetLoadTask loadComplex(string taskName, string path, 
+        void[] delegate(string pathOrLocation) loadAsset, 
+        HipAsset delegate(void[] partialData) onWorkerLoadComplete
+    )
     {
         HipAssetLoadTask task;
-        task = loadBase(path, loadWorker(()
+        task = loadBase(path, loadWorker(taskName~path, ()
         {
             task.givePartialData(loadAsset(path));
         }, (name)
@@ -294,7 +306,7 @@ class HipAssetManager
 
     @ExportD static IHipAssetLoadTask loadImage(string imagePath)
     {
-        HipAssetLoadTask task = loadSimple(imagePath, (pathOrLocation)
+        HipAssetLoadTask task = loadSimple("Load Image ", imagePath, (pathOrLocation)
         {
             import hip.filesystem.hipfs;
             auto ret = new Image(pathOrLocation);
@@ -308,7 +320,7 @@ class HipAssetManager
     @ExportD static IHipAssetLoadTask loadTexture(string texturePath)
     {
         import hip.util.memory;
-        HipAssetLoadTask task = loadComplex(texturePath, (pathOrLocation)
+        HipAssetLoadTask task = loadComplex("Load Texture ", texturePath, (pathOrLocation)
         {
             import hip.filesystem.hipfs;
             Image img = new Image(pathOrLocation);
@@ -355,7 +367,7 @@ class HipAssetManager
             this(Hip_TTF_Font fnt, ubyte[] img){font = fnt; rawImage = img;}
         }
 
-        HipAssetLoadTask task = loadComplex(ttfPath, (pathOrLocation)
+        HipAssetLoadTask task = loadComplex("Load TTF", ttfPath, (pathOrLocation)
         {
             import hip.filesystem.hipfs;
             Hip_TTF_Font font = new Hip_TTF_Font(pathOrLocation, fontSize);
@@ -393,7 +405,7 @@ class HipAssetManager
         }
 
             import std.stdio;
-        HipAssetLoadTask task = loadComplex(fontPath, (pathOrLocation)
+        HipAssetLoadTask task = loadComplex("Load BMFont", fontPath, (pathOrLocation)
         {
             import hip.filesystem.hipfs;
             HipBitmapFont font = new HipBitmapFont();
@@ -457,12 +469,16 @@ class HipAssetManager
     */
     static void update()
     {
+        import std.stdio;
         workerPool.pollFinished();
         completeMutex.lock();
             if(completeQueue.length)
             {
                 foreach(task; completeQueue)
                 {
+                    //Subject to a logger
+                    import std.stdio;
+                    writeln("Finished ", task.name);
                     if(auto handlers = task in completeHandlers)
                     {
                         foreach(handler; *handlers)
@@ -474,6 +490,7 @@ class HipAssetManager
             }
 
         completeMutex.unlock();
+        writeln("Executed update ");
     }
 
     /**

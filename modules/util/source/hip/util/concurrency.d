@@ -158,19 +158,23 @@ class HipWorkerPool
     }
     void await()
     {
-        uint idleCount = 0;
+        uint activeCount = 0;
         foreach(thread; threads)
         {
             if(!thread.isIdle)
             {
-                thread.pushTask("Await", (){awaitSemaphore.notify;});
-                idleCount++;
+                thread.pushTask("Await", ()
+                {
+                    awaitSemaphore.notify;}
+                );
+                activeCount++;
             }
         }
-        if(idleCount != 0)
+        while(activeCount > 0)
         {
-            awaitSemaphore = new Semaphore(idleCount);
+            awaitSemaphore = new Semaphore(0);
             awaitSemaphore.wait();
+            activeCount--;
         }
     }
     HipWorkerThread pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null, bool isOnFinishOnMainThread = false)
@@ -196,7 +200,7 @@ class HipWorkerPool
     {
         return (name)
         {
-            imported!"std.stdio".writeln("Finished ", name);
+            // imported!"std.stdio".writeln("Finished ", name);
 
             handlersMutex.lock();
                 finishHandlersOnMainThread~= (){onFinish(name);};

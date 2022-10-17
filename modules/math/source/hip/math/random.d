@@ -8,13 +8,14 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module modules.math.temp.random;
+module hip.math.random;
+import hip.util.reflection;
 import core.stdc.stdlib;
 import core.stdc.time;
 
 class Random
 {
-    @disable this();
+    // @disable this();
     // import std.random;
     // private static std.random.Random randomGenerator;
     static this()
@@ -22,20 +23,20 @@ class Random
         srand(cast(uint)time(null));
         // randomGenerator = std.random.Random(std.random.unpredictableSeed());
     }
-    static float rangef(float min, float max) nothrow @nogc
+    @ExportD static float rangef(float min, float max) nothrow @nogc
     {
         return (cast(float)rand() / (RAND_MAX+1)) * max + min;
         // return std.random.uniform(cast(int)min, cast(int)max, randomGenerator);
     }
-    static int range(int min, int max) nothrow @nogc
+    @ExportD static int range(int min, int max) nothrow @nogc
     {
         return cast(int)rangef(min, max);
     }
-    static uint rangeu(uint min, uint max) nothrow @nogc
+    @ExportD static uint rangeu(uint min, uint max) nothrow @nogc
     {
         return cast(uint)rangef(min, max);
     }
-    static ubyte rangeub(ubyte min, ubyte max) nothrow @nogc
+    @ExportD static ubyte rangeub(ubyte min, ubyte max) nothrow @nogc
     {
         return cast(ubyte)rangef(min, max);
     }
