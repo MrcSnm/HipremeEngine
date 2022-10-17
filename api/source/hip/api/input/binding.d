@@ -1,41 +1,18 @@
 module hip.api.input.binding;
 
+
+private alias thisModule = __traits(parent, {});
 void initInput()
 {
     version(Script)
     {
         import hip.api.internal;
-
-        loadSymbols!(
-            isKeyPressed,
-            isKeyJustPressed,
-            isKeyJustReleased,
-            getKeyDownTime,
-            getKeyUpTime,
-            isMouseButtonPressed,
-            isMouseButtonJustPressed,
-            isMouseButtonJustReleased,
-            getTouchPosition,
-            getTouchDeltaPosition,
-            getScroll,
-
-            //Gamepad
-            getGamepadCount,
-            getGamepad,
-            getAnalog,
-            isGamepadButtonPressed,
-            isGamepadButtonJustPressed,
-            isGamepadButtonJustReleased,
-            setGamepadVibrating,
-            getGamepadBatteryStatus,
-            isGamepadWireless
-        );
+        loadModuleFunctionPointers!thisModule;
         enum InputMapClass = "HipInputMap";
         mixin(loadSymbolsFromExportD!(InputMapClass,
             parseInputMap_File,
             parseInputMap_Mem
         ));
-
     }
 }
 

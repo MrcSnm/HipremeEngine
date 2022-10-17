@@ -2,6 +2,7 @@ module hip.api.graphics.g2d.binding;
 
 import hip.api.graphics.color;
 import hip.api.graphics.g2d.hipsprite;
+import hip.api.renderer.viewport;
 import hip.api.data.font;
 import hip.api.graphics.text;
 
@@ -17,7 +18,7 @@ void initG2D()
 
 version(Script)
 {
-    extern(C)
+    extern(C) //All functions there will be loaded
     {
         ///Call this function when finishing to add sprites to the scene
         void function() renderSprites;
@@ -56,6 +57,16 @@ version(Script)
         IHipSprite function(string texturePath) newSprite;
         ///Destroy a sprite instance
         void function(ref IHipSprite sprite) destroySprite;
+
+        ///Sets active the viewport passed
+        void function(Viewport v) setViewport;
+        ///Gets the active viewport
+        Viewport function() getCurrentViewport;
+
+        ///Width, Height
+        int[2] function() getWindowSize;
+
+        void function(uint width, uint height) setCameraSize;
 
         version(Have_util)
         {

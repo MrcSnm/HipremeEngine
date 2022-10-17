@@ -134,8 +134,8 @@ class HipRenderer
         ulong drawCalls;
     }
     __gshared:
-    protected static Viewport currentViewport = null;
-    protected static Viewport mainViewport = null;
+    protected static Viewport currentViewport;
+    protected static Viewport mainViewport;
     protected static IHipRendererImpl rendererImpl;
     protected static HipRendererMode rendererMode;
     protected Statistics stats;
@@ -290,6 +290,7 @@ class HipRenderer
     public static void setViewport(Viewport v)
     {
         this.currentViewport = v;
+        v.updateForWindowSize(width, height);
         rendererImpl.setViewport(v);
     }
 

@@ -9,6 +9,7 @@ public import hip.api.graphics.g2d.hipsprite;
 public import hip.api.math;
 public import hip.graphics.g2d.sprite;
 public import hip.graphics.g2d.textrenderer;
+public import hip.api.renderer.viewport;
 
 public import hip.api.data.font;
 
@@ -19,7 +20,7 @@ private __gshared
     GeometryBatch geoBatch;
     HipTextRenderer dbgText;
     HipOrthoCamera camera;
-    FitViewport viewport;
+    Viewport viewport;
     HipTextRenderer textRenderer;
     bool autoUpdateCameraAndViewport;
 }
@@ -28,8 +29,9 @@ private __gshared
 void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewport = true)
 {
     autoUpdateCameraAndViewport = shouldAutoUpdateCameraAndViewport;
-    viewport = new FitViewport(0, 0, HipRenderer.width, HipRenderer.height);
-    viewport.setSize(HipRenderer.width, HipRenderer.height);
+    viewport = new Viewport(0, 0, HipRenderer.width, HipRenderer.height);
+    viewport.setWorldSize(HipRenderer.width, HipRenderer.height);
+    viewport.setType(ViewportType.fit, HipRenderer.width, HipRenderer.height);
     HipRenderer.setViewport(viewport);
     camera = new HipOrthoCamera();
     camera.setSize(viewport.worldWidth, viewport.worldHeight);
@@ -75,17 +77,27 @@ void resizeRenderer2D(uint width, uint height)
     {
         if(viewport !is null && HipRenderer.getCurrentViewport() == viewport)
         {
-            viewport.setSize(width, height);
             HipRenderer.setViewport(viewport);
         }
         if(camera !is null)
-            camera.setSize(cast(int)viewport.width,cast(int)viewport.height);
+            camera.setSize(cast(int)viewport.worldWidth,cast(int)viewport.worldHeight);
             
     }
 }
 
 export extern(C):
 
+int[2] getWindowSize(){return [HipRenderer.width, HipRenderer.height];}
+void setCameraSize(uint width, uint height){camera.setSize(width, height);}
+void setViewport(Viewport v)
+{
+    HipRenderer.setViewport(v);
+}
+Viewport getCurrentViewport()
+{
+    import hip.util.lifetime;
+    return cast(typeof(return))hipSaveRef(HipRenderer.getCurrentViewport());
+}
 void renderSprites(){spBatch.render;}
 void renderGeometries(){geoBatch.flush;}
 void renderTexts(){dbgText.render();}
