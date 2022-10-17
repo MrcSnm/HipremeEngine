@@ -14,6 +14,7 @@ public import hip.api.data.font;
 
 private __gshared
 {
+    IHipTexture defaultTexture;
     HipSpriteBatch spBatch;
     GeometryBatch geoBatch;
     HipTextRenderer dbgText;
