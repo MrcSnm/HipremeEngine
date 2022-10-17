@@ -253,6 +253,7 @@ struct Version
 mixin template ExportDFunctions(alias mod)
 {
 	import std.traits:getSymbolsByUDA;
+    pragma(msg, mod.stringof);
 	static foreach(mem; __traits(allMembers, mod))
 	{
         //Currently only supported on classes and structs
