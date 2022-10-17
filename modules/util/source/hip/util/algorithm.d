@@ -12,3 +12,10 @@ void put(Q, T)(Q range, T[] args ...)
         i++;
     }
 }
+
+void swap(T)(ref T a, ref T b)
+{
+    T tempA = a;
+    a = b;
+    b = tempA;
+}

@@ -57,6 +57,7 @@ else version(HipInputAPI)
 version(HasInputAPI)
 {
 	public import HipInput = hip.api.input;
+	public import hip.api.input.keyboard : HipKey;
 	alias IHipInputMap = HipInput.IHipInputMap;
 }
 
