@@ -34,8 +34,8 @@ import hip.math.vector;
 
     static enum floatCount = cast(ulong)(HipSpriteVertex.sizeof/float.sizeof);
     static enum quadCount = floatCount*4;
+    static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
 }
-
 /**
 *   The spritebatch contains 2 shaders.
 *   One shader is entirely internal, which you don't have any control, this is for actually being able

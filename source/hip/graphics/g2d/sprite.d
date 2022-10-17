@@ -14,6 +14,7 @@ import std.math;
 import hip.assets.texture;
 import hip.assetmanager;
 import hip.debugging.gui;
+import hip.global.gamedef;
 public import hip.api.graphics.g2d.hipsprite;
 
 @InterfaceImplementation(function(ref void* data)
@@ -49,11 +50,20 @@ public import hip.api.graphics.g2d.hipsprite;
     uint height;
 
     protected bool isDirty;
-
-    static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
     protected float[HipSpriteVertex.floatCount * 4] vertices;
 
     mixin(HipDeferredLoad);
+
+    static IHipTexture getDefaultTexture()
+    {
+        static IHipTexture texture;
+        if(texture is null)
+        {
+            texture = new HipTexture(HipDefaultAssets.texture);
+        }
+        return texture;
+    }
+
 
     this()
     {
@@ -65,7 +75,10 @@ public import hip.api.graphics.g2d.hipsprite;
     this(string texturePath)
     {
         this();
-        texture = new HipTextureRegion(texturePath);
+        if(texturePath is null)
+            texture = new HipTextureRegion(getDefaultTexture());
+        else
+            texture = new HipTextureRegion(texturePath);
         import hip.error.handler;
         if(!(cast(HipTextureRegion)texture).hasSuccessfullyLoaded)
         {

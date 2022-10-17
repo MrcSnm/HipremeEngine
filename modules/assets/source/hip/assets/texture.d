@@ -67,7 +67,7 @@ class HipTexture : HipAsset, IHipTexture
         load(path);
     }
 
-    this(IImage image)
+    this(in IImage image)
     {
         this();
         if(image !is null)
@@ -121,22 +121,28 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
 
     bool hasSuccessfullyLoaded(){return texture && texture.hasSuccessfullyLoaded;}
 
-    this(string texturePath, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
+    protected this()
     {
         super("TextureRegion");
+        _typeID = assetTypeID!HipTextureRegion;
+    }
+
+    this(string texturePath, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
+    {
+        this();
         texture = new HipTexture(texturePath);
         setRegion(u1,v1,u2,v2);
     }
 
     this(IHipTexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
     {
-        super("TextureRegion");
+        this();
         this.texture = texture;
         setRegion(u1,v1,u2,v2);
     }
     this(IHipTexture texture, uint u1, uint v1, uint u2, uint v2)
     {
-        super("TextureRegion");
+        this();
         this.texture = texture;
         setRegion(texture.getWidth, texture.getHeight, u1,  v1, u2, v2);
     }
