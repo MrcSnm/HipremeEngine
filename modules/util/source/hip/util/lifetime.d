@@ -51,6 +51,7 @@ version(HipScriptingAPI):
 */
 private __gshared Object[][HipExportedTargets.count] _hipExportedSharedUserData;
 
+
 export extern(C) void hipDestroy(Object reference, int target = HipExportedTargets.nativeScript_D)
 {
     for(uint i = 0; i < _hipExportedSharedUserData.length; i++)

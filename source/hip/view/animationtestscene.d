@@ -72,8 +72,8 @@ class AnimationTestScene : Scene
     {
         super.render();
         Viewport v = HipRenderer.getCurrentViewport();
-        v.setSize(800, 600);
-        v.update();
+        v.updateForWindowSize(800, 600);
+        HipRenderer.setViewport(v);
         batch.camera.setScale(2, 2);
         batch.draw(spr);
         batch.render();

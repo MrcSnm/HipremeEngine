@@ -31,6 +31,7 @@ version (HipremeG2D)
 {
 	public import hip.api.graphics.color;
 	public import hip.api.renderer.texture;
+	public import hip.api.renderer.viewport;
 	public import hip.api.graphics.g2d.hipsprite;
 }
 //View + Renderer

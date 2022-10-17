@@ -53,7 +53,8 @@ class SpriteTestScene : Scene
     {
         import hip.console.log;
         Viewport v = HipRenderer.getCurrentViewport();
-        v.update();
+        v.updateForWindowSize(width, height);
+        HipRenderer.setViewport(v);
         rawlog(v.w, " ", v.h);
     }
 }
