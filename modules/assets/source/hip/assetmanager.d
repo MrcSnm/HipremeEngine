@@ -490,7 +490,6 @@ class HipAssetManager
             }
 
         completeMutex.unlock();
-        writeln("Executed update ");
     }
 
     /**

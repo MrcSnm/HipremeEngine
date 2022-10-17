@@ -59,8 +59,9 @@ version(Script)
 
         version(Have_util)
         {
-            public import hip.util.data_structures : Array2D;
-            package Array2D!IHipTextureRegion function(
+            public import hip.util.data_structures : Array2D_GC;
+            public alias Spritesheet = Array2D_GC!IHipTextureRegion;
+            package Array2D_GC!IHipTextureRegion function(
                 IHipTexture t,
                 uint frameWidth, uint frameHeight,
                 uint width, uint height,
@@ -81,8 +82,9 @@ else version(Have_hipreme_engine)
 
 version(Have_util)
 {
-    public import hip.util.data_structures : Array2D;
-    extern(D) Array2D!IHipTextureRegion cropSpritesheet(
+    public import hip.util.data_structures : Array2D, Array2D_GC;
+
+    extern(D) Array2D_GC!IHipTextureRegion cropSpritesheet(
             IHipTexture t,
             uint frameWidth, uint frameHeight,
             uint width, uint height,
@@ -95,12 +97,12 @@ version(Have_util)
             offsetX, offsetY,
             offsetXPerFrame, offsetYPerFrame);
     }
-    extern(D) Array2D!IHipTextureRegion cropSpritesheet(IHipTexture t, uint frameWidth, uint frameHeight)
+    extern(D) Array2D_GC!IHipTextureRegion cropSpritesheet(IHipTexture t, uint frameWidth, uint frameHeight)
     {
         return _cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
     }
 
-    extern(D) Array2D!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
+    extern(D) Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
     {
         uint frameWidth = t.getWidth() / columns;
         uint frameHeight = t.getHeight() / rows;

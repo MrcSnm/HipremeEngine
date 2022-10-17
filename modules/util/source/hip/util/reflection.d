@@ -213,13 +213,11 @@ template generateExportFunc(string className, alias funcSymbol)
         {
             ret~= q{
                 import hip.util.lifetime;
-                return cast(}~RetType.stringof~")"~"hipSaveRef(";
+                return cast(typeof(return))hipSaveRef(cast(Object)
+            };
 
-                static if(is(RetType == interface))
-                    ret~= "cast(Object)";
-                
-                ret~= className~"."~__traits(identifier, funcSymbol)~"("~
-                [ParameterIdentifierTuple!funcSymbol].join(",")~"));}";
+            ret~= className~"."~__traits(identifier, funcSymbol)~"("~
+            [ParameterIdentifierTuple!funcSymbol].join(",")~"));}";
         }
         else
         {
