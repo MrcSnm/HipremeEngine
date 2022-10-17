@@ -177,7 +177,6 @@ class HipSpriteBatch
         this.quadsCount+= countOfQuads;
     }
     
-    pragma(inline, true)
     private int getNextTextureID(IHipTexture t)
     {
         for(int i = 0; i < usingTexturesCount; i++)
@@ -308,7 +307,7 @@ class HipSpriteBatch
     {
         if(ppShader !is null)
             fb.bind();
-        this.flush();
+        flush();
         if(ppShader !is null)
         {
             fb.unbind();

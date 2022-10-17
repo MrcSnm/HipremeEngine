@@ -105,8 +105,8 @@ void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int
 void drawSprite(IHipSprite sprite){spBatch.draw(cast(HipSprite)sprite);}
 void drawRegion(IHipTextureRegion reg, int x, int y, int z = 0, HipColor color = HipColor.white){spBatch.draw(reg, x, y, z, color);}
 
-public import hip.util.data_structures : Array2D;
-Array2D!IHipTextureRegion _cropSpritesheet(
+public import hip.util.data_structures : Array2D, Array2D_GC;
+Array2D_GC!IHipTextureRegion _cropSpritesheet(
     IHipTexture t,
     uint frameWidth, uint frameHeight,
     uint width, uint height,
@@ -115,12 +115,13 @@ Array2D!IHipTextureRegion _cropSpritesheet(
 )
 {
     import hip.assets.texture;
-    return HipTextureRegion.spritesheet(t, 
+    import hip.util.lifetime;
+    return cast(typeof(return))hipSaveRef(HipTextureRegion.spritesheet(t, 
         frameWidth, frameHeight, 
         width, height, 
         offsetX, offsetY, 
         offsetXPerFrame, offsetYPerFrame
-    );
+    ).toGC());
 }
 
 void setFontNull(typeof(null) _)
