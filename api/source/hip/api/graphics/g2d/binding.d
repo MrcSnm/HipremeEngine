@@ -5,7 +5,7 @@ import hip.api.graphics.g2d.hipsprite;
 import hip.api.data.font;
 import hip.api.graphics.text;
 
-alias thisModule = __traits(parent, {});
+private alias thisModule = __traits(parent, {});
 void initG2D()
 {
     version(Script)
@@ -43,6 +43,8 @@ version(Script)
         void function(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24) drawQuadraticBezierLine;
         ///Draws the target sprite instance
         void function(IHipSprite sprite) drawSprite;
+        ///Draws a texture region at a specified place
+        void function(IHipTextureRegion reg, int x, int y, int z = 0, HipColor = HipColor.white) drawRegion;
         ///Sets the font for the next drawText commands
         package void function (HipFont font) _setFont;
         package void function (typeof(null) _) setFontNull;
@@ -54,7 +56,20 @@ version(Script)
         IHipSprite function(string texturePath) newSprite;
         ///Destroy a sprite instance
         void function(ref IHipSprite sprite) destroySprite;
+
+        version(Have_util)
+        {
+            public import hip.util.data_structures : Array2D;
+            package Array2D!IHipTextureRegion function(
+                IHipTexture t,
+                uint frameWidth, uint frameHeight,
+                uint width, uint height,
+                uint offsetX, uint offsetY,
+                uint offsetXPerFrame, uint offsetYPerFrame
+            ) _cropSpritesheet;
+        }
     }
+    
 }
 //Use directly 
 else version(Have_hipreme_engine)
@@ -62,3 +77,33 @@ else version(Have_hipreme_engine)
     public import hip.graphics.g2d.renderer2d;
 }
 
+
+
+version(Have_util)
+{
+    public import hip.util.data_structures : Array2D;
+    extern(D) Array2D!IHipTextureRegion cropSpritesheet(
+            IHipTexture t,
+            uint frameWidth, uint frameHeight,
+            uint width, uint height,
+            uint offsetX, uint offsetY,
+            uint offsetXPerFrame, uint offsetYPerFrame
+    )
+    {
+        return _cropSpritesheet(t, frameWidth, frameHeight,
+            width, height,
+            offsetX, offsetY,
+            offsetXPerFrame, offsetYPerFrame);
+    }
+    extern(D) Array2D!IHipTextureRegion cropSpritesheet(IHipTexture t, uint frameWidth, uint frameHeight)
+    {
+        return _cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
+    }
+
+    extern(D) Array2D!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
+    {
+        uint frameWidth = t.getWidth() / columns;
+        uint frameHeight = t.getHeight() / rows;
+        return _cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
+    }
+}

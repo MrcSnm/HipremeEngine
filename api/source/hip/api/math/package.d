@@ -25,7 +25,9 @@ void initMath()
 {
     version(Script)
     {
+        import std.stdio;
         Random.initRandom();
+        writeln("Initialized random module");
         // initVector();
     }
 }
