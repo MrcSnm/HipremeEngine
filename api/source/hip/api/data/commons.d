@@ -31,6 +31,15 @@ interface IHipAssetLoadTask
     IHipAsset asset(IHipAsset asset);
     bool hasFinishedLoading() const;
     void await();
+
+    T awaitAs(T)()
+    {
+        await();
+        //Ignore dynamic cast (future only) return cast(T)(cast(void*)asset);
+        if(hasFinishedLoading() && result == HipAssetResult.loaded)
+            return cast(T)asset;
+        return null;
+    }
 }
 
 interface IHipDeferrableTexture

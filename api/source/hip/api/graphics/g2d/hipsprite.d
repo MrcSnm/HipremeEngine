@@ -19,6 +19,10 @@ public import hip.api.data.commons;
 
 interface IHipSprite : IHipDeferrableTexture
 {
+    final IHipTexture getTexture() { return getTextureRegion().getTexture();}
+    IHipTextureRegion getTextureRegion();
+    
+    ///Will ignore the last TextureRegion and create a new one to contain the entire texture
     void setTexture(IHipTexture texture);
     void setPosition(float x, float y);
     void setScale(float x, float y);
@@ -26,7 +30,15 @@ interface IHipSprite : IHipDeferrableTexture
     void setRotation(float rotation);
     void setScroll(float x, float y);
     void setTiling(float x, float y);
-    void setRegion(float x1, float y1, float x2, float y2);
-    int getTextureWidth();
-    int getTextureHeight();
+    ///Sets the texture from the region
+    void setRegion(IHipTextureRegion region);
+    void setRegion(TextureCoordinatesQuad c);
+    final void setRegion(float u1, float v1, float u2, float v2)
+    {
+        setRegion(TextureCoordinatesQuad(u1,v1,u2,v2));
+    }
+    int getWidth() const;
+    int getHeight() const;
+    int getTextureWidth() const;
+    int getTextureHeight() const;
 }

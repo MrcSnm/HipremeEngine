@@ -20,20 +20,28 @@ else:
 
 version(Script)
 {
-	extern(C) int function(int min, int max) range;
-	extern(C) uint function(uint min, uint max) rangeu;
-	extern(C) ubyte function(ubyte min, ubyte max) rangeub;
-	extern(C) float function(float min, float max) rangef;
+	private extern(C)
+	{
+		int function(int min, int max) Random_range;
+		uint function(uint min, uint max) Random_rangeu;
+		ubyte function(ubyte min, ubyte max) Random_rangeub;
+		float function(float min, float max) Random_rangef;
+	}
+	int range(int min, int max){return Random_range(min,max);}
+	uint rangeu(uint min, uint max){return Random_rangeu(min, max);}
+	ubyte rangeub(ubyte min, ubyte max){return Random_rangeub(min, max);}
+	float rangef(float min, float max){return Random_rangef(min, max);}
+
+
 }
+
+private alias thisModule = __traits(parent, {});
 
 package void initRandom()
 {
 	version(Script)
 	{
 		import hip.api.internal;
-		mixin(loadSymbol("range"));
-		mixin(loadSymbol("rangeu"));
-		mixin(loadSymbol("rangeub"));
-		mixin(loadSymbol("rangef"));
+		loadModuleFunctionPointers!thisModule;
 	}
 }
