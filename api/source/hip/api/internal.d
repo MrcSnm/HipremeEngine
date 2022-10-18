@@ -85,11 +85,19 @@ enum loadModuleFunctionPointers(alias currentModule, string exportedClass = "")(
 	{{
 		string targetName = member;
 		static if(exportedClass != "")
+		{
 			targetName = prefix~targetName~'\0';
+		}
 		alias f = __traits(getMember, currentModule, member);
 		static if(isFunctionPointer!(f))
-
+		{
 			f = cast(typeof(f))_loadSymbol(_dll, targetName.ptr);
+			if(f is null)
+			{
+				import std.stdio;
+				writeln(f.stringof, " wasn't able to load");
+			}
+		}
 	}}
 }
 

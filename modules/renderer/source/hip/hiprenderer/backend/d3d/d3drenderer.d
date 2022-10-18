@@ -324,6 +324,9 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         initD3DRenderTargetView();
     }
 
+    /**
+    *   Create a rasterizer state
+    */
     public void setState()
     {
         D3D11_RASTERIZER_DESC desc;
@@ -405,6 +408,20 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     public Shader createShader()
     {
         return new Shader(new Hip_D3D11_ShaderImpl());
+    }
+
+    void setBlendFunction(HipBlendFunction src, HipBlendFunction dst)
+    {
+        ErrorHandler.assertExit(false, "Unimplemented");
+    }
+    void setBlendingEquation(HipBlendEquation)
+    {
+        ErrorHandler.assertExit(false, "Unimplemented");
+    }
+    bool isBlendingEnabled() const
+    {
+        ErrorHandler.assertExit(false, "Unimplemented");
+        return false;
     }
     public bool init(HipWindow window)
     {

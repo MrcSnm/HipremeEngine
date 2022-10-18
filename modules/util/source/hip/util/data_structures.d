@@ -306,6 +306,50 @@ struct Array(T)
     }
 }
 
+
+private mixin template Array2DMixin(T)
+{
+    int opApply(scope int delegate(ref T) dg)
+    {
+        int result = 0;
+        for(int i = 0; i < width*height; i++)
+        {
+            result = dg(data[i]);
+            if (result)
+                break;
+        }
+        return result;
+    }
+
+    private uint height;
+    private uint width;
+    @nogc int getWidth() const {return width;}
+    @nogc int getHeight() const {return height;}
+    @nogc T[] opSlice(size_t start, size_t end)
+    {
+        if(end < start)
+        {
+            size_t temp = end;
+            end = start; end = temp;
+        }
+        if(end > width*height)
+            end = width*height;
+        return data[start..end];
+    }
+    pragma(inline, true)
+    {
+        @nogc ref auto opIndex(size_t i,  size_t j){return data[i*width+j];}
+        @nogc ref auto opIndex(size_t i)
+        {
+            size_t temp = i*width;
+            return data[temp..temp+width];
+        }
+        @nogc auto opIndexAssign(T)(T value, size_t i, size_t j){return data[i*width+j] = value;}
+        @nogc size_t opDollar() const {return width*height;}
+        @nogc bool opCast() const{return data !is null;}
+    }
+}
+
 /**
 *   By using Array2D instead of T[][], only one array instance is created, not "n" arrays. So it is a lot
 *   faster when you use that instead of array of arrays.
@@ -314,16 +358,24 @@ struct Array(T)
 */
 struct Array2D(T)
 {
+
+    mixin Array2DMixin!T;
+    Array2D_GC!T toGC()
+    {
+        Array2D_GC!T ret = new Array2D_GC!T(width, height);
+        for(int i = 0; i < width*height; i++)
+            ret.data[i] = data[i];
+        destroy(this);
+
+        return ret;
+    }
     @nogc:
     private T* data;
-    private uint height;
-    private uint width;
     import core.stdc.stdlib;
 
     private int* countPtr;
 
     this(this){*countPtr = *countPtr + 1;}
-
     this(uint lengthHeight, uint lengthWidth)
     {
         data = cast(T*)malloc((lengthHeight*lengthWidth)*T.sizeof);
@@ -332,21 +384,15 @@ struct Array2D(T)
         height = lengthHeight;
         width = lengthWidth;
     }
-    pragma(inline, true)
-    {
-        ref auto opIndex(size_t i,  size_t j){return data[i*width+j];}
-        ref auto opIndex(size_t i)
-        {
-            size_t temp = i*width;
-            return data[temp..temp+width];
-        }
-        auto opIndexAssign(T)(T value, size_t i, size_t j){return data[i*width+j] = value;}
-    }
     ~this()
     {
+        if(countPtr == null)
+            return;
         *countPtr = *countPtr - 1;
         if(*countPtr <= 0)
         {
+            import std.stdio;
+            debug writeln("Destroyed");
             free(data);
             free(countPtr);
             data = null;
@@ -354,7 +400,20 @@ struct Array2D(T)
             width = height = 0;
         }
     }
+    
 
+}
+
+class Array2D_GC(T)
+{
+    private T[] data;
+    this(uint lengthHeight, uint lengthWidth)
+    {
+        data = new T[](lengthHeight*lengthWidth);
+        width = lengthWidth;
+        height = lengthHeight;
+    }
+    mixin Array2DMixin!T;
 }
 
 private uint hash_fnv1(T)(T value)

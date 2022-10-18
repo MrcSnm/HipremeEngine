@@ -47,6 +47,7 @@ public interface IImage : IImageBase
     string getName() const;
     void loadRaw(in ubyte[] pixels, int width, int height, ubyte bytesPerPixel);
     bool loadFromMemory(ubyte[] data);
+    bool hasLoadedData() const;
     void[] convertPalettizedToRGBA() const;
     void[] monochromeToRGBA() const;
 }

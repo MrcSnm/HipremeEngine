@@ -1,7 +1,7 @@
 module hip.api.assets.binding;
 public import hip.api.data.commons;
 
-alias thisModule = __traits(parent, {});
+private alias thisModule = __traits(parent, {});
 
 void initAssetManager()
 {

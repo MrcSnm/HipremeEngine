@@ -106,6 +106,11 @@ T sum(T)(T[] values ...) pure nothrow @safe @nogc
     return sum;
 }
 
+T clamp(T)(T value, T min, T max) pure nothrow @safe @nogc
+{
+    return value < min ? min : value > max ? max : value;
+}
+
 pragma(inline)T abs(T)(in T value){return value < 0 ? -value : value;}
 
 int greatestCommonDivisor(int a, int b)

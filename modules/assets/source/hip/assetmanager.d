@@ -89,14 +89,15 @@ class HipAssetLoadTask : IHipAssetLoadTask
     {
         if(partialData is null)
             throw new Error("No partial data was set before taking it");
-        return partialData;
+        void[] ret = partialData;
+        partialData = null;
+        return ret;
     }
     
     HipAssetResult result() const {return _result;}
     IHipAsset asset(){return _asset;}
     HipAssetResult result(HipAssetResult newResult){return _result = newResult;}
     IHipAsset asset(IHipAsset newAsset){return _asset = cast(HipAsset)newAsset;}
-    
 
 }
 
@@ -152,6 +153,7 @@ enum HipDeferredLoad()
 class HipAssetManager
 {
     import core.sync.mutex;
+    import hip.config.opts;
 
     protected static HipWorkerPool workerPool;
     static float currentTime;
@@ -161,7 +163,7 @@ class HipAssetManager
 
     //Thread Communication
     protected static HipAssetLoadTask[] completeQueue;
-    protected static Mutex completeMutex;
+    protected static DebugMutex completeMutex;
     protected static void delegate(HipAsset)[][HipAssetLoadTask] completeHandlers;
     
 
@@ -172,8 +174,8 @@ class HipAssetManager
 
     static this()
     {
-        completeMutex = new Mutex();
-        workerPool = new HipWorkerPool(8);
+        completeMutex = new DebugMutex();
+        workerPool = new HipWorkerPool(HIP_ASSETMANAGER_WORKER_POOL);
     }
     static bool isAsync = true;
 
@@ -213,7 +215,11 @@ class HipAssetManager
     }
 
     @ExportD static bool isLoading(){return !workerPool.isIdle;}
-    @ExportD static void awaitLoad(){workerPool.await;}
+    @ExportD static void awaitLoad()
+    {
+        workerPool.await;
+        update();
+    }
 
     static void awaitTask(HipAssetLoadTask task)
     {
@@ -227,19 +233,24 @@ class HipAssetManager
         destroy(semaphore);
     }
 
-    private static HipWorkerThread loadWorker(void delegate() loadFn, void delegate(string taskName) onFinish = null, bool onMainThread = false)
+    private static HipWorkerThread loadWorker(string taskName, void delegate() loadFn, void delegate(string taskName) onFinish = null, bool onMainThread = false)
     {
         if(isAsync)
-            return workerPool.pushTask("Load", loadFn, onFinish, onMainThread);
+            return workerPool.pushTask(taskName, loadFn, onFinish, onMainThread);
         else
         {
             loadFn();
             if(onFinish !is null)
-                onFinish("Load");
+                onFinish(taskName);
         }
         return null;
     }
 
+    /** 
+     * Checks whether the file has been loaded already or not:
+     *  if: returns its previous task
+     *  else: Put a new one on load cache and retunr
+     */
     private static HipAssetLoadTask loadBase(string path, HipWorkerThread worker)
     {
         HipAsset asset = getAsset(path);
@@ -256,10 +267,10 @@ class HipAssetManager
     /**
     *   loadSimple must be used when the asset can be totally constructed on the worker thread and then returned to the main thread
     */
-    private static HipAssetLoadTask loadSimple(string path, HipAsset delegate(string pathOrLocation) loadAsset)
+    private static HipAssetLoadTask loadSimple(string taskName, string path, HipAsset delegate(string pathOrLocation) loadAsset)
     {
         HipAssetLoadTask task;
-        task = loadBase(path, loadWorker(()
+        task = loadBase(path, loadWorker(taskName~path, ()
         {
             task.asset = loadAsset(path);
             if(task.asset !is null)
@@ -274,12 +285,19 @@ class HipAssetManager
     /**
     *   loadComplex is used when part of the asset can be constructed on worker thread, but for completing the load, it must finish on main thread
     */
-    private static HipAssetLoadTask loadComplex(string path, void[] delegate(string pathOrLocation) loadAsset, HipAsset delegate(void[] partialData) onWorkerLoadComplete)
+    private static HipAssetLoadTask loadComplex(string taskName, string path, 
+        void[] delegate(string pathOrLocation) loadAsset, 
+        HipAsset delegate(void[] partialData) onWorkerLoadComplete
+    )
     {
         HipAssetLoadTask task;
-        task = loadBase(path, loadWorker(()
+        task = loadBase(path, loadWorker(taskName~path, ()
         {
+            import std.stdio;
+            writeln("Loading asset at ", path);
+            writeln(task is null);
             task.givePartialData(loadAsset(path));
+            writeln("Finished giving partial data");
         }, (name)
         {
             task.asset = onWorkerLoadComplete(task.takePartialData());
@@ -294,7 +312,7 @@ class HipAssetManager
 
     @ExportD static IHipAssetLoadTask loadImage(string imagePath)
     {
-        HipAssetLoadTask task = loadSimple(imagePath, (pathOrLocation)
+        HipAssetLoadTask task = loadSimple("Load Image ", imagePath, (pathOrLocation)
         {
             import hip.filesystem.hipfs;
             auto ret = new Image(pathOrLocation);
@@ -302,20 +320,21 @@ class HipAssetManager
                 return null;
             return ret;
         });
+        workerPool.startWorking();
         return task;
     }
 
     @ExportD static IHipAssetLoadTask loadTexture(string texturePath)
     {
         import hip.util.memory;
-        HipAssetLoadTask task = loadComplex(texturePath, (pathOrLocation)
+        HipAssetLoadTask task = loadComplex("Load Texture ", texturePath, (pathOrLocation)
         {
             import hip.filesystem.hipfs;
             Image img = new Image(pathOrLocation);
             if(!img.loadFromMemory(HipFS.read(pathOrLocation)))
                 return null;
             return toHeapSlice(img);
-        }, (partialData)
+            }, (partialData)
         {
             if(partialData is null)
                 return null;
@@ -324,6 +343,7 @@ class HipAssetManager
             freeGCMemory(partialData);
             return ret;
         });
+        workerPool.startWorking();
         return task;
     }
 
@@ -355,7 +375,7 @@ class HipAssetManager
             this(Hip_TTF_Font fnt, ubyte[] img){font = fnt; rawImage = img;}
         }
 
-        HipAssetLoadTask task = loadComplex(ttfPath, (pathOrLocation)
+        HipAssetLoadTask task = loadComplex("Load TTF", ttfPath, (pathOrLocation)
         {
             import hip.filesystem.hipfs;
             Hip_TTF_Font font = new Hip_TTF_Font(pathOrLocation, fontSize);
@@ -375,6 +395,7 @@ class HipAssetManager
             HipFontAsset fnt = new HipFontAsset(i.font);
             return fnt;
         });
+        workerPool.startWorking();
         return task;
     }
 
@@ -393,7 +414,7 @@ class HipAssetManager
         }
 
             import std.stdio;
-        HipAssetLoadTask task = loadComplex(fontPath, (pathOrLocation)
+        HipAssetLoadTask task = loadComplex("Load BMFont", fontPath, (pathOrLocation)
         {
             import hip.filesystem.hipfs;
             HipBitmapFont font = new HipBitmapFont();
@@ -428,6 +449,7 @@ class HipAssetManager
             HipFontAsset fnt = new HipFontAsset(i.font);
             return fnt;
         });
+        workerPool.startWorking();
         return task;
     }
     
@@ -457,12 +479,16 @@ class HipAssetManager
     */
     static void update()
     {
+        import std.stdio;
         workerPool.pollFinished();
         completeMutex.lock();
             if(completeQueue.length)
             {
                 foreach(task; completeQueue)
                 {
+                    //Subject to a logger
+                    import std.stdio;
+                    writeln("Finished ", task.name);
                     if(auto handlers = task in completeHandlers)
                     {
                         foreach(handler; *handlers)
