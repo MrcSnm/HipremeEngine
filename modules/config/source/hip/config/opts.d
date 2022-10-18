@@ -35,6 +35,7 @@ enum HIP_OPTIMIZE = false;
 enum HIP_ALPHA_BLEND_DEFAULT = true;
 
 ///////////////////////////////// Default Asset Files /////////////////////////////////
+enum HIP_ASSETMANAGER_WORKER_POOL = 2;
 enum HIP_DEFAULT_FONT = "assets/fonts/WarsawGothic-BnBV.otf";
 enum HIP_DEFAULT_FONT_SIZE = 32;
 enum HIP_DEFAULT_TEXTURE = "assets/graphics/sprites/default.png";

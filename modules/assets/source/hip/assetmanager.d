@@ -89,14 +89,15 @@ class HipAssetLoadTask : IHipAssetLoadTask
     {
         if(partialData is null)
             throw new Error("No partial data was set before taking it");
-        return partialData;
+        void[] ret = partialData;
+        partialData = null;
+        return ret;
     }
     
     HipAssetResult result() const {return _result;}
     IHipAsset asset(){return _asset;}
     HipAssetResult result(HipAssetResult newResult){return _result = newResult;}
     IHipAsset asset(IHipAsset newAsset){return _asset = cast(HipAsset)newAsset;}
-    
 
 }
 
@@ -152,6 +153,7 @@ enum HipDeferredLoad()
 class HipAssetManager
 {
     import core.sync.mutex;
+    import hip.config.opts;
 
     protected static HipWorkerPool workerPool;
     static float currentTime;
@@ -161,7 +163,7 @@ class HipAssetManager
 
     //Thread Communication
     protected static HipAssetLoadTask[] completeQueue;
-    protected static Mutex completeMutex;
+    protected static DebugMutex completeMutex;
     protected static void delegate(HipAsset)[][HipAssetLoadTask] completeHandlers;
     
 
@@ -172,8 +174,8 @@ class HipAssetManager
 
     static this()
     {
-        completeMutex = new Mutex();
-        workerPool = new HipWorkerPool(8);
+        completeMutex = new DebugMutex();
+        workerPool = new HipWorkerPool(HIP_ASSETMANAGER_WORKER_POOL);
     }
     static bool isAsync = true;
 
@@ -246,7 +248,7 @@ class HipAssetManager
 
     /** 
      * Checks whether the file has been loaded already or not:
-     *  if has: returns its previous task
+     *  if: returns its previous task
      *  else: Put a new one on load cache and retunr
      */
     private static HipAssetLoadTask loadBase(string path, HipWorkerThread worker)
@@ -291,7 +293,11 @@ class HipAssetManager
         HipAssetLoadTask task;
         task = loadBase(path, loadWorker(taskName~path, ()
         {
+            import std.stdio;
+            writeln("Loading asset at ", path);
+            writeln(task is null);
             task.givePartialData(loadAsset(path));
+            writeln("Finished giving partial data");
         }, (name)
         {
             task.asset = onWorkerLoadComplete(task.takePartialData());
@@ -314,6 +320,7 @@ class HipAssetManager
                 return null;
             return ret;
         });
+        workerPool.startWorking();
         return task;
     }
 
@@ -327,7 +334,7 @@ class HipAssetManager
             if(!img.loadFromMemory(HipFS.read(pathOrLocation)))
                 return null;
             return toHeapSlice(img);
-        }, (partialData)
+            }, (partialData)
         {
             if(partialData is null)
                 return null;
@@ -336,6 +343,7 @@ class HipAssetManager
             freeGCMemory(partialData);
             return ret;
         });
+        workerPool.startWorking();
         return task;
     }
 
@@ -387,6 +395,7 @@ class HipAssetManager
             HipFontAsset fnt = new HipFontAsset(i.font);
             return fnt;
         });
+        workerPool.startWorking();
         return task;
     }
 
@@ -440,6 +449,7 @@ class HipAssetManager
             HipFontAsset fnt = new HipFontAsset(i.font);
             return fnt;
         });
+        workerPool.startWorking();
         return task;
     }
     
