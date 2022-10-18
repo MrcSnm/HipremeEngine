@@ -58,6 +58,46 @@ import core.thread;
 import core.sync.mutex : Mutex;
 import core.sync.semaphore:Semaphore;
 
+class DebugMutex
+{
+    private string lastFileLock;
+    private size_t lastLineLock;
+    private ulong lastID;
+    private Mutex mtx;
+    this()
+    {
+        mtx = new Mutex();
+    }
+    void lock(string file = __FILE__, size_t line = __LINE__)
+    {
+        import std.process:thisThreadID;
+        if(lastLineLock == 0)
+        {
+            lastFileLock = file;
+            lastLineLock = line;
+            lastID = thisThreadID;
+        }
+        else
+        {
+            import std.stdio;
+            writeln("Tried to lock a locked mutex at ", lastFileLock, ":",lastLineLock, " Thread(",lastID,")", " Current Thread is ",thisThreadID);
+        }
+        mtx.lock();
+    }
+    void unlock()
+    {
+        if(lastLineLock == 0)
+        {
+            import std.stdio;
+            writeln("Tried to unlock an unlocked mutex");
+        }
+        lastFileLock = null;
+        lastLineLock = 0;
+        mtx.unlock();
+    }
+
+}
+
 class HipWorkerThread : Thread
 {
     private struct WorkerJob
@@ -69,47 +109,63 @@ class HipWorkerThread : Thread
     private WorkerJob[] jobsQueue;
     private Semaphore semaphore;
     private bool isAlive;
-    private int currentTask = 0;
-    private Mutex mutex;
+    private DebugMutex mutex;
+    private HipWorkerPool pool;
 
 
-
-    this()
+    this(HipWorkerPool pool = null)
     {
         super(&run);
+        if(pool)
+            this.pool = pool;
         isAlive = true;
         semaphore = new Semaphore;
-        mutex = new Mutex();
+        mutex = new DebugMutex();
     }
     /**
     *   This thread goes into an invalid state after finishing it. It should not be used anymore
     */
     void finish()
     {
-        mutex.lock;
+        mutex.lock();
         isAlive = false;
         semaphore.notify;
-        mutex.unlock;
+        mutex.unlock();
     }
     bool isIdle()
     {
         mutex.lock();
-        bool ret = jobsQueue.length == currentTask;
+        bool ret = isIdleImpl();
         mutex.unlock();
         return ret;
+    }
+    private bool isIdleImpl()
+    {
+        return jobsQueue.length == 0;
     }
     /**
     *   Synchronized push on queue
     */
     void pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null)
     {
-        mutex.lock();
-        assert(isAlive, "Can't push a task to a worker that is has finished/awaited");
-        jobsQueue~= WorkerJob(name, task, onTaskFinish);
-        semaphore.notify();
+        if(isAlive)
+        {
+            mutex.lock();
+            jobsQueue~= WorkerJob(name, task, onTaskFinish);
+            mutex.unlock();
+            semaphore.notify();
+        }
+        else
+        {
+            import std.stdio;
+            writeln("Thread is not alive to get tasks.");
+        }
+    }
+
+    void startWorking()
+    {
         if(!isRunning)
             start();
-        mutex.unlock();
     }
     void await(bool rethrow = true)
     {
@@ -121,18 +177,46 @@ class HipWorkerThread : Thread
     {
         while(isAlive)
         {
-            if(!isIdle)
+            mutex.lock();
+            if(!isIdleImpl)
             {
-                mutex.lock();
-                WorkerJob job = jobsQueue[currentTask];
+                WorkerJob job = jobsQueue[0];
                 mutex.unlock();
-                job.task();
-                if(job.onTaskFinish != null)
-                    job.onTaskFinish(job.name);
-                currentTask++;
+                import std.stdio;
+                try
+                {
+                    job.task();
+                    if(job.onTaskFinish != null)
+                    {
+                        job.onTaskFinish(job.name);
+                    }
+                }
+                catch(Error e)
+                {
+                    onAnyException(true, e.toString());
+                    return;
+                }
+                catch(Exception e)
+                {
+                    onAnyException(false, e.toString());
+                    return;
+                }
+                mutex.lock();
+                jobsQueue = jobsQueue[1..$];
+                mutex.unlock();
             }
+            else
+                mutex.unlock();
             semaphore.wait;
         }
+    }
+
+    private void onAnyException(bool isError, string message)
+    {
+        import std.stdio;
+        isAlive = false;
+        if(pool)
+            pool.onHipThreadError(this, isError,message);
     }
     void dispose()
     {
@@ -142,41 +226,71 @@ class HipWorkerThread : Thread
     }
 }
 
+
 class HipWorkerPool
 {
     HipWorkerThread[] threads;
     protected Semaphore awaitSemaphore;
     protected void delegate()[] finishHandlersOnMainThread;
-    protected Mutex handlersMutex;
+    protected DebugMutex handlersMutex;
+
+    private struct Task
+    {
+        string name;
+        void delegate() task;
+        void delegate(string taskName) onTaskFinish = null;
+    }
+    private Task[] mainThreadTasks;
+    private uint awaitCount = 0;
+
 
     this(size_t poolSize)
     {
         threads = new HipWorkerThread[](poolSize);
-        handlersMutex = new Mutex();
+        handlersMutex = new DebugMutex ();
         for(size_t i = 0; i < poolSize; i++)
-            threads[i] = new HipWorkerThread();
+            threads[i] = new HipWorkerThread(this);
+        awaitSemaphore = new Semaphore(0);
+    }
+
+    protected void onHipThreadError(HipWorkerThread worker, bool isError, string message)
+    {
+        if(awaitCount > 0)
+        {
+            awaitSemaphore.notify();
+        }
+        import hip.util.array;
+        import std.stdio;
+        writeln("Worker failed with ", isError ? "error" : "exception", ":", message);
+        threads.remove(worker);
     }
     void await()
     {
-        uint activeCount = 0;
+        awaitCount = 0;
         foreach(thread; threads)
         {
             if(!thread.isIdle)
             {
                 thread.pushTask("Await", ()
                 {
+                    import std.stdio;
+                    writeln("Finished await");
                     awaitSemaphore.notify;}
                 );
-                activeCount++;
+                awaitCount++;
             }
         }
-        while(activeCount > 0)
+        startWorking();
+        while(awaitCount > 0)
         {
-            awaitSemaphore = new Semaphore(0);
             awaitSemaphore.wait();
-            activeCount--;
+            awaitCount--;
         }
     }
+    /**
+    *   If there is no idle thread, null will be returned and the task and onFinish callbacks will be executed on that same thread.
+    *   - Keep in mind that pushin task is not enough. You need to call startWorking() to make it active after pushing tasks
+    */
     HipWorkerThread pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null, bool isOnFinishOnMainThread = false)
     {
         foreach(thread; threads)
@@ -190,10 +304,38 @@ class HipWorkerPool
                 return thread;
             }
         }
-        task();
-        if(onTaskFinish != null)
-            onTaskFinish(name);
+        //Execute a main thread task if it had anything.
+        handlersMutex.lock();
+        mainThreadTasks~= Task(name, task, onTaskFinish);
+        handlersMutex.unlock();
         return null;
+    }
+
+    protected void executeMainThreadTasks()
+    {
+        handlersMutex.lock();
+        if(mainThreadTasks.length != 0)
+        {
+            foreach(mainThreadTask; mainThreadTasks)
+            {
+                mainThreadTask.task();
+                if(mainThreadTask.onTaskFinish != null)
+                    mainThreadTask.onTaskFinish(mainThreadTask.name);
+            }
+            mainThreadTasks.length = 0;
+        }
+        handlersMutex.unlock();
+    }
+
+    /**
+    *   This function should be called every time you push a task.
+    */
+    void startWorking()
+    {
+        foreach(thread; threads)
+            if(!thread.isIdle)
+                thread.startWorking();
+        executeMainThreadTasks();
     }
 
     void delegate(string name) notifyOnFinish(void delegate(string taskName) onFinish)
