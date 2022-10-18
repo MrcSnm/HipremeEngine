@@ -32,6 +32,9 @@ class HipTexture : HipAsset, IHipTexture
     IImage img;
     int width,height;
     public IHipTexture textureImpl;
+    private bool successfullyLoaded;
+    public bool hasSuccessfullyLoaded(){return successfullyLoaded;}
+
 
     public static HipTexture getPixelTexture()
     {
@@ -64,13 +67,14 @@ class HipTexture : HipAsset, IHipTexture
         load(path);
     }
 
-    this(IImage image)
+    this(in IImage image)
     {
         this();
         if(image !is null)
             load(image);
     }
 
+    alias load = IHipTexture.load;
 
     /**
     *   Returns whether the load was successful
@@ -79,19 +83,19 @@ class HipTexture : HipAsset, IHipTexture
     {
         import hip.filesystem.hipfs;
         ubyte[] buffer;
-        if(!HipFS.read(path, buffer))
+        if(!HipFS.read(path, buffer))            
             return false;
 
-        Image loadedImage = new Image(path);
+        Image loadedImage = new Image(path, buffer);
         return load(loadedImage);
     }
 
-    bool load(in IImage img)
+    protected bool loadImpl(in IImage img)
     {
-        bool ret = textureImpl.load(img);
+        successfullyLoaded = textureImpl.load(img);
         width = textureImpl.getWidth;
         height = textureImpl.getHeight;
-        return ret;
+        return successfullyLoaded;
     }
     
     override void onFinishLoading(){}
@@ -108,35 +112,53 @@ class HipTexture : HipAsset, IHipTexture
 
 
 
-class HipTextureRegion : HipAsset
+class HipTextureRegion : HipAsset, IHipTextureRegion
 {
     IHipTexture texture;
     public float u1, v1, u2, v2;
     protected float[8] vertices;
     int regionWidth, regionHeight;
 
-    this(string texturePath, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
+    bool hasSuccessfullyLoaded(){return texture && texture.hasSuccessfullyLoaded;}
+
+    protected this()
     {
         super("TextureRegion");
+        _typeID = assetTypeID!HipTextureRegion;
+    }
+
+    this(string texturePath, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
+    {
+        this();
         texture = new HipTexture(texturePath);
         setRegion(u1,v1,u2,v2);
     }
 
     this(IHipTexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
     {
-        super("TextureRegion");
+        this();
         this.texture = texture;
         setRegion(u1,v1,u2,v2);
     }
     this(IHipTexture texture, uint u1, uint v1, uint u2, uint v2)
     {
-        super("TextureRegion");
+        this();
         this.texture = texture;
         setRegion(texture.getWidth, texture.getHeight, u1,  v1, u2, v2);
     }
 
+    void setTexture(IHipTexture texture){this.texture = texture;}
+    const(IHipTexture) getTexture() const {return cast(const)texture;}
+    IHipTexture getTexture() {return texture;}
+    int getWidth() const {return regionWidth;}
+    int getHeight() const {return regionHeight;}
+    TextureCoordinatesQuad getRegion() const
+    {
+        return TextureCoordinatesQuad(u1, v1, u2, v2);
+    }
+
     ///By passing the width and height values, you'll be able to crop useless frames
-    public static Array2D!HipTextureRegion spritesheet(
+    public static Array2D!IHipTextureRegion spritesheet(
         IHipTexture t,
         uint frameWidth, uint frameHeight,
         uint width, uint height,
@@ -146,7 +168,7 @@ class HipTextureRegion : HipAsset
         uint lengthW = width/(frameWidth+offsetXPerFrame);
         uint lengthH = height/(frameHeight+offsetYPerFrame);
 
-        Array2D!HipTextureRegion ret = Array2D!HipTextureRegion(lengthH, lengthW);
+        Array2D!IHipTextureRegion ret = Array2D!IHipTextureRegion(lengthH, lengthW);
 
         for(int i = 0, fh = 0; fh < height; i++, fh+= frameHeight+offsetXPerFrame)
             for(int j = 0, fw = 0; fw < width; j++, fw+= frameWidth+offsetYPerFrame)
@@ -155,12 +177,13 @@ class HipTextureRegion : HipAsset
         return ret;
     }
     ///Default spritesheet method that makes a spritesheet from the entire texture
-    static Array2D!HipTextureRegion spritesheet(IHipTexture t, uint frameWidth, uint frameHeight)
+    static Array2D!IHipTextureRegion spritesheet(IHipTexture t, uint frameWidth, uint frameHeight)
     {
         return spritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
     }
 
-     /**
+    alias setRegion = IHipTextureRegion.setRegion;
+    /**
     *   Defines a region for the texture in the following order:
     *   Top-left
     *   Top-Right
@@ -193,33 +216,7 @@ class HipTextureRegion : HipAsset
         vertices[7] = v2;
     }
 
-    /**
-    *   The uint variant from the setRegion receives arguments in a non normalized way to setup
-    *   the UV coordinates.
-    *   It is better if you wish to just pass where it start and ends.
-    *   The region is divided by the width and height
-    *   
-    */
-    void setRegion(uint width, uint height, uint u1, uint v1, uint u2, uint v2)
-    {
-        float fu1 = u1/cast(float)width;
-        float fu2 = u2/cast(float)width;
-        float fv1 = v1/cast(float)height;
-        float fv2 = v2/cast(float)height;
-        setRegion(fu1, fv1, fu2, fv2);
-    }
-
-    /**
-    *   The UV coordinates passed are divided by the current texture width and height
-    */
-    void setRegion(uint u1, uint v1, uint u2, uint v2)
-    {
-        if(texture)
-            setRegion(texture.getWidth, texture.getHeight, u1, v1, u2, v2);
-    }
-
-
-    public ref float[8] getVertices(){return vertices;}
+    ref float[8] getVertices(){return vertices;}
     
     override void onFinishLoading(){}
     

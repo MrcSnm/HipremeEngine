@@ -39,12 +39,88 @@ interface IHipTexture
 {
     void setWrapMode(TextureWrapMode mode);
     void setTextureFilter(TextureFilter min, TextureFilter mag);
-    bool load(in IImage img);
+
+    protected bool loadImpl(in IImage img);
+    final bool load(in IImage img)
+    {
+        if(img.hasLoadedData)
+            return loadImpl(img);
+        return false;
+    }
     void bind();
     void bind(int slot);
     void unbind();
     void unbind(int slot);
 
-    int getWidth();
-    int getHeight();
+    bool hasSuccessfullyLoaded();
+
+    int getWidth() const;
+    int getHeight() const;
+}
+
+
+struct TextureCoordinatesQuad
+{
+    float u1, v1, u2, v2;
+}
+
+interface IHipTextureRegion
+{
+    void setTexture(IHipTexture texture);
+    const(IHipTexture) getTexture() const;
+    IHipTexture getTexture();
+    ///Returns this region width
+    int getWidth() const;
+    ///Returns this region height
+    int getHeight() const;
+
+    void setRegion(float u1, float v1, float u2, float v2);
+    TextureCoordinatesQuad getRegion() const;
+    ref float[8] getVertices();
+
+    /**
+    *   The uint variant from the setRegion receives arguments in a non normalized way to setup
+    *   the UV coordinates.
+    *   It is better if you wish to just pass where it start and ends.
+    *   The region is divided by the width and height
+    */
+    final void setRegion(int width, int height, uint u1, uint v1, uint u2, uint v2)
+    {
+        float fu1 = u1/cast(float)width;
+        float fu2 = u2/cast(float)width;
+        float fv1 = v1/cast(float)height;
+        float fv2 = v2/cast(float)height;
+        setRegion(fu1, fv1, fu2, fv2);
+    }
+
+    /**
+    *   The UV coordinates passed are divided by the current texture width and height
+    */
+    final void setRegion(uint u1, uint v1, uint u2, uint v2)
+    {
+        setRegion(getTextureWidth(), getTextureHeight(), u1, v1, u2, v2);
+    }
+
+
+
+    final void setTexture(IHipTexture texture, float u1, float v1, float u2, float v2)
+    {
+        setTexture(texture);
+        setRegion(u1,v1,u2,v2);
+    }
+    
+    final int getTextureWidth() const
+    {
+        const IHipTexture tex = getTexture();
+        if(tex)
+            return tex.getWidth();
+        return 0;
+    }
+    final int getTextureHeight() const
+    {
+        const IHipTexture tex = getTexture();
+        if(tex)
+            return tex.getHeight();
+        return 0;
+    }
 }

@@ -300,6 +300,7 @@ class Hip_GL3Renderer : IHipRendererImpl
             glDrawElements(this.mode, indicesCount, GL_UNSIGNED_SHORT, cast(void*)offset);
     }
 
+    bool isBlendingEnabled() const {return isGLBlendEnabled;}
     public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst)
     {
         if(!isGLBlendEnabled)

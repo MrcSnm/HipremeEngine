@@ -22,6 +22,8 @@ class HipTexture : IHipTexture
     int width,height;
     TextureFilter min, mag;
     private static HipTexture pixelTexture;
+
+    bool hasSuccessfullyLoaded(){return img.getWidth > 0;}
     public static immutable(HipTexture) getPixelTexture()
     {
         if(pixelTexture is null)
@@ -83,7 +85,7 @@ class HipTexture : IHipTexture
     /**
     *   Returns whether the load was successful
     */
-    bool load(in IImage img)
+    protected bool loadImpl(in IImage img)
     {
         this.img = cast(IImage)img; //Promise it won't modify
         this.width = img.getWidth;
@@ -91,6 +93,6 @@ class HipTexture : IHipTexture
         this.textureImpl.load(img);
         return width != 0;
     }
-    int getWidth(){return width;}
-    int getHeight(){return height;}
+    int getWidth() const {return width;}
+    int getHeight() const {return height;}
 }

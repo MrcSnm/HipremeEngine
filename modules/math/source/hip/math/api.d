@@ -31,8 +31,5 @@ mixin template ExportMathAPI()
     // export extern(C) Vector4 unit_4(ref Vector4 first){return first.unit;}
     // export extern(C) Vector4 project_4(ref Vector4 first, Vector4 other){return first.project(other);}
 
-    // export extern(C) int range(int min, int max){return Random.range(min,max);}
-    // export extern(C) uint rangeu(uint min, uint max){return Random.rangeu(min,max);}
-    // export extern(C) ubyte rangeub(ubyte min, ubyte max){return Random.rangeub(min,max);}
-    // export extern(C) float rangef(float min, float max){return Random.rangef(min,max);}
+    mixin ExportDFunctions!(hip.math.random);
 }
