@@ -13,7 +13,7 @@ module hip.systems.game;
 import hip.global.gamedef;
 
 import hip.view;
-import hip.game.scheduler;
+import hip.systems.timer_manager;
 import hip.event.dispatcher;
 import hip.event.handlers.keyboard;
 import hip.windowing.events;
@@ -61,7 +61,7 @@ class GameSystem
      */
     EventDispatcher dispatcher;
     KeyboardHandler keyboard;
-    HipGameScheduler scheduler;
+    HipTimerManager timerManager;
     AScene[] scenes;
     string projectDir;
     protected static AScene externalScene;
@@ -79,7 +79,7 @@ class GameSystem
     this(float targetFPS)
     {
         this.targetFPS = targetFPS;
-        scheduler = new HipGameScheduler();
+        timerManager = new HipTimerManager();
         keyboard = new KeyboardHandler();
         keyboard.addKeyListener(HipKey.ESCAPE, new class HipButton
         {
@@ -243,7 +243,7 @@ class GameSystem
     bool update(float deltaTime)
     {
         import hip.assetmanager;
-        scheduler.update(deltaTime);
+        timerManager.update(deltaTime);
         HipAssetManager.update();
         
         version(LoadScript)

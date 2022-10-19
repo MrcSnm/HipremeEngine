@@ -3,6 +3,7 @@ import hip.graphics.g2d.renderer2d;
 import hip.graphics.g2d.spritebatch;
 import hip.graphics.g2d.ninepatch;
 import hip.api;
+import hip.math.vector;
 import hip.view.scene;
 
 class NinePatchSceneTest : Scene

@@ -2,7 +2,7 @@ module hip.game.tween;
 
 version(HipTweenAPI):
 import std.math:cos, sin, PI, pow, sqrt;
-import hip.game.timer;
+import hip.timer;
 
 private enum c1 = 1.70158f;
 private enum c2 = c1 * 1.525;

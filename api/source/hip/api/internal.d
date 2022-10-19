@@ -39,7 +39,7 @@ void initializeHip()
 			import core.sys.posix.dlfcn:dlopen, RTLD_LAZY;
 			_dll = dlopen(null, RTLD_LAZY);
 		}
-		mixin(loadSymbol("hipDestroy"));
+		hipDestroy = cast(typeof(hipDestroy))_loadSymbol(_dll, "hipDestroy");
 	}
 }
 version(Script):
@@ -77,21 +77,19 @@ enum loadSymbols(Ts...)()
 /**
 *	This function will load all function pointers defined in the module passed.
 */
-enum loadModuleFunctionPointers(alias currentModule, string exportedClass = "")()
+enum loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
 {
+	string prefix = "";
+	string importedFunctionName;
 	static if(exportedClass != "")
-		enum prefix = exportedClass~"_";
-	static foreach(member; __traits(allMembers, currentModule))
+		prefix = exportedClass~"_";
+	static foreach(member; __traits(allMembers, targetModule))
 	{{
-		string targetName = member;
-		static if(exportedClass != "")
-		{
-			targetName = prefix~targetName~'\0';
-		}
-		alias f = __traits(getMember, currentModule, member);
+		alias f = __traits(getMember, targetModule, member);
 		static if(isFunctionPointer!(f))
 		{
-			f = cast(typeof(f))_loadSymbol(_dll, targetName.ptr);
+			importedFunctionName = prefix~member~'\0';
+			f = cast(typeof(f))_loadSymbol(_dll, importedFunctionName.ptr);
 			if(f is null)
 			{
 				import std.stdio;

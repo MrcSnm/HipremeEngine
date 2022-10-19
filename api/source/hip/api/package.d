@@ -36,15 +36,15 @@ version (HipremeG2D)
 }
 //View + Renderer
 public import hip.api.graphics.g2d.renderer2d;
-public import hip.api.view;
+public import hip.api.view.scene;
 
 
 //Assets
-public import hip.api.assets;
+public import HipAssetManager = hip.api.assets.assets_binding;
 //Audio
 public import hip.api.audio;
 //Math
-public import hip.api.math;
+public import hip.api.math.random;
 //Game
 public import hip.api.game.timer;
 //Input
@@ -91,6 +91,7 @@ mixin template HipEngineMain(alias StartScene)
 		export extern(System) AScene HipremeEngineGameInit()
 		{
 			import hip.api;
+			import hip.api.math.math_binding;
 			import core.runtime;
 			rt_init();
 			initializeHip();
