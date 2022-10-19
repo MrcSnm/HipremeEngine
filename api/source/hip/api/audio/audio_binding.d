@@ -1,4 +1,4 @@
-module hip.api.audio.binding;
+module hip.api.audio.audio_binding;
 public import hip.api.audio.audiosource;
 
 void initAudio()

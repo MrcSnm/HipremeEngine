@@ -3,7 +3,6 @@ module hip.api.audio.audiosource;
 version(HipAudioAPI)
 {
     public import hip.api.audio.audioclip;
-    public import hip.api.math.vector;
 
     abstract class AHipAudioSource
     {
@@ -26,6 +25,6 @@ version(HipAudioAPI)
         float maxDistance = 0;
         float rolloffFactor = 0;
         float referenceDistance = 0;
-        Vector3 position;
+        float[3] position;
     }
 }

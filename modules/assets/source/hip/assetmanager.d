@@ -293,11 +293,7 @@ class HipAssetManager
         HipAssetLoadTask task;
         task = loadBase(path, loadWorker(taskName~path, ()
         {
-            import std.stdio;
-            writeln("Loading asset at ", path);
-            writeln(task is null);
             task.givePartialData(loadAsset(path));
-            writeln("Finished giving partial data");
         }, (name)
         {
             task.asset = onWorkerLoadComplete(task.takePartialData());

@@ -3,23 +3,19 @@ import hip.api.internal;
 
 public import hip.api.game.timer;
 
+private alias thisModule = __traits(parent, {});
+
 void initGameAPI()
 {
     version(Script)
     {
-        loadSymbols!(
-            newTimer,
-            scheduleTimer
-        );
+        loadModuleFunctionPointers!thisModule;
     }
 }
 
 
 extern(System)
 {
-    ///Creates a timer managed by the user
-    IHipTimer function (string name, float durationSeconds, HipTimerCallback handler = null, HipTimerType type = HipTimerType.oneShot, bool loops = false) newTimer;
-    ///Creates a timer on the game scheduler. There will be no need to call tick()
-    IHipTimer function (string name, float durationSeconds, HipTimerCallback handler = null, HipTimerType type = HipTimerType.oneShot, bool loops = false) scheduleTimer;
-
+    IHipTimer function(IHipTimer timer) addTimer;
+    IHipTween function(IHipTween tween) addTween;
 }

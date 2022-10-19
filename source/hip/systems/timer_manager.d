@@ -1,8 +1,8 @@
-module hip.game.scheduler;
-import hip.game.timer;
-import hip.game.tween;
+module hip.systems.timer_manager;
+import hip.timer;
+import hip.tween;
 
-class HipGameScheduler
+class HipTimerManager
 {
     private HipTimer[] timers;
     private HipTween[] tweens;

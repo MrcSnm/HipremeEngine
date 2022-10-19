@@ -1,8 +1,16 @@
-module hip.game.timer;
-public import hip.api.game.timer;
+module hip.timer;
+
+enum HipTimerType
+{
+    oneShot,
+    progressive
+}
+
+alias HipTimerCallback = void delegate(float progress, uint loopCount);
+
 
 version(HipTimerAPI):
-class HipTimer : IHipTimer
+class HipTimer
 {
     alias TimerType = HipTimerType;
     ///Enforce naming for making debugging easier

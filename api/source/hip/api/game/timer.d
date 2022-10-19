@@ -20,3 +20,4 @@ interface IHipTimer
     void reset();
     void loopRestart();
 }
+interface IHipTween : IHipTimer{}

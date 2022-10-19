@@ -1,0 +1,30 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"buildOptions": [
+		"debugMode",
+		"debugInfo",
+		"debugInfoC"
+	],
+	"configurations": [
+		{
+			"name": "default",
+			"targetType": "library"
+		},
+		{
+			"name": "source",
+			"targetType": "sourceLibrary"
+		}
+	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"description": "HipremeEngine game module",
+	"importPaths": [
+		"source"
+	],
+	"license": "proprietary",
+	"name": "timer",
+	"sourcePaths": [
+		"source"
+	]
+}
