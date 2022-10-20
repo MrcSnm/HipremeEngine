@@ -75,10 +75,8 @@ enum HipEasing : float function(float x)
 
 class HipTween : HipTimer, IHipTween
 {
-    import hip.util.memory;
     HipEasing easing = null;
-    void* savedData = null;
-    uint savedDataSize = 0;
+    protected void[] savedData = null;
 
     protected void delegate() onPlay;
     protected void delegate()[] onFinish;
@@ -107,18 +105,11 @@ class HipTween : HipTimer, IHipTween
             finish();
     }
 
-    protected void allocSaveData(uint size)
+    protected void allocSaveData(size_t size)
     {
-        if(savedData == null)
-        {
-            savedDataSize = size; 
-            savedData = malloc(size);
-        }
-        else if(savedDataSize < size)
-        {
-            savedDataSize = size;
-            savedData = realloc(savedData, size);
-        }
+        if(savedData !is null)
+            destroy(savedData);
+        savedData = new void[](size);
     }
 
     static HipTween to(string[] Props, T, V)(float durationSeconds, T target, V[]  values...)
@@ -129,8 +120,11 @@ class HipTween : HipTimer, IHipTween
         V[] v2 = values.dup;
         t.onPlay = ()
         {
+            V[] savedDataConv = cast(V[])t.savedData;
             static foreach(i, p; Props)
-                mixin("memcpy(t.savedData+",V.sizeof*i, ", &target.",p,", ", V.sizeof,");");
+            {
+                savedDataConv[i] = cast(V)mixin("target.",p);
+            }
                         
             
             t.addHandler((float prog, uint loops) 
@@ -142,7 +136,7 @@ class HipTween : HipTimer, IHipTween
                 V newValue;
                 static foreach(i, p; Props)
                 {
-                    initialValue = *cast(V*)(t.savedData+i*V.sizeof);
+                    initialValue = savedDataConv[i];
                     newValue = cast(V)((1-multiplier)*initialValue + (v2[i] * multiplier));
                     mixin("target.",p," = newValue;");
                 }
@@ -154,14 +148,13 @@ class HipTween : HipTimer, IHipTween
     {
         HipTween t = new HipTween(durationSeconds, false);
         t.allocSaveData(Props.length * V.sizeof);
-        //Zero init for every variable
-        memset(t.savedData, 0, t.savedDataSize);
         V[] v2 = values.dup;
 
         t.onPlay = ()
         {
             t.addHandler((float prog, uint loops) 
             {
+                V[] savedDataConv = cast(V[])t.savedData;
                 float multiplier = prog;
                 if(t.easing != null)
                     multiplier = t.easing(multiplier);
@@ -169,12 +162,12 @@ class HipTween : HipTimer, IHipTween
                 V temp2;
                 static foreach(i, p; Props)
                 {
-                    temp = *((cast(V*)t.savedData)+i);
+                    temp = savedDataConv[i];
                     temp2 = cast(V)(v2[i] * multiplier);
 
                     mixin("target.",p,"+= -temp + temp2;");
                     //Copy the new values for being subtracted next frame
-                    memcpy(t.savedData + i * V.sizeof, &temp2, V.sizeof);
+                    savedDataConv[i] = temp2;
                 }
             });
         };
@@ -187,7 +180,7 @@ class HipTween : HipTimer, IHipTween
         this.onFinish~= onFinish;
         return this;
     }
-    ~this(){safeFree(savedData);}
+    ~this(){destroy(savedData);}
 
 }
 
