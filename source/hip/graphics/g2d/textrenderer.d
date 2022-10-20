@@ -75,7 +75,7 @@ class HipTextRenderer : IHipDeferrableText
             bmTextShader.uModel = Matrix4.identity;
             const Viewport v = HipRenderer.getCurrentViewport();
             bmTextShader.uView = Matrix4.identity;
-            bmTextShader.uProj = Matrix4.orthoLH(0, v.w, v.h, 0, 0.01, 100);
+            bmTextShader.uProj = Matrix4.orthoLH(0, v.width, v.height, 0, 0.01, 100);
             bmTextShader.setDefaultBlock("FragVars");
             bmTextShader.bind();
             bmTextShader.sendVars();

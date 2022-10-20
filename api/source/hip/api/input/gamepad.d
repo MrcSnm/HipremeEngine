@@ -18,7 +18,6 @@ else version(Have_hipreme_engine)
 
 version(HasHipInput):
 
-public import hip.api.math.vector;
 public import hip.api.input.button;
 
 enum HipGamepadAnalogs : ubyte

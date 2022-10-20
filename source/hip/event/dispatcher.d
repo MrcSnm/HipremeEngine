@@ -18,7 +18,6 @@ private:
 public:
     import hip.systems.input;
     import hip.util.time;
-    import hip.api.math.vector;
     import hip.api.input.keyboard;
     import hip.api.input.button;
     import hip.api.input.mouse;

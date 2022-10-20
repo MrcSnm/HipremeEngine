@@ -1,6 +1,5 @@
-module hip.api.assets.binding;
+module hip.api.assets.assets_binding;
 public import hip.api.data.commons;
-
 private alias thisModule = __traits(parent, {});
 
 void initAssetManager()
@@ -12,7 +11,6 @@ void initAssetManager()
     }
 }
 
-
 version(Script) extern(System)
 {
     ///Returns whether asset manager is loading anything
@@ -23,6 +21,6 @@ version(Script) extern(System)
     IHipAssetLoadTask function(string path) loadTexture;
     ///Returns a load task for image
     IHipAssetLoadTask function(string path) loadImage;
-    ///Returns a load task for font, when used, 
+    // /Returns a load task for font, when used, 
     IHipAssetLoadTask function(string path, int fontSize = 48) loadFont;
 }

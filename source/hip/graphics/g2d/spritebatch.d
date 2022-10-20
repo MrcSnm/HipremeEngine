@@ -127,7 +127,7 @@ class HipSpriteBatch
         if(fb is null)
         {
             Viewport v = HipRenderer.getCurrentViewport;
-            fb = HipRenderer.newFrameBuffer(cast(int)v.w, cast(int)v.h);
+            fb = HipRenderer.newFrameBuffer(cast(int)v.width, cast(int)v.height);
             // fbTexRegion = new HipTextureRegion(fb.getTexture());
         }
         this.ppShader = s;

@@ -13,7 +13,7 @@ module hip.systems.game;
 import hip.global.gamedef;
 
 import hip.view;
-import hip.game.scheduler;
+import hip.systems.timer_manager;
 import hip.event.dispatcher;
 import hip.event.handlers.keyboard;
 import hip.windowing.events;
@@ -61,7 +61,6 @@ class GameSystem
      */
     EventDispatcher dispatcher;
     KeyboardHandler keyboard;
-    HipGameScheduler scheduler;
     AScene[] scenes;
     string projectDir;
     protected static AScene externalScene;
@@ -73,13 +72,12 @@ class GameSystem
     }
     bool hasFinished;
     float fps;
-
     float targetFPS;
+    size_t frames;
 
     this(float targetFPS)
     {
         this.targetFPS = targetFPS;
-        scheduler = new HipGameScheduler();
         keyboard = new KeyboardHandler();
         keyboard.addKeyListener(HipKey.ESCAPE, new class HipButton
         {
@@ -216,6 +214,7 @@ class GameSystem
             if(hotload)
             {
                 rawlog("Recompiling game");
+                HipTimerManager.clearSchedule();
                 HipremeEngineGameDestroy();
                 scenes.remove(externalScene);
                 externalScene = null;
@@ -243,7 +242,9 @@ class GameSystem
     bool update(float deltaTime)
     {
         import hip.assetmanager;
-        scheduler.update(deltaTime);
+        import std.stdio;
+        frames++;
+        HipTimerManager.update(deltaTime);
         HipAssetManager.update();
         
         version(LoadScript)
