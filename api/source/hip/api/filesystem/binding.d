@@ -1,30 +1,12 @@
 module hip.api.filesystem.binding;
 
+private alias thisModule = __traits(parent, {});
 void initFS()
 {
     version(Script)
     {
         import hip.api.internal;
-        enum InputMapClass = "HipFileSystem";
-        mixin(loadSymbolsFromExportD!(InputMapClass,
-            getPath,
-            isPathValid,
-            isPathValidExtra,
-            setPath,
-            read,
-            readText,
-            write,
-            exists,
-            remove,
-            getcwd,
-            absoluteExists,
-            absoluteIsDir,
-            absoluteIsFile,
-            isDir,
-            isFile,
-            writeCache
-        ));
-
+        loadModuleFunctionPointers!(thisModule, "HipFileSystem");
     }
 }
 

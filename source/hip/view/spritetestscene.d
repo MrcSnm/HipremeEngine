@@ -55,6 +55,6 @@ class SpriteTestScene : Scene
         Viewport v = HipRenderer.getCurrentViewport();
         v.updateForWindowSize(width, height);
         HipRenderer.setViewport(v);
-        rawlog(v.w, " ", v.h);
+        rawlog(v.width, " ", v.height);
     }
 }

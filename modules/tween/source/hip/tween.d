@@ -2,7 +2,7 @@ module hip.game.tween;
 
 version(HipTweenAPI):
 import std.math:cos, sin, PI, pow, sqrt;
-import hip.game.timer;
+public import hip.timer;
 
 private enum c1 = 1.70158f;
 private enum c2 = c1 * 1.525;
@@ -73,7 +73,7 @@ enum HipEasing : float function(float x)
 }
 
 
-class HipTween : HipTimer
+class HipTween : HipTimer, IHipTween
 {
     import hip.util.memory;
     HipEasing easing = null;
@@ -84,13 +84,13 @@ class HipTween : HipTimer
 
     this(float durationSeconds, bool loops)
     {
-        super("Tween", durationSeconds, HipTimer.TimerType.progressive, loops);
+        super("Tween", durationSeconds, HipTimerType.progressive, loops);
         this.easing = null;
     }
     HipTween setEasing(HipEasing easing){this.easing = easing; return this;}
     void setProperties(string name, float durationSeconds, bool loops = false)
     {
-        super.setProperties(name, durationSeconds, TimerType.progressive, loops);
+        super.setProperties(name, durationSeconds, HipTimerType.progressive, loops);
     }
     override HipTween play()
     {

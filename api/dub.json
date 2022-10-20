@@ -7,8 +7,12 @@
 	"sourcePaths": [
 		"source"
 	],
+	"dependencies": {
+		"util": {"path": "../modules/util", "optional": true}
+	},
 	"configurations": 
 	[
+		
 		{
 			"name": "script",
 			"versions": [
@@ -17,13 +21,28 @@
 			"targetType": "sourceLibrary"
 		},
 		{
-			"name": "hipengine",
-			"importPaths": [
-				"source",
-				"../modules/math/source"
+			"name": "test",
+			"versions": [
+				"Script"
 			],
 			"targetType": "library"
+		},
+		{
+			"name": "hipengine",
+			"targetType": "library"
 		}
+	],
+	"versions" : [
+		"HipremeRenderer",
+		"HipGraphicsAPI",
+		"HipInputAPI",
+		"HipAudioAPI",
+		"HipMathAPI",
+		"HipImageAPI",
+		"HipTimerAPI",
+		"HipremeAudio",
+		"HipremeG2D",
+		"HipDataStructures"
 	],
 	"license": "proprietary",
 	"name": "hipengine_api"

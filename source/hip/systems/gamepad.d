@@ -12,6 +12,7 @@ module hip.systems.gamepad;
 
 import hip.event.handlers.button;
 public import hip.api.input.gamepad;
+public import hip.math.vector;
 
 ///Refer to https://docs.microsoft.com/en-us/uwp/api/windows.gaming.input.gamepadbuttons?view=winrt-20348
 enum HipXboxGamepadButton : int

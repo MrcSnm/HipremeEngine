@@ -41,7 +41,7 @@ class HipOrthoCamera
     void updateFromViewport()
     {
         Viewport v = HipRenderer.getCurrentViewport();
-        proj = Matrix4.orthoLH(v.x, v.w, v.h, v.y, znear, zfar);
+        proj = Matrix4.orthoLH(v.x, v.width, v.height, v.y, znear, zfar);
     }
     void setSize(uint width, uint height)
     {

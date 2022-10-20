@@ -3,6 +3,7 @@ public import hip.global.gamedef;
 public import hip.event.handlers.inputmap;
 import hip.event.dispatcher;
 import hip.systems.game;
+import hip.math.vector;
 
 
 export extern(System)

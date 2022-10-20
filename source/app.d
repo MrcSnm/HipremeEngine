@@ -16,6 +16,7 @@ import hip.error.handler;
 import hip.global.gamedef;
 import hip.hipaudio.audio;
 import hip.assetmanager;
+import hip.systems.timer_manager;
 
 version(Android)
 {
@@ -346,3 +347,4 @@ version(UWP)
 mixin ExportMathAPI;
 mixin ExportDFunctions!(hip.hipaudio.audio);
 mixin ExportDFunctions!(hip.assetmanager);
+mixin ExportDFunctions!(hip.systems.timer_manager);

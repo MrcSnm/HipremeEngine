@@ -6,7 +6,7 @@ import hip.hiprenderer;
 import hip.bind.interpreters;
 public import hip.api.graphics.color;
 public import hip.api.graphics.g2d.hipsprite;
-public import hip.api.math;
+public import hip.api.math.random;
 public import hip.graphics.g2d.sprite;
 public import hip.graphics.g2d.textrenderer;
 public import hip.api.renderer.viewport;

@@ -14,6 +14,7 @@ import core.stdc.time;
 version(Windows)
 {
     import core.sys.windows.windef;
+    extern(C) BOOL QueryPerformanceFrequency(LARGE_INTEGER* lpPerformanceCount) nothrow;
     extern(C) BOOL QueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount) nothrow;
 }
 else
@@ -31,9 +32,9 @@ private size_t getSystemTime() nothrow
 {
     version(Windows)
     {
-        LARGE_INTEGER itg;
-        QueryPerformanceCounter(&itg);
-        return itg.QuadPart;
+        LARGE_INTEGER counter = void;
+        QueryPerformanceCounter(&counter);
+        return counter.QuadPart * 1000;
     }
     else
     {
@@ -43,20 +44,43 @@ private size_t getSystemTime() nothrow
         return tm.tv_nsec;
     }
 }
+private size_t getSystemTicksPerSecond() nothrow
+{
+    version(Windows)
+    {
+        LARGE_INTEGER ticksPerSecond = void;
+        QueryPerformanceFrequency(&ticksPerSecond);
+        return ticksPerSecond.QuadPart;
+    }
+    else
+    {
+        return 0;
+    }
+}
 
 class HipTime
 {
 
     private static size_t startTime;
+    private static size_t ticksPerSecond;
     protected static long[string] performanceMeasurement;
+
     static this()
     {
-        startTime = getSystemTime();
+        ticksPerSecond = getSystemTicksPerSecond();
+        startTime =  getSystemTime();
     }
 
     static long getCurrentTime() nothrow
     {
-        return getSystemTime() - startTime;
+        size_t time = 0;
+        version(Windows)
+        {
+            time = ((getSystemTime() - startTime)* 1_000_000) / ticksPerSecond;
+        }
+        else
+            time = getSystemTime() - startTime;
+        return time;
     }
 
     static float getCurrentTimeAsMilliseconds() nothrow

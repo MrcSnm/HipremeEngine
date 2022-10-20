@@ -7,12 +7,11 @@
 		"debugInfo",
 		"debugInfoC"
 	],
+	"dependencies": {
+		"hipengine_api": {"path": "../../api"}
+	},
 	"configurations": [
 		{
-			"dependencies": {
-				"hipengine_api": {"path": "../../api", "version": "*"},
-				"util": {"path": "../util","version": "*"}
-			},
 			"name": "default",
 			"targetType": "library"
 		},
@@ -24,16 +23,11 @@
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "HipremeEngine game module",
 	"importPaths": [
-		"source",
-		"../../api/source"
-	],
-	"license": "proprietary",
-	"name": "game",
-	"sourcePaths": [
 		"source"
 	],
-	"versions": [
-		"HipTimerAPI",
-		"HipTweenAPI"
+	"license": "proprietary",
+	"name": "timer",
+	"sourcePaths": [
+		"source"
 	]
 }
