@@ -7,6 +7,9 @@
 	"sourcePaths": [
 		"source"
 	],
+	"dependencies": {
+		"util": {"path": "../modules/util", "optional": true}
+	},
 	"configurations": 
 	[
 		

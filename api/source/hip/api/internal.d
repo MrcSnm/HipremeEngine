@@ -99,6 +99,31 @@ enum loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
 	}}
 }
 
+enum loadClassFunctionPointers(alias targetClass, string exportedClass = "")()
+{
+	string prefix = "";
+	string importedFunctionName;
+
+	static if(exportedClass == "")
+		exportedClass = targetClass.stringof;
+	prefix = exportedClass~"_";
+	static foreach(member; __traits(allMembers, targetClass))
+	{{
+		alias f = __traits(getMember, targetClass, member);
+		static if(isFunctionPointer!(f))
+		{
+			importedFunctionName = prefix~member~'\0';
+			f = cast(typeof(f))_loadSymbol(_dll, importedFunctionName.ptr);
+			if(f is null)
+			{
+				import std.stdio;
+				writeln(f.stringof, " wasn't able to load");
+			}
+		}
+	}}
+}
+
+
 template loadSymbolsForStaticClass(string staticClassPath, Ts...)
 {
 	enum names = simpleManglerFuncs!(staticClassPath, Ts);

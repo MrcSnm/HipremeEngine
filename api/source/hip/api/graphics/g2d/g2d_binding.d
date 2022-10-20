@@ -96,7 +96,7 @@ else version(Have_hipreme_engine)
 
 
 
-version(Have_util)
+version(Script) version(Have_util) 
 {
     Array2D_GC!IHipTextureRegion cropSpritesheet(
         IHipTexture t,
