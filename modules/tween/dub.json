@@ -10,8 +10,7 @@
 	"configurations": [
 		{
 			"dependencies": {
-				"timer": {"path": "../timer","version": "*"},
-				"util": {"path": "../util","version": "*"}
+				"timer": {"path": "../timer","version": "*"}
 			},
 			"name": "default",
 			"targetType": "library"
