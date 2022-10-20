@@ -81,6 +81,7 @@ class HipTween : HipTimer, IHipTween
     uint savedDataSize = 0;
 
     protected void delegate() onPlay;
+    protected void delegate()[] onFinish;
 
     this(float durationSeconds, bool loops)
     {
@@ -98,6 +99,12 @@ class HipTween : HipTimer, IHipTween
         if(onPlay != null)
             onPlay();
         return this;
+    }
+    override void stop()
+    {
+        super.stop();
+        foreach(finish; onFinish)
+            finish();
     }
 
     protected void allocSaveData(uint size)
@@ -169,11 +176,16 @@ class HipTween : HipTimer, IHipTween
                     //Copy the new values for being subtracted next frame
                     memcpy(t.savedData + i * V.sizeof, &temp2, V.sizeof);
                 }
-                
             });
         };
 
         return t;
+    }
+
+    IHipTween addOnFinish(void delegate() onFinish)
+    {
+        this.onFinish~= onFinish;
+        return this;
     }
     ~this(){safeFree(savedData);}
 

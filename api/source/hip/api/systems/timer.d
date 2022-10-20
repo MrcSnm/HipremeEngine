@@ -16,6 +16,7 @@ interface IHipTimer
 
     final bool hasFinished(){return getProgress() == 1.0f;}
     IHipTimer addHandler(void delegate() handler);
+    IHipTimer addHandler(void delegate(float progress) handler);
     IHipTimer addHandler(HipTimerCallback handler);
     void forceFinish();
     void stop();
@@ -29,6 +30,7 @@ interface IHipTimer
 }
 interface IHipTween : IHipTimer
 {
+    IHipTween addOnFinish(void delegate() onFinish);
     ///Remember to call "play" for setting it up to tick
     IHipTween play();
 }
