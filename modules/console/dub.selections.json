@@ -1,8 +1,0 @@
-{
-	"fileVersion": 1,
-	"versions": {
-		"config": {"path":"../config"},
-		"debugging": {"path":"../debugging"},
-		"util": {"path":"../util"}
-	}
-}
