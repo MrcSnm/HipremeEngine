@@ -1,4 +1,4 @@
-module hip.game.tween;
+module hip.tween;
 
 version(HipTweenAPI):
 import std.math:cos, sin, PI, pow, sqrt;

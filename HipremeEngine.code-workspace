@@ -10,6 +10,7 @@
 			"dependencies/directx-d/examples/**/*"
 		],
 		"d.manyProjectsThreshold": 64,
+		"local-history.saveDelay": 1,
 		"files.exclude": 
 		{
 			"**/.dub" : true,
@@ -17,6 +18,7 @@
 			"**/*.a" : true,
 			"build/android/project/.idea/" : true,
 			"build/android/project/gradle/" : true,
+			"modules/d_std" : true,
 			"building":true,
 			"*.hap" : true,
 			"imgui.ini" : true,
@@ -31,6 +33,7 @@
 			"bin":true,
 			"dub.selections.json":true,
 			".history":true,
+			"**/.history":true,
 			"*.so" : true,
 			"*.o" : true,
 			"**/.git": true,
@@ -49,6 +52,7 @@
 			"**/*/*.cpp":true,
 			"**/node_modules": true,
 			".history":true,
+			"**/.history":true,
 			"**/bower_components": true,
 			"**/*.code-search": true
 		},

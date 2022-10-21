@@ -1,16 +1,86 @@
 {
+	"name": "hipreme_engine",
+	"description": "Open-Source D Game Engine",
 	"authors": [
 		"Hipreme"
 	],
+	"copyright": "Copyright © 2018 - 2022, Hipreme",
+	"license": "CC BY-4.0",
 	"buildOptions": [
 		"debugMode",
 		"debugInfo",
 		"debugInfoC",
 		"warnings"
 	],
+	"dflags": [
+		"-J=."
+	],
 	"dflags-dmd": [
 		"-checkaction=halt"
 	],
+	"libs-windows": [
+		"ole32",
+		"user32",
+		"dxgi",
+		"d3d11",
+		"d3dcompiler",
+		"xaudio2"
+	],
+	"libs-linux" : [
+		"X11",
+		"gl"
+	],
+	"versions": [
+		"HIPREME_DEBUG",
+		"HipremeEngineLua",
+		"HipGL3",
+		"HipCheckUnknownKeycode",
+		"HipARSDImageDecoder",
+		"HipAsync",
+		"HipDataStructures",
+		"HipGraphicsAPI",
+		"HipInputAPI",
+		"HipImageAPI",
+		"HipMathAPI",
+		"HipRendererAPI",
+		"HipTweenAPI",
+		"HipTimerAPI",
+		"HipAssets",
+		"HipConcurrency",
+		"HipDStdFile",
+		"HipScriptingAPI",
+		"GL_45",
+		"GL_ARB",
+		"AL_EFX"
+	],
+	"versions-windows": [
+		"FSWUsesWin32",
+		"Direct3D_11"
+	],
+	"subConfigurations": {
+		"hipengine_api": "hipengine"
+	},
+	"sourcePaths": [
+		"source"
+	],
+	"dependencies": {
+		"assets": {"path": "./modules/assets", "version": "*"},
+		"audio": {"path": "./modules/audio", "version": "*"},
+		"bind": {"path": "./modules/bind", "version": "*"},
+		"config": {"path": "./modules/config", "version": "*"},
+		"console": {"path": "./modules/console", "version": "*"},
+		"data": {"path": "./modules/data", "version": "*"},
+		"debugging": {"path": "./modules/debugging", "version": "*"},
+		"error": {"path": "./modules/error", "version": "*"},
+		"font": {"path": "./modules/font", "version": "*"},
+		"filesystem": {"path": "./modules/filesystem", "version": "*"},
+		"timer": {"path": "./modules/timer", "version": "*"},
+		"tween": {"path": "./modules/tween", "version": "*"},
+		"hipengine_api": {"path": "./api", "version": "*"},
+		"math": {"path": "./modules/math", "version": "*"},
+		"renderer": {"path": "./modules/renderer", "version": "*"},
+		"util": {"path": "./modules/util", "version": "*"}
+	},
 	"configurations": [
 		{
 			"name": "desktop",
@@ -27,10 +97,17 @@
 				"debugMode",
 				"debugInfo",
 				"debugInfoC"
+			]
+		},
+		{
+			"name": "at_once",
+			"targetPath": "bin/desktop",
+			"targetType": "executable",
+			"versions": [
+				"LUA_54"
 			],
-			"versions-windows": [
-				"FSWUsesWin32",
-				"Direct3D_11"
+			"dflags-ldc": [
+				"--ftime-trace"
 			]
 		},
 		{
@@ -51,10 +128,6 @@
 				"debugMode",
 				"debugInfo",
 				"debugInfoC"
-			],
-			"versions-windows": [
-				"FSWUsesWin32",
-				"Direct3D_11"
 			]
 		},
 		{
@@ -69,9 +142,6 @@
 				"Standalone",
 				"Test",
 				"TimeTrace"
-			],
-			"versions-windows": [
-				"FSWUsesWin32"
 			]
 		},
 		{
@@ -169,72 +239,5 @@
 				"GLES30"
 			]
 		}
-	],
-	"copyright": "Copyright © 2018 - 2021, Hipreme",
-	"dependencies": {
-		"assets": {"path": "./modules/assets", "version": "*"},
-		"audio": {"path": "./modules/audio", "version": "*"},
-		"bind": {"path": "./modules/bind", "version": "*"},
-		"config": {"path": "./modules/config", "version": "*"},
-		"console": {"path": "./modules/console", "version": "*"},
-		"data": {"path": "./modules/data", "version": "*"},
-		"debugging": {"path": "./modules/debugging", "version": "*"},
-		"error": {"path": "./modules/error", "version": "*"},
-		"font": {"path": "./modules/font", "version": "*"},
-		"filesystem": {"path": "./modules/filesystem", "version": "*"},
-		"timer": {"path": "./modules/timer", "version": "*"},
-		"tween": {"path": "./modules/tween", "version": "*"},
-		"hipengine_api": {"path": "./api", "version": "*"},
-		"math": {"path": "./modules/math", "version": "*"},
-		"renderer": {"path": "./modules/renderer", "version": "*"},
-		"util": {"path": "./modules/util", "version": "*"}
-	},
-	"description": "Open-Source D Game Engine",
-	"dflags": [
-		"-J=."
-	],
-	"libs-windows": [
-		"ole32",
-		"user32",
-		"dxgi",
-		"d3d11",
-		"d3dcompiler",
-		"xaudio2"
-	],
-	"libs-linux" : [
-		"X11",
-		"gl"
-	],
-	"license": "CC BY-4.0",
-	"name": "hipreme_engine",
-	"sourcePaths": [
-		"source"
-	],
-	"subConfigurations": {
-		"hipengine_api": "hipengine"
-	},
-	
-	"versions": [
-		"HIPREME_DEBUG",
-		"HipremeEngineLua",
-		"HipGL3",
-		"HipCheckUnknownKeycode",
-		"HipARSDImageDecoder",
-		"HipAsync",
-		"HipDataStructures",
-		"HipGraphicsAPI",
-		"HipInputAPI",
-		"HipImageAPI",
-		"HipMathAPI",
-		"HipRendererAPI",
-		"HipTweenAPI",
-		"HipTimerAPI",
-		"HipAssets",
-		"HipConcurrency",
-		"HipDStdFile",
-		"HipScriptingAPI",
-		"GL_45",
-		"GL_ARB",
-		"AL_EFX"
 	]
 }
