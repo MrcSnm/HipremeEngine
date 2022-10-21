@@ -47,7 +47,11 @@ class HipTimer : IHipTimer
         handlers~=(prog, count){handler();};
         return this;
     }
-
+    HipTimer addHandler(void delegate(float progress) handler)
+    {
+        handlers~=(prog, count){handler(prog);};
+        return this;
+    }
     HipTimer addHandler(void delegate(float progress, uint loopCount) handler)
     {
         handlers~=handler;
