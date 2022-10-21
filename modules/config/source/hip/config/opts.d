@@ -36,9 +36,9 @@ enum HIP_ALPHA_BLEND_DEFAULT = true;
 
 ///////////////////////////////// Default Asset Files /////////////////////////////////
 enum HIP_ASSETMANAGER_WORKER_POOL = 2;
-enum HIP_DEFAULT_FONT = "assets/fonts/WarsawGothic-BnBV.otf";
+enum HIP_DEFAULT_FONT = "assets/defaults/fonts/WarsawGothic-BnBV.otf";
 enum HIP_DEFAULT_FONT_SIZE = 32;
-enum HIP_DEFAULT_TEXTURE = "assets/graphics/sprites/default.png";
+enum HIP_DEFAULT_TEXTURE = "assets/defaults/graphics/sprites/default.png";
 
 /**
 *	Will use OpenSL ES optimal sample rate for output and buffer size multiple. 

@@ -73,6 +73,15 @@ version(Script)
 {
 	void function(string s) log;
 	void function(Object obj) hipDestroy;
+
+	void logg(Args...)(Args a)
+	{
+		import hip.util.conv;
+		string toLog;
+		foreach(arg; a)
+			toLog~= arg.to!string;
+		log(toLog);
+	}
 }
 void initConsole()
 {
