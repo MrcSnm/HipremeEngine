@@ -12,7 +12,7 @@ module hip.view.animationtestscene;
 import hip.view.scene;
 import hip.hiprenderer.viewport;
 import hip.hiprenderer.renderer;
-import hip.game.tween;
+import hip.tween;
 import hip.graphics.g2d.animation;
 import hip.graphics.g2d.sprite;
 import hip.graphics.g2d.spritebatch;
