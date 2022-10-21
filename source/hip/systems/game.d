@@ -266,6 +266,7 @@ class GameSystem
     {
         foreach (AScene s; scenes)
             s.render();
+        HipTimerManager.render();
     }
     void postUpdate()
     {

@@ -233,20 +233,33 @@ class HipTweenSpawn : HipTween
         foreach(t;tweens)
         {
             tweenList~= t;
-            if(t.getDuration() > durationSeconds)
-                durationSeconds = t.getDuration();
         }
-
+        recalculateDuration();
         onPlay = ()
         {
             foreach(t; tweenList)t.play();
         };
-        setProperties("TweenSpawn", durationSeconds, loops);
 
         addHandler((prog, count)
         {
             foreach(t; tweenList)
                 t.tick(deltaTime);
         });
+    }
+    protected void recalculateDuration()
+    {
+        foreach(t;tweenList)
+        {
+            if(t.getDuration() > durationSeconds)
+                durationSeconds = t.getDuration();
+        }
+        setProperties("TweenSpawn", durationSeconds, this.loops);
+    }
+
+    HipTweenSpawn addTween(HipTween tween)
+    {
+        tweenList~= tween;
+        recalculateDuration();
+        return this;
     }
 }
