@@ -1,5 +1,4 @@
 module hip.ai.steering;
-import std.math:cos,sin;
 import hip.math.random;
 import hip.math.utils;
 public import hip.math.utils:AxisNavigation;

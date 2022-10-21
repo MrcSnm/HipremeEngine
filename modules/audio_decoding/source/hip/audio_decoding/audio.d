@@ -206,7 +206,7 @@ private struct _AudioStreamImpl
     {
         import audioformats;
         import core.stdc.stdlib;
-        (cast(AudioStream*)block).cleanUp();
+        AudioStream as = *(cast(AudioStream*)block); //Make it execute the destructor here
         free(block);
         block = null;
     }

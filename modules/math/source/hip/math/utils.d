@@ -1,9 +1,12 @@
 module hip.math.utils;
-import std.math;
 import hip.math.vector;
 
 ///There are some errors occurring when compiling with LDC
-public import std.math: cos, sin, PI, PI_2, PI_4;
+public import core.math: sqrt, cos, sin;
+
+enum PI = 3.14159;
+enum PI_2 = PI/2;
+enum PI_4 = PI/4;
 
 int getClosestMultiple(int from, int to)
 {
@@ -79,6 +82,12 @@ Vector3 toCircleBounds(Vector3 v, float angle, AxisNavigation axis=AxisNavigatio
             break;
     }
     return v;
+}
+
+pragma(inline, true)
+T abs(T)(T val) pure nothrow @safe @nogc
+{
+    return val < 0 ? -val : val;
 }
 
 T min(T)(T[] values ...) pure nothrow @safe @nogc
