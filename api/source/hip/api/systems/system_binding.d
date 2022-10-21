@@ -21,6 +21,7 @@ extern(System)
         @disable this();
         static IHipTween function(IHipTween tween) addTween;
         static IHipTimer function(IHipTimer timer) addTimer;
+        static IHipTimer function(IHipTimer timer) addRenderTimer;
         static bool function() isPaused;
         static void function(bool shouldPause) setPaused;
         static void function(float factor) setAccelerationFactor;
