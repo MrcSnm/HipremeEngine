@@ -8,8 +8,10 @@ class HipTimerManager
 {
     @disable this();
     private static IHipTimer[] timers;
+    private static IHipTimer[] renderTimers;
     private static IHipTween[] tweens;
     private static bool _isPaused = false;
+    private static float deltaTime = 0;
     private static float accelerationFactor = 1.0f;
 
     @ExportD static IHipTween addTween(IHipTween tween)
@@ -21,6 +23,12 @@ class HipTimerManager
     @ExportD static IHipTimer addTimer(IHipTimer timer)
     {
         timers~= timer.play();
+        return timer;
+    }
+
+    @ExportD static IHipTimer addRenderTimer(IHipTimer timer)
+    {
+        renderTimers~= timer.play();
         return timer;
     }
 
@@ -38,15 +46,20 @@ class HipTimerManager
     */
     static void clearSchedule()
     {
+        renderTimers.length = 0;
         timers.length = 0;
         tweens.length = 0;
     }
 
+    /**
+    *   Update saves the delta time to be used on the render
+    */
     static void update(float delta)
     {
         if(_isPaused)
             return;
         delta*= accelerationFactor;
+        this.deltaTime = delta;
         int count = 0;
         foreach(timer; timers)
         {
@@ -66,5 +79,20 @@ class HipTimerManager
         {
             tweens.length = 0;
         }
+    }
+
+    /**
+    *   Rendered on top of everything.
+    *   Use it as a debug renderer
+    */
+    static void render()
+    {
+        int count = 0;
+        foreach(renderTimer; renderTimers)
+        {
+            count+= cast(int)renderTimer.tick(this.deltaTime);
+        }
+        if(count && count == timers.length)
+            timers.length = 0;
     }
 }
