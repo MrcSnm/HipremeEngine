@@ -1,5 +1,6 @@
 .gradle
 .dub
+modules/**/dub.selections.json
 build/android/project/app/src/main/assets/**
 build/android/project/app/build
 docs.json
@@ -20,7 +21,7 @@ modules/**/*.lib
 *.lst
 .history
 *.tsx
-assets/
+./assets/
 imgui.ini
 bin/.vs
 bin/desktop/.vs

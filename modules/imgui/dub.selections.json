@@ -1,7 +1,0 @@
-{
-	"fileVersion": 1,
-	"versions": {
-		"bindbc-cimgui": "1.84.1",
-		"bindbc-loader": "1.0.1"
-	}
-}
