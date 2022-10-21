@@ -12,8 +12,9 @@ private struct AStarNode
 pragma(inline, true)
 int manhattanHeuristic(int posX, int posY, int targetX, int targetY)
 {
-    import std.math:abs;
-    return abs(targetX-posX) + abs(targetY-posY);
+    int dx = targetX - posX;
+    int dy = targetY - posY;
+    return (dx < 0 ? -dx : dx) + (dy < 0 ? -dy : dy);
 }
 
 struct AStarResult(T)

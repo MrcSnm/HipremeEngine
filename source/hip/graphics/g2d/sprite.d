@@ -10,8 +10,8 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.graphics.g2d.sprite;
 import hip.graphics.g2d.spritebatch;
-import std.math;
 import hip.assets.texture;
+import hip.math.utils:sin,cos;
 import hip.assetmanager;
 import hip.debugging.gui;
 import hip.global.gamedef;

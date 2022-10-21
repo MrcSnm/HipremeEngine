@@ -15,8 +15,8 @@ import hip.hiprenderer.shader;
 import hip.hiprenderer;
 import hip.hiprenderer.viewport;
 import hip.api.graphics.color;
-import std.math;
 import hip.view.scene;
+import hip.math.utils;
 
 class TestScene : Scene
 {
