@@ -9,8 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.graphics.abstraction.transformable;
-private import std.math:cos, sin, tan, PI;
-enum DEGREE_RATIO = PI/180;
+enum DEGREE_RATIO = 3.14159/180;
 
 mixin template Positionable()
 {

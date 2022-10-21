@@ -1,7 +1,7 @@
 module hip.math.collision;
 import hip.math.rect;
 import hip.math.vector;
-import std.math:sqrt;
+import hip.math.utils:sqrt;
 import std.traits:isNumeric;
 
 public import hip.math.rect:overlaps;
