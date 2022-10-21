@@ -44,8 +44,8 @@ class SoundTestScene : Scene
 
         timer.play();
 
-        HipAudioClip buf = HipAudio.load("audio/the-sound-of-silence.wav", HipAudioType.SFX);
-        src = HipAudio.getSource(false, buf);
+        // HipAudioClip buf = HipAudio.load("audio/the-sound-of-silence.wav", HipAudioType.SFX);
+        // src = HipAudio.getSource(false, buf);
         HipAudio.play(src);
         
         // HipAudioClip buf = HipAudio.loadStreamed("audio/StrategicZone.mp3", (ushort.max+1));

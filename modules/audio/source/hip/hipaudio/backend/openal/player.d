@@ -276,7 +276,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     public void setPanning(HipAudioSourceAPI src, float panning)
     {
         HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
-        alSource3f(source.id, AL_POSITION, src.position.x + (panning*PANNING_CONSTANT), src.position.y, src.position.z);
+        alSource3f(source.id, AL_POSITION, src.position[0] + (panning*PANNING_CONSTANT), src.position[1], src.position[2]);
         alCheckError("Error setting OpenAL source panning");
     }
     public void setPitch(HipAudioSourceAPI src, float pitch)
@@ -289,7 +289,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     {
         HipOpenALAudioSource source = cast(HipOpenALAudioSource)src;
         alSource3f(source.id, AL_POSITION, pos.x + (src.panning*PANNING_CONSTANT), pos.y, pos.z);
-        src.position = pos;
+        src.position = [pos.x, pos.y, pos.z];
         alCheckError("Error setting OpenAL source position");
     }
 
