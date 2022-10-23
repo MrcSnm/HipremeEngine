@@ -1,9 +1,7 @@
 module hip.graphics.g2d.animation;
 import hip.graphics.g2d.textureatlas;
 import hip.api.graphics.color;
-import hip.api.renderer.texture;
-import hip.math.vector;
-import hip.assets.texture : HipTextureRegion;
+import hip.api.renderer.texture : IHipTextureRegion;
 import hip.error.handler;
 
 /**
@@ -15,7 +13,8 @@ struct HipAnimationFrame
     import hip.util.data_structures:Array2D;
     IHipTextureRegion region;
     HipColor color = HipColor(1,1,1,1);
-    Vector2 offset = Vector2(0,0);
+    ///X, Y
+    float[2] offset = [0,0];
 
     static HipAnimationFrame[] fromTextureRegions(Array2D!IHipTextureRegion reg, uint startY, uint startX, uint endY, uint endX)
     {
@@ -57,11 +56,24 @@ class HipAnimationTrack
         setFramesPerSecond(framesPerSecond);
         isLooping = shouldLoop;
     }
+    /**
+    *   Use this version if you wish a more custom frame
+    */
     HipAnimationTrack addFrames(HipAnimationFrame[] frame...)
     {
         foreach(f; frame)
             frames~= f;
-        lastFrame = cast(uint)(frames.length-1);
+        if(frames.length > 0)
+            lastFrame = cast(typeof(lastFrame))frames.length - 1;
+        return this;
+    }
+
+    HipAnimationTrack addFrames(IHipTextureRegion[] regions...)
+    {
+        foreach(r; regions)
+            frames~= HipAnimationFrame(r);
+        if(frames.length > 0)
+            lastFrame = cast(typeof(lastFrame))frames.length - 1;
         return this;
     }
     void reset(){currentFrame = 0;accumulator = 0;}
