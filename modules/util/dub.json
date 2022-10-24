@@ -14,6 +14,17 @@
 			"targetType": "staticLibrary"
 		},
 		{
+			"name": "dinterface",
+			"targetType": "staticLibrary",
+			"dflags-dmd": [
+				"-H",
+				"-Hd=./import"
+			],
+			"versions": [
+				"HipDataStructures"
+			]
+		},
+		{
 			"name": "source",
 			"targetType": "sourceLibrary"
 		}

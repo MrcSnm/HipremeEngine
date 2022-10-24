@@ -123,7 +123,7 @@ class HipTween : HipTimer, IHipTween
             V[] savedDataConv = cast(V[])t.savedData;
             static foreach(i, p; Props)
             {
-                savedDataConv[i] = cast(V)mixin("target.",p);
+                savedDataConv[i] = cast(V)__traits(getMember, target, p);
             }
                         
             
@@ -138,7 +138,7 @@ class HipTween : HipTimer, IHipTween
                 {
                     initialValue = savedDataConv[i];
                     newValue = cast(V)((1-multiplier)*initialValue + (v2[i] * multiplier));
-                    mixin("target.",p," = newValue;");
+                    __traits(getMember, target, p) = newValue;
                 }
             });
         };
@@ -165,7 +165,7 @@ class HipTween : HipTimer, IHipTween
                     temp = savedDataConv[i];
                     temp2 = cast(V)(v2[i] * multiplier);
 
-                    mixin("target.",p,"+= -temp + temp2;");
+                    __traits(getMember, target, p)+= -temp + temp2;
                     //Copy the new values for being subtracted next frame
                     savedDataConv[i] = temp2;
                 }

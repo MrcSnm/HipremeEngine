@@ -1,39 +1,20 @@
 module hip.graphics.g2d.animation;
+
+import hip.util.reflection : ExportD;
+import hip.error.handler;
 import hip.graphics.g2d.textureatlas;
+
 import hip.api.graphics.color;
 import hip.api.renderer.texture : IHipTextureRegion;
-import hip.error.handler;
-
-/**
-*   The frame user is responsible for using the frame properties, while the track is responsible
-*   for returning the correct frame
-*/
-struct HipAnimationFrame
-{
-    import hip.util.data_structures:Array2D;
-    IHipTextureRegion region;
-    HipColor color = HipColor(1,1,1,1);
-    ///X, Y
-    float[2] offset = [0,0];
-
-    static HipAnimationFrame[] fromTextureRegions(Array2D!IHipTextureRegion reg, uint startY, uint startX, uint endY, uint endX)
-    {
-        HipAnimationFrame[] ret;
-
-        for(int i = startY; i <= endY; i++)
-            for(int j = startX; j <= endX; j++)
-                ret~= HipAnimationFrame(reg[i,j]);
-        return ret;
-    }
-}
+public import hip.api.graphics.g2d.animation;
 
 /**
 *   This class uses multiplication for selecting the current frame, so, depending on the frame rate, it can cause
 *   frame skipping, for giving better freedom for speeding up animation
 */
-class HipAnimationTrack
+@ExportD class HipAnimationTrack : IHipAnimationTrack
 {
-    immutable string name;
+    private immutable string _name;
 
     protected HipAnimationFrame[] frames;
     protected float accumulator = 0;
@@ -47,19 +28,25 @@ class HipAnimationTrack
 
     //Those three are a question if they should be in the track or in the animation controller
     protected bool isPlaying = false;
-    protected bool isLooping = false;
-    protected bool isReverse = false;
+    protected bool _looping = false;
+    protected bool _reverse = false;
 
     this(string name, uint framesPerSecond, bool shouldLoop)
     {
-        this.name = name;
+        this._name = _name;
         setFramesPerSecond(framesPerSecond);
-        isLooping = shouldLoop;
+        _looping = shouldLoop;
     }
+    string name() => _name;
+    bool looping() =>  _looping;
+    bool looping(bool setLooping) => _looping = setLooping;
+    bool reverse() => _reverse;
+    bool reverse(bool setReverse) => _reverse = setReverse;
+
     /**
     *   Use this version if you wish a more custom frame
     */
-    HipAnimationTrack addFrames(HipAnimationFrame[] frame...)
+    IHipAnimationTrack addFrames(HipAnimationFrame[] frame...)
     {
         foreach(f; frame)
             frames~= f;
@@ -68,7 +55,7 @@ class HipAnimationTrack
         return this;
     }
 
-    HipAnimationTrack addFrames(IHipTextureRegion[] regions...)
+    IHipAnimationTrack addFrames(IHipTextureRegion[] regions...)
     {
         foreach(r; regions)
             frames~= HipAnimationFrame(r);
@@ -83,17 +70,17 @@ class HipAnimationTrack
         accumulator = frame*(1.0f/framesPerSecond);
         currentFrame = frame;
     }
-    void setLooping(bool looping){isLooping = looping;}
-    void setReverse(bool reverse){isReverse = reverse;}
     void setFramesPerSecond(uint fps){framesPerSecond = fps;}
 
     HipAnimationFrame* update(float dt)
     {
+        if(frames.length == 0)
+            return null;
         accumulator+= dt;
         uint frame = cast(uint)(accumulator*framesPerSecond);
         if(frame > lastFrame)
         {
-            if(isLooping)
+            if(_looping)
             {
                 accumulator = 0;
                 frame = 0;
@@ -104,12 +91,14 @@ class HipAnimationTrack
                 frame--;
             }
         }
-        if(isReverse)
+        if(_reverse)
             frame = lastFrame - frame;
 
         currentFrame = frame;
         return &frames[frame];
     }
+    
+    
 }
 
 /**
@@ -117,14 +106,13 @@ class HipAnimationTrack
 *   advanced work as setting track markers for playing tracks sequentially. Setting general animation
 *   speed 
 */
-class HipAnimation
+@ExportD class HipAnimation : IHipAnimation
 {
-    protected HipAnimationTrack[string] tracks;
+    protected IHipAnimationTrack[string] tracks;
     immutable string name;
     protected float timeScale;
-    protected HipAnimationTrack currentTrack;
+    protected IHipAnimationTrack currentTrack;
     protected HipAnimationFrame* currentFrame;
-
 
 
     this(string name)
@@ -150,7 +138,7 @@ class HipAnimation
         return ret;
     }
 
-    HipAnimation addTrack(HipAnimationTrack track)
+    IHipAnimation addTrack(IHipAnimationTrack track)
     {
         if(currentTrack is null)
         {
@@ -162,9 +150,7 @@ class HipAnimation
         tracks[track.name] = track;
         return this;
     }
-
-    HipAnimationTrack getCurrentTrack(){return currentTrack;}
-    string getCurrentTrackName(){return currentTrack.name;}
+    IHipAnimationTrack getCurrentTrack(){return currentTrack;}
     HipAnimationFrame* getCurrentFrame(){return currentFrame;}
     void setTimeScale(float scale){timeScale = scale;}
     void setTrack(string trackName)
@@ -184,6 +170,5 @@ class HipAnimation
         if(currentTrack is null)
             return;
         currentFrame = currentTrack.update(dt*timeScale);
-        
     }
 }

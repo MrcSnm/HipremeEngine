@@ -20,6 +20,7 @@ public import hip.api.renderer.texture;
 public import hip.api.graphics.g2d.hipsprite;
 public import hip.api.data.font;
 public import hip.api.graphics.text;
+public import hip.api.graphics.g2d.animation;
 public import hip.api.graphics.g2d.g2d_binding;
 
 version(Script)

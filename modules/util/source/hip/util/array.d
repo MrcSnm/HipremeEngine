@@ -136,7 +136,10 @@ bool contains(T)(ref T[] arr, T val){return arr.indexOf(val) != -1;}
 pragma(inline, true) bool contains(string accessor, T, Q)(ref T[] arr, Q val)
 {
     for(ulong i = 0; i < arr.length; i++)
-        mixin("if(arr[i]."~accessor~" == val) return true;");
+    {
+        if(__traits(getMember, arr[i], accessor) == val)
+            return true;
+    }
     return false;
 }
 
@@ -146,7 +149,10 @@ pragma(inline, true) bool contains(string accessor, T, Q)(ref T[] arr, Q val)
 pragma(inline, true) bool contains(string accessorA, string accessorB, T, Q)(ref T[] arr, Q val)
 {
     for(ulong i = 0; i < arr.length; i++)
-        mixin("if(arr[i]."~accessorA~" == val."~accessorB~") return true;");
+    {
+        if(__traits(getMember, arr[i], accessorA) == __traits(getMember, val, accessorB))
+            return true;
+    }
     return false;
 }
 
