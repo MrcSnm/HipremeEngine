@@ -1,6 +1,7 @@
 module hip.api.graphics.g2d.g2d_binding;
 
 version(HipGraphicsAPI):
+import hip.api.graphics.g2d.animation;
 import hip.api.graphics.color;
 import hip.api.graphics.g2d.hipsprite;
 import hip.api.renderer.viewport;
@@ -74,6 +75,12 @@ version(Script)
         int[2] function() getWindowSize;
 
         void function(uint width, uint height) setCameraSize;
+
+        ///Creates a track for the animation controller
+        IHipAnimationTrack function(string name, uint framesPerSecond, bool shouldLoop) newHipAnimationTrack;
+        ///Creates an animation to be iterated 
+        IHipAnimation function(string name) newHipAnimation;
+
 
         version(Have_util)
         {

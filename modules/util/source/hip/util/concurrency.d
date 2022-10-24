@@ -12,14 +12,6 @@ module hip.util.concurrency;
 
 version(HipConcurrency):
 
-/**
-*   Creates a function definition for shared an unshared.
-*/
-mixin template concurrent(string func)
-{
-    mixin(func);
-    mixin("shared "~func);
-}
 
 /**
 *   Test for wrapping atomic operations in a structure

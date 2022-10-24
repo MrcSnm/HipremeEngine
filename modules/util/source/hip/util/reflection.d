@@ -89,9 +89,10 @@ template hasUDA(alias symbol, alias UDA)
 {
     enum helper = ()
     {
+        bool ret = false;
         foreach(att; __traits(getAttributes, symbol))
-            if(is(typeof(att) == UDA) || is(att == UDA)) return true;
-        return false;
+            if(is(typeof(att) == UDA) || is(att == UDA)) ret = true;
+        return ret;
     }();
     enum hasUDA = helper;
 }
@@ -187,6 +188,10 @@ T nullCheck(string expression, T, Q)(T defaultValue, Q target)
 struct ExportD{string suffix;}
 
 
+/**
+*   Will basically generate an export name such as className_funcSymbol
+*   If it has ExportD with a suffix, it will be basically className_funcSymbol(suffix)
+*/
 template generateExportName(string className, alias funcSymbol)
 {
 	//Means that it has a suffix
@@ -196,11 +201,61 @@ template generateExportName(string className, alias funcSymbol)
 		enum generateExportName = className~"_"~__traits(identifier, funcSymbol);
 }
 
-
-
-template generateExportFunc(string className, alias funcSymbol)
+/**
+*   Returns a code to be mixed in.
+*   If isRef, it will call with hipSaveRef for not being colled
+*   funcCallCode can be anything as `className.functionName` or even `new Class`
+*/
+private enum getExportedFuncImpl(ReturnType)(string[] ParamsIdentTuple, bool isRef, string funcCallCode)
 {
     import hip.util.string:join;
+    string ret;
+    if(isRef)
+    {
+        ret~= q{
+            import hip.util.lifetime;
+            return cast(typeof(return))hipSaveRef(cast(Object)
+        };
+
+        ret~= funcCallCode~"("~ParamsIdentTuple.join(",")~"));}";
+    }
+    else
+    {
+        static if(!is(ReturnType == void))
+            ret~= "return ";
+        ret~= funcCallCode~"("~ ParamsIdentTuple.join(",")~");}";
+    }
+    return ret;
+}
+
+
+///ClassT, Ctor, string className
+///This class MUST have an interface, because it will bug out when calling the function with `need opCmp for class`
+template generateExportConstructor(ClassT, alias Ctor, string className)
+{
+    enum impl = ()
+    {
+        import std.traits : ParameterIdentifierTuple;
+        return "export extern(System) I" ~ className ~ " new" ~ className ~ //export extern(System) Class newClass
+        getParams!(Ctor).stringof ~ "{"~ //(A a, B b...)
+        getExportedFuncImpl!(ClassT)
+        (
+            [ParameterIdentifierTuple!Ctor],
+            true, //IsReference
+            "new "~className
+        );
+    }();
+
+    enum generateExportConstructor = impl;
+}
+
+/**
+*   It will create a `export extern(System)` function, thus, making it a C callable code.
+*   This function comes from a static method, and has special code injection for making the
+*   GC not collect if it is an object
+*/
+template generateExportFunc(string className, alias funcSymbol)
+{
     import std.traits:ReturnType, ParameterIdentifierTuple;
     enum impl = ()
     {
@@ -209,23 +264,12 @@ template generateExportFunc(string className, alias funcSymbol)
         ret~= getParams!(funcSymbol).stringof~"{";
         enum isRef = isReference!(RetType);
 
-        static if(isRef)
-        {
-            ret~= q{
-                import hip.util.lifetime;
-                return cast(typeof(return))hipSaveRef(cast(Object)
-            };
-
-            ret~= className~"."~__traits(identifier, funcSymbol)~"("~
-            [ParameterIdentifierTuple!funcSymbol].join(",")~"));}";
-        }
-        else
-        {
-            static if(!is(RetType == void))
-                ret~= "return ";
-            ret~= className~"."~__traits(identifier, funcSymbol)~"("~
-                [ParameterIdentifierTuple!funcSymbol].join(",")~");}";
-        }
+        ret~= getExportedFuncImpl!(RetType)
+            (
+                [ParameterIdentifierTuple!funcSymbol], 
+                isRef, 
+                className~"."~__traits(identifier, funcSymbol)
+            );
 
         return ret;
     }();
@@ -243,33 +287,55 @@ struct Version
 }
 
 
+///Intermediary step for getting an alias to the Class type
+mixin template ExportDFunctionsImpl(string className, Class)
+{
+    //If the class has ExportD, it will export a function called new(ClassName)
+    //It can't contain more than one constructor.
+    static if(hasUDA!(Class, ExportD))
+    {
+        static assert(
+            __traits(getOverloads, Class, "__ctor").length == 1, 
+            "Can't export class with more than one constructor ("~className~")"
+        );
+        mixin(
+            generateExportConstructor!(Class, __traits(getMember, Class, "__ctor"), className)
+        );
+        pragma(msg, "Exported Class "~className);
+    }
+    //Get all static methods that has ExportD
+    static foreach(sym; getSymbolsByUDA!(Class, ExportD))
+    {
+        static if(!is(sym == Class))
+        {
+            //Assert that the symbol to generate does not exists yet
+            static assert(__traits(compiles, mixin(generateExportName!(className, sym))),
+            "ExportD '" ~ generateExportName!(className, sym) ~
+            "' is not unique, use ExportD(\"SomeName\") for overloading with a suffix");
+
+            pragma(msg, "Exported "~(generateExportName!(className, sym)));
+            //Func signature
+            //Check if it is a non value type
+            mixin(generateExportFunc!(className, sym));
+        }
+    }
+}
 
 /**
 *   Iterates through a module and generates `export` function declaration for each
 *   @ExportD function found on it.
+*   If the class itself is @ExportD, it will create a method new(ClassName) to be exported too
 */
 mixin template ExportDFunctions(alias mod)
 {
-	import std.traits:getSymbolsByUDA;
+	import std.traits:getSymbolsByUDA, ParameterIdentifierTuple;
     pragma(msg, mod.stringof);
 	static foreach(mem; __traits(allMembers, mod))
 	{
         //Currently only supported on classes and structs
 		static if( (is(mixin(mem) == class) || is(mixin(mem) == struct) ))
 		{
-			static foreach(syms; getSymbolsByUDA!(mixin(mem), ExportD))
-			{
-                //Assert that the symbol to generate does not exists yet
-                static assert(__traits(compiles, mixin(generateExportName!(mem, syms))),
-                "ExportD '" ~ generateExportName!(mem, syms) ~
-                "' is not unique, use ExportD(\"SomeName\") for overloading with a suffix");
-
-                pragma(msg, "Exported "~(generateExportName!(mem, syms)));
-				//Func signature
-                //Check if it is a non value type
-                mixin(generateExportFunc!(mem, syms));
-			}
-
+            mixin ExportDFunctionsImpl!(mem, mixin(mem));
 		}
 	}
 }

@@ -213,7 +213,7 @@ public struct Vector(uint N, T)
             {
                 VectorN ret;
                 for(size_t i = 0; i < N; i++)   
-                    mixin("ret[i] = data[i] "~op~"rhs[i];");
+                    ret[i] = mixin("data[i] ", op,"rhs[i]");
                 return ret;
             }
         }
@@ -221,41 +221,23 @@ public struct Vector(uint N, T)
         {
             VectorN ret;
             for(size_t i = 0; i < N; i++)
-                mixin("ret[i] = data[i] "~op~"rhs;");
+                ret[i] = mixin("data[i]", op, "rhs");
             return ret;
         }
 
         alias opBinaryRight = opBinary;
-        // auto opBinaryRight(string op)(in VectorN lhs) inout
-        // {
-        //     static if(op == "*") return dot(lhs);
-        //     else static if(op != "/")
-        //     {
-        //         VectorN ret;
-        //         for(size_t i = 0; i < N; i++)   
-        //             mixin("ret[i] = lhs[i] "~op~"data[i];");
-        //         return ret;
-        //     }
-        // }
-        // VectorN opBinaryRight(string op)(float lhs) inout
-        // {
-        //     VectorN ret;
-        //     for(size_t i = 0; i < N; i++)
-        //         mixin("ret[i] = lhs "~op~"data[i];");
-        //     return ret;
-        // }
 
         auto opOpAssign(string op)(VectorN other) return
         {
             for(size_t i = 0; i < N; i++)
-                mixin("data[i]"~op~"= other[i];");
+                mixin("data[i]",op,"= other[i];");
             return this;
         }
 
         auto opOpAssign(string op)(float value) return
         {
             for(size_t i = 0; i < N; i++)
-                mixin("data[i]"~op~"= value;");
+                mixin("data[i]",op,"= value;");
             return this;
         }
 
@@ -333,6 +315,12 @@ public struct Vector(uint N, T)
         }
     }
 }
+
+alias Vector2 = Vector!(2, float);
+alias Vector3 = Vector!(3, float);
+alias Vector4 = Vector!(4, float);
+
+__EOF__
 
 // public struct Vector2
 // {
@@ -647,12 +635,6 @@ public struct Vector(uint N, T)
 //         inout auto ref opIndex(size_t index){return data[index];}
 //     }
 // }
-
-
-
-alias Vector2 = Vector!(2, float);
-alias Vector3 = Vector!(3, float);
-alias Vector4 = Vector!(4, float);
 
 // alias Vector2i = Vector!(2, int);
 // alias Vector3i = Vector!(3, int);

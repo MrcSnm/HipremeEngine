@@ -154,9 +154,10 @@ T toStruct(T)(string struc) pure nothrow
         each~=currentArg;
 
     static foreach(i, m; __traits(allMembers, T))
-    {
-        mixin("ret."~m~" = to!(typeof(ret."~m~"))(each[i]);");
-    }
+    {{
+        alias member = __traits(getMember, ret, m);
+        member = to!(typeof(member))(each[i]);
+    }}
     return ret;
 }
 
