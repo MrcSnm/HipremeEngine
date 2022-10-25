@@ -233,10 +233,23 @@ class HipSpriteBatch
         addQuad(v, slot);
     }
 
-
-    void draw(IHipTextureRegion reg, int x, int y, int z = 0, HipColor color = HipColor.white)
+    void draw(IHipTexture texture, int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
-        float[HipSpriteVertex.quadCount] v = getTextureRegionVertices(reg,x,y,z,color);
+        float[HipSpriteVertex.quadCount] v = getTextureVertices(texture,x,y,z,color, scaleX, scaleY, rotation);
+        ErrorHandler.assertExit(texture.getWidth() != 0 && texture.getHeight() != 0, "Tried to draw 0 bounds texture");
+        int slot = setTexture(texture);
+        ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
+
+        ///X Y Z, RGBA, UV, 1, 4 vertices
+
+        addQuad(v, slot);
+
+    }
+
+
+    void draw(IHipTextureRegion reg, int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    {
+        float[HipSpriteVertex.quadCount] v = getTextureRegionVertices(reg,x,y,z,color, scaleX, scaleY, rotation);
         ErrorHandler.assertExit(reg.getWidth() != 0 && reg.getHeight() != 0, "Tried to draw 0 bounds region");
         int slot = setTexture(reg);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
@@ -246,40 +259,8 @@ class HipSpriteBatch
         addQuad(v, slot);
     }
 
-    static float[HipSpriteVertex.quadCount] getTextureRegionVertices(IHipTextureRegion reg,
-    int x, int y, int z = 0, HipColor color = HipColor.white)
+    private static void setColor(ref float[HipSpriteVertex.quadCount] ret, in HipColor color)
     {
-        float[HipSpriteVertex.quadCount] ret;
-
-        int regionWidth = reg.getWidth();
-        int regionHeight = reg.getHeight();
-        
-        ret[X1] = x;
-        ret[Y1] = y;
-        ret[Z1] = z;
-
-        ret[X2] = x+regionWidth;
-        ret[Y2] = y;
-        ret[Z2] = z;
-        
-        ret[X3] = x+regionWidth;
-        ret[Y3] = y+regionHeight;
-        ret[Z3] = z;
-
-        ret[X4] = x;
-        ret[Y4] = y+regionHeight;
-        ret[Z4] = z;
-
-        const float[8] v = reg.getVertices();
-        ret[U1] = v[0];
-        ret[V1] = v[1];
-        ret[U2] = v[2];
-        ret[V2] = v[3];
-        ret[U3] = v[4];
-        ret[V3] = v[5];
-        ret[U4] = v[6];
-        ret[V4] = v[7];
-
         ret[R1] = color.r;
         ret[G1] = color.g;
         ret[B1] = color.b;
@@ -299,6 +280,103 @@ class HipSpriteBatch
         ret[G4] = color.g;
         ret[B4] = color.b;
         ret[A4] = color.a;
+    }
+
+    private static void setZ(ref float[HipSpriteVertex.quadCount] vertices, float z)
+    {
+        vertices[Z1] = z;
+        vertices[Z2] = z;
+        vertices[Z3] = z;
+        vertices[Z4] = z;
+    }
+    private static void setUV(ref float[HipSpriteVertex.quadCount] vertices, in float[8] uv)
+    {
+        vertices[U1] = uv[0];
+        vertices[V1] = uv[1];
+        vertices[U2] = uv[2];
+        vertices[V2] = uv[3];
+        vertices[U3] = uv[4];
+        vertices[V3] = uv[5];
+        vertices[U4] = uv[6];
+        vertices[V4] = uv[7];
+    }
+    private static void setBounds(ref float[HipSpriteVertex.quadCount] vertices, float x, float y, float width, float height, float scaleX = 1, float scaleY = 1)
+    {
+        width*= scaleX;
+        height*= scaleY;
+        vertices[X1] = x;
+        vertices[Y1] = y;
+
+        vertices[X2] = x+width;
+        vertices[Y2] = y;
+        
+        vertices[X3] = x+width;
+        vertices[Y3] = y+height;
+
+        vertices[X4] = x;
+        vertices[Y4] = y+height;
+    }
+
+    private static void setBoundsFromRotation(ref float[HipSpriteVertex.quadCount] vertices, float x, float y, float width, float height, float rotation, float scaleX = 1, float scaleY = 1)
+    {
+        import hip.math.utils:cos,sin;
+        width*= scaleX;
+        height*= scaleY;
+        float centerX = -width/2;
+        float centerY = -height/2;
+        float x2 = x + width;
+        float y2 = y + height;
+        float c = cos(rotation);
+        float s = sin(rotation);
+
+        vertices[X1] = c*centerX - s*centerY + x;
+        vertices[Y1] = c*centerY + s*centerX + y;
+
+        vertices[X2] = c*x2 - s*centerY + x;
+        vertices[Y2] = c*centerY + s*x2 + y;
+        
+        vertices[X3] = c*x2 - s*y2 + x;
+        vertices[Y3] = c*y2 + s*x2 + y;
+
+        vertices[X4] = c*centerX - s*y2 + x;
+        vertices[Y4] = c*y2 + s*centerX + y;
+    }
+
+
+    static float[HipSpriteVertex.quadCount] getTextureVertices(IHipTexture texture, 
+    int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    {
+        float[HipSpriteVertex.quadCount] ret = void;
+        int width = texture.getWidth();
+        int height = texture.getHeight();
+
+        const float[8] v = HipTextureRegion.defaultVertices;
+        setUV(ret, v);
+        setZ(ret, z);
+        setColor(ret, color);
+        if(rotation == 0)
+            setBounds(ret, x, y, width, height, scaleX, scaleY);
+        else
+            setBoundsFromRotation(ret, x, y, width, height, rotation, scaleX, scaleY);
+
+        return ret;
+    }
+
+    static float[HipSpriteVertex.quadCount] getTextureRegionVertices(IHipTextureRegion reg,
+    int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    {
+        float[HipSpriteVertex.quadCount] ret = void;
+
+        int width = reg.getWidth();
+        int height = reg.getHeight();
+        setZ(ret, z);
+        setColor(ret, color);
+        setUV(ret, reg.getVertices());
+        if(rotation == 0)
+            setBounds(ret, x, y, width, height, scaleX, scaleY);
+        else
+            setBoundsFromRotation(ret, x, y, width, height, rotation, scaleX, scaleY);
+
         
         return ret;
     }
