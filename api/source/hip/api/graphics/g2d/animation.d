@@ -40,11 +40,13 @@ struct HipAnimationFrame
 
 interface IHipAnimationTrack
 {   
-    string name();
-    bool looping();
+    string name() const;
+    bool looping() const;
     bool looping(bool setLooping);
-    bool reverse();
+    bool reverse() const;
     bool reverse(bool setReverse);
+    ///Returns how many seconds the animation lasts
+    float getDuration() const;
 
     IHipAnimationTrack addFrames(HipAnimationFrame[] frame...);
     IHipAnimationTrack addFrames(IHipTextureRegion[] regions...);
@@ -63,6 +65,8 @@ interface IHipAnimationTrack
     void reset();
     void setFrame(uint frame);
     void setFramesPerSecond(uint framesPerSecond);
+    HipAnimationFrame* getFrameForTime(float time);
+    HipAnimationFrame* getFrameForProgress(float progress);
     HipAnimationFrame* update(float deltaTime);
 }
 
@@ -77,10 +81,11 @@ interface IHipAnimation
             return null;
         return frame.region;
     }
-    final string getCurrentTrackName(){return getCurrentTrack().name;}
+    final string getCurrentTrackName() {return getCurrentTrack().name;}
     IHipAnimation addTrack(IHipAnimationTrack track);
     void update(float deltaTime);
     void setTimeScale(float scale);
-    void setTrack(string trackName);
+    void play(string trackName);
+    IHipAnimationTrack getTrack(string rtackName);
     
 }

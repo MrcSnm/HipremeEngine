@@ -322,7 +322,7 @@ class HipSpriteAnimation : HipSprite
 
     void setAnimation(string animName)
     {
-        animation.setTrack(animName);
+        animation.play(animName);
         setFrame(animation.getCurrentFrame());
     }
 

@@ -55,8 +55,8 @@ version(Script)
         ///Draws a texture region at a specified place
         void function(IHipTextureRegion reg, int x, int y, int z = 0, HipColor = HipColor.white) drawRegion;
         ///Sets the font for the next drawText commands
-        package void function (HipFont font) _setFont;
-        package void function (typeof(null) _) setFontNull;
+        package void function (HipFont font) setFont;
+        package void function (typeof(null)) setFontNull;
         ///Sets the font using HipAssetManager.loadFont
         package void function (IHipAssetLoadTask font) setFontDeferred;
         ///Draws a text using the last font set

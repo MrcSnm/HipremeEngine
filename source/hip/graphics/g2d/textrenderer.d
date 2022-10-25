@@ -55,6 +55,7 @@ class HipTextRenderer : IHipDeferrableText
 
     private HipText[] textPool;
     private int poolActive;
+    protected HipColor color;
     private uint quadsCount;
 
     this(ushort maxIndices = index_t_maxQuadIndices)
@@ -97,11 +98,18 @@ class HipTextRenderer : IHipDeferrableText
 
     void setFont(IHipFont font)
     {
+        if(this.font !is null && font != this.font)
+            render();
         this.font = font;
     }
 
     void setColor(HipColor color)
     {
+        if(this.color != color)
+        {
+            render();
+        }
+        this.color = color;
         bmTextShader.uColor = color;
     }
 

@@ -27,7 +27,7 @@ version(Script)
 {
 	private alias G2D = hip.api.graphics.g2d.g2d_binding;
 	///Sets the font for the next drawText commands
-	void setFont(HipFont font){G2D._setFont(font);}
+	void setFont(HipFont font){G2D.setFont(font);}
 	///Sets the font to the default font set on hip.global.gamedef
 	void setFont(typeof(null)){G2D.setFontNull(null);}
 	///Sets the font using HipAssetManager.loadFont

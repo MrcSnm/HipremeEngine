@@ -133,4 +133,130 @@ class HipTimer : IHipTimer
     }
 }
 
+class HipSequence : HipTimer
+{
+    protected IHipTimer[] timerList;
+    protected uint listCursor;
+    protected float cursorDuration = 0;
+    protected float listAccumulator = 0;
+    protected void delegate()[] onFinishList;
 
+    this(IHipTimer[] timers...)
+    {
+        super("", 0, HipTimerType.progressive);
+        foreach(t;timers)
+        {
+            timerList~= t;
+        }
+        cursorDuration = timerList[0].getDuration();
+        recalculateDuration();
+
+        addHandler((prog, count)
+        {
+            if(accumulator - listAccumulator >= cursorDuration)
+            {
+                if(listCursor + 1 < timerList.length)
+                {
+                    //Guarantee that it finishes here
+                    timerList[listCursor].tick(deltaTime);
+                    cursorDuration = timerList[++listCursor].getDuration();
+                    timerList[listCursor].play();
+                    listAccumulator+= cursorDuration;
+                }
+            }
+            timerList[listCursor].tick(deltaTime);
+        });
+    }
+    override HipSequence play()
+    {
+        super.play();
+        timerList[0].play();
+        return this;
+    }
+    override void stop()
+    {
+        super.stop();
+        foreach(onFinish; onFinishList)
+            onFinish();
+    }
+
+    void recalculateDuration()
+    {
+        foreach(t;timerList)
+            durationSeconds+= t.getDuration();
+        setProperties("Sequence", durationSeconds, HipTimerType.progressive);
+    }
+    HipSequence add(IHipTimer timer)
+    {
+        if(cursorDuration == 0)
+            cursorDuration = timer.getDuration();
+        timerList~= timer;
+        recalculateDuration();
+        return this;
+    }
+    HipSequence addOnFinish(void delegate() onFinish)
+    {
+        onFinishList~= onFinish;
+        return this;
+    }
+}
+
+class HipSpawn : HipTimer
+{
+    protected IHipTimer[] timerList;
+    protected void delegate()[] onFinishList;
+
+    this(IHipTimer[] timers...)
+    {
+        super("Spawn", 0, HipTimerType.progressive);
+        foreach(t;timers)
+        {
+            timerList~= t;
+        }
+        recalculateDuration();
+        addHandler((prog, count)
+        {
+            foreach(t; timerList)
+                t.tick(deltaTime);
+        });
+    }
+    override HipSpawn play()
+    {
+        super.play();
+        foreach(t; timerList)
+        {
+            t.play();
+        }
+        return this;
+    }
+    protected void recalculateDuration()
+    {
+        float durationSeconds = 0;
+        foreach(t;timerList)
+        {
+            if(t.getDuration() > durationSeconds)
+                durationSeconds = t.getDuration();
+        }
+        setProperties("Spawn", durationSeconds, HipTimerType.progressive);
+    }
+
+    override void stop()
+    {
+        super.stop();
+        foreach(onFinish; onFinishList)
+            onFinish();
+    }
+
+    HipSpawn add(IHipTimer timer)
+    {
+        timerList~= timer;
+        recalculateDuration();
+        return this;
+    }
+
+    HipSpawn addOnFinish(void delegate() onFinish)
+    {
+        onFinishList~= onFinish;
+        return this;
+    }
+}
