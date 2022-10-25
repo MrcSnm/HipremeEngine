@@ -115,7 +115,7 @@ void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3){geoBatch.fill
 void drawLine(int x1, int y1, int x2, int y2){geoBatch.drawLine(x1,y1,x2,y2);}
 void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24){geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision);}
 void drawSprite(IHipSprite sprite){spBatch.draw(cast(HipSprite)sprite);}
-void drawRegion(IHipTextureRegion reg, int x, int y, int z = 0, HipColor color = HipColor.white){spBatch.draw(reg, x, y, z, color);}
+void drawRegion(IHipTextureRegion reg, int x, int y, int z = 0, const HipColor color = HipColor.white){spBatch.draw(reg, x, y, z, color);}
 
 public import hip.util.data_structures : Array2D, Array2D_GC;
 Array2D_GC!IHipTextureRegion _cropSpritesheet(

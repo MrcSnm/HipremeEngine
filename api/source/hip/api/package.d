@@ -47,6 +47,7 @@ public import hip.api.audio;
 public import hip.api.math.random;
 //Game
 public import hip.api.systems.timer;
+public import hip.api.game.game_binding : HipGameUtils;
 public import hip.api.systems.system_binding: HipTimerManager;
 //Input
 
@@ -103,6 +104,7 @@ mixin template HipEngineMain(alias StartScene)
 			import hip.api;
 			import hip.api.math.math_binding;
 			import hip.api.systems.system_binding;
+			import hip.api.game.game_binding;
 			import core.runtime;
 			rt_init();
 			initializeHip();
@@ -113,6 +115,7 @@ mixin template HipEngineMain(alias StartScene)
 			HipInput.initInput();
 			HipAssetManager.initAssetManager();
 			initTimerAPI();
+			initGameAPI();
 			
 			return _exportedScene = new StartScene();
 		}
