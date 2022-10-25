@@ -17,9 +17,9 @@ import hip.systems.timer_manager;
 import hip.event.dispatcher;
 import hip.event.handlers.keyboard;
 import hip.windowing.events;
-
 import hip.hiprenderer.renderer;
 import hip.graphics.g2d.renderer2d;
+public import hip.event.handlers.input_listener;
 
 
 version(LoadScript)
@@ -62,6 +62,9 @@ class GameSystem
     EventDispatcher dispatcher;
     KeyboardHandler keyboard;
     AScene[] scenes;
+
+    HipInputListener inputListener;
+    HipInputListener scriptInputListener;
     string projectDir;
     protected static AScene externalScene;
 
@@ -79,31 +82,25 @@ class GameSystem
     {
         this.targetFPS = targetFPS;
         keyboard = new KeyboardHandler();
-        keyboard.addKeyListener(HipKey.ESCAPE, new class HipButton
-        {
-            override void onDown(){hasFinished = true;}
-            override void onUp(){}
-        });
-
-        keyboard.addKeyListener(HipKey.F1, new class HipButton
-        {
-            override void onDown(){}
-            override void onUp(){import hip.bind.interpreters; reloadInterpreter();}
-        });
+        inputListener = new HipInputListener(keyboard);
+        scriptInputListener = new HipInputListener(keyboard);
+        inputListener.addKeyboardListener(HipKey.ESCAPE, 
+            (meta){hasFinished = true;}
+        );
+        inputListener.addKeyboardListener(HipKey.F1, 
+            (meta){import hip.bind.interpreters; reloadInterpreter();},
+            HipButtonType.up
+        );
 
         version(LoadScript)
         {
-            keyboard.addKeyListener(HipKey.F5, new class HipButton
-            {
-                override void onDown()
-                {}
-                override void onUp()
+            inputListener.addKeyboardListener(HipKey.F5,(meta)
                 {
                     import hip.console.log;
                     rawlog("Recompiling and Reloading game ");
                     recompileReloadExternalScene();
-                }
-            });
+                }, HipButtonType.up
+            );
         }
 
         dispatcher = new EventDispatcher(HipRenderer.window, &keyboard);
@@ -254,6 +251,8 @@ class GameSystem
         }
         dispatcher.handleEvent();
         dispatcher.pollGamepads(deltaTime);
+        inputListener.update();
+        scriptInputListener.update();
 
         if(hasFinished || dispatcher.hasQuit)
             return false;

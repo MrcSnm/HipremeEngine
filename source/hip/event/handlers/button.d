@@ -9,20 +9,20 @@ final class HipButtonMetadata : AHipButtonMetadata
     float lastUpTime, upTimeStamp;
     bool _isPressed = false;
     bool _isNewState = false;
-    override bool isNewState(){return _isNewState;}
-    override bool isPressed(){return _isPressed;}
-    override float getLastDownTimeDuration(){return lastDownTime;}
-    override float getLastUpTimeDuration(){return lastUpTime;}
+    override bool isNewState() const {return _isNewState;}
+    override bool isPressed() const {return _isPressed;}
+    override float getLastDownTimeDuration() const {return lastDownTime;}
+    override float getLastUpTimeDuration() const {return lastUpTime;}
 
     this(int key){super(key);}
 
-    override float getDownTimeDuration()
+    override float getDownTimeDuration() const
     {
         if(_isPressed)
             return (HipTime.getCurrentTimeAsMilliseconds() - downTimeStamp) / 1000;
         return 0;
     }
-    override float getUpTimeDuration()
+    override float getUpTimeDuration() const
     {
         if(!_isPressed)
             return (HipTime.getCurrentTimeAsMilliseconds() - upTimeStamp) / 1000;

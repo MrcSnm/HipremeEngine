@@ -27,6 +27,8 @@ else
     public import hip.api.input.gamepad;
     public import hip.api.input.mouse;
     public import hip.api.input.inputmap;
+    public import hip.api.input.keyboard;
+    
     extern(System)
     {
         //Keyboard functions
@@ -53,5 +55,10 @@ else
         bool function(float vibrationPower, float time, ubyte id = 0) setGamepadVibrating;
         float function(ubyte id = 0) getGamepadBatteryStatus;
         bool function(ubyte id = 0) isGamepadWireless;
+
+        const(HipButton)* function(HipKey key, HipInputAction action,
+        HipButtonType type = HipButtonType.down,
+        AutoRemove remove = AutoRemove.no) addKeyboardListener;
+        bool function(const(HipButton)* button) removeKeyboardListener;
     }
 }

@@ -112,21 +112,35 @@ bool popFront(T)(ref T[] arr)
 }
 bool remove(T)(ref T[] arr, T val)
 {
-    import hip.util.memory;
-    if(arr.length == 0)
-        return false;
-    
-    for(ulong i = 0; i < arr.length; i++)
+    for(size_t i = 0; i < arr.length; i++)
+    {
         if(arr[i] == val)
         {
-            for(ulong z = 0; z+i < cast(int)arr.length-1; z++)
+            for(size_t z = 0; z+i < cast(int)arr.length-1; z++)
                 arr[z+i] = arr[z+i+1];
             arr.length--;
             return true;
         }
+    }
     return false;
 }
-pragma(inline)
+
+bool remove(T)(ref T[] arr, const(T)* val)
+{
+    for(size_t i = 0; i < arr.length; i++)
+    {
+        if(&arr[i] == val)
+        {
+            for(size_t z = 0; z+i < cast(int)arr.length-1; z++)
+                arr[z+i] = arr[z+i+1];
+            arr.length--;
+            return true;
+        }
+    }
+    return false;
+}
+
+pragma(inline, true)
 bool contains(T)(ref T[] arr, T val){return arr.indexOf(val) != -1;} 
 
 
