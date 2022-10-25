@@ -25,7 +25,8 @@ class HipText
     //Line widths, containing width for each line for correctly aplying text align
     uint[] linesWidths;
 
-    protected dstring _text;
+    protected string _text;
+    protected dstring _dtext;
     protected dstring processedText;
 
     //Debugging?
@@ -44,19 +45,22 @@ class HipText
     {
         linesWidths.length = 1;
     }
-    dstring text(){return _text;}
+    string text(){return _text;}
 
-    dstring text(dstring newText)
+    string text(string newText)
     {
         if(newText != _text)
         {
+            import std.utf:toUTF32;
             shouldUpdateText = true;
-            if(newText.length > _text.length)
+            dstring dtext = newText.toUTF32;
+            if(dtext.length > _dtext.length)
             {
                 //As it is a quad, it needs to have floats * 4
-                vertices.length = newText.length * (HipTextRendererVertex.sizeof/float.sizeof) * 4;
+                vertices.length = dtext.length * (HipTextRendererVertex.sizeof/float.sizeof) * 4;
             }
             _text = newText;
+            _dtext = dtext;
         }
         return _text;
     }
@@ -76,7 +80,7 @@ class HipText
 
     package void updateText(IHipFont font)
     {
-        HipTextStopConfig.parseText(_text, processedText, textConfig);
+        HipTextStopConfig.parseText(_dtext, processedText, textConfig);
         font.calculateTextBounds(processedText, linesWidths, width, height);
         int displayX, displayY;
         int yoffset = 0;

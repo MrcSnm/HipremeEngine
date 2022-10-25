@@ -180,7 +180,7 @@ public import hip.api.graphics.g2d.hipsprite;
     {
         if(isDirty)
         {
-            
+            isDirty = false;
             if(rotation == 0)
             {
                 float x2 = x+ (width*scaleX * tilingX);

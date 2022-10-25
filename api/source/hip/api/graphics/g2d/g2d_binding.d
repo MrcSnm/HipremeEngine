@@ -52,15 +52,17 @@ version(Script)
         void function(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24) drawQuadraticBezierLine;
         ///Draws the target sprite instance
         void function(IHipSprite sprite) drawSprite;
+        ///Draws a texture at a specified place
+        void function(IHipTexture reg, int x, int y, int z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawTexture;
         ///Draws a texture region at a specified place
-        void function(IHipTextureRegion reg, int x, int y, int z = 0, HipColor = HipColor.white) drawRegion;
+        void function(IHipTextureRegion reg, int x, int y, int z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawRegion;
         ///Sets the font for the next drawText commands
         package void function (HipFont font) setFont;
         package void function (typeof(null)) setFontNull;
         ///Sets the font using HipAssetManager.loadFont
         package void function (IHipAssetLoadTask font) setFontDeferred;
         ///Draws a text using the last font set
-        void function(dstring text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER) drawText;
+        void function(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER) drawText;
         ///Gets a sprite instance
         IHipSprite function(string texturePath) newSprite;
         ///Destroy a sprite instance
