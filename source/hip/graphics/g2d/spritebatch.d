@@ -14,13 +14,14 @@ import hip.graphics.orthocamera;
 import hip.hiprenderer.renderer;
 import hip.assets.texture;
 import hip.hiprenderer.framebuffer;
-import hip.math.matrix;
 import hip.error.handler;
 import hip.hiprenderer.shader;
 import hip.graphics.material;
-import hip.graphics.g2d.sprite;
-import hip.api.graphics.color;
-import hip.math.vector;
+public import hip.api.graphics.batch;
+public import hip.graphics.g2d.sprite;
+public import hip.api.graphics.color;
+public import hip.math.vector;
+public import hip.math.matrix;
 
 /**
 *   This is what to expect in each vertex sent to the sprite batch
@@ -44,7 +45,7 @@ import hip.math.vector;
 *   The another one is a post processing shader, which the spritebatch doesn't uses by default. If 
 *   setPostProcessingShader()
 */
-class HipSpriteBatch
+class HipSpriteBatch : IHipBatch
 {
     index_t maxQuads;
     index_t[] indices;
@@ -396,6 +397,8 @@ class HipSpriteBatch
 
     void flush()
     {
+        if(quadsCount == 0)
+            return;
         HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
         // mesh.shader.bind();
         // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);

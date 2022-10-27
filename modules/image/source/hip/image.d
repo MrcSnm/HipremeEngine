@@ -146,7 +146,7 @@ public class HipImageImpl : IImage
         return true;
     }
 
-    bool hasLoadedData() const {return pixels !is null;}
+    bool hasLoadedData() const {return pixels !is null && width != 0 && height != 0;}
 
     void[] monochromeToRGBA() const
     {

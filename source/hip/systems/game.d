@@ -21,7 +21,6 @@ import hip.hiprenderer.renderer;
 import hip.graphics.g2d.renderer2d;
 public import hip.event.handlers.input_listener;
 
-
 version(LoadScript)
 {
     import hip.systems.hotload;
@@ -49,8 +48,8 @@ version(LoadScript)
             return true;
         }
     }
-    extern(C) AScene function() HipremeEngineGameInit;
-    extern(C) void function() HipremeEngineGameDestroy;
+    extern(System) AScene function() HipremeEngineGameInit;
+    extern(System) void function() HipremeEngineGameDestroy;
 }
 
 
@@ -233,6 +232,7 @@ class GameSystem
         HipAssetManager.startCheckingReferences();
     	s.initialize();
         HipAssetManager.stopCheckingReferences();
+
         scenes~= s;
     }
 

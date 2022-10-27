@@ -22,6 +22,8 @@ class HipText
     ///Update dynamically based on the font, the text scale and the text length
     int width, height;
 
+    int boundsWidth = -1, boundsHeight = -1;
+
     //Line widths, containing width for each line for correctly aplying text align
     uint[] linesWidths;
 
@@ -41,9 +43,11 @@ class HipText
     protected size_t lastTextLength = 0;
     protected bool shouldUpdateText = true;
 
-    this()
+    this(int boundsWidth = -1, int boundsHeight = -1)
     {
         linesWidths.length = 1;
+        this.boundsWidth = boundsWidth;
+        this.boundsHeight = boundsHeight;
     }
     string text(){return _text;}
 
@@ -58,6 +62,7 @@ class HipText
             {
                 //As it is a quad, it needs to have floats * 4
                 vertices.length = dtext.length * (HipTextRendererVertex.sizeof/float.sizeof) * 4;
+                vertices[] = 0;
             }
             _text = newText;
             _dtext = dtext;
@@ -72,9 +77,10 @@ class HipText
         return vertices;
     }
     
-    protected void updateAlign(int lineNumber, out int displayX, out int displayY)
+    protected void updateAlign(int lineNumber, out int displayX, out int displayY, int boundsWidth, int boundsHeight)
     {
-        getAlign(x, y, linesWidths[lineNumber], height, alignh, alignv, displayX, displayY);
+         
+        getAlign(x, y, linesWidths[lineNumber], height, alignh, alignv, displayX, displayY, boundsWidth, boundsHeight);
     }
     public void setFont(IHipFont font){this.font = font;}
 
@@ -82,7 +88,6 @@ class HipText
     {
         HipTextStopConfig.parseText(_dtext, processedText, textConfig);
         font.calculateTextBounds(processedText, linesWidths, width, height);
-        int displayX, displayY;
         int yoffset = 0;
         int xoffset = 0;
         dstring str = processedText;
@@ -93,7 +98,8 @@ class HipText
         dchar lastCharacter = 0;
         int kerningAmount = 0;
         int lineBreakCount = 0;
-        updateAlign(0, displayX, displayY);
+        int displayX = void, displayY = void;
+        updateAlign(0, displayX, displayY, boundsWidth, boundsHeight);
         HipFontChar* ch;
         for(int i = 0; i < str.length; i++)
         {
@@ -109,7 +115,7 @@ class HipText
             {
                 case '\n':
                     xoffset = 0;
-                    updateAlign(++lineBreakCount, displayX, displayY);
+                    updateAlign(++lineBreakCount, displayX, displayY, boundsWidth, boundsHeight);
                     if(ch && ch.width != 0 && ch.height != 0 && shouldRenderLineBreak)
                         goto default;
                     else
@@ -245,7 +251,7 @@ package struct HipTextStopConfig
 
 void getAlign(
     int x, int y, int width, int height, HipTextAlign alignh, HipTextAlign alignv, 
-    out int newX, out int newY
+    out int newX, out int newY, int boundsWidth, int boundsHeight
 )
 {
     newX = x;
@@ -255,7 +261,12 @@ void getAlign(
         switch(alignh)
         {
             case CENTER:
-                newX-= width/2;
+                if(boundsWidth != -1)
+                {
+                    newX = ((x + boundsWidth)/2) - (width / 2);
+                }
+                else
+                    newX-= width/2;
                 break;
             case RIGHT:
                 newX-= width;
@@ -267,7 +278,10 @@ void getAlign(
         switch(alignv)
         {
             case CENTER:
-                newY+= height/2;
+                if(boundsHeight != -1)
+                    newY = newY + (boundsHeight/2) + height/2;
+                else
+                    newY+= height/2;
                 break;
             case BOTTOM:
                 newY+= height;

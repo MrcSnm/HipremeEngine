@@ -15,6 +15,8 @@ import hip.api.data.font;
 import hip.hiprenderer;
 import hip.graphics.g2d.text;
 import hip.assetmanager;
+public import hip.graphics.orthocamera;
+public import hip.api.graphics.batch;
 
 
 enum HipTextAlign
@@ -45,7 +47,7 @@ private Shader bmTextShader = null;
 *   This class oculd be refactored in the future to actually
 * use a spritebatch for its drawing.
 */
-class HipTextRenderer : IHipDeferrableText
+class HipTextRenderer : IHipDeferrableText, IHipBatch
 {
     mixin(HipDeferredLoad);
     IHipFont font;
@@ -56,9 +58,10 @@ class HipTextRenderer : IHipDeferrableText
     private HipText[] textPool;
     private int poolActive;
     protected HipColor color;
+    protected HipOrthoCamera camera;
     private uint quadsCount;
 
-    this(ushort maxIndices = index_t_maxQuadIndices)
+    this(HipOrthoCamera camera, ushort maxIndices = index_t_maxQuadIndices)
     {
         if(bmTextShader is null)
         {
@@ -90,6 +93,9 @@ class HipTextRenderer : IHipDeferrableText
         mesh.sendAttributes();
         HipVertexArrayObject.putQuadBatchIndices(indices, maxIndices / 6);
         mesh.setIndices(indices);
+        if(camera is null)
+            camera = new HipOrthoCamera();
+        this.camera = camera;
 
         import hip.global.gamedef;
         //Promise it won't modify
@@ -98,8 +104,10 @@ class HipTextRenderer : IHipDeferrableText
 
     void setFont(IHipFont font)
     {
-        if(this.font !is null && font != this.font)
+        if(this.font !is null && font !is this.font)
+        {
             render();
+        }
         this.font = font;
     }
 
@@ -115,22 +123,22 @@ class HipTextRenderer : IHipDeferrableText
 
 
     //Defers a call to updateText
-    void draw(string newText, int x, int y, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER)
+    void draw(string newText, int x, int y, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1)
     {
         HipText obj;
         if(poolActive <= textPool.length)
         {
             textPool.length = ++poolActive;
-            obj = textPool[$-1] = new HipText();
+            obj = textPool[$-1] = new HipText(boundsWidth, boundsHeight);
         }
         else
             obj = textPool[poolActive++];
-        obj.text = newText;
         obj.setFont(font);
         obj.x = x;
         obj.y = y;
         obj.alignh = alignh;
         obj.alignv = alignv;
+        obj.text = newText;
 
     }
 
@@ -148,14 +156,26 @@ class HipTextRenderer : IHipDeferrableText
     }
 
 
-
-    void render()
+    alias render = flush;
+    void flush()
     {
+        if(font is null)
+        {
+            import hip.error.handler;
+            ErrorHandler.showWarningMessage("Font Missing", "No font attached on HipTextRenderer");
+            return;
+        }
         foreach(i; 0..poolActive)
+        {
             draw(textPool[i]);
+        }
+        if(quadsCount == 0)
+            return;
         this.font.texture.bind();
         bmTextShader.bind();
         bmTextShader.sendVars();
+        mesh.shader.setVertexVar("Cbuf.uProj", camera.proj);
+        mesh.shader.setVertexVar("Cbuf.uView", camera.view);
         mesh.setVertices(vertices);
         mesh.draw(quadsCount*6);
 
