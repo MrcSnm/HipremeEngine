@@ -20,13 +20,14 @@ public import hip.api.renderer.texture;
 public import hip.api.graphics.g2d.hipsprite;
 public import hip.api.data.font;
 public import hip.api.graphics.text;
+public import hip.api.graphics.g2d.animation;
 public import hip.api.graphics.g2d.g2d_binding;
 
 version(Script)
 {
 	private alias G2D = hip.api.graphics.g2d.g2d_binding;
 	///Sets the font for the next drawText commands
-	void setFont(HipFont font){G2D._setFont(font);}
+	void setFont(IHipFont font){G2D.setFont(font);}
 	///Sets the font to the default font set on hip.global.gamedef
 	void setFont(typeof(null)){G2D.setFontNull(null);}
 	///Sets the font using HipAssetManager.loadFont

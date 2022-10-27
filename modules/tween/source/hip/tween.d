@@ -112,6 +112,40 @@ class HipTween : HipTimer, IHipTween
         savedData = new void[](size);
     }
 
+    /**
+    *   This version is more lightweight compiler wise as it is not templated 
+    */
+    static HipTween to(float durationSeconds, float*[] valuesRef, float[] targetValues)
+    {
+        HipTween t = new HipTween(durationSeconds, false);
+        float[] v2 = targetValues.dup;
+        t.allocSaveData(valuesRef.length * float.sizeof);
+
+        t.onPlay = ()
+        {
+            float[] savedDataConv = cast(float[])t.savedData;
+            foreach(i, v; valuesRef)
+                savedDataConv[i] = *v;
+            
+            t.addHandler((float prog, uint loops) 
+            {
+                float multiplier = prog;
+                if(t.easing != null)
+                    multiplier = t.easing(multiplier);
+                float initialValue;
+                float newValue;
+
+                foreach(i, value; valuesRef)
+                {
+                    initialValue = savedDataConv[i];
+                    newValue = ((1-multiplier)*initialValue + (v2[i] * multiplier));
+                    *value = newValue;
+                }
+            });
+        };
+        return t;
+    }
+
     static HipTween to(string[] Props, T, V)(float durationSeconds, T target, V[]  values...)
     {
         HipTween t = new HipTween(durationSeconds, false);
@@ -123,7 +157,7 @@ class HipTween : HipTimer, IHipTween
             V[] savedDataConv = cast(V[])t.savedData;
             static foreach(i, p; Props)
             {
-                savedDataConv[i] = cast(V)mixin("target.",p);
+                savedDataConv[i] = cast(V)__traits(getMember, target, p);
             }
                         
             
@@ -138,12 +172,44 @@ class HipTween : HipTimer, IHipTween
                 {
                     initialValue = savedDataConv[i];
                     newValue = cast(V)((1-multiplier)*initialValue + (v2[i] * multiplier));
-                    mixin("target.",p," = newValue;");
+                    __traits(getMember, target, p) = newValue;
                 }
             });
         };
         return t;
     }
+
+    static HipTween by(string[] Props, T, V)(float durationSeconds, float*[] valuesRef, float[] targetValues)
+    {
+        HipTween t = new HipTween(durationSeconds, false);
+        t.allocSaveData(float.sizeof * valuesRef.length);
+        float[] v2 = targetValues.dup;
+
+        t.onPlay = ()
+        {
+            t.addHandler((float prog, uint loops) 
+            {
+                float[] savedDataConv = cast(float[])t.savedData;
+                float multiplier = prog;
+                if(t.easing != null)
+                    multiplier = t.easing(multiplier);
+                float temp;
+                float temp2;
+                foreach(i, valueRef; valuesRef)
+                {
+                    temp = savedDataConv[i];
+                    temp2 = (v2[i] * multiplier);
+                    *valueRef+= -temp + temp2;
+                    //Copy the new values for being subtracted next frame
+                    savedDataConv[i] = temp2;
+
+                }
+            });
+        };
+
+        return t;
+    }
+
     static HipTween by(string[] Props, T, V)(float durationSeconds, T target, V[]  values...)
     {
         HipTween t = new HipTween(durationSeconds, false);
@@ -165,7 +231,7 @@ class HipTween : HipTimer, IHipTween
                     temp = savedDataConv[i];
                     temp2 = cast(V)(v2[i] * multiplier);
 
-                    mixin("target.",p,"+= -temp + temp2;");
+                    __traits(getMember, target, p)+= -temp + temp2;
                     //Copy the new values for being subtracted next frame
                     savedDataConv[i] = temp2;
                 }
@@ -182,84 +248,4 @@ class HipTween : HipTimer, IHipTween
     }
     ~this(){destroy(savedData);}
 
-}
-
-class HipTweenSequence : HipTween
-{
-    HipTween[] tweenList;
-    uint listCursor;
-    float cursorDuration = 0;
-    float listAccumulator = 0;
-    this(bool loops, HipTween[] tweens...)
-    {
-        super(0, loops);
-        foreach(t;tweens)
-        {
-            tweenList~= t;
-            durationSeconds+= t.getDuration();
-        }
-        cursorDuration = tweenList[0].getDuration();
-        setProperties("TweenSequence", durationSeconds, loops);
-        onPlay = ()
-        {
-            tweenList[0].play();
-        };
-
-        addHandler((prog, count)
-        {
-            if(accumulator - listAccumulator >= cursorDuration)
-            {
-                if(listCursor + 1 < tweenList.length)
-                {
-                    //Guarantee that it finishes here
-                    tweenList[listCursor].tick(deltaTime);
-                    cursorDuration = tweenList[++listCursor].getDuration();
-                    tweenList[listCursor].play();
-                    listAccumulator+= cursorDuration;
-                }
-            }
-            tweenList[listCursor].tick(deltaTime);
-        });
-    }
-}
-
-class HipTweenSpawn : HipTween
-{
-    HipTween[] tweenList;
-
-    this(bool loops, HipTween[] tweens...)
-    {
-        super(0, loops);
-        foreach(t;tweens)
-        {
-            tweenList~= t;
-        }
-        recalculateDuration();
-        onPlay = ()
-        {
-            foreach(t; tweenList)t.play();
-        };
-
-        addHandler((prog, count)
-        {
-            foreach(t; tweenList)
-                t.tick(deltaTime);
-        });
-    }
-    protected void recalculateDuration()
-    {
-        foreach(t;tweenList)
-        {
-            if(t.getDuration() > durationSeconds)
-                durationSeconds = t.getDuration();
-        }
-        setProperties("TweenSpawn", durationSeconds, this.loops);
-    }
-
-    HipTweenSpawn addTween(HipTween tween)
-    {
-        tweenList~= tween;
-        recalculateDuration();
-        return this;
-    }
 }

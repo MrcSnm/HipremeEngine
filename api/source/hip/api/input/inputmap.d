@@ -36,8 +36,11 @@ interface IHipInputMap
 }
 version(Script)
 {
-    extern(C) IHipInputMap function(string file, ubyte id = 0) parseInputMap_File;
-    extern(C) IHipInputMap function(ubyte[] file, string fileName, ubyte id = 0) parseInputMap_Mem;
+    extern(System)
+    {
+        IHipInputMap function(string file, ubyte id = 0) parseInputMap_File;
+        IHipInputMap function(ubyte[] file, string fileName, ubyte id = 0) parseInputMap_Mem;
+    }
 }
 
 version(Have_hipreme_engine)

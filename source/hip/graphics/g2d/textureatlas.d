@@ -9,13 +9,9 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.graphics.g2d.textureatlas;
-import hip.util.file;
 import hip.util.conv:to;
-import hip.util.string;
-import std.file;
-import hip.filesystem.hipfs;
-import hip.assets.texture;
-import hip.math.rect;
+public import hip.api.renderer.texture : IHipTexture, IHipTextureRegion;
+public import hip.math.rect : Size, Rect;
 
 struct AtlasFrame
 {
@@ -26,7 +22,7 @@ struct AtlasFrame
     Rect frame;
     Rect spriteSourceSize;
     Size sourceSize;
-    HipTextureRegion region;
+    IHipTextureRegion region;
 
     alias region this;
 }
@@ -36,11 +32,12 @@ class TextureAtlas
     string atlasPath;
     string[] texturePaths;
     AtlasFrame[string] frames;
-    HipTexture texture;
+    IHipTexture texture;
 
     static TextureAtlas readJSON(ubyte[] data, string atlasPath, string texturePath)
     {
         import std.json;
+        import hip.assets.texture;
         TextureAtlas ret = new TextureAtlas();
         ret.texturePaths~= texturePath;
         ret.atlasPath = atlasPath;
@@ -84,6 +81,9 @@ class TextureAtlas
     }
     static TextureAtlas readJSON(string atlasPath, string texturePath="")
     {
+        import hip.util.string : lastIndexOf;
+        import hip.filesystem.hipfs;
+
         ubyte[] data;
         HipFS.read(atlasPath, data);
         if(texturePath == "")
@@ -93,7 +93,9 @@ class TextureAtlas
 
     static TextureAtlas readAtlas(string atlasPath)
     {
-        import hip.util.string : split;
+        import hip.util.string : split, countUntil;
+        import hip.util.file : getFileContent;
+
         TextureAtlas ret = new TextureAtlas();
         ret.atlasPath = atlasPath;
         string[] lines;

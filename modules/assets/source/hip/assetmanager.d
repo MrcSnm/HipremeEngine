@@ -231,6 +231,7 @@ class HipAssetManager
         });
         semaphore.wait;
         destroy(semaphore);
+        update();
     }
 
     private static HipWorkerThread loadWorker(string taskName, void delegate() loadFn, void delegate(string taskName) onFinish = null, bool onMainThread = false)

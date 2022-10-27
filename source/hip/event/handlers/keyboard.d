@@ -38,8 +38,6 @@ char toUppercase(char a)
  */
 class KeyboardHandler : IHipKeyboard
 {
-    private HipButton[][int] listeners;
-    private int[int] listenersCount;
     private static int[256] pressedKeys;
     private static HipButtonMetadata[256] metadatas;
     private static string frameText;
@@ -56,50 +54,7 @@ class KeyboardHandler : IHipKeyboard
         pressedKeys[] = 0;
     }
     
-    
-    /** 
-     * Will take care of not let memory fragmentation happen by switching places with current index and last
-     *   k = Key object reference
-     * Params:
-     *   kCode = New key code
-     * Returns: Rebinded was succesful
-     */
-    bool rebind(HipButton k, HipKey kCode)
-    {
-        HipButton[] currentListener = listeners[k.meta.id];
-        int currentCount = listenersCount[k.meta.id];
-        int index = cast(int)indexOf(currentListener, k);
-        if(index != -1)
-        {
-            swapAt(currentListener, index, currentCount - 1);
-            currentListener[currentCount-1] = null;
-            listenersCount[k.meta.id]--;
-            addKeyListener(kCode, k);
-        }
-        return index != -1;
-    }
-    /** 
-     * Will make the key being enqueued in the keyboard event distribution
-     * Params:
-     *   key = id for being assigned with the Key object
-     *   k = Key object reference
-     */
-    void addKeyListener(HipKey keyCode, HipButton k)
-    {
-        ubyte key = cast(ubyte)keyCode;
-        if((key in listeners) == null) //Initialization for new key
-        {
-            listeners[key] = []; //Creates a new place for the new key
-            listeners[key].reserve(4); //Reserves a bit of memory
-            listenersCount[key] = 0; //Initialization
-        }
-        if(listeners[key].length != listenersCount[key]) //Check if there is null space
-            listeners[key][$ - 1] = k;
-        else
-            listeners[key]~= k; //Append if not
-        k.meta = metadatas[key];
-        listenersCount[key]++;
-    }
+
     /**
     * Takes care of the pressed keys array
     */
@@ -145,14 +100,8 @@ class KeyboardHandler : IHipKeyboard
     void handleKeyUp(HipKey key)
     {
         setPressed(key, false);
-        if((key in listeners) != null)
-        {
-            HipButton[] keyListeners = listeners[key];
-            immutable int len = listenersCount[key];
-            for(int i = 0; i < len; i++)
-                keyListeners[i].onUp();
-        }
     }
+    AHipButtonMetadata getMetadata(char key) const {return metadatas[key];}
 
     bool isKeyPressed(char key){return metadatas[key]._isPressed;}
     bool isKeyJustPressed(char key){return metadatas[key].isJustPressed;}
@@ -167,13 +116,6 @@ class KeyboardHandler : IHipKeyboard
     void handleKeyDown(HipKey key)
     {
         setPressed(key, true);
-        if((key in listeners) != null)
-        {
-            HipButton[] keyListeners = listeners[key];
-            immutable int len = listenersCount[key];
-            for(int i = 0; i < len; i++)
-                keyListeners[i].onDown();
-        }
     }
     
     static string getInputText(KeyboardLayout layout)
@@ -199,16 +141,6 @@ class KeyboardHandler : IHipKeyboard
 
     void update()
     {
-        int i = 0;
-        while(pressedKeys[i] != 0)
-        {
-            //Check listeners for that ey
-            if((pressedKeys[i] in listeners) != null)
-                foreach(key; listeners[pressedKeys[i]])
-                    key.onDown();
-            //Add it to the current input
-            i++;
-        }
     }
 
     void postUpdate()

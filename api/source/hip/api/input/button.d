@@ -18,29 +18,43 @@ else version(Have_hipreme_engine)
 
 version(HasHipInput):
 
+enum HipButtonType : ushort
+{
+    down,
+    up
+}
+
+import std.typecons:Flag;
+
+alias AutoRemove = Flag!"AutoRemove";
+alias HipInputAction = void delegate(const(AHipButtonMetadata) meta);
+
 /** 
  * Handler for any kind of button
  */
-class HipButton
+struct HipButton
 {
-    AHipButtonMetadata meta;
-    abstract void onDown();
-    abstract void onUp();
+    ushort id;
+    HipButtonType type;
+    HipInputAction action;
+    AutoRemove isAutoRemove;
+
+    alias id this;
 }
 
 abstract class AHipButtonMetadata
 {
     int id;
     this(int id){this.id = id;}
-    public abstract float getDownTimeDuration();
-    public abstract float getLastDownTimeDuration();
-    public abstract float getUpTimeDuration();
-    public abstract float getLastUpTimeDuration();
-    public abstract bool isPressed();
+    public abstract float getDownTimeDuration() const;
+    public abstract float getLastDownTimeDuration() const;
+    public abstract float getUpTimeDuration() const;
+    public abstract float getLastUpTimeDuration() const;
+    public abstract bool isPressed() const;
     ///Useful for looking justPressed and justRelease
-    public abstract bool isNewState();
+    public abstract bool isNewState() const;
     ///User API is not expected to call that function. It is used for controlling the input flow
     public abstract void setPressed(bool press);
-    public final bool isJustReleased(){return !isPressed && isNewState;}
-    public final bool isJustPressed(){return isPressed && isNewState;}
+    public final bool isJustReleased() const {return !isPressed && isNewState;}
+    public final bool isJustPressed()const {return isPressed && isNewState;}
 }

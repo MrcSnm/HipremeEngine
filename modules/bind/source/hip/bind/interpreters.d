@@ -133,8 +133,7 @@ InterpreterResult!T luaCallFunc(T, Args...)(lua_State* L, string funcName, Args 
         T ret;
         static foreach(i, m; __traits(allMembers, T))
         {
-            mixin("ret."~m ~ "= getFromIndex!("~
-            typeof(mixin("T."~m)).stringof~")( -(returnCount - cast(int)i ) ); " );
+            __traits(getMember, ret, m) = getFromIndex!(typeof(__traits(getMember, T, m)))(-(returnCount - cast(int)i));
         }
 
         return InterpreterResult!T(valid, ret);

@@ -345,6 +345,11 @@ version(UWP)
 }
 
 mixin ExportMathAPI;
+
+import hip.graphics.g2d.animation;
+mixin ExportDFunctions!(hip.graphics.g2d.animation);
+import hip.game.utils;
+mixin ExportDFunctions!(hip.game.utils);
 mixin ExportDFunctions!(hip.hipaudio.audio);
 mixin ExportDFunctions!(hip.assetmanager);
 mixin ExportDFunctions!(hip.systems.timer_manager);

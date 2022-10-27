@@ -26,19 +26,19 @@ class SoundTestScene : Scene
 {
     HipAudioSource src;
     Test t;
-    HipTween timer;
+    IHipTimer timer;
     this()
     {
         import hip.console.log;
         t = new Test();
         t.x = 0;
         t.y = 0;
-        timer = new HipTweenSequence(false, 
-        new HipTweenSpawn(false, 
-            HipTween.by!(["x"])(0.2, t, 300), 
-            HipTween.by!(["y"])(8, t, 900),
-        ),
-        HipTween.to!(["x"])(15, t, 0)
+        timer = new HipSequence( 
+            new HipSpawn( 
+                HipTween.by!(["x"])(0.2, t, 300), 
+                HipTween.by!(["y"])(8, t, 900),
+            ),
+            HipTween.to!(["x"])(15, t, 0)
         );
 
 

@@ -20,7 +20,7 @@ mixin template HipFSExtend(T, string pathProperty = "")
     {
         bool load(T instance)
         {
-            return instance.loadFromFile(mixin("instance.",pathProperty));
+            return instance.loadFromFile(__traits(getMember, instance, pathProperty));
         }
     }
 }
