@@ -57,7 +57,27 @@ bool loadDefaultAssets()
       return false;
 
    HipDefaultAssets._texture = image;
-   return true;   
+   return true;
+}
+
+export extern(System)
+{
+   const(IHipFont) getDefaultFont()
+   {
+      return HipDefaultAssets.font;
+   }
+   /**
+   *  Use this instead of getDefaultFont.getFontWithSize, as it changes its internal state.
+   */
+   IHipFont getDefaultFontWithSize(uint size)
+   {
+      return HipDefaultAssets._font.getFontWithSize(size);
+   }
+   const(IHipTexture) getDefaultTexture()
+   {
+      import hip.graphics.g2d.sprite;
+      return HipSprite.getDefaultTexture();
+   }
 }
 
 

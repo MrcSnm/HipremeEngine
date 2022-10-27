@@ -35,22 +35,22 @@ class AnimationTestScene : Scene
 
         anim
             .addTrack(new HipAnimationTrack("walk_down", 12, true)
-                .addFrames(HipAnimationFrame(sheet[0,0]),
-                            HipAnimationFrame(sheet[0,1]),
-                            HipAnimationFrame(sheet[0,2])
+                .addFrames(sheet[0,0],
+                            sheet[0,1],
+                            sheet[0,2]
                 ))
             .addTrack(new HipAnimationTrack("walk_left", 12, false)
-                .addFrames(HipAnimationFrame(sheet[1,0]),
-                           HipAnimationFrame(sheet[1,1]),
-                           HipAnimationFrame(sheet[1,2])
+                .addFrames(sheet[1,0],
+                           sheet[1,1],
+                           sheet[1,2]
             ))
             .addTrack(new HipAnimationTrack("walk_right", 12, true)
                 .addFrames(HipAnimationFrame.fromTextureRegions(sheet, 2, 0, 2, 2)
                 ))
             .addTrack(new HipAnimationTrack("walk_up", 12, false)
-                .addFrames(HipAnimationFrame(sheet[3,0]),
-                           HipAnimationFrame(sheet[3,1]),
-                           HipAnimationFrame(sheet[3,2])
+                .addFrames(sheet[3,0],
+                           sheet[3,1],
+                           sheet[3,2]
             ));
 
         spr = new HipSpriteAnimation(anim);

@@ -154,9 +154,10 @@ T toStruct(T)(string struc) pure nothrow
         each~=currentArg;
 
     static foreach(i, m; __traits(allMembers, T))
-    {
-        mixin("ret."~m~" = to!(typeof(ret."~m~"))(each[i]);");
-    }
+    {{
+        alias member = __traits(getMember, ret, m);
+        member = to!(typeof(member))(each[i]);
+    }}
     return ret;
 }
 
@@ -333,10 +334,14 @@ export string toString(float f) pure nothrow @safe
     
     if(decimal == 0)
         return ret;
-   
+    ret~= '.';
     while(cast(int)decimal != decimal)
+    {
         decimal*=10;
-    return ret ~ '.'~ (cast(int)decimal).toString;
+        if(cast(int)decimal == 0)
+        	ret~= '0';
+    }
+    return ret ~ (cast(int)decimal).toString;
 }
 
 void toStringRange(Sink)(auto ref Sink sink, float f)
@@ -518,4 +523,6 @@ unittest
     assert(toString("Hello") == "Hello");
     assert(toString(true) == "true");
     assert(toString(50.25)== "50.25");
+    assert(toString(0.003) == "0.003");
+    assert(toString(0.999) == "0.999");
 }

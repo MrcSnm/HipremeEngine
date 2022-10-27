@@ -366,6 +366,20 @@ class HipBitmapFont : HipFont
         }
         return texturePath;
     }
+
+    /**
+    *   This won't do anything in case of a bitmap font, as no one can change it.
+    */
+    IHipFont getFontWithSize(uint size)
+    {
+        HipBitmapFont ret = new HipBitmapFont();
+        ret.atlasPath = this.atlasPath;
+        ret.atlasTexturePath = this.atlasTexturePath;
+        ret.kerning = cast(HipFontKerning)this.kerning.dup;
+        ret.charactersCount = this.charactersCount;
+        ret._texture = cast(IHipTexture)this._texture;
+        return cast(IHipFont)ret;
+    }
     void readTexture(string texturePath = "")
     {
         texturePath = texturePath == "" ? getTexturePath() :  texturePath;
@@ -383,12 +397,12 @@ class HipBitmapFont : HipFont
         return ret;
     }
     
-    override int getKerning(dchar current, dchar next)
+    override int getKerning(dchar current, dchar next) const
     {
-        HipCharKerning* chKerning = current in kerning;
+        const HipCharKerning* chKerning = current in kerning;
         if(chKerning is null)
             return 0;
-        int* kerningValue = next in (*chKerning);
+        const int* kerningValue = next in (*chKerning);
         if(kerningValue is null)
             return 0;
         return *kerningValue;

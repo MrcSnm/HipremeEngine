@@ -215,6 +215,7 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         vertices[6] = u1;
         vertices[7] = v2;
     }
+    public static const float[8] defaultVertices = [0,0, 1,0, 1,1, 0,1];
 
     ref float[8] getVertices(){return vertices;}
     

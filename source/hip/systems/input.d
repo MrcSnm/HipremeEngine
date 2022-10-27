@@ -42,6 +42,7 @@ version(Android)
 }
 else version(UWP)
 {
+    //TODO: Change to a block of export extern(System)
     export extern(C) void HipInputOnTouchPressed(uint id, float x, float y)
     {
         HipEventQueue.post(0, HipEventQueue.EventType.touchDown, HipEventQueue.Touch(cast(ushort)id, x, y));

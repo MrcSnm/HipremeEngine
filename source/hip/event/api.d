@@ -1,13 +1,14 @@
 module hip.event.api;
 public import hip.global.gamedef;
 public import hip.event.handlers.inputmap;
+public import hip.api.input.button:HipButton;
 import hip.event.dispatcher;
 import hip.systems.game;
 import hip.math.vector;
 
-
 export extern(System)
 {
+    
     bool isKeyPressed(char key, uint id = 0) 
     {
         return sys.dispatcher.isKeyPressed(key, id);
@@ -87,5 +88,18 @@ export extern(System)
     bool isGamepadWireless(ubyte id = 0)
     {
         return sys.dispatcher.isGamepadWireless(id);
+    }
+
+    const(HipButton)* addKeyboardListener(HipKey key, 
+        HipInputAction action,
+        HipButtonType type = HipButtonType.down,
+        AutoRemove remove = AutoRemove.no)
+    {
+        return sys.scriptInputListener.addKeyboardListener(key,action,type,remove);
+    }
+
+    bool removeKeyboardListener(const(HipButton)* btn)
+    {
+        return sys.scriptInputListener.removeKeyboardListener(btn);
     }
 }
