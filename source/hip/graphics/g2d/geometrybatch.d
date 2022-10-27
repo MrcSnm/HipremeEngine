@@ -19,13 +19,14 @@ import hip.util.format;
 import hip.math.utils;
 import hip.math.vector;
 public import hip.api.graphics.color;
+public import hip.api.graphics.batch;
 
 
 /**
 *   This class uses the vertex layout XYZ RGBA.
 *   it is meant to be a 2D API for drawing primitives
 */
-class GeometryBatch
+class GeometryBatch : IHipBatch
 {
     protected Mesh mesh;
     protected index_t currentIndex;

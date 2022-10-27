@@ -32,7 +32,7 @@ else:
 
 version(Script)
 {
-	private extern(C)
+	private extern(System)
 	{
 		int function(int min, int max) Random_range;
 		uint function(uint min, uint max) Random_rangeu;

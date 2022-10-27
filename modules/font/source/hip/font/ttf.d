@@ -11,6 +11,18 @@ Distributed under the CC BY-4.0 License.
 module hip.font.ttf;
 import hip.api.data.font;
 
+
+private uint nextPowerOfTwo(uint number)
+{
+    ulong value = 1;
+    while(value < number)
+    {
+        value <<= 1;
+    }
+    return cast(uint)value;
+}
+
+
 /**
 *   Check the unicode table: https://unicode-table.com/en/blocks/
 *   There is a lot of character ranges that defines a set of characters in a language, such as:
@@ -27,7 +39,10 @@ class Hip_TTF_Font : HipFont
     protected TtfFont font;
     string path;
     protected uint fontSize = 32;
-    public static immutable dstring defaultCharset = " \náéíóúãñçabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\\|'\"`/*-+,.;_=!@#$%&()[]{}~^?";
+    protected uint _textureWidth, _textureHeight;
+    protected Hip_TTF_Font mainInstance;
+    protected Hip_TTF_Font[] clones;
+    public static immutable dstring defaultCharset = " \náéíóúãñçabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\\|'\"`/*-+,.;:´_=!@#$%&()[]{}~^?";
 
     this(string path, uint fontSize = 32)
     {
@@ -45,32 +60,22 @@ class Hip_TTF_Font : HipFont
         try{font = TtfFont(data);}
         catch(Exception e){return false;}
         return loadTexture(
-            generateImage(fontSize, defaultCharset)
+            generateImage(fontSize, _textureWidth, _textureHeight)
         );
     }
 
     bool partialLoad(in ubyte[] data, out ubyte[] rawImage)
     {
         font = TtfFont(data);
-        rawImage = generateImage(fontSize);
+        rawImage = generateImage(fontSize, _textureWidth, _textureHeight);
         return true;
     }
 
 
-    override int getKerning(dchar current, dchar next)
+    override int getKerning(dchar current, dchar next) const
     {
-        return cast(int)(fontScale*stbtt_GetCodepointKernAdvance(&font.font, int(current), int(next)));
+        return cast(int)(fontScale*stbtt_GetCodepointKernAdvance(cast(stbtt_fontinfo*)&font.font, int(current), int(next)));
     }
-
-    
-    protected RenderizedChar renderCharacter(dchar ch, int size, float shift_x = 0.0, float shift_y = 0.0)
-    {
-        RenderizedChar rch;
-        rch.ch = ch;
-        rch.data = font.renderCharacter(ch, size, rch.width, rch.height, shift_x, shift_y);
-        return rch;
-    }
-
 
 
     bool loadTexture(ubyte[] rawImage)
@@ -80,7 +85,7 @@ class Hip_TTF_Font : HipFont
         import hip.hiprenderer.texture;
         import hip.error.handler;
         HipImageImpl img = new HipImageImpl();
-        img.loadRaw(rawImage, 800, 600, 1);
+        img.loadRaw(rawImage, _textureWidth, _textureHeight, 1);
         HipTexture t = new HipTexture();
 
         bool ret = t.load(img);
@@ -90,13 +95,39 @@ class Hip_TTF_Font : HipFont
     }
 
     /**
+    * This function returns a new font using the same data file, with a new size.
+    * The font data will reference to this same one 
+    */
+    IHipFont getFontWithSize(uint size)
+    {
+        Hip_TTF_Font ret = new Hip_TTF_Font(this.path, size);
+        ret.font = cast(TtfFont)this.font;
+        ret.mainInstance = cast(Hip_TTF_Font)(mainInstance is null ? this : mainInstance);
+        if(mainInstance)
+            mainInstance.clones~= ret;
+        else
+            clones~= ret;
+        
+        if(!ret.loadTexture(ret.generateImage(size, ret._textureWidth, ret._textureHeight)))
+            return null;
+
+        return cast(IHipFont)ret;
+    }
+
+    protected RenderizedChar renderCharacter(dchar ch, int size, float shift_x = 0.0, float shift_y = 0.0)
+    {
+        RenderizedChar rch;
+        rch.ch = ch;
+        rch.data = font.renderCharacter(ch, size, rch.width, rch.height, shift_x, shift_y);
+        return rch;
+    }
+    /**
     *   I'm no good packer. The image will be at least 2048xMinPowOf2
     */
-    ubyte[] generateImage(int size, dstring charset = defaultCharset, uint maxWidth = 800, uint maxHeight = 600)
+    protected ubyte[] generateImage(int size, out uint width, out uint height, dstring charset = defaultCharset)
     {
-        //First guarantee the big size
-        ubyte[] image = new ubyte[](maxWidth*maxHeight);
-
+        if(charset.length == 0)
+            return null;
         scope RenderizedChar[] fontChars;
 
         scope(exit)
@@ -105,10 +136,18 @@ class Hip_TTF_Font : HipFont
                 ch.dispose();
         }
 
+        uint avgWidth = 0;
+        uint avgHeight = 0;
         foreach(dc; charset)
         {
-            fontChars~= renderCharacter(dc, size);
+            RenderizedChar rc = renderCharacter(dc, size);
+            avgWidth+= rc.width;
+            avgHeight+= rc.height;
+            fontChars~= rc;
         }
+        //Add as an error (pixel bleeding)
+        avgWidth = cast(uint)(avgWidth / charset.length) + 2;
+        avgHeight = cast(uint)(avgHeight / charset.length) + 2;
         import std.algorithm:sort;
         enum hSpacing = 1;
         enum vSpacing = 1;
@@ -122,11 +161,21 @@ class Hip_TTF_Font : HipFont
         
         int ascent, descent, lineGap;
         stbtt_GetFontVMetrics(&font.font, &ascent, &descent, &lineGap);
-        if(lineGap > 0)
-        {
-            lineBreakHeight = cast(uint)(int(ascent - descent + lineGap));
-        }
 
+        lineBreakHeight = cast(uint)(int(ascent - descent + lineGap) * scale);
+
+        //First guarantee the big size
+        import core.math:sqrt;
+        uint sqrtOfCharset = cast(uint)sqrt(cast(float)charset.length) + 1;
+        uint imageWidth = avgWidth * sqrtOfCharset;
+        uint imageHeight = avgHeight * sqrtOfCharset;
+        imageHeight = nextPowerOfTwo(imageHeight);
+        imageWidth = nextPowerOfTwo(imageWidth);
+
+        width = imageWidth;
+        height = imageHeight;
+
+        ubyte[] image = new ubyte[](imageWidth*imageHeight);
 
         int largestHeightInRow = 0;
         foreach(fontCh; sort!"a.height > b.height"(fontChars))
@@ -148,7 +197,7 @@ class Hip_TTF_Font : HipFont
                     spaceWidth = fontCh.width;
             }
 
-            if(x + fontCh.width + hSpacing > maxWidth)
+            if(x + fontCh.width + hSpacing > imageWidth)
             {
                 x = hSpacing;
                 y+= largestHeightInRow + vSpacing;
@@ -158,10 +207,10 @@ class Hip_TTF_Font : HipFont
 
             characters[fontCh.ch] = HipFontChar(fontCh.ch, cast(int)x, cast(int)y, fontCh.width, fontCh.height, 
                 xOffset, yOffset, cast(int)(xAdvance*scale), 0, 0,
-                cast(float)x/maxWidth, cast(float)y/maxHeight,
-                cast(float)fontCh.width/maxWidth, cast(float)fontCh.height/maxHeight, 
+                cast(float)x/imageWidth, cast(float)y/imageHeight,
+                cast(float)fontCh.width/imageWidth, cast(float)fontCh.height/imageHeight, 
             );
-            fontCh.blitToImage(image, cast(int)(x), cast(int)(y), maxWidth, maxHeight);
+            fontCh.blitToImage(image, cast(int)(x), cast(int)(y), imageWidth, imageHeight);
             x+= fontCh.width + hSpacing;
 
             if(fontCh.height > largestHeightInRow)

@@ -18,10 +18,11 @@ private __gshared
     IHipTexture defaultTexture;
     HipSpriteBatch spBatch;
     GeometryBatch geoBatch;
-    HipTextRenderer dbgText;
+    HipTextRenderer textBatch;
     HipOrthoCamera camera;
     Viewport viewport;
     HipTextRenderer textRenderer;
+    IHipBatch lastBatch;
     bool autoUpdateCameraAndViewport;
 }
 
@@ -38,7 +39,7 @@ void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewpor
 
     spBatch = new HipSpriteBatch(camera);
     geoBatch = new GeometryBatch(camera);
-    dbgText = new HipTextRenderer();
+    textBatch = new HipTextRenderer(camera);
     setGeometryColor(HipColor.white);
 
     version(HipremeEngineLua)
@@ -98,25 +99,102 @@ Viewport getCurrentViewport()
     import hip.util.lifetime;
     return cast(typeof(return))hipSaveRef(HipRenderer.getCurrentViewport());
 }
-void renderSprites(){spBatch.render;}
-void renderGeometries(){geoBatch.flush;}
-void renderTexts(){dbgText.render();}
+void renderSprites()
+{
+    spBatch.render();
+}
+void renderGeometries()
+{
+    geoBatch.flush();
+}
+void renderTexts()
+{
+    textBatch.flush();
+}
 void setGeometryColor(HipColor color){geoBatch.setColor(color);}
-void drawPixel(int x, int y){geoBatch.drawPixel(x, y);}
-void drawRectangle(int x, int y, int w, int h){geoBatch.drawRectangle(x,y,w,h);}
-void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3){geoBatch.drawTriangle(x1,y1,x2,y2,x3,y3);}
+void drawPixel(int x, int y)
+{
+    if(lastBatch !is null && lastBatch !is geoBatch)
+        lastBatch.flush();
+    geoBatch.drawPixel(x, y);
+    lastBatch = geoBatch;
+}
+void drawRectangle(int x, int y, int w, int h)
+{
+    if(lastBatch !is null && lastBatch !is geoBatch)
+        lastBatch.flush();
+    geoBatch.drawRectangle(x,y,w,h);
+    lastBatch = geoBatch;
+}
+void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
+{
+    if(lastBatch !is null && lastBatch !is geoBatch)
+        lastBatch.flush();
+    geoBatch.drawTriangle(x1,y1,x2,y2,x3,y3);
+    lastBatch = geoBatch;
+}
 void fillRectangle(int x, int y, int w, int h)
 {
+    if(lastBatch !is null && lastBatch !is geoBatch)
+        lastBatch.flush();
     geoBatch.fillRectangle(x,y,w,h);
+    lastBatch = geoBatch;
 }
-void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, int precision = 24){geoBatch.fillEllipse(x,y,radiusW,radiusH,degrees,precision);}
-void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24){geoBatch.drawEllipse(x,y,radiusW,radiusH,degrees,precision);}
-void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3){geoBatch.fillTriangle(x1,y1,x2,y2,x3,y3);}
-void drawLine(int x1, int y1, int x2, int y2){geoBatch.drawLine(x1,y1,x2,y2);}
-void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24){geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision);}
-void drawSprite(IHipSprite sprite){spBatch.draw(cast(HipSprite)sprite);}
-void drawRegion(IHipTextureRegion reg, int x, int y, int z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0){spBatch.draw(reg, x, y, z, color, scaleX, scaleY, rotation);}
-void drawTexture(IHipTexture texture, int x, int y, int z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0){spBatch.draw(texture, x, y, z, color, scaleX, scaleY, rotation);}
+void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, int precision = 24)
+{
+    if(lastBatch !is null && lastBatch !is geoBatch)
+        lastBatch.flush();
+    geoBatch.fillEllipse(x,y,radiusW,radiusH,degrees,precision);
+    lastBatch = geoBatch;
+}
+void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24)
+{
+    if(lastBatch !is null && lastBatch !is geoBatch)
+        lastBatch.flush();
+    geoBatch.drawEllipse(x,y,radiusW,radiusH,degrees,precision);
+    lastBatch = geoBatch;
+}
+void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3)
+{
+    if(lastBatch !is null && lastBatch !is geoBatch)
+        lastBatch.flush();
+    geoBatch.fillTriangle(x1,y1,x2,y2,x3,y3);
+    lastBatch = geoBatch;
+}
+void drawLine(int x1, int y1, int x2, int y2)
+{
+    if(lastBatch !is null && lastBatch !is geoBatch)
+        lastBatch.flush();
+    geoBatch.drawLine(x1,y1,x2,y2);
+    lastBatch = geoBatch;
+}
+void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24)
+{
+    if(lastBatch !is null && lastBatch !is geoBatch)
+        lastBatch.flush();
+    geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision);
+    lastBatch = geoBatch;
+}
+void drawSprite(IHipSprite sprite)
+{
+    if(lastBatch !is null && lastBatch !is spBatch)
+        lastBatch.flush();
+    lastBatch = spBatch;
+    spBatch.draw(cast(HipSprite)sprite);
+    lastBatch = spBatch;
+}
+void drawRegion(IHipTextureRegion reg, int x, int y, int z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+{
+    if(lastBatch !is null && lastBatch !is spBatch)
+        lastBatch.flush();
+    spBatch.draw(reg, x, y, z, color, scaleX, scaleY, rotation);
+}
+void drawTexture(IHipTexture texture, int x, int y, int z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+{
+    if(lastBatch !is null && lastBatch !is spBatch)
+        lastBatch.flush();
+    spBatch.draw(texture, x, y, z, color, scaleX, scaleY, rotation);
+}
 
 public import hip.util.data_structures : Array2D, Array2D_GC;
 Array2D_GC!IHipTextureRegion _cropSpritesheet(
@@ -137,30 +215,34 @@ Array2D_GC!IHipTextureRegion _cropSpritesheet(
     ).toGC());
 }
 
-void setFontNull(typeof(null) _)
+void setFontNull(typeof(null))
 {
     import hip.global.gamedef;
-    dbgText.setFont(cast(IHipFont)HipDefaultAssets.font);
+    textBatch.setFont(cast(IHipFont)HipDefaultAssets.font);
 }
 void setFont(IHipFont font)
 {
     if(font is null)
         setFontNull(null);
     else
-        dbgText.setFont(font);
+        textBatch.setFont(font);
 }
 void setFontDeferred(IHipAssetLoadTask task)
 {
     if(task is null)
         setFontNull(null);
     else
-        dbgText.setFont(task);
+        textBatch.setFont(task);
 }
 
-void drawText(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.LEFT, HipTextAlign alignV = HipTextAlign.CENTER)
+void drawText(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.LEFT, HipTextAlign alignV = HipTextAlign.CENTER, 
+int boundsWidth = -1, int boundsHeight = -1)
 {
-    dbgText.setColor(color);
-    dbgText.draw(text, x, y, alignH, alignV);
+    if(lastBatch !is null && lastBatch !is textBatch)
+        lastBatch.flush();
+    textBatch.setColor(color);
+    textBatch.draw(text, x, y, alignH, alignV, boundsWidth, boundsHeight);
+    lastBatch = textBatch;
 }
 
 private __gshared IHipSprite[] _sprites;

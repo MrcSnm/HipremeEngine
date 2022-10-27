@@ -26,7 +26,7 @@ version(Have_util)
 
 version(Script)
 {
-    extern(C) //All functions there will be loaded
+    extern(System) //All functions there will be loaded
     {
         ///Call this function when finishing to add sprites to the scene
         void function() renderSprites;
@@ -57,12 +57,12 @@ version(Script)
         ///Draws a texture region at a specified place
         void function(IHipTextureRegion reg, int x, int y, int z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawRegion;
         ///Sets the font for the next drawText commands
-        package void function (HipFont font) setFont;
+        package void function (IHipFont font) setFont;
         package void function (typeof(null)) setFontNull;
         ///Sets the font using HipAssetManager.loadFont
         package void function (IHipAssetLoadTask font) setFontDeferred;
         ///Draws a text using the last font set
-        void function(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER) drawText;
+        void function(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1) drawText;
         ///Gets a sprite instance
         IHipSprite function(string texturePath) newSprite;
         ///Destroy a sprite instance

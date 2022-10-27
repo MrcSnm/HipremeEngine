@@ -27,7 +27,7 @@ class BitmapTestScene : Scene
     static KeyboardLayout abnt2;
     this()
     {
-        txt = new HipTextRenderer();
+        txt = new HipTextRenderer(null);
         abnt2 = new KeyboardLayoutABNT2();
         txt.setFont(HipBitmapFont.fromFile("assets/fonts/arial.fnt"));
     }

@@ -112,6 +112,40 @@ class HipTween : HipTimer, IHipTween
         savedData = new void[](size);
     }
 
+    /**
+    *   This version is more lightweight compiler wise as it is not templated 
+    */
+    static HipTween to(float durationSeconds, float*[] valuesRef, float[] targetValues)
+    {
+        HipTween t = new HipTween(durationSeconds, false);
+        float[] v2 = targetValues.dup;
+        t.allocSaveData(valuesRef.length * float.sizeof);
+
+        t.onPlay = ()
+        {
+            float[] savedDataConv = cast(float[])t.savedData;
+            foreach(i, v; valuesRef)
+                savedDataConv[i] = *v;
+            
+            t.addHandler((float prog, uint loops) 
+            {
+                float multiplier = prog;
+                if(t.easing != null)
+                    multiplier = t.easing(multiplier);
+                float initialValue;
+                float newValue;
+
+                foreach(i, value; valuesRef)
+                {
+                    initialValue = savedDataConv[i];
+                    newValue = ((1-multiplier)*initialValue + (v2[i] * multiplier));
+                    *value = newValue;
+                }
+            });
+        };
+        return t;
+    }
+
     static HipTween to(string[] Props, T, V)(float durationSeconds, T target, V[]  values...)
     {
         HipTween t = new HipTween(durationSeconds, false);
@@ -144,6 +178,38 @@ class HipTween : HipTimer, IHipTween
         };
         return t;
     }
+
+    static HipTween by(string[] Props, T, V)(float durationSeconds, float*[] valuesRef, float[] targetValues)
+    {
+        HipTween t = new HipTween(durationSeconds, false);
+        t.allocSaveData(float.sizeof * valuesRef.length);
+        float[] v2 = targetValues.dup;
+
+        t.onPlay = ()
+        {
+            t.addHandler((float prog, uint loops) 
+            {
+                float[] savedDataConv = cast(float[])t.savedData;
+                float multiplier = prog;
+                if(t.easing != null)
+                    multiplier = t.easing(multiplier);
+                float temp;
+                float temp2;
+                foreach(i, valueRef; valuesRef)
+                {
+                    temp = savedDataConv[i];
+                    temp2 = (v2[i] * multiplier);
+                    *valueRef+= -temp + temp2;
+                    //Copy the new values for being subtracted next frame
+                    savedDataConv[i] = temp2;
+
+                }
+            });
+        };
+
+        return t;
+    }
+
     static HipTween by(string[] Props, T, V)(float durationSeconds, T target, V[]  values...)
     {
         HipTween t = new HipTween(durationSeconds, false);

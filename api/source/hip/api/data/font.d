@@ -22,20 +22,21 @@ struct HipFontChar
 
 interface IHipFont
 {
-    int getKerning(dchar current, dchar next);
-    void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int maxWidth, out int height);
+    int getKerning(dchar current, dchar next) const;
+    void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int maxWidth, out int height) const;
     ref HipFontChar[dchar] characters();
     ref IHipTexture texture();
-    uint spaceWidth();
+    uint spaceWidth() const;
     uint spaceWidth(uint newWidth);
-    uint lineBreakHeight();
+    uint lineBreakHeight() const;
     uint lineBreakHeight(uint newHeight);
+    IHipFont getFontWithSize(uint size);
 }
 
 abstract class HipFont : IHipFont
 {
     
-    abstract int getKerning(dchar current, dchar next);
+    abstract int getKerning(dchar current, dchar next) const;
 
     ///Underlying GPU texture
     IHipTexture _texture;
@@ -47,24 +48,35 @@ abstract class HipFont : IHipFont
 
     ///////Properties///////
     final ref HipFontChar[dchar] characters(){return _characters;}
+    final ref const(HipFontChar[dchar]) characters() const {return _characters;}
     final ref IHipTexture texture(){return _texture;}
-    final uint spaceWidth(){return _spaceWidth;}
+    final uint spaceWidth() const {return _spaceWidth;}
     final uint spaceWidth(uint newWidth){return _spaceWidth = newWidth;}
-    final uint lineBreakHeight(){return _lineBreakHeight;}
+    final uint lineBreakHeight() const {return _lineBreakHeight;}
     final uint lineBreakHeight(uint newHeight){return _lineBreakHeight = newHeight;}
 
 
-    final void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int maxWidth, out int height)
+    final void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int maxWidth, out int height) const
     {
-        int w, h;
+        int w = 0, h = lineBreakHeight;
         int lastMaxW = 0;
         int lineIndex = 0;
 
         for(int i = 0; i < text.length; i++)
         {
-            HipFontChar* ch = text[i] in characters;
+            const HipFontChar* ch = text[i] in characters;
             if(ch is null)
                 continue;
+            int kern = 0;
+            if(i+1 < text.length)
+            {
+                kern = getKerning(text[i], text[i+1]);
+                if(kern != 0)
+                {
+                    import std.stdio;
+                    writeln("Kerning Found:", kern);
+                }
+            }
             switch(text[i])
             {
                 case '\n':
@@ -79,7 +91,8 @@ abstract class HipFont : IHipFont
                     w+= ch && ch.width != 0 ? ch.width : spaceWidth;
                     break;
                 default:
-                    w+= ch.xadvance;
+                    w+= ch.xadvance + kern;
+
                     break;
             }
         }
