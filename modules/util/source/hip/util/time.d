@@ -34,7 +34,7 @@ private size_t getSystemTime() nothrow
     {
         LARGE_INTEGER counter = void;
         QueryPerformanceCounter(&counter);
-        return counter.QuadPart * 1000;
+        return counter.QuadPart * 1_000_000_000; //Convert to nanos
     }
     else
     {
@@ -76,7 +76,7 @@ class HipTime
         size_t time = 0;
         version(Windows)
         {
-            time = ((getSystemTime() - startTime)* 1_000_000) / ticksPerSecond;
+            time = (getSystemTime() - startTime) / ticksPerSecond;
         }
         else
             time = getSystemTime() - startTime;
@@ -85,11 +85,11 @@ class HipTime
 
     static float getCurrentTimeAsMilliseconds() nothrow
     {
-        return getCurrentTime() / 1_000_000;
+        return cast(float)getCurrentTime() / 1_000_000;
     }
     static float getCurrentTimeAsSeconds() nothrow
     {
-        return getCurrentTime() / 1_000_000_000;
+        return cast(float)getCurrentTime() / 1_000_000_000;
     }
 
     static void initPerformanceMeasurement(string name)
@@ -110,5 +110,9 @@ class HipTime
     }
     static mixin template Profile(string name){mixin("HipTime.Profiler _profile"~name~" = HipTime.Profiler("~name~");");}
     static mixin template ProfileFunction(){mixin("HipTime.Profiler _profileFunc = HipTime.Profiler(__PRETTY_FUNCTION__);");}
-
 }
+
+float seconds(float v){return v;}
+float msecs(float v){return v*1_000;}
+float usecs(float v){return v*1_000_000;}
+float nsecs(float v){return v*1_000_000_000;}

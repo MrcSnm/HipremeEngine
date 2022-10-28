@@ -184,13 +184,7 @@ extern(C) int HipremeMain()
 	sys.startExternalGame();
 	version(Desktop)
 	{
-		while(HipremeUpdate())
-		{
-			if(isUsingInterpreter)
-				updateInterpreter();
-			HipremeRender();
-		}
-		HipremeDestroy();
+		HipremeDesktopGameLoop();
 	}
 	return 0;
 }
@@ -286,25 +280,33 @@ else
 ///Steps an engine frame
 export extern(C) bool HipremeUpdate()
 {
-	import hip.util.time;
-	import core.time:dur;
-	import core.thread.osthread;
-	long initTime = HipTime.getCurrentTime();
-	// version(Windows) //For some reason, it seems that on Linux it is always 60 FPS
-	{
-		if(g_deltaTime != 0)
-		{
-			long sleepTime = cast(long)(FRAME_TIME - g_deltaTime);
-			if(sleepTime > 0)
-				Thread.sleep(dur!"msecs"(sleepTime));
-		}
-	}
 	if(!sys.update(g_deltaTime))
 		return false;
-
 	sys.postUpdate();
-	g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1_000_000_000); //As seconds
 	return true;
+}
+version(Desktop)
+{
+	void HipremeDesktopGameLoop()
+	{
+		import hip.util.time;
+		import core.time:dur;
+		import core.thread.osthread;
+		while(HipremeUpdate())
+		{
+			long initTime = HipTime.getCurrentTime();
+			long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
+			if(sleepTime > 0)
+			{
+				Thread.sleep(dur!"msecs"(sleepTime));
+			}
+			if(isUsingInterpreter)
+				updateInterpreter();
+			HipremeRender();
+			g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
+		}
+		HipremeDestroy();
+	}
 }
 /**
 * This function was created for making it rendering optional. On Android, 
