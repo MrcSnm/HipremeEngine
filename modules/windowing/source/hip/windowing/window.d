@@ -71,7 +71,20 @@ class HipWindow
     void rendererPresent(){swapBuffer();}
     void setName(string name){}
     void setSize(uint width, uint height){}
-    void setVSyncActive(bool active){}
+    void setVSyncActive(bool active)
+    {
+         //Windows must reinitialize the window if it uses modern gl, so, it must update the window here
+        version(Windows)
+            hip.windowing.platforms.windows.setVsyncActive(active);
+        else version(X11)
+            hip.windowing.platforms.x11.setVsyncActive(active);
+        else
+        {
+            import std.stdio;
+            writeln("VSync is not implemented for this platform");
+        }
+
+    }
     void setFullscreen(bool fullscreen){}
     
     void show()
@@ -80,6 +93,11 @@ class HipWindow
             return hip.windowing.platforms.windows.show(hwnd);
         else version(X11)
             return hip.windowing.platforms.x11.show();
+        else
+        {
+            import std.stdio;
+            writeln("Show is not implemented for this platform");
+        }
     }
     void hide(){}
     void exit()

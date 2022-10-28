@@ -154,13 +154,22 @@ __gshared void function(string toPrint) _fatal;
             //mtx.unlock();
         }
     }
+    void info(Args...)(Args a)
+    {
+        static if(!HE_NO_LOG && !HE_ERR_ONLY)
+        {
+            //mtx.lock();
+            _log("INFO: " ~ formatArguments(a).toString);
+            //mtx.unlock();
+        }
+    }
 
     void warn(Args...)(Args a)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             //mtx.lock();
-            _warn(formatArguments(a).toString);
+            _warn("WARNING: " ~ formatArguments(a).toString);
             //mtx.unlock();
         }
     }
@@ -170,7 +179,7 @@ __gshared void function(string toPrint) _fatal;
         static if(!HE_NO_LOG)
         {
             //mtx.lock();
-            _err(formatArguments(a).toString);
+            _err("ERROR: " ~ formatArguments(a).toString);
             //mtx.unlock();
         }
     }
@@ -180,7 +189,7 @@ __gshared void function(string toPrint) _fatal;
         static if(!HE_NO_LOG)
         {
             //mtx.lock();
-            _fatal(formatArguments(a).toString);
+            _fatal("FATAL ERROR: " ~formatArguments(a).toString);
             //mtx.unlock();
         }
     }

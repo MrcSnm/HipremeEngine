@@ -137,10 +137,14 @@ version(Windows)
         HDC hdc, HGLRC hShareContext,const int* attribList
     );
 
+    alias wglSwapIntervalEXTProc =  extern(Windows) nothrow @nogc int function(int interval);
 
+
+    wglSwapIntervalEXTProc wglSwapIntervalEXT;
     wglChoosePixelFormatARBProc wglChoosePixelFormatARB;
     wglCreateContextAttribsARBProc wglCreateContextAttribsARB;
     extern(Windows) nothrow @nogc void* wglGetProcAddress(const(char)* funcName);
+
 
     extern(Windows) nothrow @nogc bool initializeOpenGL(ref HWND hwnd, int majorVersion, int minorVersion)
     {
@@ -221,6 +225,12 @@ version(Windows)
         if(wglCreateContextAttribsARB is null)
         {
             MessageBox(NULL, "Could not load wglCreateContextAttribsARB", "Error", MB_ICONERROR | MB_OK);
+            return false;
+        }
+        wglSwapIntervalEXT = cast(wglSwapIntervalEXTProc)wglGetProcAddress("wglSwapIntervalEXT");
+        if(wglSwapIntervalEXT is null)
+        {
+            MessageBox(NULL, "Could not load wglSwapIntervalEXT", "Error", MB_ICONERROR | MB_OK);
             return false;
         }
         //Now, for the modern OpenGL
@@ -376,6 +386,14 @@ version(Windows)
     void swapBuffer()
     {
         SwapBuffers(hdc);
+    }
+
+    void setVsyncActive(bool active) @nogc nothrow @system
+    {
+        if(wglSwapIntervalEXT !is null)
+        {
+            wglSwapIntervalEXT(cast(int)active);
+        }
     }
 
     extern(Windows) bool destroy_GL_Context()
