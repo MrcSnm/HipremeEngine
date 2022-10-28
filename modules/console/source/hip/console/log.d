@@ -31,6 +31,15 @@ ulong line = __LINE__)
     Console.DEFAULT.log(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction);
 }
 
+void loglnInfo(Args...)(Args a, string file = __FILE__,
+string func = __PRETTY_FUNCTION__,
+ulong line = __LINE__)
+{
+    Console.DEFAULT.info(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction);
+}
+
+
 void rawlog(Args... )(Args a){Console.DEFAULT.log(a);}
+void rawinfo(Args... )(Args a){Console.DEFAULT.info(a);}
 void rawerror(Args... )(Args a){Console.DEFAULT.error(a);}
 void rawfatal(Args... )(Args a){Console.DEFAULT.fatal(a);}

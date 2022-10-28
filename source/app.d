@@ -332,10 +332,10 @@ export extern(C) void HipremeDestroy()
 	}
 }
 
-export extern(C) void log(string log)
+export extern(C) void log(string message)
 {
 	import hip.console.log;
-	rawlog(log);
+	rawlog(message);
 }
 
 import hip.math.api;
