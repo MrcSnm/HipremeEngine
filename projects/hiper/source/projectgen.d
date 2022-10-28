@@ -26,6 +26,9 @@ string generateCodeTemplate(TemplateInfo info = TemplateInfo())
 module script.entry;
 import hip.api;
 
+/**
+*	Call `dub` to generate the DLL, after that, just execute `dub -c run` for starting your project
+*/
 class MainScene : AScene
 {
 	
@@ -100,11 +103,29 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 		{
 			"name" : "script",
 			"targetType": "dynamicLibrary",
-			"subConfigurations": {"hipengine_api" : "script"},
-			"versions": ["Script"]
+			"versions": ["Script"],
+			"lflags-windows": [
+				"/WX"
+			]
+		},
+		{
+			"name": "ldc",
+			"targetType": "dynamicLibrary",
+			"versions": ["Script"],
+			"dflags": [
+				"-link-defaultlib-shared=false"
+			],
+			"lflags-windows": [
+				"/WX"
+			]
 		},
 		{
 			"name": "run",
+			"targetType": "dynamicLibrary",
+			"versions": ["Script"],
+			"lflags-windows": [
+				"/WX"
+			],
 			"postBuildCommands": ["cd %s && dub -c script -- %s"]
 		}
 	],
@@ -140,6 +161,7 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
 
 		std.file.write(buildNormalizedPath(projectPath, "source", "script", "entry.d"), codeTemplate);
 		std.file.write(buildNormalizedPath(projectPath, "dub.json"), dubProj);
+		std.file.write(buildNormalizedPath(projectPath, "README.md"), dubInfo.projectName~" made using Hipreme Engine");
 
 		std.file.write(buildNormalizedPath(projectPath, ".gitignore"),  q{
 .dub
@@ -147,8 +169,10 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
 bin
 *.exe
 *.dll
+*.dll_hiptempdll
 *.so
 *.lib
+*.pdb
 });
 	}
 	catch(Exception e)
