@@ -221,7 +221,6 @@ class GameSystem
         }
     }
 
-    
     /**
     *   Adding a scene will initialize them, while checking for assets referencing for auto loading them.
     */

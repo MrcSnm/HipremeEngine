@@ -27,6 +27,7 @@ struct HipRendererConfig
         loglnInfo("Starting HipRenderer with configuration: ",
         "\nMultisamplingLevel: ", multisamplingLevel,
         "\nBufferingCount: ", bufferingCount,
+        "\nFullscreen: ", fullscreen,
         "\nVsync: ", vsync? "activated" : "deactivated");
     }
 }

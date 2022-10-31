@@ -73,7 +73,7 @@ enum HipEasing : float function(float x)
 }
 
 
-class HipTween : HipTimer, IHipTween
+class HipTween : HipTimer, IHipFiniteTask
 {
     HipEasing easing = null;
     protected void[] savedData = null;
@@ -241,7 +241,7 @@ class HipTween : HipTimer, IHipTween
         return t;
     }
 
-    IHipTween addOnFinish(void delegate() onFinish)
+    HipTween addOnFinish(void delegate() onFinish)
     {
         this.onFinish~= onFinish;
         return this;
