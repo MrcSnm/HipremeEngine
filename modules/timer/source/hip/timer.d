@@ -25,14 +25,16 @@ class HipTimer : IHipTimer
     /**
     *   Perfect function for making a timer pool
     */
-    void setProperties(string name, float durationSeconds, HipTimerType type, bool loops = false)
+    void setProperties(string name, float durationSeconds, HipTimerType type, bool loops)
     {
         this.name = name;
         this.durationSeconds = durationSeconds;
         this.type = type;
-        assert(type == HipTimerType.oneShot || type == HipTimerType.progressive, "Invalid timer type");
         this.loops = loops;
-        stop();
+        assert(type == HipTimerType.oneShot || type == HipTimerType.progressive, "Invalid timer type");
+        isRunning = false;
+        accumulator = 0;
+        loopCount = 0;
     }
     string getName(){return name;}
     float getDuration(){return durationSeconds;}
@@ -106,8 +108,9 @@ class HipTimer : IHipTimer
 
 
     ///Returns wether it has finished
-    bool tick(float dt)
+    bool tick (float dt)
     {
+        import std.stdio;
         if(isRunning)
         {
             this.deltaTime = dt;
@@ -133,7 +136,7 @@ class HipTimer : IHipTimer
     }
 }
 
-class HipSequence : HipTimer
+class HipSequence : HipTimer, IHipTimerList
 {
     protected IHipTimer[] timerList;
     protected uint listCursor;
@@ -141,9 +144,9 @@ class HipSequence : HipTimer
     protected float listAccumulator = 0;
     protected void delegate()[] onFinishList;
 
-    this(IHipTimer[] timers...)
+    this(string name = "Sequence", scope IHipTimer[] timers = []...)
     {
-        super("", 0, HipTimerType.progressive);
+        super(name, 0, HipTimerType.progressive);
         foreach(t;timers)
         {
             timerList~= t;
@@ -184,7 +187,7 @@ class HipSequence : HipTimer
     {
         foreach(t;timerList)
             durationSeconds+= t.getDuration();
-        setProperties("Sequence", durationSeconds, HipTimerType.progressive);
+        setProperties(this.name, durationSeconds, HipTimerType.progressive, false);
     }
     HipSequence add(IHipTimer timer)
     {
@@ -201,14 +204,14 @@ class HipSequence : HipTimer
     }
 }
 
-class HipSpawn : HipTimer
+class HipSpawn : HipTimer, IHipTimerList
 {
     protected IHipTimer[] timerList;
     protected void delegate()[] onFinishList;
 
-    this(IHipTimer[] timers...)
+    this(string name = "Spawn", scope IHipTimer[] timers = []...)
     {
-        super("Spawn", 0, HipTimerType.progressive);
+        super(name, 0, HipTimerType.progressive);
         foreach(t;timers)
         {
             timerList~= t;
@@ -237,7 +240,7 @@ class HipSpawn : HipTimer
             if(t.getDuration() > durationSeconds)
                 durationSeconds = t.getDuration();
         }
-        setProperties("Spawn", durationSeconds, HipTimerType.progressive);
+        setProperties(this.name, durationSeconds, HipTimerType.progressive, false);
     }
 
     override void stop()

@@ -69,8 +69,20 @@ class HipWindow
     }
     void pollWindowEvents(){poll();}
     void rendererPresent(){swapBuffer();}
-    void setName(string name){}
-    void setSize(uint width, uint height){}
+    void setName(string name)
+    {
+        {
+            import std.stdio;
+            writeln("setName is not implemented for this platform");
+        }
+    }
+    void setSize(uint width, uint height)
+    {
+        {
+            import std.stdio;
+            writeln("setSize is not implemented for this platform");
+        }
+    }
     void setVSyncActive(bool active)
     {
          //Windows must reinitialize the window if it uses modern gl, so, it must update the window here
@@ -85,7 +97,13 @@ class HipWindow
         }
 
     }
-    void setFullscreen(bool fullscreen){}
+    void setFullscreen(bool fullscreen)
+    {
+        {
+            import std.stdio;
+            writeln("Fullscreen is not implemented for this platform");
+        }
+    }
     
     void show()
     {

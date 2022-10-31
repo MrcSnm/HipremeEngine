@@ -76,13 +76,13 @@ version(Script)
 	void function(string s) log;
 	void function(Object obj) hipDestroy;
 
-	void logg(Args...)(Args a)
+	void logg(Args...)(Args a, string file = __FILE__, size_t line = __LINE__)
 	{
 		import hip.util.conv;
 		string toLog;
 		foreach(arg; a)
 			toLog~= arg.to!string;
-		log(toLog);
+		log(toLog ~ "\n\t at "~file~":"~to!string(line));
 	}
 }
 void initConsole()
