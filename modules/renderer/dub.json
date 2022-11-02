@@ -28,6 +28,20 @@
 			}
 		},
 		{
+			"name": "nodx",
+			"dependencies": {
+				"bindbc-opengl": {"version": "~>1.0.0", "optional": true},
+				"hipengine_api": {"path": "../../api"},
+				"windowing" : {"path" : "../windowing"},
+				"data" : {"path": "../data"},
+				"image" : {"path": "../image"},
+				"bind" : {"path": "../bind", "optional": true},
+				"config": {"path": "../config"},
+				"error": {"path": "../error"},
+				"math": {"path": "../math"}
+			}
+		},
+		{
 			"name": "android",
 			"dependencies": {
 				"hipengine_api": {"path": "../../api"},

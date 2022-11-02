@@ -10,10 +10,12 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hiprenderer.backend.d3d.d3drenderer;
 version(Windows):
+version(DirectX):
 
 pragma(lib, "ole32");
 pragma(lib, "user32");
 pragma(lib, "d3dcompiler");
+//pragma(lib, "d3dcompiler_47");
 pragma(lib, "d3d11");
 pragma(lib, "dxgi");
 

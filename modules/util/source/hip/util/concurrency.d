@@ -265,8 +265,6 @@ class HipWorkerPool
             {
                 thread.pushTask("Await", ()
                 {
-                    import std.stdio;
-                    writeln("Finished await");
                     awaitSemaphore.notify;}
                 );
                 awaitCount++;

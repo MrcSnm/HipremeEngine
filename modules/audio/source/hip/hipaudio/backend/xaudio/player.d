@@ -1,6 +1,7 @@
 module hip.hipaudio.backend.xaudio.player;
 
 version(Windows):
+version(DirectX):
 import hip.util.system:getWindowsErrorMessage;
 import hip.hipaudio.backend.xaudio.source;
 import hip.hipaudio.backend.xaudio.clip;
@@ -12,7 +13,8 @@ import core.sys.windows.objbase;
 import directx.xaudio2;
 
 
-pragma(lib, "xaudio2");
+// pragma(lib, "xaudio2");
+pragma(lib, "xaudio2_8");
 
 class HipXAudioPlayer : IHipAudioPlayer
 {

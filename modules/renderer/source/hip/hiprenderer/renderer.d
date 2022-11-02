@@ -167,10 +167,15 @@ class HipRenderer
                 case "GL3":
                     return init(new Hip_GL3Renderer(), &cfg, width, height);
                 case "D3D11":
-                    version(Windows)
+                    version(DirectX)
+                    {
                         return init(new Hip_D3D11_Renderer(), &cfg, width, height);
+                    }
                     else
+                    {
+                        logln("Direct3D wasn't included in this build, using OpenGL 3");
                         goto case "GL3";
+                    }
                 default:
                     ErrorHandler.showErrorMessage("Invalid renderer '"~renderer~"'",
                     `
@@ -241,6 +246,8 @@ class HipRenderer
         window.setVSyncActive(currentConfig.vsync);
         window.setFullscreen(currentConfig.fullscreen);
         window.show();
+        foreach(err; window.errors)
+            loglnError(err);
         HipRenderer.width = width;
         HipRenderer.height = height;
         int w, h;
@@ -260,8 +267,10 @@ class HipRenderer
             case HipRendererType.GL3:
                 return new Hip_GL3_Texture();
             case HipRendererType.D3D11:
-                version(Windows)
+                version(DirectX)
+                {
                     return new Hip_D3D11_Texture();
+                }
                 else
                     return null;
             default:

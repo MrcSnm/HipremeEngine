@@ -12,7 +12,8 @@
 				"util": {"path": "../util", "version": "*"},
 				"image": {"path": "../image", "version": "*"},
 				"renderer": {"path": "../renderer", "version": "*"},
-				"font": {"path": "../font", "version": "*"}
+				"font": {"path": "../font", "version": "*"},
+				"console": {"path": "../console", "version": "*"}
 			},
 			"name": "default"
 		},

@@ -22,6 +22,9 @@ class HipWindow
 {
     int width, height;
     HipWindowFlags flags;
+
+    string[] errors;
+
     version(Windows)
     {
         import hip.windowing.platforms.windows;
@@ -71,17 +74,11 @@ class HipWindow
     void rendererPresent(){swapBuffer();}
     void setName(string name)
     {
-        {
-            import std.stdio;
-            writeln("setName is not implemented for this platform");
-        }
+        errors~= "setName is not implemented for this platform";
     }
     void setSize(uint width, uint height)
     {
-        {
-            import std.stdio;
-            writeln("setSize is not implemented for this platform");
-        }
+        errors~= "setSize is not implemented for this platform";
     }
     void setVSyncActive(bool active)
     {
@@ -91,18 +88,12 @@ class HipWindow
         else version(X11)
             hip.windowing.platforms.x11.setVsyncActive(active);
         else
-        {
-            import std.stdio;
-            writeln("VSync is not implemented for this platform");
-        }
+            errors~= "VSync is not implemented for this platform";
 
     }
     void setFullscreen(bool fullscreen)
     {
-        {
-            import std.stdio;
-            writeln("Fullscreen is not implemented for this platform");
-        }
+        errors~= "Fullscreen is not implemented for this platform";
     }
     
     void show()
@@ -112,10 +103,7 @@ class HipWindow
         else version(X11)
             return hip.windowing.platforms.x11.show();
         else
-        {
-            import std.stdio;
-            writeln("Show is not implemented for this platform");
-        }
+            errors~= "Show is not implemented for this platform";
     }
     void hide(){}
     void exit()
