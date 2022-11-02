@@ -402,6 +402,7 @@ class HipAssetManager
         import hip.assets.font;
         import hip.image;
         import hip.util.memory;
+        import hip.console.log;
 
         class IntermediaryData
         {
@@ -410,7 +411,6 @@ class HipAssetManager
             this(HipBitmapFont fnt, HipImageImpl img){font = fnt; this.img = img;}
         }
 
-            import std.stdio;
         HipAssetLoadTask task = loadComplex("Load BMFont", fontPath, (pathOrLocation)
         {
             import hip.filesystem.hipfs;
@@ -418,13 +418,13 @@ class HipAssetManager
 
             if(!font.loadAtlas(HipFS.readText(fontPath), fontPath))
             {
-                writeln("Could not read atlas");
+                loglnError("Could not read atlas");
                 return null;
             }
             HipImageImpl img = new HipImageImpl();
             if(!img.loadFromMemory(HipFS.read(font.getTexturePath)))
             {
-                writeln("Could not read image");
+                loglnError("Could not read image");
                 return null;
             }
             return toHeapSlice(new IntermediaryData(font, img));
@@ -432,7 +432,7 @@ class HipAssetManager
         {
             if(partialData is null)
             {
-                writeln("No partial data");
+                loglnError("No partial data");
                 return null;
             }
             scope(exit) freeGCMemory(partialData);
@@ -440,7 +440,7 @@ class HipAssetManager
             IntermediaryData i = (cast(IntermediaryData)partialData.ptr);
             if(!i.font.loadTexture(new HipTexture(i.img)))
             {
-                writeln("Could not read texture");
+                loglnError("Could not read texture");
                 return null;
             }
             HipFontAsset fnt = new HipFontAsset(i.font);
@@ -476,7 +476,6 @@ class HipAssetManager
     */
     static void update()
     {
-        import std.stdio;
         workerPool.pollFinished();
         completeMutex.lock();
             if(completeQueue.length)
@@ -484,8 +483,8 @@ class HipAssetManager
                 foreach(task; completeQueue)
                 {
                     //Subject to a logger
-                    import std.stdio;
-                    writeln("Finished ", task.name);
+                    import hip.console.log;
+                    loglnInfo("Finished ", task.name);
                     if(auto handlers = task in completeHandlers)
                     {
                         foreach(handler; *handlers)

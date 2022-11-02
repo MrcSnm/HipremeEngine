@@ -107,9 +107,15 @@ class HipAudio
                 audioInterface = new HipSDLAudioPlayer(AudioConfig.lightweightConfig);
                 break;
             case HipAudioImplementation.XAUDIO2:
-                version(Windows)
+                version(DirectX)
+                {
                     audioInterface = new HipXAudioPlayer(AudioConfig.musicConfig);
-                break;
+                    break;
+                }
+                else 
+                {
+                    goto case HipAudioImplementation.OPENAL;
+                }
             case HipAudioImplementation.OPENAL:
             default:
                 //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
