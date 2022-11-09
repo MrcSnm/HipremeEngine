@@ -165,6 +165,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             ErrorHandler.showWarningMessage("Font Missing", "No font attached on HipTextRenderer");
             return;
         }
+        HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
         foreach(i; 0..poolActive)
         {
             draw(textPool[i]);

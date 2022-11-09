@@ -18,14 +18,11 @@
 			"versions": [
 				"Script"
 			],
-			"targetType": "sourceLibrary"
+			"targetType": "library"
 		},
 		{
-			"name": "test",
-			"versions": [
-				"Script"
-			],
-			"targetType": "library"
+			"name": "source",
+			"targetType": "sourceLibrary"
 		},
 		{
 			"name": "hipengine",

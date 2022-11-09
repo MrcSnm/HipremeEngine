@@ -48,7 +48,7 @@ class Random
     *   to 1 - sum(weights)
     *   The weights must sum up to 1.0
     */
-    static T randomSelect(T)(T[] container, float[] weights = []) nothrow @nogc
+    static T randomSelect(T)(in T[] container, float[] weights = []) nothrow @nogc
     {
         if(weights.length == 0)
             return container[range(0, cast(int)$-1)];

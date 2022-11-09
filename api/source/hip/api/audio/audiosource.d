@@ -6,7 +6,11 @@ version(HipAudioAPI)
 
     abstract class AHipAudioSource
     {
-        IHipAudioClip clip;
+        protected IHipAudioClip _clip;
+
+        IHipAudioClip clip(){return _clip;}
+        IHipAudioClip clip(IHipAudioClip newClip){return _clip = newClip;}
+        
         bool isLooping;
         bool isPlaying;
 

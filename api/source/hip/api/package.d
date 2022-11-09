@@ -39,6 +39,9 @@ public import hip.api.graphics.g2d.renderer2d;
 public import hip.api.view.scene;
 
 
+//FileSystem
+public import HipFS = hip.api.filesystem.definitions;
+public import hip.api.filesystem.hipfs;
 //Assets
 public import HipAssetManager = hip.api.assets.assets_binding;
 //Audio
@@ -110,6 +113,7 @@ mixin template HipEngineMain(alias StartScene)
 			rt_init();
 			initializeHip();
 			initConsole();
+			HipFS.initFS();
 			initMath();
 			initG2D();
 			HipAudio.initAudio();
