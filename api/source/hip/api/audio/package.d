@@ -39,7 +39,6 @@ enum DistanceModel
 enum HipAudioImplementation
 {
     OPENAL,
-    SDL,
     OPENSLES,
     XAUDIO2
 }

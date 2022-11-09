@@ -245,7 +245,7 @@ class GameSystem
         if(fpsAccumulator >= 1.0)
         {
             import hip.console.log;
-            logln("FPS: ", frames);
+            // logln("FPS: ", frames);
             frames = 0;
             fpsAccumulator = 0;
         }

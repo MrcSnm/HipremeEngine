@@ -1,4 +1,4 @@
-module hip.api.filesystem.binding;
+module hip.api.filesystem.fs_binding;
 
 private alias thisModule = __traits(parent, {});
 void initFS()
@@ -10,12 +10,14 @@ void initFS()
     }
 }
 
+
 version(Have_hipreme_engine)
 {
     public import hip.filesystem.hipfs;
 }
 else
 {
+    import hip.api.internal : Overload;
     extern(System)
     {
         string function (string path) getPath;
@@ -26,8 +28,11 @@ else
         // {
             // return ret(path, cast(ubyte[])output);
         // }
-        bool function (string path, out ubyte[] output) read;
-        bool function (string path, out string output) readText;
+        @Overload("read") package  bool function (string path, out void[] output) read_void;
+        @Overload("read") package  bool function (string path, out ubyte[] output) read_ubyte;
+        @Overload("read") package  ubyte[] function (string path) read;
+        @Overload("readText") package  bool function (string path, out string output) readText_out;
+        @Overload("readText") package  string function (string path) readText;
         bool function (string path, void[] data) write;
         bool function (string path) exists;
         bool function (string path) remove;

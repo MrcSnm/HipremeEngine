@@ -436,7 +436,7 @@ string fromUTF16(wstring str) pure nothrow
 int toInt(string str) pure nothrow @safe @nogc
 {
     if(str.length == 0) return 0;
-
+    str = str.trim;
 
     int i = (cast(int)str.length)-1;
 
@@ -463,6 +463,7 @@ int toInt(string str) pure nothrow @safe @nogc
 float toFloat(string str) pure nothrow @safe @nogc
 {
     if(str.length == 0) return 0;
+    str = str.trim;
     if(str == "nan" || str == "NaN") return float.init;
     if(str == "inf" || str == "infinity" || str == "Infinity") return float.infinity;
 

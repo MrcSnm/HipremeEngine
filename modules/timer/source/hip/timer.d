@@ -110,7 +110,6 @@ class HipTimer : IHipTimer
     ///Returns wether it has finished
     bool tick (float dt)
     {
-        import std.stdio;
         if(isRunning)
         {
             this.deltaTime = dt;
@@ -139,7 +138,7 @@ class HipTimer : IHipTimer
 class HipSequence : HipTimer, IHipTimerList
 {
     protected IHipTimer[] timerList;
-    protected uint listCursor;
+    protected uint listCursor = 0;
     protected float cursorDuration = 0;
     protected float listAccumulator = 0;
     protected void delegate()[] onFinishList;

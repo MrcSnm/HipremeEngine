@@ -172,7 +172,7 @@ public struct Vector(uint N, T)
 
         static if(N == 3)
         {
-            VectorN axisAngle(in ref VectorN axis, float angle) inout
+            VectorN axisAngle(in VectorN axis, float angle) inout
             {
                 auto n = axis.unit;
                 auto proj = n* axis.dot(n);

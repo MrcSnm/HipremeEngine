@@ -50,11 +50,12 @@ class HipXAudioSource : HipAudioSource
         ErrorHandler.assertExit(SUCCEEDED(hr), "Could not create source voice: \n\t"~HipXAudioPlayer.getError(hr));
         
     }
+    alias clip = HipAudioSource.clip;
 
-    override void setClip(IHipAudioClip clip)
+    override IHipAudioClip clip(IHipAudioClip newClip)
     {
-        super.setClip(clip);
-        HipXAudioClip c = cast(HipXAudioClip)clip;
+        super.clip(newClip);
+        HipXAudioClip c = cast(HipXAudioClip)newClip;
         XAUDIO2_BUFFER* buffer = cast(XAUDIO2_BUFFER*)c.getBuffer(c.getClipData(), cast(uint)c.getClipSize());
         HRESULT hr = sourceVoice.SubmitSourceBuffer(buffer, null);
         debug
@@ -63,6 +64,7 @@ class HipXAudioSource : HipAudioSource
             ErrorHandler.assertExit(SUCCEEDED(hr),
             "Could not submit XAudio2 source voice:\n\t"~HipXAudioPlayer.getError(hr));
         }
+        return newClip;
     }
     
 

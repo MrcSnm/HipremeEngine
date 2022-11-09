@@ -46,13 +46,14 @@ struct HipColor
     }
     
     static immutable white   = HipColor(1,1,1,1);
-    static immutable black   = HipColor(0,0,0,0);
+    static immutable black   = HipColor(0,0,0,1);
     static immutable red     = HipColor(1,0,0,1);
     static immutable green   = HipColor(0,1,0,1);
     static immutable blue    = HipColor(0,0,1,1);
     static immutable yellow  = HipColor(1,1,0,1);
     static immutable purple  = HipColor(1,0,1,1);
     static immutable teal    = HipColor(0,1,1,1);
+    static immutable no      = HipColor(0,0,0,0);
 
     alias values this;
 }

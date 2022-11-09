@@ -118,24 +118,25 @@ bool dynamicLibraryIsLibNameValid(string libName)
 ///It will open the current executable if libName == null
 void* dynamicLibraryLoad(string libName)
 {
+    import core.runtime;
     void* ret;
-    version(Windows)
+    if(libName == null)
     {
-        if(libName == null)
+        version(Windows)
+        {
             ret = GetModuleHandle(null);
-        else
-            ret = LoadLibraryA((libName~"\0").ptr);
-    }
-    else version(Posix)
-    {
-        import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
-        if(libName == null)
+        }
+        else version(Posix)
+        {
+            import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
             ret = dlopen(null, RTLD_LAZY);
+        }
         else
-            ret = dlopen((libName~"\0").ptr, RTLD_LAZY);
+            ret = null;
     }
+    else
+        ret = Runtime.loadLibrary(libName);
     return ret;
-    // return Runtime.loadLibrary(libName);
 }
 
 version(Windows) private const (char)* err;
@@ -175,12 +176,6 @@ string dynamicLibraryError()
 
 bool dynamicLibraryRelease(void* dll)
 {
-    version(Windows)
-        return FreeLibrary(dll) == 0;
-    else version(Posix)
-    {
-        import core.sys.posix.dlfcn;
-        return dlclose(dll) == 0;
-    }
-    else static assert(0, "Platform not supported");
+    import core.runtime;
+    return Runtime.unloadLibrary(dll);
 }

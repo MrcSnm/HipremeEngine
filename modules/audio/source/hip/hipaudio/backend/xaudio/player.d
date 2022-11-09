@@ -74,10 +74,10 @@ class HipXAudioPlayer : IHipAudioPlayer
             default: return getWindowsErrorMessage(hr);
         }
     }
-    public bool isMusicPlaying(HipAudioSourceAPI src){return false;}
-    public bool isMusicPaused(HipAudioSourceAPI src){return false;}
-    public bool resume(HipAudioSourceAPI src){return false;}
-    public bool stop(HipAudioSourceAPI src)
+    public bool isMusicPlaying(AHipAudioSource src){return false;}
+    public bool isMusicPaused(AHipAudioSource src){return false;}
+    public bool resume(AHipAudioSource src){return false;}
+    public bool stop(AHipAudioSource src)
     {
         HipXAudioSource s = (cast(HipXAudioSource)src);
         //May need to use XAUDIO2_PLAY_TAILS for outputting reverb too.
@@ -90,36 +90,36 @@ class HipXAudioPlayer : IHipAudioPlayer
 
         return SUCCEEDED(hr);
     }
-    public bool pause(HipAudioSourceAPI src)
+    public bool pause(AHipAudioSource src)
     {
         HipXAudioSource s = (cast(HipXAudioSource)src);
         //May need to use XAUDIO2_PLAY_TAILS for outputting reverb too.
         
         return SUCCEEDED(s.sourceVoice.Stop(XAUDIO2_PLAY_TAILS));
     }
-    public bool play_streamed(HipAudioSourceAPI src){return false;}
+    public bool play_streamed(AHipAudioSource src){return false;}
 
-    public HipAudioClip load(string audioName, HipAudioType bufferType)
+    public IHipAudioClip load(string audioName, HipAudioType bufferType)
     {
         HipAudioClip buffer = new HipXAudioClip(new HipAudioFormatsDecoder());
         buffer.load(audioName,getEncodingFromName(audioName), bufferType);
         return buffer;
     }
-    public HipAudioClip loadStreamed(string audioName, uint chunkSize)
+    public IHipAudioClip loadStreamed(string audioName, uint chunkSize)
     {
         ErrorHandler.assertExit(false, "SDL Audio Player does not support chunked decoding");
         return null;
     }
-    public void updateStream(HipAudioSourceAPI source){}
+    public void updateStream(AHipAudioSource source){}
 
-    public HipAudioSourceAPI getSource(bool isStreamed){return new HipXAudioSource(this);}
+    public AHipAudioSource getSource(bool isStreamed){return new HipXAudioSource(this);}
 
-    bool play(HipAudioSourceAPI src)
+    bool play(AHipAudioSource src)
     {
         HipXAudioSource s = (cast(HipXAudioSource)src);
         stop(src);
         ///'stop' flushes the buffer, so there is a need to set the clip again
-        s.setClip(s.clip);
+        s.clip = s.clip;
 
         HRESULT hr = s.sourceVoice.Start(0);
         debug
@@ -129,12 +129,12 @@ class HipXAudioPlayer : IHipAudioPlayer
         
         return SUCCEEDED(hr);
     }
-    void setPitch(HipAudioSourceAPI src, float pitch){}
-    void setPanning(HipAudioSourceAPI src, float panning){}
-    void setVolume(HipAudioSourceAPI src, float volume){}
-    public void setMaxDistance(HipAudioSourceAPI src, float dist){}
-    public void setRolloffFactor(HipAudioSourceAPI src, float factor){}
-    public void setReferenceDistance(HipAudioSourceAPI src, float dist){}
+    void setPitch(AHipAudioSource src, float pitch){}
+    void setPanning(AHipAudioSource src, float panning){}
+    void setVolume(AHipAudioSource src, float volume){}
+    public void setMaxDistance(AHipAudioSource src, float dist){}
+    public void setRolloffFactor(AHipAudioSource src, float factor){}
+    public void setReferenceDistance(AHipAudioSource src, float dist){}
 
     public void onDestroy()
     {

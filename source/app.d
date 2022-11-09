@@ -48,6 +48,16 @@ import hip.config.opts;
 * Desktop: dub
 * UWP: dub build -c uwp
 * Android: dub build -c android --compiler=ldc2 -a aarch64--linux-android
+*
+*	Linker:
+*	If you wish to use LLD on Windows, you will need to install Windows 10 SDK.
+*	And include on dub the following lflags:
+*	"lflags": [
+		"-libpath:C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x64"
+	],
+*
+*	The libpath is required for getting to link a "compatible" libcmt, which unfortunately is not really compatible for some reason.
+*	This comment here will be stored as a documentation.
 */
 
 
@@ -352,6 +362,8 @@ import hip.graphics.g2d.animation;
 mixin ExportDFunctions!(hip.graphics.g2d.animation);
 import hip.game.utils;
 mixin ExportDFunctions!(hip.game.utils);
+import hip.filesystem.hipfs;
+mixin ExportDFunctions!(hip.filesystem.hipfs);
 mixin ExportDFunctions!(hip.hipaudio.audio);
 mixin ExportDFunctions!(hip.assetmanager);
 mixin ExportDFunctions!(hip.systems.timer_manager);
