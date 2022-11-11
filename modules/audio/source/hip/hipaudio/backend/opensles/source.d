@@ -56,7 +56,7 @@ class HipOpenSLESAudioSource : HipAudioSource
         return null;
     }
 
-    override HipAudioBufferWrapper* getFreeBuffer()
+    override HipAudioBufferWrapper2* getFreeBuffer()
     {
         void* b = audioPlayer.getProcessedBuffer();
         if(b == null)

@@ -29,16 +29,16 @@ public class HipAudioSource : AHipAudioSource
         void attachOnDestroy(){}
         override float getProgress(){return time/length;}
         override void pullStreamData(){}
-        override HipAudioBufferWrapper* getFreeBuffer(){return null;}
+        override HipAudioBufferWrapper2* getFreeBuffer(){return null;}
 
-        final void sendAvailableBuffer(void* buffer)
+        final void sendAvailableBuffer(HipAudioBuffer buffer)
         {
             (cast(HipAudioClip)clip).setBufferAvailable(buffer);
         }
 
         override HipAudioSource clean()
         {
-            isLooping = false;
+            loop = false;
             isPlaying = false;
             HipAudio.stop(this);
             length = 0;
@@ -48,15 +48,8 @@ public class HipAudioSource : AHipAudioSource
             HipAudio.setMaxDistance(this, 0f);
             HipAudio.setRolloffFactor(this, 1f);
             HipAudio.setReferenceDistance(this, 0f);
-            position = Vector3.zero();
-            id = 0;
+            position = [0,0,0];
             clip = null;
             return this;
         }
-
-        
-        //Making 3D concept available for every audio, it can be useful
-        // Vector!float position = [0f,0f,0f];
-        Vector3 position = [0f,0f,0f];
-        uint id;
 }

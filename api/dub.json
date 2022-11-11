@@ -7,6 +7,9 @@
 	"sourcePaths": [
 		"source"
 	],
+	"dflags": [
+		"-preview=shortenedMethods"
+	],
 	"dependencies": {
 		"util": {"path": "../modules/util", "optional": true}
 	},

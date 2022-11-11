@@ -11,8 +11,8 @@ interface IHipAudioClip
     uint loadStreamed(in void[] data, HipAudioEncoding encoding);
     uint loadStreamed(string audioPath, HipAudioEncoding encoding);
     uint updateStream();
-    void onUpdateStream(void* data, uint decodedSize);
-    void* getClipData();
+    void onUpdateStream(void[] data, uint decodedSize);
+    void[] getClipData();
     ulong getClipSize();
     float getDuration();
     float getDecodedDuration();
