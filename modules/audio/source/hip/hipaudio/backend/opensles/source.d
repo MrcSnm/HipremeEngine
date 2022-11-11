@@ -50,7 +50,7 @@ class HipOpenSLESAudioSource : HipAudioSource
 
     SLIBuffer* getSLIFreeBuffer()
     {
-        HipAudioBufferWrapper* freeBuf = getFreeBuffer();
+        HipAudioBufferWrapper2* freeBuf = getFreeBuffer();
         if(freeBuf != null)
             return cast(SLIBuffer*)freeBuf.buffer;
         return null;

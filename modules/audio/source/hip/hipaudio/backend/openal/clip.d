@@ -15,6 +15,7 @@ import hip.hipaudio.audiosource;
 import hip.audio_decoding.config;
 import hip.hipaudio.backend.openal.player;
 import bindbc.openal;
+import hip.hipaudio.backend.openal.al_err;
 
 /** 
  * OpenAL Buffer works in the following way:
@@ -26,8 +27,8 @@ import bindbc.openal;
  */
 public class HipOpenALClip : HipAudioClip
 {
-    this(IHipAudioDecoder decoder){super(decoder);}
-    this(IHipAudioDecoder decoder, uint chunkSize){super(decoder, chunkSize);}
+    this(IHipAudioDecoder decoder, HipAudioClipHint hint){super(decoder, hint);}
+    this(IHipAudioDecoder decoder, HipAudioClipHint hint, uint chunkSize){super(decoder, hint, chunkSize);}
     
     override public uint loadStreamed(in void[] data, HipAudioEncoding encoding)
     {
@@ -43,6 +44,7 @@ public class HipOpenALClip : HipAudioClip
         // import hip.console.log;
         HipAudioBufferWrapper2 w;
         alGenBuffers(1, &w.buffer.al);
+        alCheckError("Error generating OpenAL Buffer");
         hasBuffer = true;
         return w;
     }
@@ -50,17 +52,21 @@ public class HipOpenALClip : HipAudioClip
     override void destroyBuffer(HipAudioBuffer* buffer)
     {
         alDeleteBuffers(1, &buffer.al);
+        alCheckError("Error deleting OpenAL Buffer");
     }
 
     override void setBufferData(HipAudioBuffer* buffer, void[] data, uint size = 0)
     {
+        import std.stdio;
+        writeln(decoder.getSamplerate);
         alBufferData(
             buffer.al,
             HipOpenALAudioPlayer.config.getFormatAsOpenAL,
             data.ptr,
             size == 0 ? cast(int)data.length : size,
-            HipOpenALAudioPlayer.config.sampleRate
+            decoder.getSamplerate()
         );
+        alCheckError("Error setting OpenAL Buffer Data");
     }
 
     bool hasBuffer;
