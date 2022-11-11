@@ -22,6 +22,9 @@ class HipWindow
 {
     int width, height;
     HipWindowFlags flags;
+
+    string[] errors;
+
     version(Windows)
     {
         import hip.windowing.platforms.windows;
@@ -69,10 +72,29 @@ class HipWindow
     }
     void pollWindowEvents(){poll();}
     void rendererPresent(){swapBuffer();}
-    void setName(string name){}
-    void setSize(uint width, uint height){}
-    void setVSyncActive(bool active){}
-    void setFullscreen(bool fullscreen){}
+    void setName(string name)
+    {
+        errors~= "setName is not implemented for this platform";
+    }
+    void setSize(uint width, uint height)
+    {
+        errors~= "setSize is not implemented for this platform";
+    }
+    void setVSyncActive(bool active)
+    {
+         //Windows must reinitialize the window if it uses modern gl, so, it must update the window here
+        version(Windows)
+            hip.windowing.platforms.windows.setVsyncActive(active);
+        else version(X11)
+            hip.windowing.platforms.x11.setVsyncActive(active);
+        else
+            errors~= "VSync is not implemented for this platform";
+
+    }
+    void setFullscreen(bool fullscreen)
+    {
+        errors~= "Fullscreen is not implemented for this platform";
+    }
     
     void show()
     {
@@ -80,6 +102,8 @@ class HipWindow
             return hip.windowing.platforms.windows.show(hwnd);
         else version(X11)
             return hip.windowing.platforms.x11.show();
+        else
+            errors~= "Show is not implemented for this platform";
     }
     void hide(){}
     void exit()

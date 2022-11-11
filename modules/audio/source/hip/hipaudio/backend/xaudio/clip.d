@@ -1,6 +1,7 @@
 module hip.hipaudio.backend.xaudio.clip;
 
 version(Windows):
+version(DirectX):
 import hip.hipaudio.audioclip;
 import directx.xaudio2;
 
@@ -20,27 +21,26 @@ class HipXAudioClip : HipAudioClip
         buffer.LoopLength = 0;
         buffer.pContext   = null;
     }
-    override void setBufferData(void* buffer, uint size, void* data)
+    override void setBufferData(HipAudioBuffer* buffer, void[] data, uint size = 0)
     {
-        this.buffer.AudioBytes = size;
-        this.buffer.pAudioData = cast(ubyte*)data;
+        this.buffer.AudioBytes = size == 0 ? cast(uint)data.length : size;
+        this.buffer.pAudioData = cast(ubyte*)data.ptr;
     }
     
     ///Nothing to do
-    override protected void onUpdateStream(void* data, uint decodedSize){}
+    override protected void onUpdateStream(void[] data, uint decodedSize){}
 
     ///Wraps an XAudio buffer    
-    override protected HipAudioBufferWrapper createBuffer(void* data, uint size)
+    override protected HipAudioBufferWrapper2 createBuffer(void[] data)
     {
-        HipAudioBufferWrapper ret; // TODO: implement
-        ret.buffer = &buffer;
-        ret.bufferSize = buffer.sizeof;
+        HipAudioBufferWrapper2 ret; // TODO: implement
+        ret.buffer.xaudio = &buffer;
         return ret;
     }
 
 
     ///Calls XAudio2.9 specific buffer destroy
-    override protected void destroyBuffer(void* buffer)
+    override protected void destroyBuffer(HipAudioBuffer* buffer)
     {
         
     }

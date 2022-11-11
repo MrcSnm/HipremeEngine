@@ -1,6 +1,7 @@
 module hip.hiprenderer.backend.d3d.d3dframebuffer;
 
 version(Windows):
+version(DirectX):
 
 import directx.d3d11;
 

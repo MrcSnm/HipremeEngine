@@ -10,8 +10,14 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.api.internal;
-
 import hip.api;
+
+///Used for creating a function which will generate an overload to call a function pointer
+struct Overload
+{
+	string targetName;
+}
+
 
 version(Script){__gshared void* _dll;}
 version(Windows)
@@ -97,6 +103,45 @@ enum loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
 			}
 		}
 	}}
+}
+
+
+enum generateFunctionDefinitionFromFunctionPointer(alias funcPointerSymbol, string name)()
+{
+	import std.traits;
+	string params;
+	string identifiers;
+
+	bool isFirst = true;
+	alias storage = ParameterStorageClassTuple!funcPointerSymbol;
+	static foreach(i, p; Parameters!funcPointerSymbol)
+	{
+		if(!isFirst)
+		{
+			params~= ",";
+			identifiers~= ",";
+		}
+		else
+			isFirst = false;
+		if(storage[i] != ParameterStorageClass.none)
+			params~= storage[i].stringof["ParameterStorageClass.".length..$-1] ~" "; //Remove enum namespace and the "_"
+		params~= p.stringof ~ " _"~i.stringof;
+		identifiers~= "_"~i.stringof;
+	}
+
+	return (ReturnType!funcPointerSymbol).stringof ~ " "~ name ~ "("~params ~"){"~
+		(is(ReturnType!funcPointerSymbol == void) ? "" : "return ")~ funcPointerSymbol.stringof ~ "("~identifiers ~ ");}";
+
+}
+
+mixin template OverloadsForFunctionPointers(alias targetModule)
+{
+	import std.traits;
+	static foreach(symbol; getSymbolsByUDA!(targetModule, Overload))
+	{
+		pragma(msg, generateFunctionDefinitionFromFunctionPointer!(symbol, getUDAs!(symbol, Overload)[0].targetName));
+		mixin(generateFunctionDefinitionFromFunctionPointer!(symbol, getUDAs!(symbol, Overload)[0].targetName));
+	}
 }
 
 enum loadClassFunctionPointers(alias targetClass, string exportedClass = "")()

@@ -20,7 +20,7 @@ public import hip.api.audio.audioclip;
 ///Wraps an audio buffer by saving the specific API inside 
 struct HipAudioBufferWrapper
 {
-    void* buffer;
+    void[] buffer;
     uint  bufferSize;
     bool  isAvailable;
 
@@ -28,13 +28,43 @@ struct HipAudioBufferWrapper
     {
         import core.stdc.string:memcmp;
         static if(is(R == void*))
-            return memcmp(other, buffer, bufferSize) == 0;
+            return memcmp(other, buffer.ptr, bufferSize) == 0;
+        else static if(is(R == void[]))
+            return memcmp(other.ptr, buffer.ptr, bufferSize) == 0;
         else static if(is(R == HipAudioBufferWrapper))
             return memcmp(other.buffer, this.buffer, bufferSize) == 0;
         else
             return &this == other;
     }
 }
+
+
+union HipAudioBuffer
+{
+    version(Have_bindbc_openal)
+    {
+        import bindbc.openal;
+        ALuint al;
+    }
+    version(Have_sles)
+    {
+        import opensles;
+        SLIBuffer* sles;
+    }
+    version(Have_directx_d)
+    {
+        import directx.xaudio2;
+        XAUDIO2_BUFFER* xaudio;
+    }
+}
+
+struct HipAudioBufferWrapper2
+{
+    HipAudioBuffer buffer;
+    bool isAvailable;
+}
+
+
 
 /** 
 * Wraps a decoder onto it. Basically an easier interface with some more controls
@@ -52,7 +82,7 @@ public abstract class HipAudioClip : IHipAudioClip
     ///Unused for non streamed. It is the binary loaded from a file which will be decoded
     void[] dataToDecode;
     ///Unused for non streamed. Where the user will get its audio decoded.
-    void* outBuffer;
+    void[] outBuffer;
     ///Unused for non streamed
     uint chunkSize;
 
@@ -63,8 +93,8 @@ public abstract class HipAudioClip : IHipAudioClip
     *   that array. When getBuffer is called, it could send one
     *   of those recycleds.
     */ 
-    private HipAudioBufferWrapper[] buffersToRecycle;
-    private HipAudioBufferWrapper[] buffersCreated;
+    private HipAudioBufferWrapper2[] buffersToRecycle;
+    private HipAudioBufferWrapper2[] buffersCreated;
     
     ulong totalDecoded = 0;
 
@@ -81,7 +111,7 @@ public abstract class HipAudioClip : IHipAudioClip
         import core.stdc.stdlib:malloc;
         this(decoder);
         this.chunkSize = chunkSize;
-        outBuffer = malloc(chunkSize);
+        outBuffer = malloc(chunkSize)[0..chunkSize];
         ErrorHandler.assertExit(outBuffer != null, "Out of memory");
     }
     /**
@@ -106,17 +136,17 @@ public abstract class HipAudioClip : IHipAudioClip
     }
 
     ///Event method called when the stream is updated
-    protected abstract void  onUpdateStream(void* data, uint decodedSize);
+    protected abstract void  onUpdateStream(void[] data, uint decodedSize);
     /**
     *   Always alocates a pointer to the buffer data. So, after getting its content. Send it to the
     *   recyclable buffers
     */
-    protected abstract HipAudioBufferWrapper createBuffer(void* data, uint size);
-    protected abstract void  destroyBuffer(void* buffer);
-    package final HipAudioBufferWrapper* findBuffer(void* buf)
+    protected abstract HipAudioBufferWrapper2 createBuffer(void[] data);
+    protected abstract void  destroyBuffer(HipAudioBuffer* buffer);
+    package final HipAudioBufferWrapper2* findBuffer(HipAudioBuffer buf)
     {
         foreach(ref b; buffersCreated)
-            if(b == buf)
+            if(b.buffer == buf)
                 return &b;
         return null;
     }
@@ -128,45 +158,47 @@ public abstract class HipAudioClip : IHipAudioClip
     *   OpenSL ES: `SLIBuffer`
     *   XAudio2: To be thought?
     */
-    public    abstract void  setBufferData(void* buffer, uint size, void* data);
+    public    abstract void  setBufferData(HipAudioBuffer* buffer, void[] data, uint size);
     /**
     *   Attempts to get a buffer from the buffer recycler. 
     *   Used for when loadStreamed must set a buffer available
     */
-    public    final    void* pollFreeBuffer()
+    public    final    HipAudioBuffer pollFreeBuffer()
     {
         if(buffersToRecycle.length > 0)
         {
             import hip.console.log;
             logln(buffersToRecycle.length);
-            HipAudioBufferWrapper* w = &(buffersToRecycle[buffersToRecycle.length - 1]);
+            HipAudioBufferWrapper2* w = &(buffersToRecycle[buffersToRecycle.length - 1]);
             buffersToRecycle.length--;
             w.isAvailable = false;
             return w.buffer;
         }
-        return null;
+        return HipAudioBuffer.init;
     }
-    public final void* getBuffer(void* data, uint size)
+    
+    public final HipAudioBuffer getBuffer(void[] data, uint size)
     {
-        void* ret;
+        HipAudioBuffer ret;
         if(buffersToRecycle.length > 0)
         {
-            HipAudioBufferWrapper* w = &(buffersToRecycle[buffersToRecycle.length-1]);
+            HipAudioBufferWrapper2* w = &(buffersToRecycle[buffersToRecycle.length-1]);
             buffersToRecycle.length--;
             w.isAvailable = false;
-            setBufferData(w.buffer, size, data);
+            setBufferData(&w.buffer, data, size);
             ret = w.buffer;
             return ret;
         }
-        HipAudioBufferWrapper w = createBuffer(data, size);
-        setBufferData(w.buffer, size, data);
+        HipAudioBufferWrapper2 w = createBuffer(data);
+        setBufferData(&w.buffer, data, size);
         ret = w.buffer;
         buffersCreated~=w;
         return ret;
     }
-    package final void setBufferAvailable(void* buffer)
+    
+    package final void setBufferAvailable(HipAudioBuffer buffer)
     {
-        HipAudioBufferWrapper* w = findBuffer(buffer);
+        HipAudioBufferWrapper2* w = findBuffer(buffer);
         ErrorHandler.assertExit(w != null, "AudioClip Error: No buffer was found when trying to set it available");
         buffersToRecycle~= *w;
         w.isAvailable = true;
@@ -186,7 +218,7 @@ public abstract class HipAudioClip : IHipAudioClip
         return dec;
     }
     ///Returns the streambuffer if streamed, else, returns entire sound
-    public void* getClipData()
+    public void[] getClipData()
     {
         if(isStreamed)
             return outBuffer;
@@ -231,12 +263,12 @@ public abstract class HipAudioClip : IHipAudioClip
     {
         import core.stdc.stdlib:free;
         decoder.dispose();
-        foreach (b; buffersCreated)
-            destroyBuffer(b.buffer);
+        foreach (ref b; buffersCreated)
+            destroyBuffer(&b.buffer);
         buffersCreated.length = 0;
         if(outBuffer != null)
         {
-            free(outBuffer);
+            free(outBuffer.ptr);
             outBuffer = null;
         }
     }

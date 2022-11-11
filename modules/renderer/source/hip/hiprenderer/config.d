@@ -17,5 +17,17 @@ struct HipRendererConfig
     ///Single/Double/Triple buffering
     ubyte bufferingCount = 2;
     bool isMatrixRowMajor = true;
+    bool fullscreen = false;
     bool vsync = true;
+
+
+    void logConfiguration()
+    {
+        import hip.console.log;
+        loglnInfo("Starting HipRenderer with configuration: ",
+        "\nMultisamplingLevel: ", multisamplingLevel,
+        "\nBufferingCount: ", bufferingCount,
+        "\nFullscreen: ", fullscreen,
+        "\nVsync: ", vsync? "activated" : "deactivated");
+    }
 }

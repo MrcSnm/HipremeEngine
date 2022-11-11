@@ -39,11 +39,11 @@ HipAudioEncoding getEncodingFromName(string name)
 interface IHipAudioDecoder
 {
     bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type);
-    uint startDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
+    uint startDecoding(in void[] data, void[] outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
     in (chunkSize > 0 , "Chunk size must be greater than 0");
-    uint updateDecoding(void* outputDecodedData);
+    uint updateDecoding(void[] outputDecodedData);
     AudioConfig getAudioConfig();
-    void* getClipData();
+    void[] getClipData();
     ulong getClipSize();
     ///Don't apply to streamed audio. Gets the duration in seconds
     float getDuration();

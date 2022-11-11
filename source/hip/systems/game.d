@@ -73,9 +73,10 @@ class GameSystem
         protected static HotloadableDLL hotload;
     }
     bool hasFinished;
-    float fps;
-    float targetFPS;
-    size_t frames;
+    float fps = 0;
+    float targetFPS = 0;
+    float fpsAccumulator = 0;
+    size_t frames = 0;
 
     this(float targetFPS)
     {
@@ -220,7 +221,6 @@ class GameSystem
         }
     }
 
-    
     /**
     *   Adding a scene will initialize them, while checking for assets referencing for auto loading them.
     */
@@ -241,6 +241,14 @@ class GameSystem
         import hip.assetmanager;
         import std.stdio;
         frames++;
+        fpsAccumulator+= deltaTime;
+        if(fpsAccumulator >= 1.0)
+        {
+            import hip.console.log;
+            // logln("FPS: ", frames);
+            frames = 0;
+            fpsAccumulator = 0;
+        }
         HipTimerManager.update(deltaTime);
         HipAssetManager.update();
         

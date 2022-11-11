@@ -285,8 +285,7 @@ ref string extension(return ref string pathOrFilename, string newExt)
 }
 
 
-string joinPath(string[] paths ...)@safe pure nothrow {return joinPath(paths);}
-string joinPath(string[] paths) @safe pure nothrow
+string joinPath(in string[] paths ...) @safe pure nothrow
 {
     if(paths.length == 1)
         return paths[0];

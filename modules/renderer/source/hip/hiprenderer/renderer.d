@@ -146,7 +146,7 @@ class HipRenderer
     public static uint width, height;
     protected static HipRendererConfig currentConfig;
 
-    public static bool init(string confData, string confPath)
+    public static bool init (string confData, string confPath)
     {
         import hip.data.ini;
         IniFile ini = IniFile.parse(confData, confPath);
@@ -155,6 +155,7 @@ class HipRenderer
         {
             cfg.bufferingCount = ini.tryGet!ubyte("buffering.count", 2);
             cfg.multisamplingLevel = ini.tryGet!ubyte("multisampling.level", 0);
+            cfg.fullscreen = ini.tryGet("screen.fullscreen", false);
             cfg.vsync = ini.tryGet("vsync.on", true);
             
             int width = ini.tryGet("screen.width", 1280);
@@ -166,10 +167,15 @@ class HipRenderer
                 case "GL3":
                     return init(new Hip_GL3Renderer(), &cfg, width, height);
                 case "D3D11":
-                    version(Windows)
+                    version(DirectX)
+                    {
                         return init(new Hip_D3D11_Renderer(), &cfg, width, height);
+                    }
                     else
+                    {
+                        logln("Direct3D wasn't included in this build, using OpenGL 3");
                         goto case "GL3";
+                    }
                 default:
                     ErrorHandler.showErrorMessage("Invalid renderer '"~renderer~"'",
                     `
@@ -226,17 +232,22 @@ class HipRenderer
         }
     }
 
-    public static bool init(IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height)
+    public static bool init (IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height)
     {
         ErrorHandler.startListeningForErrors("Renderer initialization");
         if(config != null)
             currentConfig = *config;
+        currentConfig.logConfiguration();
         rendererImpl = impl;
         window = rendererImpl.createWindow(width, height);
         ErrorHandler.assertErrorMessage(window !is null, "Error creating window", "Could not create SDL GL Window");
         // ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
         rendererImpl.init(window);
+        window.setVSyncActive(currentConfig.vsync);
+        window.setFullscreen(currentConfig.fullscreen);
         window.show();
+        foreach(err; window.errors)
+            loglnError(err);
         HipRenderer.width = width;
         HipRenderer.height = height;
         int w, h;
@@ -256,8 +267,10 @@ class HipRenderer
             case HipRendererType.GL3:
                 return new Hip_GL3_Texture();
             case HipRendererType.D3D11:
-                version(Windows)
+                version(DirectX)
+                {
                     return new Hip_D3D11_Texture();
+                }
                 else
                     return null;
             default:
