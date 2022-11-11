@@ -18,128 +18,6 @@ private char* getNameFromEncoding(HipAudioEncoding encoding)
 }
 
 
-/**
-*   SDL_Sound decoder does suport resampling too. So, it won't be needed to implement
-*/
-version(HipSDLSound) class HipSDL_SoundDecoder : IHipAudioDecoder
-{
-    import sdl_sound;
-    Sound_Sample* sample;
-    HipAudioEncoding selectedEncoding;
-    uint chunkSize;
-    float duration;
-    protected static int bufferSize;
-    protected static AudioConfig cfg;
-
-    public static bool initDecoder(AudioConfig cfg, int bufferSize)
-    {
-        import hip.error.handler;
-        bool ret = ErrorHandler.assertErrorMessage(loadSDLSound(), "Error Loading SDL_Sound", "SDL_Sound not found");
-        if(!ret)
-            Sound_Init();
-        HipSDL_SoundDecoder.bufferSize = bufferSize;
-        HipSDL_SoundDecoder.cfg = cfg;
-        return ret;
-    }
-    bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type)
-    {
-        selectedEncoding = encoding;
-        Sound_AudioInfo info = cfg.getSDL_SoundInfo();
-        sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length, getNameFromEncoding(encoding), &info, HipSDL_SoundDecoder.bufferSize);
-        if(sample != null)
-            Sound_DecodeAll(sample);
-        return sample != null;
-    }
-    uint startDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
-    {
-        import hip.error.handler;
-        import hip.util.conv;
-        Sound_AudioInfo info = cfg.getSDL_SoundInfo();
-        this.selectedEncoding = encoding;
-        this.sample = Sound_NewSampleFromMem(cast(ubyte*)data.ptr, cast(uint)data.length,
-            getNameFromEncoding(encoding), &info, HipSDL_SoundDecoder.bufferSize);
-
-        ErrorHandler.assertExit(sample != null, "SDL_Sound could not create a sample from memory.");
-        if(Sound_SetBufferSize(sample, chunkSize) == 0)
-            ErrorHandler.showErrorMessage("SDL_Sound decoding error",
-            "Could not set sample with chunk size "~to!string(chunkSize));
-
-        import hip.math.utils:getClosestMultiple;
-        uint decodeSize = Sound_Decode(sample);
-        this.chunkSize = getClosestMultiple(decodeSize, chunkSize);
-        ErrorHandler.assertExit(Sound_Rewind(sample) != 0, "SDL_Sound could not get back to sample start.");
-
-        return updateDecoding(outputDecodedData);
-    }
-
-    uint updateDecoding(void* outputDecodedData)
-    {
-        import core.stdc.string:memcpy;
-        import hip.error.handler;
-        import hip.util.conv;
-        import hip.util.string;
-
-        uint ret = 0;
-        uint decodedTotal = 0;
-        while(decodedTotal != chunkSize && (ret = Sound_Decode(sample)) != 0)
-        {
-            memcpy(outputDecodedData+decodedTotal, sample.buffer, ret);
-            decodedTotal+= ret;
-            duration+= ret;
-            ErrorHandler.assertExit(decodedTotal <= chunkSize, "SDL_Sound decoding error", 
-            "Chunk size "~ to!string(chunkSize) ~ "is invalid for decoding step "~ to!string(ret));
-
-        }
-        if(sample.flags & Sound_SampleFlags.SOUND_SAMPLEFLAG_ERROR)
-            ErrorHandler.showErrorMessage("SDL_Sound decoding error",
-            "Error decoding sample.\nReason: "~ Sound_GetError().fromStringz);
-        return decodedTotal;
-    }
-    float getDuration()
-    {
-        import hip.audio_decoding.format_utils;
-        if(duration != 0)
-            return duration;
-        if(sample != null)
-        {
-            if(selectedEncoding == HipAudioEncoding.MP3)
-                return HipMp3GetDuration(sample.buffer_size, sample.actual.rate);
-            return Sound_GetDuration(sample);
-        }
-        return 0;
-    }
-    AudioConfig getAudioConfig()
-    {
-        AudioConfig ret;
-        if(sample != null)
-        {
-            Sound_AudioInfo info = sample.actual;
-            ret.channels = info.channels;
-            ret.sampleRate = info.rate;
-            ret.format = getFormatFromSDL_AudioFormat(info.format);
-        }
-        return ret;
-    }
-    void* getClipData()
-    {
-        if(sample != null)
-            return sample.buffer;
-        return null;
-    }
-    ulong getClipSize()
-    {
-        if(sample != null)
-            return cast(ulong)sample.buffer_size;
-        return 0;
-    }
-    void dispose()
-    {
-        if(sample != null)
-            Sound_FreeSample(sample);       
-    }
-    
-}
-
 
 T* monoToStereo(T)(T* data, ulong framesLength)
 {
@@ -241,13 +119,13 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
             uint bytesRead = 0;
         
             decodedBuffer.length = audioConfigDefaultBufferSize;
-            void* output = decodedBuffer.ptr;
+            void[] output = decodedBuffer;
             startDecoding(data, output, audioConfigDefaultBufferSize, encoding);
-            while((bytesRead = updateDecoding(output)) != 0)
+            while((bytesRead = updateDecoding(cast(void[])output)) != 0)
             {
                 bytesRead/= float.sizeof;
                 decodedBuffer.length+= bytesRead;
-                output+= bytesRead;
+                output = decodedBuffer[$-bytesRead..$];
             }
             duration = (clipSize / channels) / sampleRate;
         }
@@ -276,7 +154,7 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
 
         return decodeSuccesful;
     }
-    uint startDecoding(in void[] data, void* outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
+    uint startDecoding(in void[] data, void[] outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
     {
         input.openFromMemory(cast(ubyte[])data);
         channels = input.getNumChannels();
@@ -288,7 +166,7 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
         
         return updateDecoding(outputDecodedData);
     }
-    uint updateDecoding(void* outputDecodedData)
+    uint updateDecoding(void[] outputDecodedData)
     {
         import core.stdc.string:memcpy;
         int framesRead = 0;
@@ -296,8 +174,9 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
         do
         {
             framesRead = input.readSamplesFloat(buffer);
+            assert(framesRead * channels * float.sizeof < outputDecodedData.length, "Out of boundaries decoding");
             if(framesRead != 0)
-                memcpy(currentRead + outputDecodedData,
+                memcpy(outputDecodedData.ptr + currentRead,
                 buffer.ptr, framesRead * channels * float.sizeof);
             
             currentRead += framesRead  * channels * float.sizeof;
@@ -307,11 +186,40 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
         clipSize+= currentRead;
         return currentRead;
     }
+    
     AudioConfig getAudioConfig(){return AudioConfig.init;}
-    void* getClipData(){return cast(void*)decodedBuffer.ptr;}
+    void[] getClipData(){return cast(void[])decodedBuffer;}
     ulong getClipSize(){return clipSize;}
     ///Don't apply to streamed audio. Gets the duration in seconds
     float getDuration(){return duration;}
 
     void dispose(){input.cleanUp();}
+
+
+    public void testSRC(uint outputSampleRate, uint outputChannels)
+    {
+        import hip.audio_decoding.resampler;
+
+        // new class ResamplingContext
+        // {
+        //     override void loadMoreSamples() 
+        //     {
+        //         float*[2] tmp;
+        //         tmp[0] = buffersIn[0].ptr;
+        //         tmp[1] = buffersIn[1].ptr;
+
+        //         // loop:
+        //         auto actuallyGot = updateDecoding(v.chans, tmp.ptr, cast(int) buffersIn[0].length);
+        //         // if(actuallyGot == 0 && loop) {
+        //         //     v.seekStart();
+        //         //     scf.currentPosition = 0;
+        //         //     goto loop;
+        //         // }
+
+        //         resamplerDataLeft.dataIn = buffersIn[0][0 .. actuallyGot];
+        //         if(v.chans > 1)
+        //             resamplerDataRight.dataIn = buffersIn[1][0 .. actuallyGot];
+        //     }
+        // }(new SampleControlFlags(), sampleRate, outputSampleRate, channels, outputChannels);
+    }
 }

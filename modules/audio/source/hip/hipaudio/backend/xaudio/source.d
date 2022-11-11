@@ -56,7 +56,7 @@ class HipXAudioSource : HipAudioSource
     {
         super.clip(newClip);
         HipXAudioClip c = cast(HipXAudioClip)newClip;
-        XAUDIO2_BUFFER* buffer = cast(XAUDIO2_BUFFER*)c.getBuffer(c.getClipData(), cast(uint)c.getClipSize());
+        XAUDIO2_BUFFER* buffer = c.getBuffer(c.getClipData(), cast(uint)c.getClipSize()).xaudio;
         HRESULT hr = sourceVoice.SubmitSourceBuffer(buffer, null);
         debug
         {

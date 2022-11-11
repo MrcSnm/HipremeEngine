@@ -31,25 +31,41 @@ enum GUI_CONSOLE = true;
 
 ///If it is inside thread local storage, then, it won't work being called from another thread
 __gshared void function(string toPrint) _log;
+__gshared void function(string toPrint) _info;
 __gshared void function(string toPrint) _warn;
 __gshared void function(string toPrint) _err;
 __gshared void function(string toPrint) _fatal;
 
 
-@InterfaceImplementation(function(ref void* console)
+version(UWP){}
+else version(Windows)
+    version = WindowsNative;
+
+version(WindowsNative)
 {
-    version(CIMGUI)
-    {
-        Console c = cast(Console)console;
-        
-        igBegin(c.name.toStringz, &c.isShowing, 0);
-        foreach_reverse(line; c.lines)
-        {
-            igText(line.toStringz);
-        }
-        igEnd();
-    }
-}) class Console
+    import core.sys.windows.winbase;
+    import core.sys.windows.wincon;
+}
+
+
+enum WindowsConsoleColors
+{
+    lightBlue = 1,
+    darkGreen = 2,
+    darkTeal = 3,
+    lightRed = 4,
+    pink = 5,
+    yellow = 6,
+    lightGrey = 7,
+    grey = 8,
+    blue = 9,
+    green = 10,
+    lightTeal = 11,
+    red = 12,
+    white = 15
+}
+
+class Console
 {
     string name;
     string[] lines;
@@ -73,10 +89,17 @@ __gshared void function(string toPrint) _fatal;
 
     static void install(Platforms p = Platforms.DEFAULT, void function(string) printFunc = null)
     {
+        version(Windows)
+        {
+            static void* windowsConsole;
+            if(windowsConsole is null)
+                windowsConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        }
         switch(p) with(Platforms)
         {
             case NULL:
                 _log = function(string s){};
+                _info = _log;
                 _warn = _log;
                 _err = _log;
                 _fatal = _err;
@@ -86,6 +109,7 @@ __gshared void function(string toPrint) _fatal;
                 {
                     import hip.jni.helper.androidlog; 
                     _log   = function(string s){alogi(androidTag, (s~"\0").ptr);};
+                    _info = _log;
                     _warn  = function(string s){alogw(androidTag, (s~"\0").ptr);};
                     _err   = function(string s){aloge(androidTag, (s~"\0").ptr);};
                     _fatal = function(string s){alogf(androidTag, (s~"\0").ptr);};
@@ -93,6 +117,7 @@ __gshared void function(string toPrint) _fatal;
                 break;
             case UWP:
                 _log = printFunc;
+                _info = _log;
                 _warn = _log;
                 _err = _log;
                 _fatal = _err;
@@ -100,16 +125,39 @@ __gshared void function(string toPrint) _fatal;
             case DEFAULT:
             case DESKTOP:
             default:
+            {
+                import core.stdc.stdio:printf, fflush, stdout;
                 _log = function(string s)
                 {
-                    import core.stdc.stdio:printf, fflush, stdout;
                     printf("%.*s\n", cast(int)s.length, s.ptr);
                     fflush(stdout);
                 };
-                _warn = _log;
-                _err = _log;
-                _fatal = _err;
+                _info = function(string s)
+                {
+                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.blue);}
+                    _log(s);
+                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.white);}
+                };
+                _warn = function(string s)
+                {
+                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.yellow);}
+                    _log(s);
+                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.white);}
+                };
+                _err = function(string s)
+                {
+                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.red);}
+                    _log(s);
+                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.white);}
+                };
+                _fatal = function(string s)
+                {
+                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.pink);}
+                    _log(s);
+                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.white);}
+                };
                 break;
+            }
         }
     }
     private this(string consoleName, ushort id)
@@ -159,7 +207,7 @@ __gshared void function(string toPrint) _fatal;
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             //mtx.lock();
-            _log("INFO: " ~ formatArguments(a).toString);
+            _info("INFO: " ~ formatArguments(a).toString);
             //mtx.unlock();
         }
     }
