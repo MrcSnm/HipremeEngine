@@ -8,9 +8,9 @@ import directx.xaudio2;
 class HipXAudioClip : HipAudioClip
 {
     XAUDIO2_BUFFER buffer;
-    this(IHipAudioDecoder decoder)
+    this(IHipAudioDecoder decoder, HipAudioClipHint hint)
     {
-        super(decoder);
+        super(decoder, hint); //TODO: Change num channels
         buffer.Flags = 0;
         buffer.AudioBytes = 0; //How many bytes there is in this buffer
         buffer.pAudioData = null; //Data

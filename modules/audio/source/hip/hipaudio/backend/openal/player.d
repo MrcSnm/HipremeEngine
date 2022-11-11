@@ -1,7 +1,8 @@
 module hip.hipaudio.backend.openal.player;
 import hip.hipaudio.backend.openal.clip;
-import hip.audio_decoding.config;
 import hip.hipaudio.backend.openal.source;
+import hip.hipaudio.backend.openal.al_err;
+import hip.audio_decoding.config;
 import hip.hipaudio.audio;
 import hip.audio_decoding.config;
 import hip.error.handler;
@@ -9,26 +10,6 @@ import hip.audio_decoding.audio;
 import hip.math.vector;
 import bindbc.openal;
 
-package string alGetErrorString(ALenum err) @nogc nothrow
-{
-    if(err != AL_NO_ERROR)
-    {
-        final switch(err)
-        {
-            case AL_INVALID_NAME:
-                return "AL_INVALID_NAME: A bad name (ID) was passed to an OpenAL function";
-            case AL_INVALID_ENUM:
-                return "AL_INVALID_ENUM: An invalid enum value was passed to an OpenAL function";
-            case AL_INVALID_VALUE:
-                return "AL_INVALID_VALUE: An invalid value was passed to an OpenAL function";
-            case AL_INVALID_OPERATION:
-                return "AL_INVALID_OPERATION: A requested operation is not valid";
-            case AL_OUT_OF_MEMORY:
-                return "AL_OUT_OF_MEMORY: The requested operation resulted in OpenAL running out of memory";
-        }
-    }
-    return "";
-}
 
 package ALenum getFormatAsOpenAL(AudioConfig cfg)
 {
@@ -49,20 +30,6 @@ package ALenum getFormatAsOpenAL(AudioConfig cfg)
             return AL_FORMAT_STEREO16;
         else
             return AL_FORMAT_STEREO8;
-    }
-}
-
-
-package void alCheckError(string title="")
-{
-    version(HIPREME_DEBUG)
-    {
-        ALenum err = alGetError();
-        if(err != AL_NO_ERROR)
-        {
-            scope string errTitle = "OpenAL Error: " ~title;
-            ErrorHandler.showErrorMessage(errTitle, alGetErrorString(err));
-        }
     }
 }
 
@@ -212,13 +179,17 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     
     public HipAudioClipAPI load(string path, HipAudioType clipType)
     {
-        HipOpenALClip clip = new HipOpenALClip(new Decoder());
-        clip.load(path, getEncodingFromName(path), clipType);
+        HipOpenALClip clip = new HipOpenALClip(new Decoder(), getClipHint());
+        if(!clip.load(path, getEncodingFromName(path), clipType))
+        {
+            import hip.error.handler;
+            ErrorHandler.showErrorMessage("Error loading OpenAL Audio Clip", path);
+        }
         return clip;
     }
     public HipAudioClipAPI loadStreamed(string path, uint chunkSize)
     {
-        HipAudioClipAPI clip = new HipOpenALClip(new Decoder(), chunkSize);
+        HipAudioClipAPI clip = new HipOpenALClip(new Decoder(), getClipHint(), chunkSize);
         clip.loadStreamed(path, getEncodingFromName(path));
         return clip;
     }
@@ -313,6 +284,20 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         alcCloseDevice(device);
         context = null;
         device = null;               
+    }
+
+    /**
+    *   OpenAL has an embedded resampler
+    */
+    protected static HipAudioClipHint getClipHint()
+    {
+        HipAudioClipHint hint = {
+            outputChannels: HipOpenALAudioPlayer.config.channels,
+            outputSamplerate: HipOpenALAudioPlayer.config.sampleRate,
+            needsResample: false,
+            needsDecode: true
+        };
+        return hint;
     }
 
     package static AudioConfig config;

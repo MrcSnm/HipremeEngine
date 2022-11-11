@@ -21,7 +21,7 @@ class HipXAudioPlayer : IHipAudioPlayer
     IXAudio2 xAudio;
     IXAudio2MasteringVoice masterVoice;
 
-    immutable(AudioConfig) config;
+    package immutable(AudioConfig) config;
 
     /**
     *   For getting better debug information, you need to run this application on Visual Studio.
@@ -101,7 +101,7 @@ class HipXAudioPlayer : IHipAudioPlayer
 
     public IHipAudioClip load(string audioName, HipAudioType bufferType)
     {
-        HipAudioClip buffer = new HipXAudioClip(new HipAudioFormatsDecoder());
+        HipAudioClip buffer = new HipXAudioClip(new HipAudioFormatsDecoder(), HipAudioClipHint(2, 44_100, false, true));
         buffer.load(audioName,getEncodingFromName(audioName), bufferType);
         return buffer;
     }

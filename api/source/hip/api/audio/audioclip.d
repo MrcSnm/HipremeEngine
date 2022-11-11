@@ -17,4 +17,17 @@ interface IHipAudioClip
     float getDuration();
     float getDecodedDuration();
     void unload();
+    immutable(HipAudioClipHint)* getHint();
+}
+
+struct HipAudioClipHint
+{
+    ///Information may be needed by the audio API
+    uint outputChannels;
+    ///Information may be needed by the audio API
+    uint outputSamplerate;
+    ///If false, no resample will occur, and the AudioAPI will deal with it
+    bool needsResample;
+    ///If false, no decode will occur, and the AudioAPI will deal with it
+    bool needsDecode;
 }
