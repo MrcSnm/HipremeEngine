@@ -368,6 +368,27 @@ pure int indexOf(TString)(in TString str,in TString toFind, int startIndex = 0) 
     return -1;
 }
 
+pure bool startsWith(TChar)(in TChar str, in TChar withWhat) nothrow @nogc @safe
+{
+    if(withWhat.length > str.length)
+        return false;
+    int index = 0;
+    while(index < withWhat.length && str[index] == withWhat[index])
+        index++;
+    return index == withWhat.length;
+}
+
+/**
+*   Same thing as startsWith, but returns the part after the afterWhat
+*/
+pure string after(TChar)(in TChar str, in TChar afterWhat) nothrow @nogc @safe
+{
+    bool has = str.startsWith(afterWhat);
+    if(!has)
+        return null;
+    return str[afterWhat.length..$];
+}
+
 pure int indexOf(TChar)(in TChar[] str, TChar ch, int startIndex = 0) nothrow @nogc @trusted
 {
     char[1] temp = [ch];

@@ -73,7 +73,7 @@ enum HipEasing : float function(float x)
 }
 
 
-class HipTween : HipTimer, IHipTween
+class HipTween : HipTimer, IHipFiniteTask
 {
     HipEasing easing = null;
     protected void[] savedData = null;
@@ -112,11 +112,21 @@ class HipTween : HipTimer, IHipTween
         savedData = new void[](size);
     }
 
+    private static void checkSizes(size_t lengthValues, size_t lengthTarget)
+    {
+        assert(lengthTarget >= 1, "Target values must have 1 or more values");
+        if(lengthTarget != 1)
+            assert(lengthValues == lengthTarget,
+                "Must have the same number of pointers to targets if targetValues is greater than 1"
+            );
+    }
+
     /**
     *   This version is more lightweight compiler wise as it is not templated 
     */
-    static HipTween to(float durationSeconds, float*[] valuesRef, float[] targetValues)
+    static HipTween to (float durationSeconds, float*[] valuesRef, in float[] targetValues ...)
     {
+        checkSizes(valuesRef.length, targetValues.length);
         HipTween t = new HipTween(durationSeconds, false);
         float[] v2 = targetValues.dup;
         t.allocSaveData(valuesRef.length * float.sizeof);
@@ -138,7 +148,10 @@ class HipTween : HipTimer, IHipTween
                 foreach(i, value; valuesRef)
                 {
                     initialValue = savedDataConv[i];
-                    newValue = ((1-multiplier)*initialValue + (v2[i] * multiplier));
+                    if(v2.length > 1)
+                        newValue = ((1-multiplier)*initialValue + (v2[i] * multiplier));
+                    else
+                        newValue = ((1-multiplier)*initialValue + (v2[0] * multiplier));
                     *value = newValue;
                 }
             });
@@ -148,6 +161,7 @@ class HipTween : HipTimer, IHipTween
 
     static HipTween to(string[] Props, T, V)(float durationSeconds, T target, V[]  values...)
     {
+        checkSizes(Props.length, values.length);
         HipTween t = new HipTween(durationSeconds, false);
         t.allocSaveData(Props.length * V.sizeof);
 
@@ -171,7 +185,10 @@ class HipTween : HipTimer, IHipTween
                 static foreach(i, p; Props)
                 {
                     initialValue = savedDataConv[i];
-                    newValue = cast(V)((1-multiplier)*initialValue + (v2[i] * multiplier));
+                    if(v2.length > 1)
+                        newValue = cast(V)((1-multiplier)*initialValue + (v2[i] * multiplier));
+                    else
+                        newValue = cast(V)((1-multiplier)*initialValue + (v2[0] * multiplier));
                     __traits(getMember, target, p) = newValue;
                 }
             });
@@ -179,8 +196,9 @@ class HipTween : HipTimer, IHipTween
         return t;
     }
 
-    static HipTween by(string[] Props, T, V)(float durationSeconds, float*[] valuesRef, float[] targetValues)
+    static HipTween by(float durationSeconds, float*[] valuesRef, float[] targetValues)
     {
+        checkSizes(valuesRef.length, targetValues.length);
         HipTween t = new HipTween(durationSeconds, false);
         t.allocSaveData(float.sizeof * valuesRef.length);
         float[] v2 = targetValues.dup;
@@ -198,7 +216,11 @@ class HipTween : HipTimer, IHipTween
                 foreach(i, valueRef; valuesRef)
                 {
                     temp = savedDataConv[i];
-                    temp2 = (v2[i] * multiplier);
+                    if(v2.length > 1)
+                        temp2 = (v2[i] * multiplier);
+                    else 
+                        temp2 = (v2[0] * multiplier);
+                    
                     *valueRef+= -temp + temp2;
                     //Copy the new values for being subtracted next frame
                     savedDataConv[i] = temp2;
@@ -212,6 +234,7 @@ class HipTween : HipTimer, IHipTween
 
     static HipTween by(string[] Props, T, V)(float durationSeconds, T target, V[]  values...)
     {
+        checkSizes(Props.length, values.length);
         HipTween t = new HipTween(durationSeconds, false);
         t.allocSaveData(Props.length * V.sizeof);
         V[] v2 = values.dup;
@@ -229,7 +252,10 @@ class HipTween : HipTimer, IHipTween
                 static foreach(i, p; Props)
                 {
                     temp = savedDataConv[i];
-                    temp2 = cast(V)(v2[i] * multiplier);
+                    if(v2.length > 1)
+                        temp2 = cast(V)(v2[i] * multiplier);
+                    else
+                        temp2 = cast(V)(v2[0] * multiplier);
 
                     __traits(getMember, target, p)+= -temp + temp2;
                     //Copy the new values for being subtracted next frame
@@ -241,7 +267,7 @@ class HipTween : HipTimer, IHipTween
         return t;
     }
 
-    IHipTween addOnFinish(void delegate() onFinish)
+    HipTween addOnFinish(void delegate() onFinish)
     {
         this.onFinish~= onFinish;
         return this;

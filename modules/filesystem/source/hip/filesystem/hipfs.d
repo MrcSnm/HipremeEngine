@@ -173,14 +173,14 @@ class HipFileSystem
     }
 
     
-    @ExportD public static bool read(string path, out void[] output)
+    @ExportD("void") public static bool read(string path, out void[] output)
     {
         path = getPath(path);
         if(!isPathValid(path) || !isPathValidExtra(path))
             return false;
         return fs.read(path, output);
     }
-    @ExportD public static bool read(string path, out ubyte[] output)
+    @ExportD("ubyte") public static bool read(string path, out ubyte[] output)
     {
         void[] data;
         bool ret = read(path, data);
@@ -197,7 +197,7 @@ class HipFileSystem
         return [];
     }
 
-    @ExportD public static bool readText(string path, out string output)
+    @ExportD("out") public static bool readText(string path, out string output)
     {
         void[] data;
         bool ret = read(path, data);
@@ -255,7 +255,7 @@ class HipFileSystem
     {
         return fs.read(path, output);
     }
-    @ExportD public static bool absoluteRead(string path, out ubyte[] output)
+    @ExportD("ubyte") public static bool absoluteRead(string path, out ubyte[] output)
     {
         void[] data;
         bool ret = absoluteRead(path, data);

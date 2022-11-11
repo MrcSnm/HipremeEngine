@@ -28,16 +28,6 @@ public class HipOpenALClip : HipAudioClip
 {
     this(IHipAudioDecoder decoder){super(decoder);}
     this(IHipAudioDecoder decoder, uint chunkSize){super(decoder, chunkSize);}
-    void loadALBuffer(uint bufferId, void* data, uint dataSize)
-    {
-        alBufferData(
-            bufferId,
-            HipOpenALAudioPlayer.config.getFormatAsOpenAL,
-            data,
-            dataSize,
-            HipOpenALAudioPlayer.config.sampleRate
-        );
-    }
     
     override public uint loadStreamed(in void[] data, HipAudioEncoding encoding)
     {
@@ -45,40 +35,33 @@ public class HipOpenALClip : HipAudioClip
         return ret;
     }
 
-    override void onUpdateStream(void* data, uint decodedSize){}
+    override void onUpdateStream(void[] data, uint decodedSize){}
 
     /** Allocates ALuint in the bufferwrapper */
-    override HipAudioBufferWrapper createBuffer(void* data, uint bufferSize)
+    override HipAudioBufferWrapper2 createBuffer(void[] data)
     {
-        import core.stdc.stdlib:malloc;
-        import core.stdc.string:memcpy;
         // import hip.console.log;
-        ALuint id;
-        alGenBuffers(1, &id);
-
-        HipAudioBufferWrapper w;
-        w.buffer = malloc(ALuint.sizeof);
-        w.bufferSize = ALuint.sizeof;
-        memcpy(w.buffer, &id, ALuint.sizeof);
+        HipAudioBufferWrapper2 w;
+        alGenBuffers(1, &w.buffer.al);
         hasBuffer = true;
         return w;
     }
-    override void destroyBuffer(void* buffer)
+
+    override void destroyBuffer(HipAudioBuffer* buffer)
     {
-        import core.stdc.stdlib:free;
-        ALuint id = *cast(ALuint*)buffer;
-        alDeleteBuffers(1, &id);
-        free(buffer);
+        alDeleteBuffers(1, &buffer.al);
     }
 
-    override void setBufferData(void* buffer, uint size, void* data)
+    override void setBufferData(HipAudioBuffer* buffer, void[] data, uint size = 0)
     {
-        ALuint bufferId = *(cast(ALuint*)buffer);
-        loadALBuffer(bufferId, data, size);
+        alBufferData(
+            buffer.al,
+            HipOpenALAudioPlayer.config.getFormatAsOpenAL,
+            data.ptr,
+            size == 0 ? cast(int)data.length : size,
+            HipOpenALAudioPlayer.config.sampleRate
+        );
     }
-
-    ALuint getALBuffer(void* data, uint size){return *cast(ALuint*)getBuffer(data, size);}
-
 
     bool hasBuffer;
 

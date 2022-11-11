@@ -7,6 +7,9 @@
 	"sourcePaths": [
 		"source"
 	],
+	"dflags": [
+		"-preview=shortenedMethods"
+	],
 	"dependencies": {
 		"util": {"path": "../modules/util", "optional": true}
 	},
@@ -18,14 +21,11 @@
 			"versions": [
 				"Script"
 			],
-			"targetType": "sourceLibrary"
+			"targetType": "library"
 		},
 		{
-			"name": "test",
-			"versions": [
-				"Script"
-			],
-			"targetType": "library"
+			"name": "source",
+			"targetType": "sourceLibrary"
 		},
 		{
 			"name": "hipengine",

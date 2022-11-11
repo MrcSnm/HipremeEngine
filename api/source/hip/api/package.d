@@ -39,6 +39,9 @@ public import hip.api.graphics.g2d.renderer2d;
 public import hip.api.view.scene;
 
 
+//FileSystem
+public import HipFS = hip.api.filesystem.definitions;
+public import hip.api.filesystem.hipfs;
 //Assets
 public import HipAssetManager = hip.api.assets.assets_binding;
 //Audio
@@ -76,13 +79,13 @@ version(Script)
 	void function(string s) log;
 	void function(Object obj) hipDestroy;
 
-	void logg(Args...)(Args a)
+	void logg(Args...)(Args a, string file = __FILE__, size_t line = __LINE__)
 	{
 		import hip.util.conv;
 		string toLog;
 		foreach(arg; a)
 			toLog~= arg.to!string;
-		log(toLog);
+		log(toLog ~ "\n\t at "~file~":"~to!string(line));
 	}
 }
 void initConsole()
@@ -110,6 +113,7 @@ mixin template HipEngineMain(alias StartScene)
 			rt_init();
 			initializeHip();
 			initConsole();
+			HipFS.initFS();
 			initMath();
 			initG2D();
 			HipAudio.initAudio();

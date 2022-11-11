@@ -33,8 +33,8 @@ class SoundTestScene : Scene
         t = new Test();
         t.x = 0;
         t.y = 0;
-        timer = new HipSequence( 
-            new HipSpawn( 
+        timer = new HipSequence( "Sequence",
+            new HipSpawn("Tween",
                 HipTween.by!(["x"])(0.2, t, 300), 
                 HipTween.by!(["y"])(8, t, 900),
             ),

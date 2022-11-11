@@ -28,9 +28,13 @@ interface IHipTimer
     ///Returns wether it has finished
     bool tick(float deltaTime);
 }
-interface IHipTween : IHipTimer
+
+interface IHipFiniteTask
 {
-    IHipTween addOnFinish(void delegate() onFinish);
-    ///Remember to call "play" for setting it up to tick
-    IHipTween play();
+    IHipFiniteTask addOnFinish(void delegate() onFinish);
+}
+
+interface IHipTimerList : IHipFiniteTask
+{
+    IHipTimerList add(IHipTimer timer);
 }
