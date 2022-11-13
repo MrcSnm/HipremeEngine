@@ -17,7 +17,8 @@
 			"dependencies": {
 				"error": {"path": "../error", "version": "*"},
 				"hipengine_api": {"path": "../../api", "version": "*"},
-				"util": {"path": "../util", "version": "*"}
+				"util": {"path": "../util", "version": "*"},
+				"bind": {"path": "../bind", "version": "*"}
 			}
 		},
 		{

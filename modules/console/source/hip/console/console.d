@@ -89,7 +89,7 @@ class Console
 
     static void install(Platforms p = Platforms.DEFAULT, void function(string) printFunc = null)
     {
-        version(Windows)
+        version(WindowsNative)
         {
             static void* windowsConsole;
             if(windowsConsole is null)

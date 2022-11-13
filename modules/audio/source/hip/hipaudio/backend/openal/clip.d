@@ -57,8 +57,6 @@ public class HipOpenALClip : HipAudioClip
 
     override void setBufferData(HipAudioBuffer* buffer, void[] data, uint size = 0)
     {
-        import std.stdio;
-        writeln(decoder.getSamplerate);
         alBufferData(
             buffer.al,
             HipOpenALAudioPlayer.config.getFormatAsOpenAL,
