@@ -14,7 +14,6 @@ import hip.hipaudio.audio;
 public import hip.api.audio.audiosource;
 
 import hip.math.vector;
-import hip.debugging.gui;
 
 /** 
 *   Wraps properties for the AudioPlayer. The closest graphical represetantion

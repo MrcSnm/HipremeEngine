@@ -37,7 +37,6 @@ version(dll)
 import hip.hiprenderer.renderer;
 import hip.view;
 import hip.systems.game;
-import hip.debugging.gui;
 import hip.bind.interpreters;
 import hip.config.opts;
 
@@ -132,12 +131,9 @@ static void initEngine(bool audio3D = false)
 		else
 			HipFS.install(getcwd()~"/assets");
 	}
-	version(BindSDL_Static){}
-	else
-	{
-		import hip.bind.dependencies;
-		loadEngineDependencies();
-	}
+
+	import hip.bind.dependencies;
+	loadEngineDependencies();
 }
 
 
@@ -203,7 +199,6 @@ static void destroyEngine()
 {
     //HipAssetManager.disposeResources();
 	sys.quit();
-	version(CIMGUI) DI.onDestroy();
 	HipRenderer.dispose();
 	HipAudio.onDestroy();
 }

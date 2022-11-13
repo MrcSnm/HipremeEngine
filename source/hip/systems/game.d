@@ -196,7 +196,7 @@ class GameSystem
         }
         else version(Standalone)
         {
-            import hip.script.entry;
+            import script.entry;
             externalScene = new HipEngineMainScene();
             addScene(externalScene);
         }

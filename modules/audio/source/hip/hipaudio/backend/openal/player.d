@@ -2,9 +2,7 @@ module hip.hipaudio.backend.openal.player;
 import hip.hipaudio.backend.openal.clip;
 import hip.hipaudio.backend.openal.source;
 import hip.hipaudio.backend.openal.al_err;
-import hip.audio_decoding.config;
 import hip.hipaudio.audio;
-import hip.audio_decoding.config;
 import hip.error.handler;
 import hip.audio_decoding.audio;
 import hip.math.vector;
@@ -54,12 +52,10 @@ ALenum getALDistanceModel(DistanceModel model)
 */
 public class HipOpenALAudioPlayer : IHipAudioPlayer
 {
-    // alias Decoder = HipSDL_SoundDecoder;
     alias Decoder = HipAudioFormatsDecoder;
 
     public this(AudioConfig cfg)
     {
-        // HipSDL_SoundDecoder.initDecoder(cfg, audioConfigDefaultBufferSize);
         initializeOpenAL();
         config = cfg;
     }

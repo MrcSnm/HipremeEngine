@@ -245,8 +245,7 @@ class HipRenderer
         currentConfig.logConfiguration();
         rendererImpl = impl;
         window = rendererImpl.createWindow(width, height);
-        ErrorHandler.assertErrorMessage(window !is null, "Error creating window", "Could not create SDL GL Window");
-        // ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
+        ErrorHandler.assertErrorMessage(window !is null, "Error creating window", "Could not create Window");
         rendererImpl.init(window);
         window.setVSyncActive(currentConfig.vsync);
         window.setFullscreen(currentConfig.fullscreen);

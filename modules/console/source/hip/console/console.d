@@ -13,7 +13,6 @@ import hip.config.opts;
 import hip.util.reflection : isLiteral;
 import hip.util.conv:to;
 import hip.util.string : toStringz, String;
-import hip.debugging.gui:InterfaceImplementation;
 import hip.util.format;
 
 
