@@ -43,7 +43,11 @@ public import hip.api.view.scene;
 public import HipFS = hip.api.filesystem.definitions;
 public import hip.api.filesystem.hipfs;
 //Assets
+version(Script)
 public import HipAssetManager = hip.api.assets.assets_binding;
+else version(Have_hipreme_engine)
+public import hip.assetmanager;
+
 //Audio
 public import hip.api.audio;
 //Math
@@ -87,6 +91,11 @@ version(Script)
 			toLog~= arg.to!string;
 		log(toLog ~ "\n\t at "~file~":"~to!string(line));
 	}
+}
+else version(Have_hipreme_engine)
+{
+	import hip.console.log:logln;
+	alias logg = logln;
 }
 void initConsole()
 {

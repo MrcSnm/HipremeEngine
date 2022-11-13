@@ -1,7 +1,5 @@
 module hip.api.graphics.text;
 
-
-
 enum HipTextAlign
 {
     CENTER,

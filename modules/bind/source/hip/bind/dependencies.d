@@ -10,12 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.bind.dependencies;
 import hip.error.handler;
-import bindbc.loader : SharedLib;
 
-
-version(Android){immutable string CURRENT_SDL_VERSION = "SDL_2_0_12";}
-else version(Windows){immutable string CURRENT_SDL_VERSION = "SDL_2_0_10";}
-else version(linux){immutable string CURRENT_SDL_VERSION = "SDL_2_0_8";}
 
 private void showDLLMissingError(string dllName)
 {
@@ -28,9 +23,6 @@ private void showDLLMissingError(string dllName)
 bool loadEngineDependencies()
 {
     ErrorHandler.startListeningForErrors("Loading Shared Libraries");
-
-    void function(SharedLib) implementation = null;
-
     version(HipremeEngineLua)
     {
         import bindbc.lua;
@@ -42,18 +34,6 @@ bool loadEngineDependencies()
         }
     }
 
-
-    version(CIMGUI)
-    {
-        import bindbc.cimgui;
-        static if(!CIMGUI_USER_DEFINED_IMPLEMENTATION)
-            implementation = &bindSDLImgui;
-
-        if(!loadcimgui(implementation))
-        {
-            ErrorHandler.showErrorMessage("Could not load cimgui", "Cimgui.dll not found");
-        }
-    }
 
     return ErrorHandler.stopListeningForErrors();
 }

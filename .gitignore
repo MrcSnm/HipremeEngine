@@ -9,13 +9,15 @@ docs/
 build/.cache
 dependencies/**/*.lib
 dependencies/**/*.a
-build/android/SDL2*
 build/android/project/app/release/*
 building/openal-soft-1.20.1-bin
 modules/**/*.a
 modules/**/*.lib
 .history
 *.exe
+bin/desktop/*.exe
+bin/desktop/*.rsp
+bin/desktop/*.lib
 *.o
 *.obj
 *.lst
