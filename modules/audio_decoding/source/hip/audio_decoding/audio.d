@@ -1,5 +1,4 @@
 module hip.audio_decoding.audio;
-import hip.audio_decoding.config;
 public import hip.api.audio;
 public import hip.api.data.audio;
 
@@ -19,19 +18,6 @@ private char* getNameFromEncoding(HipAudioEncoding encoding)
 
 
 
-T* monoToStereo(T)(T* data, ulong framesLength)
-{
-    import core.stdc.stdlib;
-    T* ret = cast(T*)malloc(framesLength*2 * T.sizeof);
-
-    for(ulong i = 0; i < framesLength; i++)
-    {
-        ret[i*2]    = data[i];
-        ret[i*2+1]  = data[i];
-    }
-    return ret;
-}
-
 T[] monoToStereo(T)(T[] data)
 {
     T[] ret = new T[data.length*2];
@@ -43,14 +29,42 @@ T[] monoToStereo(T)(T[] data)
     return ret;
 }
 
+T[][2] stereoToDualChannel(T)(T[] data)
+{
+    assert(data.length % 2 == 0, "Stereo to mono data must be divisible by 2");
+
+    size_t len2 = cast(size_t)(data.length / 2);
+    T[][2] ret = [new T[len2], new T[len2]];
+
+    for(size_t i = 0; i < data.length; i++)
+    {
+        ret[i%2][cast(size_t)(i/2)] = data[i];
+    }
+
+    return ret;
+}
+
+T[] stereoToMono(T)(T[] data)
+{
+    assert(data.length % 2 == 0, "Stereo to mono data must be divisible by 2");
+    T[] ret = new T[cast(size_t)(data.length / 2)];
+
+    size_t retIdx = 0;
+    for(size_t i = 0; i < data.length; i+= 2)
+    {
+        ret[retIdx++] = cast(T)(cast(float)((data[i] + data[i+1]) / 2));
+    }
+
+    return ret;
+}
+
 private struct _AudioStreamImpl
 {
-    void* block;
+    void[] block;
     void initialize()
     {
-        import core.stdc.stdlib:malloc;
         import audioformats;
-        block = malloc(AudioStream.sizeof);
+        block = new void[AudioStream.sizeof];
     }
 
     void openFromMemory(in ubyte[] inputData)
@@ -84,25 +98,64 @@ private struct _AudioStreamImpl
     {
         import audioformats;
         import core.stdc.stdlib;
-        AudioStream as = *(cast(AudioStream*)block); //Make it execute the destructor here
-        free(block);
-        block = null;
+        if(block != null)
+        {
+            AudioStream as = *(cast(AudioStream*)block); //Make it execute the destructor here
+            destroy(block);
+            block = null;
+        }
     }
 }
 
 class HipAudioFormatsDecoder : IHipAudioDecoder
 {
-    _AudioStreamImpl input;
+    ///This is where the compressed data will actually be stored and from where we get the decoded data
+    private _AudioStreamImpl input;
     float sampleRate;
     int channels;
-    float duration;
-    ulong clipSize;
-    uint chunkSize;
+    protected float duration;
+    protected ulong clipSize;
 
-    float[] buffer;
+    ///Intermediary buffer where the decoded buffer will be put.
+    protected float[] chunkBuffer;
+    
+    ///Probably this will be deprecated
+    protected uint chunkSize;
+
+    ///This can hold the entire audio buffer or only enough for playing
     float[] decodedBuffer;
 
 
+    uint getSamplerate(){return cast(uint)sampleRate;}
+
+    
+    public bool loadData(in void[] data, HipAudioEncoding encoding, HipAudioType type, HipAudioClipHint hint)
+    {
+        if(hint.needsResample)
+            return decodeAndResample(data, encoding, type, hint.outputSamplerate, hint.outputChannels);
+        else
+        {
+            bool ret = decode(data, encoding, type);
+            if(hint.outputChannels == 2 && channels == 1)
+            {
+                decodedBuffer = monoToStereo(decodedBuffer);
+                clipSize*= 2;
+            }
+            else if(hint.outputChannels == 1 && channels == 2)
+            {
+                decodedBuffer = stereoToMono(decodedBuffer);
+                clipSize/= 2;
+            }
+            return ret;
+        }
+    }
+    
+
+    /**
+    *   Will completely decode all the data.
+    *   Returns if the decode was successful.
+    *   The decoded data can be retrieved by calling `getClipData()`
+    */
     bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type)
     {
         import audioformats : audiostreamUnknownLength;
@@ -137,18 +190,6 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
             clipSize = decodedBuffer.length*float.sizeof;
             decodeSuccesful = bytesRead == lengthFrames;
         }
-        if(decodeSuccesful)
-        {
-            if(channels == 1)
-            {
-                decodedBuffer = monoToStereo(decodedBuffer);
-                clipSize+=clipSize;
-            }
-            // if(sampleRate != 44_100)
-            // {
-            //     decodedBuffer = resampleBuffer(decodedBuffer, sampleRate, 44_100);
-            // }
-        }
 
         input.cleanUp();
 
@@ -161,7 +202,7 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
         sampleRate = input.getSamplerate();
 
         chunkSize = (chunkSize / channels) / float.sizeof;
-        buffer = new float[chunkSize];
+        chunkBuffer = new float[chunkSize];
         this.chunkSize = chunkSize;
         
         return updateDecoding(outputDecodedData);
@@ -173,11 +214,11 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
         uint currentRead = 0;
         do
         {
-            framesRead = input.readSamplesFloat(buffer);
+            framesRead = input.readSamplesFloat(chunkBuffer);
             assert(framesRead * channels * float.sizeof < outputDecodedData.length, "Out of boundaries decoding");
             if(framesRead != 0)
                 memcpy(outputDecodedData.ptr + currentRead,
-                buffer.ptr, framesRead * channels * float.sizeof);
+                chunkBuffer.ptr, framesRead * channels * float.sizeof);
             
             currentRead += framesRead  * channels * float.sizeof;
         } while(framesRead > 0 && currentRead <= chunkSize);
@@ -186,7 +227,7 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
         clipSize+= currentRead;
         return currentRead;
     }
-    
+
     AudioConfig getAudioConfig(){return AudioConfig.init;}
     void[] getClipData(){return cast(void[])decodedBuffer;}
     ulong getClipSize(){return clipSize;}
@@ -196,30 +237,70 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
     void dispose(){input.cleanUp();}
 
 
-    public void testSRC(uint outputSampleRate, uint outputChannels)
+
+    public bool decodeAndResample(in void[] data, HipAudioEncoding encoding, HipAudioType type, uint outputSampleRate, uint outputChannels)
     {
-        import hip.audio_decoding.resampler;
+        bool ret = decode(data, encoding, type);
+        if(ret && sampleRate != outputSampleRate)
+        {
+            auto resampler = new HipAllResample(
+                getClipData(),
+                cast(int)sampleRate, 
+                cast(int)outputSampleRate, 
+                channels, 
+                1
+            );
 
-        // new class ResamplingContext
-        // {
-        //     override void loadMoreSamples() 
-        //     {
-        //         float*[2] tmp;
-        //         tmp[0] = buffersIn[0].ptr;
-        //         tmp[1] = buffersIn[1].ptr;
 
-        //         // loop:
-        //         auto actuallyGot = updateDecoding(v.chans, tmp.ptr, cast(int) buffersIn[0].length);
-        //         // if(actuallyGot == 0 && loop) {
-        //         //     v.seekStart();
-        //         //     scf.currentPosition = 0;
-        //         //     goto loop;
-        //         // }
+            float resampleRate = cast(float)outputSampleRate / cast(float)sampleRate;
+            float[] resampledBuffer = new float[cast(ulong)(decodedBuffer.length * resampleRate)];
+            resampledBuffer[] = 0;
 
-        //         resamplerDataLeft.dataIn = buffersIn[0][0 .. actuallyGot];
-        //         if(v.chans > 1)
-        //             resamplerDataRight.dataIn = buffersIn[1][0 .. actuallyGot];
-        //     }
-        // }(new SampleControlFlags(), sampleRate, outputSampleRate, channels, outputChannels);
+            do{
+
+                import std.stdio;
+                writeln("Resampled!");
+            }
+            while(resampler.fillBuffer(resampledBuffer));
+
+            decodedBuffer = resampledBuffer;
+            clipSize = decodedBuffer.length * float.sizeof;
+                import std.stdio;
+            writeln("Converted from ",cast(int)sampleRate, "Hz to ", outputSampleRate, "Hz");
+
+        }
+        return ret;
+    }
+}
+
+
+import hip.audio_decoding.resampler;
+package class HipAllResample : ResamplingContext
+{
+    enum BYTES_PER_LOAD = 4096;
+
+    int resampledSamples = 0;
+    float[] decodedData;
+    
+    this(void[] decodedData, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels)
+    {
+        super(new SampleControlFlags(), inputSampleRate, outputSampleRate, inputChannels, outputChannels);
+        this.decodedData = cast(float[])decodedData;
+    }
+    override void loadMoreSamples()  @trusted
+    {
+
+        int toResample;
+        ///Do it BYTES_PER_LOAD as step
+        if(resampledSamples + BYTES_PER_LOAD <= decodedData.length )
+            toResample = BYTES_PER_LOAD;
+        else //If it overflows, clamp it to the minimum
+            toResample = cast(int)(decodedData.length) - resampledSamples;
+
+
+        resamplerDataLeft.dataIn = cast(float[])(decodedData[resampledSamples .. resampledSamples+toResample]);
+        resamplerDataRight.dataIn = cast(float[])(decodedData[resampledSamples .. resampledSamples+toResample]);
+        resampledSamples+= toResample;
+
     }
 }

@@ -13,7 +13,6 @@ import hip.config.opts;
 import hip.util.reflection : isLiteral;
 import hip.util.conv:to;
 import hip.util.string : toStringz, String;
-import hip.debugging.gui:InterfaceImplementation;
 import hip.util.format;
 
 
@@ -89,7 +88,7 @@ class Console
 
     static void install(Platforms p = Platforms.DEFAULT, void function(string) printFunc = null)
     {
-        version(Windows)
+        version(WindowsNative)
         {
             static void* windowsConsole;
             if(windowsConsole is null)

@@ -17,16 +17,7 @@ import hip.graphics.g2d.text;
 import hip.assetmanager;
 public import hip.graphics.orthocamera;
 public import hip.api.graphics.batch;
-
-
-enum HipTextAlign
-{
-    CENTER,
-    TOP,
-    LEFT,
-    RIGHT,
-    BOTTOM
-}
+public import hip.api.graphics.text : HipTextAlign;
 
 
 /**

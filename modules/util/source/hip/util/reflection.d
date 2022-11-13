@@ -184,7 +184,15 @@ T nullCheck(string expression, T, Q)(T defaultValue, Q target)
 }
 
 
-///Used in conjunction to ExportDFunctions, you may specify a suffix, if you so, _suffix is added
+/**
+* Used on: 
+*   - Static Methods
+*   - Class Names
+*   Used in conjunction to ExportDFunctions.
+*   You may specify a suffix, if you so, `_suffix` is added
+*   ExportD will do nothing to static methods when building release. However, it will still produce
+*   a function for returning a new class.
+*/
 struct ExportD{string suffix;}
 
 
@@ -287,6 +295,7 @@ struct Version
 }
 
 
+
 ///Intermediary step for getting an alias to the Class type
 mixin template ExportDFunctionsImpl(string className, Class)
 {
@@ -329,7 +338,7 @@ mixin template ExportDFunctionsImpl(string className, Class)
 mixin template ExportDFunctions(alias mod)
 {
 	import std.traits:getSymbolsByUDA, ParameterIdentifierTuple;
-    pragma(msg, mod.stringof);
+    pragma(msg, "Exporting ", mod.stringof);
 	static foreach(mem; __traits(allMembers, mod))
 	{
         //Currently only supported on classes and structs
@@ -339,6 +348,70 @@ mixin template ExportDFunctions(alias mod)
 		}
 	}
 }
+
+
+/**
+*   Intermediary step for getting an alias to the Class type
+*   The difference with HipExportDFunctionsImpl is that it does not generate
+*   Static method output when not in script version.
+*/
+mixin template HipExportDFunctionsImpl(string className, Class)
+{
+    //If the class has ExportD, it will export a function called new(ClassName)
+    //It can't contain more than one constructor.
+    static if(hasUDA!(Class, ExportD))
+    {
+        static assert(
+            __traits(getOverloads, Class, "__ctor").length == 1, 
+            "Can't export class with more than one constructor ("~className~")"
+        );
+        mixin(
+            generateExportConstructor!(Class, __traits(getMember, Class, "__ctor"), className)
+        );
+        pragma(msg, "Exported Class "~className);
+    }
+    version(Script)
+    {
+        //Get all static methods that has ExportD
+        static foreach(sym; getSymbolsByUDA!(Class, ExportD))
+        {
+            static if(!is(sym == Class))
+            {
+                //Assert that the symbol to generate does not exists yet
+                static assert(__traits(compiles, mixin(generateExportName!(className, sym))),
+                "ExportD '" ~ generateExportName!(className, sym) ~
+                "' is not unique, use ExportD(\"SomeName\") for overloading with a suffix");
+
+                pragma(msg, "Exported "~(generateExportName!(className, sym)));
+                //Func signature
+                //Check if it is a non value type
+                mixin(generateExportFunc!(className, sym));
+            }
+        }
+    }
+}
+
+/**
+*   Iterates through a module and generates `export` function declaration for each
+*   @ExportD function found on it.
+*   If the class itself is @ExportD, it will create a method new(ClassName) to be exported too
+*   *   The difference with HipExportDFunctions is that it does not generate
+*   *   Static method output when not in script version.
+*/
+mixin template HipExportDFunctions(alias mod)
+{
+	import std.traits:getSymbolsByUDA, ParameterIdentifierTuple;
+    pragma(msg, "Exporting ", mod.stringof);
+	static foreach(mem; __traits(allMembers, mod))
+	{
+        //Currently only supported on classes and structs
+		static if( (is(mixin(mem) == class) || is(mixin(mem) == struct) ))
+		{
+            mixin HipExportDFunctionsImpl!(mem, mixin(mem));
+		}
+	}
+}
+
 
 
 enum GetFunctionDeclareStatement(alias func, string funcName)()

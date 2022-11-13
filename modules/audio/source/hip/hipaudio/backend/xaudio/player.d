@@ -21,7 +21,7 @@ class HipXAudioPlayer : IHipAudioPlayer
     IXAudio2 xAudio;
     IXAudio2MasteringVoice masterVoice;
 
-    immutable(AudioConfig) config;
+    package immutable(AudioConfig) config;
 
     /**
     *   For getting better debug information, you need to run this application on Visual Studio.
@@ -58,9 +58,6 @@ class HipXAudioPlayer : IHipAudioPlayer
             );
             xAudio.SetDebugConfiguration(&debugConfig);
         }
-
-    
-
     }
 
     public static string getError(HRESULT hr)
@@ -77,58 +74,26 @@ class HipXAudioPlayer : IHipAudioPlayer
     public bool isMusicPlaying(AHipAudioSource src){return false;}
     public bool isMusicPaused(AHipAudioSource src){return false;}
     public bool resume(AHipAudioSource src){return false;}
-    public bool stop(AHipAudioSource src)
-    {
-        HipXAudioSource s = (cast(HipXAudioSource)src);
-        //May need to use XAUDIO2_PLAY_TAILS for outputting reverb too.
-        auto hr = s.sourceVoice.Stop(XAUDIO2_PLAY_TAILS);
-        ///Makes it return to 0
-        s.sourceVoice.FlushSourceBuffers();
-
-        debug
-            ErrorHandler.assertErrorMessage(SUCCEEDED(hr), "XAudio2 stop failure", HipXAudioPlayer.getError(hr));
-
-        return SUCCEEDED(hr);
-    }
-    public bool pause(AHipAudioSource src)
-    {
-        HipXAudioSource s = (cast(HipXAudioSource)src);
-        //May need to use XAUDIO2_PLAY_TAILS for outputting reverb too.
-        
-        return SUCCEEDED(s.sourceVoice.Stop(XAUDIO2_PLAY_TAILS));
-    }
-    public bool play_streamed(AHipAudioSource src){return false;}
+    public bool stop(AHipAudioSource src){return src.play();}
+    public bool pause(AHipAudioSource src){return src.pause();}
+    public bool play_streamed(AHipAudioSource src){return src.play_streamed();}
 
     public IHipAudioClip load(string audioName, HipAudioType bufferType)
     {
-        HipAudioClip buffer = new HipXAudioClip(new HipAudioFormatsDecoder());
+        HipAudioClip buffer = new HipXAudioClip(new HipAudioFormatsDecoder(), HipAudioClipHint(2, 44_100, false, true));
         buffer.load(audioName,getEncodingFromName(audioName), bufferType);
         return buffer;
     }
     public IHipAudioClip loadStreamed(string audioName, uint chunkSize)
     {
-        ErrorHandler.assertExit(false, "SDL Audio Player does not support chunked decoding");
+        ErrorHandler.assertExit(false, "XAudio Player does not support chunked decoding");
         return null;
     }
     public void updateStream(AHipAudioSource source){}
 
     public AHipAudioSource getSource(bool isStreamed){return new HipXAudioSource(this);}
 
-    bool play(AHipAudioSource src)
-    {
-        HipXAudioSource s = (cast(HipXAudioSource)src);
-        stop(src);
-        ///'stop' flushes the buffer, so there is a need to set the clip again
-        s.clip = s.clip;
-
-        HRESULT hr = s.sourceVoice.Start(0);
-        debug
-        {
-            ErrorHandler.assertExit(SUCCEEDED(hr), "XAudio2 Failed to play: \n\t"~HipXAudioPlayer.getError(hr));
-        }
-        
-        return SUCCEEDED(hr);
-    }
+    bool play(AHipAudioSource src){return src.play();}
     void setPitch(AHipAudioSource src, float pitch){}
     void setPanning(AHipAudioSource src, float panning){}
     void setVolume(AHipAudioSource src, float volume){}

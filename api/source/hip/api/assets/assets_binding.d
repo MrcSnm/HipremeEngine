@@ -3,11 +3,6 @@ public import hip.api.data.commons;
 public import hip.api.data.font;
 public import hip.api.renderer.texture;
 
-version(Script)
-{
-    public import hip.api.assets.globals: getDefaultFont, getDefaultTexture, getDefaultFontWithSize;
-}
-
 private alias thisModule = __traits(parent, {});
 
 void initAssetManager()
@@ -15,8 +10,6 @@ void initAssetManager()
     version(Script)
     {
         import hip.api.internal;
-        import hip.api.assets.globals;
-        initGlobalAssets();
         loadModuleFunctionPointers!(thisModule, "HipAssetManager");
     }
 }

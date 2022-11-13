@@ -1295,4 +1295,84 @@ abstract class ResamplingContext {
 			scflags.finished_ = true;
 		return !scflags.stopped;
 	}
+
+    bool fillBuffer(float[] buffer) {
+		if(cast(int) buffer.length != buffer.length)
+			throw new Exception("eeeek");
+
+		if(scflags.paused) {
+			buffer[] = 0;
+			return true;
+		}
+
+		if(outputChannels == 1) 
+        {
+			foreach(ref s; buffer) 
+            {
+				if(resamplerDataLeft.dataOut.length == 0) 
+                {
+					if(loadMore()) 
+                    {
+						scflags.finished_ = true;
+						return false;
+					}
+				}
+
+				if(inputChannels == 1) 
+                {
+					s = resamplerDataLeft.dataOut[0];
+					resamplerDataLeft.dataOut = resamplerDataLeft.dataOut[1 .. $];
+				} 
+                else 
+                {
+					s = (resamplerDataLeft.dataOut[0] + resamplerDataRight.dataOut[0]) / 2;
+
+					resamplerDataLeft.dataOut = resamplerDataLeft.dataOut[1 .. $];
+					resamplerDataRight.dataOut = resamplerDataRight.dataOut[1 .. $];
+				}
+			}
+
+			scflags.currentPosition += cast(float) buffer.length / outputSampleRate / outputChannels;
+		}
+        else if(outputChannels == 2) 
+        {
+			foreach(idx, ref s; buffer) 
+            {
+				if(resamplerDataLeft.dataOut.length == 0) 
+                {
+					if(loadMore()) 
+                    {
+						scflags.finished_ = true;
+						return false;
+					}
+				}
+
+				if(inputChannels == 1) 
+                {
+					s = resamplerDataLeft.dataOut[0];
+					if(idx & 1)
+						resamplerDataLeft.dataOut = resamplerDataLeft.dataOut[1 .. $];
+                } 
+                else 
+                {
+					if(idx & 1) 
+                    {
+						s = resamplerDataRight.dataOut[0];
+						resamplerDataRight.dataOut = resamplerDataRight.dataOut[1 .. $];
+					} 
+                    else 
+                    {
+						s = resamplerDataLeft.dataOut[0];
+						resamplerDataLeft.dataOut = resamplerDataLeft.dataOut[1 .. $];
+					}
+				}
+			}
+
+			scflags.currentPosition += cast(float) buffer.length / outputSampleRate / outputChannels;
+		} else assert(0);
+
+		if(scflags.stopped)
+			scflags.finished_ = true;
+		return !scflags.stopped;
+	}
 }

@@ -157,14 +157,20 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         return TextureCoordinatesQuad(u1, v1, u2, v2);
     }
 
-    ///By passing the width and height values, you'll be able to crop useless frames
-    public static Array2D!IHipTextureRegion spritesheet(
+    /**
+    * By passing the width and height values, you'll be able to crop useless frames
+    * Default spritesheet method that makes a spritesheet from the entire texture
+    */
+    public static Array2D!IHipTextureRegion cropSpritesheet(
         IHipTexture t,
         uint frameWidth, uint frameHeight,
-        uint width, uint height,
-        uint offsetX, uint offsetY,
-        uint offsetXPerFrame, uint offsetYPerFrame)
+        uint width = 0, uint height = 0,
+        uint offsetX = 0, uint offsetY = 0,
+        uint offsetXPerFrame = 0, uint offsetYPerFrame = 0)
     {
+        if(width == 0) width = t.getWidth;
+        if(height == 0) height = t.getHeight;
+
         uint lengthW = width/(frameWidth+offsetXPerFrame);
         uint lengthH = height/(frameHeight+offsetYPerFrame);
 
@@ -176,11 +182,13 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
 
         return ret;
     }
-    ///Default spritesheet method that makes a spritesheet from the entire texture
-    static Array2D!IHipTextureRegion spritesheet(IHipTexture t, uint frameWidth, uint frameHeight)
+    public static Array2D!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
     {
-        return spritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
+        uint frameWidth = t.getWidth() / columns;
+        uint frameHeight = t.getHeight() / rows;
+        return cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
     }
+    
 
     alias setRegion = IHipTextureRegion.setRegion;
     /**

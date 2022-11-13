@@ -217,8 +217,13 @@ class HipRenderer
         bool ret = rendererImpl.initExternal();
         if(!ret)
             ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");
+
+        window = new HipWindow(800, 600, HipWindowFlags.DEFAULT);
+        HipRenderer.width = 800;
+        HipRenderer.height = 600;
         afterInit();
         return ret;
+        // return ret;
     }
     private static afterInit()
     {
@@ -240,8 +245,7 @@ class HipRenderer
         currentConfig.logConfiguration();
         rendererImpl = impl;
         window = rendererImpl.createWindow(width, height);
-        ErrorHandler.assertErrorMessage(window !is null, "Error creating window", "Could not create SDL GL Window");
-        // ErrorHandler.assertErrorMessage(renderer != null, "Error creating renderer", "Could not create SDL Renderer");
+        ErrorHandler.assertErrorMessage(window !is null, "Error creating window", "Could not create Window");
         rendererImpl.init(window);
         window.setVSyncActive(currentConfig.vsync);
         window.setFullscreen(currentConfig.fullscreen);

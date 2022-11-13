@@ -4,6 +4,7 @@ import hip.error.handler;
 import hip.hipaudio.audio;
 import hip.hipaudio.audiosource;
 import hip.util.memory;
+import hip.hipaudio.backend.openal.al_err;
 import bindbc.openal;
 
 
@@ -198,40 +199,5 @@ public class HipOpenALAudioSource : HipAudioSource
         logln("HipAudioSource Killed!");
         alDeleteSources(1, &id);
         id = 0;
-    }
-}
-
-
-package string alGetErrorString(ALenum err) @nogc nothrow
-{
-    if(err != AL_NO_ERROR)
-    {
-        final switch(err)
-        {
-            case AL_INVALID_NAME:
-                return "AL_INVALID_NAME: A bad name (ID) was passed to an OpenAL function";
-            case AL_INVALID_ENUM:
-                return "AL_INVALID_ENUM: An invalid enum value was passed to an OpenAL function";
-            case AL_INVALID_VALUE:
-                return "AL_INVALID_VALUE: An invalid value was passed to an OpenAL function";
-            case AL_INVALID_OPERATION:
-                return "AL_INVALID_OPERATION: A requested operation is not valid";
-            case AL_OUT_OF_MEMORY:
-                return "AL_OUT_OF_MEMORY: The requested operation resulted in OpenAL running out of memory";
-        }
-    }
-    return "";
-}
-
-package void alCheckError(string title="")
-{
-    version(HIPREME_DEBUG)
-    {
-        ALenum err = alGetError();
-        if(err != AL_NO_ERROR)
-        {
-            scope string errTitle = "OpenAL Error: " ~title;
-            ErrorHandler.showErrorMessage(errTitle, alGetErrorString(err));
-        }
     }
 }

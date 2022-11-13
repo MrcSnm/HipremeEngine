@@ -30,9 +30,9 @@ struct HipDefaultAssets
 
 
 public:
-    immutable static enum ENGINE_NAME = "Hipreme Engine";
-    static int SCREEN_WIDTH = 800;
-    static int SCREEN_HEIGHT = 600;
+    enum ENGINE_NAME = "Hipreme Engine";
+    enum int SCREEN_WIDTH = 800;
+    enum int SCREEN_HEIGHT = 600;
     ///Globally shared for accessing it on Android Game Thread
    __gshared GameSystem sys;
    __gshared HipInputMap map;
@@ -79,15 +79,3 @@ export extern(System)
       return HipSprite.getDefaultTexture();
    }
 }
-
-
-float getDisplayDPI(uint displayIndex = 0)
-{
-   float diagonalDPI;
-   float verticalDPI;
-   float horizontalDPI;
-   // SDL_GetDisplayDPI(displayIndex, &diagonalDPI, &horizontalDPI, &verticalDPI);
-
-   return horizontalDPI;
-}
-

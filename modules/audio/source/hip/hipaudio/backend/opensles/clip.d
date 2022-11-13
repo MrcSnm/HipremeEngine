@@ -6,8 +6,8 @@ import hip.audio_decoding.audio;
 
 class HipOpenSLESAudioClip : HipAudioClip
 {
-    this(IHipAudioDecoder decoder){super(decoder);}
-    this(IHipAudioDecoder decoder, uint chunkSize){super(decoder, chunkSize);}
+    this(IHipAudioDecoder decoder, HipAudioClipHint hint){super(decoder, hint);}
+    this(IHipAudioDecoder decoder, HipAudioClipHint hint, uint chunkSize){super(decoder, hint, chunkSize);}
 
     override public uint loadStreamed(in void[] data, HipAudioEncoding encoding)
     {

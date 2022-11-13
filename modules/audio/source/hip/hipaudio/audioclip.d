@@ -86,6 +86,9 @@ public abstract class HipAudioClip : IHipAudioClip
     ///Unused for non streamed
     uint chunkSize;
 
+
+    HipAudioClipHint hint;
+
     /**
     *   Buffers recycled from HipAudioSource.
     *
@@ -104,14 +107,34 @@ public abstract class HipAudioClip : IHipAudioClip
     string fullPath;
     string fileName;
 
-    this(IHipAudioDecoder decoder){this.decoder = decoder;}
-    this(IHipAudioDecoder decoder, uint chunkSize)
+    
+    ///Event method called when the stream is updated
+    protected abstract void  onUpdateStream(void[] data, uint decodedSize);
+    /**
+    *   Always alocates a pointer to the buffer data. So, after getting its content. Send it to the
+    *   recyclable buffers
+    */
+    protected abstract HipAudioBufferWrapper2 createBuffer(void[] data);
+    protected abstract void  destroyBuffer(HipAudioBuffer* buffer);
+    
+    /** The buffer is actually any kind of external API buffer, it is the buffer contained in
+    *   HipAudioBufferWrapper.
+    *
+    *   OpenAL: `int` containing the buffer ID
+    *   OpenSL ES: `SLIBuffer`
+    *   XAudio2: To be thought?
+    */
+    public    abstract void  setBufferData(HipAudioBuffer* buffer, void[] data, uint size);
+
+    final immutable(HipAudioClipHint)* getHint(){return cast(immutable)&hint;}
+
+    this(IHipAudioDecoder decoder, HipAudioClipHint hint){this.decoder = decoder; this.hint = hint;}
+    this(IHipAudioDecoder decoder, HipAudioClipHint hint, uint chunkSize)
     in(chunkSize > 0, "Chunk must be greater than 0")
     {
-        import core.stdc.stdlib:malloc;
-        this(decoder);
+        this(decoder, hint);
         this.chunkSize = chunkSize;
-        outBuffer = malloc(chunkSize)[0..chunkSize];
+        outBuffer = new void[chunkSize];
         ErrorHandler.assertExit(outBuffer != null, "Out of memory");
     }
     /**
@@ -121,7 +144,8 @@ public abstract class HipAudioClip : IHipAudioClip
     {
         this.type = type;
         this.isStreamed = isStreamed;
-        return decoder.decode(data, encoding, type);
+        return decoder.loadData(data, encoding, type, hint);
+        // return decoder.decode(data, encoding, type);
     }
     /**
     *   Decodes a bit more of the current buffer
@@ -134,15 +158,6 @@ public abstract class HipAudioClip : IHipAudioClip
         onUpdateStream(outBuffer, dec);
         return dec;
     }
-
-    ///Event method called when the stream is updated
-    protected abstract void  onUpdateStream(void[] data, uint decodedSize);
-    /**
-    *   Always alocates a pointer to the buffer data. So, after getting its content. Send it to the
-    *   recyclable buffers
-    */
-    protected abstract HipAudioBufferWrapper2 createBuffer(void[] data);
-    protected abstract void  destroyBuffer(HipAudioBuffer* buffer);
     package final HipAudioBufferWrapper2* findBuffer(HipAudioBuffer buf)
     {
         foreach(ref b; buffersCreated)
@@ -151,14 +166,6 @@ public abstract class HipAudioClip : IHipAudioClip
         return null;
     }
 
-    /** The buffer is actually any kind of external API buffer, it is the buffer contained in
-    *   HipAudioBufferWrapper.
-    *
-    *   OpenAL: `int` containing the buffer ID
-    *   OpenSL ES: `SLIBuffer`
-    *   XAudio2: To be thought?
-    */
-    public    abstract void  setBufferData(HipAudioBuffer* buffer, void[] data, uint size);
     /**
     *   Attempts to get a buffer from the buffer recycler. 
     *   Used for when loadStreamed must set a buffer available
@@ -234,7 +241,6 @@ public abstract class HipAudioClip : IHipAudioClip
     public float getDuration(){return decoder.getDuration();}
     public final float getDecodedDuration()
     {
-        import hip.audio_decoding.config;
         AudioConfig cfg = decoder.getAudioConfig();
         import hip.console.log;
         rawlog(cfg.getBitDepth, cfg.channels, cfg.sampleRate);
@@ -261,14 +267,13 @@ public abstract class HipAudioClip : IHipAudioClip
 
     public void unload()
     {
-        import core.stdc.stdlib:free;
         decoder.dispose();
         foreach (ref b; buffersCreated)
             destroyBuffer(&b.buffer);
         buffersCreated.length = 0;
         if(outBuffer != null)
         {
-            free(outBuffer.ptr);
+            destroy(outBuffer);
             outBuffer = null;
         }
     }

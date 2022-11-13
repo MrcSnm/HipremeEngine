@@ -204,9 +204,7 @@ public class HipImageImpl : IImage
 
 
 ///Use that alias for supporting more platforms
-version(HipSDLImageDecoder)
-    alias HipPlatformImageDecoder = HipSDLImageDecoder;
-else version(HipARSDImageDecoder)
+version(HipARSDImageDecoder)
     alias HipPlatformImageDecoder = HipARSDImageDecoder;
 else
 {

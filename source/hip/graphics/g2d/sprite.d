@@ -13,25 +13,10 @@ import hip.graphics.g2d.spritebatch;
 import hip.assets.texture;
 import hip.math.utils:sin,cos;
 import hip.assetmanager;
-import hip.debugging.gui;
 import hip.global.gamedef;
 public import hip.api.graphics.g2d.hipsprite;
 
-@InterfaceImplementation(function(ref void* data)
-{
-    version(CIMGUI)
-    {
-        import bindbc.cimgui;
-        HipSprite* s = cast(HipSprite*)data;
-
-        igBeginGroup();
-        igSliderFloat2("Position", &s.x, -1000, 1000,  null, 0);
-        igSliderFloat2("Scale", &s.scaleX, -1, 1000,  null, 0);
-        igSliderFloat("Rotation", cast(float*)&s.rotation, 0, 360, null, 0);
-        igEndGroup();
-    }
-
-})class HipSprite : IHipSprite
+class HipSprite : IHipSprite
 {
     IHipTextureRegion texture;
     HipColor color;
