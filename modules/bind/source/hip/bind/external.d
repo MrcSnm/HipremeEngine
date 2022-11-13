@@ -15,6 +15,8 @@ version(UWP)
 {
     // import core.sys.windows.windows;
     import core.sys.windows.windef;
+    import core.sys.windows.unknwn;
+    import core.sys.windows.winbase;
     struct HipExternalCoreWindow
     {
         IUnknown coreWindow;
@@ -23,7 +25,6 @@ version(UWP)
     }
     extern(Windows) nothrow @system 
     {
-        HWND function() getCoreWindowHWND;
         HipExternalCoreWindow function() getCoreWindow;
         void function(const(wchar*) wcstr) OutputUWP;
 
@@ -60,7 +61,6 @@ void importExternal()
     version(UWP)
     {
         ///App.cpp
-        dll_import_varS!getCoreWindowHWND;
         dll_import_varS!getCoreWindow;
         dll_import_varS!OutputUWP;
 

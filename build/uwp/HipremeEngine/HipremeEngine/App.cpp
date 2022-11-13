@@ -23,19 +23,11 @@ struct HipExternalCoreWindow
 };
 
 ID3D11Device* g_D3D11Device;
-HWND g_CoreWindowHWND;
 HipExternalCoreWindow g_ExternalCoreWindow;
 
 #define ChkOk assertOk
 #define ChkTrue assertOk
 
-
-struct __declspec(uuid("45D64A29-A63E-4CB6-B498-5781D298CB4F")) __declspec(novtable)
-    ICoreWindowInterop : IUnknown
-{
-    virtual HRESULT __stdcall get_WindowHandle(HWND* hwnd) = 0;
-    virtual HRESULT __stdcall put_MessageHandled(unsigned char) = 0;
-};
 
 d_import void(*GetOutputUWP)(LPCWSTR) = &OutputDebugStringW;
 d_import void OutputUWP(LPCWSTR str)
@@ -43,7 +35,6 @@ d_import void OutputUWP(LPCWSTR str)
     OutputDebugString(str);
 }
 d_import ID3D11Device* getD3D11Device() { return g_D3D11Device; }
-d_import HWND getCoreWindowHWND() { return g_CoreWindowHWND; }
 d_import HipExternalCoreWindow getCoreWindow(){ return g_ExternalCoreWindow; }
 
 void assertOk(HRESULT res, const char* err = "")
@@ -77,7 +68,7 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
 
     com_ptr<ID3D11RenderTargetView> m_renderTargetView;
     com_ptr<ID3D11DepthStencilView> m_depthStencilView;
-    D3D_FEATURE_LEVEL m_featureLevel;
+    D3D_FEATURE_LEVEL m_featureLevel ;
     float dpi=0;
     float width=0, height=0;
     float logicalWidth=0, logicalHeight=0;
@@ -92,10 +83,6 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
 
     void Load(hstring const&)
     {
-        com_ptr<ICoreWindowInterop> interop;
-
-        assertOk(window.as<::IUnknown>()->QueryInterface(interop.put()), "Could not get window Interop interface");
-        interop->get_WindowHandle(&g_CoreWindowHWND);
         HipremeMain();
 
         //CreateD3D11Device();
@@ -268,13 +255,17 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
         }
         HipremeDestroy();
     }
-    void OnWindowClosed(const CoreWindow& sender, const CoreWindowEventArgs& args){m_windowClosed = true;}
+    void OnWindowClosed(const CoreWindow& sender, const CoreWindowEventArgs& args)
+    {
+        (void)sender;
+        (void)args;
+        m_windowClosed = true;
+    }
 
     void SetWindow(CoreWindow const& wnd)
     {
         HMODULE lib = LoadDLL(L"hipreme_engine.dll");
-        HMODULE sound = LoadDLL(L"SDL2_Sound.dll");
-        dprint("Marcelo\n\n%p", sound);
+        dprint("Marcelo\n\n%p", lib);
         if (d_game_LoadDLL(lib) != 0)
             OutputDebugString(L"Error ocurred when loading D libs");
         window = wnd;
@@ -285,8 +276,8 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
         auto windowPtr = static_cast<::IUnknown*>(winrt::get_abi(window));
 
         g_ExternalCoreWindow.coreWindow = windowPtr;
-        g_ExternalCoreWindow.logicalWidth  = wnd.Bounds().Width;
-        g_ExternalCoreWindow.logicalHeight = wnd.Bounds().Height;
+        g_ExternalCoreWindow.logicalWidth  = static_cast<uint>(wnd.Bounds().Width);
+        g_ExternalCoreWindow.logicalHeight = static_cast<uint>(wnd.Bounds().Height);
 
         HipremeInit();
 
@@ -351,6 +342,7 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
 
     void OnGamepadAdded(IInspectable const& obj, Gamepad const & gamepad)
     {
+        (void)obj;
         ubyte id = GetGamepadID(gamepad);
         if (id == 255)
             AddGamepad(gamepad);
@@ -359,6 +351,7 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
     }
     void OnGamepadRemoved(IInspectable const& obj, Gamepad const & gamepad)
     {
+        (void)obj;
         ubyte id = GetGamepadID(gamepad);
         RemoveGamepad(gamepad);
         HipInputOnGamepadDisconnected(id);

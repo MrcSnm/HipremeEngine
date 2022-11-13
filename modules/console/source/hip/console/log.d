@@ -38,6 +38,15 @@ ulong line = __LINE__)
     Console.DEFAULT.info(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction);
 }
 
+
+void loglnWarn(Args...)(Args a, string file = __FILE__,
+string func = __PRETTY_FUNCTION__,
+ulong line = __LINE__)
+{
+    Console.DEFAULT.warn(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction);
+}
+
+
 void loglnError(Args...)(Args a, string file = __FILE__,
 string func = __PRETTY_FUNCTION__,
 ulong line = __LINE__)

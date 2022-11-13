@@ -47,7 +47,7 @@ private pure bool validatePath(string initial, string toAppend)
 }
 
 
-version(none) abstract class HipFile : IHipFileItf
+abstract class HipFile : IHipFileItf
 {
     immutable FileMode mode;
     immutable string path;
@@ -114,7 +114,7 @@ class HipFileSystem
         {
             initialPath = path.sanitizePath;
             version(Android){fs = new HipAndroidFileSystemInteraction();}
-            // else version(UWP){fs = new HipUWPileSystemInteraction();}
+            else version(UWP){fs = new HipUWPileSystemInteraction();}
             else version(PSVita){fs = new HipCStdioFileSystemInteraction();}
             else
             {
@@ -127,7 +127,6 @@ class HipFileSystem
     }
 
     
-    version(FunctionArrayAvailable)
     public static void install(string path,
     bool function(string path, out string errMessage)[] validations ...)
     {

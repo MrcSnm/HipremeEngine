@@ -2,6 +2,7 @@ module hip.api.data.audio;
 
 version(HipAudioAPI):
 import hip.api.audio;
+public import hip.api.audio.audioclip:HipAudioClipHint;
 
 enum HipAudioEncoding
 {
@@ -39,6 +40,8 @@ HipAudioEncoding getEncodingFromName(string name)
 interface IHipAudioDecoder
 {
     bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type);
+    public bool decodeAndResample(in void[] data, HipAudioEncoding encoding, HipAudioType type, uint outputSampleRate, uint outputChannels);
+    bool loadData(in void[] data, HipAudioEncoding encoding, HipAudioType type, HipAudioClipHint hint);
     uint startDecoding(in void[] data, void[] outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
     in (chunkSize > 0 , "Chunk size must be greater than 0");
     uint updateDecoding(void[] outputDecodedData);
@@ -49,6 +52,7 @@ interface IHipAudioDecoder
     float getDuration();
 
     void dispose();
+    uint getSamplerate();
 }
 
 enum AudioFormat : ushort

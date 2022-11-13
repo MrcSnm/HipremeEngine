@@ -37,7 +37,6 @@ version(dll)
 import hip.hiprenderer.renderer;
 import hip.view;
 import hip.systems.game;
-import hip.debugging.gui;
 import hip.bind.interpreters;
 import hip.config.opts;
 
@@ -132,18 +131,15 @@ static void initEngine(bool audio3D = false)
 		else
 			HipFS.install(getcwd()~"/assets");
 	}
-	version(BindSDL_Static){}
-	else
-	{
-		import hip.bind.dependencies;
-		loadEngineDependencies();
-	}
+
+	import hip.bind.dependencies;
+	loadEngineDependencies();
 }
 
 
 enum float FRAME_TIME = 1000/60; //60 frames per second
 
-extern(C) int HipremeMain()
+export extern(C) int HipremeMain()
 {
 	import hip.data.ini;
 	Console.initialize();
@@ -158,7 +154,7 @@ extern(C) int HipremeMain()
 		HipAndroid.javaCall!(int, "getOptimalAudioBufferSize"),
 		HipAndroid.javaCall!(int, "getOptimalSampleRate"));
 	else
-		HipAudio.initialize();
+		HipAudio.initialize(HipAudioImplementation.XAUDIO2);
 	version(dll)
 	{
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
@@ -177,10 +173,7 @@ extern(C) int HipremeMain()
 		HipRenderer.init(confFile, "renderer.conf");
 	}
 	loadDefaultAssets();
-	
-	version(dll){}
-	else
-		sys = new GameSystem(FRAME_TIME);
+	sys = new GameSystem(FRAME_TIME);
 
 
 	//Initialize 2D context
@@ -206,7 +199,6 @@ static void destroyEngine()
 {
     //HipAssetManager.disposeResources();
 	sys.quit();
-	version(CIMGUI) DI.onDestroy();
 	HipRenderer.dispose();
 	HipAudio.onDestroy();
 }
@@ -259,7 +251,6 @@ export extern(C) void HipremeInit()
 	{
 		rt_init();
 		importExternal();
-		sys = new GameSystem(FRAME_TIME);
 	}
 }
 /**
@@ -348,22 +339,9 @@ export extern(C) void log(string message)
 	rawlog(message);
 }
 
-import hip.math.api;
-import hip.util.reflection;
 version(UWP)
 {
 	import core.sys.windows.dll;
 	mixin SimpleDllMain;
 }
-
-mixin ExportMathAPI;
-
-import hip.graphics.g2d.animation;
-mixin ExportDFunctions!(hip.graphics.g2d.animation);
-import hip.game.utils;
-mixin ExportDFunctions!(hip.game.utils);
-import hip.filesystem.hipfs;
-mixin ExportDFunctions!(hip.filesystem.hipfs);
-mixin ExportDFunctions!(hip.hipaudio.audio);
-mixin ExportDFunctions!(hip.assetmanager);
-mixin ExportDFunctions!(hip.systems.timer_manager);
+public import exportd;

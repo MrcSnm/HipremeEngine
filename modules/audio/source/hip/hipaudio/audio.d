@@ -12,7 +12,6 @@ module hip.hipaudio.audio;
 
 public import hip.hipaudio.audioclip;
 public import hip.hipaudio.audiosource;
-public import hip.audio_decoding.config;
 public import hip.api.audio;
 
 //Backends
@@ -87,10 +86,8 @@ class HipAudio
         import hip.console.log;
         HipAudio.is3D = is3D;
         config = AudioConfig.lightweightConfig;
-
-        implementation = HipAudioImplementation.OPENAL;
         
-        switch(implementation)
+        final switch(implementation)
         {
             case HipAudioImplementation.OPENSLES:
                 version(Android)
@@ -105,15 +102,16 @@ class HipAudio
             case HipAudioImplementation.XAUDIO2:
                 version(DirectX)
                 {
+                    loglnInfo("Initializing XAudio2.");
                     audioInterface = new HipXAudioPlayer(AudioConfig.musicConfig);
                     break;
                 }
                 else 
                 {
+                    loglnWarn("Tried to use XAudio2 implementation, but no DirectX version was provided. OpenAL will be used instead");
                     goto case HipAudioImplementation.OPENAL;
                 }
             case HipAudioImplementation.OPENAL:
-            default:
                 //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
                 audioInterface = new HipOpenALAudioPlayer(AudioConfig.musicConfig);
         }

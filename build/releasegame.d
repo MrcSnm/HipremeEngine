@@ -7,15 +7,38 @@ import std.file;
 import core.stdc.stdlib:EXIT_FAILURE, EXIT_SUCCESS;
 
 
+
+bool verbose = false;
 enum string[] availableSourceFolders = ["source", "src", "scripts"];
-enum string[] ignoreExtensions = [".dll", ".lib", ".so"];
-enum string[] ignoreFolders = [".dub"];
+enum string[] ignoreExtensions = [".dll", ".lib", ".so", ".obj", ".pdb"];
+enum string[] ignoreFolders = [".dub", ".git", ".history"];
+
+
+string[] getGameValidFiles(string input)
+{
+    string[] validFiles;
+    FileLoop: foreach(DirEntry e; dirEntries(input, SpanMode.shallow))
+    {
+        foreach(folder; ignoreFolders)
+        {
+            if(e.name.countUntil(folder) != -1)
+                continue FileLoop;
+        }
+        validFiles~= e.name;
+    }
+    return validFiles;
+}
 
 bool shouldFileSkip(string fileName)
 {
     string ext = fileName.extension;
-    return (ignoreExtensions.countUntil(ext) == -1 &&
-            ignoreFolders.countUntil(fileName) == -1);
+
+    foreach(x; ignoreExtensions)
+    {
+        if(ext.countUntil(x) != -1)
+            return true;
+    }
+    return false;
 }
 
 
@@ -70,6 +93,9 @@ string outputPath = "release_game";
 //     }
 // }
 
+
+
+
 int main(string[] args)
 {
     if(args.length < 2)
@@ -88,19 +114,47 @@ int main(string[] args)
         writeln("releasegame.d game path '", gamePath, " does not exists");
         return EXIT_FAILURE;
     }
+    writeln("Creating directory: ", outputPath);
     mkdirRecurse(outputPath);
 
-    foreach(DirEntry d; dirEntries(gamePath, SpanMode.depth))
-    {
-        string relativizedName = d.name[srcPath.length+1..$];
-        string absPath = d.name.asAbsolutePath.array;
-        
 
-        if(isDir(absPath))
-            mkdirRecurse(absPath);
-        else
-            // copyWithNewModuleName(relativizedName, absPath);
-            copy(absPath, relativizedName);
+    string[] validFiles = getGameValidFiles(gamePath);
+    string absoluteOutput = getcwd()~dirSeparator~outputPath~dirSeparator;
+
+    foreach(f; validFiles)
+    {
+        if(isDir(f))
+        {
+            writeln("Copying contents from folder ", f);
+            foreach(DirEntry e; dirEntries(f, SpanMode.breadth))
+            {
+                string relativizedName = e.name[gamePath.length+1..$];
+                string outputBasedOnGame = absoluteOutput~relativizedName;
+                if(isDir(e.name))
+                {
+                    if(!exists(outputBasedOnGame))
+                    {
+                        if(verbose)
+                            writeln("[FOLDER_CONTENT] MKDIR ",outputBasedOnGame);
+                        mkdirRecurse(outputBasedOnGame);
+                    }
+                }
+                else 
+                {
+                    if(verbose)
+                        writeln("[FOLDER_CONTENT] COPY[",e.name,"] ---> ", outputBasedOnGame);
+                    copy(e.name, outputBasedOnGame);
+                }
+            }
+        }
+        else if(!shouldFileSkip(f))
+        {
+            string relativizedName = f[gamePath.length+1..$];
+            if(verbose)
+                writeln("Copying [",f,"] -> ", absoluteOutput~relativizedName);
+            copy(f, absoluteOutput~relativizedName);
+        }
     }
+
     return EXIT_SUCCESS;
 }

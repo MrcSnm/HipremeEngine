@@ -3,6 +3,11 @@ module hip.windowing.window;
 version(Posix)
     version = X11;
 
+version(UWP){}
+else version(Windows)
+    version = WindowsNative;
+
+
 enum HipWindowFlags
 {
     RESIZABLE   = 1,
@@ -47,7 +52,7 @@ class HipWindow
     }
     void start()
     {
-        version(Windows)
+        version(WindowsNative)
             openWindow(hwnd, width, height);
         version(X11)
         {
@@ -59,7 +64,7 @@ class HipWindow
     bool startOpenGLContext(int majorVersion = 3, int minorVersion = 3)
     {
         //Windows must reinitialize the window if it uses modern gl, so, it must update the window here
-        version(Windows)
+        version(WindowsNative)
             return hip.windowing.platforms.windows.initializeOpenGL(hwnd, majorVersion, minorVersion);
         else version(X11)
             return hip.windowing.platforms.x11.initializeOpenGL(majorVersion, minorVersion);
@@ -83,7 +88,7 @@ class HipWindow
     void setVSyncActive(bool active)
     {
          //Windows must reinitialize the window if it uses modern gl, so, it must update the window here
-        version(Windows)
+        version(WindowsNative)
             hip.windowing.platforms.windows.setVsyncActive(active);
         else version(X11)
             hip.windowing.platforms.x11.setVsyncActive(active);
@@ -98,7 +103,7 @@ class HipWindow
     
     void show()
     {
-        version(Windows)
+        version(WindowsNative)
             return hip.windowing.platforms.windows.show(hwnd);
         else version(X11)
             return hip.windowing.platforms.x11.show();

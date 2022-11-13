@@ -14,6 +14,7 @@ version(HipAudioAPI)
         protected bool isDirty;
         protected bool _loop;
         bool isPlaying;
+        bool isPaused;
 
         protected float _time = 0;
         protected float _length = -1;
@@ -70,9 +71,21 @@ version(HipAudioAPI)
         }
 
         
-        bool play() => false;
-        bool stop() => false;
-        bool pause() => false;
+        bool play()
+        {
+            isPlaying = true;
+            return false;
+        }
+        bool stop()
+        {
+            isPlaying = false;
+            return false;
+        }
+        bool pause()
+        {
+            isPaused = true;
+            return false;
+        }
         bool play_streamed() => false;
 
 

@@ -1,6 +1,5 @@
 module hip.api.graphics.g2d.g2d_binding;
 
-version(HipGraphicsAPI):
 import hip.api.graphics.g2d.animation;
 import hip.api.graphics.color;
 import hip.api.graphics.g2d.hipsprite;
@@ -89,47 +88,23 @@ version(Script)
             package Array2D_GC!IHipTextureRegion function(
                 IHipTexture t,
                 uint frameWidth, uint frameHeight,
-                uint width, uint height,
-                uint offsetX, uint offsetY,
-                uint offsetXPerFrame, uint offsetYPerFrame
-            ) _cropSpritesheet;
+                uint width = 0, uint height = 0,
+                uint offsetX = 0, uint offsetY = 0,
+                uint offsetXPerFrame = 0, uint offsetYPerFrame = 0
+            ) cropSpritesheet;
         }
     }
-    
-}
-//Use directly 
-else version(Have_hipreme_engine)
-{
-    public import hip.graphics.g2d.renderer2d;
-}
-
-
-
-version(Script) version(Have_util) 
-{
-    Array2D_GC!IHipTextureRegion cropSpritesheet(
-        IHipTexture t,
-        uint frameWidth, uint frameHeight,
-        uint width, uint height,
-        uint offsetX, uint offsetY,
-        uint offsetXPerFrame, uint offsetYPerFrame
-    )
-    {
-        return _cropSpritesheet(t, frameWidth, frameHeight,
-            width, height,
-            offsetX, offsetY,
-            offsetXPerFrame, offsetYPerFrame);
-    }
-
-    Array2D_GC!IHipTextureRegion cropSpritesheet(IHipTexture t, uint frameWidth, uint frameHeight)
-    {
-        return _cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
-    }
-
+        
+    version(Have_util) 
     Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
     {
         uint frameWidth = t.getWidth() / columns;
         uint frameHeight = t.getHeight() / rows;
         return _cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
     }
+}
+//Use directly 
+else version(Have_hipreme_engine)
+{
+    public import hip.graphics.g2d.renderer2d;
 }
