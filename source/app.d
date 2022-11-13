@@ -143,7 +143,7 @@ static void initEngine(bool audio3D = false)
 
 enum float FRAME_TIME = 1000/60; //60 frames per second
 
-extern(C) int HipremeMain()
+export extern(C) int HipremeMain()
 {
 	import hip.data.ini;
 	Console.initialize();
@@ -158,7 +158,7 @@ extern(C) int HipremeMain()
 		HipAndroid.javaCall!(int, "getOptimalAudioBufferSize"),
 		HipAndroid.javaCall!(int, "getOptimalSampleRate"));
 	else
-		HipAudio.initialize();
+		HipAudio.initialize(HipAudioImplementation.XAUDIO2);
 	version(dll)
 	{
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
@@ -177,10 +177,7 @@ extern(C) int HipremeMain()
 		HipRenderer.init(confFile, "renderer.conf");
 	}
 	loadDefaultAssets();
-	
-	version(dll){}
-	else
-		sys = new GameSystem(FRAME_TIME);
+	sys = new GameSystem(FRAME_TIME);
 
 
 	//Initialize 2D context
@@ -259,7 +256,6 @@ export extern(C) void HipremeInit()
 	{
 		rt_init();
 		importExternal();
-		sys = new GameSystem(FRAME_TIME);
 	}
 }
 /**

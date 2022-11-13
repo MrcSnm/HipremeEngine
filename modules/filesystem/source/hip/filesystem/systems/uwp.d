@@ -1,9 +1,12 @@
 module hip.filesystem.systems.uwp;
 import hip.api.filesystem.hipfs;
+import hip.filesystem.hipfs : HipFile;
+import hip.error.handler;
 
 version(UWP)
 {
     import core.sys.windows.windef;
+    import core.sys.windows.winbase;
     import hip.bind.external : UWPCreateFileFromAppW,
                         UWPDeleteFileFromAppW,
                         UWPGetFileAttributesExFromAppW;

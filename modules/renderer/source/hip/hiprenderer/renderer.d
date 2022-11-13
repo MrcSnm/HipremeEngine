@@ -217,8 +217,13 @@ class HipRenderer
         bool ret = rendererImpl.initExternal();
         if(!ret)
             ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");
+
+        window = new HipWindow(800, 600, HipWindowFlags.DEFAULT);
+        HipRenderer.width = 800;
+        HipRenderer.height = 600;
         afterInit();
         return ret;
+        // return ret;
     }
     private static afterInit()
     {

@@ -140,7 +140,7 @@ class HipAudioFormatsDecoder : IHipAudioDecoder
             if(hint.outputChannels == 2 && channels == 1)
             {
                 decodedBuffer = monoToStereo(decodedBuffer);
-                clipSize+=clipSize;
+                clipSize*= 2;
             }
             else if(hint.outputChannels == 1 && channels == 2)
             {

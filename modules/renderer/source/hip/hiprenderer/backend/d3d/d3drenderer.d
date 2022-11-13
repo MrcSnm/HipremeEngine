@@ -42,7 +42,7 @@ import hip.hiprenderer.backend.d3d.d3dvertex;
 
 
 version(UWP)
-    import hip.bind.external : getCoreWindow, getCoreWindowHWND, HipExternalCoreWindow;
+    import hip.bind.external : getCoreWindow, HipExternalCoreWindow;
 
 ID3D11Device3 _hip_d3d_device = null;
 ID3D11DeviceContext _hip_d3d_context = null;
@@ -70,15 +70,6 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         HipWindow wnd = new HipWindow(width, height, HipWindowFlags.DEFAULT);
         wnd.start();
-        // SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d11");
-        // static if(HIP_DEBUG)
-        // {
-        //     SDL_SetHint(SDL_HINT_RENDER_DIRECT3D11_DEBUG, "1");
-        // }
-        // uint flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
-        // SDL_Window* window = SDL_CreateWindow("DX Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        // width, height, cast(SDL_WindowFlags)flags);
-
         return wnd;
     }
 
@@ -414,29 +405,31 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
     void setBlendFunction(HipBlendFunction src, HipBlendFunction dst)
     {
-        ErrorHandler.assertExit(false, "Unimplemented");
+        version(none)ErrorHandler.assertExit(false, "Unimplemented");
     }
     void setBlendingEquation(HipBlendEquation)
     {
-        ErrorHandler.assertExit(false, "Unimplemented");
+        version(none)ErrorHandler.assertExit(false, "Unimplemented");
     }
     bool isBlendingEnabled() const
     {
-        ErrorHandler.assertExit(false, "Unimplemented");
+        version(none)ErrorHandler.assertExit(false, "Unimplemented");
         return false;
     }
+
     public bool init(HipWindow window)
     {
-        this.window = window;
-        // SDL_SysWMinfo wmInfo;
-        // SDL_GetWindowWMInfo(window, &wmInfo);
+        version(UWP){assert(false, "Cannot call 'init' on UWP. Use initExternal");}
+        else
+        {
+            this.window = window;
 
-        HipRendererConfig cfg = HipRenderer.getCurrentConfig();
-        initD3DFowHWND(window.hwnd, &cfg);
-        HipRenderer.rendererType = HipRendererType.D3D11;
-        // setShader(createShader(true));
+            HipRendererConfig cfg = HipRenderer.getCurrentConfig();
+            initD3DFowHWND(window.hwnd, &cfg);
+            HipRenderer.rendererType = HipRendererType.D3D11;
 
-        return ErrorHandler.stopListeningForErrors();
+            return ErrorHandler.stopListeningForErrors();
+        }
     }
 
     version(dll)
@@ -444,12 +437,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         public bool initExternal()
         {
             HipRendererConfig cfg;
-
             initD3DForCoreWindow(getCoreWindow(), &cfg);
-            // HWND hwnd = getCoreWindowHWND();
-            // if(hwnd == null)
-            //     return false;
-            // initD3DFowHWND(hwnd, &cfg);
             return true;
         }
     }
