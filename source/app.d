@@ -339,22 +339,9 @@ export extern(C) void log(string message)
 	rawlog(message);
 }
 
-import hip.math.api;
-import hip.util.reflection;
 version(UWP)
 {
 	import core.sys.windows.dll;
 	mixin SimpleDllMain;
 }
-
-mixin ExportMathAPI;
-
-import hip.graphics.g2d.animation;
-mixin ExportDFunctions!(hip.graphics.g2d.animation);
-import hip.game.utils;
-mixin ExportDFunctions!(hip.game.utils);
-import hip.filesystem.hipfs;
-mixin ExportDFunctions!(hip.filesystem.hipfs);
-mixin ExportDFunctions!(hip.hipaudio.audio);
-mixin ExportDFunctions!(hip.assetmanager);
-mixin ExportDFunctions!(hip.systems.timer_manager);
+public import exportd;

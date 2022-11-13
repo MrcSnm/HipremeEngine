@@ -196,8 +196,9 @@ void drawTexture(IHipTexture texture, int x, int y, int z = 0, const HipColor co
     spBatch.draw(texture, x, y, z, color, scaleX, scaleY, rotation);
 }
 
+
 public import hip.util.data_structures : Array2D, Array2D_GC;
-Array2D_GC!IHipTextureRegion _cropSpritesheet(
+Array2D_GC!IHipTextureRegion cropSpritesheet(
     IHipTexture t,
     uint frameWidth, uint frameHeight,
     uint width, uint height,
@@ -207,7 +208,7 @@ Array2D_GC!IHipTextureRegion _cropSpritesheet(
 {
     import hip.assets.texture;
     import hip.util.lifetime;
-    return cast(typeof(return))hipSaveRef(HipTextureRegion.spritesheet(t, 
+    return cast(typeof(return))hipSaveRef(HipTextureRegion.cropSpritesheet(t, 
         frameWidth, frameHeight, 
         width, height, 
         offsetX, offsetY, 
@@ -259,3 +260,10 @@ void destroySprite(ref IHipSprite sprite)
     sprite = null;
 }
 
+
+Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
+{
+    uint frameWidth = t.getWidth() / columns;
+    uint frameHeight = t.getHeight() / rows;
+    return cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
+}

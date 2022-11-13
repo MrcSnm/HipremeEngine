@@ -14,7 +14,7 @@ module hip.api;
 /**
 * For building the API some rules must be followed:
 *
-*	1: Public Interfaces, Structs and Abstract Classes must always be declared somewhere at hipengine.api;
+*	1: Public Interfaces, Structs and Abstract Classes must always be declared somewhere at hip.api;
 *	2: Methods will most of the time return an interface when dealing it at scripting time, at release
 *	build, the can return the entire class.
 *	3: The User API will contain classes named as the same as those defined at the HipremeEngine, so
@@ -25,82 +25,14 @@ module hip.api;
 *	to the actual API when that API is an aliased import.
 */
 
-
-
-version (HipremeG2D)
-{
-	public import hip.api.graphics.color;
-	public import hip.api.renderer.texture;
-	public import hip.api.renderer.viewport;
-	public import hip.api.graphics.g2d.hipsprite;
-}
-//View + Renderer
-public import hip.api.graphics.g2d.renderer2d;
-public import hip.api.view.scene;
-
-
-//FileSystem
-public import HipFS = hip.api.filesystem.definitions;
-public import hip.api.filesystem.hipfs;
-//Assets
-version(Script)
-public import HipAssetManager = hip.api.assets.assets_binding;
-else version(Have_hipreme_engine)
-public import hip.assetmanager;
-
-//Audio
-public import hip.api.audio;
-//Math
-public import hip.api.math.random;
-//Game
-public import hip.api.systems.timer;
-public import hip.api.game.game_binding : HipGameUtils;
-public import hip.api.systems.system_binding: HipTimerManager;
-//Input
-
-version(Have_hipreme_engine)
-	version = HasInputAPI;
-else version(HipInputAPI)
-	version = HasInputAPI;
-
-version(HasInputAPI)
-{
-	public import HipInput = hip.api.input;
-	public import hip.api.input.button:AutoRemove, HipButtonType;
-	public import hip.api.input.keyboard : HipKey;
-	alias IHipInputMap = HipInput.IHipInputMap;
-}
-
-version(Have_hipreme_engine) //Aliased import fix
-	public import hip.event.handlers.inputmap;
-
-import hip.api.internal;
-public import hip.api.internal:initializeHip;
+public import hip.api.impl;
 
 ///Most important functions here
 version(Script)
 {
-	void function(string s) log;
 	void function(Object obj) hipDestroy;
+}
 
-	void logg(Args...)(Args a, string file = __FILE__, size_t line = __LINE__)
-	{
-		import hip.util.conv;
-		string toLog;
-		foreach(arg; a)
-			toLog~= arg.to!string;
-		log(toLog ~ "\n\t at "~file~":"~to!string(line));
-	}
-}
-else version(Have_hipreme_engine)
-{
-	import hip.console.log:logln;
-	alias logg = logln;
-}
-void initConsole()
-{
-	version(Script){mixin(loadSymbol("log"));}
-}
 
 mixin template HipEngineMain(alias StartScene)
 {
@@ -119,6 +51,8 @@ mixin template HipEngineMain(alias StartScene)
 			import hip.api.systems.system_binding;
 			import hip.api.game.game_binding;
 			import core.runtime;
+			import hip.api.internal:initializeHip;
+
 			rt_init();
 			initializeHip();
 			initConsole();
@@ -127,13 +61,19 @@ mixin template HipEngineMain(alias StartScene)
 			initG2D();
 			HipAudio.initAudio();
 			HipInput.initInput();
+			HipDefaultAssets.initGlobalAssets();
 			HipAssetManager.initAssetManager();
 			initTimerAPI();
 			initGameAPI();
 			
 			return _exportedScene = new StartScene();
 		}
-		export extern(System) void HipremeEngineGameDestroy(){if(_exportedScene)destroy(_exportedScene);_exportedScene=null;}
+		export extern(System) void HipremeEngineGameDestroy()
+		{
+			if(_exportedScene)
+				destroy(_exportedScene);
+			_exportedScene=null;
+		}
 	}
 	else
 		alias HipEngineMainScene  = StartScene;
