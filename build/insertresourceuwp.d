@@ -47,8 +47,8 @@ enum vcxItemTypes =
 
 enum wordToFind = "</ItemGroup>";
 
-enum copyInit = "<ItemGroup Label=\"ResourceCopyInit\">";
-enum copyEnd  = "</ItemGroup><ItemGroup Label=\"ResourceCopyEnd\"></ItemGroup>";
+enum copyInit = `<ItemGroup Label="ResourceCopy">`;
+enum copyEnd = "</ItemGroup>";
 
 
 
@@ -64,58 +64,34 @@ string getType(string fileName)
     return *uwpType;
 }
 
-///Use that instead of countUntil because visual studio may break the copyend line in two
-long findEndIndex(string res)
-{
-    long ret = -1;
-
-    for(ulong i = 0; i < res.length; i++)
-    {
-
-    }
-
-    return ret;
-}
 
 bool stripLastRes(ref string res)
 {
-    long start = res.countUntil(copyInit);
-    if(start == -1)
-    {
-        writeln("Nothing to strip on .vcxproj");
-        return true;
-    }
-    long end = res[cast(uint)start..$].countUntil(copyEnd);
-    if(end == -1)
-    {
-        writeln("Malformed input .vcxproj. Won't do anything.");
-        return false;
-    }
-
-    end+=start + copyEnd.length;
-    writeln("Stripping last .vcxproj ResourceCopy...");
-    res = res[0..cast(uint)start]~res[cast(uint)end..$];
-    return true;
+    return stripProject(res, ".vcxproj", copyInit);
 }
 
 bool stripLastResFilter(ref string res)
 {
-    long start = res.countUntil(copyInit);
+    return stripProject(res, ".vcxproj.filters", copyInit);
+}
+
+
+bool stripProject(ref string res, string fileName, string stripInit, string stripEnd = copyEnd)
+{
+    long start = res.countUntil(stripInit);
     if(start == -1)
     {
-        writeln("Nothing to strip on .vcxproj.filters");
+        writeln("Nothing to strip on ",fileName);
         return true;
     }
-    long end = res[cast(uint)start..$].countUntil(copyEnd);
+    //Now advance the next </ItemGroup>
+    long end = res[cast(uint)start..$].countUntil(stripEnd);
     if(end == -1)
     {
-        writeln("Malformed input on .vcxproj.filters. Won't do anything with vcxproj.filters");
+        writeln("Expected ", stripEnd, " while trying to strip ", fileName, " won't do anything");
         return false;
     }
-
-    end+=start + copyEnd.length;
-    writeln("Stripping last .vcxproj.filters ResourceCopy...");
-    res = res[0..cast(uint)start]~res[cast(uint)end..$];
+    res = res[0..cast(uint)start]~res[cast(uint)(end+start)..$];
     return true;
 }
 
