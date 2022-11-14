@@ -410,6 +410,7 @@ class HipSpriteBatch : IHipBatch
         mesh.shader.setVertexVar("Cbuf1.uView", camera.view);
         
         mesh.shader.bind();
+        import hip.console.log;
         foreach(i; 0..usingTexturesCount)
             currentTextures[i].bind(i);
         mesh.shader.sendVars();

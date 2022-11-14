@@ -117,25 +117,24 @@ class Hip_D3D11_Texture : IHipTexture
     }
     void bind()
     {
-        _hip_d3d_context.PSSetSamplers(0, 1, &sampler);
-        _hip_d3d_context.PSSetShaderResources(0, 1, &resource);
+        bind(0);
     }
     void bind(int slot)
     {
+        import hip.console.log;
+        logln("Bind on ", slot);
         _hip_d3d_context.PSSetSamplers(slot, 1, &sampler);
         _hip_d3d_context.PSSetShaderResources(slot, 1, &resource);
     }
 
-    void unbind()
-    {
-        _hip_d3d_context.PSSetSamplers(0, 1, &nullSamplerState);
-        _hip_d3d_context.PSSetShaderResources(0, 1, &nullSRV);
-    }
     void unbind(int slot)
     {
+        import hip.console.log;
+        logln("Unbind at ", slot);
         _hip_d3d_context.PSSetSamplers(slot, 1, &nullSamplerState);
         _hip_d3d_context.PSSetShaderResources(slot, 1, &nullSRV);
     }
+    void unbind(){unbind(0);}
     
     int getWidth() const {return width;}
     int getHeight() const {return height;}

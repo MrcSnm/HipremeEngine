@@ -100,7 +100,7 @@ version(Script)
     {
         uint frameWidth = t.getWidth() / columns;
         uint frameHeight = t.getHeight() / rows;
-        return _cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
+        return cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
     }
 }
 //Use directly 

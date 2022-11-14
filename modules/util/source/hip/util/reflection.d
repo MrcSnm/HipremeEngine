@@ -370,7 +370,7 @@ mixin template HipExportDFunctionsImpl(string className, Class)
         );
         pragma(msg, "Exported Class "~className);
     }
-    version(Script)
+    version(LoadScript)
     {
         //Get all static methods that has ExportD
         static foreach(sym; getSymbolsByUDA!(Class, ExportD))

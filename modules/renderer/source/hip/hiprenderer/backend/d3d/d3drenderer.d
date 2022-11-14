@@ -56,6 +56,8 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     import hip.windowing.window;
     public static HipWindow window = null;
     protected static bool hasDebugAvailable;
+    protected static D3D11_BLEND_DESC blend;
+    protected static ID3D11BlendState blendState;
     protected static Viewport currentViewport;
     public static Shader currentShader;
 
@@ -403,12 +405,87 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         return new Shader(new Hip_D3D11_ShaderImpl());
     }
 
-    void setBlendFunction(HipBlendFunction src, HipBlendFunction dst)
+    protected D3D11_BLEND getD3DBlendFunc(HipBlendFunction func)
     {
+        final switch(func) with(HipBlendFunction)
+        {
+            case  ZERO:
+                return D3D11_BLEND_ZERO;
+            case  ONE:
+                return D3D11_BLEND_ONE;
+
+            case  SRC_COLOR:
+                return D3D11_BLEND_SRC_COLOR;
+            case  ONE_MINUS_SRC_COLOR:
+                return D3D11_BLEND_INV_SRC_COLOR;
+        
+            case  DST_COLOR:
+                return D3D11_BLEND_DEST_COLOR;
+            case  ONE_MINUS_DST_COLOR:
+                return D3D11_BLEND_INV_DEST_COLOR;
+            
+            case  SRC_ALPHA:
+                return D3D11_BLEND_SRC_ALPHA;
+            case  ONE_MINUS_SRC_ALPHA:
+                return  D3D11_BLEND_INV_SRC_ALPHA;
+        
+            case  DST_ALPHA:
+                return  D3D11_BLEND_DEST_ALPHA;
+            case  ONE_MINUST_DST_ALPHA:
+                return D3D11_BLEND_INV_DEST_ALPHA;
+        
+            case  CONSTANT_COLOR:
+                return D3D11_BLEND_SRC1_COLOR;
+            case  ONE_MINUS_CONSTANT_COLOR:
+                return D3D11_BLEND_INV_SRC1_COLOR;
+            
+            case  CONSTANT_ALPHA:
+                return D3D11_BLEND_SRC1_ALPHA;
+            case  ONE_MINUS_CONSTANT_ALPHA:
+                return D3D11_BLEND_INV_SRC1_ALPHA;
+        }
+    }
+    protected D3D11_BLEND_OP getD3DBlendEquation(HipBlendEquation eq)
+    {
+        final switch(eq) with (HipBlendEquation)
+        {
+            case ADD:
+                return D3D11_BLEND_OP_ADD;
+            case SUBTRACT:
+                return D3D11_BLEND_OP_SUBTRACT;
+            case REVERSE_SUBTRACT:
+                return D3D11_BLEND_OP_REV_SUBTRACT;
+            case MIN:
+                return D3D11_BLEND_OP_MIN;
+            case MAX:
+                return D3D11_BLEND_OP_MAX;
+        }
+    }
+
+    void setBlendFunction(HipBlendFunction src, HipBlendFunction dest)
+    {
+        auto b = &blend.RenderTarget[0];
+        b.BlendEnable = cast(int)true;
+        b.SrcBlend = getD3DBlendFunc(src);
+        b.DestBlend = getD3DBlendFunc(dest);
+
+        b.SrcBlendAlpha = getD3DBlendFunc(HipBlendFunction.ZERO);
+        b.DestBlendAlpha = getD3DBlendFunc(HipBlendFunction.ZERO);
+        b.BlendOp = getD3DBlendEquation(HipBlendEquation.ADD);
+        b.BlendOpAlpha = getD3DBlendEquation(HipBlendEquation.ADD);
+        b.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+        
+        _hip_d3d_device.CreateBlendState(&blend, &blendState);
+        _hip_d3d_context.OMSetBlendState(blendState, null, 0xFF_FF_FF_FF);
+
         version(none)ErrorHandler.assertExit(false, "Unimplemented");
     }
-    void setBlendingEquation(HipBlendEquation)
+    void setBlendingEquation(HipBlendEquation eq)
     {
+        auto b = &blend.RenderTarget[0];
+        b.BlendOp = getD3DBlendEquation(eq);
+        b.BlendOpAlpha = getD3DBlendEquation(eq);
+
         version(none)ErrorHandler.assertExit(false, "Unimplemented");
     }
     bool isBlendingEnabled() const
