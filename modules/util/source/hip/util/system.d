@@ -71,12 +71,18 @@ version(Windows)
             moduleHandle = GetModuleHandle(null);
         return GetProcAddress(moduleHandle, (name~"\0").ptr);
     }
-    void dll_import_varS(alias varSymbol, string s = "")()
+    string[] dllImportVariables(Args...)()
     {
-        static if(s == "")
-            varSymbol = cast(typeof(varSymbol))dll_import_var(varSymbol.stringof);
-        else
-            varSymbol = cast(typeof(varSymbol))dll_import_var(s);
+        import std.traits:isFunctionPointer;
+        string[] failedFunctions;
+        static foreach(a; Args)
+        {
+            static assert(isFunctionPointer!a, "Can't dll import a non function pointer ( "~a.stringof~" )");
+            a = cast(typeof(a))dll_import_var(a.stringof);
+            if(a is null)
+                failedFunctions~= a.stringof;
+        }
+        return failedFunctions;
     }
 
     string getWindowsErrorMessage(HRESULT hr)
