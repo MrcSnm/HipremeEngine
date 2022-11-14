@@ -31,6 +31,13 @@ class Hip_D3D11_Texture : IHipTexture
     float[4] borderColor;
     int filter = Hip_D3D11_getTextureFilter(TextureFilter.NEAREST, TextureFilter.NEAREST);
     int wrap = Hip_D3D11_getWrapMode(TextureWrapMode.REPEAT);
+    bool[] slotsBound;
+
+    this()
+    {
+        import hip.hiprenderer:HipRenderer;
+        slotsBound = new bool[HipRenderer.getMaxSupportedShaderTextures()];
+    }
 
 
     bool hasSuccessfullyLoaded(){return width > 0;}
@@ -119,20 +126,25 @@ class Hip_D3D11_Texture : IHipTexture
     {
         bind(0);
     }
-    void bind(int slot)
+    ///Avoids rebinding to the same sl
+    void bind (int slot)
     {
-        import hip.console.log;
-        logln("Bind on ", slot);
-        _hip_d3d_context.PSSetSamplers(slot, 1, &sampler);
-        _hip_d3d_context.PSSetShaderResources(slot, 1, &resource);
+        // if(!slotsBound[slot])
+        // {
+            slotsBound[slot] = true;
+            _hip_d3d_context.PSSetSamplers(slot, 1, &sampler);
+            _hip_d3d_context.PSSetShaderResources(slot, 1, &resource);
+        // }
     }
 
-    void unbind(int slot)
+    void unbind (int slot)
     {
-        import hip.console.log;
-        logln("Unbind at ", slot);
-        _hip_d3d_context.PSSetSamplers(slot, 1, &nullSamplerState);
-        _hip_d3d_context.PSSetShaderResources(slot, 1, &nullSRV);
+        // if(slotsBound[slot])
+        // {
+            slotsBound[slot] = false;
+            _hip_d3d_context.PSSetSamplers(slot, 1, &nullSamplerState);
+            _hip_d3d_context.PSSetShaderResources(slot, 1, &nullSRV);
+        // }
     }
     void unbind(){unbind(0);}
     

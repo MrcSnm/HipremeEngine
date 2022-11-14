@@ -319,6 +319,10 @@ public class Shader
         HipRenderer.exitOnError();
     }
 
+    /**
+    *   Bind the texture into all texutre slots. This is required for getting rid of D3D11 warning (which is checked as an error and thus exits the engine)
+    *   varName is currently unused
+    */
     void initTextureSlots(IHipTexture texture, string varName, int slotsCount)
     {
         shaderImpl.initTextureSlots(shaderProgram, texture, varName, slotsCount);

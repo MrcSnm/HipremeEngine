@@ -133,7 +133,7 @@ version(UWP)
         bool exists(string path)
         {
             import std.utf:toUTF16z;
-            WIN32_FILE_ATTRIBUTE_DATA info;
+            WIN32_FILE_ATTRIBUTE_DATA info = void;
             UWPGetFileAttributesExFromAppW(path.toUTF16z, GET_FILEEX_INFO_LEVELS.GetFileExInfoStandard, &info);
             return info.dwFileAttributes != INVALID_FILE_ATTRIBUTES;
         }

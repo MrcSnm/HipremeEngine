@@ -101,36 +101,44 @@ void HipremeHandleArguments(string[] args)
 
 static void initEngine(bool audio3D = false)
 {
+	Platforms platform = Platforms.DEFAULT;
+	void function(string) printFunc;
+	string fsInstallPath = "";
+	bool function(string path, out string msg)[] validations;
+
 	version(Android)
 	{
-		Console.install(Platforms.ANDROID);
-		// HipFS.install(HipAndroid.javaCall!(string, "getApplicationDir"));
-		HipFS.install("");
-		rawlog("Starting engine on android\nWorking Dir: ", HipFS.getPath(""));
+		platform = Platforms.ANDROID;
 	}
 	else version(UWP)
 	{
 		import std.file:getcwd;
-		Console.install(Platforms.UWP, &uwpPrint);
-		HipFS.install(getcwd()~"\\UWPResources\\", (string path, out string msg)
+		platform = Platforms.UWP;
+		printFunc = &uwpPrint;
+		fsInstallPath = getcwd()~"\\UWPResources\\assets\\";
+		validations~= (string path, out string msg)
 		{
-			if(!HipFS.exists(path))
+			//As the path is installed already, it should check only for absolute paths.
+			if(!HipFS.absoluteExists(path))
 			{
-				msg = "File at path "~HipFS.getPath(path)~" does not exists. Did you forget to add it to the AppX Resources?";
+				msg = "File at path "~path~" does not exists. Did you forget to add it to the AppX Resources?";
 				return false;
 			}
 			return true;
-		});
+		};
 	}
 	else
 	{
-		import std.file:getcwd;
-		Console.install();
 		if(projectToLoad != "")
-			HipFS.install(projectToLoad~"/assets");
+			fsInstallPath = projectToLoad~"/assets";
 		else
-			HipFS.install(getcwd()~"/assets");
+			fsInstallPath = getcwd()~"/assets";
 	}
+	Console.install(platform, printFunc);
+	HipFS.install(fsInstallPath, validations);
+	loglnInfo("HipFS installed at path ", fsInstallPath);
+
+
 
 	import hip.bind.dependencies;
 	loadEngineDependencies();

@@ -24,7 +24,6 @@ enum Platforms
     UWP,
     NULL
 }
-
 static enum androidTag = "HipremeEngine";
 enum GUI_CONSOLE = true;
 
