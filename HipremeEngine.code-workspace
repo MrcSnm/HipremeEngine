@@ -24,7 +24,6 @@
 			"imgui.ini" : true,
 			"*.zip" : true,
 			"*.jar" : true,
-			"dependencies":true,
 			".vscode":true,
 			".gitmodules":true,
 			"bindbc-openal":true,
@@ -43,9 +42,11 @@
 			"**/.DS_Store": true
 		},
 		"search.exclude": {
+			"**/*.targets": true,
+			"**/*.wapproj": true,
+			"dependencies/directx-d/examples/**": true,
 			"**/.git": true,
 			"linuxlib":true,
-			"dependencies":true,
 			"bindbc-openal":true,
 			"building":true,
 			"bin":true,

@@ -1,4 +1,5 @@
 module hip.hipaudio.backend.openal.al_err;
+version(OpenAL):
 import bindbc.openal;
 
 package string alGetErrorString(ALenum err, string file = __FILE__, size_t line = __LINE__) nothrow

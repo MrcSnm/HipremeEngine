@@ -9,14 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.backend.gl.glshader;
-import hip.api.renderer.texture;
-import hip.hiprenderer.backend.gl.glrenderer;
-import hip.hiprenderer.shader;
-import hip.hiprenderer.renderer;
-import hip.hiprenderer.shader.shadervar;
-import hip.util.conv;
-import hip.error.handler;
-
 version(Android)
 {
     enum shaderVersion = "#version 300 es";
@@ -28,6 +20,17 @@ else
     enum shaderVersion = "#version 330 core";
     enum floatPrecision = "";
 }
+
+version(OpenGL):
+import hip.api.renderer.texture;
+import hip.hiprenderer.backend.gl.glrenderer;
+import hip.hiprenderer.shader;
+import hip.hiprenderer.renderer;
+import hip.hiprenderer.shader.shadervar;
+import hip.util.conv;
+import hip.error.handler;
+
+
 
 class Hip_GL3_FragmentShader : FragmentShader
 {

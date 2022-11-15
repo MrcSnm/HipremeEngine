@@ -79,6 +79,14 @@ alias Parameters = getParams;
 enum hasModule(string modulePath) = (is(typeof((){mixin("import ", modulePath, ";");})));
 enum hasType(string TypeName) = __traits(compiles, {mixin(TypeName, " _;");});
 
+template isEnum(alias s)
+{
+    static if(is(s == enum))
+        enum bool isEnum = true;
+    else
+        enum bool isEnum = false;
+}
+
 
 template getUDAs(alias symbol)
 {

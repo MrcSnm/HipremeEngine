@@ -2,7 +2,12 @@ module hip.windowing.platforms.windows;
 import hip.windowing.input;
 import hip.windowing.events;
 
-version(Windows)
+
+version(UWP){}
+else version(Windows)
+    version = WindowsNative;
+
+version(WindowsNative)
 {
     import core.sys.windows.winuser;
     import core.sys.windows.wingdi;
@@ -22,9 +27,8 @@ version(Windows)
 
     pragma(lib, "opengl32");
     pragma(lib, "gdi32");
-    pragma(lib, "user32");
-    pragma(lib, "kernel32");
-    pragma(lib, "user32");
+    pragma(lib, "user32"); //Can't import that to UWP
+    pragma(lib, "kernel32");//Can't import that to UWP
 
 
     nothrow @system int GET_X_LPARAM(LPARAM lp){return cast(int)cast(short)LOWORD(lp);}

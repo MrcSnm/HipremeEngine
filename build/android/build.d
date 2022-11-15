@@ -20,7 +20,6 @@ string compiler = "ldc2";
 */
 string objectDir = "obj";
 
-string outputPath = "./SDL2/android-project/app/src/main/jniLibs/";
 
 version(Windows){string os = "windows";}
 else{string os = "linux";}
@@ -57,8 +56,7 @@ string[] sourcePaths =
 ];
 string[] dependencies = 
 [
-	"BindBC-Loader", 
-	"BindBC-SDL"
+	"BindBC-Loader"
 ];
 /**
 *	Versions for the ldc compiler
@@ -66,10 +64,6 @@ string[] dependencies =
 string[] versions = 
 [
 	"dll",
-	"SDL_208",
-	"BindSDL_Mixer",
-	"BindSDL_TTF",
-	"BindSDL_Image",
 	"GL_45",
 	"GL_ARB"
 ];
@@ -266,12 +260,7 @@ void main(string[] args)
 	catch(Exception e){throw new Error("You must define on your environment the variable ANDROID_NDK_HOME");}
 	writeln("Getting NDK from: " ~ environment["ANDROID_NDK_HOME"]~"/");
 
-	//Check for setup
-	if(!exists("./SDL2/"))
-	{
-		writeln("Please, run preparesdl.d first by calling 'rdmd preparesdl.d'\nIf you're running on Windows, run it as admin.");
-		return;
-	}
+
 
 	string[] architectures;
 	if(args.length == 1) //Default is 1

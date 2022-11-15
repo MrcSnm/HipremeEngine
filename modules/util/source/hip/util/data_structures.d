@@ -363,8 +363,7 @@ struct Array2D(T)
     Array2D_GC!T toGC()
     {
         Array2D_GC!T ret = new Array2D_GC!T(width, height);
-        for(int i = 0; i < width*height; i++)
-            ret.data[i] = data[i];
+        ret.data[0..width*height] = data[0..width*height];
         destroy(this);
 
         return ret;
@@ -391,8 +390,6 @@ struct Array2D(T)
         *countPtr = *countPtr - 1;
         if(*countPtr <= 0)
         {
-            import std.stdio;
-            debug writeln("Destroyed");
             free(data);
             free(countPtr);
             data = null;

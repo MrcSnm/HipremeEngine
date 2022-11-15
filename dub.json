@@ -13,21 +13,18 @@
 		"warnings"
 	],
 	"dflags": [
-		"-J=."
+		"-J=.",
+		"-preview=dip25",
+		"-preview=shortenedMethods",
+		"-preview=dip1000",
+		"-preview=dip1008",
+		"-preview=inclusiveincontracts"
 	],
 	"dflags-dmd": [
 		"-checkaction=halt"
 	],
-	"libs-windows": [
-		"ole32",
-		"user32",
-		"dxgi",
-		"d3d11",
-		"d3dcompiler",
-		"xaudio2"
-	],
 	"libs-linux" : [
-		"X11",
+		"X11",	
 		"gl"
 	],
 	"versions": [
@@ -35,7 +32,6 @@
 		"HipremeEngineLua",
 		"HipGL3",
 		"HipCheckUnknownKeycode",
-		"HipARSDImageDecoder",
 		"HipAsync",
 		"HipDataStructures",
 		"HipGraphicsAPI",
@@ -46,16 +42,11 @@
 		"HipTweenAPI",
 		"HipTimerAPI",
 		"HipAssets",
-		"HipConcurrency",
 		"HipDStdFile",
 		"HipScriptingAPI",
 		"GL_45",
 		"GL_ARB",
 		"AL_EFX"
-	],
-	"versions-windows": [
-		"FSWUsesWin32",
-		"Direct3D_11"
 	],
 	"subConfigurations": {
 		"hipengine_api": "hipengine"
@@ -87,6 +78,9 @@
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
+				"HipConcurrency",
+				"OpenGL",
+				"OpenAL",
 				"Desktop",
 				"Standalone",
 				"Test",
@@ -97,17 +91,39 @@
 				"debugMode",
 				"debugInfo",
 				"debugInfoC"
+			],
+			"versions-windows": [
+				"FSWUsesWin32",
+				"Direct3D_11",
+				"DirectX",
+				"XAudio2"
 			]
 		},
 		{
-			"name": "at_once",
+			"name": "nodx",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
-				"LUA_54"
+				"HipConcurrency",
+				"OpenGL",
+				"OpenAL",
+				"Desktop",
+				"Standalone",
+				"Test",
+				"NO_GLES",
+				"NO_SLES"
 			],
-			"dflags-ldc": [
-				"--ftime-trace"
+			"subConfigurations": {
+				"audio": "nodx",
+				"renderer": "nodx"
+			},
+			"buildOptions": [
+				"debugMode",
+				"debugInfo",
+				"debugInfoC"
+			],
+			"versions-windows": [
+				"FSWUsesWin32"
 			]
 		},
 		{
@@ -118,6 +134,9 @@
 				"fswatch": "~>0.6.0"
 			},
 			"versions": [
+				"HipConcurrency",
+				"OpenGL",
+				"OpenAL",
 				"Desktop",
 				"LoadScript",
 				"Standalone",
@@ -128,20 +147,12 @@
 				"debugMode",
 				"debugInfo",
 				"debugInfoC"
-			]
-		},
-		{
-			"name" : "time_trace",
-			"targetPath": "bin/desktop",
-			"dflags-ldc": [
-				"--ftime-trace"
 			],
-			"targetType": "executable",
-			"versions": [
-				"Desktop",
-				"Standalone",
-				"Test",
-				"TimeTrace"
+			"versions-windows": [
+				"FSWUsesWin32",
+				"Direct3D_11",
+				"DirectX",
+				"XAudio2"
 			]
 		},
 		{
@@ -152,16 +163,25 @@
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
+				"HipConcurrency",
+				"OpenGL",
+				"OpenAL",
 				"Standalone",
 				"Desktop"
+			],
+			"versions-windows": [
+				"FSWUsesWin32",
+				"Direct3D_11",
+				"XAudio2",
+				"DirectX"
 			]
 		},
 		{
+			"name": "game_optimize",
 			"buildOptions": [
 				"releaseMode",
 				"optimize"
 			],
-			"name": "game_optimize",
 			"sourcePaths": [
 				"build/release_game/source"
 			],
@@ -169,44 +189,42 @@
 			"targetType": "executable",
 			"versions": [
 				"Standalone",
-				"Desktop"
+				"OpenGL",
+				"OpenAL",
+				"Desktop",
+				"HipConcurrency"
+			],
+			"versions-windows": [
+				"FSWUsesWin32",
+				"Direct3D_11",
+				"DirectX",
+				"XAudio2"
 			]
 		},
 		{
 			"name": "uwp",
-			"postBuildCommands": [
-				"cd .\\build && rdmd insertresourceuwp.d .\\uwp\\HipremeEngine\\HipremeEngine ..\\assets"
-			],
-			"subConfigurations": {
-				"audio": "uwp"
-			},
-			"targetPath": "bin/uwp/",
-			"targetType": "dynamicLibrary",
-			"versions": [
-				"dll",
-				"UWP"
-			]
-		},
-		{
-			"name": "release_uwp",
-			"postBuildCommands": [
-				"cd .\\build && rdmd insertresourceuwp.d .\\uwp\\HipremeEngine\\HipremeEngine ..\\assets"
-			],
 			"sourcePaths": [
 				"build/release_game/source"
 			],
 			"subConfigurations": {
-				"audio": "uwp"
+				"audio": "uwp",
+				"renderer": "uwp",
+				"bind": "uwp"
 			},
 			"targetPath": "bin/uwp",
 			"targetType": "dynamicLibrary",
-			"versions": [
+			"versions-windows": [
 				"Standalone",
+				"Direct3D_11",
+				"DirectX",
+				"XAudio2",
 				"dll",
+				"HipConcurrency",
 				"UWP"
 			]
 		},
 		{
+			"name": "android",
 			"libs": [
 				"log",
 				"android",
@@ -224,7 +242,6 @@
 				"console": "android",
 				"renderer": "android"
 			},
-			"name": "android",
 			"postBuildCommands": [
 				"copy /B .\\bin\\android\\libhipreme_engine.so .\\build\\android\\project\\app\\src\\main\\jniLibs\\arm64-v8a\\libhipreme_engine.so",
 				"cd .\\build && rdmd copyresources.d ..\\assets .\\android\\project\\app\\src\\main\\assets",
@@ -236,7 +253,8 @@
 			"targetType": "dynamicLibrary",
 			"versions": [
 				"dll",
-				"GLES30"
+				"GLES30",
+				"OpenGL"
 			]
 		}
 	]

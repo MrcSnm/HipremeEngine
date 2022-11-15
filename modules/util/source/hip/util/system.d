@@ -124,7 +124,6 @@ bool dynamicLibraryIsLibNameValid(string libName)
 ///It will open the current executable if libName == null
 void* dynamicLibraryLoad(string libName)
 {
-    import core.runtime;
     void* ret;
     if(libName == null)
     {
@@ -141,7 +140,15 @@ void* dynamicLibraryLoad(string libName)
             ret = null;
     }
     else
-        ret = Runtime.loadLibrary(libName);
+    {
+        // version(UWP)
+        //     ret = GetModuleHandleA((libName~'\0').ptr);
+        // else
+        // {
+            import core.runtime;
+            ret = Runtime.loadLibrary(libName);
+        // }
+    }
     return ret;
 }
 
@@ -182,6 +189,13 @@ string dynamicLibraryError()
 
 bool dynamicLibraryRelease(void* dll)
 {
-    import core.runtime;
-    return Runtime.unloadLibrary(dll);
+    // version(UWP)
+    // {
+    //     return cast(bool)FreeLibrary(dll);
+    // }
+    // else
+    // {
+        import core.runtime;
+        return Runtime.unloadLibrary(dll);
+    // }
 }

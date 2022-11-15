@@ -115,7 +115,7 @@ static void initEngine(bool audio3D = false)
 		import std.file:getcwd;
 		platform = Platforms.UWP;
 		printFunc = &uwpPrint;
-		fsInstallPath = getcwd()~"\\UWPResources\\assets\\";
+		fsInstallPath = getcwd()~"\\UWPResources\\";
 		validations~= (string path, out string msg)
 		{
 			//As the path is installed already, it should check only for absolute paths.
@@ -129,6 +129,7 @@ static void initEngine(bool audio3D = false)
 	}
 	else
 	{
+		import std.file:getcwd;
 		if(projectToLoad != "")
 			fsInstallPath = projectToLoad~"/assets";
 		else
@@ -192,7 +193,7 @@ export extern(C) int HipremeMain()
 		loadInterpreterEntry(interpreterEntry.intepreter, interpreterEntry.sourceEntry);
 	//After initializing engine, every dependency has been load
 	sys.loadGame(projectToLoad);
-	sys.startExternalGame();
+	sys.startGame();
 	version(Desktop)
 	{
 		HipremeDesktopGameLoop();
@@ -287,12 +288,33 @@ else
 }
 
 ///Steps an engine frame
-export extern(C) bool HipremeUpdate()
+bool HipremeUpdateBase()
 {
 	if(!sys.update(g_deltaTime))
 		return false;
+	if(isUsingInterpreter)
+		updateInterpreter();
 	sys.postUpdate();
 	return true;
+}
+
+export extern(C) bool HipremeUpdate()
+{
+	import hip.util.time;
+	import core.time:dur;
+	import core.thread.osthread;
+	long initTime = HipTime.getCurrentTime();
+	if(HipremeUpdateBase())
+	{
+		long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
+		if(sleepTime > 0)
+		{
+			Thread.sleep(dur!"msecs"(sleepTime));
+		}
+		g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
+		return true;
+	}
+	return false;
 }
 version(Desktop)
 {
@@ -301,7 +323,7 @@ version(Desktop)
 		import hip.util.time;
 		import core.time:dur;
 		import core.thread.osthread;
-		while(HipremeUpdate())
+		while(HipremeUpdateBase())
 		{
 			long initTime = HipTime.getCurrentTime();
 			long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
@@ -309,8 +331,6 @@ version(Desktop)
 			{
 				Thread.sleep(dur!"msecs"(sleepTime));
 			}
-			if(isUsingInterpreter)
-				updateInterpreter();
 			HipremeRender();
 			g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
 		}
@@ -351,5 +371,6 @@ version(UWP)
 {
 	import core.sys.windows.dll;
 	mixin SimpleDllMain;
+
 }
 public import exportd;

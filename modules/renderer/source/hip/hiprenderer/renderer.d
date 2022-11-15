@@ -146,6 +146,7 @@ class HipRenderer
     public static uint width, height;
     protected static HipRendererConfig currentConfig;
 
+    version(Desktop)
     public static bool init (string confData, string confPath)
     {
         import hip.data.ini;
@@ -199,21 +200,45 @@ class HipRenderer
         }
         return init(new Hip_GL3Renderer(), &cfg, 1280, 720);
     }
-
-    version(dll) public static bool initExternal(HipRendererType type)
+    version(dll) private static IHipRendererImpl getRenderer(ref HipRendererType type)
     {
-        HipRenderer.rendererType = type;
         final switch(type)
         {
             case HipRendererType.D3D11:
-                version(Windows){rendererImpl = new Hip_D3D11_Renderer();break;}
-                else{return false;}
+                version(DirectX)
+                    return new Hip_D3D11_Renderer();
+                else version(OpenGL)
+                {
+                    type = HipRendererType.GL3;
+                    return new Hip_GL3Renderer();
+                }
+                else
+                {
+                    type = HipRendererType.NONE;
+                    return null;
+                }
             case HipRendererType.GL3:
-                rendererImpl = new Hip_GL3Renderer();
-                break;
+                version(OpenGL)
+                    return new Hip_GL3Renderer();
+                else version(DirectX)
+                {
+                    type = HipRendererType.D3D11;
+                    return new Hip_D3D11_Renderer();
+                }
+                else
+                {
+                    type = HipRendererType.NONE;
+                    return null;
+                }
             case HipRendererType.NONE:
-                return false;
+                return null;
         }
+    }
+
+    version(dll) public static bool initExternal(HipRendererType type)
+    {
+        rendererImpl = getRenderer(type);
+        HipRenderer.rendererType = type;
         bool ret = rendererImpl.initExternal();
         if(!ret)
             ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");
@@ -269,12 +294,13 @@ class HipRenderer
         switch(HipRenderer.getRendererType())
         {
             case HipRendererType.GL3:
-                return new Hip_GL3_Texture();
+                version(OpenGL)
+                    return new Hip_GL3_Texture();
+                else
+                    return null;
             case HipRendererType.D3D11:
                 version(DirectX)
-                {
                     return new Hip_D3D11_Texture();
-                }
                 else
                     return null;
             default:
