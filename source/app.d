@@ -101,36 +101,45 @@ void HipremeHandleArguments(string[] args)
 
 static void initEngine(bool audio3D = false)
 {
+	Platforms platform = Platforms.DEFAULT;
+	void function(string) printFunc;
+	string fsInstallPath = "";
+	bool function(string path, out string msg)[] validations;
+
 	version(Android)
 	{
-		Console.install(Platforms.ANDROID);
-		// HipFS.install(HipAndroid.javaCall!(string, "getApplicationDir"));
-		HipFS.install("");
-		rawlog("Starting engine on android\nWorking Dir: ", HipFS.getPath(""));
+		platform = Platforms.ANDROID;
 	}
 	else version(UWP)
 	{
 		import std.file:getcwd;
-		Console.install(Platforms.UWP, &uwpPrint);
-		HipFS.install(getcwd()~"\\UWPResources\\", (string path, out string msg)
+		platform = Platforms.UWP;
+		printFunc = &uwpPrint;
+		fsInstallPath = getcwd()~"\\UWPResources\\";
+		validations~= (string path, out string msg)
 		{
-			if(!HipFS.exists(path))
+			//As the path is installed already, it should check only for absolute paths.
+			if(!HipFS.absoluteExists(path))
 			{
-				msg = "File at path "~HipFS.getPath(path)~" does not exists. Did you forget to add it to the AppX Resources?";
+				msg = "File at path "~path~" does not exists. Did you forget to add it to the AppX Resources?";
 				return false;
 			}
 			return true;
-		});
+		};
 	}
 	else
 	{
 		import std.file:getcwd;
-		Console.install();
 		if(projectToLoad != "")
-			HipFS.install(projectToLoad~"/assets");
+			fsInstallPath = projectToLoad~"/assets";
 		else
-			HipFS.install(getcwd()~"/assets");
+			fsInstallPath = getcwd()~"/assets";
 	}
+	Console.install(platform, printFunc);
+	HipFS.install(fsInstallPath, validations);
+	loglnInfo("HipFS installed at path ", fsInstallPath);
+
+
 
 	import hip.bind.dependencies;
 	loadEngineDependencies();
@@ -184,7 +193,7 @@ export extern(C) int HipremeMain()
 		loadInterpreterEntry(interpreterEntry.intepreter, interpreterEntry.sourceEntry);
 	//After initializing engine, every dependency has been load
 	sys.loadGame(projectToLoad);
-	sys.startExternalGame();
+	sys.startGame();
 	version(Desktop)
 	{
 		HipremeDesktopGameLoop();
@@ -279,12 +288,33 @@ else
 }
 
 ///Steps an engine frame
-export extern(C) bool HipremeUpdate()
+bool HipremeUpdateBase()
 {
 	if(!sys.update(g_deltaTime))
 		return false;
+	if(isUsingInterpreter)
+		updateInterpreter();
 	sys.postUpdate();
 	return true;
+}
+
+export extern(C) bool HipremeUpdate()
+{
+	import hip.util.time;
+	import core.time:dur;
+	import core.thread.osthread;
+	long initTime = HipTime.getCurrentTime();
+	if(HipremeUpdateBase())
+	{
+		long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
+		if(sleepTime > 0)
+		{
+			Thread.sleep(dur!"msecs"(sleepTime));
+		}
+		g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
+		return true;
+	}
+	return false;
 }
 version(Desktop)
 {
@@ -293,7 +323,7 @@ version(Desktop)
 		import hip.util.time;
 		import core.time:dur;
 		import core.thread.osthread;
-		while(HipremeUpdate())
+		while(HipremeUpdateBase())
 		{
 			long initTime = HipTime.getCurrentTime();
 			long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
@@ -301,8 +331,6 @@ version(Desktop)
 			{
 				Thread.sleep(dur!"msecs"(sleepTime));
 			}
-			if(isUsingInterpreter)
-				updateInterpreter();
 			HipremeRender();
 			g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
 		}
@@ -343,5 +371,6 @@ version(UWP)
 {
 	import core.sys.windows.dll;
 	mixin SimpleDllMain;
+
 }
 public import exportd;

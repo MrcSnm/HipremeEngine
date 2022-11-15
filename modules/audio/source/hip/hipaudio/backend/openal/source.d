@@ -1,4 +1,6 @@
 module hip.hipaudio.backend.openal.source;
+version(OpenAL):
+
 import hip.hipaudio.backend.openal.clip;
 import hip.error.handler;
 import hip.hipaudio.audio;

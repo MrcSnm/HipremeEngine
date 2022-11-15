@@ -252,7 +252,12 @@ public abstract class HipAudioClip : IHipAudioClip
         void[] data;
         fullPath = audioPath;
         fileName = baseName(audioPath);
-        HipFS.read(audioPath, data);
+        if(!HipFS.read(audioPath, data))
+        {
+            import hip.error.handler;
+            ErrorHandler.showWarningMessage("Could not load clip from path", audioPath);
+            return false;
+        }
         return load(data, encoding, type, isStreamed);
     }
     public final uint loadStreamed(string audioPath, HipAudioEncoding encoding)
@@ -261,7 +266,13 @@ public abstract class HipAudioClip : IHipAudioClip
         void[] data;
         fullPath = audioPath;
         fileName = baseName(audioPath);
-        HipFS.read(audioPath, data);
+
+        if(!HipFS.read(audioPath, data))
+        {
+            import hip.error.handler;
+            ErrorHandler.showWarningMessage("Could not load clip streamed from path", audioPath);
+            return 0;
+        }
         return loadStreamed(data, encoding);
     }
 

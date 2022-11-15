@@ -67,6 +67,8 @@ class HipInputMap : IHipInputMap
         void[] output;
         if(HipFS.read(file, output))
             return parseInputMap(cast(ubyte[])output, file, id);
+        import hip.error.handler;
+        ErrorHandler.showWarningMessage("Could not parse input map ",file);
         return null;
     }
     @ExportD("Mem") static IHipInputMap parseInputMap(ubyte[] file, string fileName, ubyte id = 0)

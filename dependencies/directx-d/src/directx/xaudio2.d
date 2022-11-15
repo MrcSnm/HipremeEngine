@@ -110,6 +110,25 @@ version(GUID_DEFS_ONLY)
 }
 else
 {
+	enum AUDIO_STREAM_CATEGORY
+	{
+		AudioCategory_Other,
+		AudioCategory_ForegroundOnlyMedia,
+		AudioCategory_BackgroundCapableMedia,
+		AudioCategory_Communications,
+		AudioCategory_Alerts,
+		AudioCategory_SoundEffects,
+		AudioCategory_GameEffects,
+		AudioCategory_GameMedia,
+		AudioCategory_GameChat,
+		AudioCategory_Speech,
+		AudioCategory_Movie,
+		AudioCategory_Media,
+		AudioCategory_FarFieldSpeech,
+		AudioCategory_UniformSpeech,
+		AudioCategory_VoiceTyping
+	}
+
 	// required for uuid template
 	interface XAudio2 : IUnknown{}
 	interface XAudio2_Debug : IUnknown{}	
@@ -566,7 +585,8 @@ else
 									  UINT32 InputChannels = XAUDIO2_DEFAULT_CHANNELS,
 									  UINT32 InputSampleRate = XAUDIO2_DEFAULT_SAMPLERATE,
 									  UINT32 Flags = 0, UINT32 DeviceIndex = 0,
-									  const (XAUDIO2_EFFECT_CHAIN)* pEffectChain = null);
+									  const (XAUDIO2_EFFECT_CHAIN)* pEffectChain = null,
+									  AUDIO_STREAM_CATEGORY StreamCategory = AUDIO_STREAM_CATEGORY.AudioCategory_GameEffects);
 
 		// NAME: IXAudio2::StartEngine
 		// DESCRIPTION: Creates and starts the audio processing thread.

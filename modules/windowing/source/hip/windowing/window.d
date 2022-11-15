@@ -30,7 +30,7 @@ class HipWindow
 
     string[] errors;
 
-    version(Windows)
+    version(WindowsNative)
     {
         import hip.windowing.platforms.windows;
         HWND hwnd;

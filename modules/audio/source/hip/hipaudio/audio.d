@@ -15,9 +15,9 @@ public import hip.hipaudio.audiosource;
 public import hip.api.audio;
 
 //Backends
-import hip.hipaudio.backend.openal.player;
+version(OpenAL){import hip.hipaudio.backend.openal.player;}
 version(Android){import hip.hipaudio.backend.opensles.player;}
-version(Windows){import hip.hipaudio.backend.xaudio.player;}
+version(XAudio2){import hip.hipaudio.backend.xaudio.player;}
 
 
 import hip.audio_decoding.audio;
@@ -100,20 +100,31 @@ class HipAudio
                     break;
                 }
             case HipAudioImplementation.XAUDIO2:
-                version(DirectX)
+                version(XAudio2)
                 {
-                    loglnInfo("Initializing XAudio2.");
+                    loglnInfo("Initializing XAudio2 with audio config ", AudioConfig.musicConfig);
                     audioInterface = new HipXAudioPlayer(AudioConfig.musicConfig);
                     break;
                 }
                 else 
                 {
-                    loglnWarn("Tried to use XAudio2 implementation, but no DirectX version was provided. OpenAL will be used instead");
+                    loglnWarn("Tried to use XAudio2 implementation, but no XAudio2 version was provided. OpenAL will be used instead");
                     goto case HipAudioImplementation.OPENAL;
                 }
             case HipAudioImplementation.OPENAL:
-                //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
-                audioInterface = new HipOpenALAudioPlayer(AudioConfig.musicConfig);
+            {
+                version(OpenAL)
+                {
+                    //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
+                    audioInterface = new HipOpenALAudioPlayer(AudioConfig.musicConfig);
+                    break;
+                }
+                else
+                {
+                    loglnWarn("Tried to use OpenAL implementation, but no OpenAL version was provided. No audio available.");
+                    break;
+                }
+            }
         }
         HipAudio.hasProAudio        = hasProAudio;
         HipAudio.hasLowLatencyAudio = hasLowLatencyAudio;

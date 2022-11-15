@@ -1,5 +1,7 @@
 module hip.filesystem.systems.android;
 import hip.api.filesystem.hipfs;
+import hip.filesystem.hipfs;
+import hip.error.handler;
 
 version(Android)
 {
@@ -23,6 +25,7 @@ version(Android)
         }
         override bool open(string path, FileMode mode)
         {
+            import hip.util.string;
             asset = AAssetManager_open(aaMgr, path.toStringz, AASSET_MODE_BUFFER);
             return asset != null;
         }
@@ -42,8 +45,7 @@ version(Android)
         }
         bool write(string path, void[] data)
         {
-            std.file.write(path, data);
-            return true;
+            return false;
         }
         void close()
         {
@@ -81,8 +83,7 @@ version(Android)
         }
         bool remove(string path)
         {
-            std.file.remove(path);
-            return true;
+            return false;
         }
         
         bool isDir(string path)
