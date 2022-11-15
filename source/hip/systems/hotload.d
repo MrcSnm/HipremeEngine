@@ -72,6 +72,12 @@ class HotloadableDLL
         if(lib != null)
             dynamicLibraryRelease(lib);
         if(tempPath)
-            HipFS.absoluteRemove(tempPath);
+        {
+            if(!HipFS.absoluteRemove(tempPath))
+            {
+                import hip.error.handler;
+                ErrorHandler.showErrorMessage("Could not remove ", tempPath);
+            }
+        }
     }
 }

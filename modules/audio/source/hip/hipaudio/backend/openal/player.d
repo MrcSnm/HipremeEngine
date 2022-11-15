@@ -1,4 +1,5 @@
 module hip.hipaudio.backend.openal.player;
+version(OpenAL):
 import hip.hipaudio.backend.openal.clip;
 import hip.hipaudio.backend.openal.source;
 import hip.hipaudio.backend.openal.al_err;
@@ -52,8 +53,6 @@ ALenum getALDistanceModel(DistanceModel model)
 */
 public class HipOpenALAudioPlayer : IHipAudioPlayer
 {
-    alias Decoder = HipAudioFormatsDecoder;
-
     public this(AudioConfig cfg)
     {
         initializeOpenAL();
@@ -175,7 +174,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     
     public HipAudioClipAPI load(string path, HipAudioType clipType)
     {
-        HipOpenALClip clip = new HipOpenALClip(new Decoder(), getClipHint());
+        HipOpenALClip clip = new HipOpenALClip(new HipAudioDecoder(), getClipHint());
         if(!clip.load(path, getEncodingFromName(path), clipType))
         {
             import hip.error.handler;
@@ -185,7 +184,7 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     }
     public HipAudioClipAPI loadStreamed(string path, uint chunkSize)
     {
-        HipAudioClipAPI clip = new HipOpenALClip(new Decoder(), getClipHint(), chunkSize);
+        HipAudioClipAPI clip = new HipOpenALClip(new HipAudioDecoder(), getClipHint(), chunkSize);
         clip.loadStreamed(path, getEncodingFromName(path));
         return clip;
     }

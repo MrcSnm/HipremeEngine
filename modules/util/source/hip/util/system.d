@@ -71,12 +71,18 @@ version(Windows)
             moduleHandle = GetModuleHandle(null);
         return GetProcAddress(moduleHandle, (name~"\0").ptr);
     }
-    void dll_import_varS(alias varSymbol, string s = "")()
+    string[] dllImportVariables(Args...)()
     {
-        static if(s == "")
-            varSymbol = cast(typeof(varSymbol))dll_import_var(varSymbol.stringof);
-        else
-            varSymbol = cast(typeof(varSymbol))dll_import_var(s);
+        import std.traits:isFunctionPointer;
+        string[] failedFunctions;
+        static foreach(a; Args)
+        {
+            static assert(isFunctionPointer!a, "Can't dll import a non function pointer ( "~a.stringof~" )");
+            a = cast(typeof(a))dll_import_var(a.stringof);
+            if(a is null)
+                failedFunctions~= a.stringof;
+        }
+        return failedFunctions;
     }
 
     string getWindowsErrorMessage(HRESULT hr)
@@ -118,7 +124,6 @@ bool dynamicLibraryIsLibNameValid(string libName)
 ///It will open the current executable if libName == null
 void* dynamicLibraryLoad(string libName)
 {
-    import core.runtime;
     void* ret;
     if(libName == null)
     {
@@ -135,7 +140,15 @@ void* dynamicLibraryLoad(string libName)
             ret = null;
     }
     else
-        ret = Runtime.loadLibrary(libName);
+    {
+        // version(UWP)
+        //     ret = GetModuleHandleA((libName~'\0').ptr);
+        // else
+        // {
+            import core.runtime;
+            ret = Runtime.loadLibrary(libName);
+        // }
+    }
     return ret;
 }
 
@@ -176,6 +189,13 @@ string dynamicLibraryError()
 
 bool dynamicLibraryRelease(void* dll)
 {
-    import core.runtime;
-    return Runtime.unloadLibrary(dll);
+    // version(UWP)
+    // {
+    //     return cast(bool)FreeLibrary(dll);
+    // }
+    // else
+    // {
+        import core.runtime;
+        return Runtime.unloadLibrary(dll);
+    // }
 }

@@ -23,7 +23,7 @@ version(UWP)
         uint logicalWidth;
         uint logicalHeight;
     }
-    extern(Windows) nothrow @system 
+    extern(Windows) nothrow @system __gshared
     {
         HipExternalCoreWindow function() getCoreWindow;
         void function(const(wchar*) wcstr) OutputUWP;
@@ -50,23 +50,30 @@ version(UWP)
     void uwpPrint(string str)
     {
         import std.utf:toUTF16z;
-        OutputUWP(toUTF16z(str));
+        OutputUWP(toUTF16z(str~"\n"));
     } 
 }
-alias myFunPtr = extern(Windows) nothrow @system int function();
+
 
 void importExternal()
 {
     import hip.util.system;
     version(UWP)
     {
-        ///App.cpp
-        dll_import_varS!getCoreWindow;
-        dll_import_varS!OutputUWP;
+        string[] errors = dllImportVariables!(
+            ///App.cpp
+            getCoreWindow, 
+            OutputUWP,
 
-        ///uwpfs.h
-        dll_import_varS!UWPCreateFileFromAppW;
-        dll_import_varS!UWPDeleteFileFromAppW;
-        dll_import_varS!UWPGetFileAttributesExFromAppW;
+            ///uwpfs.h
+            UWPCreateFileFromAppW,
+            UWPDeleteFileFromAppW,
+            UWPGetFileAttributesExFromAppW
+        );
+
+        assert(OutputUWP != null, "Failed loading OutputUWP");
+        
+        foreach(err; errors)
+            uwpPrint("HIPREME_ENGINE: Could not load function "~err);
     }
 }

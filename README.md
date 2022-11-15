@@ -11,6 +11,7 @@ The engine mantains some global options which you can modify it on source/global
 ## Current features
 
 - Input handler and text input with selected keyboard layout;
+- Xbox One/Series Gamepad implementation;
 - Minimal Matrix/Vector implementation;
 - Asset packing, appending, updating and reading for faster performance(less IO);
 - Multi threaded asset loading and decoding (image).
@@ -34,6 +35,7 @@ The engine mantains some global options which you can modify it on source/global
 - Direct X 11
 - OpenGL 3
 - OpenGL ES 3
+- OpenGL ES 2
 - HipRenderer (abstraction)
   
 ### Features
@@ -52,7 +54,6 @@ The engine mantains some global options which you can modify it on source/global
 
 - OpenSL ES
 - OpenAL
-- SDL
 - HipAudio (abstraction)
 
 ### Features
@@ -63,11 +64,11 @@ The engine mantains some global options which you can modify it on source/global
 
 ## Decoding
 
-- Images: WebP, PNG, JPG, BMP via SDL_Image
-- Audio: MP3, OGG, WAV, FLAC via SDL_Sound
+- Images: PNG, JPG, BMP, TIFF and maybe others via arsd-official:image_files
+- Audio: MP3, OGG, WAV, FLAC via audioformats
 - Tiled: TSX and JSON parser
 - TextureAtlas: JSON and ATLAS parser
-- Font: FNT parser
+- Font: FNT parser, TTF and OTF decoding
 - Pack: HapFile(Hipreme Asset Packing File)
 - Settings: INI/CONF parser
 
@@ -88,10 +89,10 @@ The engine mantains some global options which you can modify it on source/global
 - Multi threaded audio decoding (currently only single threaded is supported)
 - Dispatch file reading to the asset/resource packer.
 - Create a proof of concept
-- Automatize dependencies dll's generation
-- Event handler for UWP and Android
 
 
 ## Issues list
 
 - ~~D3DReflect needs to link to D3dcompiler_43 instead of _47~~ -> Fixed, directx-d D3DReflect had a wrong GUID
+- You can't spawn an Object from within an interface without calling `hipSaveRef` or `GC.addRoot`. This is a bug
+on DLL implementation which doesn't actually add the new object spawned from an interface as a leaf.

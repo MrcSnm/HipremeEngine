@@ -37,7 +37,7 @@ class HipXAudioPlayer : IHipAudioPlayer
         else
         {
             CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
-            ErrorHandler.assertExit(SUCCEEDED(hr), "Could not CoInitialize\n\t"~HipXAudioPlayer.getError(hr));
+            ErrorHandler.assertExit(SUCCEEDED(hr), "CoInitializeEx error:\n\t"~HipXAudioPlayer.getError(hr));
         } 
 
         UINT32 flags;
@@ -45,11 +45,11 @@ class HipXAudioPlayer : IHipAudioPlayer
             flags|= XAUDIO2_DEBUG_ENGINE;
         
         hr = XAudio2Create(xAudio, flags, XAUDIO2_DEFAULT_PROCESSOR);
-        ErrorHandler.assertExit(SUCCEEDED(hr), "Could not initialize XAudio:\n\t"~HipXAudioPlayer.getError(hr));
+        ErrorHandler.assertExit(SUCCEEDED(hr), "XAudio2Create error:\n\t"~HipXAudioPlayer.getError(hr));
 
-    
-        hr = xAudio.CreateMasteringVoice(&masterVoice, cfg.channels,  cfg.sampleRate);
-        ErrorHandler.assertExit(SUCCEEDED(hr), "Could not create mastering voice:\n\t"~HipXAudioPlayer.getError(hr));
+
+        hr = xAudio.CreateMasteringVoice(&masterVoice, cfg.channels,  cfg.sampleRate, 0);
+        ErrorHandler.assertExit(SUCCEEDED(hr), "CreateMasteringVoice error:\n\t"~HipXAudioPlayer.getError(hr));
 
         version(HIPREME_DEBUG)
         {
@@ -80,7 +80,7 @@ class HipXAudioPlayer : IHipAudioPlayer
 
     public IHipAudioClip load(string audioName, HipAudioType bufferType)
     {
-        HipAudioClip buffer = new HipXAudioClip(new HipAudioFormatsDecoder(), HipAudioClipHint(2, 44_100, false, true));
+        HipAudioClip buffer = new HipXAudioClip(new HipAudioDecoder(), HipAudioClipHint(2, 44_100, false, true));
         buffer.load(audioName,getEncodingFromName(audioName), bufferType);
         return buffer;
     }

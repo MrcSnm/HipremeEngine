@@ -9,6 +9,20 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.backend.gl.glrenderer;
+version(Android)
+{
+    public import gles.gl30;
+}
+else version(PSVita)
+{
+    public import gles;
+}
+else version(Have_bindbc_opengl)
+{
+    public import bindbc.opengl;
+}
+version(OpenGL):
+
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
 import hip.hiprenderer.shader;
@@ -18,21 +32,8 @@ import hip.hiprenderer.viewport;
 import hip.windowing.window;
 import hip.util.conv;
 import hip.math.rect;
-import hip.error.handler;
-version(Android)
-{
-    public import gles.gl30;
-}
-else version(PSVita)
-{
-    public import gles;
-}
-else
-{
-    public import bindbc.opengl;
-}
 import hip.console.log;
-
+import hip.error.handler;
 
 
 /**

@@ -100,7 +100,7 @@ string javaGetClassPath(string path)
         }
         else
         {
-            if(isUpper(path[i]))
+            if(isUpperCase(path[i]))
                 hasClass = true;
             className~=path[i];
         }

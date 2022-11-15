@@ -171,6 +171,8 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         mesh.setVertices(vertices);
         mesh.draw(quadsCount*6);
 
+        font.texture.unbind();
+
         poolActive = 0;
         quadsCount = 0;
     }

@@ -152,7 +152,6 @@ enum HipDeferredLoad()
 
 class HipAssetManager
 {
-    import core.sync.mutex;
     import hip.config.opts;
 
     protected static HipWorkerPool workerPool;
@@ -177,7 +176,16 @@ class HipAssetManager
         completeMutex = new DebugMutex();
         workerPool = new HipWorkerPool(HIP_ASSETMANAGER_WORKER_POOL);
     }
-    static bool isAsync = true;
+
+    version(HipConcurrency)
+    {
+        import core.sync.mutex;
+        static bool isAsync = true;
+    }
+    else
+    {
+        static bool isAsync = false;
+    }
 
     static void startCheckingReferences(){isCheckingReferenced = true;}
     static void stopCheckingReferences()
@@ -223,28 +231,33 @@ class HipAssetManager
 
     static void awaitTask(HipAssetLoadTask task)
     {
-        import core.sync.semaphore;
-        auto semaphore = new Semaphore(0);
-        task.worker.pushTask("Await Single", ()
+        version(HipConcurrency)
         {
-            semaphore.notify;
-        });
-        semaphore.wait;
-        destroy(semaphore);
-        update();
+            import core.sync.semaphore;
+            auto semaphore = new Semaphore(0);
+            task.worker.pushTask("Await Single", ()
+            {
+                semaphore.notify;
+            });
+            semaphore.wait;
+            destroy(semaphore);
+            update();
+        }
     }
 
     private static HipWorkerThread loadWorker(string taskName, void delegate() loadFn, void delegate(string taskName) onFinish = null, bool onMainThread = false)
     {
-        if(isAsync)
-            return workerPool.pushTask(taskName, loadFn, onFinish, onMainThread);
-        else
-        {
-            loadFn();
-            if(onFinish !is null)
-                onFinish(taskName);
-        }
-        return null;
+        //TODO: Make it don't use at all worker and threads.
+        return workerPool.pushTask(taskName, loadFn, onFinish, onMainThread);
+        // if(isAsync)
+        //     return workerPool.pushTask(taskName, loadFn, onFinish, onMainThread);
+        // else
+        // {
+        //     loadFn();
+        //     if(onFinish !is null)
+        //         onFinish(taskName);
+        // }
+        // return null;
     }
 
     /** 

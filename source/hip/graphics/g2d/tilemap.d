@@ -226,7 +226,12 @@ class Tileset
         static Tileset fromTSX(string tsxPath, bool autoLoadTexture = true)
         {
             void[] tsxData;
-            HipFS.read(tsxPath, tsxData);
+            if(!HipFS.read(tsxPath, tsxData))
+            {
+                import hip.error.handler;
+                ErrorHandler.showWarningMessage("Could not load TSX ", tsxPath);
+                return null;
+            }
             return fromTSX(cast(ubyte[])tsxData, tsxPath, autoLoadTexture);
         }
 
@@ -282,11 +287,13 @@ class Tileset
         }
         static Tilemap readTiledTMX(string tiledPath)
         {
-            import hip.console.log;
             void[] tmxData;
-            rawlog(tiledPath);
-            HipFS.read(tiledPath, tmxData);
-            rawlog(tiledPath);
+            if(!HipFS.read(tiledPath, tmxData))
+            {
+                import hip.error.handler;
+                ErrorHandler.showWarningMessage("Could not read Tiled TMX from path ", tiledPath);
+                return null;
+            }
             return readTiledTMX(cast(ubyte[])tmxData, tiledPath);
         }
 
@@ -570,7 +577,12 @@ class Tilemap
     static Tilemap readTiledJSON(string tiledPath)
     {
         void[] jsonData;
-        HipFS.read(tiledPath, jsonData);
+        if(!HipFS.read(tiledPath, jsonData))
+        {
+            import hip.error.handler;
+            ErrorHandler.showWarningMessage("Could not read Tiled TMX from path ", tiledPath);
+            return null;
+        }
         return readTiledJSON(cast(ubyte[])jsonData);
     }
 

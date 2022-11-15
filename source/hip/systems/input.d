@@ -42,39 +42,41 @@ version(Android)
 }
 else version(UWP)
 {
-    //TODO: Change to a block of export extern(System)
-    export extern(C) void HipInputOnTouchPressed(uint id, float x, float y)
+    export extern(System)
     {
-        HipEventQueue.post(0, HipEventQueue.EventType.touchDown, HipEventQueue.Touch(cast(ushort)id, x, y));
-    }
-    export extern(C) void HipInputOnTouchMoved(uint id, float x, float y)
-    {
-        HipEventQueue.post(0, HipEventQueue.EventType.touchMove, HipEventQueue.Touch(cast(ushort)id, x, y));
-    }
-    export extern(C) void HipInputOnTouchReleased(uint id, float x, float y)
-    {
-        HipEventQueue.post(0, HipEventQueue.EventType.touchUp, HipEventQueue.Touch(cast(ushort)id, x, y));
-    }
-    export extern(C) void HipInputOnTouchScroll(float x, float y, float z)
-    {
-        HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Scroll(x,y,z));
-    }
-    export extern(C) void HipInputOnKeyDown(uint virtualKey)
-    {
-        HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)virtualKey));
-    }
-    export extern(C) void HipInputOnKeyUp(uint virtualKey)
-    {
-        HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)virtualKey));
-    }
-    export extern(C) void HipInputOnGamepadConnected(ubyte id)
-    {
-        HipEventQueue.post(0, HipEventQueue.EventType.gamepadConnected, HipEventQueue.Gamepad(id));
-    }
-    export extern(C) void HipInputOnGamepadDisconnected(ubyte id)
-    {
-        HipEventQueue.post(0, HipEventQueue.EventType.gamepadDisconnected, HipEventQueue.Gamepad(id));
-    }
+        void HipInputOnTouchPressed(uint id, float x, float y)
+        {
+            HipEventQueue.post(0, HipEventQueue.EventType.touchDown, HipEventQueue.Touch(cast(ushort)id, x, y));
+        }
+        void HipInputOnTouchMoved(uint id, float x, float y)
+        {
+            HipEventQueue.post(0, HipEventQueue.EventType.touchMove, HipEventQueue.Touch(cast(ushort)id, x, y));
+        }
+        void HipInputOnTouchReleased(uint id, float x, float y)
+        {
+            HipEventQueue.post(0, HipEventQueue.EventType.touchUp, HipEventQueue.Touch(cast(ushort)id, x, y));
+        }
+        void HipInputOnTouchScroll(float x, float y, float z)
+        {
+            HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Scroll(x,y,z));
+        }
+        void HipInputOnKeyDown(uint virtualKey)
+        {
+            HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)virtualKey));
+        }
+        void HipInputOnKeyUp(uint virtualKey)
+        {
+            HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)virtualKey));
+        }
+        void HipInputOnGamepadConnected(ubyte id)
+        {
+            HipEventQueue.post(0, HipEventQueue.EventType.gamepadConnected, HipEventQueue.Gamepad(id));
+        }
+        void HipInputOnGamepadDisconnected(ubyte id)
+        {
+            HipEventQueue.post(0, HipEventQueue.EventType.gamepadDisconnected, HipEventQueue.Gamepad(id));
+        }
+    }    
 } 
 
 /**
@@ -162,18 +164,35 @@ class HipEventQueue : EventQueue
     /** External API used for getting the input events inside an internal queue. This way the API can remains the same*/
     static void post(T)(uint id, EventType type, T ev)
     {
-        ErrorHandler.assertExit(id < controllers.length, "Input controller out of range!");
+        import hip.util.format;
+        ErrorHandler.assertExit(id < controllers.length, format!("Input controller out of range!(ID: %s, Type: %s)")(id, type));
         controllers[id].post(cast(ubyte)type, ev);
     }
+
+    /** External API used for getting the input events inside an internal queue. This way the API can remains the same*/
+    static void post(uint id, EventType type, Gamepad ev)
+    {
+        if(type == EventType.gamepadConnected)
+        {
+            while(controllers.length < id+1)
+                newController();
+        }
+        import hip.util.format;
+        ErrorHandler.assertExit(id < controllers.length, format!("Input controller out of range!(ID: %s, Type: %s)")(id, type));
+        controllers[id].post(cast(ubyte)type, ev);
+    }
+
     /** Polls an input event for a specified controller */
     static InputEvent* poll(uint id)
     {
-        ErrorHandler.assertExit(id < controllers.length, "Input controller out of range!");
+        import hip.util.format;
+        ErrorHandler.assertExit(id < controllers.length, format!("Input controller out of range!(ID: %s)")(id));
         return controllers[id].poll();
     }
     static void clear(uint id)
     {
-        ErrorHandler.assertExit(id < controllers.length, "Input controller out of range!");
+        import hip.util.format;
+        ErrorHandler.assertExit(id < controllers.length, format!("Input controller out of range!(ID: %s)")(id));
         controllers[id].clear();
     }
     alias poll = EventQueue.poll;

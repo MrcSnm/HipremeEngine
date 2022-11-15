@@ -31,7 +31,11 @@
 			"name": "uwp",
 			"dependencies": {
 				"directx-d":{"path" : "../../dependencies/directx-d"}
+			},
+			"subConfigurations": {
+				"audio_decoding": "audioformats"
 			}
+			
 		},
 		{
 			"name": "android",
@@ -44,7 +48,7 @@
 	"license": "proprietary",
 	"name": "audio",
 	"versions": [
-		"XAUDIO_2_9",
+		"XAUDIO_2_8",
 		"HipAudioAPI",
 		"AL_EFX"
 	]

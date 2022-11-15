@@ -85,7 +85,12 @@ class TextureAtlas
         import hip.filesystem.hipfs;
 
         ubyte[] data;
-        HipFS.read(atlasPath, data);
+        if(!HipFS.read(atlasPath, data))
+        {
+            import hip.error.handler;
+            ErrorHandler.showWarningMessage("Could not atlas from path ", atlasPath);
+            return null;
+        }
         if(texturePath == "")
             texturePath = atlasPath[0..atlasPath.lastIndexOf(".")]~".png";
         return readJSON(data, atlasPath, texturePath);

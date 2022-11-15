@@ -83,12 +83,19 @@ void initXboxGamepadInput()
         return;
     version(Windows)
     {
-        dll_import_varS!HipGamepadCheckConnectedGamepads;
-        dll_import_varS!HipGamepadGetBatteryStatus;
-        dll_import_varS!HipGamepadGetXboxGamepadState;
-        dll_import_varS!HipGamepadIsWireless;
-        dll_import_varS!HipGamepadQueryConnectedGamepadsCount;
-        dll_import_varS!HipGamepadSetXboxGamepadVibration;
+        string[] errors = dllImportVariables!(
+            HipGamepadCheckConnectedGamepads,
+            HipGamepadGetBatteryStatus,
+            HipGamepadGetXboxGamepadState,
+            HipGamepadIsWireless,
+            HipGamepadQueryConnectedGamepadsCount,
+            HipGamepadSetXboxGamepadVibration
+        );
+        foreach(err; errors)
+        {
+            import hip.console.log;
+            logln("HIPREME_ENGINE: Could not load ", err);
+        }
     }
 
     hasInit = true;

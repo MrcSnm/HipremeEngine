@@ -533,9 +533,9 @@ auto splitRange(TString)(TString str, TString separator) pure nothrow @safe @nog
         TString strToSplit;
         TString sep;
         TString frontStr;
-        int last, index;
+        int lastFound, index;
 
-        bool empty(){return frontStr == "" && index == -1 && last == -1;}
+        bool empty(){return frontStr == "" && index == -1 && lastFound == -1;}
         TString front()
         {
             if(frontStr == "") popFront();
@@ -543,22 +543,27 @@ auto splitRange(TString)(TString str, TString separator) pure nothrow @safe @nog
         }
         void popFront()
         {
-            if(index == -1 && last == -1)
+            if(index == -1 && lastFound == -1)
             {
                 frontStr = "";
                 return;
             }
             index = strToSplit.indexOf(sep, index);
+            //When finding, take the string[lastFound..index]
             if(index != -1)
             {
-                frontStr = strToSplit[last..index];
-                last = index+= sep.length;
+                frontStr = strToSplit[lastFound..index];
+                lastFound = index+= sep.length;
             }
-            else if(last != 0)
+            //If index not found and there was a last, take the string[lastFound..$]
+            else if(lastFound != 0)
             {
-                frontStr = strToSplit[last..$];
-                last = -1;
+                frontStr = strToSplit[lastFound..$];
+                lastFound = -1;
             }
+            //Just say there is no string
+            else
+                lastFound = -1;
         }
     }
 

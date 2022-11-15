@@ -1,9 +1,10 @@
 module hip.util.windows;
 
+
 version(Windows):
 import core.stdc.stdarg;
 
-	
+
 @nogc nothrow extern(Windows)
 {
     void* GetModuleHandleA(const(char)* str);

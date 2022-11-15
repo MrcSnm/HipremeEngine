@@ -178,7 +178,7 @@ class GameSystem
         }
     }
 
-    void startExternalGame()
+    void startGame()
     {
         version(Test)
         {

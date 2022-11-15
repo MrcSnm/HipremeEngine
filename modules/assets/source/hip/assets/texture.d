@@ -83,8 +83,12 @@ class HipTexture : HipAsset, IHipTexture
     {
         import hip.filesystem.hipfs;
         ubyte[] buffer;
-        if(!HipFS.read(path, buffer))            
+        if(!HipFS.read(path, buffer))
+        {
+            import hip.error.handler;
+            ErrorHandler.showWarningMessage("Could not load texture from path ",path);
             return false;
+        }      
 
         Image loadedImage = new Image(path, buffer);
         return load(loadedImage);
