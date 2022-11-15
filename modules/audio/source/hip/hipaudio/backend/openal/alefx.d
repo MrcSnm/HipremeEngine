@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hipaudio.backend.alefx;
+version(OpenAL):
 import bindbc.openal;
 import hip.error.handler;
 

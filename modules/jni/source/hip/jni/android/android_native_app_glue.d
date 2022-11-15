@@ -24,8 +24,8 @@ import core.stdc.stdlib : free, malloc;
 import core.stdc.string : memcpy, memset, strerror;
 import core.sys.posix.pthread, core.sys.posix.unistd : close, pipe, read, write;
 
-import hip.jni.android.input, jni.android.native_window, jni.android.rect : ARect;
-import hip.jni.android.configuration, jni.android.log, jni.android.looper, jni.android.native_activity;
+import hip.jni.android.input, hip.jni.android.native_window, hip.jni.android.rect : ARect;
+import hip.jni.android.configuration, hip.jni.android.log, hip.jni.android.looper, hip.jni.android.native_activity;
 
 version (Android) @system:
 

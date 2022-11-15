@@ -113,7 +113,7 @@ version(UWP)
             HipUWPFile f = new HipUWPFile(path, FileMode.READ);
             import hip.console.log;
             logln(path, " " , f.getSize);
-            if(f.fp == null) return false;
+            if(f.fp == null || f.getSize == 0) return false;
             output.length = f.size;
             f.read(output.ptr, f.size);
             f.close();

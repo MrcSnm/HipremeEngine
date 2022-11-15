@@ -12,7 +12,11 @@ mixin template HipFSExtend(T, string pathProperty = "")
         ubyte[] data;
         import std.stdio;
         if(!HipFS.read(path, data))
+        {
+            import hip.error.handler;
+            ErrorHandler.showWarningMessage(T.stringof, "Could not load " ~ path);
             return false;
+        }
         return instance.loadFromMemory(data);
         
     }

@@ -9,15 +9,24 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"bindbc-loader": "~>1.0.1",
-		"bindbc-lua": "~>0.5.0",
-		"bindbc-openal": "~>1.0.0",
-		"bindbc-opengl": "~>1.0.0",
-		"error": {
-			"path": "../error",
-			"version": ">=0.0.0"
-		}
+		"error": {"path": "../error","version": "*"}
 	},
+	"configurations": [
+		{
+			"name": "default",
+			"dependencies": {
+				"bindbc-lua": "~>0.5.0",
+				"bindbc-openal": "~>1.0.0",
+				"bindbc-opengl": "~>1.0.0"
+			}
+		},
+		{
+			"name": "uwp",
+			"dependencies": {
+				"bindbc-lua": "~>0.5.0"
+			}
+		}
+	],
 	"description": "HipremeEngine bind module",
 	"license": "proprietary",
 	"name": "bind",

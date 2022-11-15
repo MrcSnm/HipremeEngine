@@ -23,7 +23,7 @@ version(UWP)
         uint logicalWidth;
         uint logicalHeight;
     }
-    extern(Windows) nothrow @system 
+    extern(Windows) nothrow @system __gshared
     {
         HipExternalCoreWindow function() getCoreWindow;
         void function(const(wchar*) wcstr) OutputUWP;

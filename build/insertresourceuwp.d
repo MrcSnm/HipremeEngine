@@ -22,13 +22,14 @@ enum vcxItemTypes =
 [
     ///Images
     ".png" : "Image",
+    ".tiff": "Image",
     ".jpeg": "Image",
     ".jpg" : "Image",
     ".bmp" : "Image",
     ".webp": "Image",
     ///Binary
-    ".ttf" : "None",
-    ".dll" : "None",
+    ".ttf" : "Document",
+    ".dll" : "Document",
     ///Text
     ".txt" : "Text",
     ".fnt" : "Text",
@@ -39,16 +40,17 @@ enum vcxItemTypes =
     ".tmx" : "Text",
     ".xml" : "Text",
     ///Audio
-    ".wav" : "None",
-    ".mp3" : "None",
-    ".ogg" : "None"
+    ".wav" : "Media",
+    ".mp3" : "Media",
+    ".ogg" : "Media"
 ];
 
 
 enum wordToFind = "</ItemGroup>";
-
-enum copyInit = `<ItemGroup Label="ResourceCopy">`;
-enum copyEnd = "</ItemGroup>";
+enum copyInit = `
+<ItemGroup Label="ResourceCopy">`;
+enum copyEnd = "
+</ItemGroup>";
 
 
 
@@ -91,7 +93,7 @@ bool stripProject(ref string res, string fileName, string stripInit, string stri
         writeln("Expected ", stripEnd, " while trying to strip ", fileName, " won't do anything");
         return false;
     }
-    res = res[0..cast(uint)start]~res[cast(uint)(end+start)..$];
+    res = res[0..cast(uint)start]~res[cast(uint)(end+start+stripEnd.length)..$];
     return true;
 }
 
@@ -198,8 +200,8 @@ int main(string[] args)
 
     if(args[2] != "--strip-only")
     {
-        long startIndex       = vcx.countUntil(wordToFind);
-        long startIndexFilter = vcxfilter.countUntil(wordToFind);
+        long startIndex       = cast(int)vcx.countUntil(wordToFind);
+        long startIndexFilter = cast(int)vcxfilter.countUntil(wordToFind);
         if(startIndex == -1 || startIndexFilter == -1)
         {
             writeln("File format is not yet supported.");
@@ -240,16 +242,21 @@ int main(string[] args)
         toAppend~= copyEnd;
         toAppendFilter = copyInit~"\n"~generateFilterDefinition()~"\n"~toAppendFilter~copyEnd;
 
-        int plusIndex = 0;
-        while(vcx[plusIndex++] != '<'){}
-        if(plusIndex != 0) plusIndex-=1;
+        int plusIndex = vcx.countUntil('<');
+        if(plusIndex != 0) plusIndex--;
 
-        int plusIndexFilter = 0;
-        while(vcxfilter[plusIndexFilter++] != '<'){}
+        int plusIndexFilter = vcxfilter.countUntil('<');
         if(plusIndexFilter != 0) plusIndexFilter-=1;
 
-        vcx = vcx[plusIndex..cast(uint)startIndex+plusIndex]~toAppend~vcx[cast(uint)startIndex+plusIndex..$];
-        vcxfilter = vcxfilter[plusIndexFilter..cast(uint)startIndexFilter+plusIndexFilter]~
+        //Add files to the project
+        vcx = 
+            vcx[plusIndex..cast(uint)startIndex+plusIndex]~
+            toAppend~
+            vcx[cast(uint)startIndex+plusIndex..$];
+
+        //Add filters to the project
+        vcxfilter = 
+            vcxfilter[plusIndexFilter..cast(uint)startIndexFilter+plusIndexFilter]~
             toAppendFilter~
             vcxfilter[cast(uint)startIndexFilter+plusIndexFilter..$];        
     }
