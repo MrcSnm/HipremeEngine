@@ -1,4 +1,5 @@
 module hip.ai.steering;
+version(Test):
 import hip.math.random;
 import hip.math.utils;
 public import hip.math.utils:AxisNavigation;

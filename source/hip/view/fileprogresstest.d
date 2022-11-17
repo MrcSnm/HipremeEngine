@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.view.fileprogresstest;
+version(Test):
 import std.stdio : File;
 import hip.console.log;
 import hip.util.file;

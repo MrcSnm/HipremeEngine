@@ -1,4 +1,5 @@
 module hip.view.assettest;
+version(Test):
 import hip.util.data_structures;
 import hip.view.scene;
 import hip.image;

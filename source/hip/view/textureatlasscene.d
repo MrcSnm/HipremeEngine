@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.view.textureatlasscene;
+version(Test):
 import hip.hiprenderer;
 import hip.graphics.g2d.textureatlas;
 import hip.graphics.g2d.spritebatch;

@@ -185,7 +185,7 @@ public class Shader
             return ShaderStatus.FRAGMENT_COMPILATION_ERROR;
         if(!shaderImpl.linkProgram(shaderProgram, vertexShader, fragmentShader))
             return ShaderStatus.LINK_ERROR;
-        deleteShaders();
+        // deleteShaders();
         return ShaderStatus.SUCCESS;
     }
 

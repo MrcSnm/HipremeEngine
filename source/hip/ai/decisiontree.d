@@ -1,4 +1,5 @@
 module hip.ai.decisiontree;
+version(Test):
 
 enum ResultTypes
 {

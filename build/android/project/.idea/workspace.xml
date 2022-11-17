@@ -9,13 +9,90 @@
     </shared>
   </component>
   <component name="AndroidLogFilters">
+    <option name="TOOL_WINDOW_LOG_LEVEL" value="verbose" />
     <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Show only selected application" />
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="002a72a2-c94b-4c61-a2b8-f896bf1fb8a8" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../../../renderer.conf" beforeDir="false" afterPath="$PROJECT_DIR$/../../../renderer.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../../README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../api/libhipengine_api.a" beforeDir="false" afterPath="$PROJECT_DIR$/../../../api/libhipengine_api.a" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../api/source/hip/api/data/audio.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../api/source/hip/api/data/audio.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../bin/android/cimgui.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/Hip_GLES30_Renderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/Hip_GLES30_Renderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/HipremeEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/HipremeEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../copyresources.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../copyresources.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine.sln" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.filters" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.filters" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.user" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.user" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine_TemporaryKey.pfx" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine_TemporaryKey.pfx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../dub.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../dub.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/assets/source/hip/assetmanager.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/assets/source/hip/assetmanager.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/audioclip.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/audioclip.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/opensles/clip.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/opensles/clip.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/opensles/player.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/opensles/player.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/opensles/source.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/opensles/source.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/sles.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/sles.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/bind/dub.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/bind/dub.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/jni/source/hip/jni/android/log.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/jni/source/hip/jni/android/log.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/jni/source/hip/jni/helper/jnicall.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/jni/source/hip/jni/helper/jnicall.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/renderer/dub.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/renderer/dub.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/backend/gl/glrenderer.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/backend/gl/glrenderer.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/backend/gl/gltexture.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/backend/gl/gltexture.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/backend/gl/glvertex.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/backend/gl/glvertex.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/renderer.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/renderer.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/vertex.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/vertex.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/util/dub.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/util/dub.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/util/source/hip/util/conv.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/util/source/hip/util/conv.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/util/source/hip/util/format.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/util/source/hip/util/format.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/util/source/hip/util/string.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/util/source/hip/util/string.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/util/source/hip/util/system.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/util/source/hip/util/system.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/util/source/hip/util/to_string_range.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/util/source/hip/util/to_string_range.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/platforms/x11.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/platforms/x11.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/platforms/x11lib/glx.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/platforms/x11lib/glx.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/platforms/x11lib/x11.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/platforms/x11lib/x11.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/window.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/window.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../source/app.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/app.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/view/tilemaptest.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/view/tilemaptest.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/ai/decisiontree.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/ai/decisiontree.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/ai/pathfinding.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/ai/pathfinding.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/ai/steering.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/ai/steering.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/event/handlers/keyboard.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/event/handlers/keyboard.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/graphics/g2d/renderer2d.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/graphics/g2d/renderer2d.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/systems/game.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/systems/game.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/systems/input.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/systems/input.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/animationtestscene.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/animationtestscene.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/assettest.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/assettest.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/bitmaptestscene.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/bitmaptestscene.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/chaintest.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/chaintest.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/curvetest.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/curvetest.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/fileprogresstest.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/fileprogresstest.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/framebuffertestscene.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/framebuffertestscene.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/geometrytestscene.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/geometrytestscene.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/ninepatchtest.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/ninepatchtest.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/paralleltestscene.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/paralleltestscene.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/pathfindingtest.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/pathfindingtest.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/scene.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/scene.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/soundtestscene.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/soundtestscene.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/spritetestscene.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/spritetestscene.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/steeringtest.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/steeringtest.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/testscene.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/testscene.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/textureatlasscene.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/textureatlasscene.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/tilemaptest.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/tilemaptest.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/ttftestscene.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/ttftestscene.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/view/uwptest.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/view/uwptest.d" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,6 +115,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
   </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="PathMacrosImpl">
     <macro name="HIPREME_ENGINE" value="$PROJECT_DIR$/../../../" />
   </component>
@@ -58,23 +138,26 @@
     <property name="ExportApk.SignV2" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="SHOW_ALL_PROCESSES" value="false" />
     <property name="TERMINAL_CUSTOM_COMMANDS_GOT_IT" value="true" />
     <property name="android-custom-viewC:/Users/Hipreme/AppData/Local/Android/Sdk/sources/android-30/android/view/View.java_SELECTED" value="View" />
+    <property name="android-custom-viewC:/Users/Hipreme/AppData/Local/Android/Sdk/sources/android-33/android/opengl/GLSurfaceView.java_SELECTED" value="GLSurfaceView" />
     <property name="android.sdk.path" value="$USER_HOME$/AppData/Local/Android/Sdk" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../source" />
+    <property name="cidr.known.project.marker" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../modules" />
     <property name="multi-representation-previewC:/Users/Hipreme/AppData/Local/Android/Sdk/sources/android-30/android/view/View.java_selected" value="Custom views" />
-    <property name="project.structure.last.edited" value="Suggestions" />
+    <property name="project.structure.last.edited" value="Project" />
     <property name="project.structure.proportion" value="0.17" />
     <property name="project.structure.side.proportion" value="0.39929327" />
-    <property name="settings.editor.selected.configurable" value="preferences.pathVariables" />
+    <property name="settings.editor.selected.configurable" value="Debugger.ObjectiveC" />
   </component>
   <component name="PsdUISettings">
-    <option name="MODULE_TAB" value="Default Config" />
-    <option name="BUILD_VARIANTS_TAB" value="Flavors" />
-    <option name="LAST_EDITED_SIGNING_CONFIG" value="releaseTest" />
-    <option name="LAST_EDITED_BUILD_TYPE" value="release" />
+    <option name="MODULE_TAB" value="Properties" />
+    <option name="BUILD_VARIANTS_TAB" value="Build Types" />
+    <option name="LAST_EDITED_SIGNING_CONFIG" value="debug" />
+    <option name="LAST_EDITED_BUILD_TYPE" value="debug" />
   </component>
   <component name="RunManager">
     <configuration default="true" type="AndroidJUnit" factoryName="Android JUnit">
@@ -85,20 +168,21 @@
       </method>
     </configuration>
     <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
-      <module name="App.app" />
+      <module name="App.app.main" />
       <option name="DEPLOY" value="true" />
       <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
       <option name="DEPLOY_AS_INSTANT" value="false" />
       <option name="ARTIFACT_NAME" value="" />
       <option name="PM_INSTALL_OPTIONS" value="" />
       <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="CLEAR_APP_STORAGE" value="false" />
       <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
       <option name="ACTIVITY_EXTRA_FLAGS" value="" />
       <option name="MODE" value="default_activity" />
-      <option name="CLEAR_LOGCAT" value="false" />
-      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
-      <option name="SKIP_NOOP_APK_INSTALLATIONS" value="true" />
-      <option name="FORCE_STOP_RUNNING_APP" value="true" />
+      <option name="CLEAR_LOGCAT" value="true" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
+      <option name="INSPECTION_WITHOUT_ACTIVITY_RESTART" value="false" />
       <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
       <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
       <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
@@ -116,23 +200,9 @@
         <option name="WORKING_DIR" value="" />
         <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
         <option name="SHOW_OPTIMIZED_WARNING" value="true" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/audio/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/bind/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/config/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/console/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/data/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/debugging/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/error/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/imgui/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/jni/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/math/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/renderer/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/util/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/dependencies/directx-d/src" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/dependencies/gles/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/dependencies/sdl_sound/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/dependencies/sles/source" />
+        <symbol_dirs symbol_path="G:\HipremeEngine" />
+        <symbol_dirs symbol_path="G:\HipremeEngine\source" />
+        <symbol_dirs symbol_path="G:\HipremeEngine\modules" />
       </Hybrid>
       <Java />
       <Native>
@@ -141,31 +211,15 @@
         <option name="WORKING_DIR" value="" />
         <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
         <option name="SHOW_OPTIMIZED_WARNING" value="true" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/audio/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/bind/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/config/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/console/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/data/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/debugging/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/error/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/imgui/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/jni/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/math/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/renderer/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/modules/util/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/dependencies/directx-d/src" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/dependencies/gles/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/dependencies/sdl_sound/source" />
-        <symbol_dirs symbol_path="$HIPREME_ENGINE$/dependencies/sles/source" />
       </Native>
       <Profilers>
-        <option name="ADVANCED_PROFILING_ENABLED" value="true" />
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
         <option name="STARTUP_PROFILING_ENABLED" value="false" />
         <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
-        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Sample Java Methods" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Sample (legacy)" />
         <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
         <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+        <option name="PROFILING_MODE" value="NOT_SET" />
       </Profilers>
       <option name="DEEP_LINK" value="" />
       <option name="ACTIVITY_CLASS" value="" />
@@ -176,6 +230,7 @@
       </method>
     </configuration>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -189,94 +244,31 @@
     </task>
     <servers />
   </component>
-  <component name="WindowStateProjectService">
-    <state x="200" y="110" key="#PSD" timestamp="1630331636869">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="200" y="110" key="#PSD/0.0.1366.728@0.0.1366.728" timestamp="1630331636869" />
-    <state x="163" y="0" key="#Project_Structure" timestamp="1630327161120">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="163" y="0" key="#Project_Structure/0.0.1366.728@0.0.1366.728" timestamp="1630327161120" />
-    <state x="392" y="0" key="#app" timestamp="1629160331863">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="392" y="0" key="#app/0.0.1366.728@0.0.1366.728" timestamp="1629160331863" />
-    <state x="137" y="18" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1630497728408">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="137" y="18" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1366.728@0.0.1366.728" timestamp="1630497728408" />
-    <state x="411" y="165" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1630319483854">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="411" y="165" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1366.728@0.0.1366.728" timestamp="1630319483854" />
-    <state x="488" y="70" key="#com.intellij.ide.util.MemberChooser" timestamp="1628813074589">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="488" y="70" key="#com.intellij.ide.util.MemberChooser/0.0.1366.728@0.0.1366.728" timestamp="1628813074589" />
-    <state x="413" y="110" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1628812346395">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="413" y="110" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1366.728@0.0.1366.728" timestamp="1628812346395" />
-    <state x="92" y="92" width="1182" height="544" key="AVDManager" timestamp="1629246625668">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="92" y="92" width="1182" height="544" key="AVDManager/0.0.1366.728@0.0.1366.728" timestamp="1629246625668" />
-    <state x="481" y="110" key="AndroidProcessChooserDialog" timestamp="1630438807313">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="481" y="110" key="AndroidProcessChooserDialog/0.0.1366.728@0.0.1366.728" timestamp="1630438807313" />
-    <state x="100" y="100" width="1166" height="528" key="DiffContextDialog" timestamp="1629145740652">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="100" y="100" width="1166" height="528" key="DiffContextDialog/0.0.1366.728@0.0.1366.728" timestamp="1629145740652" />
-    <state x="559" y="153" width="440" height="472" key="FileChooserDialogImpl" timestamp="1630326864024">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="559" y="153" width="440" height="472" key="FileChooserDialogImpl/0.0.1366.728@0.0.1366.728" timestamp="1630326864024" />
-    <state width="923" height="233" key="GridCell.Tab.0.bottom" timestamp="1630965351189">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state width="923" height="233" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1630965351189" />
-    <state width="923" height="233" key="GridCell.Tab.0.center" timestamp="1630965351189">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state width="923" height="233" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1630965351189" />
-    <state width="923" height="233" key="GridCell.Tab.0.left" timestamp="1630965351189">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state width="923" height="233" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1630965351189" />
-    <state width="923" height="233" key="GridCell.Tab.0.right" timestamp="1630965351189">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state width="923" height="233" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1630965351189" />
-    <state width="923" height="233" key="GridCell.Tab.1.bottom" timestamp="1630965351190">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state width="923" height="233" key="GridCell.Tab.1.bottom/0.0.1366.728@0.0.1366.728" timestamp="1630965351190" />
-    <state width="923" height="233" key="GridCell.Tab.1.center" timestamp="1630965351190">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state width="923" height="233" key="GridCell.Tab.1.center/0.0.1366.728@0.0.1366.728" timestamp="1630965351190" />
-    <state width="923" height="233" key="GridCell.Tab.1.left" timestamp="1630965351189">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state width="923" height="233" key="GridCell.Tab.1.left/0.0.1366.728@0.0.1366.728" timestamp="1630965351189" />
-    <state width="923" height="233" key="GridCell.Tab.1.right" timestamp="1630965351190">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state width="923" height="233" key="GridCell.Tab.1.right/0.0.1366.728@0.0.1366.728" timestamp="1630965351190" />
-    <state x="184" y="8" width="1123" height="711" key="SettingsEditor" timestamp="1630329043504">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="184" y="8" width="1123" height="711" key="SettingsEditor/0.0.1366.728@0.0.1366.728" timestamp="1630329043504" />
-    <state x="390" y="97" width="585" height="534" key="find.popup" timestamp="1630440213801">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="390" y="97" width="585" height="534" key="find.popup/0.0.1366.728@0.0.1366.728" timestamp="1630440213801" />
-    <state x="346" y="49" width="672" height="678" key="search.everywhere.popup" timestamp="1629161426939">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="346" y="49" width="672" height="678" key="search.everywhere.popup/0.0.1366.728@0.0.1366.728" timestamp="1629161426939" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="gdb">
+          <url>file://$PROJECT_DIR$/../../../modules/jni/source/hip/jni/helper/jnicall.d</url>
+          <line>113</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="gdb">
+          <url>file://$PROJECT_DIR$/../../../source/app.d</url>
+          <line>242</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

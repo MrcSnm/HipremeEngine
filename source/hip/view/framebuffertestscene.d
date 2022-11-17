@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.view.framebuffertestscene;
+version(Test):
 import hip.view.scene;
 import hip.console.log;
 import hip.graphics.g2d;

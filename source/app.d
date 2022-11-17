@@ -18,14 +18,6 @@ import hip.hipaudio.audio;
 import hip.assetmanager;
 import hip.systems.timer_manager;
 
-version(Android)
-{
-	import hip.jni.helper.androidlog;
-	import hip.jni.jni;
-	import hip.jni.helper.jnicall;
-	///Setups an Android Package for HipremeEngine
-	alias HipAndroid = javaGetPackage!("com.hipremeengine.app.HipremeEngine");
-}
 version(Windows)
 {
 	import hip.hiprenderer.backend.d3d.d3drenderer;
@@ -138,6 +130,7 @@ static void initEngine(bool audio3D = false)
 	Console.install(platform, printFunc);
 	HipFS.install(fsInstallPath, validations);
 	loglnInfo("HipFS installed at path ", fsInstallPath);
+	loglnInfo("Console installed for ", platform);
 
 
 
@@ -156,16 +149,28 @@ export extern(C) int HipremeMain()
 	if(isUsingInterpreter)
 		startInterpreter(interpreterEntry.intepreter);
 
+
+
 	version(Android)
+	{
+		bool hasProFeature = HipAndroid.javaCall!(bool, "hasProFeature");
+		bool hasLowLatencyFeature =HipAndroid.javaCall!(bool, "hasLowLatencyFeature");
+		int getOptimalAudioBufferSize = HipAndroid.javaCall!(int, "getOptimalAudioBufferSize");
+		int getOptimalSampleRate = HipAndroid.javaCall!(int, "getOptimalSampleRate");
+
 		HipAudio.initialize(HipAudioImplementation.OPENSLES, 
-		HipAndroid.javaCall!(bool, "hasProFeature"),
-		HipAndroid.javaCall!(bool, "hasLowLatencyFeature"),
-		HipAndroid.javaCall!(int, "getOptimalAudioBufferSize"),
-		HipAndroid.javaCall!(int, "getOptimalSampleRate"));
+			hasProFeature,
+			hasLowLatencyFeature,
+			getOptimalAudioBufferSize,
+			getOptimalSampleRate
+		);
+	}
 	else
 		HipAudio.initialize(HipAudioImplementation.XAUDIO2);
 	version(dll)
 	{
+		import hip.console.log;
+		logln("Will init renderer");
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
 		else version(Android)
 		{
@@ -181,7 +186,11 @@ export extern(C) int HipremeMain()
 		HipFS.absoluteReadText("renderer.conf", confFile); //Ignore return, renderer can handle no conf.
 		HipRenderer.init(confFile, "renderer.conf");
 	}
-	loadDefaultAssets();
+	if(!loadDefaultAssets())
+	{
+		loglnError("Could not load default assets!");
+	}
+	HipAssetManager.initialize();
 	sys = new GameSystem(FRAME_TIME);
 
 
@@ -216,37 +225,49 @@ static void destroyEngine()
 
 version(Android)
 {
-	import hip.systems.input;
 	
-	extern(C) void Java_com_hipremeengine_app_HipremeEngine_HipremeInit(JNIEnv* env, jclass clazz)
-	{
-		HipremeInit();
-		HipAndroid.setEnv(env);
-		aaMgr = cast(AAssetManager*)HipAndroid.javaCall!(Object, "getAssetManager");
-		aaMgr = AAssetManager_fromJava(env, aaMgr);
-	}
+	import hip.jni.helper.androidlog;
+	import hip.jni.jni;
+	import hip.jni.helper.jnicall;
+	///Setups an Android Package for HipremeEngine
+	alias HipAndroid = javaGetPackage!("com.hipremeengine.app.HipremeEngine");
+	import hip.systems.input;
+	import hip.console.log;
 
-	extern(C) jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
+	export extern(C)
 	{
-		int ret = HipremeMain();
-		import hip.hiprenderer.viewport;
-		int[2] wsize = HipAndroid.javaCall!(int[2], "getWindowSize");
-		HipRenderer.setViewport(new Viewport(0, 0, wsize[0], wsize[1]));
-		return ret;
+		void Java_com_hipremeengine_app_HipremeEngine_HipremeInit(JNIEnv* env, jclass clazz)
+		{
+			import hip.filesystem.systems.android;
+			HipremeInit();
+			JNISetEnv(env);
+			aaMgr = cast(AAssetManager*)HipAndroid.javaCall!(Object, "getAssetManager");
+			aaMgr = AAssetManager_fromJava(env, aaMgr);
+		}
+
+		jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
+		{
+			int ret = HipremeMain();
+			import hip.hiprenderer.viewport;
+			int[2] wsize = HipAndroid.javaCall!(int[2], "getWindowSize");
+			HipRenderer.setViewport(new Viewport(0, 0, wsize[0], wsize[1]));
+			return ret;
+		}
+		jboolean Java_com_hipremeengine_app_HipremeEngine_HipremeUpdate(JNIEnv* env, jclass clazz)
+		{
+			return HipremeUpdate();
+		}
+		void Java_com_hipremeengine_app_HipremeEngine_HipremeRender(JNIEnv* env, jclass clazz)
+		{
+			HipremeRender();
+		}
+		void  Java_com_hipremeengine_app_HipremeEngine_HipremeDestroy(JNIEnv* env, jclass clazz)
+		{
+			JNISetEnv(null);
+			HipremeDestroy();
+		}
 	}
-	extern(C) jboolean Java_com_hipremeengine_app_HipremeEngine_HipremeUpdate(JNIEnv* env, jclass clazz)
-	{
-		return HipremeUpdate();
-	}
-	extern(C) void Java_com_hipremeengine_app_HipremeEngine_HipremeRender(JNIEnv* env, jclass clazz)
-	{
-		HipremeRender();
-	}
-	extern(C) void  Java_com_hipremeengine_app_HipremeEngine_HipremeDestroy(JNIEnv* env, jclass clazz)
-	{
-		HipAndroid.setEnv(null);
-		HipremeDestroy();
-	}
+	
 }
 
 /**
@@ -274,10 +295,7 @@ export extern(C) void HipremeInit()
 *	- HipAudio
 *
 */
-version(dll)
-{
-
-}
+version(dll){}
 else
 {
 	int main(string[] args)
@@ -298,21 +316,29 @@ bool HipremeUpdateBase()
 	return true;
 }
 
-export extern(C) bool HipremeUpdate()
+version(dll) export extern(C) bool HipremeUpdate()
 {
 	import hip.util.time;
 	import core.time:dur;
 	import core.thread.osthread;
-	long initTime = HipTime.getCurrentTime();
-	if(HipremeUpdateBase())
+	version(Android)
 	{
-		long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
-		if(sleepTime > 0)
+		if(HipremeUpdateBase())
+			return true;
+	}
+	else version(UWP)
+	{
+		long initTime = HipTime.getCurrentTime();
+		if(HipremeUpdateBase())
 		{
-			Thread.sleep(dur!"msecs"(sleepTime));
+			long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
+			if(sleepTime > 0)
+			{
+				Thread.sleep(dur!"msecs"(sleepTime));
+			}
+			g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
+			return true;
 		}
-		g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
-		return true;
 	}
 	return false;
 }
@@ -354,6 +380,7 @@ export extern(C) void HipremeRender()
 }
 export extern(C) void HipremeDestroy()
 {
+	logln("Destroying HipremeEngine");
 	destroyEngine();
 	version(dll)
 	{

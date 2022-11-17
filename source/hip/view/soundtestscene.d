@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.view.soundtestscene;
+version(Test):
 import hip.filesystem.hipfs;
 import hip.hipaudio.audio;
 // import hip.hipaudio.backend.openal.source;

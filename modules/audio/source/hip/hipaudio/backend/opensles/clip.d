@@ -14,32 +14,29 @@ class HipOpenSLESAudioClip : HipAudioClip
         uint ret = super.loadStreamed(data, encoding);
         if(ret != 0)
         {
-            void* sliBuf = getBuffer(getClipData(), chunkSize);
+            HipAudioBuffer sliBuf = getBuffer(getClipData(), chunkSize);
             setBufferAvailable(sliBuf);
             hasBuffer = true;
         }
         return ret;
     }
-    override void onUpdateStream(void* data, uint decodedSize){}
+    override void onUpdateStream(void[] data, uint decodedSize){}
 
     /** Allocates SLIBuffer* in the wrapper*/
-    override HipAudioBufferWrapper createBuffer(void* data, uint size)
+    override HipAudioBufferWrapper2 createBuffer(void[] data)
     {
-        HipAudioBufferWrapper w;
-        w.buffer = sliGenBuffer(null, size); //Null init buffer
-        w.bufferSize = (SLIBuffer*).sizeof;
+        HipAudioBufferWrapper2 w;
+        w.buffer.sles = sliGenBuffer(null, data.length); //Null init buffer
         hasBuffer = true;
         return w;
     }
-    override void destroyBuffer(void* buffer)
+    override void  destroyBuffer(HipAudioBuffer* buffer)
     {
-        SLIBuffer* buf = cast(SLIBuffer*)buffer;
-        sliDestroyBuffer(buf);
+        sliDestroyBuffer(buffer.sles);
     }
-    override void setBufferData(void* buffer, uint size, void* data)
+    override void  setBufferData(HipAudioBuffer* buffer, void[] data, uint size)
     {
-        SLIBuffer* buf = cast(SLIBuffer*)buffer;
-        sliBufferData(buf, data);
+        sliBufferData(buffer.sles, data);
     }
 
 

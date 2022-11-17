@@ -1,4 +1,5 @@
 module hip.view.ninepatchtest;
+version(Test):
 import hip.graphics.g2d.renderer2d;
 import hip.graphics.g2d.spritebatch;
 import hip.graphics.g2d.ninepatch;

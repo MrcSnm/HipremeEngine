@@ -16,16 +16,13 @@ string format(alias fmt, Args...)(Args a)
 
     for(int i = 0; i < fmt.length; i++)
     {
-        if(i + 1 < fmt.length)
+        if(i + 1 < fmt.length && fmt[i] == '%' && fmt[i+1] == 's')
         {
-            if(fmt[i] == '%' && fmt[i+1] == 's')
-            {
-                i++;
-                ret~= converted[currArg++];
-            }
-            else
-                ret~= fmt[i];
+            i++;
+            ret~= converted[currArg++];
         }
+        else
+            ret~= fmt[i];
     }
     return ret;
 }

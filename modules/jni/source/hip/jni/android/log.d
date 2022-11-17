@@ -15,10 +15,6 @@ module hip.jni.android.log;
 import core.stdc.stdarg;
 
 version (Android):
-extern (C):
-@system:
-nothrow:
-@nogc:
 
 enum android_LogPriority
 {
@@ -32,8 +28,12 @@ enum android_LogPriority
     ANDROID_LOG_FATAL,
     ANDROID_LOG_SILENT
 }
+extern (C) @system nothrow @nogc
+{
+    int __android_log_write(int prio, const(char)* tag, const(char)* text);
+    int __android_log_print(int prio, const(char)* tag, const(char)* fmt, ...);
+    int __android_log_vprint(int prio, const(char)* tag, const(char)* fmt, va_list ap);
+    void __android_log_assert(const(char)* cond, const(char)* tag, const(char)* fmt, ...);
+}
 
-int __android_log_write(int prio, const(char)* tag, const(char)* text);
-int __android_log_print(int prio, const(char)* tag, const(char)* fmt, ...);
-int __android_log_vprint(int prio, const(char)* tag, const(char)* fmt, va_list ap);
-void __android_log_assert(const(char)* cond, const(char)* tag, const(char)* fmt, ...);
+

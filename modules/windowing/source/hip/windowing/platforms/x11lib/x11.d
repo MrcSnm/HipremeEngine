@@ -1,6 +1,7 @@
 module hip.windowing.platforms.x11lib.x11;
 
-version(Posix)
+version(Android){}
+else version(Posix)
     version = X11;
 version(X11):
 

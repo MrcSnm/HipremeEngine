@@ -25,7 +25,10 @@
 				"config": {"path": "../config"},
 				"error": {"path": "../error"},
 				"math": {"path": "../math"}
-			}
+			},
+			"versions": [
+				"HipGL3"
+			]
 		},
 		{
 			"name": "nodx",
@@ -38,7 +41,10 @@
 				"config": {"path": "../config"},
 				"error": {"path": "../error"},
 				"math": {"path": "../math"}
-			}
+			},
+			"versions": [
+				"HipGL3"
+			]
 		},
 		{
 			"name": "uwp",
@@ -68,6 +74,9 @@
 				"config": {"path": "../config"},
 				"error": {"path": "../error"},
 				"math": {"path": "../math"}
+			},
+			"subConfigurations": {
+				"bind": "android"
 			}
 		},
 		{
