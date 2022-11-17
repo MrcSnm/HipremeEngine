@@ -11,8 +11,9 @@ Distributed under the CC BY-4.0 License.
 
 module hip.systems.game;
 import hip.global.gamedef;
-
 import hip.view;
+import hip.api.view.scene;
+
 import hip.systems.timer_manager;
 import hip.event.dispatcher;
 import hip.event.handlers.keyboard;

@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.view.spritetestscene;
+version(Test):
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.hiprenderer.shader;
 import hip.graphics.g2d;

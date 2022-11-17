@@ -1,4 +1,5 @@
 module hip.view.curvetest;
+version(Test):
 import hip.api;
 import hip.hiprenderer;
 import hip.console.log;

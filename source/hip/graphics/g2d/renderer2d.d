@@ -33,7 +33,6 @@ void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewpor
     viewport = new Viewport(0, 0, HipRenderer.width, HipRenderer.height);
     viewport.setWorldSize(HipRenderer.width, HipRenderer.height);
     viewport.setType(ViewportType.fit, HipRenderer.width, HipRenderer.height);
-    HipRenderer.setViewport(viewport);
     camera = new HipOrthoCamera();
     camera.setSize(viewport.worldWidth, viewport.worldHeight);
 
@@ -41,6 +40,8 @@ void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewpor
     geoBatch = new GeometryBatch(camera);
     textBatch = new HipTextRenderer(camera);
     setGeometryColor(HipColor.white);
+    HipRenderer.setViewport(viewport);
+
 
     version(HipremeEngineLua)
     {

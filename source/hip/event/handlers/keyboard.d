@@ -38,14 +38,14 @@ char toUppercase(char a)
  */
 class KeyboardHandler : IHipKeyboard
 {
-    private static int[256] pressedKeys;
-    private static HipButtonMetadata[256] metadatas;
-    private static string frameText;
+    private __gshared int[256] pressedKeys;
+    private __gshared HipButtonMetadata[256] metadatas;
+    private __gshared string frameText;
 
-    private static bool altPressed;
-    private static bool shiftPressed;
-    private static bool ctrlPressed;
-    private static float keyRepeatDelay = 0.5;
+    private __gshared bool altPressed;
+    private __gshared bool shiftPressed;
+    private __gshared bool ctrlPressed;
+    private __gshared float keyRepeatDelay = 0.5;
 
     static this()
     {

@@ -116,7 +116,7 @@ interface IHipRendererImpl
     public bool isBlendingEnabled() const;
     public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst);
     public void setBlendingEquation(HipBlendEquation eq);
-    public bool hasErrorOccurred(out string err, string line = __FILE__, int line =__LINE__);
+    public bool hasErrorOccurred(out string err, string line = __FILE__, size_t line =__LINE__);
     public void begin();
     public void setRendererMode(HipRendererMode mode);
     public void drawIndexed(index_t count, uint offset = 0);
@@ -255,6 +255,7 @@ class HipRenderer
         import hip.config.opts;
         mainViewport = new Viewport(0,0, window.width, window.height);
         setViewport(mainViewport);
+        setColor();
         HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
         static if(HIP_ALPHA_BLEND_DEFAULT)
         {
@@ -385,18 +386,19 @@ class HipRenderer
         s.bind();
         HipRenderer.exitOnError();
     }
-    public static bool hasErrorOccurred(out string err, string file = __FILE__, int line =__LINE__)
+    public static bool hasErrorOccurred(out string err, string file = __FILE__, size_t line =__LINE__)
     {
         return rendererImpl.hasErrorOccurred(err, file, line);
     }
 
-    public static void exitOnError(string file = __FILE__, int line = __LINE__)
+    public static void exitOnError(string file = __FILE__, size_t line = __LINE__)
     {
         import core.stdc.stdlib:exit;
         string err;
         if(hasErrorOccurred(err, file, line))
         {
-            logln(err, file,":",line);
+            loglnError(err, file,":",line);
+            throw new Exception(err, file, line);
             exit(-1);
         }
     }

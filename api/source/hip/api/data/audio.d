@@ -80,6 +80,10 @@ struct AudioConfig
     uint channels;
     int bufferSize;
 
+    static enum defaultBufferSize = audioConfigDefaultBufferSize;
+
+
+
     /**
     *   Returns a default audio configuration for 2D
     */

@@ -21,6 +21,12 @@
 			}
 		},
 		{
+			"name": "android",
+			"dependencies": {
+				"bindbc-lua": "~>0.5.0"
+			}
+		},
+		{
 			"name": "uwp",
 			"dependencies": {
 				"bindbc-lua": "~>0.5.0"

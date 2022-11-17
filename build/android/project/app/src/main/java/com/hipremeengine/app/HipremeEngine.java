@@ -50,15 +50,14 @@ public class HipremeEngine extends Activity
         }
         assetManager = getApplicationContext().getResources().getAssets();
         instance = this;
-
-        view = new HipSurfaceView((this));
+        view = new HipSurfaceView(this);
         setContentView(view);
     }
     @Override
     protected void onDestroy()
     {
         super.onDestroy();
-        HipremeDestroy();
+        //HipremeDestroy();
         HipremeEngine.instance = null;
     }
 

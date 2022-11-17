@@ -227,23 +227,21 @@ float sliToAttenuation(float gain)
     return (gain < 0.01f) ? -96.0f : 20 * log10(gain);
 }
 
-SLInterfaceID[] getAudioPlayerInterfaces(bool willUseFastMixer)
+const(SLInterfaceID)[] getAudioPlayerInterfaces(bool willUseFastMixer)
 {
-    SLInterfaceID[] ret = [SL_IID_VOLUME/*, SL_IID_MUTESOLO*/]; //can't require SL_IID_MUTESOLO with a mono buffer queue data source error
+    const(SLInterfaceID)[] ret = [SL_IID_VOLUME, SL_IID_ANDROIDSIMPLEBUFFERQUEUE/*, SL_IID_MUTESOLO*/]; //can't require SL_IID_MUTESOLO with a mono buffer queue data source error
     if(!willUseFastMixer)
     {
         ret~= [SL_IID_BASSBOOST, SL_IID_EFFECTSEND, SL_IID_ENVIRONMENTALREVERB, SL_IID_EQUALIZER,
         SL_IID_PLAYBACKRATE, SL_IID_PRESETREVERB, SL_IID_VIRTUALIZER, SL_IID_ANDROIDEFFECT,
         SL_IID_ANDROIDEFFECTSEND, SL_IID_METADATAEXTRACTION][];
     }
-    version(Android)
-        ret~= SL_IID_ANDROIDSIMPLEBUFFERQUEUE;
     return ret;
 }
-SLboolean[] getAudioPlayerRequirements(ref SLInterfaceID[] itfs)
+SLboolean[] getAudioPlayerRequirements(ref const(SLInterfaceID)[] itfs)
 {
     SLboolean[] ret;
-    foreach (SLInterfaceID id; itfs)
+    foreach (const(SLInterfaceID) id; itfs)
         ret~= SL_BOOLEAN_TRUE;
     return ret;
 }
@@ -262,7 +260,7 @@ string sliGetErrorMessages()
 ///Must be used as an opaque pointer
 struct SLIBuffer
 {
-    uint size;
+    size_t size;
     bool isLocked;
     bool hasBeenProcessed;
     ///Tightly packed structure
@@ -272,7 +270,7 @@ struct SLIBuffer
 /**
 *   Creates an unresizable buffer(tightly packed) for not getting a cache miss
 */
-SLIBuffer* sliGenBuffer(void* data, uint size)
+SLIBuffer* sliGenBuffer(void[] data, size_t size)
 {
     import core.stdc.stdlib:malloc;
     import core.stdc.string:memcpy,memset;
@@ -283,16 +281,16 @@ SLIBuffer* sliGenBuffer(void* data, uint size)
     if(data == null)
         memset(buf.data.ptr, 0, size);
     else
-        memcpy(buf.data.ptr, data, size);
+        memcpy(buf.data.ptr, data.ptr, size);
     return buf;
 }
 
 ///Copies data inside the buffer on its immutable size. Use that on unlocked buffers.
-void sliBufferData(SLIBuffer* buffer, void* data)
+void sliBufferData(SLIBuffer* buffer, void[] data)
 {
     import core.stdc.string:memcpy;
     ErrorHandler.assertExit(!buffer.isLocked, "Can't write to locked buffer");
-    memcpy(buffer.data.ptr, data, buffer.size);
+    memcpy(buffer.data.ptr, data.ptr, buffer.size);
 }
 
 ///Invalidates the buffer and makes it null
@@ -324,9 +322,9 @@ __gshared struct SLIAudioPlayer
     SLAndroidEffectItf androidEffect;
     SLAndroidEffectSendItf androidEffectSend;
 
-    ///@TODO
+    ///TODO:
     SLEffectSendItf playerEffectSend;
-    ///@TODO
+    ///TODO:
     SLMetadataExtractionItf playerMetadata;
 
     /**
@@ -348,14 +346,7 @@ __gshared struct SLIAudioPlayer
     protected ushort totalChunksPlayed;
 
 
-    version(Android){SLAndroidSimpleBufferQueueItf playerAndroidSimpleBufferQueue;}
-    else  //Those lines will appear just as a documentation, right now, we don't have any implementation using it
-    {
-        ///@NO_SUPPORT
-        SL3DSourceItf source3D;
-        SL3DDopplerItf doppler3D;
-        SL3DLocationItf location3D;
-    }
+    SLAndroidSimpleBufferQueueItf playerAndroidSimpleBufferQueue;
     SLIBuffer* nextBuffer;
     bool isPlaying, hasFinishedTrack;
 
@@ -536,21 +527,16 @@ __gshared struct SLIAudioPlayer
     *   Same behavior from (*androidBufferQueue).Enqueue. If you wish to use queue
     *   for streaming sound, call pushBuffer
     */
-    static void Enqueue(ref SLIAudioPlayer audioPlayer, void* samples, uint sampleSize)
+    static void Enqueue(ref SLIAudioPlayer audioPlayer, void* samples, size_t sampleSize)
     {
-        version(Android)
-        {
-            (*audioPlayer.playerAndroidSimpleBufferQueue)
-                .Enqueue(audioPlayer.playerAndroidSimpleBufferQueue, samples, sampleSize);
-        }
+        assert(sampleSize <= uint.max, "Probably something bad will happen with that size.");
+        (*audioPlayer.playerAndroidSimpleBufferQueue)
+            .Enqueue(audioPlayer.playerAndroidSimpleBufferQueue, samples, cast(uint)sampleSize);
     }
     static void Clear(ref SLIAudioPlayer audioPlayer)
     {
-        version(Android)
-        {
-            (*audioPlayer.playerAndroidSimpleBufferQueue)
-                .Clear(audioPlayer.playerAndroidSimpleBufferQueue);
-        }
+        (*audioPlayer.playerAndroidSimpleBufferQueue)
+            .Clear(audioPlayer.playerAndroidSimpleBufferQueue);
     }
 
     /**
@@ -634,11 +620,13 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
     bool willUseFastMixer = engine.willUseFastMixer;
     with(temp)
     {
-        SLInterfaceID[] ids = getAudioPlayerInterfaces(willUseFastMixer);
+        const(SLInterfaceID)[] ids = getAudioPlayerInterfaces(willUseFastMixer);
         SLboolean[] req = getAudioPlayerRequirements(ids);
 
+
+
         sliCall(engine.CreateAudioPlayer(&playerObj, &src, &dest,
-        cast(uint)(ids.length), ids.ptr, req.ptr),
+        cast(uint)(ids.length), (cast(SLInterfaceID[])ids).ptr, req.ptr),
         "Could not create AudioPlayer with format: "~to!string(*(cast(SLDataFormat_PCM*)src.pFormat)));
 
         sliCall((*playerObj).Realize(playerObj, SL_BOOLEAN_FALSE),

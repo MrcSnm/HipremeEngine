@@ -182,7 +182,7 @@ Options:
         //Check if the path where the name is exists, for creating a folder for it
         else
         {
-            int ind = lastIndexOf(name, '/');
+            long ind = lastIndexOf(name, '/');
             if(ind == -1)
                 ind = lastIndexOf(name, '\\');
             string namePath = name[0..ind];

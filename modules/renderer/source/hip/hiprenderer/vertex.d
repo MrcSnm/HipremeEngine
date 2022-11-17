@@ -153,9 +153,11 @@ class HipVertexArrayObject
     */
     void createIndexBuffer(index_t count, HipBufferUsage usage)
     {
-        this.bind();
         this.EBO = HipRenderer.createIndexBuffer(count, usage);
+        this.bind();
         this.EBO.bind();
+        HipRenderer.exitOnError();
+
     }
     /**
     * Creates and binds a vertex buffer.
@@ -164,9 +166,10 @@ class HipVertexArrayObject
     */
     void createVertexBuffer(uint count, HipBufferUsage usage)
     {
-        this.bind();
         this.VBO = HipRenderer.createVertexBuffer(count*this.stride, usage);
+        this.bind();
         this.VBO.bind();
+        HipRenderer.exitOnError();
     }
     /**
     *   This function creates an attribute information,

@@ -1,4 +1,5 @@
 module hip.view.geometrytestscene;
+version(Test):
 import hip.hiprenderer.renderer;
 import hip.api;
 import hip.console.log;

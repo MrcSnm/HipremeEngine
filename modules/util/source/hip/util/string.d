@@ -466,7 +466,7 @@ string fromStringz(const char* cstr) pure nothrow @nogc
     return (len) ? cast(string)cstr[0..len] : null;
 }
 
-const(char*) toStringz(string str) pure nothrow
+const(char)* toStringz(string str) pure nothrow
 {
     return (str~"\0").ptr;
 }
@@ -633,7 +633,7 @@ TString trim(TString)(TString str) pure nothrow @safe @nogc
     return str[start..end+1];
 }
 
-TString join(TString)(TString[] args, TString separator)
+TString join(TString)(TString[] args, TString separator = "")
 {
 	if(args.length == 0) return "";
 	TString ret = args[0];

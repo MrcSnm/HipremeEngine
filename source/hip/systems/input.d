@@ -38,7 +38,7 @@ version(Android)
         HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Touch(ushort.max, x,y));
 	}
 
-    mixin javaGenerateModuleMethodsForPackage!(HipAndroidInput, systems.input, false);
+    mixin javaGenerateModuleMethodsForPackage!(HipAndroidInput, hip.systems.input, true);
 }
 else version(UWP)
 {

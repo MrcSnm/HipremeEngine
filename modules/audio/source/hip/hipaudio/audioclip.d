@@ -48,7 +48,8 @@ union HipAudioBuffer
     }
     version(Have_sles)
     {
-        import opensles;
+        import opensles.sles;
+        import hip.hipaudio.backend.sles;
         SLIBuffer* sles;
     }
     version(Have_directx_d)
