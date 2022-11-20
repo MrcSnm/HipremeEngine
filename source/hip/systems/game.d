@@ -66,7 +66,7 @@ class GameSystem
     HipInputListener inputListener;
     HipInputListener scriptInputListener;
     string projectDir;
-    protected static AScene externalScene;
+    protected __gshared AScene externalScene;
 
     version(LoadScript)
     {
@@ -266,7 +266,15 @@ class GameSystem
         if(hasFinished || dispatcher.hasQuit)
             return false;
         foreach(s; scenes)
-            s.update(deltaTime);
+        {
+            if(s is null)
+            {
+                import hip.console.log;
+                logln("SCENE IS NULL");
+            }
+            else
+                s.update(deltaTime);
+        }
 
         return true;
     }

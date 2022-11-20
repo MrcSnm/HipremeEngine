@@ -91,6 +91,10 @@ struct AudioConfig
     {
         return AudioConfig(44_100, AudioFormat.float32Little, 2, audioConfigDefaultBufferSize);
     }
+    static AudioConfig androidConfig()
+    {
+        return AudioConfig(22_050, AudioFormat.float32Little, 1U, 2048);
+    }
     static AudioConfig lightweightConfig()
     {
         return AudioConfig(22_050, AudioFormat._default, 1U, 2048);

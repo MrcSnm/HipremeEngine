@@ -7,7 +7,7 @@ version(Android)
 {
     public import hip.jni.android.asset_manager;
     public import hip.jni.android.asset_manager_jni;
-    AAssetManager* aaMgr;
+    __gshared AAssetManager* aaMgr;
     class HipAndroidFile : HipFile
     {
         import core.stdc.stdio;

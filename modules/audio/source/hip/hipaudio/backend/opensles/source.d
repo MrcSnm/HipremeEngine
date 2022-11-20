@@ -22,13 +22,40 @@ class HipOpenSLESAudioSource : HipAudioSource
     override IHipAudioClip clip(IHipAudioClip clip)
     {
         super.clip(clip);
+        return clip;
+    }
+
+    override bool play()
+    {
         SLIBuffer* buf = (cast(HipAudioClip)clip).getBuffer(clip.getClipData(), cast(uint)clip.getClipSize()).sles;
         SLIAudioPlayer.Enqueue(*audioPlayer, buf.data.ptr, buf.size);
         buf.isLocked = true;
         buf.hasBeenProcessed = false;
 
-        return clip;
+        import hip.console.log;
+
+        logln("SampleRate: ", clip.getSampleRate);
+        logln("Output: ", clip.getHint().outputSamplerate);
+        float rate = cast(float)clip.getSampleRate() / cast(float)clip.getHint().outputSamplerate;
+        
+        SLIAudioPlayer.setRate(*audioPlayer, rate);
+
+        SLIAudioPlayer.play(*audioPlayer);
+        return true;
     }
+
+    override bool stop()
+    {
+        SLIAudioPlayer.stop(*audioPlayer);
+        return false;
+    }
+
+    override bool pause()
+    {
+        SLIAudioPlayer.pause(*audioPlayer);
+        return false;
+    }
+
 
     override void pullStreamData()
     {

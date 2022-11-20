@@ -69,37 +69,79 @@ class Hip_GL3_FragmentShader : FragmentShader
             }
         };
     }
-    override final string getSpriteBatchFragment()
+
+    version(Android)
     {
-        int sup = HipRenderer.getMaxSupportedShaderTextures();
-        //Push the line breaks for easier debugging on gpu debugger
-        string textureSlotSwitchCase = "switch(texId)\n{\n"; 
-        for(int i = 0; i < sup; i++)
+        override final string getSpriteBatchFragment()
         {
-            string strI = to!string(i);
-            textureSlotSwitchCase~="case "~strI~": "~
-            "\t\toutPixelColor = texture(uTex1["~strI~"], inTexST)*inVertexColor*uBatchColor;break;\n";
+            int sup = HipRenderer.getMaxSupportedShaderTextures();
+            //Push the line breaks for easier debugging on gpu debugger
+
+            import hip.console.log;
+            logln("Supporting ", sup, " textures");
+
+            string textureSlotSwitchCase = "switch(texId)\n{\n"; 
+            for(int i = 0; i < sup; i++)
+            {
+                string strI = to!string(i);
+                textureSlotSwitchCase~="case "~strI~": "~
+                "\t\toutPixelColor = texture(uTex1["~strI~"], inTexST)*inVertexColor*uBatchColor;break;\n";
+            }
+            textureSlotSwitchCase~="}\n";
+
+            return shaderVersion~"\n"~floatPrecision~"\n"~q{
+                
+                uniform sampler2D uTex1[}~to!string(sup)~q{];
+
+                uniform vec4 uBatchColor;
+
+                in vec4 inVertexColor;
+                in vec2 inTexST;
+                in float inTexID;
+
+                out vec4 outPixelColor;
+                void main()
+                }~"{"~q{
+                    int texId = int(inTexID);
+                } ~textureSlotSwitchCase~"}";
+                    // outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
+                    // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
         }
-        textureSlotSwitchCase~="}\n";
-
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
-            
-            uniform sampler2D uTex1[}~to!string(sup)~q{];
-
-            uniform vec4 uBatchColor;
-
-            in vec4 inVertexColor;
-            in vec2 inTexST;
-            in float inTexID;
-
-            out vec4 outPixelColor;
-            void main()
-            }~"{"~q{
-                int texId = int(inTexID);
-            } ~textureSlotSwitchCase~"}";
-                // outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
-                // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
     }
+    else
+    {
+        override final string getSpriteBatchFragment()
+        {
+            int sup = HipRenderer.getMaxSupportedShaderTextures();
+            //Push the line breaks for easier debugging on gpu debugger
+            string textureSlotSwitchCase = "switch(texId)\n{\n"; 
+            for(int i = 0; i < sup; i++)
+            {
+                string strI = to!string(i);
+                textureSlotSwitchCase~="case "~strI~": "~
+                "\t\toutPixelColor = texture(uTex1["~strI~"], inTexST)*inVertexColor*uBatchColor;break;\n";
+            }
+            textureSlotSwitchCase~="}\n";
+
+            return shaderVersion~"\n"~floatPrecision~"\n"~q{
+                
+                uniform sampler2D uTex1[}~to!string(sup)~q{];
+
+                uniform vec4 uBatchColor;
+
+                in vec4 inVertexColor;
+                in vec2 inTexST;
+                in float inTexID;
+
+                out vec4 outPixelColor;
+                void main()
+                }~"{"~q{
+                    int texId = int(inTexID);
+                } ~textureSlotSwitchCase~"}";
+                    // outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
+                    // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
+        }
+    } 
 
     override final string getGeometryBatchFragment()
     {
@@ -331,7 +373,7 @@ class Hip_GL_ShaderImpl : IShader
         if(varID < 0)
         {
             ErrorHandler.showErrorMessage("Uniform not found",
-            "Variable named '"~name~"' does not exists in the shader");
+            "Variable named '"~name~"' does not exists in shader "~prog.name);
         }
         return varID;
     }

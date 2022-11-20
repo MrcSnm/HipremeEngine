@@ -138,7 +138,7 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
         vbo.bind();
         import hip.console.log;
         static int v = 0;
-        logln("Bind VAO ", v++);
+        logln(v++);
         foreach(vao; vaoInfos)
         {
             glCall(() => glVertexAttribPointer(
@@ -150,12 +150,15 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
                 cast(void*)vao.info.offset
             ));
             glCall(() => glEnableVertexAttribArray(vao.info.index));
-            logln("enable attrib");
         }
     }
         
     void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
     {
+        foreach(vao; vaoInfos)
+        {
+            glCall(() => glDisableVertexAttribArray(vao.info.index));
+        }
         vbo.unbind();
         ebo.unbind();
     }
@@ -169,10 +172,15 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
     void createInputLayout(Shader s){}
 }
 
-version(HipGL3) class Hip_GL3_VertexArrayObject : IHipVertexArrayImpl
+version(HipGLUseVertexArray) class Hip_GL3_VertexArrayObject : IHipVertexArrayImpl
 {
     uint vao;
-    this(){glGenVertexArrays(1, &this.vao);}
+    this()
+    {
+        glCall(() => glGenVertexArrays(1, &this.vao));
+        import hip.console.log;
+        logln("Created VertexArray");
+    }
     void bind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo){glCall(() => glBindVertexArray(this.vao));}
     void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo){glCall(() => glBindVertexArray(0));}
     void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride)

@@ -85,14 +85,13 @@ class HipAudio
         }
         import hip.console.log;
         HipAudio.is3D = is3D;
-        config = AudioConfig.lightweightConfig;
         
         final switch(implementation)
         {
             case HipAudioImplementation.OPENSLES:
                 version(Android)
                 {
-                    audioInterface = new HipOpenSLESAudioPlayer(AudioConfig.lightweightConfig,
+                    audioInterface = new HipOpenSLESAudioPlayer(AudioConfig.androidConfig,
                     hasProAudio,
                     hasLowLatencyAudio,
                     optimalBufferSize,
@@ -274,7 +273,6 @@ class HipAudio
         audioInterface.setMaxDistance(src, dist);
         src.maxDistance = dist;
     }
-    public static AudioConfig getConfig(){return config;}
     
     /**
     *   Call this function whenever you update any AHipAudioSource property
@@ -294,7 +292,6 @@ class HipAudio
         audioInterface.setPitch(src, src.pitch);
 
     }
-    protected static AudioConfig config;
     protected static bool hasProAudio;
     protected static bool hasLowLatencyAudio;
     protected static int  optimalBufferSize;

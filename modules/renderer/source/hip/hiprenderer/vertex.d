@@ -24,9 +24,10 @@ public import hip.hiprenderer.backend.gl.glvertex;
 // else{alias index_t = uint;}
 alias index_t = ushort;
 
+
 enum index_t_maxQuads()
 {
-    return cast(index_t)(index_t.max / 6);
+    return cast(index_t)(ushort.max / 6);
 }
 enum index_t_maxQuadIndices()
 {

@@ -52,7 +52,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
     protected HipOrthoCamera camera;
     private uint quadsCount;
 
-    this(HipOrthoCamera camera, ushort maxIndices = index_t_maxQuadIndices)
+    this(HipOrthoCamera camera, index_t maxIndices = index_t_maxQuadIndices)
     {
         if(bmTextShader is null)
         {
@@ -165,9 +165,9 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             return;
         this.font.texture.bind();
         bmTextShader.bind();
-        bmTextShader.sendVars();
         mesh.shader.setVertexVar("Cbuf.uProj", camera.proj);
         mesh.shader.setVertexVar("Cbuf.uView", camera.view);
+        bmTextShader.sendVars();
         mesh.setVertices(vertices);
         mesh.draw(quadsCount*6);
 
@@ -177,3 +177,4 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         quadsCount = 0;
     }
 }
+    

@@ -193,6 +193,7 @@ struct SLIOutputMix
             sliCall((*outputMixObj).Realize(outputMixObj, SL_BOOLEAN_FALSE),
             "Could not initialize output mix");
 
+
             if(!willUseFastMixer)   
             {
                 if(!sliCall((*outputMixObj).GetInterface(outputMixObj, SL_IID_ENVIRONMENTALREVERB, &environmentReverb),
@@ -378,6 +379,21 @@ __gshared struct SLIAudioPlayer
             volume = gain;
         }
     }
+
+    static void setRate(ref SLIAudioPlayer audioPlayer, float rate)
+    {
+        if(rate < 0.5 || rate > 2.0)
+        {
+            import hip.util.conv:to;
+            ErrorHandler.showErrorMessage("Unsupported rate change on OpenSL ES.", "Max rate change is from 0.5 to 2.0, received "~rate.to!string);
+        }
+        short newRate = cast(short)(rate * 1000);
+        with(audioPlayer)
+        {
+            sliCall((*playbackRate).SetRate(playbackRate, newRate), "Could not set playback rate");
+        }
+    }
+
     /**
     *   Also invalidates enqueued SLIBuffer, so, destroy with care
     */
@@ -615,7 +631,6 @@ __gshared struct SLIAudioPlayer
 */
 SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoRegisterCallback = true)
 {
-    import core.stdc.stdlib:malloc;
     SLIAudioPlayer temp;
     bool willUseFastMixer = engine.willUseFastMixer;
     with(temp)
@@ -624,10 +639,19 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
         SLboolean[] req = getAudioPlayerRequirements(ids);
 
 
-
-        sliCall(engine.CreateAudioPlayer(&playerObj, &src, &dest,
-        cast(uint)(ids.length), (cast(SLInterfaceID[])ids).ptr, req.ptr),
-        "Could not create AudioPlayer with format: "~to!string(*(cast(SLDataFormat_PCM*)src.pFormat)));
+        
+        version(OpenSLES1) //Used for SDK < 21. But I won't support unless someone ask.
+        {
+            sliCall(engine.CreateAudioPlayer(&playerObj, &src, &dest,
+            cast(uint)(ids.length), (cast(SLInterfaceID[])ids).ptr, req.ptr),
+            "Could not create AudioPlayer with format: "~to!string(*(cast(SLDataFormat_PCM*)src.pFormat)));
+        }
+        else
+        {
+            sliCall(engine.CreateAudioPlayer(&playerObj, &src, &dest,
+            cast(uint)(ids.length), (cast(SLInterfaceID[])ids).ptr, req.ptr),
+            "Could not create AudioPlayer with format: "~to!string(*(cast(SLAndroidDataFormat_PCM_EX*)src.pFormat)));
+        }
 
         sliCall((*playerObj).Realize(playerObj, SL_BOOLEAN_FALSE),
         "Could not initialize AudioPlayer");
@@ -687,7 +711,7 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
     }
     if(sliErrorMessages.length == 0)
     {
-        SLIAudioPlayer* playerOut = cast(SLIAudioPlayer*)malloc(SLIAudioPlayer.sizeof);
+        SLIAudioPlayer* playerOut = new SLIAudioPlayer();
         *playerOut = temp;
         if(autoRegisterCallback)
         {
@@ -709,21 +733,18 @@ void sliDestroyContext()
     foreach(ref gp; genPlayers)
     {
         SLIAudioPlayer.destroyAudioPlayer(*gp);
-        free(gp);
+        destroy(gp);
         gp = null;
     }
 }
 
 
-version(Android){alias SLIDataLocator_Address = SLDataLocator_AndroidSimpleBufferQueue;}
-else{alias SLIDataLocator_Address = SLDataLocator_Address;}
-
 
 bool sliCreateOutputContext(
     bool hasProAudio=false,
     bool hasLowLatencyAudio=false,
-    int  optimalBufferSize=44_100,
-    int  optimalSampleRate=4096,
+    int  optimalBufferSize=4096,
+    int  optimalSampleRate=44_100,
     bool willUseFastMixer = false
 )
 {
@@ -732,8 +753,7 @@ bool sliCreateOutputContext(
 
     // loadSawtooth();
 
-    version(Android)
-        SLIOutputMix.initializeForAndroid(outputMix, engine, willUseFastMixer);
+    SLIOutputMix.initializeForAndroid(outputMix, engine, willUseFastMixer);
     // SLIAudioPlayer.initializeForAndroid(gAudioPlayer, engine, src, destination);
     
     return sliErrorQueue.length == 0;

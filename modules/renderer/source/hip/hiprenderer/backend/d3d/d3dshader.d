@@ -416,9 +416,17 @@ class Hip_D3D11_ShaderImpl : IShader
     void useShader(ShaderProgram program){setCurrentShader(program);}
     int getId(ref ShaderProgram prog, string name)
     {
+        import hip.error.handler;
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
         D3D11_SHADER_INPUT_BIND_DESC output;
-        p.vReflector.GetResourceBindingDescByName(name.ptr, &output);
+
+        
+        if(!SUCCEEDED(p.vReflector.GetResourceBindingDescByName(name.ptr, &output)))
+        {
+            ErrorHandler.showErrorMessage("Error finding ID/Uniform for shader ", "For variable named "~name ~ " in shader " ~ prog.name);
+        }
+
+        
         return output.BindPoint;
     }
 

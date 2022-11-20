@@ -31,6 +31,12 @@ class HipMouse
     bool isJustReleased(HipMouseButton btn){return metadatas[btn].isJustReleased;}
     void setPosition(float x, float y, uint id = 0)
     {
+        if(id+1 > positions.length)
+            positions.length = id+1;
+        if(id+1 > lastPositions.length)
+        {
+            lastPositions.length = id+1;
+        }
         lastPositions[id] = positions[id];
         ErrorHandler.assertExit(id < positions.length, "Touch ID out of range");
         positions[id].x=x;
