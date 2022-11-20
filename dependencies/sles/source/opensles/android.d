@@ -53,6 +53,9 @@ struct SLAndroidDataFormat_PCM_EX {
     SLuint32         channelMask;
     SLuint32         endianness;
     SLuint32         representation;
+
+    ///Maintain struct naming based on SLDataFormat_PCM
+    alias samplesPerSec = sampleRate;
 }
 
 enum SL_ANDROID_SPEAKER_NON_POSITIONAL =       (cast(SLuint32) 0x80000000);

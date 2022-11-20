@@ -15,7 +15,7 @@ public class HipSurfaceView extends GLSurfaceView
         renderer = new Hip_GLES30_Renderer();
         setRenderer(renderer);
         //Save battery
-        setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        //setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 
     @Override
@@ -28,27 +28,27 @@ public class HipSurfaceView extends GLSurfaceView
         switch(e.getAction())
         {
             case MotionEvent.ACTION_MOVE:
-                for(; i < pointerCount;i++)
+                for(i = 0; i < pointerCount;i++)
                 {
                     ID = e.getPointerId(i);
-                    HipInput.onMotionEventActionMove(ID, e.getX(ID), e.getY(ID));
+                    HipInput.onMotionEventActionMove(ID, e.getX(i), e.getY(i));
                 }
                 break;
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
-                for(; i < pointerCount;i++)
+                for(i = 0; i < pointerCount;i++)
                 {
                     ID = e.getPointerId(i);
-                    HipInput.onMotionEventActionPointerDown(ID, e.getX(ID), e.getY(ID));
+                    HipInput.onMotionEventActionPointerDown(ID, e.getX(i), e.getY(i));
                 }
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL: //Sometimes it is cancelled instead of "up"
             case MotionEvent.ACTION_POINTER_UP:
-                for(; i < pointerCount;i++)
+                for(i = 0; i < pointerCount;i++)
                 {
                     ID = e.getPointerId(i);
-                    HipInput.onMotionEventActionPointerUp(ID, e.getX(ID), e.getY(ID));
+                    HipInput.onMotionEventActionPointerUp(ID, e.getX(i), e.getY(i));
                 }
                 break;
             case MotionEvent.ACTION_SCROLL:
