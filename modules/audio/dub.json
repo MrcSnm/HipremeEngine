@@ -41,7 +41,10 @@
 			"name": "android",
 			"dependencies": {
 				"sles": {"path": "../../dependencies/sles"}
-			}
+			},
+			"versions": [
+				"OpenSLES1_1"
+			]
 		}
 	],
 	"description": "HipremeEngine audio module",

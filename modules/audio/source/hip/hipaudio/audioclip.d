@@ -225,6 +225,7 @@ public abstract class HipAudioClip : IHipAudioClip
         onUpdateStream(outBuffer, dec);
         return dec;
     }
+
     ///Returns the streambuffer if streamed, else, returns entire sound
     public void[] getClipData()
     {
@@ -240,6 +241,7 @@ public abstract class HipAudioClip : IHipAudioClip
         return decoder.getClipSize();
     }
     public float getDuration(){return decoder.getDuration();}
+    public final uint getSampleRate(){return decoder.getSamplerate();}
     public final float getDecodedDuration()
     {
         AudioConfig cfg = decoder.getAudioConfig();

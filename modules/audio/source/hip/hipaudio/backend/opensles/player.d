@@ -2,6 +2,9 @@ module hip.hipaudio.backend.opensles.player;
 
 
 version(Android):
+import opensles.sles;
+import opensles.android;
+
 import hip.hipaudio.backend.opensles.source;
 import hip.hipaudio.backend.opensles.clip;
 import hip.hipaudio.audiosource;
@@ -9,14 +12,23 @@ import hip.hipaudio.backend.sles;
 import hip.config.opts : HIP_OPENSLES_OPTIMAL, HIP_OPENSLES_FAST_MIXER;
 import hip.audio_decoding.audio;
 import hip.util.conv:to;
-import opensles.sles;
 import hip.error.handler;
 import hip.hipaudio.audio;
 
-private SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)
+
+version(OpenSLES1)
+    alias SLDataFormat = SLDataFormat_PCM;
+else
+    alias SLDataFormat = SLAndroidDataFormat_PCM_EX;
+
+private SLDataFormat getFormatAsOpenSLES(AudioConfig cfg)
 {
-    SLDataFormat_PCM ret;
-    ret.formatType = SL_DATAFORMAT_PCM;
+    SLDataFormat ret;
+    version(OpenSLES1)
+        ret.formatType = SL_DATAFORMAT_PCM;
+    else
+        ret.formatType = SL_ANDROID_DATAFORMAT_PCM_EX;
+
     ret.numChannels = cfg.channels; //2 channels seems to not be supported yet
 
     static if(HIP_OPENSLES_OPTIMAL)
@@ -31,31 +43,59 @@ private SLDataFormat_PCM getFormatAsOpenSLES(AudioConfig cfg)
             ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
             ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
             ret.endianness = SL_BYTEORDER_BIGENDIAN;
+            version(OpenSLES1_1)
+                ret.representation = SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT;
             break;
         case AudioFormat.signed32Big:
             ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_32;
             ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_32;
             ret.endianness = SL_BYTEORDER_BIGENDIAN;
+            version(OpenSLES1_1)
+                ret.representation = SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT;
             break;
-
         case AudioFormat.signed8:
             ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_8;
             ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_8;
             ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
+            version(OpenSLES1_1)
+                ret.representation = SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT;
             break;
         default:
         case AudioFormat.signed16Little:
             ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
             ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
             ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
+            version(OpenSLES1_1)
+                ret.representation = SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT;
             break;
-        //Little
         case AudioFormat.signed32Little:
             ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_32;
             ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_32;
             ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
+            version(OpenSLES1_1)
+                ret.representation = SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT;
+            break;
+        //Little
+        case AudioFormat.float32Little:
+            ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_32;
+            ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_32;
+            ret.endianness = SL_BYTEORDER_LITTLEENDIAN;
+            version(OpenSLES1_1)
+                ret.representation = SL_ANDROID_PCM_REPRESENTATION_FLOAT;
+            else
+                ErrorHandler.assertExit(false, "Needs OpenSLES 1.1 (Achieved by -version=OpenSLES1_1) to support float PCM");
+            break;
+        case AudioFormat.float32Big:
+            ret.containerSize = SL_PCMSAMPLEFORMAT_FIXED_32;
+            ret.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_32;
+            ret.endianness = SL_BYTEORDER_BIGENDIAN;
+            version(OpenSLES1_1)
+                ret.representation = SL_ANDROID_PCM_REPRESENTATION_FLOAT;
+            else
+                ErrorHandler.assertExit(false, "Needs OpenSLES 1.1 (Achieved by -version=OpenSLES1_1) to support float PCM");
             break;
     }
+    
     if(cfg.channels == 2)
         ret.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
     else if(cfg.channels == 1)
@@ -75,9 +115,13 @@ enum MAX_SLI_AUDIO_PLAYERS = 32;
 enum MAX_SLI_BUFFERS       = 16;
 
 
+/**
+*   If wish to use fast mixer, this function should only create
+*   players with the same stats from the android output
+*/
 package SLIAudioPlayer* hipGenAudioPlayer()
 {
-    SLDataFormat_PCM fmt = HipAudio.getConfig().getFormatAsOpenSLES();
+    SLDataFormat fmt = HipOpenSLESAudioPlayer.config.getFormatAsOpenSLES();
     version(Android)
     {
         import opensles.android;
@@ -106,7 +150,7 @@ package SLIAudioPlayer* hipGenAudioPlayer()
     destination.pLocator = &locatorMix;
     destination.pFormat = null;
 
-    SLIAudioPlayer* player =  sliGenAudioPlayer(src, destination);
+    SLIAudioPlayer* player = sliGenAudioPlayer(src, destination);
     if(player == null)
         ErrorHandler.showErrorMessage("SLIAudioPlayer creation error:", sliGetErrorMessages());
 
@@ -132,7 +176,7 @@ package SLIAudioPlayer* hipGetPlayerFromPool()
 
 class HipOpenSLESAudioPlayer : IHipAudioPlayer
 {
-    AudioConfig cfg;
+    static AudioConfig config;
     SLIOutputMix output;
     SLEngineItf itf;
 
@@ -160,23 +204,32 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
         int  optimalSampleRate
     )
     {
-        this.cfg = cfg;
         import hip.math.utils:getClosestMultiple;
+        import hip.console.log;
         optimalBufferSize = getClosestMultiple(optimalBufferSize, AudioConfig.defaultBufferSize);
         HipOpenSLESAudioPlayer.hasProAudio = hasProAudio;
         HipOpenSLESAudioPlayer.hasLowLatencyAudio = hasLowLatencyAudio;
         HipOpenSLESAudioPlayer.optimalBufferSize = optimalBufferSize;
         HipOpenSLESAudioPlayer.optimalSampleRate = optimalSampleRate;
-
         static if(HIP_OPENSLES_OPTIMAL)
             cfg.sampleRate = optimalSampleRate;
+        config = cfg;
+
+
+        logln("OpenSL ES Initialization with:
+hasProAudio? ", hasProAudio, "
+hasLowLatencyAudio? ", hasLowLatencyAudio, "
+optimalBufferSize: ", optimalBufferSize, " 
+outputSampleRate: ", cfg.sampleRate);
+
+        
 
         // HipSDL_SoundDecoder.initDecoder(cfg, optimalBufferSize);
         ErrorHandler.assertErrorMessage(sliCreateOutputContext(
             hasProAudio,
             hasLowLatencyAudio,
             optimalBufferSize,
-            optimalSampleRate,
+            config.sampleRate,
             HIP_OPENSLES_FAST_MIXER
         ),
         "Error creating OpenSLES context.", sliGetErrorMessages());
@@ -227,13 +280,13 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     }
     public HipAudioClipAPI load(string path, HipAudioType type)
     {
-        HipAudioClipAPI buffer = new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(cfg.channels, cfg.sampleRate, false, true));
+        HipAudioClipAPI buffer = new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true));
         buffer.load(path, getEncodingFromName(path), type);
         return buffer;
     }
     public HipAudioClipAPI loadStreamed(string path, uint chunkSize)
     {
-        HipAudioClipAPI buffer = new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(cfg.channels, cfg.sampleRate, false, true), chunkSize);
+        HipAudioClipAPI buffer = new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true), chunkSize);
         buffer.loadStreamed(path, getEncodingFromName(path));
         return buffer;
     }

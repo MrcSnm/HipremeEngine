@@ -110,6 +110,7 @@ class Hip_GL3Renderer : IHipRendererImpl
         rawlog("GL Renderer: ",  glGetString(GL_RENDERER));
         rawlog("GL Version: ",  glGetString(GL_VERSION));
         rawlog("GLSL Version: ",  glGetString(GL_SHADING_LANGUAGE_VERSION));
+
         // setColor();
         HipRenderer.rendererType = HipRendererType.GL3;
         return true;
@@ -143,7 +144,7 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public IHipVertexArrayImpl createVertexArray()
     {
-        version(HipGL3)
+        version(HipGLUseVertexArray)
             return new Hip_GL3_VertexArrayObject();
         else
             return new Hip_GL_VertexArrayObject();

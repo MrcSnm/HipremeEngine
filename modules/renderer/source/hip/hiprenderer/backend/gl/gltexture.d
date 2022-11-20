@@ -132,7 +132,7 @@ class Hip_GL3_Texture : IHipTexture
                 break;
             case 4:
                 mode = GL_RGBA;
-                internalFormat = GL_RGBA8;
+                internalFormat = GL_RGBA;
                 break;
             case 2:
             default:
