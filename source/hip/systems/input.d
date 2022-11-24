@@ -42,7 +42,12 @@ version(Android)
 
     @JavaFunc!(HipAndroidRenderer) void onRendererResize(int x, int y)
     {
-        HipEventQueue.post(0, HipEventQueue.EventType.windowResize, HipEventQueue.Resize(cast(uint)x, cast(uint)y));
+        ///Must be executed on the render thread :(
+        import hip.hiprenderer;
+        import hip.graphics.g2d.renderer2d;
+        HipRenderer.setWindowSize(x, y);
+        resizeRenderer2D(cast(uint)x, cast(uint)y);
+        // HipEventQueue.post(0, HipEventQueue.EventType.windowResize, HipEventQueue.Resize(cast(uint)x, cast(uint)y));
     }
 
     mixin javaGenerateModuleMethodsForPackage!(HipAndroidInput, hip.systems.input, true);

@@ -33,6 +33,7 @@ public class HipremeEngine extends Activity
     public static native int HipremeMain();
     public static native boolean HipremeUpdate();
     public static native void HipremeRender();
+    public static native void HipremeReinitialize();
     public static native void HipremeDestroy();
 
     HipSurfaceView view;

@@ -12,16 +12,19 @@ module hip.hiprenderer.backend.gl.gltexture;
 
 version(OpenGL):
 public import hip.api.renderer.texture;
+public import hip.api.data.commons:IReloadable;
 
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
 import hip.image;
 
-class Hip_GL3_Texture : IHipTexture
+class Hip_GL3_Texture : IHipTexture, IReloadable
 {
     GLuint textureID = 0;
     int width, height;
     uint currentSlot;
+
+    private IImage loadedImage;
 
     bool hasSuccessfullyLoaded(){return width > 0;}
     protected int getGLWrapMode(TextureWrapMode mode)
@@ -107,6 +110,7 @@ class Hip_GL3_Texture : IHipTexture
 
     protected bool loadImpl(in IImage image)
     {
+        loadedImage = cast(IImage)image;
         glCall(() => glGenTextures(1, &textureID));
         int mode;
         int internalFormat;
@@ -153,5 +157,16 @@ class Hip_GL3_Texture : IHipTexture
     
     int getWidth() const {return width;}
     int getHeight() const {return height;}
+    
+    bool reload()
+    {
+        if(loadedImage !is null)
+        {
+            textureID = 0;
+            return loadImpl(loadedImage);
+        }
+        return false;
+    }
+    
     
 }

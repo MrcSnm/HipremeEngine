@@ -12,6 +12,7 @@ module hip.hiprenderer.shader.shader;
 public import hip.hiprenderer.shader.shadervar :
 ShaderHint, ShaderVariablesLayout, ShaderVar;
 
+import hip.api.data.commons:IReloadable;
 import hip.api.renderer.texture;
 import hip.math.matrix;
 import hip.error.handler;
@@ -99,7 +100,7 @@ abstract class ShaderProgram
 }
 
 
-public class Shader
+public class Shader : IReloadable
 {
     VertexShader vertexShader;
     FragmentShader fragmentShader;
@@ -111,6 +112,8 @@ public class Shader
     string fragmentShaderPath;
     string vertexShaderPath;
 
+    protected string internalVertexSource;
+    protected string internalFragmentSource;
     private bool isUseCall = false;
 
     this(IShader shaderImpl)
@@ -182,6 +185,9 @@ public class Shader
 
     ShaderStatus loadShaders(string vertexShaderSource, string fragmentShaderSource, string shaderPath = "")
     {
+        this.internalVertexSource = vertexShaderSource;
+        this.internalFragmentSource = fragmentShaderSource;
+
         shaderProgram.name = shaderPath;
         if(!shaderImpl.compileShader(vertexShader, vertexShaderSource))
             return ShaderStatus.VERTEX_COMPILATION_ERROR;
@@ -340,5 +346,15 @@ public class Shader
         shaderImpl.deleteShader(&vertexShader);
         HipRenderer.exitOnError();
     }
+    
+    bool reload()
+    {
+        vertexShader = shaderImpl.createVertexShader();
+        fragmentShader = shaderImpl.createFragmentShader();
+        shaderProgram = shaderImpl.createShaderProgram();
+
+        return loadShaders(internalVertexSource, internalFragmentSource) == ShaderStatus.SUCCESS;
+    }
+    
 
 }

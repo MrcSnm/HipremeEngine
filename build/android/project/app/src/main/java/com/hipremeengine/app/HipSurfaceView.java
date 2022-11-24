@@ -1,6 +1,7 @@
 package com.hipremeengine.app;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -14,6 +15,7 @@ public class HipSurfaceView extends GLSurfaceView
         setEGLContextClientVersion(3);
         renderer = new Hip_GLES30_Renderer();
         setRenderer(renderer);
+        setPreserveEGLContextOnPause(true);
         //Save battery
         //setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }

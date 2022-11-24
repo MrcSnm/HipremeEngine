@@ -79,20 +79,23 @@ void resizeRenderer2D(uint width, uint height)
 {
     if(autoUpdateCameraAndViewport)
     {
-        HipRenderer.setWindowSize(width, height);
         if(viewport !is null && HipRenderer.getCurrentViewport() == viewport)
-        {
             HipRenderer.setViewport(viewport);
-        }
         if(camera !is null)
-            camera.setSize(cast(int)viewport.worldWidth,cast(int)viewport.worldHeight);
-            
+            camera.setSize(viewport.worldWidth, viewport.worldHeight);
     }
 }
 
 export extern(C):
 
 int[2] getWindowSize(){return [HipRenderer.width, HipRenderer.height];}
+
+void setWindowSize(uint width, uint height)
+{
+    HipRenderer.setWindowSize(width, height);
+    HipRenderer.setViewport(viewport);
+    camera.setSize(cast(int)viewport.worldWidth,cast(int)viewport.worldHeight);
+}
 void setCameraSize(uint width, uint height){camera.setSize(width, height);}
 void setViewport(Viewport v)
 {
