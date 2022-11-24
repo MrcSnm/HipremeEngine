@@ -44,6 +44,14 @@ class HipOpenSLESAudioSource : HipAudioSource
         return true;
     }
 
+    alias loop = HipAudioSource.loop;
+    override bool loop(bool shouldLoop)
+    {
+        super.loop(shouldLoop);
+        SLIAudioPlayer.setLoop(*audioPlayer, shouldLoop);
+        return shouldLoop;
+    }
+
     override bool stop()
     {
         SLIAudioPlayer.stop(*audioPlayer);

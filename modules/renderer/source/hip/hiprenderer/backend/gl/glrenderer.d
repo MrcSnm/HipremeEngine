@@ -93,18 +93,14 @@ class Hip_GL3Renderer : IHipRendererImpl
         version(Have_bindbc_opengl)
         {
             GLSupport ver = loadOpenGL();
-            switch(ver)
+            if(ver == GLSupport.noLibrary)
             {
-                case GLSupport.noLibrary:
-                {
-                    ErrorHandler.showErrorMessage("Loading OpenGL", "No OpenGL could be found");
-                    break;
-                }
-                case GLSupport.badLibrary:
-                {
-                    ErrorHandler.showErrorMessage("Loading OpenGL", "OpenGL version is different than expected");
-                    break;
-                }
+                ErrorHandler.showErrorMessage("Loading OpenGL", "No OpenGL could be found");
+                return false;
+            }
+            else if(ver == GLSupport.badLibrary)
+            {
+                ErrorHandler.showErrorMessage("Loading OpenGL", "OpenGL version is different than expected");
             }
         }
         rawlog("GL Renderer: ",  glGetString(GL_RENDERER));

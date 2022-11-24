@@ -19,6 +19,7 @@ bin/desktop/*.exe
 bin/desktop/*.rsp
 bin/desktop/*.lib
 *.o
+*.a
 *.obj
 *.lst
 .history

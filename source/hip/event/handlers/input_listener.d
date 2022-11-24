@@ -1,20 +1,25 @@
 module hip.event.handlers.input_listener;
 public import hip.api.input.button;
 public import hip.api.input.keyboard;
+public import hip.api.input.mouse;
+import hip.event.dispatcher;
 import hip.event.handlers.keyboard;
+import hip.event.handlers.mouse;
 
 
 
 class HipInputListener
 {
-    protected HipButton[] actionListeners;
+    protected HipButton[] touchListeners;
     protected HipButton[] keyboardListeners;
 
     protected KeyboardHandler keyboard;
+    protected HipMouse mouse;
 
-    this(KeyboardHandler keyboard)
+    this(EventDispatcher dispatcher)
     {
-        this.keyboard = keyboard;
+        this.keyboard = dispatcher.keyboard;
+        this.mouse = dispatcher.mouse;
     }
 
     const(HipButton)* addKeyboardListener(HipKey key, 
@@ -27,21 +32,21 @@ class HipInputListener
         return &keyboardListeners[$-1];
     }
 
-    const(HipButton)* addActionListener(HipKey key, 
+    const(HipButton)* addTouchListener(HipMouseButton btn, 
         HipInputAction action,
         HipButtonType type = HipButtonType.down,
         AutoRemove remove = AutoRemove.no
         )
     {
-        actionListeners~= HipButton(cast(ushort)key, type, action, remove);
-        return &actionListeners[$-1];
+        touchListeners~= HipButton(cast(ushort)btn, type, action, remove);
+        return &touchListeners[$-1];
     }
     /**
     *   Mainly used for the scriptInputListener
     */
     void clearAll()
     {
-        actionListeners.length = 0;
+        touchListeners.length = 0;
         keyboardListeners.length = 0;
     }
 
@@ -50,10 +55,10 @@ class HipInputListener
         import hip.util.array:remove;
         return remove(keyboardListeners, button);
     }
-    bool removeActionListener(const(HipButton)* button)
+    bool removeTouchListener(const(HipButton)* button)
     {
         import hip.util.array:remove;
-        return remove(actionListeners, button);
+        return remove(touchListeners, button);
     }
 
     void update()
@@ -75,6 +80,26 @@ class HipInputListener
                 key.action(keyboard.getMetadata(cast(char)key.id));
                 if(key.isAutoRemove)
                     removeKeyboardListener(&key);
+            }
+        }
+
+        foreach(ref touch; touchListeners)
+        {
+            bool shouldExecute = false;
+            final switch(touch.type) with(HipButtonType)
+            {
+                case down:
+                    shouldExecute = mouse.isJustPressed(cast(HipMouseButton)touch.id);
+                    break;
+                case up:
+                    shouldExecute = mouse.isJustReleased(cast(HipMouseButton)touch.id);
+                    break;
+            }
+            if(shouldExecute)
+            {
+                touch.action(mouse.getMetadata(cast(HipMouseButton)touch.id));
+                if(touch.isAutoRemove)
+                    removeTouchListener(&touch);
             }
         }
     }

@@ -233,9 +233,18 @@ const(SLInterfaceID)[] getAudioPlayerInterfaces(bool willUseFastMixer)
     const(SLInterfaceID)[] ret = [SL_IID_VOLUME, SL_IID_ANDROIDSIMPLEBUFFERQUEUE/*, SL_IID_MUTESOLO*/]; //can't require SL_IID_MUTESOLO with a mono buffer queue data source error
     if(!willUseFastMixer)
     {
-        ret~= [SL_IID_BASSBOOST, SL_IID_EFFECTSEND, SL_IID_ENVIRONMENTALREVERB, SL_IID_EQUALIZER,
-        SL_IID_PLAYBACKRATE, SL_IID_PRESETREVERB, SL_IID_VIRTUALIZER, SL_IID_ANDROIDEFFECT,
-        SL_IID_ANDROIDEFFECTSEND, SL_IID_METADATAEXTRACTION][];
+        ret~= [
+            SL_IID_BASSBOOST,
+            SL_IID_EFFECTSEND,
+            SL_IID_ENVIRONMENTALREVERB,
+            SL_IID_EQUALIZER,
+            SL_IID_PLAYBACKRATE,
+            SL_IID_PRESETREVERB,
+            SL_IID_VIRTUALIZER, 
+            SL_IID_ANDROIDEFFECT,
+            SL_IID_ANDROIDEFFECTSEND, 
+            SL_IID_METADATAEXTRACTION
+        ][];
     }
     return ret;
 }
@@ -328,6 +337,14 @@ __gshared struct SLIAudioPlayer
     ///TODO:
     SLMetadataExtractionItf playerMetadata;
 
+    struct EnqueuedBuffer
+    {
+        void* data;
+        size_t size;
+    }
+    
+    EnqueuedBuffer enqueued;
+
     /**
     *   This queue works as:
 
@@ -349,7 +366,7 @@ __gshared struct SLIAudioPlayer
 
     SLAndroidSimpleBufferQueueItf playerAndroidSimpleBufferQueue;
     SLIBuffer* nextBuffer;
-    bool isPlaying, hasFinishedTrack;
+    bool isPlaying, hasFinishedTrack, isLooping;
 
     float volume;
 
@@ -365,9 +382,22 @@ __gshared struct SLIAudioPlayer
         }
         else if(hasFinishedTrack)
         {
-            import hip.console.log;
-            logln("STOPPED!");
-            SLIAudioPlayer.stop(this);
+            if(isLooping)
+            {
+                if(enqueued != EnqueuedBuffer.init)
+                {
+                    SLIAudioPlayer.stop(this);
+                    SLIAudioPlayer.Enqueue(this, enqueued.data, enqueued.size);
+                    SLIAudioPlayer.play(this);
+                }
+                else
+                    loglnError("Tried to loop OpenSLES AudioPlayer, but there is no enqueued buffer");
+            }
+            else
+            {
+                logln("STOPPED!");
+                SLIAudioPlayer.stop(this);
+            }
         }            
     }
 
@@ -414,7 +444,7 @@ __gshared struct SLIAudioPlayer
             playerVol = null;
             playerSeek = null;
             playerEffectSend = null;
-            version(Android){playerAndroidSimpleBufferQueue = null;}
+            playerAndroidSimpleBufferQueue = null;
         }
     }
     alias PlayerCallback = extern(C) void function(SLPlayItf player, void* context, SLuint32 event);
@@ -472,7 +502,11 @@ __gshared struct SLIAudioPlayer
                 }
             }
             else
+            {
+                import hip.console.log;
+                logln("Finished track on AudioThread");
                 p.hasFinishedTrack = true;
+            }
         }
     }
 
@@ -546,6 +580,9 @@ __gshared struct SLIAudioPlayer
     static void Enqueue(ref SLIAudioPlayer audioPlayer, void* samples, size_t sampleSize)
     {
         assert(sampleSize <= uint.max, "Probably something bad will happen with that size.");
+
+        audioPlayer.enqueued = EnqueuedBuffer(samples, sampleSize);
+
         (*audioPlayer.playerAndroidSimpleBufferQueue)
             .Enqueue(audioPlayer.playerAndroidSimpleBufferQueue, samples, cast(uint)sampleSize);
     }
@@ -623,6 +660,32 @@ __gshared struct SLIAudioPlayer
             isPlaying = false;
         }
     }
+
+    static void seekClipPosition(ref SLIAudioPlayer audioPlayer, float posMillis, SLuint32 seekMode = SL_SEEKMODE_FAST)
+    {
+        with(audioPlayer)
+        {
+            (*playerSeek).SetPosition(playerSeek, cast(SLmillisecond)posMillis, seekMode);
+        }
+    }
+
+    // static void setLoop(ref SLIAudioPlayer audioPlayer, bool shouldLoop, float loopStartMillis = 0, float loopEnd = -1)
+    // {
+    //     with(audioPlayer)
+    //     {
+    //         if(playerSeek is null)
+    //             return;
+    //         SLmillisecond end = cast(SLmillisecond)loopEnd;
+    //         if(loopEnd <= 0)
+    //             end = SL_TIME_UNKNOWN;
+    //         (*playerSeek).SetLoop(playerSeek, shouldLoop, cast(SLmillisecond)loopStartMillis, end);
+    //     }
+    // }
+
+    static void setLoop(ref SLIAudioPlayer audioPlayer, bool shouldLoop)
+    {
+        audioPlayer.isLooping = shouldLoop;
+    }
     
 }
 
@@ -665,8 +728,9 @@ SLIAudioPlayer* sliGenAudioPlayer(SLDataSource src,SLDataSink dest, bool autoReg
 
         if(!willUseFastMixer)
         {
+            
             // sliCall((*playerObj).GetInterface(playerObj, SL_IID_SEEK, &playerSeek),
-            //("Could not get Seek interface for AudioPlayer");
+            // "Could not get Seek interface for AudioPlayer");
 
             //Metadata
             sliCall((*playerObj).GetInterface(playerObj, SL_IID_METADATAEXTRACTION, &playerMetadata),

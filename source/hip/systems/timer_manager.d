@@ -6,11 +6,11 @@ public import hip.timer;
 class HipTimerManager
 {
     @disable this();
-    private static IHipTimer[] timers;
-    private static IHipTimer[] renderTimers;
-    private static bool _isPaused = false;
-    private static float deltaTime = 0;
-    private static float accelerationFactor = 1.0f;
+    private __gshared IHipTimer[] timers;
+    private __gshared IHipTimer[] renderTimers;
+    private __gshared bool _isPaused = false;
+    private __gshared float deltaTime = 0;
+    private __gshared float accelerationFactor = 1.0f;
 
 
     @ExportD static IHipTimer addTimer(IHipTimer timer)

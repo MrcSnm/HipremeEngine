@@ -185,6 +185,8 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
     static int  optimalBufferSize;
     static int  optimalSampleRate;
 
+    protected SLIAudioPlayer*[] spawnedPlayers;
+
     /**
     *   For understanding a bit better how the buffer size works, take a look into the documentation
     *   provided by google: https://developer.android.com/ndk/guides/audio/audio-latency#buffer-size
@@ -296,16 +298,15 @@ outputSampleRate: ", cfg.sampleRate);
     public AHipAudioSource getSource(bool isStreamed)
     {
         SLIAudioPlayer* p = hipGetPlayerFromPool();
+        spawnedPlayers~= p;
         return new HipOpenSLESAudioSource(p, isStreamed);
     }
 
-    //EFFECTS
-    public void setPitch(AHipAudioSource src, float pitch){}
-    public void setPanning(AHipAudioSource src, float panning){}
-    public void setVolume(AHipAudioSource src, float volume){}
-    public void setMaxDistance(AHipAudioSource src, float dist){}
-    public void setRolloffFactor(AHipAudioSource src, float factor){}
-    public void setReferenceDistance(AHipAudioSource src, float dist){}
-
     public void onDestroy(){sliDestroyContext();}
+
+    public void update()
+    {
+        foreach(p; spawnedPlayers)
+            p.update();
+    }
 }
