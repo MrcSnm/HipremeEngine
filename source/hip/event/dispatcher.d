@@ -119,10 +119,12 @@ class EventDispatcher
                     break;
                 case HipEventQueue.EventType.touchDown:
                     auto t = ev.get!(HipEventQueue.Touch);
+                    mouse.setPosition(t.xPos, t.yPos, t.id);
                     mouse.setPressed(HipMouseButton.left, true);
                     break;
                 case HipEventQueue.EventType.touchUp:
                     auto t = ev.get!(HipEventQueue.Touch);
+                    mouse.setPosition(t.xPos, t.yPos, t.id);
                     mouse.setPressed(HipMouseButton.left, false);
                     break;
                 case HipEventQueue.EventType.touchMove:

@@ -235,7 +235,7 @@ class HipRenderer
         }
     }
 
-    version(dll) public static bool initExternal(HipRendererType type)
+    version(dll) public static bool initExternal(HipRendererType type, int windowWidth = -1, int windowHeight = -1)
     {
         rendererImpl = getRenderer(type);
         HipRenderer.rendererType = type;
@@ -243,7 +243,12 @@ class HipRenderer
         if(!ret)
             ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");
 
-        window = new HipWindow(800, 600, HipWindowFlags.DEFAULT);
+        if(windowWidth == -1)
+            windowWidth = 800;
+        if(windowHeight == -1)
+            windowHeight = 600;
+
+        window = new HipWindow(windowWidth, windowHeight, HipWindowFlags.DEFAULT);
         HipRenderer.width = window.width;
         HipRenderer.height = window.height;
         afterInit();
