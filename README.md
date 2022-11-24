@@ -45,7 +45,6 @@ The engine mantains some global options which you can modify it on source/global
 3. GeometryBatch
 4. FrameBuffer
 5. BitmapText
-6. ImGUI
 7. Shader
 8. Material
 9. Tiled maps
@@ -54,6 +53,7 @@ The engine mantains some global options which you can modify it on source/global
 
 - OpenSL ES
 - OpenAL
+- XAudio2
 - HipAudio (abstraction)
 
 ### Features

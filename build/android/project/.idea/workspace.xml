@@ -18,40 +18,22 @@
   <component name="ChangeListManager">
     <list default="true" id="002a72a2-c94b-4c61-a2b8-f896bf1fb8a8" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../../../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../../README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../api/libhipengine_api.a" beforeDir="false" afterPath="$PROJECT_DIR$/../../../api/libhipengine_api.a" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../api/source/hip/api/console.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../api/source/hip/api/console.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../api/source/hip/api/impl.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../api/source/hip/api/impl.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../api/source/hip/api/input/binding.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../api/source/hip/api/input/binding.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../api/source/hip/api/input/mouse.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../api/source/hip/api/input/mouse.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../api/source/hip/api/input/package.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../api/source/hip/api/input/package.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../insertresourceuwp.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../insertresourceuwp.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/Hip_GLES30_Renderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/Hip_GLES30_Renderer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine.sln" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine.sln" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.filters" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.filters" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.user" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.user" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine_TemporaryKey.pfx" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine_TemporaryKey.pfx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/audio.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/audio.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/audiosource.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/audiosource.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/nullaudio.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/nullaudio.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/openal/player.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/openal/player.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/opensles/player.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/opensles/player.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/opensles/source.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/opensles/source.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/sles.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/sles.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/xaudio/player.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/audio/source/hip/hipaudio/backend/xaudio/player.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/math/source/hip/math/vector.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/math/source/hip/math/vector.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/jni/source/hip/jni/helper/jnicall.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/jni/source/hip/jni/helper/jnicall.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/math/source/hip/math/random.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/math/source/hip/math/random.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/backend/gl/glrenderer.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/backend/gl/glrenderer.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/renderer.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/renderer.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/input.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/input.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/platforms/windows.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/platforms/windows.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/platforms/x11.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/windowing/source/hip/windowing/platforms/x11.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../renderer.conf" beforeDir="false" afterPath="$PROJECT_DIR$/../../../renderer.conf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../source/app.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/app.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/hip/event/api.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/event/api.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../source/hip/event/dispatcher.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/event/dispatcher.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/hip/event/handlers/input_listener.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/event/handlers/input_listener.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/hip/event/handlers/mouse.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/event/handlers/mouse.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/hip/systems/game.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/systems/game.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/graphics/g2d/renderer2d.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/graphics/g2d/renderer2d.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/systems/input.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/systems/input.d" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -227,8 +209,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="gdb">
           <url>file://$PROJECT_DIR$/../../../source/app.d</url>
-          <line>242</line>
+          <line>244</line>
           <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="gdb">
+          <url>file://$PROJECT_DIR$/../../../modules/math/source/hip/math/random.d</url>
+          <line>38</line>
+          <option name="timeStamp" value="13" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

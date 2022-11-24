@@ -141,9 +141,11 @@ static void initEngine(bool audio3D = false)
 
 enum float FRAME_TIME = 1000/60; //60 frames per second
 
-export extern(C) int HipremeMain()
+export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 {
 	import hip.data.ini;
+	import hip.math.random;
+	Random.initialize();
 	Console.initialize();
 	initEngine(true);
 	if(isUsingInterpreter)
@@ -171,12 +173,12 @@ export extern(C) int HipremeMain()
 	{
 		import hip.console.log;
 		logln("Will init renderer");
-		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11);}
+		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11, windowWidth, windowHeight);}
 		else version(Android)
 		{
 			version(Have_gles){}
 			else{static assert(false, "Android build requires GLES on its dependencies.");}
-			HipRenderer.initExternal(HipRendererType.GL3);
+			HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);
 		}
 		else static assert(false, "No renderer for this platform");
 	}
@@ -247,13 +249,8 @@ version(Android)
 
 		jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
 		{
-			int ret = HipremeMain();
-			import hip.hiprenderer.viewport;
 			int[2] wsize = HipAndroid.javaCall!(int[2], "getWindowSize");
-			Viewport p = HipRenderer.getCurrentViewport();
-			p.setBounds(0,0, wsize[0], wsize[1]);
-			HipRenderer.setWindowSize(wsize[0], wsize[1]);
-			HipRenderer.setViewport(p);
+			int ret = HipremeMain(wsize[0], wsize[1]);
 			return ret;
 		}
 		jboolean Java_com_hipremeengine_app_HipremeEngine_HipremeUpdate(JNIEnv* env, jclass clazz)

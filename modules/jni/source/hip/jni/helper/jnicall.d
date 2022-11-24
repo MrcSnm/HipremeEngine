@@ -133,6 +133,8 @@ string javaGenerateMethodName(alias javaPackage)(string method)
     {
         if(pName[i] == '.')
             packName~= '_';
+        else if(pName[i] == '_')
+            packName~= "_1";
         else
             packName~= pName[i];
     }

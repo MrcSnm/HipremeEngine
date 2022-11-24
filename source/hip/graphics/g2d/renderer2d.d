@@ -31,6 +31,8 @@ void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewpor
 {
     autoUpdateCameraAndViewport = shouldAutoUpdateCameraAndViewport;
     viewport = new Viewport(0, 0, HipRenderer.width, HipRenderer.height);
+    import hip.console.log;
+    logln("Viewport ", [viewport.width, viewport.height]);
     viewport.setWorldSize(HipRenderer.width, HipRenderer.height);
     viewport.setType(ViewportType.fit, HipRenderer.width, HipRenderer.height);
     HipRenderer.setViewport(viewport);
@@ -77,6 +79,7 @@ void resizeRenderer2D(uint width, uint height)
 {
     if(autoUpdateCameraAndViewport)
     {
+        HipRenderer.setWindowSize(width, height);
         if(viewport !is null && HipRenderer.getCurrentViewport() == viewport)
         {
             HipRenderer.setViewport(viewport);

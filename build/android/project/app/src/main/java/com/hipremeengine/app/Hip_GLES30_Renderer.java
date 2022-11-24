@@ -11,6 +11,8 @@ import javax.microedition.khronos.opengles.GL10;
 public class Hip_GLES30_Renderer implements GLSurfaceView.Renderer
 {
 
+    public static native void onRendererResize(int width, int height);
+
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config)
     {
@@ -38,7 +40,7 @@ public class Hip_GLES30_Renderer implements GLSurfaceView.Renderer
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height)
     {
-        GLES20.glViewport(0, 0, width, height);
+        onRendererResize(width, height);
     }
 
     @Override
