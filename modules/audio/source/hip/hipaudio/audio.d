@@ -42,14 +42,6 @@ else
  */
 public interface IHipAudioPlayer
 {
-    //COMMON TASK
-    public bool isMusicPlaying(AHipAudioSource src);
-    public bool isMusicPaused(AHipAudioSource src);
-    public bool resume(AHipAudioSource src);
-    public bool play(AHipAudioSource src);
-    public bool stop(AHipAudioSource src);
-    public bool pause(AHipAudioSource src);
-
     //LOAD RELATED
     public bool play_streamed(AHipAudioSource src);
     public IHipAudioClip load(string path, HipAudioType type);
@@ -59,15 +51,9 @@ public interface IHipAudioPlayer
     public final IHipAudioClip loadMusic(string mus){return load(mus, HipAudioType.MUSIC);}
     public final IHipAudioClip loadSfx(string sfx){return load(sfx, HipAudioType.SFX);}
 
-    //EFFECTS
-    public void setPitch(AHipAudioSource src, float pitch);
-    public void setPanning(AHipAudioSource src, float panning);
-    public void setVolume(AHipAudioSource src, float volume);
-    public void setMaxDistance(AHipAudioSource src, float dist);
-    public void setRolloffFactor(AHipAudioSource src, float factor);
-    public void setReferenceDistance(AHipAudioSource src, float dist);
 
     public void onDestroy();
+    public void update();
 }
 
 class HipAudio
@@ -134,17 +120,10 @@ class HipAudio
 
     @ExportD static bool play(AHipAudioSource src)
     {
-        if(audioInterface.play(src))
-        {
-            src.isPlaying = true;
-            src.time = 0;
-            return true;
-        }
         return false;
     }
     @ExportD static bool pause(AHipAudioSource src)
     {
-        audioInterface.pause(src);
         src.isPlaying = false;
         return false;
     }
@@ -156,13 +135,11 @@ class HipAudio
     }
     @ExportD static bool resume(AHipAudioSource src)
     {
-        audioInterface.resume(src);
         src.isPlaying = true;
         return false;
     }
     @ExportD static bool stop(AHipAudioSource src)
     {
-        audioInterface.stop(src);
         return false;
     }
 
@@ -221,14 +198,12 @@ class HipAudio
         return ret;
     }
 
-    @ExportD static bool isMusicPlaying(AHipAudioSource src)
+    @ExportD static bool isMusicPlaying()
     {
-        audioInterface.isMusicPlaying(src);
         return false;
     }
-    @ExportD static bool isMusicPaused(AHipAudioSource src)
+    @ExportD static bool isMusicPaused()
     {
-        audioInterface.isMusicPaused(src);
         return false;
     }
     
@@ -242,56 +217,14 @@ class HipAudio
         audioInterface = null;
     }
 
+    static void update()
+    {
+        if(audioInterface !is null)
+            audioInterface.update();
+    }
 
-    @ExportD static void setPitch(AHipAudioSource src, float pitch)
-    {
-        audioInterface.setPitch(src, pitch);
-        src.pitch = pitch;
-    }
-    @ExportD static void setPanning(AHipAudioSource src, float panning)
-    {
-        audioInterface.setPanning(src, panning);
-        src.panning = panning;
-    }
-    @ExportD static void setVolume(AHipAudioSource src, float volume)
-    {
-        audioInterface.setVolume(src, volume);
-        src.volume = volume;
-    }
-    @ExportD static void setReferenceDistance(AHipAudioSource src, float dist)
-    {
-        audioInterface.setReferenceDistance(src, dist);
-        src.referenceDistance = dist;
-    }
-    @ExportD static void setRolloffFactor(AHipAudioSource src, float factor)
-    {
-        audioInterface.setRolloffFactor(src, factor);
-        src.rolloffFactor = factor;
-    }
-    @ExportD static void setMaxDistance(AHipAudioSource src, float dist)
-    {
-        audioInterface.setMaxDistance(src, dist);
-        src.maxDistance = dist;
-    }
-    
-    /**
-    *   Call this function whenever you update any AHipAudioSource property
-    * without calling its setter.
-    */
-    @ExportD static void update(AHipAudioSource src)
-    {
-        if(!src.isPlaying)
-            HipAudio.pause(src);
-        else
-            HipAudio.resume(src);
-        audioInterface.setMaxDistance(src, src.maxDistance);
-        audioInterface.setRolloffFactor(src, src.rolloffFactor);
-        audioInterface.setReferenceDistance(src, src.referenceDistance);
-        audioInterface.setVolume(src, src.volume);
-        audioInterface.setPanning(src, src.panning);
-        audioInterface.setPitch(src, src.pitch);
 
-    }
+   
     protected static bool hasProAudio;
     protected static bool hasLowLatencyAudio;
     protected static int  optimalBufferSize;
@@ -301,7 +234,7 @@ class HipAudio
     private static HipAudioSource[] sourcePool;
     private static uint activeSources;
 
-    static IHipAudioPlayer audioInterface;
+    __gshared IHipAudioPlayer audioInterface;
 
     //Debug vars
     version(HIPREME_DEBUG)

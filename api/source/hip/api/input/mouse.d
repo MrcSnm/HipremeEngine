@@ -25,6 +25,7 @@ enum HipMouseButton : ubyte
     right,
     button1,
     button2,
+    any,
     invalid
 }
 interface IHipMouse

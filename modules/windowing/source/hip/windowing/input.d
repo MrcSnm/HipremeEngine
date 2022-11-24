@@ -1,6 +1,6 @@
 module hip.windowing.input;
 
-enum HipMouseButton : ubyte
+enum HipWindowingMouseButton : ubyte
 {
     left,
     middle,

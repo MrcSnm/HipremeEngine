@@ -11,12 +11,14 @@ Distributed under the CC BY-4.0 License.
 
 module hip.systems.game;
 import hip.global.gamedef;
+import hip.hipaudio.audio;
 import hip.view;
 import hip.api.view.scene;
 
 import hip.systems.timer_manager;
 import hip.event.dispatcher;
 import hip.event.handlers.keyboard;
+import hip.event.handlers.mouse;
 import hip.windowing.events;
 import hip.hiprenderer.renderer;
 import hip.graphics.g2d.renderer2d;
@@ -60,7 +62,6 @@ class GameSystem
      * Holds the member that generates the events as inputs
      */
     EventDispatcher dispatcher;
-    KeyboardHandler keyboard;
     AScene[] scenes;
 
     HipInputListener inputListener;
@@ -82,9 +83,17 @@ class GameSystem
     this(float targetFPS)
     {
         this.targetFPS = targetFPS;
-        keyboard = new KeyboardHandler();
-        inputListener = new HipInputListener(keyboard);
-        scriptInputListener = new HipInputListener(keyboard);
+        dispatcher = new EventDispatcher(HipRenderer.window);
+        dispatcher.addOnResizeListener((uint width, uint height)
+        {
+            HipRenderer.width = width;
+            HipRenderer.height = height;
+            resizeRenderer2D(width, height);
+            foreach (AScene s; scenes)
+                s.onResize(width, height);
+        });
+        inputListener = new HipInputListener(dispatcher);
+        scriptInputListener = new HipInputListener(dispatcher);
         inputListener.addKeyboardListener(HipKey.ESCAPE, 
             (meta){hasFinished = true;}
         );
@@ -104,15 +113,7 @@ class GameSystem
             );
         }
 
-        dispatcher = new EventDispatcher(HipRenderer.window, &keyboard);
-        dispatcher.addOnResizeListener((uint width, uint height)
-        {
-            HipRenderer.width = width;
-            HipRenderer.height = height;
-            resizeRenderer2D(width, height);
-            foreach (AScene s; scenes)
-                s.onResize(width, height);
-        });
+        
         
     }
 
@@ -217,7 +218,7 @@ class GameSystem
                 scenes.remove(externalScene);
                 externalScene = null;
                 recompileGame(); // Calls hotload.reload();
-                startExternalGame();
+                startGame();
             }
         }
     }
@@ -250,6 +251,7 @@ class GameSystem
             frames = 0;
             fpsAccumulator = 0;
         }
+        HipAudio.update();
         HipTimerManager.update(deltaTime);
         HipAssetManager.update();
         

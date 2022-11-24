@@ -39,14 +39,7 @@ public class HipAudioSource : AHipAudioSource
         {
             loop = false;
             isPlaying = false;
-            HipAudio.stop(this);
             length = 0;
-            HipAudio.setPitch(this, 1f);
-            HipAudio.setPanning(this, 0f);
-            HipAudio.setVolume(this, 1f);
-            HipAudio.setMaxDistance(this, 0f);
-            HipAudio.setRolloffFactor(this, 1f);
-            HipAudio.setReferenceDistance(this, 0f);
             position = [0,0,0];
             clip = null;
             return this;

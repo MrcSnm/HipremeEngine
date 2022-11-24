@@ -244,8 +244,8 @@ class HipRenderer
             ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");
 
         window = new HipWindow(800, 600, HipWindowFlags.DEFAULT);
-        HipRenderer.width = 800;
-        HipRenderer.height = 600;
+        HipRenderer.width = window.width;
+        HipRenderer.height = window.height;
         afterInit();
         return ret;
         // return ret;
@@ -286,6 +286,12 @@ class HipRenderer
         afterInit();
 
         return ErrorHandler.stopListeningForErrors();
+    }
+    public static void setWindowSize(int width, int height)
+    {
+        assert(width > 0 && height > 0, "Window width and height must be greater than 0");
+        HipRenderer.width = window.width = width;
+        HipRenderer.height = window.height = height;
     }
     public static HipRendererType getRendererType(){return rendererType;}
     public static HipRendererConfig getCurrentConfig(){return currentConfig;}

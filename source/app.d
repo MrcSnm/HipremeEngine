@@ -250,7 +250,10 @@ version(Android)
 			int ret = HipremeMain();
 			import hip.hiprenderer.viewport;
 			int[2] wsize = HipAndroid.javaCall!(int[2], "getWindowSize");
-			HipRenderer.setViewport(new Viewport(0, 0, wsize[0], wsize[1]));
+			Viewport p = HipRenderer.getCurrentViewport();
+			p.setBounds(0,0, wsize[0], wsize[1]);
+			HipRenderer.setWindowSize(wsize[0], wsize[1]);
+			HipRenderer.setViewport(p);
 			return ret;
 		}
 		jboolean Java_com_hipremeengine_app_HipremeEngine_HipremeUpdate(JNIEnv* env, jclass clazz)
@@ -321,13 +324,13 @@ version(dll) export extern(C) bool HipremeUpdate()
 	import hip.util.time;
 	import core.time:dur;
 	import core.thread.osthread;
-	version(Android)
-	{
-		if(HipremeUpdateBase())
-			return true;
-	}
-	else version(UWP)
-	{
+	// version(Android)
+	// {
+	// 	if(HipremeUpdateBase())
+	// 		return true;
+	// }
+	// else version(UWP)
+	// {
 		long initTime = HipTime.getCurrentTime();
 		if(HipremeUpdateBase())
 		{
@@ -336,10 +339,13 @@ version(dll) export extern(C) bool HipremeUpdate()
 			{
 				Thread.sleep(dur!"msecs"(sleepTime));
 			}
-			g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
+			// g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
+			g_deltaTime = 0.016;
+			// logln(g_deltaTime);
+
 			return true;
 		}
-	}
+	// }
 	return false;
 }
 version(Desktop)

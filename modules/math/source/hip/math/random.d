@@ -51,7 +51,10 @@ class Random
     static T randomSelect(T)(in T[] container, float[] weights = []) nothrow @nogc
     {
         if(weights.length == 0)
-            return container[range(0, cast(int)$-1)];
+        {
+            size_t index = range(0, cast(int)(container.length) - 1);
+            return container[index];
+        }
 
         float currentSum = 0;
         float selectedValue = rangef(0.0, 1.0);

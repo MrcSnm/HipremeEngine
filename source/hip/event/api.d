@@ -2,6 +2,8 @@ module hip.event.api;
 public import hip.global.gamedef;
 public import hip.event.handlers.inputmap;
 public import hip.api.input.button:HipButton;
+public import hip.api.renderer.viewport:Viewport;
+import hip.hiprenderer;
 import hip.event.dispatcher;
 import hip.systems.game;
 import hip.math.vector;
@@ -29,29 +31,53 @@ export extern(System)
     {
         return sys.dispatcher.getKeyUpTime(key, id);
     }
-    bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.left, uint id = 0) 
+    bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.any, uint id = 0) 
     {
         return sys.dispatcher.isMouseButtonPressed(btn, id);
     }
-    bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.left, uint id = 0) 
+    bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.any, uint id = 0) 
     {
         return sys.dispatcher.isMouseButtonJustPressed(btn, id);
     }
-    bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.left, uint id = 0) 
+    bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.any, uint id = 0) 
     {
         return sys.dispatcher.isMouseButtonJustReleased(btn, id);
     }
-    Vector2 getTouchPosition(uint id=0) 
+    float[2] getTouchPosition(uint id=0) 
     {
-        return sys.dispatcher.getTouchPosition(id);
+        return cast(float[2])sys.dispatcher.getTouchPosition(id);
     }
-    Vector2 getTouchDeltaPosition(uint id=0) 
+
+
+    float[2] getNormallizedTouchPosition(uint id=0) 
     {
-        return sys.dispatcher.getTouchDeltaPosition(id);
+        import hip.hiprenderer;
+        float[2] ret = cast(float[2])sys.dispatcher.getTouchPosition(id);
+        ret[0]/= HipRenderer.width;
+        ret[1]/= HipRenderer.height;
+        return ret;
     }
-    Vector3 getScroll() 
+
+    float[2] getWorldTouchPosition(uint id=0, Viewport vp = null) 
     {
-        return sys.dispatcher.getScroll();
+        import hip.math.utils:clamp;
+        float[2] ret = cast(float[2])sys.dispatcher.getTouchPosition(id);
+        if(vp is null)
+            vp = HipRenderer.getCurrentViewport();
+
+        ret[0] = clamp(((ret[0] - vp.x) / vp.width) * vp.worldWidth, 0, vp.worldWidth);
+        ret[1] = clamp(((ret[1] - vp.y) / vp.height) * vp.worldHeight, 0, vp.worldHeight);
+        
+
+        return ret;
+    }
+    float[2] getTouchDeltaPosition(uint id=0) 
+    {
+        return cast(float[2])sys.dispatcher.getTouchDeltaPosition(id);
+    }
+    float[3] getScroll() 
+    {
+        return cast(float[3])sys.dispatcher.getScroll();
     }
     ubyte getGamepadCount()
     {
@@ -65,9 +91,9 @@ export extern(System)
     {
         return sys.dispatcher.setGamepadVibrating(vibrationPower, time, id);
     }
-    Vector3 getAnalog(HipGamepadAnalogs analog, ubyte id = 0)
+    float[3] getAnalog(HipGamepadAnalogs analog, ubyte id = 0)
     {
-        return sys.dispatcher.getAnalog(analog);
+        return cast(float[3])sys.dispatcher.getAnalog(analog);
     }
     bool isGamepadButtonPressed(HipGamepadButton btn, ubyte id = 0)
     {
@@ -98,8 +124,23 @@ export extern(System)
         return sys.scriptInputListener.addKeyboardListener(key,action,type,remove);
     }
 
+    const(HipButton)* addTouchListener(HipMouseButton btn, 
+        HipInputAction action,
+        HipButtonType type = HipButtonType.down,
+        AutoRemove remove = AutoRemove.no)
+    {
+        import hip.console.log;
+        logln("Added touch");
+        return sys.scriptInputListener.addTouchListener(btn,action,type,remove);
+    }
+
     bool removeKeyboardListener(const(HipButton)* btn)
     {
         return sys.scriptInputListener.removeKeyboardListener(btn);
+    }
+
+    bool removeTouchListener(const(HipButton)* btn)
+    {
+        return sys.scriptInputListener.removeTouchListener(btn);
     }
 }

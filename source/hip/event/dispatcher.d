@@ -37,15 +37,15 @@ package __gshared HipGamePad[] gamepads;
 class EventDispatcher
 {
     ulong frameCount;
-    KeyboardHandler* keyboard = null;
+    KeyboardHandler keyboard = null;
     HipMouse mouse = null;
     HipWindow window;
     protected void delegate(uint width, uint height)[] resizeListeners;
 
-    this(HipWindow window, KeyboardHandler *kb)
+    this(HipWindow window)
     {
         this.window = window;
-        keyboard = kb;
+        keyboard = new KeyboardHandler();
         mouse = new HipMouse();
         HipEventQueue.newController(); //Creates controller 0
         initXboxGamepadInput();
@@ -178,9 +178,9 @@ class EventDispatcher
     ///Public API
     Vector2 getTouchPosition(uint id = 0){return mouse.getPosition(id);}
     Vector2 getTouchDeltaPosition(uint id = 0){return mouse.getDeltaPosition(id);}
-    bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.left, uint id = 0){return mouse.isPressed(btn);}
-    bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.left, uint id = 0){return mouse.isJustPressed(btn);}
-    bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.left, uint id = 0){return mouse.isJustReleased(btn);}
+    bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.isPressed(btn);}
+    bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.isJustPressed(btn);}
+    bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.isJustReleased(btn);}
     Vector3 getScroll(){return mouse.getScroll();}
     bool isKeyPressed(char key, uint id = 0){return keyboard.isKeyPressed(key.toUppercase);}
     bool isKeyJustPressed(char key, uint id = 0){return keyboard.isKeyJustPressed(key.toUppercase);}
