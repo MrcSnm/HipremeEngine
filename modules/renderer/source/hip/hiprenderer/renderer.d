@@ -127,24 +127,37 @@ interface IHipRendererImpl
     public void dispose();
 }
 
+private struct HipRendererResources
+{
+    IHipTexture[] textures;
+    Shader[] shaders;
+    IHipVertexArrayImpl[]  vertexArrays;
+    IHipVertexBufferImpl[]  vertexBuffers;
+    IHipIndexBufferImpl[]  indexBuffers;
+}
+
 class HipRenderer
 {
     static struct Statistics 
     {
         ulong drawCalls;
     }
-    __gshared:
-    protected static Viewport currentViewport;
-    protected static Viewport mainViewport;
-    protected static IHipRendererImpl rendererImpl;
-    protected static HipRendererMode rendererMode;
-    protected Statistics stats;
-    public static HipWindow window = null;
-    public static Shader currentShader;
-    package static HipRendererType rendererType = HipRendererType.NONE;
+    __gshared
+    {
+        protected Viewport currentViewport;
+        protected Viewport mainViewport;
+        protected IHipRendererImpl rendererImpl;
+        protected HipRendererMode rendererMode;
+        protected Statistics stats;
+        public  HipWindow window = null;
+        public  Shader currentShader;
+        package HipRendererType rendererType = HipRendererType.NONE;
 
-    public static uint width, height;
-    protected static HipRendererConfig currentConfig;
+        public uint width, height;
+        protected HipRendererConfig currentConfig;
+
+        protected HipRendererResources res;
+    }
 
     version(Desktop)
     public static bool init (string confData, string confPath)
@@ -283,25 +296,24 @@ class HipRenderer
         window.show();
         foreach(err; window.errors)
             loglnError(err);
-        HipRenderer.width = width;
-        HipRenderer.height = height;
-        int w, h;
-        w = window.width;
-        h = window.height;
+        
+        setWindowSize(width, height);
         afterInit();
-
         return ErrorHandler.stopListeningForErrors();
     }
     public static void setWindowSize(int width, int height)
     {
         assert(width > 0 && height > 0, "Window width and height must be greater than 0");
+        logln("Changing window size to ", [width, height]);
         HipRenderer.width = window.width = width;
         HipRenderer.height = window.height = height;
     }
     public static HipRendererType getRendererType(){return rendererType;}
     public static HipRendererConfig getCurrentConfig(){return currentConfig;}
     public static int getMaxSupportedShaderTextures(){return rendererImpl.queryMaxSupportedPixelShaderTextures();}
-    public static IHipTexture getTextureImplementation()
+
+
+    private static IHipTexture _getTextureImplementation()
     {
         switch(HipRenderer.getRendererType())
         {
@@ -320,6 +332,11 @@ class HipRenderer
                 "Can't create a texture without a renderer implementation active");
                 return null;
         }
+    }
+    public static IHipTexture getTextureImplementation()
+    {
+        res.textures~= _getTextureImplementation();
+        return res.textures[$-1];
     }
 
     public static void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
@@ -349,6 +366,21 @@ class HipRenderer
         rendererImpl.setViewport(v);
     }
 
+    public static void reinitialize()
+    {
+        version(Android)
+        {
+            foreach(tex; res.textures)
+            {
+                (cast(Hip_GL3_Texture)tex).reload();
+            }
+            foreach(shader; res.shaders)
+            {
+                shader.reload();
+            }
+        }
+    }
+
     public static void setCamera()
     {
         
@@ -363,15 +395,22 @@ class HipRenderer
             return mat.transpose();
         return mat;
     }
+
+    private static Shader _createShader()
+    {
+        res.shaders~= rendererImpl.createShader();
+        return res.shaders[$-1];
+    }
+
     public static Shader newShader(HipShaderPresets shaderPreset = HipShaderPresets.DEFAULT)
     {
-        Shader ret = rendererImpl.createShader();
+        Shader ret = _createShader();
         ret.setFromPreset(shaderPreset);
         return ret;
     }
     public static Shader newShader(string vertexShader, string fragmentShader)
     {
-        Shader ret = rendererImpl.createShader();
+        Shader ret = _createShader();
         ret.loadShadersFromFiles(vertexShader, fragmentShader);
         return ret;
     }
@@ -381,15 +420,18 @@ class HipRenderer
     }
     public static IHipVertexArrayImpl  createVertexArray()
     {
-        return rendererImpl.createVertexArray();
+        res.vertexArrays~= rendererImpl.createVertexArray();
+        return res.vertexArrays[$-1];
     }
     public static IHipVertexBufferImpl  createVertexBuffer(ulong size, HipBufferUsage usage)
     {
-        return rendererImpl.createVertexBuffer(size, usage);
+        res.vertexBuffers~= rendererImpl.createVertexBuffer(size, usage);
+        return res.vertexBuffers[$-1];
     }
     public static IHipIndexBufferImpl createIndexBuffer(index_t count, HipBufferUsage usage)
     {
-        return rendererImpl.createIndexBuffer(count, usage);
+        res.indexBuffers~= rendererImpl.createIndexBuffer(count, usage);
+        return res.indexBuffers[$-1];
     }
     public static void setShader(Shader s)
     {

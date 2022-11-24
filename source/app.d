@@ -238,20 +238,31 @@ version(Android)
 
 	export extern(C)
 	{
+		private __gshared bool _hasExecInit = false;
 		void Java_com_hipremeengine_app_HipremeEngine_HipremeInit(JNIEnv* env, jclass clazz)
 		{
-			import hip.filesystem.systems.android;
-			HipremeInit();
-			JNISetEnv(env);
-			aaMgr = cast(AAssetManager*)HipAndroid.javaCall!(Object, "getAssetManager");
-			aaMgr = AAssetManager_fromJava(env, aaMgr);
+			if(!_hasExecInit)
+			{
+				_hasExecInit = true;
+				import hip.filesystem.systems.android;
+				HipremeInit();
+				JNISetEnv(env);
+				aaMgr = cast(AAssetManager*)HipAndroid.javaCall!(Object, "getAssetManager");
+				aaMgr = AAssetManager_fromJava(env, aaMgr);
+			}
 		}
 
+		private __gshared bool _hasExecMain;
+		private __gshared int  _mainRet;
 		jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
 		{
-			int[2] wsize = HipAndroid.javaCall!(int[2], "getWindowSize");
-			int ret = HipremeMain(wsize[0], wsize[1]);
-			return ret;
+			if(!_hasExecMain)
+			{
+				_hasExecMain = true;
+				int[2] wsize = HipAndroid.javaCall!(int[2], "getWindowSize");
+				_mainRet = HipremeMain(wsize[0], wsize[1]);
+			}
+			return _mainRet;
 		}
 		jboolean Java_com_hipremeengine_app_HipremeEngine_HipremeUpdate(JNIEnv* env, jclass clazz)
 		{
@@ -261,6 +272,12 @@ version(Android)
 		{
 			HipremeRender();
 		}
+
+		void Java_com_hipremeengine_app_HipremeEngine_HipremeReinitialize(JNIEnv* env, jclass clazz)
+		{
+			HipRenderer.reinitialize();
+		}
+
 		void  Java_com_hipremeengine_app_HipremeEngine_HipremeDestroy(JNIEnv* env, jclass clazz)
 		{
 			JNISetEnv(null);

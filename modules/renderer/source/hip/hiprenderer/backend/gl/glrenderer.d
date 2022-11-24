@@ -156,7 +156,6 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public void setViewport(Viewport v)
     {
-        import hip.console.log;
         logln("glViewport ", [v.x, v.y, v.width, v.height]);
         glCall(() => glViewport(cast(int)v.x, cast(int)v.y, cast(GLsizei)v.width, cast(GLsizei)v.height));
     }
