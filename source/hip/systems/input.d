@@ -20,6 +20,8 @@ version(Android)
 
     ///Setups an Android Package for HipremeEngine
     alias HipAndroidInput = javaGetPackage!("com.hipremeengine.app.HipInput");
+    alias HipAndroidRenderer = javaGetPackage!("com.hipremeengine.app.Hip_GLES30_Renderer");
+
     @JavaFunc!(HipAndroidInput) void onMotionEventActionMove(int pointerId, float x, float y)
 	{
         HipEventQueue.post(0, HipEventQueue.EventType.touchMove, HipEventQueue.Touch(cast(ushort)pointerId, x,y));
@@ -38,7 +40,18 @@ version(Android)
         HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Touch(ushort.max, x,y));
 	}
 
-    mixin javaGenerateModuleMethodsForPackage!(HipAndroidInput, systems.input, false);
+    @JavaFunc!(HipAndroidRenderer) void onRendererResize(int x, int y)
+    {
+        ///Must be executed on the render thread :(
+        import hip.hiprenderer;
+        import hip.graphics.g2d.renderer2d;
+        HipRenderer.setWindowSize(x, y);
+        resizeRenderer2D(cast(uint)x, cast(uint)y);
+        // HipEventQueue.post(0, HipEventQueue.EventType.windowResize, HipEventQueue.Resize(cast(uint)x, cast(uint)y));
+    }
+
+    mixin javaGenerateModuleMethodsForPackage!(HipAndroidInput, hip.systems.input, true);
+    mixin javaGenerateModuleMethodsForPackage!(HipAndroidRenderer, hip.systems.input, true);
 }
 else version(UWP)
 {

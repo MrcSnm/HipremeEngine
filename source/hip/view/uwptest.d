@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.view.uwptest;
+version(Test):
 import hip.console.log;
 import hip.view.scene;
 class UwpTestScene : Scene

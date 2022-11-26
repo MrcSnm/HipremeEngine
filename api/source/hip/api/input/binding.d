@@ -28,6 +28,7 @@ else
     public import hip.api.input.mouse;
     public import hip.api.input.inputmap;
     public import hip.api.input.keyboard;
+    public import hip.api.renderer.viewport:Viewport;
     
     extern(System)
     {
@@ -39,11 +40,17 @@ else
         float function(char key, uint id = 0) getKeyUpTime;
 
         //Mouse/Touch functions
-        bool function(HipMouseButton btn = HipMouseButton.left, uint id = 0) isMouseButtonPressed;
-        bool function(HipMouseButton btn = HipMouseButton.left, uint id = 0) isMouseButtonJustPressed;
-        bool function(HipMouseButton btn = HipMouseButton.left, uint id = 0) isMouseButtonJustReleased;
-        immutable(int[2]*) function(uint id = 0) getTouchPosition;
-        int[2] function(uint id=0) getTouchDeltaPosition;
+        bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonPressed;
+        bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonJustPressed;
+        bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonJustReleased;
+
+        ///Gets Raw touch/mouse position
+        float[2] function(uint id = 0) getTouchPosition;
+        ///Gets normallized to the window touch/mouse position
+        float[2] function(uint id = 0) getNormallizedTouchPosition;
+        ///Gets touch position in world transform. The world transform can both be based in Viewport argument, if none is passed, it is based on the currently active viewport
+        float[2] function(uint id = 0, Viewport vp = null) getWorldTouchPosition;
+        float[2] function(uint id=0) getTouchDeltaPosition;
         float[3] function(uint id=0) getScroll;
         //Gamepad Functions
         ubyte function() getGamepadCount;
@@ -59,6 +66,20 @@ else
         const(HipButton)* function(HipKey key, HipInputAction action,
         HipButtonType type = HipButtonType.down,
         AutoRemove remove = AutoRemove.no) addKeyboardListener;
+
+        const(HipButton)* function (HipMouseButton btn, HipInputAction action,
+        HipButtonType type = HipButtonType.down,
+        AutoRemove remove = AutoRemove.no) addTouchListener;
+
+
+
         bool function(const(HipButton)* button) removeKeyboardListener;
+        bool function(const(HipButton)* btn) removeTouchListener;
     }
 }
+
+
+alias addMouseListener = addTouchListener;
+alias isTouchPressed = isMouseButtonPressed;
+alias isTouchJustPressed = isMouseButtonJustPressed;
+alias isTouchJustReleased = isMouseButtonJustReleased;

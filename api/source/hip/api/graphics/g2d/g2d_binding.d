@@ -75,6 +75,8 @@ version(Script)
         ///Width, Height
         int[2] function() getWindowSize;
 
+        void function(uint width, uint height) setWindowSize;
+
         void function(uint width, uint height) setCameraSize;
 
         ///Creates a track for the animation controller

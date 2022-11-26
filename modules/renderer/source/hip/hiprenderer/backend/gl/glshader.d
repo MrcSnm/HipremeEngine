@@ -69,37 +69,79 @@ class Hip_GL3_FragmentShader : FragmentShader
             }
         };
     }
-    override final string getSpriteBatchFragment()
+
+    version(Android)
     {
-        int sup = HipRenderer.getMaxSupportedShaderTextures();
-        //Push the line breaks for easier debugging on gpu debugger
-        string textureSlotSwitchCase = "switch(texId)\n{\n"; 
-        for(int i = 0; i < sup; i++)
+        override final string getSpriteBatchFragment()
         {
-            string strI = to!string(i);
-            textureSlotSwitchCase~="case "~strI~": "~
-            "\t\toutPixelColor = texture(uTex1["~strI~"], inTexST)*inVertexColor*uBatchColor;break;\n";
+            int sup = HipRenderer.getMaxSupportedShaderTextures();
+            //Push the line breaks for easier debugging on gpu debugger
+
+            import hip.console.log;
+            logln("Supporting ", sup, " textures");
+
+            string textureSlotSwitchCase = "switch(texId)\n{\n"; 
+            for(int i = 0; i < sup; i++)
+            {
+                string strI = to!string(i);
+                textureSlotSwitchCase~="case "~strI~": "~
+                "\t\toutPixelColor = texture(uTex1["~strI~"], inTexST)*inVertexColor*uBatchColor;break;\n";
+            }
+            textureSlotSwitchCase~="}\n";
+
+            return shaderVersion~"\n"~floatPrecision~"\n"~q{
+                
+                uniform sampler2D uTex1[}~to!string(sup)~q{];
+
+                uniform vec4 uBatchColor;
+
+                in vec4 inVertexColor;
+                in vec2 inTexST;
+                in float inTexID;
+
+                out vec4 outPixelColor;
+                void main()
+                }~"{"~q{
+                    int texId = int(inTexID);
+                } ~textureSlotSwitchCase~"}";
+                    // outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
+                    // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
         }
-        textureSlotSwitchCase~="}\n";
-
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
-            
-            uniform sampler2D uTex1[}~to!string(sup)~q{];
-
-            uniform vec4 uBatchColor;
-
-            in vec4 inVertexColor;
-            in vec2 inTexST;
-            in float inTexID;
-
-            out vec4 outPixelColor;
-            void main()
-            }~"{"~q{
-                int texId = int(inTexID);
-            } ~textureSlotSwitchCase~"}";
-                // outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
-                // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
     }
+    else
+    {
+        override final string getSpriteBatchFragment()
+        {
+            int sup = HipRenderer.getMaxSupportedShaderTextures();
+            //Push the line breaks for easier debugging on gpu debugger
+            string textureSlotSwitchCase = "switch(texId)\n{\n"; 
+            for(int i = 0; i < sup; i++)
+            {
+                string strI = to!string(i);
+                textureSlotSwitchCase~="case "~strI~": "~
+                "\t\toutPixelColor = texture(uTex1["~strI~"], inTexST)*inVertexColor*uBatchColor;break;\n";
+            }
+            textureSlotSwitchCase~="}\n";
+
+            return shaderVersion~"\n"~floatPrecision~"\n"~q{
+                
+                uniform sampler2D uTex1[}~to!string(sup)~q{];
+
+                uniform vec4 uBatchColor;
+
+                in vec4 inVertexColor;
+                in vec2 inTexST;
+                in float inTexID;
+
+                out vec4 outPixelColor;
+                void main()
+                }~"{"~q{
+                    int texId = int(inTexID);
+                } ~textureSlotSwitchCase~"}";
+                    // outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
+                    // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
+        }
+    } 
 
     override final string getGeometryBatchFragment()
     {
@@ -259,6 +301,7 @@ class Hip_GL_ShaderImpl : IShader
     {
         Hip_GL3_FragmentShader fs = new Hip_GL3_FragmentShader();
         fs.shader = glCreateShader(GL_FRAGMENT_SHADER);
+        HipRenderer.exitOnError();
         return fs;
     }
 
@@ -266,27 +309,29 @@ class Hip_GL_ShaderImpl : IShader
     {
         Hip_GL3_VertexShader vs = new Hip_GL3_VertexShader();
         vs.shader = glCreateShader(GL_VERTEX_SHADER);
+        HipRenderer.exitOnError();
         return vs;
     }
     ShaderProgram createShaderProgram()
     {
         Hip_GL3_ShaderProgram prog = new Hip_GL3_ShaderProgram();
         prog.program = glCreateProgram();
+        HipRenderer.exitOnError();
         return prog;
     }
     bool compileShader(GLuint shaderID, string shaderSource)
     {
         shaderSource~="\0";
         char* source = cast(char*)shaderSource.ptr; 
-        glShaderSource(shaderID, 1, &source,  cast(GLint*)null);
-        glCompileShader(shaderID);
+        glCall(() =>glShaderSource(shaderID, 1, &source,  cast(GLint*)null));
+        glCall(() =>glCompileShader(shaderID));
         int success;
         char[512] infoLog;
 
-        glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
+        glCall(() => glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success));
         if(ErrorHandler.assertErrorMessage(success==true, "Shader compilation error", "Compilation failed"))
         {
-            glGetShaderInfoLog(shaderID, 512, null, infoLog.ptr);
+            glCall(() =>glGetShaderInfoLog(shaderID, 512, null, infoLog.ptr));
             ErrorHandler.showErrorMessage("Error on shader source: ", shaderSource);
             ErrorHandler.showErrorMessage("Compilation error:", cast(string)(infoLog));
         }
@@ -305,18 +350,18 @@ class Hip_GL_ShaderImpl : IShader
     {
         uint prog = (cast(Hip_GL3_ShaderProgram)program).program;
 
-        glAttachShader(prog, (cast(Hip_GL3_VertexShader)vs).shader);
-        glAttachShader(prog, (cast(Hip_GL3_FragmentShader)fs).shader);
-        glLinkProgram(prog);
+        glCall(() =>glAttachShader(prog, (cast(Hip_GL3_VertexShader)vs).shader));
+        glCall(() =>glAttachShader(prog, (cast(Hip_GL3_FragmentShader)fs).shader));
+        glCall(() =>glLinkProgram(prog));
         
         int success;
         char[512] infoLog;
 
-        glGetProgramiv(prog, GL_LINK_STATUS, &success);
+        glCall(() =>glGetProgramiv(prog, GL_LINK_STATUS, &success));
 
         if(ErrorHandler.assertErrorMessage(success==true, "Shader linking error", "Linking failed"))
         {
-            glGetProgramInfoLog(prog, 512, null, infoLog.ptr);
+            glCall(() => glGetProgramInfoLog(prog, 512, null, infoLog.ptr));
             ErrorHandler.showErrorMessage("Linking error: ", cast(string)(infoLog));
         }
         
@@ -324,12 +369,11 @@ class Hip_GL_ShaderImpl : IShader
     }
     int getId(ref ShaderProgram prog, string name)
     {
-        
-        int varID = glGetUniformLocation((cast(Hip_GL3_ShaderProgram)prog).program, cast(char*)name.ptr); //Immutable anyway
+        int varID = glCall(() =>glGetUniformLocation((cast(Hip_GL3_ShaderProgram)prog).program, cast(char*)name.ptr)); //Immutable anyway
         if(varID < 0)
         {
             ErrorHandler.showErrorMessage("Uniform not found",
-            "Variable named '"~name~"' does not exists in the shader");
+            "Variable named '"~name~"' does not exists in shader "~prog.name);
         }
         return varID;
     }
@@ -347,16 +391,16 @@ class Hip_GL_ShaderImpl : IShader
     */
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
     {
-        glVertexAttribPointer(layoutIndex, valueAmount, dataType, normalize, stride, cast(void*)offset);
-        glEnableVertexAttribArray(layoutIndex);
+        glCall(() =>glVertexAttribPointer(layoutIndex, valueAmount, dataType, normalize, stride, cast(void*)offset));
+        glCall(() =>glEnableVertexAttribArray(layoutIndex));
     }
 
     void setCurrentShader(ShaderProgram program)
     {
-        glUseProgram((cast(Hip_GL3_ShaderProgram)program).program);
+        glCall(() =>glUseProgram((cast(Hip_GL3_ShaderProgram)program).program));
     }
 
-    void useShader(ShaderProgram program){glUseProgram((cast(Hip_GL3_ShaderProgram)program).program);}
+    void useShader(ShaderProgram program){glCall(() =>glUseProgram((cast(Hip_GL3_ShaderProgram)program).program));}
 
 
     void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts)
@@ -369,49 +413,49 @@ class Hip_GL_ShaderImpl : IShader
                 final switch(v.sVar.type) with(UniformType)
                 {
                     case boolean:
-                        glUniform1i(id, v.sVar.get!bool);
+                        glCall(() => glUniform1i(id, v.sVar.get!bool));
                         break;
                     case integer:
-                        glUniform1i(id, v.sVar.get!int);
+                        glCall(() => glUniform1i(id, v.sVar.get!int));
                         break;
                     case integer_array:
                         int[] temp = v.sVar.get!(int[]);
-                        glUniform1iv(id, cast(int)temp.length, temp.ptr);
+                        glCall(() =>glUniform1iv(id, cast(int)temp.length, temp.ptr));
                         break;
                     case uinteger:
-                        glUniform1ui(id, v.sVar.get!uint);
+                        glCall(() =>glUniform1ui(id, v.sVar.get!uint));
                         break;
                     case uinteger_array:
                         uint[] temp = v.sVar.get!(uint[]);
-                        glUniform1uiv(id, cast(int)temp.length, temp.ptr);
+                        glCall(() =>glUniform1uiv(id, cast(int)temp.length, temp.ptr));
                         break;
                     case floating:
-                        glUniform1f(id, v.sVar.get!float);
+                        glCall(() =>glUniform1f(id, v.sVar.get!float));
                         break;
                     case floating2:
                         float[2] temp = v.sVar.get!(float[2]);
-                        glUniform2f(id, temp[0], temp[1]);
+                        glCall(() =>glUniform2f(id, temp[0], temp[1]));
                         break;
                     case floating3:
                         float[3] temp = v.sVar.get!(float[3]);
-                        glUniform3f(id, temp[0], temp[1], temp[2]);
+                        glCall(() =>glUniform3f(id, temp[0], temp[1], temp[2]));
                         break;
                     case floating4:
                         float[4] temp = v.sVar.get!(float[4]);
-                        glUniform4f(id, temp[0], temp[1], temp[2], temp[3]);
+                        glCall(() =>glUniform4f(id, temp[0], temp[1], temp[2], temp[3]));
                         break;
                     case floating2x2:
-                        glUniformMatrix2fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[4]).ptr);
+                        glCall(() => glUniformMatrix2fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[4]).ptr));
                         break;
                     case floating3x3:
-                        glUniformMatrix3fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[9]).ptr);
+                        glCall(() =>glUniformMatrix3fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[9]).ptr));
                         break;
                     case floating4x4:
-                        glUniformMatrix4fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[16]).ptr);
+                        glCall(() => glUniformMatrix4fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[16]).ptr));
                         break;
                     case floating_array:
                         float[] temp = v.sVar.get!(float[]);
-                        glUniform1fv(id, cast(int)temp.length, temp.ptr);
+                        glCall(() => glUniform1fv(id, cast(int)temp.length, temp.ptr));
                         break;
                     case none:break;
                 }
@@ -427,7 +471,7 @@ class Hip_GL_ShaderImpl : IShader
         scope int[] temp = new int[](slotsCount);
         for(int i = 0; i < slotsCount; i++)
             temp[i] = i;
-        glUniform1iv(varID, slotsCount, temp.ptr);
+        glCall(() => glUniform1iv(varID, slotsCount, temp.ptr));
     }
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
@@ -438,17 +482,17 @@ class Hip_GL_ShaderImpl : IShader
     void deleteShader(FragmentShader* _fs)
     {
         auto fs = cast(Hip_GL3_FragmentShader)*_fs;
-        glDeleteShader(fs.shader); fs.shader = 0;
+        glCall(() => glDeleteShader(fs.shader)); fs.shader = 0;
     }
     void deleteShader(VertexShader* _vs)
     {
         auto vs = cast(Hip_GL3_VertexShader)*_vs;
-        glDeleteShader(vs.shader); vs.shader = 0;
+        glCall(() => glDeleteShader(vs.shader)); vs.shader = 0;
     }
     void dispose(ref ShaderProgram prog)
     {
         Hip_GL3_ShaderProgram p = cast(Hip_GL3_ShaderProgram)prog;
-        glDeleteProgram(p.program);
+        glCall(() => glDeleteProgram(p.program));
     }
 }
 
@@ -472,29 +516,29 @@ version(HipGL3) class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
         if(layout.hint & ShaderHint.GL_USE_BLOCK)
         {
             uint ubo;
-            glGenBuffers(1, &ubo);
-            glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-            glBufferData(GL_UNIFORM_BUFFER, layout.getLayoutSize(), null, GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            glCall(() => glGenBuffers(1, &ubo));
+            glCall(() => glBindBuffer(GL_UNIFORM_BUFFER, ubo));
+            glCall(() => glBufferData(GL_UNIFORM_BUFFER, layout.getLayoutSize(), null, GL_DYNAMIC_DRAW));
+            glCall(() => glBindBuffer(GL_UNIFORM_BUFFER, 0));
             ubos~= Pair!(ShaderVariablesLayout, uint)(layout, ubo);
         }
     }
     protected uint getUboId(ref Pair!(ShaderVariablesLayout, int) ubo, string name)
     {
-        return glGetUniformBlockIndex(ubo.b, cast(char*)name.ptr);
+        return glCall(() =>glGetUniformBlockIndex(ubo.b, cast(char*)name.ptr));
     }
     protected void bindUbo(ref Pair!(ShaderVariablesLayout, int) ubo, int index = 0)
     {
-        glBindBufferBase(GL_UNIFORM_BUFFER, index, ubo.second);
+        glCall(() =>glBindBufferBase(GL_UNIFORM_BUFFER, index, ubo.second));
     }
     protected void updateUbo(ref Pair!(ShaderVariablesLayout, int) ubo)
     {
         import core.stdc.string;
-        glBindBuffer(GL_UNIFORM_BUFFER, ubo.b);
+        glCall(() =>glBindBuffer(GL_UNIFORM_BUFFER, ubo.b));
         GLvoid* ptr = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
         memcpy(ptr, ubo.a.getBlockData(), ubo.a.getLayoutSize());
-        glUnmapBuffer(GL_UNIFORM_BUFFER);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        glCall(() => glUnmapBuffer(GL_UNIFORM_BUFFER));
+        glCall(() => glBindBuffer(GL_UNIFORM_BUFFER, 0));
     }
     
 
@@ -513,7 +557,7 @@ version(HipGL3) class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
     override void dispose(ref ShaderProgram prog)
     {
         foreach (ub; ubos)
-            glDeleteBuffers(1, &ub.b);
+            glCall(() => glDeleteBuffers(1, &ub.b));
         ubos.length = 0;
         super.dispose(prog);
     }

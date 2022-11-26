@@ -112,6 +112,11 @@ void   toStringRange(Sink)(auto ref Sink sink, const(char)* str) if(isOutputRang
         put(sink, str[i]);
 }
 
+void   toStringRange(Sink)(auto ref Sink sink, const(ubyte)* str) if(isOutputRange!(Sink, char))
+{
+    toStringRange(sink, cast(const(char)*)str);
+}
+
 void toStringRange(Sink)(auto ref Sink sink, void* ptr) if(isOutputRange!(Sink, char))
 {
     toHex(sink, cast(size_t)ptr);

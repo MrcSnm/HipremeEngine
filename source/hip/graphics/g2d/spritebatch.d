@@ -404,14 +404,13 @@ class HipSpriteBatch : IHipBatch
         // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
         // material.bind();
 
-        mesh.shader.initTextureSlots(currentTextures[0], "uTex", HipRenderer.getMaxSupportedShaderTextures());
+        mesh.shader.initTextureSlots(currentTextures[0], "uTex1", HipRenderer.getMaxSupportedShaderTextures());
         mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj);
         mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity());
         mesh.shader.setVertexVar("Cbuf1.uView", camera.view);
         
-        mesh.shader.bind();
-        import hip.console.log;
-        foreach(i; 1..usingTexturesCount)
+        mesh.bind();
+        foreach(i; 0..usingTexturesCount)
             currentTextures[i].bind(i);
         mesh.shader.sendVars();
 

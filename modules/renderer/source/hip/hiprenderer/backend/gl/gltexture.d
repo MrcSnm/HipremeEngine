@@ -12,16 +12,19 @@ module hip.hiprenderer.backend.gl.gltexture;
 
 version(OpenGL):
 public import hip.api.renderer.texture;
+public import hip.api.data.commons:IReloadable;
 
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
 import hip.image;
 
-class Hip_GL3_Texture : IHipTexture
+class Hip_GL3_Texture : IHipTexture, IReloadable
 {
     GLuint textureID = 0;
     int width, height;
     uint currentSlot;
+
+    private IImage loadedImage;
 
     bool hasSuccessfullyLoaded(){return width > 0;}
     protected int getGLWrapMode(TextureWrapMode mode)
@@ -65,35 +68,35 @@ class Hip_GL3_Texture : IHipTexture
 
     void bind()
     {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        glCall(() => glActiveTexture(GL_TEXTURE0));
+        glCall(() => glBindTexture(GL_TEXTURE_2D, textureID));
     }
     void unbind()
     {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glCall(() => glActiveTexture(GL_TEXTURE0));
+        glCall(() => glBindTexture(GL_TEXTURE_2D, 0));
     }
 
     void bind(int slot)
     {
         currentSlot = slot;
-        glActiveTexture(GL_TEXTURE0+slot);
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        glCall(() => glActiveTexture(GL_TEXTURE0+slot));
+        glCall(() => glBindTexture(GL_TEXTURE_2D, textureID));
     }
 
     void unbind(int slot)
     {
         currentSlot = slot;
-        glActiveTexture(GL_TEXTURE0+slot);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glCall(() => glActiveTexture(GL_TEXTURE0+slot));
+        glCall(() => glBindTexture(GL_TEXTURE_2D, 0));
     }
 
     void setWrapMode(TextureWrapMode mode)
     {
         int mod = getGLWrapMode(mode);
         bind(currentSlot);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mod);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mod);
+        glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mod));
+        glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mod));
     }
 
     void setTextureFilter(TextureFilter min, TextureFilter mag)
@@ -101,14 +104,16 @@ class Hip_GL3_Texture : IHipTexture
         int min_filter = getGLMinMagFilter(min);
         int mag_filter = getGLMinMagFilter(mag);
         bind(currentSlot);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
+        glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter));
+        glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter));
     }
 
     protected bool loadImpl(in IImage image)
     {
-        glGenTextures(1, &textureID);
+        loadedImage = cast(IImage)image;
+        glCall(() => glGenTextures(1, &textureID));
         int mode;
+        int internalFormat;
         const(void)[] pixels = image.getPixels;
         switch(image.getBytesPerPixel)
         {
@@ -117,33 +122,51 @@ class Hip_GL3_Texture : IHipTexture
                 {
                     pixels = image.convertPalettizedToRGBA();
                     mode = GL_RGBA;
+                    internalFormat = GL_RGBA8;
                 }
                 else
+                {
                     mode = GL_RED;
+                    internalFormat = GL_R8;
+                }
                 break;
             case 3:
                 mode = GL_RGB;
+                internalFormat = GL_RGB8;
                 break;
             case 4:
                 mode = GL_RGBA;
+                internalFormat = GL_RGBA;
                 break;
             case 2:
             default:
                 import hip.util.conv;
                 ErrorHandler.assertExit(false, "GL Pixel format unsupported on image "~image.getName~", bytesPerPixel: "~to!string(image.getBytesPerPixel));
         }
-        bind(currentSlot);
-        glTexImage2D(GL_TEXTURE_2D, 0, mode, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, pixels.ptr);
         width = image.getWidth;
         height = image.getHeight;
+        bind(currentSlot);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glCall(() => glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, pixels.ptr));
+
+        glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         setWrapMode(TextureWrapMode.REPEAT);
         return true;
     }
     
     int getWidth() const {return width;}
     int getHeight() const {return height;}
+    
+    bool reload()
+    {
+        if(loadedImage !is null)
+        {
+            textureID = 0;
+            return loadImpl(loadedImage);
+        }
+        return false;
+    }
+    
     
 }

@@ -1,4 +1,5 @@
 module hip.ai.pathfinding;
+version(Test):
 import hip.util.data_structures;
 
 private struct AStarNode

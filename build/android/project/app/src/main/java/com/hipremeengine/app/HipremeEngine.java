@@ -33,6 +33,7 @@ public class HipremeEngine extends Activity
     public static native int HipremeMain();
     public static native boolean HipremeUpdate();
     public static native void HipremeRender();
+    public static native void HipremeReinitialize();
     public static native void HipremeDestroy();
 
     HipSurfaceView view;
@@ -50,15 +51,14 @@ public class HipremeEngine extends Activity
         }
         assetManager = getApplicationContext().getResources().getAssets();
         instance = this;
-
-        view = new HipSurfaceView((this));
+        view = new HipSurfaceView(this);
         setContentView(view);
     }
     @Override
     protected void onDestroy()
     {
         super.onDestroy();
-        HipremeDestroy();
+        //HipremeDestroy();
         HipremeEngine.instance = null;
     }
 

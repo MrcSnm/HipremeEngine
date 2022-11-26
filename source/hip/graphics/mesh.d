@@ -44,11 +44,20 @@ class Mesh
         this.vao.sendAttributes(shader);
     }
 
+    void bind()
+    {
+        this.shader.bind();
+        this.vao.bind();
+    }
+    void unbind()
+    {
+        this.shader.unbind();
+        this.vao.unbind();
+    }
+
     /**
-    *   Use this function only for creation!
-    *   inside loops, you must use updateIndices
+    *   Will choose between resizing buffer as needed or only updating it.
     */
-    
     public void setIndices(ref index_t[] indices)
     {
         if(indices.length <  this.indices.length)
@@ -59,9 +68,9 @@ class Mesh
         this.indices = indices;
         this.vao.setIndices(cast(index_t)indices.length, indices.ptr);
     }
-    /**''
-    *   Use this function only for creation!
-    *   Inside loops, you must use updateVertices
+
+    /**
+    *   Will choose between resizing buffer as needed or only updating it.
     */
     public void setVertices(ref float[] vertices)
     {

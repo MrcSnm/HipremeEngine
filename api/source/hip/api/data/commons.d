@@ -6,6 +6,14 @@ interface ILoadable
     bool isReady();
 }
 
+/**
+*   OpenGL Renderer must implement IReloadable for when changing device orientation.
+*/
+interface IReloadable
+{
+    bool reload();
+}
+
 interface IHipAsset
 {
     string name() const;

@@ -242,10 +242,10 @@ int main(string[] args)
         toAppend~= copyEnd;
         toAppendFilter = copyInit~"\n"~generateFilterDefinition()~"\n"~toAppendFilter~copyEnd;
 
-        int plusIndex = vcx.countUntil('<');
+        long plusIndex = vcx.countUntil('<');
         if(plusIndex != 0) plusIndex--;
 
-        int plusIndexFilter = vcxfilter.countUntil('<');
+        long plusIndexFilter = vcxfilter.countUntil('<');
         if(plusIndexFilter != 0) plusIndexFilter-=1;
 
         //Add files to the project

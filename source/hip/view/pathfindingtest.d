@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.view.pathfindingtest;
+version(Test):
 import hip.ai.pathfinding;
 import hip.hiprenderer;
 import hip.graphics.g2d.geometrybatch;

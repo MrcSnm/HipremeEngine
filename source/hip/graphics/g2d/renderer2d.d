@@ -31,6 +31,8 @@ void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewpor
 {
     autoUpdateCameraAndViewport = shouldAutoUpdateCameraAndViewport;
     viewport = new Viewport(0, 0, HipRenderer.width, HipRenderer.height);
+    import hip.console.log;
+    logln("Viewport ", [viewport.width, viewport.height]);
     viewport.setWorldSize(HipRenderer.width, HipRenderer.height);
     viewport.setType(ViewportType.fit, HipRenderer.width, HipRenderer.height);
     HipRenderer.setViewport(viewport);
@@ -41,6 +43,7 @@ void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewpor
     geoBatch = new GeometryBatch(camera);
     textBatch = new HipTextRenderer(camera);
     setGeometryColor(HipColor.white);
+
 
     version(HipremeEngineLua)
     {
@@ -77,18 +80,22 @@ void resizeRenderer2D(uint width, uint height)
     if(autoUpdateCameraAndViewport)
     {
         if(viewport !is null && HipRenderer.getCurrentViewport() == viewport)
-        {
             HipRenderer.setViewport(viewport);
-        }
         if(camera !is null)
-            camera.setSize(cast(int)viewport.worldWidth,cast(int)viewport.worldHeight);
-            
+            camera.setSize(viewport.worldWidth, viewport.worldHeight);
     }
 }
 
 export extern(C):
 
 int[2] getWindowSize(){return [HipRenderer.width, HipRenderer.height];}
+
+void setWindowSize(uint width, uint height)
+{
+    HipRenderer.setWindowSize(width, height);
+    HipRenderer.setViewport(viewport);
+    camera.setSize(cast(int)viewport.worldWidth,cast(int)viewport.worldHeight);
+}
 void setCameraSize(uint width, uint height){camera.setSize(width, height);}
 void setViewport(Viewport v)
 {
