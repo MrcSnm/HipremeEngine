@@ -32,23 +32,25 @@ version(Windows)
 	alias GetModuleHandle = GetModuleHandleW;
 }
 
-void initializeHip()
+version(Script) void initializeHip()
 {
-	version(Script)
+	version(Windows)
 	{
-		version(Windows)
-		{
-			_dll = GetModuleHandle(null);
-		}
-		else
-		{
-			import core.sys.posix.dlfcn:dlopen, RTLD_LAZY;
-			_dll = dlopen(null, RTLD_LAZY);
-		}
-		hipDestroy = cast(typeof(hipDestroy))_loadSymbol(_dll, "hipDestroy");
+		_dll = GetModuleHandle(null);
 	}
+	else
+	{
+		import core.sys.posix.dlfcn:dlopen, RTLD_NOW;
+		_dll = dlopen(null, RTLD_NOW);
+	}
+	import std.stdio;
+	if(_dll == null)
+		writeln("Could not load GetModuleHandle(null)");
+	hipDestroy = cast(typeof(hipDestroy))_loadSymbol(_dll, "hipDestroy");
+	if(hipDestroy == null)
+		writeln("Fatal error: could not load hipDestroy");
 }
-version(Script):
+
 version(Windows)
 {
 	alias _loadSymbol = GetProcAddress;
@@ -142,6 +144,19 @@ mixin template OverloadsForFunctionPointers(alias targetModule)
 	}
 }
 
+mixin template ExpandClassFunctionPointers(alias targetClass)
+{
+	import hip.api.internal: isFunctionPointer;
+
+	static foreach(mem; __traits(allMembers, targetClass))
+	{
+		static if(isFunctionPointer!(__traits(getMember, targetClass, mem)))
+		{
+			mixin(__traits(getVisibility, __traits(getMember, targetClass, mem)), " alias ", mem, " = ", __traits(identifier, targetClass), ".", mem,";");
+		}
+	}
+}
+
 enum loadClassFunctionPointers(alias targetClass, string exportedClass = "")()
 {
 	string prefix = "";
@@ -160,11 +175,31 @@ enum loadClassFunctionPointers(alias targetClass, string exportedClass = "")()
 			if(f is null)
 			{
 				import std.stdio;
-				writeln(f.stringof, " wasn't able to load");
+				writeln(f.stringof, " wasn't able to load (tried with ", importedFunctionName,")");
 			}
 		}
 	}}
 }
+
+enum loadClassFunctionPointers(alias targetClass)()
+{
+	string importedFunctionName;
+	static foreach(member; __traits(allMembers, targetClass))
+	{{
+		alias f = __traits(getMember, targetClass, member);
+		static if(isFunctionPointer!(f))
+		{
+			importedFunctionName = member~'\0';
+			f = cast(typeof(f))_loadSymbol(_dll, importedFunctionName.ptr);
+			if(f is null)
+			{
+				import std.stdio;
+				writeln(f.stringof, " wasn't able to load (tried with ", importedFunctionName,")");
+			}
+		}
+	}}
+}
+
 
 
 template loadSymbolsFromExportD(string exportedClass, Ts...)
@@ -174,7 +209,14 @@ template loadSymbolsFromExportD(string exportedClass, Ts...)
 		enum e = '"'~exportedClass~"_\"";
 		string ret;
 		static foreach(i, s; Ts)
+		{
 			ret~= s.stringof ~"= cast(typeof("~s.stringof~ " ))_loadSymbol(_dll, ("~e~"~\""~s.stringof~"\\0\").ptr);";
+			if(s.stringof is null)
+			{
+				import std.stdio;
+				writeln("Could not load ",s.stringof, " (tried with ", e~s.stringof,")");
+			}
+		}
 		return ret;
 	}();
 

@@ -51,7 +51,7 @@ class EventDispatcher
         initXboxGamepadInput();
         import hip.windowing.events;
 
-        onKeyDown = (wchar key)
+        onKeyDown = (uint key)
         {
             try
             {
@@ -59,7 +59,7 @@ class EventDispatcher
             }
             catch(Exception e){assert(false);}
         };
-        onKeyUp = (wchar key)
+        onKeyUp = (uint key)
         {
             try{HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(getHipKeyFromSystem(key)));}
             catch(Exception e){assert(false);}
@@ -243,10 +243,10 @@ class EventDispatcher
 
 version(Windows)
 {
-    private HipKey getHipKeyFromSystem(wchar key)
+    private HipKey getHipKeyFromSystem(uint key)
     {
         import core.sys.windows.winuser;
-        ushort k = ushort(key);
+        ushort k = cast(ushort)(key);
         assert(k > 0 && k < ubyte.max, "Key out of range");
         switch(k)
         {
@@ -371,10 +371,131 @@ version(Windows)
 }
 else version(Posix)
 {
-    private HipKey getHipKeyFromSystem(wchar key)
+    private HipKey getHipKeyFromSystem(uint key)
     {
-        import hip.console.log;
-        logln("Key: ", key);
-        return cast(HipKey)ushort(key);
+        import hip.windowing.platforms.x11lib.keysym;
+        switch(key)
+        {
+            case XK_BackSpace: return HipKey.BACKSPACE;
+            case XK_Tab: return HipKey.TAB;
+            case XK_Return: return HipKey.ENTER;
+            case XK_KP_Enter: return HipKey.ENTER;
+            case XK_Shift_L: return HipKey.SHIFT;
+            case XK_Shift_R: return HipKey.SHIFT;
+            case XK_Control_L: return HipKey.CTRL;
+            case XK_Control_R: return HipKey.CTRL;
+            case XK_Alt_L: return HipKey.ALT;
+            case XK_Alt_R: return HipKey.ALT;
+            case XK_Pause: return HipKey.PAUSE_BREAK;
+            case XK_Caps_Lock: return HipKey.CAPSLOCK;
+            case XK_Escape: return HipKey.ESCAPE;
+            case XK_space: return HipKey.SPACE;
+            case XK_Page_Up: return HipKey.PAGE_UP;
+            case XK_Page_Down: return HipKey.PAGE_DOWN;
+            case XK_End: return HipKey.END;
+            case XK_Home: return HipKey.HOME;
+            case XK_Left: return HipKey.ARROW_LEFT;
+            case XK_Up: return HipKey.ARROW_UP;
+            case XK_Right: return HipKey.ARROW_RIGHT;
+            case XK_Down: return HipKey.ARROW_DOWN;
+            case XK_Insert: return HipKey.INSERT;
+            case XK_Delete: return HipKey.DELETE;
+            case XK_0: return HipKey._0;
+            case XK_1: return HipKey._1;
+            case XK_2: return HipKey._2;
+            case XK_3: return HipKey._3;
+            case XK_4: return HipKey._4;
+            case XK_5: return HipKey._5;
+            case XK_6: return HipKey._6;
+            case XK_7: return HipKey._7;
+            case XK_8: return HipKey._8;
+            case XK_9: return HipKey._9;
+            case XK_A: return HipKey.A;
+            case XK_B: return HipKey.B;
+            case XK_C: return HipKey.C;
+            case XK_D: return HipKey.D;
+            case XK_E: return HipKey.E;
+            case XK_F: return HipKey.F;
+            case XK_G: return HipKey.G;
+            case XK_H: return HipKey.H;
+            case XK_I: return HipKey.I;
+            case XK_J: return HipKey.J;
+            case XK_K: return HipKey.K;
+            case XK_L: return HipKey.L;
+            case XK_M: return HipKey.M;
+            case XK_N: return HipKey.N;
+            case XK_O: return HipKey.O;
+            case XK_P: return HipKey.P;
+            case XK_Q: return HipKey.Q;
+            case XK_R: return HipKey.R;
+            case XK_S: return HipKey.S;
+            case XK_T: return HipKey.T;
+            case XK_U: return HipKey.U;
+            case XK_V: return HipKey.V;
+            case XK_W: return HipKey.W;
+            case XK_X: return HipKey.X;
+            case XK_Y: return HipKey.Y;
+            case XK_Z: return HipKey.Z;
+            case XK_a: return HipKey.A;
+            case XK_b: return HipKey.B;
+            case XK_c: return HipKey.C;
+            case XK_d: return HipKey.D;
+            case XK_e: return HipKey.E;
+            case XK_f: return HipKey.F;
+            case XK_g: return HipKey.G;
+            case XK_h: return HipKey.H;
+            case XK_i: return HipKey.I;
+            case XK_j: return HipKey.J;
+            case XK_k: return HipKey.K;
+            case XK_l: return HipKey.L;
+            case XK_m: return HipKey.M;
+            case XK_n: return HipKey.N;
+            case XK_o: return HipKey.O;
+            case XK_p: return HipKey.P;
+            case XK_q: return HipKey.Q;
+            case XK_r: return HipKey.R;
+            case XK_s: return HipKey.S;
+            case XK_t: return HipKey.T;
+            case XK_u: return HipKey.U;
+            case XK_v: return HipKey.V;
+            case XK_w: return HipKey.W;
+            case XK_x: return HipKey.X;
+            case XK_y: return HipKey.Y;
+            case XK_z: return HipKey.Z;
+            case XK_Meta_L: return HipKey.META_LEFT;
+            case XK_Meta_R: return HipKey.META_RIGHT;
+            case XK_F1: return HipKey.F1;
+            case XK_F2: return HipKey.F2;
+            case XK_F3: return HipKey.F3;
+            case XK_F4: return HipKey.F4;
+            case XK_F5: return HipKey.F5;
+            case XK_F6: return HipKey.F6;
+            case XK_F7: return HipKey.F7;
+            case XK_F8: return HipKey.F8;
+            case XK_F9: return HipKey.F9;
+            case XK_F10: return HipKey.F10;
+            case XK_F11: return HipKey.F11;
+            case XK_F12: return HipKey.F12;
+            case XK_semicolon: return HipKey.SEMICOLON;
+            case XK_equal: return HipKey.EQUAL;
+            case XK_comma: return HipKey.COMMA;
+            case XK_minus: return HipKey.MINUS;
+            case XK_period: return HipKey.PERIOD;
+            case XK_slash: return HipKey.SLASH;
+            case XK_bracketleft: return HipKey.BRACKET_LEFT;
+            case XK_bracketright: return HipKey.BRACKET_RIGHT;
+            case XK_backslash: return HipKey.BACKSLASH;
+            case XK_grave: return HipKey.QUOTE;
+            default:
+            {
+                version(HipCheckUnknownKeycode)
+                {
+                    import hip.util.conv:to;
+                    assert(false, "Unknown key received ("~to!string(key)~")");
+                }
+                else
+                    return cast(HipKey)key;
+            }
+        }
     }
 }

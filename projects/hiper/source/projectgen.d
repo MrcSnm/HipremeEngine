@@ -137,7 +137,6 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 		"HipAudioAPI",
 		"HipMathAPI",
 		"HipremeAudio",
-		"HipremeG2D",
 		"HipDataStructures"
 	]
 }

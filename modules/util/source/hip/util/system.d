@@ -106,7 +106,12 @@ version(Windows)
 string dynamicLibraryGetLibName(string libName)
 {
     version(Windows) return libName~".dll";
-    else version(Posix) return "lib"~libName~".so";
+    else version(Posix)
+    {
+        import hip.util.path;
+        libName.filename = "lib"~libName.filename~".so";
+        return libName;
+    }
     else static assert(0, "Platform not supported");
 }
 
@@ -115,7 +120,10 @@ bool dynamicLibraryIsLibNameValid(string libName)
     version(Windows)
         return libName[$-4..$] == ".dll";
     else version(Posix)
-        return libName[0..3] == "lib" && libName[$-3..$] == ".so";
+    {
+        import hip.util.path;
+        return libName.filename[0..3] == "lib" && libName[$-3..$] == ".so";
+    }
     else
         return true;
 }
@@ -132,8 +140,8 @@ void* dynamicLibraryLoad(string libName)
         }
         else version(Posix)
         {
-            import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
-            ret = dlopen(null, RTLD_LAZY);
+            import core.sys.posix.dlfcn : dlopen, RTLD_NOW;
+            ret = dlopen(null, RTLD_NOW);
         }
         else
             ret = null;
@@ -145,10 +153,15 @@ void* dynamicLibraryLoad(string libName)
             import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
             ret = dlopen(libName.toStringz, RTLD_LAZY);
         }
-        else
+        else version(Windows)
         {
             import core.runtime;
             ret = Runtime.loadLibrary(libName);
+        }
+        else version(Posix)
+        {
+            import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
+            ret = dlopen(libName.toStringz, RTLD_LAZY);
         }
     }
     return ret;
@@ -196,6 +209,11 @@ bool dynamicLibraryRelease(void* dll)
         return cast(bool)FreeLibrary(dll);
     }
     else version(Android)
+    {
+        import core.sys.linux.dlfcn:dlclose;
+        return cast(bool)dlclose(dll);
+    }
+    else version(Posix)
     {
         import core.sys.linux.dlfcn:dlclose;
         return cast(bool)dlclose(dll);

@@ -4,13 +4,12 @@ public import hip.api.renderer.texture;
 
 private alias thisModule = __traits(parent, {});
 
-void initGlobalAssets()
+version(Script) void initGlobalAssets()
 {
-    version(Script)
-    {
-        import hip.api.internal;
-        loadModuleFunctionPointers!thisModule;
-    }
+    import hip.api.internal;
+    loadModuleFunctionPointers!thisModule;
+    import hip.api.console;
+    log("HipengineAPI: Initialized Global Assets");
 }
 
 version(Script) extern(System)

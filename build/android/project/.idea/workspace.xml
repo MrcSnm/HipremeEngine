@@ -17,30 +17,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="002a72a2-c94b-4c61-a2b8-f896bf1fb8a8" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../../../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../../README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/Hip_GLES30_Renderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/Hip_GLES30_Renderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine.sln" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine.sln" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.filters" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.filters" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.user" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.user" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine_TemporaryKey.pfx" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine_TemporaryKey.pfx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/jni/source/hip/jni/helper/jnicall.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/jni/source/hip/jni/helper/jnicall.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/math/source/hip/math/random.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/math/source/hip/math/random.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/backend/gl/glrenderer.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/backend/gl/glrenderer.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/renderer.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/renderer/source/hip/hiprenderer/renderer.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../renderer.conf" beforeDir="false" afterPath="$PROJECT_DIR$/../../../renderer.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/app.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/app.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/hip/event/dispatcher.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/event/dispatcher.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/hip/graphics/g2d/renderer2d.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/graphics/g2d/renderer2d.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/hip/systems/input.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/systems/input.d" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[f479b6e]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[C:\Users\Hipreme\.android\avd\Pixel_3a_API_33_x86_64.avd]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -219,5 +210,10 @@
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="AndroidRunConfigurationType">
+        <watch expression="program" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

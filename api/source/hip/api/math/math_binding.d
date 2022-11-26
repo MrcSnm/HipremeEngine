@@ -4,12 +4,9 @@ version(HipMathAPI):
 import hip.api.math.random;
 
 
-void initMath()
+version(Script) void initMath()
 {
-    version(Script)
-    {
-        import std.stdio;
-        initRandom();
-        writeln("Initialized random module");
-    }
+    initRandom();
+    import hip.api.console;
+    log("HipengineAPI: Initialized Math");
 }

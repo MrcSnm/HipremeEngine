@@ -300,6 +300,11 @@ export extern(C) void HipremeInit()
 		importExternal();
 	}
 }
+export extern(C) void HipremeTest()
+{
+	import std.stdio;
+	writeln("Executing HipremeTest from a Shared Library");
+}
 /**
 *	Loads shared libraries and setups the engine modules:
 *

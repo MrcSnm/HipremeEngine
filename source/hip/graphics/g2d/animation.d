@@ -50,6 +50,8 @@ public import hip.api.graphics.g2d.animation;
     */
     IHipAnimationTrack addFrames(HipAnimationFrame[] frame...)
     {
+        import std.stdio;
+        writeln("Adding frames");
         foreach(f; frame)
             frames~= f;
         if(frames.length > 0)
