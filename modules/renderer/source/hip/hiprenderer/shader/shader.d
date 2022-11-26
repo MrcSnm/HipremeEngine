@@ -12,6 +12,7 @@ module hip.hiprenderer.shader.shader;
 public import hip.hiprenderer.shader.shadervar :
 ShaderHint, ShaderVariablesLayout, ShaderVar;
 
+import hip.api.data.commons:IReloadable;
 import hip.api.renderer.texture;
 import hip.math.matrix;
 import hip.error.handler;
@@ -93,10 +94,13 @@ abstract class FragmentShader
     abstract string getBitmapTextFragment();
 }
 
-abstract class ShaderProgram{}
+abstract class ShaderProgram
+{
+    string name;
+}
 
 
-public class Shader
+public class Shader : IReloadable
 {
     VertexShader vertexShader;
     FragmentShader fragmentShader;
@@ -108,6 +112,8 @@ public class Shader
     string fragmentShaderPath;
     string vertexShaderPath;
 
+    protected string internalVertexSource;
+    protected string internalFragmentSource;
     private bool isUseCall = false;
 
     this(IShader shaderImpl)
@@ -131,7 +137,7 @@ public class Shader
     void setFromPreset(HipShaderPresets preset = HipShaderPresets.DEFAULT)
     {
         ShaderStatus status = ShaderStatus.SUCCESS;
-        fragmentShaderPath="hiprenderer.backend.";
+        fragmentShaderPath="hip.hiprenderer.backend.";
         switch(HipRenderer.getRendererType())
         {
             case HipRendererType.D3D11:
@@ -145,24 +151,24 @@ public class Shader
         switch(preset) with(HipShaderPresets)
         {
             case SPRITE_BATCH:
-                status = loadShaders(vertexShader.getSpriteBatchVertex(), fragmentShader.getSpriteBatchFragment());
                 fragmentShaderPath~= ".SPRITE_BATCH";
+                status = loadShaders(vertexShader.getSpriteBatchVertex(), fragmentShader.getSpriteBatchFragment(), fragmentShaderPath);
                 break;
             case FRAME_BUFFER:
-                status = loadShaders(vertexShader.getFrameBufferVertex(), fragmentShader.getFrameBufferFragment());
                 fragmentShaderPath~= ".FRAME_BUFFER";
+                status = loadShaders(vertexShader.getFrameBufferVertex(), fragmentShader.getFrameBufferFragment(), fragmentShaderPath);
                 break;
             case GEOMETRY_BATCH:
-                status = loadShaders(vertexShader.getGeometryBatchVertex(), fragmentShader.getGeometryBatchFragment());
                 fragmentShaderPath~= ".GEOMETRY_BATCH";
+                status = loadShaders(vertexShader.getGeometryBatchVertex(), fragmentShader.getGeometryBatchFragment(), fragmentShaderPath);
                 break;
             case BITMAP_TEXT:
-                status = loadShaders(vertexShader.getBitmapTextVertex(), fragmentShader.getBitmapTextFragment());
                 fragmentShaderPath~= ".BITMAP_TEXT";
+                status = loadShaders(vertexShader.getBitmapTextVertex(), fragmentShader.getBitmapTextFragment(), fragmentShaderPath);
                 break;
             case DEFAULT:
-                status = loadShaders(vertexShader.getDefaultVertex(),fragmentShader.getDefaultFragment());
                 fragmentShaderPath~= ".DEFAULT";
+                status = loadShaders(vertexShader.getDefaultVertex(),fragmentShader.getDefaultFragment(), fragmentShaderPath);
                 break;
             case NONE:
             default:
@@ -177,15 +183,19 @@ public class Shader
         }
     }
 
-    ShaderStatus loadShaders(string vertexShaderSource, string fragmentShaderSource)
+    ShaderStatus loadShaders(string vertexShaderSource, string fragmentShaderSource, string shaderPath = "")
     {
+        this.internalVertexSource = vertexShaderSource;
+        this.internalFragmentSource = fragmentShaderSource;
+
+        shaderProgram.name = shaderPath;
         if(!shaderImpl.compileShader(vertexShader, vertexShaderSource))
             return ShaderStatus.VERTEX_COMPILATION_ERROR;
         if(!shaderImpl.compileShader(fragmentShader, fragmentShaderSource))
             return ShaderStatus.FRAGMENT_COMPILATION_ERROR;
         if(!shaderImpl.linkProgram(shaderProgram, vertexShader, fragmentShader))
             return ShaderStatus.LINK_ERROR;
-        deleteShaders();
+        // deleteShaders();
         return ShaderStatus.SUCCESS;
     }
 
@@ -336,5 +346,15 @@ public class Shader
         shaderImpl.deleteShader(&vertexShader);
         HipRenderer.exitOnError();
     }
+    
+    bool reload()
+    {
+        vertexShader = shaderImpl.createVertexShader();
+        fragmentShader = shaderImpl.createFragmentShader();
+        shaderProgram = shaderImpl.createShaderProgram();
+
+        return loadShaders(internalVertexSource, internalFragmentSource) == ShaderStatus.SUCCESS;
+    }
+    
 
 }

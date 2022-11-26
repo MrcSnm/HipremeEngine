@@ -11,8 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.util.system;
 
 import hip.util.conv;
-import core.stdc.string;
-import hip.util.string:fromStringz;
+import hip.util.string:fromStringz, toStringz;
 import hip.util.path:pathSeparator;
 
 enum debugger = "asm {int 3;}";
@@ -141,13 +140,16 @@ void* dynamicLibraryLoad(string libName)
     }
     else
     {
-        // version(UWP)
-        //     ret = GetModuleHandleA((libName~'\0').ptr);
-        // else
-        // {
+        version(Android)
+        {
+            import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
+            ret = dlopen(libName.toStringz, RTLD_LAZY);
+        }
+        else
+        {
             import core.runtime;
             ret = Runtime.loadLibrary(libName);
-        // }
+        }
     }
     return ret;
 }
@@ -189,13 +191,18 @@ string dynamicLibraryError()
 
 bool dynamicLibraryRelease(void* dll)
 {
-    // version(UWP)
-    // {
-    //     return cast(bool)FreeLibrary(dll);
-    // }
-    // else
-    // {
+    version(UWP)
+    {
+        return cast(bool)FreeLibrary(dll);
+    }
+    else version(Android)
+    {
+        import core.sys.linux.dlfcn:dlclose;
+        return cast(bool)dlclose(dll);
+    }
+    else
+    {
         import core.runtime;
         return Runtime.unloadLibrary(dll);
-    // }
+    }
 }

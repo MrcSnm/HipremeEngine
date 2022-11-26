@@ -18,14 +18,52 @@ class HipOpenSLESAudioSource : HipAudioSource
         this.isStreamed = isStreamed;
     }
 
-    override void setClip(HipAudioClip clip)
+    alias clip = HipAudioSource.clip;
+    override IHipAudioClip clip(IHipAudioClip clip)
     {
-        super.setClip(clip);
-        SLIBuffer* buf = cast(SLIBuffer*)clip.getBuffer(clip.getClipData(), cast(uint)clip.getClipSize());
+        super.clip(clip);
+        return clip;
+    }
+
+    override bool play()
+    {
+        SLIBuffer* buf = (cast(HipAudioClip)clip).getBuffer(clip.getClipData(), cast(uint)clip.getClipSize()).sles;
         SLIAudioPlayer.Enqueue(*audioPlayer, buf.data.ptr, buf.size);
         buf.isLocked = true;
         buf.hasBeenProcessed = false;
+
+        import hip.console.log;
+
+        logln("SampleRate: ", clip.getSampleRate);
+        logln("Output: ", clip.getHint().outputSamplerate);
+        float rate = cast(float)clip.getSampleRate() / cast(float)clip.getHint().outputSamplerate;
+        
+        SLIAudioPlayer.setRate(*audioPlayer, rate);
+
+        SLIAudioPlayer.play(*audioPlayer);
+        return true;
     }
+
+    alias loop = HipAudioSource.loop;
+    override bool loop(bool shouldLoop)
+    {
+        super.loop(shouldLoop);
+        SLIAudioPlayer.setLoop(*audioPlayer, shouldLoop);
+        return shouldLoop;
+    }
+
+    override bool stop()
+    {
+        SLIAudioPlayer.stop(*audioPlayer);
+        return false;
+    }
+
+    override bool pause()
+    {
+        SLIAudioPlayer.pause(*audioPlayer);
+        return false;
+    }
+
 
     override void pullStreamData()
     {
@@ -35,33 +73,27 @@ class HipOpenSLESAudioSource : HipAudioSource
         ErrorHandler.assertExit(audioPlayer.playerObj != null, "Can't pull stream data without null audioplayer");
         uint decoded = clip.updateStream();
         import hip.console.log;
-        SLIBuffer* freeBuf = getSLIFreeBuffer();
+        HipAudioBufferWrapper2* freeBuf = getFreeBuffer();
         
         if(freeBuf != null)
         {
-            audioPlayer.removeFreeBuffer(freeBuf);
-            sendAvailableBuffer(freeBuf);
+            audioPlayer.removeFreeBuffer(freeBuf.buffer.sles);
+            sendAvailableBuffer(freeBuf.buffer);
         }
-        
-        SLIBuffer* buf = cast(SLIBuffer*)clip.getBuffer(clip.getClipData(), clip.chunkSize);
+        HipAudioClip c = cast(HipAudioClip)clip;
+        SLIBuffer* buf = c.getBuffer(c.getClipData(), c.chunkSize).sles;
         audioPlayer.pushBuffer(buf);
 
     }
 
-    SLIBuffer* getSLIFreeBuffer()
-    {
-        HipAudioBufferWrapper2* freeBuf = getFreeBuffer();
-        if(freeBuf != null)
-            return cast(SLIBuffer*)freeBuf.buffer;
-        return null;
-    }
-
     override HipAudioBufferWrapper2* getFreeBuffer()
     {
-        void* b = audioPlayer.getProcessedBuffer();
+        SLIBuffer* b = audioPlayer.getProcessedBuffer();
         if(b == null)
             return null;
-        return clip.findBuffer(b);
+        HipAudioBuffer buffer;
+        buffer.sles = b;
+        return (cast(HipAudioClip)clip).findBuffer(buffer);
     }
     
 }

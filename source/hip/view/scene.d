@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.view.scene;
+version(Test):
 public import hip.api.view.scene;
 public import hip.view.layer;
 

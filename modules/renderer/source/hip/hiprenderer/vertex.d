@@ -24,9 +24,10 @@ public import hip.hiprenderer.backend.gl.glvertex;
 // else{alias index_t = uint;}
 alias index_t = ushort;
 
+
 enum index_t_maxQuads()
 {
-    return cast(index_t)(index_t.max / 6);
+    return cast(index_t)(ushort.max / 6);
 }
 enum index_t_maxQuadIndices()
 {
@@ -153,9 +154,11 @@ class HipVertexArrayObject
     */
     void createIndexBuffer(index_t count, HipBufferUsage usage)
     {
-        this.bind();
         this.EBO = HipRenderer.createIndexBuffer(count, usage);
+        this.bind();
         this.EBO.bind();
+        HipRenderer.exitOnError();
+
     }
     /**
     * Creates and binds a vertex buffer.
@@ -164,9 +167,10 @@ class HipVertexArrayObject
     */
     void createVertexBuffer(uint count, HipBufferUsage usage)
     {
-        this.bind();
         this.VBO = HipRenderer.createVertexBuffer(count*this.stride, usage);
+        this.bind();
         this.VBO.bind();
+        HipRenderer.exitOnError();
     }
     /**
     *   This function creates an attribute information,

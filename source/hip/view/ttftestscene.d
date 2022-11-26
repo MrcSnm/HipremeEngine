@@ -1,4 +1,5 @@
 module hip.view.ttftestscene;
+version(Test):
 
 import hip.font.ttf;
 import hip.view.scene;

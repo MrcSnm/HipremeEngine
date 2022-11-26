@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.view.bitmaptestscene;
+version(Test):
 import hip.graphics.g2d.tilemap;
 import hip.event.handlers.keyboard_layout;
 import hip.hiprenderer;

@@ -10,6 +10,7 @@ interface IHipAudioClip
     bool load(string audioPath, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false);
     uint loadStreamed(in void[] data, HipAudioEncoding encoding);
     uint loadStreamed(string audioPath, HipAudioEncoding encoding);
+    uint getSampleRate();
     uint updateStream();
     void onUpdateStream(void[] data, uint decodedSize);
     void[] getClipData();

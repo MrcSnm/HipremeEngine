@@ -105,4 +105,6 @@ class HipXAudioPlayer : IHipAudioPlayer
     {
         xAudio.Release();
     }
+
+    public void update(){}
 }

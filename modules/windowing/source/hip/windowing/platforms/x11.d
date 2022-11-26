@@ -1,6 +1,7 @@
 module hip.windowing.platforms.x11;
 
-version(Posix)
+version(Android){}
+else version(Posix)
     version = X11;
 
 version(X11):
@@ -275,15 +276,15 @@ void poll()
                 {
                     case 1: //Left
                         if(onMouseDown != null)
-                            onMouseDown(HipMouseButton.left, x, y);
+                            onMouseDown(HipWindowingMouseButton.left, x, y);
                         break;
                     case 2: //Middle
                         if(onMouseDown != null)
-                            onMouseDown(HipMouseButton.middle, x, y);
+                            onMouseDown(HipWindowingMouseButton.middle, x, y);
                         break;
                     case 3: //Right
                         if(onMouseDown != null)
-                            onMouseDown(HipMouseButton.right, x, y);
+                            onMouseDown(HipWindowingMouseButton.right, x, y);
                         break;
                     case 4: //Scroll up
                         if(onMouseWheel != null)
@@ -304,15 +305,15 @@ void poll()
                 {
                     case 1: //Left
                         if(onMouseUp != null)
-                            onMouseUp(HipMouseButton.left, x, y);
+                            onMouseUp(HipWindowingMouseButton.left, x, y);
                         break;
                     case 2: //Middle
                         if(onMouseUp != null)
-                            onMouseUp(HipMouseButton.middle, x, y);
+                            onMouseUp(HipWindowingMouseButton.middle, x, y);
                         break;
                     case 3: //Right
                         if(onMouseUp != null)
-                            onMouseUp(HipMouseButton.right, x, y);
+                            onMouseUp(HipWindowingMouseButton.right, x, y);
                         break;
                     default: break;
                 }

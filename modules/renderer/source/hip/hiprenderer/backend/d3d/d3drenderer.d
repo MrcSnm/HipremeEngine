@@ -334,7 +334,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     }
     public final bool isRowMajor(){return false;}
 
-    public bool hasErrorOccurred(out string err, string file = __FILE__, int line = __LINE__)
+    public bool hasErrorOccurred(out string err, string file = __FILE__, size_t line = __LINE__)
     {
         if(hasDebugAvailable)
         {

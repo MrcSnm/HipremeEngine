@@ -3,6 +3,7 @@ import hip.util.string;
 import std.typecons;
 import std.traits:isArray;
 public import hip.util.to_string_range;
+public import hip.util.string:toStringz;
 
 
 string toString(dstring dstr) pure nothrow @safe
@@ -16,6 +17,7 @@ string toString(dstring dstr) pure nothrow @safe
     }
     catch(Exception e){return "";}
 }
+
 
 string toString(T)(T[] arr) pure nothrow @safe
 {

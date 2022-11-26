@@ -41,13 +41,6 @@ public class HipNullAudio : IHipAudioPlayer
     public void updateStream(AHipAudioSource source){}
     public AHipAudioSource getSource(bool isStreamed){return new HipAudioSource();}
 
-    //EFFECTS
-    public void setPitch(AHipAudioSource src, float pitch){}
-    public void setPanning(AHipAudioSource src, float panning){}
-    public void setVolume(AHipAudioSource src, float volume){}
-    public void setMaxDistance(AHipAudioSource src, float dist){}
-    public void setRolloffFactor(AHipAudioSource src, float factor){}
-    public void setReferenceDistance(AHipAudioSource src, float dist){}
-
     public void onDestroy(){}
+    public void update(){}
 }

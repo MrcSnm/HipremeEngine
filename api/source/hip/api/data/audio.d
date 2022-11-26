@@ -80,12 +80,20 @@ struct AudioConfig
     uint channels;
     int bufferSize;
 
+    static enum defaultBufferSize = audioConfigDefaultBufferSize;
+
+
+
     /**
     *   Returns a default audio configuration for 2D
     */
     static AudioConfig musicConfig()
     {
         return AudioConfig(44_100, AudioFormat.float32Little, 2, audioConfigDefaultBufferSize);
+    }
+    static AudioConfig androidConfig()
+    {
+        return AudioConfig(22_050, AudioFormat.float32Little, 1U, 2048);
     }
     static AudioConfig lightweightConfig()
     {

@@ -90,11 +90,14 @@ enum loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
 		static if(isFunctionPointer!(f))
 		{
 			importedFunctionName = prefix~member~'\0';
-			f = cast(typeof(f))_loadSymbol(_dll, importedFunctionName.ptr);
 			if(f is null)
 			{
-				import std.stdio;
-				writeln(f.stringof, " wasn't able to load");
+				f = cast(typeof(f))_loadSymbol(_dll, importedFunctionName.ptr);
+				if(f is null)
+				{
+					import std.stdio;
+					writeln(f.stringof, " wasn't able to load (tried with ", importedFunctionName, ")");
+				}
 			}
 		}
 	}}

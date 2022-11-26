@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.view.paralleltestscene;
+version(Test):
 import hip.hiprenderer;
 import hip.image;
 import hip.graphics.g2d;

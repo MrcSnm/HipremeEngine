@@ -13,32 +13,49 @@ import hip.util.reflection;
 import core.stdc.stdlib;
 import core.stdc.time;
 
+
+
+
 class Random
 {
-    // @disable this();
-    // import std.random;
-    // private static std.random.Random randomGenerator;
-    static this()
+    @disable this();
+    
+    // version(Android)
+    // {
+    //     import std.random;
+    //     private __gshared std.random.Random randomGenerator;
+    // }
+    static void initialize()
     {
         srand(cast(uint)time(null));
-        // randomGenerator = std.random.Random(std.random.unpredictableSeed());
+        // version(Android)
+        // {
+        //     import std.random;
+        //     randomGenerator = std.random.Random(std.random.unpredictableSeed());
+        // }
     }
-    @ExportD static float rangef(float min, float max) nothrow @nogc
+
+    @nogc nothrow
     {
-        return (cast(float)rand() / (RAND_MAX+1)) * max + min;
-        // return std.random.uniform(cast(int)min, cast(int)max, randomGenerator);
-    }
-    @ExportD static int range(int min, int max) nothrow @nogc
-    {
-        return cast(int)rangef(min, max);
-    }
-    @ExportD static uint rangeu(uint min, uint max) nothrow @nogc
-    {
-        return cast(uint)rangef(min, max);
-    }
-    @ExportD static ubyte rangeub(ubyte min, ubyte max) nothrow @nogc
-    {
-        return cast(ubyte)rangef(min, max);
+        @ExportD static float rangef(float min, float max)
+        {
+            // version(Android)
+                // return std.random.uniform(cast(int)min, cast(int)max, randomGenerator);
+            // else
+            return (cast(float)rand() / RAND_MAX) * max + min;
+        }
+        @ExportD static int range(int min, int max)
+        {
+            return cast(int)rangef(min, max);
+        }
+        @ExportD static uint rangeu(uint min, uint max)
+        {
+            return cast(uint)rangef(min, max);
+        }
+        @ExportD static ubyte rangeub(ubyte min, ubyte max)
+        {
+            return cast(ubyte)rangef(min, max);
+        }
     }
 
     /**
@@ -48,10 +65,16 @@ class Random
     *   to 1 - sum(weights)
     *   The weights must sum up to 1.0
     */
-    static T randomSelect(T)(in T[] container, float[] weights = []) nothrow @nogc
+    static T randomSelect(T)(in T[] container, float[] weights = []) @nogc nothrow
     {
         if(weights.length == 0)
-            return container[range(0, cast(int)$-1)];
+        {
+            int min = 0;
+            int max = cast(int)(container.length) - 1;
+            int index = range(min, max);
+
+            return container[index];
+        }
 
         float currentSum = 0;
         float selectedValue = rangef(0.0, 1.0);

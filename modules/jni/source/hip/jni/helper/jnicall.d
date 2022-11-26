@@ -111,7 +111,7 @@ string javaGetClassPath(string path)
 jclass javaGetClass(JNIEnv* env, string path)
 {
     path = javaGetClassPath(path);
-    if(path == "")
+    if(path == "" || env == null)
         return null;
     return (*env).FindClass(env, path.toStringz);
 }
@@ -133,6 +133,8 @@ string javaGenerateMethodName(alias javaPackage)(string method)
     {
         if(pName[i] == '.')
             packName~= '_';
+        else if(pName[i] == '_')
+            packName~= "_1";
         else
             packName~= pName[i];
     }
@@ -251,7 +253,7 @@ string java_getParametersCall(string funcParams)()
 string javaGenerateMethod(alias javaPackage, string funcSymbol, string m = __MODULE__)()
 {
     static assert(__traits(hasMember, javaPackage, "_packageName"), "JavaFunc error: "~javaPackage.stringof~" is not a java package");
-    mixin("import hip."~m~";");
+    mixin("import "~m~";");
 
 
     enum metName = javaGenerateMethodName!(javaPackage)(funcSymbol);
@@ -313,14 +315,13 @@ enum JavaFunc(alias T)()
 
 template javaGetPackage(string packageName)
 {
-    JNIEnv* _env = null;
     immutable(string) _packageName = packageName;
-    void setEnv(JNIEnv* env){_env = env;}
 
 
     
-    auto javaCall(T, string path, Args...)(JNIEnv* env = _env)
+    auto javaCall(T, string path, Args...)()
     {
+        JNIEnv* env = _env;
         static if(is(T == void*))
             return javaCall!(Object, path, Args);
         static if(packageName[$-1] != '.' && path[0] != '.')
@@ -342,7 +343,6 @@ template javaGetPackage(string packageName)
         }
         typeRepresentation~=")"~javaGetTypeRepresentation!T;
         
-        import hip.console.log;
 
         jclass cls = javaGetClass(env, where);
         jmethodID id = (*env).GetStaticMethodID(env, cls,
@@ -375,4 +375,5 @@ template javaGetPackage(string packageName)
 
 // }
 
-alias javaCall = javaGetPackage!("").javaCall;
+void JNISetEnv(JNIEnv* env){_env = env;}
+private __gshared JNIEnv* _env = null;

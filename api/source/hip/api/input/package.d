@@ -25,4 +25,6 @@ public import hip.api.input.binding;
 
 
 alias getMousePosition = getTouchPosition;
+alias getNormallizedMousePosition = getNormallizedTouchPosition;
+alias getWorldMousePosition = getWorldTouchPosition;
 alias getMouseDeltaPosition = getTouchDeltaPosition;

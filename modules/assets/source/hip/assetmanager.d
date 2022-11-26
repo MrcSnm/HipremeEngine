@@ -154,24 +154,24 @@ class HipAssetManager
 {
     import hip.config.opts;
 
-    protected static HipWorkerPool workerPool;
-    static float currentTime;
+    protected __gshared HipWorkerPool workerPool;
+    __gshared float currentTime;
     //Caching
-    protected static HipAsset[string] assets;
-    protected static HipAssetLoadTask[string] loadQueue;
+    protected __gshared HipAsset[string] assets;
+    protected __gshared HipAssetLoadTask[string] loadQueue;
 
     //Thread Communication
-    protected static HipAssetLoadTask[] completeQueue;
-    protected static DebugMutex completeMutex;
-    protected static void delegate(HipAsset)[][HipAssetLoadTask] completeHandlers;
+    protected __gshared HipAssetLoadTask[] completeQueue;
+    protected __gshared DebugMutex completeMutex;
+    protected __gshared void delegate(HipAsset)[][HipAssetLoadTask] completeHandlers;
     
 
     //Auto Loading
-    protected static HipAsset[string] referencedAssets;
-    protected static bool isCheckingReferenced = false;
+    protected __gshared HipAsset[string] referencedAssets;
+    protected __gshared bool isCheckingReferenced = false;
 
 
-    static this()
+    public static void initialize()
     {
         completeMutex = new DebugMutex();
         workerPool = new HipWorkerPool(HIP_ASSETMANAGER_WORKER_POOL);

@@ -27,14 +27,75 @@ class HipMouse
     {
         metadatas[cast(int)btn].setPressed(pressed);
     }
-    bool isJustPressed(HipMouseButton btn){return metadatas[btn].isJustPressed;}
-    bool isJustReleased(HipMouseButton btn){return metadatas[btn].isJustReleased;}
+
+    bool isPressed(HipMouseButton btn = HipMouseButton.any)
+    {
+        if(btn == HipMouseButton.any)
+        {
+            foreach(b; __traits(allMembers, HipMouseButton))
+            {
+                HipMouseButton mem = __traits(getMember, HipMouseButton, b);
+                if(mem >= HipMouseButton.any)
+                    return false;
+                if(metadatas[mem].isPressed)
+                    return true;
+            }
+            return false;
+        }
+        return metadatas[btn].isPressed;
+    }
+
+    bool isJustPressed(HipMouseButton btn)
+    {
+        if(btn == HipMouseButton.any)
+        {
+            foreach(b; __traits(allMembers, HipMouseButton))
+            {
+                HipMouseButton mem = __traits(getMember, HipMouseButton, b);
+                if(mem >= HipMouseButton.any)
+                    return false;
+                if(metadatas[mem].isJustPressed)
+                    return true;
+            }
+            return false;
+        }
+        return metadatas[btn].isJustPressed;
+    }
+    bool isJustReleased(HipMouseButton btn)
+    {
+        if(btn == HipMouseButton.any)
+        {
+            foreach(b; __traits(allMembers, HipMouseButton))
+            {
+                HipMouseButton mem = __traits(getMember, HipMouseButton, b);
+                if(mem >= HipMouseButton.any)
+                    return false;
+                if(metadatas[mem].isJustReleased)
+                    return true;
+            }
+            return false;
+        }
+        return metadatas[btn].isJustReleased;
+    }
     void setPosition(float x, float y, uint id = 0)
     {
+        if(id+1 > positions.length)
+            positions.length = id+1;
+        if(id+1 > lastPositions.length)
+        {
+            lastPositions.length = id+1;
+        }
         lastPositions[id] = positions[id];
         ErrorHandler.assertExit(id < positions.length, "Touch ID out of range");
         positions[id].x=x;
         positions[id].y=y;
+    }
+
+    HipButtonMetadata getMetadata(HipMouseButton btn = HipMouseButton.any)
+    {
+        if(btn == HipMouseButton.any)
+            btn = HipMouseButton.left;
+        return metadatas[btn];
     }
     void setScroll(float x, float y, float z)
     {
@@ -42,7 +103,7 @@ class HipMouse
         scroll.y=y;
         scroll.z=z;
     }
-    bool isPressed(HipMouseButton btn = HipMouseButton.left){return metadatas[btn].isPressed;}
+    
 
     ///Use the ID for getting the touch, may return null
     Vector2 getPosition(uint id = 0)

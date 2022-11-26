@@ -93,13 +93,13 @@ abstract class HipFile : IHipFileItf
 */
 class HipFileSystem
 {
-    protected __gshared static string defPath;
-    protected __gshared static string initialPath = "";
-    protected __gshared static string combinedPath;
-    protected __gshared static bool hasSetInitial;
-    protected __gshared static IHipFileSystemInteraction fs;
+    protected __gshared string defPath;
+    protected __gshared string initialPath = "";
+    protected __gshared string combinedPath;
+    protected __gshared bool hasSetInitial;
+    protected __gshared IHipFileSystemInteraction fs;
 
-    protected __gshared static bool function(string path, out string errMessage)[] extraValidations;
+    protected __gshared bool function(string path, out string errMessage)[] extraValidations;
 
     version(Android){import hip.filesystem.systems.android;}
     else version(UWP){import hip.filesystem.systems.uwp;}

@@ -1,6 +1,7 @@
 module hip.windowing.window;
 
-version(Posix)
+version(Android){}
+else version(Posix)
     version = X11;
 
 version(UWP){}

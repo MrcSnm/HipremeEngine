@@ -281,6 +281,11 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         device = null;               
     }
 
+    public void update()
+    {
+        
+    }
+
     /**
     *   OpenAL has an embedded resampler
     */

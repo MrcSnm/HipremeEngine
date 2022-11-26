@@ -84,39 +84,39 @@ version(WindowsNative)
             }
             case WM_LBUTTONDOWN:
                 if(onMouseDown != null)
-                    onMouseDown(HipMouseButton.left, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+                    onMouseDown(HipWindowingMouseButton.left, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
                 break;
             case WM_MBUTTONDOWN:
                 if(onMouseDown != null)
-                    onMouseDown(HipMouseButton.middle, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+                    onMouseDown(HipWindowingMouseButton.middle, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
                 break;
             case WM_RBUTTONDOWN:
                 if(onMouseDown != null)
-                    onMouseDown(HipMouseButton.right, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+                    onMouseDown(HipWindowingMouseButton.right, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
                 break;
             case WM_XBUTTONDOWN:
                 if(onMouseDown != null)
                     onMouseDown(
-                        GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? HipMouseButton.button1 : HipMouseButton.button2,
+                        GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? HipWindowingMouseButton.button1 : HipWindowingMouseButton.button2,
                         GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)
                     );
                 break;
             case WM_LBUTTONUP:
                 if(onMouseUp != null)
-                    onMouseUp(HipMouseButton.left, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+                    onMouseUp(HipWindowingMouseButton.left, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
                 break;
             case WM_MBUTTONUP:
                 if(onMouseUp != null)
-                    onMouseUp(HipMouseButton.middle, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+                    onMouseUp(HipWindowingMouseButton.middle, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
                 break;
             case WM_RBUTTONUP:
                 if(onMouseUp != null)
-                    onMouseUp(HipMouseButton.right, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+                    onMouseUp(HipWindowingMouseButton.right, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
                 break;
             case WM_XBUTTONUP:
                 if(onMouseUp != null)
                     onMouseUp(
-                        GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? HipMouseButton.button1 : HipMouseButton.button2,
+                        GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? HipWindowingMouseButton.button1 : HipWindowingMouseButton.button2,
                         GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)
                     );
                 break;
@@ -352,7 +352,7 @@ version(WindowsNative)
         );
     }
 
-    extern(Windows) LRESULT openWindow(out HWND hwnd, int width, int height)
+    extern(Windows) LRESULT openWindow(out HWND hwnd, ref int width, ref int height)
     {
         static bool registeredClass = false;
         if(!registeredClass)

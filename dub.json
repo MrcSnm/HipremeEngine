@@ -14,23 +14,14 @@
 	],
 	"dflags": [
 		"-J=.",
-		"-preview=dip25",
-		"-preview=shortenedMethods",
-		"-preview=dip1000",
-		"-preview=dip1008",
-		"-preview=inclusiveincontracts"
+		"-preview=shortenedMethods"
 	],
 	"dflags-dmd": [
 		"-checkaction=halt"
 	],
-	"libs-linux" : [
-		"X11",	
-		"gl"
-	],
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipremeEngineLua",
-		"HipGL3",
 		"HipCheckUnknownKeycode",
 		"HipAsync",
 		"HipDataStructures",
@@ -87,6 +78,7 @@
 				"NO_GLES",
 				"NO_SLES"
 			],
+		
 			"buildOptions": [
 				"debugMode",
 				"debugInfo",
@@ -112,6 +104,10 @@
 				"Test",
 				"NO_GLES",
 				"NO_SLES"
+			],
+			"libs-linux" : [
+				"X11",
+				"gl"
 			],
 			"subConfigurations": {
 				"audio": "nodx",
@@ -143,6 +139,10 @@
 				"NO_GLES",
 				"NO_SLES"
 			],
+			"libs-linux" : [
+				"X11",
+				"gl"
+			],
 			"buildOptions": [
 				"debugMode",
 				"debugInfo",
@@ -169,6 +169,10 @@
 				"Standalone",
 				"Desktop"
 			],
+			"libs-linux" : [
+				"X11",
+				"gl"
+			],
 			"versions-windows": [
 				"FSWUsesWin32",
 				"Direct3D_11",
@@ -193,6 +197,10 @@
 				"OpenAL",
 				"Desktop",
 				"HipConcurrency"
+			],
+			"libs-linux" : [
+				"X11",
+				"gl"
 			],
 			"versions-windows": [
 				"FSWUsesWin32",
@@ -225,12 +233,21 @@
 		},
 		{
 			"name": "android",
+			"lflags": [
+				"-LC:/Users/Hipreme/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/33/"
+			],
+			"dflags": [
+				"-g"
+			],
 			"libs": [
 				"log",
 				"android",
 				"OpenSLES",
 				"EGL",
 				"GLESv3"
+			],
+			"sourcePaths": [
+				"build/release_game"
 			],
 			"dependencies": {
 				"jni": {"path": "./modules/jni", "version": "*"},
@@ -244,15 +261,17 @@
 			},
 			"postBuildCommands": [
 				"copy /B .\\bin\\android\\libhipreme_engine.so .\\build\\android\\project\\app\\src\\main\\jniLibs\\arm64-v8a\\libhipreme_engine.so",
-				"cd .\\build && rdmd copyresources.d ..\\assets .\\android\\project\\app\\src\\main\\assets",
-				"cd .\\build\\android\\project\\ && .\\gradlew.bat :app:assembleDebug && adb install -r .\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
-				"adb shell monkey -p com.hipremeengine.app 1",
-				"adb logcat -b all -v color com.hipremengine.app:D | findstr HipremeEngine"
+				"cd .\\build && rdmd copyresources.d .\\release_game\\assets .\\android\\project\\app\\src\\main\\assets",
+				"REM .\\build\\android\\project\\ && .\\gradlew.bat :app:assembleDebug && adb install -r .\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
+				"REM shell monkey -p com.hipremeengine.app 1",
+				"REM logcat -b all -v color com.hipremengine.app:D | findstr com.hipremeengine.app"
 			],
 			"targetPath": "bin/android/",
 			"targetType": "dynamicLibrary",
 			"versions": [
 				"dll",
+				"Standalone",
+				"HipConcurrency",
 				"GLES30",
 				"OpenGL"
 			]

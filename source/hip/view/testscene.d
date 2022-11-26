@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.view.testscene;
+version(Test):
 
 import hip.graphics.g2d.geometrybatch;
 import hip.hiprenderer.shader;

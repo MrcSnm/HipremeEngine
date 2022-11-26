@@ -18,6 +18,11 @@ module hip.config.opts;
 */
 enum HIP_DEBUG = true;
 
+/** 
+ * Will call HipRenderer.exitOnError for each glCall
+ */
+enum HIP_DEBUG_GL = true;
+
 /**
 *   Used for disabling every engine log function
 */

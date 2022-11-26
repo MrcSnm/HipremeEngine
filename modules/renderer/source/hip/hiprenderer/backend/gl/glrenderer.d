@@ -36,6 +36,22 @@ import hip.console.log;
 import hip.error.handler;
 
 
+auto glCall(T)(scope T delegate() dg, string file = __FILE__, size_t line = __LINE__)
+{
+    import hip.config.opts;
+    static if(is(T == void))
+        dg();
+    else
+        auto ret = dg();
+    static if(HIP_DEBUG_GL)
+    {
+        HipRenderer.exitOnError(file, line);
+    }
+    static if(!is(T == void))
+    return ret;
+}
+
+
 /**
 *
 *   Those functions here present are fairly inneficient as there is not batch ocurring,
@@ -75,11 +91,23 @@ class Hip_GL3Renderer : IHipRendererImpl
         if(window !is null)
             window.startOpenGLContext();
         version(Have_bindbc_opengl)
+        {
             GLSupport ver = loadOpenGL();
+            if(ver == GLSupport.noLibrary)
+            {
+                ErrorHandler.showErrorMessage("Loading OpenGL", "No OpenGL could be found");
+                return false;
+            }
+            else if(ver == GLSupport.badLibrary)
+            {
+                ErrorHandler.showErrorMessage("Loading OpenGL", "OpenGL version is different than expected");
+            }
+        }
         rawlog("GL Renderer: ",  glGetString(GL_RENDERER));
         rawlog("GL Version: ",  glGetString(GL_VERSION));
         rawlog("GLSL Version: ",  glGetString(GL_SHADING_LANGUAGE_VERSION));
-        setColor();
+
+        // setColor();
         HipRenderer.rendererType = HipRendererType.GL3;
         return true;
     }
@@ -96,13 +124,13 @@ class Hip_GL3Renderer : IHipRendererImpl
     public int queryMaxSupportedPixelShaderTextures()
     {
         int maxTex;
-        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTex);
+        glCall(() => glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTex));
         return maxTex;
     }
 
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
-        glClearColor(r/255, g/255, b/255, a/255);
+        glCall(() => glClearColor(r/255, g/255, b/255, a/255));
     }
 
     public IHipFrameBuffer createFrameBuffer(int width, int height)
@@ -112,7 +140,7 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public IHipVertexArrayImpl createVertexArray()
     {
-        version(HipGL3)
+        version(HipGLUseVertexArray)
             return new Hip_GL3_VertexArrayObject();
         else
             return new Hip_GL_VertexArrayObject();
@@ -128,7 +156,8 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public void setViewport(Viewport v)
     {
-        glViewport(cast(int)v.x, cast(int)v.y, cast(GLsizei)v.width, cast(GLsizei)v.height);
+        logln("glViewport ", [v.x, v.y, v.width, v.height]);
+        glCall(() => glViewport(cast(int)v.x, cast(int)v.y, cast(GLsizei)v.width, cast(GLsizei)v.height));
     }
     public bool setWindowMode(HipWindowMode mode)
     {
@@ -144,7 +173,7 @@ class Hip_GL3Renderer : IHipRendererImpl
         }
         return false;
     }
-    public bool hasErrorOccurred(out string err, string file = __FILE__, int line =__LINE__)
+    public bool hasErrorOccurred(out string err, string file = __FILE__, size_t line =__LINE__)
     {
         GLenum errorCode = glGetError();
         static enum GL_STACK_OVERFLOW = 0x0503;
@@ -202,21 +231,21 @@ class Hip_GL3Renderer : IHipRendererImpl
         else
         {
             window.rendererPresent();
-            glFlush();
-            glFinish();
+            glCall(() => glFlush());
+            glCall(() => glFinish());
         }
     }
 
     pragma(inline, true)
     public void clear()
     {
-        glClear(GL_COLOR_BUFFER_BIT);
+        glCall(() => glClear(GL_COLOR_BUFFER_BIT));
     }
 
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
-        glClearColor(r/255,g/255,b/255,a/255);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glCall(() => glClearColor(r/255,g/255,b/255,a/255));
+        glCall(() => glClear(GL_COLOR_BUFFER_BIT));
     }
 
     protected GLenum getGLRendererMode(HipRendererMode mode)
@@ -291,14 +320,14 @@ class Hip_GL3Renderer : IHipRendererImpl
     }
     public void drawVertices(index_t count, uint offset)
     {
-        glDrawArrays(this.mode, offset, count);
+        glCall(() => glDrawArrays(this.mode, offset, count));
     }
     public void drawIndexed(index_t indicesCount, uint offset = 0)
     {
         static if(is(index_t == uint))
-            glDrawElements(this.mode, indicesCount, GL_UNSIGNED_INT, cast(void*)offset);
+            glCall(() => glDrawElements(this.mode, indicesCount, GL_UNSIGNED_INT, cast(void*)offset));
         else
-            glDrawElements(this.mode, indicesCount, GL_UNSIGNED_SHORT, cast(void*)offset);
+            glCall(() => glDrawElements(this.mode, indicesCount, GL_UNSIGNED_SHORT, cast(void*)offset));
     }
 
     bool isBlendingEnabled() const {return isGLBlendEnabled;}
@@ -306,20 +335,20 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         if(!isGLBlendEnabled)
         {
-            glEnable(GL_BLEND);
+            glCall(() => glEnable(GL_BLEND));
             isGLBlendEnabled = true;
         }
-        glBlendFunc(getGLBlendFunction(src), getGLBlendFunction(dst));
+        glCall(() => glBlendFunc(getGLBlendFunction(src), getGLBlendFunction(dst)));
     }
 
     public void setBlendingEquation(HipBlendEquation eq)
     {
         if(!isGLBlendEnabled)
         {
-            glEnable(GL_BLEND);
+            glCall(() => glEnable(GL_BLEND));
             isGLBlendEnabled = true;
         }
-        glBlendEquation(getGLBlendEquation(eq));
+        glCall(() => glBlendEquation(getGLBlendEquation(eq)));
     }
 
     public void dispose()
