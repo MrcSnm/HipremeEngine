@@ -41,11 +41,9 @@ void logVars(Args...)(string file = __FILE__, size_t line = __LINE__)
 		log(toPrint ~ "\n\t at "~file~":"~to!string(line));
 }
 
-void initConsole()
+version(Script) void initConsole()
 {
-	version(Script)
-    {
-        import hip.api.internal : _loadSymbol, _dll;
-        log = cast(typeof(log))_loadSymbol(_dll, "log".ptr);
-    }
+	import hip.api.internal : _loadSymbol, _dll;
+	log = cast(typeof(log))_loadSymbol(_dll, "log".ptr);
+	log("HipengineAPI: Initialized Console");
 }

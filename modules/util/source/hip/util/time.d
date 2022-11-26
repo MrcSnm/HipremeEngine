@@ -20,6 +20,7 @@ version(Windows)
 else
 {
     import core.stdc.config:c_long;
+    enum CLOCK_MONOTONIC = 1;
     struct timespec
     {
         int tv_sec; //Seconds
@@ -28,7 +29,7 @@ else
     extern(C) int clock_gettime(int clock_id, timespec* tm) nothrow;
 }
 
-private size_t getSystemTime() nothrow
+size_t getSystemTime() nothrow
 {
     version(Windows)
     {
@@ -38,10 +39,10 @@ private size_t getSystemTime() nothrow
     }
     else
     {
-        timespec tm;
-        if(clock_gettime(0, &tm))
+        timespec tm = void;
+        if(clock_gettime(CLOCK_MONOTONIC, &tm))
             return 0;
-        return tm.tv_nsec;
+        return cast(size_t)(tm.tv_nsec + tm.tv_sec * 1e9);
     }
 }
 private size_t getSystemTicksPerSecond() nothrow

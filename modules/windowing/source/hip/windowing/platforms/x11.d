@@ -324,11 +324,13 @@ void poll()
                 break;
             case KeyPress:
                 if(onKeyDown != null)
-                    onKeyDown(convertKeycodeToScancode(&ev.xkey));
+                    onKeyDown(cast(uint)XKeycodeToKeysym(x11win.display, ev.xkey.keycode, ev.xkey.state & ShiftMask ? 1 : 0));
+                    // onKeyDown(convertKeycodeToScancode(&ev.xkey));
                 break;
             case KeyRelease:
                 if(onKeyUp != null)
-                    onKeyUp(convertKeycodeToScancode(&ev.xkey));
+                    onKeyUp(cast(uint)XKeycodeToKeysym(x11win.display, ev.xkey.keycode, ev.xkey.state & ShiftMask ? 1 : 0));
+                    // onKeyUp(convertKeycodeToScancode(&ev.xkey));
                 break;
             default:break;
         }

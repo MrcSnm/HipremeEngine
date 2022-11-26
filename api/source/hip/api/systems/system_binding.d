@@ -5,12 +5,11 @@ public import hip.api.systems.timer;
 
 private alias thisModule = __traits(parent, {});
 
-void initTimerAPI()
+version(Script) void initTimerAPI()
 {
-    version(Script)
-    {
-        loadClassFunctionPointers!(HipTimerManager, "HipTimerManager");
-    }
+    loadClassFunctionPointers!(HipTimerManager, "HipTimerManager");
+    import hip.api.console;
+    log("HipengineAPI: Initialized TimerManager");
 }
 
 

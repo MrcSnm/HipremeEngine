@@ -57,12 +57,12 @@ version(WindowsNative)
             case WM_SYSKEYDOWN:
             case WM_KEYDOWN:
                 if(onKeyDown != null)
-                    onKeyDown(cast(wchar)wParam);
+                    onKeyDown(cast(uint)wParam);
                 break;
             case WM_SYSKEYUP:
             case WM_KEYUP:
                 if(onKeyUp != null)
-                    onKeyUp(cast(wchar)wParam);
+                    onKeyUp(cast(uint)wParam);
                 break;
             case WM_SIZE: //Resize
             {
