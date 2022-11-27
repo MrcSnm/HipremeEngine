@@ -56,6 +56,7 @@ ulong line = __LINE__)
 
 
 void rawlog(Args... )(Args a){Console.DEFAULT.log(a);}
+void rawwarn(Args... )(Args a){Console.DEFAULT.warn(a);}
 void rawinfo(Args... )(Args a){Console.DEFAULT.info(a);}
 void rawerror(Args... )(Args a){Console.DEFAULT.error(a);}
 void rawfatal(Args... )(Args a){Console.DEFAULT.fatal(a);}
