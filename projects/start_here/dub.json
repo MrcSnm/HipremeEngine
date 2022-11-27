@@ -1,0 +1,59 @@
+
+{
+	"authors": ["HipremeEngine"],
+	"description" : "Hipreme Engine test scene",
+	"license": "proprietary",
+	"targetName" : "start_here",
+	"name" : "start_here",
+	"sourcePaths"  : ["source"],
+	"dependencies": 
+	{
+		"hipengine_api": {"path": "G:\\HipremeEngine/api"},
+		"math": {"path": "G:\\HipremeEngine/modules/math"}
+	},
+	"dflags-ldc": [
+		"-link-defaultlib-shared=false"
+	],
+	"configurations": 
+	[
+		{
+			"name" : "script",
+			"targetType": "dynamicLibrary",
+			"versions": ["Script"],
+			"lflags-windows": [
+				"/WX"
+			]
+		},
+		{
+			"name": "ldc",
+			"targetType": "dynamicLibrary",
+			"versions": ["Script"],
+			"dflags": [
+				"-link-defaultlib-shared=false"
+			],
+			"lflags-windows": [
+				"/WX"
+			]
+		},
+		{
+			"name": "run",
+			"targetType": "dynamicLibrary",
+			"versions": ["Script"],
+			"lflags-windows": [
+				"/WX"
+			],
+			"postBuildCommands": ["cd G:\\HipremeEngine && dub -c script -- G:\\HipremeEngine\\projects\\start_here"]
+		}
+	],
+	"versions" : [
+		"HipremeRenderer",
+		"HipGraphicsAPI",
+		"HipImageAPI",
+		"HipInputAPI",
+		"HipAudioAPI",
+		"HipMathAPI",
+		"HipremeAudio",
+		"HipDataStructures"
+	]
+}
+	
