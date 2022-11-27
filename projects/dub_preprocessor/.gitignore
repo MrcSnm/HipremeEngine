@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/dub_preprocessor
+dub_preprocessor.so
+dub_preprocessor.dylib
+dub_preprocessor.dll
+dub_preprocessor.a
+dub_preprocessor.lib
+dub_preprocessor-test-*
+*.exe
+*.o
+*.obj
+*.lst

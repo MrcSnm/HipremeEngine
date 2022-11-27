@@ -86,7 +86,7 @@ void resizeRenderer2D(uint width, uint height)
     }
 }
 
-export extern(C):
+export extern(System):
 
 int[2] getWindowSize(){return [HipRenderer.width, HipRenderer.height];}
 
@@ -270,6 +270,8 @@ void destroySprite(ref IHipSprite sprite)
 
 Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
 {
+    import std.stdio;
+    writeln("Cropping Spritesheet: ", [rows, columns]);
     uint frameWidth = t.getWidth() / columns;
     uint frameHeight = t.getHeight() / rows;
     return cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);

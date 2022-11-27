@@ -13,6 +13,7 @@ import std.file : copy;
 import hip.filesystem.hipfs;
 import hip.util.system;
 import hip.util.path;
+import hip.console.log;
 
 class HotloadableDLL
 {
@@ -24,9 +25,11 @@ class HotloadableDLL
     this(string path, void delegate (void* libPointer) onDllLoad)
     {
         assert(path, "DLL path should not be null");
+
         if(HipFS.absoluteIsDir(path))
             path = joinPath(path, path.filenameNoExt);
 
+        
         if(!dynamicLibraryIsLibNameValid(path))
             path = dynamicLibraryGetLibName(path);
         trueLibPath = path;
@@ -39,15 +42,18 @@ class HotloadableDLL
         if(!HipFS.absoluteExists(path))
         {
             import hip.console.log;
-            rawlog("Does not exists ", path);
+            logln("Does not exists ", path);
             return false;
         }
         tempPath = getTempName(path);
         copy(path, tempPath);
-        lib = dynamicLibraryLoad(tempPath);
 
+        loglnInfo("Loading dll ", path);
+        lib = dynamicLibraryLoad(tempPath);
         if(onDllLoad && lib != null)
             onDllLoad(lib);
+        else if(lib == null)
+            loglnError("Could not load dll ", path);
         return lib != null;
     }
 

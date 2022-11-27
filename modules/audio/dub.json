@@ -17,7 +17,9 @@
 		{
 			"name": "default",
 			"dependencies": {
-				"bindbc-openal": "~>1.0.0",
+				"bindbc-openal": "~>1.0.0"
+			},
+			"dependencies-windows": {
 				"directx-d":{"path" : "../../dependencies/directx-d", "optional": true}
 			}
 		},
@@ -50,8 +52,11 @@
 	"description": "HipremeEngine audio module",
 	"license": "proprietary",
 	"name": "audio",
+
+	"versions-windows": [
+		"XAUDIO_2_8"
+	],
 	"versions": [
-		"XAUDIO_2_8",
 		"HipAudioAPI",
 		"AL_EFX"
 	]

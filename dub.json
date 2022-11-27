@@ -85,7 +85,6 @@
 				"debugInfoC"
 			],
 			"versions-windows": [
-				"FSWUsesWin32",
 				"Direct3D_11",
 				"DirectX",
 				"XAudio2"
@@ -117,9 +116,6 @@
 				"debugMode",
 				"debugInfo",
 				"debugInfoC"
-			],
-			"versions-windows": [
-				"FSWUsesWin32"
 			]
 		},
 		{
@@ -139,6 +135,12 @@
 				"NO_GLES",
 				"NO_SLES"
 			],
+			"dflags-linux": [
+				"-link-defaultlib-shared"
+			],
+			"lflags-linux": [
+				"--export-dynamic"
+			],
 			"libs-linux" : [
 				"X11",
 				"gl"
@@ -149,7 +151,6 @@
 				"debugInfoC"
 			],
 			"versions-windows": [
-				"FSWUsesWin32",
 				"Direct3D_11",
 				"DirectX",
 				"XAudio2"
@@ -174,7 +175,6 @@
 				"gl"
 			],
 			"versions-windows": [
-				"FSWUsesWin32",
 				"Direct3D_11",
 				"XAudio2",
 				"DirectX"
@@ -203,7 +203,6 @@
 				"gl"
 			],
 			"versions-windows": [
-				"FSWUsesWin32",
 				"Direct3D_11",
 				"DirectX",
 				"XAudio2"

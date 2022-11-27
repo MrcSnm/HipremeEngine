@@ -18,13 +18,15 @@
 				"bindbc-opengl": {"version": "~>1.0.0", "optional": true},
 				"hipengine_api": {"path": "../../api"},
 				"windowing" : {"path" : "../windowing"},
-				"directx-d": {"path": "../../dependencies/directx-d", "optional": true},
 				"data" : {"path": "../data"},
 				"image" : {"path": "../image"},
 				"bind" : {"path": "../bind", "optional": true},
 				"config": {"path": "../config"},
 				"error": {"path": "../error"},
 				"math": {"path": "../math"}
+			},
+			"dependencies-windows": {
+				"directx-d": {"path": "../../dependencies/directx-d", "optional": true}
 			},
 			"versions": [
 				"HipGL3",

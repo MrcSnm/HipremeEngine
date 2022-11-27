@@ -1,12 +1,12 @@
 module hip.api.game.game_binding;
 import hip.api.internal;
 public import hip.api.graphics.g2d.animation;
-void initGameAPI()
+
+version(Script) void initGameAPI()
 {
-    version(Script)
-    {
-        loadClassFunctionPointers!(HipGameUtils, "HipGameUtils");
-    }
+    loadClassFunctionPointers!(HipGameUtils, "HipGameUtils");
+    import hip.api.console;
+    log("HipengineAPI: Initialized GameUtils");
 }
 
 

@@ -19,7 +19,6 @@ Project getProject()
         outputType : OutputType.library,
         versions : 
         [
-            "HipremeG2D",
             "HipremeAudio",
             "Script"
         ]

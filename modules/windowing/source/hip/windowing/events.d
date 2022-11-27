@@ -9,7 +9,7 @@ nothrow
     void function(int x, int y) onMouseMove;
     void function(ubyte btn, int x, int y) onMouseDown;
     void function(ubyte btn, int x, int y) onMouseUp;
-    void function(wchar k) onKeyDown;
+    void function(uint k) onKeyDown;
+    void function(uint k) onKeyUp;   
     void function(wchar k) onTextInput;
-    void function(wchar k) onKeyUp;   
 }

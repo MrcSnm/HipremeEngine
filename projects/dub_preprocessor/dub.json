@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2022, Hipreme",
+	"description": "A minimal D application.",
+	"license": "proprietary",
+	"name": "dub_preprocessor"
+}
