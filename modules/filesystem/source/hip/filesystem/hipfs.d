@@ -141,7 +141,9 @@ class HipFileSystem
     {
         import hip.util.path:joinPath;
         import hip.util.system : sanitizePath;
-        return joinPath(combinedPath, path.sanitizePath);
+        if(combinedPath)
+            return joinPath(combinedPath, path.sanitizePath);
+        return path.sanitizePath;
     }
     @ExportD public static bool isPathValid(string path){return validatePath(initialPath, defPath~path);}
     @ExportD public static bool isPathValidExtra(string path)
@@ -166,8 +168,13 @@ class HipFileSystem
     {
         import hip.util.path:joinPath;
         import hip.util.system : sanitizePath;
-        defPath = path.sanitizePath;
-        combinedPath = joinPath(initialPath, defPath);
+        if(path)
+        {
+            defPath = path.sanitizePath;
+            combinedPath = joinPath(initialPath, defPath);
+        }
+        else
+            combinedPath = initialPath;
         return validatePath(initialPath, combinedPath);
     }
 

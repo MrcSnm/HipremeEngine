@@ -44,7 +44,7 @@ import hip.config.opts;
 *	If you wish to use LLD on Windows, you will need to install Windows 10 SDK.
 *	And include on dub the following lflags:
 *	"lflags": [
-		"-libpath:C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x64"
+		"-libpath:C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x64\\"
 	],
 *
 *	The libpath is required for getting to link a "compatible" libcmt, which unfortunately is not really compatible for some reason.

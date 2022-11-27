@@ -84,7 +84,8 @@
 				"math": {"path": "../math"}
 			},
 			"subConfigurations": {
-				"bind": "android"
+				"bind": "android",
+				"windowing": "android"
 			},
 			"versions": [
 				"HipGLUseVertexArray"
