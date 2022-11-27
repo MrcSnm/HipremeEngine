@@ -21,32 +21,61 @@ import hip.math.utils;
 
 class TestScene : Scene
 {
+    //Lower Level API. Not available in the Scripting API
     GeometryBatch geom;
     Shader shader;
-    float a;
+
+
     override void initialize()
     {
         geom = new GeometryBatch(null, 5000, 5000);
-        a = 0;
         geom.setColor(HipColor(0, 1, 0, 1));
         HipRenderer.setViewport(new Viewport(0,0, 800, 600));
     }
     override void update(float dt)
     {
         super.update(dt);
+        import hip.api;
+        if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
+        {
+            logg("You just clicked me!");
+        }
+
+        if(HipInput.isKeyJustPressed(HipKey.ENTER))
+        {
+            logg("Don't press ENTER!");
+        }
     }
 
     override void render()
     {
+        ////////////////////////Lower Level////////////////////////
         super.render();
-
-        // geom.drawRectangle(0, 0, 200, 200);
-        // geom.setColor(HipColor(0, 1, 0, 1));
-        geom.setColor(HipColor(1, 1, 0, 1));
-        geom.drawLine(0, 0, abs(cast(int)(cos(a)*200)), abs(cast(int)(sin(a)*200)));
-        // geom.drawRectangle(0, 0, 800, 800);
-        // geom.drawRectangle(800/2, 600/2, 800/2, 600/2);
+        geom.setColor(HipColor.red);
+        geom.fillRectangle(0, 0, 200, 200);
+        geom.setColor(HipColor.green);
+        geom.fillRectangle(0, 0, 100, 100);
         geom.flush();
+
+
+        ////////////////////////Higher Level////////////////////////
+        import hip.api;
+        setGeometryColor(HipColor.white);
+        drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        fillRectangle(300, 300, 100, 100);
+
+        drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        drawTexture(null, 300, 500);
+
+        /**
+        *   For loading a texture you can execute
+        *   IHipTexture myTexture = HipAssetManager.loadTexture("sprites/theTexture.png").awaitAs!IHipTexture;
+        *
+        *   TODO: Tutorial to play sounds
+        */
+        renderGeometries();
+        renderTexts();
+        renderSprites();
         
     }
 }
