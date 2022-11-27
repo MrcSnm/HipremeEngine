@@ -29,7 +29,7 @@ class NinePatchSceneTest : Scene
         }
         else if(HipInput.isMouseButtonPressed())
         {
-            Vector2 delta = HipInput.getMousePosition() - startPatch;
+            Vector2 delta = Vector2(HipInput.getMousePosition()) - startPatch;
             ninepatch.setSize(cast(int)delta.x, cast(int)delta.y);
         }
         

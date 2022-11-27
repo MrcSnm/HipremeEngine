@@ -318,6 +318,8 @@ string joinPath(in string[] paths ...) @safe pure nothrow
         if(sep != '\0')
             break;
     }
+    if(sep == '\0')
+        sep = pathSeparator;
     return joinPath(sep, paths);
 }
 

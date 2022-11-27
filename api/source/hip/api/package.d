@@ -30,7 +30,8 @@ public import hip.api.impl;
 ///Most important functions here
 version(Script)
 {
-	void function(Object obj) hipDestroy;
+	private alias hipDestroyFn = extern(C) void function(Object obj);
+	hipDestroyFn hipDestroy;
 }
 
 
@@ -41,6 +42,7 @@ mixin template HipEngineMain(alias StartScene)
 		__gshared AScene _exportedScene;
 		version(Windows)
 		{
+			pragma(msg, "DLL Entrypoint");
 			import core.sys.windows.dll;
 			mixin SimpleDllMain;
 		}
