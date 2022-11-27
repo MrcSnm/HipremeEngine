@@ -42,7 +42,6 @@ mixin template HipEngineMain(alias StartScene)
 		__gshared AScene _exportedScene;
 		version(Windows)
 		{
-			pragma(msg, "DLL Entrypoint");
 			import core.sys.windows.dll;
 			mixin SimpleDllMain;
 		}
