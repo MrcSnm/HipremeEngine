@@ -1,9 +1,19 @@
 module hip.util.to_string_range;
 import std.range.interfaces;
 import std.range.primitives;
-import std.range:put;
 import std.traits:isArray;
 import std.typecons:isTuple;
+
+private void put(Sink, E)(ref Sink sink, E e)
+{
+    static if(is(E == U[], U))
+        foreach(element; e)
+            sink.put(element);
+    else
+        sink.put(e);
+}
+
+
 
 void toStringRange(Sink)(auto ref Sink sink, float f)
 {

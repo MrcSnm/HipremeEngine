@@ -12,6 +12,7 @@ private enum c5 = (2 * PI) / 4.5f;
 private enum n1 = 7.5625f;
 private enum d1 = 2.75f;
 
+//TODO: Change (x) to (float x) for not generating templates needlessly
 /**
 *   Credits to https://easings.net as I don't understand most of those functions
 */
@@ -57,7 +58,7 @@ enum HipEasing : float function(float x)
                              ? -(pow(2, 20 * x - 10) * sin((20 * x - 11.125f) * c5))/2
                              : (pow(2, -20 * x + 10) * sin((20 * x - 11.125f) * c5))/2 + 1,
     easeInBounce    = (x) => 1 - HipEasing.easeOutBounce(1 - x),
-    easeOutBounce   = function float(float x)
+    easeOutBounce   = function float(x)
     {
         if(x < 1.0f / d1)
             return n1 * x * x;

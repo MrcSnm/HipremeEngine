@@ -4,7 +4,14 @@
 	],
 	"configurations": [
 		{
-			"name": "default"
+			"name": "default",
+			"libs-linux" : [
+				"X11",
+				"gl"
+			]
+		},
+		{
+			"name": "android"
 		},
 		{
 			"name": "source",

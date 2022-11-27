@@ -24,7 +24,6 @@ struct String
     private size_t _capacity;
     private int* countPtr;
 
-    import std.stdio;
     this(this)
     {
         if(countPtr !is null)
