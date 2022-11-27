@@ -52,7 +52,7 @@ union HipAudioBuffer
         import hip.hipaudio.backend.sles;
         SLIBuffer* sles;
     }
-    version(Have_directx_d)
+    version(Windows) version(Have_directx_d)
     {
         import directx.xaudio2;
         XAUDIO2_BUFFER* xaudio;

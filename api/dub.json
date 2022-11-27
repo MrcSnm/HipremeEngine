@@ -41,7 +41,6 @@
 		"HipImageAPI",
 		"HipTimerAPI",
 		"HipremeAudio",
-		"HipremeG2D",
 		"HipDataStructures"
 	],
 	"license": "proprietary",

@@ -28,15 +28,18 @@ void toStringRange(Sink)(auto ref Sink sink, float f)
         f = -f;
         put(sink, '-');
     }
+    
     float decimal = f - cast(int)f;
     toStringRange(sink, cast(int)f);
     if(decimal == 0)
         return;
-   
-    while(cast(int)decimal != decimal)
-        decimal*=10;
-
     put(sink, '.');
+    while(cast(int)decimal != decimal)
+    {
+        decimal*=10;
+        if(cast(int)decimal == 0)
+            put(sink, '0');
+    }
     toStringRange(sink, cast(int)decimal);
 }
 
@@ -138,7 +141,7 @@ void toStringRange(Sink)(auto ref Sink sink, bool b) if(isOutputRange!(Sink, cha
     }
 }
 
-void toStringRange(Sink)(auto ref Sink sink, int x) 
+void toStringRange(Sink)(auto ref Sink sink, long x) 
 if(isOutputRange!(Sink, char))
 {
     enum numbers = "0123456789";

@@ -13,6 +13,7 @@ module hip.systems.game;
 import hip.global.gamedef;
 import hip.hipaudio.audio;
 import hip.view;
+import hip.error.handler;
 import hip.api.view.scene;
 
 import hip.systems.timer_manager;
@@ -124,6 +125,7 @@ class GameSystem
             import hip.util.path;
             import hip.util.system;
             import hip.util.string:indexOf;
+            import hip.console.log;
 
 
             if(gameDll.isAbsolutePath && HipFS.absoluteIsFile(gameDll))
@@ -142,16 +144,16 @@ class GameSystem
 
             hotload = new HotloadableDLL(gameDll, (void* lib)
             {
-                assert(lib != null, "No library " ~ gameDll ~ " was found");
+                ErrorHandler.assertExit(lib != null, "No library " ~ gameDll ~ " was found");
                 HipremeEngineGameInit = 
                     cast(typeof(HipremeEngineGameInit))
                     dynamicLibrarySymbolLink(lib, "HipremeEngineGameInit");
-                assert(HipremeEngineGameInit != null,
+                ErrorHandler.assertExit(HipremeEngineGameInit != null,
                 "HipremeEngineGameInit wasn't found when looking into "~gameDll);
                 HipremeEngineGameDestroy = 
                     cast(typeof(HipremeEngineGameDestroy))
                     dynamicLibrarySymbolLink(lib, "HipremeEngineGameDestroy");
-                assert(HipremeEngineGameDestroy != null,
+                ErrorHandler.assertExit(HipremeEngineGameDestroy != null,
                 "HipremeEngineGameDestroy wasn't found when looking into "~gameDll);
             });
         }
@@ -172,8 +174,13 @@ class GameSystem
             string err;
             if(getDubError(dub, err))
             {
-                import core.sys.windows.winuser;
-                MessageBoxA(null, (err~"\0").ptr, "GameDLL Compilation Failure\0".ptr,  MB_ICONERROR | MB_OK);
+                version(Windows)
+                {
+                    import core.sys.windows.winuser;
+                    MessageBoxA(null, (err~"\0").ptr, "GameDLL Compilation Failure\0".ptr,  MB_ICONERROR | MB_OK);
+                }
+                import hip.console.log;
+                loglnError(err, " GameDLL Compilation Failure");
             }
             hotload.reload();
         }
@@ -191,7 +198,7 @@ class GameSystem
         }
         else version(LoadScript)
         {
-            assert(HipremeEngineGameInit != null, "No game was loaded");
+            ErrorHandler.assertExit(HipremeEngineGameInit != null, "No game was loaded");
             externalScene = HipremeEngineGameInit();
             addScene(externalScene);
         }

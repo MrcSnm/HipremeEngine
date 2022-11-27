@@ -5,13 +5,12 @@ public import hip.api.renderer.texture;
 
 private alias thisModule = __traits(parent, {});
 
-void initAssetManager()
+version(Script) void initAssetManager()
 {
-    version(Script)
-    {
-        import hip.api.internal;
-        loadModuleFunctionPointers!(thisModule, "HipAssetManager");
-    }
+    import hip.api.internal;
+    loadModuleFunctionPointers!(thisModule, "HipAssetManager");
+    import hip.api.console;
+    log("HipengineAPI: Initialized AssetManager");
 }
 
 version(Script) extern(System)

@@ -273,6 +273,15 @@ struct XKeyEvent
 }
 alias  XKeyPressedEvent = XKeyEvent;
 alias  XKeyReleasedEvent = XKeyEvent;
+enum ShiftMask   =     1; // Shift
+enum LockMask    =     2; // Caps Lock
+enum ControlMask =     4; // Ctrl
+enum Mod1Mask    =     8; // Alt
+enum Mod2Mask    =    16; // Num Lock
+enum Mod3Mask    =    32; // Scroll Lock
+enum Mod4Mask    =    64; // Windows
+enum Mod5Mask    =   128; // ???
+
 
 struct XButtonEvent
 {
@@ -859,6 +868,7 @@ version(SharedX11)
 		Status function(Display* display, Window w, XWindowAttributes* win_attr) XGetWindowAttributes;
 		int function(XMappingEvent *event_map) XRefreshKeyboardMapping;
 		int function(XKeyEvent *event_struct, char *buffer_return, int bytes_buffer, KeySym *keysym_return, XComposeStatus *status_in_out) XLookupString;
+		KeySym function(Display* display, typeof(XKeyEvent.keycode) keycode, int index) XKeycodeToKeysym;
 		Colormap function(Display *display, Window w, Visual *visual, int alloc) XCreateColormap;
 		int function(Display *display, Window w, const(char)* window_name) XStoreName;
 		int function(Display* display,Window w,uint value_mask,XWindowChanges* values) XConfigureWindow;
@@ -927,6 +937,8 @@ else
 		Status  XGetWindowAttributes(Display* display, Window w, XWindowAttributes* win_attr);
 		int  XRefreshKeyboardMapping(XMappingEvent *event_map);
 		int  XLookupString(XKeyEvent *event_struct, char *buffer_return, int bytes_buffer, KeySym *keysym_return, XComposeStatus *status_in_out);
+		KeySym XKeycodeToKeysym(Display* display, typeof(XKeyEvent.keycode) keycode, int index);
+		
 		Colormap  XCreateColormap(Display *display, Window w, Visual *visual, int alloc);
 		int  XStoreName(Display *display, Window w, const(char)* window_name);
 		int  XConfigureWindow(Display* display,Window w,uint value_mask,XWindowChanges* values);
@@ -997,6 +1009,7 @@ void loadX11()
         XGetWindowAttributes = cast(typeof(XGetWindowAttributes))load_dl_func("XGetWindowAttributes");
         XRefreshKeyboardMapping = cast(typeof(XRefreshKeyboardMapping))load_dl_func("XRefreshKeyboardMapping");
         XLookupString = cast(typeof(XLookupString))load_dl_func("XLookupString");
+		XKeycodeToKeysym = cast(typeof(XKeycodeToKeysym))load_dl_func("XKeycodeToKeysym");
         XCreateColormap = cast(typeof(XCreateColormap))load_dl_func("XCreateColormap");
         XStoreName = cast(typeof(XStoreName))load_dl_func("XStoreName");
         XConfigureWindow = cast(typeof(XConfigureWindow))load_dl_func("XConfigureWindow");

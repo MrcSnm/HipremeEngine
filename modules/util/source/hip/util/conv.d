@@ -180,7 +180,7 @@ TO to(TO, FROM)(FROM f) pure nothrow
 }
 
 /// This function can be called at compilation time without bringing runtime
-string toString(int x) pure nothrow @safe
+string toString(long x) pure nothrow @safe
 {
     enum numbers = "0123456789";
     bool isNegative = x < 0;
