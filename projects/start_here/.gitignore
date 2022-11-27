@@ -1,0 +1,10 @@
+
+.dub
+.vs
+bin
+*.exe
+*.dll
+*.dll_hiptempdll
+*.so
+*.lib
+*.pdb

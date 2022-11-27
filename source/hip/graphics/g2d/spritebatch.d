@@ -236,6 +236,10 @@ class HipSpriteBatch : IHipBatch
 
     void draw(IHipTexture texture, int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
+        if(texture is null)
+        {
+            texture = HipSprite.getDefaultTexture();
+        }
         float[HipSpriteVertex.quadCount] v = getTextureVertices(texture,x,y,z,color, scaleX, scaleY, rotation);
         ErrorHandler.assertExit(texture.getWidth() != 0 && texture.getHeight() != 0, "Tried to draw 0 bounds texture");
         int slot = setTexture(texture);
