@@ -11,10 +11,6 @@ Distributed under the CC BY-4.0 License.
 module hip.error.handler;
 import hip.console.log;
 import hip.util.conv;
-version(Android)
-{
-    import hip.jni.helper.androidlog;
-}
 
 /** 
  * Base clas for documenting errors
@@ -125,16 +121,8 @@ public static class ErrorHandler
     }
     public static void showWarningMessage(string warningTitle, string warningMessage)
     {
-        version(Android)
-        {
-            alogw("HipremeEngine", "\nWarning: " ~ warningTitle);
-            alogw("HipremeEngine", warningMessage);
-        }
-        else
-        {
-            rawlog("\nWarning: " ~ warningTitle);
-            rawlog(warningMessage);
-        }
+        rawwarn("\nWarning: " ~ warningTitle);
+        rawwarn(warningMessage);
         warnHistory~= warningTitle~": "~warningMessage;
     }
 

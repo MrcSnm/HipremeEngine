@@ -104,10 +104,6 @@
 				"NO_GLES",
 				"NO_SLES"
 			],
-			"libs-linux" : [
-				"X11",
-				"gl"
-			],
 			"subConfigurations": {
 				"audio": "nodx",
 				"renderer": "nodx"
@@ -141,10 +137,6 @@
 			"lflags-linux": [
 				"--export-dynamic"
 			],
-			"libs-linux" : [
-				"X11",
-				"gl"
-			],
 			"buildOptions": [
 				"debugMode",
 				"debugInfo",
@@ -170,10 +162,6 @@
 				"Standalone",
 				"Desktop"
 			],
-			"libs-linux" : [
-				"X11",
-				"gl"
-			],
 			"versions-windows": [
 				"Direct3D_11",
 				"XAudio2",
@@ -197,10 +185,6 @@
 				"OpenAL",
 				"Desktop",
 				"HipConcurrency"
-			],
-			"libs-linux" : [
-				"X11",
-				"gl"
 			],
 			"versions-windows": [
 				"Direct3D_11",

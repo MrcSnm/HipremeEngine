@@ -30,7 +30,7 @@ string[] pathSplitter(string path) @safe pure nothrow
     {
         if(path[i] == '/' || path[i] == '\\')
         {
-            ret~= current;
+            ret~= current~path[i];
             current = null;
             continue;
         }
@@ -296,10 +296,7 @@ string joinPath(char separator, in string[] paths ...) @safe pure nothrow
         string next = i+1 < paths.length ? paths[i+1] : "";
 
         if(filePath == "")
-        {
-            output~= separator;
             continue;
-        }
         
         output~=paths[i];
         if(next != "" && next[0] != separator  &&
