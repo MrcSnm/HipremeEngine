@@ -178,8 +178,6 @@ version(HipGLUseVertexArray) class Hip_GL3_VertexArrayObject : IHipVertexArrayIm
     this()
     {
         glCall(() => glGenVertexArrays(1, &this.vao));
-        import hip.console.log;
-        logln("Created VertexArray");
     }
     void bind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo){glCall(() => glBindVertexArray(this.vao));}
     void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo){glCall(() => glBindVertexArray(0));}

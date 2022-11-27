@@ -30,7 +30,8 @@ public import hip.api.impl;
 ///Most important functions here
 version(Script)
 {
-	void function(Object obj) hipDestroy;
+	private alias hipDestroyFn = extern(C) void function(Object obj);
+	hipDestroyFn hipDestroy;
 }
 
 
