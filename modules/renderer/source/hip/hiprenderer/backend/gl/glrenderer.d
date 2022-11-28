@@ -179,10 +179,10 @@ class Hip_GL3Renderer : IHipRendererImpl
         static enum GL_STACK_UNDERFLOW = 0x0504;
         switch(errorCode)
         {
+            //Don't execute to!string(line) for avoiding useless GC trigger.
             case GL_NO_ERROR:
-                err = `GL_NO_ERROR at `~file~":"~to!string(line)~`:
-    No error has been recorded. The value of this symbolic constant is guaranteed to be 0.`;
-                    break;
+                err =  `GL_NO_ERROR: No error has been recorded. The value of this symbolic constant is guaranteed to be 0.`;
+                break;
             case GL_INVALID_ENUM:
                 err = `GL_INVALID_ENUM at `~file~":"~to!string(line)~`:
     An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag.`;
