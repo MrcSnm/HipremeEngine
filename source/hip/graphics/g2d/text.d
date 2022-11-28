@@ -74,7 +74,8 @@ class HipText
     {
         if(shouldUpdateText)
             updateText(font);
-        return vertices;
+        
+        return vertices[0.._dtext.length * (HipTextRendererVertex.sizeof/float.sizeof) * 4];
     }
     
     protected void updateAlign(int lineNumber, out int displayX, out int displayY, int boundsWidth, int boundsHeight)

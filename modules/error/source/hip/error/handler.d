@@ -137,17 +137,16 @@ public static class ErrorHandler
     public static bool assertErrorMessage(bool expression, lazy string errorTitle, lazy string errorMessage, bool isFatal = false,
     string file = __FILE__, size_t line =__LINE__, string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
     {
-        version(HIPREME_DEBUG)
-        {
-            string where = "at module '"~mod~"' "~file~":"~to!string(line)~"("~func~")\n\t";
-        }
-        else
-        {
-            string where="";
-        }
         expression = !expression; //Negate the expression, as it must return wether error ocurred
         if(expression)
+        {
+            version(HIPREME_DEBUG)
+            {
+                string where = "at module '"~mod~"' "~file~":"~to!string(line)~"("~func~")\n\t";
+            }
+            else{string where="";}
             showErrorMessage(where~errorTitle, "\t"~errorMessage, isFatal);
+        }
         return expression;
     }
 
