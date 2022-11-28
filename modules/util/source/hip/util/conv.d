@@ -63,8 +63,8 @@ string toString(T)(T structOrTupleOrEnum) pure nothrow @safe if(!isArray!T)
     {
         foreach(mem; __traits(allMembers, T))
             if(__traits(getMember, T, mem) == structOrTupleOrEnum)
-                return mem;
-        return "";
+                return T.stringof~"."~mem;
+        return T.stringof~".|MEMBER_NOT_FOUND|";
     }
     else static assert(0, "Not implemented for "~T.stringof);
 }
@@ -127,8 +127,7 @@ string toString(string str) pure nothrow @safe @nogc {return str;}
 
 string toString(bool b) pure nothrow @safe @nogc
 {
-    if(b) return "true";
-    return "false";
+    return b ? "true" : "false";
 }
 
 TO to(TO, FROM)(FROM f) pure nothrow

@@ -7,30 +7,38 @@ import std.typecons:isTuple;
 private void put(Sink, E)(ref Sink sink, E e)
 {
     static if(is(E == U[], U))
+    {
+        static if(__traits(hasMember, sink, "preAllocate"))
+            sink.preAllocate(e.length);
         foreach(element; e)
             sink.put(element);
+    }
     else
         sink.put(e);
 }
 
 
+void toStringRange(Sink, Enum)(ref Sink sink, Enum enumMember) if(is(Enum == enum))
+{
+    foreach(mem; __traits(allMembers, Enum))
+        if(__traits(getMember, Enum, mem) == enumMember)
+        {
+            put(sink, Enum.stringof ~ "." ~ mem); //@nogc string, resolved at compile time
+            return;
+        }
+    put(sink, Enum.stringof ~ ".|MEMBER_NOT_FOUND|"); //@nogc string, resolved at compile time
+}
 
-void toStringRange(Sink)(auto ref Sink sink, float f)
+void toStringRange(Sink)(ref Sink sink, float f)
 {
     if(f != f) //nan
     {
-        static if(__traits(hasMember, sink, "preAllocate"))
-            sink.preAllocate("nan".length);
-        foreach(v; "nan")
-            put(sink, v);
+        put(sink, "nan");
         return;
     } 
     if(f == float.infinity)
     {
-        static if(__traits(hasMember, sink, "preAllocate"))
-            sink.preAllocate("inf".length);
-        foreach(v; "inf")
-            put(sink, v);
+        put(sink, "inf");
         return;
     }
     if(f < 0)
@@ -56,18 +64,18 @@ void toStringRange(Sink)(auto ref Sink sink, float f)
 void toStringRange(Sink, T)(auto ref Sink sink, T[] arr)
 if(isOutputRange!(Sink, char) && !is(T[] == string)) //There is a better match for string
 {
-    put(sink, '[');
     static if(__traits(compiles, sink.preAllocate))
     {
         //2: '[' and ']'
-        // 2 * (cast(int)arr.length - 1): ", "
-        sink.preAllocate(2 * arr.length);
+        // 2 * arr.length: ", " (no need to use - 1 as there will be the inputs)
+        sink.preAllocate(2 + 2 * arr.length);
     }
+    put(sink, '[');
     for(int i = 0; i < arr.length; i++)
     {
         if(i != 0)
         {
-            foreach(character; " ")
+            foreach(character; ", ")
                 put(sink, character);
         }
         toStringRange(sink, arr[i]);
@@ -137,21 +145,10 @@ void toStringRange(Sink)(auto ref Sink sink, void* ptr) if(isOutputRange!(Sink, 
 
 void toStringRange(Sink)(auto ref Sink sink, bool b) if(isOutputRange!(Sink, char))
 {
-    if(b)
-    {
-        static if(__traits(compiles, sink.preAllocate))
-            sink.preAllocate("true".length);
-        put(sink, "true");
-    }
-    else
-    {
-        static if(__traits(compiles, sink.preAllocate))
-            sink.preAllocate("false".length);
-        put(sink, "false");
-    }
+    put(sink, b ? "true" :"false");
 }
 
-void toStringRange(Sink)(auto ref Sink sink, long x) 
+void toStringRange(Sink)(ref Sink sink, long x) 
 if(isOutputRange!(Sink, char))
 {
     enum numbers = "0123456789";
