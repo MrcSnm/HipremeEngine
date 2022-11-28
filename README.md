@@ -1,5 +1,8 @@
 # HipremeEngine
 
+## [Getting Started](https://github.com/MrcSnm/HipremeEngine/wiki/Getting-Started)
+- Please check how a game is expected to be developed with Hipreme Engine.
+
 The engine mantains some global options which you can modify it on source/global/opts.d:
 - HE_DEBUG    -> Use that for creating a debug version for the engine only
 - HE_NO_LOG   -> Disable the global logging functions
