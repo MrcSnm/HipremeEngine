@@ -349,9 +349,9 @@ pure TString replaceAll(TString)(TString str, TString what, TString replaceWith 
 
 pure int indexOf(TString)(in TString str,in TString toFind, int startIndex = 0) nothrow @nogc @safe
 {
-    int left = 0;
     if(!toFind.length)
         return -1;
+    int left = 0;
 
     for(int i = startIndex; i < str.length; i++)
     {

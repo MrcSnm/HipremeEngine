@@ -21,6 +21,7 @@ bin/desktop/*.lib
 *.o
 *.a
 *.obj
+*.pdb
 *.lst
 .history
 *.tsx

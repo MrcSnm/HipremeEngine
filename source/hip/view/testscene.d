@@ -15,15 +15,19 @@ import hip.graphics.g2d.geometrybatch;
 import hip.hiprenderer.shader;
 import hip.hiprenderer;
 import hip.hiprenderer.viewport;
-import hip.api.graphics.color;
 import hip.view.scene;
 import hip.math.utils;
 
 class TestScene : Scene
 {
+    import hip.api;
+
     //Lower Level API. Not available in the Scripting API
     GeometryBatch geom;
     Shader shader;
+
+    IHipFont smallFont;
+    IHipFont bigFont;
 
 
     override void initialize()
@@ -31,11 +35,13 @@ class TestScene : Scene
         geom = new GeometryBatch(null, 5000, 5000);
         geom.setColor(HipColor(0, 1, 0, 1));
         HipRenderer.setViewport(new Viewport(0,0, 800, 600));
+
+        smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
+        bigFont = HipDefaultAssets.getDefaultFontWithSize(64);
     }
     override void update(float dt)
     {
         super.update(dt);
-        import hip.api;
         if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
         {
             logg("You just clicked me!");
@@ -58,9 +64,18 @@ class TestScene : Scene
         geom.flush();
 
 
+        //Use a non GC allocating string on render (String) for drawing the mousePosition
+        import hip.util.string;
+        float[2] mousePos = HipInput.getWorldMousePosition();
+        setFont(smallFont);
+        String s = String(mousePos);
+        drawText(s.toString, cast(int)mousePos[0], cast(int)mousePos[1]);
+
+        
+
         ////////////////////////Higher Level////////////////////////
-        import hip.api;
         setGeometryColor(HipColor.white);
+        setFont(null);
         drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(300, 300, 100, 100);
 
