@@ -9,7 +9,7 @@ version(Script) void initGlobalAssets()
     import hip.api.internal;
     loadModuleFunctionPointers!thisModule;
     import hip.api.console;
-    log("HipengineAPI: Initialized Global Assets");
+    log("HipEngineAPI: Initialized Global Assets");
 }
 
 version(Script) extern(System)

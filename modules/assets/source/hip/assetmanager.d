@@ -357,6 +357,45 @@ class HipAssetManager
         return task;
     }
 
+    @ExportD static IHipAssetLoadTask loadTextureAtlas(string atlasPath, string texturePath = ":IGNORE")
+    {
+        import hip.console.log;
+        import hip.util.memory;
+        import hip.assets.textureatlas;
+        class TextureAtlasIntermediaryData
+        {
+            Image image;
+            HipTextureAtlas atlas;
+        }
+        HipAssetLoadTask task = loadComplex("Load TextureAtlas ", atlasPath, (pathOrLocation)
+        {
+            import hip.filesystem.hipfs;
+            TextureAtlasIntermediaryData inter = new TextureAtlasIntermediaryData();
+            inter.atlas = HipTextureAtlas.read(atlasPath, texturePath);
+            string imagePath = inter.atlas.getTexturePath();
+            inter.image = new Image(imagePath);
+            if(!inter.image.loadFromMemory(HipFS.read(imagePath)))
+                return null;
+            return toHeapSlice(inter);
+            }, (partialData)
+        {
+            if(partialData is null)
+                return null;
+            // scope(exit) freeGCMemory(partialData);
+            auto inter = cast(TextureAtlasIntermediaryData)partialData.ptr;
+            if(!inter.atlas.loadTexture(inter.image))
+            {
+                loglnError("Could not load HipTextureAtlas texture ", inter.atlas.getTexturePath());
+                return null;
+            }
+            HipTextureAtlas ret = inter.atlas;
+            logln(ret.texture.getWidth());
+            return ret;
+        });
+        workerPool.startWorking();
+        return task;
+    }
+
     @ExportD static IHipAssetLoadTask loadFont(string fontPath, int fontSize = 48)
     {
         import hip.util.path;

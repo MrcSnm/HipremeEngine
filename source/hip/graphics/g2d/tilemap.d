@@ -11,7 +11,6 @@ Distributed under the CC BY-4.0 License.
 
 module hip.graphics.g2d.tilemap;
 import hip.filesystem.hipfs;
-import hip.math.rect;
 import hip.graphics.g2d.spritebatch;
 import hip.util.string;
 import std.file;

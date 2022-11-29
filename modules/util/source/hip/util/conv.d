@@ -234,7 +234,13 @@ string toString(float f) pure nothrow @safe
     return ret ~ (cast(int)decimal).toString;
 }
 
-string toHex(size_t n)
+pure string toString(void* ptr) @safe nothrow
+{
+    return ptr is null ? "null" : toHex(cast(size_t)ptr);
+}
+
+
+pure string toHex(size_t n) @safe nothrow
 {
     enum numbers = "0123456789ABCDEF";
     int preAllocSize = 1;
@@ -254,7 +260,7 @@ string toHex(size_t n)
         div/= 16;
     }
     ret[i] = numbers[n%16];
-    return cast(string)ret;
+    return ret[0..$];
 }
 
 
