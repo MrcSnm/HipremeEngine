@@ -15,9 +15,9 @@ public import hip.graphics.g2d.textrenderer,
     hip.graphics.g2d.spritebatch,
     hip.graphics.g2d.sprite,
     hip.graphics.g2d.animation,
-    hip.graphics.g2d.textureatlas,
     hip.hiprenderer.viewport,
     hip.assets.texture,
+    hip.assets.textureatlas,
     hip.graphics.g2d.tilemap;
 
 

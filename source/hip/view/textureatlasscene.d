@@ -11,19 +11,19 @@ Distributed under the CC BY-4.0 License.
 module hip.view.textureatlasscene;
 version(Test):
 import hip.hiprenderer;
-import hip.graphics.g2d.textureatlas;
+import hip.assets.textureatlas;
 import hip.graphics.g2d.spritebatch;
 import hip.graphics.g2d.animation;
 import hip.view;
 
 class TextureAtlasScene : Scene
 {
-    TextureAtlas atlas;
+    HipTextureAtlas atlas;
     HipAnimation emerald;
     HipSpriteBatch batch;
     this()
     {
-        atlas = TextureAtlas.readJSON("graphics/atlases/UI.json");
+        atlas = HipTextureAtlas.readJSON("graphics/atlases/UI.json");
         batch = new HipSpriteBatch();
         emerald = HipAnimation.fromAtlas(atlas, "emerald", 12, true);
     }

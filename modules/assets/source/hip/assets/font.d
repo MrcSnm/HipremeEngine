@@ -17,19 +17,10 @@ class HipFontAsset : HipAsset, IHipFont
         this._typeID = assetTypeID!HipFontAsset;
         this.font = font;
     }
-    override void onFinishLoading()
-    {
-        
-    }
-
-    override void onDispose()
-    {
-        
-    }
-
+    override void onFinishLoading(){}
+    override void onDispose(){}
     bool load()
-    {
-        return bool.init; // TODO: implement
+    {return bool.init; // TODO: implement
     }
     bool isReady()
     {
