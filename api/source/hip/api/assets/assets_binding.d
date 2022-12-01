@@ -2,6 +2,7 @@ module hip.api.assets.assets_binding;
 public import hip.api.data.commons;
 public import hip.api.data.font;
 public import hip.api.data.textureatlas;
+public import hip.api.data.tilemap;
 public import hip.api.renderer.texture;
 
 private alias thisModule = __traits(parent, {});

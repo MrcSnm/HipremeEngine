@@ -200,6 +200,78 @@ class HipTilesetImpl : HipTileset
     //     static assert(false, `Please call dub add arsd-official:dom for using TSX parser`);
     // }
 
+    static HipTilesetImpl read (string path, uint firstGid)
+    {
+        import hip.util.path;
+        switch(path.extension)
+        {
+            case "xml":
+            case "tmx":
+                assert(false, `Please call dub add arsd-official:dom for using TSX parser`);
+            case "tsj":
+            case "json":
+                return HipTilesetImpl.readJSON(path, firstGid);
+            default:
+                assert(false, "Unrecognized extension for file "~path);
+        }
+    }
+
+    static HipTilesetImpl readJSON (string path, uint firstGid)
+    {
+        import std.json;
+        import hip.filesystem.hipfs;
+        import hip.console.log;
+        string data;
+
+        if(!HipFS.readText(path, data))
+        {
+            loglnWarn("Could not read file named ", path);
+            return null;
+        }
+        return readJSON(path, parseJSON(data), firstGid);
+    }
+
+    import std.json;
+    static HipTilesetImpl readJSON (string path, JSONValue t, uint firstGid)
+    {
+        HipTilesetImpl ret = new HipTilesetImpl(cast(uint)t["tilecount"].integer);
+        ret.columns       = cast(ushort)t["columns"].integer;
+        ret.texturePath   =             t["image"].str;
+        ret.textureHeight =   cast(uint)t["imageheight"].integer;
+        ret.textureWidth  =   cast(uint)t["imagewidth"].integer;
+        ret.margin        =    cast(int)t["margin"].integer;
+        ret.name          =             t["name"].str;
+        ret.spacing       =    cast(int)t["spacing"].integer;
+        ret.tileHeight    =   cast(uint)t["tileheight"].integer;
+        ret.tileWidth     =   cast(uint)t["tilewidth"].integer;
+        ret.path = path;
+        ret.firstGid = firstGid;
+
+        if("tiles" in t)
+        {
+            JSONValue[] tiles = t["tiles"].array;
+            foreach (currentTile; tiles)
+            {
+                Tile tile;
+                tile.id = cast(ushort)currentTile["id"].integer;
+                
+                JSONValue[] tProps = currentTile["properties"].array;
+                foreach(prop; tProps)
+                {
+                    TileProperty _p;
+
+                    _p.name  = prop["name"].str;
+                    _p.type  = prop["type"].str;
+                    _p.value = prop["value"].toString;
+                    tile.properties[_p.name] = _p;
+                }
+                ret.tiles[tile.id] = tile;
+            }
+        }
+
+        return ret;
+    }
+
     this(uint tileCount){super(tileCount);}
 
     IImage textureImage;
@@ -234,9 +306,11 @@ class HipTilesetImpl : HipTileset
             return false;
         texture = new HipTexture(img);
         int i = 0;
-        for(int y = 0; y < textureHeight; y+= tileHeight)
-            for(int x = 0; x < textureWidth; x+= tileWidth)
+        for(int y = margin; y < textureHeight; y+= (tileHeight+spacing))
+            for(int x = margin; x < textureWidth; x+= (tileWidth+spacing))
             {
+                if(i == tileCount)
+                    break;
                 Tile* t = &tiles[i];
                 t.region = new HipTextureRegion(texture, x, y, x+tileWidth, y+tileHeight);
                 i++;
@@ -249,6 +323,12 @@ class HipTilesetImpl : HipTileset
 
 class HipTilemap : HipAsset, IHipTilemap
 {
+
+    int _x, _y;
+    HipColor _color = HipColor.white;
+    float _scaleX = 1.0, _scaleY = 1.0;
+    float _rotation = 0;
+
     string _path;
     uint _width, _height;
     bool _isInfinite;
@@ -257,6 +337,15 @@ class HipTilemap : HipAsset, IHipTilemap
     string _renderOrder;
     string _tiledVersion;
     uint _tileWidth, _tileHeight;
+
+    ref int x() => _x;
+    ref int y() => _y;
+    ref HipColor color() => _color;
+    ref float scaleX() => _scaleX;
+    ref float scaleY() => _scaleY;
+    float scale() => _scaleX;
+    float scale(float sc) => _scaleX = _scaleY = sc;
+    ref float rotation() => _rotation;
 
     ///Used for rendering order
     string path() const => _path;
@@ -297,10 +386,11 @@ class HipTilemap : HipAsset, IHipTilemap
         return replaceFileName(path, tsxName);
     }
 
-    static HipTilemap readTiledJSON(ubyte[] tiledData)
+    static HipTilemap readTiledJSON (string mapPath, ubyte[] tiledData)
     {
         import std.json;
         HipTilemap ret = new HipTilemap();
+        ret._path = mapPath;
         JSONValue json = parseJSON(cast(string)(tiledData));
         ret._height     =    cast(uint)json["height"].integer;
         ret._isInfinite =              json["infinite"].boolean;
@@ -389,57 +479,23 @@ class HipTilemap : HipAsset, IHipTilemap
 
         foreach(t; jtilesets)
         {
-            uint tileCount = cast(uint)t["tilecount"].integer;
+            const(JSONValue)* source = ("source" in t);
+            uint firstGid = cast(ushort)t["firstgid"].integer;
             HipTilesetImpl tileset;
 
-            const(JSONValue)* source = ("source" in t);
             if(source !is null)
             {
-                version(HipTSX)
-                    tileset = Tileset.fromTSX(source.str);
-                else
-                    assert(0, "No TSX support");
+                import hip.util.path;
+                tileset = HipTilesetImpl.read(joinPath(dirName(mapPath), source.str), firstGid);
             }
             else
-            {
-                tileset = new HipTilesetImpl(tileCount);
-                tileset.columns       = cast(ushort)t["columns"].integer;
-                tileset.texturePath   =             t["image"].str;
-                tileset.textureHeight =   cast(uint)t["imageheight"].integer;
-                tileset.textureWidth  =   cast(uint)t["imagewidth"].integer;
-                tileset.margin        =    cast(int)t["margin"].integer;
-                tileset.name          =             t["name"].str;
-                tileset.spacing       =    cast(int)t["spacing"].integer;
-                tileset.tileHeight    =   cast(uint)t["tileheight"].integer;
-                tileset.tileWidth     =   cast(uint)t["tilewidth"].integer;
-            }
-            tileset.firstGid      = cast(ushort)t["firstgid"].integer;
-
-            JSONValue[] tiles = t["tiles"].array;
-
-            foreach (currentTile; tiles)
-            {
-                Tile tile;
-                tile.id = cast(ushort)currentTile["id"].integer;
-                
-                JSONValue[] tProps = currentTile["properties"].array;
-                foreach(prop; tProps)
-                {
-                    TileProperty _p;
-
-                    _p.name  = prop["name"].str;
-                    _p.type  = prop["type"].str;
-                    _p.value = prop["value"].toString;
-                    tile.properties[_p.name] = _p;
-                }
-                tileset.tiles[tile.id] = tile;
-            }
+                tileset = HipTilesetImpl.readJSON("null", t, firstGid);
             ret.tilesets~= tileset;
         }
 
         return ret;
     }
-    static HipTilemap readTiledJSON(string tiledPath)
+    static HipTilemap readTiledJSON (string tiledPath)
     {
         import hip.filesystem.hipfs;
         void[] jsonData;
@@ -449,7 +505,7 @@ class HipTilemap : HipAsset, IHipTilemap
             ErrorHandler.showWarningMessage("Could not read Tiled TMX from path ", tiledPath);
             return null;
         }
-        return readTiledJSON(cast(ubyte[])jsonData);
+        return readTiledJSON(tiledPath, cast(ubyte[])jsonData);
     }
 
 

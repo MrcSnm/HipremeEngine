@@ -1,5 +1,6 @@
 module hip.graphics.g2d.renderer2d;
 import hip.graphics.g2d.spritebatch;
+import hip.graphics.g2d.tilemap;
 import hip.graphics.g2d.geometrybatch;
 import hip.graphics.orthocamera;
 import hip.hiprenderer;
@@ -193,7 +194,16 @@ void drawRegion(IHipTextureRegion reg, int x, int y, int z = 0, const HipColor c
     if(lastBatch !is null && lastBatch !is spBatch)
         lastBatch.flush();
     spBatch.draw(reg, x, y, z, color, scaleX, scaleY, rotation);
+    lastBatch = spBatch;
 }
+void drawMap(IHipTilemap map)
+{
+    if(lastBatch !is null && lastBatch !is spBatch)
+        lastBatch.flush();
+    map.render(spBatch, false);
+    lastBatch = spBatch;
+}
+
 void drawTexture(IHipTexture texture, int x, int y, int z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
 {
     if(lastBatch !is null && lastBatch !is spBatch)

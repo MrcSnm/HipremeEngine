@@ -5,6 +5,7 @@ import hip.api.graphics.color;
 import hip.api.graphics.g2d.hipsprite;
 import hip.api.renderer.viewport;
 import hip.api.data.font;
+import hip.api.data.tilemap;
 import hip.api.graphics.text;
 
 version(Script) void initG2D()
@@ -56,6 +57,7 @@ version(Script)
             void function(IHipTexture reg, int x, int y, int z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawTexture;
             ///Draws a texture region at a specified place
             void function(IHipTextureRegion reg, int x, int y, int z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawRegion;
+            void function(IHipTilemap reg) drawMap;
             ///Sets the font for the next drawText commands
             package void function (IHipFont font) setFont;
             package void function (typeof(null)) setFontNull;
