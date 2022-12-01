@@ -273,7 +273,7 @@ version(Windows)
             case VK_DOWN: return HipKey.ARROW_DOWN;
             case VK_INSERT: return HipKey.INSERT;
             case VK_DELETE: return HipKey.DELETE;
-            //A
+            //0
             case 0x30: return HipKey._0;
             case 0x31: return HipKey._1;
             case 0x32: return HipKey._2;
@@ -284,7 +284,7 @@ version(Windows)
             case 0x37: return HipKey._7;
             case 0x38: return HipKey._8;
             case 0x39: return HipKey._9;
-
+            //A
             case 0x41: return HipKey.A;
             case 0x42: return HipKey.B;
             case 0x43: return HipKey.C;
