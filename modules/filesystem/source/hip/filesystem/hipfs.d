@@ -145,7 +145,6 @@ class HipFileSystem
             return joinPath(combinedPath, path.sanitizePath);
         return path.sanitizePath;
     }
-    @ExportD public static bool isPathValid(string path){return validatePath(initialPath, defPath~path);}
     @ExportD public static bool isPathValidExtra(string path)
     {
         import hip.error.handler;
@@ -162,6 +161,17 @@ class HipFileSystem
             }
         }
         return true;
+    }
+    @ExportD public static bool isPathValid(string path)
+    {
+        import hip.error.handler;
+        if(!validatePath(initialPath, defPath~path))
+        {
+            ErrorHandler.showErrorMessage("Path failed default validation: can't reference external path.", path);
+            return false;
+        }
+
+        return isPathValidExtra(path);
     }
 
     @ExportD public static bool setPath(string path)
@@ -182,7 +192,7 @@ class HipFileSystem
     @ExportD("void") public static bool read(string path, out void[] output)
     {
         path = getPath(path);
-        if(!isPathValid(path) || !isPathValidExtra(path))
+        if(!isPathValid(path))
             return false;
         return fs.read(path, output);
     }
@@ -228,7 +238,7 @@ class HipFileSystem
         import std.stdio:File;
         public static bool getFile(string path, string opts, out File file)
         {
-            if(!isPathValid(path) || !isPathValidExtra(path))
+            if(!isPathValid(path))
                 return false;
             file = File(getPath(path), opts);
             return true;
@@ -245,7 +255,7 @@ class HipFileSystem
     @ExportD public static bool exists(string path){return isPathValid(path) && fs.exists(getPath(path));}
     @ExportD public static bool remove(string path)
     {
-        if(!isPathValid(path) || !isPathValidExtra(path))
+        if(!isPathValid(path))
             return false;
         return fs.remove(getPath(path));
     }

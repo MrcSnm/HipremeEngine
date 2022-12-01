@@ -254,9 +254,11 @@ version(Windows)
             case VK_TAB: return HipKey.TAB;
             case VK_ESCAPE: return HipKey.ESCAPE;
 
+
             case VK_SHIFT: return HipKey.SHIFT;
             case VK_CONTROL: return HipKey.CTRL;
             case VK_MENU: return HipKey.ALT;
+            case VK_SNAPSHOT: return HipKey.PRINT;
             
             case VK_RETURN: return HipKey.ENTER;
             case VK_CAPITAL: return HipKey.CAPSLOCK;

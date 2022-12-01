@@ -5,6 +5,7 @@ public import hip.api.console;
 
 //Assets
 public import hip.api.data.textureatlas;
+public import hip.api.data.tilemap;
 
 //Rendering
 public import hip.api.graphics.color;

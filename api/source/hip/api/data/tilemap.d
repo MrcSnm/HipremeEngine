@@ -178,6 +178,19 @@ abstract class HipTileset
 */
 interface IHipTilemap
 {
+    ref int x();
+    ref int y();
+    ref HipColor color();
+    ref float scaleX();
+    ref float scaleY();
+
+    ///Returns scaleX as the one to be modified.
+    float scale();
+    ///Modifies both scaleX and scaleY at the same time.
+    float scale(float v);
+    ref float rotation();
+    
+
     string path() const;
     uint width() const;
     uint height() const;
