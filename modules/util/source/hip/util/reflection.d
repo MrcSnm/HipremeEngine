@@ -491,6 +491,36 @@ enum ForwardInterface(string member, I)() if(is(I == interface))
     }.replaceAll("$I", I.stringof).replaceAll("$member", member);
 }
 
+
+enum GenerateGetterSettersInterfaceImpl(interface_)()
+{
+    import hip.util.array;
+    foreach(mem; __traits(allMembers, interface_))
+    {
+        alias member = __traits(getMember, interface_, mem);
+        if(__traits(isFinalFunction, member))
+            continue;
+        auto attributes = __traits(getFunctionAttributes, member);
+        if(attributes.contains("ref"))
+            continue;
+    }
+
+}
+
+/**
+*   Generates getter and setter for given interface.
+*   - Final methods are excluded.
+*   - `void` return types are excluded
+*   - `const` methods will only generate the const getter
+*/
+mixin template GenerateGettersSettersInterface(interface_) if(is(interface_ == interface))
+{
+    static foreach(mem; __traits(allMembers, interface_))
+    {
+
+    }
+}
+
 /**
 * This mixin is able to generate runtime accessors. That means that by having a string, it is
 *possible to modify 

@@ -21,7 +21,7 @@ import hip.graphics.g2d.spritebatch;
 
 class TilemapTestScene : Scene
 {
-    Tilemap map;
+    IHipTilemap map;
     HipSpriteBatch batch;
     HipSprite spr;
     HipSprite sprite;
@@ -33,7 +33,7 @@ class TilemapTestScene : Scene
 
 
         // map = Tilemap.readTiledTMX("maps/Test.tmx");
-        spr = new HipSprite(map.tilesets[0].texture);
+        spr = new HipSprite(map.getTilesetForID(1).texture);
         sprite = new HipSprite("graphics/sprites/sprite.png");
         sprite2 = new HipSprite("graphics/sprites/shaun.png");
         // rawlog(map.layers["Camada de Tiles 1"].tiles);

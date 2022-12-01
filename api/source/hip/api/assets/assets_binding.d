@@ -24,6 +24,8 @@ version(Script) extern(System)
     IHipAssetLoadTask function(string path) loadTexture;
     ///Returns a load task for image
     IHipAssetLoadTask function(string path) loadImage;
+    ///Returns a load task for tilemap
+    IHipAssetLoadTask function(string path) loadTilemap;
     /** 
     *   Returns a load task for a texture atlas
     *   If ":IGNORE" is provided for texturePath, the following behavior will occur:

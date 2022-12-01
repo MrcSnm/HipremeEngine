@@ -381,15 +381,48 @@ class HipAssetManager
         {
             if(partialData is null)
                 return null;
-            // scope(exit) freeGCMemory(partialData);
+            scope(exit) freeGCMemory(partialData);
             auto inter = cast(TextureAtlasIntermediaryData)partialData.ptr;
             if(!inter.atlas.loadTexture(inter.image))
             {
                 loglnError("Could not load HipTextureAtlas texture ", inter.atlas.getTexturePath());
                 return null;
             }
-            HipTextureAtlas ret = inter.atlas;
-            logln(ret.texture.getWidth());
+            return inter.atlas;
+        });
+        workerPool.startWorking();
+        return task;
+    }
+
+
+    @ExportD static IHipAssetLoadTask loadTilemap(string tilemapPath)
+    {
+        import hip.console.log;
+        import hip.util.memory;
+        import hip.assets.tilemap;
+        class TileMapIData
+        {   
+            HipTilemap map;
+        }
+        HipAssetLoadTask task = loadComplex("Load TextureAtlas ", tilemapPath, (pathOrLocation)
+        {
+            import hip.filesystem.hipfs;
+            TileMapIData inter = new TileMapIData();
+            inter.map = HipTilemap.readTiledJSON(pathOrLocation);
+            inter.map.loadImages();
+            return toHeapSlice(inter);
+            }, (partialData)
+        {
+            if(partialData is null)
+                return null;
+            scope(exit) freeGCMemory(partialData);
+            auto inter = cast(TileMapIData)partialData.ptr;
+            if(!inter.map.loadTextures())
+            {
+                loglnError("Could not load HipTilemap textures ", inter.map.path);
+                return null;
+            }
+            HipTilemap ret = inter.map;
             return ret;
         });
         workerPool.startWorking();
