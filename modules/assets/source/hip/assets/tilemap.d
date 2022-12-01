@@ -307,10 +307,8 @@ class HipTilesetImpl : HipTileset
         texture = new HipTexture(img);
         int i = 0;
         for(int y = margin; y < textureHeight; y+= (tileHeight+spacing))
-            for(int x = margin; x < textureWidth; x+= (tileWidth+spacing))
+            for(int x = margin, currCol = 0 ; currCol < columns; currCol++, x+= (tileWidth+spacing))
             {
-                if(i == tileCount)
-                    break;
                 Tile* t = &tiles[i];
                 t.region = new HipTextureRegion(texture, x, y, x+tileWidth, y+tileHeight);
                 i++;
