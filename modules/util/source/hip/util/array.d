@@ -21,16 +21,34 @@ int indexOf(string accessor, T, Q)(T[] arr, Q element, int startIndex = 0)
     else
         enum op = accessor;
     const size_t len = arr.length;
-    for(ulong i = startIndex; i < len; i++)
+    for(size_t i = startIndex; i < len; i++)
         mixin("if(arr[i]"~op~" == element)return cast(int)i;");
     return -1;
 }
 /**
 * Returns index of element if it finds or returns -1 if not
 */
-int indexOf(T)(T[] arr, T element, int startIndex = 0)
+int indexOf(T)(in T[] arr, T element, int startIndex = 0) pure nothrow @nogc
 {
-    return indexOf!""(arr, element, startIndex);
+    if(startIndex < 0)
+        return -1;
+    for(int i = startIndex; i < arr.length; i++)
+        if(arr[i] == element)
+            return i;
+    return -1;
+}
+
+import std.typecons: isTuple;
+///Index of for tuples
+int indexOf(T, V)(in T tuple, V value) pure nothrow @nogc if(isTuple!T)
+{
+    foreach(i, v; tuple)
+    {
+        static if(is(typeof(v) == V))
+        if(v == value)
+            return i;
+    }
+    return -1;
 }
 
 int lastIndexOf(T)(T[] arr, T element, int startIndex = -1)
@@ -141,15 +159,18 @@ bool remove(T)(ref T[] arr, const(T)* val)
 }
 
 pragma(inline, true)
-bool contains(T)(ref T[] arr, T val){return arr.indexOf(val) != -1;} 
+bool contains(T)(in T[] arr, T val) pure nothrow @nogc {return arr.indexOf(val) != -1;} 
+
+pragma(inline, true)
+bool contains(T, V)(in T[] tuple, V val) pure nothrow @nogc {return tuple.indexOf(val) != -1;} 
 
 
 /**
 *   Compare a array of structures member with a target value
 */
-pragma(inline, true) bool contains(string accessor, T, Q)(ref T[] arr, Q val)
+bool contains(string accessor, T, Q)(ref T[] arr, Q val)
 {
-    for(ulong i = 0; i < arr.length; i++)
+    for(size_t i = 0; i < arr.length; i++)
     {
         if(__traits(getMember, arr[i], accessor) == val)
             return true;
@@ -160,9 +181,9 @@ pragma(inline, true) bool contains(string accessor, T, Q)(ref T[] arr, Q val)
 /**
 *   Compare two different structures accessing different members
 */
-pragma(inline, true) bool contains(string accessorA, string accessorB, T, Q)(ref T[] arr, Q val)
+bool contains(string accessorA, string accessorB, T, Q)(ref T[] arr, Q val)
 {
-    for(ulong i = 0; i < arr.length; i++)
+    for(size_t i = 0; i < arr.length; i++)
     {
         if(__traits(getMember, arr[i], accessorA) == __traits(getMember, val, accessorB))
             return true;
@@ -170,7 +191,7 @@ pragma(inline, true) bool contains(string accessorA, string accessorB, T, Q)(ref
     return false;
 }
 
-pragma(inline) bool isEmpty(T)(in T[] arr){return arr.length == 0;}
+pragma(inline, true) bool isEmpty(T)(in T[] arr){return arr.length == 0;}
 
 
 import std.traits:ForeachType;

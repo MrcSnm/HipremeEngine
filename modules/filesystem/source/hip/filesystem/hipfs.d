@@ -208,7 +208,10 @@ class HipFileSystem
         void[] data;
         bool ret = read(path, data);
         if(ret)
-            output = cast(string)data;
+        {
+            import std.utf;
+            output = toUTF8((cast(string)data));
+        }
         return ret;
     }
     @ExportD public static string readText(string path)

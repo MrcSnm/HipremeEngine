@@ -60,31 +60,65 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         ret.texturePaths~= texturePath;
         ret.atlasPath = atlasPath;
 
+        import hip.console.log;
+
         JSONValue json = parseJSON(cast(string)data);
-        JSONValue[] frames = json["frames"].array;
-        foreach(f; frames)
+        if(json["frames"].type == JSONType.array)
         {
-            AtlasFrame a;
-            a.filename = f["filename"].str;
-            a.rotated  = f["rotated"].boolean;
-            a.trimmed  = f["trimmed"].boolean;
-            JSONValue frameRect = f["frame"].object;
-            a.frame = Rect(
-                cast(uint)frameRect["x"].integer,
-                cast(uint)frameRect["y"].integer,
-                cast(uint)frameRect["w"].integer,
-                cast(uint)frameRect["h"].integer
-            );
-            frameRect = f["spriteSourceSize"].object;
-            a.spriteSourceSize = Rect(
-                cast(uint)frameRect["x"].integer,
-                cast(uint)frameRect["y"].integer,
-                cast(uint)frameRect["w"].integer,
-                cast(uint)frameRect["h"].integer
-            );
-            frameRect = f["sourceSize"].object;
-            a.sourceSize = Size(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
-            ret.frames[a.filename] = a;
+            JSONValue[] frames = json["frames"].array;
+            foreach(f; frames)
+            {
+                AtlasFrame a;
+                a.filename = f["filename"].str;
+                a.rotated  = f["rotated"].boolean;
+                a.trimmed  = f["trimmed"].boolean;
+                JSONValue frameRect = f["frame"].object;
+                a.frame = Rect(
+                    cast(uint)frameRect["x"].integer,
+                    cast(uint)frameRect["y"].integer,
+                    cast(uint)frameRect["w"].integer,
+                    cast(uint)frameRect["h"].integer
+                );
+                frameRect = f["spriteSourceSize"].object;
+                a.spriteSourceSize = Rect(
+                    cast(uint)frameRect["x"].integer,
+                    cast(uint)frameRect["y"].integer,
+                    cast(uint)frameRect["w"].integer,
+                    cast(uint)frameRect["h"].integer
+                );
+                frameRect = f["sourceSize"].object;
+                a.sourceSize = Size(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
+                ret.frames[a.filename] = a;
+            }
+        }
+        else 
+        {
+            JSONValue frames = json["frames"].object;
+            JSONValue meta = json["meta"].object;
+            foreach(string frameName, ref JSONValue f; frames)
+            {
+                AtlasFrame a;
+                a.filename = frameName;
+                a.rotated  = f["rotated"].boolean;
+                a.trimmed  = f["trimmed"].boolean;
+                JSONValue frameRect = f["frame"].object;
+                a.frame = Rect(
+                    cast(uint)frameRect["x"].integer,
+                    cast(uint)frameRect["y"].integer,
+                    cast(uint)frameRect["w"].integer,
+                    cast(uint)frameRect["h"].integer
+                );
+                frameRect = f["spriteSourceSize"].object;
+                a.spriteSourceSize = Rect(
+                    cast(uint)frameRect["x"].integer,
+                    cast(uint)frameRect["y"].integer,
+                    cast(uint)frameRect["w"].integer,
+                    cast(uint)frameRect["h"].integer
+                );
+                frameRect = f["sourceSize"].object;
+                a.sourceSize = Size(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
+                ret.frames[frameName] = a;   
+            }
         }
 
         return ret;
@@ -99,8 +133,8 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     static HipTextureAtlas readSpritesheet (string spritesheetPath, string texturePath = "")
     {
         import hip.filesystem.hipfs;
-        ubyte[] data;
-        if(!HipFS.read(spritesheetPath, data))
+        string data;
+        if(!HipFS.readText(spritesheetPath, data))
         {
             import hip.error.handler;
             ErrorHandler.showWarningMessage("Could not find spritesheet from path ", spritesheetPath);
@@ -112,7 +146,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
             texturePath = spritesheetPath.dup.extension(".png");
         }
 
-        return readSpritesheet(data, spritesheetPath, texturePath);
+        return readSpritesheet(cast(ubyte[])data, spritesheetPath, texturePath);
     }
 
     static HipTextureAtlas readSpritesheet (ubyte[] data, string spritesheetPath, string texturePath)
@@ -167,14 +201,14 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     static HipTextureAtlas readXML (string atlasPath, string texturePath = ":IGNORE")
     {
         import hip.filesystem.hipfs;
-        ubyte[] data;
-        if(!HipFS.read(atlasPath, data))
+        string data;
+        if(!HipFS.readText(atlasPath, data))
         {
             import hip.error.handler;
             ErrorHandler.showWarningMessage("Could not find atlas XML with path ", atlasPath);
             return null;
         }
-        return readXML(data, atlasPath, texturePath);
+        return readXML(cast(ubyte[])data, atlasPath, texturePath);
     }
 
     static HipTextureAtlas read (string atlasPath, string texturePath = ":IGNORE")
@@ -239,8 +273,8 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         import hip.util.path;
         import hip.filesystem.hipfs;
 
-        ubyte[] data;
-        if(!HipFS.read(atlasPath, data))
+        string data;
+        if(!HipFS.readText(atlasPath, data))
         {
             import hip.error.handler;
             ErrorHandler.showWarningMessage("Could not atlas JSON from path ", atlasPath);
@@ -248,7 +282,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         }
         if(texturePath == "")
             texturePath = atlasPath.dup.extension("png");
-        return readJSON(data, atlasPath, texturePath);
+        return readJSON(cast(ubyte[])data, atlasPath, texturePath);
     }
 
     static HipTextureAtlas readAtlas (ubyte[] data, string atlasPath)
@@ -327,14 +361,14 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     {
         import hip.filesystem.hipfs;
         import hip.error.handler;
-        ubyte[] data;
+        string data;
 
-        if(!HipFS.read(atlasPath, data))
+        if(!HipFS.readText(atlasPath, data))
         {
             ErrorHandler.showWarningMessage("Could not load HipTextureAtlas atlas from path ", atlasPath);
             return null;
         }
-        return readAtlas(data, atlasPath);
+        return readAtlas(cast(ubyte[])data, atlasPath);
     }
     
     override void onFinishLoading(){}
