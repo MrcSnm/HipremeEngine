@@ -208,8 +208,11 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         this.u2 = u2;
         this.v1 = v1;
         this.v2 = v2;
-        regionWidth =  cast(uint)((u2 - u1) * texture.getWidth);
-        regionHeight = cast(uint)((v2 - v1) * texture.getHeight);
+        //Check for round
+        float regWidth =  (u2 - u1) * texture.getWidth;
+        float regHeight = (v2 - v1) * texture.getHeight;
+        regionWidth =  cast(uint)(regWidth + 0.5) > cast(uint)regWidth ? cast(uint)(regWidth+0.5) : cast(uint)regWidth;
+        regionHeight = cast(uint)(regHeight + 0.5) > cast(uint)regHeight ? cast(uint)(regHeight+0.5) : cast(uint)regHeight;
 
         //Top left
         vertices[0] = u1;

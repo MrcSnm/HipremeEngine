@@ -25,6 +25,8 @@ int getClosestMultiple(int from, int to)
     }
 }
 
+pragma(inline, true) int round(float f){return f > 0 ? cast(int)(f+0.5) : cast(int)(f-0.5);}
+
 ///Bit twiddling hacks
 uint roundPow2(uint n)
 {
