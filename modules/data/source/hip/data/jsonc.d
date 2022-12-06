@@ -1,6 +1,4 @@
 module hip.data.jsonc;
-
-version(HipJSON):
 public import std.json;
 
 JSONValue parseJSONC(string jsonc)

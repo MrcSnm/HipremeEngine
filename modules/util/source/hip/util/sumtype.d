@@ -46,7 +46,7 @@ private union TypeUnion
     ///Untested
     real real_;
 }
-pure Type getType(T)()  nothrow @nogc @sasfe
+pure Type getType(T)()  nothrow @nogc @safe
 {
     with(Type)
     {
@@ -111,8 +111,17 @@ struct Sumtype
     T get(T)() const
     {
         if(getType!T != type)
-            throw new Error("Tried to get a mismatching type: "~T.stringof~" (expected "~getTypeName~")");
+            throw new Exception("Tried to get a mismatching type: "~T.stringof~" (expected "~getTypeName~")");
         return *cast(T*)(cast(void*)&data);
+    }
+    T set(T)(T value)
+    {
+        if(type == Type.undefined)
+            this.type = getType!T;
+        else if(type != getType!T)
+            throw new Exception("Tried to get a mismatching type: "~T.stringof~" (expected "~getTypeName~")");
+        data = *cast(TypeUnion)(cast(void*)&data);
+        return value;
     }
 
     T opCast(T)() const
@@ -130,7 +139,7 @@ struct Sumtype
         return Sumtype(Type.string_, cast(TypeUnion)data);
     }
     
-    static Sumtype make(T)(T data)
+    static Sumtype make(T)(T data) if(!is(T == string))
     {
         Sumtype s = void;
         s.type = getType!T;

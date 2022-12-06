@@ -27,6 +27,18 @@ version(Script) extern(System)
     IHipAssetLoadTask function(string path) loadImage;
     ///Returns a load task for tilemap
     IHipAssetLoadTask function(string path) loadTilemap;
+
+
+    /**
+    *   All those kind are asset files and should be treated as such.
+    *   
+    */
+    IHipAssetLoadTask function(string path) loadCSV;
+    IHipAssetLoadTask function(string path) loadINI;
+    IHipAssetLoadTask function(string path) loadJSONC;
+    //TODO: IHipAssetLoadTask function(string path) loadHapFile;
+
+
     /** 
     *   Returns a load task for a texture atlas
     *   If ":IGNORE" is provided for texturePath, the following behavior will occur:

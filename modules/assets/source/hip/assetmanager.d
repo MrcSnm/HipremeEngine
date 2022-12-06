@@ -50,6 +50,9 @@ public import hip.asset;
 public import hip.assets.image;
 public import hip.assets.texture;
 public import hip.assets.font;
+public import hip.assets.csv;
+public import hip.assets.jsonc;
+public import hip.assets.ini;
 public import hip.api.data.commons;
 
 
@@ -351,6 +354,43 @@ class HipAssetManager
             Image img = cast(Image)partialData.ptr;
             HipTexture ret = new HipTexture(img);
             freeGCMemory(partialData);
+            return ret;
+        });
+        workerPool.startWorking();
+        return task;
+    }
+
+    @ExportD static IHipAssetLoadTask loadCSV(string path)
+    {
+        HipAssetLoadTask task = loadSimple("Load CSV", path, (pathOrLocation)
+        {
+            auto ret = new HipCSV();
+            if(!ret.loadFromFile(pathOrLocation))
+                return null;
+            return ret;
+        });
+        workerPool.startWorking();
+        return task;
+    }
+    @ExportD static IHipAssetLoadTask loadINI(string path)
+    {
+        HipAssetLoadTask task = loadSimple("Load INI", path, (pathOrLocation)
+        {
+            auto ret = new HipINI();
+            if(!ret.loadFromFile(pathOrLocation))
+                return null;
+            return ret;
+        });
+        workerPool.startWorking();
+        return task;
+    }
+    @ExportD static IHipAssetLoadTask loadJSONC(string path)
+    {
+        HipAssetLoadTask task = loadSimple("Load JSONC", path, (pathOrLocation)
+        {
+            auto ret = new HipJSONC();
+            if(!ret.loadFromFile(pathOrLocation))
+                return null;
             return ret;
         });
         workerPool.startWorking();
