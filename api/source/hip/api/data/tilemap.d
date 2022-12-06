@@ -38,20 +38,21 @@ struct TileProperty
     string name;
     string type;
     string value;
-    void set(string v){value = v;}
+    string set(string v){return value = v;}
+    string toString() const => value;
+
 
     version(Have_util)
     {
-        T get(T)()
+        import hip.util.sumtype;
+        Sumtype val;
+        pragma(inline, true) T get(T)()
         {
-            import hip.util.conv;
-            return to!T(value);
+            if(val.type == Type.undefined)
+                val = Sumtype.make!T(value);
+            return val.get!T;
         }
-        void set(T)(T v)
-        {
-            import hip.util.conv;
-            value = to!string(v);
-        }
+        pragma(inline, true) T set(T)(T v) => val.set(v);
     }
 }
 
@@ -125,6 +126,8 @@ final class HipTileLayer
     string drawOrder;
     TileProperty[string] properties;
     float opacity;
+
+    
 }
 
 /**
@@ -209,6 +212,7 @@ interface IHipTilemap
         return getTilesetForID(id).getTextureRegion(id);
     }
     final Tile* getTileForID(ushort id){return getTilesetForID(id).getTile(id);}
+
 
     alias layers this;
 }
