@@ -232,20 +232,14 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
     }
     public static const float[8] defaultVertices = [0,0, 1,0, 1,1, 0,1];
 
+    HipTextureRegion clone()
+    {
+        return new HipTextureRegion(texture, u1, v1, u2, v2);
+    }
+
     ref float[8] getVertices(){return vertices;}
-    
     override void onFinishLoading(){}
-    
     override void onDispose(){}
-    
-    bool load()
-    {
-        return bool.init; // TODO: implement
-    }
-    
-    bool isReady()
-    {
-        return bool.init; // TODO: implement
-    }
+    bool isReady(){return texture !is null;}
     
 }

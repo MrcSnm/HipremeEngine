@@ -119,14 +119,26 @@ final class HipTileLayer
     string name;
     ///Data
     ushort[] tiles;
-    bool visible;
+    bool visible = true;
     int x, y, width, height;
     ushort id;
     string type;
     string drawOrder;
     TileProperty[string] properties;
-    float opacity;
+    float opacity = 1.0;
 
+    /**
+    *
+    */
+    this(string name, uint columns, uint rows, ushort id, IHipTilemap map)
+    {
+        this.name = name;
+        this.id = id;
+        tiles = new ushort[columns*rows];
+        width = columns;
+        height = rows;
+    }
+    this(){}
     
 }
 
@@ -165,6 +177,13 @@ abstract class HipTileset
     {
         this.tiles = new Tile[tileCount];
         this.tileCount = tileCount;
+    }
+
+    void setTexture(IHipTexture texture)
+    {
+        this.texture = texture;
+        this.textureWidth = texture.getWidth;
+        this.textureHeight = texture.getHeight;
     }
 
     IHipTextureRegion getTextureRegion(ushort id)
@@ -206,11 +225,18 @@ interface IHipTilemap
     uint tileHeight() const;
     uint tileWidth() const;
 
-    HipTileset getTilesetForID(ushort id);
-    final IHipTextureRegion getTextureRegionForID(ushort id)
+    void setTileSize(uint tileWidth, uint tileHeight);
+    ///Use it when programatically creating your tilemap
+    void addTileset(HipTileset tileset);
+    ///Use it when programatically creating your tilemap
+    final HipTileLayer addNewLayer(string layerName, uint columns, uint rows)
     {
-        return getTilesetForID(id).getTextureRegion(id);
+        return layers[layerName] = new HipTileLayer(layerName, columns, rows, cast(ushort)layers.length, this);
     }
+    
+
+    HipTileset getTilesetForID(ushort id);
+    final IHipTextureRegion getTextureRegionForID(ushort id){return getTilesetForID(id).getTextureRegion(id);}
     final Tile* getTileForID(ushort id){return getTilesetForID(id).getTile(id);}
 
 

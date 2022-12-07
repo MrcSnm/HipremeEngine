@@ -49,12 +49,14 @@ import hip.util.concurrency;
 public import hip.asset;
 public import hip.assets.image;
 public import hip.assets.texture;
+public import hip.assets.tilemap;
 public import hip.assets.font;
 public import hip.assets.csv;
 public import hip.assets.jsonc;
 public import hip.assets.ini;
 public import hip.api.data.commons;
-
+public import hip.assets.textureatlas;
+public import hip.util.data_structures;
 
 
 
@@ -468,6 +470,13 @@ class HipAssetManager
         workerPool.startWorking();
         return task;
     }
+
+    @ExportD static IHipTilemap createTilemap(uint width, uint height, uint tileWidth, uint tileHeight)
+    {
+        return new HipTilemap(width, height, tileWidth, tileHeight);
+    }
+    @ExportD static HipTileset tilesetFromAtlas(IHipTextureAtlas atlas){return HipTilesetImpl.fromAtlas(cast(HipTextureAtlas)atlas);}
+    @ExportD static HipTileset tilesetFromSpritesheet(Array2D_GC!IHipTextureRegion sp){return HipTilesetImpl.fromSpritesheet(sp);}
 
     @ExportD static IHipAssetLoadTask loadFont(string fontPath, int fontSize = 48)
     {

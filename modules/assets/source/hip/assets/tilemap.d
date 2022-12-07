@@ -1,6 +1,6 @@
 module hip.assets.tilemap;
+public import hip.api.data.tilemap;
 import hip.config.opts;
-import hip.api.data.tilemap;
 import hip.assets.image;
 import hip.asset;
 
@@ -272,6 +272,56 @@ class HipTilesetImpl : HipTileset
         return ret;
     }
 
+    import hip.util.data_structures;
+    static HipTileset fromSpritesheet(Array2D_GC!IHipTextureRegion regions)
+    {
+        import hip.error.handler;
+        import hip.assets.texture;
+        ErrorHandler.assertExit(regions.getWidth > 0 && regions.getHeight > 0, "Invalid spritesheet");
+        HipTilesetImpl t = new HipTilesetImpl(regions.getWidth * regions.getHeight);
+        t.name = "Created from Spritesheet";
+        t.firstGid = 1;
+        t.setTexture(regions[0,0].getTexture);
+        t.tileWidth = regions[0,0].getWidth();
+        t.tileHeight = regions[0,0].getHeight();
+        int i = 0;
+        for(int y = 0; y < regions.getHeight; y++)
+            for(int x = 0; x < regions.getWidth; x++)
+            {
+                Tile* tile = &t.tiles[i++];
+                tile.id = cast(ushort)i;
+                tile.region = regions[x, y]; //TODO: May use clone one day if direct assign doesn't fit
+                // t.region = (cast(HipTextureRegion)regions[x, y]).clone;
+            }
+
+        return t;
+    }
+    import hip.assets.textureatlas;
+    /**
+    *   Untested. D's Associative Arrays aren't deterministic, this is subject to bug.
+    */
+    static HipTileset fromAtlas(HipTextureAtlas atlas)
+    {
+        HipTilesetImpl t = new HipTilesetImpl(cast(uint)atlas.frames.length);
+        t.firstGid = 1;
+        t.name = "Tileset from Atlas: "~atlas.name;
+        t.setTexture(atlas.texture);
+        int i = 0;
+        foreach(atlasFrame; atlas)
+        {
+            Tile* tile = &t.tiles[i++];
+            if(!t.tileWidth)
+            {
+                t.tileWidth = atlasFrame.region.getWidth;
+                t.tileHeight = atlasFrame.region.getHeight;
+            }
+            //TODO: May use clone one day if direct assign doesn't fit.
+            tile.region = atlasFrame.region;
+            tile.id = cast(ushort)i;
+        }
+        return t;
+    }
+
     this(uint tileCount){super(tileCount);}
 
     IImage textureImage;
@@ -336,6 +386,16 @@ class HipTilemap : HipAsset, IHipTilemap
     string _tiledVersion;
     uint _tileWidth, _tileHeight;
 
+    this(uint width = 0, uint height = 0, uint tileWidth = 0, uint tileHeight = 0)
+    {
+        super("HipTilemap");
+        _typeID = assetTypeID!HipTilemap;
+        this._width = width;
+        this._height = height;
+        this._tileWidth = tileWidth;
+        this._tileHeight = tileHeight;
+    }
+
     ref int x() => _x;
     ref int y() => _y;
     ref HipColor color() => _color;
@@ -356,6 +416,14 @@ class HipTilemap : HipAsset, IHipTilemap
     string tiled_version() const => _tiledVersion;
     uint tileHeight() const => _tileHeight;
     uint tileWidth() const => _tileWidth;
+
+    void setTileSize(uint tileWidth, uint tileHeight)
+    {
+        _tileWidth = tileWidth;
+        _tileHeight = tileHeight;
+    }
+
+    void addTileset(HipTileset tileset){tilesets~= cast(HipTilesetImpl)tileset;}
 
     protected HipTileLayer[] layersArray;
     HipTilesetImpl[] tilesets;
