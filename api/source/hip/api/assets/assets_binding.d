@@ -30,12 +30,60 @@ version(Script) extern(System)
 
 
     /**
-    *   All those kind are asset files and should be treated as such.
-    *   
+    *   Usage:
+    ```d
+    //Iterate every value
+    foreach(v; csv) //or
+    //Iterate columns
+    foreach(v; csv.getColumnRange(0)) //or
+    //Iterate rows
+    foreach(v; csv.getRow(0))
+    //Get the csv cell
+    csv[x, y]
+    ```
+    * Returns: IHipCSV
     */
     IHipAssetLoadTask function(string path) loadCSV;
+    /**
+    *   Usage:
+    ```d
+    //If not found, use 2 as default
+    ini.tryGet!ubyte("buffering.count", 2);
+    //Alternative usage
+    ini.buffering.count.get!ubyte 
+    ```
+    * Returns: IHipINI
+    */
     IHipAssetLoadTask function(string path) loadINI;
+    /**
+    *   Usage:
+    ```d
+    //Must import std.json for actually using it.
+    import std.json;
+    JSONValue json = hipJSON.getJSON!JSONValue;
+    json["myProperty"].str//or other types
+    ```
+    * Returns: IHipJSONC
+    */
     IHipAssetLoadTask function(string path) loadJSONC;
+
+    version(Have_util)
+    {
+        public import hip.util.data_structures:Array2D, Array2D_GC;
+        HipTileset function(Array2D_GC!IHipTextureRegion spritesheet) tilesetFromSpritesheet;
+        HipTileset function(IHipTextureAtlas atlas) tilesetFromAtlas;
+    }   
+
+    /** 
+     * Used for creating procedurally generated Tilemap:
+     ```d
+     IHipTilemap map = HipAssetManager.createTilemap(200, 200, 1, 1);
+     map.addTileset(HipAssetManager.tilesetFromSpritesheet(mySpritesheet));
+     HipTileLayer layer = map.addNewLayer("MyLayer", 200, 200);
+     //Define your tiles by accessing layer.tiles = []
+     ```
+     */
+    IHipTilemap function(uint width, uint height, uint tileWidth, uint tileHeight, bool isInfinite = false) createTilemap;
     //TODO: IHipAssetLoadTask function(string path) loadHapFile;
 
 

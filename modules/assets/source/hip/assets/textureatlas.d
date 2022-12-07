@@ -373,7 +373,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     
     override void onFinishLoading(){}
     override void onDispose(){}
-    bool isReady(){return texture !is null;}
+    bool isReady(){return texture !is null && frames.length > 0;}
     
 
     alias frames this;

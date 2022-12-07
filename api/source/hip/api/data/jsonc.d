@@ -12,9 +12,9 @@ interface IHipJSONC
     *   This function is templated for not generating dependency on std.json.
     *   It is not optimized to hold the JSON. Call it only once or it will parse again.
     */
-    T getJSON(T)()
+    auto getJSON()()
     {
         import std.json;
-        return parseJSON(getData);
+        return parseJSON!string(getData());
     }
 }
