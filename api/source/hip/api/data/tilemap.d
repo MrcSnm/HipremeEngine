@@ -145,52 +145,41 @@ final class HipTileLayer
 /**
 *   Tileset is a data set containing tiles. It has information about the underlying texture used for a tile.
 */
-abstract class HipTileset
+interface IHipTileset
 {
-    uint columns;
+    uint columns() const;
 
     ///Means where the tileset id starts
-    uint firstGid;
+    uint firstGid() const;
+    
 
     ///"image" in tiled
-    string texturePath; 
-    ///"imageheight" in tiled
-    uint  textureHeight;
-    ///"imagewidth" in tiled 
-    uint  textureWidth; 
 
-    IHipTexture texture;
-    int margin;
-    string name;
+    string texturePath() const;
+    ///"imageheight" in tiled
+    uint  textureHeight() const;
+    ///"imagewidth" in tiled 
+    uint  textureWidth() const; 
+
+    IHipTexture texture();
+    int margin() const;
+    string name() const;
 
     ///Only available when loaded via .tsx
-    string path;
-    int spacing;
-    uint tileCount;
-    uint tileHeight;
-    uint tileWidth;
+    string path() const;
+    int spacing() const;
+    uint tileHeight() const;
+    uint tileWidth() const;
 
     ///Usually only accessed when looking for a specific property
-    public Tile[] tiles;
+    Tile[] tiles();
 
-    this(uint tileCount)
-    {
-        this.tiles = new Tile[tileCount];
-        this.tileCount = tileCount;
-    }
-
-    void setTexture(IHipTexture texture)
-    {
-        this.texture = texture;
-        this.textureWidth = texture.getWidth;
-        this.textureHeight = texture.getHeight;
-    }
-
-    IHipTextureRegion getTextureRegion(ushort id)
+    final uint tileCount()const {return cast(uint)(cast(IHipTileset)this).tiles.length;}
+    final IHipTextureRegion getTextureRegion(ushort id)
     {
         return tiles[id - firstGid].region;
     }
-    Tile* getTile(ushort id){return &tiles[id - firstGid];}
+    final Tile* getTile(ushort id){return &tiles[id - firstGid];}
 }
 
 
@@ -227,7 +216,7 @@ interface IHipTilemap
 
     void setTileSize(uint tileWidth, uint tileHeight);
     ///Use it when programatically creating your tilemap
-    void addTileset(HipTileset tileset);
+    void addTileset(IHipTileset tileset);
     ///Use it when programatically creating your tilemap
     final HipTileLayer addNewLayer(string layerName, uint columns, uint rows)
     {
@@ -235,7 +224,7 @@ interface IHipTilemap
     }
     
 
-    HipTileset getTilesetForID(ushort id);
+    IHipTileset getTilesetForID(ushort id);
     final IHipTextureRegion getTextureRegionForID(ushort id){return getTilesetForID(id).getTextureRegion(id);}
     final Tile* getTileForID(ushort id){return getTilesetForID(id).getTile(id);}
 

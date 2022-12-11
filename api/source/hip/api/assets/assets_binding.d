@@ -28,6 +28,13 @@ version(Script) extern(System)
     ///Returns a load task for tilemap
     IHipAssetLoadTask function(string path) loadTilemap;
 
+    /**
+    *   This function is used in conjunction usually with `createTilemap`.
+    *   Use `loadTilemap` when you have a complete map which you wish to load.
+    *   loadTileset is a way of loading an externally defined tileset for your procedural map.
+    */
+    IHipAssetLoadTask function(string path) loadTileset;
+
 
     /**
     *   Usage:
@@ -71,8 +78,8 @@ version(Script) extern(System)
     {
         public import hip.util.data_structures:Array2D, Array2D_GC;
         HipTileset function(Array2D_GC!IHipTextureRegion spritesheet) tilesetFromSpritesheet;
-        HipTileset function(IHipTextureAtlas atlas) tilesetFromAtlas;
     }   
+    HipTileset function(IHipTextureAtlas atlas) tilesetFromAtlas;
 
     /** 
      * Used for creating procedurally generated Tilemap:
