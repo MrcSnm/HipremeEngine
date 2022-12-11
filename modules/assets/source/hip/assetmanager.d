@@ -446,7 +446,7 @@ class HipAssetManager
         {   
             HipTilemap map;
         }
-        HipAssetLoadTask task = loadComplex("Load TextureAtlas ", tilemapPath, (pathOrLocation)
+        HipAssetLoadTask task = loadComplex("Load Tilemap ", tilemapPath, (pathOrLocation)
         {
             import hip.filesystem.hipfs;
             TileMapIData inter = new TileMapIData();
@@ -471,12 +471,46 @@ class HipAssetManager
         return task;
     }
 
+    @ExportD static IHipAssetLoadTask loadTileset(string tilesetPath)
+    {
+        import hip.console.log;
+        import hip.util.memory;
+        import hip.assets.tilemap;
+        class TilsetData
+        {   
+            HipTilesetImpl tileset;
+        }
+        HipAssetLoadTask task = loadComplex("Load Tileset ", tilesetPath, (pathOrLocation)
+        {
+            import hip.filesystem.hipfs;
+            TilsetData inter = new TilsetData();
+            inter.tileset = HipTilesetImpl.read(pathOrLocation, 1);
+            inter.loadImage();
+            return toHeapSlice(inter);
+            }, (partialData)
+        {
+            if(partialData is null)
+                return null;
+            scope(exit) freeGCMemory(partialData);
+            auto inter = cast(TilsetData)partialData.ptr;
+            if(!inter.tileset.loadTexture())
+            {
+                loglnError("Could not load HipTileset texture ", inter.tileset.path);
+                return null;
+            }
+            HipTilesetImpl ret = inter.tileset;
+            return ret;
+        });
+        workerPool.startWorking();
+        return task;
+    }
+
     @ExportD static IHipTilemap createTilemap(uint width, uint height, uint tileWidth, uint tileHeight)
     {
         return new HipTilemap(width, height, tileWidth, tileHeight);
     }
-    @ExportD static HipTileset tilesetFromAtlas(IHipTextureAtlas atlas){return HipTilesetImpl.fromAtlas(cast(HipTextureAtlas)atlas);}
-    @ExportD static HipTileset tilesetFromSpritesheet(Array2D_GC!IHipTextureRegion sp){return HipTilesetImpl.fromSpritesheet(sp);}
+    @ExportD static IHipTileset tilesetFromAtlas(IHipTextureAtlas atlas){return HipTilesetImpl.fromAtlas(cast(HipTextureAtlas)atlas);}
+    @ExportD static IHipTileset tilesetFromSpritesheet(Array2D_GC!IHipTextureRegion sp){return HipTilesetImpl.fromSpritesheet(sp);}
 
     @ExportD static IHipAssetLoadTask loadFont(string fontPath, int fontSize = 48)
     {

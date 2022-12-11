@@ -4,8 +4,39 @@ import hip.config.opts;
 import hip.assets.image;
 import hip.asset;
 
-class HipTilesetImpl : HipTileset
+class HipTilesetImpl : HipAsset, IHipTileset
 {
+    uint _columns; uint columns() const =>_columns;
+
+    ///Means where the tileset id starts
+    uint _firstGid; uint firstGid() const => firstGid;
+    
+
+    ///"image" in tiled
+
+    string _texturePath; string texturePath() const => texturePath;
+    ///"imageheight" in tiled
+    uint  _textureHeight; uint  textureHeight() const => textureHeight;
+    ///"imagewidth" in tiled 
+    uint  _textureWidth; uint  textureWidth() const => _textureWidth;
+    IHipTexture _texture; IHipTexture texture()     => _texture;
+    int _margin; int margin() const => margin;
+    string _name; string name() const => name;
+
+    ///Only available when loaded via .tsx
+    string _path; string path() const => path;
+    int _spacing; int spacing() const => spacing;
+    uint _tileHeight; uint tileHeight() const => tileHeight;
+    uint _tileWidth; uint tileWidth() const => tileWidth;
+    Tile[] _tiles; Tile[] tiles() => _tiles;
+
+    void setTexture(IHipTexture texture)
+    {
+        this._texture = texture;
+        this._textureWidth = texture.getWidth;
+        this._textureHeight = texture.getHeight;
+    }
+
     // static if(hasTSXSupport)
     // {
     //     import arsd.dom;
@@ -235,17 +266,17 @@ class HipTilesetImpl : HipTileset
     static HipTilesetImpl readJSON (string path, JSONValue t, uint firstGid)
     {
         HipTilesetImpl ret = new HipTilesetImpl(cast(uint)t["tilecount"].integer);
-        ret.columns       = cast(ushort)t["columns"].integer;
-        ret.texturePath   =             t["image"].str;
-        ret.textureHeight =   cast(uint)t["imageheight"].integer;
-        ret.textureWidth  =   cast(uint)t["imagewidth"].integer;
-        ret.margin        =    cast(int)t["margin"].integer;
-        ret.name          =             t["name"].str;
-        ret.spacing       =    cast(int)t["spacing"].integer;
-        ret.tileHeight    =   cast(uint)t["tileheight"].integer;
-        ret.tileWidth     =   cast(uint)t["tilewidth"].integer;
-        ret.path = path;
-        ret.firstGid = firstGid;
+        ret._columns       = cast(ushort)t["columns"].integer;
+        ret._texturePath   =             t["image"].str;
+        ret._textureHeight =   cast(uint)t["imageheight"].integer;
+        ret._textureWidth  =   cast(uint)t["imagewidth"].integer;
+        ret._margin        =    cast(int)t["margin"].integer;
+        ret._name          =             t["name"].str;
+        ret._spacing       =    cast(int)t["spacing"].integer;
+        ret._tileHeight    =   cast(uint)t["tileheight"].integer;
+        ret._tileWidth     =   cast(uint)t["tilewidth"].integer;
+        ret._path = path;
+        ret._firstGid = firstGid;
 
         if("tiles" in t)
         {
@@ -273,17 +304,17 @@ class HipTilesetImpl : HipTileset
     }
 
     import hip.util.data_structures;
-    static HipTileset fromSpritesheet(Array2D_GC!IHipTextureRegion regions)
+    static IHipTileset fromSpritesheet(Array2D_GC!IHipTextureRegion regions)
     {
         import hip.error.handler;
         import hip.assets.texture;
         ErrorHandler.assertExit(regions.getWidth > 0 && regions.getHeight > 0, "Invalid spritesheet");
         HipTilesetImpl t = new HipTilesetImpl(regions.getWidth * regions.getHeight);
-        t.name = "Created from Spritesheet";
-        t.firstGid = 1;
+        t._name = "Created from Spritesheet";
+        t._firstGid = 1;
         t.setTexture(regions[0,0].getTexture);
-        t.tileWidth = regions[0,0].getWidth();
-        t.tileHeight = regions[0,0].getHeight();
+        t._tileWidth = regions[0,0].getWidth();
+        t._tileHeight = regions[0,0].getHeight();
         int i = 0;
         for(int y = 0; y < regions.getHeight; y++)
             for(int x = 0; x < regions.getWidth; x++)
@@ -300,11 +331,11 @@ class HipTilesetImpl : HipTileset
     /**
     *   Untested. D's Associative Arrays aren't deterministic, this is subject to bug.
     */
-    static HipTileset fromAtlas(HipTextureAtlas atlas)
+    static IHipTileset fromAtlas(HipTextureAtlas atlas)
     {
         HipTilesetImpl t = new HipTilesetImpl(cast(uint)atlas.frames.length);
-        t.firstGid = 1;
-        t.name = "Tileset from Atlas: "~atlas.name;
+        t._firstGid = 1;
+        t._name = "Tileset from Atlas: "~atlas.name;
         t.setTexture(atlas.texture);
         int i = 0;
         foreach(atlasFrame; atlas)
@@ -312,8 +343,8 @@ class HipTilesetImpl : HipTileset
             Tile* tile = &t.tiles[i++];
             if(!t.tileWidth)
             {
-                t.tileWidth = atlasFrame.region.getWidth;
-                t.tileHeight = atlasFrame.region.getHeight;
+                t._tileWidth = atlasFrame.region.getWidth;
+                t._tileHeight = atlasFrame.region.getHeight;
             }
             //TODO: May use clone one day if direct assign doesn't fit.
             tile.region = atlasFrame.region;
@@ -322,8 +353,12 @@ class HipTilesetImpl : HipTileset
         return t;
     }
 
-    this(uint tileCount){super(tileCount);}
-
+    this(uint tileCount)
+    {
+        super("HipTileset");
+        _tiles = new Tile[tileCount];
+        _typeID = assetTypeID!HipTilesetImpl;
+    }
     IImage textureImage;
 
     IImage loadImage()
@@ -354,7 +389,7 @@ class HipTilesetImpl : HipTileset
         IImage img = loadImage();
         if(img is null)
             return false;
-        texture = new HipTexture(img);
+        _texture = new HipTexture(img);
         int i = 0;
         for(int y = margin; y < textureHeight; y+= (tileHeight+spacing))
             for(int x = margin, currCol = 0 ; currCol < columns; currCol++, x+= (tileWidth+spacing))
@@ -366,6 +401,10 @@ class HipTilesetImpl : HipTileset
 
         return texture.hasSuccessfullyLoaded();
     }
+    
+    override void onFinishLoading(){}
+    override void onDispose(){}
+    bool isReady(){return _texture !is null;}
 }
 
 
@@ -423,7 +462,7 @@ class HipTilemap : HipAsset, IHipTilemap
         _tileHeight = tileHeight;
     }
 
-    void addTileset(HipTileset tileset){tilesets~= cast(HipTilesetImpl)tileset;}
+    void addTileset(IHipTileset tileset){tilesets~= cast(HipTilesetImpl)tileset;}
 
     protected HipTileLayer[] layersArray;
     HipTilesetImpl[] tilesets;
@@ -433,7 +472,7 @@ class HipTilemap : HipAsset, IHipTilemap
         _typeID = assetTypeID!HipTilemap;
     }
 
-    HipTileset getTilesetForID(ushort id)
+    IHipTileset getTilesetForID(ushort id)
     {
         if(tilesets.length == 0)
             return null;
