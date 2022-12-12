@@ -15,7 +15,7 @@
 			"dependencies": {
 				"console": {"path": "../console"},
 				"error": {"path": "../error"},
-				"image": {"path": "../image"},
+				"hipengine_api": {"path": "../../api"},
 				"util": {"path": "../util"}
 			}
 		},

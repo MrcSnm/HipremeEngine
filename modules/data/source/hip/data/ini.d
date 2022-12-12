@@ -9,52 +9,21 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.data.ini;
+public import hip.api.data.ini;
 import hip.util.conv:to;
 
-struct IniVar
+
+class IniFile : IHipIniFile
 {
-    string name;
-    string value;
-
-    T get(T)(){return to!T(value);}
-    string get(){return value;}
-    auto opAssign(T)(T value)
-    {
-        this.value = to!string(value);
-        return value;
-    }
-
-    string toString() const @safe pure nothrow{return name~" = "~ value;}
-}
-
-struct IniBlock
-{
-    string name;
-    string comment;
-    IniVar[string] vars;
-
-    string toString() const @safe pure
-    {
-        string ret = "["~name~"]\n";
-        foreach (v; vars)
-            ret~= v.toString();
-        return ret;
-    }
-    auto opDispatch(string member)()
-    {
-        return vars[member];
-    }
-
-    alias vars this;
-}
-
-class IniFile
-{
-    IniBlock[string] blocks;
+    IniBlock[string] _blocks;
     string path;
     bool configFound = false;
-    bool noError = true;
+    bool _noError = true;
     string[] errors;
+
+    bool noError() const{return _noError;}
+    ref IniBlock[string] blocks(){return _blocks;}
+    const(string[]) getErrors() const{return cast(const)errors;}
 
     /**
     *   Simple parser for the .conf or .ini files commonly found.
@@ -107,7 +76,7 @@ class IniFile
                     if(v == "")
                     {
                         ret.errors~= "No value for key '"~k~"'";
-                        ret.noError = false;
+                        ret._noError = false;
                         break;
                     }
                     string name = k.replaceAll(' ', "");
@@ -120,30 +89,19 @@ class IniFile
         return ret;
     }
 
-    public T tryGet(T)(string varPath, T defaultVal = T.init)
+    IniVar* getIniVar(string varPath)
     {
         import hip.util.string:splitRange;
         import hip.util.algorithm;
-        
         string accessorA, accessorB;
         varPath.splitRange(".").put(&accessorA, &accessorB);
         if(accessorB == "")
-            return defaultVal;
-
-        IniBlock* b = (accessorA in this);
+            return null;
+        IniBlock* b = (accessorA in blocks);
         if(b is null)
-            return defaultVal;
-        IniVar* v = (accessorB in *b);
-        if(v is null)
-            return defaultVal;
-        return v.get!T;
+            return null;
+        return (accessorB in *b);
     }
-
-    auto opDispatch(string member)()
-    {
-        return blocks[member];
-    }
-    alias blocks this;
 }
 
 /**

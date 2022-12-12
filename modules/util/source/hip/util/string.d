@@ -347,7 +347,7 @@ pure TString replaceAll(TString)(TString str, TString what, TString replaceWith 
     return ret;
 }
 
-pure int indexOf(TString)(in TString str,in TString toFind, int startIndex = 0) nothrow @nogc @safe
+pure int indexOf (TString)(in TString str,in TString toFind, int startIndex = 0) nothrow @nogc @safe
 {
     if(!toFind.length)
         return -1;
@@ -367,7 +367,7 @@ pure int indexOf(TString)(in TString str,in TString toFind, int startIndex = 0) 
     return -1;
 }
 
-pure bool startsWith(TChar)(in TChar str, in TChar withWhat) nothrow @nogc @safe
+pure bool startsWith(TString)(in TString str, in TString withWhat) nothrow @nogc @safe
 {
     if(withWhat.length > str.length)
         return false;
@@ -380,7 +380,7 @@ pure bool startsWith(TChar)(in TChar str, in TChar withWhat) nothrow @nogc @safe
 /**
 *   Same thing as startsWith, but returns the part after the afterWhat
 */
-pure string after(TChar)(in TChar str, in TChar afterWhat) nothrow @nogc @safe
+pure string after(TString)(in TString str, in TString afterWhat) nothrow @nogc @safe
 {
     bool has = str.startsWith(afterWhat);
     if(!has)
@@ -388,7 +388,32 @@ pure string after(TChar)(in TChar str, in TChar afterWhat) nothrow @nogc @safe
     return str[afterWhat.length..$];
 }
 
-pure int indexOf(TChar)(in TChar[] str, TChar ch, int startIndex = 0) nothrow @nogc @trusted
+pure string findAfter(TString)(in TString str, in TString afterWhat, int startIndex = 0) nothrow @nogc @safe
+{
+    int afterWhatIndex = str.indexOf(afterWhat, startIndex);
+    if(afterWhatIndex == -1)
+        return null;
+    return str[afterWhatIndex+afterWhat.length..$];
+}
+
+/**
+*   Returns the content that is between `left` and `right`:
+```d
+string test = `string containing a "thing"`;
+writeln(test.between(`"`, `"`)); //thing
+```
+*/
+pure string between(TString)(in TString str, in TString left, in TString right, int start = 0) nothrow @nogc @safe
+{
+    int leftIndex = str.indexOf(left, start);
+    if(leftIndex == -1) return null;
+    int rightIndex = str.indexOf(right, leftIndex+1);
+    if(rightIndex == -1) return null;
+
+    return str[leftIndex+1..rightIndex];
+}
+
+pure int indexOf(TChar)(in TChar[] str, in TChar ch, int startIndex = 0) nothrow @nogc @trusted
 {
     char[1] temp = [ch];
     return indexOf(str, cast(TChar[])temp, startIndex);
@@ -451,7 +476,6 @@ T toDefault(T)(string s, T defaultValue = T.init)
 {
     if(s == "")
         return defaultValue;
-
     T v = defaultValue;
     try{v = to!(T)(s);}
     catch(Exception e){}
@@ -570,6 +594,32 @@ auto splitRange(TString)(TString str, TString separator) pure nothrow @safe @nog
 }
 
 
+bool isNumber(TString)(in TString str) pure nothrow @nogc
+{
+    if(!str)
+        return false;
+    bool isFirst = true;
+    bool hasDecimalSeparator = false;
+    foreach(c; str)
+    {
+        //Check for negative
+        if(isFirst)
+        {
+            isFirst = false;
+            if(c == '-')
+                continue;
+        }
+        //Can only check for '.' once.
+        if(!hasDecimalSeparator && c == '.')
+            hasDecimalSeparator = true;
+        else if(c < '0' || c > '9')
+            return false;
+
+    }
+    return true;
+}
+
+
 pragma(inline, true) enum isUpperCase(TChar)(TChar c)
 {
     return c >= 'A' && c <= 'Z';
@@ -650,4 +700,7 @@ unittest
     assert(lastIndexOf("hello, hello", "hello") == 7);
     assert(indexOf("hello, hello", "hello") == 0);
     assert(replaceAll("\nTest\n", '\n') == "Test");
+
+    assert(trim(" \n  \thello there  \n \t") == "hello there");
+    assert(between(`string containing a "thing"`, `"`, `"`) == "thing");
 }

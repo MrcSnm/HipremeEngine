@@ -80,7 +80,7 @@ abstract class HipAsset : ILoadable, IHipAsset
 
 
 private __gshared int assetIds = 0;
-int assetTypeID(T : HipAsset)()
+int assetTypeID(T : IHipAsset)()
 {
     static int id = -1;
     if(id == -1)

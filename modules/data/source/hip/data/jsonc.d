@@ -1,6 +1,4 @@
 module hip.data.jsonc;
-
-version(HipJSON):
 public import std.json;
 
 JSONValue parseJSONC(string jsonc)
@@ -15,29 +13,25 @@ JSONValue parseJSONC(string jsonc)
 string stripComments(string str)
 {
     string ret;
-    ulong i = 0;
-    ulong length = str.length;
+    size_t i = 0;
+    size_t length = str.length;
     ret.reserve(str.length);
 
     while(i < length)
     {
-        //Don't parse strings from comments
+        //Don't parse comments inside strings
         if(str[i] == '"')
         {
-            ret~= '"';
+            size_t left = i;
             i++;
-            while(i < length)
+            while(i < length && str[i] != '"')
             {
-                ret~= str[i];
-                if(str[i] == '\\' && i+1 < length && str[i+1] == '"')
-                {
+                if(str[i] == '\\')
                     i++;
-                    ret~= '"';
-                }
-                else if(str[i] == '"')
-                    break;
                 i++;
             }
+            i++; //Skip '"'
+            ret~= str[left..i];
         }
         //Parse single liner comments
         else if(str[i] == '/' && i+1 < length && str[i+1] == '/')

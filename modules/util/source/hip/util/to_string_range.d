@@ -84,12 +84,12 @@ if(isOutputRange!(Sink, char) && !is(T[] == string)) //There is a better match f
 }
 
 
-void toStringRange(Sink, T)(auto ref Sink sink, T structOrTuple) 
-if(!isArray!T && (is(T == struct) || isTuple!T))
+void toStringRange(Sink, T)(auto ref Sink sink, T structOrTupleOrClass) 
+if(!isArray!T && (is(T == struct) || is(T == class) || is(T == interface) || isTuple!T))
 {
     static if(isTuple!T)
     {
-        alias tupl = structOrTuple;
+        alias tupl = structOrTupleOrClass;
         put(sink, T.stringof);
         put(sink, '(');
         foreach(i, v; tupl)
@@ -102,16 +102,33 @@ if(!isArray!T && (is(T == struct) || isTuple!T))
     }
     else static if(is(T == struct))//For structs declaration
     {
-        alias struct_ = structOrTuple;
+        alias struct_ = structOrTupleOrClass;
         put(sink, T.stringof);
         put(sink, '(');
-        static foreach(i, alias m; T.tupleof)
+        foreach(i, v; struct_.tupleof)
         {
             if(i > 0)
                 put(sink, ", ");
-            toStringRange(sink, struct_.tupleof[i]);
+            toStringRange(sink, v);
         }
         put(sink, ')');
+    }
+    else static if(is(T == class))
+    {
+        alias class_ = structOrTupleOrClass;
+        put(sink, T.classinfo.name);
+        put(sink, '(');
+        foreach(i, v; class_.tupleof)
+        {
+            if(i > 0)
+                put(sink, ", ");
+            toStringRange(sink, v);
+        }
+        put(sink, ')');
+    }
+    else static if(is(T == interface))
+    {
+        put(sink, T.classinfo.name);
     }
     else static assert(0, "Not implemented for "~T.stringof);
 }
@@ -140,7 +157,10 @@ void   toStringRange(Sink)(auto ref Sink sink, const(ubyte)* str) if(isOutputRan
 
 void toStringRange(Sink)(auto ref Sink sink, void* ptr) if(isOutputRange!(Sink, char))
 {
-    toHex(sink, cast(size_t)ptr);
+    if(ptr is null)
+        put(sink, "null");
+    else
+        toHex(sink, cast(size_t)ptr);
 }
 
 void toStringRange(Sink)(auto ref Sink sink, bool b) if(isOutputRange!(Sink, char))

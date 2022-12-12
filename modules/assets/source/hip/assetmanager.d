@@ -49,9 +49,14 @@ import hip.util.concurrency;
 public import hip.asset;
 public import hip.assets.image;
 public import hip.assets.texture;
+public import hip.assets.tilemap;
 public import hip.assets.font;
+public import hip.assets.csv;
+public import hip.assets.jsonc;
+public import hip.assets.ini;
 public import hip.api.data.commons;
-
+public import hip.assets.textureatlas;
+public import hip.util.data_structures;
 
 
 
@@ -356,6 +361,156 @@ class HipAssetManager
         workerPool.startWorking();
         return task;
     }
+
+    @ExportD static IHipAssetLoadTask loadCSV(string path)
+    {
+        HipAssetLoadTask task = loadSimple("Load CSV", path, (pathOrLocation)
+        {
+            auto ret = new HipCSV();
+            if(!ret.loadFromFile(pathOrLocation))
+                return null;
+            return ret;
+        });
+        workerPool.startWorking();
+        return task;
+    }
+    @ExportD static IHipAssetLoadTask loadINI(string path)
+    {
+        HipAssetLoadTask task = loadSimple("Load INI", path, (pathOrLocation)
+        {
+            auto ret = new HipINI();
+            if(!ret.loadFromFile(pathOrLocation))
+                return null;
+            return ret;
+        });
+        workerPool.startWorking();
+        return task;
+    }
+    @ExportD static IHipAssetLoadTask loadJSONC(string path)
+    {
+        HipAssetLoadTask task = loadSimple("Load JSONC", path, (pathOrLocation)
+        {
+            auto ret = new HipJSONC();
+            if(!ret.loadFromFile(pathOrLocation))
+                return null;
+            return ret;
+        });
+        workerPool.startWorking();
+        return task;
+    }
+
+    @ExportD static IHipAssetLoadTask loadTextureAtlas(string atlasPath, string texturePath = ":IGNORE")
+    {
+        import hip.console.log;
+        import hip.util.memory;
+        import hip.assets.textureatlas;
+        class TextureAtlasIntermediaryData
+        {
+            Image image;
+            HipTextureAtlas atlas;
+        }
+        HipAssetLoadTask task = loadComplex("Load TextureAtlas ", atlasPath, (pathOrLocation)
+        {
+            import hip.filesystem.hipfs;
+            TextureAtlasIntermediaryData inter = new TextureAtlasIntermediaryData();
+            inter.atlas = HipTextureAtlas.read(atlasPath, texturePath);
+            string imagePath = inter.atlas.getTexturePath();
+            inter.image = new Image(imagePath);
+            if(!inter.image.loadFromMemory(HipFS.read(imagePath)))
+                return null;
+            return toHeapSlice(inter);
+            }, (partialData)
+        {
+            if(partialData is null)
+                return null;
+            scope(exit) freeGCMemory(partialData);
+            auto inter = cast(TextureAtlasIntermediaryData)partialData.ptr;
+            if(!inter.atlas.loadTexture(inter.image))
+            {
+                loglnError("Could not load HipTextureAtlas texture ", inter.atlas.getTexturePath());
+                return null;
+            }
+            return inter.atlas;
+        });
+        workerPool.startWorking();
+        return task;
+    }
+
+
+    @ExportD static IHipAssetLoadTask loadTilemap(string tilemapPath)
+    {
+        import hip.console.log;
+        import hip.util.memory;
+        import hip.assets.tilemap;
+        class TileMapIData
+        {   
+            HipTilemap map;
+        }
+        HipAssetLoadTask task = loadComplex("Load Tilemap ", tilemapPath, (pathOrLocation)
+        {
+            import hip.filesystem.hipfs;
+            TileMapIData inter = new TileMapIData();
+            inter.map = HipTilemap.readTiledJSON(pathOrLocation);
+            inter.map.loadImages();
+            return toHeapSlice(inter);
+            }, (partialData)
+        {
+            if(partialData is null)
+                return null;
+            scope(exit) freeGCMemory(partialData);
+            auto inter = cast(TileMapIData)partialData.ptr;
+            if(!inter.map.loadTextures())
+            {
+                loglnError("Could not load HipTilemap textures ", inter.map.path);
+                return null;
+            }
+            HipTilemap ret = inter.map;
+            return ret;
+        });
+        workerPool.startWorking();
+        return task;
+    }
+
+    @ExportD static IHipAssetLoadTask loadTileset(string tilesetPath)
+    {
+        import hip.console.log;
+        import hip.util.memory;
+        import hip.assets.tilemap;
+        class TilsetData
+        {   
+            HipTilesetImpl tileset;
+        }
+        HipAssetLoadTask task = loadComplex("Load Tileset ", tilesetPath, (pathOrLocation)
+        {
+            import hip.filesystem.hipfs;
+            TilsetData inter = new TilsetData();
+            inter.tileset = HipTilesetImpl.read(pathOrLocation, 1);
+            inter.tileset.loadImage();
+            return toHeapSlice(inter);
+            }, (partialData)
+        {
+            if(partialData is null)
+                return null;
+            scope(exit) freeGCMemory(partialData);
+            auto inter = cast(TilsetData)partialData.ptr;
+            if(!inter.tileset.loadTexture())
+            {
+                loglnError("Could not load HipTileset texture ", inter.tileset.path);
+                return null;
+            }
+            HipTilesetImpl ret = inter.tileset;
+            return ret;
+        });
+        workerPool.startWorking();
+        return task;
+    }
+
+    @ExportD static IHipTilemap createTilemap(uint width, uint height, uint tileWidth, uint tileHeight)
+    {
+        return new HipTilemap(width, height, tileWidth, tileHeight);
+    }
+    @ExportD static IHipTileset tilesetFromAtlas(IHipTextureAtlas atlas){return HipTilesetImpl.fromAtlas(cast(HipTextureAtlas)atlas);}
+    @ExportD static IHipTileset tilesetFromSpritesheet(Array2D_GC!IHipTextureRegion sp){return HipTilesetImpl.fromSpritesheet(sp);}
 
     @ExportD static IHipAssetLoadTask loadFont(string fontPath, int fontSize = 48)
     {

@@ -2,7 +2,7 @@ module hip.graphics.g2d.animation;
 
 import hip.util.reflection : ExportD;
 import hip.error.handler;
-import hip.graphics.g2d.textureatlas;
+import hip.assets.textureatlas;
 
 import hip.api.graphics.color;
 import hip.api.renderer.texture : IHipTextureRegion;
@@ -145,7 +145,7 @@ public import hip.api.graphics.g2d.animation;
         this.timeScale = 1.0f;
     }
 
-    static HipAnimation fromAtlas(TextureAtlas atlas, string which, uint fps, bool shouldLoop=false)
+    static HipAnimation fromAtlas(HipTextureAtlas atlas, string which, uint fps, bool shouldLoop=false)
     {
         import hip.util.conv:to;
         HipAnimation ret = new HipAnimation(which);

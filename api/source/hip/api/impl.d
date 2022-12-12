@@ -3,6 +3,13 @@ module hip.api.impl;
 //Console
 public import hip.api.console;
 
+//Assets
+public import hip.api.data.textureatlas;
+public import hip.api.data.tilemap;
+public import hip.api.data.csv;
+public import hip.api.data.ini;
+public import hip.api.data.jsonc;
+
 //Rendering
 public import hip.api.graphics.color;
 public import hip.api.renderer.texture;
