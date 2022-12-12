@@ -252,6 +252,10 @@ string replaceFileName(string filePath, string newFileName) @safe pure nothrow
 
 /**
 *   Extension getter
+```d
+string myFile = "test.png";
+writeln(myFile.extension); //png
+```
 */
 string extension(string pathOrFilename) pure nothrow @nogc @safe
 {
@@ -280,8 +284,14 @@ ref string extension(return ref string pathOrFilename, string newExt)
         else if(newExt[0] != '.')
             pathOrFilename = pathOrFilename[0..ind+1]~newExt;
         else
-            pathOrFilename = pathOrFilename[0..ind]~newExt[1..$];
+            pathOrFilename = pathOrFilename[0..ind+1]~newExt[1..$];
     }
+    return pathOrFilename;
+}
+
+string extension(string pathOrFilename, string newExt)
+{
+    pathOrFilename = pathOrFilename.extension(newExt);
     return pathOrFilename;
 }
 

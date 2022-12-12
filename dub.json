@@ -78,7 +78,12 @@
 				"NO_GLES",
 				"NO_SLES"
 			],
-		
+			"dflags-ldc": [
+				"--disable-verify"
+			],
+			"lflags": [
+				"/TIME"	
+			],
 			"buildOptions": [
 				"debugMode",
 				"debugInfo",

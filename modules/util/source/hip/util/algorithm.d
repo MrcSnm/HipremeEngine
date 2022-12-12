@@ -23,7 +23,7 @@ auto map(Range, From, To)(Range range, scope To delegate (From data) func)
     return Return(range, func);
 }
 
-void put(Q, T)(Q range, T[] args ...)
+void put(Q, T)(Q range, T[] args ...) if(is(T == U*, U))
 {
     int i = 0;
     foreach(v; range)

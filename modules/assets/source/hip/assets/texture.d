@@ -208,8 +208,11 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         this.u2 = u2;
         this.v1 = v1;
         this.v2 = v2;
-        regionWidth =  cast(uint)((u2 - u1) * texture.getWidth);
-        regionHeight = cast(uint)((v2 - v1) * texture.getHeight);
+        //Check for round
+        float regWidth =  (u2 - u1) * texture.getWidth;
+        float regHeight = (v2 - v1) * texture.getHeight;
+        regionWidth =  cast(uint)(regWidth + 0.5) > cast(uint)regWidth ? cast(uint)(regWidth+0.5) : cast(uint)regWidth;
+        regionHeight = cast(uint)(regHeight + 0.5) > cast(uint)regHeight ? cast(uint)(regHeight+0.5) : cast(uint)regHeight;
 
         //Top left
         vertices[0] = u1;
@@ -229,20 +232,14 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
     }
     public static const float[8] defaultVertices = [0,0, 1,0, 1,1, 0,1];
 
+    HipTextureRegion clone()
+    {
+        return new HipTextureRegion(texture, u1, v1, u2, v2);
+    }
+
     ref float[8] getVertices(){return vertices;}
-    
     override void onFinishLoading(){}
-    
     override void onDispose(){}
-    
-    bool load()
-    {
-        return bool.init; // TODO: implement
-    }
-    
-    bool isReady()
-    {
-        return bool.init; // TODO: implement
-    }
+    bool isReady(){return texture !is null;}
     
 }
