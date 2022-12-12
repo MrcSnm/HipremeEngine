@@ -485,7 +485,7 @@ class HipAssetManager
             import hip.filesystem.hipfs;
             TilsetData inter = new TilsetData();
             inter.tileset = HipTilesetImpl.read(pathOrLocation, 1);
-            inter.loadImage();
+            inter.tileset.loadImage();
             return toHeapSlice(inter);
             }, (partialData)
         {
