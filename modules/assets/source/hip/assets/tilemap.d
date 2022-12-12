@@ -9,25 +9,26 @@ class HipTilesetImpl : HipAsset, IHipTileset
     uint _columns; uint columns() const =>_columns;
 
     ///Means where the tileset id starts
-    uint _firstGid; uint firstGid() const => firstGid;
+    uint _firstGid; uint firstGid() const => _firstGid;
     
 
     ///"image" in tiled
 
-    string _texturePath; string texturePath() const => texturePath;
+    string _texturePath; string texturePath() const => _texturePath;
     ///"imageheight" in tiled
-    uint  _textureHeight; uint  textureHeight() const => textureHeight;
+    uint  _textureHeight; uint  textureHeight() const => _textureHeight;
     ///"imagewidth" in tiled 
     uint  _textureWidth; uint  textureWidth() const => _textureWidth;
     IHipTexture _texture; IHipTexture texture()     => _texture;
-    int _margin; int margin() const => margin;
-    string _name; string name() const => name;
+    int _margin; int margin() const => _margin;
+
+    override string name() const => super.name;
 
     ///Only available when loaded via .tsx
-    string _path; string path() const => path;
-    int _spacing; int spacing() const => spacing;
-    uint _tileHeight; uint tileHeight() const => tileHeight;
-    uint _tileWidth; uint tileWidth() const => tileWidth;
+    string _path; string path() const => _path;
+    int _spacing; int spacing() const => _spacing;
+    uint _tileHeight; uint tileHeight() const => _tileHeight;
+    uint _tileWidth; uint tileWidth() const => _tileWidth;
     Tile[] _tiles; Tile[] tiles() => _tiles;
 
     void setTexture(IHipTexture texture)
