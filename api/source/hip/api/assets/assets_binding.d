@@ -21,6 +21,32 @@ version(Script) extern(System)
     bool function() isLoading;
     ///Stops the code from running and awaits asset manager to finish loading
     void function() awaitLoad;
+
+
+    
+    /** 
+    * Used for manually creating texture regions. This is used by the game code abstraction.
+    */
+    IHipTextureRegion function(IHipTexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1) createTextureRegion;
+    
+    /** 
+     * Used for creating procedurally generated Tilemap:
+     ```d
+     IHipTilemap map = HipAssetManager.createTilemap(200, 200, 1, 1);
+     map.addTileset(HipAssetManager.tilesetFromSpritesheet(mySpritesheet));
+     HipTileLayer layer = map.addNewLayer("MyLayer", 200, 200);
+     //Define your tiles by accessing layer.tiles = []
+     ```
+     */
+    IHipTilemap function(uint width, uint height, uint tileWidth, uint tileHeight, bool isInfinite = false) createTilemap;
+
+    
+    /**
+    *   Reserved for deferred loading.
+    *   Use it on your own risk.
+    */
+    void function (void delegate(IHipAsset) onComplete, IHipAssetLoadTask task) addOnCompleteHandler;
+
     ///Returns a load task for texture
     IHipAssetLoadTask function(string path) loadTexture;
     ///Returns a load task for image
@@ -81,16 +107,6 @@ version(Script) extern(System)
     }   
     IHipTileset function(IHipTextureAtlas atlas) tilesetFromAtlas;
 
-    /** 
-     * Used for creating procedurally generated Tilemap:
-     ```d
-     IHipTilemap map = HipAssetManager.createTilemap(200, 200, 1, 1);
-     map.addTileset(HipAssetManager.tilesetFromSpritesheet(mySpritesheet));
-     HipTileLayer layer = map.addNewLayer("MyLayer", 200, 200);
-     //Define your tiles by accessing layer.tiles = []
-     ```
-     */
-    IHipTilemap function(uint width, uint height, uint tileWidth, uint tileHeight, bool isInfinite = false) createTilemap;
     //TODO: IHipAssetLoadTask function(string path) loadHapFile;
 
 

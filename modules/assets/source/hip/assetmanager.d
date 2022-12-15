@@ -41,10 +41,7 @@ mixin template HipAssetsGenerateEnum(string filePath)
 }
 
 
-version(HipAssets):
-
 import hip.util.system;
-import hip.asset;
 import hip.util.concurrency;
 public import hip.asset;
 public import hip.assets.image;
@@ -109,6 +106,9 @@ class HipAssetLoadTask : IHipAssetLoadTask
 
 
 import hip.api.data.font;
+
+
+
 mixin template HipDeferredLoadImpl()
 {
     import hip.util.reflection;
@@ -168,7 +168,7 @@ class HipAssetManager
     //Thread Communication
     protected __gshared HipAssetLoadTask[] completeQueue;
     protected __gshared DebugMutex completeMutex;
-    protected __gshared void delegate(HipAsset)[][HipAssetLoadTask] completeHandlers;
+    protected __gshared void delegate(IHipAsset)[][HipAssetLoadTask] completeHandlers;
     
 
     //Auto Loading
@@ -505,6 +505,10 @@ class HipAssetManager
         return task;
     }
 
+    @ExportD static IHipTextureRegion createTextureRegion(IHipTexture texture, float u1 = 0.0, float v1 = 0.0, float u2 = 1.0, float v2 = 1.0)
+    {
+        return new HipTextureRegion(texture, u1, v1, u2, v2);
+    }
     @ExportD static IHipTilemap createTilemap(uint width, uint height, uint tileWidth, uint tileHeight)
     {
         return new HipTilemap(width, height, tileWidth, tileHeight);
@@ -633,9 +637,12 @@ class HipAssetManager
         }
     }
 
-    static void addOnCompleteHandler(void delegate(HipAsset) onComplete, IHipAssetLoadTask task)
+    static void addOnCompleteHandler(void delegate(IHipAsset) onComplete, IHipAssetLoadTask task)
     {
-        completeHandlers[cast(HipAssetLoadTask)task]~= onComplete;
+        if(task.asset !is null)
+            onComplete(task.asset);
+        else
+            completeHandlers[cast(HipAssetLoadTask)task]~= onComplete;
     }
 
     /**

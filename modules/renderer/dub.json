@@ -106,9 +106,6 @@
 			]
 		}
 	],
-	"versions": [
-		"HipRendererAPI"
-	],
 	"description": "HipremeEngine renderer module",
 	"license": "proprietary",
 	"name": "renderer"

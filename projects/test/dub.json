@@ -1,0 +1,53 @@
+
+{
+	"authors": ["HipremeEngine"],
+	"description" : "Hipreme Engine test scene",
+	"license": "proprietary",
+	"targetName" : "test",
+	"name" : "test",
+	"sourcePaths"  : ["source"],
+	"dependencies": 
+	{
+		"hipengine_api": {"path": "G:\\HipremeEngine/api"},
+		"util": {"path": "G:\\HipremeEngine/modules/util"},
+		"game2d": {"path": "G:\\HipremeEngine/modules/game2d"},
+		"timer": {"path": "G:\\HipremeEngine/modules/timer"},
+		"tween": {"path": "G:\\HipremeEngine/modules/tween"},
+		"math": {"path": "G:\\HipremeEngine/modules/math"}
+	},
+	"dflags-ldc": [
+		"-link-defaultlib-shared=false"
+	],
+	"configurations": 
+	[
+		{
+			"name" : "script",
+			"targetType": "dynamicLibrary",
+			"versions": ["Script"],
+			"lflags-windows": [
+				"/WX"
+			]
+		},
+		{
+			"name": "run",
+			"targetType": "dynamicLibrary",
+			"versions": ["Script"],
+			"lflags-windows": [
+				"/WX"
+			],
+			"postBuildCommands": ["cd G:\\HipremeEngine && dub -c script -- G:\\HipremeEngine\\projects\\test"]
+		}
+	],
+	"versions" : [
+		"HipremeRenderer",
+		"HipGraphicsAPI",
+		"HipInputAPI",
+		"HipAudioAPI",
+		"HipMathAPI",
+		"HipImageAPI",
+		"HipTimerAPI",
+		"HipremeAudio",
+		"HipDataStructures"
+	]
+}
+	

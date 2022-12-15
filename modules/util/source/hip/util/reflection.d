@@ -491,6 +491,29 @@ enum ForwardInterface(string member, I)() if(is(I == interface))
     }.replaceAll("$I", I.stringof).replaceAll("$member", member);
 }
 
+mixin template ForwardInterface2(string member, I) if(is(I == interface))
+{
+    import hip.util.reflection:isMethodImplemented, ForwardFunc;
+
+    static assert(is(typeof(mixin(member)) : I),
+        "For forwarding the interface, the member "~member~" should be or implement "~I.stringof
+    );
+
+    static foreach(m; __traits(allMembers, I)) 
+    static foreach(ov; __traits(getVirtualMethods, I, m))
+    {
+        //Check for overloads here
+        static if(!isMethodImplemented!(typeof(this), m, typeof(ov)))
+            mixin(ForwardFunc!(ov, m, member));
+    }
+}
+
+mixin template MultiInherit(I) if(is(I == interface))
+{
+    mixin("private I ",I.stringof,"_impl");
+    mixin(ForwardInterface!(I.stringof~"_impl", I));
+}
+
 
 enum GenerateGetterSettersInterfaceImpl(interface_)()
 {

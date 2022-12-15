@@ -11,12 +11,6 @@ Distributed under the CC BY-4.0 License.
 
 module hip.api.input;
 
-version(HipInputAPI)
-    version = HasHipInput;
-else version(Have_hipreme_engine)
-    version = HasHipInput;
-
-version(HasHipInput):
 public import hip.api.input.mouse;
 public import hip.api.input.gamepad;
 public import hip.api.input.inputmap;

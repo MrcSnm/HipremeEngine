@@ -14,6 +14,8 @@ public import hip.hiprenderer.shader;
 public import hip.hiprenderer.vertex;
 public import hip.hiprenderer.framebuffer;
 public import hip.hiprenderer.viewport;
+public import hip.api.renderer.texture;
+public import hip.api.graphics.color;
 import hip.windowing.window;
 import hip.math.rect;
 import hip.error.handler;

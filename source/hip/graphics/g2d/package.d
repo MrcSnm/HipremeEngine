@@ -13,7 +13,6 @@ module hip.graphics.g2d;
 public import hip.graphics.g2d.textrenderer,
     hip.graphics.g2d.geometrybatch,
     hip.graphics.g2d.spritebatch,
-    hip.graphics.g2d.sprite,
     hip.graphics.g2d.animation,
     hip.hiprenderer.viewport,
     hip.assets.texture,

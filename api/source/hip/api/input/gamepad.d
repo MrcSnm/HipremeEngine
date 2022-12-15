@@ -11,13 +11,6 @@ Distributed under the CC BY-4.0 License.
 
 module hip.api.input.gamepad;
 
-version(HipInputAPI)
-    version = HasHipInput;
-else version(Have_hipreme_engine)
-    version = HasHipInput;
-
-version(HasHipInput):
-
 public import hip.api.input.button;
 
 enum HipGamepadAnalogs : ubyte

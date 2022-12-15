@@ -10,20 +10,4 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.view;
 
-public import hip.view.scene,
-    hip.view.bitmaptestscene,
-    hip.view.framebuffertestscene,
-    hip.view.paralleltestscene,
-    hip.view.tilemaptest,
-    hip.view.fileprogresstest,
-    hip.view.soundtestscene,
-    hip.view.animationtestscene,
-    hip.view.textureatlasscene,
-    hip.view.steeringtest,
-    hip.view.pathfindingtest,
-    hip.view.chaintest,
-    hip.view.geometrytestscene,
-    hip.view.ninepatchtest,
-    hip.view.curvetest,
-    hip.view.assettest,
-    hip.view.spritetestscene;
+public import hip.view.scene, hip.view.testscene;
