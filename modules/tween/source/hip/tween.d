@@ -1,6 +1,5 @@
 module hip.tween;
 
-version(HipTweenAPI):
 import std.math:cos, sin, PI, pow, sqrt;
 public import hip.timer;
 

@@ -41,8 +41,5 @@
 	],
 	"description": "HipremeEngine data module",
 	"license": "proprietary",
-	"name": "image",
-	"versions": [
-		"HipImageAPI"
-	]
+	"name": "image"
 }

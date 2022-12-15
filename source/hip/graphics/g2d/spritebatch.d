@@ -18,7 +18,6 @@ import hip.error.handler;
 import hip.hiprenderer.shader;
 import hip.graphics.material;
 public import hip.api.graphics.batch;
-public import hip.graphics.g2d.sprite;
 public import hip.api.graphics.color;
 public import hip.math.vector;
 public import hip.math.matrix;
@@ -137,26 +136,26 @@ class HipSpriteBatch : IHipBatch
     /**
     *   Sets the texture slot/index for the current quad and points it to the next quad
     */
-    void addQuad(ref float[HipSpriteVertex.quadCount] quad, int slot)
+    void addQuad(float[] quad, int slot)
     {
         if(quadsCount+1 > maxQuads)
             flush();
 
-        quad[T1] = slot;
-        quad[T2] = slot;
-        quad[T3] = slot;
-        quad[T4] = slot;
-
         for(ulong i = 0; i < HipSpriteVertex.quadCount; i++)
             vertices[(HipSpriteVertex.quadCount*quadsCount)+i] = quad[i];
+
+        vertices[HipSpriteVertex.quadCount*quadsCount + T1] = slot;
+        vertices[HipSpriteVertex.quadCount*quadsCount + T2] = slot;
+        vertices[HipSpriteVertex.quadCount*quadsCount + T3] = slot;
+        vertices[HipSpriteVertex.quadCount*quadsCount + T4] = slot;
         
         quadsCount++;
     }
 
-    void addQuads(uint count)(ref float[count] quadsVertices, int slot)
+    void addQuads(float[] quadsVertices, int slot)
     {
-        static assert(count % HipSpriteVertex.quadCount == 0, "Count must be divisible by 40");
-        enum int countOfQuads = cast(int)(count /HipSpriteVertex.quadCount);
+        assert(quadsVertices.length % HipSpriteVertex.quadCount == 0, "Count must be divisible by 40");
+        int countOfQuads = cast(int)(quadsVertices.length /HipSpriteVertex.quadCount);
 
         for(int i = 0; i < quadsCount; i++)
         {
@@ -170,7 +169,7 @@ class HipSpriteBatch : IHipBatch
         uint index = 0;
         uint startCopyIndex = cast(uint)(HipSpriteVertex.quadCount*this.quadsCount);
 
-        while(index < count)
+        while(index < quadsVertices.length)
         {
             vertices[startCopyIndex + index] = quadsVertices[index];
             index++;
@@ -209,62 +208,52 @@ class HipSpriteBatch : IHipBatch
     }
     protected int setTexture(IHipTextureRegion reg){return setTexture(reg.getTexture());}
 
-    void draw(uint count)(HipTexture t, ref float[count] vertices)
+    void draw(IHipTexture t, float[] vertices)
     {
-        static assert(count % HipSpriteVertex.quadCount == 0,
-        mixin("\"Quads count to draw must be divisible by ", count, "\""));
-
-
-        ErrorHandler.assertExit(t.width != 0 && t.height != 0, "Tried to draw 0 bounds sprite");
+        ErrorHandler.assertExit(t.getWidth != 0 && t.getHeight != 0, "Tried to draw 0 bounds sprite");
         int slot = setTexture(t);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
 
-        static if((count / HipSpriteVertex.quadCount) == 1)
+        if(vertices.length / HipSpriteVertex.quadCount == 1)
             addQuad(vertices, slot);
         else
             addQuads(vertices, slot);
     }
-    void draw(HipSprite s)
-    {
-        float[HipSpriteVertex.quadCount] v = s.getVertices();
-        ErrorHandler.assertExit(s.width != 0 && s.height != 0, "Tried to draw 0 bounds sprite");
-        int slot = setTexture(s.texture);
-        ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
-        ///X Y Z, RGBA, UV, 4 vertices
-        addQuad(v, slot);
-    }
 
     void draw(IHipTexture texture, int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
+        import hip.global.gamedef;
+        if(quadsCount+1 > maxQuads)
+            flush();
         if(texture is null)
-        {
-            texture = HipSprite.getDefaultTexture();
-        }
-        float[HipSpriteVertex.quadCount] v = getTextureVertices(texture,x,y,z,color, scaleX, scaleY, rotation);
+            texture = cast()getDefaultTexture();
         ErrorHandler.assertExit(texture.getWidth() != 0 && texture.getHeight() != 0, "Tried to draw 0 bounds texture");
         int slot = setTexture(texture);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
 
-        ///X Y Z, RGBA, UV, 1, 4 vertices
+        size_t startVertex = HipSpriteVertex.quadCount*quadsCount;
+        size_t endVertex = startVertex + HipSpriteVertex.quadCount;
 
-        addQuad(v, slot);
-
+        getTextureVertices(vertices[startVertex..endVertex], slot, texture,x,y,z,color, scaleX, scaleY, rotation);
+        quadsCount++;
     }
 
 
     void draw(IHipTextureRegion reg, int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
-        float[HipSpriteVertex.quadCount] v = getTextureRegionVertices(reg,x,y,z,color, scaleX, scaleY, rotation);
+        if(quadsCount+1 > maxQuads)
+            flush();
+        size_t startVertex = HipSpriteVertex.quadCount*quadsCount;
+        size_t endVertex = startVertex + HipSpriteVertex.quadCount;
         ErrorHandler.assertExit(reg.getWidth() != 0 && reg.getHeight() != 0, "Tried to draw 0 bounds region");
         int slot = setTexture(reg);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
 
-        ///X Y Z, RGBA, UV, 1, 4 vertices
-
-        addQuad(v, slot);
+        getTextureRegionVertices(vertices[startVertex..endVertex], slot, reg,x,y,z,color, scaleX, scaleY, rotation);
+        quadsCount++;
     }
 
-    private static void setColor(ref float[HipSpriteVertex.quadCount] ret, in HipColor color)
+    private static void setColor(float[] ret, in HipColor color)
     {
         ret[R1] = color.r;
         ret[G1] = color.g;
@@ -287,14 +276,14 @@ class HipSpriteBatch : IHipBatch
         ret[A4] = color.a;
     }
 
-    private static void setZ(ref float[HipSpriteVertex.quadCount] vertices, float z)
+    private static void setZ(float[] vertices, float z)
     {
         vertices[Z1] = z;
         vertices[Z2] = z;
         vertices[Z3] = z;
         vertices[Z4] = z;
     }
-    private static void setUV(ref float[HipSpriteVertex.quadCount] vertices, in float[8] uv)
+    private static void setUV(float[] vertices, in float[8] uv)
     {
         vertices[U1] = uv[0];
         vertices[V1] = uv[1];
@@ -305,7 +294,14 @@ class HipSpriteBatch : IHipBatch
         vertices[U4] = uv[6];
         vertices[V4] = uv[7];
     }
-    private static void setBounds(ref float[HipSpriteVertex.quadCount] vertices, float x, float y, float width, float height, float scaleX = 1, float scaleY = 1)
+    private static void setTID(float[] vertices, int tid)
+    {
+        vertices[T1] = tid;
+        vertices[T2] = tid;
+        vertices[T3] = tid;
+        vertices[T4] = tid;
+    }
+    private static void setBounds(float[] vertices, float x, float y, float width, float height, float scaleX = 1, float scaleY = 1)
     {
         width*= scaleX;
         height*= scaleY;
@@ -322,7 +318,7 @@ class HipSpriteBatch : IHipBatch
         vertices[Y4] = y+height;
     }
 
-    private static void setBoundsFromRotation(ref float[HipSpriteVertex.quadCount] vertices, float x, float y, float width, float height, float rotation, float scaleX = 1, float scaleY = 1)
+    private static void setBoundsFromRotation(float[] vertices, float x, float y, float width, float height, float rotation, float scaleX = 1, float scaleY = 1)
     {
         import hip.math.utils:cos,sin;
         width*= scaleX;
@@ -348,42 +344,36 @@ class HipSpriteBatch : IHipBatch
     }
 
 
-    static float[HipSpriteVertex.quadCount] getTextureVertices(IHipTexture texture, 
+    static void getTextureVertices(float[] output, int slot, IHipTexture texture,
     int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
-        float[HipSpriteVertex.quadCount] ret = void;
         int width = texture.getWidth();
         int height = texture.getHeight();
 
         const float[8] v = HipTextureRegion.defaultVertices;
-        setUV(ret, v);
-        setZ(ret, z);
-        setColor(ret, color);
+        setUV(output, v);
+        setZ(output, z);
+        setTID(output, slot);
+        setColor(output, color);
         if(rotation == 0)
-            setBounds(ret, x, y, width, height, scaleX, scaleY);
+            setBounds(output, x, y, width, height, scaleX, scaleY);
         else
-            setBoundsFromRotation(ret, x, y, width, height, rotation, scaleX, scaleY);
-
-        return ret;
+            setBoundsFromRotation(output, x, y, width, height, rotation, scaleX, scaleY);
     }
 
-    static float[HipSpriteVertex.quadCount] getTextureRegionVertices(IHipTextureRegion reg,
+    static void getTextureRegionVertices(float[] output, int slot, IHipTextureRegion reg,
     int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
-        float[HipSpriteVertex.quadCount] ret = void;
-
         int width = reg.getWidth();
         int height = reg.getHeight();
-        setZ(ret, z);
-        setColor(ret, color);
-        setUV(ret, reg.getVertices());
+        setZ(output, z);
+        setColor(output, color);
+        setTID(output, slot);
+        setUV(output, reg.getVertices());
         if(rotation == 0)
-            setBounds(ret, x, y, width, height, scaleX, scaleY);
+            setBounds(output, x, y, width, height, scaleX, scaleY);
         else
-            setBoundsFromRotation(ret, x, y, width, height, rotation, scaleX, scaleY);
-
-        
-        return ret;
+            setBoundsFromRotation(output, x, y, width, height, rotation, scaleX, scaleY);
     }
 
     void render()

@@ -11,8 +11,6 @@ Distributed under the CC BY-4.0 License.
 
 module hip.api.data.image;
 
-version(HipImageAPI):
-
 public interface IImageBase
 {
     uint getWidth() const;

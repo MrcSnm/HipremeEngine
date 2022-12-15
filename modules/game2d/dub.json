@@ -1,0 +1,14 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"targetType": "staticLibrary",
+	"dependencies": {
+		"hipengine_api": {"path": "../../api", "version": "*"},
+		"math": {"path": "../math", "version": "*"}
+	},
+	"copyright": "Copyright © 2022, Hipreme",
+	"description": "Hipreme Engine game2d module",
+	"license": "CC-BY 4.0",
+	"name": "game2d"
+}
