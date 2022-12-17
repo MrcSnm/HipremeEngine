@@ -48,7 +48,7 @@ ID3D11DeviceContext _hip_d3d_context = null;
 ID3D11DeviceContext3 _hip_d3d_context3 = null;
 IDXGISwapChain3 _hip_d3d_swapChain = null;
 ID3D11RenderTargetView _hip_d3d_mainRenderTarget = null;
-
+private __gshared bool errorCheckEnabled = true;
 
 class Hip_D3D11_Renderer : IHipRendererImpl
 {
@@ -78,7 +78,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     string file = __FILE__, size_t line = __LINE__,
     string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
     {
-        ErrorHandler.assertExit(SUCCEEDED(hres), msg~":\n\t"~getWindowsErrorMessage(hres),file,line,mod,func);
+        ErrorHandler.assertLazyExit(SUCCEEDED(hres), msg~":\n\t"~getWindowsErrorMessage(hres),file,line,mod,func);
     }
 
     protected void createD3DDevice()
@@ -229,11 +229,11 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         ID3D11Texture2D pBackBuffer;
 
         res = _hip_d3d_swapChain.GetBuffer(0, &IID_ID3D11Texture2D, cast(void**)&pBackBuffer);
-        ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Error creating D3D11Texture2D", getWindowsErrorMessage(res));
+        ErrorHandler.assertLazyErrorMessage(SUCCEEDED(res), "Error creating D3D11Texture2D", getWindowsErrorMessage(res));
 
         //Use back buffer address to create a render target
         res = _hip_d3d_device.CreateRenderTargetView(pBackBuffer, null, &_hip_d3d_mainRenderTarget);
-        ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Error creating render target view", getWindowsErrorMessage(res));
+        ErrorHandler.assertLazyErrorMessage(SUCCEEDED(res), "Error creating render target view", getWindowsErrorMessage(res));
         pBackBuffer.Release();
 
         _hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_mainRenderTarget, null);
@@ -299,7 +299,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         device.QueryInterface(&IID_ID3D11Device3, cast(void**)&_hip_d3d_device);
 
 
-        if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "D3D11: Error creating device and swap chain", getWindowsErrorMessage(res)))
+        if(ErrorHandler.assertLazyErrorMessage(SUCCEEDED(res), "D3D11: Error creating device and swap chain", getWindowsErrorMessage(res)))
         {
             Hip_D3D11_Dispose();
             return;
@@ -333,6 +333,10 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         _hip_d3d_context.RSSetState(state);
     }
     public final bool isRowMajor(){return false;}
+    void setErrorCheckingEnabled(bool enable = true)
+    {
+        errorCheckEnabled = enable;
+    }
 
     public bool hasErrorOccurred(out string err, string file = __FILE__, size_t line = __LINE__)
     {

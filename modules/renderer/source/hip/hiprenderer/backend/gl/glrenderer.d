@@ -36,6 +36,8 @@ import hip.console.log;
 import hip.error.handler;
 
 
+private __gshared bool errorCheckEnabled = true;
+
 auto glCall(T)(scope T delegate() dg, string file = __FILE__, size_t line = __LINE__)
 {
     import hip.config.opts;
@@ -45,7 +47,8 @@ auto glCall(T)(scope T delegate() dg, string file = __FILE__, size_t line = __LI
         auto ret = dg();
     static if(HIP_DEBUG_GL)
     {
-        HipRenderer.exitOnError(file, line);
+        if(errorCheckEnabled)
+            HipRenderer.exitOnError(file, line);
     }
     static if(!is(T == void))
     return ret;
@@ -65,6 +68,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     protected static bool isGLBlendEnabled = false;
     protected static GLenum mode;
 
+    void setErrorCheckingEnabled(bool enable = true){errorCheckEnabled = enable;}
     public final bool isRowMajor(){return true;}
 
     HipWindow createWindow(uint width, uint height)

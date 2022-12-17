@@ -144,16 +144,16 @@ class GameSystem
 
             hotload = new HotloadableDLL(gameDll, (void* lib)
             {
-                ErrorHandler.assertExit(lib != null, "No library " ~ gameDll ~ " was found");
+                ErrorHandler.assertLazyExit(lib != null, "No library " ~ gameDll ~ " was found");
                 HipremeEngineGameInit = 
                     cast(typeof(HipremeEngineGameInit))
                     dynamicLibrarySymbolLink(lib, "HipremeEngineGameInit");
-                ErrorHandler.assertExit(HipremeEngineGameInit != null,
+                ErrorHandler.assertLazyExit(HipremeEngineGameInit != null,
                 "HipremeEngineGameInit wasn't found when looking into "~gameDll);
                 HipremeEngineGameDestroy = 
                     cast(typeof(HipremeEngineGameDestroy))
                     dynamicLibrarySymbolLink(lib, "HipremeEngineGameDestroy");
-                ErrorHandler.assertExit(HipremeEngineGameDestroy != null,
+                ErrorHandler.assertLazyExit(HipremeEngineGameDestroy != null,
                 "HipremeEngineGameDestroy wasn't found when looking into "~gameDll);
             });
         }

@@ -47,7 +47,7 @@ class HipXAudioSource : HipAudioSource
         fmt.cbSize          = 0;
         HRESULT hr = player.xAudio.CreateSourceVoice(&sourceVoice, &fmt);
 
-        ErrorHandler.assertExit(SUCCEEDED(hr), "Could not create source voice: \n\t"~HipXAudioPlayer.getError(hr));
+        ErrorHandler.assertLazyExit(SUCCEEDED(hr), "Could not create source voice: \n\t"~HipXAudioPlayer.getError(hr));
         
     }
     alias clip = HipAudioSource.clip;
@@ -62,12 +62,12 @@ class HipXAudioSource : HipAudioSource
         {
             isClipDirty = false;
             HRESULT hr = sourceVoice.SetSourceSampleRate(c.decoder.getSamplerate());
-            ErrorHandler.assertExit(SUCCEEDED(hr),
+            ErrorHandler.assertLazyExit(SUCCEEDED(hr),
             "Could not set source voice Sample Rate:\n\t"~HipXAudioPlayer.getError(hr));
         }
 
         HRESULT hr = sourceVoice.SubmitSourceBuffer(buffer, null);
-        ErrorHandler.assertExit(SUCCEEDED(hr),
+        ErrorHandler.assertLazyExit(SUCCEEDED(hr),
         "Could not submit XAudio2 source voice:\n\t"~HipXAudioPlayer.getError(hr));
     }
 
@@ -100,7 +100,7 @@ class HipXAudioSource : HipAudioSource
         submitClip();
         
         HRESULT hr = sourceVoice.Start(0);
-        ErrorHandler.assertExit(SUCCEEDED(hr), "XAudio2 Failed to play: \n\t"~HipXAudioPlayer.getError(hr));
+        ErrorHandler.assertLazyExit(SUCCEEDED(hr), "XAudio2 Failed to play: \n\t"~HipXAudioPlayer.getError(hr));
         isPlaying = true;        
         return SUCCEEDED(hr);
     }
@@ -111,7 +111,7 @@ class HipXAudioSource : HipAudioSource
         ///Makes it return to 0
         sourceVoice.FlushSourceBuffers();
         debug
-            ErrorHandler.assertErrorMessage(SUCCEEDED(hr), "XAudio2 stop failure", HipXAudioPlayer.getError(hr));
+            ErrorHandler.assertLazyErrorMessage(SUCCEEDED(hr), "XAudio2 stop failure", HipXAudioPlayer.getError(hr));
 
         isPlaying = false;
         return SUCCEEDED(hr);

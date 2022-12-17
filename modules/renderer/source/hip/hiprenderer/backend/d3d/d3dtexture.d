@@ -109,7 +109,7 @@ class Hip_D3D11_Texture : IHipTexture
                 break;
             case 2:
             default:
-                ErrorHandler.assertExit(false, 
+                ErrorHandler.assertLazyExit(false, 
                 "Unsopported bytes per pixel for D3D11 Texture named '"~image.getName~"'");
         }
         desc.Format = format;

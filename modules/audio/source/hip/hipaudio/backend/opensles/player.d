@@ -227,7 +227,7 @@ outputSampleRate: ", cfg.sampleRate);
         
 
         // HipSDL_SoundDecoder.initDecoder(cfg, optimalBufferSize);
-        ErrorHandler.assertErrorMessage(sliCreateOutputContext(
+        ErrorHandler.assertLazyErrorMessage(sliCreateOutputContext(
             hasProAudio,
             hasLowLatencyAudio,
             optimalBufferSize,

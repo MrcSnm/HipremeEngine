@@ -108,7 +108,7 @@ version(UWP)
 
         bool read(string path, out void[] output)
         {
-            if(ErrorHandler.assertErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
+            if(ErrorHandler.assertLazyErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
                 return false;
             HipUWPFile f = new HipUWPFile(path, FileMode.READ);
             import hip.console.log;

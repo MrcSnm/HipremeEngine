@@ -68,7 +68,9 @@ public import hip.api.graphics.g2d.animation;
     void reset(){currentFrame = 0;accumulator = 0;}
     void setFrame(uint frame)
     {
-        ErrorHandler.assertExit(frame < frames.length, "Frame is out of bounds on track "~name);
+        version(HipOptimize){}
+        else
+            ErrorHandler.assertLazyExit(frame < frames.length, "Frame is out of bounds on track "~name);
         accumulator = frame*(1.0f/framesPerSecond);
         currentFrame = frame;
     }
@@ -178,8 +180,10 @@ public import hip.api.graphics.g2d.animation;
     void play(string trackName)
     {
         IHipAnimationTrack* track = trackName in tracks;
-        ErrorHandler.assertExit(track != null,
-        "Track "~trackName~" does not exists in the animation '"~name~"'.");
+        version(HipOptimize){}
+        else
+            ErrorHandler.assertLazyExit(track != null,
+                "Track "~trackName~" does not exists in the animation '"~name~"'.");
 
         if(currentTrack !is null)
             currentTrack.reset();
@@ -190,8 +194,10 @@ public import hip.api.graphics.g2d.animation;
     IHipAnimationTrack getTrack(string trackName)
     {
         IHipAnimationTrack* track = trackName in tracks;
-        ErrorHandler.assertExit(track != null,
-        "Track "~trackName~" does not exists in the animation '"~name~"'.");
+        version(HipOptimize){}
+        else
+            ErrorHandler.assertLazyExit(track != null,
+            "Track "~trackName~" does not exists in the animation '"~name~"'.");
         
         return *track;
     }
