@@ -105,6 +105,7 @@ interface IHipRendererImpl
     public bool init(HipWindow window);
     version(dll){public bool initExternal();}
     public bool isRowMajor();
+    void setErrorCheckingEnabled(bool enable = true);
     public HipWindow createWindow(uint width, uint height);
     public Shader createShader();
     public IHipFrameBuffer createFrameBuffer(int width, int height);
@@ -462,6 +463,11 @@ class HipRenderer
     {
         rendererImpl.begin();
         HipRenderer.exitOnError();
+    }
+    
+    public static void setErrorCheckingEnabled(bool enable = true)
+    {
+        rendererImpl.setErrorCheckingEnabled(enable);
     }
 
     public static void setRendererMode(HipRendererMode mode)

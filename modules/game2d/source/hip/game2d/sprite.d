@@ -36,13 +36,13 @@ class HipSprite
     uint height;
 
     protected bool isDirty = true;
-    protected float[HipSpriteVertexQuadCount] vertices;
+    protected float[HipSpriteVertexQuadCount] vertices = 0;
 
 
     this()
     {
-        vertices[] = 0;
         setColor(HipColor.white);
+        setTexture(cast()getDefaultTexture());
     }
     this(IHipAssetLoadTask task)
     {
@@ -55,17 +55,17 @@ class HipSprite
     */
     this(string texturePath)
     {
-        this(createTextureRegion(texturePath is null ? cast()getDefaultTexture() : loadTexture(texturePath).awaitAs!IHipTexture));
+        this(createTextureRegion(loadTexture(texturePath).awaitAs!IHipTexture));
     }
 
     this(IHipTexture texture)
     {
-        this();
+        setColor(HipColor.white);
         setTexture(texture);
     }
     this(IHipTextureRegion region)
     {
-        this();
+        setColor(HipColor.white);
         this.texture = region;
         width  = region.getWidth();
         height = region.getHeight();
@@ -206,7 +206,7 @@ class HipSprite
         return vertices;
     }
 
-    pure void setColor(HipColor color)
+    void setColor(HipColor color)
     {
         this.color = color;
         vertices[R1] = color.r;

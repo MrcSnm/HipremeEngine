@@ -35,6 +35,9 @@ version(Script)
             void function() renderGeometries;
             ///Call this function when finishing to add texts to the scene
             void function() renderTexts;
+            ///Use this only when you're sure you don't need!
+            void function(bool enable = true) setRendererErrorCheckingEnabled;
+
             ///Will change the color for the next calls to drawPixel, drawRectangle, drawTriangle, fillRectangle, fillTriangle, drawLine, drawQuadraticBezierLine
             void function(HipColor color) setGeometryColor;
             ///Draw a pixel at (x, y) with the color specified at setGeometryColor

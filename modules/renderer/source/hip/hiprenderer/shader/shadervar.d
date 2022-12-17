@@ -117,7 +117,7 @@ struct ShaderVar
             this.singleSize = value.singleSize;
         }
         else
-            ErrorHandler.assertExit(this.set(value), "Value set for '"~name~"' is invalid.");
+            ErrorHandler.assertLazyExit(this.set(value), "Value set for '"~name~"' is invalid.");
         return this;
     }
 

@@ -106,6 +106,10 @@ void renderSprites()
 {
     spBatch.render();
 }
+void setRendererErrorCheckingEnabled(bool enable)
+{
+    HipRenderer.setErrorCheckingEnabled(enable);
+}
 void renderGeometries()
 {
     geoBatch.flush();

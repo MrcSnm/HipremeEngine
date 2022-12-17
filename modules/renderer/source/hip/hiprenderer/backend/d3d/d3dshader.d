@@ -334,7 +334,7 @@ class Hip_D3D11_ShaderImpl : IShader
         defines.ptr, null, "main",  shaderPrefix.ptr, compile_flags, effects_flags, &shader, &error);
         shaderPtr = shader;
 
-        if(ErrorHandler.assertErrorMessage(SUCCEEDED(hr), shaderType~" compilation error", "Compilation failed"))
+        if(ErrorHandler.assertLazyErrorMessage(SUCCEEDED(hr), shaderType~" compilation error", "Compilation failed"))
         {
             if(error !is null)
             {

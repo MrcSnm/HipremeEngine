@@ -7,7 +7,7 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
     bool read(string path, out void[] output)
     {
         import hip.error.handler;
-        if(ErrorHandler.assertErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
+        if(ErrorHandler.assertLazyErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
             return false;
 
         auto f = File(path);

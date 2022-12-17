@@ -71,7 +71,7 @@ class HipSpriteBatch : IHipBatch
     this(HipOrthoCamera camera = null, index_t maxQuads = 10_900)
     {
         import hip.util.conv:to;
-        ErrorHandler.assertExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
+        ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
         this.maxQuads = maxQuads;
         indices = new index_t[maxQuads*6];
         vertices = new float[maxQuads*HipSpriteVertex.quadCount]; //XYZ -> 3, RGBA -> 4, ST -> 2, TexID 3+4+2+1=10
@@ -141,13 +141,26 @@ class HipSpriteBatch : IHipBatch
         if(quadsCount+1 > maxQuads)
             flush();
 
-        for(ulong i = 0; i < HipSpriteVertex.quadCount; i++)
-            vertices[(HipSpriteVertex.quadCount*quadsCount)+i] = quad[i];
-
-        vertices[HipSpriteVertex.quadCount*quadsCount + T1] = slot;
-        vertices[HipSpriteVertex.quadCount*quadsCount + T2] = slot;
-        vertices[HipSpriteVertex.quadCount*quadsCount + T3] = slot;
-        vertices[HipSpriteVertex.quadCount*quadsCount + T4] = slot;
+        size_t start = HipSpriteVertex.quadCount*quadsCount;
+        version(none) //D way to do it, but it is also slower
+        {
+            size_t end = start + HipSpriteVertex.quadCount;
+            vertices[start..end] = quad;
+            vertices[start+ T1] = slot;
+            vertices[start+ T2] = slot;
+            vertices[start+ T3] = slot;
+            vertices[start+ T4] = slot;
+        }
+        else
+        {
+            import core.stdc.string;
+            float* v = vertices.ptr;
+            memcpy(v + start, quad.ptr, HipSpriteVertex.quadCount * float.sizeof);
+            *(v + T1) = slot;
+            *(v + T2) = slot;
+            *(v + T3) = slot;
+            *(v + T4) = slot;
+        }
         
         quadsCount++;
     }
@@ -157,30 +170,25 @@ class HipSpriteBatch : IHipBatch
         assert(quadsVertices.length % HipSpriteVertex.quadCount == 0, "Count must be divisible by 40");
         int countOfQuads = cast(int)(quadsVertices.length /HipSpriteVertex.quadCount);
 
-        for(int i = 0; i < quadsCount; i++)
+        size_t start = cast(size_t)(HipSpriteVertex.quadCount*this.quadsCount);
+        size_t end = start + quadsVertices.length;
+        vertices[start..end] = quadsVertices;
+
+        for(int i = 0; i < countOfQuads; i++)
         {
-            quadsVertices[i*HipSpriteVertex.quadCount + T1] = slot;
-            quadsVertices[i*HipSpriteVertex.quadCount + T2] = slot;
-            quadsVertices[i*HipSpriteVertex.quadCount + T3] = slot;
-            quadsVertices[i*HipSpriteVertex.quadCount + T4] = slot;
+            vertices[start + i*HipSpriteVertex.quadCount + T1] = slot;
+            vertices[start + i*HipSpriteVertex.quadCount + T2] = slot;
+            vertices[start + i*HipSpriteVertex.quadCount + T3] = slot;
+            vertices[start + i*HipSpriteVertex.quadCount + T4] = slot;
         }
 
-
-        uint index = 0;
-        uint startCopyIndex = cast(uint)(HipSpriteVertex.quadCount*this.quadsCount);
-
-        while(index < quadsVertices.length)
-        {
-            vertices[startCopyIndex + index] = quadsVertices[index];
-            index++;
-        }
         this.quadsCount+= countOfQuads;
     }
     
     private int getNextTextureID(IHipTexture t)
     {
         for(int i = 0; i < usingTexturesCount; i++)
-            if(currentTextures[i] == t)
+            if(currentTextures[i] is t)
                 return i;
 
         if(usingTexturesCount + 1 == currentTextures.length)
@@ -214,7 +222,7 @@ class HipSpriteBatch : IHipBatch
         int slot = setTexture(t);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
 
-        if(vertices.length / HipSpriteVertex.quadCount == 1)
+        if(vertices.length == HipSpriteVertex.quadCount)
             addQuad(vertices, slot);
         else
             addQuads(vertices, slot);

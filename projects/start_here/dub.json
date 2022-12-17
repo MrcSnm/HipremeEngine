@@ -46,10 +46,6 @@
 		}
 	],
 	"versions" : [
-		"HipremeRenderer",
-		"HipGraphicsAPI",
-		"HipImageAPI",
-		"HipInputAPI",
 		"HipAudioAPI",
 		"HipMathAPI",
 		"HipremeAudio",
