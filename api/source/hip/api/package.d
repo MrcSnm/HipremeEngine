@@ -72,7 +72,10 @@ mixin template HipEngineMain(alias StartScene)
 		export extern(System) void HipremeEngineGameDestroy()
 		{
 			if(_exportedScene)
+			{
+				_exportedScene.dispose();
 				destroy(_exportedScene);
+			}
 			_exportedScene=null;
 		}
 	}

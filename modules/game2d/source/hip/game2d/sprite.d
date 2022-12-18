@@ -17,6 +17,76 @@ import hip.api.assets.assets_binding;
 import hip.api.assets.globals;
 import hip.game2d.renderer_data;
 
+/**
+*   Encapsulates bunch of sprites to hold a contiguous list of vertices. This can be a lot more performant
+*   than creating sprite by sprite.
+*/
+class HipMultiSprite
+{
+    protected float[] vertices;
+    HipSprite[] sprites;
+    IHipTexture texture;
+    this(size_t spritesCount)
+    {
+        vertices = new float[HipSpriteVertexQuadCount*spritesCount];
+        vertices[] = 0;
+        sprites = new HipSprite[spritesCount];
+        foreach(i; 0..spritesCount)
+            sprites[i] = new HipSprite(vertices[i*HipSpriteVertexQuadCount..(i+1)*HipSpriteVertexQuadCount]);
+    }
+
+    ref HipSprite opIndex(size_t index){return sprites[index];}
+
+    int opApply(scope int delegate(ref HipSprite) dg)
+    {
+        int result = 0;
+        foreach (item; sprites)
+        {
+            result = dg(item);
+            if (result)
+                break;
+        }
+        return result;
+    }
+
+    
+    int opApply(scope int delegate(size_t index, ref HipSprite) dg)
+    {
+        int result = 0;
+        foreach (i, item; sprites)
+        {
+            result = dg(i, item);
+            if (result)
+                break;
+        }
+        return result;
+    }
+
+
+    void setTexture(IHipTexture texture)
+    {
+        this.texture = texture;
+        foreach(sp; sprites)
+            sp.setTexture(texture);
+    }
+
+    ref float[] getVertices()
+    {
+        //Vertices is already a data sink for the sprites, so no need to reassign.
+        foreach(sp; sprites)
+            sp.getVertices();
+        return vertices;
+    }
+
+    void draw()
+    {
+        import hip.api.graphics.g2d.renderer2d;
+        foreach(sp; sprites)
+            sp.isDirty = true;
+        drawSprite(texture, getVertices());
+    }
+}
+
 class HipSprite 
 {
     IHipTextureRegion texture;
@@ -36,11 +106,18 @@ class HipSprite
     uint height;
 
     protected bool isDirty = true;
-    protected float[HipSpriteVertexQuadCount] vertices = 0;
+    protected float[] vertices;
 
+    package this(float[] sink)
+    {
+        this.vertices = sink;
+        setColor(HipColor.white);
+    }
 
     this()
     {
+        vertices = new float[40];
+        vertices[] = 0;
         setColor(HipColor.white);
         setTexture(cast()getDefaultTexture());
     }
@@ -60,11 +137,15 @@ class HipSprite
 
     this(IHipTexture texture)
     {
+        vertices = new float[40];
+        vertices[] = 0;
         setColor(HipColor.white);
         setTexture(texture);
     }
     this(IHipTextureRegion region)
     {
+        vertices = new float[40];
+        vertices[] = 0;
         setColor(HipColor.white);
         this.texture = region;
         width  = region.getWidth();
@@ -203,7 +284,7 @@ class HipSprite
             }
         }
 
-        return vertices;
+        return vertices[0..40];
     }
 
     void setColor(HipColor color)
