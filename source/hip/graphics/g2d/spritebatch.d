@@ -168,21 +168,49 @@ class HipSpriteBatch : IHipBatch
     void addQuads(float[] quadsVertices, int slot)
     {
         assert(quadsVertices.length % HipSpriteVertex.quadCount == 0, "Count must be divisible by 40");
-        int countOfQuads = cast(int)(quadsVertices.length /HipSpriteVertex.quadCount);
+        import hip.util.array:swapAt;
+        uint countOfQuads = cast(int)(quadsVertices.length /HipSpriteVertex.quadCount);
 
-        size_t start = cast(size_t)(HipSpriteVertex.quadCount*this.quadsCount);
-        size_t end = start + quadsVertices.length;
-        vertices[start..end] = quadsVertices;
 
-        for(int i = 0; i < countOfQuads; i++)
+        while(countOfQuads > 0)
         {
-            vertices[start + i*HipSpriteVertex.quadCount + T1] = slot;
-            vertices[start + i*HipSpriteVertex.quadCount + T2] = slot;
-            vertices[start + i*HipSpriteVertex.quadCount + T3] = slot;
-            vertices[start + i*HipSpriteVertex.quadCount + T4] = slot;
-        }
+            size_t remainingQuads = this.maxQuads - this.quadsCount;
+            if(remainingQuads == 0)
+            {
+                flush();
+                this.usingTexturesCount = 1;
+                swapAt(this.currentTextures, 0, slot);//Guarantee the target slot is being used
+                remainingQuads = this.maxQuads;
+            }
+            size_t quadsToDraw = (countOfQuads < remainingQuads) ? countOfQuads : remainingQuads;
 
-        this.quadsCount+= countOfQuads;
+            size_t start = cast(size_t)(HipSpriteVertex.quadCount*this.quadsCount);
+            size_t end = start + quadsToDraw * HipSpriteVertex.quadCount;
+
+
+
+            vertices[start..end] = quadsVertices[0..quadsToDraw*HipSpriteVertex.quadCount];
+            for(int i = 0; i < quadsToDraw; i++)
+            {
+                const size_t quadStart = i*HipSpriteVertex.quadCount;
+                vertices[start + quadStart + T1] = slot;
+                vertices[start + quadStart + T2] = slot;
+                vertices[start + quadStart + T3] = slot;
+                vertices[start + quadStart + T4] = slot;
+            }
+            quadsVertices = quadsVertices[quadsToDraw*HipSpriteVertex.quadCount..$];
+
+
+            if(quadsToDraw + remainingQuads == maxQuads)
+            {
+                flush();
+                this.usingTexturesCount = 1;
+                swapAt(this.currentTextures, 0, slot);//Guarantee the target slot is being used
+            }
+            else
+                this.quadsCount+= quadsToDraw;
+            countOfQuads-= quadsToDraw;
+        }
     }
     
     private int getNextTextureID(IHipTexture t)

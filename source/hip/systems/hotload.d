@@ -77,7 +77,12 @@ class HotloadableDLL
     {
         if(lib != null)
         {
-            dynamicLibraryRelease(lib);
+            if(!dynamicLibraryRelease(lib))
+            {
+                import hip.error.handler;
+                ErrorHandler.showErrorMessage("Could not unload the dll ", tempPath);
+                return;
+            }
             if(tempPath)
             {
                 if(!HipFS.absoluteRemove(tempPath))

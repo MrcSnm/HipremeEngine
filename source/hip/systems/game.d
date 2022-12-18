@@ -303,9 +303,9 @@ class GameSystem
         {
             if(hotload !is null)
             {
+                destroy(watcher);
                 if(HipremeEngineGameDestroy != null)
                     HipremeEngineGameDestroy();
-                destroy(watcher);
                 scenes.length = 0;
                 externalScene = null;
                 hotload.dispose();
