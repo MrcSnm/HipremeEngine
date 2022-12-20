@@ -65,10 +65,16 @@ class HipAssetLoadTask : IHipAssetLoadTask
     protected HipWorkerThread worker;
     protected void[] partialData;
 
-    this(string name, HipAsset asset)
+    private string fileRequesting;
+    private size_t lineRequesting;
+
+    this(string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
     {
+        assert(name != null, "Asset load task can't receive null name");
         this.name = name;
-        this._asset = _asset; 
+        this._asset = asset;
+        this.fileRequesting = fileRequesting;
+        this.lineRequesting = lineRequesting;
         if(asset is null)
             _result = HipAssetResult.cantLoad;
         else
@@ -78,19 +84,25 @@ class HipAssetLoadTask : IHipAssetLoadTask
     bool hasFinishedLoading() const{return result == HipAssetResult.loaded;}
     bool opCast(T : bool)() const{return hasFinishedLoading;}
     
-    void await(){HipAssetManager.awaitTask(this);}
+    void await()
+    {
+        if(_result == HipAssetResult.loading)
+            HipAssetManager.awaitTask(this);
+    }
 
     void givePartialData(void[] data)
     {
+        import hip.util.conv:to;
         if(partialData !is null)
-            throw new Error("AssetLoadTask already has partial data");
+            throw new Error("AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
         partialData = data;
     }
 
     void[] takePartialData()
     {
+        import hip.util.conv:to;
         if(partialData is null)
-            throw new Error("No partial data was set before taking it");
+            throw new Error("No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
         void[] ret = partialData;
         partialData = null;
         return ret;
@@ -270,13 +282,13 @@ class HipAssetManager
      *  if: returns its previous task
      *  else: Put a new one on load cache and retunr
      */
-    private static HipAssetLoadTask loadBase(string path, HipWorkerThread worker)
+    private static HipAssetLoadTask loadBase(string path, HipWorkerThread worker, string fileRequesting = __FILE__, size_t lineRequesting = __LINE__)
     {
         HipAsset asset = getAsset(path);
-        if(asset !is null){return new HipAssetLoadTask(path, asset);}
+        if(asset !is null){return new HipAssetLoadTask(path, asset, fileRequesting, lineRequesting);}
         else if(HipAssetLoadTask* task = path in loadQueue){return *task;}
 
-        auto task = new HipAssetLoadTask(path, null);
+        auto task = new HipAssetLoadTask(path, null, fileRequesting, lineRequesting);
         loadQueue[path] = task;
         task.result = HipAssetResult.loading;
         task.worker = worker;
@@ -286,10 +298,12 @@ class HipAssetManager
     /**
     *   loadSimple must be used when the asset can be totally constructed on the worker thread and then returned to the main thread
     */
-    private static HipAssetLoadTask loadSimple(string taskName, string path, HipAsset delegate(string pathOrLocation) loadAsset)
+    private static HipAssetLoadTask loadSimple(string taskName, string path, HipAsset delegate(string pathOrLocation) loadAsset, 
+    string f = __FILE__, size_t l = __LINE__)
     {
         HipAssetLoadTask task;
-        task = loadBase(path, loadWorker(taskName~path, ()
+        taskName = taskName~":"~path;
+        task = loadBase(taskName, loadWorker(taskName, ()
         {
             task.asset = loadAsset(path);
             if(task.asset !is null)
@@ -297,7 +311,7 @@ class HipAssetManager
             else
                 task.result = HipAssetResult.cantLoad;
             putComplete(task);
-        }));
+        }), f, l);
         return task;
     }
 
@@ -306,11 +320,13 @@ class HipAssetManager
     */
     private static HipAssetLoadTask loadComplex(string taskName, string path, 
         void[] delegate(string pathOrLocation) loadAsset, 
-        HipAsset delegate(void[] partialData) onWorkerLoadComplete
+        HipAsset delegate(void[] partialData) onWorkerLoadComplete,
+        string f = __FILE__, size_t l = __LINE__
     )
     {
         HipAssetLoadTask task;
-        task = loadBase(path, loadWorker(taskName~path, ()
+        taskName = taskName~":"~path;
+        task = loadBase(taskName, loadWorker(taskName, ()
         {
             task.givePartialData(loadAsset(path));
         }, (name)
@@ -321,11 +337,11 @@ class HipAssetManager
             else
                 task.result = HipAssetResult.cantLoad;
             putComplete(task);
-        }, true));
+        }, true), f, l);
         return task;
     }
 
-    @ExportD static IHipAssetLoadTask loadImage(string imagePath)
+    @ExportD static IHipAssetLoadTask loadImage(string imagePath, string f = __FILE__, size_t l = __LINE__)
     {
         HipAssetLoadTask task = loadSimple("Load Image ", imagePath, (pathOrLocation)
         {
@@ -334,12 +350,12 @@ class HipAssetManager
             if(!ret.loadFromMemory(HipFS.read(pathOrLocation)))
                 return null;
             return ret;
-        });
+        }, f, l);
         workerPool.startWorking();
         return task;
     }
 
-    @ExportD static IHipAssetLoadTask loadTexture(string texturePath)
+    @ExportD static IHipAssetLoadTask loadTexture(string texturePath, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.util.memory;
         HipAssetLoadTask task = loadComplex("Load Texture ", texturePath, (pathOrLocation)
@@ -357,12 +373,12 @@ class HipAssetManager
             HipTexture ret = new HipTexture(img);
             freeGCMemory(partialData);
             return ret;
-        });
+        }, f, l);
         workerPool.startWorking();
         return task;
     }
 
-    @ExportD static IHipAssetLoadTask loadCSV(string path)
+    @ExportD static IHipAssetLoadTask loadCSV(string path, string f = __FILE__, size_t l = __LINE__)
     {
         HipAssetLoadTask task = loadSimple("Load CSV", path, (pathOrLocation)
         {
@@ -370,11 +386,11 @@ class HipAssetManager
             if(!ret.loadFromFile(pathOrLocation))
                 return null;
             return ret;
-        });
+        }, f, l);
         workerPool.startWorking();
         return task;
     }
-    @ExportD static IHipAssetLoadTask loadINI(string path)
+    @ExportD static IHipAssetLoadTask loadINI(string path, string f = __FILE__, size_t l = __LINE__)
     {
         HipAssetLoadTask task = loadSimple("Load INI", path, (pathOrLocation)
         {
@@ -382,11 +398,11 @@ class HipAssetManager
             if(!ret.loadFromFile(pathOrLocation))
                 return null;
             return ret;
-        });
+        }, f, l);
         workerPool.startWorking();
         return task;
     }
-    @ExportD static IHipAssetLoadTask loadJSONC(string path)
+    @ExportD static IHipAssetLoadTask loadJSONC(string path, string f = __FILE__, size_t l = __LINE__)
     {
         HipAssetLoadTask task = loadSimple("Load JSONC", path, (pathOrLocation)
         {
@@ -394,12 +410,13 @@ class HipAssetManager
             if(!ret.loadFromFile(pathOrLocation))
                 return null;
             return ret;
-        });
+        }, f, l);
         workerPool.startWorking();
         return task;
     }
 
-    @ExportD static IHipAssetLoadTask loadTextureAtlas(string atlasPath, string texturePath = ":IGNORE")
+    @ExportD static IHipAssetLoadTask loadTextureAtlas(string atlasPath, string texturePath = ":IGNORE", 
+    string f = __FILE__, size_t l = __LINE__)
     {
         import hip.console.log;
         import hip.util.memory;
@@ -431,13 +448,13 @@ class HipAssetManager
                 return null;
             }
             return inter.atlas;
-        });
+        }, f, l);
         workerPool.startWorking();
         return task;
     }
 
 
-    @ExportD static IHipAssetLoadTask loadTilemap(string tilemapPath)
+    @ExportD static IHipAssetLoadTask loadTilemap(string tilemapPath, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.console.log;
         import hip.util.memory;
@@ -466,12 +483,12 @@ class HipAssetManager
             }
             HipTilemap ret = inter.map;
             return ret;
-        });
+        }, f, l);
         workerPool.startWorking();
         return task;
     }
 
-    @ExportD static IHipAssetLoadTask loadTileset(string tilesetPath)
+    @ExportD static IHipAssetLoadTask loadTileset(string tilesetPath, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.console.log;
         import hip.util.memory;
@@ -500,7 +517,7 @@ class HipAssetManager
             }
             HipTilesetImpl ret = inter.tileset;
             return ret;
-        });
+        }, f, l);
         workerPool.startWorking();
         return task;
     }
@@ -516,22 +533,22 @@ class HipAssetManager
     @ExportD static IHipTileset tilesetFromAtlas(IHipTextureAtlas atlas){return HipTilesetImpl.fromAtlas(cast(HipTextureAtlas)atlas);}
     @ExportD static IHipTileset tilesetFromSpritesheet(Array2D_GC!IHipTextureRegion sp){return HipTilesetImpl.fromSpritesheet(sp);}
 
-    @ExportD static IHipAssetLoadTask loadFont(string fontPath, int fontSize = 48)
+    @ExportD static IHipAssetLoadTask loadFont(string fontPath, int fontSize = 48, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.util.path;
         switch(fontPath.extension)
         {
             case "bmfont":
             case "fnt":
-                return loadBMFont(fontPath);
+                return loadBMFont(fontPath, f, l);
             case "ttf":
             case "otf":
-                return loadTTF(fontPath, fontSize);
+                return loadTTF(fontPath, fontSize, f, l);
             default: return null;
         }
     }
 
-    private static HipAssetLoadTask loadTTF(string ttfPath, int fontSize)
+    private static HipAssetLoadTask loadTTF(string ttfPath, int fontSize, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.font.ttf;
         import hip.assets.font;
@@ -563,12 +580,12 @@ class HipAssetManager
                 return null;
             HipFontAsset fnt = new HipFontAsset(i.font);
             return fnt;
-        });
+        }, f, l);
         workerPool.startWorking();
         return task;
     }
 
-    private static HipAssetLoadTask loadBMFont(string fontPath)
+    private static HipAssetLoadTask loadBMFont(string fontPath, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.font.bmfont;
         import hip.assets.font;
@@ -617,7 +634,7 @@ class HipAssetManager
             }
             HipFontAsset fnt = new HipFontAsset(i.font);
             return fnt;
-        });
+        }, f, l);
         workerPool.startWorking();
         return task;
     }

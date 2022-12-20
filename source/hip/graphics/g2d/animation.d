@@ -28,21 +28,21 @@ public import hip.api.graphics.g2d.animation;
 
     //Those three are a question if they should be in the track or in the animation controller
     protected bool isPlaying = false;
-    protected bool _looping = false;
-    protected bool _reverse = false;
+    protected bool isAdvancingForward = true;
+    protected HipAnimationLoopingMode _loopingMode = HipAnimationLoopingMode.none;
+    protected bool _reverse  = false;
 
-    this(string trackName, uint framesPerSecond, bool shouldLoop)
+    this(string trackName, uint framesPerSecond, HipAnimationLoopingMode loopingMode)
     {
         this._name = trackName;
         setFramesPerSecond(framesPerSecond);
-        _looping = shouldLoop;
+        _loopingMode = loopingMode ;
     }
     string name() const => _name;
-    bool looping() const =>  _looping;
-    bool looping(bool setLooping) => _looping = setLooping;
+    HipAnimationLoopingMode loopingMode() const =>  _loopingMode;
+    HipAnimationLoopingMode loopingMode(HipAnimationLoopingMode loopingMode = HipAnimationLoopingMode.reset) => _loopingMode = loopingMode;
     bool reverse() const => _reverse;
     bool reverse(bool setReverse) => _reverse = setReverse;
-
     float getDuration() const => cast(float)frames.length / framesPerSecond;
 
     /**
@@ -102,22 +102,30 @@ public import hip.api.graphics.g2d.animation;
             return null;
         accumulator+= dt;
         uint frame = cast(uint)(accumulator*framesPerSecond);
+        import std.stdio;
+        writeln(_loopingMode);
         if(frame > lastFrame)
         {
-            if(_looping)
+            final switch(_loopingMode) with(HipAnimationLoopingMode)
             {
-                accumulator = 0;
-                frame = 0;
-            }
-            else
-            {
-                accumulator-=dt;
-                frame = lastFrame;
+                case reset:
+                    accumulator = 0;
+                    frame = 0;
+                    break;
+                case pingpong:
+                    frame = 0;
+                    accumulator = 0;
+                    isAdvancingForward = !isAdvancingForward;
+                    break;
+                case none:
+                    accumulator-=dt;
+                    frame = lastFrame;
+                    break;
             }
         }
-        if(_reverse)
+        if((_loopingMode == HipAnimationLoopingMode.pingpong && !isAdvancingForward) || 
+        (_reverse && _loopingMode != HipAnimationLoopingMode.pingpong))
             frame = lastFrame - frame;
-
         currentFrame = frame;
         return &frames[frame];
     }
@@ -145,11 +153,11 @@ public import hip.api.graphics.g2d.animation;
         this.timeScale = 1.0f;
     }
 
-    static HipAnimation fromAtlas(HipTextureAtlas atlas, string which, uint fps, bool shouldLoop=false)
+    static HipAnimation fromAtlas(HipTextureAtlas atlas, string which, uint fps, HipAnimationLoopingMode loopingMode = HipAnimationLoopingMode.none)
     {
         import hip.util.conv:to;
         HipAnimation ret = new HipAnimation(which);
-        HipAnimationTrack track = new HipAnimationTrack(which, fps, shouldLoop);
+        HipAnimationTrack track = new HipAnimationTrack(which, fps, loopingMode);
         AtlasFrame* frame;
         int i = 1;
         while((frame = (which~"_"~to!string(i) in atlas)) != null)
@@ -194,11 +202,7 @@ public import hip.api.graphics.g2d.animation;
     IHipAnimationTrack getTrack(string trackName)
     {
         IHipAnimationTrack* track = trackName in tracks;
-        version(HipOptimize){}
-        else
-            ErrorHandler.assertLazyExit(track != null,
-            "Track "~trackName~" does not exists in the animation '"~name~"'.");
-        
+        if(track is null) return null;
         return *track;
     }
 
