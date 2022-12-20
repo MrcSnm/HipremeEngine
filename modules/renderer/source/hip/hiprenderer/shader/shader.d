@@ -221,7 +221,7 @@ public class Shader : IReloadable
         ShaderVar* v = findByName(name);
         if(v != null)
         {
-            ErrorHandler.assertExit(v.shaderType == ShaderTypes.VERTEX, "Variable named "~name~" must be from Vertex Shader");
+            ErrorHandler.assertLazyExit(v.shaderType == ShaderTypes.VERTEX, "Variable named "~name~" must be from Vertex Shader");
             v.set(val);
         }
         else
@@ -236,7 +236,7 @@ public class Shader : IReloadable
         ShaderVar* v = findByName(name);
         if(v != null)
         {
-            ErrorHandler.assertExit(v.shaderType == ShaderTypes.FRAGMENT, "Variable named "~name~" must be from Fragment Shader");
+            ErrorHandler.assertLazyExit(v.shaderType == ShaderTypes.FRAGMENT, "Variable named "~name~" must be from Fragment Shader");
             v.set(val);
         }
         else
@@ -275,7 +275,7 @@ public class Shader : IReloadable
 
     public void addVarLayout(ShaderVariablesLayout layout)
     {
-        ErrorHandler.assertExit((layout.name in layouts) is null, "Shader: VariablesLayout '"~layout.name~"' is already defined");
+        ErrorHandler.assertLazyExit((layout.name in layouts) is null, "Shader: VariablesLayout '"~layout.name~"' is already defined");
         if(defaultLayout is null)
             defaultLayout = layout;
         layouts[layout.name] = layout;
@@ -319,7 +319,7 @@ public class Shader : IReloadable
     }
     auto opDispatch(string member, T)(T value)
     {
-        ErrorHandler.assertExit(defaultLayout.variables[member].sVar.set(value), "Invalid value of type "~
+        ErrorHandler.assertLazyExit(defaultLayout.variables[member].sVar.set(value), "Invalid value of type "~
         T.stringof~" passed to "~defaultLayout.name~"."~member);
     }
 

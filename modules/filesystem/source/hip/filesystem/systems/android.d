@@ -19,7 +19,7 @@ version(Android)
         }
         override ulong getSize()
         {
-            ErrorHandler.assertErrorMessage(asset != null, "HipAndroidFile error",
+            ErrorHandler.assertLazyErrorMessage(asset != null, "HipAndroidFile error",
             "Can't get size from null asset '"~path~"'");
             return cast(ulong)AAsset_getLength64(asset);
         }

@@ -88,27 +88,6 @@ bool isRootOf(string theRoot, string ofWhat) pure nothrow @nogc
 }
 
 
-string baseName(string path) @safe pure nothrow @nogc
-{
-    int lastSepIndex = -1;
-    int preLastSepIndex = -1;
-
-    foreach(i, v; path)
-    {
-        if(path[i] == pathSeparator)
-        {
-            if(preLastSepIndex == -1)
-                preLastSepIndex = lastSepIndex;
-            lastSepIndex = cast(int)i;
-        }
-    }
-    
-    if(lastSepIndex == path.length)
-        return path[preLastSepIndex..$-1];
-    else if(lastSepIndex == -1)
-        return path;
-    return path[lastSepIndex..$];
-}
 
 string relativePath(string filePath, string base, bool caseSensitive = defaultCaseSensitivity) pure nothrow @safe
 {
@@ -223,6 +202,8 @@ string filename(string filePath) @safe pure nothrow @nogc
         return filePath;
     return filePath[last+1..$];
 }
+
+alias baseName = filename;
 
 ref string filename(return ref string filePath, string newFileName) @safe pure nothrow
 {

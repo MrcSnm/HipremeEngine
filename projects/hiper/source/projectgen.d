@@ -125,13 +125,8 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 		}
 	],
 	"versions" : [
-		"HipremeRenderer",
-		"HipGraphicsAPI",
-		"HipInputAPI",
 		"HipAudioAPI",
 		"HipMathAPI",
-		"HipImageAPI",
-		"HipTimerAPI",
 		"HipremeAudio",
 		"HipDataStructures"
 	]

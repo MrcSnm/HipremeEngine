@@ -77,7 +77,7 @@ class HipInputMap : IHipInputMap
         JSONValue inputJson = parseJSON(cast(string)file);
 
         JSONValue* temp = ("actions" in inputJson.object);
-        ErrorHandler.assertErrorMessage(temp != null, "HipInputMap wrong formatting", 
+        ErrorHandler.assertLazyErrorMessage(temp != null, "HipInputMap wrong formatting", 
         "\"actions\" not found in "~fileName);
 
         foreach(k, v; temp.object)

@@ -14,7 +14,7 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
     {
         import core.stdc.stdio;
         import hip.error.handler;
-        if(ErrorHandler.assertErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
+        if(ErrorHandler.assertLazyErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
             return false;
 
         auto f = fopen((path~"\0").ptr, "r");

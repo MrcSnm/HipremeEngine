@@ -1,5 +1,6 @@
 module hip.components.transform;
 
+version(none):
 import hip.systems.gameobject;
 public import hip.math.matrix;
 public import hip.math.vector;

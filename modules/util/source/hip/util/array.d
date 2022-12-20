@@ -51,6 +51,8 @@ int indexOf(T, V)(in T tuple, V value) pure nothrow @nogc if(isTuple!T)
     return -1;
 }
 
+
+
 int lastIndexOf(T)(T[] arr, T element, int startIndex = -1)
 {
     const size_t len = arr.length;

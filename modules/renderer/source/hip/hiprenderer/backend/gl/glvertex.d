@@ -67,7 +67,7 @@ class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
     }
     void updateData(int offset, ulong size, const(void*) data)
     {
-        ErrorHandler.assertExit(size+offset <= this.size,
+        ErrorHandler.assertLazyExit(size+offset <= this.size,
         "Tried to set data with size "~to!string(size)~"and offset "~to!string(offset)~
         "for vertex buffer with size "~to!string(this.size));
 

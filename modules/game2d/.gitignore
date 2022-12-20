@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/game2d
+game2d.so
+game2d.dylib
+game2d.dll
+game2d.a
+game2d.lib
+game2d-test-*
+*.exe
+*.o
+*.obj
+*.lst

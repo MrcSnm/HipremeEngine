@@ -365,7 +365,6 @@ class HipTilesetImpl : HipAsset, IHipTileset
     IImage loadImage()
     {
         import hip.error.handler;
-        import hip.console.log;
         import hip.filesystem.hipfs;
         import hip.util.path;
         if(textureImage is null)
@@ -375,7 +374,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
             ubyte[] data;
             if(!HipFS.read(imagePath, data))
             {
-                loglnError("Error loading image at path ",imagePath, " required by Tileset");
+                ErrorHandler.showErrorMessage("Error loading image required by Tileset", imagePath);
                 return null;
             }
             return textureImage = new Image(imagePath, data);

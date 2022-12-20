@@ -41,3 +41,20 @@ void swap(T)(ref T a, ref T b)
     a = b;
     b = tempA;
 }
+
+
+int find(T)(in T[] array, scope bool function(T val) pred)
+{
+    foreach(index, v; array)
+        if(pred(v))
+            return cast(int)index;
+    return -1;
+}
+
+int findLast(T)(in T[] array, scope bool function(T val) pred)
+{
+    foreach_reverse(index, v; array)
+        if(pred(v))
+            return cast(int)index;
+    return -1;
+}

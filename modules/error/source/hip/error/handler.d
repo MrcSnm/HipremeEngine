@@ -109,13 +109,11 @@ public static class ErrorHandler
     {
         if(isFatal)
         {
-            rawfatal("\nFATAL ERROR: " ~ errorTitle);
-            rawfatal(errorMessage);
+            rawfatal(errorTitle, '(', errorMessage, ')');
         }
         else
         {
-            rawerror("\nError: " ~ errorTitle);
-            rawerror(errorMessage);
+            rawerror(errorTitle, '(', errorMessage, ')');
         }
         getError(errorTitle, errorMessage);
     }
@@ -134,7 +132,7 @@ public static class ErrorHandler
      *   errorMessage = Error Message
      * Returns: If the error happenned
      */
-    public static bool assertErrorMessage(bool expression, lazy string errorTitle, lazy string errorMessage, bool isFatal = false,
+    public static bool assertErrorMessage(bool expression, string errorTitle, string errorMessage, bool isFatal = false,
     string file = __FILE__, size_t line =__LINE__, string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
     {
         expression = !expression; //Negate the expression, as it must return wether error ocurred
@@ -150,16 +148,57 @@ public static class ErrorHandler
         return expression;
     }
 
-    public static void assertExit(bool expression, lazy string onAssertionFailure = "Assertion Failure",
+    /** 
+     * 
+     * Params:
+     *   expression = Expression for looking wether an error has happenned
+     *   errorTitle = Error Header
+     *   errorMessage = Error Message
+     * Returns: If the error happenned
+     */
+    public static bool assertLazyErrorMessage(bool expression, lazy string errorTitle, lazy string errorMessage, bool isFatal = false,
+    string file = __FILE__, size_t line =__LINE__, string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
+    {
+        expression = !expression; //Negate the expression, as it must return wether error ocurred
+        if(expression)
+        {
+            version(HIPREME_DEBUG)
+            {
+                string where = "at module '"~mod~"' "~file~":"~to!string(line)~"("~func~")\n\t";
+            }
+            else{string where="";}
+            showErrorMessage(where~errorTitle, "\t"~errorMessage, isFatal);
+        }
+        return expression;
+    }
+
+    /**
+    *   If you're running on a loop or need to concat your failure message, prefer using assertLazyExit.
+    */
+    public static void assertExit(bool expression, string onAssertionFailure = "Assertion Failure",
     string file = __FILE__, size_t line = __LINE__, string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
     {
-        if(ErrorHandler.assertErrorMessage(expression, "HipAssertion", onAssertionFailure, true,
-        file, line, mod, func))
+        if(!expression)
         {
+            cast(void)ErrorHandler.assertErrorMessage(false, "HipAssertion", onAssertionFailure, true,
+            file, line, mod, func);
             import core.stdc.stdlib;
             exit(EXIT_FAILURE);
         }
     }
+
+    public static void assertLazyExit(bool expression, lazy string onAssertionFailure,
+    string file = __FILE__, size_t line = __LINE__, string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
+    {
+        if(!expression)
+        {
+            cast(void)ErrorHandler.assertLazyErrorMessage(false, "HipAssertion", onAssertionFailure, true,
+            file, line, mod, func);
+            import core.stdc.stdlib;
+            exit(EXIT_FAILURE);
+        }
+    }
+
     static immutable(string) assertReturn(string expression)(string onAssertionFailureMessage)
     {
         return `if(ErrorHandler.assertErrorMessage(`~expression~`, "HipAssertion", "`~onAssertionFailureMessage~

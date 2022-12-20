@@ -162,13 +162,23 @@ class HipFileSystem
         }
         return true;
     }
-    @ExportD public static bool isPathValid(string path)
+    
+    @ExportD public static bool isPathValid(string path, bool expectsFile = true, bool shouldVerify = true)
     {
         import hip.error.handler;
         if(!validatePath(initialPath, defPath~path))
         {
             ErrorHandler.showErrorMessage("Path failed default validation: can't reference external path.", path);
             return false;
+        }
+        if(shouldVerify)
+        {
+            if((expectsFile && !HipFS.absoluteIsFile(path)) || (!expectsFile && !HipFS.absoluteIsDir(path)))
+            {
+                ErrorHandler.showErrorMessage("Path failed default validation: Expected '"~ (expectsFile ? "file" : "directory") ~ 
+                "' but received "~ (expectsFile ? "'directory'" : "'file'"), path);
+                return false;
+            }
         }
 
         return isPathValidExtra(path);
@@ -292,8 +302,8 @@ class HipFileSystem
     }
 
 
-    @ExportD public static bool isDir(string path){return isPathValid(path) && fs.isDir(getPath(path));}
-    @ExportD public static bool isFile(string path){return isPathValid(path) && fs.isFile(getPath(path));}
+    @ExportD public static bool isDir(string path){return isPathValid(path, false, false) && fs.isDir(getPath(path));}
+    @ExportD public static bool isFile(string path){return isPathValid(path, true, false) && fs.isFile(getPath(path));}
 
     @ExportD public static string writeCache(string cacheName, void[] data)
     {

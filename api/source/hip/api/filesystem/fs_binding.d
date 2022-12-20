@@ -24,7 +24,7 @@ else
         extern(System) static
         {
             string function (string path) getPath;
-            bool function (string path) isPathValid;
+            bool function (string path, bool expectsFile = true, bool shouldVerify = true) isPathValid;
             bool function (string path) isPathValidExtra;
             bool function (string path) setPath;
             // bool read(string path, out void[] output)

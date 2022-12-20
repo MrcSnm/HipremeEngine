@@ -1,6 +1,7 @@
 module hip.api.graphics.g2d.animation;
 public import hip.api.renderer.texture;
 public import hip.api.graphics.color;
+public import hip.api.data.textureatlas;
 
 /**
 *   The frame user is responsible for using the frame properties, while the track is responsible
@@ -35,14 +36,22 @@ struct HipAnimationFrame
             return ret;
         }
     }
-
 }
+
+enum HipAnimationLoopingMode
+{
+    none,
+    reset,
+    pingpong
+}
+
 
 interface IHipAnimationTrack
 {   
     string name() const;
-    bool looping() const;
-    bool looping(bool setLooping);
+    HipAnimationLoopingMode loopingMode() const;
+    HipAnimationLoopingMode loopingMode(HipAnimationLoopingMode mode = HipAnimationLoopingMode.reset);
+
     bool reverse() const;
     bool reverse(bool setReverse);
     ///Returns how many seconds the animation lasts
@@ -70,6 +79,7 @@ interface IHipAnimationTrack
     HipAnimationFrame* update(float deltaTime);
 }
 
+
 interface IHipAnimation
 {
     IHipAnimationTrack getCurrentTrack();
@@ -81,11 +91,47 @@ interface IHipAnimation
             return null;
         return frame.region;
     }
+
+    version(Have_util) version(Script)
+    {
+        /**
+        *   Creates an IHipAnimation from a loaded texture atlas.
+        *   Its frames will be checked such as `mySprite${frameNumber}`.
+        *   The animation will be named as the string without the number.
+        */
+        static IHipAnimation createFromAtlas(IHipTextureAtlas atlas, string animationName, uint framesPerSecond = 24)
+        {
+            import hip.util.string:getNumericEnding, lastIndexOf;
+            import hip.util.algorithm;
+            import hip.api.graphics.g2d.renderer2d;
+            import std.algorithm:sort;
+            
+            IHipAnimation anim = newHipAnimation(animationName);
+            foreach(string frameName; sort(atlas.frames.keys))
+            {
+                AtlasFrame* frame = frameName in atlas;
+                string name = frameName;
+                int index = frameName.lastIndexOf(frameName.getNumericEnding);
+                if(index != -1)
+                    name = frameName[0..index];
+                IHipAnimationTrack track = anim.getTrack(name);
+                if(track is null)
+                {
+                    anim.addTrack(track = newHipAnimationTrack(name, framesPerSecond, true));
+                }
+                track.addFrames(HipAnimationFrame(frame.region, HipColor.white, [0,0]));
+
+            }
+            return anim;
+        }
+    }
+
+
     final string getCurrentTrackName() {return getCurrentTrack().name;}
     IHipAnimation addTrack(IHipAnimationTrack track);
     void update(float deltaTime);
     void setTimeScale(float scale);
     void play(string trackName);
-    IHipAnimationTrack getTrack(string rtackName);
+    IHipAnimationTrack getTrack(string trackName);
     
 }

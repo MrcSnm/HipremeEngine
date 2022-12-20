@@ -14,7 +14,8 @@
 	],
 	"dflags": [
 		"-J=.",
-		"-preview=shortenedMethods"
+		"-preview=shortenedMethods",
+		"-mixin=mixed.d"
 	],
 	"dflags-dmd": [
 		"-checkaction=halt"
@@ -23,16 +24,8 @@
 		"HIPREME_DEBUG",
 		"HipremeEngineLua",
 		"HipCheckUnknownKeycode",
-		"HipAsync",
 		"HipDataStructures",
-		"HipGraphicsAPI",
-		"HipInputAPI",
-		"HipImageAPI",
 		"HipMathAPI",
-		"HipRendererAPI",
-		"HipTweenAPI",
-		"HipTimerAPI",
-		"HipAssets",
 		"HipDStdFile",
 		"HipScriptingAPI",
 		"GL_45",
@@ -51,10 +44,8 @@
 		"bind": {"path": "./modules/bind", "version": "*"},
 		"config": {"path": "./modules/config", "version": "*"},
 		"console": {"path": "./modules/console", "version": "*"},
-		"data": {"path": "./modules/data", "version": "*"},
 		"debugging": {"path": "./modules/debugging", "version": "*"},
 		"error": {"path": "./modules/error", "version": "*"},
-		"font": {"path": "./modules/font", "version": "*"},
 		"filesystem": {"path": "./modules/filesystem", "version": "*"},
 		"timer": {"path": "./modules/timer", "version": "*"},
 		"tween": {"path": "./modules/tween", "version": "*"},

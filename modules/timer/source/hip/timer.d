@@ -1,7 +1,6 @@
 module hip.timer;
 public import hip.api.systems.timer;
 
-version(HipTimerAPI):
 class HipTimer : IHipTimer
 {
     ///Enforce naming for making debugging easier
