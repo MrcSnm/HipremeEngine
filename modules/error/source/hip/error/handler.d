@@ -109,13 +109,11 @@ public static class ErrorHandler
     {
         if(isFatal)
         {
-            rawfatal("\nFATAL ERROR: " ~ errorTitle);
-            rawfatal(errorMessage);
+            rawfatal(errorTitle, '(', errorMessage, ')');
         }
         else
         {
-            rawerror("\nError: " ~ errorTitle);
-            rawerror(errorMessage);
+            rawerror(errorTitle, '(', errorMessage, ')');
         }
         getError(errorTitle, errorMessage);
     }

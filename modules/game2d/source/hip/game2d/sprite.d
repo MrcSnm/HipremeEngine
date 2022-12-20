@@ -18,8 +18,12 @@ import hip.api.assets.globals;
 import hip.game2d.renderer_data;
 
 /**
-*   Encapsulates bunch of sprites to hold a contiguous list of vertices. This can be a lot more performant
-*   than creating sprite by sprite.
+*   Encapsulates bunch of sprites to hold a contiguous list of vertices.
+*   It has some advantages than creating manually an array of similar sprites such as:
+*   - Copies only once to the SpriteBatch, which searches for the texture index once. 
+*   - Boundary checks once
+*   - Makes the sprites array vertices linear, reducing cache misses.
+*   - Wraps the setTexture and draw process so no need to manually execute the foreach
 */
 class HipMultiSprite
 {
@@ -198,7 +202,6 @@ class HipSprite
         vertices[V4] = v[7];
     }
 
-
     void setPosition(float x, float y)
     {
         this.x = x;
@@ -376,12 +379,18 @@ class HipSpriteAnimation : HipSprite
     IHipAnimation animation;
     HipAnimationFrame* currentFrame;
 
+    this(){super();}
+
     this(IHipAnimation anim)
     {
-        super("");
+        super();
         animation = anim;
         this.setAnimation(anim.getCurrentTrackName());
+    }
 
+    IHipAnimationTrack getAnimation(string animName)
+    {
+        return animation.getTrack(animName);
     }
 
     void setAnimation(string animName)
