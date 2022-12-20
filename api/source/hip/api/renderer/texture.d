@@ -11,7 +11,6 @@ Distributed under the CC BY-4.0 License.
 
 module hip.api.renderer.texture;
 
-version(HipGraphicsAPI):
 public import hip.api.data.image;
 public import hip.api.graphics.color;
 
@@ -62,6 +61,11 @@ interface IHipTexture
 struct TextureCoordinatesQuad
 {
     float u1, v1, u2, v2;
+}
+
+interface IHipTexturizable
+{
+    void setTexture(IHipTexture texture);
 }
 
 interface IHipTextureRegion

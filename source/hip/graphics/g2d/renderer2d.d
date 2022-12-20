@@ -6,9 +6,8 @@ import hip.graphics.orthocamera;
 import hip.hiprenderer;
 import hip.bind.interpreters;
 public import hip.api.graphics.color;
-public import hip.api.graphics.g2d.hipsprite;
 public import hip.api.math.random;
-public import hip.graphics.g2d.sprite;
+public import hip.api.data.commons:IHipAssetLoadTask;
 public import hip.graphics.g2d.textrenderer;
 public import hip.api.renderer.viewport;
 
@@ -62,9 +61,6 @@ void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewpor
             sendInterpreterFunc!(drawLine)(entry.intepreter);
             sendInterpreterFunc!(drawQuadraticBezierLine)(entry.intepreter);
             // sendInterpreterFunc!(drawText)(entry.intepreter); not supported yet
-            sendInterpreterFunc!(drawSprite)(entry.intepreter);
-            sendInterpreterFunc!(newSprite)(entry.intepreter);
-            sendInterpreterFunc!(destroySprite)(entry.intepreter);
         }
     }
 
@@ -87,6 +83,7 @@ void resizeRenderer2D(uint width, uint height)
 
 export extern(System):
 
+
 int[2] getWindowSize(){return [HipRenderer.width, HipRenderer.height];}
 
 void setWindowSize(uint width, uint height)
@@ -108,6 +105,10 @@ Viewport getCurrentViewport()
 void renderSprites()
 {
     spBatch.render();
+}
+void setRendererErrorCheckingEnabled(bool enable)
+{
+    HipRenderer.setErrorCheckingEnabled(enable);
 }
 void renderGeometries()
 {
@@ -181,12 +182,13 @@ void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int
     geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision);
     lastBatch = geoBatch;
 }
-void drawSprite(IHipSprite sprite)
+
+void drawSprite(IHipTexture texture, float[] vertices)
 {
     if(lastBatch !is null && lastBatch !is spBatch)
         lastBatch.flush();
     lastBatch = spBatch;
-    spBatch.draw(cast(HipSprite)sprite);
+    spBatch.draw(texture, vertices);
     lastBatch = spBatch;
 }
 void drawRegion(IHipTextureRegion reg, int x, int y, int z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
@@ -260,21 +262,6 @@ int boundsWidth = -1, int boundsHeight = -1)
     textBatch.draw(text, x, y, alignH, alignV, boundsWidth, boundsHeight);
     lastBatch = textBatch;
 }
-
-private __gshared IHipSprite[] _sprites;
-IHipSprite newSprite(string texturePath)
-{
-    _sprites~= new HipSprite(texturePath);
-    return _sprites[$-1];
-}
-
-void destroySprite(ref IHipSprite sprite)
-{
-    import hip.util.array:remove;
-    _sprites.remove(sprite);
-    sprite = null;
-}
-
 
 Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
 {

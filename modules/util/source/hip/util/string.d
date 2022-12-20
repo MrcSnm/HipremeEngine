@@ -619,31 +619,54 @@ bool isNumber(TString)(in TString str) pure nothrow @nogc
     return true;
 }
 
+/**
+This function will get the number at the end of the string. Used when you have numbered items such as frames:
+walk_01, walk_02, etc
+```d
+"test123".getNumericEnding == "123"
+"123abc".getNumericEnding == ""
+"123".getNumericEnding == "123"
+```
+*/
+string getNumericEnding(string s)
+{
+    if(!s)
+        return "";
+    long i = cast(long)s.length - 1;
+    while(i >= 0)
+    {
+        if(!isNumeric(s[i]))
+            return s[i+1..$];
+        i--;
+    }
+    return "";
+}
 
-pragma(inline, true) enum isUpperCase(TChar)(TChar c)
+
+pragma(inline, true) bool isUpperCase(TChar)(TChar c) @nogc nothrow pure @safe
 {
     return c >= 'A' && c <= 'Z';
 }
-pragma(inline, true) enum isLowercase(TChar)(TChar c)
+pragma(inline, true) bool isLowercase(TChar)(TChar c) @nogc nothrow pure @safe
 {
     return c >= 'a' && c <= 'z';
 }
 
-pragma(inline, true) enum isAlpha(TChar)(TChar c)
+pragma(inline, true) bool isAlpha(TChar)(TChar c) @nogc nothrow pure @safe
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
-pragma(inline, true) enum isEndOfLine(TChar)(TChar c)
+pragma(inline, true) bool isEndOfLine(TChar)(TChar c) @nogc nothrow pure @safe
 {
     return c == '\n' || c == '\r';
 }
 
-pragma(inline, true) enum isNumeric(TChar)(TChar c)
+pragma(inline, true) bool isNumeric(TChar)(TChar c) @nogc nothrow pure @safe
 {
     return (c >= '0' && c <= '9') || (c == '-');
 }
-pragma(inline, true) enum isWhitespace(TChar)(TChar c)
+pragma(inline, true) bool isWhitespace(TChar)(TChar c) @nogc nothrow pure @safe
 {
     return (c == ' ' || c == '\t' || c.isEndOfLine);
 }
@@ -703,4 +726,8 @@ unittest
 
     assert(trim(" \n  \thello there  \n \t") == "hello there");
     assert(between(`string containing a "thing"`, `"`, `"`) == "thing");
+
+    assert("test123".getNumericEnding == "123");
+    assert("123abc".getNumericEnding == "");
+    assert("123".getNumericEnding == "123");
 }

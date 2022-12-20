@@ -76,13 +76,20 @@ class HotloadableDLL
     void dispose()
     {
         if(lib != null)
-            dynamicLibraryRelease(lib);
-        if(tempPath)
         {
-            if(!HipFS.absoluteRemove(tempPath))
+            if(!dynamicLibraryRelease(lib))
             {
                 import hip.error.handler;
-                ErrorHandler.showErrorMessage("Could not remove ", tempPath);
+                ErrorHandler.showErrorMessage("Could not unload the dll ", tempPath);
+                return;
+            }
+            if(tempPath)
+            {
+                if(!HipFS.absoluteRemove(tempPath))
+                {
+                    import hip.error.handler;
+                    ErrorHandler.showErrorMessage("Could not remove ", tempPath);
+                }
             }
         }
     }

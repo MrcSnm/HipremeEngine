@@ -135,7 +135,7 @@ public class HipImageImpl : IImage
         import hip.error.handler;
         if(ErrorHandler.assertErrorMessage(data.length != 0, "No data was passed to load Image.", "Could not load image"))
             return false;
-        if(ErrorHandler.assertErrorMessage(decoder.startDecoding(data),
+        if(ErrorHandler.assertLazyErrorMessage(decoder.startDecoding(data),
         "Decoding Image: ", "Could not load image " ~ imagePath))
             return false;
         width         = decoder.getWidth();

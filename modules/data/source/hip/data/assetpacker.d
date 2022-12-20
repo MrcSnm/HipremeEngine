@@ -10,389 +10,384 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.assets.assetpacker;
 
+import hip.util.file;
 
-version(HipAssets)
+enum HapHeaderStart = "1HZ00ZH9";
+enum HapHeaderEnd   = "9HZ00ZH1";
+enum HapHeaderSize = HapHeaderEnd.length + HapHeaderStart.length;
+
+enum HapHeaderStatus
 {
-
-    import hip.util.file;
-
-    enum HapHeaderStart = "1HZ00ZH9";
-    enum HapHeaderEnd   = "9HZ00ZH1";
-    enum HapHeaderSize = HapHeaderEnd.length + HapHeaderStart.length;
-
-    enum HapHeaderStatus
-    {
-        SUCCESS = 0, 
-        DOES_NOT_EXIST,
-        NOT_HAP
-    }
+    SUCCESS = 0, 
+    DOES_NOT_EXIST,
+    NOT_HAP
+}
 
 
-    struct HapChunk
-    {
-        string fileName;
-        ulong startPosition;
-        ubyte[] bin;
+struct HapChunk
+{
+    string fileName;
+    ulong startPosition;
+    ubyte[] bin;
 
-        alias bin this;
-    }
+    alias bin this;
+}
 
-    private extern(C) int sortChunk(const(void*) a, const(void*) b)
-    {
-        long startPosA = (cast(HapChunk*)a).startPosition;
-        long startPosB = (cast(HapChunk*)b).startPosition;
-        return cast(int)(startPosA - startPosB);
-    }
+private extern(C) int sortChunk(const(void*) a, const(void*) b)
+{
+    long startPosA = (cast(HapChunk*)a).startPosition;
+    long startPosB = (cast(HapChunk*)b).startPosition;
+    return cast(int)(startPosA - startPosB);
+}
 
-    class HapFile
-    {
-        HapChunk[string] chunks;
-        immutable string path;
-        uint fileSteps;
-        protected FileProgression fp;
-
-        /**
-        *   Reads the entire hapfile and get its chunks synchronously
-        */
-        static HapFile get(string filePath)
-        {
-            HapFile f = new HapFile(filePath, 1);
-            f.update();
-            return f;
-        }
-
-
-        this(string filePath, uint fileSteps = 10)
-        {
-            this.path = filePath;
-            this.fileSteps = fileSteps;
-        }
-
-        bool loadFromMemory(in ubyte[] data)
-        {
-            HapChunk[] ch = getHapChunks(data, getHeaderStart(data));
-            foreach(c;ch)
-                chunks[c.fileName] = c;
-            return ch.length != 0;
-        }
-
-        string getText(string chunkName, bool removeCarriageReturn = true)
-        {
-            import hip.util.string : replaceAll;
-            HapChunk* ch = (chunkName in chunks);
-            if(ch is null)
-                return "";
-            if(!removeCarriageReturn)
-                return cast(string)ch.bin;
-            return replaceAll(cast(string)ch.bin, '\r');
-        }
-
-        string[] getChunksList()
-        {
-            string[] ret;
-            foreach(k, v; chunks)
-                ret~=k;
-            return ret;
-        }
-        bool update(){return fp.update();}
-        float getProgress(){return fp.getProgress();}
-
-
-        alias chunks this;
-    }
-
-    private string reverse(string s)
-    {
-        string ret = "";
-        foreach_reverse(c; s)
-            ret~= c;
-        return ret;
-    }
+class HapFile
+{
+    HapChunk[string] chunks;
+    immutable string path;
+    uint fileSteps;
+    protected FileProgression fp;
 
     /**
-    *
-    *   Writes an asset pack in the .hap format (Hipreme Asset Pack),
-    *   it is only sequential binary chunk containing its headers on
-    *   the file end.
-    *
-    *   Returns if the file writing was a success.
+    *   Reads the entire hapfile and get its chunks synchronously
     */
-    bool writeAssetPack(string outputFileName, string[] assetPaths, string basePath = "")
+    static HapFile get(string filePath)
     {
-        import hip.console.log;
-        import hip.util.conv:to;
-        import hip.util.path : relativePath;
-        import core.stdc.string : memcpy;
-        import std.file;
-        import std.stdio : File;
-        if(exists(outputFileName~".hap"))
-        {
-            rawlog(outputFileName~".hap already exists");
-            return false;
-        }
-        ubyte[] plainData;
-        ulong dataLength = 0;
+        HapFile f = new HapFile(filePath, 1);
+        f.update();
+        return f;
+    }
 
-        string toAppend = HapHeaderEnd;
 
-        foreach(p; assetPaths)
-        {
-            string path = p;
-            if(basePath != "")
-                path = relativePath(path, basePath);
+    this(string filePath, uint fileSteps = 10)
+    {
+        this.path = filePath;
+        this.fileSteps = fileSteps;
+    }
 
-            if(exists(path))
-            {
-                auto _f = File(path);
-                void[] fileData = new void[](_f.size);
-                _f.rawRead(fileData);
-                dataLength+= fileData.length;
-                plainData.length = dataLength;
-                toAppend~= path~", "~to!string(dataLength-fileData.length)~"\n";
-                memcpy((plainData.ptr+dataLength-fileData.length), fileData.ptr, fileData.length);
-            }
-            else
-                rawlog("Archive at path '"~path~"' does not exists, it will be skipped");
-        }
-        toAppend~= HapHeaderStart;
+    bool loadFromMemory(in ubyte[] data)
+    {
+        HapChunk[] ch = getHapChunks(data, getHeaderStart(data));
+        foreach(c;ch)
+            chunks[c.fileName] = c;
+        return ch.length != 0;
+    }
 
-        plainData.length+= toAppend.length;
-        memcpy(plainData.ptr+dataLength, toAppend.ptr, toAppend.length);
-        std.file.write(outputFileName~".hap", plainData);
+    string getText(string chunkName, bool removeCarriageReturn = true)
+    {
+        import hip.util.string : replaceAll;
+        HapChunk* ch = (chunkName in chunks);
+        if(ch is null)
+            return "";
+        if(!removeCarriageReturn)
+            return cast(string)ch.bin;
+        return replaceAll(cast(string)ch.bin, '\r');
+    }
 
+    string[] getChunksList()
+    {
+        string[] ret;
+        foreach(k, v; chunks)
+            ret~=k;
+        return ret;
+    }
+    bool update(){return fp.update();}
+    float getProgress(){return fp.getProgress();}
+
+
+    alias chunks this;
+}
+
+private string reverse(string s)
+{
+    string ret = "";
+    foreach_reverse(c; s)
+        ret~= c;
+    return ret;
+}
+
+/**
+*
+*   Writes an asset pack in the .hap format (Hipreme Asset Pack),
+*   it is only sequential binary chunk containing its headers on
+*   the file end.
+*
+*   Returns if the file writing was a success.
+*/
+bool writeAssetPack(string outputFileName, string[] assetPaths, string basePath = "")
+{
+    import hip.console.log;
+    import hip.util.conv:to;
+    import hip.util.path : relativePath;
+    import core.stdc.string : memcpy;
+    import std.file;
+    import std.stdio : File;
+    if(exists(outputFileName~".hap"))
+    {
+        rawlog(outputFileName~".hap already exists");
         return false;
     }
+    ubyte[] plainData;
+    ulong dataLength = 0;
 
-    /**
-    *   Appends the file to the asset pack. It does not check if the file is already present.
-    *   
-    *   Returns the operation status, 0 = success
-    */
-    HapHeaderStatus appendAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
+    string toAppend = HapHeaderEnd;
+
+    foreach(p; assetPaths)
     {
-        import hip.console.log;
-        import hip.util.conv:to;
-        import hip.util.path : relativePath;
-        import core.stdc.string : memcpy;
-        import std.file : exists, read;
-        import std.stdio : File;
+        string path = p;
+        if(basePath != "")
+            path = relativePath(path, basePath);
 
-        if(!exists(hapFile))
-            return HapHeaderStatus.DOES_NOT_EXIST;
-
-        File f = File(hapFile, "r+");
-        ubyte[] rawData = new ubyte[f.size];
-        f.rawRead(rawData);
-
-        ulong headerStart = getHeaderStart(rawData);
-        if(headerStart == 0)
-            return HapHeaderStatus.NOT_HAP;
-
-        string files = "";
-        for(ulong i = headerStart; i < rawData.length - HapHeaderEnd.length; i++)
-            files~= rawData[i];
-
-        headerStart-= HapHeaderStart.length;
-        f.seek(headerStart);
-
-        ubyte[] dataToAppend;
-
-        string toAppend = "";
-        foreach(p; assetPaths)
+        if(exists(path))
         {
-            string finalPath = p;
-            if(basePath != "")
-                finalPath = relativePath(finalPath, basePath);
-            if(exists(finalPath))
-            {
-                ubyte[] data = cast(ubyte[])read(finalPath);
-                dataToAppend.length+= data.length;
-                memcpy(dataToAppend.ptr+(dataToAppend.length - data.length), data.ptr, data.length);
-                toAppend~= finalPath~", "~to!string(headerStart)~"\n";
-                headerStart+= data.length;
-            }
-            else
-                rawlog("File named '"~finalPath~"' does not exists, it will not be appended");
+            auto _f = File(path);
+            void[] fileData = new void[](_f.size);
+            _f.rawRead(fileData);
+            dataLength+= fileData.length;
+            plainData.length = dataLength;
+            toAppend~= path~", "~to!string(dataLength-fileData.length)~"\n";
+            memcpy((plainData.ptr+dataLength-fileData.length), fileData.ptr, fileData.length);
         }
+        else
+            rawlog("Archive at path '"~path~"' does not exists, it will be skipped");
+    }
+    toAppend~= HapHeaderStart;
 
-        f.rawWrite(dataToAppend);
-        f.rawWrite(HapHeaderEnd);
-        f.rawWrite(files);
-        f.rawWrite(toAppend);
-        f.rawWrite(HapHeaderStart);
-        f.close();
-        
-        return HapHeaderStatus.SUCCESS;
-        
+    plainData.length+= toAppend.length;
+    memcpy(plainData.ptr+dataLength, toAppend.ptr, toAppend.length);
+    std.file.write(outputFileName~".hap", plainData);
+
+    return false;
+}
+
+/**
+*   Appends the file to the asset pack. It does not check if the file is already present.
+*   
+*   Returns the operation status, 0 = success
+*/
+HapHeaderStatus appendAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
+{
+    import hip.console.log;
+    import hip.util.conv:to;
+    import hip.util.path : relativePath;
+    import core.stdc.string : memcpy;
+    import std.file : exists, read;
+    import std.stdio : File;
+
+    if(!exists(hapFile))
+        return HapHeaderStatus.DOES_NOT_EXIST;
+
+    File f = File(hapFile, "r+");
+    ubyte[] rawData = new ubyte[f.size];
+    f.rawRead(rawData);
+
+    ulong headerStart = getHeaderStart(rawData);
+    if(headerStart == 0)
+        return HapHeaderStatus.NOT_HAP;
+
+    string files = "";
+    for(ulong i = headerStart; i < rawData.length - HapHeaderEnd.length; i++)
+        files~= rawData[i];
+
+    headerStart-= HapHeaderStart.length;
+    f.seek(headerStart);
+
+    ubyte[] dataToAppend;
+
+    string toAppend = "";
+    foreach(p; assetPaths)
+    {
+        string finalPath = p;
+        if(basePath != "")
+            finalPath = relativePath(finalPath, basePath);
+        if(exists(finalPath))
+        {
+            ubyte[] data = cast(ubyte[])read(finalPath);
+            dataToAppend.length+= data.length;
+            memcpy(dataToAppend.ptr+(dataToAppend.length - data.length), data.ptr, data.length);
+            toAppend~= finalPath~", "~to!string(headerStart)~"\n";
+            headerStart+= data.length;
+        }
+        else
+            rawlog("File named '"~finalPath~"' does not exists, it will not be appended");
     }
 
-    /**
-    *       Updates files in the assetpack, mantains the order and won't overwrite every single data,
-    *   unless the data to be updated is at the top. 
-    *   
-    *       Mantaining an intelligent system that will let the less changing files at the 
-    *   top is the way to go.
-    */
-    HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
+    f.rawWrite(dataToAppend);
+    f.rawWrite(HapHeaderEnd);
+    f.rawWrite(files);
+    f.rawWrite(toAppend);
+    f.rawWrite(HapHeaderStart);
+    f.close();
+    
+    return HapHeaderStatus.SUCCESS;
+    
+}
+
+/**
+*       Updates files in the assetpack, mantains the order and won't overwrite every single data,
+*   unless the data to be updated is at the top. 
+*   
+*       Mantaining an intelligent system that will let the less changing files at the 
+*   top is the way to go.
+*/
+HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string basePath = "")
+{
+    import hip.console.log;
+    import hip.util.conv:to;
+    import hip.util.array : indexOf;
+    import hip.util.path : relativePath;
+    import std.file : exists, read;
+    import std.stdio : File;
+
+    if(!exists(hapFile))
+        return HapHeaderStatus.DOES_NOT_EXIST;
+    File target = File(hapFile, "r+");
+    ubyte[] hapData = new ubyte[target.size];
+    target.rawRead(hapData);
+    
+    const ulong headerStart = getHeaderStart(hapData);
+    if(headerStart == 0)
+        return HapHeaderStatus.NOT_HAP;
+
+    string[] toAppend;
+    HapChunk[] chunks = getHapChunks(hapData, headerStart);
+
+
+    string[] fileNames;
+    foreach(a; chunks) 
+        fileNames~= a.fileName;
+
+    ulong lowestStartPosition = ulong.max;
+
+    foreach(p; assetPaths)
     {
-        import hip.console.log;
-        import hip.util.conv:to;
-        import hip.util.array : indexOf;
-        import hip.util.path : relativePath;
-        import std.file : exists, read;
-        import std.stdio : File;
-
-        if(!exists(hapFile))
-            return HapHeaderStatus.DOES_NOT_EXIST;
-        File target = File(hapFile, "r+");
-        ubyte[] hapData = new ubyte[target.size];
-        target.rawRead(hapData);
-        
-        const ulong headerStart = getHeaderStart(hapData);
-        if(headerStart == 0)
-            return HapHeaderStatus.NOT_HAP;
-
-        string[] toAppend;
-        HapChunk[] chunks = getHapChunks(hapData, headerStart);
-
-
-        string[] fileNames;
-        foreach(a; chunks) 
-            fileNames~= a.fileName;
-
-        ulong lowestStartPosition = ulong.max;
-
-        foreach(p; assetPaths)
+        string path = p;
+        if(basePath != "")  
+            path = relativePath(path, basePath);
+        if(!exists(path))
         {
-            string path = p;
-            if(basePath != "")  
-                path = relativePath(path, basePath);
-            if(!exists(path))
-            {
-                rawlog("File '"~path~"' does not exists");
-                continue;
-            }
-            long pathIndex = indexOf(fileNames, path);
-            if(pathIndex != -1)
-            {
-                HapChunk* f = &chunks[pathIndex];
-                if(f.startPosition < lowestStartPosition)
-                    lowestStartPosition = f.startPosition;
-                ubyte[] fileData = cast(ubyte[])read(path);
-                f.bin = fileData;
-            }
-            else
-                toAppend~= path;
+            rawlog("File '"~path~"' does not exists");
+            continue;
         }
-
-        import core.stdc.stdlib:qsort;
-        qsort(cast(void*)chunks.ptr, chunks.length, chunks[0].sizeof, &sortChunk);
-
-        target.seek(lowestStartPosition);
-
-        ulong nextStartPosition = lowestStartPosition;
-        for(int i = 0; i < chunks.length; i++)
+        long pathIndex = indexOf(fileNames, path);
+        if(pathIndex != -1)
         {
-            if(chunks[i].startPosition >= lowestStartPosition)
-            {
-                //rawlog("Updating "~chunks[i].fileName);
-                target.rawWrite(chunks[i].bin);
-                chunks[i].startPosition = nextStartPosition;
-                nextStartPosition+= chunks[i].bin.length;
-            }
+            HapChunk* f = &chunks[pathIndex];
+            if(f.startPosition < lowestStartPosition)
+                lowestStartPosition = f.startPosition;
+            ubyte[] fileData = cast(ubyte[])read(path);
+            f.bin = fileData;
         }
-
-        fileTruncate(target, nextStartPosition);
-        target.rawWrite(HapHeaderEnd);
-        foreach(_f; chunks)
-            target.rawWrite(_f.fileName~", "~to!string(_f.startPosition)~"\n");
-        target.rawWrite(HapHeaderStart);
-        target.close();
-
-        if(toAppend.length != 0)
-            return appendAssetInPack(hapFile, toAppend,  basePath);
-        return HapHeaderStatus.SUCCESS;
+        else
+            toAppend~= path;
     }
 
-    ulong getHeaderStart (string hapFile)
+    import core.stdc.stdlib:qsort;
+    qsort(cast(void*)chunks.ptr, chunks.length, chunks[0].sizeof, &sortChunk);
+
+    target.seek(lowestStartPosition);
+
+    ulong nextStartPosition = lowestStartPosition;
+    for(int i = 0; i < chunks.length; i++)
     {
-        import std.file : exists, read;
-        if(exists(hapFile))
+        if(chunks[i].startPosition >= lowestStartPosition)
         {
-            ubyte[] hapData = cast(ubyte[])read(hapFile);
-            getHeaderStart(hapData);
+            //rawlog("Updating "~chunks[i].fileName);
+            target.rawWrite(chunks[i].bin);
+            chunks[i].startPosition = nextStartPosition;
+            nextStartPosition+= chunks[i].bin.length;
         }
+    }
+
+    fileTruncate(target, nextStartPosition);
+    target.rawWrite(HapHeaderEnd);
+    foreach(_f; chunks)
+        target.rawWrite(_f.fileName~", "~to!string(_f.startPosition)~"\n");
+    target.rawWrite(HapHeaderStart);
+    target.close();
+
+    if(toAppend.length != 0)
+        return appendAssetInPack(hapFile, toAppend,  basePath);
+    return HapHeaderStatus.SUCCESS;
+}
+
+ulong getHeaderStart (string hapFile)
+{
+    import std.file : exists, read;
+    if(exists(hapFile))
+    {
+        ubyte[] hapData = cast(ubyte[])read(hapFile);
+        getHeaderStart(hapData);
+    }
+    return 0;
+}
+ulong getHeaderStart (in ubyte[] fileData)
+{
+    string header = "";
+    ulong i;
+    for(i = 0; i != HapHeaderEnd.length; i++)
+        header~= fileData[$-1-i];
+
+    if(header != HapHeaderEnd)
         return 0;
-    }
-    ulong getHeaderStart (in ubyte[] fileData)
+    
+    long z = 0;
+    i = fileData.length - i;
+    fileCapture: for(; i != 0; i--)
     {
-        string header = "";
-        ulong i;
-        for(i = 0; i != HapHeaderEnd.length; i++)
-            header~= fileData[$-1-i];
-
-        if(header != HapHeaderEnd)
-            return 0;
-        
-        long z = 0;
-        i = fileData.length - i;
-        fileCapture: for(; i != 0; i--)
+        while(fileData[i-z] == HapHeaderStart[z])
         {
-            while(fileData[i-z] == HapHeaderStart[z])
-            {
-                z++;
-                if(z == HapHeaderStart.length)
-                    break fileCapture;
-            }
-            z = 0;
+            z++;
+            if(z == HapHeaderStart.length)
+                break fileCapture;
         }
-        return i+1;
+        z = 0;
     }
+    return i+1;
+}
 
-    HapChunk[] getHapChunks(in ubyte[] hapFile, ulong headerStart)
+HapChunk[] getHapChunks(in ubyte[] hapFile, ulong headerStart)
+{
+    import hip.util.string : split;
+    import hip.util.conv : to;
+    import core.stdc.string : memcpy;
+    HapChunk[] ret;
+    string hap = "";
+    for(ulong i = headerStart; i < hapFile.length-HapHeaderStart.length; i++)
+        hap~= hapFile[i];
+    string[] infos = split(hap,  '\n');
+
+    foreach(info; infos)
     {
-        import hip.util.string : split;
-        import hip.util.conv : to;
-        import core.stdc.string : memcpy;
-        HapChunk[] ret;
-        string hap = "";
-        for(ulong i = headerStart; i < hapFile.length-HapHeaderStart.length; i++)
-            hap~= hapFile[i];
-        string[] infos = split(hap,  '\n');
-
-        foreach(info; infos)
-        {
-            HapChunk h;
-            string[] temp = split(info, ", ");
-            if(temp.length == 0)
-                continue;
-            h.fileName = temp[0];
-            h.startPosition = to!ulong(temp[1]);
-            ret~= h;
-        }
-
-        for(int i = 0; i < cast(int)ret.length-1; i++)
-        {
-            const ulong fileLength = ret[i+1].startPosition - ret[i].startPosition;
-            ret[i].bin = new ubyte[fileLength];
-            memcpy(ret[i].bin.ptr, hapFile.ptr+ret[i].startPosition, fileLength);
-        }
-
-        //File length - headerLength
-        const ulong headerLength = (hapFile.length - headerStart);
-        ret[$-1].bin = new ubyte[hapFile.length - ret[$-1].startPosition - headerLength - HapHeaderEnd.length];
-        memcpy(ret[$-1].bin.ptr, hapFile.ptr+ret[$-1].startPosition, ret[$-1].bin.length);
-
-        return ret;
-
+        HapChunk h;
+        string[] temp = split(info, ", ");
+        if(temp.length == 0)
+            continue;
+        h.fileName = temp[0];
+        h.startPosition = to!ulong(temp[1]);
+        ret~= h;
     }
 
-    HapChunk[] getHapChunks(string hapFilePath)
+    for(int i = 0; i < cast(int)ret.length-1; i++)
     {
-        import std.stdio : File;
-        File f = File(hapFilePath);
-        ubyte[] hapFile = new ubyte[f.size];
-        f.rawRead(hapFile);
-        return getHapChunks(hapFile, getHeaderStart(hapFile));
+        const ulong fileLength = ret[i+1].startPosition - ret[i].startPosition;
+        ret[i].bin = new ubyte[fileLength];
+        memcpy(ret[i].bin.ptr, hapFile.ptr+ret[i].startPosition, fileLength);
     }
+
+    //File length - headerLength
+    const ulong headerLength = (hapFile.length - headerStart);
+    ret[$-1].bin = new ubyte[hapFile.length - ret[$-1].startPosition - headerLength - HapHeaderEnd.length];
+    memcpy(ret[$-1].bin.ptr, hapFile.ptr+ret[$-1].startPosition, ret[$-1].bin.length);
+
+    return ret;
+
+}
+
+HapChunk[] getHapChunks(string hapFilePath)
+{
+    import std.stdio : File;
+    File f = File(hapFilePath);
+    ubyte[] hapFile = new ubyte[f.size];
+    f.rawRead(hapFile);
+    return getHapChunks(hapFile, getHeaderStart(hapFile));
 }

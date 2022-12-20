@@ -34,8 +34,7 @@ class HipTexture : HipAsset, IHipTexture
     public IHipTexture textureImpl;
     private bool successfullyLoaded;
     public bool hasSuccessfullyLoaded(){return successfullyLoaded;}
-
-
+    
     public static HipTexture getPixelTexture()
     {
         static HipTexture pixelTexture;
@@ -105,10 +104,7 @@ class HipTexture : HipAsset, IHipTexture
     override void onFinishLoading(){}
     override void onDispose(){}
     
-    bool isReady(){
-        return bool.init; // TODO: implement
-    }
-    
+    bool isReady(){return textureImpl !is null;}
     int getWidth(){return width;}
     int getHeight(){return height;}
     
@@ -118,6 +114,7 @@ class HipTexture : HipAsset, IHipTexture
 
 class HipTextureRegion : HipAsset, IHipTextureRegion
 {
+    public static const float[8] defaultVertices = [0,0, 1,0, 1,1, 0,1];
     IHipTexture texture;
     public float u1, v1, u2, v2;
     protected float[8] vertices;
@@ -131,12 +128,7 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         _typeID = assetTypeID!HipTextureRegion;
     }
 
-    this(string texturePath, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
-    {
-        this();
-        texture = new HipTexture(texturePath);
-        setRegion(u1,v1,u2,v2);
-    }
+    this(string texturePath, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1){this(new HipTexture(texturePath));}
 
     this(IHipTexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
     {
@@ -230,7 +222,6 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         vertices[6] = u1;
         vertices[7] = v2;
     }
-    public static const float[8] defaultVertices = [0,0, 1,0, 1,1, 0,1];
 
     HipTextureRegion clone()
     {

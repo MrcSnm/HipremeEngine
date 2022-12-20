@@ -58,3 +58,9 @@ interface IHipDeferrableText
 {
     void setFont(IHipAssetLoadTask task);
 }
+
+interface IHipDeserializable
+{
+    IHipDeserializable deserialize(string data);
+    IHipDeserializable deserialize(void* data);
+}

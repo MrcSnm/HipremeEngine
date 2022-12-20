@@ -75,7 +75,7 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
     void updateData(int offset, ulong size, const void* data)
     {
         
-        ErrorHandler.assertExit(size+offset <= this.size,
+        ErrorHandler.assertLazyExit(size+offset <= this.size,
         "Tried to set data with size "~to!string(size)~" and offset "~to!string(offset)~
         "for vertex buffer with size "~to!string(this.size));
         D3D11_MAPPED_SUBRESOURCE resource;
@@ -142,7 +142,7 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
     }
     void updateData(int offset, index_t count, const index_t* data)
     {
-        ErrorHandler.assertExit(count*index_t.sizeof+offset <= this.size, 
+        ErrorHandler.assertLazyExit(count*index_t.sizeof+offset <= this.size, 
         "Tried to set data with size "~to!string(count*index_t.sizeof)~" and offset "~to!string(offset)~
         "for vertex buffer with size "~to!string(this.size));
         D3D11_MAPPED_SUBRESOURCE resource;

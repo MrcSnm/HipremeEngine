@@ -14,6 +14,8 @@ public import hip.hiprenderer.shader;
 public import hip.hiprenderer.vertex;
 public import hip.hiprenderer.framebuffer;
 public import hip.hiprenderer.viewport;
+public import hip.api.renderer.texture;
+public import hip.api.graphics.color;
 import hip.windowing.window;
 import hip.math.rect;
 import hip.error.handler;
@@ -103,6 +105,7 @@ interface IHipRendererImpl
     public bool init(HipWindow window);
     version(dll){public bool initExternal();}
     public bool isRowMajor();
+    void setErrorCheckingEnabled(bool enable = true);
     public HipWindow createWindow(uint width, uint height);
     public Shader createShader();
     public IHipFrameBuffer createFrameBuffer(int width, int height);
@@ -460,6 +463,11 @@ class HipRenderer
     {
         rendererImpl.begin();
         HipRenderer.exitOnError();
+    }
+    
+    public static void setErrorCheckingEnabled(bool enable = true)
+    {
+        rendererImpl.setErrorCheckingEnabled(enable);
     }
 
     public static void setRendererMode(HipRendererMode mode)

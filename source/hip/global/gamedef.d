@@ -30,10 +30,10 @@ struct HipDefaultAssets
 
 
 public:
-    enum ENGINE_NAME = "Hipreme Engine";
-    enum int SCREEN_WIDTH = 800;
-    enum int SCREEN_HEIGHT = 600;
-    ///Globally shared for accessing it on Android Game Thread
+   enum ENGINE_NAME = "Hipreme Engine";
+   enum int SCREEN_WIDTH = 800;
+   enum int SCREEN_HEIGHT = 600;
+   ///Globally shared for accessing it on Android Game Thread
    __gshared GameSystem sys;
    __gshared HipInputMap map;
 
@@ -75,7 +75,12 @@ export extern(System)
    }
    const(IHipTexture) getDefaultTexture()
    {
-      import hip.graphics.g2d.sprite;
-      return HipSprite.getDefaultTexture();
+      static IHipTexture texture;
+      if(texture is null)
+      {
+         import hip.assets.texture;
+         texture = new HipTexture(HipDefaultAssets.texture);
+      }
+      return cast(const)texture;
    }
 }

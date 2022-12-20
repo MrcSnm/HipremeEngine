@@ -217,7 +217,6 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
  */
 static void destroyEngine()
 {
-    //HipAssetManager.disposeResources();
 	sys.quit();
 	HipRenderer.dispose();
 	HipAudio.onDestroy();

@@ -178,7 +178,7 @@ class HipEventQueue : EventQueue
     static void post(T)(uint id, EventType type, T ev)
     {
         import hip.util.format;
-        ErrorHandler.assertExit(id < controllers.length, format!("Input controller out of range!(ID: %s, Type: %s)")(id, type));
+        ErrorHandler.assertLazyExit(id < controllers.length, format!("Input controller out of range!(ID: %s, Type: %s)")(id, type));
         controllers[id].post(cast(ubyte)type, ev);
     }
 
@@ -191,7 +191,7 @@ class HipEventQueue : EventQueue
                 newController();
         }
         import hip.util.format;
-        ErrorHandler.assertExit(id < controllers.length, format!("Input controller out of range!(ID: %s, Type: %s)")(id, type));
+        ErrorHandler.assertLazyExit(id < controllers.length, format!("Input controller out of range!(ID: %s, Type: %s)")(id, type));
         controllers[id].post(cast(ubyte)type, ev);
     }
 
@@ -199,13 +199,13 @@ class HipEventQueue : EventQueue
     static InputEvent* poll(uint id)
     {
         import hip.util.format;
-        ErrorHandler.assertExit(id < controllers.length, format!("Input controller out of range!(ID: %s)")(id));
+        ErrorHandler.assertLazyExit(id < controllers.length, format!("Input controller out of range!(ID: %s)")(id));
         return controllers[id].poll();
     }
     static void clear(uint id)
     {
         import hip.util.format;
-        ErrorHandler.assertExit(id < controllers.length, format!("Input controller out of range!(ID: %s)")(id));
+        ErrorHandler.assertLazyExit(id < controllers.length, format!("Input controller out of range!(ID: %s)")(id));
         controllers[id].clear();
     }
     alias poll = EventQueue.poll;

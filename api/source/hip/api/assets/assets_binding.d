@@ -21,19 +21,45 @@ version(Script) extern(System)
     bool function() isLoading;
     ///Stops the code from running and awaits asset manager to finish loading
     void function() awaitLoad;
+
+
+    
+    /** 
+    * Used for manually creating texture regions. This is used by the game code abstraction.
+    */
+    IHipTextureRegion function(IHipTexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1) createTextureRegion;
+    
+    /** 
+     * Used for creating procedurally generated Tilemap:
+     ```d
+     IHipTilemap map = HipAssetManager.createTilemap(200, 200, 1, 1);
+     map.addTileset(HipAssetManager.tilesetFromSpritesheet(mySpritesheet));
+     HipTileLayer layer = map.addNewLayer("MyLayer", 200, 200);
+     //Define your tiles by accessing layer.tiles = []
+     ```
+     */
+    IHipTilemap function(uint width, uint height, uint tileWidth, uint tileHeight, bool isInfinite = false) createTilemap;
+
+    
+    /**
+    *   Reserved for deferred loading.
+    *   Use it on your own risk.
+    */
+    void function (void delegate(IHipAsset) onComplete, IHipAssetLoadTask task) addOnCompleteHandler;
+
     ///Returns a load task for texture
-    IHipAssetLoadTask function(string path) loadTexture;
+    IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadTexture;
     ///Returns a load task for image
-    IHipAssetLoadTask function(string path) loadImage;
+    IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadImage;
     ///Returns a load task for tilemap
-    IHipAssetLoadTask function(string path) loadTilemap;
+    IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadTilemap;
 
     /**
     *   This function is used in conjunction usually with `createTilemap`.
     *   `loadTileset` is a way of loading an externally defined tileset for your procedural map.
     *   Use `loadTilemap` when you have a complete map which you wish to load.
     */
-    IHipAssetLoadTask function(string path) loadTileset;
+    IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadTileset;
 
 
     /**
@@ -50,7 +76,7 @@ version(Script) extern(System)
     ```
     * Returns: IHipCSV
     */
-    IHipAssetLoadTask function(string path) loadCSV;
+    IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadCSV;
     /**
     *   Usage:
     ```d
@@ -61,7 +87,7 @@ version(Script) extern(System)
     ```
     * Returns: IHipINI
     */
-    IHipAssetLoadTask function(string path) loadINI;
+    IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadINI;
     /**
     *   Usage:
     ```d
@@ -72,28 +98,9 @@ version(Script) extern(System)
     ```
     * Returns: IHipJSONC
     */
-    IHipAssetLoadTask function(string path) loadJSONC;
+    IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadJSONC;
 
-    version(Have_util)
-    {
-        public import hip.util.data_structures:Array2D, Array2D_GC;
-        IHipTileset function(Array2D_GC!IHipTextureRegion spritesheet) tilesetFromSpritesheet;
-    }   
-    IHipTileset function(IHipTextureAtlas atlas) tilesetFromAtlas;
-
-    /** 
-     * Used for creating procedurally generated Tilemap:
-     ```d
-     IHipTilemap map = HipAssetManager.createTilemap(200, 200, 1, 1);
-     map.addTileset(HipAssetManager.tilesetFromSpritesheet(mySpritesheet));
-     HipTileLayer layer = map.addNewLayer("MyLayer", 200, 200);
-     //Define your tiles by accessing layer.tiles = []
-     ```
-     */
-    IHipTilemap function(uint width, uint height, uint tileWidth, uint tileHeight, bool isInfinite = false) createTilemap;
-    //TODO: IHipAssetLoadTask function(string path) loadHapFile;
-
-
+    
     /** 
     *   Returns a load task for a texture atlas
     *   If ":IGNORE" is provided for texturePath, the following behavior will occur:
@@ -102,7 +109,16 @@ version(Script) extern(System)
     *   - .txt(or any): Load a file with same name but extension .png
     *   - .xml: Ignore internal texture path to try file with same name but .png extension
     */
-    IHipAssetLoadTask function(string atlasPath, string texturePath = ":IGNORE") loadTextureAtlas;
+    IHipAssetLoadTask function(string atlasPath, string texturePath = ":IGNORE", string f = __FILE__, size_t l = __LINE__) loadTextureAtlas;
     // /Returns a load task for font, when used, 
-    IHipAssetLoadTask function(string path, int fontSize = 48) loadFont;
+    IHipAssetLoadTask function(string path, int fontSize = 48, string f = __FILE__, size_t l = __LINE__) loadFont;
+
+    version(Have_util)
+    {
+        public import hip.util.data_structures:Array2D, Array2D_GC;
+        IHipTileset function(Array2D_GC!IHipTextureRegion spritesheet) tilesetFromSpritesheet;
+    }   
+    IHipTileset function(IHipTextureAtlas atlas) tilesetFromAtlas;
+
+    //TODO: IHipAssetLoadTask function(string path) loadHapFile;
 }

@@ -17,3 +17,11 @@ mixin HipExportDFunctions!(hip.filesystem.hipfs);
 mixin HipExportDFunctions!(hip.hipaudio.audio);
 mixin HipExportDFunctions!(hip.assetmanager);
 mixin HipExportDFunctions!(hip.systems.timer_manager);
+
+
+///ExportD doesn't work on function/delegate
+alias AssetDelegate = void delegate(IHipAsset);
+export extern(System) static void HipAssetManager_addOnCompleteHandler(AssetDelegate onComplete, IHipAssetLoadTask task)
+{
+    HipAssetManager.addOnCompleteHandler(onComplete, task);
+}
