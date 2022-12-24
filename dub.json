@@ -72,9 +72,6 @@
 			"dflags-ldc": [
 				"--disable-verify"
 			],
-			"lflags": [
-				"/TIME"	
-			],
 			"buildOptions": [
 				"debugMode",
 				"debugInfo",
