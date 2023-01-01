@@ -8,7 +8,7 @@ public import hip.api.data.font;
 class HipFontAsset : HipAsset, IHipFont
 {
     import hip.util.reflection;
-    mixin(ForwardInterface!("font", IHipFont));
+    mixin ForwardInterface!("font", IHipFont);
 
     IHipFont font;
     this(IHipFont font)

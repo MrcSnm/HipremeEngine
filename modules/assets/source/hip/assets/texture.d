@@ -27,7 +27,7 @@ import hip.util.reflection;
 
 class HipTexture : HipAsset, IHipTexture
 {
-    mixin(ForwardInterface!("textureImpl", IHipTexture));
+    mixin ForwardInterface!("textureImpl", IHipTexture);
     
     IImage img;
     int width,height;
