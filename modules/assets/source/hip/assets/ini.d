@@ -34,5 +34,5 @@ class HipINI : HipAsset, IHipIniFile
     override void onFinishLoading(){}
     override void onDispose(){}
     bool isReady(){return f !is null;}
-    mixin(ForwardInterface!("f", IHipIniFile));
+    mixin ForwardInterface!("f", IHipIniFile);
 }
