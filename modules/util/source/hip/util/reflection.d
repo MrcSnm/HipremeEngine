@@ -356,7 +356,7 @@ mixin template ExportDFunctionsImpl(string className, Class)
 */
 mixin template ExportDFunctions(alias mod)
 {
-	import std.traits:getSymbolsByUDA;
+	import std.traits:getSymbolsByUDA, ParameterIdentifierTuple;
     pragma(msg, "Exporting ", mod.stringof);
 	static foreach(mem; __traits(allMembers, mod))
 	{
@@ -485,7 +485,7 @@ enum ForwardFunc(alias func, string funcName, string member)()
 *
 *   [Dev: Futurely, it should be changed to use `alias member` instead of getting its string.]
 */
-enum ForwardInterface2(string member, I)() if(is(I == interface))
+enum ForwardInterface(string member, I)() if(is(I == interface))
 {
     import hip.util.string:replaceAll;
 
@@ -507,10 +507,9 @@ enum ForwardInterface2(string member, I)() if(is(I == interface))
     }.replaceAll("$I", I.stringof).replaceAll("$member", member);
 }
 
-mixin template ForwardInterface(string member, I) if(is(I == interface))
+mixin template ForwardInterface2(string member, I) if(is(I == interface))
 {
-    import std.traits:ReturnType;
-    import hip.util.reflection:isMethodImplemented, ForwardFunc, getParams;
+    import hip.util.reflection:isMethodImplemented, ForwardFunc;
 
     static assert(is(typeof(mixin(member)) : I),
         "For forwarding the interface, the member "~member~" should be or implement "~I.stringof

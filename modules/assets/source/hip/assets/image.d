@@ -37,7 +37,7 @@ public class Image : HipAsset, IImage
     }
     static alias getPixelImage = HipImageImpl.getPixelImage;
 
-    mixin ForwardInterface!("impl", IImage);
+    mixin(ForwardInterface!("impl", IImage));
 
     void loadRaw(in ubyte[] pixels, int width, int height, ubyte bytesPerPixel)
     {

@@ -118,68 +118,68 @@ void renderTexts()
 {
     textBatch.flush();
 }
-void setGeometryColor(HipColor color){geoBatch.setColor(color);}
-void drawPixel(int x, int y)
+void setGeometryColor(in HipColor color){geoBatch.setColor(color);}
+void drawPixel(int x, int y, in HipColor color = HipColor.invalid)
 {
     if(lastBatch !is null && lastBatch !is geoBatch)
         lastBatch.flush();
-    geoBatch.drawPixel(x, y);
+    geoBatch.drawPixel(x, y,color);
     lastBatch = geoBatch;
 }
-void drawRectangle(int x, int y, int w, int h)
+void drawRectangle(int x, int y, int w, int h, in HipColor color = HipColor.invalid)
 {
     if(lastBatch !is null && lastBatch !is geoBatch)
         lastBatch.flush();
-    geoBatch.drawRectangle(x,y,w,h);
+    geoBatch.drawRectangle(x,y,w,h,color);
     lastBatch = geoBatch;
 }
-void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
+void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, in HipColor color = HipColor.invalid)
 {
     if(lastBatch !is null && lastBatch !is geoBatch)
         lastBatch.flush();
-    geoBatch.drawTriangle(x1,y1,x2,y2,x3,y3);
+    geoBatch.drawTriangle(x1,y1,x2,y2,x3,y3,color);
     lastBatch = geoBatch;
 }
-void fillRectangle(int x, int y, int w, int h)
+void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24, in HipColor color = HipColor.invalid)
 {
     if(lastBatch !is null && lastBatch !is geoBatch)
         lastBatch.flush();
-    geoBatch.fillRectangle(x,y,w,h);
+    geoBatch.drawEllipse(x,y,radiusW,radiusH,degrees,precision,color);
     lastBatch = geoBatch;
 }
-void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, int precision = 24)
+void drawLine(int x1, int y1, int x2, int y2, in HipColor color = HipColor.invalid)
 {
     if(lastBatch !is null && lastBatch !is geoBatch)
         lastBatch.flush();
-    geoBatch.fillEllipse(x,y,radiusW,radiusH,degrees,precision);
+    geoBatch.drawLine(x1,y1,x2,y2,color);
     lastBatch = geoBatch;
 }
-void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24)
+void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, in HipColor color = HipColor.invalid)
 {
     if(lastBatch !is null && lastBatch !is geoBatch)
         lastBatch.flush();
-    geoBatch.drawEllipse(x,y,radiusW,radiusH,degrees,precision);
+    geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision,color);
     lastBatch = geoBatch;
 }
-void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3)
+void fillRectangle(int x, int y, int w, int h, in HipColor color = HipColor.invalid)
 {
     if(lastBatch !is null && lastBatch !is geoBatch)
         lastBatch.flush();
-    geoBatch.fillTriangle(x1,y1,x2,y2,x3,y3);
+    geoBatch.fillRectangle(x,y,w,h,color);
     lastBatch = geoBatch;
 }
-void drawLine(int x1, int y1, int x2, int y2)
+void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, int precision = 24, in HipColor color = HipColor.invalid)
 {
     if(lastBatch !is null && lastBatch !is geoBatch)
         lastBatch.flush();
-    geoBatch.drawLine(x1,y1,x2,y2);
+    geoBatch.fillEllipse(x,y,radiusW,radiusH,degrees,precision,color);
     lastBatch = geoBatch;
 }
-void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24)
+void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3, in HipColor color = HipColor.invalid)
 {
     if(lastBatch !is null && lastBatch !is geoBatch)
         lastBatch.flush();
-    geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision);
+    geoBatch.fillTriangle(x1,y1,x2,y2,x3,y3,color);
     lastBatch = geoBatch;
 }
 
@@ -253,7 +253,7 @@ void setFontDeferred(IHipAssetLoadTask task)
         textBatch.setFont(task);
 }
 
-void drawText(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.LEFT, HipTextAlign alignV = HipTextAlign.CENTER, 
+void drawText(string text, int x, int y, in HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.LEFT, HipTextAlign alignV = HipTextAlign.CENTER, 
 int boundsWidth = -1, int boundsHeight = -1)
 {
     if(lastBatch !is null && lastBatch !is textBatch)

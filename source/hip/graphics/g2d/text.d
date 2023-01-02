@@ -222,7 +222,7 @@ package struct HipTextStopConfig
             }
             default: break;
         }
-        return HipTextStopConfig(cast(int)indexToParse, HipColor.white);
+        return HipTextStopConfig(cast(int)indexToParse, cast()HipColor.white);
     }
 
 
