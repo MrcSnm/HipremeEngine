@@ -7,7 +7,7 @@
 			"name": "default",
 			"libs-linux" : [
 				"X11",
-				"GL"
+				"gl"
 			]
 		},
 		{
