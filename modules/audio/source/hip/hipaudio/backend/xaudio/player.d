@@ -13,9 +13,6 @@ import core.sys.windows.objbase;
 import directx.xaudio2;
 
 
-// pragma(lib, "xaudio2");
-pragma(lib, "xaudio2_8");
-
 class HipXAudioPlayer : IHipAudioPlayer
 {
     IXAudio2 xAudio;
