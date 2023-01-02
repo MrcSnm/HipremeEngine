@@ -118,6 +118,8 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
     IHipTexture texture;
     public float u1, v1, u2, v2;
     protected float[8] vertices;
+    protected float[8] verticesTransformed;
+    private bool flippedX, flippedY;
     int regionWidth, regionHeight;
 
     bool hasSuccessfullyLoaded(){return texture && texture.hasSuccessfullyLoaded;}
@@ -221,14 +223,52 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         //Bot left
         vertices[6] = u1;
         vertices[7] = v2;
+
+        if(flippedX)
+        {
+            flippedX = false;
+            setFlippedX(true);
+        }
+        if(flippedY)
+        {
+            flippedY = false;
+            setFlippedY(true);
+        }
     }
 
     HipTextureRegion clone()
     {
         return new HipTextureRegion(texture, u1, v1, u2, v2);
     }
+    void setFlippedX(bool flip)
+    {
+        if(flip != flippedX)
+        {
+            flippedX = flip;
+            vertices[0] = flip ? u2 : u1;
+            vertices[2] = flip ? u1 : u2;
+            vertices[4] = flip ? u1 : u2;
+            vertices[6] = flip ? u2 : u1;
+        }
+    }
+    void setFlippedY(bool flip)
+    {
+        if(flip != flippedY)
+        {
+            flippedY = flip;
+            vertices[1] = flip ? v2 : v1;
+            vertices[3] = flip ? v2 : v1;
+            vertices[5] = flip ? v1 : v2;
+            vertices[7] = flip ? v1 : v2;
+        }
+    }
+    bool isFlippedX(){return flippedX;}
+    bool isFlippedY(){return flippedY;}
 
-    ref float[8] getVertices(){return vertices;}
+    ref float[8] getVertices()
+    {
+        return vertices;
+    }
     override void onFinishLoading(){}
     override void onDispose(){}
     bool isReady(){return texture !is null;}

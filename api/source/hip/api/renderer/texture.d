@@ -82,6 +82,11 @@ interface IHipTextureRegion
     TextureCoordinatesQuad getRegion() const;
     ref float[8] getVertices();
 
+    void setFlippedX(bool flip);
+    void setFlippedY(bool flip);
+    bool isFlippedX();
+    bool isFlippedY();
+
     /**
     *   The uint variant from the setRegion receives arguments in a non normalized way to setup
     *   the UV coordinates.

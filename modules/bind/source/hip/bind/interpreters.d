@@ -1,4 +1,5 @@
 module hip.bind.interpreters;
+import std.traits:Unqual;
 
 private enum valid = true;
 private enum invalid = false;
@@ -8,7 +9,6 @@ private enum isSigned(T) = is(T == byte) || is(T == short) || is(T == int) || (i
 private enum isInteger(T) = isUnsigned!T || isSigned!T;
 private enum isFloating(T) = is(T == float) || is(T == double);
 private enum isNumber(T) = isInteger!T || isFloating!T;
-
 private enum isStructPointer(T) = is(typeof(*T.init) == struct);
 
 struct InterpreterResult(T)
@@ -91,7 +91,9 @@ T luaGetFromIndex(T)(lua_State* L, int ind)
         import core.stdc.string;
         assert(lua_isuserdata(L, ind), "Tried to get a "~T.stringof~" from a not userdata");
         void* data = lua_touserdata(L, ind);
+        //Remove constness as it is copying
         T ret;
+        import core.internal.traits;
         memcpy(&ret, data, T.sizeof);
         return ret;
     }
@@ -145,8 +147,9 @@ InterpreterResult!T luaCallFunc(T, Args...)(lua_State* L, string funcName, Args 
 extern(C) int externLua(alias Func)(lua_State* L) nothrow
 {
     import std.traits:Parameters, ReturnType;
+    import std.meta:staticMap;
     
-    Parameters!Func params;
+    staticMap!(Unqual,Parameters!Func) params;
     int stackCounter = 0;
     
     foreach_reverse(ref param; params)

@@ -42,7 +42,26 @@ void match(alias reference, matches...)()
         matches[$-1]();
 }
 
-
+/**
+*   Used when wanting to represent any struct compatible with a static array.
+*/
+enum isTypeArrayOf(Type, Array, int Count)()
+{
+    static if(is(Array == Type[Count]))
+        return true;
+    else static if(is(Array T : T*))
+        return false;
+    else
+    {
+        int count = 0;
+  		static foreach(v; Array.tupleof)
+    		static if(is(typeof(v) == Type))
+      			count++;
+            else static if(__traits(isStaticArray, typeof(v)) && is(typeof(v.init[0]) == Type))
+            	count+= v.length;
+  		return count == Count;
+    }
+}
 
 bool isLiteral(alias variable)(string var = variable.stringof)
 {
@@ -211,8 +230,8 @@ struct ExportD{string suffix;}
 template generateExportName(string className, alias funcSymbol)
 {
 	//Means that it has a suffix
-	static if(is(typeof(getUDAs!funcSymbol[0]) == ExportD))
-		enum generateExportName = className~"_"~__traits(identifier, funcSymbol)~"_"~getUDAs!funcSymbol[0].suffix;
+	static if(is(typeof(__traits(getAttributes, funcSymbol)[0]) == ExportD))
+		enum generateExportName = className~"_"~__traits(identifier, funcSymbol)~"_"~__traits(getAttributes, funcSymbol)[0].suffix;
 	else
 		enum generateExportName = className~"_"~__traits(identifier, funcSymbol);
 }
@@ -222,24 +241,19 @@ template generateExportName(string className, alias funcSymbol)
 *   If isRef, it will call with hipSaveRef for not being colled
 *   funcCallCode can be anything as `className.functionName` or even `new Class`
 */
-private enum getExportedFuncImpl(ReturnType)(string[] ParamsIdentTuple, bool isRef, string funcCallCode)
+private enum getExportedFuncImpl(bool isRef, string funcCallCode)
 {
-    import hip.util.string:join;
     string ret;
     if(isRef)
     {
-        ret~= q{
+        ret = q{
             import hip.util.lifetime;
             return cast(typeof(return))hipSaveRef(cast(Object)
-        };
-
-        ret~= funcCallCode~"("~ParamsIdentTuple.join(",")~"));}";
+        } ~ funcCallCode~"(__traits(parameters)));}";
     }
     else
     {
-        static if(!is(ReturnType == void))
-            ret~= "return ";
-        ret~= funcCallCode~"("~ ParamsIdentTuple.join(",")~");}";
+        ret = "return "~funcCallCode~"(__traits(parameters));}";
     }
     return ret;
 }
@@ -247,16 +261,14 @@ private enum getExportedFuncImpl(ReturnType)(string[] ParamsIdentTuple, bool isR
 
 ///ClassT, Ctor, string className
 ///This class MUST have an interface, because it will bug out when calling the function with `need opCmp for class`
-template generateExportConstructor(ClassT, alias Ctor, string className)
+template generateExportConstructor(ClassT, string className)
 {
     enum impl = ()
     {
-        import std.traits : ParameterIdentifierTuple;
         return "export extern(System) I" ~ className ~ " new" ~ className ~ //export extern(System) Class newClass
-        getParams!(Ctor).stringof ~ "{"~ //(A a, B b...)
-        getExportedFuncImpl!(ClassT)
+        "(getParams!(__traits(getMember, Class, \"__ctor\"))){"~ //(A a, B b...)
+        getExportedFuncImpl
         (
-            [ParameterIdentifierTuple!Ctor],
             true, //IsReference
             "new "~className
         );
@@ -272,20 +284,18 @@ template generateExportConstructor(ClassT, alias Ctor, string className)
 */
 template generateExportFunc(string className, alias funcSymbol)
 {
-    import std.traits:ReturnType, ParameterIdentifierTuple;
+    import std.traits:ReturnType;
     enum impl = ()
     {
         alias RetType = ReturnType!funcSymbol;
-        string ret = "export extern(System) "~RetType.stringof~" "~generateExportName!(className, funcSymbol);
-        ret~= getParams!(funcSymbol).stringof~"{";
-        enum isRef = isReference!(RetType);
+        string ret = "export extern(System) ReturnType!(sym)"~" "~generateExportName!(className, funcSymbol);
+        ret~= "(getParams!(sym)){";
 
-        ret~= getExportedFuncImpl!(RetType)
-            (
-                [ParameterIdentifierTuple!funcSymbol], 
-                isRef, 
-                className~"."~__traits(identifier, funcSymbol)
-            );
+        ret~= getExportedFuncImpl
+        (
+            isReference!(RetType),
+            className~"."~__traits(identifier, funcSymbol)
+        );
 
         return ret;
     }();
@@ -316,7 +326,7 @@ mixin template ExportDFunctionsImpl(string className, Class)
             "Can't export class with more than one constructor ("~className~")"
         );
         mixin(
-            generateExportConstructor!(Class, __traits(getMember, Class, "__ctor"), className)
+            generateExportConstructor!(Class, className)
         );
         pragma(msg, "Exported Class "~className);
     }
@@ -338,6 +348,7 @@ mixin template ExportDFunctionsImpl(string className, Class)
     }
 }
 
+
 /**
 *   Iterates through a module and generates `export` function declaration for each
 *   @ExportD function found on it.
@@ -350,9 +361,9 @@ mixin template ExportDFunctions(alias mod)
 	static foreach(mem; __traits(allMembers, mod))
 	{
         //Currently only supported on classes and structs
-		static if( (is(mixin(mem) == class) || is(mixin(mem) == struct) ))
+		static if( (is(__traits(getMember, mod, member) == class) || is(__traits(getMember, mod, member) == struct) ))
 		{
-            mixin ExportDFunctionsImpl!(mem, mixin(mem));
+            mixin ExportDFunctionsImpl!(mem, __traits(getMember, mod, member));
 		}
 	}
 }
@@ -374,7 +385,7 @@ mixin template HipExportDFunctionsImpl(string className, Class)
             "Can't export class with more than one constructor ("~className~")"
         );
         mixin(
-            generateExportConstructor!(Class, __traits(getMember, Class, "__ctor"), className)
+            generateExportConstructor!(Class, className)
         );
         pragma(msg, "Exported Class "~className);
     }
@@ -408,35 +419,29 @@ mixin template HipExportDFunctionsImpl(string className, Class)
 */
 mixin template HipExportDFunctions(alias mod)
 {
-	import std.traits:getSymbolsByUDA, ParameterIdentifierTuple;
+	import std.traits:getSymbolsByUDA;
     pragma(msg, "Exporting ", mod.stringof);
 	static foreach(mem; __traits(allMembers, mod))
 	{
         //Currently only supported on classes and structs
-		static if( (is(mixin(mem) == class) || is(mixin(mem) == struct) ))
+		static if( (is(__traits(getMember, mod, mem) == class) || is(__traits(getMember, mod, mem) == struct) ))
 		{
-            mixin HipExportDFunctionsImpl!(mem, mixin(mem));
+            mixin HipExportDFunctionsImpl!(mem, __traits(getMember, mod, mem));
 		}
 	}
 }
 
 
-
-enum GetFunctionDeclareStatement(alias func, string funcName)()
+string attributes(alias member)() 
 {
-    import std.traits:ReturnType;
-    import hip.util.string:join;
-    return [__traits(getFunctionAttributes, func)].join(" ") ~ " " ~ (ReturnType!func).stringof ~ " " ~ funcName ~ (getParams!func).stringof;
+	string ret;
+	foreach(attr; __traits(getFunctionAttributes, member))
+		ret~= attr ~ " ";
+	return ret;
 }
 
-enum ForwardFunc(alias func, string funcName, string member)()
-{
-    import hip.util.string;
-    import std.traits:ParameterIdentifierTuple, ReturnType;
 
-    return GetFunctionDeclareStatement!(func, funcName) ~
-         "{" ~ (!is(ReturnType!func == void) ? "return ": "") ~ member ~ "." ~funcName ~ "(" ~ [ParameterIdentifierTuple!func].join(",") ~");}";
-}
+
 
 template hasOverload(T,string member, OverloadType)
 {
@@ -462,6 +467,16 @@ enum isMethodImplemented(T, string member, FuncType)()
     return ret;
 }
 
+
+/** 
+ * Private to forward interface
+ */
+enum ForwardFunc(alias func, string funcName, string member)()
+{
+    return attributes!func~ " ReturnType!(ov) " ~ funcName ~ "(getParams!(ov))"~
+         "{ return " ~ member ~ "." ~funcName ~ "(__traits(parameters));}";
+}
+
 /**
 *   This function receives a string containing the member name which implements the interface I.   
 *   
@@ -475,7 +490,8 @@ enum ForwardInterface(string member, I)() if(is(I == interface))
     import hip.util.string:replaceAll;
 
     return q{
-        import hip.util.reflection:isMethodImplemented, ForwardFunc;
+        import std.traits:ReturnType;
+        import hip.util.reflection:isMethodImplemented, ForwardFunc, getParams;
 
         static assert(is(typeof($member) : $I),
             "For forwarding the interface, the member $member should be or implement $I"
@@ -486,7 +502,7 @@ enum ForwardInterface(string member, I)() if(is(I == interface))
         {
             //Check for overloads here
             static if(!isMethodImplemented!(typeof(this), m, typeof(ov)))
-                mixin(ForwardFunc!(ov, m, $member.stringof));
+                mixin(ForwardFunc!(ov, m, "$member"));
         }
     }.replaceAll("$I", I.stringof).replaceAll("$member", member);
 }

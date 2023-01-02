@@ -45,7 +45,7 @@ version(Script) extern(System)
     *   Reserved for deferred loading.
     *   Use it on your own risk.
     */
-    void function (void delegate(IHipAsset) onComplete, IHipAssetLoadTask task) addOnCompleteHandler;
+    void function (IHipAssetLoadTask task, void delegate(IHipAsset) onComplete) addOnCompleteHandler;
 
     ///Returns a load task for texture
     IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadTexture;

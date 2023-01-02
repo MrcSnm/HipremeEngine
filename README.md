@@ -70,7 +70,7 @@ The engine mantains some global options which you can modify it on source/global
 - Images: PNG, JPG, BMP, TIFF and maybe others via arsd-official:image_files
 - Audio: MP3, OGG, WAV, FLAC via audioformats
 - Tiled: TSX and JSON parser
-- TextureAtlas: JSON and ATLAS parser
+- TextureAtlas: JSON, ATLAS, XML and TXT(Spritesheet) parser
 - Font: FNT parser, TTF and OTF decoding
 - Pack: HapFile(Hipreme Asset Packing File)
 - Settings: INI/CONF parser

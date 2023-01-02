@@ -8,6 +8,12 @@ enum PI = 3.14159;
 enum PI_2 = PI/2;
 enum PI_4 = PI/4;
 
+enum RAD_TO_DEG = 180/PI;
+enum DEG_TO_RAD = PI/180;
+
+enum radToDeg(float radians){return radians*RAD_TO_DEG;}
+enum degToRad(float degrees){return DEG_TO_RAD * degrees;}
+
 int getClosestMultiple(int from, int to)
 {
     float temp = to/cast(float)from;

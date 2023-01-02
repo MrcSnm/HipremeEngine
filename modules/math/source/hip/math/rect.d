@@ -9,29 +9,56 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.math.rect;
+public import hip.math.vector;
 
 struct Size
 {
-    uint w, h;
+    pure nothrow @nogc @safe:
+    uint width, height;
+    alias w = width, h = height;
 
-    alias width = w;
-    alias height = h;
+    Vector2 opCast() const { return Vector2(w, h);}
 }
-
 struct Rect
 {
-    float x, y, w, h;
-    alias width = w;
-    alias height = h;
+    pure nothrow @nogc @safe:
+    float x, y, width, height;
+    alias w = width, h = height;
+
+    Vector2 position() const {return Vector2(x,y);}
+    Size size() const {return Size(cast(uint)w,cast(uint)h);}
+
+
+    void move(in float[2] vec){this.x+= vec[0];this.y+= vec[1];}
+    void move(in Vector2 vec){this.x+= vec[0];this.y+= vec[1];}
+
+    this(float x, float y, float w, float h){this.x=x;this.y=y;this.w=w;this.h=h;}
+    this(float[2] position, float w, float h){this(position[0], position[1], w, h);}
+    this(float[2] position, float[2] size){this(position[0], position[1], size[0], size[1]);}
+    this(float[2] position, Size size){this(position[0], position[1], size.w, size.h);}
+    this(float[4] rec){this(rec[0], rec[1], rec[2], rec[3]);}
+
+    this(int x, int y, int w, int h){this.x=x;this.y=y;this.w=w;this.h=h;}
+    this(int[2] position, int, int w, int h){this(position[0], position[1], w, h);}
+    this(int[2] position, int[2] size){this(position[0], position[1], size[0], size[1]);}
+    this(int[2] position, Size size){this(position[0], position[1], size.w, size.h);}
+    this(int[4] rec){this(rec[0], rec[1], rec[2], rec[3]);}
+
+    this(float[2] position, int w, int h){this(position[0], position[1], w, h);}
+    this(float[2] position, int[2] size){this(position[0], position[1], size[0], size[1]);}
+
+    this(int[2] position, float w, float h){this(position[0], position[1], w, h);}
+    this(int[2] position, float[2] size){this(position[0], position[1], size[0], size[1]);}
 }
 
-
-pure nothrow @nogc @safe
-bool overlaps(Rect r1, Rect r2)
+struct DynamicRect
 {
-    const float r1x2 = r1.x+r1.w;
-    const float r2x2 = r2.x+r2.w;
-    const float r1y2 = r1.y+r1.h;
-    const float r2y2 = r2.y+r2.h;
-    return !(r1x2 < r2.x || r1.x > r2x2 || r1y2 < r2.y || r1.y > r2y2);
+    pure nothrow @nogc @safe:
+    Rect rect;
+    Vector2 velocity;
+    Vector2 position() const {return Vector2(rect.x,rect.y);}
+    Size size() const {return Size(cast(uint)rect.w,cast(uint)rect.h);}
+    void move(in float[2] vec){rect.x+= vec[0];rect.y+= vec[1];}
+    void move(in Vector2 vec){rect.x+= vec[0];rect.y+= vec[1];}
+
 }
