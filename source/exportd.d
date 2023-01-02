@@ -8,7 +8,7 @@ import hip.assetmanager;
 import hip.systems.timer_manager;
 import hip.filesystem.hipfs;
 
-
+import std.traits:ReturnType;
 
 mixin ExportMathAPI;
 mixin HipExportDFunctions!(hip.graphics.g2d.animation);
@@ -21,7 +21,7 @@ mixin HipExportDFunctions!(hip.systems.timer_manager);
 
 ///ExportD doesn't work on function/delegate
 alias AssetDelegate = void delegate(IHipAsset);
-export extern(System) static void HipAssetManager_addOnCompleteHandler(AssetDelegate onComplete, IHipAssetLoadTask task)
+export extern(System) static void HipAssetManager_addOnCompleteHandler(IHipAssetLoadTask task, AssetDelegate onComplete)
 {
-    HipAssetManager.addOnCompleteHandler(onComplete, task);
+    HipAssetManager.addOnCompleteHandler(task, onComplete);
 }

@@ -139,6 +139,19 @@ final class HipTileLayer
         height = rows;
     }
     this(){}
+
+    final ushort getTileXY(uint x, uint y)
+    {
+       return tiles[y*width+x];
+    }
+
+    final ushort checkedGetTileXY(int x, int y)
+    {
+        int target = y*width+x;
+        if(target < 0 || target >= tiles.length)
+            return 0;
+        return tiles[target];
+    }
     
 }
 

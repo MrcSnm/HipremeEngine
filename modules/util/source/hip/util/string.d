@@ -639,7 +639,7 @@ string getNumericEnding(string s)
             return s[i+1..$];
         i--;
     }
-    return "";
+    return s;
 }
 
 

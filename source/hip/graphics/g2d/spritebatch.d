@@ -256,7 +256,7 @@ class HipSpriteBatch : IHipBatch
             addQuads(vertices, slot);
     }
 
-    void draw(IHipTexture texture, int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    void draw(IHipTexture texture, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         import hip.global.gamedef;
         if(quadsCount+1 > maxQuads)
@@ -275,7 +275,7 @@ class HipSpriteBatch : IHipBatch
     }
 
 
-    void draw(IHipTextureRegion reg, int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    void draw(IHipTextureRegion reg, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         if(quadsCount+1 > maxQuads)
             flush();
@@ -381,7 +381,7 @@ class HipSpriteBatch : IHipBatch
 
 
     static void getTextureVertices(float[] output, int slot, IHipTexture texture,
-    int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         int width = texture.getWidth();
         int height = texture.getHeight();
@@ -398,7 +398,7 @@ class HipSpriteBatch : IHipBatch
     }
 
     static void getTextureRegionVertices(float[] output, int slot, IHipTextureRegion reg,
-    int x, int y, int z = 0, HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         int width = reg.getWidth();
         int height = reg.getHeight();

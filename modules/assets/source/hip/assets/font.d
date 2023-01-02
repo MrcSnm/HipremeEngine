@@ -19,11 +19,5 @@ class HipFontAsset : HipAsset, IHipFont
     }
     override void onFinishLoading(){}
     override void onDispose(){}
-    bool load()
-    {return bool.init; // TODO: implement
-    }
-    bool isReady()
-    {
-        return bool.init; // TODO: implement
-    }
+    bool isReady(){return font.texture !is null;}
 }

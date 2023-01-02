@@ -12,7 +12,7 @@ module hip.math.vector;
 import core.math : sqrt, sin, cos;
 import core.simd;
 
-public struct Vector(uint N, T)
+struct Vector(uint N, T)
 {
     static assert(N >= 2 && N <= 4, "Vector is only implemented for 2, 3 and 4 dimensions");
     private alias VectorN = Vector!(N, T);
@@ -210,38 +210,59 @@ public struct Vector(uint N, T)
             }
         }
 
-        auto opBinary(string op)(in VectorN rhs) inout
+        VectorN opBinary(string op)(in VectorN rhs) inout if(op == "*" || op == "/" || op == "+" || op == "-")
         {
-            static if(op == "*") return dot(rhs);
-            else static if(op != "/")
+            VectorN ret;
+            for(size_t i = 0; i < N; i++)   
             {
-                VectorN ret;
-                for(size_t i = 0; i < N; i++)   
-                    ret[i] = mixin("data[i] ", op,"rhs[i]");
-                return ret;
+                ret[i] = mixin("data[i] ", op,"rhs[i]");
+                version(HipMathSkipNanCheck){}
+                else static if(op == "/" || op == "-") assert(ret[i] !is float.nan);
             }
+            return ret;
         }
         VectorN opBinary(string op)(float rhs) inout
         {
             VectorN ret;
             for(size_t i = 0; i < N; i++)
+            {
                 ret[i] = mixin("data[i]", op, "rhs");
+                version(HipMathSkipNanCheck){}
+                else static if(op == "/" || op == "-") assert(ret[i] !is float.nan);
+            }
             return ret;
         }
 
         alias opBinaryRight = opBinary;
-
         auto opOpAssign(string op)(VectorN other) return
         {
-            for(size_t i = 0; i < N; i++)
-                mixin("data[i]",op,"= other[i];");
+            version(HipMathSkipNanCheck)
+                mixin("data[]",op,"= other.data[];");
+            else
+            {
+                for(size_t i = 0; i < N; i++)
+                {
+                    mixin("data[i]",op,"= other[i];");
+                    static if(op == "/" || op == "-") 
+                    assert(data[i] !is float.nan);
+                }
+            }
             return this;
         }
 
         auto opOpAssign(string op)(float value) return
         {
-            for(size_t i = 0; i < N; i++)
-                mixin("data[i]",op,"= value;");
+            version(HipMathSkipNanCheck)
+                mixin("data[]",op,"= value;");
+            else
+            {
+                for(size_t i = 0; i < N; i++)
+                {
+                    mixin("data[i]",op,"= value;");
+                    static if(op == "/" || op == "-") 
+                    assert(data[i] !is float.nan);
+                }
+            }
             return this;
         }
 
@@ -264,7 +285,7 @@ public struct Vector(uint N, T)
             return VectorN.init;
         }
 
-        enum isSIMD = false;
+        private enum isSIMD = false;
         static if(isSIMD)
         {
             alias TSimd = mixin(T.stringof~"4");
@@ -323,323 +344,3 @@ public struct Vector(uint N, T)
 alias Vector2 = Vector!(2, float);
 alias Vector3 = Vector!(3, float);
 alias Vector4 = Vector!(4, float);
-
-__EOF__
-
-// public struct Vector2
-// {
-//     @nogc @safe nothrow
-//     {
-
-//         this(float x, float y)
-//         {
-//             data = [x,y];
-//         }
-//         this(float[2] v){data = [v[0], v[1]];}
-//         float opIndexUnary(string op)(size_t index)
-//         {
-//             return mixin(op ~ "data[",index~"];");
-//         }
-//         auto opUnary(string op)() inout
-//         {
-//             static if(op == "-")
-//                 return Vector2(-data[0], -data[1]);
-//             else static if(op == "+")
-//                 return Vector2(data[0], data[1]);
-//             else
-//                 static assert(0, op~" is not supported on vectors");
-//         }
-//         float dot()(auto ref Vector2 other) inout
-//         {
-//             return (data[0]*other[0] + data[1]*other[1]);
-//         }
-
-//         const float mag(){return sqrt(data[0]*data[0] + data[1]*data[1]);}
-//         const float magSquare(){return data[0]*data[0] + data[1] * data[1];}
-
-        
-//         void normalize()
-//         {
-//             const float m = mag();
-//             data[]/=m;
-//         }
-
-//         Vector2 unit() inout
-//         {
-//             const float m = mag();
-//             return Vector2(data[0]/m, data[1]/m);
-//         }
-        
-//         Vector2 project(ref Vector2 reference) inout
-//         {
-//             auto n = reference.unit;
-//             return n * dot(reference);
-//         }
-
-//         static float dot(ref Vector2 first, ref Vector2 second){return first.dot(second);}
-
-//         Vector2 rotate(float radians)
-//         {
-//             const float c = cos(radians);
-//             const float s = sin(radians);
-
-//             return Vector2(x*c - y*s, y*c + s*x);
-//         }
-
-//         auto opBinary(string op)(auto ref in Vector2 rhs) inout
-//         {
-//             static if(op == "+")return Vector2(data[0]+ rhs[0], data[1]+ rhs[1]);
-//             else static if(op == "-")return Vector2(data[0]- rhs[0], data[1]- rhs[1]);
-//             else static if(op == "*")return dot(rhs);
-//         }
-//         auto opBinary(string op)(auto ref float rhs) inout
-//         {
-//             mixin("return Vector2(data[0] "~ op ~ "rhs , data[1] "~ op ~ "rhs);");
-//         }
-//         auto opBinaryRight(string op, T)(auto ref T lhs) inout {return opBinary!op(lhs);}
-
-//         ref Vector2 opAssign(Vector2 other) return
-//         {
-//             data[0] = other[0];
-//             data[1] = other[1];
-//             return this;
-//         }
-
-//         static Vector2 zero(){return Vector2(0,0);}
-//         private float[2] data;
-
-//         inout auto ref float x() return {return data[0];}
-//         inout auto ref float y() return {return data[1];}
-//         inout auto ref opIndex(size_t index){return data[index];}
-//     }
-// }
-
-
-// public struct Vector3
-// {
-//     @nogc @safe nothrow
-//     {
-
-//         this(float x, float y, float z)
-//         {
-//             data = [x,y,z];
-//         }
-//         this(float[3] v){data = [v[0], v[1], v[2]];}
-//         float opIndexUnary(string op)(size_t index)
-//         {
-//             return mixin(op ~ "data[",index~"];");
-//         }
-//         auto opUnary(string op)() inout
-//         {
-//             static if(op == "-")
-//                 return Vector3(-data[0], -data[1], -data[2]);
-//             else static if(op == "+")
-//                 return Vector3(data[0], data[1], data[2]);
-//             else
-//                 static assert(0, op~" is not supported on vectors");
-//         }
-//         float dot()(auto ref Vector3 other) inout
-//         {
-//             return (data[0]*other[0] + data[1]*other[1] + data[2] * other[2]);
-//         }
-
-//         inout float mag(){return sqrt(data[0]*data[0] + data[1]*data[1] + data[2]*data[2]);}
-//         inout float magSquare(){return data[0]*data[0] + data[1] * data[1] + data[2]*data[2];}
-//         void normalize()
-//         {
-//             const float m = mag();
-//             data[]/=m;
-//         }
-
-//         float distance(Vector3 other)
-//         {
-//             float dx = (other.x-x);
-//             dx*=dx;
-//             float dy = other.y-y;
-//             dy*=dy;
-//             float dz = other.z-z;
-//             dz*=dz;
-//             return sqrt(dx+dy+dz);
-//         }
-
-//         Vector3 unit() const 
-//         {
-//             const float m = mag();
-//             return Vector3(data[0]/m, data[1]/m, data[2]/m);
-//         }
-        
-//         Vector3 project(ref Vector3 reference) const
-//         {
-//             auto n = reference.unit;
-//             return n * dot(reference);
-//         }
-
-//         pragma(inline, true)
-//         auto axisAngle(in ref Vector3 axis, float angle) inout
-//         {
-//             auto n = axis.unit;
-//             auto proj = n* axis.dot(n);
-//             auto perpendicular = this - proj;
-//             auto rot = perpendicular*cos(angle) + n.cross(perpendicular)*sin(angle);
-//             return proj + rot;
-//         }
-
-
-//         Vector3 cross(ref Vector3 other) inout
-//         {
-//             return Vector3(data[1]*other[2] - data[2]-other[1],
-//                         -(data[0]*other[2]- data[2]*other[0]),
-//                         data[0]*other[1] - data[1]*other[0]);
-//         }
-
-//         static float Dot(ref Vector3 first, ref Vector3 second){return first.dot(second);}
-
-//         Vector3 rotateZ(float radians)
-//         {
-//             const float c = cos(radians);
-//             const float s = sin(radians);
-
-//             return Vector3(x*c - y*s, y*c + s*x, z);
-//         }
-
-//         auto opBinary(string op)(auto ref in Vector3 rhs) inout
-//         {
-//             static if(op == "+")return Vector3(data[0]+ rhs[0], data[1]+ rhs[1], data[2]+ rhs[2]);
-//             else static if(op == "-")return Vector3(data[0]- rhs[0], data[1]- rhs[1], data[2]- rhs[2]);
-//             else static if(op == "*")return dot(rhs);
-//         }
-
-//         Vector3 opBinary(string op)(float rhs) inout
-//         {
-//             mixin("return Vector3(data[0] "~ op ~ "rhs , data[1] "~ op ~ "rhs, data[2] "~ op~"rhs);");
-//         }
-//         auto opBinaryRight(string op, T)(T lhs) inout{return opBinary!op(lhs);}
-
-//         auto opOpAssign(string op, T)(T value)
-//         {
-//             mixin("this.x"~op~"= value;");
-//             mixin("this.y"~op~"= value;");
-//             mixin("this.z"~op~"= value;");
-//             return this;
-//         }
-//         ref Vector3 opAssign(Vector3 other) return
-//         {
-//             data[0] = other[0];
-//             data[1] = other[1];
-//             data[2] = other[2];
-//             return this;
-//         }
-//         ref Vector3 opAssign(float[3] other) return
-//         {
-//             data[0] = other[0];
-//             data[1] = other[1];
-//             data[2] = other[2];
-//             return this;
-//         }
-
-//         static Vector3 Zero(){return Vector3(0,0,0);}
-//         private float[3] data;
-
-//         inout auto ref float x() return {return data[0];}
-//         inout auto ref float y() return {return data[1];}
-//         inout auto ref float z() return {return data[2];}
-//         inout auto ref opIndex(size_t index){return data[index];}
-//     }
-// }
-
-// public struct Vector4
-// {
-//     @nogc @safe nothrow
-//     {
-
-//         this(float x, float y, float z, float w)
-//         {
-//             data = [x,y,z, w];
-//         }
-//         this(float[4] v){data = [v[0], v[1], v[2], v[3]];}
-//         float opIndexUnary(string op)(size_t index)
-//         {
-//             return mixin(op ~ "data[",index~"];");
-//         }
-//         auto opUnary(string op)() inout
-//         {
-//             static if(op == "-")
-//                 return Vector4(-data[0], -data[1], -data[2], -data[3]);
-//             else static if(op == "+")
-//                 return Vector4(data[0], data[1], data[2], data[3]);
-//             else
-//                 static assert(0, op~" is not supported on vectors");
-//         }
-//         float dot()(auto ref Vector4 other) inout
-//         {
-//             return (data[0]*other[0] + data[1]*other[1] + data[2] * other[2] + data[3]*other[3]);
-//         }
-
-//         inout float mag(){return sqrt(data[0]*data[0] + data[1]*data[1] + data[2]*data[2] + data[3]*data[3]);}
-//         inout float magSquare(){return data[0]*data[0] + data[1] * data[1] + data[2]*data[2] + data[3] * data[3];}
-//         void normalize()
-//         {
-//             const float m = mag();
-//             data[]/=m;
-//         }
-
-//         Vector4 unit() inout 
-//         {
-//             const float m = mag();
-//             return Vector4(data[0]/m, data[1]/m, data[2]/m, data[3]/m);
-//         }
-        
-//         Vector4 project(ref Vector4 reference) inout
-//         {
-//             auto n = reference.unit;
-//             return n * dot(reference);
-//         }
-
-//         static float Dot(ref Vector3 first, ref Vector3 second){return first.dot(second);}
-
-//         auto opBinary(string op)(auto ref Vector3 rhs) inout
-//         {
-//             static if(op == "+")return Vector4(data[0]+ rhs[0], data[1]+ rhs[1], data[2]+ rhs[2], data[3]+rhs[3]);
-//             else static if(op == "-")return Vector4(data[0]- rhs[0], data[1]- rhs[1], data[2]- rhs[2], data[3]-rhs[3]);
-//             else static if(op == "*")return dot(rhs);
-//         }
-
-//         auto opBinary(string op)(auto ref float rhs) inout
-//         {
-//             mixin("return Vector4(data[0] "~ op ~ "rhs,
-//             data[1] "~ op ~ "rhs,
-//             data[2] "~ op~"rhs,
-//             data[3] "~ op~"rhs);");
-//         }
-
-//         ref Vector4 opAssign(Vector4 other) return
-//         {
-//             data[0] = other[0];
-//             data[1] = other[1];
-//             data[2] = other[2];
-//             data[3] = other[3];
-//             return this;
-//         }
-//         ref Vector4 opAssign(float[4] other) return
-//         {
-//             data[0] = other[0];
-//             data[1] = other[1];
-//             data[2] = other[2];
-//             data[3] = other[3];
-//             return this;
-//         }
-
-//         static Vector4 Zero(){return Vector4(0,0,0,0);}
-//         private float[4] data;
-
-//         inout auto ref float x() return {return data[0];}
-//         inout auto ref float y() return {return data[1];}
-//         inout auto ref float z() return {return data[2];}
-//         inout auto ref float w() return {return data[3];}
-//         inout auto ref opIndex(size_t index){return data[index];}
-//     }
-// }
-
-// alias Vector2i = Vector!(2, int);
-// alias Vector3i = Vector!(3, int);
-// alias Vector4i = Vector!(4, int);

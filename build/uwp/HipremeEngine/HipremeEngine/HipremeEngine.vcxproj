@@ -13,8 +13,8 @@
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.17134.0</WindowsTargetPlatformMinVersion>
+    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">
@@ -50,42 +50,33 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-  </ItemGroup><ItemGroup Label="ResourceCopyInit">
-<Audio Include="$(ProjectDir)\UWPResources\audio\active_matrix_edited.wav"/>
-<Image Include="$(ProjectDir)\UWPResources\audio\AlbumArtSmall.jpg"/>
-<Image Include="$(ProjectDir)\UWPResources\audio\AlbumArt_{B5020207-474E-4720-8B97-B815F21B9B00}_Large.jpg"/>
-<Image Include="$(ProjectDir)\UWPResources\audio\AlbumArt_{B5020207-474E-4720-8B97-B815F21B9B00}_Small.jpg"/>
-<Image Include="$(ProjectDir)\UWPResources\audio\Folder.jpg"/>
-<Audio Include="$(ProjectDir)\UWPResources\audio\junkyard-a-class.mp3"/>
-<Audio Include="$(ProjectDir)\UWPResources\audio\StrategicZone.mp3"/>
-<Audio Include="$(ProjectDir)\UWPResources\audio\the-sound-of-silence.wav"/>
-<Audio Include="$(ProjectDir)\UWPResources\audio\wind-sfx.mp3"/>
-<Text Include="$(ProjectDir)\UWPResources\data\input\input.json"/>
-<Text Include="$(ProjectDir)\UWPResources\fonts\arial.fnt"/>
-<Image Include="$(ProjectDir)\UWPResources\fonts\arial.png"/>
+  </ItemGroup>
+<ItemGroup Label="ResourceCopy">
+<Text Include="$(ProjectDir)\UWPResources\data\levels.txt"/>
 <Text Include="$(ProjectDir)\UWPResources\fonts\consolas.fnt"/>
 <Image Include="$(ProjectDir)\UWPResources\fonts\consolas.png"/>
-<None Include="$(ProjectDir)\UWPResources\fonts\fa-regular-400.ttf"/>
-<None Include="$(ProjectDir)\UWPResources\fonts\fa-solid-900.ttf"/>
-<Text Include="$(ProjectDir)\UWPResources\fonts\tnroman.fnt"/>
-<Image Include="$(ProjectDir)\UWPResources\fonts\tnroman.png"/>
-<Text Include="$(ProjectDir)\UWPResources\graphics\atlases\UI.json"/>
-<Image Include="$(ProjectDir)\UWPResources\graphics\atlases\UI.png"/>
-<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\gUqMLK.png"/>
-<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\nineSlicePanel.png"/>
-<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\rex.png"/>
-<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\shaun.png"/>
-<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\sprite.png"/>
-<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\tese.bmp"/>
-<Image Include="$(ProjectDir)\UWPResources\graphics\sprites\teste.bmp"/>
-<Image Include="$(ProjectDir)\UWPResources\graphics\tilesets\generic_platformer_tiles.png"/>
-<Image Include="$(ProjectDir)\UWPResources\graphics\tilesets\terrain-v7.png"/>
-<Text Include="$(ProjectDir)\UWPResources\maps\minitest.tmx"/>
-<Text Include="$(ProjectDir)\UWPResources\maps\terrain-v7.tsx"/>
-<Text Include="$(ProjectDir)\UWPResources\maps\Test.tmx"/>
-<Text Include="$(ProjectDir)\UWPResources\text\renderer.conf"/>
-</ItemGroup><ItemGroup Label="ResourceCopyEnd"></ItemGroup>
-  
+<Image Include="$(ProjectDir)\UWPResources\images\background.png"/>
+<Image Include="$(ProjectDir)\UWPResources\images\background_blur.png"/>
+<Media Include="$(ProjectDir)\UWPResources\sounds\pop.wav"/>
+<Media Include="$(ProjectDir)\UWPResources\sounds\song17.mp3"/>
+<Media Include="$(ProjectDir)\UWPResources\sounds\song17mono.mp3"/>
+<Media Include="$(ProjectDir)\UWPResources\sounds\song17mono48khz.mp3"/>
+<Image Include="$(ProjectDir)\UWPResources\sprites\assets_candy.png"/>
+<Image Include="$(ProjectDir)\UWPResources\sprites\explotion.png"/>
+
+</ItemGroup>
+  <ItemGroup Label="ResourceCopy">
+    <Text Include="$(ProjectDir)\UWPResources\data\levels.txt" />
+    <Text Include="$(ProjectDir)\UWPResources\fonts\consolas.fnt" />
+    <Image Include="$(ProjectDir)\UWPResources\fonts\consolas.png" />
+    <Image Include="$(ProjectDir)\UWPResources\images\background.png" />
+    <Image Include="$(ProjectDir)\UWPResources\images\background_blur.png" />
+    <Media Include="$(ProjectDir)\UWPResources\sounds\pop.wav" />
+    <Media Include="$(ProjectDir)\UWPResources\sounds\song17.mp3" />
+    <Media Include="$(ProjectDir)\UWPResources\sounds\song17mono.mp3" />
+    <Image Include="$(ProjectDir)\UWPResources\sprites\assets_candy.png" />
+    <Image Include="$(ProjectDir)\UWPResources\sprites\explotion.png" />
+  </ItemGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
@@ -112,7 +103,6 @@
     <Import Project="PropertySheet.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
-    <PackageCertificateThumbprint>265466C509D85090B62BB7FA3A8442B5B9003A15</PackageCertificateThumbprint>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
@@ -122,6 +112,7 @@
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <AppInstallerUri>D:\HipremeEngine\bin\uwp</AppInstallerUri>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+    <PackageCertificateKeyFile>HipremeEngine_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(ProjectDir)src;$(IncludePath)</IncludePath>
@@ -166,6 +157,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\Def.h" />
     <ClInclude Include="src\input.hpp" />
+    <ClInclude Include="uwpfs.h" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -189,73 +181,10 @@
     <ClCompile Include="d_game.cpp" />
     <ClCompile Include="src\Def.cpp" />
     <ClCompile Include="src\input.cpp" />
+    <ClCompile Include="uwpfs.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="D:\HipremeEngine\bin\desktop\cimgui.dll">
-      <FileType>Discomap</FileType>
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libFLAC-8.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libfreetype-6.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libjpeg-9.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libmodplug-1.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libmpg123-0.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libogg-0.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libopus-0.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libopusfile-0.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libpng16-16.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libtiff-5.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libvorbis-0.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libvorbisfile-3.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\libwebp-7.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\SDL2.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\SDL2_image.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\SDL2_mixer.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\SDL2_sound.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\SDL2_ttf.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\soft_oal.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\desktop\zlib1.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="D:\HipremeEngine\bin\uwp\hipreme_engine.dll">
+    <None Include="..\..\..\..\bin\uwp\hipreme_engine.dll">
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="HipremeEngine_TemporaryKey.pfx" />

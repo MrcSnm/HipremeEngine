@@ -13,9 +13,11 @@
 		"warnings"
 	],
 	"dflags": [
-		"-J=.",
 		"-preview=shortenedMethods",
 		"-mixin=mixed.d"
+	],
+	"stringImportPaths": [
+		"."
 	],
 	"dflags-dmd": [
 		"-checkaction=halt"

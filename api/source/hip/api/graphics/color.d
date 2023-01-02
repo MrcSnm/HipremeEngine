@@ -44,16 +44,23 @@ struct HipColor
             cast(float)(color & 255)/255
         );
     }
+
+    auto opAssign(in HipColor color)
+    {
+        values[] = color.values[];
+        return this;
+    }
     
-    static immutable white   = HipColor(1,1,1,1);
-    static immutable black   = HipColor(0,0,0,1);
-    static immutable red     = HipColor(1,0,0,1);
-    static immutable green   = HipColor(0,1,0,1);
-    static immutable blue    = HipColor(0,0,1,1);
-    static immutable yellow  = HipColor(1,1,0,1);
-    static immutable purple  = HipColor(1,0,1,1);
-    static immutable teal    = HipColor(0,1,1,1);
-    static immutable no      = HipColor(0,0,0,0);
+    static enum invalid = HipColor(-1, -1, -1, -1);
+    static enum white   = HipColor(1,1,1,1);
+    static enum black   = HipColor(0,0,0,1);
+    static enum red     = HipColor(1,0,0,1);
+    static enum green   = HipColor(0,1,0,1);
+    static enum blue    = HipColor(0,0,1,1);
+    static enum yellow  = HipColor(1,1,0,1);
+    static enum purple  = HipColor(1,0,1,1);
+    static enum teal    = HipColor(0,1,1,1);
+    static enum no      = HipColor(0,0,0,0);
 
     alias values this;
 }
