@@ -2,12 +2,12 @@ module hip.api.data.textureatlas;
 public import hip.api.renderer.texture;
 
 
-struct Size
+struct AtlasSize
 {
     uint width, height;
     alias w = width, h = height;
 }
-struct Rect
+struct AtlasRect
 {
     float x, y, width, height;
     alias w = width, h = height;
@@ -19,9 +19,9 @@ struct AtlasFrame
     bool rotated;
     bool trimmed;
 
-    Rect frame;
-    Rect spriteSourceSize;
-    Size sourceSize;
+    AtlasRect frame;
+    AtlasRect spriteSourceSize;
+    AtlasSize sourceSize;
     IHipTextureRegion region;
 
     alias region this;

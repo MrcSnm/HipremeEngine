@@ -117,7 +117,7 @@ interface IHipAnimation
                 IHipAnimationTrack track = anim.getTrack(name);
                 if(track is null)
                 {
-                    anim.addTrack(track = newHipAnimationTrack(name, framesPerSecond, true));
+                    anim.addTrack(track = newHipAnimationTrack(name, framesPerSecond, HipAnimationLoopingMode.reset));
                 }
                 track.addFrames(HipAnimationFrame(frame.region, HipColor.white, [0,0]));
 

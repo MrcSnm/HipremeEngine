@@ -36,7 +36,7 @@ public import hip.api.graphics.g2d.animation;
     {
         this._name = trackName;
         setFramesPerSecond(framesPerSecond);
-        _loopingMode = loopingMode ;
+        _loopingMode = loopingMode;
     }
     string name() const => _name;
     HipAnimationLoopingMode loopingMode() const =>  _loopingMode;
@@ -102,8 +102,6 @@ public import hip.api.graphics.g2d.animation;
             return null;
         accumulator+= dt;
         uint frame = cast(uint)(accumulator*framesPerSecond);
-        import std.stdio;
-        writeln(_loopingMode);
         if(frame > lastFrame)
         {
             final switch(_loopingMode) with(HipAnimationLoopingMode)

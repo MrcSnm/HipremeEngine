@@ -73,21 +73,21 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
                 a.rotated  = f["rotated"].boolean;
                 a.trimmed  = f["trimmed"].boolean;
                 JSONValue frameRect = f["frame"].object;
-                a.frame = Rect(
+                a.frame = AtlasRect(
                     cast(uint)frameRect["x"].integer,
                     cast(uint)frameRect["y"].integer,
                     cast(uint)frameRect["w"].integer,
                     cast(uint)frameRect["h"].integer
                 );
                 frameRect = f["spriteSourceSize"].object;
-                a.spriteSourceSize = Rect(
+                a.spriteSourceSize = AtlasRect(
                     cast(uint)frameRect["x"].integer,
                     cast(uint)frameRect["y"].integer,
                     cast(uint)frameRect["w"].integer,
                     cast(uint)frameRect["h"].integer
                 );
                 frameRect = f["sourceSize"].object;
-                a.sourceSize = Size(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
+                a.sourceSize = AtlasSize(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
                 ret.frames[a.filename] = a;
             }
         }
@@ -102,21 +102,21 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
                 a.rotated  = f["rotated"].boolean;
                 a.trimmed  = f["trimmed"].boolean;
                 JSONValue frameRect = f["frame"].object;
-                a.frame = Rect(
+                a.frame = AtlasRect(
                     cast(uint)frameRect["x"].integer,
                     cast(uint)frameRect["y"].integer,
                     cast(uint)frameRect["w"].integer,
                     cast(uint)frameRect["h"].integer
                 );
                 frameRect = f["spriteSourceSize"].object;
-                a.spriteSourceSize = Rect(
+                a.spriteSourceSize = AtlasRect(
                     cast(uint)frameRect["x"].integer,
                     cast(uint)frameRect["y"].integer,
                     cast(uint)frameRect["w"].integer,
                     cast(uint)frameRect["h"].integer
                 );
                 frameRect = f["sourceSize"].object;
-                a.sourceSize = Size(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
+                a.sourceSize = AtlasSize(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
                 ret.frames[frameName] = a;   
             }
         }
@@ -179,9 +179,9 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
                 int x = void, y = void, width = void, height = void;
                 lineDataRange.map((string data) => to!int(data)).put(&x, &y, &width, &height);
                 AtlasFrame atlasFrame;
-                atlasFrame.spriteSourceSize = Rect(x, y, width, height);
-                atlasFrame.frame = Rect(x, y, width, height);
-                atlasFrame.sourceSize = Size(width, height);
+                atlasFrame.spriteSourceSize = AtlasRect(x, y, width, height);
+                atlasFrame.frame = AtlasRect(x, y, width, height);
+                atlasFrame.sourceSize = AtlasSize(width, height);
                 atlasFrame.filename = frame;
                 atlas.frames[frame] = atlasFrame;
             }
@@ -260,9 +260,9 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
 
             AtlasFrame frame;
             frame.filename = name;
-            frame.frame = Rect(x, y, width, height);
-            frame.spriteSourceSize = Rect(x, y, width, height);
-            frame.sourceSize = Size(width, height);
+            frame.frame = AtlasRect(x, y, width, height);
+            frame.spriteSourceSize = AtlasRect(x, y, width, height);
+            frame.sourceSize = AtlasSize(width, height);
             atlas.frames[frame.filename] = frame;
         }
         return atlas;
@@ -349,9 +349,9 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
             string index = lines[i+6];
                 index = index[index.countUntil(":")+2 .. $];
 
-            frame.frame = Rect(x, y, sizeW, sizeH);
-            frame.spriteSourceSize = Rect(_offsetX, _offsetY, sizeW, sizeH);
-            frame.sourceSize = Size(sizeW, sizeH);
+            frame.frame = AtlasRect(x, y, sizeW, sizeH);
+            frame.spriteSourceSize = AtlasRect(_offsetX, _offsetY, sizeW, sizeH);
+            frame.sourceSize = AtlasSize(sizeW, sizeH);
             ret.frames[frame.filename] = frame;
         }
         return ret;

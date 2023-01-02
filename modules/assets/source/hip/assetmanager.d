@@ -57,13 +57,14 @@ public import hip.util.data_structures;
 
 
 
-class HipAssetLoadTask : IHipAssetLoadTask
+final class HipAssetLoadTask : IHipAssetLoadTask
 {
     string name;
     HipAssetResult _result = HipAssetResult.cantLoad;
     HipAsset _asset = null;
     protected HipWorkerThread worker;
     protected void[] partialData;
+
 
     private string fileRequesting;
     private size_t lineRequesting;
@@ -83,6 +84,28 @@ class HipAssetLoadTask : IHipAssetLoadTask
 
     bool hasFinishedLoading() const{return result == HipAssetResult.loaded;}
     bool opCast(T : bool)() const{return hasFinishedLoading;}
+
+    void into(void* function(IHipAsset asset) castFunc, IHipAsset*[] variables...)
+    {
+        import hip.error.handler;
+        final switch(_result) with(HipAssetResult)
+        {
+            case loaded:
+                foreach(v; variables)
+                    *v = cast(IHipAsset)castFunc(asset);
+                break;
+            case loading:
+                HipAssetManager.addOnCompleteHandler(this, (completeAsset)
+                {
+                    foreach(v; variables)
+                        *v = cast(IHipAsset)castFunc(completeAsset);
+                });
+                break;
+            case cantLoad:
+                ErrorHandler.showWarningMessage("Can't load a null asset into a variable address", name);
+                break;
+        }
+    }
     
     void await()
     {
@@ -131,11 +154,10 @@ mixin template HipDeferredLoadImpl()
         if(task.asset !is null)
             func( cast(T)task.asset);
         else
-            HipAssetManager.addOnCompleteHandler(
-            (asset)
+            HipAssetManager.addOnCompleteHandler(task, (asset)
             {
                 func(cast(T)asset);
-            }, task);
+            });
     }
 
     pragma(msg, typeof(this).stringof, hasType!"hip.assets.texture.HipTexture",  hasMethod!(typeof(this), "setTexture", IHipTexture));
@@ -239,7 +261,9 @@ class HipAssetManager
         
     }
 
+    ///Returns whether asset manager is loading anything
     @ExportD static bool isLoading(){return !workerPool.isIdle;}
+    ///Stops the code from running and awaits asset manager to finish loading
     @ExportD static void awaitLoad()
     {
         workerPool.await;
@@ -654,7 +678,7 @@ class HipAssetManager
         }
     }
 
-    static void addOnCompleteHandler(void delegate(IHipAsset) onComplete, IHipAssetLoadTask task)
+    static void addOnCompleteHandler(IHipAssetLoadTask task, void delegate(IHipAsset) onComplete)
     {
         if(task.asset !is null)
             onComplete(task.asset);

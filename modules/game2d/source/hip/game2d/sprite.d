@@ -109,6 +109,8 @@ class HipSprite
     ///Height of the texture region, (v2-v1) * texture.height
     uint height;
 
+    private bool flippedX, flippedY;
+
     protected bool isDirty = true;
     protected float[] vertices;
 
@@ -166,10 +168,10 @@ class HipSprite
     }
     void setTexture(IHipAssetLoadTask task)
     {
-        addOnCompleteHandler((asset)
+        addOnCompleteHandler(task, (asset)
         {
             this.setTexture(cast(IHipTexture)asset);
-        }, task);
+        });
     }
 
     final IHipTexture getTexture() { return texture.getTexture();}
@@ -200,6 +202,16 @@ class HipSprite
         vertices[V3] = v[5];
         vertices[U4] = v[6];
         vertices[V4] = v[7];
+        if(flippedX)
+        {
+            flippedX = false;
+            setFlippedX(true);
+        }
+        if(flippedY)
+        {
+            flippedY = false;
+            setFlippedY(true);
+        }
     }
 
     void setPosition(float x, float y)
@@ -240,50 +252,48 @@ class HipSprite
         if(isDirty)
         {
             isDirty = false;
+            float _x = -cast(float)width/2 * scaleX;
+            float _y = -cast(float)height/2 * scaleY;
+            float x2 = _x+(width * scaleX);
+            float y2 = _y+(height * scaleY); 
             if(rotation == 0)
             {
-                float x2 = x+ (width*scaleX * tilingX);
-                float y2 = y+ (height*scaleY * tilingY);
                 //Top left
-                vertices[X1] = x;
-                vertices[Y1] = y;
+                vertices[X1] = _x + x;
+                vertices[Y1] = _y + y;
 
                 //Top right
-                vertices[X2] = x2;
-                vertices[Y2] = y;
+                vertices[X2] = x2 + x;
+                vertices[Y2] = _y + y;
 
                 //Bot right
-                vertices[X3] = x2;
-                vertices[Y3] = y2;
+                vertices[X3] = x2 + x;
+                vertices[Y3] = y2 + y;
 
                 //Bot left
-                vertices[X4] = x;
-                vertices[Y4] = y2;
+                vertices[X4] = _x + x;
+                vertices[Y4] = y2 + y;
             }
             else
             {
                 import core.math:sin,cos;
-                float x = -cast(float)width/2;
-                float y = -cast(float)height/2;
-                float x2 = x+(width * tilingX);
-                float y2 = y+(height * tilingY); 
                 float c = cos(rotation);
                 float s = sin(rotation);
                 //Top left
-                vertices[X1] = c*x - s*y + this.x;
-                vertices[Y1] = c*y + s*x + this.y;
+                vertices[X1] = c*_x - s*_y + this.x;
+                vertices[Y1] = c*_y + s*_x + this.y;
 
                 //Top right
-                vertices[X2] = c*x2 - s*y + this.x;
-                vertices[Y2] = c*y + s*x2 + this.y;
+                vertices[X2] = c*x2 - s*_y + this.x;
+                vertices[Y2] = c*_y + s*x2 + this.y;
 
                 //Bot right
                 vertices[X3] = c*x2 - s*y2 + this.x;
                 vertices[Y3] = c*y2 + s*x2 + this.y;
 
                 //Bot left
-                vertices[X4] = c*x - s*y2 + this.x;
-                vertices[Y4] = c*y2 + s*x + this.y;
+                vertices[X4] = c*_x - s*y2 + this.x;
+                vertices[Y4] = c*y2 + s*_x + this.y;
             }
         }
 
@@ -322,8 +332,15 @@ class HipSprite
     }
     void setRotation(float rotation)
     {
-        this.rotation = rotation;
+        import hip.math.utils;
+        this.rotation = rotation % (PI * 2);
         isDirty = true;
+    }
+    ///Same thing as setRotation, but receives in Degrees
+    void setAngle(float angle)
+    {
+        import hip.math.utils:degToRad;
+        setRotation(degToRad(angle));
     }
 
     int getWidth() const {return width;}
@@ -346,6 +363,34 @@ class HipSprite
         scrollX = x;
         scrollY = y;
     }
+
+    void setFlippedX(bool flip)
+    {
+        if(flip != flippedX)
+        {
+            auto reg = texture.getRegion;
+            flippedX = flip;
+            vertices[U1] = flip ? reg.u2 : reg.u1;
+            vertices[U2] = flip ? reg.u1 : reg.u2;
+            vertices[U3] = flip ? reg.u1 : reg.u2;
+            vertices[U4] = flip ? reg.u2 : reg.u1;
+        }
+    }
+    void setFlippedY(bool flip)
+    {
+        if(flip != flippedY)
+        {
+            auto reg = texture.getRegion;
+            flippedY = flip;
+            vertices[V1] = flip ? reg.v2 : reg.v1;
+            vertices[V2] = flip ? reg.v2 : reg.v1;
+            vertices[V3] = flip ? reg.v1 : reg.v2;
+            vertices[V4] = flip ? reg.v1 : reg.v2;
+        }
+    }
+    bool isFlippedX() => flippedX;
+    bool isFlippedY() => flippedY;
+
 
     /**
     *   Sets the tiling factor for this sprite. Default is 1.
