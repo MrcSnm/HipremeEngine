@@ -22,7 +22,7 @@ struct Size
 struct Rect
 {
     pure nothrow @nogc @safe:
-    float x, y, width, height;
+    float x = 0, y = 0, width = 0, height = 0;
     alias w = width, h = height;
 
     Vector2 position() const {return Vector2(x,y);}

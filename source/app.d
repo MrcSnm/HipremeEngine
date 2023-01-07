@@ -90,6 +90,12 @@ void HipremeHandleArguments(string[] args)
 	}
 }
 
+// import core.sys.windows.windows;
+// extern(Windows) int NtSetTimerResolution(ULONG RequestedResolution, BOOLEAN Set, PULONG ActualResolution);
+// // HACK: this allows to Sleep under 15.6ms smh
+// 	uint unused;
+// 	NtSetTimerResolution(5000, TRUE, &unused);
+
 
 static void initEngine(bool audio3D = false)
 {
@@ -127,6 +133,7 @@ static void initEngine(bool audio3D = false)
 		else
 			fsInstallPath = getcwd()~"/assets";
 	}
+	
 	Console.install(platform, printFunc);
 	HipFS.install(fsInstallPath, validations);
 	loglnInfo("HipFS installed at path ", fsInstallPath);

@@ -14,6 +14,7 @@ import hip.filesystem.hipfs;
 import hip.util.system;
 import hip.util.path;
 import hip.console.log;
+import hip.error.handler;
 
 class HotloadableDLL
 {
@@ -24,7 +25,8 @@ class HotloadableDLL
     string tempPath;
     this(string path, void delegate (void* libPointer) onDllLoad)
     {
-        assert(path, "DLL path should not be null");
+        ErrorHandler.assertExit(path != null, "DLL path should not be null:
+Call `dub -c script -- path/to/project` dub -c script requires that argument.");
 
         if(HipFS.absoluteIsDir(path))
             path = joinPath(path, path.filenameNoExt);

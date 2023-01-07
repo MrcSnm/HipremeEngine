@@ -20,9 +20,7 @@
 				"xaudio2_8"
 			],
 			"dependencies": {
-				"bindbc-openal": "~>1.0.0"
-			},
-			"dependencies-windows": {
+				"bindbc-openal": "~>1.0.0",
 				"directx-d":{"path" : "../../dependencies/directx-d", "optional": true}
 			}
 		},

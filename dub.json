@@ -19,9 +19,6 @@
 	"stringImportPaths": [
 		"."
 	],
-	"dflags-dmd": [
-		"-checkaction=halt"
-	],
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipremeEngineLua",
@@ -46,7 +43,6 @@
 		"bind": {"path": "./modules/bind", "version": "*"},
 		"config": {"path": "./modules/config", "version": "*"},
 		"console": {"path": "./modules/console", "version": "*"},
-		"debugging": {"path": "./modules/debugging", "version": "*"},
 		"error": {"path": "./modules/error", "version": "*"},
 		"filesystem": {"path": "./modules/filesystem", "version": "*"},
 		"timer": {"path": "./modules/timer", "version": "*"},

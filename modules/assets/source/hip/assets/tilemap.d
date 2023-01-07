@@ -509,7 +509,7 @@ class HipTilemap : HipAsset, IHipTilemap
 
         foreach(l; layers)
         {
-            HipTileLayer layer = new HipTileLayer();
+            HipTileLayer layer = new HipTileLayer(ret);
 
             //Check first the layer type.
             layer.type    =             l["type"].str;

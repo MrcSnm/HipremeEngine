@@ -15,18 +15,15 @@
 		{
 			"name": "default",
 			"dependencies": {
+				"directx-d": {"path": "../../dependencies/directx-d", "optional": true},
 				"bindbc-opengl": {"version": "~>1.0.0", "optional": true},
 				"hipengine_api": {"path": "../../api"},
 				"windowing" : {"path" : "../windowing"},
 				"data" : {"path": "../data"},
 				"image" : {"path": "../image"},
-				"bind" : {"path": "../bind", "optional": true},
 				"config": {"path": "../config"},
 				"error": {"path": "../error"},
-				"math": {"path": "../math"}
-			},
-			"dependencies-windows": {
-				"directx-d": {"path": "../../dependencies/directx-d", "optional": true}
+				"math": {"path": "../math"}	
 			},
 			"versions": [
 				"HipGL3",
@@ -42,7 +39,6 @@
 				"windowing" : {"path" : "../windowing"},
 				"data" : {"path": "../data"},
 				"image" : {"path": "../image"},
-				"bind" : {"path": "../bind", "optional": true},
 				"config": {"path": "../config"},
 				"error": {"path": "../error"},
 				"math": {"path": "../math"}
@@ -62,7 +58,6 @@
 				"directx-d": {"path": "../../dependencies/directx-d"},
 				"data" : {"path": "../data"},
 				"image" : {"path": "../image"},
-				"bind" : {"path": "../bind", "optional": true},
 				"config": {"path": "../config"},
 				"error": {"path": "../error"},
 				"math": {"path": "../math"}

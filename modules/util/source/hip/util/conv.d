@@ -90,7 +90,7 @@ T toStruct(T)(string struc) pure nothrow
     string currentArg;
 
     bool isInsideString = false;
-    for(ulong i = 1; i < (cast(int)struc.length)-1; i++)
+    for(size_t i = 1; i < (cast(int)struc.length)-1; i++)
     {
         if(!isInsideString && struc[i] == ',')
         {
@@ -148,7 +148,7 @@ TO to(TO, FROM)(FROM f) pure nothrow
         else
             return toInt(f);
     }
-    else static if(is(TO == uint) || is(TO == ulong) || is(TO == ubyte) || is(TO == ushort))
+    else static if(is(TO == uint) || is(TO == size_t) || is(TO == ubyte) || is(TO == ushort))
     {
         static if(!is(FROM == string))
             return cast(TO)toInt(f.toString);
@@ -185,7 +185,7 @@ string toString(long x) pure nothrow @safe
     bool isNegative = x < 0;
     if(isNegative)
         x*= -1;
-    ulong div = 10;
+    size_t div = 10;
     int length = 1;
     int count = 1;
     while(div <= x)
@@ -201,10 +201,10 @@ string toString(long x) pure nothrow @safe
     while(div <= x)
     {
         count++;
-        ret[length-count]=numbers[(x/div)%10];
+        ret[length-count]=numbers[cast(size_t)((x/div)%10)];
         div*=10;
     }
-    ret[length-1] = numbers[x%10];
+    ret[length-1] = numbers[cast(size_t)(x%10)];
     return ret[0..$];
 }
 
