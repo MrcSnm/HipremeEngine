@@ -1,21 +1,10 @@
 module hip.windowing.platforms.null_;
 
-void show()
+void openWindow(int width, int height)
 {
     
 }
-
-void poll()
-{
-    
-}
-
-void swapBuffer()
-{
-
-}
-
-bool destroy_GL_Context()
-{
-    return true;
-}
+void show(){}
+void poll(){}
+void swapBuffer(){}
+bool destroy_GL_Context(){return true;}

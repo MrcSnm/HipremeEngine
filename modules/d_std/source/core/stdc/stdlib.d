@@ -5,6 +5,9 @@ enum EXIT_SUCCESS = 0;
 enum EXIT_FAILURE = 1;
 enum RAND_MAX = 0x7fffffff;
 
+
+alias _compare_fp_t = extern(C) int function(const(void*) a, const(void*) b);
+
 version(WebAssembly)
 {
     private alias nogc_free_t = @nogc nothrow void function(ubyte* ptr);
@@ -28,6 +31,7 @@ version(WebAssembly)
             auto nogc_realloc = cast(nogc_realloc_t)&object.realloc;
             return cast(void*)nogc_realloc(cast(ubyte*)ptr, size, file, line).ptr;
         }
+        void qsort(void* base, size_t nmemb, size_t size, _compare_fp_t compar){assert(false, "No sort implemented");}
         void exit(int exitCode){assert(false, "Exit with code unknown");}
     }   
 }

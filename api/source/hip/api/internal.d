@@ -55,6 +55,10 @@ version(Windows)
 {
 	alias _loadSymbol = GetProcAddress;
 }
+else version(WebAssembly)
+{
+	void* _loadSymbol(void* dll, string name){assert(false, "Can't load symbol in Wasm: "~name);}
+}
 else
 {
 	import core.sys.posix.dlfcn:dlsym;

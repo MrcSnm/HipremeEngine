@@ -40,6 +40,10 @@ class HipWindow
     {
         import hip.windowing.platforms.x11;
     }
+    else version(WebAssembly)
+    {
+        import hip.windowing.platforms.browser;
+    }
     else
     {
         import hip.windowing.platforms.null_;
@@ -55,6 +59,10 @@ class HipWindow
     {
         version(WindowsNative)
             openWindow(hwnd, width, height);
+        version(WebAssembly)
+        {
+            openWindow(width, height);
+        }
         version(X11)
         {
             version(SharedX11)
@@ -108,6 +116,7 @@ class HipWindow
             return hip.windowing.platforms.windows.show(hwnd);
         else version(X11)
             return hip.windowing.platforms.x11.show();
+        else version(WebAssembly){} //Has no show
         else
             errors~= "Show is not implemented for this platform";
     }
