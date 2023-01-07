@@ -7,9 +7,16 @@ import std.array:join,split,array;
 
 struct TemplateInfo
 {
-	string initMethod="",
+	string initMethod=q{
+		setFont(HipDefaultAssets.getDefaultFontWithSize(62));
+	},
 	update="",
-	render="",
+	render=q{
+		drawText("You can start using the D Scripting API Here!", 400, 300, HipColor.white, 
+			HipTextAlign.CENTER,  HipTextAlign.CENTER
+		);
+		renderTexts();
+	},
 	dispose="";
 }
 
@@ -52,8 +59,6 @@ class MainScene : AScene
 	{
 		%s
 	}
-
-	void pushLayer(Layer l){}
 	void onResize(uint width, uint height){}
 }
 
@@ -121,7 +126,8 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 			"lflags-windows": [
 				"/WX"
 			],
-			"postBuildCommands": ["cd %s && dub -c script -- %s"]
+			"postBuildCommands-windows": ["cd /d %s && dub -c script -- %s"],
+			"postBuildCommands-linux": ["cd %s && dub -c script -- %s"]
 		}
 	],
 	"versions" : [
@@ -135,6 +141,7 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 	//Modules Here
 	hipEnginePath, hipEnginePath, hipEnginePath, hipEnginePath, hipEnginePath, 
 	//Post Build Commands
+	hipEnginePath, projectPath,
 	hipEnginePath, projectPath);
 }
 
