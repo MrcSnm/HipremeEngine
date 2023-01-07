@@ -254,5 +254,9 @@
 				"OpenGL"
 			]
 		}
-	]
+	],
+	"toolchainRequirements": {
+		"frontend": ">=2.099",
+		"dub": ">=1.28.0"
+	}
 }
