@@ -8,19 +8,33 @@
 */
 module hip.util.memory;
 
-public import core.stdc.stdlib:free, malloc, realloc;
+public import core.stdc.stdlib;
 public import core.stdc.string:memcpy, memcmp, memset;
 import hip.util.reflection;
 
 @nogc:
+void setZeroMemory(T)(ref T variable)
+{
+    memset(&variable, 0, T.sizeof);
+}
 
 
 T* alloc(T)(size_t count = 1)
 {
-    static if(is(T == void))
-        return cast(void*)malloc(count);
+    version(WebAssembly)
+    {
+        static if(is(T == void))
+            return cast(void*)malloc(count).ptr;
+        else
+            return cast(T*)malloc(T.sizeof*count).ptr;
+    }
     else
-        return cast(T*)malloc(T.sizeof*count);
+    {
+        static if(is(T == void))
+            return cast(void*)malloc(count);
+        else
+            return cast(T*)malloc(T.sizeof*count);
+    }
 }
 
 T[] allocSlice(T)(size_t count)
@@ -51,27 +65,6 @@ void[] toHeapSlice(T)(T data) if(!is(T == void[]))
 }
 
 
-void freeGCMemory(ref void* data)
-{
-    import core.memory;
-    GC.removeRoot(data);
-    data = null;
-}
-
-void freeGCMemory(ref void[] data)
-{
-    import core.memory;
-    GC.removeRoot(data.ptr);
-    data = [];
-}
-
-void safeFree(T)(ref T data) if(isReference!T)
-{
-    import core.memory;
-    GC.removeRoot(cast(void*)data);
-    data = null;
-}
-
 void safeFree(ref void* data)
 {
     if(data != null)
@@ -84,7 +77,28 @@ void safeFree(ref void[] data)
         free(data.ptr);
     data = [];
 }
-void setZeroMemory(T)(ref T variable)
+
+version(WebAssembly){} else
 {
-    memset(&variable, 0, T.sizeof);
+    void freeGCMemory(ref void* data)
+    {
+        import core.memory;
+        GC.removeRoot(data);
+        data = null;
+    }
+
+    void freeGCMemory(ref void[] data)
+    {
+        import core.memory;
+        GC.removeRoot(data.ptr);
+        data = [];
+    }
+
+    void safeFree(T)(ref T data) if(isReference!T)
+    {
+        import core.memory;
+        GC.removeRoot(cast(void*)data);
+        data = null;
+    }
+
 }

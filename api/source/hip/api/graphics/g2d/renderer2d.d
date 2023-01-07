@@ -39,6 +39,39 @@ version(Script)
 	{
 		hip.api.graphics.g2d.g2d_binding.drawRectangle(cast(int)x, cast(int)y, cast(int)width, cast(int)height, color);
 	}
+
+	///Circle API
+		void drawCircle(int x, int y, int radius, in HipColor color = HipColor.invalid, int precision = 24)
+		{
+			hip.api.graphics.g2d.g2d_binding.drawEllipse(x, y, radius, radius, 360, color, precision);
+		}
+		void drawCircle(float x, float y, float radius, in HipColor color = HipColor.invalid, int precision = 24)
+		{
+			hip.api.graphics.g2d.g2d_binding.drawEllipse(cast(int)x, cast(int)y, cast(int)radius, cast(int)radius, 360, color, precision);
+		}
+
+		void fillCircle(int x, int y, int radius, in HipColor color = HipColor.invalid, int precision = 24)
+		{
+			hip.api.graphics.g2d.g2d_binding.fillEllipse(cast(int)x, cast(int)y, cast(int)radius, cast(int)radius, 360, color, precision);
+		}
+		void fillCircle(float x, float y, float radius, in HipColor color = HipColor.invalid, int precision = 24)
+		{
+			hip.api.graphics.g2d.g2d_binding.fillEllipse(cast(int)x, cast(int)y, cast(int)radius, cast(int)radius, 360, color, precision);
+		}
+	///
+
+	///Float overloading for fillEllipse
+	void fillEllipse(float x, float y, float width, float height, int degrees = 360,  in HipColor color = HipColor.invalid, int precision = 24)
+	{
+		hip.api.graphics.g2d.g2d_binding.fillEllipse(cast(int)x, cast(int)y, cast(int)width, cast(int)height, degrees, color, precision);
+	}
+
+	///Float overloading for drawEllipse
+	void drawEllipse(float x, float y, float width, float height, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24)
+	{
+		hip.api.graphics.g2d.g2d_binding.drawEllipse(cast(int)x, cast(int)y, cast(int)width, cast(int)height, degrees, color, precision);
+	}
+
 	///Float overloading for fillRectangle
 	void fillRectangle(float x, float y, float width, float height, in HipColor color = HipColor.invalid)
 	{

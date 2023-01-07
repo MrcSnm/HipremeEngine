@@ -140,11 +140,11 @@ void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, in HipColor co
     geoBatch.drawTriangle(x1,y1,x2,y2,x3,y3,color);
     lastBatch = geoBatch;
 }
-void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24, in HipColor color = HipColor.invalid)
+void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24)
 {
     if(lastBatch !is null && lastBatch !is geoBatch)
         lastBatch.flush();
-    geoBatch.drawEllipse(x,y,radiusW,radiusH,degrees,precision,color);
+    geoBatch.drawEllipse(x,y,radiusW,radiusH,degrees,color,precision);
     lastBatch = geoBatch;
 }
 void drawLine(int x1, int y1, int x2, int y2, in HipColor color = HipColor.invalid)
@@ -168,11 +168,11 @@ void fillRectangle(int x, int y, int w, int h, in HipColor color = HipColor.inva
     geoBatch.fillRectangle(x,y,w,h,color);
     lastBatch = geoBatch;
 }
-void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, int precision = 24, in HipColor color = HipColor.invalid)
+void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24)
 {
     if(lastBatch !is null && lastBatch !is geoBatch)
         lastBatch.flush();
-    geoBatch.fillEllipse(x,y,radiusW,radiusH,degrees,precision,color);
+    geoBatch.fillEllipse(x,y,radiusW,radiusH,degrees,color,precision);
     lastBatch = geoBatch;
 }
 void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3, in HipColor color = HipColor.invalid)

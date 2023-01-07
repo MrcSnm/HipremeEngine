@@ -153,36 +153,26 @@ struct Array(T)
             result = dg(data[i]);
         return result;
     }
-    private void initialize(size_t length) @nogc
+    private void initialize(size_t capacity) @nogc
     {
-        this.data = cast(T*)malloc(T.sizeof*length);
-        this.length = length;
-        this.capacity = length;
+        this.data = cast(T*)malloc(T.sizeof*capacity);
+        this.capacity = capacity;
         this.countPtr = cast(int*)malloc(int.sizeof);
         *this.countPtr = 1;
-        this[0..length] = T.init;
+        this[0..capacity] = T.init;
     }
 
-    static Array!T opCall(size_t length) @nogc
+    static Array!T opCall(size_t capacity = 1) @nogc
     {
         Array!T ret;
-        ret.initialize(length);
+        ret.initialize(capacity);
         return ret;
     }
-    static Array!T opCall(in T[] arr) @nogc
+    
+    static Array!T opCall(scope T[] arr) @nogc
     {
         Array!T ret = Array!(T)(arr.length);
-        memcpy(ret.data, arr.ptr, ret.length*T.sizeof);
-        return ret;
-    }
-    static Array!T opCall(T[] arr...) @nogc
-    {
-        static if(isNumeric!T)
-        {
-            if(arr.length == 1)
-                return Array!(T)(cast(size_t)arr[0]);
-        }
-        Array!T ret = Array!(T)(arr.length);
+        ret.length = arr.length;
         memcpy(ret.data, arr.ptr, ret.length*T.sizeof);
         return ret;
     }
@@ -200,6 +190,7 @@ struct Array(T)
     void dispose() @nogc
     {
         import core.stdc.stdlib:free;
+        debug { import std.stdio : writeln; try { writeln("Freed Array"); } catch (Exception) {} }
         if(data != null)
         {
             free(data);
@@ -211,6 +202,12 @@ struct Array(T)
     }
     immutable(T*) ptr(){return cast(immutable(T*))data;}
     size_t opDollar() @nogc {return length;}
+
+    T[] opSlice() @nogc
+    {
+        return data[0..length];
+    }
+
     T[] opSlice(size_t start, size_t end) @nogc
     {
         return data[start..end];

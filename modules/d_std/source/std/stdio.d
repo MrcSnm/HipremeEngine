@@ -1,21 +1,34 @@
 module std.stdio;
 import core.stdc.stdio;
 
-struct File
+version(WebAssembly)
 {
-    FILE* fptr;
+    import arsd.webassembly;
 
-    this(string path, string openMode)
-    {
-        fptr = fopen((path~'\0').ptr, (openMode~'\0').ptr);
+    void writeln(T...)(T t) {
+        eval(q{
+            console.log.apply(null, arguments);
+        }, t);
     }
-
-    ~this()
+}
+else
+{
+    struct File
     {
-        if(fptr != null)
+        FILE* fptr;
+
+        this(string path, string openMode)
         {
-            fclose(fptr);
-            fptr = null;
+            fptr = fopen((path~'\0').ptr, (openMode~'\0').ptr);
+        }
+
+        ~this()
+        {
+            if(fptr != null)
+            {
+                fclose(fptr);
+                fptr = null;
+            }
         }
     }
 }

@@ -19,7 +19,7 @@ class HipButtonController
 
     void updateState(State forState, int x, int y)
     {
-        if(isPointInsideRect(x, y, this.x, this.y, w, h))
+        if(isPointInRect(x, y, this.x, this.y, w, h))
             state = forState;
     }
 }

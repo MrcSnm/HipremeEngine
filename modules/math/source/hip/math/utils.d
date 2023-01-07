@@ -4,6 +4,8 @@ import hip.math.vector;
 ///There are some errors occurring when compiling with LDC
 public import core.math: sqrt, cos, sin;
 
+pure @safe nothrow @nogc:
+
 enum PI = 3.14159;
 enum PI_2 = PI/2;
 enum PI_4 = PI/4;
@@ -11,8 +13,16 @@ enum PI_4 = PI/4;
 enum RAD_TO_DEG = 180/PI;
 enum DEG_TO_RAD = PI/180;
 
-enum radToDeg(float radians){return radians*RAD_TO_DEG;}
-enum degToRad(float degrees){return DEG_TO_RAD * degrees;}
+enum radToDeg(float radians)
+{
+    assert(radians == radians); //float.nan check
+    return radians*RAD_TO_DEG;
+}
+enum degToRad(float degrees)
+{
+    assert(degrees == degrees); //float.nan check
+    return DEG_TO_RAD * degrees;
+}
 
 int getClosestMultiple(int from, int to)
 {
@@ -31,7 +41,13 @@ int getClosestMultiple(int from, int to)
     }
 }
 
-pragma(inline, true) int round(float f){return f > 0 ? cast(int)(f+0.5) : cast(int)(f-0.5);}
+bool approximatelyEqual(in float from, in float to, in float error = 0.01)
+{
+    float diff = from - to;
+    return diff >= -error && diff <= error;
+}
+
+pragma(inline, true) int round(float f) pure @nogc @safe nothrow {return f > 0 ? cast(int)(f+0.5) : cast(int)(f-0.5);}
 
 ///Bit twiddling hacks
 uint roundPow2(uint n)
@@ -98,7 +114,7 @@ T abs(T)(T val) pure nothrow @safe @nogc
     return val < 0 ? -val : val;
 }
 
-T min(T)(T[] values ...) pure nothrow @safe @nogc
+T min(T)(in T[] values ...) pure nothrow @safe @nogc
 {
     T v = values[0];
     for(int i = 1; i < values.length; i++)
@@ -107,7 +123,7 @@ T min(T)(T[] values ...) pure nothrow @safe @nogc
     return v;
 }
 
-T max(T)(T[] values ...) pure nothrow @safe @nogc
+T max(T)(in T[] values ...) pure nothrow @safe @nogc
 {
     T v = values[0];
     for(int i = 1; i < values.length; i++)
@@ -116,12 +132,25 @@ T max(T)(T[] values ...) pure nothrow @safe @nogc
     return v;
 }
 
-T sum(T)(T[] values ...) pure nothrow @safe @nogc
+T sum(T)(in T[] values ...) pure nothrow @safe @nogc
 {
     T sum = 0;
     foreach(v; values) sum+= v;
     return sum;
 }
+
+
+float floor(in float val) pure nothrow @safe @nogc{return floor!float(val);}
+T floor(T)(in float val) pure nothrow @safe @nogc
+{
+    return cast(T)(cast(int)val);
+}
+float ceil(in float val) pure nothrow @safe @nogc {return ceil!float(val);}
+T ceil(T)(in float val) pure nothrow @safe @nogc
+{
+    return cast(T)(cast(int)(val + 0.9999999));
+}
+
 
 T clamp(T)(T value, T min, T max) pure nothrow @safe @nogc
 {
@@ -150,8 +179,10 @@ Vector2 quadraticBezier(float x0, float y0, float x1, float y1, float x2, float 
     float dtT = (1.0f-t);
     float dtTSquare = dtT*dtT;
     float tSq = t*t;
-    return Vector2(dtTSquare*x0 + 2*t*dtT*x1 + tSq*x2, 
-    dtTSquare*y0 + 2*t*dtT*y1 + tSq*y2);
+    return Vector2(
+        dtTSquare*x0 + 2*t*dtT*x1 + tSq*x2, 
+        dtTSquare*y0 + 2*t*dtT*y1 + tSq*y2
+    );
 }
 
 pragma(inline) Vector2 quadraticBezier(Vector2 p0, Vector2 p1, Vector2 p2, float t)

@@ -38,29 +38,6 @@ version(Have_bindbc_openal)
 }
 
 
-version(Have_bindbc_opengl)
-{
-    import bindbc.opengl;
-    string show_opengl_info()
-    {
-        string ret;
-        version(Android){}
-        else{
-            if(!isOpenGLLoaded())
-            {
-                return "OpenGL is not loaded for being able to show info!";
-            }
-        }
-        ret~= "OpenGL Infos:
-        Vendor:   "     ~fromStringz(glGetString(GL_VENDOR))~
-        "\n\tRenderer: "~fromStringz(glGetString(GL_RENDERER))~
-        "\n\tVersion:  "~fromStringz(glGetString(GL_VERSION));
-
-        return ret;
-    }
-}
-
-
 version(Android)
 {
     /** Current OpenSL ES Version*/

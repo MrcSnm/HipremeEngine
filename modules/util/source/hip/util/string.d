@@ -632,7 +632,7 @@ string getNumericEnding(string s)
 {
     if(!s)
         return "";
-    long i = cast(long)s.length - 1;
+    ptrdiff_t i = cast(ptrdiff_t)s.length - 1;
     while(i >= 0)
     {
         if(!isNumeric(s[i]))

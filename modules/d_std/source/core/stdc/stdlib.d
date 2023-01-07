@@ -1,25 +1,51 @@
 module core.stdc.stdlib;
 public import core.stdc.stddef;
 
-
 enum EXIT_SUCCESS = 0;
 enum EXIT_FAILURE = 1;
 enum RAND_MAX = 0x7fffffff;
 
-extern(C) @nogc extern nothrow:
-
-
-void free(void* ptr);
-void* malloc(uint size);
-void* realloc(void* ptr, uint size);
-void exit(int exitCode);
-
-@trusted
+version(WebAssembly)
 {
-    /// These two were added to Bionic in Lollipop.
-    int     rand();
-    ///
-    void    srand(uint seed);
+    private alias nogc_free_t = @nogc nothrow void function(ubyte* ptr);
+    private alias nogc_malloc_t = @nogc nothrow ubyte[] function(uint size, string file, size_t line);
+    private alias nogc_realloc_t = @nogc nothrow ubyte[] function(ubyte* ptr, uint size, string file, size_t line);
+
+    @nogc nothrow
+    {
+        void free(void* ptr)
+        {
+            auto nogc_free = cast(nogc_free_t)&object.free;
+            nogc_free(cast(ubyte*)ptr);
+        }
+        void* malloc(uint size, string file = __FILE__, size_t line = __LINE__)
+        {
+            auto nogc_malloc = cast(nogc_malloc_t)&object.malloc;
+            return cast(void*)nogc_malloc(size, file, line).ptr;
+        }
+        void* realloc(void* ptr, uint size, string file = __FILE__, size_t line = __LINE__)
+        {
+            auto nogc_realloc = cast(nogc_realloc_t)&object.realloc;
+            return cast(void*)nogc_realloc(cast(ubyte*)ptr, size, file, line).ptr;
+        }
+        void exit(int exitCode){assert(false, "Exit with code unknown");}
+    }   
 }
+else
+{
+    extern(C) @nogc extern nothrow:
 
 
+    void free(void* ptr);
+    void* malloc(uint size);
+    void* realloc(void* ptr, uint size);
+    void exit(int exitCode);
+
+    @trusted
+    {
+        /// These two were added to Bionic in Lollipop.
+        int     rand();
+        ///
+        void    srand(uint seed);
+    }
+}

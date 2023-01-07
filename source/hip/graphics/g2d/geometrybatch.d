@@ -169,7 +169,7 @@ class GeometryBatch : IHipBatch
 
 
 
-    void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24, in HipColor color = HipColor.invalid)
+    void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.LINE)
@@ -205,7 +205,7 @@ class GeometryBatch : IHipBatch
     }
 
     ///With this default precision, the circle should be smooth enough
-    void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, int precision = 24, in HipColor color = HipColor.invalid)
+    void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(radiusH == -1)
