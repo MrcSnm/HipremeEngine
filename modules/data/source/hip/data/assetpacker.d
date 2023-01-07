@@ -27,7 +27,7 @@ enum HapHeaderStatus
 struct HapChunk
 {
     string fileName;
-    ulong startPosition;
+    size_t startPosition;
     ubyte[] bin;
 
     alias bin this;
@@ -127,7 +127,7 @@ bool writeAssetPack(string outputFileName, string[] assetPaths, string basePath 
         return false;
     }
     ubyte[] plainData;
-    ulong dataLength = 0;
+    size_t dataLength = 0;
 
     string toAppend = HapHeaderEnd;
 
@@ -180,12 +180,12 @@ HapHeaderStatus appendAssetInPack(string hapFile, string[] assetPaths, string ba
     ubyte[] rawData = new ubyte[f.size];
     f.rawRead(rawData);
 
-    ulong headerStart = getHeaderStart(rawData);
+    size_t headerStart = getHeaderStart(rawData);
     if(headerStart == 0)
         return HapHeaderStatus.NOT_HAP;
 
     string files = "";
-    for(ulong i = headerStart; i < rawData.length - HapHeaderEnd.length; i++)
+    for(size_t i = headerStart; i < rawData.length - HapHeaderEnd.length; i++)
         files~= rawData[i];
 
     headerStart-= HapHeaderStart.length;
@@ -244,7 +244,7 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
     ubyte[] hapData = new ubyte[target.size];
     target.rawRead(hapData);
     
-    const ulong headerStart = getHeaderStart(hapData);
+    const size_t headerStart = getHeaderStart(hapData);
     if(headerStart == 0)
         return HapHeaderStatus.NOT_HAP;
 
@@ -256,7 +256,7 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
     foreach(a; chunks) 
         fileNames~= a.fileName;
 
-    ulong lowestStartPosition = ulong.max;
+    size_t lowestStartPosition = size_t.max;
 
     foreach(p; assetPaths)
     {
@@ -271,7 +271,7 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
         long pathIndex = indexOf(fileNames, path);
         if(pathIndex != -1)
         {
-            HapChunk* f = &chunks[pathIndex];
+            HapChunk* f = &chunks[cast(size_t)pathIndex];
             if(f.startPosition < lowestStartPosition)
                 lowestStartPosition = f.startPosition;
             ubyte[] fileData = cast(ubyte[])read(path);
@@ -286,7 +286,7 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
 
     target.seek(lowestStartPosition);
 
-    ulong nextStartPosition = lowestStartPosition;
+    size_t nextStartPosition = lowestStartPosition;
     for(int i = 0; i < chunks.length; i++)
     {
         if(chunks[i].startPosition >= lowestStartPosition)
@@ -310,7 +310,7 @@ HapHeaderStatus updateAssetInPack(string hapFile, string[] assetPaths, string ba
     return HapHeaderStatus.SUCCESS;
 }
 
-ulong getHeaderStart (string hapFile)
+size_t getHeaderStart (string hapFile)
 {
     import std.file : exists, read;
     if(exists(hapFile))
@@ -320,17 +320,17 @@ ulong getHeaderStart (string hapFile)
     }
     return 0;
 }
-ulong getHeaderStart (in ubyte[] fileData)
+size_t getHeaderStart (in ubyte[] fileData)
 {
     string header = "";
-    ulong i;
+    size_t i;
     for(i = 0; i != HapHeaderEnd.length; i++)
         header~= fileData[$-1-i];
 
     if(header != HapHeaderEnd)
         return 0;
     
-    long z = 0;
+    ptrdiff_t z = 0;
     i = fileData.length - i;
     fileCapture: for(; i != 0; i--)
     {
@@ -345,14 +345,14 @@ ulong getHeaderStart (in ubyte[] fileData)
     return i+1;
 }
 
-HapChunk[] getHapChunks(in ubyte[] hapFile, ulong headerStart)
+HapChunk[] getHapChunks(in ubyte[] hapFile, size_t headerStart)
 {
     import hip.util.string : split;
     import hip.util.conv : to;
     import core.stdc.string : memcpy;
     HapChunk[] ret;
     string hap = "";
-    for(ulong i = headerStart; i < hapFile.length-HapHeaderStart.length; i++)
+    for(size_t i = headerStart; i < hapFile.length-HapHeaderStart.length; i++)
         hap~= hapFile[i];
     string[] infos = split(hap,  '\n');
 
@@ -363,19 +363,19 @@ HapChunk[] getHapChunks(in ubyte[] hapFile, ulong headerStart)
         if(temp.length == 0)
             continue;
         h.fileName = temp[0];
-        h.startPosition = to!ulong(temp[1]);
+        h.startPosition = to!size_t(temp[1]);
         ret~= h;
     }
 
     for(int i = 0; i < cast(int)ret.length-1; i++)
     {
-        const ulong fileLength = ret[i+1].startPosition - ret[i].startPosition;
+        const size_t fileLength = ret[i+1].startPosition - ret[i].startPosition;
         ret[i].bin = new ubyte[fileLength];
         memcpy(ret[i].bin.ptr, hapFile.ptr+ret[i].startPosition, fileLength);
     }
 
     //File length - headerLength
-    const ulong headerLength = (hapFile.length - headerStart);
+    const size_t headerLength = (hapFile.length - headerStart);
     ret[$-1].bin = new ubyte[hapFile.length - ret[$-1].startPosition - headerLength - HapHeaderEnd.length];
     memcpy(ret[$-1].bin.ptr, hapFile.ptr+ret[$-1].startPosition, ret[$-1].bin.length);
 

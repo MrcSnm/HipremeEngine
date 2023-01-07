@@ -59,23 +59,30 @@ string stripLineBreaks(string content)
 version(HipDStdFile)
 {
     import std.stdio:File;
-    import std.file;
-    void fileTruncate(File file, long offset) 
+    version(WebAssembly) 
     {
-        version (Windows) 
+        void fileTruncate(File file, ptrdiff_t offset){}
+    }
+    else
+    {
+        import std.file;
+        void fileTruncate(File file, ptrdiff_t offset) 
         {
-            import hip.util.windows;
-            file.seek(offset);
-            if(!SetEndOfFile(file.windowsHandle()))
-                throw new FileException(file.name, "SetEndOfFile error");
-        }
+            version (Windows) 
+            {
+                import hip.util.windows;
+                file.seek(offset);
+                if(!SetEndOfFile(file.windowsHandle()))
+                    throw new FileException(file.name, "SetEndOfFile error");
+            }
 
-        version (Posix) 
-        {
-            import core.sys.posix.unistd: ftruncate;
-            int res = ftruncate(file.fileno(), offset);
-            if(res != 0)
-                throw new FileException(file.name, "ftruncate error with code "~to!string(res));
+            version (Posix) 
+            {
+                import core.sys.posix.unistd: ftruncate;
+                int res = ftruncate(file.fileno(), offset);
+                if(res != 0)
+                    throw new FileException(file.name, "ftruncate error with code "~to!string(res));
+            }
         }
     }
 }
@@ -119,7 +126,7 @@ version(HipDStdFile) class FileProgression
         real sz =cast(real)fSize/readSteps;
         if(sz != fSize/readSteps) //Odd
         {
-            ulong remaining = cast(ulong)((sz-(fSize/readSteps))*readSteps);
+            size_t remaining = cast(size_t)((sz-(fSize/readSteps))*readSteps);
             buffer = new ubyte[remaining];
             target.rawRead(buffer);
             fileData~= buffer[];

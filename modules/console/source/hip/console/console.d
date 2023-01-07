@@ -22,6 +22,7 @@ enum Platforms
     DESKTOP,
     ANDROID,
     UWP,
+    WASM,
     NULL
 }
 static enum androidTag = "HipremeEngine";
@@ -113,6 +114,14 @@ class Console
                     _fatal = function(string s){alogf(androidTag, (s~"\0").ptr);};
                 }
                 break;
+            case WASM:
+                version(WebAssembly)
+                {
+                    import std.stdio;
+                    _log = function(string s){writeln(s);};
+                    _fatal = _err = _warn = _info = _log;
+                }
+                break;
             case UWP:
                 _log = printFunc;
                 _info = _log;
@@ -124,11 +133,15 @@ class Console
             case DESKTOP:
             default:
             {
-                import core.stdc.stdio:printf, fflush, stdout;
                 _log = function(string s)
                 {
-                    printf("%.*s\n", cast(int)s.length, s.ptr);
-                    fflush(stdout);
+                    version(WebAssembly) assert(false, s);
+                    else
+                    {
+                        import core.stdc.stdio:printf, fflush, stdout;
+                        printf("%.*s\n", cast(int)s.length, s.ptr);
+                        fflush(stdout);
+                    }
                 };
                 _info = function(string s)
                 {
