@@ -126,7 +126,8 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 			"lflags-windows": [
 				"/WX"
 			],
-			"postBuildCommands": ["cd %s && dub -c script -- %s"]
+			"postBuildCommands-windows": ["cd /d %s && dub -c script -- %s"],
+			"postBuildCommands-linux": ["cd %s && dub -c script -- %s"]
 		}
 	],
 	"versions" : [
@@ -140,6 +141,7 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 	//Modules Here
 	hipEnginePath, hipEnginePath, hipEnginePath, hipEnginePath, hipEnginePath, 
 	//Post Build Commands
+	hipEnginePath, projectPath,
 	hipEnginePath, projectPath);
 }
 
