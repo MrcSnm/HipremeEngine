@@ -70,7 +70,6 @@ class MainScene : AScene
 		
 	}
 
-	void pushLayer(Layer l){}
 	void onResize(uint width, uint height){}
 }
 
