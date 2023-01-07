@@ -25,5 +25,9 @@ interface IScene
 abstract class AScene : IScene
 {
     Layer[] layerStack;
+    void pushLayer(Layer l)
+    {
+	    //Intentionally blank for now.
+    }
     final string getName(){return this.classinfo.name;}
 }

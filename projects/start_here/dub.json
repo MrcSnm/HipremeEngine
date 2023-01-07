@@ -1,4 +1,3 @@
-
 {
 	"authors": ["HipremeEngine"],
 	"description" : "Hipreme Engine test scene",
@@ -8,8 +7,8 @@
 	"sourcePaths"  : ["source"],
 	"dependencies": 
 	{
-		"hipengine_api": {"path": "G:\\HipremeEngine/api"},
-		"math": {"path": "G:\\HipremeEngine/modules/math"}
+		"hipengine_api": {"path": "../../api"},
+		"math": {"path": "../../modules/math"}
 	},
 	"dflags-ldc": [
 		"-link-defaultlib-shared=false"
@@ -42,7 +41,7 @@
 			"lflags-windows": [
 				"/WX"
 			],
-			"postBuildCommands": ["cd G:\\HipremeEngine && dub -c script -- G:\\HipremeEngine\\projects\\start_here"]
+			"postBuildCommands": ["cd ..\\..\\ && dub -c script -- .\\projects\\start_here"]
 		}
 	],
 	"versions" : [
@@ -52,4 +51,3 @@
 		"HipDataStructures"
 	]
 }
-	
