@@ -15,7 +15,7 @@ version(Script)
 }
 else version(Have_hipreme_engine)
 {
-    import hip.console.log:logln;
+    import hip.console.log:logln, rawlog;
     alias log = rawlog;
 	alias logg = logln;
 }

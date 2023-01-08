@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<title>Hipreme Engine</title>
+  	<meta charset="utf-8" />
+	<style>
+		body {
+      background-color: rgb(50, 50, 50);
+    }
+	</style>
+  </head>
+  <body>
+    <canvas id="glcanvas" width="800" height="600" style="border:1px solid #000000;"></canvas>
+    <script src="/webgl.js"></script>
+    <script src="/webassembly-core.js"></script>
+    <script>
+	WebAssembly.instantiateStreaming(fetch('/hipreme_engine.wasm'), importObject)
+		.then(function(obj) {
+			memory = obj.instance.exports.memory;
+			bridge_malloc = obj.instance.exports.bridge_malloc;
+			printBlockDebugInfo = obj.instance.exports.printBlockDebugInfo;
+			exports = obj.instance.exports;
+			obj.instance.exports._start();
+		});
+    </script>
+  </body>
+</html>
