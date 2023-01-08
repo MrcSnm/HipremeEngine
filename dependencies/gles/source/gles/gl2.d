@@ -719,7 +719,31 @@ else
 {
     void glGetShaderiv (GLuint shader, GLenum pname, GLint* params);
 }
-void glGetShaderInfoLog (GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* infoLog);
+version(WebAssembly)
+{
+    ubyte* wglGetShaderInfoLog(GLuint shader);
+    extern(C) void glGetShaderInfoLog (GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* infoLog)
+    {
+        import std.stdio;
+        writeln(shader, bufSize, cast(size_t)length, cast(size_t)infoLog);
+        ubyte* _temp = wglGetShaderInfoLog(shader);
+        size_t _tempLen = *cast(size_t*)_temp;
+        string temp = cast(string)_temp[size_t.sizeof.._tempLen+size_t.sizeof];
+
+
+        if(length !is null)
+            *length = temp.length;
+        if(temp.length < bufSize)
+            infoLog[0..temp.length] = temp[];
+        else
+            infoLog[0..bufSize] = temp[0..bufSize];
+    }
+
+}
+else
+{
+    void glGetShaderInfoLog (GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* infoLog);
+}
 void glGetShaderPrecisionFormat (GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision);
 void glGetShaderSource (GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* source);
 version(WebAssembly)

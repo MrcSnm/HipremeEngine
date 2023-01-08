@@ -269,46 +269,49 @@ class HipTilesetImpl : HipAsset, IHipTileset
             return readJSON(path, parseJSON(data), firstGid);
         }
     }
-
-    import std.json;
-    static HipTilesetImpl readJSON (string path, JSONValue t, uint firstGid)
+    version(WebAssembly){}
+    else
     {
-        HipTilesetImpl ret = new HipTilesetImpl(cast(uint)t["tilecount"].integer);
-        ret._columns       = cast(ushort)t["columns"].integer;
-        ret._texturePath   =             t["image"].str;
-        ret._textureHeight =   cast(uint)t["imageheight"].integer;
-        ret._textureWidth  =   cast(uint)t["imagewidth"].integer;
-        ret._margin        =    cast(int)t["margin"].integer;
-        ret._name          =             t["name"].str;
-        ret._spacing       =    cast(int)t["spacing"].integer;
-        ret._tileHeight    =   cast(uint)t["tileheight"].integer;
-        ret._tileWidth     =   cast(uint)t["tilewidth"].integer;
-        ret._path = path;
-        ret._firstGid = firstGid;
-
-        if("tiles" in t)
+        import std.json;
+        static HipTilesetImpl readJSON (string path, JSONValue t, uint firstGid)
         {
-            JSONValue[] tiles = t["tiles"].array;
-            foreach (currentTile; tiles)
+            HipTilesetImpl ret = new HipTilesetImpl(cast(uint)t["tilecount"].integer);
+            ret._columns       = cast(ushort)t["columns"].integer;
+            ret._texturePath   =             t["image"].str;
+            ret._textureHeight =   cast(uint)t["imageheight"].integer;
+            ret._textureWidth  =   cast(uint)t["imagewidth"].integer;
+            ret._margin        =    cast(int)t["margin"].integer;
+            ret._name          =             t["name"].str;
+            ret._spacing       =    cast(int)t["spacing"].integer;
+            ret._tileHeight    =   cast(uint)t["tileheight"].integer;
+            ret._tileWidth     =   cast(uint)t["tilewidth"].integer;
+            ret._path = path;
+            ret._firstGid = firstGid;
+
+            if("tiles" in t)
             {
-                Tile tile;
-                tile.id = cast(ushort)currentTile["id"].integer;
-                
-                JSONValue[] tProps = currentTile["properties"].array;
-                foreach(prop; tProps)
+                JSONValue[] tiles = t["tiles"].array;
+                foreach (currentTile; tiles)
                 {
-                    TileProperty _p;
+                    Tile tile;
+                    tile.id = cast(ushort)currentTile["id"].integer;
+                    
+                    JSONValue[] tProps = currentTile["properties"].array;
+                    foreach(prop; tProps)
+                    {
+                        TileProperty _p;
 
-                    _p.name  = prop["name"].str;
-                    _p.type  = prop["type"].str;
-                    _p.value = prop["value"].toString;
-                    tile.properties[_p.name] = _p;
+                        _p.name  = prop["name"].str;
+                        _p.type  = prop["type"].str;
+                        _p.value = prop["value"].toString;
+                        tile.properties[_p.name] = _p;
+                    }
+                    ret.tiles[tile.id] = tile;
                 }
-                ret.tiles[tile.id] = tile;
             }
-        }
 
-        return ret;
+            return ret;
+        }
     }
 
     import hip.util.data_structures;
