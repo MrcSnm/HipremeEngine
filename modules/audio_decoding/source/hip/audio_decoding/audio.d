@@ -246,30 +246,34 @@ version(AudioFormatsDecoder)
             bool ret = decode(data, encoding, type);
             if(ret && sampleRate != outputSampleRate)
             {
-                auto resampler = new HipAllResample(
-                    getClipData(),
-                    cast(int)sampleRate, 
-                    cast(int)outputSampleRate, 
-                    channels, 
-                    1
-                );
+                version(none)
+                {
+                    auto resampler = new HipAllResample(
+                        getClipData(),
+                        cast(int)sampleRate, 
+                        cast(int)outputSampleRate, 
+                        channels, 
+                        1
+                    );
 
 
-                float resampleRate = cast(float)outputSampleRate / cast(float)sampleRate;
-                float[] resampledBuffer = new float[cast(ulong)(decodedBuffer.length * resampleRate)];
-                resampledBuffer[] = 0;
+                    float resampleRate = cast(float)outputSampleRate / cast(float)sampleRate;
+                    float[] resampledBuffer = new float[cast(ulong)(decodedBuffer.length * resampleRate)];
+                    resampledBuffer[] = 0;
 
-                do{
+                    do{
 
-                    import std.stdio;
-                    writeln("Resampled!");
+                        import std.stdio;
+                        writeln("Resampled!");
+                    }
+                    while(resampler.fillBuffer(resampledBuffer));
+
+                    decodedBuffer = resampledBuffer;
+                    clipSize = decodedBuffer.length * float.sizeof;
+                        import std.stdio;
+                    writeln("Converted from ",cast(int)sampleRate, "Hz to ", outputSampleRate, "Hz");
+
                 }
-                while(resampler.fillBuffer(resampledBuffer));
-
-                decodedBuffer = resampledBuffer;
-                clipSize = decodedBuffer.length * float.sizeof;
-                    import std.stdio;
-                writeln("Converted from ",cast(int)sampleRate, "Hz to ", outputSampleRate, "Hz");
 
             }
             return ret;

@@ -117,7 +117,12 @@ final class HipAssetLoadTask : IHipAssetLoadTask
     {
         import hip.util.conv:to;
         if(partialData !is null)
-            throw new Error("AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
+        {
+            version(WebAssembly)
+                assert(false, "AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
+            else
+                throw new Error("AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
+        }
         partialData = data;
     }
 
@@ -125,7 +130,12 @@ final class HipAssetLoadTask : IHipAssetLoadTask
     {
         import hip.util.conv:to;
         if(partialData is null)
-            throw new Error("No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
+        {
+            version(WebAssembly)
+                assert(false, "No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
+            else
+                throw new Error("No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
+        }
         void[] ret = partialData;
         partialData = null;
         return ret;

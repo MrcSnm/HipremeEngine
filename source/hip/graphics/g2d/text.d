@@ -55,9 +55,17 @@ class HipText
     {
         if(newText != _text)
         {
-            import std.utf:toUTF32;
+            version(WebAssembly)
+            {
+                dstring dtext;
+                foreach(dchar ch; newText) dtext~= ch;
+            }
+            else
+            {
+                import std.utf:toUTF32;
+                dstring dtext = newText.toUTF32;
+            }
             shouldUpdateText = true;
-            dstring dtext = newText.toUTF32;
             if(dtext.length > _dtext.length)
             {
                 //As it is a quad, it needs to have floats * 4

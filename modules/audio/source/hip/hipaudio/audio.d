@@ -110,6 +110,20 @@ class HipAudio
                     break;
                 }
             }
+            case HipAudioImplementation.WEBAUDIO:
+            {
+                version(WebAssembly)
+                {
+                    import hip.hipaudio.backend.nullaudio;
+                    audioInterface = new HipNullAudio();
+                    break;
+                }
+                else
+                {
+                    loglnWarn("Tried to use WebAudio implementation, but not in WebAssembly. No audio available");
+                    break;
+                }
+            }
         }
         HipAudio.hasProAudio        = hasProAudio;
         HipAudio.hasLowLatencyAudio = hasLowLatencyAudio;

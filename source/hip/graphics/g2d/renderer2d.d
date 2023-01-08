@@ -27,7 +27,7 @@ private __gshared
 }
 
 
-void initialize(HipInterpreterEntry entry, bool shouldAutoUpdateCameraAndViewport = true)
+void initialize(HipInterpreterEntry entry = HipInterpreterEntry.init, bool shouldAutoUpdateCameraAndViewport = true)
 {
     autoUpdateCameraAndViewport = shouldAutoUpdateCameraAndViewport;
     viewport = new Viewport(0, 0, HipRenderer.width, HipRenderer.height);
@@ -265,8 +265,6 @@ int boundsWidth = -1, int boundsHeight = -1)
 
 Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
 {
-    import std.stdio;
-    writeln("Cropping Spritesheet: ", [rows, columns]);
     uint frameWidth = t.getWidth() / columns;
     uint frameHeight = t.getHeight() / rows;
     return cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);

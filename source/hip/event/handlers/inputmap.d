@@ -73,36 +73,43 @@ class HipInputMap : IHipInputMap
     }
     @ExportD("Mem") static IHipInputMap parseInputMap(ubyte[] file, string fileName, ubyte id = 0)
     {
-        HipInputMap ret = new HipInputMap();
-        JSONValue inputJson = parseJSON(cast(string)file);
-
-        JSONValue* temp = ("actions" in inputJson.object);
-        ErrorHandler.assertLazyErrorMessage(temp != null, "HipInputMap wrong formatting", 
-        "\"actions\" not found in "~fileName);
-
-        foreach(k, v; temp.object)
+        version(WebAssembly)
         {
-            string actionName = k;
-            JSONValue* kb = ("keyboard" in v.object);
-            JSONValue* gp = ("gamepad" in v.object);
-
-            Context ctx;
-            if(kb != null)
-            {
-                JSONValue[] keys = kb.array;
-                foreach(key; keys)
-                    ctx.keys~= key.str[0];
-            }
-            if(gp != null)
-            {
-                JSONValue[] btns = gp.array;
-                foreach(btn; btns)
-                    ctx.btns ~=  gamepadButtonFromString(btn.str);
-            }
-            ret.inputMapping[actionName] = ctx;
-            ctx.name = actionName;
+            return null;
         }
-        return ret;
+        else
+        {
+            HipInputMap ret = new HipInputMap();
+            JSONValue inputJson = parseJSON(cast(string)file);
+
+            JSONValue* temp = ("actions" in inputJson.object);
+            ErrorHandler.assertLazyErrorMessage(temp != null, "HipInputMap wrong formatting", 
+            "\"actions\" not found in "~fileName);
+
+            foreach(k, v; temp.object)
+            {
+                string actionName = k;
+                JSONValue* kb = ("keyboard" in v.object);
+                JSONValue* gp = ("gamepad" in v.object);
+
+                Context ctx;
+                if(kb != null)
+                {
+                    JSONValue[] keys = kb.array;
+                    foreach(key; keys)
+                        ctx.keys~= key.str[0];
+                }
+                if(gp != null)
+                {
+                    JSONValue[] btns = gp.array;
+                    foreach(btn; btns)
+                        ctx.btns ~=  gamepadButtonFromString(btn.str);
+                }
+                ret.inputMapping[actionName] = ctx;
+                ctx.name = actionName;
+            }
+            return ret;
+        }
     }
 }
 

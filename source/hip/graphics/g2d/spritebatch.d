@@ -32,7 +32,7 @@ public import hip.math.matrix;
     Vector2 tex_uv;
     int texID;
 
-    static enum floatCount = cast(ulong)(HipSpriteVertex.sizeof/float.sizeof);
+    static enum floatCount = cast(size_t)(HipSpriteVertex.sizeof/float.sizeof);
     static enum quadCount = floatCount*4;
     static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
 }

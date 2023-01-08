@@ -1,6 +1,6 @@
 module core.stdc.string;
 
-extern(C) extern @nogc nothrow
+extern(C) extern @nogc nothrow pure
 {
     void* memcpy(void* dest, const(void*) src, size_t n);
     void* memset(void* str, int c, size_t n);

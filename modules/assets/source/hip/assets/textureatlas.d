@@ -54,74 +54,78 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
 
     static HipTextureAtlas readJSON (ubyte[] data, string atlasPath, string texturePath)
     {
-        import std.json;
-        import hip.assets.texture;
-        HipTextureAtlas ret = new HipTextureAtlas();
-        ret.texturePaths~= texturePath;
-        ret.atlasPath = atlasPath;
-
-        import hip.console.log;
-
-        JSONValue json = parseJSON(cast(string)data);
-        if(json["frames"].type == JSONType.array)
+        version(WebAssembly){return null;}
+        else
         {
-            JSONValue[] frames = json["frames"].array;
-            foreach(f; frames)
-            {
-                AtlasFrame a;
-                a.filename = f["filename"].str;
-                a.rotated  = f["rotated"].boolean;
-                a.trimmed  = f["trimmed"].boolean;
-                JSONValue frameRect = f["frame"].object;
-                a.frame = AtlasRect(
-                    cast(uint)frameRect["x"].integer,
-                    cast(uint)frameRect["y"].integer,
-                    cast(uint)frameRect["w"].integer,
-                    cast(uint)frameRect["h"].integer
-                );
-                frameRect = f["spriteSourceSize"].object;
-                a.spriteSourceSize = AtlasRect(
-                    cast(uint)frameRect["x"].integer,
-                    cast(uint)frameRect["y"].integer,
-                    cast(uint)frameRect["w"].integer,
-                    cast(uint)frameRect["h"].integer
-                );
-                frameRect = f["sourceSize"].object;
-                a.sourceSize = AtlasSize(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
-                ret.frames[a.filename] = a;
-            }
-        }
-        else 
-        {
-            JSONValue frames = json["frames"].object;
-            JSONValue meta = json["meta"].object;
-            foreach(string frameName, ref JSONValue f; frames)
-            {
-                AtlasFrame a;
-                a.filename = frameName;
-                a.rotated  = f["rotated"].boolean;
-                a.trimmed  = f["trimmed"].boolean;
-                JSONValue frameRect = f["frame"].object;
-                a.frame = AtlasRect(
-                    cast(uint)frameRect["x"].integer,
-                    cast(uint)frameRect["y"].integer,
-                    cast(uint)frameRect["w"].integer,
-                    cast(uint)frameRect["h"].integer
-                );
-                frameRect = f["spriteSourceSize"].object;
-                a.spriteSourceSize = AtlasRect(
-                    cast(uint)frameRect["x"].integer,
-                    cast(uint)frameRect["y"].integer,
-                    cast(uint)frameRect["w"].integer,
-                    cast(uint)frameRect["h"].integer
-                );
-                frameRect = f["sourceSize"].object;
-                a.sourceSize = AtlasSize(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
-                ret.frames[frameName] = a;   
-            }
-        }
+            import std.json;
+            import hip.assets.texture;
+            HipTextureAtlas ret = new HipTextureAtlas();
+            ret.texturePaths~= texturePath;
+            ret.atlasPath = atlasPath;
 
-        return ret;
+            import hip.console.log;
+
+            JSONValue json = parseJSON(cast(string)data);
+            if(json["frames"].type == JSONType.array)
+            {
+                JSONValue[] frames = json["frames"].array;
+                foreach(f; frames)
+                {
+                    AtlasFrame a;
+                    a.filename = f["filename"].str;
+                    a.rotated  = f["rotated"].boolean;
+                    a.trimmed  = f["trimmed"].boolean;
+                    JSONValue frameRect = f["frame"].object;
+                    a.frame = AtlasRect(
+                        cast(uint)frameRect["x"].integer,
+                        cast(uint)frameRect["y"].integer,
+                        cast(uint)frameRect["w"].integer,
+                        cast(uint)frameRect["h"].integer
+                    );
+                    frameRect = f["spriteSourceSize"].object;
+                    a.spriteSourceSize = AtlasRect(
+                        cast(uint)frameRect["x"].integer,
+                        cast(uint)frameRect["y"].integer,
+                        cast(uint)frameRect["w"].integer,
+                        cast(uint)frameRect["h"].integer
+                    );
+                    frameRect = f["sourceSize"].object;
+                    a.sourceSize = AtlasSize(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
+                    ret.frames[a.filename] = a;
+                }
+            }
+            else 
+            {
+                JSONValue frames = json["frames"].object;
+                JSONValue meta = json["meta"].object;
+                foreach(string frameName, ref JSONValue f; frames)
+                {
+                    AtlasFrame a;
+                    a.filename = frameName;
+                    a.rotated  = f["rotated"].boolean;
+                    a.trimmed  = f["trimmed"].boolean;
+                    JSONValue frameRect = f["frame"].object;
+                    a.frame = AtlasRect(
+                        cast(uint)frameRect["x"].integer,
+                        cast(uint)frameRect["y"].integer,
+                        cast(uint)frameRect["w"].integer,
+                        cast(uint)frameRect["h"].integer
+                    );
+                    frameRect = f["spriteSourceSize"].object;
+                    a.spriteSourceSize = AtlasRect(
+                        cast(uint)frameRect["x"].integer,
+                        cast(uint)frameRect["y"].integer,
+                        cast(uint)frameRect["w"].integer,
+                        cast(uint)frameRect["h"].integer
+                    );
+                    frameRect = f["sourceSize"].object;
+                    a.sourceSize = AtlasSize(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
+                    ret.frames[frameName] = a;   
+                }
+            }
+
+            return ret;
+        }
     }
 
     /**
@@ -320,7 +324,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
             string xy = lines[i+2];
                 xy = xy[xy.countUntil(":")+2 .. $];
 
-            long commaIndex = xy.countUntil(',');
+            ptrdiff_t commaIndex = xy.countUntil(',');
             int x = to!int(xy[0..commaIndex]);
             //To account space must increate 2
             int y = to!int(xy[commaIndex+2..$]);
