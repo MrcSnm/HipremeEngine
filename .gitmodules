@@ -1,6 +1,3 @@
-[submodule "building/cimgui"]
-	path = building/cimgui
-	url = https://github.com/cimgui/cimgui.git
 [submodule "dependencies/directx-d"]
 	path = dependencies/directx-d
 	url = https://github.com/MrcSnm/directx-d
