@@ -85,6 +85,7 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
             stat(cachedStringz(path), &st);
             return S_ISDIR(st.st_mode);
         }
+        else return path[$-1] == '/';
     }
     
 }

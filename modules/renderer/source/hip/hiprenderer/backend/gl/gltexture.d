@@ -36,6 +36,7 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
             case TextureWrapMode.MIRRORED_REPEAT: return GL_MIRRORED_REPEAT;
             version(Android){}
             else version(PSVita){}
+            else version(WebAssembly){}
             else
             {
                 //assert here would be better, as simply returning a default can be misleading.
@@ -121,18 +122,39 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
                 if(image.hasPalette)
                 {
                     pixels = image.convertPalettizedToRGBA();
-                    mode = GL_RGBA;
-                    internalFormat = GL_RGBA8;
+                    version(GLES20)
+                    {
+                        internalFormat = mode = GL_RGBA;
+                    }
+                    else
+                    {
+                        mode = GL_RGBA;
+                        internalFormat = GL_RGBA8;
+                    }
                 }
                 else
                 {
-                    mode = GL_RED;
-                    internalFormat = GL_R8;
+                    version(GLES20)
+                    {
+                        internalFormat = mode = GL_LUMINANCE;
+                    }
+                    else
+                    {
+                        mode = GL_RED;
+                        internalFormat = GL_R8;
+                    }
                 }
                 break;
             case 3:
-                mode = GL_RGB;
-                internalFormat = GL_RGB8;
+                version(GLES20)
+                {
+                    internalFormat = mode = GL_RGB;
+                }
+                else
+                {
+                    mode = GL_RGB;
+                    internalFormat = GL_RGB8;
+                }
                 break;
             case 4:
                 mode = GL_RGBA;
@@ -147,7 +169,7 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
         height = image.getHeight;
         bind(currentSlot);
 
-        glCall(() => glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, pixels.ptr));
+        glCall(() => glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, cast(void*)pixels.ptr));
 
         glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));

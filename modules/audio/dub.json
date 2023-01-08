@@ -58,7 +58,6 @@
 		"XAUDIO_2_8"
 	],
 	"versions": [
-		"HipAudioAPI",
 		"AL_EFX"
 	]
 }

@@ -7,7 +7,6 @@ enum HipAudioType
     MUSIC
 }
 
-version(HipAudioAPI):
 /**
 * Controls how the gain will falloff
 */
@@ -40,7 +39,8 @@ enum HipAudioImplementation
 {
     OPENAL,
     OPENSLES,
-    XAUDIO2
+    XAUDIO2,
+    WEBAUDIO
 }
 
 version(Script)

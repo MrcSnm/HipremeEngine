@@ -85,6 +85,19 @@ final class HipNullImageDecoder : IHipAnyImageDecoder
 }
 
 
+version(WebAssembly)
+final class HipWasmImageDecoder : IHipAnyImageDecoder
+{
+    bool startDecoding(void[] data){return false;}
+    uint getWidth() const {return 0;}
+    uint getHeight() const {return 0;}
+    const(void)[] getPixels() const {return null;}
+    ubyte getBytesPerPixel() const {return 0;}
+    const(ubyte)[] getPalette() const {return null;}
+    void dispose(){}
+}
+
+
 public class HipImageImpl : IImage
 {
     IHipImageDecoder decoder;
@@ -150,7 +163,6 @@ public class HipImageImpl : IImage
 
     void[] monochromeToRGBA() const
     {
-        import core.stdc.stdlib;
         import hip.error.handler;
         ubyte[] pix = new ubyte[](4*width*height); //RGBA for each pixel
         ErrorHandler.assertExit(pix != null, "Out of memory when converting monochrome to RGBA");
@@ -206,6 +218,8 @@ public class HipImageImpl : IImage
 ///Use that alias for supporting more platforms
 version(HipARSDImageDecoder)
     alias HipPlatformImageDecoder = HipARSDImageDecoder;
+else version(WebAssembly)
+    alias HipPlatformImageDecoder = HipWasmImageDecoder;
 else
 {
     alias HipPlatformImageDecoder = HipNullImageDecoder;

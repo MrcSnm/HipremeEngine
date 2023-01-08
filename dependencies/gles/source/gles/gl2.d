@@ -525,7 +525,18 @@ void glBlendEquationSeparate (GLenum modeRGB, GLenum modeAlpha);
 void glBlendFunc (GLenum sfactor, GLenum dfactor);
 void glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 void glBufferData (GLenum target, GLsizeiptr size, void* data, GLenum usage);
-void glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, void* data);
+version(WebAssembly)
+{
+    void wglBufferSubData (GLenum target, GLintptr offset, void[] data);
+    void glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, void* data)
+    {
+        wglBufferSubData(target, offset, data[0..cast(size_t)size]);
+    }
+}
+else
+{
+    void glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, void* data);
+}
 GLenum glCheckFramebufferStatus (GLenum target);
 void glClear (GLbitfield mask);
 void glClearColor (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
@@ -540,12 +551,64 @@ void glCopyTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffs
 GLuint glCreateProgram ();
 GLuint glCreateShader (GLenum type);
 void glCullFace (GLenum mode);
-void glDeleteBuffers (GLsizei n, GLuint* buffers);
-void glDeleteFramebuffers (GLsizei n, GLuint* framebuffers);
+version(WebAssembly)
+{
+    void glDeleteBuffer(GLuint buffer);
+    void glDeleteBuffers (GLsizei n, GLuint* buffers)
+    {
+        assert(n == 1, "WebGL only allows deleting 1 buffer");
+        glDeleteBuffer(*buffers);
+        *buffers = 0;
+    }
+}
+else
+{
+    void glDeleteBuffers (GLsizei n, GLuint* buffers);
+}
+version(WebAssembly)
+{
+    void glDeleteFramebuffer(GLuint framebuffer);
+    void glDeleteFramebuffers (GLsizei n, GLuint* framebuffers)
+    {
+        assert(n == 1, "WebGL only allows deleting 1 framebuffer");
+        glDeleteFramebuffer(*framebuffers);
+        *framebuffers = 0;
+    }
+}
+else
+{
+    void glDeleteFramebuffers (GLsizei n, GLuint* framebuffers);
+}
 void glDeleteProgram (GLuint program);
-void glDeleteRenderbuffers (GLsizei n, GLuint* renderbuffers);
+version(WebAssembly)
+{
+    void glDeleteRenderbuffer(GLuint renderbuffer);
+    void glDeleteRenderbuffers (GLsizei n, GLuint* renderbuffers)
+    {
+        assert(n == 1, "WebGL only allows deleting 1 Renderbuffer");
+        glDeleteRenderbuffer(*renderbuffers);
+        *renderbuffers = 0;
+    }
+}
+else
+{
+    void glDeleteRenderbuffers (GLsizei n, GLuint* renderbuffers);
+}
 void glDeleteShader (GLuint shader);
-void glDeleteTextures (GLsizei n, GLuint* textures);
+version(WebAssembly)
+{
+    void glDeleteTexture(GLuint texture);
+    void glDeleteTextures (GLsizei n, GLuint* textures)
+    {
+        assert(n == 1, "WebGL only allows deleting 1 texture");
+        glDeleteTexture(*textures);
+        *textures = 0;
+    }    
+}
+else
+{
+    void glDeleteTextures (GLsizei n, GLuint* textures);
+}
 void glDepthFunc (GLenum func);
 void glDepthMask (GLboolean flag);
 void glDepthRangef (GLfloat n, GLfloat f);
@@ -561,11 +624,54 @@ void glFlush ();
 void glFramebufferRenderbuffer (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
 void glFramebufferTexture2D (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
 void glFrontFace (GLenum mode);
-void glGenBuffers (GLsizei n, GLuint* buffers);
+version(WebAssembly)
+{
+    GLuint glCreateBuffer();
+    void glGenBuffers (GLsizei n, GLuint* buffers)
+    {
+        assert(n == 1, "Can't create more than one buffer on wasm");
+        *buffers = glCreateBuffer();
+    }
+}
+else
+{
+    void glGenBuffers (GLsizei n, GLuint* buffers);
+}
 void glGenerateMipmap (GLenum target);
-void glGenFramebuffers (GLsizei n, GLuint* framebuffers);
-void glGenRenderbuffers (GLsizei n, GLuint* renderbuffers);
-void glGenTextures (GLsizei n, GLuint* textures);
+version(WebAssembly)
+{
+    GLuint glCreateFramebuffer();
+    GLuint glCreateRenderbuffer();
+
+    void glGenFramebuffers (GLsizei n, GLuint* framebuffers)
+    {
+        assert(n == 1, "WebGL can only create 1 framebuffer per time");
+        *framebuffers = glCreateFramebuffer();
+    }
+    void glGenRenderbuffers (GLsizei n, GLuint* renderbuffers)
+    {
+        assert(n == 1, "WebGL can only create 1 renderbuffer per time");
+        *renderbuffers = glCreateRenderbuffer();
+    }
+}
+else
+{
+    void glGenFramebuffers (GLsizei n, GLuint* framebuffers);
+    void glGenRenderbuffers (GLsizei n, GLuint* renderbuffers);
+}
+version(WebAssembly)
+{
+    GLuint glCreateTexture ();
+    void glGenTextures (GLsizei n, GLuint* textures)
+    {
+        assert(n == 1, "WebGL only allows generating 1 texture per time.");
+        *textures = glCreateTexture();
+    }
+}
+else
+{
+    void glGenTextures (GLsizei n, GLuint* textures);
+}
 void glGetActiveAttrib (GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, GLenum* type, GLchar* name);
 void glGetActiveUniform (GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, GLenum* type, GLchar* name);
 void glGetAttachedShaders (GLuint program, GLsizei maxCount, GLsizei* count, GLuint* shaders);
@@ -575,15 +681,68 @@ void glGetBufferParameteriv (GLenum target, GLenum pname, GLint* params);
 GLenum glGetError ();
 void glGetFloatv (GLenum pname, GLfloat* data);
 void glGetFramebufferAttachmentParameteriv (GLenum target, GLenum attachment, GLenum pname, GLint* params);
-void glGetIntegerv (GLenum pname, GLint* data);
-void glGetProgramiv (GLuint program, GLenum pname, GLint* params);
+version(WebAssembly)
+{
+    GLint glGetParameter(GLenum pname);
+    void glGetIntegerv (GLenum pname, GLint* data)
+    {
+        *data = glGetParameter(pname);
+    }
+}
+else
+{
+    void glGetIntegerv (GLenum pname, GLint* data);
+}
+version(WebAssembly)
+{
+    GLint glGetProgramParameter (GLuint program, GLenum pname);
+    void glGetProgramiv (GLuint program, GLenum pname, GLint* params)
+    {
+        *params = glGetProgramParameter(program, pname);
+    }
+}
+else
+{
+    void glGetProgramiv (GLuint program, GLenum pname, GLint* params);
+}
 void glGetProgramInfoLog (GLuint program, GLsizei bufSize, GLsizei* length, GLchar* infoLog);
 void glGetRenderbufferParameteriv (GLenum target, GLenum pname, GLint* params);
-void glGetShaderiv (GLuint shader, GLenum pname, GLint* params);
+version(WebAssembly)
+{
+    GLint glGetShaderParameter(GLuint shader, GLenum pname);
+    void glGetShaderiv (GLuint shader, GLenum pname, GLint* params)
+    {
+        *params = glGetShaderParameter(shader, pname);
+    }
+}
+else
+{
+    void glGetShaderiv (GLuint shader, GLenum pname, GLint* params);
+}
 void glGetShaderInfoLog (GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* infoLog);
 void glGetShaderPrecisionFormat (GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision);
 void glGetShaderSource (GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* source);
-GLubyte* glGetString (GLenum name);
+version(WebAssembly)
+{
+    GLubyte* glGetString (GLenum name)
+    {
+        switch(name)
+        {
+            case GL_RENDERER:
+                return cast(GLubyte*)"OpenGLES 2.0 emulated by WebGL 1.0(Hipreme Engine)".ptr;
+            case GL_VERSION:
+                return cast(GLubyte*)"WebGL 1.0".ptr;
+            case GL_SHADING_LANGUAGE_VERSION:
+                return cast(GLubyte*)"Unknown Shading Language Version (WebGL 1.0)".ptr;
+            default:
+            return null;
+        }
+    }
+}
+else
+{
+    GLubyte* glGetString (GLenum name);
+}
 void glGetTexParameterfv (GLenum target, GLenum pname, GLfloat* params);
 void glGetTexParameteriv (GLenum target, GLenum pname, GLint* params);
 void glGetUniformfv (GLuint program, GLint location, GLfloat* params);

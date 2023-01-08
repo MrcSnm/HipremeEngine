@@ -14,7 +14,9 @@ version(WebAssembly)
 struct File
 {
     FILE* fptr;
-    const size_t size;
+    private size_t _size;
+
+    size_t size(){return size;}
 
     this(string path, string openMode = "r")
     {
@@ -24,7 +26,7 @@ struct File
             fseek(fptr, 0, SEEK_END);
             auto tempSize = ftell(fptr);
             if(tempSize > 0)
-                size = cast(size_t)tempSize;
+                _size = cast(size_t)tempSize;
             fseek(fptr, 0, SEEK_SET);
         }
     }
