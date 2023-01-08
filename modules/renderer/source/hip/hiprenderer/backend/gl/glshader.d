@@ -326,14 +326,15 @@ class Hip_GL_ShaderImpl : IShader
         glCall(() =>glShaderSource(shaderID, 1, &source,  cast(GLint*)null));
         glCall(() =>glCompileShader(shaderID));
         int success;
-        char[512] infoLog;
+        char[512] infoLog = 0;
 
         glCall(() => glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success));
         if(ErrorHandler.assertErrorMessage(success==true, "Shader compilation error", "Compilation failed"))
         {
-            glCall(() =>glGetShaderInfoLog(shaderID, 512, null, infoLog.ptr));
+            ptrdiff_t length;
+            glCall(() =>glGetShaderInfoLog(shaderID, 512, &length, infoLog.ptr));
             ErrorHandler.showErrorMessage("Error on shader source: ", shaderSource);
-            ErrorHandler.showErrorMessage("Compilation error:", cast(string)(infoLog));
+            ErrorHandler.showErrorMessage("Compilation error:", cast(string)(infoLog[0..length]));
         }
         return success==true;
     }

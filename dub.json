@@ -117,7 +117,7 @@
 				"OpenGL",
 				"OpenAL",
 				"Desktop",
-				"LoadScript",
+				"Load_DScript",
 				"Standalone",
 				"NO_GLES",
 				"NO_SLES"
