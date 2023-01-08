@@ -79,8 +79,8 @@ interface IHipVertexBufferImpl
 {
     void bind();
     void unbind();
-    void setData(ulong size, const void* data);
-    void updateData(int offset, ulong size, const void* data);
+    void setData(size_t size, const void* data);
+    void updateData(int offset, size_t size, const void* data);
 }
 interface IHipIndexBufferImpl
 {

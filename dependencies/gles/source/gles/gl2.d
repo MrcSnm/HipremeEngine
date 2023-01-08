@@ -524,7 +524,14 @@ void glBlendEquation (GLenum mode);
 void glBlendEquationSeparate (GLenum modeRGB, GLenum modeAlpha);
 void glBlendFunc (GLenum sfactor, GLenum dfactor);
 void glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
-void glBufferData (GLenum target, GLsizeiptr size, void* data, GLenum usage);
+version(WebAssembly)
+{
+    void glBufferData (GLenum target, GLuint size, void* data, GLenum usage);
+}
+else
+{
+    void glBufferData (GLenum target, GLsizeiptr size, void* data, GLenum usage);
+}
 version(WebAssembly)
 {
     void wglBufferSubData (GLenum target, GLintptr offset, void[] data);
@@ -721,11 +728,13 @@ else
 }
 version(WebAssembly)
 {
+    /**
+    *   After deep thought, I think calling wglGetShaderInfoLog the best thing to do.
+    *   That way, memory can be safely freed.
+    */
     ubyte* wglGetShaderInfoLog(GLuint shader);
     extern(C) void glGetShaderInfoLog (GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* infoLog)
     {
-        import std.stdio;
-        writeln(shader, bufSize, cast(size_t)length, cast(size_t)infoLog);
         ubyte* _temp = wglGetShaderInfoLog(shader);
         size_t _tempLen = *cast(size_t*)_temp;
         string temp = cast(string)_temp[size_t.sizeof.._tempLen+size_t.sizeof];
@@ -771,7 +780,21 @@ void glGetTexParameterfv (GLenum target, GLenum pname, GLfloat* params);
 void glGetTexParameteriv (GLenum target, GLenum pname, GLint* params);
 void glGetUniformfv (GLuint program, GLint location, GLfloat* params);
 void glGetUniformiv (GLuint program, GLint location, GLint* params);
-GLint glGetUniformLocation (GLuint program, GLchar* name);
+version(WebAssembly)
+{
+    GLint wglGetUniformLocation(GLuint program, GLuint length, GLchar* name);
+    GLint glGetUniformLocation (GLuint program, GLchar* name)
+    {
+        size_t length = 0;
+        while(name[length++] != '\0'){}
+        assert(length != 0, "Can't send a 0 length string to wglGetUniformLocation");
+        return wglGetUniformLocation(program, length-1, name);
+    }
+}
+else
+{
+    GLint glGetUniformLocation (GLuint program, GLchar* name);
+}
 void glGetVertexAttribfv (GLuint index, GLenum pname, GLfloat* params);
 void glGetVertexAttribiv (GLuint index, GLenum pname, GLint* params);
 void glGetVertexAttribPointerv (GLuint index, GLenum pname, void** pointer);
@@ -793,7 +816,27 @@ void glRenderbufferStorage (GLenum target, GLenum internalformat, GLsizei width,
 void glSampleCoverage (GLfloat value, GLboolean invert);
 void glScissor (GLint x, GLint y, GLsizei width, GLsizei height);
 void glShaderBinary (GLsizei count, GLuint* shaders, GLenum binaryformat, void* binary, GLsizei length);
-void glShaderSource (GLuint shader, GLsizei count, GLchar** string, GLint* length);
+version(WebAssembly)
+{
+    void wglShaderSource (GLuint shader, GLchar* string_, GLint length);
+    void glShaderSource (GLuint shader, GLsizei count, GLchar** string, GLint* length)
+    {
+        assert(count == 1, "Can't pass more than one string to WebGL glShaderSource.");
+        GLint sourceSize = 0;
+        GLchar* str = *string;
+        if(length != null)
+            sourceSize = *length;
+        else
+        {
+            while(str[sourceSize++] != '\0'){}
+        }
+        wglShaderSource(shader, str, sourceSize);
+    }
+}
+else
+{
+    void glShaderSource (GLuint shader, GLsizei count, GLchar** string, GLint* length);
+}
 void glStencilFunc (GLenum func, GLint ref_, GLuint mask);
 void glStencilFuncSeparate (GLenum face, GLenum func, GLint ref_, GLuint mask);
 void glStencilMask (GLuint mask);
