@@ -56,8 +56,8 @@ struct ShaderVar
     string name;
     ShaderTypes shaderType;
     UniformType type;
-    ulong singleSize;
-    ulong varSize;
+    size_t singleSize;
+    size_t varSize;
     bool isDynamicArrayReference;
 
     const T get(T)()

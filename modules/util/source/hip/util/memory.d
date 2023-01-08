@@ -21,20 +21,10 @@ void setZeroMemory(T)(ref T variable)
 
 T* alloc(T)(size_t count = 1)
 {
-    version(WebAssembly)
-    {
-        static if(is(T == void))
-            return cast(void*)malloc(count).ptr;
-        else
-            return cast(T*)malloc(T.sizeof*count).ptr;
-    }
+    static if(is(T == void))
+        return cast(void*)core.stdc.stdlib.malloc(count);
     else
-    {
-        static if(is(T == void))
-            return cast(void*)malloc(count);
-        else
-            return cast(T*)malloc(T.sizeof*count);
-    }
+        return cast(T*)core.stdc.stdlib.malloc(T.sizeof*count);
 }
 
 T[] allocSlice(T)(size_t count)
@@ -47,9 +37,17 @@ void* toHeap(T)(T data)
     import hip.util.reflection;
     static if(isReference!T)
     {
-        import core.memory;
-        void* m = cast(void*)data;
-        GC.addRoot(cast(void*)data);
+        version(WebAssembly)
+        {
+            void* m = alloc!T;
+            memcpy(m, &data, T.sizeof);
+        }
+        else
+        {
+            import core.memory;
+            void* m = cast(void*)data;
+            GC.addRoot(cast(void*)data);
+        }
     }
     else
     {
@@ -78,27 +76,44 @@ void safeFree(ref void[] data)
     data = [];
 }
 
-version(WebAssembly){} else
+void freeGCMemory(ref void* data)
 {
-    void freeGCMemory(ref void* data)
+    version(WebAssembly)
+    {
+        object.free(cast(ubyte*)data);
+    }
+    else
     {
         import core.memory;
         GC.removeRoot(data);
-        data = null;
     }
+    data = null;
+}
 
-    void freeGCMemory(ref void[] data)
+void freeGCMemory(ref void[] data)
+{
+    version(WebAssembly)
+    {
+        object.free(cast(ubyte*)data.ptr);
+    }
+    else
     {
         import core.memory;
         GC.removeRoot(data.ptr);
-        data = [];
     }
+    data = null;
+}
 
-    void safeFree(T)(ref T data) if(isReference!T)
+void safeFree(T)(ref T data) if(isReference!T)
+{
+    version(WebAssembly)
+    {
+        free(cast(ubyte*)data);
+    }
+    else
     {
         import core.memory;
         GC.removeRoot(cast(void*)data);
-        data = null;
     }
-
+    data = null;
 }

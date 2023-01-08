@@ -8,7 +8,7 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hip.assets.assetpacker;
+module hip.data.assetpacker;
 
 import hip.util.file;
 
