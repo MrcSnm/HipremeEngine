@@ -110,7 +110,7 @@ interface IHipRendererImpl
     public Shader createShader();
     public IHipFrameBuffer createFrameBuffer(int width, int height);
     public IHipVertexArrayImpl  createVertexArray();
-    public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage);
+    public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage);
     public IHipIndexBufferImpl  createIndexBuffer(index_t count, HipBufferUsage usage);
     public int queryMaxSupportedPixelShaderTextures();
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
@@ -428,7 +428,7 @@ class HipRenderer
         res.vertexArrays~= rendererImpl.createVertexArray();
         return res.vertexArrays[$-1];
     }
-    public static IHipVertexBufferImpl  createVertexBuffer(ulong size, HipBufferUsage usage)
+    public static IHipVertexBufferImpl  createVertexBuffer(size_t size, HipBufferUsage usage)
     {
         res.vertexBuffers~= rendererImpl.createVertexBuffer(size, usage);
         return res.vertexBuffers[$-1];

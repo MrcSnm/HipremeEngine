@@ -153,7 +153,7 @@ class Hip_GL3Renderer : IHipRendererImpl
         else
             return new Hip_GL_VertexArrayObject();
     }
-    public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
+    public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage)
     {
         return new Hip_GL3_VertexBufferObject(size, usage);
     }
