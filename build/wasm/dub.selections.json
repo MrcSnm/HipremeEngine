@@ -1,0 +1,8 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"config": {"path":"../../modules/config"},
+		"d_std": {"path":"../../modules/d_std"},
+		"math": {"path":"../../modules/math"}
+	}
+}

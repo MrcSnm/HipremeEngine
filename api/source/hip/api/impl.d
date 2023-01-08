@@ -57,5 +57,5 @@ else version(Have_hipreme_engine)
     public import HipDefaultAssets = hip.global.gamedef : getDefaultFont, getDefaultTexture, getDefaultFontWithSize;
     
     ///All other functions that are actually exported is expected to be in that module.
-    public import exportd;
+    // public import exportd;
 }

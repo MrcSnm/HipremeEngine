@@ -76,7 +76,7 @@ class Hip_GL3_FragmentShader : FragmentShader
         };
     }
 
-    version(WebAssembly)
+    version(WebAssembly) //They are very different, so, better to keep them separate
     {
         override final string getSpriteBatchFragment()
         {
@@ -150,36 +150,60 @@ class Hip_GL3_FragmentShader : FragmentShader
 
     override final string getGeometryBatchFragment()
     {
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
-            
-
+        version(WebAssembly)
+        {
+            enum attr1 = q{varying};
+            enum outputPixelVar = q{};
+            enum outputAssignment = q{gl_FragColor};
+        }
+        else
+        {
+            enum attr1 = q{in};
+            enum outputPixelVar = q{out vec4 pixelColor;};
+            enum outputAssignment = q{outPixelColor};
+        }
+        enum shaderSource = q{
             uniform vec4 uGlobalColor;
-            in vec4 inVertexColor;
-            out vec4 outPixelColor;
+            %s vec4 inVertexColor;
+            %s
 
             void main()
             {
-                outPixelColor = inVertexColor * uGlobalColor;
+                %s = inVertexColor * uGlobalColor;
             }
-        };
+        }.fastUnsafeCTFEFormat(attr1, outputPixelVar, outputAssignment);
+        return shaderVersion~"\n"~floatPrecision~"\n"~shaderSource;
     }
 
     override final string getBitmapTextFragment()
     {
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+        version(WebAssembly)
+        {
+            enum attr1 = q{varying};
+            enum outputPixelVar = q{};
+            enum outputAssignment = q{gl_FragColor};
+        }
+        else
+        {
+            enum attr1 = q{in};
+            enum outputPixelVar = q{out vec4 outPixelColor};
+            enum outputAssignment = q{outPixelColor};
+        }
+        enum shaderSource = q{
             
 
             uniform vec4 uColor;
             uniform sampler2D uTex;
-            in vec2 inTexST;
-            out vec4 outPixelColor;
+            %s vec2 inTexST;
+            %s
 
             void main()
             {
-                float r = texture(uTex, inTexST).r;
-                outPixelColor = vec4(r,r,r,r)*uColor;
+                float r = texture2D(uTex, inTexST).r;
+                %s = vec4(r,r,r,r)*uColor;
             }
-        };
+        }.fastUnsafeCTFEFormat(attr1, outputPixelVar, outputAssignment);
+        return shaderVersion~"\n"~floatPrecision~"\n"~shaderSource;
     }
 }
 class Hip_GL3_VertexShader : VertexShader
@@ -272,44 +296,71 @@ class Hip_GL3_VertexShader : VertexShader
     }
     override final string getGeometryBatchVertex()
     {
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+        version(WebAssembly)
+        {
+            enum attr1 = q{attribute};
+            enum attr2 = q{attribute};
+            enum out1 = q{varying};
+        }
+        else
+        {
+            enum attr1 = q{layout (location = 0) in};
+            enum attr2 = q{layout (location = 1) in};
+            enum out1 = q{out};
+        }
+
+        enum shaderSource = q{
             
-            layout (location = 0) in vec3 vPosition;
-            layout (location = 1) in vec4 vColor;
+            %s vec3 vPosition;
+            %s vec4 vColor;
 
             uniform mat4 uProj;
             uniform mat4 uModel;
             uniform mat4 uView;
             
-            out vec4 inVertexColor;
+            %s vec4 inVertexColor;
 
             void main()
             {
                 gl_Position = uProj*uView*uModel*vec4(vPosition, 1.0);
                 inVertexColor = vColor;
             }
-        };
+        }.fastUnsafeCTFEFormat(attr1, attr2, out1);
+        return shaderVersion~"\n"~floatPrecision~"\n"~shaderSource;
     }
 
     override final string getBitmapTextVertex()
     {
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+        version(WebAssembly)
+        {
+            enum attr1 = q{attribute};
+            enum attr2 = q{attribute};
+            enum out1 = q{varying};
+        }
+        else
+        {
+            enum attr1 = q{layout (location = 0) in};
+            enum attr2 = q{layout (location = 1) in};
+            enum out1 = q{out};
+        }
+        enum shaderSource = q{
             
-            layout (location = 0) in vec2 vPosition;
-            layout (location = 1) in vec2 vTexST;
+            %s vec2 vPosition;
+            %s vec2 vTexST;
 
             uniform mat4 uModel;
             uniform mat4 uView;
             uniform mat4 uProj;
 
-            out vec2 inTexST;
+            %s vec2 inTexST;
 
             void main()
             {
                 gl_Position = uProj * uView * uModel * vec4(vPosition, 1.0, 1.0);
                 inTexST = vTexST;
             }
-        };
+        }.fastUnsafeCTFEFormat(attr1, attr2, out1);
+        return shaderVersion~"\n"~floatPrecision~"\n"~shaderSource;
     }
 }
 class Hip_GL3_ShaderProgram : ShaderProgram

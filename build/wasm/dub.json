@@ -1,0 +1,91 @@
+{
+	"name": "wasm",
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2023, Hipreme",
+	"description": "WASM build for Hipreme Engine",
+	"license": "proprietary",
+	"configurations": [
+		{
+			"name": "default",
+			"targetPath": "build/",
+			"targetType": "executable",
+			"targetName": "hipreme_engine",
+			"dependencies": {
+				"wasm:wasmruntime": "*",
+				"config": {"path": "../../modules/config"}
+			},
+			"dflags": [
+				"-preview=shortenedMethods"
+			],
+			"stringImportPaths": [
+				"../../"
+			],
+			"sourcePaths": [
+				"../../modules/d_std/source",
+				"../../modules/math/source",
+				"../../modules/util/source",
+				"../../modules/console/source",
+				"../../modules/error/source",
+				"../../modules/windowing/source",
+				"../../modules/data/source",
+				"../../modules/image/source",
+				"../../modules/timer/source",
+				"../../modules/tween/source",
+				"../../modules/audio_decoding/source",
+				"../../modules/filesystem/source",
+				"../../dependencies/gles/source",
+				"../../modules/renderer/source",
+				"../../modules/audio/source",
+				"../../modules/font/source",
+				"../../modules/assets/source",
+				"../../modules/bind/source",
+				"../../api/source",
+				"../../source/hip"
+			],
+			"postGenerateCommands": [
+				"cd build && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true --embed-base-url=../"
+			],
+			"versions": [
+				"HipDataStructures",
+				"HipDStdFile",
+				"OpenGL",
+				"GLES20",
+				"Have_hipreme_engine",
+				"dll"
+			],
+			
+			"lflags": [
+				"-allow-undefined"
+			]
+		}
+	],
+	"subPackages": [
+		{
+			"name": "wasmruntime",
+			"targetType": "staticLibrary",
+			"targetPath": "runtime/",
+			"sourcePaths": [],
+			"sourceFiles": [
+				"runtime/webassembly/arsd-webassembly/arsd/webassembly.d",
+				"runtime/webassembly/arsd-webassembly/object.d",
+				"runtime/webassembly/arsd-webassembly/core/arsd/aa.d",
+				"runtime/webassembly/arsd-webassembly/core/arsd/objectutils.d",
+				"runtime/webassembly/arsd-webassembly/core/arsd/utf_decoding.d",
+				"runtime/webassembly/arsd-webassembly/core/internal/utf.d"
+			],
+			"excludedSourceFiles": ["source/**"],
+			
+			"importPaths": [
+				"runtime/webassembly/arsd-webassembly"
+			],
+			"lflags": [
+				"-allow-undefined"
+			],
+			"versions": [
+				"CarelessAlocation"
+			]
+		}
+	]
+}

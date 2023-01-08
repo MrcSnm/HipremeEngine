@@ -527,21 +527,11 @@ void glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAl
 version(WebAssembly)
 {
     void glBufferData (GLenum target, GLuint size, void* data, GLenum usage);
+    void glBufferSubData (GLenum target, GLint offset, GLuint size, void* data);
 }
 else
 {
     void glBufferData (GLenum target, GLsizeiptr size, void* data, GLenum usage);
-}
-version(WebAssembly)
-{
-    void wglBufferSubData (GLenum target, GLintptr offset, void[] data);
-    void glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, void* data)
-    {
-        wglBufferSubData(target, offset, data[0..cast(size_t)size]);
-    }
-}
-else
-{
     void glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, void* data);
 }
 GLenum glCheckFramebufferStatus (GLenum target);
@@ -766,7 +756,7 @@ version(WebAssembly)
             case GL_VERSION:
                 return cast(GLubyte*)"WebGL 1.0".ptr;
             case GL_SHADING_LANGUAGE_VERSION:
-                return cast(GLubyte*)"Unknown Shading Language Version (WebGL 1.0)".ptr;
+                return cast(GLubyte*)"WebGL GLSL 1.0.0".ptr;
             default:
             return null;
         }
