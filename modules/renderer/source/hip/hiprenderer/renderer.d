@@ -244,6 +244,9 @@ class HipRenderer
                 else
                 {
                     type = HipRendererType.NONE;
+                    assert(rendererImpl !is null, "No Renderer was found. Available Versions:
+    OpenGL
+    DirectX");
                     return null;
                 }
             case HipRendererType.NONE:
@@ -269,7 +272,6 @@ class HipRenderer
         HipRenderer.height = window.height;
         afterInit();
         return ret;
-        // return ret;
     }
     private static afterInit()
     {
@@ -454,7 +456,6 @@ class HipRenderer
         if(hasErrorOccurred(err, file, line))
         {
             loglnError(err, file,":",line);
-            throw new Exception(err, file, line);
             exit(-1);
         }
     }

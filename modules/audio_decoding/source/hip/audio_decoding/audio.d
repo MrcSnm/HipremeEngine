@@ -294,34 +294,38 @@ class HipNullAudioDecoder: IHipAudioDecoder
     uint getSamplerate(){return 0;}
 }
 
-import hip.audio_decoding.resampler;
-package class HipAllResample : ResamplingContext
+
+version(none) //Buggy and not currently working
 {
-    enum BYTES_PER_LOAD = 4096;
-
-    int resampledSamples = 0;
-    float[] decodedData;
-    
-    this(void[] decodedData, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels)
+    import hip.audio_decoding.resampler;
+    package class HipAllResample : ResamplingContext
     {
-        super(new SampleControlFlags(), inputSampleRate, outputSampleRate, inputChannels, outputChannels);
-        this.decodedData = cast(float[])decodedData;
-    }
-    override void loadMoreSamples()  @trusted
-    {
+        enum BYTES_PER_LOAD = 4096;
 
-        int toResample;
-        ///Do it BYTES_PER_LOAD as step
-        if(resampledSamples + BYTES_PER_LOAD <= decodedData.length )
-            toResample = BYTES_PER_LOAD;
-        else //If it overflows, clamp it to the minimum
-            toResample = cast(int)(decodedData.length) - resampledSamples;
+        int resampledSamples = 0;
+        float[] decodedData;
+        
+        this(void[] decodedData, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels)
+        {
+            super(new SampleControlFlags(), inputSampleRate, outputSampleRate, inputChannels, outputChannels);
+            this.decodedData = cast(float[])decodedData;
+        }
+        override void loadMoreSamples()  @trusted
+        {
+
+            int toResample;
+            ///Do it BYTES_PER_LOAD as step
+            if(resampledSamples + BYTES_PER_LOAD <= decodedData.length )
+                toResample = BYTES_PER_LOAD;
+            else //If it overflows, clamp it to the minimum
+                toResample = cast(int)(decodedData.length) - resampledSamples;
 
 
-        resamplerDataLeft.dataIn = cast(float[])(decodedData[resampledSamples .. resampledSamples+toResample]);
-        resamplerDataRight.dataIn = cast(float[])(decodedData[resampledSamples .. resampledSamples+toResample]);
-        resampledSamples+= toResample;
+            resamplerDataLeft.dataIn = cast(float[])(decodedData[resampledSamples .. resampledSamples+toResample]);
+            resamplerDataRight.dataIn = cast(float[])(decodedData[resampledSamples .. resampledSamples+toResample]);
+            resampledSamples+= toResample;
 
+        }
     }
 }
 

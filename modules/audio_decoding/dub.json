@@ -35,8 +35,5 @@
 	],
 	"description": "HipremeEngine data module",
 	"license": "proprietary",
-	"name": "audio_decoding",
-	"versions": [
-		"HipAudioAPI"
-	]
+	"name": "audio_decoding"
 }

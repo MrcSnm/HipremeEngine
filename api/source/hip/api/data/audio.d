@@ -1,6 +1,5 @@
 module hip.api.data.audio;
 
-version(HipAudioAPI):
 import hip.api.audio;
 public import hip.api.audio.audioclip:HipAudioClipHint;
 

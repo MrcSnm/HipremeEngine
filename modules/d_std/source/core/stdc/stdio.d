@@ -118,6 +118,9 @@ version(WebAssembly)
     extern(C) long	 ftell ( FILE *){return EOF;}
     extern(C) size_t fread (void *, size_t _size, size_t _n, FILE *){return 0;}
     extern(C) int    fgetc (FILE *){return EOF;}
+    extern(C) size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream){return 0;}
+    extern(C) int    fflush(FILE *stream){return EOF;}
+    extern(C) int    remove(const char *filename){return -1;}
     extern(C) int	 fputc (int, FILE *){return EOF;}
     extern(C) int	 fseek (FILE *, long, int){return EOF;}
     extern(C) int	 fclose (FILE *){return -1;}

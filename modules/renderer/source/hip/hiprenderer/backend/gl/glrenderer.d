@@ -17,6 +17,10 @@ else version(PSVita)
 {
     public import gles;
 }
+else version(WebAssembly)
+{
+    public import gles;
+}
 else version(Have_bindbc_opengl)
 {
     public import bindbc.opengl;
@@ -231,6 +235,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     public void end()
     {
         version(Android){}
+        else version(WebAssembly){}
         else
         {
             window.rendererPresent();

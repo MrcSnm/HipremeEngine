@@ -1,6 +1,6 @@
 module hip.tween;
 
-import std.math:cos, sin, PI, pow, sqrt;
+import core.stdc.math:cos, sin, PI, pow, sqrt;
 public import hip.timer;
 
 private enum c1 = 1.70158f;

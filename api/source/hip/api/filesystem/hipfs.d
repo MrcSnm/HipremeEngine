@@ -1,7 +1,5 @@
 module hip.api.filesystem.hipfs;
 
-version(HipFileAPI):
-
 ///Less dependencies
 enum
 {

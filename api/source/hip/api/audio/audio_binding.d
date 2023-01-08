@@ -1,7 +1,7 @@
 module hip.api.audio.audio_binding;
 public import hip.api.audio.audiosource;
 
-version(Script) version(HipAudioAPI)void initAudio()
+version(Script) void initAudio()
 {
     import hip.api.internal;
     loadClassFunctionPointers!(HipAudioBinding, "HipAudio");

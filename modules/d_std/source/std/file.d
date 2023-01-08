@@ -46,3 +46,16 @@ void write(string path, ubyte[] buffer)
 }
 void write(string path, void[] buffer){write(path, cast(ubyte[])buffer);}
 void write(string path, string buffer){write(path, cast(ubyte[])buffer);}
+
+void remove(string filename)
+{
+    if(!core.stdc.stdio.remove((filename~"\0").ptr))
+    {
+        assert(false, "Could not remove "~filename);
+    }
+}
+
+bool isDir(string path)
+{
+    assert(false, "No generic implementation for isDir");
+}

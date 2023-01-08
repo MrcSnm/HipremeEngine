@@ -8,9 +8,6 @@
 		"debugInfoC"
 	],
 	"copyright": "Copyright © 2021, Hipreme",
-	"versions": [
-		"HipFileAPI"
-	],
 	"configurations": [
 		{
 			"name": "default",
