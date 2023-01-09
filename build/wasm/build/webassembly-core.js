@@ -170,9 +170,8 @@ env: {
 		}
 	},
 	abort: function() {
-		var i = document.getElementById("stdout");
-		i.innerHTML += "<div style='color: red;'>Aborted</div>";
-		throw "aborted";
+		if(druntimeAbortHook) druntimeAbortHook();
+		throw new Error("DRuntime Aborted Wasm");
 	},
 	_Unwind_Resume: function() {},
 

@@ -138,7 +138,7 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
-        glCall(() => glClearColor(r/255, g/255, b/255, a/255));
+        glCall(() => glClearColor(cast(float)r/255, cast(float)g/255, cast(float)b/255, cast(float)a/255));
     }
 
     public IHipFrameBuffer createFrameBuffer(int width, int height)
@@ -252,7 +252,7 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
-        glCall(() => glClearColor(r/255,g/255,b/255,a/255));
+        setColor(r,g,b,a);
         glCall(() => glClear(GL_COLOR_BUFFER_BIT));
     }
 

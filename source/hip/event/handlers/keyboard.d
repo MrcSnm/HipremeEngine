@@ -47,11 +47,14 @@ class KeyboardHandler : IHipKeyboard
     private __gshared bool ctrlPressed;
     private __gshared float keyRepeatDelay = 0.5;
 
-    static this()
+    this()
     {
-        for(int i = 0; i < 256; i++)
-            metadatas[i] = new HipButtonMetadata(i);
-        pressedKeys[] = 0;
+        if(metadatas[0] is null)
+        {
+            for(int i = 0; i < 256; i++)
+                metadatas[i] = new HipButtonMetadata(i);
+            pressedKeys[] = 0;
+        }
     }
     
 
@@ -116,6 +119,8 @@ class KeyboardHandler : IHipKeyboard
     void handleKeyDown(HipKey key)
     {
         setPressed(key, true);
+        // import hip.console.log;
+        // logln("Set pressed the key ", key);
     }
     
     static string getInputText(KeyboardLayout layout)

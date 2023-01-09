@@ -12,6 +12,11 @@ module hip.systems.input;
 import hip.util.data_structures;
 import hip.error.handler;
 
+version(WebAssembly)
+    version = QueuePopulatedExternally;
+else version(UWP)
+    version = QueuePopulatedExternally;
+
 version(Android)
 {
     import hip.jni.helper.androidlog;
@@ -53,7 +58,7 @@ version(Android)
     mixin javaGenerateModuleMethodsForPackage!(HipAndroidInput, hip.systems.input, true);
     mixin javaGenerateModuleMethodsForPackage!(HipAndroidRenderer, hip.systems.input, true);
 }
-else version(UWP)
+else version(QueuePopulatedExternally)
 {
     export extern(System)
     {
@@ -88,6 +93,10 @@ else version(UWP)
         void HipInputOnGamepadDisconnected(ubyte id)
         {
             HipEventQueue.post(0, HipEventQueue.EventType.gamepadDisconnected, HipEventQueue.Gamepad(id));
+        }
+        void HipOnRendererResize(int x, int y)
+        {
+            HipEventQueue.post(0, HipEventQueue.EventType.windowResize, HipEventQueue.Resize(cast(uint)x, cast(uint)y));
         }
     }    
 } 
@@ -178,7 +187,10 @@ class HipEventQueue : EventQueue
     static void post(T)(uint id, EventType type, T ev)
     {
         import hip.util.format;
-        ErrorHandler.assertLazyExit(id < controllers.length, format!("Input controller out of range!(ID: %s, Type: %s)")(id, type));
+        if(id >= controllers.length)
+        {
+            ErrorHandler.assertExit(false, format!("Input controller out of range!(ID: %s, Type: %s)")(id, type));
+        }
         controllers[id].post(cast(ubyte)type, ev);
     }
 
@@ -191,7 +203,10 @@ class HipEventQueue : EventQueue
                 newController();
         }
         import hip.util.format;
-        ErrorHandler.assertLazyExit(id < controllers.length, format!("Input controller out of range!(ID: %s, Type: %s)")(id, type));
+        if(id >= controllers.length)
+        {
+            ErrorHandler.assertExit(false, format!("Input controller out of range!(ID: %s, Type: %s)")(id, type));
+        }
         controllers[id].post(cast(ubyte)type, ev);
     }
 
@@ -199,13 +214,19 @@ class HipEventQueue : EventQueue
     static InputEvent* poll(uint id)
     {
         import hip.util.format;
-        ErrorHandler.assertLazyExit(id < controllers.length, format!("Input controller out of range!(ID: %s)")(id));
+        if(id >= controllers.length)
+        {
+            ErrorHandler.assertExit(false, format!("Input controller out of range!(ID: %s)")(id));
+        }
         return controllers[id].poll();
     }
     static void clear(uint id)
     {
         import hip.util.format;
-        ErrorHandler.assertLazyExit(id < controllers.length, format!("Input controller out of range!(ID: %s)")(id));
+        if(id >= controllers.length)
+        {
+            ErrorHandler.assertExit(false, format!("Input controller out of range!(ID: %s)")(id));
+        }
         controllers[id].clear();
     }
     alias poll = EventQueue.poll;

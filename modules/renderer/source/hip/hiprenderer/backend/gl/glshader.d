@@ -159,7 +159,7 @@ class Hip_GL3_FragmentShader : FragmentShader
         else
         {
             enum attr1 = q{in};
-            enum outputPixelVar = q{out vec4 pixelColor;};
+            enum outputPixelVar = q{out vec4 outPixelColor;};
             enum outputAssignment = q{outPixelColor};
         }
         enum shaderSource = q{
@@ -186,7 +186,7 @@ class Hip_GL3_FragmentShader : FragmentShader
         else
         {
             enum attr1 = q{in};
-            enum outputPixelVar = q{out vec4 outPixelColor};
+            enum outputPixelVar = q{out vec4 outPixelColor;};
             enum outputAssignment = q{outPixelColor};
         }
         enum shaderSource = q{
