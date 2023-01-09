@@ -48,6 +48,7 @@ class EventDispatcher
         keyboard = new KeyboardHandler();
         mouse = new HipMouse();
         HipEventQueue.newController(); //Creates controller 0
+        import std.stdio;
         initXboxGamepadInput();
         import hip.windowing.events;
 
@@ -136,6 +137,7 @@ class EventDispatcher
                     mouse.setScroll(t.x, t.y, t.z);
                     break;
                 case HipEventQueue.EventType.keyDown:
+                import hip.console.log;
                     auto k = ev.get!(HipEventQueue.Key);
                     keyboard.handleKeyDown(cast(HipKey)(k.id));
                     break;

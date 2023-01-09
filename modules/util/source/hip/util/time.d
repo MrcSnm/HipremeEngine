@@ -74,7 +74,7 @@ class HipTime
     private static size_t ticksPerSecond;
     protected static long[string] performanceMeasurement;
 
-    static this()
+    static void initialize()
     {
         ticksPerSecond = getSystemTicksPerSecond();
         startTime =  getSystemTime();

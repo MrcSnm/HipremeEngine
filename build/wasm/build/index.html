@@ -12,6 +12,7 @@
   <body>
     <canvas id="glcanvas" width="800" height="600" style="border:1px solid #000000;"></canvas>
     <script src="/webgl.js"></script>
+    <script src="/hipreme_engine.js"></script>
     <script src="/webassembly-core.js"></script>
     <script>
 	WebAssembly.instantiateStreaming(fetch('/hipreme_engine.wasm'), importObject)
@@ -21,6 +22,7 @@
 			printBlockDebugInfo = obj.instance.exports.printBlockDebugInfo;
 			exports = obj.instance.exports;
 			obj.instance.exports._start();
+			initializeHipremeEngine(exports);
 		});
     </script>
   </body>
