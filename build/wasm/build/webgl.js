@@ -8,22 +8,12 @@ function initializeWebglContext()
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    const _objects = [];
-    const _freelist = [];
-    let _last = 0;
+    
 
-    const addObject = (val) =>
-    {
-        if(val === null || val === undefined) return 0;
-        let idx = _freelist.pop() || ++_last;
-        _objects[idx] = val;
-        return idx;
-    }
-    const removeObject = (val) =>
-    {
-        _freelist.push(val);
-        delete _objects[val];
-    };
+    const addObject = WasmUtils.addObject;
+    const removeObject = WasmUtils.removeObject;
+    const _objects = WasmUtils._objects;
+   
     
     return {
         glAttachShader(program, shader) {

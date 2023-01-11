@@ -1,6 +1,6 @@
 module hip.event.handlers.inputmap;
 import hip.util.reflection;
-import std.json;
+import hip.data.jsonc;
 import hip.filesystem.hipfs;
 import hip.error.handler;
 import hip.api.input;
@@ -73,43 +73,34 @@ class HipInputMap : IHipInputMap
     }
     @ExportD("Mem") static IHipInputMap parseInputMap(ubyte[] file, string fileName, ubyte id = 0)
     {
-        version(WebAssembly)
-        {
-            return null;
-        }
-        else
-        {
-            HipInputMap ret = new HipInputMap();
-            JSONValue inputJson = parseJSON(cast(string)file);
+        HipInputMap ret = new HipInputMap();
+        JSONValue inputJson = parseJSON(cast(string)file);
 
-            JSONValue* temp = ("actions" in inputJson.object);
-            ErrorHandler.assertLazyErrorMessage(temp != null, "HipInputMap wrong formatting", 
-            "\"actions\" not found in "~fileName);
+        JSONValue* temp = ("actions" in inputJson.object);
+        ErrorHandler.assertLazyErrorMessage(temp != null, "HipInputMap wrong formatting", 
+        "\"actions\" not found in "~fileName);
 
-            foreach(k, v; temp.object)
+        foreach(k, v; temp.object)
+        {
+            string actionName = k;
+            JSONValue* kb = ("keyboard" in v.object);
+            JSONValue* gp = ("gamepad" in v.object);
+
+            Context ctx;
+            if(kb != null)
             {
-                string actionName = k;
-                JSONValue* kb = ("keyboard" in v.object);
-                JSONValue* gp = ("gamepad" in v.object);
-
-                Context ctx;
-                if(kb != null)
-                {
-                    JSONValue[] keys = kb.array;
-                    foreach(key; keys)
-                        ctx.keys~= key.str[0];
-                }
-                if(gp != null)
-                {
-                    JSONValue[] btns = gp.array;
-                    foreach(btn; btns)
-                        ctx.btns ~=  gamepadButtonFromString(btn.str);
-                }
-                ret.inputMapping[actionName] = ctx;
-                ctx.name = actionName;
+                foreach(key; kb.array) //Keyboard
+                    ctx.keys~= key.str[0];
             }
-            return ret;
+            if(gp != null)
+            {
+                foreach(btn; gp.array) //Gamepad
+                    ctx.btns ~=  gamepadButtonFromString(btn.str);
+            }
+            ret.inputMapping[actionName] = ctx;
+            ctx.name = actionName;
         }
+        return ret;
     }
 }
 

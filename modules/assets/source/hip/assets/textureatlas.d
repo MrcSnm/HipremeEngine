@@ -54,78 +54,73 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
 
     static HipTextureAtlas readJSON (ubyte[] data, string atlasPath, string texturePath)
     {
-        version(WebAssembly){return null;}
-        else
+        import hip.data.json;
+        import hip.assets.texture;
+        HipTextureAtlas ret = new HipTextureAtlas();
+        ret.texturePaths~= texturePath;
+        ret.atlasPath = atlasPath;
+
+        import hip.console.log;
+
+        JSONValue json = parseJSON(cast(string)data);
+        if(json["frames"].type == JSONType.array)
         {
-            import std.json;
-            import hip.assets.texture;
-            HipTextureAtlas ret = new HipTextureAtlas();
-            ret.texturePaths~= texturePath;
-            ret.atlasPath = atlasPath;
-
-            import hip.console.log;
-
-            JSONValue json = parseJSON(cast(string)data);
-            if(json["frames"].type == JSONType.array)
+            foreach(f; json["frames"].array)
             {
-                JSONValue[] frames = json["frames"].array;
-                foreach(f; frames)
-                {
-                    AtlasFrame a;
-                    a.filename = f["filename"].str;
-                    a.rotated  = f["rotated"].boolean;
-                    a.trimmed  = f["trimmed"].boolean;
-                    JSONValue frameRect = f["frame"].object;
-                    a.frame = AtlasRect(
-                        cast(uint)frameRect["x"].integer,
-                        cast(uint)frameRect["y"].integer,
-                        cast(uint)frameRect["w"].integer,
-                        cast(uint)frameRect["h"].integer
-                    );
-                    frameRect = f["spriteSourceSize"].object;
-                    a.spriteSourceSize = AtlasRect(
-                        cast(uint)frameRect["x"].integer,
-                        cast(uint)frameRect["y"].integer,
-                        cast(uint)frameRect["w"].integer,
-                        cast(uint)frameRect["h"].integer
-                    );
-                    frameRect = f["sourceSize"].object;
-                    a.sourceSize = AtlasSize(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
-                    ret.frames[a.filename] = a;
-                }
+                AtlasFrame a;
+                a.filename = f["filename"].str;
+                a.rotated  = f["rotated"].boolean;
+                a.trimmed  = f["trimmed"].boolean;
+                JSONValue frameRect = f["frame"].object;
+                a.frame = AtlasRect(
+                    cast(uint)frameRect["x"].integer,
+                    cast(uint)frameRect["y"].integer,
+                    cast(uint)frameRect["w"].integer,
+                    cast(uint)frameRect["h"].integer
+                );
+                frameRect = f["spriteSourceSize"].object;
+                a.spriteSourceSize = AtlasRect(
+                    cast(uint)frameRect["x"].integer,
+                    cast(uint)frameRect["y"].integer,
+                    cast(uint)frameRect["w"].integer,
+                    cast(uint)frameRect["h"].integer
+                );
+                frameRect = f["sourceSize"].object;
+                a.sourceSize = AtlasSize(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
+                ret.frames[a.filename] = a;
             }
-            else 
-            {
-                JSONValue frames = json["frames"].object;
-                JSONValue meta = json["meta"].object;
-                foreach(string frameName, ref JSONValue f; frames)
-                {
-                    AtlasFrame a;
-                    a.filename = frameName;
-                    a.rotated  = f["rotated"].boolean;
-                    a.trimmed  = f["trimmed"].boolean;
-                    JSONValue frameRect = f["frame"].object;
-                    a.frame = AtlasRect(
-                        cast(uint)frameRect["x"].integer,
-                        cast(uint)frameRect["y"].integer,
-                        cast(uint)frameRect["w"].integer,
-                        cast(uint)frameRect["h"].integer
-                    );
-                    frameRect = f["spriteSourceSize"].object;
-                    a.spriteSourceSize = AtlasRect(
-                        cast(uint)frameRect["x"].integer,
-                        cast(uint)frameRect["y"].integer,
-                        cast(uint)frameRect["w"].integer,
-                        cast(uint)frameRect["h"].integer
-                    );
-                    frameRect = f["sourceSize"].object;
-                    a.sourceSize = AtlasSize(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
-                    ret.frames[frameName] = a;   
-                }
-            }
-
-            return ret;
         }
+        else 
+        {
+            JSONValue frames = json["frames"].object;
+            JSONValue meta = json["meta"].object;
+            foreach(string frameName, JSONValue f; frames)
+            {
+                AtlasFrame a;
+                a.filename = frameName;
+                a.rotated  = f["rotated"].boolean;
+                a.trimmed  = f["trimmed"].boolean;
+                JSONValue frameRect = f["frame"].object;
+                a.frame = AtlasRect(
+                    cast(uint)frameRect["x"].integer,
+                    cast(uint)frameRect["y"].integer,
+                    cast(uint)frameRect["w"].integer,
+                    cast(uint)frameRect["h"].integer
+                );
+                frameRect = f["spriteSourceSize"].object;
+                a.spriteSourceSize = AtlasRect(
+                    cast(uint)frameRect["x"].integer,
+                    cast(uint)frameRect["y"].integer,
+                    cast(uint)frameRect["w"].integer,
+                    cast(uint)frameRect["h"].integer
+                );
+                frameRect = f["sourceSize"].object;
+                a.sourceSize = AtlasSize(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
+                ret.frames[frameName] = a;   
+            }
+        }
+
+        return ret;
     }
 
     /**

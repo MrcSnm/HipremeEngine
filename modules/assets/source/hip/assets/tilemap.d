@@ -250,68 +250,55 @@ class HipTilesetImpl : HipAsset, IHipTileset
 
     static HipTilesetImpl readJSON (string path, uint firstGid)
     {
-        version(WebAssembly)
+        import hip.filesystem.hipfs;
+        import hip.console.log;
+        string data;
+
+        if(!HipFS.readText(path, data))
         {
+            loglnWarn("Could not read file named ", path);
             return null;
         }
-        else
-        {
-            import std.json;
-            import hip.filesystem.hipfs;
-            import hip.console.log;
-            string data;
-
-            if(!HipFS.readText(path, data))
-            {
-                loglnWarn("Could not read file named ", path);
-                return null;
-            }
-            return readJSON(path, parseJSON(data), firstGid);
-        }
+        return readJSON(path, parseJSON(data), firstGid);
     }
-    version(WebAssembly){}
-    else
+
+    import hip.data.json;
+    static HipTilesetImpl readJSON (string path, JSONValue t, uint firstGid)
     {
-        import std.json;
-        static HipTilesetImpl readJSON (string path, JSONValue t, uint firstGid)
+        HipTilesetImpl ret = new HipTilesetImpl(cast(uint)t["tilecount"].integer);
+        ret._columns       = cast(ushort)t["columns"].integer;
+        ret._texturePath   =             t["image"].str;
+        ret._textureHeight =   cast(uint)t["imageheight"].integer;
+        ret._textureWidth  =   cast(uint)t["imagewidth"].integer;
+        ret._margin        =    cast(int)t["margin"].integer;
+        ret._name          =             t["name"].str;
+        ret._spacing       =    cast(int)t["spacing"].integer;
+        ret._tileHeight    =   cast(uint)t["tileheight"].integer;
+        ret._tileWidth     =   cast(uint)t["tilewidth"].integer;
+        ret._path = path;
+        ret._firstGid = firstGid;
+
+        if("tiles" in t)
         {
-            HipTilesetImpl ret = new HipTilesetImpl(cast(uint)t["tilecount"].integer);
-            ret._columns       = cast(ushort)t["columns"].integer;
-            ret._texturePath   =             t["image"].str;
-            ret._textureHeight =   cast(uint)t["imageheight"].integer;
-            ret._textureWidth  =   cast(uint)t["imagewidth"].integer;
-            ret._margin        =    cast(int)t["margin"].integer;
-            ret._name          =             t["name"].str;
-            ret._spacing       =    cast(int)t["spacing"].integer;
-            ret._tileHeight    =   cast(uint)t["tileheight"].integer;
-            ret._tileWidth     =   cast(uint)t["tilewidth"].integer;
-            ret._path = path;
-            ret._firstGid = firstGid;
-
-            if("tiles" in t)
+            foreach (currentTile; t["tiles"].array)
             {
-                JSONValue[] tiles = t["tiles"].array;
-                foreach (currentTile; tiles)
+                Tile tile;
+                tile.id = cast(ushort)currentTile["id"].integer;
+                
+                foreach(prop; currentTile["properties"].array)
                 {
-                    Tile tile;
-                    tile.id = cast(ushort)currentTile["id"].integer;
-                    
-                    JSONValue[] tProps = currentTile["properties"].array;
-                    foreach(prop; tProps)
-                    {
-                        TileProperty _p;
+                    TileProperty _p;
 
-                        _p.name  = prop["name"].str;
-                        _p.type  = prop["type"].str;
-                        _p.value = prop["value"].toString;
-                        tile.properties[_p.name] = _p;
-                    }
-                    ret.tiles[tile.id] = tile;
+                    _p.name  = prop["name"].str;
+                    _p.type  = prop["type"].str;
+                    _p.value = prop["value"].toString;
+                    tile.properties[_p.name] = _p;
                 }
+                ret.tiles[tile.id] = tile;
             }
-
-            return ret;
         }
+
+        return ret;
     }
 
     import hip.util.data_structures;
@@ -503,119 +490,104 @@ class HipTilemap : HipAsset, IHipTilemap
 
     static HipTilemap readTiledJSON (string mapPath, ubyte[] tiledData)
     {
-        version(WebAssembly)
-        {
-            return null;
-        }
-        else
-        {
-            import std.json;
-            HipTilemap ret = new HipTilemap();
-            ret._path = mapPath;
-            JSONValue json = parseJSON(cast(string)(tiledData));
-            ret._height     =    cast(uint)json["height"].integer;
-            ret._isInfinite =              json["infinite"].boolean;
-            ret._width      =    cast(uint)json["width"].integer;
-            ret._orientation=              json["orientation"].str;
-            ret._renderOrder=              json["renderorder"].str;
-            ret._tileHeight =    cast(uint)json["tileheight"].integer;
-            ret._tileWidth  =    cast(uint)json["tilewidth"].integer;
+        import hip.data.json;
+        HipTilemap ret = new HipTilemap();
+        ret._path = mapPath;
+        JSONValue json = parseJSON(cast(string)(tiledData));
+        ret._height     =    cast(uint)json["height"].integer;
+        ret._isInfinite =              json["infinite"].boolean;
+        ret._width      =    cast(uint)json["width"].integer;
+        ret._orientation=              json["orientation"].str;
+        ret._renderOrder=              json["renderorder"].str;
+        ret._tileHeight =    cast(uint)json["tileheight"].integer;
+        ret._tileWidth  =    cast(uint)json["tilewidth"].integer;
 
-            JSONValue[] layers =      json["layers"].array;
+        foreach(l; json["layers"].array)
+        {
+            HipTileLayer layer = new HipTileLayer(ret);
 
-            foreach(l; layers)
+            //Check first the layer type.
+            layer.type    =             l["type"].str;
+            layer.id      = cast(ushort)l["id"].integer;
+            layer.name    =             l["name"].str;
+            layer.opacity =             l["opacity"].integer;
+            layer.visible =             l["visible"].boolean;
+            layer.x       = cast(int)   l["x"].integer;
+            layer.y       = cast(int)   l["y"].integer;
+            if(layer.type == TileLayerType.OBJECT_LAYER)
             {
-                HipTileLayer layer = new HipTileLayer(ret);
-
-                //Check first the layer type.
-                layer.type    =             l["type"].str;
-                layer.id      = cast(ushort)l["id"].integer;
-                layer.name    =             l["name"].str;
-                layer.opacity =             l["opacity"].integer;
-                layer.visible =             l["visible"].boolean;
-                layer.x       = cast(int)   l["x"].integer;
-                layer.y       = cast(int)   l["y"].integer;
-                if(layer.type == TileLayerType.OBJECT_LAYER)
+                foreach(o; l["objects"].array)
                 {
-                    JSONValue[] objs = l["objects"].array;
+                    TileLayerObject obj;
+                    obj.gid     = cast(ushort)o["gid"].integer;
+                    obj.height  = cast(uint)  o["height"].integer;
+                    obj.id      = cast(ushort)o["id"].integer;
+                    obj.name    =             o["name"].str;
+                    obj.rotation= cast(int)   o["rotation"].integer;
+                    obj.type    =             o["type"].str;
+                    obj.visible =             o["visible"].boolean;
+                    obj.width   = cast(uint)  o["width"].integer;
+                    obj.x       = cast(int)   o["x"].integer;
+                    obj.y       = cast(int)   o["y"].integer;
 
-                    foreach(o; objs)
+                    const(JSONValue)* v = ("properties" in o);
+                    if(v != null)
                     {
-                        TileLayerObject obj;
-                        obj.gid     = cast(ushort)o["gid"].integer;
-                        obj.height  = cast(uint)  o["height"].integer;
-                        obj.id      = cast(ushort)o["id"].integer;
-                        obj.name    =             o["name"].str;
-                        obj.rotation= cast(int)   o["rotation"].integer;
-                        obj.type    =             o["type"].str;
-                        obj.visible =             o["visible"].boolean;
-                        obj.width   = cast(uint)  o["width"].integer;
-                        obj.x       = cast(int)   o["x"].integer;
-                        obj.y       = cast(int)   o["y"].integer;
-
-                        const(JSONValue)* v = ("properties" in o);
-                        if(v != null)
+                        foreach(p; v.array) //Properties
                         {
-                            const(JSONValue)[] props = v.array;
-                            foreach(p; props)
-                            {
-                                TileProperty tp;
-                                tp.name  = p["name"].str;
-                                tp.type  = p["type"].str;
-                                tp.value = p["value"].toString;
+                            TileProperty tp;
+                            tp.name  = p["name"].str;
+                            tp.type  = p["type"].str;
+                            tp.value = p["value"].toString;
 
-                                obj.properties[tp.name] = tp;
-                            }
+                            obj.properties[tp.name] = tp;
                         }
                     }
                 }
-                else if(layer.type == TileLayerType.TILE_LAYER)
-                {
-                    JSONValue[] layerData = l["data"].array;
-                    layer.height  = cast(uint)  l["height"].integer;
-                    layer.width   = cast(uint)  l["width"].integer;
-                    layer.tiles.reserve(layerData.length);
-                    foreach(d; layerData)
-                        layer.tiles~= cast(ushort)d.integer;
-                }
-
-                const(JSONValue)* layerProp = ("properties" in l);
-                if(layerProp != null)
-                {
-                    const(JSONValue)[] layerProps = layerProp.array;
-                    foreach(p; layerProps)
-                    {
-                        TileProperty tp;
-                        tp.name  = p["name"].str;
-                        tp.type  = p["type"].str;
-                        tp.value = p["value"].toString;
-                        layer.properties[tp.name] = tp;
-                    }
-                }
-                ret.layersArray~=layer;
-                ret._layers[layer.name] = layer;
             }
-
-            JSONValue[] jtilesets = json["tilesets"].array;
-
-            foreach(t; jtilesets)
+            else if(layer.type == TileLayerType.TILE_LAYER)
             {
-                const(JSONValue)* source = ("source" in t);
-                uint firstGid = cast(ushort)t["firstgid"].integer;
-                HipTilesetImpl tileset;
-
-                if(source !is null)
-                {
-                    import hip.util.path;
-                    tileset = HipTilesetImpl.read(joinPath(dirName(mapPath), source.str), firstGid);
-                }
-                else
-                    tileset = HipTilesetImpl.readJSON("null", t, firstGid);
-                ret.tilesets~= tileset;
+                auto layerData = l["data"].array;
+                layer.height  = cast(uint)  l["height"].integer;
+                layer.width   = cast(uint)  l["width"].integer;
+                layer.tiles.reserve(layerData.length);
+                foreach(d; layerData)
+                    layer.tiles~= cast(ushort)d.integer;
             }
 
-            return ret;
+            const(JSONValue)* layerProp = ("properties" in l);
+            if(layerProp != null)
+            {
+                foreach(p; layerProp.array)
+                {
+                    TileProperty tp;
+                    tp.name  = p["name"].str;
+                    tp.type  = p["type"].str;
+                    tp.value = p["value"].toString;
+                    layer.properties[tp.name] = tp;
+                }
+            }
+            ret.layersArray~=layer;
+            ret._layers[layer.name] = layer;
         }
+
+        foreach(t; json["tilesets"].array)
+        {
+            const(JSONValue)* source = ("source" in t);
+            uint firstGid = cast(ushort)t["firstgid"].integer;
+            HipTilesetImpl tileset;
+
+            if(source !is null)
+            {
+                import hip.util.path;
+                tileset = HipTilesetImpl.read(joinPath(dirName(mapPath), source.str), firstGid);
+            }
+            else
+                tileset = HipTilesetImpl.readJSON("null", t, firstGid);
+            ret.tilesets~= tileset;
+        }
+
+        return ret;
     }
     static HipTilemap readTiledJSON (string tiledPath)
     {

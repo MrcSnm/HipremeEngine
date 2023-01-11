@@ -32,7 +32,7 @@ public class Image : HipAsset, IImage
     private void initialize(string path)
     {
         import hip.util.system : sanitizePath;
-        impl = new HipImageImpl();
+        impl = new HipImageImpl(path);
         imagePath = sanitizePath(path);
     }
     static alias getPixelImage = HipImageImpl.getPixelImage;
