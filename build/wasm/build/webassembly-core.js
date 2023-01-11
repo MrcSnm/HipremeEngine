@@ -26,7 +26,7 @@ var dModules = {};
 var savedFunctions = {};
 const utf8Encoder = new TextEncoder("utf-8");
 const utf8Decoder = new TextDecoder();
-var WasmUtils = {
+const WasmUtils = {
 	toDString(str)
 	{
 		const s = utf8Encoder.encode(str);
@@ -37,15 +37,97 @@ var WasmUtils = {
 		view2.set(s);
 		return ptr;
 	},
+	toDArguments(...args)
+	{
+		//Calculate total length before.
+		let allocLength = 4;
+		const size_t = 4;
+		for(let i = 0; i < args.length; i++)
+		{
+			switch(typeof(args[i]))
+			{
+				case "boolean":
+				case "number":
+					allocLength+= size_t;
+					break;
+				case "string":
+					//Allocates a slice (ptr+length) and the characters.
+					allocLength+= utf8Encoder.encode(args[i]).length + size_t;
+					break;
+				case "object":
+					throw new Error("To Be Implemented for arrays.");
+				default: throw new Error("Can't send argument "+args[i]+ " to D.");
+			}
+		}
+		const ptr = bridge_malloc(allocLength);
+		let view = new DataView(memory.buffer, ptr, allocLength);
+		//Always pass count of arguments first
+		view.setUint32(0, args.length, true);
+		let offset = 4;
+		for(let i = 0; i < args.length; i++)
+		{
+			switch(typeof(args[i]))
+			{
+				case "boolean":
+				case "number":
+					view.setUint32(offset, args[i], true);
+					offset+= size_t;
+					break;
+				case "string":
+				{
+					let strData = utf8Encoder.encode(args[i]);
+					view.setUint32(offset, strData.byteLength, true);//Size
+					offset+= size_t;
+					new Uint8Array(memory.buffer, ptr+offset, strData.byteLength).set(strData);
+					offset+= strData.length;
+					break;
+				}
+				case "object":
+					throw new Error("To Be Implemented for arrays.");
+			}
+		}
+		console.log(ptr)
+		return ptr;
+	},
 	fromDString(length, ptr)
 	{
 		return utf8Decoder.decode(new DataView(memory.buffer, ptr, length));
-	}
-}
+	},
+	binToBase64(ptr, length)
+	{
+		return btoa(String.fromCharCode.apply(null, new Uint8Array(memory.buffer, ptr, length)));
+	},
+	_objects: [],
+    addObject(val){return 0;}, //Overridden in hidden context
+    removeObject(val){return 0;}
+};
+
+(function()
+{
+	const _objects = WasmUtils._objects;
+    const _freelist = [];
+    let _last = 0;
+	WasmUtils.addObject = function(val)
+    {
+        if(val === null || val === undefined) return 0;
+        let idx = _freelist.pop() || ++_last;
+        _objects[idx] = val;
+        return idx;
+    };
+    WasmUtils.removeObject = function(val)
+    {
+        _freelist.push(val);
+        delete _objects[val];
+    };
+}());
+
+
 
 var importObject = {
-env: {
-	acquire: function(returnType, modlen, modptr, javascriptCodeStringLength, javascriptCodeStringPointer, argsLength, argsPtr) {
+	env: 
+	{
+		acquire: function(returnType, modlen, modptr, javascriptCodeStringLength, javascriptCodeStringPointer, argsLength, argsPtr) 
+		{
 		var td = new TextDecoder();
 		var md = td.decode(new Uint8Array(memory.buffer, modptr, modlen));
 		var s = td.decode(new Uint8Array(memory.buffer, javascriptCodeStringPointer, javascriptCodeStringLength));
@@ -157,6 +239,10 @@ env: {
 		return -1;
 	},
 
+	table: new WebAssembly.Table({initial: 4, element: "anyfunc"}),
+	__table_base: 0,
+	tableBase: 0,
+
 	retain: function(handle) {
 		bridgeObjects[handle].refcount++;
 	},
@@ -169,8 +255,15 @@ env: {
 				bridgeObjects.pop();
 		}
 	},
+	callDg: function(handleA, handleB, handleC)
+	{
+		const args = WasmUtils.toDArguments(handleB, handleC);
+		exports.__callDFunction(handleA, args);
+		exports.__callDFunction(handleA, args);
+		exports.__callDFunction(handleA, args);
+	},
 	abort: function() {
-		if(druntimeAbortHook) druntimeAbortHook();
+		if(window.druntimeAbortHook !== undefined) druntimeAbortHook();
 		throw new Error("DRuntime Aborted Wasm");
 	},
 	_Unwind_Resume: function() {},
@@ -178,91 +271,9 @@ env: {
 	monotimeNow: function() {
 		return performance.now()|0;
 	},
-
-	executeCanvasCommands: function(handle, start, len) {
-		var context = bridgeObjects[handle].object;
-
-		var commands = new Float64Array(memory.buffer, start, len);
-
-		context.save();
-
-		len = 0;
-
-		while(len < commands.length) {
-			switch(commands[len++]) {
-				case 0: break; // intentionally blank
-				case 1: // clear
-					context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-				break;
-				case 2: // strokeStyle
-					var s = "";
-					var slen = commands[len++];
-					for(var i = 0; i < slen; i++)
-						s += String.fromCharCode(commands[len++]);
-					context.strokeStyle = s;
-				break;
-				case 3: // fillStyle
-					var s = "";
-					var slen = commands[len++];
-					for(var i = 0; i < slen; i++)
-						s += String.fromCharCode(commands[len++]);
-					context.fillStyle = s;
-				break;
-				case 4: // drawRectangle
-					context.beginPath();
-					context.rect(commands[len++] + 0.5, commands[len++] + 0.5, commands[len++] - 1, commands[len++] - 1);
-					context.closePath();
-
-					context.stroke();
-					context.fill();
-				break;
-				case 5: // drawText
-					// FIXME
-					var x = commands[len++];
-					var y = commands[len++];
-					var s = "";
-					var slen = commands[len++];
-					for(var i = 0; i < slen; i++)
-						s += String.fromCharCode(commands[len++]);
-
-					context.font = "18px sans-serif";
-					context.strokeText(s, x, y);
-				break;
-				case 6: // drawCircle
-					context.beginPath();
-					context.arc(commands[len++], commands[len++], commands[len++], 0, 2 * Math.PI, false);
-					context.closePath();
-					context.fill();
-					context.stroke();
-				break;
-				case 7: // drawLine
-					context.beginPath();
-					context.moveTo(commands[len++] + 0.5, commands[len++] + 0.5);
-					context.lineTo(commands[len++] + 0.5, commands[len++] + 0.5);
-					context.closePath();
-
-					context.stroke();
-				break;
-				case 8: // drawPolygon
-					context.beginPath();
-					var count = commands[len++];
-
-					context.moveTo(commands[len++] + 0.5,
-						commands[len++] + 0.5);
-					for(var i = 1; i < count; i++)
-						context.lineTo(commands[len++] + 0.5,
-							commands[len++] + 0.5);
-
-					context.closePath();
-					context.fill();
-					context.stroke();
-				break;
-				default: throw new Error("unknown command from sdpy bridge");
-			}
-		}
-
-		context.restore();
-
+	_getFuncAddress(func)
+	{
+		return func;
 	},
 	JS_Math_random : Math.random,
 	atan2f: Math.atan2,
@@ -280,5 +291,10 @@ env: {
 	for (const functionName in glEnv) 
 	{
 		importObject.env[functionName] = glEnv[functionName];
+	}
+	const decEnv = initializeDecoders();
+	for (const functionName in decEnv)
+	{
+		importObject.env[functionName] = decEnv[functionName];
 	}
 }());

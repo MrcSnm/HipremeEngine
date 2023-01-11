@@ -644,7 +644,7 @@ class HipAssetManager
                 loglnError("Could not read atlas");
                 return null;
             }
-            HipImageImpl img = new HipImageImpl();
+            HipImageImpl img = new HipImageImpl(font.getTexturePath);
             if(!img.loadFromMemory(HipFS.read(font.getTexturePath)))
             {
                 loglnError("Could not read image");

@@ -1,0 +1,62 @@
+function initializeDecoders()
+{
+    const gameAssets = {};
+    function assertNotExist(key)
+    {
+        if(gameAssets[key])
+            throw new Error("HipremeEngine already loaded asset " + key);
+    }
+    function substringEquals(input, start, compareWith)
+    {
+        if(start + compareWith.length >= input.length) return false;
+        for(let i = 0; i < compareWith.length; i++)
+            if(!compareWith[i] == input[i+start]) return false;
+        return true;
+    }
+    const addObject = WasmUtils.addObject;
+    ///__callDFunction always expect toDArguments as its argument.
+    const toDArguments = WasmUtils.toDArguments;
+    const _objects = WasmUtils._objects;
+    const removeObject = WasmUtils.removeObject;
+
+    const memoryCanvas = document.createElement("canvas").getContext("2d", {willReadFrequently:true});
+
+    return {
+        WasmDecodeImage(imgNameLength, imgNamePtr, ptr, length, dFunction )
+        {
+            const imgName = WasmUtils.fromDString(imgNameLength, imgNamePtr);
+            assertNotExist(imgName);
+            const extIndex = imgName.lastIndexOf(".") + 1;
+            if(extIndex == 0) throw new TypeError("Expected extension on imgName: " + imgName);
+
+            const type = imgName.substring(extIndex);
+            const img = document.createElement("img");
+            const imgHandle = addObject(img);
+            img.onload = (ev) =>
+            {
+                console.log("Calling D Function from Javascript: ");
+                exports.__callDFunction(dFunction, toDArguments(imgHandle));
+
+            };  
+            img.src = 'data:image/'+type+";base64,"+WasmUtils.binToBase64(ptr, length);
+            document.body.appendChild(img);
+            gameAssets[imgName] = img;
+
+            return imgHandle;
+        },
+        WasmImageGetWidth(img)
+        {
+            return _objects[img].width;
+        },
+        WasmImageGetHeight(img){return _objects[img].height;},
+        WasmImageGetPixels(img){
+            memoryCanvas.drawImage(_objects[img], 0, 0);
+            const imgData = memoryCanvas.getImageData(0, 0, _objects[img].width, _objects[img].height);
+            return imgData.data;
+        },
+        WasmImageDispose(img)
+        {
+            removeObject(img);
+        }
+    }
+}

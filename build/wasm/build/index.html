@@ -11,12 +11,15 @@
   </head>
   <body>
     <canvas id="glcanvas" width="800" height="600" style="border:1px solid #000000;"></canvas>
+    <script src="/decoders.js"></script>
     <script src="/webgl.js"></script>
     <script src="/hipreme_engine.js"></script>
     <script src="/webassembly-core.js"></script>
     <script>
 	WebAssembly.instantiateStreaming(fetch('/hipreme_engine.wasm'), importObject)
 		.then(function(obj) {
+
+			console.log(importObject.env.table);
 			memory = obj.instance.exports.memory;
 			bridge_malloc = obj.instance.exports.bridge_malloc;
 			printBlockDebugInfo = obj.instance.exports.printBlockDebugInfo;

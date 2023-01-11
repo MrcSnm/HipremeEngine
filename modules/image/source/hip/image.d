@@ -86,15 +86,75 @@ final class HipNullImageDecoder : IHipAnyImageDecoder
 
 
 version(WebAssembly)
-final class HipWasmImageDecoder : IHipAnyImageDecoder
 {
-    bool startDecoding(void[] data){return false;}
-    uint getWidth() const {return 0;}
-    uint getHeight() const {return 0;}
-    const(void)[] getPixels() const {return null;}
-    ubyte getBytesPerPixel() const {return 0;}
-    const(ubyte)[] getPalette() const {return null;}
-    void dispose(){}
+    extern(C) struct BrowserImage
+    {
+        size_t handle;
+        bool valid() const {return handle > 0;}
+        alias handle this;
+    }
+    import hip.wasm;
+    //Returns a BrowserImage, but can't use it in type directly.
+    extern(C) size_t WasmDecodeImage(
+        size_t imgPathLength, char* imgPathChars, ubyte* data, size_t dataSize,
+        JSFunction!(void function(BrowserImage)) onImageLoad
+    );
+
+    extern(C) size_t WasmImageGetWidth(size_t);
+    extern(C) size_t WasmImageGetHeight(size_t);
+    extern(C) ubyte* WasmImageGetPixels(size_t);
+    extern(C) void WasmImageDispose(size_t);
+
+    final class HipWasmImageDecoder : IHipAnyImageDecoder
+    {
+        //Everything here needs to be cached for not calling the Wasm bridge.
+        private uint width, height;
+        private size_t timePixelsGet = 0;
+        BrowserImage img;
+        string path;
+        this(string path)
+        {
+            assert(path, "HipWasmImageDecoder requires a path.");
+            this.path = path;
+        }
+        bool startDecoding(void[] data)
+        {
+            img = WasmDecodeImage(path.length, cast(char*)path.ptr, cast(ubyte*)data.ptr, data.length, sendJSFunction!((BrowserImage _img)
+            {
+                // assert(img == _img, "Different image returned!");
+                import std.stdio;
+                writeln("Getting width: ", WasmImageGetWidth(_img));
+            }));
+
+            if(img.valid)
+            {
+                width = WasmImageGetWidth(img);
+                height = WasmImageGetHeight(img);
+            }
+            return img.valid;
+        }
+        uint getWidth() const {return width;}
+        uint getHeight() const {return height;}
+        const(void)[] getPixels() const 
+        {
+            assert(img.valid);
+            if(timePixelsGet >= 5)
+            {
+                assert(false, "Don't call getPixel constantly on web. It is a very heavy operation. and may be 
+                collected by the JS GC. A more strategic solution is being looked.
+                ");
+            }
+            (cast()this).timePixelsGet++;//Debug info, never do that!!
+            return cast(const(void)[])(WasmImageGetPixels(img)[0..width*height*4]);
+        }
+        ubyte getBytesPerPixel() const {return 4;}
+        const(ubyte)[] getPalette() const {return null;}
+        void dispose()
+        {
+            assert(img.valid, "Invalid dispose call.");
+            WasmImageDispose(img);
+        }
+    }
 }
 
 
@@ -107,9 +167,9 @@ public class HipImageImpl : IImage
     ushort bitsPerPixel;
     
     const(void)[] pixels;
-    this()
+    this(string path = "")
     {
-        decoder = new HipPlatformImageDecoder();        
+        decoder = new HipPlatformImageDecoder(path);
     }
 
     static immutable(IImage) getPixelImage()

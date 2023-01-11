@@ -91,8 +91,8 @@ version(Script) extern(System)
     /**
     *   Usage:
     ```d
-    //Must import std.json for actually using it.
-    import std.json;
+    //Must import hip.data.json for actually using it.
+    import hip.data.json;
     JSONValue json = hipJSON.getJSON!JSONValue;
     json["myProperty"].str//or other types
     ```

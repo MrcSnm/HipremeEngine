@@ -41,6 +41,7 @@
 				"../../modules/font/source",
 				"../../modules/assets/source",
 				"../../modules/bind/source",
+				"../../modules/wasm/source",
 				"../../api/source",
 				"../../source/hip"
 			],

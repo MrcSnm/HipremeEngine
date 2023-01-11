@@ -1,18 +1,13 @@
 module hip.data.jsonc;
 
 
-version(WebAssembly){}
-else
-{
-    public import std.json;
-}
+public import hip.data.json;
 
 auto parseJSONC()(string jsonc)
 {
     version(WebAssembly) static assert(false, "No JSONC for Wasm.");
     return parseJSON(stripComments(jsonc));
 }
-
 
 /** 
 *   Strips single and multi line comments (C style)

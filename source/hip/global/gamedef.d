@@ -42,21 +42,30 @@ public:
 
 
 
-bool loadDefaultAssets()
+bool loadDefaultAssets(out string str)
 {
    import hip.font.ttf;
    import hip.assets.image;
 
-   auto font = new Hip_TTF_Font(HIP_DEFAULT_FONT, HIP_DEFAULT_FONT_SIZE);
-   if(!font.loadFromMemory(cast(ubyte[])HipDefaultAssets.fontData))
-      return false;
-   HipDefaultAssets._font = font;
-
+   
    auto image = new Image(HIP_DEFAULT_TEXTURE);
    if(!image.loadFromMemory(cast(ubyte[])HipDefaultAssets.textureData))
+   {
+      str = "Failed loading default image.";
       return false;
-
+   }
    HipDefaultAssets._texture = image;
+
+   auto font = new Hip_TTF_Font(HIP_DEFAULT_FONT, HIP_DEFAULT_FONT_SIZE);
+   if(!font.loadFromMemory(cast(ubyte[])HipDefaultAssets.fontData))
+   {
+      str = "Failed loading default TTF Font.";
+      return false;
+   }
+   HipDefaultAssets._font = font;
+
+   str = "Successfully loaded game default assets.";
+
    return true;
 }
 

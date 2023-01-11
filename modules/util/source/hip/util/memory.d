@@ -62,20 +62,6 @@ void[] toHeapSlice(T)(T data) if(!is(T == void[]))
     return toHeap(data)[0..T.sizeof];
 }
 
-
-void safeFree(ref void* data)
-{
-    if(data != null)
-        free(data);
-    data = null;
-}
-void safeFree(ref void[] data)
-{
-    if(data.ptr !is null)
-        free(data.ptr);
-    data = [];
-}
-
 void freeGCMemory(ref void* data)
 {
     version(WebAssembly)
@@ -86,6 +72,7 @@ void freeGCMemory(ref void* data)
     {
         import core.memory;
         GC.removeRoot(data);
+        GC.free(data);
     }
     data = null;
 }
@@ -100,6 +87,7 @@ void freeGCMemory(ref void[] data)
     {
         import core.memory;
         GC.removeRoot(data.ptr);
+        GC.free(data.ptr);
     }
     data = null;
 }
@@ -114,6 +102,20 @@ void safeFree(T)(ref T data) if(isReference!T)
     {
         import core.memory;
         GC.removeRoot(cast(void*)data);
+        GC.free(cast(void*)data);
     }
     data = null;
+}
+
+void safeFree(ref void* data)
+{
+    if(data != null)
+        free(data);
+    data = null;
+}
+void safeFree(ref void[] data)
+{
+    if(data.ptr !is null)
+        free(data.ptr);
+    data = [];
 }

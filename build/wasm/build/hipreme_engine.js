@@ -76,6 +76,8 @@ function initializeHipremeEngine(exports)
         window.removeEventListener("gamepaddisconnected", HipInputOnGamepadDisconnected);
         window.removeEventListener("resize", HipOnRendererResize);
     };
+    window.druntimeAbortHook = destroyEngine;
+
 
     let lastTime = performance.now();
     const gameLoop = () =>
@@ -105,5 +107,4 @@ function initializeHipremeEngine(exports)
         });
     }
     requestAnimationFrame(gameLoop);
-    window.druntimeAbortHook = destroyEngine;
 }
