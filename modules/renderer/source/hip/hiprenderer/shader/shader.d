@@ -236,7 +236,8 @@ public class Shader : IReloadable
         ShaderVar* v = findByName(name);
         if(v != null)
         {
-            ErrorHandler.assertLazyExit(v.shaderType == ShaderTypes.FRAGMENT, "Variable named "~name~" must be from Fragment Shader");
+            if(v.shaderType != ShaderTypes.FRAGMENT)
+                ErrorHandler.assertExit(false, "Variable named "~name~" must be from Fragment Shader");
             v.set(val);
         }
         else

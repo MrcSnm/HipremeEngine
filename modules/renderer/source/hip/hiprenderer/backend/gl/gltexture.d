@@ -169,6 +169,8 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
         height = image.getHeight;
         bind(currentSlot);
 
+        import hip.console.log;
+        loglnWarn("Putting pixels onto glTexImage.", width, height, image.getName);
 
         glCall(() => glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, cast(void*)pixels.ptr));
 

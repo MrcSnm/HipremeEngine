@@ -4,19 +4,23 @@ import hip.filesystem.hipfs;
 import hip.filesystem.extension;
 
 import hip.assets.image;
-mixin HipFSExtend!(Image) mxImg;
+mixin HipFSExtend!(Image, "", void delegate(IImage img), void delegate()) mxImg;
 alias loadFromFile = mxImg.loadFromFile;
 
 import hip.assets.texture;
 bool loadFromFile(HipTexture texture, string path)
 {
     Image img = new Image(path);
-    if(!img.loadFromFile(path))
+    if(!img.loadFromFile(path, (IImage _img){texture.load(_img);}, ()
     {
-        destroy(img);
-        return false;
-    }
-    return texture.load(img);
+        import hip.console.log;
+        loglnError("Could not load image from path ", path);
+    }))
+        {
+            destroy(img);
+            return false;
+        }
+    return true;
 }
 
 
@@ -29,7 +33,7 @@ bool loadFromFile(HipBitmapFont font, string atlasPath)
     if(!font.loadAtlas(cast(string)data, atlasPath))
         return false;
     Image img = new Image(font.getTexturePath);
-    if(!img.loadFromMemory(HipFS.read(font.getTexturePath)))
+    if(!img.loadFromMemory(HipFS.read(font.getTexturePath), (_){}, (){})) //!FIXME
         return false;
     return font.loadTexture(new HipTexture(img));
 }

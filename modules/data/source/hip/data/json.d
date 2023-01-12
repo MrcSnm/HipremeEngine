@@ -232,13 +232,13 @@ struct JSONValue
 			newIndex--;
 			return newIndex < data.length;
 		}
-
-		data = data[1..$];
 		JSONValue ret;
 		ret.data.object = new JSONObject();
 		JSONValue* current = &ret;
 		JSONState state = JSONState.lookingForNext;
 		JSONValue lastValue = ret;
+		import hip.console.log;
+		logln(cast(size_t)ret.type);
 
 		scope JSONValue[] stack = [ret];
 		void pushNewScope(JSONValue val)
@@ -257,7 +257,12 @@ struct JSONValue
 			assert(stack.length > 0, "Unexpected pop.");
 			stack = stack[0..$-1];
 			if(stack.length > 0)
+			{
 				current = &stack[$-1];
+				import std.stdio;
+				writeln(current is null, current.key, current.error, cast(size_t)current.type);
+				assert(current.type == JSONType.object || current.type == JSONType.array, "Unexpected value in stack. (Typed "~(cast(size_t)(current.type)).to!string);
+			}
 		}
 
 		void pushToStack(JSONValue val)
@@ -276,6 +281,10 @@ struct JSONValue
 		}
 
 		size_t line = 0;
+		string getErr(string err="")
+		{
+			return "Error at line "~line.to!string~" "~err~" on index '"~index.to!string~"' last parsed: "~lastValue.toString;
+		}
 
 		string lastKey;
 		do
@@ -289,7 +298,7 @@ struct JSONValue
 				case '{':
 				{
 					if(state != JSONState.value)
-						return JSONValue(JSONData.init, "", "Error at line "~line.to!string);
+						return JSONValue(JSONData.init, "", getErr());
 					JSONValue obj = JSONValue.create(new JSONObject(), lastKey);
 					pushNewScope(obj);
 
@@ -302,7 +311,7 @@ struct JSONValue
 					break;
 				case ':':
 					if(state != JSONState.lookingAssignment)
-						return JSONValue(JSONData.init, "", "Error at line "~line.to!string~" expected key before ':'");
+						return JSONValue(JSONData.init, "", getErr("expected key before ':'"));
 					state = JSONState.value;
 					break;
 				case '"':
@@ -318,9 +327,9 @@ struct JSONValue
 							goto default;
 						case JSONState.key:
 						{
-							assert(current.type == JSONType.object, "Error at line "~line.to!string~" only object can receive a key.");
+							assert(current.type == JSONType.object, getErr("only object can receive a key."));
 							if(!getNextString(data, index, index, lastKey))
-								return JSONValue(JSONData.init, "", "Error at line"~line.to!string~" unclosed quotes.");
+								return JSONValue(JSONData.init, "", getErr("unclosed quotes."));
 							pushToStack(JSONValue(JSONData.init, lastKey));
 							state = JSONState.lookingAssignment;
 							break;
@@ -329,35 +338,35 @@ struct JSONValue
 						{
 							string val;
 							if(!getNextString(data, index, index, val))
-								return JSONValue(JSONData.init, "", "Error at line"~line.to!string~" unclosed quotes.");
+								return JSONValue(JSONData.init, "", getErr("unclosed quotes."));
 							pushToStack(JSONValue.create!string(val, lastKey));
 							state = JSONState.lookingForNext;
 							break;
 						}
 						default:
-							return JSONValue(JSONData.init, "", "Error at line "~line.to!string~" comma expected before key "~lastValue.toString);
+							return JSONValue(JSONData.init, "", getErr("comma expected before key "~lastValue.key));
 					}
 					break;
 				}
 				case '[':
 				{
 					if(state != JSONState.lookingForNext && state != JSONState.value)
-						return JSONValue(JSONData.init, "", "Error at line "~line.to!string~" expected to be a value. "~lastValue.toString);
+						return JSONValue(JSONData.init, "", getErr(" expected to be a value. "));
 					pushNewScope(JSONValue.create(new JSONArray(), lastKey));
 					state = JSONState.value;
 					break;
 				}
 				case ']':
 					if(state != JSONState.lookingForNext && state != JSONState.value)
-						return JSONValue(JSONData.init, "", "Error at line "~line.to!string~" expected to be a value. "~lastValue.toString);
+						return JSONValue(JSONData.init, "", getErr("expected to be a value. "));
 					popScope();
 					state = JSONState.lookingForNext;
 					break;
 				case ',':
 					if(state != JSONState.lookingForNext)
-						return JSONValue(JSONData.init, "", "Error at line "~line.to!string~" unexpected comma.");
+						return JSONValue(JSONData.init, "", getErr("unexpected comma. "));
 					if(current.type != JSONType.object && current.type != JSONType.array)
-						return JSONValue(JSONData.init, "", "Error at line "~line.to!string~" unexpected comma.");
+						return JSONValue(JSONData.init, "", getErr("unexpected comma. "));
 
 					switch(current.type) with(JSONType)
 					{
@@ -373,7 +382,7 @@ struct JSONValue
 							if(ch.isNumeric)
 							{
 								if(!getNextNumber(data, index, index, lastValue.data, lastValue.type))
-									return JSONValue(JSONData.init, "", "Error at line "~line.to!string~" unexpected end of file.");
+									return JSONValue(JSONData.init, "", getErr("unexpected end of file."));
 								pushToStack(lastValue);
 								state = JSONState.lookingForNext;
 							}
@@ -393,23 +402,23 @@ struct JSONValue
 							if(ch.isNumeric)
 							{
 								if(current.type != JSONType.array)
-									return JSONValue(JSONData.init, "", "Error at line "~line.to!string~" unexpected number.");
+									return JSONValue(JSONData.init, "", getErr("unexpected number."));
 								if(!getNextNumber(data, index, index, lastValue.data, lastValue.type))
-									return JSONValue(JSONData.init, "", "Error at line "~line.to!string~" unexpected end of file.");
+									return JSONValue(JSONData.init, "", getErr("unexpected end of file."));
 								pushToStack(lastValue);
 								state = JSONState.lookingForNext;
 							}
 							else if(index + "true".length < data.length && data[index.."true".length + index] == "true")
 							{
 								if(current.type != JSONType.array)
-									return JSONValue(JSONData.init, "", "Error at line "~line.to!string~" unexpected number.");
+									return JSONValue(JSONData.init, "", getErr("unexpected number."));
 								pushToStack(JSONValue.create!bool(true, lastKey));
 								state = JSONState.lookingForNext;
 							}
 							else if(index + "false".length < data.length && data[index.."false".length + index] == "false")
 							{
 								if(current.type != JSONType.array)
-									return JSONValue(JSONData.init, "", "Error at line "~line.to!string~" unexpected number.");
+									return JSONValue(JSONData.init, "", getErr("unexpected number."));
 								pushToStack(JSONValue.create!bool(false, lastKey));
 								state = JSONState.lookingForNext;
 							}

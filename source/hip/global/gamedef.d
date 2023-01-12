@@ -42,29 +42,30 @@ public:
 
 
 
-bool loadDefaultAssets(out string str)
+bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) onFailure)
 {
    import hip.font.ttf;
    import hip.assets.image;
 
    
    auto image = new Image(HIP_DEFAULT_TEXTURE);
-   if(!image.loadFromMemory(cast(ubyte[])HipDefaultAssets.textureData))
+   if(!image.loadFromMemory(cast(ubyte[])HipDefaultAssets.textureData, (_)
    {
-      str = "Failed loading default image.";
+      HipDefaultAssets._texture = image;
+      onSuccess();
+   }, (){onFailure("Failed loading default image.");}))
       return false;
-   }
-   HipDefaultAssets._texture = image;
 
-   auto font = new Hip_TTF_Font(HIP_DEFAULT_FONT, HIP_DEFAULT_FONT_SIZE);
-   if(!font.loadFromMemory(cast(ubyte[])HipDefaultAssets.fontData))
-   {
-      str = "Failed loading default TTF Font.";
-      return false;
-   }
-   HipDefaultAssets._font = font;
+   //!FIXME
+   // auto font = new Hip_TTF_Font(HIP_DEFAULT_FONT, HIP_DEFAULT_FONT_SIZE);
+   // if(!font.loadFromMemory(cast(ubyte[])HipDefaultAssets.fontData))
+   // {
+   //    str = "Failed loading default TTF Font.";
+   //    return false;
+   // }
+   // HipDefaultAssets._font = font;
 
-   str = "Successfully loaded game default assets.";
+   // str = "Successfully loaded game default assets.";
 
    return true;
 }
@@ -88,6 +89,8 @@ export extern(System)
       if(texture is null)
       {
          import hip.assets.texture;
+         import hip.console.log;
+         logln("Image has loaded? ", HipDefaultAssets.texture.getName, HipDefaultAssets.texture.getWidth);
          texture = new HipTexture(HipDefaultAssets.texture);
       }
       return cast(const)texture;

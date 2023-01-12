@@ -24,8 +24,8 @@ public interface IImageBase
 
 public interface IHipImageDecoder : IImageBase
 {
-    ///Use that for decoding from memory, returns wether decode was successful
-    bool startDecoding(void[] data);
+    ///Use that for decoding from memory, returns whether data was invalid.
+    bool startDecoding(void[] data, void delegate() onSuccess, void delegate() onFailure);
     
     static const(ubyte[4]) getPixel(){return cast(ubyte[4])[255,255,255,255];}
     ///Dispose the pixels
@@ -43,8 +43,15 @@ public interface IHipAnyImageDecoder : IHipPNGDecoder, IHipJPEGDecoder, IHipWebP
 public interface IImage : IImageBase
 {
     string getName() const;
+    ///loadRaw assumes that you already have the raw pixels to be put on CPU, so, there's no error checking.
     void loadRaw(in ubyte[] pixels, int width, int height, ubyte bytesPerPixel);
-    bool loadFromMemory(ubyte[] data);
+    /**
+    *   loadMemory expects data to be decoded. This process is not
+    *   instant on Web. A decision was made of putting successful and
+    *   unsuccessful callbacks for that reason. Prefer using the onError callback
+    *   rather than the bool return.
+    */
+    bool loadFromMemory(ubyte[] data, void delegate(IImage self) onSuccess, void delegate() onFailure);
     bool hasLoadedData() const;
     void[] convertPalettizedToRGBA() const;
     void[] monochromeToRGBA() const;

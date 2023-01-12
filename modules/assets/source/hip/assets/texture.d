@@ -89,7 +89,14 @@ class HipTexture : HipAsset, IHipTexture
             return false;
         }      
 
-        Image loadedImage = new Image(path, buffer);
+        Image loadedImage = new Image(path, buffer, (IImage img)
+        {
+            loadImpl(img);
+        }, ()
+        {
+            import hip.error.handler;
+            ErrorHandler.showWarningMessage("Could not load image.", path);
+        });
         return load(loadedImage);
     }
 

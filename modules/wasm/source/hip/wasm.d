@@ -1,4 +1,5 @@
 module hip.wasm;
+version(WebAssembly):
 
 ///WebAssembly.Table replacement for HipremeEngine
 private __gshared ubyte* function(ubyte* args)[] _annonymousFunctionTable;
@@ -28,8 +29,7 @@ private ubyte* validateArguments(alias fn)(ubyte* args)
 struct Arguments(alias Func)
 {
 	import std.traits;
-	static foreach(i, type; Parameters!Func)
-		mixin("type _",i,";");
+	Parameters!Func params;
 }
 
 Struct loadMemoryInStruct(Struct)(ubyte* arg)
@@ -67,12 +67,11 @@ ubyte* sendJSFunction(alias fn)()
 	import std.traits;
 	static ubyte* function(ubyte* arg) convertedFunc  = (ubyte* arg)
 	{
-		Arguments!fn params = wasmParametersFromUbyte!fn(arg);
+		Arguments!fn params = wasmParametersFromUbyte!fn(validateArguments!fn(arg));
 		static if(!is(ReturnType!fn == void))
 			return fn(params.tupleof);
 		else
 		{
-			import std.stdio;
 			fn(params.tupleof);
 			return null;
 		}
@@ -114,6 +113,7 @@ ubyte* function(ubyte* args) toFunc(alias dg)()
 {
 	import std.traits;
 	import hip.wasm;
+	alias Params = Parameters!dg;
 	alias DgArgs = Arguments!dg;
 	enum Length = DgArgs.tupleof.length;
 	alias Ret = ReturnType!dg;
@@ -125,16 +125,16 @@ ubyte* function(ubyte* args) toFunc(alias dg)()
 		assert(argsCount - 2 <= Length, "Expected "~Length.stringof~" parameters.");
 		size_t[3] baseArgs = (cast(size_t*)arg)[0..3];
 
-		DgArgs delegateArguments;
+		static DgArgs delegateArguments;
 		static if(Length > 0)
 			delegateArguments = loadMemoryInStruct!DgArgs(arg + size_t.sizeof*3);
 		
 		static if(Length > 0) 
 		{
 			static if(is(Ret == void))
-				void delegate(DgArgs) dg;
+				void delegate(Params) dg;
 			else
-				ubyte* delegate(DgArgs) dg;
+				ubyte* delegate(Params) dg;
 		}
 		else
 		{
@@ -151,9 +151,9 @@ ubyte* function(ubyte* args) toFunc(alias dg)()
 		{
 			static if(is(Ret == void))
 			{
-				dg(delegateArguments);
+				dg(delegateArguments.tupleof);
 				return null;
-			} else return dg(delegateArguments);
+			} else return dg(delegateArguments.tupleof);
 		}
 		else
 		{
@@ -168,3 +168,16 @@ ubyte* function(ubyte* args) toFunc(alias dg)()
 }
 
 
+
+ubyte[] getWasmBinary(ubyte* input)
+{
+	size_t length = *cast(size_t*)input;
+	ubyte[] ret = (input+size_t.sizeof)[0..length];
+	return ret;
+}
+
+void freeWasmBinary(ubyte[] binary)
+{
+	ubyte* ptr = binary.ptr - size_t.sizeof;
+	object.free(ptr);
+}

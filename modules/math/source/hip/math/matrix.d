@@ -324,7 +324,7 @@ auto toString()(in Matrix3 mat) @nogc
             else
                 ret~=", ";
         }
-        toStringRange(ret, this[i]);
+        toStringRange(ret, mat[i]);
     }
     ret~= ']';
     return ret;
@@ -345,7 +345,7 @@ auto toString()(in Matrix4 mat) @nogc
             else
                 ret~=", ";
         }            
-        toStringRange(ret, this[i]);
+        toStringRange(ret, mat[i]);
     }
     ret~= ']';
     return ret;

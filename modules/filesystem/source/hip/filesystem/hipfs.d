@@ -103,6 +103,7 @@ class HipFileSystem
 
     version(Android){import hip.filesystem.systems.android;}
     else version(UWP){import hip.filesystem.systems.uwp;}
+    else version(WebAssembly){import hip.filesystem.systems.browser;}
     else version(HipDStdFile){import hip.filesystem.systems.dstd;}
     else {import hip.filesystem.systems.cstd;}
  
@@ -116,6 +117,7 @@ class HipFileSystem
             version(Android){fs = new HipAndroidFileSystemInteraction();}
             else version(UWP){fs = new HipUWPileSystemInteraction();}
             else version(PSVita){fs = new HipCStdioFileSystemInteraction();}
+            else version(WebAssembly){fs = new HipBrowserFileSystemInteraction();}
             else
             {
                 version(HipDStdFile){}else{static assert(false, "HipDStdFile should be marked to be used.");}
