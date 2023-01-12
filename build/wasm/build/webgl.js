@@ -13,6 +13,12 @@ function initializeWebglContext()
     const addObject = WasmUtils.addObject;
     const removeObject = WasmUtils.removeObject;
     const _objects = WasmUtils._objects;
+
+    /**
+     * Format: 
+     * [ptr] : [program, length, loc]
+     */
+    const uniformTable = new Map();
    
     
     return {
@@ -151,8 +157,15 @@ function initializeWebglContext()
         glGetProgramInfoLog ( program ) {
             return WasmUtils.toDString(gl.getProgramInfoLog(_objects[program]))
         },
-        wglGetUniformLocation ( program, length, ptr) {
-            return addObject(gl.getUniformLocation(_objects[program], WasmUtils.fromDString(length,ptr)));
+        wglGetUniformLocation ( program, length, ptr) 
+        {
+            if(!uniformTable.has(program))
+                uniformTable.set(program, new Map());
+            const uniforms = uniformTable.get(program);
+            const str = WasmUtils.fromDString(length, ptr);
+            if(!uniforms.has(str))
+                uniforms.set(str, addObject(gl.getUniformLocation(_objects[program], str)));
+            return uniforms.get(str);
         },
         glLinkProgram ( program ) {
             gl.linkProgram(_objects[program]);

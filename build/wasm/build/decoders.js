@@ -22,7 +22,7 @@ function initializeDecoders()
     const memoryCanvas = document.createElement("canvas").getContext("2d", {willReadFrequently:true});
 
     return {
-        WasmDecodeImage(imgNameLength, imgNamePtr, ptr, length, dFunction )
+        WasmDecodeImage(imgNameLength, imgNamePtr, ptr, length, dFunction, dgFunc, delegateCtx)
         {
             const imgName = WasmUtils.fromDString(imgNameLength, imgNamePtr);
             assertNotExist(imgName);
@@ -34,12 +34,10 @@ function initializeDecoders()
             const imgHandle = addObject(img);
             img.onload = (ev) =>
             {
-                console.log("Calling D Function from Javascript: ");
-                exports.__callDFunction(dFunction, toDArguments(imgHandle));
-
+                exports.__callDFunction(dFunction, toDArguments(dgFunc, delegateCtx, imgHandle));
             };  
             img.src = 'data:image/'+type+";base64,"+WasmUtils.binToBase64(ptr, length);
-            document.body.appendChild(img);
+            // document.body.appendChild(img); Not needed
             gameAssets[imgName] = img;
 
             return imgHandle;
@@ -49,10 +47,12 @@ function initializeDecoders()
             return _objects[img].width;
         },
         WasmImageGetHeight(img){return _objects[img].height;},
+
+        ///Always allocates D memory. Should be freed in D code.
         WasmImageGetPixels(img){
             memoryCanvas.drawImage(_objects[img], 0, 0);
             const imgData = memoryCanvas.getImageData(0, 0, _objects[img].width, _objects[img].height);
-            return imgData.data;
+            return WasmUtils.toDBinary(imgData.data);
         },
         WasmImageDispose(img)
         {

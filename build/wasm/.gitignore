@@ -12,6 +12,7 @@ wasm.dll
 wasm.a
 wasm.lib
 wasm-test-*
+generated/**
 *.exe
 *.o
 *.obj

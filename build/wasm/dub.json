@@ -20,7 +20,8 @@
 				"-preview=shortenedMethods"
 			],
 			"stringImportPaths": [
-				"../../"
+				"../../",
+				"generated"
 			],
 			"sourcePaths": [
 				"../../modules/d_std/source",
@@ -45,6 +46,9 @@
 				"../../api/source",
 				"../../source/hip"
 			],
+			"preGenerateCommands": [
+				"rdmd prebuild/gendir.d ../../assets/defaults generated"
+			],
 			"postGenerateCommands": [
 				"cd build && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true --embed-base-url=../"
 			],
@@ -54,6 +58,7 @@
 				"OpenGL",
 				"GLES20",
 				"Have_hipreme_engine",
+				"CarelessAlocation",
 				"dll"
 			],
 			

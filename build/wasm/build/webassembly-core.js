@@ -9,6 +9,52 @@ var bridgeObjects = [{}]; // the first one is a null object; ignored
 var memory;
 var printBlockDebugInfo;
 var bridge_malloc;
+/**
+ * Notable export is __callDFunc
+ * This function expects a function handle which is passed from the code, example usages:
+ * 
+ * ```d
+ * extern(C) int testDFunction(JSFunction!(void function(string abc)));
+ * //Usage in code
+ * 
+ * testDFunction(sendJSFunction!((string abc)
+ * {
+ * 		writeln("Hello Javascript argument abc!! ", abc);
+ * }));
+ * ```
+ * On Javascript Side, use it as:
+ * ```js
+ * 
+ * testDFunction(funcHandle)
+ * {
+ * 		exports.__callDFunc(funcHandle, WasmUtils.toDArguments("This is a Javascript string"));
+ * 		return 9999;
+ * }
+ * ```
+ * 
+ * Delegates are a bit more complex, define your function as:
+ * ```d
+ * extern(C) void testDDelegate(JSDelegateType!(void delegate(string abc)));
+ * 
+ * //Usage in code
+ * int a = 912;
+ * string theStr;
+ * testDDelegate(sendJSDelegate!((string abc)
+ * {
+ * 		writeln(++a);
+ * 		theStr = abc;
+ * }).tupleof); //Tupleof is necessary as JSDelegate is actually 3 ubyte*
+ * ```
+ * 
+ * On the Javascript side:
+ * 
+ * ```js
+ * testDDelegate(funcHandle, dgFunc, dgCtx)
+ * {
+ * 		exports.__callDFunc(funcHandle, WasmUtils.toDArguments(dgFunc, dgCtx, "Javascript string on D delegate"));
+ * }
+ * ```
+ */
 var exports;
 
 function memdump(address, length) {
@@ -37,11 +83,14 @@ const WasmUtils = {
 		view2.set(s);
 		return ptr;
 	},
+	size_t: 4,
+
+	//TODO: Implement a bridge_free.
 	toDArguments(...args)
 	{
 		//Calculate total length before.
 		let allocLength = 4;
-		const size_t = 4;
+		const size_t = WasmUtils.size_t;
 		for(let i = 0; i < args.length; i++)
 		{
 			switch(typeof(args[i]))
@@ -86,7 +135,6 @@ const WasmUtils = {
 					throw new Error("To Be Implemented for arrays.");
 			}
 		}
-		console.log(ptr)
 		return ptr;
 	},
 	fromDString(length, ptr)
@@ -96,6 +144,18 @@ const WasmUtils = {
 	binToBase64(ptr, length)
 	{
 		return btoa(String.fromCharCode.apply(null, new Uint8Array(memory.buffer, ptr, length)));
+	},
+	toDBinary(inputBinary)
+	{
+		if(Object.getPrototypeOf(inputBinary) != Uint8Array.prototype &&
+		 Object.getPrototypeOf(inputBinary) != Uint8ClampedArray.prototype)
+			throw new Error("Expected Uint8Array.");
+		
+		const ptr = bridge_malloc(inputBinary.byteLength +WasmUtils.size_t);
+		const view = new DataView(memory.buffer, ptr, inputBinary.byteLength + WasmUtils.size_t);
+		view.setUint32(0, inputBinary.byteLength, true);
+		new Uint8Array(memory.buffer, ptr+ WasmUtils.size_t, inputBinary.byteLength).set(inputBinary);
+		return ptr;
 	},
 	_objects: [],
     addObject(val){return 0;}, //Overridden in hidden context
@@ -255,18 +315,26 @@ var importObject = {
 				bridgeObjects.pop();
 		}
 	},
-	callDg: function(handleA, handleB, handleC)
-	{
-		const args = WasmUtils.toDArguments(handleB, handleC);
-		exports.__callDFunction(handleA, args);
-		exports.__callDFunction(handleA, args);
-		exports.__callDFunction(handleA, args);
-	},
+	//Maintained here as a reference.
+	// callDg: function(dFunc, dgFunc, dgContext)
+	// {
+	// 	const args = WasmUtils.toDArguments(dgFunc, dgContext, (Math.random() * 500) | 0, "Javascript String!!");
+	// 	exports.__callDFunction(dFunc, args);
+	// 	exports.__callDFunction(dFunc, args);
+	// 	exports.__callDFunction(dFunc, args);
+
+	// 	return WasmUtils.toDString("Test return after things...");
+	// },
 	abort: function() {
 		if(window.druntimeAbortHook !== undefined) druntimeAbortHook();
 		throw new Error("DRuntime Aborted Wasm");
 	},
 	_Unwind_Resume: function() {},
+
+	WasmStartGameLoop()
+	{
+		initializeHipremeEngine(exports);
+	},
 
 	monotimeNow: function() {
 		return performance.now()|0;

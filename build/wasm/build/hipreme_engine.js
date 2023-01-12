@@ -80,31 +80,32 @@ function initializeHipremeEngine(exports)
 
 
     let lastTime = performance.now();
-    const gameLoop = () =>
+    function nextFrame(step)
     {
-        requestAnimationFrame((step) =>
+        try
         {
-            try
-            {
-                if(exports.HipremeUpdate(performance.now() - lastTime))
-                {
-                    finished = true;
-                    destroyEngine();
-                }
-                else
-                {
-                    exports.HipremeRender();
-                    gameLoop();
-                }
-                lastTime = performance.now();
-            }
-            catch(err)
+            if(exports.HipremeUpdate(performance.now() - lastTime))
             {
                 finished = true;
                 destroyEngine();
-                throw err;
             }
-        });
+            else
+            {
+                exports.HipremeRender();
+                gameLoop();
+            }
+            lastTime = performance.now();
+        }
+        catch(err)
+        {
+            finished = true;
+            destroyEngine();
+            throw err;
+        }
+    }
+    const gameLoop = () =>
+    {
+        requestAnimationFrame(nextFrame);
     }
     requestAnimationFrame(gameLoop);
 }
