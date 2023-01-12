@@ -329,22 +329,56 @@ class HipAssetManager
         return task;
     }
 
+    private static void delegate(HipAsset) onSuccessLoad(HipAssetLoadTask task)
+    {
+        return (HipAsset asset)
+        {
+            task.asset = asset;
+            task.result = HipAssetResult.loaded;
+            putComplete(task);
+        };
+    }
+    private static void delegate() onFailureLoad(HipAssetLoadTask task)
+    {
+        return ()
+        {
+            import hip.console.log;
+            logln("Could not load file: ", task.name);
+            task.result = HipAssetResult.cantLoad;
+            putComplete(task);
+        };
+    }
+
+    
     /**
     *   loadSimple must be used when the asset can be totally constructed on the worker thread and then returned to the main thread
     */
-    private static HipAssetLoadTask loadSimple(string taskName, string path, HipAsset delegate(string pathOrLocation) loadAsset, 
+    private static HipAssetLoadTask loadSimple(string taskName, string path, 
+    HipAsset delegate(string pathOrLocation) loadAsset, string f = __FILE__, size_t l = __LINE__)
+    {
+        HipAssetLoadTask task;
+        taskName = taskName~":"~path;
+        task = loadBase(taskName, loadWorker(taskName, ()
+        {
+            task.asset = loadAsset(path,);
+            if(task.asset !is null)
+                task.result = HipAssetResult.loaded;
+            else
+                task.result = HipAssetResult.cantLoad;
+            putComplete(task);
+        }), f, l);
+        return task;
+    }
+
+    private static HipAssetLoadTask loadSimple(string taskName, string path, void delegate(string pathOrLocation, 
+    void delegate(HipAsset) onSuccess, void delegate() onFailure) loadAsset, 
     string f = __FILE__, size_t l = __LINE__)
     {
         HipAssetLoadTask task;
         taskName = taskName~":"~path;
         task = loadBase(taskName, loadWorker(taskName, ()
         {
-            task.asset = loadAsset(path);
-            if(task.asset !is null)
-                task.result = HipAssetResult.loaded;
-            else
-                task.result = HipAssetResult.cantLoad;
-            putComplete(task);
+            loadAsset(path, onSuccessLoad(task), onFailureLoad(task));
         }), f, l);
         return task;
     }
@@ -377,13 +411,15 @@ class HipAssetManager
 
     @ExportD static IHipAssetLoadTask loadImage(string imagePath, string f = __FILE__, size_t l = __LINE__)
     {
-        HipAssetLoadTask task = loadSimple("Load Image ", imagePath, (pathOrLocation)
+        HipAssetLoadTask task = loadSimple("Load Image ", imagePath, (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
-            auto ret = new Image(pathOrLocation);
-            if(!ret.loadFromMemory(HipFS.read(pathOrLocation)))
-                return null;
-            return ret;
+            Image ret = new Image(pathOrLocation);
+            if(!ret.loadFromMemory(HipFS.read(pathOrLocation), (IImage _){
+                onSuccess(ret);
+            }, onFailure))
+                onFailure();
+
         }, f, l);
         workerPool.startWorking();
         return task;
@@ -396,7 +432,7 @@ class HipAssetManager
         {
             import hip.filesystem.hipfs;
             Image img = new Image(pathOrLocation);
-            if(!img.loadFromMemory(HipFS.read(pathOrLocation)))
+            if(!img.loadFromMemory(HipFS.read(pathOrLocation), (_){}, (){})) //!FIXME
                 return null;
             return toHeapSlice(img);
             }, (partialData)
@@ -417,7 +453,7 @@ class HipAssetManager
         HipAssetLoadTask task = loadSimple("Load CSV", path, (pathOrLocation)
         {
             auto ret = new HipCSV();
-            if(!ret.loadFromFile(pathOrLocation))
+            if(!ret.loadFromFile(pathOrLocation)) 
                 return null;
             return ret;
         }, f, l);
@@ -467,7 +503,7 @@ class HipAssetManager
             inter.atlas = HipTextureAtlas.read(atlasPath, texturePath);
             string imagePath = inter.atlas.getTexturePath();
             inter.image = new Image(imagePath);
-            if(!inter.image.loadFromMemory(HipFS.read(imagePath)))
+            if(!inter.image.loadFromMemory(HipFS.read(imagePath), (_){}, (){})) //!FIXME
                 return null;
             return toHeapSlice(inter);
             }, (partialData)
@@ -536,7 +572,7 @@ class HipAssetManager
             import hip.filesystem.hipfs;
             TilsetData inter = new TilsetData();
             inter.tileset = HipTilesetImpl.read(pathOrLocation, 1);
-            inter.tileset.loadImage();
+            inter.tileset.loadImage((_){}, (){}); //!FIXME
             return toHeapSlice(inter);
             }, (partialData)
         {
@@ -645,7 +681,7 @@ class HipAssetManager
                 return null;
             }
             HipImageImpl img = new HipImageImpl(font.getTexturePath);
-            if(!img.loadFromMemory(HipFS.read(font.getTexturePath)))
+            if(!img.loadFromMemory(HipFS.read(font.getTexturePath), (_){}, (){})) //!FIXME
             {
                 loglnError("Could not read image");
                 return null;

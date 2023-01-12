@@ -565,9 +565,13 @@ class Hip_GL_ShaderImpl : IShader
 
     void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount)
     {
+        ///Optimization for not allocating when inside loops.
+        static int[] temp;
+        if(slotsCount > temp.length)
+            temp.length = slotsCount;
+
         setCurrentShader(prog);
         int varID = getId(prog, varName);
-        scope int[] temp = new int[](slotsCount);
         for(int i = 0; i < slotsCount; i++)
             temp[i] = i;
         glCall(() => glUniform1iv(varID, slotsCount, temp.ptr));

@@ -359,7 +359,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
     }
     IImage textureImage;
 
-    IImage loadImage()
+    IImage loadImage(void delegate(IImage self) onSuccess, void delegate() onFailure)
     {
         import hip.error.handler;
         import hip.filesystem.hipfs;
@@ -374,29 +374,35 @@ class HipTilesetImpl : HipAsset, IHipTileset
                 ErrorHandler.showErrorMessage("Error loading image required by Tileset", imagePath);
                 return null;
             }
-            return textureImage = new Image(imagePath, data);
+            return textureImage = new Image(imagePath, data, onSuccess, onFailure);
         }
         return textureImage;
     }
 
     bool loadTexture()
     {
+        import hip.error.handler;
         import hip.assets.texture;
 
-        IImage img = loadImage();
-        if(img is null)
-            return false;
-        _texture = new HipTexture(img);
-        int i = 0;
-        for(int y = margin; y < textureHeight; y+= (tileHeight+spacing))
-            for(int x = margin, currCol = 0 ; currCol < columns; currCol++, x+= (tileWidth+spacing))
-            {
-                Tile* t = &tiles[i];
-                t.region = new HipTextureRegion(texture, x, y, x+tileWidth, y+tileHeight);
-                i++;
-            }
+        IImage img = loadImage((IImage theImg)
+        {
+            _texture = new HipTexture(theImg);
+            int i = 0;
+            for(int y = margin; y < textureHeight; y+= (tileHeight+spacing))
+                for(int x = margin, currCol = 0 ; currCol < columns; currCol++, x+= (tileWidth+spacing))
+                {
+                    Tile* t = &tiles[i];
+                    t.region = new HipTextureRegion(texture, x, y, x+tileWidth, y+tileHeight);
+                    i++;
+                }
 
-        return texture.hasSuccessfullyLoaded();
+        }, (){
+            ErrorHandler.showWarningMessage("Could not load image required by tileset.", textureImage.getName);
+        });
+        if(img is null || !img.hasLoadedData)
+            return false;
+
+        return texture !is null && texture.hasSuccessfullyLoaded();
     }
     
     override void onFinishLoading(){}
@@ -606,7 +612,7 @@ class HipTilemap : HipAsset, IHipTilemap
     void loadImages()
     {
         foreach(HipTilesetImpl tileset; tilesets)
-            tileset.loadImage();
+            tileset.loadImage((_){}, (){}); //!FIXME
     }
 
     bool loadTextures()

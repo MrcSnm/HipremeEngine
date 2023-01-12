@@ -197,9 +197,10 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 		HipFS.absoluteReadText("renderer.conf", confFile); //Ignore return, renderer can handle no conf.
 		HipRenderer.init(confFile, "renderer.conf");
 	}
-	if(!loadDefaultAssets())
+	string err;
+	if(!loadDefaultAssets(err))
 	{
-		loglnError("Could not load default assets!");
+		loglnError("Could not load default assets! ", err);
 	}
 	HipAssetManager.initialize();
 	sys = new GameSystem(FRAME_TIME);

@@ -136,9 +136,6 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
             this.ebo = ebo;
         isWaitingCreation = false;
         vbo.bind();
-        import hip.console.log;
-        static int v = 0;
-        logln(v++);
         foreach(vao; vaoInfos)
         {
             glCall(() => glVertexAttribPointer(
