@@ -17,11 +17,16 @@
 				"config": {"path": "../../modules/config"}
 			},
 			"dflags": [
-				"-preview=shortenedMethods"
+				"-preview=shortenedMethods",
+				"-O0",
+				"-mv=arsd.ttf=ttf.d"
 			],
 			"stringImportPaths": [
 				"../../",
 				"generated"
+			],
+			"sourceFiles": [
+				"C:/Users/Hipreme/AppData/Local/dub/packages/arsd-official-10.9.5/arsd-official/ttf.d"
 			],
 			"sourcePaths": [
 				"../../modules/d_std/source",
