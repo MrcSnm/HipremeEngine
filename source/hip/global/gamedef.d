@@ -42,30 +42,40 @@ public:
 
 
 
+///This function is callable only once.
 bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) onFailure)
 {
    import hip.font.ttf;
    import hip.assets.image;
+   static int succeededSteps = 0;
+   enum ASSETS_TO_LOAD = 2;
 
+   if(succeededSteps > 0)
+      return false;
    
    auto image = new Image(HIP_DEFAULT_TEXTURE);
-   if(!image.loadFromMemory(cast(ubyte[])HipDefaultAssets.textureData, (_)
+   image.loadFromMemory(cast(ubyte[])HipDefaultAssets.textureData, (_)
    {
       HipDefaultAssets._texture = image;
-      onSuccess();
-   }, (){onFailure("Failed loading default image.");}))
-      return false;
+      if(++succeededSteps == ASSETS_TO_LOAD)
+         onSuccess();
+   }, 
+   ()
+   {
+      onFailure("Failed loading default image.");
+   });
 
-   //!FIXME
-   // auto font = new Hip_TTF_Font(HIP_DEFAULT_FONT, HIP_DEFAULT_FONT_SIZE);
-   // if(!font.loadFromMemory(cast(ubyte[])HipDefaultAssets.fontData))
-   // {
-   //    str = "Failed loading default TTF Font.";
-   //    return false;
-   // }
-   // HipDefaultAssets._font = font;
+   auto font = new Hip_TTF_Font(HIP_DEFAULT_FONT, HIP_DEFAULT_FONT_SIZE);
 
-   // str = "Successfully loaded game default assets.";
+   if(!font.loadFromMemory(cast(ubyte[])HipDefaultAssets.fontData))
+      onFailure("Failed loading default font");
+   else
+   {
+      if(++succeededSteps == ASSETS_TO_LOAD)
+         onSuccess();
+   }
+   HipDefaultAssets._font = font;
+
 
    return true;
 }

@@ -19,13 +19,21 @@ enum float FRAME_TIME = 1000/60; //60 frames per second
 
 void main()
 {
-	import std.stdio;
+	import hip.console.log;
 	import hip.util.time;
 	import hip.wasm;
+	
+
 
 	HipTime.initialize();
 	Console.install(Platforms.WASM);
-	HipFS.install("./");
+	HipFS.install("");
+	void[] output;
+
+	HipFS.read("fonts/WarsawGothic-BnBV.otf", output);
+
+	logln(output.length);
+	
 	HipRenderer.initExternal(HipRendererType.GL3, 800, 600);
 	//Initialize 2D context
 	loadDefaultAssets((){initializeGame();}, (err)
@@ -37,6 +45,8 @@ void main()
 private void initializeGame()
 {
 	import hip.graphics.g2d;
+	import hip.console.log;
+	logln("Initialized Game");
 	HipRenderer2D.initialize();
 	sys = new GameSystem(FRAME_TIME);
 	WasmStartGameLoop();
@@ -50,8 +60,11 @@ export extern(C) void HipremeRender()
 		HipRenderer.setColor(0,0,0,255);
 		HipRenderer.clear();
 		import hip.api.graphics.g2d.renderer2d;
-		drawTexture(null, 50, 50);
+		drawTexture(null, 150, 50);
 		renderSprites();
+
+		drawText("Hello WASM", 50, 50);
+		renderTexts();
 	}
 	// sys.render();
 	// import hip.api;

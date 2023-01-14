@@ -1,6 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
+		"arsd-official": "10.9.8",
 		"config": {"path":"../../modules/config"},
 		"d_std": {"path":"../../modules/d_std"},
 		"math": {"path":"../../modules/math"}
