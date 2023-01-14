@@ -237,8 +237,6 @@ struct JSONValue
 		JSONValue* current = &ret;
 		JSONState state = JSONState.lookingForNext;
 		JSONValue lastValue = ret;
-		import hip.console.log;
-		logln(cast(size_t)ret.type);
 
 		scope JSONValue[] stack = [ret];
 		void pushNewScope(JSONValue val)
@@ -259,8 +257,6 @@ struct JSONValue
 			if(stack.length > 0)
 			{
 				current = &stack[$-1];
-				import std.stdio;
-				writeln(current is null, current.key, current.error, cast(size_t)current.type);
 				assert(current.type == JSONType.object || current.type == JSONType.array, "Unexpected value in stack. (Typed "~(cast(size_t)(current.type)).to!string);
 			}
 		}
@@ -442,13 +438,13 @@ struct JSONValue
 	if(op == "in")
 	{
 		if(type != JSONType.object)	return null;
-		return key in data.object.value;
+		return key in *(data.object).value;
 	}
     JSONValue* opBinaryRight(string op)(string key)
 	if(op == "in")
 	{
 		if(type != JSONType.object)	return null;
-		return key in data.object.value;
+		return key in (*data.object).value;
 	}
 
     int opApply(scope int delegate(string key, JSONValue v) dg)

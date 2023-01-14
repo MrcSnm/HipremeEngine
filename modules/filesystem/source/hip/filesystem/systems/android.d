@@ -56,13 +56,18 @@ version(Android)
 
     class HipAndroidFileSystemInteraction : IHipFileSystemInteraction
     {
-        bool read(string path, out void[] output)
+        bool read(string path, void delegate(void[] data) onSuccess, void delegate(string err) onError)
         {
+            void[] output;
             HipAndroidFile f = new HipAndroidFile(path, FileMode.READ);
             output.length = f.size;
             bool ret = f.read(output.ptr, f.size) >= 0;
             f.close();
             destroy(f);
+            if(!ret)
+                onError("Could not read file.");
+            else
+                onSuccess(output);
             return ret;
         }
         bool write(string path, void[] data)
