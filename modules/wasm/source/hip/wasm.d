@@ -46,6 +46,14 @@ Struct loadMemoryInStruct(Struct)(ubyte* arg)
 				v = cast(string)data[size_t.sizeof..length+size_t.sizeof];
 			}
 		}
+		else static if(is(typeof(v) : ubyte[]))
+		{
+			{
+				ubyte* data = arg+last;
+				size_t length = *cast(size_t*)data;
+				v = cast(ubyte[])data[size_t.sizeof..length+size_t.sizeof];
+			}
+		}
 		else
 			memcpy(&v, arg+last, v.sizeof);
 		last+= v.sizeof;
@@ -89,6 +97,19 @@ struct JSDelegate
 	ubyte* funcHandle;
 	ubyte* funcptr;
 	ubyte* ctx;
+}
+
+alias JSStringType = AliasSeq!(size_t, void*);
+
+struct JSString
+{
+	size_t length;
+	void* ptr;
+	this(string str)
+	{
+		length = str.length;
+		ptr = cast(void*)str.ptr;
+	}
 }
 
 import std.traits;

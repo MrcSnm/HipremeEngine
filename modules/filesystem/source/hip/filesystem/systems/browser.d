@@ -12,6 +12,14 @@ immutable string directories = import("directories.json");
 import hip.api.filesystem.hipfs;
 import hip.filesystem.hipfs;
 
+version(WebAssembly):
+import hip.wasm;
+
+
+private extern(C) void WasmRead(JSStringType str,
+    JSDelegateType!(void delegate(void[])) onSuccess, 
+    JSDelegateType!(void delegate(string)) onError
+);
 
 class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
 {
@@ -26,12 +34,49 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
             ErrorHandler.assertExit(false, "Could not parse directories.json, required for BrowserFS. Got `"~directories~"`\n\t Error: "~dirsJson.error);
         }
     }
-    bool read(string path, out void[] output){return false;}
+    
+    bool read(string path, void delegate(void[] data) onSuccess, void delegate(string err = "Corrupted File") onError)
+    {
+        JSONValue dummy = void;
+        if(!getFromPath(path, dummy))
+            return false;
+
+        WasmRead(JSString(path).tupleof, sendJSDelegate!((ubyte[] wasmBin)
+        {
+            onSuccess(cast(void[])wasmBin);
+        }).tupleof, sendJSDelegate!(onError).tupleof);
+        
+        return true;
+    }
     bool write(string path, void[] data){return false;}
-    bool exists(string path){return false;}
+
+    private bool getFromPath(string path, out JSONValue output)
+    {
+        import hip.util.path:pathSplitterRange;
+        output = dirsJson;
+        foreach(p; pathSplitterRange(path))
+        {
+            JSONValue* currAddr = p in output;
+            if(currAddr is null)
+                return false;
+            output = *currAddr;
+        }
+        return true;
+    }
+    bool exists(string path)
+    {
+        JSONValue dummy = void;
+        return getFromPath(path, dummy);
+    }
     bool remove(string path){return false;}
 
-    bool isDir(string path){return false;}
+    bool isDir(string path)
+    {
+        JSONValue temp = void;
+        if(!getFromPath(path, temp))
+            return false;
+        return temp.type == JSONType.object;
+    }
 
     ~this()
     {

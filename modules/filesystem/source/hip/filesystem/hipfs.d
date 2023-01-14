@@ -98,6 +98,7 @@ class HipFileSystem
     protected __gshared string combinedPath;
     protected __gshared bool hasSetInitial;
     protected __gshared IHipFileSystemInteraction fs;
+    protected __gshared size_t filesReadingCount = 0;
 
     protected __gshared bool function(string path, out string errMessage)[] extraValidations;
 
@@ -200,13 +201,27 @@ class HipFileSystem
         return validatePath(initialPath, combinedPath);
     }
 
+    private static void delegate(string err) defaultErrorHandler()
+    {
+        return (err)
+        {
+            import hip.error.handler;
+            filesReadingCount--;
+            ErrorHandler.assertExit(false, "HipFS Error: "~err);
+        };
+    }
     
     @ExportD("void") public static bool read(string path, out void[] output)
     {
         path = getPath(path);
         if(!isPathValid(path))
             return false;
-        return fs.read(path, output);
+        filesReadingCount++;
+        return fs.read(path, (void[] data)
+        {
+            import hip.console.log;
+            logln("Finished reading file!!! ", data.length);
+            output = data;filesReadingCount--;}, defaultErrorHandler);
     }
     @ExportD("ubyte") public static bool read(string path, out ubyte[] output)
     {
@@ -284,7 +299,7 @@ class HipFileSystem
 
     @ExportD public static bool absoluteRead(string path, out void[] output)
     {
-        return fs.read(path, output);
+        return fs.read(path, (void[] data){output = data;}, defaultErrorHandler);
     }
     @ExportD("ubyte") public static bool absoluteRead(string path, out ubyte[] output)
     {

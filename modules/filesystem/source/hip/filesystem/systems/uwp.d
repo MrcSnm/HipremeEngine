@@ -106,18 +106,24 @@ version(UWP)
     class HipUWPileSystemInteraction : IHipFileSystemInteraction
     {
 
-        bool read(string path, out void[] output)
+        bool read(string path, void delegate(void[] data) onSuccess, void delegate(string err) onError)
         {
             if(ErrorHandler.assertLazyErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
                 return false;
             HipUWPFile f = new HipUWPFile(path, FileMode.READ);
             import hip.console.log;
             logln(path, " " , f.getSize);
-            if(f.fp == null || f.getSize == 0) return false;
+            if(f.fp == null || f.getSize == 0)
+            {
+                onError("Could not acquire file pointer or file has 0 size.");
+                return false;
+            }
+            void[] output;
             output.length = f.size;
             f.read(output.ptr, f.size);
             f.close();
             destroy(f);
+            onSuccess(output);
             return true;
         }
         bool write(string path, void[] data)

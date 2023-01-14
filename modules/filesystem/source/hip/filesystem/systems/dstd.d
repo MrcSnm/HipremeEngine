@@ -4,15 +4,17 @@ import hip.api.filesystem.hipfs;
 version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteraction
 {
     import std.stdio : File;
-    bool read(string path, out void[] output)
+    bool read(string path, void delegate(void[] data) onSuccess, void delegate(string err) onError)
     {
         import hip.error.handler;
         if(ErrorHandler.assertLazyErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
             return false;
-
+        void[] output;
         auto f = File(path);
         output.length = f.size;
-        f.rawRead(output);
+        f.rawRead(output); //TODO: onError should be on try/catch
+        f.close();
+        onSuccess(output);
         return true;
     }
     bool write(string path, void[] data)

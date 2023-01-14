@@ -13,10 +13,7 @@ import hip.api.data.font;
 
 immutable dstring defaultCharset = " \náéíóúãñçabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\\|'\"`/*-+,.;:´_=!@#$%&()[]{}~^?";
 
-version(WebAssembly)
-    version = HipNullFont;
-else
-    version = HipArsdFont;
+version = HipArsdFont;
 
 
 private uint nextPowerOfTwo(uint number)
