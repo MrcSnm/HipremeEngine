@@ -62,6 +62,11 @@ uint roundPow2(uint n)
     return n + 1;
 }
 
+bool isPowerOf2(size_t num)
+{
+    return (num & (num - 1)) == 0;
+}
+
 enum dipsPerInch = 96.0f;
 int convertDipsToPixels(float dips, float dpi = 96.0f) //96 is Windows convention
 {

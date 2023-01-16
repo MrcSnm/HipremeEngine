@@ -17,6 +17,7 @@ public import hip.api.data.commons:IReloadable;
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
 import hip.image;
+import hip.math.utils;
 
 class Hip_GL3_Texture : IHipTexture, IReloadable
 {
@@ -95,6 +96,13 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
     void setWrapMode(TextureWrapMode mode)
     {
         int mod = getGLWrapMode(mode);
+        version(GLES2)
+        {
+            assert((isPowerOf2(width) && isPowerOf2(height)) || mod  == TextureWrapMode.CLAMP_TO_EDGE,
+                "OpenGL ES 2.0/WebGL 1.0 must use Textures using Power of 2 size. If you wish to use "~
+                "a non Power of 2, you must use the TextureWrapMode.CLAMP_TO_EDGE"
+            );
+        }
         bind(currentSlot);
         glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mod));
         glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mod));
@@ -173,10 +181,15 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
         loglnWarn("Putting pixels onto glTexImage.", width, height, image.getName);
 
         glCall(() => glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, cast(void*)pixels.ptr));
-
         glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         setWrapMode(TextureWrapMode.REPEAT);
+
+        version(GLES20)
+        if(!isPowerOf2(image.getWidth) || !isPowerOf2(image.getHeight))
+        {
+            setWrapMode(TextureWrapMode.CLAMP_TO_EDGE);
+        }
         return true;
     }
     

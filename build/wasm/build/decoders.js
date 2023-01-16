@@ -19,7 +19,9 @@ function initializeDecoders()
     const _objects = WasmUtils._objects;
     const removeObject = WasmUtils.removeObject;
 
-    const memoryCanvas = document.createElement("canvas").getContext("2d", {willReadFrequently:true});
+    const _canvas = document.createElement("canvas");
+    
+    const memoryCanvas = _canvas.getContext("2d", {willReadFrequently:true});
 
     return {
         WasmDecodeImage(imgNameLength, imgNamePtr, ptr, length, dFunction, dgFunc, delegateCtx)
@@ -49,9 +51,13 @@ function initializeDecoders()
         WasmImageGetHeight(img){return _objects[img].height;},
 
         ///Always allocates D memory. Should be freed in D code.
-        WasmImageGetPixels(img){
-            memoryCanvas.drawImage(_objects[img], 0, 0);
-            const imgData = memoryCanvas.getImageData(0, 0, _objects[img].width, _objects[img].height);
+        WasmImageGetPixels(img)
+        {
+            const objImg = _objects[img];
+            _canvas.width = objImg.width;
+            _canvas.height = objImg.height;
+            memoryCanvas.drawImage(objImg, 0, 0);
+            const imgData = memoryCanvas.getImageData(0, 0, objImg.width, objImg.height);
             return WasmUtils.toDBinary(imgData.data);
         },
         WasmImageDispose(img)

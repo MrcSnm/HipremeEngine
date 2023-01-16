@@ -36,9 +36,7 @@ void* toHeap(T)(in T data) if(isReference!T)
 {
     version(WebAssembly)
     {
-        import std.stdio;
-        writeln("Called to heap for type ", T.stringof);
-        void* m = cast(void*)data; //WASM don't neede to allocate as it is not ever deleted.
+        void* m = cast(void*)data; //WASM don't need to allocate as it is not ever deleted.
     }
     else
     {

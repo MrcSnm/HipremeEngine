@@ -103,7 +103,7 @@ final class HipAssetLoadTask : IHipAssetLoadTask
                 HipAssetManager.addOnCompleteHandler(this, (completeAsset)
                 {
                     IHipAsset theAsset = cast(IHipAsset)castFunc(completeAsset);
-                    assert(theAsset !is null, "Null asset wtf bro?");
+                    assert(theAsset !is null, "Null asset received in complete handler?");
                     foreach(v; vars)
                         *v = theAsset;
                 });
@@ -436,7 +436,7 @@ class HipAssetManager
             void delegate(
                 string pathOrLocation, 
                 void delegate(void[] partialData) onFirstStepComplete, 
-                void delegate() onFailure
+                void delegate(string err = "") onFailure
             ) loadAsset, 
 
             void delegate (
@@ -452,7 +452,7 @@ class HipAssetManager
 
             task = loadBase(taskName, loadWorker(taskName, ()
             {
-                loadAsset(path, onSuccessLoadFirstStep(task, nextStep), onFailureLoad(task));
+                loadAsset(path, (void[] partialData){task.givePartialData(partialData);}, onFailureLoad(task));
             }, (_)
             {
                 mainThreadLoadFunction(task.takePartialData(), onSuccessLoad(task));
@@ -717,6 +717,8 @@ class HipAssetManager
     @ExportD static IHipAssetLoadTask loadFont(string fontPath, int fontSize = 48, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.util.path;
+        import hip.console.log;
+        logln("Trying to load the font ", fontPath, "EXT: ", fontPath.extension);
         switch(fontPath.extension)
         {
             case "bmfont":
@@ -786,15 +788,16 @@ class HipAssetManager
             HipImageImpl img;
             this(HipBitmapFont fnt, HipImageImpl img){font = fnt; this.img = img;}
         }
+        logln("Loading bmfont");
 
-        HipAssetLoadTask task = loadComplex("Load BMFont", fontPath, (pathOrLocation, onSuccess, onFailure)
+        HipAssetLoadTask task = loadComplex("Load BMFont", fontPath, 
+        (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
-            HipBitmapFont font = new HipBitmapFont();
-
             void[] output;
             HipFS.read(pathOrLocation, output).addOnSuccess((in void[] fontData)
             {
+                HipBitmapFont font = new HipBitmapFont();
                 if(!font.loadAtlas(cast(string)fontData, pathOrLocation))
                     return onFailure("Could not load font atlas.");
                 HipImageImpl img = new HipImageImpl(font.getTexturePath);
@@ -810,9 +813,6 @@ class HipAssetManager
                     {
                         onFailure("Could not decode image.");
                     });
-
-                    toHeapSlice(new IntermediaryData(font, img));
-
                 }).addOnError((string err)
                 {
                     onFailure("Could not load font image "~err);
@@ -822,18 +822,16 @@ class HipAssetManager
             {
                 onFailure("Could read file atlas");
             });
-
-        }, (partialData, onSuccess)
+        },
+        (partialData, onSuccess)
         {
-            scope(exit) freeGCMemory(partialData);
-
             IntermediaryData i = (cast(IntermediaryData)partialData.ptr);
             if(!i.font.loadTexture(new HipTexture(i.img)))
-            {
                 assert(false, "Could not read texture");
-            }
             HipFontAsset fnt = new HipFontAsset(i.font);
             onSuccess(fnt);
+            freeGCMemory(partialData);
+
         }, f, l);
         workerPool.startWorking();
         return task;
@@ -863,6 +861,7 @@ class HipAssetManager
             import hip.console.log;
             loglnInfo("Added a complete handler for ", (cast(HipAssetLoadTask)task).name);
             completeHandlers[cast(HipAssetLoadTask)task]~= onComplete;
+            loglnInfo(cast(void*)task);
         }
     }
 
@@ -878,15 +877,18 @@ class HipAssetManager
             {
                 foreach(task; completeQueue)
                 {
+                    import hip.console.log;
+                    loglnInfo(task.name, " executing handlers");
                     //Subject to a logger
                     if(auto handlers = task in completeHandlers)
                     {
                         foreach(handler; *handlers)
                             handler(task._asset);
+                        handlers.length = 0;
                     }
+                    completeHandlers.remove(task);
                 }
                 completeQueue.length = 0;
-                completeHandlers.clear();
             }
 
         completeMutex.unlock();
