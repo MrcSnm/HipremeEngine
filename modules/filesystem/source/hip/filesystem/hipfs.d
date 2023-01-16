@@ -88,6 +88,44 @@ abstract class HipFile : IHipFileItf
 }
 
 
+private class HipFSPromise : IHipFSPromise
+{
+    string filename;
+    bool finished = false;
+    void[] data;
+    void delegate(in void[] data)[] onSuccessList;
+    void delegate(string err)[] onErrorList;
+    this(string filename){this.filename = filename;}
+    IHipFSPromise addOnSuccess(void delegate(in void[] data) onSuccess)
+    {
+        if(finished)
+            onSuccess(data);
+        else
+            onSuccessList~=onSuccess;
+        return this;
+    }
+    IHipFSPromise addOnError(void delegate(string error) onError)
+    {
+        if(finished && !data.length)
+            onError("No data");
+        else
+            onErrorList~= onError;
+        return this;
+    }
+    void setFinished(void[] data)
+    {
+        import std.stdio;
+        this.data = data;
+        this.finished = true;
+        if(data) foreach(success; onSuccessList)
+            success(data);
+        else foreach(err; onErrorList)
+            err("Could not read file");
+
+    }
+    bool resolved() const{return finished;}
+}
+
 /**
 * FileSystem access for specific platforms.
 */
@@ -211,22 +249,34 @@ class HipFileSystem
         };
     }
     
-    @ExportD("void") public static bool read(string path, out void[] output)
+    @ExportD("void") public static IHipFSPromise read(string path, out void[] output)
     {
+        import hip.console.log;
+        logln("Required path ", path);
         path = getPath(path);
         if(!isPathValid(path))
-            return false;
+            return null;
+        logln("Path validated.");
         filesReadingCount++;
-        return fs.read(path, (void[] data)
+
+        HipFSPromise promise = new HipFSPromise(path);
+        fs.read(path, (void[] data)
         {
-            import hip.console.log;
-            logln("Finished reading file!!! ", data.length);
-            output = data;filesReadingCount--;}, defaultErrorHandler);
+            output = data;
+            filesReadingCount--;
+            promise.setFinished(data);
+        }, (string err)
+        {
+            promise.setFinished(null);
+            defaultErrorHandler()(err);
+        });
+        
+        return promise;
     }
-    @ExportD("ubyte") public static bool read(string path, out ubyte[] output)
+    @ExportD("ubyte") public static IHipFSPromise read(string path, out ubyte[] output)
     {
         void[] data;
-        bool ret = read(path, data);
+        IHipFSPromise ret = read(path, data);
         output = cast(ubyte[])data;
         return ret;
     }
@@ -240,10 +290,10 @@ class HipFileSystem
         return [];
     }
 
-    @ExportD("out") public static bool readText(string path, out string output)
+    @ExportD("out") public static IHipFSPromise readText(string path, out string output)
     {
         void[] data;
-        bool ret = read(path, data);
+        IHipFSPromise ret = read(path, data);
         if(ret)
         {
             import std.utf;

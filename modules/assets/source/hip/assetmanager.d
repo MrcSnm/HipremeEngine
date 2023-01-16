@@ -85,9 +85,12 @@ final class HipAssetLoadTask : IHipAssetLoadTask
     bool hasFinishedLoading() const{return result == HipAssetResult.loaded;}
     bool opCast(T : bool)() const{return hasFinishedLoading;}
 
+
     void into(void* function(IHipAsset asset) castFunc, IHipAsset*[] variables...)
+    // void into(void* function(IHipAsset asset) castFunc, IHipAsset*[] variables)
     {
         import hip.error.handler;
+        import hip.console.log;
         final switch(_result) with(HipAssetResult)
         {
             case loaded:
@@ -95,10 +98,14 @@ final class HipAssetLoadTask : IHipAssetLoadTask
                     *v = cast(IHipAsset)castFunc(asset);
                 break;
             case loading:
+                //variables are implicitly `scope`, need to duplicate.
+                IHipAsset*[] vars = variables.dup;
                 HipAssetManager.addOnCompleteHandler(this, (completeAsset)
                 {
-                    foreach(v; variables)
-                        *v = cast(IHipAsset)castFunc(completeAsset);
+                    IHipAsset theAsset = cast(IHipAsset)castFunc(completeAsset);
+                    assert(theAsset !is null, "Null asset wtf bro?");
+                    foreach(v; vars)
+                        *v = theAsset;
                 });
                 break;
             case cantLoad:
@@ -229,6 +236,7 @@ class HipAssetManager
     version(HipConcurrency)
     {
         import core.sync.mutex;
+        import std.compiler;
         static bool isAsync = true;
     }
     else
@@ -299,6 +307,7 @@ class HipAssetManager
     private static HipWorkerThread loadWorker(string taskName, void delegate() loadFn, void delegate(string taskName) onFinish = null, bool onMainThread = false)
     {
         //TODO: Make it don't use at all worker and threads.
+        //? Maybe it is not actually needed, as it can be handled by version(HipConcurrency)
         return workerPool.pushTask(taskName, loadFn, onFinish, onMainThread);
         // if(isAsync)
         //     return workerPool.pushTask(taskName, loadFn, onFinish, onMainThread);
@@ -338,6 +347,16 @@ class HipAssetManager
             putComplete(task);
         };
     }
+    private static void delegate(void[] partialData) onSuccessLoadFirstStep(HipAssetLoadTask task, 
+    void delegate(string taskName) nextStep)
+    {
+        return (void[] partialData)
+        {
+            task.givePartialData(partialData);
+            workerPool.notifyOnFinish(nextStep)(task.name);
+        };
+    }
+
     private static void delegate() onFailureLoad(HipAssetLoadTask task)
     {
         return ()
@@ -383,6 +402,39 @@ class HipAssetManager
         return task;
     }
 
+    private static HipAssetLoadTask loadComplex(
+        string taskName,
+        string path,
+        void delegate(
+            string pathOrLocation, 
+            void delegate(void[] partialData) onFirstStepComplete, 
+            void delegate() onFailure
+        ) loadAsset, 
+
+        void delegate (
+            void[] partialData,
+            void delegate(HipAsset) onSuccess,
+        ) mainThreadLoadFunction,
+        string f = __FILE__,
+        size_t l = __LINE__
+    )
+    {
+        HipAssetLoadTask task;
+        taskName = taskName~":"~path;
+
+        auto nextStep = (string _)
+        {
+            mainThreadLoadFunction(task.takePartialData(), onSuccessLoad(task));
+        };
+
+        task = loadBase(taskName, loadWorker(taskName, ()
+        {
+            loadAsset(path, onSuccessLoadFirstStep(task, nextStep), onFailureLoad(task));
+        }), f, l);
+
+        return task;
+    }
+
     /**
     *   loadComplex is used when part of the asset can be constructed on worker thread, but for completing the load, it must finish on main thread
     */
@@ -411,16 +463,57 @@ class HipAssetManager
 
     @ExportD static IHipAssetLoadTask loadImage(string imagePath, string f = __FILE__, size_t l = __LINE__)
     {
-        HipAssetLoadTask task = loadSimple("Load Image ", imagePath, (pathOrLocation, onSuccess, onFailure)
+        void delegate(string,void delegate(HipAsset), void delegate()) assetLoadFunc = 
+        (pathOrLocation,onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
-            Image ret = new Image(pathOrLocation);
-            if(!ret.loadFromMemory(HipFS.read(pathOrLocation), (IImage _){
-                onSuccess(ret);
-            }, onFailure))
-                onFailure();
+            void[] output;
+            HipFS.read(pathOrLocation, output).addOnSuccess((in void[] data)
+            {
+                new Image(pathOrLocation, cast(ubyte[])data, (IImage img){onSuccess(cast(HipAsset)img);}, (){onFailure();});
+            }).addOnError((string err)
+            {
+                import hip.console.log;
+                logln("Could not read file with err: ", err);
+            });
+        };
+        HipAssetLoadTask task = loadSimple("Load Image ", imagePath, assetLoadFunc, f, l);
+        workerPool.startWorking();
+        return task;
+    }
 
-        }, f, l);
+    @ExportD static IHipAssetLoadTask loadTexture2(string texturePath, string f = __FILE__, size_t l = __LINE__)
+    {
+        import hip.util.memory;
+        import hip.console.log;
+        void delegate(string, void delegate(void[]), void delegate()) assetLoadFunc = 
+        (pathOrLocation, onFirstStepComplete, onFailure)
+        {
+            import hip.filesystem.hipfs;
+            void[] output;
+            HipFS.read(pathOrLocation, output).addOnSuccess((in void[] data)
+            {
+                Image img;
+                img = new Image(pathOrLocation, cast(ubyte[])data, 
+                (IImage _)
+                {
+                    onFirstStepComplete(toHeapSlice(img));
+                }, (){onFailure();});
+            }).addOnError((string err)
+            {
+                logln("Could not read file with err: ", err);
+            });
+        };
+
+        void delegate(void[], void delegate(HipAsset)) onPartialDataLoaded = 
+        (partialData, onSuccess)
+        {
+            Image img = cast(Image)partialData.ptr;
+            HipTexture ret = new HipTexture(img);
+            onSuccess(ret);
+            freeGCMemory(partialData);
+        };
+        HipAssetLoadTask task = loadComplex("Load Texture", texturePath, assetLoadFunc, onPartialDataLoaded, f, l);
         workerPool.startWorking();
         return task;
     }
@@ -729,7 +822,11 @@ class HipAssetManager
         if(task.asset !is null)
             onComplete(task.asset);
         else
+        {
+            import hip.console.log;
+            loglnInfo("Added a complete handler for ", (cast(HipAssetLoadTask)task).name);
             completeHandlers[cast(HipAssetLoadTask)task]~= onComplete;
+        }
     }
 
     /**
@@ -745,8 +842,6 @@ class HipAssetManager
                 foreach(task; completeQueue)
                 {
                     //Subject to a logger
-                    import hip.console.log;
-                    loglnInfo("Finished ", task.name);
                     if(auto handlers = task in completeHandlers)
                     {
                         foreach(handler; *handlers)

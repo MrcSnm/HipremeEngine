@@ -38,8 +38,11 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
     bool read(string path, void delegate(void[] data) onSuccess, void delegate(string err = "Corrupted File") onError)
     {
         JSONValue dummy = void;
+        import hip.console.log;
+        logln("Browser tries to read ", path);
         if(!getFromPath(path, dummy))
             return false;
+        logln("Browser read start on ", path);
 
         WasmRead(JSString(path).tupleof, sendJSDelegate!((ubyte[] wasmBin)
         {

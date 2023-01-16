@@ -22,8 +22,20 @@ function initializeFS()
             });
         },
 
-        write(length, ptr) {
-            throw new Error("Can't write files " + WasmUtils.fromDString(length, ptr))
+        WasmReadCache(pathLength, pathPtr)
+        {
+            const cachePath = WasmUtils.fromDString(pathLength, pathPtr);
+            const ret = localStorage.getItem(cachePath);
+            console.log("Cache from ", cachePath, ret);
+            return WasmUtils.toDString(ret);
+        },
+
+        WasmWriteCache(pathLength, pathPtr, writeLength, writePtr)
+        {
+            const path = WasmUtils.fromDString(pathLength, pathPtr);
+            const toWrite = WasmUtils.fromDString(writeLength, writePtr);
+            localStorage.setItem(path, toWrite);
+            console.log("Saved in", path, toWrite);
         }
     };
 }

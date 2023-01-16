@@ -39,6 +39,14 @@ interface IHipFileItf
     ulong getSize();
     void close();
 }
+interface IHipFSPromise
+{
+  IHipFSPromise addOnSuccess(void delegate(in void[] data) onSuccess);
+  IHipFSPromise addOnError(void delegate(string error) onError);
+  bool resolved() const;
+  final bool opCast() const {return resolved;}
+}
+
 interface IHipFileSystemInteraction
 {
     protected final const(wchar*) cachedWStringz(wstring path)
