@@ -39,7 +39,9 @@ void main()
 }
 
 import hip.graphics.g2d;
+import hip.api;
 __gshared IHipTexture texture;
+__gshared IHipFont font;
 // __gshared IImage img;
 
 private void initializeGame()
@@ -52,8 +54,11 @@ private void initializeGame()
 	HipRenderer2D.initialize();
 	sys = new GameSystem(FRAME_TIME);
 
-	IHipAssetLoadTask task = HipAssetManager.loadTexture2("graphics/sprites/sprite.png");
+	IHipAssetLoadTask task = HipAssetManager.loadTexture("graphics/sprites/sprite.png");
 	task.into(&texture);
+
+	IHipAssetLoadTask task2 = HipAssetManager.loadFont("fonts/consolas.fnt");
+	task2.into(&font);
 
 	// IHipAssetLoadTask task2 = HipAssetManager.loadImage("graphics/sprites/sprite.png");
 	// task2.into(&img);
@@ -67,15 +72,20 @@ export extern(C) void HipremeRender()
 {
 	if(sys !is null)
 	{
-		if(texture !is null)
-		{
-			logln(texture.getWidth);
-		}
-		// logln(img is null);
+		import hip.api.graphics.g2d.renderer2d;
 		HipRenderer.setColor(0,0,0,255);
 		HipRenderer.clear();
-		import hip.api.graphics.g2d.renderer2d;
+		// logln(img is null);
 		drawTexture(null, 150, 50);
+		if(texture !is null)
+			drawTexture(texture, 100, 100);
+		if(font !is null)
+		{
+			setFont(font);
+			drawText("Test with my custom font", 150, 300);
+			setFontNull(null);
+			renderTexts();
+		}
 		renderSprites();
 
 		drawText("Hello WASM", 50, 50);
