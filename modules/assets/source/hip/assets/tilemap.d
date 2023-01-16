@@ -232,7 +232,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
     //     static assert(false, `Please call dub add arsd-official:dom for using TSX parser`);
     // }
 
-    static HipTilesetImpl read (string path, uint firstGid)
+    static HipTilesetImpl read (string path, uint firstGid = 1)
     {
         import hip.util.path;
         switch(path.extension)
@@ -248,6 +248,24 @@ class HipTilesetImpl : HipAsset, IHipTileset
         }
     }
 
+    import hip.data.json;
+    static HipTilesetImpl readFromMemory (string path, string data, uint firstGid = 1)
+    {
+        import hip.util.path;
+        switch(path.extension)
+        {
+            case "xml":
+            case "tmx":
+                assert(false, `Please call dub add arsd-official:dom for using TSX parser`);
+            case "tsj":
+            case "json":
+                return HipTilesetImpl.readJSON(path, parseJSON(data), firstGid);
+            default:
+                assert(false, "Unrecognized extension for file "~path);
+        }
+    }
+
+
     static HipTilesetImpl readJSON (string path, uint firstGid)
     {
         import hip.filesystem.hipfs;
@@ -262,7 +280,6 @@ class HipTilesetImpl : HipAsset, IHipTileset
         return readJSON(path, parseJSON(data), firstGid);
     }
 
-    import hip.data.json;
     static HipTilesetImpl readJSON (string path, JSONValue t, uint firstGid)
     {
         HipTilesetImpl ret = new HipTilesetImpl(cast(uint)t["tilecount"].integer);
