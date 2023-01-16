@@ -226,6 +226,23 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         }
     }
 
+    static HipTextureAtlas readFromMemory (ubyte[] data, string atlasPath, string texturePath = ":IGNORE")
+    {
+        import hip.util.path;
+        switch(atlasPath.extension)
+        {
+            case "xml":
+                return HipTextureAtlas.readXML(data, atlasPath, texturePath);
+            case "atlas":
+                return HipTextureAtlas.readAtlas(data, atlasPath);
+            case "json":
+                return HipTextureAtlas.readJSON(data, atlasPath, texturePath == ":IGNORE" ? "" : texturePath);
+            default:
+                return HipTextureAtlas.readSpritesheet(data, atlasPath, texturePath == ":IGNORE" ? "" : texturePath);
+        }
+    }
+
+
     static HipTextureAtlas readXML (ubyte[] data, string atlasPath, string texturePath = ":IGNORE")
     {
         import hip.assets.texture;
@@ -267,7 +284,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         return atlas;
     }
     
-    static HipTextureAtlas readJSON (string atlasPath, string texturePath="")
+    static HipTextureAtlas readJSON (string atlasPath, string texturePath="") //!FIXME
     {
         import hip.util.path;
         import hip.filesystem.hipfs;
