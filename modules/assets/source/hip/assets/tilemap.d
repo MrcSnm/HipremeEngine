@@ -369,12 +369,14 @@ class HipTilesetImpl : HipAsset, IHipTileset
             ErrorHandler.assertExit(texturePath != "", "No texture path for loading tilemap texture");
             string imagePath = replaceFileName(path, texturePath);
             ubyte[] data;
-            if(!HipFS.read(imagePath, data))
+            HipFS.read(imagePath, data).addOnSuccess((in void[] imgData)
+            {
+                textureImage = new Image(imagePath, data, onSuccess, onFailure);
+            }).addOnError((string err)
             {
                 ErrorHandler.showErrorMessage("Error loading image required by Tileset", imagePath);
-                return null;
-            }
-            return textureImage = new Image(imagePath, data, onSuccess, onFailure);
+                onFailure();
+            });
         }
         return textureImage;
     }
@@ -609,10 +611,17 @@ class HipTilemap : HipAsset, IHipTilemap
     }
 
 
-    void loadImages()
+    ///Those arguments are actually synchronous on all platforms. This is to simulate JS API.
+    void loadImages(void delegate() onSuccess, void delegate() onFailure)
     {
+        int counter = 0;
+        auto onSuccessInternal = delegate(IImage _)
+        {
+            if(++counter == tilesets.length)
+                onSuccess();
+        };
         foreach(HipTilesetImpl tileset; tilesets)
-            tileset.loadImage((_){}, (){}); //!FIXME
+            tileset.loadImage(onSuccessInternal, onFailure);
     }
 
     bool loadTextures()

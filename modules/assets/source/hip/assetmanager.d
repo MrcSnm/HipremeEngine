@@ -357,40 +357,23 @@ class HipAssetManager
         };
     }
 
-    private static void delegate() onFailureLoad(HipAssetLoadTask task)
+    private static void delegate(string err = "") onFailureLoad(HipAssetLoadTask task)
     {
-        return ()
+        return (err)
         {
             import hip.console.log;
-            logln("Could not load file: ", task.name);
+            loglnWarn("Could not load task: ", task.name, " INFO: ", err);
             task.result = HipAssetResult.cantLoad;
             putComplete(task);
         };
     }
 
-    
+
     /**
     *   loadSimple must be used when the asset can be totally constructed on the worker thread and then returned to the main thread
     */
-    private static HipAssetLoadTask loadSimple(string taskName, string path, 
-    HipAsset delegate(string pathOrLocation) loadAsset, string f = __FILE__, size_t l = __LINE__)
-    {
-        HipAssetLoadTask task;
-        taskName = taskName~":"~path;
-        task = loadBase(taskName, loadWorker(taskName, ()
-        {
-            task.asset = loadAsset(path,);
-            if(task.asset !is null)
-                task.result = HipAssetResult.loaded;
-            else
-                task.result = HipAssetResult.cantLoad;
-            putComplete(task);
-        }), f, l);
-        return task;
-    }
-
     private static HipAssetLoadTask loadSimple(string taskName, string path, void delegate(string pathOrLocation, 
-    void delegate(HipAsset) onSuccess, void delegate() onFailure) loadAsset, 
+    void delegate(HipAsset) onSuccess, void delegate(string err = "") onFailure) loadAsset, 
     string f = __FILE__, size_t l = __LINE__)
     {
         HipAssetLoadTask task;
@@ -402,68 +385,86 @@ class HipAssetManager
         return task;
     }
 
-    private static HipAssetLoadTask loadComplex(
-        string taskName,
-        string path,
-        void delegate(
-            string pathOrLocation, 
-            void delegate(void[] partialData) onFirstStepComplete, 
-            void delegate() onFailure
-        ) loadAsset, 
-
-        void delegate (
-            void[] partialData,
-            void delegate(HipAsset) onSuccess,
-        ) mainThreadLoadFunction,
-        string f = __FILE__,
-        size_t l = __LINE__
-    )
+    version(WebAssembly)
     {
-        HipAssetLoadTask task;
-        taskName = taskName~":"~path;
+        /**
+        *   The main difference in that version is that it doesn't depends on HipConcurrency to put
+        *   on notifyOnFinish. That was decided because it is impossible to actually know when something
+        *   has finished on Browser. The notfyOnFinish callback must be passed manually.
+        */
+        private static HipAssetLoadTask loadComplex(
+            string taskName,
+            string path,
+            void delegate(
+                string pathOrLocation, 
+                void delegate(void[] partialData) onFirstStepComplete, 
+                void delegate(string err = "") onFailure
+            ) loadAsset, 
 
-        auto nextStep = (string _)
+            void delegate (
+                void[] partialData,
+                void delegate(HipAsset) onSuccess,
+            ) mainThreadLoadFunction,
+            string f = __FILE__,
+            size_t l = __LINE__
+        )
         {
-            mainThreadLoadFunction(task.takePartialData(), onSuccessLoad(task));
-        };
+            HipAssetLoadTask task;
+            taskName = taskName~":"~path;
 
-        task = loadBase(taskName, loadWorker(taskName, ()
-        {
-            loadAsset(path, onSuccessLoadFirstStep(task, nextStep), onFailureLoad(task));
-        }), f, l);
+            auto nextStep = (string _)
+            {
+                mainThreadLoadFunction(task.takePartialData(), onSuccessLoad(task));
+            };
 
-        return task;
+            task = loadBase(taskName, loadWorker(taskName, ()
+            {
+                loadAsset(path, onSuccessLoadFirstStep(task, nextStep), onFailureLoad(task));
+            }), f, l);
+
+            return task;
+        }
     }
-
-    /**
-    *   loadComplex is used when part of the asset can be constructed on worker thread, but for completing the load, it must finish on main thread
-    */
-    private static HipAssetLoadTask loadComplex(string taskName, string path, 
-        void[] delegate(string pathOrLocation) loadAsset, 
-        HipAsset delegate(void[] partialData) onWorkerLoadComplete,
-        string f = __FILE__, size_t l = __LINE__
-    )
+    else
     {
-        HipAssetLoadTask task;
-        taskName = taskName~":"~path;
-        task = loadBase(taskName, loadWorker(taskName, ()
+        /**
+        *   loadComplex is used when part of the asset can be constructed on worker thread, but for completing the load, it must finish on main thread
+        */
+        private static HipAssetLoadTask loadComplex(
+            string taskName,
+            string path,
+            void delegate(
+                string pathOrLocation, 
+                void delegate(void[] partialData) onFirstStepComplete, 
+                void delegate() onFailure
+            ) loadAsset, 
+
+            void delegate (
+                void[] partialData,
+                void delegate(HipAsset) onSuccess,
+            ) mainThreadLoadFunction,
+            string f = __FILE__,
+            size_t l = __LINE__
+        )
         {
-            task.givePartialData(loadAsset(path));
-        }, (name)
-        {
-            task.asset = onWorkerLoadComplete(task.takePartialData());
-            if(task.asset !is null)
-                task.result = HipAssetResult.loaded;
-            else
-                task.result = HipAssetResult.cantLoad;
-            putComplete(task);
-        }, true), f, l);
-        return task;
+            HipAssetLoadTask task;
+            taskName = taskName~":"~path;
+
+            task = loadBase(taskName, loadWorker(taskName, ()
+            {
+                loadAsset(path, onSuccessLoadFirstStep(task, nextStep), onFailureLoad(task));
+            }, (_)
+            {
+                mainThreadLoadFunction(task.takePartialData(), onSuccessLoad(task));
+            }), f, l);
+
+            return task;
+        }
     }
 
     @ExportD static IHipAssetLoadTask loadImage(string imagePath, string f = __FILE__, size_t l = __LINE__)
     {
-        void delegate(string,void delegate(HipAsset), void delegate()) assetLoadFunc = 
+        void delegate(string,void delegate(HipAsset), void delegate(string err = "")) assetLoadFunc = 
         (pathOrLocation,onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
@@ -473,8 +474,7 @@ class HipAssetManager
                 new Image(pathOrLocation, cast(ubyte[])data, (IImage img){onSuccess(cast(HipAsset)img);}, (){onFailure();});
             }).addOnError((string err)
             {
-                import hip.console.log;
-                logln("Could not read file with err: ", err);
+                onFailure("Could not read file with err: " ~ err);
             });
         };
         HipAssetLoadTask task = loadSimple("Load Image ", imagePath, assetLoadFunc, f, l);
@@ -482,11 +482,11 @@ class HipAssetManager
         return task;
     }
 
-    @ExportD static IHipAssetLoadTask loadTexture2(string texturePath, string f = __FILE__, size_t l = __LINE__)
+    @ExportD static IHipAssetLoadTask loadTexture(string texturePath, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.util.memory;
         import hip.console.log;
-        void delegate(string, void delegate(void[]), void delegate()) assetLoadFunc = 
+        void delegate(string, void delegate(void[]), void delegate(string err = "")) assetLoadFunc = 
         (pathOrLocation, onFirstStepComplete, onFailure)
         {
             import hip.filesystem.hipfs;
@@ -518,62 +518,63 @@ class HipAssetManager
         return task;
     }
 
-    @ExportD static IHipAssetLoadTask loadTexture(string texturePath, string f = __FILE__, size_t l = __LINE__)
-    {
-        import hip.util.memory;
-        HipAssetLoadTask task = loadComplex("Load Texture ", texturePath, (pathOrLocation)
-        {
-            import hip.filesystem.hipfs;
-            Image img = new Image(pathOrLocation);
-            if(!img.loadFromMemory(HipFS.read(pathOrLocation), (_){}, (){})) //!FIXME
-                return null;
-            return toHeapSlice(img);
-            }, (partialData)
-        {
-            if(partialData is null)
-                return null;
-            Image img = cast(Image)partialData.ptr;
-            HipTexture ret = new HipTexture(img);
-            freeGCMemory(partialData);
-            return ret;
-        }, f, l);
-        workerPool.startWorking();
-        return task;
-    }
-
+   
     @ExportD static IHipAssetLoadTask loadCSV(string path, string f = __FILE__, size_t l = __LINE__)
     {
-        HipAssetLoadTask task = loadSimple("Load CSV", path, (pathOrLocation)
+        HipAssetLoadTask task = loadSimple("Load CSV", path, (pathOrLocation, onSuccess, onError)
         {
-            auto ret = new HipCSV();
-            if(!ret.loadFromFile(pathOrLocation)) 
-                return null;
-            return ret;
+            import hip.filesystem.hipfs;
+            void[] output;
+            HipFS.read(pathOrLocation, output).addOnSuccess((in void[] data)
+            {
+                auto ret = new HipCSV();
+                ret.loadFromMemory(cast(string)data);
+                onSuccess(ret);
+            }).addOnError((string err)
+            {
+                onError("Error reading file: "~ err);
+            });
         }, f, l);
         workerPool.startWorking();
         return task;
     }
     @ExportD static IHipAssetLoadTask loadINI(string path, string f = __FILE__, size_t l = __LINE__)
     {
-        HipAssetLoadTask task = loadSimple("Load INI", path, (pathOrLocation)
+        HipAssetLoadTask task = loadSimple("Load INI", path, (pathOrLocation, onSuccess, onError)
         {
-            auto ret = new HipINI();
-            if(!ret.loadFromFile(pathOrLocation))
-                return null;
-            return ret;
+            import hip.filesystem.hipfs;
+            void[] output;
+            HipFS.read(pathOrLocation, output).addOnSuccess((in void[] data)
+            {
+                auto ret = new HipINI();
+                ret.loadFromMemory(cast(string)data, pathOrLocation);
+                onSuccess(ret);
+            }).addOnError((string err)
+            {
+                onError("Error reading file: "~ err);
+            });
         }, f, l);
+
         workerPool.startWorking();
         return task;
     }
     @ExportD static IHipAssetLoadTask loadJSONC(string path, string f = __FILE__, size_t l = __LINE__)
     {
-        HipAssetLoadTask task = loadSimple("Load JSONC", path, (pathOrLocation)
+        HipAssetLoadTask task = loadSimple("Load JSONC", path, (pathOrLocation, onSuccess, onError)
         {
-            auto ret = new HipJSONC();
-            if(!ret.loadFromFile(pathOrLocation))
-                return null;
-            return ret;
+            import hip.filesystem.hipfs;
+            void[] output;
+            HipFS.read(pathOrLocation, output).addOnSuccess((in void[] data)
+            {
+                auto ret = new HipJSONC();
+                ret.loadFromMemory(cast(string)data);
+                onSuccess(ret);
+            }).addOnError((string err)
+            {
+                onError("Error reading file: "~ err);
+            });
         }, f, l);
+
         workerPool.startWorking();
         return task;
     }
@@ -589,29 +590,45 @@ class HipAssetManager
             Image image;
             HipTextureAtlas atlas;
         }
-        HipAssetLoadTask task = loadComplex("Load TextureAtlas ", atlasPath, (pathOrLocation)
+        void delegate(string, void delegate(void[]), void delegate(string err = "")) assetLoadFunc = 
+        (pathOrLocation, onFirstStepComplete, onFailure)
         {
             import hip.filesystem.hipfs;
-            TextureAtlasIntermediaryData inter = new TextureAtlasIntermediaryData();
-            inter.atlas = HipTextureAtlas.read(atlasPath, texturePath);
-            string imagePath = inter.atlas.getTexturePath();
-            inter.image = new Image(imagePath);
-            if(!inter.image.loadFromMemory(HipFS.read(imagePath), (_){}, (){})) //!FIXME
-                return null;
-            return toHeapSlice(inter);
-            }, (partialData)
+            void[] output;
+            HipFS.read(pathOrLocation, output).addOnSuccess((in void[] data)
+            {
+                TextureAtlasIntermediaryData inter = new TextureAtlasIntermediaryData();
+                inter.atlas = HipTextureAtlas.readFromMemory(cast(ubyte[])data, atlasPath, texturePath);
+                
+                void[] _imgData;
+                HipFS.read(inter.atlas.getTexturePath(), _imgData).addOnSuccess((in void[] imgData)
+                {
+                    inter.image = new Image(pathOrLocation, cast(ubyte[])imgData, 
+                    (IImage _)
+                    {
+                        onFirstStepComplete(toHeapSlice(inter));
+                    }, (){onFailure("Failure trying to read image");});
+                }).addOnError((err){onFailure("Failure trying to read atlas");});
+            }).addOnError((string err)
+            {
+                logln("Could not read file with err: ", err);
+            });
+        };
+
+        void delegate(void[], void delegate(HipAsset)) onPartialDataLoaded = 
+        (partialData, onSuccess)
         {
-            if(partialData is null)
-                return null;
             scope(exit) freeGCMemory(partialData);
             auto inter = cast(TextureAtlasIntermediaryData)partialData.ptr;
             if(!inter.atlas.loadTexture(inter.image))
             {
-                loglnError("Could not load HipTextureAtlas texture ", inter.atlas.getTexturePath());
-                return null;
+                assert(false, "Need to implement onError for texture atlas.");
             }
-            return inter.atlas;
-        }, f, l);
+            onSuccess(inter.atlas);
+            freeGCMemory(partialData);
+        };
+        HipAssetLoadTask task = loadComplex("Load TextureAtlas", atlasPath, assetLoadFunc, onPartialDataLoaded, f, l);
+
         workerPool.startWorking();
         return task;
     }
@@ -622,30 +639,32 @@ class HipAssetManager
         import hip.console.log;
         import hip.util.memory;
         import hip.assets.tilemap;
-        class TileMapIData
-        {   
-            HipTilemap map;
-        }
-        HipAssetLoadTask task = loadComplex("Load Tilemap ", tilemapPath, (pathOrLocation)
+
+        HipAssetLoadTask task = loadComplex("Load Tilemap ", tilemapPath, (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
-            TileMapIData inter = new TileMapIData();
-            inter.map = HipTilemap.readTiledJSON(pathOrLocation);
-            inter.map.loadImages();
-            return toHeapSlice(inter);
-            }, (partialData)
-        {
-            if(partialData is null)
-                return null;
-            scope(exit) freeGCMemory(partialData);
-            auto inter = cast(TileMapIData)partialData.ptr;
-            if(!inter.map.loadTextures())
+            HipTilemap map;
+            void[] jsonData;
+            HipFS.read(pathOrLocation, jsonData).addOnSuccess((in void[] data)
             {
-                loglnError("Could not load HipTilemap textures ", inter.map.path);
-                return null;
+                map = HipTilemap.readTiledJSON(pathOrLocation, cast(ubyte[])jsonData);
+                map.loadImages(()
+                {
+                    onSuccess(toHeapSlice(map));
+                }, (){onFailure();});
+            }).addOnError((string err)
+            {
+                onFailure("Failed loading tilemap data."~err);
+            });
+            }, (partialData, onSuccess)
+        {
+            scope(exit) freeGCMemory(partialData);
+            auto map = cast(HipTilemap)partialData.ptr;
+            if(!map.loadTextures())
+            {
+                assert(false, "Could not load HipTilemap textures " ~ map.path);
             }
-            HipTilemap ret = inter.map;
-            return ret;
+            onSuccess(map);
         }, f, l);
         workerPool.startWorking();
         return task;
@@ -724,25 +743,31 @@ class HipAssetManager
             this(Hip_TTF_Font fnt, ubyte[] img){font = fnt; rawImage = img;}
         }
 
-        HipAssetLoadTask task = loadComplex("Load TTF", ttfPath, (pathOrLocation)
+        HipAssetLoadTask task = loadComplex("Load TTF", ttfPath, (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
             Hip_TTF_Font font = new Hip_TTF_Font(pathOrLocation, fontSize);
             ubyte[] rawImage;
-            if(!font.partialLoad(HipFS.read(pathOrLocation), rawImage))
-                return null;
-            return toHeapSlice(new IntermediaryData(font, rawImage));
-        }, (partialData)
+            void[] fontData;
+            HipFS.read(pathOrLocation, fontData).addOnSuccess((in void[] data)
+            {
+                if(!font.partialLoad(cast(ubyte[])data, rawImage))
+                    onFailure("Could not load font data");
+                onSuccess(toHeapSlice(new IntermediaryData(font, rawImage)));
+            }).addOnError((string err)
+            {
+                onFailure("Could not read file "~err);
+            });
+        }, (partialData, onSuccess)
         {
-            if(partialData is null)
-                return null;
             scope(exit) freeGCMemory(partialData);
-
             IntermediaryData i = (cast(IntermediaryData)partialData.ptr);
             if(!i.font.loadTexture(i.rawImage))
-                return null;
+            {
+                assert(false, "Failed loading TTF Font");
+            }
             HipFontAsset fnt = new HipFontAsset(i.font);
-            return fnt;
+            onSuccess(fnt);
         }, f, l);
         workerPool.startWorking();
         return task;
@@ -763,40 +788,53 @@ class HipAssetManager
             this(HipBitmapFont fnt, HipImageImpl img){font = fnt; this.img = img;}
         }
 
-        HipAssetLoadTask task = loadComplex("Load BMFont", fontPath, (pathOrLocation)
+        HipAssetLoadTask task = loadComplex("Load BMFont", fontPath, (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
             HipBitmapFont font = new HipBitmapFont();
 
-            if(!font.loadAtlas(HipFS.readText(fontPath), fontPath))
+            void[] output;
+            HipFS.read(pathOrLocation, output).addOnSuccess((in void[] fontData)
             {
-                loglnError("Could not read atlas");
-                return null;
-            }
-            HipImageImpl img = new HipImageImpl(font.getTexturePath);
-            if(!img.loadFromMemory(HipFS.read(font.getTexturePath), (_){}, (){})) //!FIXME
+                if(!font.loadAtlas(cast(string)fontData, pathOrLocation))
+                    return onFailure("Could not load font atlas.");
+                HipImageImpl img = new HipImageImpl(font.getTexturePath);
+
+                void[] _imgData;
+                HipFS.read(font.getTexturePath, _imgData).addOnSuccess((in void[] imgData)
+                {
+                    img.loadFromMemory(cast(ubyte[])imgData, (IImage _)
+                    {
+                        onSuccess(toHeapSlice(new IntermediaryData(font, img)));
+                    }, 
+                    ()
+                    {
+                        onFailure("Could not decode image.");
+                    });
+
+                    toHeapSlice(new IntermediaryData(font, img));
+
+                }).addOnError((string err)
+                {
+                    onFailure("Could not load font image "~err);
+                });
+                
+            }).addOnError((string err)
             {
-                loglnError("Could not read image");
-                return null;
-            }
-            return toHeapSlice(new IntermediaryData(font, img));
-        }, (partialData)
+                onFailure("Could read file atlas");
+            });
+
+        }, (partialData, onSuccess)
         {
-            if(partialData is null)
-            {
-                loglnError("No partial data");
-                return null;
-            }
             scope(exit) freeGCMemory(partialData);
 
             IntermediaryData i = (cast(IntermediaryData)partialData.ptr);
             if(!i.font.loadTexture(new HipTexture(i.img)))
             {
-                loglnError("Could not read texture");
-                return null;
+                assert(false, "Could not read texture");
             }
             HipFontAsset fnt = new HipFontAsset(i.font);
-            return fnt;
+            onSuccess(fnt);
         }, f, l);
         workerPool.startWorking();
         return task;
