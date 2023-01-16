@@ -28,11 +28,7 @@ void main()
 	HipTime.initialize();
 	Console.install(Platforms.WASM);
 	HipFS.install("");
-	void[] output;
 
-	HipFS.read("fonts/WarsawGothic-BnBV.otf", output);
-
-	logln(output.length);
 	
 	HipRenderer.initExternal(HipRendererType.GL3, 800, 600);
 	//Initialize 2D context
@@ -42,14 +38,28 @@ void main()
 	});
 }
 
+import hip.graphics.g2d;
+__gshared IHipTexture texture;
+// __gshared IImage img;
+
 private void initializeGame()
 {
 	import hip.graphics.g2d;
 	import hip.console.log;
+	import hip.assetmanager;
 	logln("Initialized Game");
+	HipAssetManager.initialize();
 	HipRenderer2D.initialize();
 	sys = new GameSystem(FRAME_TIME);
+
+	IHipAssetLoadTask task = HipAssetManager.loadTexture2("graphics/sprites/sprite.png");
+	task.into(&texture);
+
+	// IHipAssetLoadTask task2 = HipAssetManager.loadImage("graphics/sprites/sprite.png");
+	// task2.into(&img);
+
 	WasmStartGameLoop();
+
 }
 extern(C) void WasmStartGameLoop();
 
@@ -57,6 +67,11 @@ export extern(C) void HipremeRender()
 {
 	if(sys !is null)
 	{
+		if(texture !is null)
+		{
+			logln(texture.getWidth);
+		}
+		// logln(img is null);
 		HipRenderer.setColor(0,0,0,255);
 		HipRenderer.clear();
 		import hip.api.graphics.g2d.renderer2d;
@@ -75,7 +90,8 @@ export extern(C) void HipremeRender()
 
 export extern(C) bool HipremeUpdate(float dt)
 {
-	if(sys !is null)
+	import hip.assetmanager;
+	if(sys !is null || HipAssetManager.isLoading)
 	{
 		dt/= 1000; //To seconds. Javascript gives in MS.
 		import hip.api;

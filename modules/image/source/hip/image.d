@@ -135,23 +135,22 @@ version(WebAssembly)
         }
         bool startDecoding(void[] data, void delegate() onSuccess, void delegate() onFailure)
         {
+            import hip.console.log;
             img = WasmDecodeImage(path.length, cast(char*)path.ptr, cast(ubyte*)data.ptr, data.length, sendJSDelegate!((BrowserImage _img)
             {
                 assert(img == _img, "Different image returned!");
                 if(img.valid)
                 {
-                    import hip.console.log;
                     width = WasmImageGetWidth(img);
                     height = WasmImageGetHeight(img);
                     pixels = getWasmBinary(WasmImageGetPixels(img));
-                    logln("Getting width: ", width);
-                    logln("Getting height: ", height);
-                    logln("Getting pixels: ", pixels.length);
+                    logln(width, " x ", height, " ", pixels.length, " bytes");
 
                     (width != 0 && height != 0) ? onSuccess() : onFailure();
                 }
                 else
                 {
+                    loglnError("Corrupted JS image object.");
                     onFailure();
                 }
             }).tupleof);
@@ -244,12 +243,7 @@ public class HipImageImpl : IImage
         return true;
     }
 
-    bool hasLoadedData() const 
-    {
-        import hip.console.log;
-        logln(getName, " has loaded data? ", width, " ", height, " ", pixels.length);
-        return pixels !is null && width != 0 && height != 0;
-    }
+    bool hasLoadedData() const {return pixels !is null && width != 0 && height != 0;}
 
     void[] monochromeToRGBA() const
     {

@@ -49,9 +49,9 @@ public class Image : HipAsset, IImage
     {
         bool ret = this.impl.loadFromMemory(data, (IImage self)
         {
-            onSuccess(self);
             this.width = impl.getWidth;
             this.height = impl.getHeight;
+            onSuccess(self);
         }, onFailure);
         return ret;
     }

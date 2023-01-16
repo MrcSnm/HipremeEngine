@@ -18,7 +18,7 @@
 			},
 			"dflags": [
 				"-preview=shortenedMethods",
-				"-O0",
+				"-fvisibility=hidden",
 				"-mv=arsd.ttf=ttf.d"
 			],
 			"stringImportPaths": [
@@ -87,6 +87,10 @@
 				"runtime/webassembly/arsd-webassembly/core/internal/utf.d"
 			],
 			"excludedSourceFiles": ["source/**"],
+			"dflags": [
+				"-fvisibility=hidden",
+				"-Oz"
+			],
 			
 			"importPaths": [
 				"runtime/webassembly/arsd-webassembly"

@@ -357,10 +357,10 @@ version(HipConcurrency)
         void pollFinished()
         {
             handlersMutex.lock();
-                foreach(finishHandler; finishHandlersOnMainThread)
-                    finishHandler();
                 if(finishHandlersOnMainThread.length)
                 {
+                    foreach(finishHandler; finishHandlersOnMainThread)
+                        finishHandler();
                     finishHandlersOnMainThread.length = 0;
                 }
             handlersMutex.unlock();
@@ -388,21 +388,39 @@ else
     class HipWorkerPool
     {
         private HipWorkerThread thread;
+        private void delegate()[] finishHandlersOnMainThread;
         this(size_t poolSize)
         {
             thread = new HipWorkerThread(this);
         }
-        final void await(){}
-        final void pollFinished(){}
+        void delegate(string name) notifyOnFinish(void delegate(string taskName) onFinish)
+        {
+            return (name)
+            {
+                finishHandlersOnMainThread~= (){onFinish(name);};
+            };
+        }
+        final void await()
+        {
+            version(WebAssembly) assert(false, "Code using await does not work on WebAssembly.");
+        }
+        final void pollFinished()
+        {
+            if(finishHandlersOnMainThread.length)
+            {
+                foreach(handler; finishHandlersOnMainThread)
+                    handler();
+                finishHandlersOnMainThread.length = 0;
+            }
+        }
         final HipWorkerThread pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null, bool isOnFinishOnMainThread = true)
         {
+            version(WebAssembly)
+                assert(onTaskFinish is null, "Can't have an onTaskFinish on Wasm, implement it on a higher level using notfyOnFinish.");
             thread.pushTask(name, task, onTaskFinish);
             return thread;
         }
-        final void startWorking()
-        {
-            thread.startWorking();
-        }
+        final void startWorking(){thread.startWorking();}
         final void finish(){}
         final bool isIdle(){return thread.isIdle;}
         final void dispose(){}

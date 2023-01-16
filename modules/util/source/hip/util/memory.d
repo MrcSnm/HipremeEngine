@@ -32,28 +32,28 @@ T[] allocSlice(T)(size_t count)
     return alloc!T(count)[0..count];
 }
 
-void* toHeap(T)(T data)
+void* toHeap(T)(in T data) if(isReference!T)
 {
-    import hip.util.reflection;
-    static if(isReference!T)
+    version(WebAssembly)
     {
-        version(WebAssembly)
-        {
-            void* m = alloc!T;
-            memcpy(m, &data, T.sizeof);
-        }
-        else
-        {
-            import core.memory;
-            void* m = cast(void*)data;
-            GC.addRoot(cast(void*)data);
-        }
+        import std.stdio;
+        writeln("Called to heap for type ", T.stringof);
+        void* m = cast(void*)data; //WASM don't neede to allocate as it is not ever deleted.
     }
     else
     {
-        void* m = alloc!T;
-        memcpy(m, &data, T.sizeof);
+        import core.memory;
+        void* m = cast(void*)data;
+        GC.addRoot(cast(void*)data);
     }
+    return m;
+}
+
+void* toHeap(T)(T data) if(!isReference!T)
+{
+    import hip.util.reflection;
+    void* m = alloc!T;
+    memcpy(m, &data, T.sizeof);
     return m;
 }
 
