@@ -675,30 +675,29 @@ class HipAssetManager
         import hip.console.log;
         import hip.util.memory;
         import hip.assets.tilemap;
-        class TilsetData
-        {   
-            HipTilesetImpl tileset;
-        }
-        HipAssetLoadTask task = loadComplex("Load Tileset ", tilesetPath, (pathOrLocation)
+        HipAssetLoadTask task = loadComplex("Load Tileset ", tilesetPath, (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
-            TilsetData inter = new TilsetData();
-            inter.tileset = HipTilesetImpl.read(pathOrLocation, 1);
-            inter.tileset.loadImage((_){}, (){}); //!FIXME
-            return toHeapSlice(inter);
-            }, (partialData)
-        {
-            if(partialData is null)
-                return null;
-            scope(exit) freeGCMemory(partialData);
-            auto inter = cast(TilsetData)partialData.ptr;
-            if(!inter.tileset.loadTexture())
+
+            void[] data;
+            HipFS.read(pathOrLocation, data).addOnSuccess((in void[] data)
             {
-                loglnError("Could not load HipTileset texture ", inter.tileset.path);
-                return null;
-            }
-            HipTilesetImpl ret = inter.tileset;
-            return ret;
+                HipTilesetImpl tileset = HipTilesetImpl.readFromMemory(pathOrLocation, cast(string)data);
+                tileset.loadImage((IImage _)
+                {
+                    onSuccess(toHeapSlice(tileset));
+                }, (){onFailure("Failed loading image for tileset");});
+            }).addOnError((string err)
+            {
+                onFailure("Failed reading file for tileset");
+            });
+            }, (partialData, onSuccess)
+        {
+            scope(exit) freeGCMemory(partialData);
+            HipTilesetImpl tileset = cast(HipTilesetImpl)partialData.ptr;
+            if(!tileset.loadTexture())
+                assert(false, "Could not load HipTileset texture " ~ tileset.path);
+            onSuccess(tileset);
         }, f, l);
         workerPool.startWorking();
         return task;
