@@ -39,10 +39,12 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
     {
         JSONValue dummy = void;
         import hip.console.log;
-        logln("Browser tries to read ", path);
         if(!getFromPath(path, dummy))
+        {
+            hiplog("Browser could not read ", path);
             return false;
-        logln("Browser read start on ", path);
+        }
+        hiplog("Browser read start on ", path);
 
         WasmRead(JSString(path).tupleof, sendJSDelegate!((ubyte[] wasmBin)
         {

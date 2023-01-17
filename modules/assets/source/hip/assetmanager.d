@@ -12,6 +12,8 @@ module hip.assetmanager;
 import hip.util.concurrency;
 import hip.util.data_structures: Node;
 import hip.util.reflection;
+import hip.error.handler;
+import hip.console.log : hiplog;
 
 private string buildConstantsFromFolderTree(string code, Node!string node, int depth = 0)
 {
@@ -90,7 +92,6 @@ final class HipAssetLoadTask : IHipAssetLoadTask
     // void into(void* function(IHipAsset asset) castFunc, IHipAsset*[] variables)
     {
         import hip.error.handler;
-        import hip.console.log;
         final switch(_result) with(HipAssetResult)
         {
             case loaded:
@@ -361,8 +362,7 @@ class HipAssetManager
     {
         return (err)
         {
-            import hip.console.log;
-            loglnWarn("Could not load task: ", task.name, " INFO: ", err);
+            ErrorHandler.showWarningMessage("Could not load task: "~ task.name, err);
             task.result = HipAssetResult.cantLoad;
             putComplete(task);
         };
@@ -485,7 +485,6 @@ class HipAssetManager
     @ExportD static IHipAssetLoadTask loadTexture(string texturePath, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.util.memory;
-        import hip.console.log;
         void delegate(string, void delegate(void[]), void delegate(string err = "")) assetLoadFunc = 
         (pathOrLocation, onFirstStepComplete, onFailure)
         {
@@ -501,7 +500,7 @@ class HipAssetManager
                 }, (){onFailure();});
             }).addOnError((string err)
             {
-                logln("Could not read file with err: ", err);
+                ErrorHandler.showErrorMessage("Could not read file ", err);
             });
         };
 
@@ -582,7 +581,6 @@ class HipAssetManager
     @ExportD static IHipAssetLoadTask loadTextureAtlas(string atlasPath, string texturePath = ":IGNORE", 
     string f = __FILE__, size_t l = __LINE__)
     {
-        import hip.console.log;
         import hip.util.memory;
         import hip.assets.textureatlas;
         class TextureAtlasIntermediaryData
@@ -611,7 +609,7 @@ class HipAssetManager
                 }).addOnError((err){onFailure("Failure trying to read atlas");});
             }).addOnError((string err)
             {
-                logln("Could not read file with err: ", err);
+                ErrorHandler.showErrorMessage("Could not read file: ", err);
             });
         };
 
@@ -634,7 +632,7 @@ class HipAssetManager
     }
 
 
-    @ExportD static IHipAssetLoadTask loadTilemap(string tilemapPath, string f = __FILE__, size_t l = __LINE__)
+     @ExportD static IHipAssetLoadTask loadTilemap(string tilemapPath, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.console.log;
         import hip.util.memory;
@@ -647,10 +645,12 @@ class HipAssetManager
             void[] jsonData;
             HipFS.read(pathOrLocation, jsonData).addOnSuccess((in void[] data)
             {
-                map = HipTilemap.readTiledJSON(pathOrLocation, cast(ubyte[])jsonData);
-                map.loadImages(()
+                map = HipTilemap.readTiledJSON(pathOrLocation, cast(ubyte[])jsonData, (_)
                 {
-                    onSuccess(toHeapSlice(map));
+                    map.loadImages(()
+                    {
+                        onSuccess(toHeapSlice(map));
+                    }, (){onFailure();});
                 }, (){onFailure();});
             }).addOnError((string err)
             {
@@ -670,9 +670,9 @@ class HipAssetManager
         return task;
     }
 
+
     @ExportD static IHipAssetLoadTask loadTileset(string tilesetPath, string f = __FILE__, size_t l = __LINE__)
     {
-        import hip.console.log;
         import hip.util.memory;
         import hip.assets.tilemap;
         HipAssetLoadTask task = loadComplex("Load Tileset ", tilesetPath, (pathOrLocation, onSuccess, onFailure)
@@ -682,11 +682,15 @@ class HipAssetManager
             void[] data;
             HipFS.read(pathOrLocation, data).addOnSuccess((in void[] data)
             {
-                HipTilesetImpl tileset = HipTilesetImpl.readFromMemory(pathOrLocation, cast(string)data);
-                tileset.loadImage((IImage _)
+                auto onTilesetJsonLoaded = delegate(HipTilesetImpl tileset)
                 {
-                    onSuccess(toHeapSlice(tileset));
-                }, (){onFailure("Failed loading image for tileset");});
+                    tileset.loadImage((IImage _)
+                    {
+                        onSuccess(toHeapSlice(tileset));
+                    }, (){onFailure("Failed loading image for tileset");}); 
+                };
+                auto onTilesetJsonFailure = delegate(){onFailure("Failed loading tileset json");};
+                HipTilesetImpl.readFromMemory(pathOrLocation, cast(string)data, onTilesetJsonLoaded, onTilesetJsonFailure);
             }).addOnError((string err)
             {
                 onFailure("Failed reading file for tileset");
@@ -717,8 +721,7 @@ class HipAssetManager
     @ExportD static IHipAssetLoadTask loadFont(string fontPath, int fontSize = 48, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.util.path;
-        import hip.console.log;
-        logln("Trying to load the font ", fontPath, "EXT: ", fontPath.extension);
+        hiplog("Trying to load the font ", fontPath, "EXT: ", fontPath.extension);
         switch(fontPath.extension)
         {
             case "bmfont":
@@ -780,7 +783,6 @@ class HipAssetManager
         import hip.assets.font;
         import hip.image;
         import hip.util.memory;
-        import hip.console.log;
 
         class IntermediaryData
         {
@@ -788,7 +790,7 @@ class HipAssetManager
             HipImageImpl img;
             this(HipBitmapFont fnt, HipImageImpl img){font = fnt; this.img = img;}
         }
-        logln("Loading bmfont");
+        hiplog("Loading bmfont");
 
         HipAssetLoadTask task = loadComplex("Load BMFont", fontPath, 
         (pathOrLocation, onSuccess, onFailure)
@@ -858,10 +860,8 @@ class HipAssetManager
             onComplete(task.asset);
         else
         {
-            import hip.console.log;
-            loglnInfo("Added a complete handler for ", (cast(HipAssetLoadTask)task).name);
+            hiplog("Added a complete handler for ", (cast(HipAssetLoadTask)task).name);
             completeHandlers[cast(HipAssetLoadTask)task]~= onComplete;
-            loglnInfo(cast(void*)task);
         }
     }
 
@@ -877,9 +877,8 @@ class HipAssetManager
             {
                 foreach(task; completeQueue)
                 {
-                    import hip.console.log;
-                    loglnInfo(task.name, " executing handlers");
                     //Subject to a logger
+                    hiplog(task.name, " executing handlers");
                     if(auto handlers = task in completeHandlers)
                     {
                         foreach(handler; *handlers)

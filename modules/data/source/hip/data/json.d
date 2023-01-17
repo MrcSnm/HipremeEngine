@@ -468,8 +468,10 @@ struct JSONValue
 	//selfPrintKey is only used for object.
 	string toString(bool selfPrintkey = true)
 	{
+		if(hasErrorOccurred)
+			return error;
 		import hip.util.conv:to;
-		string ret ;
+		string ret;
 		final switch ( type ) with(JSONType)
 		{
 			case int_:
