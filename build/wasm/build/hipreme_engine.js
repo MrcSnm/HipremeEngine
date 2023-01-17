@@ -52,7 +52,8 @@ function initializeHipremeEngine(exports)
     };
     const HipOnRendererResize = (ev) =>
     {
-        exports.HipOnRendererResize(800, 600);//Currently maintain it as that.
+        const scale = window.devicePixelRatio;
+        exports.HipOnRendererResize(800*scale, 600*scale);//Currently maintain it as that.
     };
     window.addEventListener("keydown", HipInputOnKeyDown);
     window.addEventListener("keyup", HipInputOnKeyUp);

@@ -346,16 +346,6 @@ var importObject = {
 					bridgeObjects.pop();
 			}
 		},
-		//Maintained here as a reference.
-		// callDg: function(dFunc, dgFunc, dgContext)
-		// {
-		// 	const args = WasmUtils.toDArguments(dgFunc, dgContext, (Math.random() * 500) | 0, "Javascript String!!");
-		// 	exports.__callDFunction(dFunc, args);
-		// 	exports.__callDFunction(dFunc, args);
-		// 	exports.__callDFunction(dFunc, args);
-
-		// 	return WasmUtils.toDString("Test return after things...");
-		// },
 		abort: function() {
 			if(window.druntimeAbortHook !== undefined) druntimeAbortHook();
 			throw new Error("DRuntime Aborted Wasm");

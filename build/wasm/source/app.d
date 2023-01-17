@@ -30,7 +30,7 @@ void main()
 	HipFS.install("");
 
 	
-	HipRenderer.initExternal(HipRendererType.GL3, 800, 600);
+	HipRenderer.initExternal(HipRendererType.GL3, 1200, 900);
 	//Initialize 2D context
 	loadDefaultAssets((){initializeGame();}, (err)
 	{
@@ -42,6 +42,8 @@ import hip.graphics.g2d;
 import hip.api;
 __gshared IHipTexture texture;
 __gshared IHipFont font;
+IHipFont ttfFont;
+IHipTilemap map;
 // __gshared IImage img;
 
 private void initializeGame()
@@ -59,6 +61,11 @@ private void initializeGame()
 
 	IHipAssetLoadTask task2 = HipAssetManager.loadFont("fonts/consolas.fnt");
 	task2.into(&font);
+
+	HipAssetManager.loadFont("fonts/WarsawGothic-BnBV.otf").into(&ttfFont);
+
+	HipAssetManager.loadTilemap("maps/untitled.tmj").into(&map);
+
 
 	// IHipAssetLoadTask task2 = HipAssetManager.loadImage("graphics/sprites/sprite.png");
 	// task2.into(&img);
@@ -82,14 +89,21 @@ export extern(C) void HipremeRender()
 		if(font !is null)
 		{
 			setFont(font);
-			drawText("Test with my custom font", 150, 300);
+			drawText("abcdefghijklmnopqrstuvwxyz", 150, 400);
+			setFontNull(null);
+			renderTexts();
+		}
+		if(ttfFont !is null)
+		{
+			setFont(ttfFont);
+			drawText("The ttf font is here!", 600, 200);
 			setFontNull(null);
 			renderTexts();
 		}
 		renderSprites();
 
-		drawText("Hello WASM", 50, 50);
-		renderTexts();
+		// drawText("Hello WASM", 50, 50);
+		// renderTexts();
 	}
 	// sys.render();
 	// import hip.api;

@@ -20,6 +20,7 @@ function initializeDecoders()
     const removeObject = WasmUtils.removeObject;
 
     const _canvas = document.createElement("canvas");
+    _canvas.style.imageRendering = "pixelated";
     
     const memoryCanvas = _canvas.getContext("2d", {willReadFrequently:true});
 
@@ -56,6 +57,7 @@ function initializeDecoders()
             const objImg = _objects[img];
             _canvas.width = objImg.width;
             _canvas.height = objImg.height;
+
             memoryCanvas.drawImage(objImg, 0, 0);
             const imgData = memoryCanvas.getImageData(0, 0, objImg.width, objImg.height);
             return WasmUtils.toDBinary(imgData.data);

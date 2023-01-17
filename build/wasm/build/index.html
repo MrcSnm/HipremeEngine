@@ -5,12 +5,22 @@
   	<meta charset="utf-8" />
 	<style>
 		body {
-      background-color: rgb(50, 50, 50);
-    }
+      	background-color: rgb(50, 50, 50);
+    	}
+		#glcanvas {
+			display: block;
+			padding-left: 0;
+			width: 800px;
+			height: 600px;
+			padding-right: 0;
+			margin-left: auto;
+			margin-right: auto;
+			image-rendering: crisp-edges;
+		}
 	</style>
   </head>
   <body>
-    <canvas id="glcanvas" width="800" height="600" style="border:1px solid #000000;"></canvas>
+    <canvas id="glcanvas" width="800" height="600"></canvas>
     <script src="/fs.js"></script>
     <script src="/decoders.js"></script>
     <script src="/webgl.js"></script>
@@ -21,7 +31,11 @@
 	WebAssembly.instantiateStreaming(fetch('/hipreme_engine.wasm'), importObject)
 		.then(function(obj) {
 
-			console.log(importObject.env.table);
+			const canvas = document.getElementById("glcanvas");
+			const scale = window.devicePixelRatio;
+
+			canvas.width = Math.floor(canvas.width * scale);
+			canvas.height = Math.floor(canvas.height * scale);
 			memory = obj.instance.exports.memory;
 			bridge_malloc = obj.instance.exports.bridge_malloc;
 			printBlockDebugInfo = obj.instance.exports.printBlockDebugInfo;
