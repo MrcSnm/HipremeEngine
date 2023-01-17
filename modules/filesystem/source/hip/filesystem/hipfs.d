@@ -252,11 +252,11 @@ class HipFileSystem
     @ExportD("void") public static IHipFSPromise read(string path, out void[] output)
     {
         import hip.console.log;
-        logln("Required path ", path);
+        hiplog("Required path ", path);
         path = getPath(path);
         if(!isPathValid(path))
             return null;
-        logln("Path validated.");
+        hiplog("Path validated.");
         filesReadingCount++;
 
         HipFSPromise promise = new HipFSPromise(path);

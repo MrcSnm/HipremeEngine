@@ -232,7 +232,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
     //     static assert(false, `Please call dub add arsd-official:dom for using TSX parser`);
     // }
 
-    static HipTilesetImpl read (string path, uint firstGid = 1)
+    static HipTilesetImpl read (string path, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError, uint firstGid = 1)
     {
         import hip.util.path;
         switch(path.extension)
@@ -242,14 +242,14 @@ class HipTilesetImpl : HipAsset, IHipTileset
                 assert(false, `Please call dub add arsd-official:dom for using TSX parser`);
             case "tsj":
             case "json":
-                return HipTilesetImpl.readJSON(path, firstGid);
+                return HipTilesetImpl.readJSON(path, firstGid, onSuccess, onError);
             default:
                 assert(false, "Unrecognized extension for file "~path);
         }
     }
 
     import hip.data.json;
-    static HipTilesetImpl readFromMemory (string path, string data, uint firstGid = 1)
+    static HipTilesetImpl readFromMemory (string path, string data, void delegate(HipTilesetImpl) onSuccess, void delegate() onError, uint firstGid = 1)
     {
         import hip.util.path;
         switch(path.extension)
@@ -259,41 +259,64 @@ class HipTilesetImpl : HipAsset, IHipTileset
                 assert(false, `Please call dub add arsd-official:dom for using TSX parser`);
             case "tsj":
             case "json":
-                return HipTilesetImpl.readJSON(path, parseJSON(data), firstGid);
+                HipTilesetImpl ret = new HipTilesetImpl(0);
+                ret._path = path;
+                ret._firstGid = firstGid;
+                ret.loadJSON(parseJSON(data), onSuccess, onError);
+                return ret;
             default:
                 assert(false, "Unrecognized extension for file "~path);
         }
     }
 
-
-    static HipTilesetImpl readJSON (string path, uint firstGid)
+    static HipTilesetImpl readJSON (string path, uint firstGid, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError)
     {
         import hip.filesystem.hipfs;
         import hip.console.log;
-        string data;
 
-        if(!HipFS.readText(path, data))
+        HipTilesetImpl tileset = new HipTilesetImpl(0);
+        tileset._path = path;
+        tileset._firstGid = firstGid;
+
+        string jsonData;
+        HipFS.readText(path, jsonData).addOnSuccess((in void[] data)
         {
-            loglnWarn("Could not read file named ", path);
-            return null;
-        }
-        return readJSON(path, parseJSON(data), firstGid);
+            tileset.loadJSON(parseJSON(cast(string)data), onSuccess, onError);
+        }).addOnError((err)
+        {
+            loglnWarn("Could not read file at path ", path," ", err);
+        });
+        return tileset;
     }
 
-    static HipTilesetImpl readJSON (string path, JSONValue t, uint firstGid)
+    public static HipTilesetImpl readJSON (string path, uint firstGid, JSONValue t, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError)
     {
-        HipTilesetImpl ret = new HipTilesetImpl(cast(uint)t["tilecount"].integer);
-        ret._columns       = cast(ushort)t["columns"].integer;
-        ret._texturePath   =             t["image"].str;
-        ret._textureHeight =   cast(uint)t["imageheight"].integer;
-        ret._textureWidth  =   cast(uint)t["imagewidth"].integer;
-        ret._margin        =    cast(int)t["margin"].integer;
-        ret._name          =             t["name"].str;
-        ret._spacing       =    cast(int)t["spacing"].integer;
-        ret._tileHeight    =   cast(uint)t["tileheight"].integer;
-        ret._tileWidth     =   cast(uint)t["tilewidth"].integer;
+        HipTilesetImpl ret = new HipTilesetImpl(0);
         ret._path = path;
         ret._firstGid = firstGid;
+        ret.loadJSON(t, onSuccess, onError);
+        return ret;
+    }
+
+    private void loadJSON (JSONValue t, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError)
+    {
+        if(t.hasErrorOccurred)
+        {
+            import hip.error.handler;
+            ErrorHandler.showErrorMessage("JSON Parsing Error on Tilemap", t.toString);
+            return onError();
+        }
+        _tiles = new Tile[cast(uint)t["tilecount"].integer];
+        _columns       = cast(ushort)t["columns"].integer;
+        _texturePath   =             t["image"].str;
+        _textureHeight =   cast(uint)t["imageheight"].integer;
+        _textureWidth  =   cast(uint)t["imagewidth"].integer;
+        _margin        =    cast(int)t["margin"].integer;
+        _name          =             t["name"].str;
+        _spacing       =    cast(int)t["spacing"].integer;
+        _tileHeight    =   cast(uint)t["tileheight"].integer;
+        _tileWidth     =   cast(uint)t["tilewidth"].integer;
+        
 
         if("tiles" in t)
         {
@@ -311,12 +334,12 @@ class HipTilesetImpl : HipAsset, IHipTileset
                     _p.value = prop["value"].toString;
                     tile.properties[_p.name] = _p;
                 }
-                ret.tiles[tile.id] = tile;
+                tiles[tile.id] = tile;
             }
         }
-
-        return ret;
+        onSuccess(this);
     }
+
 
     import hip.util.data_structures;
     static IHipTileset fromSpritesheet(Array2D_GC!IHipTextureRegion regions)
@@ -513,7 +536,7 @@ class HipTilemap : HipAsset, IHipTilemap
         return replaceFileName(path, tsxName);
     }
 
-    static HipTilemap readTiledJSON (string mapPath, ubyte[] tiledData)
+    static HipTilemap readTiledJSON (string mapPath, ubyte[] tiledData, void delegate(HipTilemap) onSuccess, void delegate() onError)
     {
         import hip.data.json;
         HipTilemap ret = new HipTilemap();
@@ -596,6 +619,15 @@ class HipTilemap : HipAsset, IHipTilemap
             ret._layers[layer.name] = layer;
         }
 
+        uint maxTilesets = json["tilesets"].array.length;
+        uint loadedCount = 0;
+        auto onTilesetLoad = delegate(HipTilesetImpl tileset)
+        {
+            if(++loadedCount == maxTilesets)
+                onSuccess(ret);
+        };
+
+
         foreach(t; json["tilesets"].array)
         {
             const(JSONValue)* source = ("source" in t);
@@ -605,26 +637,30 @@ class HipTilemap : HipAsset, IHipTilemap
             if(source !is null)
             {
                 import hip.util.path;
-                tileset = HipTilesetImpl.read(joinPath(dirName(mapPath), source.str), firstGid);
+                import hip.console.log;
+                loglnWarn("Reading from source ");
+                tileset = HipTilesetImpl.read(joinPath(dirName(mapPath), source.str), onTilesetLoad, onError, firstGid);
             }
             else
-                tileset = HipTilesetImpl.readJSON("null", t, firstGid);
+                tileset = HipTilesetImpl.readJSON("null", firstGid, t, onTilesetLoad, onError);
             ret.tilesets~= tileset;
         }
 
         return ret;
     }
-    static HipTilemap readTiledJSON (string tiledPath)
+    static void readTiledJSON (string tiledPath, void delegate(HipTilemap) onSuccess, void delegate() onError)
     {
         import hip.filesystem.hipfs;
         void[] jsonData;
-        if(!HipFS.read(tiledPath, jsonData))
+        HipFS.read(tiledPath, jsonData).addOnSuccess((in void[] data)
+        {
+            HipTilemap.readTiledJSON(tiledPath, cast(ubyte[])jsonData, onSuccess, onError);
+        }).addOnError((err)
         {
             import hip.error.handler;
             ErrorHandler.showWarningMessage("Could not read Tiled TMX from path ", tiledPath);
-            return null;
-        }
-        return readTiledJSON(tiledPath, cast(ubyte[])jsonData);
+            onError();
+        });
     }
 
 

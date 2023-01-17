@@ -67,7 +67,7 @@ enum WindowsConsoleColors
 class Console
 {
     string name;
-    string[] lines;
+    String[] lines;
 
     static ushort idCount = 0;
     ushort id;
@@ -175,14 +175,14 @@ class Console
     }
     private this(string consoleName, ushort id)
     {
-        lines = new string[](maxLines);
+        lines = new String[maxLines];
         name = consoleName;
         this.id = id;
     }
 
     this(string consoleName)
     {
-        lines = new string[](maxLines);
+        lines = new String[maxLines];
         name = consoleName;
         id = idCount;
         idCount++;
@@ -203,6 +203,12 @@ class Console
         String toLog = String(a);
         // _formatLog(toLog);
         return toLog;
+    }
+    
+    void hipLog(Args...)(Args a)
+    {
+        lines~= formatArguments(a);
+        _log(lines[$-1].toString);
     }
     
     

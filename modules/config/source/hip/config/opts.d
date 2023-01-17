@@ -29,6 +29,11 @@ enum HIP_DEBUG_GL = true;
 enum HE_NO_LOG = false;
 
 /**
+*	Used to track calls to find where the print call is located.
+*/
+enum HIP_TRACK_HIPLOG = false;
+
+/**
 *   Mantain only error related logging
 */
 enum HE_ERR_ONLY = false; 

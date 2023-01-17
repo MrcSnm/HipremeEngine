@@ -144,7 +144,7 @@ version(WebAssembly)
                     width = WasmImageGetWidth(img);
                     height = WasmImageGetHeight(img);
                     pixels = getWasmBinary(WasmImageGetPixels(img));
-                    logln(width, " x ", height, " ", pixels.length, " bytes");
+                    hiplog(width, " x ", height, " ", pixels.length, " bytes");
 
                     (width != 0 && height != 0) ? onSuccess() : onFailure();
                 }

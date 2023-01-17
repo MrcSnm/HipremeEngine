@@ -23,6 +23,22 @@ private string _formatPrettyFunction(string f)
 }
 
 
+/**
+*   hiplog is a special function and should be used only within the engine for documentation.
+*   It generates less data by not taking the function name and simplifying the read load.
+*   Think of that as a verbose of what the engine is currently doing.
+*/
+void hiplog(Args...)(Args a, string file = __FILE__,
+string func = __PRETTY_FUNCTION__,
+ulong line = __LINE__)
+{
+    import hip.config.opts;
+    static if(HIP_TRACK_HIPLOG)
+        Console.DEFAULT.hipLog("HIP: ", a, " [[", file, ":", line, "]]\n");
+    else
+        Console.DEFAULT.hipLog("HIP: ", a, "\n");
+}
+
 
 void logln(Args...)(Args a, string file = __FILE__,
 string func = __PRETTY_FUNCTION__,
