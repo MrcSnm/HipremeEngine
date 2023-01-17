@@ -12,7 +12,6 @@ function initializeFS()
             {
                 val.arrayBuffer().then((buffer) =>
                 {
-                    console.log(buffer.byteLength);
                     __callDFunction(onSuccessHandle, WasmUtils.toDArguments(onSuccessFunc, onSuccessCtx, new Uint8Array(buffer)));
                 });
             })
