@@ -28,6 +28,7 @@ void render(HipTileLayer layer, IHipTilemap map, HipSpriteBatch batch, bool shou
     ushort lastId;
     IHipTextureRegion lastTexture;
 
+
     for(int i = 0, y = layer.y; i < h; i++, y+= th)
         for(int j =0, x = layer.x; j < w; j++, x+= tw)
         {

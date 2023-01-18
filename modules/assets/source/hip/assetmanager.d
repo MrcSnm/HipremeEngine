@@ -634,7 +634,6 @@ class HipAssetManager
 
      @ExportD static IHipAssetLoadTask loadTilemap(string tilemapPath, string f = __FILE__, size_t l = __LINE__)
     {
-        import hip.console.log;
         import hip.util.memory;
         import hip.assets.tilemap;
 

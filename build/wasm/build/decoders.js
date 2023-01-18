@@ -45,10 +45,7 @@ function initializeDecoders()
 
             return imgHandle;
         },
-        WasmImageGetWidth(img)
-        {
-            return _objects[img].width;
-        },
+        WasmImageGetWidth(img){return _objects[img].width;},
         WasmImageGetHeight(img){return _objects[img].height;},
 
         ///Always allocates D memory. Should be freed in D code.
@@ -62,9 +59,25 @@ function initializeDecoders()
             const imgData = memoryCanvas.getImageData(0, 0, objImg.width, objImg.height);
             return WasmUtils.toDBinary(imgData.data);
         },
-        WasmImageDispose(img)
+        WasmImageDispose(img){removeObject(img);},
+
+        WasmDecodeAudio(sndNameLength, sndNamePtr, ptr, length, dFunction, dgFunc, delegateCtx)
         {
-            removeObject(img);
+            const sndName = WasmUtils.fromDString(sndNameLength, sndNamePtr);
+            assertNotExist(sndName);
+            const extIndex = sndName.lastIndexOf(".") + 1;
+            if(extIndex == 0) throw new TypeError("Expected extension on sndName: " + sndName);
+
+            const type = sndName.substring(extIndex);
+            const snd = document.createElement("audio");
+            const sndHandle = addObject(snd);
+            snd.onload = (ev) =>
+            {
+                exports.__callDFunction(dFunction, toDArguments(dgFunc, delegateCtx, sndHandle));
+            };  
+            snd.src = 'data:audio/'+type+";base64,"+WasmUtils.binToBase64(ptr, length);
+            gameAssets[sndName] = snd;
+            
         }
     }
 }
