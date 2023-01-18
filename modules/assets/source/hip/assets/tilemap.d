@@ -307,16 +307,15 @@ class HipTilesetImpl : HipAsset, IHipTileset
             return onError();
         }
         _tiles = new Tile[cast(uint)t["tilecount"].integer];
-        _columns       = cast(ushort)t["columns"].integer;
         _texturePath   =             t["image"].str;
         _textureHeight =   cast(uint)t["imageheight"].integer;
         _textureWidth  =   cast(uint)t["imagewidth"].integer;
+        _columns       = cast(ushort)t["columns"].integer;
         _margin        =    cast(int)t["margin"].integer;
         _name          =             t["name"].str;
         _spacing       =    cast(int)t["spacing"].integer;
         _tileHeight    =   cast(uint)t["tileheight"].integer;
         _tileWidth     =   cast(uint)t["tilewidth"].integer;
-        
 
         if("tiles" in t)
         {
@@ -411,7 +410,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
             ubyte[] data;
             HipFS.read(imagePath, data).addOnSuccess((in void[] imgData)
             {
-                textureImage = new Image(imagePath, data, onSuccess, onFailure);
+                textureImage = new Image(imagePath, cast(ubyte[])imgData, onSuccess, onFailure);
             }).addOnError((string err)
             {
                 ErrorHandler.showErrorMessage("Error loading image required by Tileset", imagePath);
@@ -425,24 +424,20 @@ class HipTilesetImpl : HipAsset, IHipTileset
     {
         import hip.error.handler;
         import hip.assets.texture;
-
-        IImage img = loadImage((IImage theImg)
+        if(textureImage is null)
         {
-            _texture = new HipTexture(theImg);
-            int i = 0;
-            for(int y = margin; y < textureHeight; y+= (tileHeight+spacing))
-                for(int x = margin, currCol = 0 ; currCol < columns; currCol++, x+= (tileWidth+spacing))
-                {
-                    Tile* t = &tiles[i];
-                    t.region = new HipTextureRegion(texture, x, y, x+tileWidth, y+tileHeight);
-                    i++;
-                }
-
-        }, (){
-            ErrorHandler.showWarningMessage("Could not load image required by tileset.", textureImage.getName);
-        });
-        if(img is null || !img.hasLoadedData)
+            loadImage((_){loadTexture();}, (){});
             return false;
+        }
+        _texture = new HipTexture(textureImage);
+        int i = 0;
+        for(int y = margin; y < textureHeight; y+= (tileHeight+spacing))
+            for(int x = margin, currCol = 0 ; currCol < columns; currCol++, x+= (tileWidth+spacing))
+            {
+                Tile* t = &tiles[i];
+                t.region = new HipTextureRegion(texture, x, y, x+tileWidth, y+tileHeight);
+                i++;
+            }
 
         return texture !is null && texture.hasSuccessfullyLoaded();
     }
@@ -562,6 +557,8 @@ class HipTilemap : HipAsset, IHipTilemap
             layer.visible =             l["visible"].boolean;
             layer.x       = cast(int)   l["x"].integer;
             layer.y       = cast(int)   l["y"].integer;
+            layer.columns = cast(int)   l["width"].integer;
+            layer.rows    = cast(int)   l["height"].integer;
             if(layer.type == TileLayerType.OBJECT_LAYER)
             {
                 foreach(o; l["objects"].array)

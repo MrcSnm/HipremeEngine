@@ -176,7 +176,12 @@ const WasmUtils = {
 	},
 	binToBase64(ptr, length)
 	{
-		return btoa(String.fromCharCode.apply(null, new Uint8Array(memory.buffer, ptr, length)));
+		const u8a = new Uint8Array(memory.buffer, ptr, length);
+		const CHUNK_SIZE = 0x8000;
+		const c = [];
+		for (let i=0; i < length; i+=CHUNK_SIZE)
+			c.push(String.fromCharCode.apply(null, u8a.subarray(i, i+CHUNK_SIZE)));
+		return btoa(c.join(""));
 	},
 	toDBinary(inputBinary)
 	{

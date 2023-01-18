@@ -181,15 +181,20 @@ struct JSONValue
 		{
 			assert(data[currentIndex] == '"');
 			newIndex = currentIndex+1;
+			ptrdiff_t left = newIndex;
 			while(newIndex < data.length && data[newIndex] != '"')
 			{
 				if(data[newIndex] == '\\')
+				{
+					theString~= data[left..newIndex];
 					newIndex++;
+					left = newIndex;
+				}
 				newIndex++;
 			}
 			if(newIndex == data.length) //Not found
 				return false;
-			theString = data[currentIndex+1..newIndex]; //Assign output
+			theString~= data[left..newIndex]; //Assign output
 			return true;
 		}
 

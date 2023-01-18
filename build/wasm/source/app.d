@@ -83,24 +83,29 @@ export extern(C) void HipremeRender()
 		HipRenderer.setColor(0,0,0,255);
 		HipRenderer.clear();
 		// logln(img is null);
-		drawTexture(null, 150, 50);
-		if(texture !is null)
-			drawTexture(texture, 100, 100);
-		if(font !is null)
+		// drawTexture(null, 150, 50);
+		// if(texture !is null)
+		// 	drawTexture(texture, 100, 100);
+		// if(font !is null)
+		// {
+		// 	setFont(font);
+		// 	drawText("abcdefghijklmnopqrstuvwxyz", 150, 400);
+		// 	setFontNull(null);
+		// 	renderTexts();
+		// }
+		// if(ttfFont !is null)
+		// {
+		// 	setFont(ttfFont);
+		// 	drawText("The ttf font is here!", 600, 200);
+		// 	setFontNull(null);
+		// 	renderTexts();
+		// }
+		// renderSprites();
+		if(map !is null)
 		{
-			setFont(font);
-			drawText("abcdefghijklmnopqrstuvwxyz", 150, 400);
-			setFontNull(null);
-			renderTexts();
+			drawMap(map);
+			renderSprites();
 		}
-		if(ttfFont !is null)
-		{
-			setFont(ttfFont);
-			drawText("The ttf font is here!", 600, 200);
-			setFontNull(null);
-			renderTexts();
-		}
-		renderSprites();
 
 		// drawText("Hello WASM", 50, 50);
 		// renderTexts();
