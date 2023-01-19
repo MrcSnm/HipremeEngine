@@ -24,10 +24,10 @@ public class Image : HipAsset, IImage
         initialize(path);
     }
 
-    this(in string path, ubyte[] buffer, void delegate(IImage self) onSuccess, void delegate() onFailure)
+    this(in string path, in ubyte[] buffer, void delegate(IImage self) onSuccess, void delegate() onFailure)
     {
         this(path);
-        loadFromMemory(buffer, onSuccess, onFailure);
+        loadFromMemory(cast(ubyte[])buffer, onSuccess, onFailure);
     }
     private void initialize(string path)
     {

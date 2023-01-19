@@ -616,7 +616,7 @@ class HipTilemap : HipAsset, IHipTilemap
             ret._layers[layer.name] = layer;
         }
 
-        uint maxTilesets = json["tilesets"].array.length;
+        size_t maxTilesets = json["tilesets"].array.length;
         uint loadedCount = 0;
         auto onTilesetLoad = delegate(HipTilesetImpl tileset)
         {
@@ -648,10 +648,10 @@ class HipTilemap : HipAsset, IHipTilemap
     static void readTiledJSON (string tiledPath, void delegate(HipTilemap) onSuccess, void delegate() onError)
     {
         import hip.filesystem.hipfs;
-        void[] jsonData;
-        HipFS.read(tiledPath, jsonData).addOnSuccess((in void[] data)
+        ubyte[] jsonData;
+        HipFS.read(tiledPath, jsonData).addOnSuccess((in ubyte[] data)
         {
-            HipTilemap.readTiledJSON(tiledPath, cast(ubyte[])jsonData, onSuccess, onError);
+            HipTilemap.readTiledJSON(tiledPath, cast()jsonData, onSuccess, onError);
         }).addOnError((err)
         {
             import hip.error.handler;

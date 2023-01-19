@@ -92,11 +92,11 @@ private class HipFSPromise : IHipFSPromise
 {
     string filename;
     bool finished = false;
-    void[] data;
-    void delegate(in void[] data)[] onSuccessList;
+    ubyte[] data;
+    void delegate(in ubyte[] data)[] onSuccessList;
     void delegate(string err)[] onErrorList;
     this(string filename){this.filename = filename;}
-    IHipFSPromise addOnSuccess(void delegate(in void[] data) onSuccess)
+    IHipFSPromise addOnSuccess(void delegate(in ubyte[] data) onSuccess)
     {
         if(finished)
             onSuccess(data);
@@ -112,7 +112,7 @@ private class HipFSPromise : IHipFSPromise
             onErrorList~= onError;
         return this;
     }
-    void setFinished(void[] data)
+    void setFinished(ubyte[] data)
     {
         import std.stdio;
         this.data = data;
@@ -249,7 +249,7 @@ class HipFileSystem
         };
     }
     
-    @ExportD("void") public static IHipFSPromise read(string path, out void[] output)
+    @ExportD("ubyte") public static IHipFSPromise read(string path, out ubyte[] output)
     {
         import hip.console.log;
         hiplog("Required path ", path);
@@ -260,7 +260,7 @@ class HipFileSystem
         filesReadingCount++;
 
         HipFSPromise promise = new HipFSPromise(path);
-        fs.read(path, (void[] data)
+        fs.read(path, (ubyte[] data)
         {
             output = data;
             filesReadingCount--;
@@ -272,13 +272,6 @@ class HipFileSystem
         });
         
         return promise;
-    }
-    @ExportD("ubyte") public static IHipFSPromise read(string path, out ubyte[] output)
-    {
-        void[] data;
-        IHipFSPromise ret = read(path, data);
-        output = cast(ubyte[])data;
-        return ret;
     }
 
     
@@ -292,7 +285,7 @@ class HipFileSystem
 
     @ExportD("out") public static IHipFSPromise readText(string path, out string output)
     {
-        void[] data;
+        ubyte[] data;
         IHipFSPromise ret = read(path, data);
         if(ret)
         {

@@ -14,11 +14,11 @@ function initializeDecoders()
         return true;
     }
     const addObject = WasmUtils.addObject;
-    ///__callDFunction always expect toDArguments as its argument.
-    const toDArguments = WasmUtils.toDArguments;
     const _objects = WasmUtils._objects;
     const removeObject = WasmUtils.removeObject;
-
+    
+    ///__callDFunction always expect toDArguments as its argument.
+    const toDArguments = WasmUtils.toDArguments;
     const _canvas = document.createElement("canvas");
     _canvas.style.imageRendering = "pixelated";
     
@@ -40,6 +40,7 @@ function initializeDecoders()
                 exports.__callDFunction(dFunction, toDArguments(dgFunc, delegateCtx, imgHandle));
             };  
             img.src = 'data:image/'+type+";base64,"+WasmUtils.binToBase64(ptr, length);
+
             // document.body.appendChild(img); Not needed
             gameAssets[imgName] = img;
 
@@ -61,23 +62,5 @@ function initializeDecoders()
         },
         WasmImageDispose(img){removeObject(img);},
 
-        WasmDecodeAudio(sndNameLength, sndNamePtr, ptr, length, dFunction, dgFunc, delegateCtx)
-        {
-            const sndName = WasmUtils.fromDString(sndNameLength, sndNamePtr);
-            assertNotExist(sndName);
-            const extIndex = sndName.lastIndexOf(".") + 1;
-            if(extIndex == 0) throw new TypeError("Expected extension on sndName: " + sndName);
-
-            const type = sndName.substring(extIndex);
-            const snd = document.createElement("audio");
-            const sndHandle = addObject(snd);
-            snd.onload = (ev) =>
-            {
-                exports.__callDFunction(dFunction, toDArguments(dgFunc, delegateCtx, sndHandle));
-            };  
-            snd.src = 'data:audio/'+type+";base64,"+WasmUtils.binToBase64(ptr, length);
-            gameAssets[sndName] = snd;
-            
-        }
     }
 }

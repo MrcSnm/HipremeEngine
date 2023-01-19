@@ -17,7 +17,9 @@ import hip.audio_decoding.audio;
 public class HipNullAudioClip : HipAudioClip
 {
     this(IHipAudioDecoder decoder, HipAudioClipHint hint){super(null, hint);}
-    public override bool load(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false){return false;}
+    public override bool load(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type,
+    void delegate(in ubyte[]) onSuccess, void delegate() onFailure){return false;}
+
     public override void unload(){}
     public override void onUpdateStream(void[] data, uint decodedSize){}
     protected override  void  destroyBuffer(HipAudioBuffer* buffer){}
@@ -36,6 +38,7 @@ public class HipNullAudio : IHipAudioPlayer
 
     //LOAD RELATED
     public bool play_streamed(AHipAudioSource src){return false;}
+    public IHipAudioClip getClip(){return new HipNullAudioClip(null, HipAudioClipHint.init);}
     public IHipAudioClip load(string path, HipAudioType bufferType){return new HipNullAudioClip(null, HipAudioClipHint.init);}
     public IHipAudioClip loadStreamed(string path, uint chunkSize){return new HipNullAudioClip(null, HipAudioClipHint.init);}
     public void updateStream(AHipAudioSource source){}

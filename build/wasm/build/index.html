@@ -21,11 +21,12 @@
   </head>
   <body>
     <canvas id="glcanvas" width="800" height="600"></canvas>
-    <script src="/fs.js"></script>
-    <script src="/decoders.js"></script>
-    <script src="/webgl.js"></script>
-    <script src="/hipreme_engine.js"></script>
-    <script src="/webassembly-core.js"></script>
+    <script src="fs.js"></script>
+    <script src="decoders.js"></script>
+    <script src="webaudio.js"></script>
+    <script src="webgl.js"></script>
+    <script src="hipreme_engine.js"></script>
+    <script src="webassembly-core.js"></script>
     <script>
 	// WebAssembly.instantiateStreaming(fetch('/hipreme_engine.wasm'), importObject)
 	WebAssembly.instantiateStreaming(fetch('/hipreme_engine.wasm'), importObject)
@@ -42,6 +43,8 @@
 			exports = obj.instance.exports;
 			obj.instance.exports._start();
 		});
+
+
     </script>
   </body>
 </html>
