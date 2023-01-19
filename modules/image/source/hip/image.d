@@ -29,7 +29,7 @@ final class HipARSDImageDecoder : IHipAnyImageDecoder
     {
         this.path = path;
     }
-    bool startDecoding(void[] data, void delegate() onSuccess, void delegate() onFailure)
+    bool startDecoding(ubyte[] data, void delegate() onSuccess, void delegate() onFailure)
     {
         img = loadImageFromMemory(data);
         if(img !is null)
@@ -57,7 +57,7 @@ final class HipARSDImageDecoder : IHipAnyImageDecoder
         return 0;
     }
 
-    const(void[]) getPixels()  const
+    const(ubyte[]) getPixels()  const
     {
         if(img !is null)
             return trueImg.imageData.bytes;
@@ -93,7 +93,7 @@ final class HipNullImageDecoder : IHipAnyImageDecoder
     }
     uint getWidth() const {return 0;}
     uint getHeight() const {return 0;}
-    const(void)[] getPixels() const {return null;}
+    const(ubyte)[] getPixels() const {return null;}
     ubyte getBytesPerPixel() const {return 0;}
     const(ubyte)[] getPalette() const {return null;}
     void dispose(){}
@@ -159,9 +159,9 @@ version(WebAssembly)
         }
         uint getWidth() const {return width;}
         uint getHeight() const {return height;}
-        const(void)[] getPixels() const 
+        const(ubyte)[] getPixels() const 
         {
-            return cast(const(void)[])pixels;
+            return cast(const(ubyte)[])pixels;
         }
         ubyte getBytesPerPixel() const {return 4;}
         const(ubyte)[] getPalette() const {return null;}
@@ -185,7 +185,7 @@ public class HipImageImpl : IImage
     ubyte bytesPerPixel;
     ushort bitsPerPixel;
     
-    const(void)[] pixels;
+    ubyte[] pixels;
     this(string path = "")
     {
         imagePath = path;
@@ -199,7 +199,7 @@ public class HipImageImpl : IImage
         if(img is null)
         {
             img = new HipImageImpl("Pixel");
-            img.pixels = cast(void[])pixel;
+            img.pixels = pixel;
             img.width = 1;
             img.height = 1;
             img.bytesPerPixel = 4;
@@ -211,13 +211,13 @@ public class HipImageImpl : IImage
     uint getHeight() const {return height;}
     ubyte getBytesPerPixel() const {return bytesPerPixel;}
     const(ubyte[]) getPalette() const {return decoder.getPalette;}
-    const(void[]) getPixels() const {return pixels;}
+    const(ubyte[]) getPixels() const {return pixels;}
 
     void loadRaw(in ubyte[] pixels, int width, int height, ubyte bytesPerPixel)
     {
         this.width = width;
         this.height = height;
-        this.pixels = cast(void[])pixels;
+        this.pixels = cast(ubyte[])pixels;
         this.bytesPerPixel = bytesPerPixel;
         this.bitsPerPixel = cast(ubyte)(bytesPerPixel*8);
     }
@@ -234,7 +234,7 @@ public class HipImageImpl : IImage
             height        = decoder.getHeight();
             bitsPerPixel  = decoder.getBitsPerPixel();
             bytesPerPixel = decoder.getBytesPerPixel();
-            pixels        = decoder.getPixels();
+            pixels        = cast(ubyte[])decoder.getPixels();
             onSuccess(this);
         }, onFailure),
         "Decoding Image: ", "Could not load image " ~ imagePath))
@@ -245,7 +245,7 @@ public class HipImageImpl : IImage
 
     bool hasLoadedData() const {return pixels !is null && width != 0 && height != 0;}
 
-    void[] monochromeToRGBA() const
+    ubyte[] monochromeToRGBA() const
     {
         import hip.error.handler;
         ubyte[] pix = new ubyte[](4*width*height); //RGBA for each pixel
@@ -263,10 +263,10 @@ public class HipImageImpl : IImage
             pix[z++] = color; //A
         }
 
-        return cast(void[])pix;
+        return pix;
     }
 
-    void[] convertPalettizedToRGBA() const
+    ubyte[] convertPalettizedToRGBA() const
     {
         import hip.error.handler;
         ubyte[] pix = new ubyte[](4*width*height); //RGBA for each pixel
@@ -287,7 +287,7 @@ public class HipImageImpl : IImage
             pix[z++] = palette[colorIndex+3]; //A
         }
 
-        return cast(void[])pix;
+        return pix;
     }
 
     void dispose()

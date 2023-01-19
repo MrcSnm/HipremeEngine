@@ -63,6 +63,16 @@ class HipOpenSLESAudioSource : HipAudioSource
         SLIAudioPlayer.pause(*audioPlayer);
         return false;
     }
+    override bool play()
+    {
+        SLIAudioPlayer.play(*audioPlayer);
+        return false;
+    }
+    override bool resume()
+    {
+        SLIAudioPlayer.resume(*audioPlayer);
+        return false;   
+    }
 
 
     override void pullStreamData()

@@ -17,7 +17,7 @@ import hip.wasm;
 
 
 private extern(C) void WasmRead(JSStringType str,
-    JSDelegateType!(void delegate(void[])) onSuccess, 
+    JSDelegateType!(void delegate(ubyte[])) onSuccess, 
     JSDelegateType!(void delegate(string)) onError
 );
 
@@ -35,7 +35,7 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
         }
     }
     
-    bool read(string path, void delegate(void[] data) onSuccess, void delegate(string err = "Corrupted File") onError)
+    bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err = "Corrupted File") onError)
     {
         JSONValue dummy = void;
         import hip.console.log;
@@ -48,7 +48,7 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
 
         WasmRead(JSString(path).tupleof, sendJSDelegate!((ubyte[] wasmBin)
         {
-            onSuccess(cast(void[])wasmBin);
+            onSuccess(wasmBin);
         }).tupleof, sendJSDelegate!(onError).tupleof);
         
         return true;

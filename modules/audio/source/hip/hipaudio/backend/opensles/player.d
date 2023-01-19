@@ -21,6 +21,8 @@ version(OpenSLES1)
 else
     alias SLDataFormat = SLAndroidDataFormat_PCM_EX;
 
+version(Android):
+
 private SLDataFormat getFormatAsOpenSLES(AudioConfig cfg)
 {
     SLDataFormat ret;
@@ -236,38 +238,6 @@ outputSampleRate: ", cfg.sampleRate);
         ),
         "Error creating OpenSLES context.", sliGetErrorMessages());
     }
-    public bool isMusicPlaying(AHipAudioSource src)
-    {
-        return (cast(HipOpenSLESAudioSource)src).audioPlayer.isPlaying;
-    }
-    public bool isMusicPaused(AHipAudioSource src){return false;}
-    public bool resume(AHipAudioSource src)
-    {
-        HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
-        SLIAudioPlayer.resume(*source.audioPlayer);
-        return false;
-    }
-    public bool play(AHipAudioSource src)
-    {
-        HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
-        SLIAudioPlayer.play(*source.audioPlayer);
-
-        return true;
-    }
-    public bool stop(AHipAudioSource src)
-    {
-        HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
-        SLIAudioPlayer.stop(*source.audioPlayer);
-        source.audioPlayer = null; //?
-        return false;
-    }
-    public bool pause(AHipAudioSource src)
-    {
-        HipOpenSLESAudioSource source = cast(HipOpenSLESAudioSource)src;
-        SLIAudioPlayer.pause(*source.audioPlayer);
-        return false;
-    }
-
     //LOAD RELATED
     public bool play_streamed(AHipAudioSource src)
     {
@@ -280,6 +250,8 @@ outputSampleRate: ", cfg.sampleRate);
         SLIAudioPlayer.play(*source.audioPlayer);
         return true;
     }
+    public HipAudioClipAPI getClip(){return new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true));}
+
     public HipAudioClipAPI load(string path, HipAudioType type)
     {
         HipAudioClipAPI buffer = new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true));

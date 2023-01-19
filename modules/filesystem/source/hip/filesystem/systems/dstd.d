@@ -4,12 +4,12 @@ import hip.api.filesystem.hipfs;
 version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteraction
 {
     import std.stdio : File;
-    bool read(string path, void delegate(void[] data) onSuccess, void delegate(string err) onError)
+    bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err) onError)
     {
         import hip.error.handler;
         if(ErrorHandler.assertLazyErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
             return false;
-        void[] output;
+        ubyte[] output;
         auto f = File(path);
         output.length = f.size;
         f.rawRead(output); //TODO: onError should be on try/catch

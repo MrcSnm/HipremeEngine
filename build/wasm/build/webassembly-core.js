@@ -174,6 +174,19 @@ const WasmUtils = {
 	{
 		return utf8Decoder.decode(new DataView(memory.buffer, ptr, length));
 	},
+	fromDBinary(length, ptr)
+	{
+		return new Uint8Array(memory.buffer, ptr, length);
+	},
+
+	copyFromDBinary(length, ptr)
+	{
+		const dBinary = WasmUtils.fromDBinary(length, ptr);
+		//Binary copy is needed as currently the binary is detached while decoding..
+		const copy = new Uint8Array(dBinary.byteLength);
+		for(let i = 0; i < dBinary.byteLength; i++) copy[i] = dBinary[i];
+		return copy;
+	},
 	binToBase64(ptr, length)
 	{
 		const u8a = new Uint8Array(memory.buffer, ptr, length);
@@ -382,19 +395,19 @@ var importObject = {
 
 (function()
 {
-	const glEnv = initializeWebglContext();
-	for (const functionName in glEnv) 
+	const JSAPI = [
+		initializeWebglContext,
+		initializeDecoders,
+		initializeFS,
+		initializeWebaudioContext,
+	];
+
+	for(const initializeApi of JSAPI)
 	{
-		importObject.env[functionName] = glEnv[functionName];
-	}
-	const decEnv = initializeDecoders();
-	for (const functionName in decEnv)
-	{
-		importObject.env[functionName] = decEnv[functionName];
-	}
-	const fsEnv = initializeFS();
-	for(const functionName in fsEnv)
-	{
-		importObject.env[functionName] = fsEnv[functionName];
+		const api = initializeApi();
+		for(const functionName in api)
+		{
+			importObject.env[functionName] = api[functionName];
+		}
 	}
 }());

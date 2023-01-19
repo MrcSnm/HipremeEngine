@@ -68,12 +68,9 @@ class HipXAudioPlayer : IHipAudioPlayer
             default: return getWindowsErrorMessage(hr);
         }
     }
-    public bool isMusicPlaying(AHipAudioSource src){return false;}
-    public bool isMusicPaused(AHipAudioSource src){return false;}
-    public bool resume(AHipAudioSource src){return false;}
-    public bool stop(AHipAudioSource src){return src.play();}
-    public bool pause(AHipAudioSource src){return src.pause();}
     public bool play_streamed(AHipAudioSource src){return src.play_streamed();}
+
+    public IHipAudioClip getClip(){return new HipXAudioClip(new HipAudioDecoder(), HipAudioClipHint(2, 44_100, false, true));}
 
     public IHipAudioClip load(string audioName, HipAudioType bufferType)
     {
@@ -87,21 +84,11 @@ class HipXAudioPlayer : IHipAudioPlayer
         return null;
     }
     public void updateStream(AHipAudioSource source){}
-
     public AHipAudioSource getSource(bool isStreamed){return new HipXAudioSource(this);}
-
-    bool play(AHipAudioSource src){return src.play();}
-    void setPitch(AHipAudioSource src, float pitch){}
-    void setPanning(AHipAudioSource src, float panning){}
-    void setVolume(AHipAudioSource src, float volume){}
-    public void setMaxDistance(AHipAudioSource src, float dist){}
-    public void setRolloffFactor(AHipAudioSource src, float factor){}
-    public void setReferenceDistance(AHipAudioSource src, float dist){}
 
     public void onDestroy()
     {
         xAudio.Release();
     }
-
     public void update(){}
 }

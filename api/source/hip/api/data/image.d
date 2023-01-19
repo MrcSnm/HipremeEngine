@@ -15,7 +15,7 @@ public interface IImageBase
 {
     uint getWidth() const;
     uint getHeight() const;
-    const(void[]) getPixels() const;
+    const(ubyte[]) getPixels() const;
     ubyte getBytesPerPixel() const;
     final ushort getBitsPerPixel() const {return getBytesPerPixel()*8;}
     const(ubyte[]) getPalette() const;
@@ -25,7 +25,7 @@ public interface IImageBase
 public interface IHipImageDecoder : IImageBase
 {
     ///Use that for decoding from memory, returns whether data was invalid.
-    bool startDecoding(void[] data, void delegate() onSuccess, void delegate() onFailure);
+    bool startDecoding(ubyte[] data, void delegate() onSuccess, void delegate() onFailure);
     
     static const(ubyte[4]) getPixel(){return cast(ubyte[4])[255,255,255,255];}
     ///Dispose the pixels
@@ -53,6 +53,6 @@ public interface IImage : IImageBase
     */
     bool loadFromMemory(ubyte[] data, void delegate(IImage self) onSuccess, void delegate() onFailure);
     bool hasLoadedData() const;
-    void[] convertPalettizedToRGBA() const;
-    void[] monochromeToRGBA() const;
+    ubyte[] convertPalettizedToRGBA() const;
+    ubyte[] monochromeToRGBA() const;
 }

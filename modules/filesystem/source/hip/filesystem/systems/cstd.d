@@ -10,7 +10,7 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
 {
     version(Windows)
         pragma(lib, "Shlwapi.lib"); //PathIsDirectory
-    bool read(string path, void delegate(void[] data) onSuccess, void delegate(string err) onError)
+    bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err) onError)
     {
         import core.stdc.stdio;
         import hip.error.handler;
@@ -28,10 +28,10 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
             return false;
         }
         fseek(f, 0, SEEK_SET);
-        void[] output;
+        ubyte[] output;
         output.length = cast(size_t)size;
 
-        if(fread(output.ptr, cast(size_t)size, 1, f) != size)
+        if(fread(cast(void*)output.ptr, cast(size_t)size, 1, f) != size)
         {
             fclose(f);
             onError("File is corrupted. Coult not read file entirely");

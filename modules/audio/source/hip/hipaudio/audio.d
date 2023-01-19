@@ -24,6 +24,7 @@ import hip.audio_decoding.audio;
 import hip.math.utils:getClosestMultiple;
 import hip.util.reflection;
 import hip.error.handler;
+import hip.hipaudio.backend.webaudio.player;
 
 version(Standalone)
 {
@@ -44,6 +45,7 @@ public interface IHipAudioPlayer
 {
     //LOAD RELATED
     public bool play_streamed(AHipAudioSource src);
+    public IHipAudioClip getClip();
     public IHipAudioClip load(string path, HipAudioType type);
     public IHipAudioClip loadStreamed(string path, uint chunkSize);
     public void updateStream(AHipAudioSource source);
@@ -115,7 +117,7 @@ class HipAudio
                 version(WebAssembly)
                 {
                     import hip.hipaudio.backend.nullaudio;
-                    audioInterface = new HipNullAudio();
+                    audioInterface = new HipWebAudioPlayer(AudioConfig.musicConfig);
                     break;
                 }
                 else
@@ -156,6 +158,8 @@ class HipAudio
     {
         return false;
     }
+
+    @ExportD static IHipAudioClip getClip(){return audioInterface.getClip();}
 
     /**
     *   If forceLoad is set to true, you will need to manage it's destruction yourself

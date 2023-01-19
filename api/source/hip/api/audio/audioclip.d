@@ -5,8 +5,12 @@ public import hip.api.data.audio;
 
 interface IHipAudioClip
 {
-    bool load(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false);
-    bool load(string audioPath, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false);
+    public bool load(string audioPath, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false,
+    void delegate(in ubyte[]) onSuccess = null, void delegate() onFailure = null);
+
+    public bool load(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type,
+    void delegate(in ubyte[]) onSuccess, void delegate() onFailure);
+
     uint loadStreamed(in void[] data, HipAudioEncoding encoding);
     uint loadStreamed(string audioPath, HipAudioEncoding encoding);
     uint getSampleRate();
@@ -26,8 +30,10 @@ struct HipAudioClipHint
     uint outputChannels;
     ///Information may be needed by the audio API
     uint outputSamplerate;
-    ///If false, no resample will occur, and the AudioAPI will deal with it
+    ///Delegate to the Audio API the resampling.
     bool needsResample;
-    ///If false, no decode will occur, and the AudioAPI will deal with it
+    ///Delegate to the Audio API the decoding.
     bool needsDecode;
+    ///Delegate to the Audio API the channel conversion.
+    bool needsChannelConversion = true;
 }

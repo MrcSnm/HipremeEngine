@@ -20,6 +20,7 @@ enum float FRAME_TIME = 1000/60; //60 frames per second
 void main()
 {
 	import hip.console.log;
+	import hip.hipaudio.audio;
 	import hip.util.time;
 	import hip.wasm;
 	
@@ -28,8 +29,7 @@ void main()
 	HipTime.initialize();
 	Console.install(Platforms.WASM);
 	HipFS.install("");
-
-	
+	HipAudio.initialize(HipAudioImplementation.WEBAUDIO);
 	HipRenderer.initExternal(HipRendererType.GL3, 1200, 900);
 	//Initialize 2D context
 	loadDefaultAssets((){initializeGame();}, (err)
@@ -40,6 +40,7 @@ void main()
 
 import hip.graphics.g2d;
 import hip.api;
+import hip.api.data.audio;
 __gshared IHipTexture texture;
 __gshared IHipFont font;
 IHipFont ttfFont;
@@ -65,6 +66,10 @@ private void initializeGame()
 	HipAssetManager.loadFont("fonts/WarsawGothic-BnBV.otf").into(&ttfFont);
 
 	HipAssetManager.loadTilemap("maps/untitled.tmj").into(&map);
+
+	auto clip = HipAudio.getClip();
+	logln(clip is null);
+	clip.load("sounds/pop.wav", HipAudioEncoding.WAV, HipAudioType.SFX);
 
 
 	// IHipAssetLoadTask task2 = HipAssetManager.loadImage("graphics/sprites/sprite.png");

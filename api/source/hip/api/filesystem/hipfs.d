@@ -41,7 +41,7 @@ interface IHipFileItf
 }
 interface IHipFSPromise
 {
-  IHipFSPromise addOnSuccess(void delegate(in void[] data) onSuccess);
+  IHipFSPromise addOnSuccess(void delegate(in ubyte[] data) onSuccess);
   IHipFSPromise addOnError(void delegate(string error) onError);
   bool resolved() const;
   final bool opCast() const {return resolved;}
@@ -82,7 +82,7 @@ interface IHipFileSystemInteraction
     *       - Sync Platforms: File does not exists, can't read.
     *       - Async platforms: File does not exists
     */
-    bool read(string path, void delegate(void[] data) onSuccess, void delegate(string err = "Corrupted File") onError);
+    bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err = "Corrupted File") onError);
     bool write(string path, void[] data);
     bool exists(string path);
     bool remove(string path);
