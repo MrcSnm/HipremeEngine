@@ -55,9 +55,7 @@ class HipXAudioSource : HipAudioSource
 
     protected void submitClip()
     {
-        HipXAudioClip c = cast(HipXAudioClip)clip;
-        XAUDIO2_BUFFER* buffer = c.getBuffer(c.getClipData(), cast(uint)c.getClipSize()).xaudio;
-
+        XAUDIO2_BUFFER* buffer = getBufferFromAPI(clip).xaudio;
         if(isClipDirty)
         {
             isClipDirty = false;

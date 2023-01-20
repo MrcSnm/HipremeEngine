@@ -46,13 +46,9 @@ public interface IHipAudioPlayer
     //LOAD RELATED
     public bool play_streamed(AHipAudioSource src);
     public IHipAudioClip getClip();
-    public IHipAudioClip load(string path, HipAudioType type);
     public IHipAudioClip loadStreamed(string path, uint chunkSize);
     public void updateStream(AHipAudioSource source);
     public AHipAudioSource getSource(bool isStreamed);
-    public final IHipAudioClip loadMusic(string mus){return load(mus, HipAudioType.MUSIC);}
-    public final IHipAudioClip loadSfx(string sfx){return load(sfx, HipAudioType.SFX);}
-
 
     public void onDestroy();
     public void update();
@@ -133,11 +129,6 @@ class HipAudio
         HipAudio.optimalSampleRate  = optimalSampleRate;
         return ErrorHandler.stopListeningForErrors();
     }
-
-    @ExportD static bool play(AHipAudioSource src)
-    {
-        return false;
-    }
     @ExportD static bool pause(AHipAudioSource src)
     {
         src.isPlaying = false;
@@ -149,42 +140,8 @@ class HipAudio
         src.isPlaying = true;
         return false;
     }
-    @ExportD static bool resume(AHipAudioSource src)
-    {
-        src.isPlaying = true;
-        return false;
-    }
-    @ExportD static bool stop(AHipAudioSource src)
-    {
-        return false;
-    }
-
     @ExportD static IHipAudioClip getClip(){return audioInterface.getClip();}
 
-    /**
-    *   If forceLoad is set to true, you will need to manage it's destruction yourself
-    *   Just call audioBufferInstance.unload()
-    */
-    @ExportD static IHipAudioClip load(string path, HipAudioType bufferType, bool forceLoad = false)
-    {
-        //Creates a buffer compatible with the target interface
-        version(HIPREME_DEBUG)
-        {
-            if(ErrorHandler.assertErrorMessage(hasInitializedAudio, "Audio not initialized", "Call Audio.initialize before loading buffers"))
-                return null;
-        }
-        HipAudioClip* checker = null;
-        checker = path in bufferPool;
-        if(!checker)
-        {
-            HipAudioClip buf = cast(HipAudioClip)audioInterface.load(path, bufferType);
-            bufferPool[path] = buf;
-            checker = &buf;
-        }
-        else if(forceLoad)
-            return audioInterface.load(path, bufferType);
-        return *checker;
-    }
     /**
     *   Loads a file from disk, sets the chunkSize for streaming and does one decoding frame
     */
@@ -202,34 +159,13 @@ class HipAudio
     @ExportD static AHipAudioSource getSource(bool isStreamed = false, IHipAudioClip clip = null)
     {
         if(isStreamed) ErrorHandler.assertExit(clip !is null, "Can't get streamed source without any buffer");
-        HipAudioSource ret;
-        if(sourcePool.length == activeSources)
-        {
-            ret = cast(HipAudioSource)audioInterface.getSource(isStreamed);
-            sourcePool~= ret;
-        }
-        else
-            ret = sourcePool[activeSources].clean();
+        HipAudioSource ret = cast(HipAudioSource)audioInterface.getSource(isStreamed);
         if(clip)
             ret.clip = clip;
-        activeSources++;
         return ret;
     }
-
-    @ExportD static bool isMusicPlaying()
-    {
-        return false;
-    }
-    @ExportD static bool isMusicPaused()
-    {
-        return false;
-    }
-    
     @ExportD static void onDestroy()
     {
-        foreach(ref buf; bufferPool)
-            buf.unload();
-        bufferPool.clear();
         if(audioInterface !is null)
             audioInterface.onDestroy();
         audioInterface = null;
@@ -248,8 +184,6 @@ class HipAudio
     protected static int  optimalBufferSize;
     protected static int  optimalSampleRate;
     private static bool is3D;
-    private static HipAudioClip[string] bufferPool; 
-    private static HipAudioSource[] sourcePool;
     private static uint activeSources;
 
     __gshared IHipAudioPlayer audioInterface;

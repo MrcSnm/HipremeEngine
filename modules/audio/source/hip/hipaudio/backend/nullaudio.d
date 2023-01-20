@@ -17,13 +17,13 @@ import hip.audio_decoding.audio;
 public class HipNullAudioClip : HipAudioClip
 {
     this(IHipAudioDecoder decoder, HipAudioClipHint hint){super(null, hint);}
-    public override bool load(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type,
+    public override bool loadFromMemory(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type,
     void delegate(in ubyte[]) onSuccess, void delegate() onFailure){return false;}
 
     public override void unload(){}
     public override void onUpdateStream(void[] data, uint decodedSize){}
     protected override  void  destroyBuffer(HipAudioBuffer* buffer){}
-    protected override HipAudioBufferWrapper2 createBuffer(void[] data){return HipAudioBufferWrapper2(HipAudioBuffer.init, false);}
+    protected override HipAudioBufferWrapper createBuffer(void[] data){return HipAudioBufferWrapper(HipAudioBuffer.init, false);}
     public override void setBufferData(HipAudioBuffer* buffer, void[] data, uint size = 0){}
 }
 

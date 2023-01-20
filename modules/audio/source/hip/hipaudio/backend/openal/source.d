@@ -202,15 +202,14 @@ public class HipOpenALAudioSource : HipAudioSource
     override IHipAudioClip clip(IHipAudioClip newClip)
     {
         super.clip(newClip);
-        HipOpenALClip c = cast(HipOpenALClip)newClip;
-        if(!c.isStreamed)
+        if(!newClip.isStreamed)
         {
-            HipAudioBuffer buf = c.getBuffer(c.getClipData(), cast(uint)c.getClipSize());
+            HipAudioBuffer buf = getBufferFromAPI(newClip);
             alSourcei(id, AL_BUFFER, buf.al);
         }
         else
         {
-            HipAudioBuffer buf = c.getBuffer(c.getClipData(), c.chunkSize);
+            HipAudioBuffer buf = getBufferFromAPI(newClip); //use clip.chunkSize in future
             alSourceQueueBuffers(id, 1, &buf.al);
         }
         logln(id);
@@ -249,7 +248,7 @@ public class HipOpenALAudioSource : HipAudioSource
         return cast(uint)b;
     }
 
-    override HipAudioBufferWrapper2* getFreeBuffer()
+    override HipAudioBufferWrapper* getFreeBuffer()
     {
         HipAudioBuffer buffer;
         int b;

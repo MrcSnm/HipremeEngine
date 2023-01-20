@@ -70,21 +70,15 @@ class HipXAudioPlayer : IHipAudioPlayer
     }
     public bool play_streamed(AHipAudioSource src){return src.play_streamed();}
 
+    public AHipAudioSource getSource(bool isStreamed){return new HipXAudioSource(this);}
     public IHipAudioClip getClip(){return new HipXAudioClip(new HipAudioDecoder(), HipAudioClipHint(2, 44_100, false, true));}
 
-    public IHipAudioClip load(string audioName, HipAudioType bufferType)
-    {
-        HipAudioClip buffer = new HipXAudioClip(new HipAudioDecoder(), HipAudioClipHint(2, 44_100, false, true));
-        buffer.load(audioName,getEncodingFromName(audioName), bufferType);
-        return buffer;
-    }
     public IHipAudioClip loadStreamed(string audioName, uint chunkSize)
     {
         ErrorHandler.assertExit(false, "XAudio Player does not support chunked decoding");
         return null;
     }
     public void updateStream(AHipAudioSource source){}
-    public AHipAudioSource getSource(bool isStreamed){return new HipXAudioSource(this);}
 
     public void onDestroy()
     {

@@ -1,7 +1,7 @@
 module hip.api.data.audio;
 
 import hip.api.audio;
-public import hip.api.audio.audioclip:HipAudioClipHint;
+public import hip.api.audio.audioclip;
 
 enum HipAudioEncoding
 {
@@ -14,17 +14,9 @@ enum HipAudioEncoding
 
 HipAudioEncoding getEncodingFromName(string name)
 {
-    int index = 0;
-    for(int i = cast(int)name.length-1; i >= 0; i--)
-    {
-        if(name[i] == '.')
-        {
-            index = i+1;
-            break;
-        }
-    }
-    string temp = name[index..$];
-    switch(temp)
+    int i = cast(int)name.length-1;
+    while(i >= 0 && name[i] != '.'){i--;} if(name[i] == '.') i++;
+    switch(name[i..$])
     {
         case "wav":return HipAudioEncoding.WAV;
         case "ogg":return HipAudioEncoding.OGG;
@@ -32,7 +24,7 @@ HipAudioEncoding getEncodingFromName(string name)
         case "flac":return HipAudioEncoding.FLAC;
         case "mid":
         case "midi":return HipAudioEncoding.MIDI;
-        default: assert(false, "Encoding from file '"~name~"', "~temp~", is not supported.");
+        default: assert(false, "Encoding from file '"~name~", is not supported.");
     }
 }
 
@@ -53,7 +45,10 @@ interface IHipAudioDecoder
     void delegate(in ubyte[] data) onSuccess, void delegate() onFailure)
     {
         if(data.length == 0)
+        {
+            onFailure();
             return false;
+        }
 
         if(hint.needsDecode)
         {
@@ -65,7 +60,10 @@ interface IHipAudioDecoder
                     {
                         if(hint.needsChannelConversion && getClipChannels != hint.outputChannels &&
                         !channelConversion(resampledData, getClipChannels, cast(ubyte)hint.outputChannels))
+                        {
                             onFailure(); 
+                            return;
+                        }
                         onSuccess(getClipData);
                     }, onFailure);
                 }

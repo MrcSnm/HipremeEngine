@@ -10,33 +10,11 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hipaudio.audioclip;
 import hip.util.path : baseName;
-import hip.filesystem.hipfs;
 import hip.error.handler;
 import hip.audio_decoding.audio;
 import hip.hipaudio.audio;
 import hip.hipaudio.audiosource;
 public import hip.api.audio.audioclip;
-
-///Wraps an audio buffer by saving the specific API inside 
-struct HipAudioBufferWrapper
-{
-    void[] buffer;
-    uint  bufferSize;
-    bool  isAvailable;
-
-    bool opEquals(R)(const R other) const
-    {
-        import core.stdc.string:memcmp;
-        static if(is(R == void*))
-            return memcmp(other, buffer.ptr, bufferSize) == 0;
-        else static if(is(R == void[]))
-            return memcmp(other.ptr, buffer.ptr, bufferSize) == 0;
-        else static if(is(R == HipAudioBufferWrapper))
-            return memcmp(other.buffer, this.buffer, bufferSize) == 0;
-        else
-            return &this == other;
-    }
-}
 
 
 union HipAudioBuffer
@@ -62,9 +40,12 @@ union HipAudioBuffer
         import hip.hipaudio.backend.webaudio.clip;
         size_t webaudio;
     }
+    static assert(HipAudioBuffer.sizeof == size_t.sizeof, 
+        "HipAudioBuffer must have same size as a ptr, _getBufferAPI depends on that"
+    );
 }
 
-struct HipAudioBufferWrapper2
+struct HipAudioBufferWrapper
 {
     HipAudioBuffer buffer;
     bool isAvailable;
@@ -102,15 +83,14 @@ public abstract class HipAudioClip : IHipAudioClip
     *   that array. When getBuffer is called, it could send one
     *   of those recycleds.
     */ 
-    private HipAudioBufferWrapper2[] buffersToRecycle;
-    private HipAudioBufferWrapper2[] buffersCreated;
+    private HipAudioBufferWrapper[] buffersToRecycle;
+    private HipAudioBufferWrapper[] buffersCreated;
     
     size_t totalDecoded = 0;
 
     HipAudioType type;
     HipAudioEncoding encoding;
     bool isStreamed = false;
-    string fullPath;
     string fileName;
 
     
@@ -120,7 +100,7 @@ public abstract class HipAudioClip : IHipAudioClip
     *   Always alocates a pointer to the buffer data. So, after getting its content. Send it to the
     *   recyclable buffers
     */
-    protected abstract HipAudioBufferWrapper2 createBuffer(ubyte[] data);
+    protected abstract HipAudioBufferWrapper createBuffer(ubyte[] data);
     protected abstract void  destroyBuffer(HipAudioBuffer* buffer);
     
     /** The buffer is actually any kind of external API buffer, it is the buffer contained in
@@ -143,27 +123,10 @@ public abstract class HipAudioClip : IHipAudioClip
         outBuffer = new ubyte[chunkSize];
         ErrorHandler.assertExit(outBuffer != null, "Out of memory");
     }
-
-    ///Probably isStreamed does not makes any sense when reading entire file
-    public final bool load(string audioPath, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false,
-    void delegate(in ubyte[]) onSuccess = null, void delegate() onFailure = null)
-    {
-        ubyte[] data;
-        fullPath = audioPath;
-        fileName = baseName(audioPath);
-        return cast(bool)HipFS.read(audioPath, data).addOnError((err)
-        {
-            ErrorHandler.showWarningMessage("Could not load clip from path", audioPath);            
-        }).addOnSuccess((in ubyte[] rawData)
-        {
-            load(cast(ubyte[])rawData, encoding, type, onSuccess, onFailure);
-        });
-    }
-
     /**
     *   Should implement the specific loading here
     */
-    public bool load(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type,
+    public bool loadFromMemory(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type,
     void delegate(in ubyte[]) onSuccess, void delegate() onFailure)
     {
         this.type = type;
@@ -181,7 +144,7 @@ public abstract class HipAudioClip : IHipAudioClip
         onUpdateStream(outBuffer, dec);
         return dec;
     }
-    package final HipAudioBufferWrapper2* findBuffer(HipAudioBuffer buf)
+    package final HipAudioBufferWrapper* findBuffer(HipAudioBuffer buf)
     {
         foreach(ref b; buffersCreated)
             if(b.buffer == buf)
@@ -197,7 +160,7 @@ public abstract class HipAudioClip : IHipAudioClip
     {
         if(buffersToRecycle.length > 0)
         {
-            HipAudioBufferWrapper2* w = &(buffersToRecycle[$ - 1]);
+            HipAudioBufferWrapper* w = &(buffersToRecycle[$ - 1]);
             buffersToRecycle.length--;
             w.isAvailable = false;
             return w.buffer;
@@ -213,16 +176,25 @@ public abstract class HipAudioClip : IHipAudioClip
             setBufferData(&ret, data, size);
             return ret;
         }
-        HipAudioBufferWrapper2 w = createBuffer(data);
+        HipAudioBufferWrapper w = createBuffer(data);
         setBufferData(&w.buffer, data, size);
         ret = w.buffer;
         buffersCreated~=w;
         return ret;
     }
-    
+    HipAudioBufferAPI* _getBufferAPI(ubyte[] data, uint size)
+    {
+        import core.stdc.string;
+        void* returnBuffer;
+        HipAudioBuffer buff = getBuffer(data, size);
+        ///Remember the address is actually the data.
+        memcpy(&returnBuffer, &buff, (void*).sizeof);
+        return cast(HipAudioBufferAPI*)returnBuffer;
+    }
+
     package final void setBufferAvailable(HipAudioBuffer buffer)
     {
-        HipAudioBufferWrapper2* w = findBuffer(buffer);
+        HipAudioBufferWrapper* w = findBuffer(buffer);
         ErrorHandler.assertExit(w != null, "AudioClip Error: No buffer was found when trying to set it available");
         buffersToRecycle~= *w;
         w.isAvailable = true;
@@ -265,22 +237,7 @@ public abstract class HipAudioClip : IHipAudioClip
         rawlog(cfg.getBitDepth, cfg.channels, cfg.sampleRate);
         return getClipSize() / (cast(float) cfg.sampleRate);
     }
-    
-    public final uint loadStreamed(string audioPath, HipAudioEncoding encoding)
-    {
-        isStreamed = true;
-        ubyte[] data;
-        fullPath = audioPath;
-        fileName = baseName(audioPath);
-
-        if(!HipFS.read(audioPath, data))
-        {
-            import hip.error.handler;
-            ErrorHandler.showWarningMessage("Could not load clip streamed from path", audioPath);
-            return 0;
-        }
-        return loadStreamed(data, encoding);
-    }
+  
 
     public void unload()
     {

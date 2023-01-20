@@ -252,12 +252,6 @@ outputSampleRate: ", cfg.sampleRate);
     }
     public HipAudioClipAPI getClip(){return new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true));}
 
-    public HipAudioClipAPI load(string path, HipAudioType type)
-    {
-        HipAudioClipAPI buffer = new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true));
-        buffer.load(path, getEncodingFromName(path), type);
-        return buffer;
-    }
     public HipAudioClipAPI loadStreamed(string path, uint chunkSize)
     {
         HipAudioClipAPI buffer = new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true), chunkSize);

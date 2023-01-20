@@ -6,6 +6,7 @@ extern(C) size_t WebAudioSourceCreate();
 extern(C) void WebAudioSourceStop(size_t src);
 extern(C) void WebAudioSourceSetData(size_t src, size_t buffer);
 extern(C) void WebAudioSourceSetPlaying(size_t src, bool playing);
+extern(C) void WebAudioSourceSetLooping(size_t src, bool shouldLoop);
 extern(C) void WebAudioSourceSetPitch(size_t src, float pitch);
 extern(C) void WebAudioSourceSetVolume(size_t src, float volume);
 extern(C) void WebAudioSourceSetPlaybackRate(size_t src, float rate);
@@ -21,11 +22,7 @@ class HipWebAudioSource : HipAudioSource
     protected bool isClipDirty = true;
     protected size_t webSrc = 0;
 
-    this(HipWebAudioPlayer player)
-    {
-        AudioConfig cfg = player.config;
-        webSrc = WebAudioSourceCreate();
-    }
+    this(HipWebAudioPlayer player){webSrc = WebAudioSourceCreate();}
     alias clip = HipAudioSource.clip;
 
 
@@ -34,8 +31,7 @@ class HipWebAudioSource : HipAudioSource
         if(newClip != clip)
             isClipDirty = true;
 
-        HipWebAudioClip c = cast(HipWebAudioClip)newClip;
-        WebAudioSourceSetData(webSrc, c.getBuffer(c.getClipData(), c.getClipSize()).webaudio);
+        WebAudioSourceSetData(webSrc, getBufferFromAPI(newClip).webaudio);
         super.clip(newClip);
         return newClip;
     }
@@ -44,11 +40,10 @@ class HipWebAudioSource : HipAudioSource
     override bool loop(bool value)
     {
         bool ret = super.loop(value);
-        HipWebAudioClip c = (cast(HipWebAudioClip)clip);
+        WebAudioSourceSetLooping(webSrc, value);
         return ret;
     }
 
-    
         
     override bool play()
     {

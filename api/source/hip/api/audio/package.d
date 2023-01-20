@@ -45,9 +45,9 @@ enum HipAudioImplementation
 
 version(Script)
 {
-    public import HipAudio = hip.api.audio.audio_binding; 
-    alias IHipAudioClip = HipAudio.IHipAudioClip;
-    alias AHipAudioSource = HipAudio.AHipAudioSource;
+    public import HipAudio = hip.api.audio.audio_binding;
+    public import hip.api.audio.audioclip:IHipAudioClip;
+    public import hip.api.audio.audiosource:AHipAudioSource;
 }
 else version(Have_hipreme_engine)
 {

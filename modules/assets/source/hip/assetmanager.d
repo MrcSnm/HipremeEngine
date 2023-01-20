@@ -47,6 +47,7 @@ import hip.util.system;
 import hip.util.concurrency;
 public import hip.asset;
 public import hip.assets.image;
+public import hip.assets.audioclip;
 public import hip.assets.texture;
 public import hip.assets.tilemap;
 public import hip.assets.font;
@@ -452,7 +453,7 @@ class HipAssetManager
 
             task = loadBase(taskName, loadWorker(taskName, ()
             {
-                loadAsset(path, (ubyte[] partialData){task.givePartialData(partialData);}, onFailureLoad(task));
+                loadAsset(path, (void[] partialData){task.givePartialData(partialData);}, onFailureLoad(task));
             }, (_)
             {
                 mainThreadLoadFunction(task.takePartialData(), onSuccessLoad(task));
@@ -478,6 +479,36 @@ class HipAssetManager
             });
         };
         HipAssetLoadTask task = loadSimple("Load Image ", imagePath, assetLoadFunc, f, l);
+        workerPool.startWorking();
+        return task;
+    }
+
+    /** 
+     * This can be totally loaded on the other thread. loadSimple is enough
+     */
+    @ExportD static IHipAssetLoadTask loadAudio(string audioPath, string f = __FILE__, size_t l = __LINE__)
+    {
+        hiplog("Loading Audio: ", audioPath);
+        void delegate(string, void delegate(HipAsset), void delegate(string err)) assetLoadFunc =
+        (pathOrLocation, onSuccess, onFailure)
+        {
+            import hip.filesystem.hipfs;
+            ubyte[] output;
+            HipFS.read(pathOrLocation, output).addOnSuccess((in ubyte[] data)
+            {
+                auto clip = new hip.assets.audioclip.HipAudioClip();
+                clip.loadFromMemory(data, getEncodingFromName(pathOrLocation), HipAudioType.SFX,
+                (in ubyte[] newData)
+                {
+                    onSuccess(clip);
+                }, (){onFailure("Could not load HipAudioClip.");});
+
+            }).addOnError((string err)
+            {
+                onFailure("Could not read file "~audioPath~" with error "~err);
+            });
+        };
+        HipAssetLoadTask task = loadSimple("Load AudioClip", audioPath, assetLoadFunc, f, l);
         workerPool.startWorking();
         return task;
     }

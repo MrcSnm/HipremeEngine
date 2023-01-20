@@ -28,7 +28,7 @@ public class HipAudioSource : AHipAudioSource
         void attachOnDestroy(){}
         override float getProgress(){return time/length;}
         override void pullStreamData(){}
-        override HipAudioBufferWrapper2* getFreeBuffer(){return null;}
+        override HipAudioBufferWrapper* getFreeBuffer(){return null;}
 
         final void sendAvailableBuffer(HipAudioBuffer buffer)
         {
@@ -44,4 +44,19 @@ public class HipAudioSource : AHipAudioSource
             clip = null;
             return this;
         }
+}
+
+/** 
+ * Unpacks the HipAudioBufferAPI into a HipAudioBuffer. 
+ *  ClipSize with size different than 0 is used for streamed audio
+ */
+HipAudioBuffer getBufferFromAPI(IHipAudioClip clip, size_t clipSize = 0)
+{
+    import core.stdc.string;
+    if(clipSize == 0)
+        clipSize = clip.getClipSize();
+    HipAudioBufferAPI* api = clip._getBufferAPI(clip.getClipData(), cast(uint)clipSize);
+    HipAudioBuffer buffer;
+    memcpy(&buffer, &api, (void*).sizeof);
+    return buffer;
 }
