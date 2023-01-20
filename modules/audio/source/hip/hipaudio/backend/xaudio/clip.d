@@ -21,19 +21,19 @@ class HipXAudioClip : HipAudioClip
         buffer.LoopLength = 0;
         buffer.pContext   = null;
     }
-    override void setBufferData(HipAudioBuffer* buffer, void[] data, uint size = 0)
+    override void setBufferData(HipAudioBuffer* buffer, ubyte[] data, uint size = 0)
     {
         this.buffer.AudioBytes = size == 0 ? cast(uint)data.length : size;
         this.buffer.pAudioData = cast(ubyte*)data.ptr;
     }
     
     ///Nothing to do
-    override protected void onUpdateStream(void[] data, uint decodedSize){}
+    override protected void onUpdateStream(ubyte[] data, uint decodedSize){}
 
     ///Wraps an XAudio buffer    
-    override protected HipAudioBufferWrapper2 createBuffer(void[] data)
+    override protected HipAudioBufferWrapper createBuffer(ubyte[] data)
     {
-        HipAudioBufferWrapper2 ret; // TODO: implement
+        HipAudioBufferWrapper ret; // TODO: implement
         ret.buffer.xaudio = &buffer;
         return ret;
     }
@@ -44,5 +44,4 @@ class HipXAudioClip : HipAudioClip
     {
         
     }
-
 }

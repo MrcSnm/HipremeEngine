@@ -102,20 +102,10 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     
     public HipAudioClipAPI getClip(){return new HipOpenALClip(new HipAudioDecoder(), getClipHint());}
     
-    public HipAudioClipAPI load(string path, HipAudioType clipType)
-    {
-        HipOpenALClip clip = new HipOpenALClip(new HipAudioDecoder(), getClipHint());
-        if(!clip.load(path, getEncodingFromName(path), clipType))
-        {
-            import hip.error.handler;
-            ErrorHandler.showErrorMessage("Error loading OpenAL Audio Clip", path);
-        }
-        return clip;
-    }
     public HipAudioClipAPI loadStreamed(string path, uint chunkSize)
     {
         HipAudioClipAPI clip = new HipOpenALClip(new HipAudioDecoder(), getClipHint(), chunkSize);
-        clip.loadStreamed(path, getEncodingFromName(path));
+        // clip.loadStreamed(path, getEncodingFromName(path));
         return clip;
     }
 

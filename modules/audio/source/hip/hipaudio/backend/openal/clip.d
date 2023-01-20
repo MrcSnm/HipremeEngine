@@ -31,19 +31,13 @@ public class HipOpenALClip : HipAudioClip
     this(IHipAudioDecoder decoder, HipAudioClipHint hint){super(decoder, hint);}
     this(IHipAudioDecoder decoder, HipAudioClipHint hint, uint chunkSize){super(decoder, hint, chunkSize);}
     
-    override public uint loadStreamed(in void[] data, HipAudioEncoding encoding)
-    {
-        uint ret = super.loadStreamed(data, encoding);
-        return ret;
-    }
-
-    override void onUpdateStream(void[] data, uint decodedSize){}
+    override void onUpdateStream(ubyte[] data, uint decodedSize){}
 
     /** Allocates ALuint in the bufferwrapper */
-    override HipAudioBufferWrapper2 createBuffer(void[] data)
+    override HipAudioBufferWrapper createBuffer(ubyte[] data)
     {
         // import hip.console.log;
-        HipAudioBufferWrapper2 w;
+        HipAudioBufferWrapper w;
         alGenBuffers(1, &w.buffer.al);
         alCheckError("Error generating OpenAL Buffer");
         hasBuffer = true;
@@ -56,7 +50,7 @@ public class HipOpenALClip : HipAudioClip
         alCheckError("Error deleting OpenAL Buffer");
     }
 
-    override void setBufferData(HipAudioBuffer* buffer, void[] data, uint size = 0)
+    override void setBufferData(HipAudioBuffer* buffer, ubyte[] data, uint size = 0)
     {
         alBufferData(
             buffer.al,
@@ -70,6 +64,4 @@ public class HipOpenALClip : HipAudioClip
 
     bool hasBuffer;
 
-    ///If not present, it won't call the super class .load(string) for some reason
-    alias load = HipAudioClip.load;
 }

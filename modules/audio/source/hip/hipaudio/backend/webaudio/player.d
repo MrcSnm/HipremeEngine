@@ -19,12 +19,6 @@ class HipWebAudioPlayer : IHipAudioPlayer
 
     public bool play_streamed(AHipAudioSource src){return src.play_streamed();}
 
-    public IHipAudioClip load(string audioName, HipAudioType bufferType)
-    {
-        HipAudioClip buffer = new HipWebAudioClip(new HipAudioDecoder(), HipAudioClipHint(2, 44_100, false, true));
-        buffer.load(audioName,getEncodingFromName(audioName), bufferType);
-        return buffer;
-    }
     public IHipAudioClip getClip()
     {
         return new HipWebAudioClip(new HipAudioDecoder(), HipAudioClipHint(2, 44_100, false, true));

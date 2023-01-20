@@ -10,7 +10,7 @@
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
 		"math": {"path": "../math"},
-		"filesystem": {"path": "../filesystem", "version": "*"},
+		"error": {"path": "../error"},
 		"audio_decoding": {"path": "../audio_decoding"}
 	},
 	"configurations": [

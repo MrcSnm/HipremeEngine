@@ -3,21 +3,26 @@ module hip.api.audio.audioclip;
 public import hip.api.audio;
 public import hip.api.data.audio;
 
+
+struct HipAudioBufferAPI;
+
 interface IHipAudioClip
 {
-    public bool load(string audioPath, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false,
-    void delegate(in ubyte[]) onSuccess = null, void delegate() onFailure = null);
-
-    public bool load(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type,
+    public bool loadFromMemory(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type,
     void delegate(in ubyte[]) onSuccess, void delegate() onFailure);
 
-    uint loadStreamed(in void[] data, HipAudioEncoding encoding);
-    uint loadStreamed(string audioPath, HipAudioEncoding encoding);
+    uint loadStreamed(in ubyte[] data, HipAudioEncoding encoding);
     uint getSampleRate();
     uint updateStream();
-    void onUpdateStream(void[] data, uint decodedSize);
-    void[] getClipData();
-    ulong getClipSize();
+    void onUpdateStream(ubyte[] data, uint decodedSize);
+
+    /** 
+     * This function is reserved for HipAudio for being able to take the buffer out of an
+     *  audio asset.
+     */
+    HipAudioBufferAPI* _getBufferAPI(ubyte[] data, uint size); 
+    ubyte[] getClipData();
+    size_t getClipSize();
     float getDuration();
     float getDecodedDuration();
     void unload();

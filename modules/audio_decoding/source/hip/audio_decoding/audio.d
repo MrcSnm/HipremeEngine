@@ -162,13 +162,13 @@ version(AudioFormatsDecoder)
                 uint bytesRead = 0;
             
                 decodedBuffer.length = audioConfigDefaultBufferSize;
-                ubyte[] output = decodedBuffer;
+                ubyte[] output = cast(ubyte[])decodedBuffer;
                 startDecoding(data, output, audioConfigDefaultBufferSize, encoding);
                 while((bytesRead = updateDecoding(output)) != 0)
                 {
                     bytesRead/= float.sizeof;
                     decodedBuffer.length+= bytesRead;
-                    output = decodedBuffer[$-bytesRead..$];
+                    output = cast(ubyte[])decodedBuffer[$-bytesRead..$];
                 }
                 duration = (clipSize / channels) / sampleRate;
             }
@@ -273,6 +273,8 @@ version(AudioFormatsDecoder)
             }
             return false;
         }
+
+        ubyte[] getClipData(){return cast(ubyte[])decodedBuffer;}
     }
 }
 

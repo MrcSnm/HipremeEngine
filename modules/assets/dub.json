@@ -9,6 +9,7 @@
 			"dependencies": {
 				"hipengine_api": {"path": "../../api", "version": "*"},
 				"filesystem": {"path": "../filesystem", "version": "*"},
+				"audio": {"path": "../audio", "version": "*"},
 				"util": {"path": "../util", "version": "*"},
 				"error": {"path": "../error", "version": "*"},
 				"data": {"path": "../data", "version": "*"},

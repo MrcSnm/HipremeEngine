@@ -6,7 +6,7 @@ function initializeWebaudioContext()
     /**
      * @type {AudioContext}
      */
-    const audioContext = new AudioContext();
+    const audioContext = new AudioContext({latencyHint: "interactive"});
 
     const addObject = WasmUtils.addObject;
     const _objects = WasmUtils._objects;
@@ -21,11 +21,25 @@ function initializeWebaudioContext()
          */
         constructor()
         {
+            this.isPlaying = false;
+            this.isLooping = false;
+            this.bufferHandle = -1;
+            this._reloadAudio();
+        }
+        _reloadAudio()
+        {
+            if(this.isLooping)
+            {
+                this.track.stop();
+                this.track.loop = false;
+            }
             this.track = audioContext.createBufferSource();
             this.gainNode = audioContext.createGain();
             this.panNode = audioContext.createStereoPanner();
-
             this.track.connect(this.gainNode).connect(this.panNode).connect(audioContext.destination);
+            if(this.bufferHandle !== -1)
+                this.setBufferData(this.bufferHandle);
+            this.setLooping(this.isLooping);
         }
         load(sndNameLength, sndNamePtr, ptr, length, dFunction, dgFunc, delegateCtx)
         {
@@ -36,13 +50,15 @@ function initializeWebaudioContext()
                     // buffer.
                 })
         }
-        setBufferDaata(dataHandle)
+        setBufferData(dataHandle)
         {
             /**@type {AudioBuffer} */
             const buffer = _objects[dataHandle];
+            this.bufferHandle = dataHandle;
             if(Object.getPrototypeOf(buffer) != AudioBuffer.prototype)
                 throw new Error("Invalid buffer received.");
-            this.track.buffer = buffer;
+            if(this.track.buffer !== buffer)
+                this.track.buffer = buffer;
         }
         loadStreamed()
         {
@@ -51,15 +67,27 @@ function initializeWebaudioContext()
         setPlaying(playing)
         {
             if(playing)
+            {
+                if(this.isPlaying)
+                    this._reloadAudio();
                 this.track.start();
-            else
+            }
+            else if(this.isPlaying)
                 this.track.stop();
+            this.isPlaying = playing;
         }
         stop()
         {
-            this.track.stop(0);
+            if(this.isPlaying)
+            {
+                this.isPlaying = false;
+                this.track.stop(0);
+            }
         }
-        setLooping(loop){this.track.loop = loop;}
+        setLooping(loop)
+        {
+            this.track.loop = this.isLooping = Boolean(loop);
+        }
         setPlaybackRate(rate){this.track.playbackRate.value = rate;}
         setPitch(pitch)
         {
@@ -89,6 +117,7 @@ function initializeWebaudioContext()
             },
             WebAudioSourceStop(src){_objects[src].stop()},
             WebAudioSourceSetPlaying(src, playing){_objects[src].setPlaying(playing);},
+            WebAudioSourceSetLooping(src, shouldLoop){_objects[src].setLooping(shouldLoop);},
             WebAudioSourceSetPitch(src, pitch){_objects[src].setPitch(pitch);},
             WebAudioSourceSetVolume(src, volume){_objects[src].setGain(volume);},
             WebAudioSourceSetPlaybackRate(src,rate){_objects[src].setPlaybackRate(rate);},
