@@ -10,20 +10,22 @@
 	"sourcePaths": [
 		"source"
 	],
+	"dependencies": {
+		"hipengine_api": {"path": "../../api"},
+		"data" : {"path": "../data"},
+		"image" : {"path": "../image"},
+		"config": {"path": "../config"},
+		"error": {"path": "../error"},
+		"math": {"path": "../math"},
+		"windowing" : {"path" : "../windowing"}
+	},
 	"copyright": "Copyright © 2021, Hipreme",
 	"configurations": [
 		{
 			"name": "default",
 			"dependencies": {
 				"directx-d": {"path": "../../dependencies/directx-d", "optional": true},
-				"bindbc-opengl": {"version": "~>1.0.0", "optional": true},
-				"hipengine_api": {"path": "../../api"},
-				"windowing" : {"path" : "../windowing"},
-				"data" : {"path": "../data"},
-				"image" : {"path": "../image"},
-				"config": {"path": "../config"},
-				"error": {"path": "../error"},
-				"math": {"path": "../math"}	
+				"bindbc-opengl": {"version": "~>1.0.0", "optional": true}
 			},
 			"versions": [
 				"HipGL3",
@@ -35,13 +37,7 @@
 		{
 			"name": "nodx",
 			"dependencies": {
-				"bindbc-opengl": {"version": "~>1.0.0", "optional": true},
-				"windowing" : {"path" : "../windowing"},
-				"data" : {"path": "../data"},
-				"image" : {"path": "../image"},
-				"config": {"path": "../config"},
-				"error": {"path": "../error"},
-				"math": {"path": "../math"}
+				"bindbc-opengl": {"version": "~>1.0.0", "optional": true}
 			},
 			"versions": [
 				"HipGL3",
@@ -53,30 +49,27 @@
 		{
 			"name": "uwp",
 			"dependencies": {
-				"hipengine_api": {"path": "../../api"},
-				"windowing" : {"path" : "../windowing"},
-				"directx-d": {"path": "../../dependencies/directx-d"},
-				"data" : {"path": "../data"},
-				"image" : {"path": "../image"},
-				"config": {"path": "../config"},
-				"error": {"path": "../error"},
-				"math": {"path": "../math"}
+				"directx-d": {"path": "../../dependencies/directx-d"}
 			},
 			"subConfigurations": {
 				"image": "arsd"
 			}
 		},
 		{
+			"name": "wasm",
+			"dependencies": {
+				"gles" : {"path": "../../dependencies/gles"}
+			},
+			"subConfigurations": {
+				"windowing": "wasm",
+				"image": "wasm"
+			}
+		},
+		{
 			"name": "android",
 			"dependencies": {
-				"hipengine_api": {"path": "../../api"},
 				"gles" : {"path": "../../dependencies/gles", "optional": true},
-				"windowing" : {"path" : "../windowing"},
-				"image" : {"path": "../image"},
-				"bind" : {"path": "../bind", "optional": true},
-				"config": {"path": "../config"},
-				"error": {"path": "../error"},
-				"math": {"path": "../math"}
+				"bind" : {"path": "../bind", "optional": true}
 			},
 			"subConfigurations": {
 				"bind": "android",
@@ -84,20 +77,6 @@
 			},
 			"versions": [
 				"HipGLUseVertexArray"
-			]
-		},
-		{
-			"name": "source",
-			"targetType": "sourceLibrary",
-			"importPaths": [
-				"source",
-				"../windowing/source",
-				"../../dependencies/gles/source",
-				"../data/source",
-				"../image/source",
-				"../config/source",
-				"../error/source",
-				"../math/source"
 			]
 		}
 	],

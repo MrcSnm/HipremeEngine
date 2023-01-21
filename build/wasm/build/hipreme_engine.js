@@ -85,7 +85,7 @@ function initializeHipremeEngine(exports)
     {
         try
         {
-            if(exports.HipremeUpdate(performance.now() - lastTime))
+            if(!exports.HipremeUpdate(performance.now() - lastTime))
             {
                 finished = true;
                 destroyEngine();

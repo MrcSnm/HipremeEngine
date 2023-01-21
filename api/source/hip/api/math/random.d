@@ -23,7 +23,6 @@ package void initRandom()
 }
 
 
-version(HipMathAPI):
 version(Have_hipreme_engine)
 {
 	public import hip.math.random;

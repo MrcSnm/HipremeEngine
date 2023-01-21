@@ -59,7 +59,7 @@ class HipXAudioSource : HipAudioSource
         if(isClipDirty)
         {
             isClipDirty = false;
-            HRESULT hr = sourceVoice.SetSourceSampleRate(c.decoder.getSamplerate());
+            HRESULT hr = sourceVoice.SetSourceSampleRate(clip.getSampleRate());
             ErrorHandler.assertLazyExit(SUCCEEDED(hr),
             "Could not set source voice Sample Rate:\n\t"~HipXAudioPlayer.getError(hr));
         }

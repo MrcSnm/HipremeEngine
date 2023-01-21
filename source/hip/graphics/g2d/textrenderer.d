@@ -163,15 +163,15 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         }
         if(quadsCount == 0)
             return;
+        mesh.bind();
         this.font.texture.bind();
-        bmTextShader.bind();
         mesh.shader.setVertexVar("Cbuf.uProj", camera.proj);
         mesh.shader.setVertexVar("Cbuf.uView", camera.view);
-        bmTextShader.sendVars();
+        mesh.shader.sendVars();
         mesh.setVertices(vertices);
         mesh.draw(quadsCount*6);
-
         font.texture.unbind();
+        mesh.unbind();
 
         poolActive = 0;
         quadsCount = 0;

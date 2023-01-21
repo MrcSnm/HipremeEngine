@@ -112,7 +112,6 @@ struct JSString
 	}
 }
 
-import std.traits;
 alias JSDelegateType(T) = AliasSeq!(ubyte*, ubyte*, ubyte*);
 
 JSDelegate sendJSDelegate(alias dg)()

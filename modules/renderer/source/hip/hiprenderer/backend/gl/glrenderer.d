@@ -49,7 +49,15 @@ auto glCall(T)(scope T delegate() dg, string file = __FILE__, size_t line = __LI
         dg();
     else
         auto ret = dg();
-    static if(HIP_DEBUG_GL)
+    version(WebAssembly)
+    {
+        static if(HIP_DEBUG_WEBGL)
+        {
+            if(errorCheckEnabled)
+                HipRenderer.exitOnError(file, line);
+        }
+    }
+    else static if(HIP_DEBUG_GL)
     {
         if(errorCheckEnabled)
             HipRenderer.exitOnError(file, line);

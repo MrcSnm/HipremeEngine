@@ -21,7 +21,6 @@
 	],
 	"versions": [
 		"HIPREME_DEBUG",
-		"HipremeEngineLua",
 		"HipCheckUnknownKeycode",
 		"HipDataStructures",
 		"HipMathAPI",
@@ -190,8 +189,7 @@
 			],
 			"subConfigurations": {
 				"audio": "uwp",
-				"renderer": "uwp",
-				"bind": "uwp"
+				"renderer": "uwp"
 			},
 			"targetPath": "bin/uwp",
 			"targetType": "dynamicLibrary",
@@ -204,6 +202,37 @@
 				"HipConcurrency",
 				"UWP"
 			]
+		},
+		{
+			"name": "wasm",
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"hipengine_wasm:wasmruntime": {"path": "build/wasm", "version": "*"}
+			},
+			"stringImportPaths": [
+				"build/wasm/generated"
+			],
+			"postGenerateCommands": [
+				"set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true",
+				"move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
+			],
+			"subConfigurations": {
+				"assets": "wasm",
+				"audio": "wasm",
+				"filesystem": "wasm",
+				"renderer": "wasm"
+			},
+			"versions": [
+				"HipDataStructures",
+				"Test",
+				"Standalone",
+				"HipDStdFile",
+				"OpenGL",
+				"GLES20",
+				"CarelessAlocation",
+				"dll"
+			],
+			"targetType": "executable"
 		},
 		{
 			"name": "android",

@@ -1,77 +1,11 @@
 {
-	"name": "wasm",
+	"name": "hipengine_wasm",
 	"authors": [
 		"Hipreme"
 	],
 	"copyright": "Copyright © 2023, Hipreme",
 	"description": "WASM build for Hipreme Engine",
 	"license": "proprietary",
-	"configurations": [
-		{
-			"name": "default",
-			"targetPath": "build/",
-			"targetType": "executable",
-			"targetName": "hipreme_engine",
-			"dependencies": {
-				"wasm:wasmruntime": "*",
-				"config": {"path": "../../modules/config"}
-			},
-			"dflags": [
-				"-preview=shortenedMethods",
-				"-fvisibility=hidden",
-				"-mv=arsd.ttf=ttf.d"
-			],
-			"stringImportPaths": [
-				"../../",
-				"generated"
-			],
-			"sourceFiles": [
-				"C:/Users/Hipreme/AppData/Local/dub/packages/arsd-official-10.9.5/arsd-official/ttf.d"
-			],
-			"sourcePaths": [
-				"../../modules/d_std/source",
-				"../../modules/math/source",
-				"../../modules/util/source",
-				"../../modules/console/source",
-				"../../modules/error/source",
-				"../../modules/windowing/source",
-				"../../modules/data/source",
-				"../../modules/image/source",
-				"../../modules/timer/source",
-				"../../modules/tween/source",
-				"../../modules/audio_decoding/source",
-				"../../modules/filesystem/source",
-				"../../dependencies/gles/source",
-				"../../modules/renderer/source",
-				"../../modules/audio/source",
-				"../../modules/font/source",
-				"../../modules/assets/source",
-				"../../modules/bind/source",
-				"../../modules/wasm/source",
-				"../../api/source",
-				"../../source/hip"
-			],
-			"preGenerateCommands": [
-				"rdmd prebuild/gendir.d ../../assets/defaults generated"
-			],
-			"postGenerateCommands": [
-				"cd build && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true --embed-base-url=../"
-			],
-			"versions": [
-				"HipDataStructures",
-				"HipDStdFile",
-				"OpenGL",
-				"GLES20",
-				"Have_hipreme_engine",
-				"CarelessAlocation",
-				"dll"
-			],
-			
-			"lflags": [
-				"-allow-undefined"
-			]
-		}
-	],
 	"subPackages": [
 		{
 			"name": "wasmruntime",
@@ -88,7 +22,6 @@
 			],
 			"excludedSourceFiles": ["source/**"],
 			"dflags": [
-				"-fvisibility=hidden",
 				"-Oz"
 			],
 			

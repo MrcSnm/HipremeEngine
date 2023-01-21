@@ -1,4 +1,7 @@
 module hip.graphics.g2d.renderer2d;
+
+version(Have_bindbc_lua)
+    version = HipremeEngineLua;
 import hip.graphics.g2d.spritebatch;
 import hip.graphics.g2d.tilemap;
 import hip.graphics.g2d.geometrybatch;

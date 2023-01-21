@@ -58,17 +58,14 @@ class HipFrameBuffer : IHipFrameBuffer
     void bind()
     {
         this.impl.bind();
-        HipRenderer.exitOnError();
     }
     void unbind()
     {
         this.impl.unbind();
-        HipRenderer.exitOnError();
     }
     void clear()
     {
         this.impl.clear();
-        HipRenderer.exitOnError();
     }
     IHipTexture getTexture(){return impl.getTexture();}
 
@@ -76,7 +73,6 @@ class HipFrameBuffer : IHipFrameBuffer
     {
         currentShader.bind();
         impl.draw();
-        HipRenderer.exitOnError();
     }
 
     void dispose(){impl.dispose();}
