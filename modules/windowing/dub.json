@@ -10,9 +10,8 @@
 				"gl"
 			]
 		},
-		{
-			"name": "android"
-		},
+		{"name": "android"},
+		{"name": "wasm"},
 		{
 			"name": "source",
 			"targetType": "sourceLibrary"

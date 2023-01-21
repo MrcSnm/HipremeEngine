@@ -1,6 +1,6 @@
 module hip.bind.interpreters.lua;
 
-version(HipremeEngineLua):
+version(Have_bindbc_lua):
 private enum valid = true;
 private enum invalid = false;
 

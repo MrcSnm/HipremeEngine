@@ -136,8 +136,10 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
             this.ebo = ebo;
         isWaitingCreation = false;
         vbo.bind();
+        ebo.bind();
         foreach(vao; vaoInfos)
         {
+            glCall(() => glEnableVertexAttribArray(vao.info.index));
             glCall(() => glVertexAttribPointer(
                 vao.info.index,
                 vao.info.count,
@@ -146,7 +148,6 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
                 vao.stride,
                 cast(void*)vao.info.offset
             ));
-            glCall(() => glEnableVertexAttribArray(vao.info.index));
         }
     }
         

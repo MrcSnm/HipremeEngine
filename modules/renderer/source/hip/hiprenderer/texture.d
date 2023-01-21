@@ -54,23 +54,19 @@ class HipTexture : IHipTexture
     public void bind()
     {
         textureImpl.bind();
-        HipRenderer.exitOnError();
     }
     ///Binds texture to the specific slot
     public void bind(int slot)
     {
         textureImpl.bind(slot);
-        HipRenderer.exitOnError();
     }
     public void unbind()
     {
         textureImpl.unbind();
-        HipRenderer.exitOnError();
     }
     public void unbind(int slot)
     {
         textureImpl.unbind(slot);
-        HipRenderer.exitOnError();
     }
     public void setWrapMode(TextureWrapMode mode){textureImpl.setWrapMode(mode);}
     public void setTextureFilter(TextureFilter min, TextureFilter mag)

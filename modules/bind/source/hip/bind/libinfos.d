@@ -9,9 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.bind.libinfos;
-import hip.console.log;
 import core.stdc.string:strlen;
-import hip.util.string : fromStringz;
 
 version(Have_bindbc_openal)
 {

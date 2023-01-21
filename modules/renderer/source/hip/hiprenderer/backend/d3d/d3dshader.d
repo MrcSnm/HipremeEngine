@@ -406,14 +406,18 @@ class Hip_D3D11_ShaderImpl : IShader
         // glEnableVertexAttribArray(layoutIndex);
     }
 
-    void setCurrentShader(ShaderProgram _program)
+    void bind(ShaderProgram _program)
     {
         auto program = cast(Hip_D3D11_ShaderProgram)_program;
         _hip_d3d_context.VSSetShader(program.vs.vs, cast(ID3D11ClassInstance*)0, 0u);
         _hip_d3d_context.PSSetShader(program.fs.fs, cast(ID3D11ClassInstance*)0, 0u);
     }
+    void unbind(ShaderProgram _program)
+    {
+        _hip_d3d_context.VSSetShader(null, cast(ID3D11ClassInstance*)0, 0u);
+        _hip_d3d_context.PSSetShader(null, cast(ID3D11ClassInstance*)0, 0u);
+    }
 
-    void useShader(ShaderProgram program){setCurrentShader(program);}
     int getId(ref ShaderProgram prog, string name)
     {
         import hip.error.handler;

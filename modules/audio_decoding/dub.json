@@ -16,6 +16,7 @@
 		"hipengine_api": {"path": "../../api", "version": "*"}
 	},
 	"configurations": [
+		{"name": "null"},
 		{
 			"name": "audioformats",
 			"dependencies": {
@@ -26,7 +27,10 @@
 			]
 		},
 		{
-			"name": "null"
+			"name": "wasm",
+			"dependencies": {
+				"wasm": {"path": "../wasm", "version": "*"}
+			}
 		},
 		{
 			"name": "header",

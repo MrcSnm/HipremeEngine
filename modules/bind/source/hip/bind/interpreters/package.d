@@ -1,5 +1,8 @@
 module hip.bind.interpreters;
 
+version(Have_bindbc_lua)
+    version = HipremeEngineLua;
+
 
 struct HipInterpreterEntry
 {

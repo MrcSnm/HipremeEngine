@@ -202,12 +202,12 @@ public class HipOpenALAudioSource : HipAudioSource
     override IHipAudioClip clip(IHipAudioClip newClip)
     {
         super.clip(newClip);
-        if(!newClip.isStreamed)
-        {
-            HipAudioBuffer buf = getBufferFromAPI(newClip);
-            alSourcei(id, AL_BUFFER, buf.al);
-        }
-        else
+        // if(!newClip.isStreamed)
+        // {
+        //     HipAudioBuffer buf = getBufferFromAPI(newClip);
+        //     alSourcei(id, AL_BUFFER, buf.al);
+        // }
+        // else
         {
             HipAudioBuffer buf = getBufferFromAPI(newClip); //use clip.chunkSize in future
             alSourceQueueBuffers(id, 1, &buf.al);

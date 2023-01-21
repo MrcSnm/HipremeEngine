@@ -442,7 +442,6 @@ class HipRenderer
     {
         currentShader = s;
         s.bind();
-        HipRenderer.exitOnError();
     }
     public static bool hasErrorOccurred(out string err, string file = __FILE__, size_t line =__LINE__)
     {
@@ -463,7 +462,6 @@ class HipRenderer
     public static void begin()
     {
         rendererImpl.begin();
-        HipRenderer.exitOnError();
     }
     
     public static void setErrorCheckingEnabled(bool enable = true)
@@ -475,7 +473,6 @@ class HipRenderer
     {
         rendererMode = mode;
         rendererImpl.setRendererMode(mode);
-        HipRenderer.exitOnError();
         stats.drawCalls++;
     }
     public static HipRendererMode getMode(){return rendererMode;}
@@ -483,7 +480,6 @@ class HipRenderer
     public static void drawIndexed(index_t count, uint offset = 0)
     {
         rendererImpl.drawIndexed(count, offset);
-        HipRenderer.exitOnError();
         stats.drawCalls++;
     }
     public static void drawIndexed(HipRendererMode mode, index_t count, uint offset = 0)
@@ -495,7 +491,6 @@ class HipRenderer
     public static void drawVertices(index_t count, uint offset = 0)
     {
         rendererImpl.drawVertices(count, offset);
-        HipRenderer.exitOnError();
     }
     public static void drawVertices(HipRendererMode mode, index_t count, uint offset = 0)
     {

@@ -494,13 +494,14 @@ class Hip_GL_ShaderImpl : IShader
         glCall(() =>glEnableVertexAttribArray(layoutIndex));
     }
 
-    void setCurrentShader(ShaderProgram program)
+    void bind(ShaderProgram program)
     {
         glCall(() =>glUseProgram((cast(Hip_GL3_ShaderProgram)program).program));
     }
-
-    void useShader(ShaderProgram program){glCall(() =>glUseProgram((cast(Hip_GL3_ShaderProgram)program).program));}
-
+    void unbind(ShaderProgram program)
+    {
+        glCall(() =>glUseProgram(0));
+    }
 
     void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts)
     {
@@ -570,11 +571,12 @@ class Hip_GL_ShaderImpl : IShader
         if(slotsCount > temp.length)
             temp.length = slotsCount;
 
-        setCurrentShader(prog);
+        bind(prog);
         int varID = getId(prog, varName);
         for(int i = 0; i < slotsCount; i++)
             temp[i] = i;
         glCall(() => glUniform1iv(varID, slotsCount, temp.ptr));
+        unbind(prog);
     }
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {

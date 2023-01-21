@@ -23,6 +23,7 @@ class Mesh
     protected Shader currentShader;
     ///Not yet supported
     bool isInstanced;
+    private bool isBonded;
     HipVertexArrayObject vao;
     Shader shader;
 
@@ -46,13 +47,23 @@ class Mesh
 
     void bind()
     {
-        this.shader.bind();
-        this.vao.bind();
+        // if(!this.isBonded)
+        // {
+            this.isBonded = true;
+            this.shader.bind();
+            this.vao.bind();
+        // }
+        // else assert(false, "Erroneous call to bind.");
     }
     void unbind()
     {
-        this.shader.unbind();
-        this.vao.unbind();
+        // if(this.isBonded)
+        // {
+            this.isBonded = false;
+            this.shader.unbind();
+            this.vao.unbind();
+        // }
+        // else assert(false, "Erroneous call to unbind.");
     }
 
     /**
@@ -116,8 +127,7 @@ class Mesh
             HipRenderer.drawInstanced()
         }
         */
-        this.shader.bind();
-        this.vao.bind();
+        bind();
         HipRenderer.drawIndexed(cast(index_t)count);
     }
 

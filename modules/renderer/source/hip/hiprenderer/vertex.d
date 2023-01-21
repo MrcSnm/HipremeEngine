@@ -157,7 +157,6 @@ class HipVertexArrayObject
         this.EBO = HipRenderer.createIndexBuffer(count, usage);
         this.bind();
         this.EBO.bind();
-        HipRenderer.exitOnError();
 
     }
     /**
@@ -170,7 +169,6 @@ class HipVertexArrayObject
         this.VBO = HipRenderer.createVertexBuffer(count*this.stride, usage);
         this.bind();
         this.VBO.bind();
-        HipRenderer.exitOnError();
     }
     /**
     *   This function creates an attribute information,
@@ -237,15 +235,19 @@ class HipVertexArrayObject
 
     void bind()
     {
-        isBonded = true;
-        this.VAO.bind(this.VBO, this.EBO);
-        HipRenderer.exitOnError();
+        // if(!this.isBonded)
+        // {
+            isBonded = true;
+            this.VAO.bind(this.VBO, this.EBO);
+        // }
     }
     void unbind()
     {
-        isBonded = false;
-        this.VAO.unbind(this.VBO, this.EBO);
-        HipRenderer.exitOnError();
+        // if(this.isBonded)
+        // {
+            isBonded = false;
+            this.VAO.unbind(this.VBO, this.EBO);
+        // }
     }
 
     /**
@@ -260,7 +262,6 @@ class HipVertexArrayObject
             
         this.bind(); 
         this.VBO.setData(count*this.stride, data);
-        HipRenderer.exitOnError();
     }
     /**
     *   Update the VBO. Won't cause memory allocation
@@ -271,7 +272,6 @@ class HipVertexArrayObject
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
         this.bind();
         this.VBO.updateData(offset, count*this.stride, data);
-        HipRenderer.exitOnError();
     }
     /**
     *   Will set the indices data. Beware that this function may allocate memory.
@@ -285,7 +285,6 @@ class HipVertexArrayObject
             ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");
         this.bind();
         this.EBO.setData(count, data);
-        HipRenderer.exitOnError();
     }
     /**
     *   Updates the index buffer's data. It won't allocate memory
@@ -296,7 +295,6 @@ class HipVertexArrayObject
             ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");
         this.bind();
         this.EBO.updateData(offset, count, data);
-        HipRenderer.exitOnError();
     }
 
     /**

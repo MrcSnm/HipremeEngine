@@ -45,6 +45,8 @@ __gshared IHipTexture texture;
 __gshared IHipFont font;
 IHipFont ttfFont;
 IHipTilemap map;
+IHipAudioClip clip;
+AHipAudioSource src;
 // __gshared IImage img;
 
 private void initializeGame()
@@ -67,9 +69,9 @@ private void initializeGame()
 
 	HipAssetManager.loadTilemap("maps/untitled.tmj").into(&map);
 
-	auto clip = HipAudio.getClip();
-	logln(clip is null);
-	clip.load("sounds/pop.wav", HipAudioEncoding.WAV, HipAudioType.SFX);
+	HipAssetManager.loadAudio("sounds/pop.wav").into(&clip);
+
+	src = HipAudio.getSource();
 
 
 	// IHipAssetLoadTask task2 = HipAssetManager.loadImage("graphics/sprites/sprite.png");
@@ -125,11 +127,18 @@ export extern(C) void HipremeRender()
 export extern(C) bool HipremeUpdate(float dt)
 {
 	import hip.assetmanager;
-	if(sys !is null || HipAssetManager.isLoading)
+	import hip.console.log;
+	if(sys !is null)
 	{
+		sys.update(dt);
+		if(HipInput.isKeyJustPressed(HipKey.ARROW_DOWN))
+		{
+			src.clip = clip;
+			src.loop = true;
+			src.play();
+		}
 		dt/= 1000; //To seconds. Javascript gives in MS.
 		import hip.api;
-		sys.update(dt);
 		sys.postUpdate();
 	}
 	return false;

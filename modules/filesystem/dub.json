@@ -8,19 +8,25 @@
 		"debugInfoC"
 	],
 	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"error": {"path": "../error", "version": "*"},
+		"hipengine_api": {"path": "../../api", "version": "*"},
+		"util": {"path": "../util", "version": "*"},
+		"bind": {"path": "../bind", "version": "*"}
+	},
 	"configurations": [
 		{
-			"name": "default",
-			"dependencies": {
-				"error": {"path": "../error", "version": "*"},
-				"hipengine_api": {"path": "../../api", "version": "*"},
-				"util": {"path": "../util", "version": "*"},
-				"bind": {"path": "../bind", "version": "*"}
-			}
+			"name": "default"
 		},
 		{
-			"name": "source",
-			"targetType": "sourceLibrary"
+			"name": "wasm",
+			"stringImportPaths": [
+				"../../build/wasm/generated"
+			],
+			"importPaths": [
+				"../data/source",
+				"../wasm/source"
+			]
 		}
 	],
 	"description": "HipremeEngine bind module",
