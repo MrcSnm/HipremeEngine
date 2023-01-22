@@ -207,7 +207,7 @@
 			"name": "wasm",
 			"dependencies": {
 				"d_std": {"path": "modules/d_std", "version": "*"},
-				"hipengine_wasm:wasmruntime": {"path": "build/wasm", "version": "*"}
+				"runtime": {"path": "build/wasm/runtime", "version": "*"}
 			},
 			"stringImportPaths": [
 				"build/wasm/generated"
