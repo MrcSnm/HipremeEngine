@@ -1,39 +1,19 @@
 {
-	"name": "hipengine_wasm",
 	"authors": [
 		"Hipreme"
 	],
 	"copyright": "Copyright © 2023, Hipreme",
+	"dependencies": {
+		"arsd-official:cgi": "~>10.9.8"
+	},
 	"description": "WASM build for Hipreme Engine",
 	"license": "proprietary",
-	"subPackages": [
-		{
-			"name": "wasmruntime",
-			"targetType": "staticLibrary",
-			"targetPath": "runtime/",
-			"sourcePaths": [],
-			"sourceFiles": [
-				"runtime/webassembly/arsd-webassembly/arsd/webassembly.d",
-				"runtime/webassembly/arsd-webassembly/object.d",
-				"runtime/webassembly/arsd-webassembly/core/arsd/aa.d",
-				"runtime/webassembly/arsd-webassembly/core/arsd/objectutils.d",
-				"runtime/webassembly/arsd-webassembly/core/arsd/utf_decoding.d",
-				"runtime/webassembly/arsd-webassembly/core/internal/utf.d"
-			],
-			"excludedSourceFiles": ["source/**"],
-			"dflags": [
-				"-Oz"
-			],
-			
-			"importPaths": [
-				"runtime/webassembly/arsd-webassembly"
-			],
-			"lflags": [
-				"-allow-undefined"
-			],
-			"versions": [
-				"CarelessAlocation"
-			]
-		}
+	"mainSourceFile": "source/serve.d",
+	"targetType": "executable",
+	"excludedSourceFiles": [
+		"source/app.d"
+	],
+	"versions": [
+		"embedded_httpd"
 	]
 }
