@@ -41,10 +41,10 @@ interface IHipFileItf
 }
 interface IHipFSPromise
 {
-  IHipFSPromise addOnSuccess(void delegate(in ubyte[] data) onSuccess);
-  IHipFSPromise addOnError(void delegate(string error) onError);
-  bool resolved() const;
-  final bool opCast() const {return resolved;}
+    IHipFSPromise addOnSuccess(void delegate(in ubyte[] data) onSuccess);
+    IHipFSPromise addOnError(void delegate(string error) onError);
+    bool resolved() const;
+  
 }
 
 interface IHipFileSystemInteraction

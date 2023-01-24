@@ -37,6 +37,7 @@ version(Script)
 
 mixin template HipEngineMain(alias StartScene)
 {
+	immutable string ScriptModules = import("scriptmodules.txt");
 	version(Script)
 	{
 		__gshared AScene _exportedScene;

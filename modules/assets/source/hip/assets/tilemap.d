@@ -278,8 +278,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
         tileset._path = path;
         tileset._firstGid = firstGid;
 
-        string jsonData;
-        HipFS.readText(path, jsonData).addOnSuccess((in void[] data)
+        HipFS.readText(path).addOnSuccess((in void[] data)
         {
             tileset.loadJSON(parseJSON(cast(string)data), onSuccess, onError);
         }).addOnError((err)
@@ -407,8 +406,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
         {
             ErrorHandler.assertExit(texturePath != "", "No texture path for loading tilemap texture");
             string imagePath = replaceFileName(path, texturePath);
-            ubyte[] data;
-            HipFS.read(imagePath, data).addOnSuccess((in void[] imgData)
+            HipFS.read(imagePath).addOnSuccess((in ubyte[] imgData)
             {
                 textureImage = new Image(imagePath, cast(ubyte[])imgData, onSuccess, onFailure);
             }).addOnError((string err)
@@ -648,10 +646,9 @@ class HipTilemap : HipAsset, IHipTilemap
     static void readTiledJSON (string tiledPath, void delegate(HipTilemap) onSuccess, void delegate() onError)
     {
         import hip.filesystem.hipfs;
-        ubyte[] jsonData;
-        HipFS.read(tiledPath, jsonData).addOnSuccess((in ubyte[] data)
+        HipFS.read(tiledPath).addOnSuccess((in ubyte[] data)
         {
-            HipTilemap.readTiledJSON(tiledPath, cast()jsonData, onSuccess, onError);
+            HipTilemap.readTiledJSON(tiledPath, cast(ubyte[])data, onSuccess, onError);
         }).addOnError((err)
         {
             import hip.error.handler;

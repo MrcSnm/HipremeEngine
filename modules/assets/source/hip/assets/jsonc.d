@@ -25,13 +25,16 @@ class HipJSONC : HipAsset, IHipJSONC
     {
         import hip.filesystem.hipfs;
         import hip.error.handler;
-        string tempData;
-        if(!HipFS.readText(filePath, tempData))
+
+        HipFS.readText(filePath).addOnError((err)
         {
             ErrorHandler.showWarningMessage("Could not load JSONC file", filePath);
-            return false;
-        }
-        return loadFromMemory(tempData, filePath);
+
+        }).addOnSuccess((in ubyte[] data)
+        {
+            loadFromMemory(cast(string)data, filePath);
+        });
+        return true;
     }
     override void onFinishLoading(){}
     override void onDispose(){}

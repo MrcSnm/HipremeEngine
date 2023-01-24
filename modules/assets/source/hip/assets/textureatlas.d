@@ -133,7 +133,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     {
         import hip.filesystem.hipfs;
         string data;
-        if(!HipFS.readText(spritesheetPath, data))
+        if(!HipFS.readText(spritesheetPath))
         {
             import hip.error.handler;
             ErrorHandler.showWarningMessage("Could not find spritesheet from path ", spritesheetPath);
@@ -189,43 +189,6 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     }
 
 
-    /**
-    *   Used for the following type of XML (Parsed without a real XML parser):
-    ```xml
-       <TextureAtlas imagePath="image.png">
-           <SubTexture name="sub.png" x="0" y="0" width="0" height="0"/>
-       </TextureAtlas>
-    ```
-    */
-    static HipTextureAtlas readXML (string atlasPath, string texturePath = ":IGNORE")
-    {
-        import hip.filesystem.hipfs;
-        string data;
-        if(!HipFS.readText(atlasPath, data))
-        {
-            import hip.error.handler;
-            ErrorHandler.showWarningMessage("Could not find atlas XML with path ", atlasPath);
-            return null;
-        }
-        return readXML(cast(ubyte[])data, atlasPath, texturePath);
-    }
-
-    static HipTextureAtlas read (string atlasPath, string texturePath = ":IGNORE")
-    {
-        import hip.util.path;
-        switch(atlasPath.extension)
-        {
-            case "xml":
-                return HipTextureAtlas.readXML(atlasPath, texturePath);
-            case "atlas":
-                return HipTextureAtlas.readAtlas(atlasPath);
-            case "json":
-                return HipTextureAtlas.readJSON(atlasPath, texturePath == ":IGNORE" ? "" : texturePath);
-            default:
-                return HipTextureAtlas.readSpritesheet(atlasPath, texturePath == ":IGNORE" ? "" : texturePath);
-        }
-    }
-
     static HipTextureAtlas readFromMemory (ubyte[] data, string atlasPath, string texturePath = ":IGNORE")
     {
         import hip.util.path;
@@ -242,7 +205,14 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         }
     }
 
-
+    /**
+    *   Used for the following type of XML (Parsed without a real XML parser):
+    ```xml
+       <TextureAtlas imagePath="image.png">
+           <SubTexture name="sub.png" x="0" y="0" width="0" height="0"/>
+       </TextureAtlas>
+    ```
+    */
     static HipTextureAtlas readXML (ubyte[] data, string atlasPath, string texturePath = ":IGNORE")
     {
         import hip.assets.texture;
@@ -284,22 +254,6 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         return atlas;
     }
     
-    static HipTextureAtlas readJSON (string atlasPath, string texturePath="") //!FIXME
-    {
-        import hip.util.path;
-        import hip.filesystem.hipfs;
-
-        string data;
-        if(!HipFS.readText(atlasPath, data))
-        {
-            import hip.error.handler;
-            ErrorHandler.showWarningMessage("Could not atlas JSON from path ", atlasPath);
-            return null;
-        }
-        if(texturePath == "")
-            texturePath = atlasPath.dup.extension("png");
-        return readJSON(cast(ubyte[])data, atlasPath, texturePath);
-    }
 
     static HipTextureAtlas readAtlas (ubyte[] data, string atlasPath)
     {
@@ -373,19 +327,6 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         return ret;
     }
 
-    static HipTextureAtlas readAtlas (string atlasPath)
-    {
-        import hip.filesystem.hipfs;
-        import hip.error.handler;
-        string data;
-
-        if(!HipFS.readText(atlasPath, data))
-        {
-            ErrorHandler.showWarningMessage("Could not load HipTextureAtlas atlas from path ", atlasPath);
-            return null;
-        }
-        return readAtlas(cast(ubyte[])data, atlasPath);
-    }
     
     override void onFinishLoading(){}
     override void onDispose(){}

@@ -224,10 +224,6 @@ class HipAssetManager
     protected __gshared void delegate(IHipAsset)[][HipAssetLoadTask] completeHandlers;
     
 
-    //Auto Loading
-    protected __gshared HipAsset[string] referencedAssets;
-    protected __gshared bool isCheckingReferenced = false;
-
 
     public static void initialize()
     {
@@ -246,40 +242,14 @@ class HipAssetManager
         static bool isAsync = false;
     }
 
-    static void startCheckingReferences(){isCheckingReferenced = true;}
-    static void stopCheckingReferences()
-    {
-        isCheckingReferenced = false;
-        foreach(key, value; referencedAssets)
-        {
-            if(value.typeID == assetTypeID!Image)
-            {
 
-            }
-            else if(value.typeID == assetTypeID!HipTexture)
-            {
-
-            }
-        }
-        referencedAssets.clear();
-    }
-
-    static HipAsset getAsset(string name)
+    @ExportD static IHipAsset getAsset(string name)
     {
         if(HipAsset* asset = name in assets)
             return *asset;
-        else if(isCheckingReferenced && (name in referencedAssets) is null)
-        {
-            // load()
-        }
         return null;
     }
     static pragma(inline, true) T getAsset(T : HipAsset)(string name) {return cast(T)getAsset(name);}
-
-    static HipAssetLoadTask tryLoadAsset(T: HipAsset)(string name)
-    {
-        
-    }
 
     ///Returns whether asset manager is loading anything
     @ExportD static bool isLoading(){return !workerPool.isIdle;}
@@ -329,7 +299,7 @@ class HipAssetManager
      */
     private static HipAssetLoadTask loadBase(string path, HipWorkerThread worker, string fileRequesting = __FILE__, size_t lineRequesting = __LINE__)
     {
-        HipAsset asset = getAsset(path);
+        HipAsset asset = cast(HipAsset)getAsset(path);
         if(asset !is null){return new HipAssetLoadTask(path, asset, fileRequesting, lineRequesting);}
         else if(HipAssetLoadTask* task = path in loadQueue){return *task;}
 
@@ -469,8 +439,7 @@ class HipAssetManager
         (pathOrLocation,onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
-            ubyte[] output;
-            HipFS.read(pathOrLocation, output).addOnSuccess((in ubyte[] data)
+            HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
             {
                 new Image(pathOrLocation, cast(ubyte[])data, (IImage img){onSuccess(cast(HipAsset)img);}, (){onFailure();});
             }).addOnError((string err)
@@ -493,8 +462,7 @@ class HipAssetManager
         (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
-            ubyte[] output;
-            HipFS.read(pathOrLocation, output).addOnSuccess((in ubyte[] data)
+            HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
             {
                 auto clip = new hip.assets.audioclip.HipAudioClip();
                 clip.loadFromMemory(data, getEncodingFromName(pathOrLocation), HipAudioType.SFX,
@@ -520,8 +488,7 @@ class HipAssetManager
         (pathOrLocation, onFirstStepComplete, onFailure)
         {
             import hip.filesystem.hipfs;
-            ubyte[] output;
-            HipFS.read(pathOrLocation, output).addOnSuccess((in ubyte[] data)
+            HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
             {
                 Image img;
                 img = new Image(pathOrLocation, cast(ubyte[])data, 
@@ -554,8 +521,7 @@ class HipAssetManager
         HipAssetLoadTask task = loadSimple("Load CSV", path, (pathOrLocation, onSuccess, onError)
         {
             import hip.filesystem.hipfs;
-            ubyte[] output;
-            HipFS.read(pathOrLocation, output).addOnSuccess((in ubyte[] data)
+            HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
             {
                 auto ret = new HipCSV();
                 ret.loadFromMemory(cast(string)data);
@@ -573,8 +539,7 @@ class HipAssetManager
         HipAssetLoadTask task = loadSimple("Load INI", path, (pathOrLocation, onSuccess, onError)
         {
             import hip.filesystem.hipfs;
-            ubyte[] output;
-            HipFS.read(pathOrLocation, output).addOnSuccess((in ubyte[] data)
+            HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
             {
                 auto ret = new HipINI();
                 ret.loadFromMemory(cast(string)data, pathOrLocation);
@@ -593,8 +558,7 @@ class HipAssetManager
         HipAssetLoadTask task = loadSimple("Load JSONC", path, (pathOrLocation, onSuccess, onError)
         {
             import hip.filesystem.hipfs;
-            ubyte[] output;
-            HipFS.read(pathOrLocation, output).addOnSuccess((in ubyte[] data)
+            HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
             {
                 auto ret = new HipJSONC();
                 ret.loadFromMemory(cast(string)data);
@@ -623,14 +587,12 @@ class HipAssetManager
         (pathOrLocation, onFirstStepComplete, onFailure)
         {
             import hip.filesystem.hipfs;
-            ubyte[] output;
-            HipFS.read(pathOrLocation, output).addOnSuccess((in ubyte[] data)
+            HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
             {
                 TextureAtlasIntermediaryData inter = new TextureAtlasIntermediaryData();
                 inter.atlas = HipTextureAtlas.readFromMemory(cast(ubyte[])data, atlasPath, texturePath);
                 
-                ubyte[] _imgData;
-                HipFS.read(inter.atlas.getTexturePath(), _imgData).addOnSuccess((in ubyte[] imgData)
+                HipFS.read(inter.atlas.getTexturePath()).addOnSuccess((in ubyte[] imgData)
                 {
                     inter.image = new Image(pathOrLocation, imgData, 
                     (IImage _)
@@ -672,10 +634,9 @@ class HipAssetManager
         {
             import hip.filesystem.hipfs;
             HipTilemap map;
-            ubyte[] jsonData;
-            HipFS.read(pathOrLocation, jsonData).addOnSuccess((in ubyte[] data)
+            HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
             {
-                map = HipTilemap.readTiledJSON(pathOrLocation, jsonData, (_)
+                map = HipTilemap.readTiledJSON(pathOrLocation, cast(ubyte[])data, (_)
                 {
                     map.loadImages(()
                     {
@@ -709,8 +670,7 @@ class HipAssetManager
         {
             import hip.filesystem.hipfs;
 
-            ubyte[] data;
-            HipFS.read(pathOrLocation, data).addOnSuccess((in ubyte[] data)
+            HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
             {
                 auto onTilesetJsonLoaded = delegate(HipTilesetImpl tileset)
                 {
@@ -782,8 +742,7 @@ class HipAssetManager
             import hip.filesystem.hipfs;
             Hip_TTF_Font font = new Hip_TTF_Font(pathOrLocation, fontSize);
             ubyte[] rawImage;
-            ubyte[] fontData;
-            HipFS.read(pathOrLocation, fontData).addOnSuccess((in ubyte[] data)
+            HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
             {
                 if(!font.partialLoad(cast(ubyte[])data, rawImage))
                     onFailure("Could not load font data");
@@ -826,16 +785,14 @@ class HipAssetManager
         (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
-            ubyte[] output;
-            HipFS.read(pathOrLocation, output).addOnSuccess((in ubyte[] fontData)
+            HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] fontData)
             {
                 HipBitmapFont font = new HipBitmapFont();
                 if(!font.loadAtlas(cast(string)fontData, pathOrLocation))
                     return onFailure("Could not load font atlas.");
                 HipImageImpl img = new HipImageImpl(font.getTexturePath);
 
-                ubyte[] _imgData;
-                HipFS.read(font.getTexturePath, _imgData).addOnSuccess((in ubyte[] imgData)
+                HipFS.read(font.getTexturePath).addOnSuccess((in ubyte[] imgData)
                 {
                     img.loadFromMemory(cast(ubyte[])imgData, (IImage _)
                     {
@@ -929,7 +886,6 @@ class HipAssetManager
     static void dispose()
     {
         import hip.error.handler;
-        ErrorHandler.assertExit(!isCheckingReferenced, "Tried to dispose AssetManager while checking referenced assets");
         workerPool.dispose();
         foreach(HipAsset asset; assets.byValue)
             asset.dispose();
