@@ -237,9 +237,7 @@ class GameSystem
         import hip.console.log;
         import hip.assetmanager;
         logln("Initializing scene ", s.getName);
-        HipAssetManager.startCheckingReferences();
     	s.initialize();
-        HipAssetManager.stopCheckingReferences();
 
         scenes~= s;
     }

@@ -7,7 +7,6 @@ version(Script) void initInput()
     loadClassFunctionPointers!HipInputBinding;
     enum InputMapClass = "HipInputMap";
     mixin(loadSymbolsFromExportD!(InputMapClass,
-        parseInputMap_File,
         parseInputMap_Mem
     ));
     import hip.api.console;

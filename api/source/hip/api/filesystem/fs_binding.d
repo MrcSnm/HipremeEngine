@@ -17,6 +17,7 @@ version(Have_hipreme_engine)
 else
 {
     import hip.api.internal;
+    public import hip.api.filesystem.hipfs;
 
     class HipFSBinding
     {
@@ -31,11 +32,8 @@ else
             // {
                 // return ret(path, cast(ubyte[])output);
             // }
-            @Overload("read") package  bool function (string path, out void[] output) read_void;
-            @Overload("read") package  bool function (string path, out ubyte[] output) read_ubyte;
-            @Overload("read") package  ubyte[] function (string path) read;
-            @Overload("readText") package  bool function (string path, out string output) readText_out;
-            @Overload("readText") package  string function (string path) readText;
+            IHipFSPromise function (string path, out ubyte[] output) read;
+            IHipFSPromise function (string path, out string output) readText;
             bool function (string path, void[] data) write;
             bool function (string path) exists;
             bool function (string path) remove;

@@ -249,7 +249,7 @@ class HipFileSystem
         };
     }
     
-    @ExportD("ubyte") public static IHipFSPromise read(string path, out ubyte[] output)
+    @ExportD public static IHipFSPromise read(string path)
     {
         import hip.console.log;
         hiplog("Required path ", path);
@@ -262,7 +262,6 @@ class HipFileSystem
         HipFSPromise promise = new HipFSPromise(path);
         fs.read(path, (ubyte[] data)
         {
-            output = data;
             filesReadingCount--;
             promise.setFinished(data);
         }, (string err)
@@ -274,33 +273,16 @@ class HipFileSystem
         return promise;
     }
 
-    
-    @ExportD public static ubyte[] read(string path)
+    @ExportD public static IHipFSPromise readText(string path)
     {
-        ubyte[] output;
-        if(read(path, output))
-            return output;
-        return [];
-    }
-
-    @ExportD("out") public static IHipFSPromise readText(string path, out string output)
-    {
-        ubyte[] data;
-        IHipFSPromise ret = read(path, data);
-        if(ret)
-        {
-            import std.utf;
-            output = toUTF8((cast(string)data));
-        }
+        IHipFSPromise ret = read(path);
+        // if(ret)
+        // {
+        //     import std.utf;
+        //     output = toUTF8((cast(string)data));
+        // }
         return ret;
     }
-    @ExportD public static string readText(string path)
-    {
-        string output;
-        readText(path, output);
-        return output;
-    }
-
     
 
     version(HipDStdFile)
