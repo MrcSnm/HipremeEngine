@@ -13,12 +13,13 @@ class HipAudioClip : HipAsset, IHipAudioClip
         import hip.hipaudio.audio;
         clip = HipAudio.getClip();
     }
-    public bool loadFromMemory(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type,
+    public bool loadFromMemory(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type,    
     void delegate(in ubyte[]) onSuccess, void delegate() onFailure)
     {
         return clip.loadFromMemory(data,encoding,type,onSuccess,onFailure);
     }
-
+    
+    IHipAudioClip getAudioClipBackend(){return clip;}
     uint loadStreamed(in ubyte[] data, HipAudioEncoding encoding){return clip.loadStreamed(data,encoding);}
     uint getSampleRate(){return clip.getSampleRate;}
     uint updateStream(){return clip.updateStream;}

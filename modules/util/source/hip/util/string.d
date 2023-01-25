@@ -45,7 +45,8 @@ struct String
     {
         String s;
         s.initialize(str.length);
-        s.chars[] = str;
+        s.chars = s.chars.ptr[0..str.length];
+        s.chars[] = str[];
         return s;
     }
     static auto opCall(const(char)* str){return opCall(str[0..strlen(str)]);}

@@ -183,11 +183,13 @@ version(HipConcurrency)
                     import std.stdio;
                     try
                     {
+                        mutex.lock();
                         job.task();
                         if(job.onTaskFinish != null)
                         {
                             job.onTaskFinish(job.name);
                         }
+                        mutex.unlock();
                     }
                     catch(Error e)
                     {
@@ -230,6 +232,7 @@ version(HipConcurrency)
         HipWorkerThread[] threads;
         protected Semaphore awaitSemaphore;
         protected void delegate()[] finishHandlersOnMainThread;
+        protected void delegate()[] onAllTasksFinishHandlers;
         protected DebugMutex handlersMutex;
 
         private struct Task
@@ -240,6 +243,7 @@ version(HipConcurrency)
         }
         private Task[] mainThreadTasks;
         private uint awaitCount = 0;
+        private size_t tasksCount = 0;
 
 
         this(size_t poolSize)
@@ -249,6 +253,14 @@ version(HipConcurrency)
             for(size_t i = 0; i < poolSize; i++)
                 threads[i] = new HipWorkerThread(this);
             awaitSemaphore = new Semaphore(0);
+        }
+
+        void addOnAllTasksFinished(void delegate() onAllFinished)
+        {
+            if(tasksCount == 0)
+                onAllFinished();
+            else
+                onAllTasksFinishHandlers~= onAllFinished;
         }
 
         protected void onHipThreadError(HipWorkerThread worker, bool isError, string message)
@@ -289,20 +301,21 @@ version(HipConcurrency)
         */
         HipWorkerThread pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null, bool isOnFinishOnMainThread = false)
         {
+            tasksCount++;
             foreach(thread; threads)
             {
                 if(thread.isIdle)
                 {
                     if(onTaskFinish !is null && isOnFinishOnMainThread)
-                        thread.pushTask(name, task, notifyOnFinish(onTaskFinish));
+                        thread.pushTask(name, task, notifyOnFinishOnMainThread(onTaskFinish));
                     else
-                        thread.pushTask(name, task, onTaskFinish);
+                        thread.pushTask(name, task, notifyOnFinish(onTaskFinish));
                     return thread;
                 }
             }
             //Execute a main thread task if it had anything.
             handlersMutex.lock();
-            mainThreadTasks~= Task(name, task, onTaskFinish);
+            mainThreadTasks~= Task(name, task, notifyOnFinish(onTaskFinish));
             handlersMutex.unlock();
             return null;
         }
@@ -334,14 +347,28 @@ version(HipConcurrency)
             executeMainThreadTasks();
         }
 
-        void delegate(string name) notifyOnFinish(void delegate(string taskName) onFinish)
+        void delegate(string name) notifyOnFinish(void delegate(string taskName) onFinish = null)
         {
             return (name)
             {
-                // imported!"std.stdio".writeln("Finished ", name);
-
                 handlersMutex.lock();
-                    finishHandlersOnMainThread~= (){onFinish(name);};
+                    if(onFinish)
+                        onFinish(name);
+                    tasksCount--;
+                handlersMutex.unlock();
+            };
+        }
+
+        void delegate(string name) notifyOnFinishOnMainThread(void delegate(string taskName) onFinish)
+        {
+            return (name)
+            {
+                handlersMutex.lock();
+                    finishHandlersOnMainThread~= ()
+                    {
+                        onFinish(name);
+                        tasksCount--;
+                    };
                 handlersMutex.unlock();
             };
         }
@@ -362,6 +389,12 @@ version(HipConcurrency)
                     foreach(finishHandler; finishHandlersOnMainThread)
                         finishHandler();
                     finishHandlersOnMainThread.length = 0;
+                }
+                if(tasksCount == 0 && onAllTasksFinishHandlers.length)
+                {
+                    foreach(onAllFinish; onAllTasksFinishHandlers)
+                        onAllFinish();
+                    onAllTasksFinishHandlers.length = 0;
                 }
             handlersMutex.unlock();
 
@@ -388,16 +421,35 @@ else
     class HipWorkerPool
     {
         private HipWorkerThread thread;
+        protected void delegate()[] onAllTasksFinishHandlers;
         private void delegate()[] finishHandlersOnMainThread;
+        size_t tasksCount = 0;
+        void addOnAllTasksFinished(void delegate() onAllFinished)
+        {
+            if(tasksCount == 0)
+                onAllFinished();
+            else
+                onAllTasksFinishHandlers~= onAllFinished;
+        }
+
         this(size_t poolSize)
         {
             thread = new HipWorkerThread(this);
         }
+        void delegate(string name) notifyOnFinishOnMainThread(void delegate(string taskName) onFinish)
+        {
+            return (name)
+            {
+                finishHandlersOnMainThread~= (){onFinish(name); tasksCount--;};
+            };
+        }
+
         void delegate(string name) notifyOnFinish(void delegate(string taskName) onFinish)
         {
             return (name)
             {
-                finishHandlersOnMainThread~= (){onFinish(name);};
+                tasksCount--;
+                if(onFinish) onFinish(name);
             };
         }
         final void await()
@@ -412,12 +464,19 @@ else
                     handler();
                 finishHandlersOnMainThread.length = 0;
             }
+            if(tasksCount == 0 && onAllTasksFinishHandlers.length)
+            {
+                foreach(onAllFinish; onAllTasksFinishHandlers)
+                    onAllFinish();
+                onAllTasksFinishHandlers.length = 0;
+            }
         }
         final HipWorkerThread pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null, bool isOnFinishOnMainThread = true)
         {
+            tasksCount++;
             version(WebAssembly)
                 assert(onTaskFinish is null, "Can't have an onTaskFinish on Wasm, implement it on a higher level using notfyOnFinish.");
-            thread.pushTask(name, task, onTaskFinish);
+            thread.pushTask(name, task, notifyOnFinish(onTaskFinish));
             return thread;
         }
         final void startWorking(){thread.startWorking();}

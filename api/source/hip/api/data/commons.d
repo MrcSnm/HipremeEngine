@@ -33,13 +33,39 @@ string[] getModulesFromRoot(string modules, string root)
     return ret[rootStart..$];
 }
 
+IHipAssetLoadTask loadAsset(type)(string assetPath)
+{
+    import hip.api;
+    static if(is(type == IHipCSV))
+        return HipAssetManager.loadCSV(assetPath);
+    else static if(is(type == IHipFont))
+        return HipAssetManager.loadFont(assetPath);
+    else static if(is(type == IImage))
+        return HipAssetManager.loadImage(assetPath);
+    else static if(is(type == IHipIniFile))
+        return HipAssetManager.loadINI(assetPath);
+    else static if(is(type == IHipJSONC))
+        return HipAssetManager.loadJSONC(assetPath);
+    else static if(is(type == IHipTexture))
+        return HipAssetManager.loadTexture(assetPath);
+    else static if(is(type == IHipTextureAtlas))
+        return HipAssetManager.loadTextureAtlas(assetPath);
+    else static if(is(type == IHipTilemap))
+        return HipAssetManager.loadTilemap(assetPath);
+    else static if(is(type == IHipTileset))
+        return HipAssetManager.loadTileset(assetPath);
+    else static if(is(type == IHipAudioClip))
+        return HipAssetManager.loadAudio(assetPath);
+    else
+        return HipAssetManager.loadFile(assetPath);
+}
 
-mixin template LoadAllAssets()
+mixin template LoadAllAssets(string modules)
 {
     import hip.util.string:split;
     mixin LoadReferencedAssets!(modules.split("\n"));
 }
-mixin template LoadReferencedAssets(string[] modules, alias callback)
+mixin template LoadReferencedAssets(string[] modules)
 {
     void loadReferenced()
     {
@@ -79,9 +105,13 @@ mixin template LoadReferencedAssets(string[] modules, alias callback)
                                 alias classMember = __traits(getMember, type, classMemberStr);
                                 alias assetUDA = GetUDA!(Asset, __traits(getAttributes, classMember));
                                 static if(assetUDA.path !is null)
-                                {
-                                    callback(assetUDA.path);
-                                }
+                                {{
+                                    IHipAssetLoadTask task = loadAsset!(typeof(classMember))(assetUDA.path);
+                                    static if(!__traits(compiles, classMember.offsetof)) //Static 
+                                    {
+                                        task.into(&classMember);
+                                    }
+                                }}
                             }}
                         }
                     }
@@ -133,27 +163,8 @@ mixin template PreloadAssets()
 {
     private void _load(type, alias theMember)(string assetPath)
     {
-        static if(is(type == IHipCSV))
-            HipAssetManager.loadCSV(assetPath).into(&theMember);
-        else static if(is(type == IHipFont))
-            HipAssetManager.loadFont(assetPath).into(&theMember);
-        else static if(is(type == IImage))
-            HipAssetManager.loadImage(assetPath).into(&theMember);
-        else static if(is(type == IHipIniFile))
-            HipAssetManager.loadINI(assetPath).into(&theMember);
-        else static if(is(type == IHipJSONC))
-            HipAssetManager.loadJSONC(assetPath).into(&theMember);
-        else static if(is(type == IHipTexture))
-            HipAssetManager.loadTexture(assetPath).into(&theMember);
-        else static if(is(type == IHipTextureAtlas))
-            HipAssetManager.loadTextureAtlas(assetPath).into(&theMember);
-        else static if(is(type == IHipTilemap))
-            HipAssetManager.loadTilemap(assetPath).into(&theMember);
-        else static if(is(type == IHipTileset))
-            HipAssetManager.loadTileset(assetPath).into(&theMember);
-
+        loadAsset!type(assetPath).into(&theMember);
     }
-    ;
     alias preload = ForeachAssetInClass!(typeof(this), _load);
 }
 
@@ -164,28 +175,33 @@ interface IHipPreloadable
 
     mixin template Preload()
     {
-        final string[] getAssetsForPreload()
+        mixin template impl()
         {
-            static string[] ret;
-            static void getAsset(T, alias member)(string asset){ret~= asset;}
-            if(ret.length != 0)
+            final string[] getAssetsForPreload()
             {
-                mixin ForeachAssetInClass!(typeof(this), __traits(child, this, getAsset)) f;
+                static string[] ret;
+                static void getAsset(T, alias member)(string asset){ret~= asset;}
+                if(ret.length != 0)
+                {
+                    mixin ForeachAssetInClass!(typeof(this), __traits(child, this, getAsset)) f;
+                    f.ForeachAssetInClass;
+                }
+                return ret;
+            }
+            final void preload()
+            {
+                mixin ForeachAssetInClass!(typeof(this), loadAsset) f;
                 f.ForeachAssetInClass;
             }
-            return ret;
         }
-
         private final void loadAsset(T, alias member)(string asset)
         {
-            __traits(child, this, member) = HipAssetManager.get!T(asset);
+            ///Don't take static members.
+            static if(__traits(compiles, __traits(child, this, member).offsetof))
+                __traits(child, this, member) = HipAssetManager.get!T(asset);
         }
-
-        final void preload()
-        {
-            mixin ForeachAssetInClass!(typeof(this), loadAsset) f;
-            f.ForeachAssetInClass;
-        }
+        static if(__traits(compiles, typeof(super).preload)){override: mixin impl;}
+        else{mixin impl;}
     }
 }
 
@@ -232,6 +248,7 @@ interface IHipAssetLoadTask
     void await();
     ///When the variables finish loading, it will also assign the asset to the variables 
     void into(void* function(IHipAsset asset) castFunc, IHipAsset*[] variables...);
+    void into(string*[] variables...);
     final void into(T)(T*[] variables...){into((asset) => (cast(void*)cast(T)asset), cast(IHipAsset*[])variables);}
 
 

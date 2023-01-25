@@ -234,12 +234,15 @@ class GameSystem
     */
     void addScene(AScene s)
     {
-        import hip.console.log;
         import hip.assetmanager;
-        logln("Initializing scene ", s.getName);
-    	s.initialize();
-
-        scenes~= s;
+        s.preload();
+        HipAssetManager.addOnLoadingFinish(()
+        {
+            import hip.console.log;
+            hiplog("Initializing scene ", s.getName);
+    	    s.initialize();
+            scenes~= s;
+        });
     }
 
     bool update(float deltaTime)
