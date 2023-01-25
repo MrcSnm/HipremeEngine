@@ -69,7 +69,9 @@ class HipTexture : HipAsset, IHipTexture
 
     protected bool loadImpl(in IImage img)
     {
+        import hip.console.log;
         successfullyLoaded = textureImpl.load(img);
+        logln(img.getWidth, " vs ", textureImpl.getWidth);
         width = textureImpl.getWidth;
         height = textureImpl.getHeight;
         return successfullyLoaded;

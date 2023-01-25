@@ -49,6 +49,12 @@ version(Script) extern(System)
 
     IHipAsset function(string name) getAsset;
 
+    ///File reading wrapped in asset manager.
+    IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadFile;
+
+    ///Loads an in memory audio clip
+    IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadAudio;
+
     ///Returns a load task for texture
     IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadTexture;
     ///Returns a load task for image

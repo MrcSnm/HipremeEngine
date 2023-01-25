@@ -81,7 +81,7 @@ class HipXAudioSource : HipAudioSource
     override bool loop(bool value)
     {
         bool ret = super.loop(value);
-        HipXAudioClip c = (cast(HipXAudioClip)clip);
+        HipXAudioClip c = clip.getAudioClipBackend!(HipXAudioClip);
         c.buffer.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
         return ret;
     }

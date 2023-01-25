@@ -21,6 +21,9 @@ interface IHipAudioClip
      *  audio asset.
      */
     HipAudioBufferAPI* _getBufferAPI(ubyte[] data, uint size); 
+    ///Reserved for internal engine methods.
+    IHipAudioClip getAudioClipBackend();
+    T getAudioClipBackend(T)(){return cast(T)getAudioClipBackend;}
     ubyte[] getClipData();
     size_t getClipSize();
     float getDuration();

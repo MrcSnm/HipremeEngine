@@ -191,6 +191,7 @@ public abstract class HipAudioClip : IHipAudioClip
         memcpy(&returnBuffer, &buff, (void*).sizeof);
         return cast(HipAudioBufferAPI*)returnBuffer;
     }
+    IHipAudioClip getAudioClipBackend(){return this;}
 
     package final void setBufferAvailable(HipAudioBuffer buffer)
     {

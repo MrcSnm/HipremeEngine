@@ -67,6 +67,9 @@ mixin template HipEngineMain(alias StartScene)
 			HipAssetManager.initAssetManager();
 			initTimerAPI();
 			initGameAPI();
+
+			mixin LoadAllAssets!(ScriptModules);
+			loadReferenced();
 			
 			return _exportedScene = new StartScene();
 		}
