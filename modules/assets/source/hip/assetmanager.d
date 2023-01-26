@@ -91,6 +91,21 @@ final class HipAssetLoadTask : IHipAssetLoadTask
     bool opCast(T : bool)() const{return hasFinishedLoading;}
 
 
+    void addOnCompleteHandler(void delegate(IHipAsset) onComplete)
+    {
+        HipAssetManager.addOnCompleteHandler(this, onComplete);
+    }
+    void addOnCompleteHandler(void delegate(string) onComplete)
+    {
+        HipAssetManager.addOnCompleteHandler(this, (asset)
+        {
+            HipFileAsset theAsset = cast(HipFileAsset)asset;
+            assert(theAsset !is null, "Asset received is not a text");
+            onComplete(theAsset.getText);
+        });
+    }
+
+
     void into(string*[] variables...)
     {
         import hip.error.handler;
@@ -103,12 +118,10 @@ final class HipAssetLoadTask : IHipAssetLoadTask
             case loading:
                 //variables are implicitly `scope`, need to duplicate.
                 string*[] vars = variables.dup;
-                HipAssetManager.addOnCompleteHandler(this, (completeAsset)
+                addOnCompleteHandler((string data)
                 {
-                    HipFileAsset theAsset = cast(HipFileAsset)completeAsset;
-                    assert(theAsset !is null, "Null asset received in complete handler?");
                     foreach(v; vars)
-                        *v = theAsset.getText;
+                        *v = data;
                 });
                 break;
             case cantLoad:
@@ -130,7 +143,7 @@ final class HipAssetLoadTask : IHipAssetLoadTask
             case loading:
                 //variables are implicitly `scope`, need to duplicate.
                 IHipAsset*[] vars = variables.dup;
-                HipAssetManager.addOnCompleteHandler(this, (completeAsset)
+                addOnCompleteHandler((IHipAsset completeAsset)
                 {
                     IHipAsset theAsset = cast(IHipAsset)castFunc(completeAsset);
                     assert(theAsset !is null, "Null asset received in complete handler?");
@@ -277,7 +290,21 @@ class HipAssetManager
             return *asset;
         return null;
     }
-    static pragma(inline, true) T getAsset(T : HipAsset)(string name) {return cast(T)getAsset(name);}
+
+    @ExportD static string getStringAsset(string name)
+    {
+        IHipAsset asset = getAsset(name);
+        if(asset !is null)
+        {
+            HipFileAsset fA = cast(HipFileAsset)asset;
+            assert(fA !is null, "Asset fetched is not a file asset.");
+            return fA.getText;
+        }
+        else
+            return null;
+    }
+
+    static pragma(inline, true) T get(T)(string name) {return cast(T)getAsset(name);}
 
     ///Returns whether asset manager is loading anything
     @ExportD static bool isLoading(){return !workerPool.isIdle;}
@@ -416,7 +443,7 @@ class HipAssetManager
                 mainThreadLoadFunction(task.takePartialData(), onSuccessLoad(task));
             };
 
-            task = loadBase(taskName, loadWorker(taskName, ()
+            task = loadBase(taskName, path, loadWorker(taskName, ()
             {
                 loadAsset(path, onSuccessLoadFirstStep(task, nextStep), onFailureLoad(task));
             }), f, l);

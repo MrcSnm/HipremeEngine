@@ -1,9 +1,42 @@
 module hip.api.data.commons;
 
-struct Asset
+
+///Use @Asset instead of HipAsset.
+struct HipAssetUDA(T)
 {
     string path;
+    static if(!(is(T == void)))
+        T function(string data) conversionFunction;
 }
+
+HipAssetUDA!T Asset(T)(string path, T function(string) conversionFunc)
+{
+    return HipAssetUDA!T(path, conversionFunc);
+}
+HipAssetUDA!void Asset(string path)
+{
+    return HipAssetUDA!void(path);
+}
+
+template FilterAsset(Attributes...)
+{
+    import std.traits:isInstanceOf;
+    import std.meta:AliasSeq;
+    alias FilterAsset = AliasSeq!();
+    static foreach(attr; Attributes)
+        static if(isInstanceOf!(HipAssetUDA, typeof(attr)))
+        	FilterAsset = attr;
+}
+
+template GetAssetUDA(Attributes...)
+{
+    alias asset = FilterAsset!(Attributes);
+    static if(is(typeof(asset)))
+        enum GetAssetUDA = asset;
+    else
+        enum GetAssetUDA = HipAssetUDA!void();
+}
+
 
 string[] getModulesFromRoot(string modules, string root)
 {
@@ -70,23 +103,6 @@ mixin template LoadReferencedAssets(string[] modules)
     void loadReferenced()
     {
         import std.traits:isFunction;
-        template GetUDA(UDAType, Attributes...)
-        {
-            enum impl()
-            {
-                UDAType ret;
-                foreach(i; Attributes)
-                {
-                    if(is(typeof(i) == UDAType))
-                    {
-                        ret = i;
-                        break;
-                    }
-                }
-                return ret;
-            }
-            enum GetUDA = impl();
-        }
         static foreach(modStr; modules)
         {{
             mixin("import ",modStr,";");
@@ -103,13 +119,16 @@ mixin template LoadReferencedAssets(string[] modules)
                             static foreach(classMemberStr; __traits(derivedMembers, type))
                             {{
                                 alias classMember = __traits(getMember, type, classMemberStr);
-                                alias assetUDA = GetUDA!(Asset, __traits(getAttributes, classMember));
+                                alias assetUDA = GetAssetUDA!(__traits(getAttributes, classMember));
                                 static if(assetUDA.path !is null)
                                 {{
                                     IHipAssetLoadTask task = loadAsset!(typeof(classMember))(assetUDA.path);
                                     static if(!__traits(compiles, classMember.offsetof)) //Static 
                                     {
-                                        task.into(&classMember);
+                                        static if(__traits(hasMember, assetUDA, "conversionFunction"))
+                                            task.into(assetUDA.conversionFunction, &classMember);
+                                        else
+                                            task.into(&classMember);
                                     }
                                 }}
                             }}
@@ -128,30 +147,13 @@ mixin template ForeachAssetInClass(T, alias foreachAsset)
     void ForeachAssetInClass()
     {
         import std.traits:isFunction;
-        template GetUDA(UDAType, Attributes...)
-        {
-            enum impl()
-            {
-                UDAType ret;
-                foreach(i; Attributes)
-                {
-                    if(is(typeof(i) == UDAType))
-                    {
-                        ret = i;
-                        break;
-                    }
-                }
-                return ret;
-            }
-            enum GetUDA = impl();
-        }
         static foreach(member; __traits(derivedMembers, T))
         {{
             alias theMember = __traits(getMember, T, member);
             static if(!isFunction!theMember)
             {
                 alias type = typeof(theMember);
-                alias assetUDA = GetUDA!(Asset, __traits(getAttributes, theMember));
+                enum assetUDA = GetAssetUDA!(__traits(getAttributes, theMember));
                 static if(assetUDA.path != null)
                     foreachAsset!(type, theMember)(assetUDA.path);
             }
@@ -197,8 +199,19 @@ interface IHipPreloadable
         private final void loadAsset(T, alias member)(string asset)
         {
             ///Don't take static members.
-            static if(__traits(compiles, __traits(child, this, member).offsetof))
-                __traits(child, this, member) = HipAssetManager.get!T(asset);
+            alias mem = __traits(child, this, member);
+            static if(__traits(compiles, mem.offsetof))
+            {
+                static if(!__traits(compiles, HipAssetManager.get!T))
+                {
+                    alias assetUDA = GetAssetUDA!(__traits(getAttributes, mem));
+                    static assert(__traits(hasMember, assetUDA, "conversionFunction"), 
+                    "Type has no conversion function and HipAssetManager can't infer its type.");
+                    mem = assetUDA.conversionFunction(HipAssetManager.get!string(asset));
+                }
+                else
+                    mem = HipAssetManager.get!T(asset);
+            }
         }
         static if(__traits(compiles, typeof(super).preload)){override: mixin impl;}
         else{mixin impl;}
@@ -248,8 +261,19 @@ interface IHipAssetLoadTask
     void await();
     ///When the variables finish loading, it will also assign the asset to the variables 
     void into(void* function(IHipAsset asset) castFunc, IHipAsset*[] variables...);
-    void into(string*[] variables...);
     final void into(T)(T*[] variables...){into((asset) => (cast(void*)cast(T)asset), cast(IHipAsset*[])variables);}
+    void into(string*[] variables...);
+    void addOnCompleteHandler(void delegate(IHipAsset) onComplete);
+    void addOnCompleteHandler(void delegate(string) onComplete);
+    final void into(T)(T function(string) convertFunction, T*[] variables...)
+    {
+        T*[] vars = variables.dup;
+        addOnCompleteHandler((string data)
+        {
+            foreach(v; vars)
+                *v = convertFunction(data);
+        });
+    }
 
 
     ///Awaits the asset to be loaded and if the load was possible, cast it to the type, else returns null.

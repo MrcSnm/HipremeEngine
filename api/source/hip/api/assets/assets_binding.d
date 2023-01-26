@@ -48,6 +48,7 @@ version(Script) extern(System)
     void function (IHipAssetLoadTask task, void delegate(IHipAsset) onComplete) addOnCompleteHandler;
 
     IHipAsset function(string name) getAsset;
+    string function(string name) getStringAsset;
 
     ///File reading wrapped in asset manager.
     IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadFile;
@@ -131,5 +132,5 @@ version(Script) extern(System)
     //TODO: IHipAssetLoadTask function(string path) loadHapFile;
 }
 
-
 T get(T)(string name){return cast(T)getAsset(name);}
+T get(T : string)(string name){return cast(T)getStringAsset(name);}
