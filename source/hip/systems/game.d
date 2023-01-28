@@ -204,8 +204,8 @@ class GameSystem
         }
         else version(Standalone)
         {
-            import script.entry;
-            externalScene = new HipEngineMainScene();
+            import gamescript.entry;
+            externalScene = HipremeEngineMainScene();
             addScene(externalScene);
         }
     }
@@ -239,7 +239,7 @@ class GameSystem
         HipAssetManager.addOnLoadingFinish(()
         {
             import hip.console.log;
-            hiplog("Initializing scene ", s.getName);
+            loglnWarn("Initializing scene ", s.getName);
     	    s.initialize();
             scenes~= s;
         });

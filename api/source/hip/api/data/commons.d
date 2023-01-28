@@ -9,14 +9,8 @@ struct HipAssetUDA(T)
         T function(string data) conversionFunction;
 }
 
-HipAssetUDA!T Asset(T)(string path, T function(string) conversionFunc)
-{
-    return HipAssetUDA!T(path, conversionFunc);
-}
-HipAssetUDA!void Asset(string path)
-{
-    return HipAssetUDA!void(path);
-}
+HipAssetUDA!T Asset(T)(string path, T function(string) conversionFunc){return HipAssetUDA!T(path, conversionFunc);}
+HipAssetUDA!void Asset(string path){return HipAssetUDA!void(path);}
 
 template FilterAsset(Attributes...)
 {
@@ -170,6 +164,34 @@ mixin template PreloadAssets()
     alias preload = ForeachAssetInClass!(typeof(this), _load);
 }
 
+/**
+*   Usage:
+```d
+class SomeScene : IHipPreloadable
+{
+    mixin Preload; ///IHipPreloadable lets you use Preload symbol. 
+
+    ///Will load "someTexture.png" inside the member 'texture'
+    @Asset("someTexture.png")
+    IHipTexture texture;
+
+    ///Loads game levels inside this variable
+    @Asset("gameLevels.txt", &parseGameLevels)
+    GameLevel[] gameLevels
+
+    ///Doesn't need to call 'preload()' to populate. As it is variable, it will be populated right after its load.
+    @Asset("helpText.txt")
+    static string helpText;
+
+    void initialize()
+    {
+        preload(); ///Needed to call for populating your assets after the class creation
+    }
+
+    GameLevel[] parseGameLevels(string data){return [];}
+}
+```
+*/
 interface IHipPreloadable
 {
     void preload();
@@ -202,6 +224,7 @@ interface IHipPreloadable
             alias mem = __traits(child, this, member);
             static if(__traits(compiles, mem.offsetof))
             {
+                ///Try converting the member with conversion function
                 static if(!__traits(compiles, HipAssetManager.get!T))
                 {
                     alias assetUDA = GetAssetUDA!(__traits(getAttributes, mem));
@@ -209,10 +232,12 @@ interface IHipPreloadable
                     "Type has no conversion function and HipAssetManager can't infer its type.");
                     mem = assetUDA.conversionFunction(HipAssetManager.get!string(asset));
                 }
-                else
+                else //Just get from asset manager
                     mem = HipAssetManager.get!T(asset);
             }
         }
+
+        ///Deal with override/no override
         static if(__traits(compiles, typeof(super).preload)){override: mixin impl;}
         else{mixin impl;}
     }
@@ -250,19 +275,33 @@ enum HipAssetResult
     loaded
 }
 
+/** 
+ *  IHipAssetLoadTask is the base return type from any asset you want to `HipAssetManager.load{X}`.
+ *  The loading, unless otherwise stated, is asynchronous. For simple games, most of the time you won't need
+ *  to directly used LoadTask as currently the engine loads all the assets at startup to make it easier
+ *  to prototype a game without needing to think about those tasks.
+ *
+ *  `await` is not supported on WebAssembly export, so, don't use it if you plan to export to web.
+ */
 interface IHipAssetLoadTask
 {
     HipAssetResult result() const;
+    ///Sets the result. Should not exist in user code.
     HipAssetResult result(HipAssetResult result);
+
     IHipAsset asset();
+    ///Sets the asset. Should not exist in user code.
     IHipAsset asset(IHipAsset asset);
+
     bool hasFinishedLoading() const;
-    ///Awaits the asset load process
+    ///Awaits the asset load process. Can't be used on WebAssembly export
     void await();
     ///When the variables finish loading, it will also assign the asset to the variables 
     void into(void* function(IHipAsset asset) castFunc, IHipAsset*[] variables...);
     final void into(T)(T*[] variables...){into((asset) => (cast(void*)cast(T)asset), cast(IHipAsset*[])variables);}
     void into(string*[] variables...);
+
+    ///May be executed instantly if the asset is already loaded.
     void addOnCompleteHandler(void delegate(IHipAsset) onComplete);
     void addOnCompleteHandler(void delegate(string) onComplete);
     final void into(T)(T function(string) convertFunction, T*[] variables...)
@@ -276,7 +315,10 @@ interface IHipAssetLoadTask
     }
 
 
-    ///Awaits the asset to be loaded and if the load was possible, cast it to the type, else returns null.
+    /**
+    *   Awaits the asset to be loaded and if the load was possible, cast it to the type, else returns null.
+    *   Unsupported at WebAssembly.
+    */
     T awaitAs(T)()
     {
         await();
@@ -287,6 +329,8 @@ interface IHipAssetLoadTask
     }
 }
 
+
+///Maybe will be deprecated in future. This is common in web, but it is a pain to work with.
 interface IHipDeferrableTexture
 {
     void setTexture(IHipAssetLoadTask task);

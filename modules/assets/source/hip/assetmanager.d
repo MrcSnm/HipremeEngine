@@ -369,6 +369,11 @@ class HipAssetManager
     {
         return (HipAsset asset)
         {
+            ///Will need specific code. Web works differently
+            version(WebAssembly)
+            {
+                workerPool.signalTaskFinish();
+            }
             task.asset = asset;
             task.result = HipAssetResult.loaded;
             putComplete(task);
@@ -380,7 +385,7 @@ class HipAssetManager
         return (void[] partialData)
         {
             task.givePartialData(partialData);
-            workerPool.notifyOnFinishOnMainThread(nextStep)(task.name);
+            workerPool.notifyOnFinishOnMainThread(nextStep, false)(task.name);
         };
     }
 
@@ -446,7 +451,7 @@ class HipAssetManager
             task = loadBase(taskName, path, loadWorker(taskName, ()
             {
                 loadAsset(path, onSuccessLoadFirstStep(task, nextStep), onFailureLoad(task));
-            }), f, l);
+            }, null, true), f, l);
 
             return task;
         }
@@ -584,12 +589,11 @@ class HipAssetManager
         void delegate(void[], void delegate(HipAsset)) onPartialDataLoaded = 
         (partialData, onSuccess)
         {
-            IImage img = cast(IImage)partialData.ptr;
+            Image img = cast(Image)(cast(IImage)partialData.ptr);
             HipTexture ret = new HipTexture(img);
-            import hip.console.log;
-            logln("Image: ", img.getWidth, " Texture: ", ret.getWidth);
             onSuccess(ret);
-            freeGCMemory(partialData);
+            void* gcObjCopy = cast(void*)img;
+            freeGCMemory(gcObjCopy); 
         };
         HipAssetLoadTask task = loadComplex("Load Texture", texturePath, assetLoadFunc, onPartialDataLoaded, f, l);
         workerPool.startWorking();

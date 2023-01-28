@@ -51,7 +51,7 @@ public class Image : HipAsset, IImage
         {
             this.width = impl.getWidth;
             this.height = impl.getHeight;
-            onSuccess(self);
+            onSuccess(this);
         }, onFailure);
         return ret;
     }
