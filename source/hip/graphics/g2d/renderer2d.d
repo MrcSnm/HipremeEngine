@@ -272,3 +272,8 @@ Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint r
     uint frameHeight = t.getHeight() / rows;
     return cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
 }
+
+version(Standalone)
+{
+    public import exportd;
+}

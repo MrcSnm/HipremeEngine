@@ -19,18 +19,8 @@ void setZeroMemory(T)(ref T variable)
 }
 
 
-T* alloc(T)(size_t count = 1)
-{
-    static if(is(T == void))
-        return cast(void*)core.stdc.stdlib.malloc(count);
-    else
-        return cast(T*)core.stdc.stdlib.malloc(T.sizeof*count);
-}
-
-T[] allocSlice(T)(size_t count)
-{
-    return alloc!T(count)[0..count];
-}
+T* alloc(T)(size_t count = 1){return cast(T*)core.stdc.stdlib.malloc(T.sizeof*count);}
+T[] allocSlice(T)(size_t count){return alloc!T(count)[0..count];}
 
 void* toHeap(T)(in T data) if(isReference!T)
 {
@@ -49,7 +39,6 @@ void* toHeap(T)(in T data) if(isReference!T)
 
 void* toHeap(T)(T data) if(!isReference!T)
 {
-    import hip.util.reflection;
     void* m = alloc!T;
     memcpy(m, &data, T.sizeof);
     return m;
@@ -62,6 +51,7 @@ void[] toHeapSlice(T)(T data) if(!is(T == void[]))
 
 void freeGCMemory(ref void* data)
 {
+    assert(data !is null, "Tried to free null data.");
     version(WebAssembly)
     {
         object.free(cast(ubyte*)data);
@@ -77,6 +67,8 @@ void freeGCMemory(ref void* data)
 
 void freeGCMemory(ref void[] data)
 {
+    assert(data.length, "Tried to free null data.");
+
     version(WebAssembly)
     {
         object.free(cast(ubyte*)data.ptr);

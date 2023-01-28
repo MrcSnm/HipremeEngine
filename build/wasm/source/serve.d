@@ -69,4 +69,40 @@ void handler(Cgi cgi)
 
 }
 
-mixin GenericMain!handler;
+/++
+	This is the function [GenericMain] calls. View its source for some simple boilerplate you can copy/paste and modify, or you can call it yourself from your `main`.
+	Params:
+		fun = Your request handler
+		CustomCgi = a subclass of Cgi, if you wise to customize it further
+		maxContentLength = max POST size you want to allow
+		args = command-line arguments
+	History:
+	Documented Sept 26, 2020.
++/
+void hipengineCgiMain(alias fun, CustomCgi = Cgi, long maxContentLength = defaultMaxContentLength)(string[] args) if(is(CustomCgi : Cgi)) 
+{
+	if(tryAddonServers(args))
+		return;
+
+	if(trySimulatedRequest!(fun, CustomCgi)(args))
+		return;
+
+	RequestServer server;
+	// you can change the port here if you like
+	server.listeningPort = 9000;
+
+	string host = server.listeningHost;
+	if(host == "") host = "localhost";
+	writeln("HipremeEngine Dev Server listening from ", host,":",server.listeningPort);
+
+	// then call this to let the command line args override your default
+	server.configureFromCommandLine(args);
+
+	// and serve the request(s).
+	server.serve!(fun, CustomCgi, maxContentLength)();
+}
+
+void main(string[] args)
+{
+	hipengineCgiMain!(handler)(args);
+}

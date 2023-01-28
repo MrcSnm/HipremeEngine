@@ -359,7 +359,7 @@ version(HipConcurrency)
             };
         }
 
-        void delegate(string name) notifyOnFinishOnMainThread(void delegate(string taskName) onFinish)
+        void delegate(string name) notifyOnFinishOnMainThread(void delegate(string taskName) onFinish, bool finished = true)
         {
             return (name)
             {
@@ -367,7 +367,8 @@ version(HipConcurrency)
                     finishHandlersOnMainThread~= ()
                     {
                         onFinish(name);
-                        tasksCount--;
+                        if(finished)
+                            tasksCount--;
                     };
                 handlersMutex.unlock();
             };
@@ -436,11 +437,16 @@ else
         {
             thread = new HipWorkerThread(this);
         }
-        void delegate(string name) notifyOnFinishOnMainThread(void delegate(string taskName) onFinish)
+        void delegate(string name) notifyOnFinishOnMainThread(void delegate(string taskName) onFinish, bool finished = true)
         {
             return (name)
             {
-                finishHandlersOnMainThread~= (){onFinish(name); tasksCount--;};
+                finishHandlersOnMainThread~= ()
+                {
+                    onFinish(name); 
+                    if(finished)
+                        tasksCount--;
+                };
             };
         }
 
@@ -448,9 +454,16 @@ else
         {
             return (name)
             {
-                tasksCount--;
                 if(onFinish) onFinish(name);
+                version(WebAssembly){}
+                else
+                    tasksCount--;
             };
+        }
+        final void signalTaskFinish()
+        {
+            assert(tasksCount > 0, "Tried to signal task finish without tasks.");
+            tasksCount--;
         }
         final void await()
         {

@@ -204,7 +204,7 @@
 			]
 		},
 		{
-			"name": "wasm",
+			"name": "wasm-test",
 			"dependencies": {
 				"d_std": {"path": "modules/d_std", "version": "*"},
 				"runtime": {"path": "build/wasm/runtime", "version": "*"}
@@ -225,6 +225,40 @@
 			"versions": [
 				"HipDataStructures",
 				"Test",
+				"Standalone",
+				"HipDStdFile",
+				"OpenGL",
+				"GLES20",
+				"CarelessAlocation",
+				"dll"
+			],
+			"targetType": "executable"
+		},
+		{
+			"name": "wasm",
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"runtime": {"path": "build/wasm/runtime", "version": "*"}
+			},
+			"sourcePaths": [
+				"build/release_game/source"
+			],
+			"stringImportPaths": [
+				"build/wasm/generated",
+				"build/release_game/"
+			],
+			"postGenerateCommands": [
+				"set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true",
+				"move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
+			],
+			"subConfigurations": {
+				"assets": "wasm",
+				"audio": "wasm",
+				"filesystem": "wasm",
+				"renderer": "wasm"
+			},
+			"versions": [
+				"HipDataStructures",
 				"Standalone",
 				"HipDStdFile",
 				"OpenGL",
