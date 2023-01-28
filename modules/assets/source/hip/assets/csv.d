@@ -21,13 +21,15 @@ class HipCSV : HipAsset, IHipCSV
     {
         import hip.error.handler;
         import hip.filesystem.hipfs;
-        string data;
-        if(!HipFS.readText(file, data))
+        HipFS.readText(file).addOnError((string err)
         {
             ErrorHandler.showErrorMessage("Could not load CSV File", file);
-            return false;
-        }
-        return loadFromMemory(data, fieldDelimiter, textDelimiter, file);
+        }).addOnSuccess((in ubyte[] data)
+        {
+            loadFromMemory(cast(string)data, fieldDelimiter, textDelimiter, file);
+        });
+
+        return true;
     }
 
     string opIndex(size_t x, size_t y) const{return csv.data[y][x];}

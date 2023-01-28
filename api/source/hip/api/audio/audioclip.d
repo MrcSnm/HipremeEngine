@@ -1,20 +1,31 @@
 module hip.api.audio.audioclip;
 
-version(HipAudioAPI):
 public import hip.api.audio;
 public import hip.api.data.audio;
 
+
+struct HipAudioBufferAPI;
+
 interface IHipAudioClip
 {
-    bool load(in void[] data, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false);
-    bool load(string audioPath, HipAudioEncoding encoding, HipAudioType type, bool isStreamed = false);
-    uint loadStreamed(in void[] data, HipAudioEncoding encoding);
-    uint loadStreamed(string audioPath, HipAudioEncoding encoding);
+    public bool loadFromMemory(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type,
+    void delegate(in ubyte[]) onSuccess, void delegate() onFailure);
+
+    uint loadStreamed(in ubyte[] data, HipAudioEncoding encoding);
     uint getSampleRate();
     uint updateStream();
-    void onUpdateStream(void[] data, uint decodedSize);
-    void[] getClipData();
-    ulong getClipSize();
+    void onUpdateStream(ubyte[] data, uint decodedSize);
+
+    /** 
+     * This function is reserved for HipAudio for being able to take the buffer out of an
+     *  audio asset.
+     */
+    HipAudioBufferAPI* _getBufferAPI(ubyte[] data, uint size); 
+    ///Reserved for internal engine methods.
+    IHipAudioClip getAudioClipBackend();
+    T getAudioClipBackend(T)(){return cast(T)getAudioClipBackend;}
+    ubyte[] getClipData();
+    size_t getClipSize();
     float getDuration();
     float getDecodedDuration();
     void unload();
@@ -27,8 +38,10 @@ struct HipAudioClipHint
     uint outputChannels;
     ///Information may be needed by the audio API
     uint outputSamplerate;
-    ///If false, no resample will occur, and the AudioAPI will deal with it
+    ///Delegate to the Audio API the resampling.
     bool needsResample;
-    ///If false, no decode will occur, and the AudioAPI will deal with it
+    ///Delegate to the Audio API the decoding.
     bool needsDecode;
+    ///Delegate to the Audio API the channel conversion.
+    bool needsChannelConversion = true;
 }

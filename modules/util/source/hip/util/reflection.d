@@ -165,7 +165,7 @@ template aaToSwitch(alias aa, bool reverse = false)
 }
 
 
-ulong enumLength(T)()
+size_t enumLength(T)()
 if(is(T == enum))
 {
     return __traits(allMembers, T).length;
@@ -389,7 +389,7 @@ mixin template HipExportDFunctionsImpl(string className, Class)
         );
         pragma(msg, "Exported Class "~className);
     }
-    version(LoadScript)
+    version(Load_DScript)
     {
         //Get all static methods that has ExportD
         static foreach(sym; getSymbolsByUDA!(Class, ExportD))

@@ -421,7 +421,7 @@ class HipSprite
 class HipSpriteAnimation : HipSprite
 {
     import hip.api.graphics.g2d.animation;
-    IHipAnimation animation;
+    private IHipAnimation animation;
     HipAnimationFrame* currentFrame;
 
     this(){super();}
@@ -437,7 +437,14 @@ class HipSpriteAnimation : HipSprite
     {
         return animation.getTrack(animName);
     }
-
+    /**
+    *   Sets internal animation data.
+    */
+    void setAnimation(IHipAnimation anim)
+    {
+        animation = anim;
+        setAnimation(animation.getCurrentTrackName());
+    }
     void setAnimation(string animName)
     {
         animation.play(animName);

@@ -25,31 +25,20 @@ else
 string[] pathSplitter(string path) @safe pure nothrow
 {
     string[] ret;
-    string current;
-    for(uint i = 0; i < path.length; i++)
-    {
-        if(path[i] == '/' || path[i] == '\\')
-        {
-            ret~= current~path[i];
-            current = null;
-            continue;
-        }
-        current~= path[i];
-    }
-    if(current.length != 0)
-        ret~= current;
+    foreach(p; pathSplitterRange(path))
+        ret~= p;
     return ret;
 }
 
-auto pathSplitterRange(string path) pure nothrow @nogc
+auto pathSplitterRange(string path) pure @safe nothrow @nogc
 {
     struct PathRange
     {
         string path;
         size_t indexRight = 0;
 
-        bool empty() pure nothrow @nogc {return indexRight >= path.length;}
-        string front() pure nothrow @nogc
+        bool empty() @safe pure nothrow @nogc {return indexRight >= path.length;}
+        string front() @safe pure nothrow @nogc
         {
             size_t i = indexRight;
             while(i < path.length && path[i] != '\\' && path[i] != '/')
@@ -57,14 +46,14 @@ auto pathSplitterRange(string path) pure nothrow @nogc
             indexRight = i;
             return path[0..indexRight];
         }
-        void popFront() pure nothrow @nogc
+        void popFront() @safe pure nothrow @nogc
         {
             if(indexRight+1 < path.length)
             {
                 path = path[indexRight+1..$];
                 indexRight = 0;
             }
-            else 
+            else
                 indexRight+= 1; //Guarantees empty
         }
     }
@@ -227,6 +216,27 @@ string replaceFileName(string filePath, string newFileName) @safe pure nothrow
     string[] p = pathSplitter(filePath);
     p[$-1] = newFileName;
     return joinPath(sep, p);
+}
+
+string normalizePath(string path)
+{
+    string[] normalized;
+    foreach(p; pathSplitterRange(path))
+    {
+        if(p == ".")
+            continue;
+        else if(p == "..")
+        {
+            if(normalized.length > 0)
+                normalized = normalized[0..$-1];
+            else
+                normalized~= p;
+        }
+        else
+            normalized~= p;
+
+    }
+    return normalized.joinPath;
 }
 
 

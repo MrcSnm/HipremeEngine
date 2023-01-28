@@ -7,7 +7,7 @@ public import hip.math.vector;
 
 pure nothrow @nogc @safe:
 
-bool isPointInsideCircle(T)(in T px, in T py, in T circleX, in T circleY, in T circleRadius) 
+bool isPointInCircle(T)(in T px, in T py, in T circleX, in T circleY, in T circleRadius) 
 if(isNumeric!T)
 {
     float dx = px-circleX;
@@ -15,21 +15,76 @@ if(isNumeric!T)
     return sqrt(dx*dx+dy*dy) <= circleRadius;
 }
 
-bool isPointInsideCircle(in Vector2 point, in Vector2 circle, in float radius)
+bool isPointInCircle(in Vector2 point, in Vector2 circle, in float radius)
 {
     return (circle - point).mag <= radius;
 }
 
-bool isPointInsideRect(T)(in T px, in T py, in T rx, in T ry, in T rw, in T rh)
+
+bool isPointInRect(T)(in T px, in T py, in T rx, in T ry, in T rw, in T rh)
 if(isNumeric!T)
 {
     return !(px <= rx || px >= rx+rw || py <= ry || py >= ry+rh);
 }
-
-bool isPointInsideRect(in Vector2 p, in Rect r)
+bool isPointInRect(in Vector2 p, in Rect r)
 {
     return !(p.x <= r.x || p.x >= r.x+r.w || p.y <= r.y || p.y >= r.x+r.h);
 }
+
+
+
+///Error AKA approximation
+bool isPointInLine(T)(in T px, in T py, in T lx1, in T ly1, in T lx2, in T ly2, in float error = 0.01)
+if(isNumeric!T)
+{
+    import hip.math.utils;
+    float lineLength = (lx2 - lx1)^^2 +(ly2 - ly1)^^2;
+    float distLeft = (lx1 - px)^^2 + (ly1 - py)^^2;
+    float distRight = (lx2 - px)^^2 + (ly2 - py)^^2;
+
+    return sqrt(lineLength).approximatelyEqual(sqrt(distLeft)+sqrt(distRight), error);
+}
+
+pragma(inline, true)
+bool isPointInLine(T)(in T[2] point, in T[2] lineStart, in T[2] lineEnd, in float error = 0.01)
+{
+    return isPointInLine(point[0], point[1], lineStart[0], lineStart[1], lineEnd[0], lineEnd[1], error);
+}
+pragma(inline, true)
+bool isPointInLine(in Vector2 point, in Vector2 lineStart, in Vector2 lineEnd, in float error = 0.01)
+{
+    return isPointInLine(point[0], point[1], lineStart[0], lineStart[1], lineEnd[0], lineEnd[1], error);
+}
+
+bool isCircleInLine(float circleX, float circleY, float radius, float lx1, float ly1, float lx2, float ly2)
+{
+    if(isPointInCircle(lx1, ly1, circleX, circleY, radius) || isPointInCircle(lx2, ly2, circleX, circleY, radius))
+        return true;
+    import hip.math.utils;
+    float lineDistX = lx2 - lx1;
+    float lineDistY = ly2 - ly1;
+    float lineLengthSquared = lineDistX*lineDistX + lineDistY*lineDistY;
+
+    //Dot product between circle pos distance to line start to line vector.
+    //Remember dot is the same as length squared vector, so need to divide by squared length to normalize.
+    float dot = ((circleX - lx1) * lineDistX + (circleY - ly1) * lineDistY) / lineLengthSquared;
+
+    ///Closest point from the circleX and Y to the line
+    float closestX = lx1 + dot*lineDistX, closestY = ly1 + dot*lineDistY;
+    if(!isPointInLine(closestX, closestY, lx1, ly1, lx2, ly2))
+        return false;
+
+    //Returns if distance <= radius from the closest point in line to the circle point
+    return sqrt((closestX - circleX)^^ 2 + (closestY - circleY)^^ 2) <= radius;
+}
+
+bool isRayIntersectingLine(in Vector2 l1Start, in Vector2 l1End, in Vector2 l2Start, in Vector2 l2End, out Vector2 intersection)
+{
+    Vector2 line1 = l1End - l1Start;
+    Vector2 line2 = l2End - l2Start;
+    return false;
+}
+
 
 bool isRayIntersectingRect(in Vector2 rayPos, in Vector2 rayEnd, in Rect rect, out Vector2 intersection, out Vector2 intersectionNormal, out float intersectionTime)
 {

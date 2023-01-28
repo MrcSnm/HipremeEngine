@@ -25,7 +25,7 @@ import hip.hiprenderer.renderer;
 import hip.graphics.g2d.renderer2d;
 public import hip.event.handlers.input_listener;
 
-version(LoadScript)
+version(Load_DScript)
 {
     import hip.systems.hotload;
     import hip.systems.compilewatcher;
@@ -70,7 +70,7 @@ class GameSystem
     string projectDir;
     protected __gshared AScene externalScene;
 
-    version(LoadScript)
+    version(Load_DScript)
     {
         static CompileWatcher watcher;
         protected static HotloadableDLL hotload;
@@ -102,7 +102,7 @@ class GameSystem
             HipButtonType.up
         );
 
-        version(LoadScript)
+        version(Load_DScript)
         {
             inputListener.addKeyboardListener(HipKey.F5,(meta)
                 {
@@ -119,7 +119,7 @@ class GameSystem
 
     void loadGame(string gameDll)
     {
-        version(LoadScript)
+        version(Load_DScript)
         {
             import hip.filesystem.hipfs;
             import hip.util.path;
@@ -161,7 +161,7 @@ class GameSystem
 
     void recompileGame()
     {
-        version(LoadScript)
+        version(Load_DScript)
         {
             import std.process:executeShell;
             import std.stdio;
@@ -196,7 +196,7 @@ class GameSystem
             import hip.view.testscene;
             addScene(new TestScene());
         }
-        else version(LoadScript)
+        else version(Load_DScript)
         {
             ErrorHandler.assertExit(HipremeEngineGameInit != null, "No game was loaded");
             externalScene = HipremeEngineGameInit();
@@ -204,15 +204,15 @@ class GameSystem
         }
         else version(Standalone)
         {
-            import script.entry;
-            externalScene = new HipEngineMainScene();
+            import gamescript.entry;
+            externalScene = HipremeEngineMainScene();
             addScene(externalScene);
         }
     }
 
     void recompileReloadExternalScene()
     {
-        version(LoadScript)
+        version(Load_DScript)
         {
             import hip.util.array:remove;
             import hip.console.log;
@@ -234,14 +234,15 @@ class GameSystem
     */
     void addScene(AScene s)
     {
-        import hip.console.log;
         import hip.assetmanager;
-        logln("Initializing scene ", s.getName);
-        HipAssetManager.startCheckingReferences();
-    	s.initialize();
-        HipAssetManager.stopCheckingReferences();
-
-        scenes~= s;
+        s.preload();
+        HipAssetManager.addOnLoadingFinish(()
+        {
+            import hip.console.log;
+            loglnWarn("Initializing scene ", s.getName);
+    	    s.initialize();
+            scenes~= s;
+        });
     }
 
     bool update(float deltaTime)
@@ -261,7 +262,7 @@ class GameSystem
         HipTimerManager.update(deltaTime);
         HipAssetManager.update();
         
-        version(LoadScript)
+        version(Load_DScript)
         {
             if(watcher.update())
                 recompileReloadExternalScene();
@@ -299,7 +300,7 @@ class GameSystem
     
     void quit()
     {
-        version(LoadScript)
+        version(Load_DScript)
         {
             if(hotload !is null)
             {

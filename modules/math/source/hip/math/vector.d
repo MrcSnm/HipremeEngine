@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.math.vector;
 import core.math : sqrt, sin, cos;
-import core.simd;
+float abc(int a, int b) { return cast(float)a+b;}
 
 struct Vector(uint N, T)
 {
@@ -217,7 +217,7 @@ struct Vector(uint N, T)
             {
                 ret[i] = mixin("data[i] ", op,"rhs[i]");
                 version(HipMathSkipNanCheck){}
-                else static if(op == "/" || op == "-") assert(ret[i] !is float.nan);
+                else static if(op == "/" || op == "-") assert(ret[i] == ret[i]); //Check for float.nan
             }
             return ret;
         }
@@ -228,7 +228,7 @@ struct Vector(uint N, T)
             {
                 ret[i] = mixin("data[i]", op, "rhs");
                 version(HipMathSkipNanCheck){}
-                else static if(op == "/" || op == "-") assert(ret[i] !is float.nan);
+                else static if(op == "/" || op == "-") assert(ret[i] == ret[i]); //Check for float.nan
             }
             return ret;
         }
@@ -244,7 +244,7 @@ struct Vector(uint N, T)
                 {
                     mixin("data[i]",op,"= other[i];");
                     static if(op == "/" || op == "-") 
-                    assert(data[i] !is float.nan);
+                    assert(data[i] == data[i]); //Check for float.nan
                 }
             }
             return this;
@@ -260,7 +260,7 @@ struct Vector(uint N, T)
                 {
                     mixin("data[i]",op,"= value;");
                     static if(op == "/" || op == "-") 
-                    assert(data[i] !is float.nan);
+                    assert(data[i] == data[i]); //Check for float.nan
                 }
             }
             return this;

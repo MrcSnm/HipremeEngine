@@ -40,7 +40,8 @@ class HipText
     protected float[] vertices;
 
     //Caching
-    protected size_t lastTextLength = 0;
+    protected size_t _drawableTextCount = 0;
+    protected size_t maxDrawableTextCount = 0;
     protected bool shouldUpdateText = true;
 
     this(int boundsWidth = -1, int boundsHeight = -1)
@@ -51,17 +52,30 @@ class HipText
     }
     string text(){return _text;}
 
+    size_t drawableTextCount(){return _drawableTextCount;}
+
+    
     string text(string newText)
     {
         if(newText != _text)
         {
-            import std.utf:toUTF32;
+            version(WebAssembly)
+            {
+                dstring dtext;
+                foreach(dchar ch; newText) dtext~= ch;
+            }
+            else
+            {
+                import std.utf:toUTF32;
+                dstring dtext = newText.toUTF32;
+            }
+            _drawableTextCount = countVertices(dtext);
             shouldUpdateText = true;
-            dstring dtext = newText.toUTF32;
-            if(dtext.length > _dtext.length)
+            if(_drawableTextCount > maxDrawableTextCount)
             {
                 //As it is a quad, it needs to have floats * 4
-                vertices.length = dtext.length * (HipTextRendererVertex.sizeof/float.sizeof) * 4;
+                vertices.length = _drawableTextCount * (HipTextRendererVertex.sizeof/float.sizeof) * 4;
+                maxDrawableTextCount = _drawableTextCount;
                 vertices[] = 0;
             }
             _text = newText;
@@ -75,7 +89,7 @@ class HipText
         if(shouldUpdateText)
             updateText(font);
         
-        return vertices[0.._dtext.length * (HipTextRendererVertex.sizeof/float.sizeof) * 4];
+        return vertices[0..drawableTextCount * (HipTextRendererVertex.sizeof/float.sizeof) * 4];
     }
     
     protected void updateAlign(int lineNumber, out int displayX, out int displayY, int boundsWidth, int boundsHeight)
@@ -83,7 +97,11 @@ class HipText
          
         getAlign(x, y, linesWidths[lineNumber], height, alignh, alignv, displayX, displayY, boundsWidth, boundsHeight);
     }
-    public void setFont(IHipFont font){this.font = font;}
+    public void setFont(IHipFont font)
+    {
+        this.font = font;
+        this.updateText(font);
+    }
 
     package void updateText(IHipFont font)
     {
@@ -294,3 +312,14 @@ void getAlign(
     }
 }
     
+
+private size_t countVertices(dstring str)
+{
+    size_t i = 0;
+    foreach(ch; str)
+    {
+        if(ch != ' ' && ch != '\n')
+            i++;
+    }
+    return i;
+}

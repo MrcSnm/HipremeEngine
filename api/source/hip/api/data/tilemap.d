@@ -120,37 +120,75 @@ final class HipTileLayer
     ///Data
     ushort[] tiles;
     bool visible = true;
-    int x, y, width, height;
+    int x, y, columns, rows, width, height;
+    uint tileWidth, tileHeight;
     ushort id;
     string type;
     string drawOrder;
     TileProperty[string] properties;
     float opacity = 1.0;
 
+    this(IHipTilemap map)
+    {
+        tileWidth = map.tileWidth;
+        tileHeight = map.tileHeight;
+    }
+
     /**
     *
     */
     this(string name, uint columns, uint rows, ushort id, IHipTilemap map)
     {
+        this(map);
         this.name = name;
         this.id = id;
+        this.columns = columns;
+        this.rows = rows;
         tiles = new ushort[columns*rows];
-        width = columns;
-        height = rows;
-    }
-    this(){}
-
-    final ushort getTileXY(uint x, uint y)
-    {
-       return tiles[y*width+x];
+        width = columns*tileWidth;
+        height = rows*tileHeight;
     }
 
-    final ushort checkedGetTileXY(int x, int y)
+    bool isInLayerBoundaries(int x, int y, int w, int h) const @nogc
     {
-        int target = y*width+x;
-        if(target < 0 || target >= tiles.length)
+        int x2 = x+w;
+        int y2 = y+h;
+
+        bool notInBoundariesX = x2 < this.x || x > this.width + this.x;
+        if(notInBoundariesX)
+            return false;
+        bool notInBoundariesY = y2 < this.y || y > this.height + this.y;
+
+        return !notInBoundariesY;
+    }
+
+    ///Expects I and J in column/row
+    final ushort getTile(uint i, uint j) @nogc @safe
+    {
+       return tiles[j*columns+i];
+    }
+    final ushort checkedGetTile(uint i, uint j) @nogc @trusted
+    {
+        int target = j*columns+i;
+        if(i >= columns || j >= rows || target < 0 || target >= tiles.length)
             return 0;
-        return tiles[target];
+        return tiles.ptr[target];
+    }
+
+    ///Gets tile from relative X and Y. Does not take into account the layer x, y
+    final ushort getTileXY(uint x, uint y) @nogc @safe
+    {
+        return getTile(cast(uint)(x / tileWidth), cast(uint)(y / tileHeight));
+    }
+
+    ///Gets tile from absolute X and Y. Takes into account the layer x, y
+    final ushort checkedGetTileXY(int x, int y) @nogc @trusted
+    {
+        if(x < this.x || y < this.y || x > this.x+this.width || y > this.y+this.height)
+            return 0;
+        y-= this.y;
+        x-= this.x;
+        return checkedGetTile(x / tileWidth, y / tileHeight);
     }
     
 }
@@ -202,30 +240,33 @@ interface IHipTileset
 */
 interface IHipTilemap
 {
-    ref int x();
-    ref int y();
-    ref HipColor color();
-    ref float scaleX();
-    ref float scaleY();
+    @nogc ref int x();
+    @nogc ref int y();
+    @nogc ref HipColor color();
+    @nogc ref float scaleX();
+    @nogc ref float scaleY();
 
     ///Returns scaleX as the one to be modified.
-    float scale();
+    @nogc float scale();
     ///Modifies both scaleX and scaleY at the same time.
-    float scale(float v);
+    @nogc float scale(float v);
     ref float rotation();
     
 
     string path() const;
-    uint width() const;
-    uint height() const;
-    bool isInfinite() const;
+    uint width() const @nogc;
+    uint height() const @nogc;
+    bool isInfinite() const @nogc;
     ref HipTileLayer[string] layers();
-    string orientation() const;
-    string renderorder() const;
-    string tiled_version() const;
+    string orientation() const @nogc;
+    string renderorder() const @nogc;
+    string tiled_version() const @nogc;
 
-    uint tileHeight() const;
-    uint tileWidth() const;
+    uint tileHeight() const @nogc;
+    uint tileWidth() const @nogc;
+
+    final uint tileWidthScaled() @nogc {return cast(uint)(scaleX * tileWidth);}
+    final uint tileHeightScaled() @nogc {return cast(uint)(scaleY * tileHeight);}
 
     void setTileSize(uint tileWidth, uint tileHeight);
     ///Use it when programatically creating your tilemap

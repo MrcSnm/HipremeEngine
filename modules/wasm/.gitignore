@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/wasm
+wasm.so
+wasm.dylib
+wasm.dll
+wasm.a
+wasm.lib
+wasm-test-*
+*.exe
+*.o
+*.obj
+*.lst

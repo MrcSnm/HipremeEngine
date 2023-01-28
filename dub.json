@@ -19,12 +19,8 @@
 	"stringImportPaths": [
 		"."
 	],
-	"dflags-dmd": [
-		"-checkaction=halt"
-	],
 	"versions": [
 		"HIPREME_DEBUG",
-		"HipremeEngineLua",
 		"HipCheckUnknownKeycode",
 		"HipDataStructures",
 		"HipMathAPI",
@@ -46,7 +42,6 @@
 		"bind": {"path": "./modules/bind", "version": "*"},
 		"config": {"path": "./modules/config", "version": "*"},
 		"console": {"path": "./modules/console", "version": "*"},
-		"debugging": {"path": "./modules/debugging", "version": "*"},
 		"error": {"path": "./modules/error", "version": "*"},
 		"filesystem": {"path": "./modules/filesystem", "version": "*"},
 		"timer": {"path": "./modules/timer", "version": "*"},
@@ -121,7 +116,7 @@
 				"OpenGL",
 				"OpenAL",
 				"Desktop",
-				"LoadScript",
+				"Load_DScript",
 				"Standalone",
 				"NO_GLES",
 				"NO_SLES"
@@ -194,8 +189,7 @@
 			],
 			"subConfigurations": {
 				"audio": "uwp",
-				"renderer": "uwp",
-				"bind": "uwp"
+				"renderer": "uwp"
 			},
 			"targetPath": "bin/uwp",
 			"targetType": "dynamicLibrary",
@@ -208,6 +202,71 @@
 				"HipConcurrency",
 				"UWP"
 			]
+		},
+		{
+			"name": "wasm-test",
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"runtime": {"path": "build/wasm/runtime", "version": "*"}
+			},
+			"stringImportPaths": [
+				"build/wasm/generated"
+			],
+			"postGenerateCommands": [
+				"set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true",
+				"move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
+			],
+			"subConfigurations": {
+				"assets": "wasm",
+				"audio": "wasm",
+				"filesystem": "wasm",
+				"renderer": "wasm"
+			},
+			"versions": [
+				"HipDataStructures",
+				"Test",
+				"Standalone",
+				"HipDStdFile",
+				"OpenGL",
+				"GLES20",
+				"CarelessAlocation",
+				"dll"
+			],
+			"targetType": "executable"
+		},
+		{
+			"name": "wasm",
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"runtime": {"path": "build/wasm/runtime", "version": "*"}
+			},
+			"sourcePaths": [
+				"build/release_game/source"
+			],
+			"stringImportPaths": [
+				"build/wasm/generated",
+				"build/release_game/"
+			],
+			"postGenerateCommands": [
+				"set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true",
+				"move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
+			],
+			"subConfigurations": {
+				"assets": "wasm",
+				"audio": "wasm",
+				"filesystem": "wasm",
+				"renderer": "wasm"
+			},
+			"versions": [
+				"HipDataStructures",
+				"Standalone",
+				"HipDStdFile",
+				"OpenGL",
+				"GLES20",
+				"CarelessAlocation",
+				"dll"
+			],
+			"targetType": "executable"
 		},
 		{
 			"name": "android",

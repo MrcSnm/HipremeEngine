@@ -23,10 +23,21 @@ enum HIP_DEBUG = true;
  */
 enum HIP_DEBUG_GL = true;
 
+/** 
+ * Will call HipRenderer.exitOnError for each glCall.
+ *	WebGL has a bizarre glGetError in terms of performance, it can degradate it alone. This will possibily never be enabled.
+ */
+enum HIP_DEBUG_WEBGL = false;
+
 /**
 *   Used for disabling every engine log function
 */
 enum HE_NO_LOG = false;
+
+/**
+*	Used to track calls to find where the print call is located.
+*/
+enum HIP_TRACK_HIPLOG = false;
 
 /**
 *   Mantain only error related logging

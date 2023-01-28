@@ -9,12 +9,9 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.math.random;
-import hip.util.reflection;
 import core.stdc.stdlib;
-import core.stdc.time;
 
-
-
+version(WebAssembly) extern(C) float JS_Math_random() @nogc nothrow;
 
 class Random
 {
@@ -27,7 +24,11 @@ class Random
     // }
     static void initialize()
     {
-        srand(cast(uint)time(null));
+        version(WebAssembly){} else
+        {
+            import core.stdc.time;
+            srand(cast(uint)time(null));
+        }
         // version(Android)
         // {
         //     import std.random;
@@ -37,22 +38,26 @@ class Random
 
     @nogc nothrow
     {
-        @ExportD static float rangef(float min, float max)
+        static float rangef(float min, float max)
         {
-            // version(Android)
+            version(WebAssembly)
+            {
+                return JS_Math_random() * max + min;
                 // return std.random.uniform(cast(int)min, cast(int)max, randomGenerator);
-            // else
-            return (cast(float)rand() / RAND_MAX) * max + min;
+            }
+            //else version(Android){return std.random.uniform(cast(int)min, cast(int)max, randomGenerator);}
+            else
+                return (cast(float)rand() / RAND_MAX) * max + min;
         }
-        @ExportD static int range(int min, int max)
+        static int range(int min, int max)
         {
             return cast(int)rangef(min, max);
         }
-        @ExportD static uint rangeu(uint min, uint max)
+        static uint rangeu(uint min, uint max)
         {
             return cast(uint)rangef(min, max);
         }
-        @ExportD static ubyte rangeub(ubyte min, ubyte max)
+        static ubyte rangeub(ubyte min, ubyte max)
         {
             return cast(ubyte)rangef(min, max);
         }

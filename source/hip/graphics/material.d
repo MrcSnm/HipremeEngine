@@ -48,7 +48,7 @@ class Material
     void setVar(ShaderTypes t, string varName, Matrix3 data){setVar(t, varName, &data, UniformType.floating3x3, data.sizeof);}
     void setVar(ShaderTypes t, string varName, Matrix4 data){setVar(t, varName, &data, UniformType.floating4x4, data.sizeof);}
 
-    protected void setVar(ShaderTypes t, string varName, void* varData, UniformType type, ulong varSize)
+    protected void setVar(ShaderTypes t, string varName, void* varData, UniformType type, size_t varSize)
     {
         import core.stdc.string : memcpy;
         ShaderVar* variable = (varName in variables);

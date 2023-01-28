@@ -169,7 +169,7 @@ class GeometryBatch : IHipBatch
 
 
 
-    void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, int precision = 24, in HipColor color = HipColor.invalid)
+    void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.LINE)
@@ -205,7 +205,7 @@ class GeometryBatch : IHipBatch
     }
 
     ///With this default precision, the circle should be smooth enough
-    void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, int precision = 24, in HipColor color = HipColor.invalid)
+    void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(radiusH == -1)
@@ -362,22 +362,24 @@ class GeometryBatch : IHipBatch
         const uint count = this.currentIndex;
         if(count == 0)
             return;
-        verticesCount = 0;
-        currentIndex = 0;
-        currentVertex = 0;
-        this.mesh.updateVertices(this.vertices);
-        this.mesh.updateIndices(this.indices);
+
+        mesh.bind();
+    
+        mesh.updateVertices(vertices);
+        mesh.updateIndices(indices);
 
         mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1]);
         mesh.shader.setVertexVar("Geom.uProj",  camera.proj);
         mesh.shader.setVertexVar("Geom.uModel", Matrix4.identity());
         mesh.shader.setVertexVar("Geom.uView",  camera.view);
 
-        mesh.shader.bind();
         mesh.shader.sendVars();
         //Vertices to render = indices.length
-        
         this.mesh.draw(count);
+        mesh.unbind();
+        verticesCount = 0;
+        currentIndex = 0;
+        currentVertex = 0;
     }
 
 }

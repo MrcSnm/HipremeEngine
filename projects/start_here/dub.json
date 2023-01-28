@@ -45,7 +45,6 @@
 		}
 	],
 	"versions" : [
-		"HipAudioAPI",
 		"HipMathAPI",
 		"HipremeAudio",
 		"HipDataStructures"

@@ -9,13 +9,11 @@ struct IniVar
     pragma(inline, true) string get() => value;
     pragma(inline, true) string opAssign(string v) () => value = v;
 
-    IniVar opAssign(IniVar var){this.name = var.name; this.value = var.value; this.data = var.data; return this;}
-
-
     version(Have_util)
     {
         import hip.util.sumtype;
         private Sumtype data;
+        IniVar opAssign(IniVar var){this.name = var.name; this.value = var.value; this.data = var.data; return this;}
 
         T get(T)()
         {

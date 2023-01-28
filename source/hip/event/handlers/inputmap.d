@@ -1,6 +1,6 @@
 module hip.event.handlers.inputmap;
 import hip.util.reflection;
-import std.json;
+import hip.data.jsonc;
 import hip.filesystem.hipfs;
 import hip.error.handler;
 import hip.api.input;
@@ -62,15 +62,6 @@ class HipInputMap : IHipInputMap
 
     }
 
-    @ExportD("File") static IHipInputMap parseInputMap(string file, ubyte id = 0)
-    {
-        void[] output;
-        if(HipFS.read(file, output))
-            return parseInputMap(cast(ubyte[])output, file, id);
-        import hip.error.handler;
-        ErrorHandler.showWarningMessage("Could not parse input map ",file);
-        return null;
-    }
     @ExportD("Mem") static IHipInputMap parseInputMap(ubyte[] file, string fileName, ubyte id = 0)
     {
         HipInputMap ret = new HipInputMap();
@@ -89,14 +80,12 @@ class HipInputMap : IHipInputMap
             Context ctx;
             if(kb != null)
             {
-                JSONValue[] keys = kb.array;
-                foreach(key; keys)
+                foreach(key; kb.array) //Keyboard
                     ctx.keys~= key.str[0];
             }
             if(gp != null)
             {
-                JSONValue[] btns = gp.array;
-                foreach(btn; btns)
+                foreach(btn; gp.array) //Gamepad
                     ctx.btns ~=  gamepadButtonFromString(btn.str);
             }
             ret.inputMapping[actionName] = ctx;

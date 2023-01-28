@@ -1,8 +1,7 @@
 module hip.api.data.audio;
 
-version(HipAudioAPI):
 import hip.api.audio;
-public import hip.api.audio.audioclip:HipAudioClipHint;
+public import hip.api.audio.audioclip;
 
 enum HipAudioEncoding
 {
@@ -15,17 +14,9 @@ enum HipAudioEncoding
 
 HipAudioEncoding getEncodingFromName(string name)
 {
-    int index = 0;
-    for(int i = cast(int)name.length-1; i >= 0; i--)
-    {
-        if(name[i] == '.')
-        {
-            index = i+1;
-            break;
-        }
-    }
-    string temp = name[index..$];
-    switch(temp)
+    int i = cast(int)name.length-1;
+    while(i >= 0 && name[i] != '.'){i--;} if(name[i] == '.') i++;
+    switch(name[i..$])
     {
         case "wav":return HipAudioEncoding.WAV;
         case "ogg":return HipAudioEncoding.OGG;
@@ -33,26 +24,85 @@ HipAudioEncoding getEncodingFromName(string name)
         case "flac":return HipAudioEncoding.FLAC;
         case "mid":
         case "midi":return HipAudioEncoding.MIDI;
-        default: assert(false, "Encoding from file '"~name~"', "~temp~", is not supported.");
+        default: assert(false, "Encoding from file '"~name~", is not supported.");
     }
 }
 
 interface IHipAudioDecoder
 {
-    bool decode(in void[] data, HipAudioEncoding encoding, HipAudioType type);
-    public bool decodeAndResample(in void[] data, HipAudioEncoding encoding, HipAudioType type, uint outputSampleRate, uint outputChannels);
-    bool loadData(in void[] data, HipAudioEncoding encoding, HipAudioType type, HipAudioClipHint hint);
-    uint startDecoding(in void[] data, void[] outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
+    bool decode(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type, 
+    void delegate(in ubyte[] data) onSuccess, void delegate() onFailure);
+
+    bool resample(in ubyte[] data, HipAudioType type, uint outputSampleRate, uint outputChannels,
+    void delegate(in ubyte[] data) onSuccess, void delegate() onFailure);
+
+    ///Channel conversion is a very simple implementation, so, I won't use delegates for it.
+    bool channelConversion(in ubyte[] data, ubyte from, ubyte to);
+    /**
+    *   Receives the raw data. Deals with the data based on clip hint.
+    */
+    final bool loadData(in ubyte[] data, HipAudioEncoding encoding, HipAudioType type, HipAudioClipHint hint,
+    void delegate(in ubyte[] data) onSuccess, void delegate() onFailure)
+    {
+        if(data.length == 0)
+        {
+            onFailure();
+            return false;
+        }
+
+        if(hint.needsDecode)
+        {
+            decode(data, encoding, type, (in ubyte[] decodedData)
+            {
+                if(hint.needsResample && getSamplerate != hint.outputSamplerate)
+                {
+                    resample(decodedData, type, hint.outputSamplerate, hint.outputChannels, (in ubyte[] resampledData)
+                    {
+                        if(hint.needsChannelConversion && getClipChannels != hint.outputChannels &&
+                        !channelConversion(resampledData, getClipChannels, cast(ubyte)hint.outputChannels))
+                        {
+                            onFailure(); 
+                            return;
+                        }
+                        onSuccess(getClipData);
+                    }, onFailure);
+                }
+                else
+                    onSuccess(decodedData);
+            }, onFailure);
+        }
+        else if(hint.needsResample && getSamplerate != hint.outputSamplerate)
+        {
+            resample(getClipData, type, hint.outputSamplerate, hint.outputChannels, (in ubyte[] resampledData)
+            {
+                if(hint.needsChannelConversion && getClipChannels != hint.outputChannels &&
+                !channelConversion(resampledData, getClipChannels, cast(ubyte)hint.outputChannels))
+                    onFailure(); 
+                onSuccess(getClipData);
+            }, onFailure);
+        }
+        else if(hint.needsChannelConversion && getClipChannels != hint.outputChannels)
+        {
+            channelConversion(getClipData, getClipChannels, cast(ubyte)hint.outputChannels);
+            onSuccess(getClipData);
+        }
+
+        return true;
+    }
+    ///Used for streaming.
+    uint startDecoding(in ubyte[] data, ubyte[] outputDecodedData, uint chunkSize, HipAudioEncoding encoding)
     in (chunkSize > 0 , "Chunk size must be greater than 0");
-    uint updateDecoding(void[] outputDecodedData);
+    uint updateDecoding(ubyte[] outputDecodedData);
     AudioConfig getAudioConfig();
-    void[] getClipData();
-    ulong getClipSize();
+    ubyte[] getClipData();
+    ubyte getClipChannels();
+    size_t getClipSize();
     ///Don't apply to streamed audio. Gets the duration in seconds
     float getDuration();
 
     void dispose();
     uint getSamplerate();
+
 }
 
 enum AudioFormat : ushort

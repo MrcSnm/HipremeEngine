@@ -90,6 +90,12 @@ void HipremeHandleArguments(string[] args)
 	}
 }
 
+// import core.sys.windows.windows;
+// extern(Windows) int NtSetTimerResolution(ULONG RequestedResolution, BOOLEAN Set, PULONG ActualResolution);
+// // HACK: this allows to Sleep under 15.6ms smh
+// 	uint unused;
+// 	NtSetTimerResolution(5000, TRUE, &unused);
+
 
 static void initEngine(bool audio3D = false)
 {
@@ -98,10 +104,8 @@ static void initEngine(bool audio3D = false)
 	string fsInstallPath = "";
 	bool function(string path, out string msg)[] validations;
 
-	version(Android)
-	{
-		platform = Platforms.ANDROID;
-	}
+	version(Android){platform = Platforms.ANDROID;}
+	else version(WebAssembly){platform = Platforms.WASM;}
 	else version(UWP)
 	{
 		import std.file:getcwd;
@@ -127,6 +131,7 @@ static void initEngine(bool audio3D = false)
 		else
 			fsInstallPath = getcwd()~"/assets";
 	}
+	
 	Console.install(platform, printFunc);
 	HipFS.install(fsInstallPath, validations);
 	loglnInfo("HipFS installed at path ", fsInstallPath);
@@ -145,6 +150,8 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 {
 	import hip.data.ini;
 	import hip.math.random;
+	import hip.util.time;
+	HipTime.initialize();
 	Random.initialize();
 	Console.initialize();
 	initEngine(true);
@@ -167,13 +174,16 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 			getOptimalSampleRate
 		);
 	}
+	else version(WebAssembly)
+		HipAudio.initialize(HipAudioImplementation.WEBAUDIO);
 	else
 		HipAudio.initialize(HipAudioImplementation.XAUDIO2);
 	version(dll)
 	{
 		import hip.console.log;
-		logln("Will init renderer");
+		hiplog("Will init renderer");
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11, windowWidth, windowHeight);}
+		else version(WebAssembly){HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);}
 		else version(Android)
 		{
 			version(Have_gles){}
@@ -188,10 +198,25 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 		HipFS.absoluteReadText("renderer.conf", confFile); //Ignore return, renderer can handle no conf.
 		HipRenderer.init(confFile, "renderer.conf");
 	}
-	if(!loadDefaultAssets())
+	version(Desktop)
 	{
-		loglnError("Could not load default assets!");
+		loadDefaultAssets((){}, (err){loglnError("Could not load default assets! ", err);});
+		gameInitialize();
 	}
+	else version(WebAssembly)
+	{
+		loadDefaultAssets((){gameInitialize();}, (err)
+		{
+			loglnError("Could not load default assets! ", err);
+		});
+	}
+	return 0;
+}
+
+version(WebAssembly) extern(C) void WasmStartGameLoop();
+
+void gameInitialize()
+{
 	HipAssetManager.initialize();
 	sys = new GameSystem(FRAME_TIME);
 
@@ -205,11 +230,8 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	//After initializing engine, every dependency has been load
 	sys.loadGame(projectToLoad);
 	sys.startGame();
-	version(Desktop)
-	{
-		HipremeDesktopGameLoop();
-	}
-	return 0;
+	version(Desktop){HipremeDesktopGameLoop();}
+	else version(WebAssembly){WasmStartGameLoop();}
 }
 
 /** 
@@ -295,8 +317,12 @@ export extern(C) void HipremeInit()
 {
 	version(dll)
 	{
-		rt_init();
-		importExternal();
+		version(WebAssembly){}
+		else
+		{
+			rt_init();
+			importExternal();
+		}
 	}
 }
 export extern(C) void HipremeTest()
@@ -316,7 +342,10 @@ export extern(C) void HipremeTest()
 *	- HipAudio
 *
 */
-version(dll){}
+version(dll)
+{
+	version(WebAssembly){int main(){return HipremeMain();}}
+}
 else
 {
 	int main(string[] args)
@@ -337,33 +366,34 @@ bool HipremeUpdateBase()
 	return true;
 }
 
-version(dll) export extern(C) bool HipremeUpdate()
+version(WebAssembly)
+{
+	export extern(C) bool HipremeUpdate(float dt)
+	{
+		dt/= 1000; //To seconds. Javascript gives in MS.
+		g_deltaTime = dt;
+		return HipremeUpdateBase();
+	}
+}
+else version(dll) export extern(C) bool HipremeUpdate()
 {
 	import hip.util.time;
 	import core.time:dur;
 	import core.thread.osthread;
-	// version(Android)
-	// {
-	// 	if(HipremeUpdateBase())
-	// 		return true;
-	// }
-	// else version(UWP)
-	// {
-		long initTime = HipTime.getCurrentTime();
-		if(HipremeUpdateBase())
+	long initTime = HipTime.getCurrentTime();
+	if(HipremeUpdateBase())
+	{
+		long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
+		if(sleepTime > 0)
 		{
-			long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
-			if(sleepTime > 0)
-			{
-				Thread.sleep(dur!"msecs"(sleepTime));
-			}
-			// g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
-			g_deltaTime = 0.016;
-			// logln(g_deltaTime);
-
-			return true;
+			Thread.sleep(dur!"msecs"(sleepTime));
 		}
-	// }
+		// g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
+		g_deltaTime = 0.016;
+		// logln(g_deltaTime);
+
+		return true;
+	}
 	return false;
 }
 version(Desktop)
@@ -408,7 +438,11 @@ export extern(C) void HipremeDestroy()
 	destroyEngine();
 	version(dll)
 	{
-		rt_term();
+		version(WebAssembly){}
+		else
+		{
+			rt_term();
+		}
 	}
 }
 

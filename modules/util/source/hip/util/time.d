@@ -17,6 +17,10 @@ version(Windows)
     extern(C) BOOL QueryPerformanceFrequency(LARGE_INTEGER* lpPerformanceCount) nothrow;
     extern(C) BOOL QueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount) nothrow;
 }
+else version(WebAssembly)
+{
+    extern(C) size_t monotimeNow() @nogc nothrow;
+}
 else
 {
     import core.stdc.config:c_long;
@@ -36,6 +40,10 @@ size_t getSystemTime() nothrow
         LARGE_INTEGER counter = void;
         QueryPerformanceCounter(&counter);
         return counter.QuadPart * 1_000_000_000; //Convert to nanos
+    }
+    else version(WebAssembly)
+    {
+        return monotimeNow();
     }
     else
     {
@@ -66,7 +74,7 @@ class HipTime
     private static size_t ticksPerSecond;
     protected static long[string] performanceMeasurement;
 
-    static this()
+    static void initialize()
     {
         ticksPerSecond = getSystemTicksPerSecond();
         startTime =  getSystemTime();
@@ -86,11 +94,17 @@ class HipTime
 
     static float getCurrentTimeAsMilliseconds() nothrow
     {
-        return cast(float)getCurrentTime() / 1_000_000;
+         version(WebAssembly)
+            return cast(float)getCurrentTime();
+        else
+            return cast(float)getCurrentTime() / 1_000_000;
     }
     static float getCurrentTimeAsSeconds() nothrow
     {
-        return cast(float)getCurrentTime() / 1_000_000_000;
+         version(WebAssembly)
+            return getCurrentTime() / 1_000;
+        else
+            return cast(float)getCurrentTime() / 1_000_000_000;
     }
 
     static void initPerformanceMeasurement(string name)

@@ -47,6 +47,15 @@ version(Script) extern(System)
     */
     void function (IHipAssetLoadTask task, void delegate(IHipAsset) onComplete) addOnCompleteHandler;
 
+    IHipAsset function(string name) getAsset;
+    string function(string name) getStringAsset;
+
+    ///File reading wrapped in asset manager.
+    IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadFile;
+
+    ///Loads an in memory audio clip
+    IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadAudio;
+
     ///Returns a load task for texture
     IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadTexture;
     ///Returns a load task for image
@@ -91,8 +100,8 @@ version(Script) extern(System)
     /**
     *   Usage:
     ```d
-    //Must import std.json for actually using it.
-    import std.json;
+    //Must import hip.data.json for actually using it.
+    import hip.data.json;
     JSONValue json = hipJSON.getJSON!JSONValue;
     json["myProperty"].str//or other types
     ```
@@ -122,3 +131,6 @@ version(Script) extern(System)
 
     //TODO: IHipAssetLoadTask function(string path) loadHapFile;
 }
+
+T get(T)(string name){return cast(T)getAsset(name);}
+T get(T : string)(string name){return cast(T)getStringAsset(name);}

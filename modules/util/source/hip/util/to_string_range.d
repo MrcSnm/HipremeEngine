@@ -195,7 +195,7 @@ if(isOutputRange!(Sink, char))
         put(sink, numbers[(x/div)%10]);
         div/=10;
     }
-    put(sink, numbers[x%10]);
+    put(sink, numbers[cast(size_t)(x%10)]);
 }
 
 

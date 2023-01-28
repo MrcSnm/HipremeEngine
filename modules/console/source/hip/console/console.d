@@ -22,6 +22,7 @@ enum Platforms
     DESKTOP,
     ANDROID,
     UWP,
+    WASM,
     NULL
 }
 static enum androidTag = "HipremeEngine";
@@ -66,7 +67,7 @@ enum WindowsConsoleColors
 class Console
 {
     string name;
-    string[] lines;
+    String[] lines;
 
     static ushort idCount = 0;
     ushort id;
@@ -113,6 +114,16 @@ class Console
                     _fatal = function(string s){alogf(androidTag, (s~"\0").ptr);};
                 }
                 break;
+            case WASM:
+                version(WebAssembly)
+                {
+                    import arsd.webassembly;
+                    _log = function(string s){eval(q{console.log.apply(null, arguments)}, s);};
+                    _fatal = _err = function(string s){eval(q{console.error.apply(null, arguments)}, s);};
+                    _warn = function(string s){eval(q{console.warn.apply(null, arguments)}, s);};
+                    _info = function(string s){eval(q{console.info.apply(null, arguments)}, s);};
+                }
+                break;
             case UWP:
                 _log = printFunc;
                 _info = _log;
@@ -124,11 +135,15 @@ class Console
             case DESKTOP:
             default:
             {
-                import core.stdc.stdio:printf, fflush, stdout;
                 _log = function(string s)
                 {
-                    printf("%.*s\n", cast(int)s.length, s.ptr);
-                    fflush(stdout);
+                    version(WebAssembly) assert(false, s);
+                    else
+                    {
+                        import core.stdc.stdio:printf, fflush, stdout;
+                        printf("%.*s\n", cast(int)s.length, s.ptr);
+                        fflush(stdout);
+                    }
                 };
                 _info = function(string s)
                 {
@@ -160,14 +175,14 @@ class Console
     }
     private this(string consoleName, ushort id)
     {
-        lines = new string[](maxLines);
+        lines = new String[maxLines];
         name = consoleName;
         this.id = id;
     }
 
     this(string consoleName)
     {
-        lines = new string[](maxLines);
+        lines = new String[maxLines];
         name = consoleName;
         id = idCount;
         idCount++;
@@ -188,6 +203,12 @@ class Console
         String toLog = String(a);
         // _formatLog(toLog);
         return toLog;
+    }
+    
+    void hipLog(Args...)(Args a)
+    {
+        lines~= formatArguments(a);
+        _log(lines[$-1].toString);
     }
     
     

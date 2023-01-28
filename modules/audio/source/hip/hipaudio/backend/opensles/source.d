@@ -27,7 +27,7 @@ class HipOpenSLESAudioSource : HipAudioSource
 
     override bool play()
     {
-        SLIBuffer* buf = (cast(HipAudioClip)clip).getBuffer(clip.getClipData(), cast(uint)clip.getClipSize()).sles;
+        SLIBuffer* buf = getBufferFromAPI(clip).sles;
         SLIAudioPlayer.Enqueue(*audioPlayer, buf.data.ptr, buf.size);
         buf.isLocked = true;
         buf.hasBeenProcessed = false;
@@ -62,6 +62,16 @@ class HipOpenSLESAudioSource : HipAudioSource
     {
         SLIAudioPlayer.pause(*audioPlayer);
         return false;
+    }
+    override bool play()
+    {
+        SLIAudioPlayer.play(*audioPlayer);
+        return false;
+    }
+    override bool resume()
+    {
+        SLIAudioPlayer.resume(*audioPlayer);
+        return false;   
     }
 
 

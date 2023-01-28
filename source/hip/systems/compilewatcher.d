@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 
 module hip.systems.compilewatcher;
 
-version(LoadScript):
+version(Load_DScript):
 import fswatch;
 import std.concurrency;
 import hip.util.path;

@@ -124,8 +124,8 @@ void flocking(
 {
 
     Vector3 alignmentSteering = Vector3.zero;
-    ulong groupSize = 0;
-    for(ulong i = 0; i < groupPosition.length; i++)
+    size_t groupSize = 0;
+    for(size_t i = 0; i < groupPosition.length; i++)
     {
         if(groupPosition[i] != position && position.distance(groupPosition[i]) <= perceptionRadius)
         {

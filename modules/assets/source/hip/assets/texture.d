@@ -56,15 +56,6 @@ class HipTexture : HipAsset, IHipTexture
         textureImpl = HipRenderer.getTextureImplementation();
     }
 
-    /**
-    *   Only use this style of initializing HipTexture if you wish to avoid HipAssetManager usage. 
-    *   This is not really recommended as instantiating as simply new HipTexture("path.png") won't add to the asset manager cache.
-    */
-    this(string path)
-    {
-        this();
-        load(path);
-    }
 
     this(in IImage image)
     {
@@ -75,27 +66,12 @@ class HipTexture : HipAsset, IHipTexture
 
     alias load = IHipTexture.load;
 
-    /**
-    *   Returns whether the load was successful
-    */
-    public bool load(string path)
-    {
-        import hip.filesystem.hipfs;
-        ubyte[] buffer;
-        if(!HipFS.read(path, buffer))
-        {
-            import hip.error.handler;
-            ErrorHandler.showWarningMessage("Could not load texture from path ",path);
-            return false;
-        }      
-
-        Image loadedImage = new Image(path, buffer);
-        return load(loadedImage);
-    }
 
     protected bool loadImpl(in IImage img)
     {
+        import hip.console.log;
         successfullyLoaded = textureImpl.load(img);
+        logln(img.getWidth, " vs ", textureImpl.getWidth);
         width = textureImpl.getWidth;
         height = textureImpl.getHeight;
         return successfullyLoaded;
@@ -129,8 +105,6 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         super("TextureRegion");
         _typeID = assetTypeID!HipTextureRegion;
     }
-
-    this(string texturePath, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1){this(new HipTexture(texturePath));}
 
     this(IHipTexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1)
     {

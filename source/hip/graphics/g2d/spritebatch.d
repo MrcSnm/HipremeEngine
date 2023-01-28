@@ -32,7 +32,7 @@ public import hip.math.matrix;
     Vector2 tex_uv;
     int texID;
 
-    static enum floatCount = cast(ulong)(HipSpriteVertex.sizeof/float.sizeof);
+    static enum floatCount = cast(size_t)(HipSpriteVertex.sizeof/float.sizeof);
     static enum quadCount = floatCount*4;
     static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
 }
@@ -435,11 +435,12 @@ class HipSpriteBatch : IHipBatch
         // material.bind();
 
         mesh.shader.initTextureSlots(currentTextures[0], "uTex1", HipRenderer.getMaxSupportedShaderTextures());
+        mesh.bind();
+
         mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj);
         mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity());
         mesh.shader.setVertexVar("Cbuf1.uView", camera.view);
         
-        mesh.bind();
         foreach(i; 0..usingTexturesCount)
             currentTextures[i].bind(i);
         mesh.shader.sendVars();
@@ -450,7 +451,7 @@ class HipSpriteBatch : IHipBatch
         ///Some operations may require texture unbinding(D3D11 Framebuffer)
         foreach(i; 0..usingTexturesCount)
             currentTextures[i].unbind(i);
-
+        mesh.unbind();
         quadsCount = 0;
         usingTexturesCount = 0;
     }

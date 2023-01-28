@@ -79,13 +79,27 @@ abstract class HipAsset : ILoadable, IHipAsset
 }
 
 
+class HipFileAsset : HipAsset
+{
+    string path;
+    ubyte[] data;
+    this(in string path)
+    {
+        super("File_"~path);
+        this.path = path;
+        _typeID = assetTypeID!HipFileAsset;
+    } 
+    void load(in ubyte[] data){this.data = cast(ubyte[])data;}
+    string getText(){return cast(string)data;}
+    override void onFinishLoading(){}
+    override void onDispose(){}
+    bool isReady(){return data.length != 0;}
+}
+
 private __gshared int assetIds = 0;
 int assetTypeID(T : IHipAsset)()
 {
     static int id = -1;
-    if(id == -1)
-    {
-        id = ++assetIds;
-    }
+    if(id == -1){id = ++assetIds;}
     return id;
 }

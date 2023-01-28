@@ -60,7 +60,8 @@ interface IShader
     bool compileShader(FragmentShader fs, string shaderSource);
     bool compileShader(VertexShader vs, string shaderSource);
     bool linkProgram(ref ShaderProgram program, VertexShader vs,  FragmentShader fs);
-    void setCurrentShader(ShaderProgram program);
+    void bind(ShaderProgram program);
+    void unbind(ShaderProgram program);
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
     int  getId(ref ShaderProgram prog, string name);
 
@@ -221,7 +222,8 @@ public class Shader : IReloadable
         ShaderVar* v = findByName(name);
         if(v != null)
         {
-            ErrorHandler.assertLazyExit(v.shaderType == ShaderTypes.VERTEX, "Variable named "~name~" must be from Vertex Shader");
+            if(v.shaderType != ShaderTypes.VERTEX)
+                ErrorHandler.assertExit(false, "Variable named "~name~" must be from Vertex Shader");
             v.set(val);
         }
         else
@@ -236,7 +238,8 @@ public class Shader : IReloadable
         ShaderVar* v = findByName(name);
         if(v != null)
         {
-            ErrorHandler.assertLazyExit(v.shaderType == ShaderTypes.FRAGMENT, "Variable named "~name~" must be from Fragment Shader");
+            if(v.shaderType != ShaderTypes.FRAGMENT)
+                ErrorHandler.assertExit(false, "Variable named "~name~" must be from Fragment Shader");
             v.set(val);
         }
         else
@@ -292,11 +295,8 @@ public class Shader : IReloadable
      */
     public void setDefaultBlock(string blockName){defaultLayout = layouts[blockName];}
 
-    void bind()
-    {
-        shaderImpl.setCurrentShader(shaderProgram);
-        HipRenderer.exitOnError();
-    }
+    void bind(){shaderImpl.bind(shaderProgram);}
+    void unbind(){shaderImpl.unbind(shaderProgram);}
 
     auto opDispatch(string member)()
     {
@@ -319,14 +319,16 @@ public class Shader : IReloadable
     }
     auto opDispatch(string member, T)(T value)
     {
-        ErrorHandler.assertLazyExit(defaultLayout.variables[member].sVar.set(value), "Invalid value of type "~
-        T.stringof~" passed to "~defaultLayout.name~"."~member);
+        if(!defaultLayout.variables[member].sVar.set(value))
+        {
+            ErrorHandler.assertExit(false, "Invalid value of type "~
+            T.stringof~" passed to "~defaultLayout.name~"."~member);
+        }
     }
 
     void sendVars()
     {
         shaderImpl.sendVars(shaderProgram, layouts);
-        HipRenderer.exitOnError();
     }
 
     /**
@@ -336,7 +338,6 @@ public class Shader : IReloadable
     void initTextureSlots(IHipTexture texture, string varName, int slotsCount)
     {
         shaderImpl.initTextureSlots(shaderProgram, texture, varName, slotsCount);
-        HipRenderer.exitOnError();
     }
 
 
@@ -344,7 +345,6 @@ public class Shader : IReloadable
     {
         shaderImpl.deleteShader(&fragmentShader);
         shaderImpl.deleteShader(&vertexShader);
-        HipRenderer.exitOnError();
     }
     
     bool reload()

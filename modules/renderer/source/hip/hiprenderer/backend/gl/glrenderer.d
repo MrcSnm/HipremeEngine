@@ -17,6 +17,10 @@ else version(PSVita)
 {
     public import gles;
 }
+else version(WebAssembly)
+{
+    public import gles;
+}
 else version(Have_bindbc_opengl)
 {
     public import bindbc.opengl;
@@ -45,7 +49,15 @@ auto glCall(T)(scope T delegate() dg, string file = __FILE__, size_t line = __LI
         dg();
     else
         auto ret = dg();
-    static if(HIP_DEBUG_GL)
+    version(WebAssembly)
+    {
+        static if(HIP_DEBUG_WEBGL)
+        {
+            if(errorCheckEnabled)
+                HipRenderer.exitOnError(file, line);
+        }
+    }
+    else static if(HIP_DEBUG_GL)
     {
         if(errorCheckEnabled)
             HipRenderer.exitOnError(file, line);
@@ -134,7 +146,7 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
-        glCall(() => glClearColor(r/255, g/255, b/255, a/255));
+        glCall(() => glClearColor(cast(float)r/255, cast(float)g/255, cast(float)b/255, cast(float)a/255));
     }
 
     public IHipFrameBuffer createFrameBuffer(int width, int height)
@@ -149,7 +161,7 @@ class Hip_GL3Renderer : IHipRendererImpl
         else
             return new Hip_GL_VertexArrayObject();
     }
-    public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
+    public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage)
     {
         return new Hip_GL3_VertexBufferObject(size, usage);
     }
@@ -231,6 +243,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     public void end()
     {
         version(Android){}
+        else version(WebAssembly){}
         else
         {
             window.rendererPresent();
@@ -247,7 +260,7 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
-        glCall(() => glClearColor(r/255,g/255,b/255,a/255));
+        setColor(r,g,b,a);
         glCall(() => glClear(GL_COLOR_BUFFER_BIT));
     }
 

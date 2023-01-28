@@ -1,5 +1,7 @@
 module hip.audio_decoding.resampler;
 
+version(none): //Currently unused as audio players already resample.
+
 /* Copyright (C) 2007-2008 Jean-Marc Valin
     * Copyright (C) 2008      Thorvald Natvig
     * D port by Ketmar // Invisible Vector

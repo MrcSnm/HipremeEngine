@@ -20,13 +20,14 @@ enum hasTSXSupport = Version.HipTSX && hasModule!"arsd.dom";
 
 void render(HipTileLayer layer, IHipTilemap map, HipSpriteBatch batch, bool shouldRenderBatch = false)
 {
-    uint w = layer.width, h = layer.height;
+    uint w = layer.columns, h = layer.rows;
 
     uint th = cast(uint)(map.tileHeight*map.scaleY),
          tw = cast(uint)(map.tileWidth*map.scaleX);
 
     ushort lastId;
     IHipTextureRegion lastTexture;
+
 
     for(int i = 0, y = layer.y; i < h; i++, y+= th)
         for(int j =0, x = layer.x; j < w; j++, x+= tw)
