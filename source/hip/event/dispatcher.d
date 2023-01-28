@@ -48,6 +48,7 @@ class EventDispatcher
         keyboard = new KeyboardHandler();
         mouse = new HipMouse();
         HipEventQueue.newController(); //Creates controller 0
+        import std.stdio;
         initXboxGamepadInput();
         import hip.windowing.events;
 
@@ -136,6 +137,7 @@ class EventDispatcher
                     mouse.setScroll(t.x, t.y, t.z);
                     break;
                 case HipEventQueue.EventType.keyDown:
+                import hip.console.log;
                     auto k = ev.get!(HipEventQueue.Key);
                     keyboard.handleKeyDown(cast(HipKey)(k.id));
                     break;
@@ -498,6 +500,125 @@ else version(Posix)
                 else
                     return cast(HipKey)key;
             }
+        }
+    }
+}
+else version(WebAssembly)
+{
+    private HipKey getHipKeyFromSystem(uint key)
+    {
+        import core.sys.windows.winuser;
+        ushort k = cast(ushort)(key);
+        assert(k > 0 && k < ubyte.max, "Key out of range");
+        switch(k)
+        {
+            case 8: return HipKey.BACKSPACE;
+            case 9: return HipKey.TAB;
+            case 27: return HipKey.ESCAPE;
+
+            
+            case 13: return HipKey.ENTER;
+            case 20: return HipKey.CAPSLOCK;
+            case 32: return HipKey.SPACE;
+            case 33: return HipKey.PAGE_UP;
+            case 35: return HipKey.END;
+            case 36: return HipKey.HOME;
+            case 37: return HipKey.ARROW_LEFT;
+            case 38: return HipKey.ARROW_UP;
+            case 39: return HipKey.ARROW_RIGHT;
+            case 40: return HipKey.ARROW_DOWN;
+            case 45: return HipKey.INSERT;
+            case 46: return HipKey.DELETE;
+            //0
+            case 48: return HipKey._0;
+            case 49: return HipKey._1;
+            case 50: return HipKey._2;
+            case 51: return HipKey._3;
+            case 52: return HipKey._4;
+            case 53: return HipKey._5;
+            case 54: return HipKey._6;
+            case 55: return HipKey._7;
+            case 56: return HipKey._8;
+            case 57: return HipKey._9;
+            //A
+            case 65: return HipKey.A;
+            case 66: return HipKey.B;
+            case 67: return HipKey.C;
+            case 68: return HipKey.D;
+            case 69: return HipKey.E;
+            case 70: return HipKey.F;
+            case 71: return HipKey.G;
+            case 72: return HipKey.H;
+            case 73: return HipKey.I;
+            case 74: return HipKey.J;
+            case 75: return HipKey.K;
+            case 76: return HipKey.L;
+            case 77: return HipKey.M;
+            case 78: return HipKey.N;
+            case 79: return HipKey.O;
+            case 80: return HipKey.P;
+            case 81: return HipKey.Q;
+            case 82: return HipKey.R;
+            case 83: return HipKey.S;
+            case 84: return HipKey.T;
+            case 85: return HipKey.U;
+            case 86: return HipKey.V;
+            case 87: return HipKey.W;
+            case 88: return HipKey.X;
+            case 89: return HipKey.Y;
+            case 90: return HipKey.Z;
+            case 91: return HipKey.META_LEFT;
+            case 93: return HipKey.META_RIGHT;
+            //Maybe there's a need to change?
+            case 97: return HipKey._0;
+            case 98: return HipKey._1;
+            case 99: return HipKey._2;
+            case 100: return HipKey._3;
+            case 101: return HipKey._4;
+            case 102: return HipKey._5;
+            case 103: return HipKey._6;
+            case 104: return HipKey._7;
+            case 105: return HipKey._8;
+            case 106: return HipKey._9;
+
+            case 112: return HipKey.F1;
+            case 113: return HipKey.F2;
+            case 114: return HipKey.F3;
+            case 115: return HipKey.F4;
+            case 116: return HipKey.F5;
+            case 117: return HipKey.F6;
+            case 118: return HipKey.F7;
+            case 119: return HipKey.F8;
+            case 120: return HipKey.F9;
+            case 121: return HipKey.F10;
+            case 122: return HipKey.F11;
+            case 123: return HipKey.F12;
+
+            case 16: return HipKey.SHIFT;
+            case 17: return HipKey.CTRL;
+            case 18: return HipKey.ALT;
+
+            case 191: return HipKey.SEMICOLON;
+
+            case 188: return HipKey.COMMA;
+            case 189: return HipKey.MINUS;
+            case 190: return HipKey.PERIOD;
+
+            case 193: return HipKey.SLASH;
+            
+            case 221: return HipKey.BRACKET_LEFT;
+            case 220: return HipKey.BRACKET_RIGHT;
+            case 226: return HipKey.BACKSLASH;
+            case 192: return HipKey.QUOTE;
+
+            default:
+                version(HipCheckUnknownKeycode)
+                {
+                    import hip.util.conv:to;
+                    assert(false, "Unknown key received ("~to!string(k)~")");
+                }
+                else
+                    return cast(HipKey)k;
         }
     }
 }

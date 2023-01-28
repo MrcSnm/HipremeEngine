@@ -109,11 +109,11 @@ public static class ErrorHandler
     {
         if(isFatal)
         {
-            rawfatal(errorTitle, '(', errorMessage, ')');
+            rawfatal(errorTitle, "\t[[", errorMessage, "]]");
         }
         else
         {
-            rawerror(errorTitle, '(', errorMessage, ')');
+            rawerror(errorTitle, "\t[[", errorMessage, "]]");
         }
         getError(errorTitle, errorMessage);
     }
@@ -143,7 +143,7 @@ public static class ErrorHandler
                 string where = "at module '"~mod~"' "~file~":"~to!string(line)~"("~func~")\n\t";
             }
             else{string where="";}
-            showErrorMessage(where~errorTitle, "\t"~errorMessage, isFatal);
+            showErrorMessage(where~errorTitle, errorMessage, isFatal);
         }
         return expression;
     }
@@ -167,7 +167,7 @@ public static class ErrorHandler
                 string where = "at module '"~mod~"' "~file~":"~to!string(line)~"("~func~")\n\t";
             }
             else{string where="";}
-            showErrorMessage(where~errorTitle, "\t"~errorMessage, isFatal);
+            showErrorMessage(where~errorTitle, errorMessage, isFatal);
         }
         return expression;
     }

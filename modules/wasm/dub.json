@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2023, Hipreme",
+	"description": "WASM module used by Hipreme Engine.",
+	"license": "proprietary",
+	"name": "wasm"
+}

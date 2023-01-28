@@ -14,7 +14,7 @@ interface IHipJSONC
     */
     auto getJSON()()
     {
-        import std.json;
+        import hip.data.json;
         return parseJSON!string(getData());
     }
 }

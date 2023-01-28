@@ -88,6 +88,44 @@ abstract class HipFile : IHipFileItf
 }
 
 
+private class HipFSPromise : IHipFSPromise
+{
+    string filename;
+    bool finished = false;
+    ubyte[] data;
+    void delegate(in ubyte[] data)[] onSuccessList;
+    void delegate(string err)[] onErrorList;
+    this(string filename){this.filename = filename;}
+    IHipFSPromise addOnSuccess(void delegate(in ubyte[] data) onSuccess)
+    {
+        if(finished)
+            onSuccess(data);
+        else
+            onSuccessList~=onSuccess;
+        return this;
+    }
+    IHipFSPromise addOnError(void delegate(string error) onError)
+    {
+        if(finished && !data.length)
+            onError("No data");
+        else
+            onErrorList~= onError;
+        return this;
+    }
+    void setFinished(ubyte[] data)
+    {
+        import std.stdio;
+        this.data = data;
+        this.finished = true;
+        if(data) foreach(success; onSuccessList)
+            success(data);
+        else foreach(err; onErrorList)
+            err("Could not read file");
+
+    }
+    bool resolved() const{return finished;}
+}
+
 /**
 * FileSystem access for specific platforms.
 */
@@ -98,11 +136,13 @@ class HipFileSystem
     protected __gshared string combinedPath;
     protected __gshared bool hasSetInitial;
     protected __gshared IHipFileSystemInteraction fs;
+    protected __gshared size_t filesReadingCount = 0;
 
     protected __gshared bool function(string path, out string errMessage)[] extraValidations;
 
     version(Android){import hip.filesystem.systems.android;}
     else version(UWP){import hip.filesystem.systems.uwp;}
+    else version(WebAssembly){import hip.filesystem.systems.browser;}
     else version(HipDStdFile){import hip.filesystem.systems.dstd;}
     else {import hip.filesystem.systems.cstd;}
  
@@ -116,6 +156,7 @@ class HipFileSystem
             version(Android){fs = new HipAndroidFileSystemInteraction();}
             else version(UWP){fs = new HipUWPileSystemInteraction();}
             else version(PSVita){fs = new HipCStdioFileSystemInteraction();}
+            else version(WebAssembly){fs = new HipBrowserFileSystemInteraction();}
             else
             {
                 version(HipDStdFile){}else{static assert(false, "HipDStdFile should be marked to be used.");}
@@ -198,49 +239,50 @@ class HipFileSystem
         return validatePath(initialPath, combinedPath);
     }
 
-    
-    @ExportD("void") public static bool read(string path, out void[] output)
+    private static void delegate(string err) defaultErrorHandler()
     {
+        return (err)
+        {
+            import hip.error.handler;
+            filesReadingCount--;
+            ErrorHandler.assertExit(false, "HipFS Error: "~err);
+        };
+    }
+    
+    @ExportD public static IHipFSPromise read(string path)
+    {
+        import hip.console.log;
+        hiplog("Required path ", path);
         path = getPath(path);
         if(!isPathValid(path))
-            return false;
-        return fs.read(path, output);
-    }
-    @ExportD("ubyte") public static bool read(string path, out ubyte[] output)
-    {
-        void[] data;
-        bool ret = read(path, data);
-        output = cast(ubyte[])data;
-        return ret;
-    }
+            return null;
+        hiplog("Path validated.");
+        filesReadingCount++;
 
-    
-    @ExportD public static ubyte[] read(string path)
-    {
-        ubyte[] output;
-        if(read(path, output))
-            return output;
-        return [];
-    }
-
-    @ExportD("out") public static bool readText(string path, out string output)
-    {
-        void[] data;
-        bool ret = read(path, data);
-        if(ret)
+        HipFSPromise promise = new HipFSPromise(path);
+        fs.read(path, (ubyte[] data)
         {
-            import std.utf;
-            output = toUTF8((cast(string)data));
-        }
-        return ret;
-    }
-    @ExportD public static string readText(string path)
-    {
-        string output;
-        readText(path, output);
-        return output;
+            filesReadingCount--;
+            promise.setFinished(data);
+        }, (string err)
+        {
+            promise.setFinished(null);
+            defaultErrorHandler()(err);
+        });
+        
+        return promise;
     }
 
+    @ExportD public static IHipFSPromise readText(string path)
+    {
+        IHipFSPromise ret = read(path);
+        // if(ret)
+        // {
+        //     import std.utf;
+        //     output = toUTF8((cast(string)data));
+        // }
+        return ret;
+    }
     
 
     version(HipDStdFile)
@@ -282,7 +324,7 @@ class HipFileSystem
 
     @ExportD public static bool absoluteRead(string path, out void[] output)
     {
-        return fs.read(path, output);
+        return fs.read(path, (void[] data){output = data;}, defaultErrorHandler);
     }
     @ExportD("ubyte") public static bool absoluteRead(string path, out ubyte[] output)
     {

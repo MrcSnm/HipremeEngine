@@ -11,8 +11,9 @@ Distributed under the CC BY-4.0 License.
 
 module hip.api.view.scene;
 public import hip.api.view.layer;
+public import hip.api.data.commons:IHipPreloadable;
 
-interface IScene
+interface IScene : IHipPreloadable
 {
     void initialize();
     void pushLayer(Layer l);
@@ -29,5 +30,9 @@ abstract class AScene : IScene
     {
 	    //Intentionally blank for now.
     }
+
+
+    void preload(){assert(false, "use `mixin Preload;` to implement that function");}
+    string[] getAssetsForPreload(){assert(false, "use `mixin Preload;` to implement that function");};
     final string getName(){return this.classinfo.name;}
 }

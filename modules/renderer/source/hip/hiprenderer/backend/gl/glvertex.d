@@ -48,10 +48,10 @@ private int getGLAttributeType(HipAttributeType _t)
 class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
 {
     immutable int  usage;
-    ulong size;
+    size_t size;
     uint vbo;
 
-    this(ulong size, HipBufferUsage usage)
+    this(size_t size, HipBufferUsage usage)
     {
         this.size = size;
         this.usage = getGLUsage(usage);
@@ -59,13 +59,13 @@ class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
     }
     void bind(){glCall(()=>glBindBuffer(GL_ARRAY_BUFFER, this.vbo));}
     void unbind(){glCall(()=>glBindBuffer(GL_ARRAY_BUFFER, 0));}
-    void setData(ulong size, const(void*) data)
+    void setData(size_t size, const(void*) data)
     {
         this.size = size;
         this.bind();
         glCall(() => glBufferData(GL_ARRAY_BUFFER, size, cast(void*)data, this.usage));
     }
-    void updateData(int offset, ulong size, const(void*) data)
+    void updateData(int offset, size_t size, const(void*) data)
     {
         ErrorHandler.assertLazyExit(size+offset <= this.size,
         "Tried to set data with size "~to!string(size)~"and offset "~to!string(offset)~
@@ -79,7 +79,7 @@ class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
 class Hip_GL3_IndexBufferObject : IHipIndexBufferImpl
 {
     immutable int  usage;
-    ulong size;
+    size_t size;
     index_t count;
     uint ebo;
     this(index_t count, HipBufferUsage usage)
@@ -136,11 +136,10 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
             this.ebo = ebo;
         isWaitingCreation = false;
         vbo.bind();
-        import hip.console.log;
-        static int v = 0;
-        logln(v++);
+        ebo.bind();
         foreach(vao; vaoInfos)
         {
+            glCall(() => glEnableVertexAttribArray(vao.info.index));
             glCall(() => glVertexAttribPointer(
                 vao.info.index,
                 vao.info.count,
@@ -149,7 +148,6 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
                 vao.stride,
                 cast(void*)vao.info.offset
             ));
-            glCall(() => glEnableVertexAttribArray(vao.info.index));
         }
     }
         

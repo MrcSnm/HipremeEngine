@@ -124,12 +124,12 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         }
         else
             obj = textPool[poolActive++];
-        obj.setFont(font);
         obj.x = x;
         obj.y = y;
         obj.alignh = alignh;
         obj.alignv = alignv;
         obj.text = newText;
+        obj.setFont(font);
 
     }
 
@@ -137,7 +137,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
     {
         float[] verts = text.getVertices;
         uint beforeCount = quadsCount;
-        quadsCount+= text.text.length;
+        quadsCount+= text.drawableTextCount;
 
 
         if(vertices.length < quadsCount*4*4) //4 floats, 4 vertices
@@ -163,15 +163,15 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         }
         if(quadsCount == 0)
             return;
+        mesh.bind();
         this.font.texture.bind();
-        bmTextShader.bind();
         mesh.shader.setVertexVar("Cbuf.uProj", camera.proj);
         mesh.shader.setVertexVar("Cbuf.uView", camera.view);
-        bmTextShader.sendVars();
+        mesh.shader.sendVars();
         mesh.setVertices(vertices);
         mesh.draw(quadsCount*6);
-
         font.texture.unbind();
+        mesh.unbind();
 
         poolActive = 0;
         quadsCount = 0;

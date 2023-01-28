@@ -18,7 +18,7 @@ class Scene : AScene
 {
     final this(){}
     public void initialize(){}
-    public void pushLayer(Layer l)
+    override public void pushLayer(Layer l)
     {
         layerStack~= l;
         l.onAttach();

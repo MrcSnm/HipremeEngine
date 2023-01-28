@@ -24,15 +24,15 @@ public class Image : HipAsset, IImage
         initialize(path);
     }
 
-    this(in string path, ubyte[] buffer)
+    this(in string path, in ubyte[] buffer, void delegate(IImage self) onSuccess, void delegate() onFailure)
     {
         this(path);
-        loadFromMemory(buffer);
+        loadFromMemory(cast(ubyte[])buffer, onSuccess, onFailure);
     }
     private void initialize(string path)
     {
         import hip.util.system : sanitizePath;
-        impl = new HipImageImpl();
+        impl = new HipImageImpl(path);
         imagePath = sanitizePath(path);
     }
     static alias getPixelImage = HipImageImpl.getPixelImage;
@@ -45,11 +45,14 @@ public class Image : HipAsset, IImage
         this.width = width;
         this.height = height;
     }
-    bool loadFromMemory(ubyte[] data)
+    bool loadFromMemory(ubyte[] data,void delegate(IImage self) onSuccess, void delegate() onFailure)
     {
-        bool ret = this.impl.loadFromMemory(data);
-        this.width = impl.getWidth;
-        this.height = impl.getHeight;
+        bool ret = this.impl.loadFromMemory(data, (IImage self)
+        {
+            this.width = impl.getWidth;
+            this.height = impl.getHeight;
+            onSuccess(this);
+        }, onFailure);
         return ret;
     }
 

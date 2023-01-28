@@ -9,28 +9,12 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"error": {"path": "../error","version": "*"}
+		"error": {"path": "../error","version": "*"},
+		"bindbc-lua": {"version": "~>0.5.0", "optional": true}
 	},
 	"configurations": [
 		{
-			"name": "default",
-			"dependencies": {
-				"bindbc-lua": "~>0.5.0",
-				"bindbc-openal": "~>1.0.0",
-				"bindbc-opengl": "~>1.0.0"
-			}
-		},
-		{
-			"name": "android",
-			"dependencies": {
-				"bindbc-lua": "~>0.5.0"
-			}
-		},
-		{
-			"name": "uwp",
-			"dependencies": {
-				"bindbc-lua": "~>0.5.0"
-			}
+			"name": "default"
 		}
 	],
 	"description": "HipremeEngine bind module",

@@ -110,7 +110,7 @@ interface IHipRendererImpl
     public Shader createShader();
     public IHipFrameBuffer createFrameBuffer(int width, int height);
     public IHipVertexArrayImpl  createVertexArray();
-    public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage);
+    public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage);
     public IHipIndexBufferImpl  createIndexBuffer(index_t count, HipBufferUsage usage);
     public int queryMaxSupportedPixelShaderTextures();
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
@@ -244,6 +244,9 @@ class HipRenderer
                 else
                 {
                     type = HipRendererType.NONE;
+                    assert(rendererImpl !is null, "No Renderer was found. Available Versions:
+    OpenGL
+    DirectX");
                     return null;
                 }
             case HipRendererType.NONE:
@@ -269,7 +272,6 @@ class HipRenderer
         HipRenderer.height = window.height;
         afterInit();
         return ret;
-        // return ret;
     }
     private static afterInit()
     {
@@ -426,7 +428,7 @@ class HipRenderer
         res.vertexArrays~= rendererImpl.createVertexArray();
         return res.vertexArrays[$-1];
     }
-    public static IHipVertexBufferImpl  createVertexBuffer(ulong size, HipBufferUsage usage)
+    public static IHipVertexBufferImpl  createVertexBuffer(size_t size, HipBufferUsage usage)
     {
         res.vertexBuffers~= rendererImpl.createVertexBuffer(size, usage);
         return res.vertexBuffers[$-1];
@@ -440,7 +442,6 @@ class HipRenderer
     {
         currentShader = s;
         s.bind();
-        HipRenderer.exitOnError();
     }
     public static bool hasErrorOccurred(out string err, string file = __FILE__, size_t line =__LINE__)
     {
@@ -454,7 +455,6 @@ class HipRenderer
         if(hasErrorOccurred(err, file, line))
         {
             loglnError(err, file,":",line);
-            throw new Exception(err, file, line);
             exit(-1);
         }
     }
@@ -462,7 +462,6 @@ class HipRenderer
     public static void begin()
     {
         rendererImpl.begin();
-        HipRenderer.exitOnError();
     }
     
     public static void setErrorCheckingEnabled(bool enable = true)
@@ -474,7 +473,6 @@ class HipRenderer
     {
         rendererMode = mode;
         rendererImpl.setRendererMode(mode);
-        HipRenderer.exitOnError();
         stats.drawCalls++;
     }
     public static HipRendererMode getMode(){return rendererMode;}
@@ -482,7 +480,6 @@ class HipRenderer
     public static void drawIndexed(index_t count, uint offset = 0)
     {
         rendererImpl.drawIndexed(count, offset);
-        HipRenderer.exitOnError();
         stats.drawCalls++;
     }
     public static void drawIndexed(HipRendererMode mode, index_t count, uint offset = 0)
@@ -494,7 +491,6 @@ class HipRenderer
     public static void drawVertices(index_t count, uint offset = 0)
     {
         rendererImpl.drawVertices(count, offset);
-        HipRenderer.exitOnError();
     }
     public static void drawVertices(HipRendererMode mode, index_t count, uint offset = 0)
     {

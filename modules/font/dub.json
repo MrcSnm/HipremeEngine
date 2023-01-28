@@ -29,17 +29,9 @@
 		"arsd-official:ttf": "~>10.9.5"
 	},
 	"description": "HipremeEngine bind module",
-	"importPaths": [
-		"source",
-		"../../api/source"
-	],
 	"license": "proprietary",
 	"name": "font",
 	"sourcePaths": [
 		"source"
-	],
-	"versions": [
-		"HipTTFAPI",
-		"HipBMFontAPI"
 	]
 }

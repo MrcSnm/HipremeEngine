@@ -19,10 +19,10 @@ struct String
     @nogc:
     import core.stdc.string;
     import core.stdc.stdlib;
-    char* chars;
-    size_t length;
+    char[] chars;
     private size_t _capacity;
     private int* countPtr;
+    size_t length() const {return chars.length;}
 
     this(this)
     {
@@ -32,31 +32,25 @@ struct String
 
     private void initialize(size_t length)
     {
-        this.chars = cast(char*)malloc(length);
+        if(length == 0)
+            length = 128;
+        this.chars = (cast(char*)malloc(length))[0..0];
         this.countPtr = cast(int*)malloc(int.sizeof);
         this._capacity = length;
-        this.chars[0..length] = '\0';
+        this.chars.ptr[0.._capacity] = '\0';
         *countPtr = 1;
     }
 
-    static auto opCall(const(char)* str)
-    {
-        String s;
-        size_t l = strlen(str);
-        s.initialize(l);
-        s.length = l;
-        memcpy(s.chars, str, l);
-        return s;
-    }
-    static auto opCall(String str){return str;}
     static auto opCall(string str)
     {
         String s;
         s.initialize(str.length);
-        s.length = str.length;
-        memcpy(s.chars, str.ptr, s.length);
+        s.chars = s.chars.ptr[0..str.length];
+        s.chars[] = str[];
         return s;
     }
+    static auto opCall(const(char)* str){return opCall(str[0..strlen(str)]);}
+    static auto opCall(String str){return str;}
 
     private enum isAppendable(T) = is(T == String) || is(T == string) || is(T == immutable(char)*) || is(T == char);
     
@@ -76,6 +70,7 @@ struct String
         }
         return s;
     }
+
     alias _opApplyFn = int delegate(char c) @nogc;
     int opApply(scope _opApplyFn dg)
     {
@@ -85,6 +80,9 @@ struct String
         return result;
     }
 
+    /**
+    *   If it was borrowed, allocate new memory.
+    */
     bool updateBorrowed(size_t length)
     {
         if(countPtr == null) //Not initialized
@@ -95,10 +93,11 @@ struct String
         else if(*countPtr != 1) //If it is borrowed
         {
             //Remove that old reference and initialize itself (something like when slices shares a common array)
-            char* oldChars = chars;
+            char[] oldChars = chars;
             *countPtr = *countPtr - 1;
             initialize(length+this.length);
-            memcpy(chars, oldChars, this.length);
+            chars = chars.ptr[0..oldChars.length];
+            chars[0..oldChars.length] = oldChars[0..$];
             return true;
         }
         return false;
@@ -107,75 +106,53 @@ struct String
     auto ref opOpAssign(string op, T)(T value)
     if(op == "~")
     {
-        size_t l = 0;
-        immutable (char)* chs;
+        char[] chs;
         static if(is(T == String))
-        {
-            l = value.length;
-            chs = cast(immutable(char)*)value.chars;
-        }
+            chs = value.chars;
         else static if (is(T == string)) 
-        {
-            l = cast(size_t)value.length;
-            chs = value.ptr;
-        }
+            chs = cast(char[])value;
         else static if(is(T == immutable(char)*))
-        {
-            l = cast(size_t)strlen(value);
-            chs = value;
-        }
+            chs = value[0..strlen(value)];
         else static if(is(T == char))
         {
-            l = 1;
-            chs = cast(immutable(char*))&value;
+            static char[1] _chContainer;
+            _chContainer[0] = value;
+            chs = _chContainer;
         }
         else
         {
-            string temp = to!string(value);
-            l = temp.length;
-            chs = temp.ptr;
+            //TODO: Use toStringRange for optimizations
+            chs = cast(char[])to!string(value);
         }
-        if(!updateBorrowed(l) && l + this.length >= this._capacity) //New size is greater than capacity
-            resize(cast(uint)((l + this.length)*1.5));
-        memcpy(chars+length, chs, l);
-        length+= l;
+        if(!updateBorrowed(chs.length) && chs.length + this.length >= this._capacity) //New size is greater than capacity
+            resize(cast(uint)((chs.length + this.length)*1.5));
+        memcpy(chars.ptr+length, chs.ptr, chs.length);
+        chars = chars.ptr[0..chars.length+chs.length];
         return this;
     }
 
     auto ref opAssign(string value)
     {
-        bool resized = updateBorrowed(value.length);
-        if(!resized)
+        if(countPtr is null)
+            chars = cast(char[])value; //Don't allocate memory for the string literal.
+        else
         {
-            if(chars == null)
+            bool resized = updateBorrowed(value.length);
+            if(!resized)
             {
-                chars = cast(char*)malloc(value.length);
-                _capacity = value.length;
+                if(chars == null)
+                    initialize(value.length);
+                else if(value.length > _capacity)
+                    resize(value.length);
             }
-            else if(value.length > _capacity)
-                resize(value.length);
+            chars.ptr[0..value.length] = value[];
         }
-        memcpy(chars, value.ptr, value.length);
-        length = value.length;
         return this;
     }
 
     auto ref opAssign(immutable(char)* value)
     {
-        size_t l = cast(size_t)strlen(value);
-        bool resized = updateBorrowed(l);
-        if(!resized)
-        {
-            if(chars == null)
-            {
-                chars = cast(char*)malloc(l);
-                _capacity = l;
-            }
-            else if(l > _capacity)
-                resize(l);
-        }
-        length = l;
-        memcpy(chars, value, l);
+        opAssign(value[0..strlen(value)]);
         return this;
     }
 
@@ -183,11 +160,11 @@ struct String
     {
         return cast(string)chars[0..length];
     }
-    string toString() const {return cast(string)chars[0..length];}
+    string toString() const {return cast(string)chars;}
 
     pragma(inline, true) private void resize(size_t newSize)
     {
-        chars = cast(char*)realloc(chars, newSize);
+        chars = (cast(char*)realloc(chars.ptr, newSize))[0..chars.length];
         _capacity = newSize;
     }
     ///Make this struct OutputRange compatible
@@ -195,8 +172,8 @@ struct String
     {
         if(this.length + 1 >= this._capacity)
             resize(cast(uint)((this.length+1)*1.5));
-        chars[length] = c;
-        length++;
+        chars.ptr[length] = c;
+        chars = chars.ptr[0..length+1];
     }
     bool opEquals(R)(const R other) const
     {
@@ -216,10 +193,7 @@ struct String
     void preAllocate(uint howMuch)
     {
         if(length + howMuch > _capacity)
-        {
-            this._capacity+= howMuch;
-            chars = cast(char*)realloc(chars, this._capacity);
-        }
+            resize(_capacity + howMuch);
     }
     void preAllocate(ulong howMuch){preAllocate(cast(uint)howMuch);}
 
@@ -233,12 +207,11 @@ struct String
     {
         if(countPtr != null)
         {
-
             *countPtr = *countPtr - 1;
             assert(*countPtr >= 0);
             if(*countPtr == 0 && chars != null)
             {
-                free(chars);
+                free(chars.ptr);
                 free(countPtr);
             }
             countPtr = null;
@@ -632,7 +605,7 @@ string getNumericEnding(string s)
 {
     if(!s)
         return "";
-    long i = cast(long)s.length - 1;
+    ptrdiff_t i = cast(ptrdiff_t)s.length - 1;
     while(i >= 0)
     {
         if(!isNumeric(s[i]))

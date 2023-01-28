@@ -23,7 +23,7 @@ private void showDLLMissingError(string dllName)
 bool loadEngineDependencies()
 {
     ErrorHandler.startListeningForErrors("Loading Shared Libraries");
-    version(HipremeEngineLua)
+    version(Have_bindbc_lua)
     {
         import bindbc.lua;
         LuaSupport l = loadLua();

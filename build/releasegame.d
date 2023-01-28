@@ -120,7 +120,6 @@ int main(string[] args)
 
     string[] validFiles = getGameValidFiles(gamePath);
     string absoluteOutput = getcwd()~dirSeparator~outputPath~dirSeparator;
-
     foreach(f; validFiles)
     {
         if(isDir(f))
@@ -141,6 +140,12 @@ int main(string[] args)
                 }
                 else 
                 {
+                    if(!exists(dirName(outputBasedOnGame)))
+                    {
+                        if(verbose)
+                            writeln("[FOLDER_CONTENT] MKDIR ",outputBasedOnGame);
+                        mkdirRecurse(dirName(outputBasedOnGame));
+                    }
                     if(verbose)
                         writeln("[FOLDER_CONTENT] COPY[",e.name,"] ---> ", outputBasedOnGame);
                     copy(e.name, outputBasedOnGame);

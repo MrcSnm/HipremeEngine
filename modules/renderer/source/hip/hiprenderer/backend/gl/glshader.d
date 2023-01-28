@@ -15,6 +15,11 @@ version(Android)
     enum floatPrecision = "";
     // enum floatPrecision = "precision mediump;";
 }
+else version(WebAssembly)
+{
+    enum shaderVersion = "#version 100";
+    enum floatPrecision = "precision mediump float;";
+}
 else
 {
     enum shaderVersion = "#version 330 core";
@@ -28,6 +33,7 @@ import hip.hiprenderer.shader;
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.shader.shadervar;
 import hip.util.conv;
+import hip.util.format: fastUnsafeCTFEFormat, format;
 import hip.error.handler;
 
 
@@ -70,42 +76,36 @@ class Hip_GL3_FragmentShader : FragmentShader
         };
     }
 
-    version(Android)
+    version(WebAssembly) //They are very different, so, better to keep them separate
     {
         override final string getSpriteBatchFragment()
         {
             int sup = HipRenderer.getMaxSupportedShaderTextures();
-            //Push the line breaks for easier debugging on gpu debugger
-
-            import hip.console.log;
-            logln("Supporting ", sup, " textures");
-
-            string textureSlotSwitchCase = "switch(texId)\n{\n"; 
+            string textureSlotSwitchCase;
             for(int i = 0; i < sup; i++)
             {
                 string strI = to!string(i);
-                textureSlotSwitchCase~="case "~strI~": "~
-                "\t\toutPixelColor = texture(uTex1["~strI~"], inTexST)*inVertexColor*uBatchColor;break;\n";
+                if(i != 0)
+                    textureSlotSwitchCase~="\t\t\t\telse ";
+                textureSlotSwitchCase~="if(texId == "~strI~")"~
+                "{gl_FragColor = texture2D(uTex1["~strI~"], inTexST)*inVertexColor*uBatchColor;}\n";
             }
             textureSlotSwitchCase~="}\n";
-
-            return shaderVersion~"\n"~floatPrecision~"\n"~q{
-                
-                uniform sampler2D uTex1[}~to!string(sup)~q{];
-
+            enum shaderSource = q{
                 uniform vec4 uBatchColor;
 
-                in vec4 inVertexColor;
-                in vec2 inTexST;
-                in float inTexID;
+                varying vec4 inVertexColor;
+                varying vec2 inTexST;
+                varying float inTexID;
 
-                out vec4 outPixelColor;
                 void main()
-                }~"{"~q{
+            };
+            return shaderVersion~"\n"~floatPrecision~"\n"~format!q{
+                    uniform sampler2D uTex1[%s];}(sup)~
+                shaderSource~
+            "{"~q{
                     int texId = int(inTexID);
-                } ~textureSlotSwitchCase~"}";
-                    // outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
-                    // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
+            }~ textureSlotSwitchCase;
         }
     }
     else
@@ -123,58 +123,87 @@ class Hip_GL3_FragmentShader : FragmentShader
             }
             textureSlotSwitchCase~="}\n";
 
-            return shaderVersion~"\n"~floatPrecision~"\n"~q{
-                
-                uniform sampler2D uTex1[}~to!string(sup)~q{];
+                enum shaderSource = q{
 
-                uniform vec4 uBatchColor;
+                    uniform vec4 uBatchColor;
 
-                in vec4 inVertexColor;
-                in vec2 inTexST;
-                in float inTexID;
+                    in vec4 inVertexColor;
+                    in vec2 inTexST;
+                    in float inTexID;
 
-                out vec4 outPixelColor;
-                void main()
-                }~"{"~q{
+                    out vec4 outPixelColor;
+                    void main()
+                };
+            return shaderVersion~"\n"~floatPrecision~"\n"~format!q{
+                    uniform sampler2D uTex1[%s];}(sup)~
+                shaderSource~
+            "{"~q{
                     int texId = int(inTexID);
-                } ~textureSlotSwitchCase~"}";
-                    // outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
-                    // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
+            } ~textureSlotSwitchCase~
+            "}";
+            // outPixelColor = texture(uTex1[texId], inTexST)* inVertexColor * uBatchColor;
+            // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
         }
-    } 
+
+    }
+
 
     override final string getGeometryBatchFragment()
     {
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
-            
-
+        version(WebAssembly)
+        {
+            enum attr1 = q{varying};
+            enum outputPixelVar = q{};
+            enum outputAssignment = q{gl_FragColor};
+        }
+        else
+        {
+            enum attr1 = q{in};
+            enum outputPixelVar = q{out vec4 outPixelColor;};
+            enum outputAssignment = q{outPixelColor};
+        }
+        enum shaderSource = q{
             uniform vec4 uGlobalColor;
-            in vec4 inVertexColor;
-            out vec4 outPixelColor;
+            %s vec4 inVertexColor;
+            %s
 
             void main()
             {
-                outPixelColor = inVertexColor * uGlobalColor;
+                %s = inVertexColor * uGlobalColor;
             }
-        };
+        }.fastUnsafeCTFEFormat(attr1, outputPixelVar, outputAssignment);
+        return shaderVersion~"\n"~floatPrecision~"\n"~shaderSource;
     }
 
     override final string getBitmapTextFragment()
     {
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+        version(WebAssembly)
+        {
+            enum attr1 = q{varying};
+            enum outputPixelVar = q{};
+            enum outputAssignment = q{gl_FragColor};
+        }
+        else
+        {
+            enum attr1 = q{in};
+            enum outputPixelVar = q{out vec4 outPixelColor;};
+            enum outputAssignment = q{outPixelColor};
+        }
+        enum shaderSource = q{
             
 
             uniform vec4 uColor;
             uniform sampler2D uTex;
-            in vec2 inTexST;
-            out vec4 outPixelColor;
+            %s vec2 inTexST;
+            %s
 
             void main()
             {
-                float r = texture(uTex, inTexST).r;
-                outPixelColor = vec4(r,r,r,r)*uColor;
+                float r = texture2D(uTex, inTexST).r;
+                %s = vec4(r,r,r,r)*uColor;
             }
-        };
+        }.fastUnsafeCTFEFormat(attr1, outputPixelVar, outputAssignment);
+        return shaderVersion~"\n"~floatPrecision~"\n"~shaderSource;
     }
 }
 class Hip_GL3_VertexShader : VertexShader
@@ -196,7 +225,7 @@ class Hip_GL3_VertexShader : VertexShader
 
             void main()
             {
-                gl_Position = proj*vec4(position, 1.0f);
+                gl_Position = proj*vec4(position, 1.0);
                 vertexColor = color;
                 tex_uv = texCoord;
             }
@@ -220,70 +249,118 @@ class Hip_GL3_VertexShader : VertexShader
     }
     override final string getSpriteBatchVertex()
     {
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+        version(GLES20) //`in` representation in GLES 20 is `attribute``
+        {
+            enum attr1 = q{attribute};
+            enum attr2 = q{attribute};
+            enum attr3 = q{attribute};
+            enum attr4 = q{attribute};
+            enum out1 = q{varying};
+            enum out2 = q{varying};
+            enum out3 = q{varying};
+        }
+        else
+        {
+            enum attr1 = q{layout (location = 0) in};
+            enum attr2 = q{layout (location = 1) in};
+            enum attr3 = q{layout (location = 2) in};
+            enum attr4 = q{layout (location = 3) in};
+            enum out1 = q{out};
+            enum out2 = q{out};
+            enum out3 = q{out};
+        }
+        enum shaderSource = q{
             
-            layout (location = 0) in vec3 vPosition;
-            layout (location = 1) in vec4 vColor;
-            layout (location = 2) in vec2 vTexST;
-            layout (location = 3) in float vTexID;
+            %s vec3 vPosition;
+            %s vec4 vColor;
+            %s vec2 vTexST;
+            %s float vTexID;
 
             uniform mat4 uProj;
             uniform mat4 uModel;
             uniform mat4 uView;
             
-            out vec4 inVertexColor;
-            out vec2 inTexST;
-            out float inTexID;
+            %s vec4 inVertexColor;
+            %s vec2 inTexST;
+            %s float inTexID;
 
             void main()
             {
-                gl_Position = uProj*uView*uModel*vec4(vPosition, 1.0f);
+                gl_Position = uProj*uView*uModel*vec4(vPosition, 1.0);
                 inVertexColor = vColor;
                 inTexST = vTexST;
                 inTexID = vTexID;
             }
-        };
+        }.fastUnsafeCTFEFormat(attr1, attr2, attr3, attr4, out1, out2, out3);
+        return shaderVersion~"\n"~floatPrecision~"\n"~shaderSource;
     }
     override final string getGeometryBatchVertex()
     {
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+        version(WebAssembly)
+        {
+            enum attr1 = q{attribute};
+            enum attr2 = q{attribute};
+            enum out1 = q{varying};
+        }
+        else
+        {
+            enum attr1 = q{layout (location = 0) in};
+            enum attr2 = q{layout (location = 1) in};
+            enum out1 = q{out};
+        }
+
+        enum shaderSource = q{
             
-            layout (location = 0) in vec3 vPosition;
-            layout (location = 1) in vec4 vColor;
+            %s vec3 vPosition;
+            %s vec4 vColor;
 
             uniform mat4 uProj;
             uniform mat4 uModel;
             uniform mat4 uView;
             
-            out vec4 inVertexColor;
+            %s vec4 inVertexColor;
 
             void main()
             {
-                gl_Position = uProj*uView*uModel*vec4(vPosition, 1.0f);
+                gl_Position = uProj*uView*uModel*vec4(vPosition, 1.0);
                 inVertexColor = vColor;
             }
-        };
+        }.fastUnsafeCTFEFormat(attr1, attr2, out1);
+        return shaderVersion~"\n"~floatPrecision~"\n"~shaderSource;
     }
 
     override final string getBitmapTextVertex()
     {
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+        version(WebAssembly)
+        {
+            enum attr1 = q{attribute};
+            enum attr2 = q{attribute};
+            enum out1 = q{varying};
+        }
+        else
+        {
+            enum attr1 = q{layout (location = 0) in};
+            enum attr2 = q{layout (location = 1) in};
+            enum out1 = q{out};
+        }
+        enum shaderSource = q{
             
-            layout (location = 0) in vec2 vPosition;
-            layout (location = 1) in vec2 vTexST;
+            %s vec2 vPosition;
+            %s vec2 vTexST;
 
             uniform mat4 uModel;
             uniform mat4 uView;
             uniform mat4 uProj;
 
-            out vec2 inTexST;
+            %s vec2 inTexST;
 
             void main()
             {
                 gl_Position = uProj * uView * uModel * vec4(vPosition, 1.0, 1.0);
                 inTexST = vTexST;
             }
-        };
+        }.fastUnsafeCTFEFormat(attr1, attr2, out1);
+        return shaderVersion~"\n"~floatPrecision~"\n"~shaderSource;
     }
 }
 class Hip_GL3_ShaderProgram : ShaderProgram
@@ -326,14 +403,36 @@ class Hip_GL_ShaderImpl : IShader
         glCall(() =>glShaderSource(shaderID, 1, &source,  cast(GLint*)null));
         glCall(() =>glCompileShader(shaderID));
         int success;
-        char[512] infoLog;
-
+        
         glCall(() => glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success));
         if(ErrorHandler.assertErrorMessage(success==true, "Shader compilation error", "Compilation failed"))
         {
-            glCall(() =>glGetShaderInfoLog(shaderID, 512, null, infoLog.ptr));
+            import core.stdc.stdlib;
+            char[] infoLog;
+            version(WebAssembly)
+            {
+                {
+                    GLint length = 0;
+                    ubyte* temp = glCall(() => wglGetShaderInfoLog(shaderID));
+                    length = *cast(GLint*)temp;
+                    infoLog = cast(char[])temp[size_t.sizeof..+size_t.sizeof + length];
+                }
+            }
+            else
+            {
+                {
+                    GLint length = 0;
+                    glCall(() => glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length));
+                    infoLog = cast(char[])malloc(length)[0..length];
+                    glCall(() =>glGetShaderInfoLog(shaderID, length, &length, infoLog.ptr));
+                }
+            }
             ErrorHandler.showErrorMessage("Error on shader source: ", shaderSource);
             ErrorHandler.showErrorMessage("Compilation error:", cast(string)(infoLog));
+            version(WebAssembly)
+                free(infoLog.ptr - GLint.sizeof); //Remember that the pointer started in length.
+            else
+                free(infoLog.ptr);
         }
         return success==true;
     }
@@ -395,13 +494,14 @@ class Hip_GL_ShaderImpl : IShader
         glCall(() =>glEnableVertexAttribArray(layoutIndex));
     }
 
-    void setCurrentShader(ShaderProgram program)
+    void bind(ShaderProgram program)
     {
         glCall(() =>glUseProgram((cast(Hip_GL3_ShaderProgram)program).program));
     }
-
-    void useShader(ShaderProgram program){glCall(() =>glUseProgram((cast(Hip_GL3_ShaderProgram)program).program));}
-
+    void unbind(ShaderProgram program)
+    {
+        glCall(() =>glUseProgram(0));
+    }
 
     void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts)
     {
@@ -466,12 +566,17 @@ class Hip_GL_ShaderImpl : IShader
 
     void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount)
     {
-        setCurrentShader(prog);
+        ///Optimization for not allocating when inside loops.
+        static int[] temp;
+        if(slotsCount > temp.length)
+            temp.length = slotsCount;
+
+        bind(prog);
         int varID = getId(prog, varName);
-        scope int[] temp = new int[](slotsCount);
         for(int i = 0; i < slotsCount; i++)
             temp[i] = i;
         glCall(() => glUniform1iv(varID, slotsCount, temp.ptr));
+        unbind(prog);
     }
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {

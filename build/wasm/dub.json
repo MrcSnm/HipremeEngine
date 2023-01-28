@@ -1,0 +1,20 @@
+{
+	"name": "hipengine-dev-server",
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2023, Hipreme",
+	"dependencies": {
+		"arsd-official:cgi": "~>10.9.8"
+	},
+	"description": "WASM build for Hipreme Engine",
+	"license": "proprietary",
+	"mainSourceFile": "source/serve.d",
+	"targetType": "executable",
+	"excludedSourceFiles": [
+		"source/app.d"
+	],
+	"versions": [
+		"embedded_httpd"
+	]
+}

@@ -20,7 +20,6 @@ interface IHipInputMap
 
     version(Script)
     {
-        static IHipInputMap parseInputMap(string file, ubyte id = 0){return parseInputMap_File(file,id);}
         static IHipInputMap parseInputMap(ubyte[] file, string fileName, ubyte id = 0){return parseInputMap_Mem(file, fileName,id);}
     }
     else version(Have_hipreme_engine)
@@ -32,7 +31,6 @@ version(Script)
 {
     extern(System)
     {
-        IHipInputMap function(string file, ubyte id = 0) parseInputMap_File;
         IHipInputMap function(ubyte[] file, string fileName, ubyte id = 0) parseInputMap_Mem;
     }
 }

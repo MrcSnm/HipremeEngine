@@ -112,6 +112,7 @@ string dynamicLibraryGetLibName(string libName)
         libName.filename = "lib"~libName.filename~".so";
         return libName;
     }
+    else version(WebAssembly) return "";
     else static assert(0, "Platform not supported");
 }
 
@@ -158,6 +159,8 @@ void* dynamicLibraryLoad(string libName)
             import core.runtime;
             ret = Runtime.loadLibrary(libName);
         }
+        else version(WebAssembly)
+            ret = null;
         else version(Posix)
         {
             import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
@@ -199,6 +202,8 @@ string dynamicLibraryError()
         import core.sys.posix.dlfcn;
         return cast(string)fromStringz(dlerror());
     }
+    else version(WebAssembly)
+        return "WebAssembly does not load dynamic libraries";
     else static assert(0, "Platform not supported");
 }
 
@@ -218,6 +223,8 @@ bool dynamicLibraryRelease(void* dll)
         import core.sys.linux.dlfcn:dlclose;
         return cast(bool)dlclose(dll);
     }
+    else version(WebAssembly)
+        return false;
     else
     {
         import core.runtime;

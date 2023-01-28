@@ -37,6 +37,7 @@ version(Script)
 
 mixin template HipEngineMain(alias StartScene)
 {
+	immutable string ScriptModules = import("scriptmodules.txt");
 	version(Script)
 	{
 		__gshared AScene _exportedScene;
@@ -66,6 +67,9 @@ mixin template HipEngineMain(alias StartScene)
 			HipAssetManager.initAssetManager();
 			initTimerAPI();
 			initGameAPI();
+
+			mixin LoadAllAssets!(ScriptModules);
+			loadReferenced();
 			
 			return _exportedScene = new StartScene();
 		}
@@ -80,5 +84,12 @@ mixin template HipEngineMain(alias StartScene)
 		}
 	}
 	else
-		alias HipEngineMainScene  = StartScene;
+	{
+		AScene HipremeEngineMainScene()
+		{
+			mixin LoadAllAssets!(ScriptModules);
+			loadReferenced();
+			return new StartScene();
+		}
+	}
 }

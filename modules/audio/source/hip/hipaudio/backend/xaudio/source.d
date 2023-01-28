@@ -55,13 +55,11 @@ class HipXAudioSource : HipAudioSource
 
     protected void submitClip()
     {
-        HipXAudioClip c = cast(HipXAudioClip)clip;
-        XAUDIO2_BUFFER* buffer = c.getBuffer(c.getClipData(), cast(uint)c.getClipSize()).xaudio;
-
+        XAUDIO2_BUFFER* buffer = getBufferFromAPI(clip).xaudio;
         if(isClipDirty)
         {
             isClipDirty = false;
-            HRESULT hr = sourceVoice.SetSourceSampleRate(c.decoder.getSamplerate());
+            HRESULT hr = sourceVoice.SetSourceSampleRate(clip.getSampleRate());
             ErrorHandler.assertLazyExit(SUCCEEDED(hr),
             "Could not set source voice Sample Rate:\n\t"~HipXAudioPlayer.getError(hr));
         }
@@ -83,7 +81,7 @@ class HipXAudioSource : HipAudioSource
     override bool loop(bool value)
     {
         bool ret = super.loop(value);
-        HipXAudioClip c = (cast(HipXAudioClip)clip);
+        HipXAudioClip c = clip.getAudioClipBackend!(HipXAudioClip);
         c.buffer.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
         return ret;
     }

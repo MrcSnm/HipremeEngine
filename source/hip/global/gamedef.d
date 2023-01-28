@@ -42,21 +42,41 @@ public:
 
 
 
-bool loadDefaultAssets()
+///This function is callable only once.
+bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) onFailure)
 {
    import hip.font.ttf;
    import hip.assets.image;
+   static int succeededSteps = 0;
+   enum ASSETS_TO_LOAD = 2;
+
+   if(succeededSteps > 0)
+      return false;
+   
+   auto image = new Image(HIP_DEFAULT_TEXTURE);
+   image.loadFromMemory(cast(ubyte[])HipDefaultAssets.textureData, (_)
+   {
+      HipDefaultAssets._texture = image;
+      if(++succeededSteps == ASSETS_TO_LOAD)
+         onSuccess();
+   }, 
+   ()
+   {
+      onFailure("Failed loading default image.");
+   });
 
    auto font = new Hip_TTF_Font(HIP_DEFAULT_FONT, HIP_DEFAULT_FONT_SIZE);
+
    if(!font.loadFromMemory(cast(ubyte[])HipDefaultAssets.fontData))
-      return false;
+      onFailure("Failed loading default font");
+   else
+   {
+      if(++succeededSteps == ASSETS_TO_LOAD)
+         onSuccess();
+   }
    HipDefaultAssets._font = font;
 
-   auto image = new Image(HIP_DEFAULT_TEXTURE);
-   if(!image.loadFromMemory(cast(ubyte[])HipDefaultAssets.textureData))
-      return false;
 
-   HipDefaultAssets._texture = image;
    return true;
 }
 
@@ -79,6 +99,8 @@ export extern(System)
       if(texture is null)
       {
          import hip.assets.texture;
+         import hip.console.log;
+         logln("Image has loaded? ", HipDefaultAssets.texture.getName, HipDefaultAssets.texture.getWidth);
          texture = new HipTexture(HipDefaultAssets.texture);
       }
       return cast(const)texture;

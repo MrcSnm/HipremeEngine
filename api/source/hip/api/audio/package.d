@@ -7,7 +7,6 @@ enum HipAudioType
     MUSIC
 }
 
-version(HipAudioAPI):
 /**
 * Controls how the gain will falloff
 */
@@ -40,14 +39,15 @@ enum HipAudioImplementation
 {
     OPENAL,
     OPENSLES,
-    XAUDIO2
+    XAUDIO2,
+    WEBAUDIO
 }
 
 version(Script)
 {
-    public import HipAudio = hip.api.audio.audio_binding; 
-    alias IHipAudioClip = HipAudio.IHipAudioClip;
-    alias AHipAudioSource = HipAudio.AHipAudioSource;
+    public import HipAudio = hip.api.audio.audio_binding;
+    public import hip.api.audio.audioclip:IHipAudioClip;
+    public import hip.api.audio.audiosource:AHipAudioSource;
 }
 else version(Have_hipreme_engine)
 {

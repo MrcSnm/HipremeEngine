@@ -21,14 +21,15 @@ class HipINI : HipAsset, IHipIniFile
     bool loadFromFile(string path)
     {
         import hip.filesystem.hipfs;
-        string data;
-        if(!HipFS.readText(path, data))
+        HipFS.readText(path).addOnError((err)
         {
             import hip.error.handler;
             ErrorHandler.showWarningMessage("Could not load INI file ", path);
-            return false;
-        }
-        return loadFromMemory(data, path);
+        }).addOnSuccess((in ubyte[] data)
+        {
+            loadFromMemory(cast(string)data, path);
+        });
+        return true;
     }
 
     override void onFinishLoading(){}

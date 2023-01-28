@@ -50,6 +50,10 @@ version(Script)
             void function(int x, int y, int w, int h, in HipColor color = HipColor.invalid) fillRectangle;
             ///Draws a filled triangle
             void function(int x1, int y1, int x2, int y2, int x3, int y3, in HipColor color = HipColor.invalid) fillTriangle;
+            ///Draws unfilled circle
+            void function(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24) drawEllipse;
+            ///Draws a filled circle
+            void function(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24) fillEllipse;
             ///Draws a line from (x1, y1) to (x2, y2)
             void function(int x1, int y1, int x2, int y2, in HipColor color = HipColor.invalid) drawLine;
             ///Draws a line using bezier points. The higher the precision, the smoother the line, the heavier it is to execute
@@ -127,6 +131,10 @@ version(Script)
             void function(int x, int y, int w, int h, in HipColor color = HipColor.invalid) fillRectangle;
             ///Draws a filled triangle
             void function(int x1, int y1, int x2, int y2, int x3, int y3, in HipColor color = HipColor.invalid) fillTriangle;
+            ///Draws unfilled circle
+            void function(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24) drawEllipse;
+            ///Draws a filled circle
+            void function(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24) fillEllipse;
             ///Draws a line from (x1, y1) to (x2, y2)
             void function(int x1, int y1, int x2, int y2, in HipColor color = HipColor.invalid) drawLine;
             ///Draws a line using bezier points. The higher the precision, the smoother the line, the heavier it is to execute

@@ -10,11 +10,7 @@
 	"configurations": 
 	[
 		{
-			"name": "default",
-			"dependencies": 
-			{
-				"util" : {"path": "../util"}
-			}
+			"name": "default"
 		},
 		{
 			"name": "source",

@@ -10,8 +10,6 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.math.matrix;
 import core.math;
-import hip.util.conv;
-import hip.util.string;
 
 enum MatrixType
 {
@@ -124,24 +122,6 @@ struct Matrix3
                 ret[]/=rhs;
             }
         }
-        return ret;
-    }
-
-    String toString() @nogc
-    {
-        String ret = '[';
-        for(uint i = 0; i < 9; i++)
-        {
-            if(i != 0)
-            {
-                if(i%3 == 0)
-                    ret~= "]\n[";
-                else
-                    ret~=", ";
-            }
-            toStringRange(ret, this[i]);
-        }
-        ret~= ']';
         return ret;
     }
 
@@ -327,24 +307,46 @@ struct Matrix4
         ]) * mat;
     }
 
-    String toString() @nogc
-    {
-        String ret = "[";
-
-        for(uint i = 0; i < 16; i++)
-        {
-            if(i != 0)
-            {
-                if(i%4 == 0)
-                    ret~= "]\n[";
-                else
-                    ret~=", ";
-            }            
-            toStringRange(ret, this[i]);
-        }
-        ret~= ']';
-        return ret;
-    }
-
     alias values this;
+}
+
+auto toString()(in Matrix3 mat) @nogc
+{
+    import hip.util.conv;
+    import hip.util.string;
+    String ret = '[';
+    for(uint i = 0; i < 9; i++)
+    {
+        if(i != 0)
+        {
+            if(i%3 == 0)
+                ret~= "]\n[";
+            else
+                ret~=", ";
+        }
+        toStringRange(ret, mat[i]);
+    }
+    ret~= ']';
+    return ret;
+}
+
+auto toString()(in Matrix4 mat) @nogc
+{
+    import hip.util.conv;
+    import hip.util.string;
+    String ret = "[";
+
+    for(uint i = 0; i < 16; i++)
+    {
+        if(i != 0)
+        {
+            if(i%4 == 0)
+                ret~= "]\n[";
+            else
+                ret~=", ";
+        }            
+        toStringRange(ret, mat[i]);
+    }
+    ret~= ']';
+    return ret;
 }

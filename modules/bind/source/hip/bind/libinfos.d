@@ -9,9 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.bind.libinfos;
-import hip.console.log;
 import core.stdc.string:strlen;
-import hip.util.string : fromStringz;
 
 version(Have_bindbc_openal)
 {
@@ -33,29 +31,6 @@ version(Have_bindbc_openal)
             next += (len + 2);
         }
         ret~= "----------\n";
-        return ret;
-    }
-}
-
-
-version(Have_bindbc_opengl)
-{
-    import bindbc.opengl;
-    string show_opengl_info()
-    {
-        string ret;
-        version(Android){}
-        else{
-            if(!isOpenGLLoaded())
-            {
-                return "OpenGL is not loaded for being able to show info!";
-            }
-        }
-        ret~= "OpenGL Infos:
-        Vendor:   "     ~fromStringz(glGetString(GL_VENDOR))~
-        "\n\tRenderer: "~fromStringz(glGetString(GL_RENDERER))~
-        "\n\tVersion:  "~fromStringz(glGetString(GL_VERSION));
-
         return ret;
     }
 }

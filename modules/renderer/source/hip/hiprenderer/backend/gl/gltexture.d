@@ -17,6 +17,7 @@ public import hip.api.data.commons:IReloadable;
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
 import hip.image;
+import hip.math.utils;
 
 class Hip_GL3_Texture : IHipTexture, IReloadable
 {
@@ -36,6 +37,7 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
             case TextureWrapMode.MIRRORED_REPEAT: return GL_MIRRORED_REPEAT;
             version(Android){}
             else version(PSVita){}
+            else version(WebAssembly){}
             else
             {
                 //assert here would be better, as simply returning a default can be misleading.
@@ -94,6 +96,13 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
     void setWrapMode(TextureWrapMode mode)
     {
         int mod = getGLWrapMode(mode);
+        version(GLES2)
+        {
+            assert((isPowerOf2(width) && isPowerOf2(height)) || mod  == TextureWrapMode.CLAMP_TO_EDGE,
+                "OpenGL ES 2.0/WebGL 1.0 must use Textures using Power of 2 size. If you wish to use "~
+                "a non Power of 2, you must use the TextureWrapMode.CLAMP_TO_EDGE"
+            );
+        }
         bind(currentSlot);
         glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mod));
         glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mod));
@@ -121,18 +130,39 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
                 if(image.hasPalette)
                 {
                     pixels = image.convertPalettizedToRGBA();
-                    mode = GL_RGBA;
-                    internalFormat = GL_RGBA8;
+                    version(GLES20)
+                    {
+                        internalFormat = mode = GL_RGBA;
+                    }
+                    else
+                    {
+                        mode = GL_RGBA;
+                        internalFormat = GL_RGBA8;
+                    }
                 }
                 else
                 {
-                    mode = GL_RED;
-                    internalFormat = GL_R8;
+                    version(GLES20)
+                    {
+                        internalFormat = mode = GL_LUMINANCE;
+                    }
+                    else
+                    {
+                        mode = GL_RED;
+                        internalFormat = GL_R8;
+                    }
                 }
                 break;
             case 3:
-                mode = GL_RGB;
-                internalFormat = GL_RGB8;
+                version(GLES20)
+                {
+                    internalFormat = mode = GL_RGB;
+                }
+                else
+                {
+                    mode = GL_RGB;
+                    internalFormat = GL_RGB8;
+                }
                 break;
             case 4:
                 mode = GL_RGBA;
@@ -147,11 +177,19 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
         height = image.getHeight;
         bind(currentSlot);
 
-        glCall(() => glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, pixels.ptr));
+        import hip.console.log;
+        loglnWarn("Putting pixels onto glTexImage.", width, height, image.getName);
 
+        glCall(() => glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, cast(void*)pixels.ptr));
         glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         setWrapMode(TextureWrapMode.REPEAT);
+
+        version(GLES20)
+        if(!isPowerOf2(image.getWidth) || !isPowerOf2(image.getHeight))
+        {
+            setWrapMode(TextureWrapMode.CLAMP_TO_EDGE);
+        }
         return true;
     }
     

@@ -1,7 +1,5 @@
 module hip.api.filesystem.hipfs;
 
-version(HipFileAPI):
-
 ///Less dependencies
 enum
 {
@@ -41,6 +39,14 @@ interface IHipFileItf
     ulong getSize();
     void close();
 }
+interface IHipFSPromise
+{
+    IHipFSPromise addOnSuccess(void delegate(in ubyte[] data) onSuccess);
+    IHipFSPromise addOnError(void delegate(string error) onError);
+    bool resolved() const;
+  
+}
+
 interface IHipFileSystemInteraction
 {
     protected final const(wchar*) cachedWStringz(wstring path)
@@ -65,7 +71,18 @@ interface IHipFileSystemInteraction
         return cache.ptr;
     }
 
-    bool read(string path, out void[] output);
+    /**
+    *   onSuccess: Maybe be executed before the function returns (on sync platforms).
+    *
+    *   onError: Error is reserved for when the file exists but can't be read.
+    Not being able to read because it doesn't exists is not an error. 
+    *   
+    *
+    *   Returns:
+    *       - Sync Platforms: File does not exists, can't read.
+    *       - Async platforms: File does not exists
+    */
+    bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err = "Corrupted File") onError);
     bool write(string path, void[] data);
     bool exists(string path);
     bool remove(string path);

@@ -10,7 +10,7 @@
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
 		"math": {"path": "../math"},
-		"filesystem": {"path": "../filesystem", "version": "*"},
+		"error": {"path": "../error"},
 		"audio_decoding": {"path": "../audio_decoding"}
 	},
 	"configurations": [
@@ -20,16 +20,20 @@
 				"xaudio2_8"
 			],
 			"dependencies": {
-				"bindbc-openal": "~>1.0.0"
-			},
-			"dependencies-windows": {
+				"bindbc-openal": "~>1.0.0",
 				"directx-d":{"path" : "../../dependencies/directx-d", "optional": true}
+			},
+			"subConfigurations": {
+				"audio_decoding": "audioformats"
 			}
 		},
 		{
 			"name": "nodx",
 			"dependencies": {
 				"bindbc-openal": "~>1.0.0"
+			},
+			"subConfigurations": {
+				"audio_decoding": "audioformats"
 			}
 		},
 		{
@@ -40,16 +44,18 @@
 			"subConfigurations": {
 				"audio_decoding": "audioformats"
 			}
-			
+		},
+		{
+			"name": "wasm",
+			"subConfigurations": {"audio_decoding": "wasm"}
 		},
 		{
 			"name": "android",
-			"dependencies": {
-				"sles": {"path": "../../dependencies/sles"}
+			"dependencies": {"sles": {"path": "../../dependencies/sles"}},
+			"subConfigurations": {
+				"audio_decoding": "audioformats"
 			},
-			"versions": [
-				"OpenSLES1_1"
-			]
+			"versions": ["OpenSLES1_1"]
 		}
 	],
 	"description": "HipremeEngine audio module",
@@ -60,7 +66,6 @@
 		"XAUDIO_2_8"
 	],
 	"versions": [
-		"HipAudioAPI",
 		"AL_EFX"
 	]
 }

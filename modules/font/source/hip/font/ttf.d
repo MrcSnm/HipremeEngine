@@ -11,6 +11,10 @@ Distributed under the CC BY-4.0 License.
 module hip.font.ttf;
 import hip.api.data.font;
 
+immutable dstring defaultCharset = " \náéíóúãñçabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\\|'\"`/*-+,.;:´_=!@#$%&()[]{}~^?";
+
+version = HipArsdFont;
+
 
 private uint nextPowerOfTwo(uint number)
 {
@@ -22,7 +26,26 @@ private uint nextPowerOfTwo(uint number)
     return cast(uint)value;
 }
 
+class HipNullFont : HipFont
+{
+    string path;
+    this(){}
+    this(string path, uint fontSize = 32)
+    {
+    }
+    /**
+    *   This will cause a full load of the .ttf file, image generation and GPU upload. Should only be used
+    *   If you don't care about async
+    */
+    bool loadFromMemory(in ubyte[] data){return false;}
+    bool partialLoad(in ubyte[] data, out ubyte[] rawImage){return false;}
+    bool loadTexture(ubyte[] rawImage){return false;}
+    override int getKerning(dchar current, dchar next) const{return 0;}
+    IHipFont getFontWithSize(uint size){return new HipNullFont();}
+}
 
+
+version(HipArsdFont)
 /**
 *   Check the unicode table: https://unicode-table.com/en/blocks/
 *   There is a lot of character ranges that defines a set of characters in a language, such as:
@@ -32,7 +55,7 @@ private uint nextPowerOfTwo(uint number)
 *   0180—024F Latin Extended-B 
 *   Maybe it will prove more useful than having a default charset
 */
-class Hip_TTF_Font : HipFont
+class HipArsd_TTF_Font : HipFont
 {
     import arsd.ttf;
     protected float fontScale;
@@ -42,7 +65,6 @@ class Hip_TTF_Font : HipFont
     protected uint _textureWidth, _textureHeight;
     protected Hip_TTF_Font mainInstance;
     protected Hip_TTF_Font[] clones;
-    public static immutable dstring defaultCharset = " \náéíóúãñçabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\\|'\"`/*-+,.;:´_=!@#$%&()[]{}~^?";
 
     this(string path, uint fontSize = 32)
     {
@@ -221,6 +243,11 @@ class Hip_TTF_Font : HipFont
 
 }
 
+version(HipNullFont)
+    alias Hip_TTF_Font = HipNullFont;
+else version(HipArsdFont)
+    alias Hip_TTF_Font = HipArsd_TTF_Font;
+
 
 private struct RenderizedChar
 {
@@ -242,15 +269,16 @@ private struct RenderizedChar
         }
     }
 
-
-
     void dispose()
     {
-        if(data.ptr != null)
+        version(HipArsdFont)
         {
-            import arsd.ttf;
-            stbtt_FreeBitmap(data.ptr, null);
-            data = null;
+            if(data.ptr != null)
+            {
+                import arsd.ttf;
+                stbtt_FreeBitmap(data.ptr, null);
+            }
         }
+        data = null;
     }
 }
