@@ -109,6 +109,9 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 	"stringImportPaths": [
 		"."
 	],
+	"preBuildCommands": [
+		"rdmd $HIPREME_ENGINE/tools/build/getmodules.d source/ scriptmodules.txt"
+	],
 	"dflags-ldc": [
 		"-link-defaultlib-shared=false"
 	],
@@ -129,8 +132,8 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 			"lflags-windows": [
 				"/WX"
 			],
-			"postBuildCommands-windows": ["cd /d %s && dub -c script -- %s"],
-			"postBuildCommands-linux": ["cd %s && dub -c script -- %s"]
+			"postGenerateCommands-windows": ["cd /d %s && dub -c script -- %s"],
+			"postGenerateCommands-linux": ["cd %s && dub -c script -- %s"]
 		}
 	],
 	"versions" : [
