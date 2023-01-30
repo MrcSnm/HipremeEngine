@@ -21,8 +21,10 @@ The engine mantains some global options which you can modify it on source/global
 
 ## Platforms
 
-- UWP (Xbox and everything Windows runs on)
+- Xbox Series (UWP)
 - Android
+- Browser (WebAssembly)
+- Windows
 - Linux
 
 ### Features
@@ -39,6 +41,7 @@ The engine mantains some global options which you can modify it on source/global
 - OpenGL 3
 - OpenGL ES 3
 - OpenGL ES 2
+- WebGL 1.0 (OpenGL ES 2 emulated)
 - HipRenderer (abstraction)
   
 ### Features
@@ -57,6 +60,7 @@ The engine mantains some global options which you can modify it on source/global
 - OpenSL ES
 - OpenAL
 - XAudio2
+- WebAudio
 - HipAudio (abstraction)
 
 ### Features
@@ -69,20 +73,21 @@ The engine mantains some global options which you can modify it on source/global
 
 - Images: PNG, JPG, BMP, TIFF and maybe others via arsd-official:image_files
 - Audio: MP3, OGG, WAV, FLAC via audioformats
-- Tiled: TSX and JSON parser
+- Tiled: TSX and TSJ parser
 - TextureAtlas: JSON, ATLAS, XML and TXT(Spritesheet) parser
-- Font: FNT parser, TTF and OTF decoding
+- Font: FNT, TTF, OTF
 - Pack: HapFile(Hipreme Asset Packing File)
-- Settings: INI/CONF parser
+- Settings: INI/CONF, JSON (HipremeEngine own's implementation that simulates std.json but faster) and CSV
 
 ### Coding
 
 - Scripting:
 
-1. Lua
-2. D ( check api module for reference )
+1. D ( check api module for reference )
 - Filewatcher for recompiling the script
 - Live reload ( no engine restart for coding )
+
+2. Lua (outdated)
   
 
 
@@ -90,7 +95,6 @@ The engine mantains some global options which you can modify it on source/global
 
 - GLSL to HLSL transpiler
 - Multi threaded audio decoding (currently only single threaded is supported)
-- Dispatch file reading to the asset/resource packer.
 - Create a proof of concept
 
 
