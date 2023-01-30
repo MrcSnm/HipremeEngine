@@ -8,10 +8,17 @@
 	"dependencies": 
 	{
 		"hipengine_api": {"path": "../../api"},
+		"util": {"path": "../../modules/util"},
 		"math": {"path": "../../modules/math"}
 	},
+	"stringImportPaths": [
+		"."
+	],
 	"dflags-ldc": [
 		"-link-defaultlib-shared=false"
+	],
+	"preBuildCommands": [
+		"rdmd ../../tools/build/getmodules.d source/ scriptmodules.txt"
 	],
 	"configurations": 
 	[
@@ -41,7 +48,7 @@
 			"lflags-windows": [
 				"/WX"
 			],
-			"postBuildCommands": ["cd ..\\..\\ && dub -c script -- .\\projects\\start_here"]
+			"postGenerateCommands": ["cd ..\\..\\ && dub -c script -- .\\projects\\start_here"]
 		}
 	],
 	"versions" : [

@@ -35,13 +35,27 @@ struct HipColor
         return [cast(ubyte)(r*255), cast(ubyte)(g*255), cast(ubyte)(b*255), cast(ubyte)(a*255)];
     }
 
-    static HipColor fromInt(int color)
+    uint toInteger()
     {
+        uint red = cast(uint)(r*255);
+        uint green = cast(uint)(g*255);
+        uint blue = cast(uint)(b*255);
+        uint alpha = cast(uint)(a*255);
+        return (red << 24 +
+         green << 16 + 
+         blue << 8 + 
+         alpha);
+    }
+
+    static HipColor fromInt(uint color)
+    {
+        ubyte[4] c = *cast(ubyte[4]*)&color;
+
         return HipColor(
-            cast(float)(color >> 24)/255,
-            cast(float)((color >> 16) & 255)/255,
-            cast(float)((color >> 8) & 255)/255,
-            cast(float)(color & 255)/255
+            (cast(float)c[0])/255,
+            (cast(float)c[1])/255,
+            (cast(float)c[2])/255,
+            (cast(float)c[3])/255
         );
     }
 
