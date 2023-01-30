@@ -61,6 +61,7 @@ abstract class HipFont : IHipFont
         int w = 0, h = lineBreakHeight;
         int lastMaxW = 0;
         int lineIndex = 0;
+        linesWidths[] = 0;
 
         for(int i = 0; i < text.length; i++)
         {

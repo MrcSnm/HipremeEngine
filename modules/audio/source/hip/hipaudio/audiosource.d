@@ -52,11 +52,11 @@ public class HipAudioSource : AHipAudioSource
  */
 HipAudioBuffer getBufferFromAPI(IHipAudioClip clip, size_t clipSize = 0)
 {
-    import core.stdc.string;
+    import hip.util.memory;
     if(clipSize == 0)
         clipSize = clip.getClipSize();
     HipAudioBufferAPI* api = clip._getBufferAPI(clip.getClipData(), cast(uint)clipSize);
-    HipAudioBuffer buffer;
-    memcpy(&buffer, &api, (void*).sizeof);
+    HipAudioBuffer buffer = *cast(HipAudioBuffer*)api;
+    freeGCMemory(api);
     return buffer;
 }
