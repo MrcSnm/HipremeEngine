@@ -106,6 +106,9 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 		"tween": {"path": "%s/modules/tween"},
 		"math": {"path": "%s/modules/math"}
 	},
+	"stringImportPaths": [
+		"."
+	],
 	"dflags-ldc": [
 		"-link-defaultlib-shared=false"
 	],
