@@ -40,9 +40,6 @@ union HipAudioBuffer
         import hip.hipaudio.backend.webaudio.clip;
         size_t webaudio;
     }
-    static assert(HipAudioBuffer.sizeof == size_t.sizeof, 
-        "HipAudioBuffer must have same size as a ptr, _getBufferAPI depends on that"
-    );
 }
 
 struct HipAudioBufferWrapper
@@ -184,12 +181,9 @@ public abstract class HipAudioClip : IHipAudioClip
     }
     HipAudioBufferAPI* _getBufferAPI(ubyte[] data, uint size)
     {
-        import core.stdc.string;
-        void* returnBuffer;
-        HipAudioBuffer buff = getBuffer(data, size);
-        ///Remember the address is actually the data.
-        memcpy(&returnBuffer, &buff, (void*).sizeof);
-        return cast(HipAudioBufferAPI*)returnBuffer;
+        HipAudioBuffer* temp = new HipAudioBuffer();
+        *temp = getBuffer(data, size);
+        return cast(HipAudioBufferAPI*)temp;
     }
     IHipAudioClip getAudioClipBackend(){return this;}
 

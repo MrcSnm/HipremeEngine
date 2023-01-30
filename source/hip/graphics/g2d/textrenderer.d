@@ -126,6 +126,8 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             obj = textPool[poolActive++];
         obj.x = x;
         obj.y = y;
+        obj.boundsWidth = boundsWidth;
+        obj.boundsHeight = boundsHeight;
         obj.alignh = alignh;
         obj.alignv = alignv;
         obj.text = newText;
