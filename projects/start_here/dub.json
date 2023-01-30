@@ -18,7 +18,7 @@
 		"-link-defaultlib-shared=false"
 	],
 	"preBuildCommands": [
-
+		"rdmd ../../tools/build/getmodules.d source/ scriptmodules.txt"
 	],
 	"configurations": 
 	[
