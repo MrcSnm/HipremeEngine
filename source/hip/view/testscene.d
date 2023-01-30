@@ -18,9 +18,11 @@ import hip.hiprenderer.viewport;
 import hip.view.scene;
 import hip.math.utils;
 
-class TestScene : Scene
+class TestScene : Scene, IHipPreloadable
 {
     import hip.api;
+
+    mixin Preload;
 
     //Lower Level API. Not available in the Scripting API
     GeometryBatch geom;

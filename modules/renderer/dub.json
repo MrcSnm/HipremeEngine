@@ -24,8 +24,8 @@
 		{
 			"name": "default",
 			"dependencies": {
-				"directx-d": {"path": "../../dependencies/directx-d", "optional": true},
-				"bindbc-opengl": {"version": "~>1.0.0", "optional": true}
+				"directx-d": {"path": "../../dependencies/directx-d", "optional": true, "default": true},
+				"bindbc-opengl": {"version": "~>1.0.0", "optional": true, "default": true}
 			},
 			"versions": [
 				"HipGL3",
@@ -37,7 +37,7 @@
 		{
 			"name": "nodx",
 			"dependencies": {
-				"bindbc-opengl": {"version": "~>1.0.0", "optional": true}
+				"bindbc-opengl": "~>1.0.0"
 			},
 			"versions": [
 				"HipGL3",
@@ -68,7 +68,7 @@
 		{
 			"name": "android",
 			"dependencies": {
-				"gles" : {"path": "../../dependencies/gles", "optional": true},
+				"gles" : {"path": "../../dependencies/gles"},
 				"bind" : {"path": "../bind", "optional": true}
 			},
 			"subConfigurations": {
