@@ -12,10 +12,5 @@
 	"sourcePaths": [
 		"source"
 	],
-	"targetPath": "bin",
-	"versions": [
-		"GL_45",
-		"GL_ARB",
-		"SDL_208"
-	]
+	"targetPath": "bin"
 }

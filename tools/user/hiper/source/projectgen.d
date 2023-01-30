@@ -30,14 +30,15 @@ struct DubProjectInfo
 string generateCodeTemplate(TemplateInfo info = TemplateInfo())
 {
 	return format!q{
-module script.entry;
+module gamescript.entry;
 import hip.api;
 
 /**
 *	Call `dub` to generate the DLL, after that, just execute `dub -c run` for starting your project
 */
-class MainScene : AScene
+class MainScene : AScene, IHipPreloadable
 {
+	mixin Preload;
 	
 	/** Constructor */
 	override void initialize()
@@ -106,6 +107,12 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 		"tween": {"path": "%s/modules/tween"},
 		"math": {"path": "%s/modules/math"}
 	},
+	"stringImportPaths": [
+		"."
+	],
+	"preBuildCommands": [
+		"rdmd $HIPREME_ENGINE/tools/build/getmodules.d source/ scriptmodules.txt"
+	],
 	"dflags-ldc": [
 		"-link-defaultlib-shared=false"
 	],
@@ -126,8 +133,8 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 			"lflags-windows": [
 				"/WX"
 			],
-			"postBuildCommands-windows": ["cd /d %s && dub -c script -- %s"],
-			"postBuildCommands-linux": ["cd %s && dub -c script -- %s"]
+			"postGenerateCommands-windows": ["cd /d %s && dub -c script -- %s"],
+			"postGenerateCommands-linux": ["cd %s && dub -c script -- %s"]
 		}
 	],
 	"versions" : [
@@ -189,7 +196,7 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
 		mkdirRecurse(projectPath);
 		//Source Folder
 		writeln("Creating scripts folder");
-		mkdirRecurse(buildNormalizedPath(projectPath, "source", "script"));
+		mkdirRecurse(buildNormalizedPath(projectPath, "source", "gamescript"));
 		//Assets Folder
 		writeln("Creating assets folder");
 		mkdirRecurse(buildNormalizedPath(projectPath, "assets"));
@@ -197,8 +204,8 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
 		writeln("Creating vscode folder");
 		mkdirRecurse(buildNormalizedPath(projectPath, ".vscode"));
 
-		writeln("Writing code template for script/entry.d");
-		std.file.write(buildNormalizedPath(projectPath, "source", "script", "entry.d"), codeTemplate);
+		writeln("Writing code template for gamescript/entry.d");
+		std.file.write(buildNormalizedPath(projectPath, "source", "gamescript", "entry.d"), codeTemplate);
 		writeln("Writing dub.json");
 		std.file.write(buildNormalizedPath(projectPath, "dub.json"), dubProj);
 		writeln("Writing README.md");
