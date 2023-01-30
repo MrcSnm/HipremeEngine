@@ -49,13 +49,23 @@ void[] toHeapSlice(T)(T data) if(!is(T == void[]))
     return toHeap(data)[0..T.sizeof];
 }
 
-void freeGCMemory(ref void* data)
+
+void freeGCMemory(void* data)
 {
     assert(data !is null, "Tried to free null data.");
-    version(WebAssembly)
+    version(WebAssembly){object.free(cast(ubyte*)data);}
+    else
     {
-        object.free(cast(ubyte*)data);
+        import core.memory;
+        GC.removeRoot(data);
+        GC.free(data);
     }
+}
+
+void freeGCMemory(ref void* data) //Remove ref.
+{
+    assert(data !is null, "Tried to free null data.");
+    version(WebAssembly){object.free(cast(ubyte*)data);}
     else
     {
         import core.memory;
@@ -68,11 +78,7 @@ void freeGCMemory(ref void* data)
 void freeGCMemory(ref void[] data)
 {
     assert(data.length, "Tried to free null data.");
-
-    version(WebAssembly)
-    {
-        object.free(cast(ubyte*)data.ptr);
-    }
+    version(WebAssembly){object.free(cast(ubyte*)data.ptr);}
     else
     {
         import core.memory;
