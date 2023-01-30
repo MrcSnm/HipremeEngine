@@ -1,11 +1,12 @@
-module script.entry;
+module gamescript.entry;
 import hip.api;
 
 /**
 *	Call `dub` to generate the DLL, after that, just execute `dub -c run` for starting your project
 */
-class MainScene : AScene
+class MainScene : AScene, IHipPreloadable
 {
+    mixin Preload;
 	IHipFont bigFont, smallFont;
 	/** Constructor */
 	override void initialize()
