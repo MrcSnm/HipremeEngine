@@ -392,6 +392,22 @@ version(WindowsNative)
         SwapBuffers(hdc);
     }
 
+    int[2] getWindowSize(HWND hwnd)
+    {
+        RECT rect;
+        GetWindowRect(hwnd, &rect);
+        return [rect.right - rect.left, rect.bottom - rect.top];
+    }
+    void setWindowName(HWND hwnd, string name)
+    {
+        SetWindowTextA(hwnd, name.ptr);
+    }
+
+    void setWindowSize(HWND hwnd, int width, int height)
+    {
+        SetWindowPos(hwnd, null, 0, 0, width, height, SWP_NOMOVE);
+    }
+
     void setVsyncActive(bool active) @nogc nothrow @system
     {
         if(wglSwapIntervalEXT !is null)

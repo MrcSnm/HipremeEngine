@@ -59,11 +59,11 @@ class HipWindow
     {
         version(WindowsNative)
             openWindow(hwnd, width, height);
-        version(WebAssembly)
+        else version(WebAssembly)
         {
             openWindow(width, height);
         }
-        version(X11)
+        else version(X11)
         {
             version(SharedX11)
                 loadX11();
@@ -88,11 +88,33 @@ class HipWindow
     void rendererPresent(){swapBuffer();}
     void setName(string name)
     {
-        errors~= "setName is not implemented for this platform";
+        version(WindowsNative)
+            hip.windowing.platforms.windows.setWindowName(hwnd, name);
+        else version(X11)
+            hip.windowing.platforms.x11.setWindowName(name);
+        else
+            errors~= "setName is not implemented for this platform";
     }
     void setSize(uint width, uint height)
     {
-        errors~= "setSize is not implemented for this platform";
+        version(WindowsNative)
+            hip.windowing.platforms.windows.setWindowSize(hwnd, width, height);
+        else version(X11)
+            return hip.windowing.platforms.x11.setWindowSize(width, height);
+        else
+            errors~= "setSize is not implemented for this platform";
+    }
+    int[2] getSize()
+    {
+        version(WindowsNative)
+            return hip.windowing.platforms.windows.getWindowSize(hwnd);
+        else version(X11)
+            return hip.windowing.platforms.x11.getWindowSize();
+        else
+        {
+            errors~= "getSize is not implemented for this platform";
+            return [0,0];
+        }
     }
     void setVSyncActive(bool active)
     {

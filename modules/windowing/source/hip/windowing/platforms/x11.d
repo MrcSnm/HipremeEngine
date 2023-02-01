@@ -227,9 +227,9 @@ void setVsyncActive(bool active) @nogc nothrow @system
     glXSwapIntervalSGI(cast(int)active);
 }
 
-void setWindowName(Display* display, Window window, char* name)
+void setWindowName(string name)
 {
-    XStoreName(display, window, name);
+    XStoreName(x11win.display, x11win.window, name.ptr);
 }
 
 
@@ -338,10 +338,10 @@ void poll()
 }
 
 ///Returns [width, height]
-int[2] getWindowSize(Display* display, Window window )
+int[2] getWindowSize()
 {
     XWindowAttributes att;
-    XGetWindowAttributes(display, window, &att);
+    XGetWindowAttributes(x11win.display, x11win.window, &att);
     return [att.width, att.height];
 }
 
