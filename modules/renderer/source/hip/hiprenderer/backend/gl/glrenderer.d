@@ -83,17 +83,6 @@ class Hip_GL3Renderer : IHipRendererImpl
     void setErrorCheckingEnabled(bool enable = true){errorCheckEnabled = enable;}
     public final bool isRowMajor(){return true;}
 
-    HipWindow createWindow(uint width, uint height)
-    {
-        version(Android){return null;}
-        else
-        {
-            HipWindow wnd = new HipWindow(width, height, 
-                HipWindowFlags.RESIZABLE | HipWindowFlags.MINIMIZABLE | HipWindowFlags.MAXIMIZABLE);
-            wnd.start();
-            return wnd;
-        }
-    }
     Shader createShader()
     {
         version(HipGL3)

@@ -96,7 +96,6 @@ mixin template LoadReferencedAssets(string[] modules)
 {
     void loadReferenced()
     {
-        import std.traits:isFunction;
         static foreach(modStr; modules)
         {{
             mixin("import ",modStr,";");
@@ -106,27 +105,24 @@ mixin template LoadReferencedAssets(string[] modules)
                 alias moduleMember = __traits(getMember, theModule, moduleMemberStr);
                 static if(!is(moduleMember == module) && is(moduleMember type))
                 {
-                    static if(!isFunction!type)
+                    static if(is(type == class) || is(type == struct))
                     {
-                        static if(is(type == class) || is(type == struct))
-                        {
-                            static foreach(classMemberStr; __traits(derivedMembers, type))
+                        static foreach(classMemberStr; __traits(derivedMembers, type))
+                        {{
+                            alias classMember = __traits(getMember, type, classMemberStr);
+                            alias assetUDA = GetAssetUDA!(__traits(getAttributes, classMember));
+                            static if(assetUDA.path !is null)
                             {{
-                                alias classMember = __traits(getMember, type, classMemberStr);
-                                alias assetUDA = GetAssetUDA!(__traits(getAttributes, classMember));
-                                static if(assetUDA.path !is null)
-                                {{
-                                    IHipAssetLoadTask task = loadAsset!(typeof(classMember))(assetUDA.path);
-                                    static if(!__traits(compiles, classMember.offsetof)) //Static 
-                                    {
-                                        static if(__traits(hasMember, assetUDA, "conversionFunction"))
-                                            task.into(assetUDA.conversionFunction, &classMember);
-                                        else
-                                            task.into(&classMember);
-                                    }
-                                }}
+                                IHipAssetLoadTask task = loadAsset!(typeof(classMember))(assetUDA.path);
+                                static if(!__traits(compiles, classMember.offsetof)) //Static 
+                                {
+                                    static if(__traits(hasMember, assetUDA, "conversionFunction"))
+                                        task.into(assetUDA.conversionFunction, &classMember);
+                                    else
+                                        task.into(&classMember);
+                                }
                             }}
-                        }
+                        }}
                     }
                 }
             }}

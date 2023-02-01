@@ -196,7 +196,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	{
 		string confFile;
 		HipFS.absoluteReadText("renderer.conf", confFile); //Ignore return, renderer can handle no conf.
-		HipRenderer.init(confFile, "renderer.conf");
+		HipRenderer.initialize(confFile, "renderer.conf");
 	}
 	version(Desktop)
 	{

@@ -67,13 +67,6 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     }
     
 
-    public HipWindow createWindow(uint width, uint height)
-    {
-        HipWindow wnd = new HipWindow(width, height, HipWindowFlags.DEFAULT);
-        wnd.start();
-        return wnd;
-    }
-
     static void assertExit(HRESULT hres, string msg,
     string file = __FILE__, size_t line = __LINE__,
     string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
