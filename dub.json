@@ -22,7 +22,6 @@
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipCheckUnknownKeycode",
-		"HipDataStructures",
 		"HipMathAPI",
 		"HipDStdFile",
 		"HipScriptingAPI",
@@ -57,7 +56,6 @@
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
-				"HipConcurrency",
 				"OpenGL",
 				"OpenAL",
 				"Desktop",
@@ -85,7 +83,6 @@
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
-				"HipConcurrency",
 				"OpenGL",
 				"OpenAL",
 				"Desktop",
@@ -112,7 +109,6 @@
 				"fswatch": "~>0.6.0"
 			},
 			"versions": [
-				"HipConcurrency",
 				"OpenGL",
 				"OpenAL",
 				"Desktop",
@@ -146,7 +142,6 @@
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
-				"HipConcurrency",
 				"OpenGL",
 				"OpenAL",
 				"Standalone",
@@ -173,8 +168,7 @@
 				"Standalone",
 				"OpenGL",
 				"OpenAL",
-				"Desktop",
-				"HipConcurrency"
+				"Desktop"
 			],
 			"versions-windows": [
 				"Direct3D_11",
@@ -199,7 +193,6 @@
 				"DirectX",
 				"XAudio2",
 				"dll",
-				"HipConcurrency",
 				"UWP"
 			]
 		},
@@ -223,7 +216,6 @@
 				"renderer": "wasm"
 			},
 			"versions": [
-				"HipDataStructures",
 				"Test",
 				"Standalone",
 				"HipDStdFile",
@@ -258,7 +250,6 @@
 				"renderer": "wasm"
 			},
 			"versions": [
-				"HipDataStructures",
 				"Standalone",
 				"HipDStdFile",
 				"OpenGL",
@@ -267,6 +258,32 @@
 				"dll"
 			],
 			"targetType": "executable"
+		},
+		{
+			"name": "psvita",
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"runtime": {"path": "build/wasm/runtime", "version": "*"}
+			},
+			"sourcePaths": [
+				"build/release_game/source"
+			],
+			"stringImportPaths": [
+				"build/release_game/"
+			],
+			"subConfigurations": {
+				"assets": "psvita",
+				"audio": "psvita",
+				"renderer": "psvita"
+			},
+			"versions": [
+				"Standalone",
+				"OpenGL",
+				"CarelessAlocation",
+				"dll"
+			],
+			"targetType": "executable",
+			"targetPath": "build/vita/hipreme_engine/libs"
 		},
 		{
 			"name": "android",
@@ -308,7 +325,6 @@
 			"versions": [
 				"dll",
 				"Standalone",
-				"HipConcurrency",
 				"GLES30",
 				"OpenGL"
 			]

@@ -198,6 +198,7 @@ ubyte[] getWasmBinary(ubyte* input)
 
 void freeWasmBinary(ubyte[] binary)
 {
+	import core.memory;
 	ubyte* ptr = binary.ptr - size_t.sizeof;
-	object.free(ptr);
+	GC.free(ptr);
 }
