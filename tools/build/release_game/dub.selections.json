@@ -1,0 +1,10 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"hipengine_api": {"path":"G:/HipremeEngine/api"},
+		"math": {"path":"G:/HipremeEngine/modules/math"},
+		"timer": {"path":"G:/HipremeEngine/modules/timer"},
+		"tween": {"path":"G:/HipremeEngine/modules/tween"},
+		"util": {"path":"G:/HipremeEngine/modules/util"}
+	}
+}

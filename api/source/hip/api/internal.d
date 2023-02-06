@@ -55,16 +55,15 @@ version(Windows)
 {
 	alias _loadSymbol = GetProcAddress;
 }
-else version(WebAssembly)
-{
-	void* _loadSymbol(void* dll, string name){assert(false, "Can't load symbol in Wasm: "~name);}
-}
-else
+else version(Posix)
 {
 	import core.sys.posix.dlfcn:dlsym;
 	alias _loadSymbol = dlsym;
 }
-
+else
+{
+	void* _loadSymbol(void* dll, string name){assert(false, "Can't load shared libraries in Wasm/PSVita: "~name);}
+}
 
 enum bool isFunctionPointer(alias T) = is(typeof(*T) == function);
 

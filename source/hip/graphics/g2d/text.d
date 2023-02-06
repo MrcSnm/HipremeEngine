@@ -3,6 +3,10 @@ module hip.graphics.g2d.text;
 import hip.graphics.g2d.textrenderer;
 import hip.api.data.font;
 
+version(WebAssembly) version = UseDRuntimeDecoder;
+version(PSVita) version = UseDRuntimeDecoder;
+
+
 
 /**
 *   Formatting the text:
@@ -59,7 +63,7 @@ class HipText
     {
         if(newText != _text)
         {
-            version(WebAssembly)
+            version(UseDRuntimeDecoder)
             {
                 dstring dtext;
                 foreach(dchar ch; newText) dtext~= ch;

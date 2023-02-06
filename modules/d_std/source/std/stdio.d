@@ -4,13 +4,25 @@ import core.stdc.stdio;
 version(WebAssembly)
 {
     import arsd.webassembly;
-
     void writeln(T...)(T t) {
         eval(q{
             console.log.apply(null, arguments);
         }, t);
     }
 }
+version(PSVita)
+{
+    void writeln(Args...)(Args args)
+    {
+        puts("Writeln not implemented.");
+        // import hip.util.conv;
+        // string toPrint;
+        // foreach(a; args)
+        //     toPrint~= to!string(a);
+        // printf("%.*s\n", toPrint.length, toPrint.ptr);
+    }
+}
+
 struct File
 {
     FILE* fptr;

@@ -175,7 +175,8 @@ version(AudioFormatsDecoder)
             else
             {
                 duration = lengthFrames/cast(double)sampleRate;
-                decodedBuffer = new float[lengthFrames*channels];
+                size_t bufferSize = cast(size_t)(lengthFrames*channels);
+                decodedBuffer = new float[bufferSize];
                 int bytesRead = input.readSamplesFloat(decodedBuffer);
                 clipSize = decodedBuffer.length*float.sizeof;
                 decodeSuccesful = bytesRead == lengthFrames;

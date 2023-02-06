@@ -15,6 +15,10 @@ import hip.util.reflection;
 import hip.error.handler;
 import hip.console.log : hiplog;
 
+
+version(WebAssembly) version = CustomRuntime;
+version(PSVita) version = CustomRuntime;
+
 private string buildConstantsFromFolderTree(string code, Node!string node, int depth = 0)
 {
     import hip.util.path;
@@ -168,7 +172,7 @@ final class HipAssetLoadTask : IHipAssetLoadTask
         import hip.util.conv:to;
         if(partialData !is null)
         {
-            version(WebAssembly)
+            version(CustomRuntime)
                 assert(false, "AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
             else
                 throw new Error("AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
@@ -181,7 +185,7 @@ final class HipAssetLoadTask : IHipAssetLoadTask
         import hip.util.conv:to;
         if(partialData is null)
         {
-            version(WebAssembly)
+            version(CustomRuntime)
                 assert(false, "No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
             else
                 throw new Error("No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
@@ -305,6 +309,7 @@ class HipAssetManager
     }
 
     static pragma(inline, true) T get(T)(string name) {return cast(T)getAsset(name);}
+    static pragma(inline, true) T get(T : string)(string name) {return getStringAsset(name);}
 
     ///Returns whether asset manager is loading anything
     @ExportD static bool isLoading(){return !workerPool.isIdle;}

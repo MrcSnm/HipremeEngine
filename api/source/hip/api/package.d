@@ -27,6 +27,12 @@ module hip.api;
 
 public import hip.api.impl;
 
+
+enum HipAssetLoadStrategy
+{
+	loadAll
+}
+
 ///Most important functions here
 version(Script)
 {
@@ -35,7 +41,7 @@ version(Script)
 }
 
 
-mixin template HipEngineMain(alias StartScene)
+mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = HipAssetLoadStrategy.loadAll)
 {
 	immutable string ScriptModules = import("scriptmodules.txt");
 	version(Script)

@@ -622,3 +622,7 @@ else version(WebAssembly)
         }
     }
 }
+else version(PSVita)
+{
+    private HipKey getHipKeyFromSystem(uint key){return HipKey._0;}
+}

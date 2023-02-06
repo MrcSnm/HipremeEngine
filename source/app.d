@@ -190,6 +190,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 			else{static assert(false, "Android build requires GLES on its dependencies.");}
 			HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);
 		}
+		else version(PSVita){HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);}
 		else static assert(false, "No renderer for this platform");
 	}
 	else
@@ -325,11 +326,6 @@ export extern(C) void HipremeInit()
 		}
 	}
 }
-export extern(C) void HipremeTest()
-{
-	import std.stdio;
-	writeln("Executing HipremeTest from a Shared Library");
-}
 /**
 *	Loads shared libraries and setups the engine modules:
 *
@@ -371,6 +367,14 @@ version(WebAssembly)
 	export extern(C) bool HipremeUpdate(float dt)
 	{
 		dt/= 1000; //To seconds. Javascript gives in MS.
+		g_deltaTime = dt;
+		return HipremeUpdateBase();
+	}
+}
+else version(PSVita)
+{
+	export extern(C) bool HipremeUpdate(float dt)
+	{
 		g_deltaTime = dt;
 		return HipremeUpdateBase();
 	}

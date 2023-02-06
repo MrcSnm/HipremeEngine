@@ -20,28 +20,6 @@ int asInt(alias enumMember)()
     ErrorHandler.assertLazyExit(0, "Member "~enumMember.stringof~" from type " ~ T.stringof~ " does not exist");
 }
 
-
-import std.meta:Alias;
-//For usage on match!
-alias Case = Alias;
-void match(alias reference, matches...)()
-{
-    import std.range:iota;
-    static foreach(i; iota(0, matches.length, 2))
-    {
-        static if(i + 1 < matches.length)
-        {
-            if(reference == matches[i])
-            {
-                matches[i+1]();
-                return;
-            }
-        }
-    }
-    static if(matches.length % 2 != 0)
-        matches[$-1]();
-}
-
 /**
 *   Used when wanting to represent any struct compatible with a static array.
 */
