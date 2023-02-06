@@ -2,10 +2,24 @@ module core.stdc.string;
 
 extern(C) extern @nogc nothrow pure
 {
-    void* memcpy(void* dest, const(void*) src, size_t n);
-    void* memset(void* str, int c, size_t n);
-    int memcmp(const(void*) str1, const(void*) str2, size_t n) pure;
-    version(WebAssembly)
+    version(WebAssembly) version = CustomStrLen;
+
+    version(WebAssembly) version = CustomRuntime;
+    version(PSVita) version = CustomRuntime;
+    
+
+    version(CustomRuntime)
+    {
+        public import object: memcpy, memset, memcmp; 
+    }
+    else
+    {
+        void* memcpy(void* dest, const(void*) src, size_t n);
+        void* memset(void* str, int c, size_t n);
+        int memcmp(const(void*) str1, const(void*) str2, size_t n) pure;
+    }
+
+    version(CustomStrLen)
     {
         size_t strlen(const(char*) str) pure
         {
@@ -15,6 +29,7 @@ extern(C) extern @nogc nothrow pure
             return l;
         }
     }
-    else
-    size_t strlen(const(char*) str) pure;
+    else size_t strlen(const(char*) str) pure;
+
+    int strncmp (const(char)* str1, const(char)* str2, size_t num );
 }

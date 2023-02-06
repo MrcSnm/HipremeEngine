@@ -40,6 +40,9 @@ private extern(C) int sortChunk(const(void*) a, const(void*) b)
     return cast(int)(startPosA - startPosB);
 }
 
+
+version(HipDStdFile):
+
 class HapFile
 {
     HapChunk[string] chunks;

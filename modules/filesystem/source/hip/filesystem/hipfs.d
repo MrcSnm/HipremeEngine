@@ -143,6 +143,7 @@ class HipFileSystem
     version(Android){import hip.filesystem.systems.android;}
     else version(UWP){import hip.filesystem.systems.uwp;}
     else version(WebAssembly){import hip.filesystem.systems.browser;}
+    else version(PSVita){import hip.filesystem.systems.cstd;}
     else version(HipDStdFile){import hip.filesystem.systems.dstd;}
     else {import hip.filesystem.systems.cstd;}
  

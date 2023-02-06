@@ -24,6 +24,14 @@
 				"audio": "wasm",
 				"renderer": "wasm"
 			}
+		},
+		{
+			"name": "psvita",
+			"subConfigurations": {
+				"image": "gamut",
+				"audio": "psvita",
+				"renderer": "psvita"
+			}
 		}
 	],
 	"license": "proprietary",

@@ -1,6 +1,8 @@
 module std.file;
 import core.stdc.stdio;
 
+string getcwd(){return "";}
+
 bool exists(string file)
 {
     auto fHandle = fopen(file.ptr, "r");

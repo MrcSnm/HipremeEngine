@@ -99,6 +99,19 @@ enum SEEK_SET = 0;
 enum SEEK_CUR = 1;
 enum SEEK_END = 2;
 
+version(PSVita)
+{
+    struct _reent  //Minimal required
+    {
+        int _errno;
+        FILE* stdint, stdout, stderr;
+    }
+
+    extern(C) _reent* getreent();
+
+    FILE* stdout (){return getreent().stdout;}
+}
+
 // enum 	stdin	(_REENT->_stdin)
 // #define	stdout	(_REENT->_stdout)
 // #define	stderr	(_REENT->_stderr)
@@ -127,6 +140,7 @@ version(WebAssembly)
 }
 else
 {
+    nothrow @nogc:
     extern(C) extern FILE *	tmpfile ();
     extern(C) extern char *	tmpnam (char *);
     extern(C) extern char *	tempnam (char *, char*);

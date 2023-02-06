@@ -84,6 +84,7 @@ else
         double ceil(double x);
         double fmod(double x, double denom);
         double cbrt(double x);
+        float cbrtf(float x);
 
 
         float sqrtf(float x);

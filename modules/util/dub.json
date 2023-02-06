@@ -19,9 +19,6 @@
 			"dflags-dmd": [
 				"-H",
 				"-Hd=./import"
-			],
-			"versions": [
-				"HipDataStructures"
 			]
 		},
 		{

@@ -1,0 +1,11 @@
+subset: 0,1,2,3,4,7
+targetGoal: 300
+duration: 60
+
+subset: 4,7,8,9,2,3
+targetGoal: 500
+duration: 65
+
+subset: 10,11,14,7,9,8,0,1,2,3
+targetGoal: 700
+duration: 70

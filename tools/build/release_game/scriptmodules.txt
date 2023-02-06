@@ -1,0 +1,9 @@
+gamescript.background
+gamescript.board
+gamescript.config
+gamescript.entry
+gamescript.game
+gamescript.game_hud
+gamescript.level
+gamescript.piece
+gamescript.text

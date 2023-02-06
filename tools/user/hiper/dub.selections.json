@@ -3,9 +3,6 @@
 	"versions": {
 		"arsd-official": "10.8.4",
 		"automem": "0.6.7",
-		"bindbc-loader": "0.3.2",
-		"bindbc-opengl": "0.15.0",
-		"bindbc-sdl": "0.19.2",
 		"dwt": "1.0.5+swt-3.4.1",
 		"gfm": "8.0.6",
 		"gfm7": "1.1.2",

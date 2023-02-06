@@ -82,7 +82,7 @@ class HipTween : HipTimer, IHipFiniteTask
     protected void delegate() onPlay;
     protected void delegate()[] onFinish;
 
-    this(float durationSeconds, bool loops)
+    this(float durationSeconds, bool loops = false)
     {
         super("Tween", durationSeconds, HipTimerType.progressive, loops);
         this.easing = null;
