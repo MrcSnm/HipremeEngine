@@ -7,6 +7,7 @@
 	"lflags": ["-allow-undefined"],
 	"sourceFiles": [
 		"webassembly/arsd-webassembly/arsd/webassembly.d",
+		"webassembly/arsd-webassembly/core/arsd/memory_allocation.d",
 		"webassembly/arsd-webassembly/object.d",
 		"webassembly/arsd-webassembly/core/arsd/aa.d",
 		"webassembly/arsd-webassembly/core/arsd/objectutils.d",
