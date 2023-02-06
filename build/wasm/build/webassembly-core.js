@@ -77,6 +77,12 @@ function isUint8Array(obj)
 	return false;
 }
 
+const ArrayTypes = {
+	i32: 0,
+	f32: 1,
+	u32: 2
+};
+
 var dModules = {};
 var savedFunctions = {};
 const utf8Encoder = new TextEncoder("utf-8");
@@ -84,12 +90,67 @@ const utf8Decoder = new TextDecoder();
 const WasmUtils = {
 	toDString(str)
 	{
+		if(typeof str != "string")
+			throw new TypeError("toDString only accepts strings.");
 		const s = utf8Encoder.encode(str);
 		const ptr = bridge_malloc(s.byteLength + 4);
 		let view = new Uint32Array(memory.buffer, ptr, 1);
 		view[0] = s.byteLength;
 		let view2 = new Uint8Array(memory.buffer, ptr + 4, s.length);
 		view2.set(s);
+		return ptr;
+	},
+	/**
+	 * @param {number[]} arr 
+	 * @returns {number}
+	 */
+	getArrayType(arr)
+	{
+		if(!Array.isArray(arr))
+			throw new TypeError("getArrayType only supports arrays.");
+		if(arr.length === 0)
+			throw new SyntaxError("getArrayType needs at least one value");
+		let type;
+		for(let i = 0; i < arr.length; i++)
+		{
+			if(arr[i] % 1 != 0)
+			{
+				type = ArrayTypes.f32;
+				break;
+			}
+			else if(arr[i] < 0)
+				type = ArrayTypes.i32;
+			else if(type != ArrayTypes.i32)
+				type = ArrayTypes.u32;
+		}
+		return type;
+	},
+	/**
+	 * Only supports Float32, Int32 or Uint32. Inferred by the array content.
+	 * If it has any floating point number, the array will be float
+	 * If not float, it will choose by checking negative numbers.
+	 * @param {number[]} arr 
+	 * @returns 
+	 */
+	toDArray(arr)
+	{
+		const type = this.getArrayType(arr);
+		const ptr = bridge_malloc(4 * arr.length + this.size_t);
+		let view = new Uint32Array(memory.buffer, ptr, 1);
+		view[0] = arr.length;
+
+		switch(type)
+		{
+			case ArrayTypes.f32:
+				new Float32Array(memory.buffer, ptr+this.size_t, arr.length).set(arr);
+				break;
+			case ArrayTypes.i32:
+				new Int32Array(memory.buffer, ptr+this.size_t, arr.length).set(arr);
+				break;
+			case ArrayTypes.u32:
+				new Uint32Array(memory.buffer, ptr+this.size_t, arr.length).set(arr);
+				break;
+		}
 		return ptr;
 	},
 	size_t: 4,
@@ -400,6 +461,7 @@ var importObject = {
 		initializeDecoders,
 		initializeFS,
 		initializeWebaudioContext,
+		initializeWindowing
 	];
 
 	for(const initializeApi of JSAPI)
