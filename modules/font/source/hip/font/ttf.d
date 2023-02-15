@@ -41,6 +41,7 @@ class HipNullFont : HipFont
     bool partialLoad(in ubyte[] data, out ubyte[] rawImage){return false;}
     bool loadTexture(ubyte[] rawImage){return false;}
     override int getKerning(dchar current, dchar next) const{return 0;}
+    override int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const{return 0;}
     IHipFont getFontWithSize(uint size){return new HipNullFont();}
 }
 
@@ -93,7 +94,10 @@ class HipArsd_TTF_Font : HipFont
         return true;
     }
 
-
+    override int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const
+    {
+        return cast(int)(fontScale*stbtt_GetGlyphKernAdvance(cast(stbtt_fontinfo*)&font.font, current.glyphIndex, next.glyphIndex));
+    }
     override int getKerning(dchar current, dchar next) const
     {
         return cast(int)(fontScale*stbtt_GetCodepointKernAdvance(cast(stbtt_fontinfo*)&font.font, int(current), int(next)));
@@ -231,6 +235,7 @@ class HipArsd_TTF_Font : HipFont
                 xOffset, yOffset, cast(int)(xAdvance*scale), 0, 0,
                 cast(float)x/imageWidth, cast(float)y/imageHeight,
                 cast(float)fontCh.width/imageWidth, cast(float)fontCh.height/imageHeight, 
+                g
             );
             fontCh.blitToImage(image, cast(int)(x), cast(int)(y), imageWidth, imageHeight);
             x+= fontCh.width + hSpacing;
