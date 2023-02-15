@@ -197,16 +197,17 @@ interface IHipPreloadable
     {
         mixin template impl()
         {
+            private __gshared string[] _assetsForPreload;
+            private __gshared void getAsset(T, alias member)(string asset){_assetsForPreload~= asset;}
+
             final string[] getAssetsForPreload()
             {
-                static string[] ret;
-                static void getAsset(T, alias member)(string asset){ret~= asset;}
-                if(ret.length != 0)
+                if(_assetsForPreload.length != 0)
                 {
                     mixin ForeachAssetInClass!(typeof(this), __traits(child, this, getAsset)) f;
                     f.ForeachAssetInClass;
                 }
-                return ret;
+                return _assetsForPreload;
             }
             final void preload()
             {

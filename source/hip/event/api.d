@@ -107,6 +107,19 @@ export extern(System)
     {
         return sys.dispatcher.isGamepadButtonJustReleased(btn, id);
     }
+    bool areGamepadButtonsPressed(scope HipGamepadButton[] btns, ubyte id = 0)
+    {
+        return sys.dispatcher.areGamepadButtonsPressed(btns, id);
+    }
+    bool areGamepadButtonsJustPressed(scope HipGamepadButton[] btns, ubyte id = 0)
+    {
+        return sys.dispatcher.areGamepadButtonsJustPressed(btns, id);
+    }
+    bool areGamepadButtonsJustReleased(scope HipGamepadButton[] btns, ubyte id = 0)
+    {
+        return sys.dispatcher.areGamepadButtonsJustReleased(btns, id);
+    }
+
     float getGamepadBatteryStatus(ubyte id = 0)
     {
         return sys.dispatcher.getGamepadBatteryStatus(id);

@@ -131,13 +131,12 @@ static void initEngine(bool audio3D = false)
 		else
 			fsInstallPath = getcwd()~"/assets";
 	}
+	version(PSVita){platform = Platforms.PSVITA;}
 	
 	Console.install(platform, printFunc);
+	loglnInfo("Console installed for ", platform);
 	HipFS.install(fsInstallPath, validations);
 	loglnInfo("HipFS installed at path ", fsInstallPath);
-	loglnInfo("Console installed for ", platform);
-
-
 
 	import hip.bind.dependencies;
 	loadEngineDependencies();
@@ -153,7 +152,6 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	import hip.util.time;
 	HipTime.initialize();
 	Random.initialize();
-	Console.initialize();
 	initEngine(true);
 	if(isUsingInterpreter)
 		startInterpreter(interpreterEntry.intepreter);
@@ -174,10 +172,12 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 			getOptimalSampleRate
 		);
 	}
+	else version(Windows)
+		HipAudio.initialize(HipAudioImplementation.XAUDIO2);
 	else version(WebAssembly)
 		HipAudio.initialize(HipAudioImplementation.WEBAUDIO);
 	else
-		HipAudio.initialize(HipAudioImplementation.XAUDIO2);
+		HipAudio.initialize(HipAudioImplementation.OPENAL);
 	version(dll)
 	{
 		import hip.console.log;
@@ -186,8 +186,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 		else version(WebAssembly){HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);}
 		else version(Android)
 		{
-			version(Have_gles){}
-			else{static assert(false, "Android build requires GLES on its dependencies.");}
+			version(Have_gles){}else{static assert(false, "Android build requires GLES on its dependencies.");}
 			HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);
 		}
 		else version(PSVita){HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);}
@@ -199,18 +198,10 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 		HipFS.absoluteReadText("renderer.conf", confFile); //Ignore return, renderer can handle no conf.
 		HipRenderer.initialize(confFile, "renderer.conf");
 	}
-	version(Desktop)
+	loadDefaultAssets((){gameInitialize();}, (err)
 	{
-		loadDefaultAssets((){}, (err){loglnError("Could not load default assets! ", err);});
-		gameInitialize();
-	}
-	else version(WebAssembly)
-	{
-		loadDefaultAssets((){gameInitialize();}, (err)
-		{
-			loglnError("Could not load default assets! ", err);
-		});
-	}
+		loglnError("Could not load default assets! ", err);
+	});
 	return 0;
 }
 
@@ -319,6 +310,7 @@ export extern(C) void HipremeInit()
 	version(dll)
 	{
 		version(WebAssembly){}
+		else version(PSVita){}
 		else
 		{
 			rt_init();
@@ -432,8 +424,8 @@ export extern(C) void HipremeRender()
 	HipRenderer.begin();
 	HipRenderer.clear(0,0,0,255);
 	sys.render();
-	if(isUsingInterpreter)
-		renderInterpreter();
+	// if(isUsingInterpreter)
+	// 	renderInterpreter();
 	HipRenderer.end();
 }
 export extern(C) void HipremeDestroy()
@@ -443,6 +435,7 @@ export extern(C) void HipremeDestroy()
 	version(dll)
 	{
 		version(WebAssembly){}
+		else version(PSVita){}
 		else
 		{
 			rt_term();

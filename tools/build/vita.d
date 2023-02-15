@@ -4,13 +4,14 @@ import std;
 string[] envDflags = 
 [
 "-I=$HIPREME_ENGINE/modules/d_std/source",
-"-I=$HIPREME_ENGINE/build/wasm/runtime/webassembly/arsd-webassembly",
+"-I=$HIPREME_ENGINE/dependencies/runtime/druntime/arsd-webassembly",
 "-d-version=PSVita",
 "-d-version=PSV",
 "-preview=shortenedMethods",
 "-fvisibility=hidden",
 "-mtriple=armv7a-unknown-newlib",
 "-mcpu=cortex-a9",
+"--revert=dtorfields",
 "-g",
 "-float-abi=hard",
 "--relocation-model=static",

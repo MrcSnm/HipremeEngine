@@ -1,7 +1,7 @@
 rdmd tools/build/gendir.d assets/defaults build/wasm/generated
 
 set DFLAGS=-I=%HIPREME_ENGINE%/modules/d_std/source ^
--I=%HIPREME_ENGINE%/build/wasm/runtime/webassembly/arsd-webassembly ^
+-I=%HIPREME_ENGINE%/dependencies/runtime/druntime/arsd-webassembly ^
 -preview=shortenedMethods ^
 -L-allow-undefined ^
 -fvisibility=hidden ^

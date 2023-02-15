@@ -13,133 +13,59 @@ module hip.systems.gamepad;
 import hip.event.handlers.button;
 public import hip.api.input.gamepad;
 public import hip.math.vector;
+import hip.systems.gamepads.xbox;
+import hip.systems.gamepads.psv;
 
-///Refer to https://docs.microsoft.com/en-us/uwp/api/windows.gaming.input.gamepadbuttons?view=winrt-20348
-enum HipXboxGamepadButton : int
+
+enum HipGamepadTypes : ubyte
 {
-    none            = 0,     ///No button.
-    menu            = 1,     ///Menu button.
-    view            = 1<<1,  ///View button.
-    a               = 1<<2,  ///A button.
-    b               = 1<<3,  ///B button.
-    x               = 1<<4,  ///X button.
-    y               = 1<<5,  ///Y button.
-    dPadUp          = 1<<6,  ///D-pad up.
-    dPadDown        = 1<<7,  ///D-pad down.
-    dPadLeft        = 1<<8,  ///D-pad left.
-    dPadRight       = 1<<9,  ///D-pad right.
-    leftShoulder    = 1<<10, ///Left bumper.
-    rightShoulder   = 1<<11, ///Right bumper.
-    leftThumbstick  = 1<<12, ///Left stick.
-    rightThumbstick = 1<<13, ///Right stick.
-    paddle1         = 1<<14, ///The first paddle.
-    paddle2         = 1<<15, ///The second paddle.
-    paddle3         = 1<<16, ///The third paddle.
-    paddle4         = 1<<17, ///The fourth paddle.
+    xbox,
+    psvita
 }
 
-
-pragma(inline) enum isXboxGamepadButtonPressed(int gamepadState, HipXboxGamepadButton btn){return (gamepadState & btn) == btn;}
-
-struct HipInputXboxGamepadState
+HipGamepad getNewGamepad(ubyte type)
 {
-    int buttons;
-    double leftAnalogX;
-    double leftAnalogY;
-    double rightAnalogX;
-    double rightAnalogY;
-    double leftTrigger;
-    double rightTrigger;
-}
-
-
-
-
-//////// External API ////////
-
-import hip.util.system;
-
-extern(System):
-ubyte* function() HipGamepadCheckConnectedGamepads;
-HipGamepadBatteryStatus function(ubyte id) HipGamepadGetBatteryStatus;
-HipInputXboxGamepadState function(ubyte id) HipGamepadGetXboxGamepadState;
-bool function(ubyte id) HipGamepadIsWireless;
-ubyte function() HipGamepadQueryConnectedGamepadsCount;
-
-void function(
-    ubyte id,
-    double leftMotor,
-    double rightMotor,
-    double leftTrigger,
-    double rightTrigger
-) HipGamepadSetXboxGamepadVibration;
-
-
-extern(D):
-void initXboxGamepadInput()
-{
-    static bool hasInit = false;
-    if(hasInit)
-        return;
-    version(Windows)
+    final switch(type)
     {
-        string[] errors = dllImportVariables!(
-            HipGamepadCheckConnectedGamepads,
-            HipGamepadGetBatteryStatus,
-            HipGamepadGetXboxGamepadState,
-            HipGamepadIsWireless,
-            HipGamepadQueryConnectedGamepadsCount,
-            HipGamepadSetXboxGamepadVibration
-        );
-        foreach(err; errors)
-        {
-            import hip.console.log;
-            logln("HIPREME_ENGINE: Could not load ", err);
-        }
+        case HipGamepadTypes.xbox: return new HipGamepad(new HipXBOXGamepad());
+        case HipGamepadTypes.psvita: return new HipGamepad(new HipPSVGamepad());
     }
-
-    hasInit = true;
 }
 
-
-//////// End External API ////////
-
-private pragma(inline) void pollXbox(HipGamePad pad, HipInputXboxGamepadState state)
+interface IHipGamepadImpl
 {
-    with(pad)
-    {
-        leftAnalog.x = state.leftAnalogX;
-        leftAnalog.y = state.leftAnalogY;
-
-        rightAnalog.x = state.rightAnalogX;
-        rightAnalog.y = state.rightAnalogY;
-
-        leftTrigger = state.leftTrigger;
-        rightTrigger = state.rightTrigger;
-        setButtonPressed(HipGamepadButton.xboxY, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.y));
-        setButtonPressed(HipGamepadButton.xboxX, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.x));
-        setButtonPressed(HipGamepadButton.xboxA, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.a));
-        setButtonPressed(HipGamepadButton.xboxB, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.b));
-
-        setButtonPressed(HipGamepadButton.dPadUp, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.dPadUp));
-        setButtonPressed(HipGamepadButton.dPadLeft, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.dPadLeft));
-        setButtonPressed(HipGamepadButton.dPadDown, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.dPadDown));
-        setButtonPressed(HipGamepadButton.dPadRight, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.dPadRight));
-
-        setButtonPressed(HipGamepadButton.left1, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.leftShoulder));
-        setButtonPressed(HipGamepadButton.right1, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.rightShoulder));
-        // setButtonPressed(HipGamepadButton.left2, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.pa));
-        // setButtonPressed(HipGamepadButton.right2, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.dPadRight));
-
-        setButtonPressed(HipGamepadButton.left3, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.leftThumbstick));
-        setButtonPressed(HipGamepadButton.right3, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.rightThumbstick));
-
-        setButtonPressed(HipGamepadButton.start, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.menu));
-        setButtonPressed(HipGamepadButton.select, isXboxGamepadButtonPressed(state.buttons, HipXboxGamepadButton.view));
-    }
-
-   
+    void poll(HipGamepad pad);
+    void setVibrating(ubyte id, 
+        double leftMotor, 
+        double rightMotor,
+        double leftTrigger,
+        double rightTrigger
+    );
+    bool isWireless(ubyte id);
+    HipGamepadBatteryStatus getBatteryStatus(ubyte id);
 }
+final class HipNullGamepad : IHipGamepadImpl
+{
+    void poll(HipGamepad pad){}
+    void setVibrating(ubyte id, double leftMotor, double rightMotor, double leftTrigger, double rightTrigger){}
+    bool isWireless(ubyte id){return false;}
+    HipGamepadBatteryStatus getBatteryStatus(ubyte id){return HipGamepadBatteryStatus.init;}
+}
+
+
+private pragma(inline, true) float applyDeadzone(float input, float deadzone)
+{
+    if(input < 0) return input > -deadzone ? 0 : input;
+    return input < deadzone ? 0 : input;
+}
+
+private pragma(inline, true) float applyZones(float input, float deadzone, float alivezone)
+{
+    input = applyDeadzone(input, deadzone);
+    if(input < 0) return input < -alivezone ? -1 : input;
+    return input > alivezone ? 1 : input;
+}
+
 
 /** Engine task:
 * Send gamepad connect and disconnect events
@@ -150,7 +76,7 @@ private pragma(inline) void pollXbox(HipGamePad pad, HipInputXboxGamepadState st
 * Check gamepad count
 * Decide what will do with connected gamepads
 */
-class HipGamePad : AHipGamepad
+class HipGamepad : AHipGamepad
 {
     HipGamepadBatteryStatus status;
     Vector3 leftAnalog;
@@ -158,22 +84,68 @@ class HipGamePad : AHipGamepad
     float leftTrigger;
     float rightTrigger;
     ubyte id;
-    static ubyte instanceCount = 0;
+    __gshared ubyte instanceCount = 0;
     protected float vibrationAccumulator = 0;
     protected HipButtonMetadata[HipGamepadButton.count] buttons;
+    private IHipGamepadImpl impl;
+
+
 
     ubyte getId(){return id;}
-    this()
+    package this(IHipGamepadImpl impl)
     {
         id = instanceCount++;
         for(int i = 0; i < buttons.length; i++)
             buttons[i] = new HipButtonMetadata(i);
+        this.impl = impl;
     }
 
     void setButtonPressed(HipGamepadButton btn, bool pressed){buttons[btn].setPressed(pressed);}
+
+    void setAnalog(HipGamepadAnalogs analog, float[3] value)
+    {
+        value[0] = applyZones(value[0], deadZone, aliveZone);
+        value[1] = applyZones(value[1], deadZone, aliveZone);
+        value[2] = applyZones(value[2], deadZone, aliveZone);
+
+        final switch(analog)
+        {
+            case HipGamepadAnalogs.leftStick:
+                leftAnalog = value;
+                break;
+            case HipGamepadAnalogs.rightStick:
+                rightAnalog = value;
+                break;
+            case HipGamepadAnalogs.rightTrigger:
+                rightTrigger = value[0];
+                break;
+            case HipGamepadAnalogs.leftTrigger:
+                leftTrigger = value[0];
+                break;
+        }
+    }
     bool isButtonPressed(HipGamepadButton btn){return buttons[btn].isPressed;}
     bool isButtonJustPressed(HipGamepadButton btn){return buttons[btn].isJustPressed;}
     bool isButtonJustReleased(HipGamepadButton btn){return buttons[btn].isJustReleased;}
+
+    bool areButtonsPressed(scope HipGamepadButton[] btns)
+    {
+        foreach(btn; btns)
+            if(!buttons[btn].isPressed) return false;
+        return true;
+    }
+    bool areButtonsJustPressed(scope HipGamepadButton[] btns)
+    {
+        foreach(btn; btns)
+            if(!buttons[btn].isJustPressed) return false;
+        return true;
+    }
+    bool areButtonsJustReleased(scope HipGamepadButton[] btns)
+    {
+        foreach(btn; btns)
+            if(!buttons[btn].isJustReleased) return false;
+        return true;
+    }
 
     void poll(float deltaTime)
     {
@@ -185,7 +157,7 @@ class HipGamePad : AHipGamepad
         }
 
         if(_isConnected) 
-            pollXbox(this, HipGamepadGetXboxGamepadState(getId));
+            impl.poll(this);
     }
 
     void postUpdate()
@@ -193,35 +165,50 @@ class HipGamePad : AHipGamepad
         for(int i =0; i < buttons.length; i++)
             buttons[i]._isNewState = false;
     }
-    bool setVibrating(float vibrationPower, float time)
+
+    final bool setVibrating(float time, double vibrationPower)
     {
-        HipGamepadSetXboxGamepadVibration(getId, 
-            cast(double)vibrationPower,
-            cast(double)vibrationPower,
-            cast(double)vibrationPower,
-            cast(double)vibrationPower
+        return setVibrating(time, vibrationPower,vibrationPower,vibrationPower,vibrationPower);
+    }
+
+    bool setVibrating(float time,  double leftMotor,
+        double rightMotor,
+        double leftTrigger,
+        double rightTrigger
+    )
+    {
+        impl.setVibrating(getId, 
+            leftMotor,
+            rightMotor,
+            leftTrigger,
+            rightTrigger
         );
-        this.vibrationPower = vibrationPower;
         vibrationAccumulator = 0;
         vibrationTime = time;
         return true;
     }
     
-    bool isWireless(){return HipGamepadIsWireless(getId);}
+    bool isWireless(){return impl.isWireless(getId);}
     Vector3 getAnalogState(HipGamepadAnalogs analog)
     {
         final switch(analog)
         {
             case HipGamepadAnalogs.leftStick: return leftAnalog;
             case HipGamepadAnalogs.rightStick: return rightAnalog;
-            case HipGamepadAnalogs.rightTrigger: return rightAnalog;
-            case HipGamepadAnalogs.leftTrigger: return rightAnalog;
+            case HipGamepadAnalogs.rightTrigger: return Vector3(rightTrigger, 0, 0);
+            case HipGamepadAnalogs.leftTrigger: return Vector3(leftTrigger, 0, 0);
         }
     }
     float getBatteryStatus()
     {
-        status = HipGamepadGetBatteryStatus(getId());
+        status = impl.getBatteryStatus(getId());
         return cast(float)status.remainingCapacityInMilliwattHours
             / status.fullChargeCapacityInMilliwattHours;
     }
+}
+
+void initGamepads()
+{
+    import hip.systems.gamepads.xbox;
+    initXboxGamepadInput();
 }

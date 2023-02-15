@@ -257,6 +257,7 @@ class HipRenderer
     {
         rendererImpl = getRenderer(type);
         HipRenderer.rendererType = type;
+        logln("Initialized renderer.: ", rendererType, " renderer? ", rendererImpl !is null);
         bool ret = rendererImpl.initExternal();
         if(!ret)
             ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");

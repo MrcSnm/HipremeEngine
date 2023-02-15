@@ -47,12 +47,13 @@ bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) on
 {
    import hip.font.ttf;
    import hip.assets.image;
-   static int succeededSteps = 0;
+   __gshared int succeededSteps = 0;
    enum ASSETS_TO_LOAD = 2;
 
    if(succeededSteps > 0)
       return false;
    
+   import hip.console.log;
    auto image = new Image(HIP_DEFAULT_TEXTURE);
    image.loadFromMemory(cast(ubyte[])HipDefaultAssets.textureData, (_)
    {
@@ -71,10 +72,10 @@ bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) on
       onFailure("Failed loading default font");
    else
    {
+      HipDefaultAssets._font = font;
       if(++succeededSteps == ASSETS_TO_LOAD)
          onSuccess();
    }
-   HipDefaultAssets._font = font;
 
 
    return true;
@@ -95,7 +96,7 @@ export extern(System)
    }
    const(IHipTexture) getDefaultTexture()
    {
-      static IHipTexture texture;
+      __gshared IHipTexture texture;
       if(texture is null)
       {
          import hip.assets.texture;

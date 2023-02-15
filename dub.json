@@ -200,7 +200,7 @@
 			"name": "wasm-test",
 			"dependencies": {
 				"d_std": {"path": "modules/d_std", "version": "*"},
-				"runtime": {"path": "build/wasm/runtime", "version": "*"}
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"stringImportPaths": [
 				"build/wasm/generated"
@@ -210,6 +210,7 @@
 				"move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
 			],
 			"subConfigurations": {
+				"runtime": "wasm",
 				"assets": "wasm",
 				"audio": "wasm",
 				"filesystem": "wasm",
@@ -230,7 +231,7 @@
 			"name": "wasm",
 			"dependencies": {
 				"d_std": {"path": "modules/d_std", "version": "*"},
-				"runtime": {"path": "build/wasm/runtime", "version": "*"}
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"sourcePaths": [
 				"build/release_game/source"
@@ -244,6 +245,7 @@
 				"move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
 			],
 			"subConfigurations": {
+				"runtime": "wasm",
 				"assets": "wasm",
 				"audio": "wasm",
 				"filesystem": "wasm",
@@ -263,7 +265,7 @@
 			"name": "psvita",
 			"dependencies": {
 				"d_std": {"path": "modules/d_std", "version": "*"},
-				"runtime": {"path": "build/wasm/runtime", "version": "*"}
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"sourcePaths": [
 				"build/release_game/source"
@@ -272,18 +274,49 @@
 				"build/release_game/"
 			],
 			"subConfigurations": {
+				"runtime": "psvita",
 				"assets": "psvita",
 				"audio": "psvita",
 				"renderer": "psvita"
 			},
 			"versions": [
 				"Standalone",
+				"Test",
 				"OpenGL",
+				"GLES20",
 				"CarelessAlocation",
 				"dll"
 			],
-			"targetType": "executable",
-			"targetPath": "build/vita/hipreme_engine/libs"
+			"targetType": "executable"
+		},
+		{
+			"name": "psvita-main",
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
+			},
+			"sourcePaths": [
+				"build/release_game/source"
+			],
+			"stringImportPaths": [
+				"build/release_game/"
+			],
+			"subConfigurations": {
+				"runtime": "psvita",
+				"assets": "psvita",
+				"audio": "psvita",
+				"renderer": "psvita"
+			},
+			"versions": [
+				"Standalone",
+				"Test",
+				"OpenGL",
+				"GLES20",
+				"CarelessAlocation",
+				"dll"
+			],
+			"targetPath": "build/vita/hipreme_engine/libs",
+			"targetType": "staticLibrary"
 		},
 		{
 			"name": "android",

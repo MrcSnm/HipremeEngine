@@ -194,6 +194,8 @@ class GameSystem
             // addScene(new ChainTestScene());
             // addScene(new AssetTest());
             import hip.view.testscene;
+            import hip.console.log;
+            hiplog("starting test scene.");
             addScene(new TestScene());
         }
         else version(Load_DScript)
@@ -235,14 +237,14 @@ class GameSystem
     void addScene(AScene s)
     {
         import hip.assetmanager;
-        s.preload();
-        HipAssetManager.addOnLoadingFinish(()
-        {
+        // s.preload();
+        // HipAssetManager.addOnLoadingFinish(()
+        // {
             import hip.console.log;
             loglnWarn("Initializing scene ", s.getName);
     	    s.initialize();
             scenes~= s;
-        });
+        // });
     }
 
     bool update(float deltaTime)

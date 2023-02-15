@@ -99,7 +99,7 @@ class HipFileAsset : HipAsset
 private __gshared int assetIds = 0;
 int assetTypeID(T : IHipAsset)()
 {
-    static int id = -1;
+    __gshared int id = -1;
     if(id == -1){id = ++assetIds;}
     return id;
 }

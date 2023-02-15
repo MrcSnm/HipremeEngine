@@ -20,7 +20,7 @@
 		},
 		{
 			"dependencies": {
-				"gamut": "~>2.0.8"
+				"gamut": "~>2.0.9"
 			},
 			"subConfigurations": {
 				"gamut": "just-decode"

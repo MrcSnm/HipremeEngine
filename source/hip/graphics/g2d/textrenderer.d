@@ -32,7 +32,7 @@ public import hip.api.graphics.text : HipTextAlign;
 
 
 
-private Shader bmTextShader = null;
+private __gshared Shader bmTextShader = null;
 
 /**
 *   This class oculd be refactored in the future to actually
@@ -163,17 +163,18 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         {
             draw(textPool[i]);
         }
-        if(quadsCount == 0)
-            return;
-        mesh.bind();
-        this.font.texture.bind();
-        mesh.shader.setVertexVar("Cbuf.uProj", camera.proj);
-        mesh.shader.setVertexVar("Cbuf.uView", camera.view);
-        mesh.shader.sendVars();
-        mesh.setVertices(vertices);
-        mesh.draw(quadsCount*6);
-        font.texture.unbind();
-        mesh.unbind();
+        if(quadsCount != 0)
+        {
+            mesh.bind();
+            this.font.texture.bind();
+            mesh.shader.setVertexVar("Cbuf.uProj", camera.proj);
+            mesh.shader.setVertexVar("Cbuf.uView", camera.view);
+            mesh.shader.sendVars();
+            mesh.setVertices(vertices);
+            mesh.draw(quadsCount*6);
+            font.texture.unbind();
+            mesh.unbind();
+        }
 
         poolActive = 0;
         quadsCount = 0;

@@ -19,8 +19,8 @@ extern void (*HipInputOnKeyUp)(uint32_t virtualKey);
 
 //Gamepad
 
-extern void (*HipInputOnGamepadConnected)(ubyte id);
-extern void (*HipInputOnGamepadDisconnected)(ubyte id);
+extern void (*HipInputOnGamepadConnected)(ubyte id, ubyte type);
+extern void (*HipInputOnGamepadDisconnected)(ubyte id, ubyte type);
 
 
 

@@ -43,6 +43,8 @@ private extern(C) int sortChunk(const(void*) a, const(void*) b)
 
 version(HipDStdFile):
 
+__EOF__
+
 class HapFile
 {
     HapChunk[string] chunks;

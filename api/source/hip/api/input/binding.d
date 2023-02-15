@@ -32,7 +32,6 @@ else
     {
         extern(System) static
         {
-            //Keyboard functions
             bool function(char key, uint id = 0) isKeyPressed;
             bool function(char key, uint id = 0) isKeyJustPressed;
             bool function(char key, uint id = 0) isKeyJustReleased;
@@ -59,6 +58,12 @@ else
             bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonPressed;
             bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustPressed;
             bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustReleased;
+
+
+            bool function(scope HipGamepadButton[] btn, ubyte id = 0) areGamepadButtonsPressed;
+            bool function(scope HipGamepadButton[] btn, ubyte id = 0) areGamepadButtonsJustPressed;
+            bool function(scope HipGamepadButton[] btn, ubyte id = 0) areGamepadButtonsJustReleased;
+            
             bool function(float vibrationPower, float time, ubyte id = 0) setGamepadVibrating;
             float function(ubyte id = 0) getGamepadBatteryStatus;
             bool function(ubyte id = 0) isGamepadWireless;
@@ -107,6 +112,12 @@ else
         bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonPressed;
         bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustPressed;
         bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustReleased;
+
+
+        bool function(scope HipGamepadButton[] btn, ubyte id = 0) areGamepadButtonsPressed;
+        bool function(scope HipGamepadButton[] btn, ubyte id = 0) areGamepadButtonsJustPressed;
+        bool function(scope HipGamepadButton[] btn, ubyte id = 0) areGamepadButtonsJustReleased;
+        
         bool function(float vibrationPower, float time, ubyte id = 0) setGamepadVibrating;
         float function(ubyte id = 0) getGamepadBatteryStatus;
         bool function(ubyte id = 0) isGamepadWireless;

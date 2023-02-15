@@ -58,11 +58,11 @@ function initializeHipremeEngine(exports)
     };
     const HipInputOnGamepadConnected = (ev) =>
     {
-        exports.HipInputOnGamepadConnected(ev.gamepad.id);
+        exports.HipInputOnGamepadConnected(ev.gamepad.id, -1);
     };
     const HipInputOnGamepadDisconnected = (ev) =>
     {
-        exports.HipInputOnGamepadDisconnected(ev.gamepad.id);
+        exports.HipInputOnGamepadDisconnected(ev.gamepad.id, -1);
     };
     const HipOnRendererResize = (ev) =>
     {

@@ -70,9 +70,9 @@ private size_t getSystemTicksPerSecond() nothrow
 class HipTime
 {
 
-    private static size_t startTime;
-    private static size_t ticksPerSecond;
-    protected static long[string] performanceMeasurement;
+    private __gshared size_t startTime;
+    private __gshared size_t ticksPerSecond;
+    protected __gshared long[string] performanceMeasurement;
 
     static void initialize()
     {
