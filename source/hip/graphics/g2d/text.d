@@ -265,6 +265,9 @@ package struct HipTextStopConfig
                 config[indexConfig++] = cfg;
             }
         }
+        //!FIXME: This allocated on each frame. It should both be used a @nogc operation (String) or it should 
+        //!find a way to create a range to be used instead of a string.
+        if(lastParseIndex == 0) return text;
         parsedText = parsingText ~ text[lastParseIndex..$];
     }
 

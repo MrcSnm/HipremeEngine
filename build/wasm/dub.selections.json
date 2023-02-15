@@ -1,35 +1,6 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"arsd-official": "10.9.8",
-		"assets": {"path":"../../modules/assets"},
-		"audio": {"path":"../../modules/audio"},
-		"audio_decoding": {"path":"../../modules/audio_decoding"},
-		"bind": {"path":"../../modules/bind"},
-		"bindbc-loader": "1.0.1",
-		"bindbc-lua": "0.5.1",
-		"bindbc-openal": "1.0.0",
-		"bindbc-opengl": "1.0.3",
-		"config": {"path":"../../modules/config"},
-		"console": {"path":"../../modules/console"},
-		"data": {"path":"../../modules/data"},
-		"debugging": {"path":"../../modules/debugging"},
-		"directx-d": {"path":"../../dependencies/directx-d"},
-		"error": {"path":"../../modules/error"},
-		"filesystem": {"path":"../../modules/filesystem"},
-		"font": {"path":"../../modules/font"},
-		"fswatch": "0.6.0",
-		"gles": {"path":"../../dependencies/gles"},
-		"hipengine_api": {"path":"../../api"},
-		"hipreme_engine": {"path":"../../"},
-		"image": {"path":"../../modules/image"},
-		"jni": {"path":"../../modules/jni"},
-		"math": {"path":"../../modules/math"},
-		"renderer": {"path":"../../modules/renderer"},
-		"sles": {"path":"../../dependencies/sles"},
-		"timer": {"path":"../../modules/timer"},
-		"tween": {"path":"../../modules/tween"},
-		"util": {"path":"../../modules/util"},
-		"windowing": {"path":"../../modules/windowing"}
+		"arsd-official": "10.9.8"
 	}
 }
