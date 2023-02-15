@@ -51,7 +51,7 @@ interface IHipFileSystemInteraction
 {
     protected final const(wchar*) cachedWStringz(wstring path)
     {
-        static wchar[] cache;
+        __gshared wchar[] cache;
         if(path.length > cache.length)
             cache.length = path.length + 1;
         cache[0..path.length] = path[];
@@ -62,7 +62,7 @@ interface IHipFileSystemInteraction
 
     protected final const(char*) cachedStringz(string path)
     {
-        static char[] cache;
+        __gshared char[] cache;
         if(path.length > cache.length)
             cache.length = path.length + 1;
         cache[0..path.length] = path[];

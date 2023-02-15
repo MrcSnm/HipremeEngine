@@ -267,8 +267,8 @@ public class HipImageImpl : IImage
 
     static immutable(IImage) getPixelImage()
     {
-        static HipImageImpl img; 
-        static ubyte[4] pixel = IHipImageDecoder.getPixel();
+        __gshared HipImageImpl img; 
+        __gshared ubyte[4] pixel = IHipImageDecoder.getPixel();
         if(img is null)
         {
             img = new HipImageImpl("Pixel");

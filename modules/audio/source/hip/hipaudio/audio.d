@@ -179,18 +179,18 @@ class HipAudio
 
 
    
-    protected static bool hasProAudio;
-    protected static bool hasLowLatencyAudio;
-    protected static int  optimalBufferSize;
-    protected static int  optimalSampleRate;
-    private static bool is3D;
-    private static uint activeSources;
+    protected __gshared bool hasProAudio;
+    protected __gshared bool hasLowLatencyAudio;
+    protected __gshared int  optimalBufferSize;
+    protected __gshared int  optimalSampleRate;
+    private   __gshared bool is3D;
+    private   __gshared uint activeSources;
 
     __gshared IHipAudioPlayer audioInterface;
 
     //Debug vars
     version(HIPREME_DEBUG)
     {
-        public static bool hasInitializedAudio = false;
+        public __gshared bool hasInitializedAudio = false;
     }
 }

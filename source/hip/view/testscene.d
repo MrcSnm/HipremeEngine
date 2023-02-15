@@ -38,21 +38,26 @@ class TestScene : Scene, IHipPreloadable
         geom.setColor(HipColor(0, 1, 0, 1));
         HipRenderer.setViewport(new Viewport(0,0, 800, 600));
 
-        smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
-        bigFont = HipDefaultAssets.getDefaultFontWithSize(64);
+        // smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
+        // bigFont = HipDefaultAssets.getDefaultFontWithSize(64);
     }
     override void update(float dt)
     {
         super.update(dt);
-        if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
-        {
-            logg("You just clicked me!");
-        }
+        if(HipInput.areGamepadButtonsJustPressed([HipGamepadButton.psSquare, HipGamepadButton.psTriangle]))
+            logg("Button combination pressed!");
+        // {
+            // logg("You just done a gamepad input combination!");
+        // }
+        // if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
+        // {
+        //     logg("You just clicked me!");
+        // }
 
-        if(HipInput.isKeyJustPressed(HipKey.ENTER))
-        {
-            logg("Don't press ENTER!");
-        }
+        // if(HipInput.isKeyJustPressed(HipKey.ENTER))
+        // {
+        //     logg("Don't press ENTER!");
+        // }
     }
 
     override void render()
@@ -66,23 +71,25 @@ class TestScene : Scene, IHipPreloadable
         geom.flush();
 
 
-        //Use a non GC allocating string on render (String) for drawing the mousePosition
-        import hip.util.string;
-        float[2] mousePos = HipInput.getWorldMousePosition();
-        setFont(smallFont);
-        String s = String(mousePos);
-        drawText(s.toString, cast(int)mousePos[0], cast(int)mousePos[1]);
+        // //Use a non GC allocating string on render (String) for drawing the mousePosition
+        // import hip.util.string;
+        // float[2] mousePos = HipInput.getWorldMousePosition();
+        // setFont(smallFont);
+        // String s = String(mousePos);
+        // drawText(s.toString, cast(int)mousePos[0], cast(int)mousePos[1]);
 
         
 
         ////////////////////////Higher Level////////////////////////
         setGeometryColor(HipColor.white);
-        setFont(null);
-        drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        // setFont(null);
+        // drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(300, 300, 100, 100);
 
         drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         drawTexture(null, 300, 500);
+
+        // logg("Render testscene.");
 
         /**
         *   For loading a texture you can execute

@@ -360,26 +360,27 @@ class GeometryBatch : IHipBatch
     void flush()
     {
         const uint count = this.currentIndex;
-        if(count == 0)
-            return;
+        if(count != 0)
+        {
+            mesh.bind();
+        
+            mesh.updateVertices(vertices);
+            mesh.updateIndices(indices);
 
-        mesh.bind();
-    
-        mesh.updateVertices(vertices);
-        mesh.updateIndices(indices);
+            mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1]);
+            mesh.shader.setVertexVar("Geom.uProj",  camera.proj);
+            mesh.shader.setVertexVar("Geom.uModel", Matrix4.identity());
+            mesh.shader.setVertexVar("Geom.uView",  camera.view);
 
-        mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1]);
-        mesh.shader.setVertexVar("Geom.uProj",  camera.proj);
-        mesh.shader.setVertexVar("Geom.uModel", Matrix4.identity());
-        mesh.shader.setVertexVar("Geom.uView",  camera.view);
-
-        mesh.shader.sendVars();
-        //Vertices to render = indices.length
-        this.mesh.draw(count);
-        mesh.unbind();
+            mesh.shader.sendVars();
+            //Vertices to render = indices.length
+            this.mesh.draw(count);
+            mesh.unbind();
+        }
         verticesCount = 0;
         currentIndex = 0;
         currentVertex = 0;
+
     }
 
 }

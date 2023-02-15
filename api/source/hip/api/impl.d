@@ -35,6 +35,7 @@ public import hip.api.systems.timer;
 public import HipInput = hip.api.input;
 public import hip.api.input.button:AutoRemove, HipButtonType;
 public import hip.api.input.keyboard : HipKey;
+public import hip.api.input.gamepad;
 public import hip.api.input.mouse : HipMouseButton;
 alias IHipInputMap = HipInput.IHipInputMap;
 

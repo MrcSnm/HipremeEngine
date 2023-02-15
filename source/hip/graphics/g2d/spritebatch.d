@@ -68,6 +68,7 @@ class HipSpriteBatch : IHipBatch
 
     uint quadsCount;
 
+
     this(HipOrthoCamera camera = null, index_t maxQuads = 10_900)
     {
         import hip.util.conv:to;
@@ -218,11 +219,12 @@ class HipSpriteBatch : IHipBatch
         for(int i = 0; i < usingTexturesCount; i++)
             if(currentTextures[i] is t)
                 return i;
-
-        if(usingTexturesCount + 1 == currentTextures.length)
-            return -1;
-        currentTextures[usingTexturesCount] = t;
-        return usingTexturesCount++;
+        if(usingTexturesCount < currentTextures.length)
+        {
+            currentTextures[usingTexturesCount] = t;
+            return usingTexturesCount++;            
+        }
+        return -1;
     }
     /**
     *   Sets the current texture in use on the sprite batch and returns its slot.
@@ -427,31 +429,32 @@ class HipSpriteBatch : IHipBatch
 
     void flush()
     {
-        if(quadsCount == 0)
-            return;
-        HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
-        // mesh.shader.bind();
-        // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
-        // material.bind();
+        if(quadsCount != 0)
+        {
+            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+            // mesh.shader.bind();
+            // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
+            // material.bind();
 
-        mesh.shader.initTextureSlots(currentTextures[0], "uTex1", HipRenderer.getMaxSupportedShaderTextures());
-        mesh.bind();
+            mesh.shader.initTextureSlots(currentTextures[0], "uTex1", HipRenderer.getMaxSupportedShaderTextures());
+            mesh.bind();
 
-        mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj);
-        mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity());
-        mesh.shader.setVertexVar("Cbuf1.uView", camera.view);
-        
-        foreach(i; 0..usingTexturesCount)
-            currentTextures[i].bind(i);
-        mesh.shader.sendVars();
+            mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj);
+            mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity());
+            mesh.shader.setVertexVar("Cbuf1.uView", camera.view);
+            
+            foreach(i; 0..usingTexturesCount)
+                currentTextures[i].bind(i);
+            mesh.shader.sendVars();
 
-        mesh.updateVertices(vertices);
-        mesh.draw(quadsCount*6);
+            mesh.updateVertices(vertices);
+            mesh.draw(quadsCount*6);
 
-        ///Some operations may require texture unbinding(D3D11 Framebuffer)
-        foreach(i; 0..usingTexturesCount)
-            currentTextures[i].unbind(i);
-        mesh.unbind();
+            ///Some operations may require texture unbinding(D3D11 Framebuffer)
+            foreach(i; 0..usingTexturesCount)
+                currentTextures[i].unbind(i);
+            mesh.unbind();
+        }
         quadsCount = 0;
         usingTexturesCount = 0;
     }

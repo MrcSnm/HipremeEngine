@@ -68,15 +68,11 @@
 		{
 			"name": "psvita",
 			"subConfigurations": {
+				"windowing": "psvita",
 				"image": "gamut"
 			},
-			"dependencies": {
-				"gles" : {"path": "../../dependencies/gles"}
-			},
-			"versions": 
-			[
-				"GLES20"
-			]
+			"versions": ["GLES20"],
+			"dependencies": {"gles" : {"path": "../../dependencies/gles"}}
 		},
 		{
 			"name": "android",

@@ -16,7 +16,7 @@ version(WebAssembly) version = CustomRuntime;
 version(PSVita) version = CustomRuntime;
 
 version(CustomRuntime)
-    static import core.arsd.memory_allocation;
+    static import rt.hooks;
 
 @nogc:
 void setZeroMemory(T)(ref T variable)
@@ -59,7 +59,7 @@ void[] toHeapSlice(T)(T data) if(!is(T == void[]))
 void freeGCMemory(void* data)
 {
     assert(data !is null, "Tried to free null data.");
-    version(CustomRuntime){core.arsd.memory_allocation.free(cast(ubyte*)data);}
+    version(CustomRuntime){rt.hooks.free(cast(ubyte*)data);}
     else
     {
         import core.memory;
@@ -71,7 +71,7 @@ void freeGCMemory(void* data)
 void freeGCMemory(ref void* data) //Remove ref.
 {
     assert(data !is null, "Tried to free null data.");
-    version(CustomRuntime){core.arsd.memory_allocation.free(cast(ubyte*)data);}
+    version(CustomRuntime){rt.hooks.free(cast(ubyte*)data);}
     else
     {
         import core.memory;
@@ -84,7 +84,7 @@ void freeGCMemory(ref void* data) //Remove ref.
 void freeGCMemory(ref void[] data)
 {
     assert(data.length, "Tried to free null data.");
-    version(CustomRuntime){core.arsd.memory_allocation.free(cast(ubyte*)data.ptr);}
+    version(CustomRuntime){rt.hooks.free(cast(ubyte*)data.ptr);}
     else
     {
         import core.memory;

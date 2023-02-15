@@ -13,9 +13,9 @@ import hip.math.vector;
 
 class Scaling
 {
-    private static Vector2 temp;
     static Vector2 fit(float width, float height, float targetWidth, float targetHeight)
     {
+        Vector2 temp;
         float ratio = height/width;
         float targetRatio = targetHeight/targetWidth;
 

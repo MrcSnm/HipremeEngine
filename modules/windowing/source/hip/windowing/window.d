@@ -85,7 +85,10 @@ class HipWindow
         return destroy_GL_Context();
     }
     void pollWindowEvents(){poll();}
-    void rendererPresent(){swapBuffer();}
+    void rendererPresent()
+    {
+        swapBuffer();
+    }
     void setName(string name)
     {
         version(WindowsNative)

@@ -37,7 +37,7 @@ class HipTexture : HipAsset, IHipTexture
     
     public static HipTexture getPixelTexture()
     {
-        static HipTexture pixelTexture;
+        __gshared HipTexture pixelTexture;
         if(pixelTexture is null)
         {
             pixelTexture = new HipTexture();

@@ -149,6 +149,7 @@ public class Shader : IReloadable
                 break;
             default:break;
         }
+
         switch(preset) with(HipShaderPresets)
         {
             case SPRITE_BATCH:

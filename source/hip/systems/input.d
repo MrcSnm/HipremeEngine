@@ -16,6 +16,8 @@ version(WebAssembly)
     version = QueuePopulatedExternally;
 else version(UWP)
     version = QueuePopulatedExternally;
+else version(PSVita)
+    version = QueuePopulatedExternally;
 
 version(Android)
 {
@@ -86,13 +88,13 @@ else version(QueuePopulatedExternally)
         {
             HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)virtualKey));
         }
-        void HipInputOnGamepadConnected(ubyte id)
+        void HipInputOnGamepadConnected(ubyte id, ubyte type)
         {
-            HipEventQueue.post(0, HipEventQueue.EventType.gamepadConnected, HipEventQueue.Gamepad(id));
+            HipEventQueue.post(0, HipEventQueue.EventType.gamepadConnected, HipEventQueue.Gamepad(id, type));
         }
-        void HipInputOnGamepadDisconnected(ubyte id)
+        void HipInputOnGamepadDisconnected(ubyte id, ubyte type)
         {
-            HipEventQueue.post(0, HipEventQueue.EventType.gamepadDisconnected, HipEventQueue.Gamepad(id));
+            HipEventQueue.post(0, HipEventQueue.EventType.gamepadDisconnected, HipEventQueue.Gamepad(id, type));
         }
         void HipOnRendererResize(int x, int y)
         {
@@ -159,7 +161,12 @@ class HipEventQueue : EventQueue
         uint height;
     }
 
-    struct Gamepad{ubyte id;}
+    struct Gamepad
+    {
+        ubyte id;
+        ///See hip.systems.gamepad.HipGamepadTypes
+        ubyte type;
+    }
 
     struct Scroll
     {

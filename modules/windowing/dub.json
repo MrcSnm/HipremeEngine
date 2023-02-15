@@ -12,6 +12,7 @@
 		},
 		{"name": "android"},
 		{"name": "wasm"},
+		{"name": "psvita"},
 		{
 			"name": "source",
 			"targetType": "sourceLibrary"
