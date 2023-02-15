@@ -32,6 +32,8 @@ class TestScene : Scene, IHipPreloadable
     IHipFont bigFont;
 
 
+    float x = 100, y = 100;
+
     override void initialize()
     {
         geom = new GeometryBatch(null, 5000, 5000);
@@ -46,6 +48,10 @@ class TestScene : Scene, IHipPreloadable
         super.update(dt);
         if(HipInput.areGamepadButtonsJustPressed([HipGamepadButton.psSquare, HipGamepadButton.psTriangle]))
             logg("Button combination pressed!");
+        auto v = HipInput.getAnalog(HipGamepadAnalogs.leftStick);
+
+        x+= dt*400*v[0];
+        y+= dt*400*v[1];
         // {
             // logg("You just done a gamepad input combination!");
         // }
@@ -84,7 +90,7 @@ class TestScene : Scene, IHipPreloadable
         setGeometryColor(HipColor.white);
         // setFont(null);
         // drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
-        fillRectangle(300, 300, 100, 100);
+        fillRectangle(cast(int)x, cast(int)y, 100, 100);
 
         drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         drawTexture(null, 300, 500);

@@ -118,11 +118,11 @@ class HipText
         alias v = vertices;
         int vI = 0; //vertex buffer index
 
-        dchar lastCharacter = 0;
         int kerningAmount = 0;
         int lineBreakCount = 0;
         int displayX = void, displayY = void;
         updateAlign(0, displayX, displayY, boundsWidth, boundsHeight);
+        HipFontChar* lastCharacter;
         HipFontChar* ch;
         for(int i = 0; i < str.length; i++)
         {
@@ -154,8 +154,8 @@ class HipText
                     break;
                 default:
                     //Find kerning
-
-                    kerningAmount = font.getKerning(lastCharacter, ch.id);
+                    if(lastCharacter)
+                        kerningAmount = font.getKerning(lastCharacter, ch);
                     xoffset+= ch.xoffset+kerningAmount;
                     yoffset+= ch.yoffset;
                     //Gen vertices 
@@ -189,7 +189,7 @@ class HipText
                     xoffset+= ch.xadvance;
 
             }
-            lastCharacter = str[i];
+            lastCharacter = ch;
         }
         shouldUpdateText = false;
     }
