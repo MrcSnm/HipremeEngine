@@ -75,12 +75,14 @@ abstract class HipFont : IHipFont
             if(i+1 < text.length)
             {
                 next = text[i+1] in characters;
-                // kern = getKerning(text[i], text[i+1]);
-                kern = getKerning(ch, next);
-                if(kern != 0)
+                if(next)
                 {
-                    import std.stdio;
-                    writeln("Kerning Found:", kern);
+                    kern = getKerning(ch, next);
+                    if(kern != 0)
+                    {
+                        import std.stdio;
+                        writeln("Kerning Found:", kern);
+                    }
                 }
             }
             switch(text[i])

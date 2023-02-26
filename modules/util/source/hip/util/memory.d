@@ -70,27 +70,20 @@ void freeGCMemory(void* data)
 
 void freeGCMemory(ref void* data) //Remove ref.
 {
-    assert(data !is null, "Tried to free null data.");
-    version(CustomRuntime){rt.hooks.free(cast(ubyte*)data);}
-    else
-    {
-        import core.memory;
-        GC.removeRoot(data);
-        GC.free(data);
-    }
+    freeGCMemory(cast(void*)data);
     data = null;
 }
 
 void freeGCMemory(ref void[] data)
 {
     assert(data.length, "Tried to free null data.");
-    version(CustomRuntime){rt.hooks.free(cast(ubyte*)data.ptr);}
-    else
-    {
-        import core.memory;
-        GC.removeRoot(data.ptr);
-        GC.free(data.ptr);
-    }
+    freeGCMemory(data.ptr);
+    data = null;
+}
+
+void freeGCMemory(T)(ref T[] data)
+{
+    freeGCMemory(cast(void*)data.ptr);
     data = null;
 }
 

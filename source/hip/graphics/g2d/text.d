@@ -61,6 +61,7 @@ class HipText
     
     string text(string newText)
     {
+        import hip.console.log;
         if(newText != _text)
         {
             version(UseDRuntimeDecoder)
@@ -109,6 +110,7 @@ class HipText
 
     package void updateText(IHipFont font)
     {
+        import hip.console.log;
         HipTextStopConfig.parseText(_dtext, processedText, textConfig);
         font.calculateTextBounds(processedText, linesWidths, width, height);
         int yoffset = 0;

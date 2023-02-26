@@ -12,14 +12,15 @@ version(WebAssembly)
 }
 version(PSVita)
 {
+    extern(C) void hipVitaPrint(uint length, const(char)* str);
+    import hip.util.conv:to;
     void writeln(Args...)(Args args)
     {
-        puts("Writeln not implemented.");
-        // import hip.util.conv;
-        // string toPrint;
-        // foreach(a; args)
-        //     toPrint~= to!string(a);
-        // printf("%.*s\n", toPrint.length, toPrint.ptr);
+        char[] str;
+        static foreach(arg; args){str~= to!string(arg);}
+        hipVitaPrint(str.length, cast(const(char)*)str.ptr);
+        import hip.util.memory;
+        freeGCMemory(str);
     }
 }
 
