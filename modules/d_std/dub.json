@@ -2,6 +2,17 @@
 	"authors": [
 		"Marcelo"
 	],
+	"configurations": [
+		{
+			"name": "default"
+		},
+		{
+			"name": "psvita",
+			"importPaths": [
+				"../util/source"
+			]
+		}
+	],
 	"copyright": "Copyright © 2022, Marcelo",
 	"description": "A minimal D application.",
 	"license": "proprietary",

@@ -12,12 +12,9 @@ module hip.systems.input;
 import hip.util.data_structures;
 import hip.error.handler;
 
-version(WebAssembly)
-    version = QueuePopulatedExternally;
-else version(UWP)
-    version = QueuePopulatedExternally;
-else version(PSVita)
-    version = QueuePopulatedExternally;
+version(WebAssembly) version = QueuePopulatedExternally;
+else version(UWP) version = QueuePopulatedExternally;
+else version(PSVita) version = QueuePopulatedExternally;
 
 version(Android)
 {

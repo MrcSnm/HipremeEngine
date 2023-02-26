@@ -85,7 +85,7 @@ class Mesh
     */
     public void setVertices(ref float[] vertices)
     {
-        if(vertices.length <  this.vertices.length)
+        if(vertices.length <=  this.vertices.length)
         {
             updateVertices(vertices);
             return;
