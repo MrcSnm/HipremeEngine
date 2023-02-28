@@ -25,7 +25,8 @@
 			"lflags": ["-allow-undefined"]
 		},
 		{
-			"name": "psvita"
+			"name": "psvita",
+			"importPaths": ["../../modules/util/source"]
 		}
 	],
 	"license": "proprietary",

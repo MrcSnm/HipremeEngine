@@ -320,7 +320,7 @@ pure TString replaceAll(TString)(TString str, TString what, TString replaceWith 
     return ret;
 }
 
-pure int indexOf (TString)(in TString str,in TString toFind, int startIndex = 0) nothrow @nogc @safe
+pure int indexOf (TString)(inout TString str,inout TString toFind, int startIndex = 0) nothrow @nogc @safe
 {
     if(!toFind.length)
         return -1;
@@ -340,7 +340,7 @@ pure int indexOf (TString)(in TString str,in TString toFind, int startIndex = 0)
     return -1;
 }
 
-pure bool startsWith(TString)(in TString str, in TString withWhat) nothrow @nogc @safe
+pure bool startsWith(TString)(inout TString str, inout TString withWhat) nothrow @nogc @safe
 {
     if(withWhat.length > str.length)
         return false;
@@ -353,7 +353,7 @@ pure bool startsWith(TString)(in TString str, in TString withWhat) nothrow @nogc
 /**
 *   Same thing as startsWith, but returns the part after the afterWhat
 */
-pure string after(TString)(in TString str, in TString afterWhat) nothrow @nogc @safe
+pure string after(TString)(TString str, immutable TString afterWhat) nothrow @nogc @safe
 {
     bool has = str.startsWith(afterWhat);
     if(!has)
@@ -361,7 +361,7 @@ pure string after(TString)(in TString str, in TString afterWhat) nothrow @nogc @
     return str[afterWhat.length..$];
 }
 
-pure string findAfter(TString)(in TString str, in TString afterWhat, int startIndex = 0) nothrow @nogc @safe
+pure inout(TString) findAfter(TString)(inout TString str, inout TString afterWhat, int startIndex = 0) nothrow @nogc @safe
 {
     int afterWhatIndex = str.indexOf(afterWhat, startIndex);
     if(afterWhatIndex == -1)
@@ -376,7 +376,7 @@ string test = `string containing a "thing"`;
 writeln(test.between(`"`, `"`)); //thing
 ```
 */
-pure string between(TString)(in TString str, in TString left, in TString right, int start = 0) nothrow @nogc @safe
+pure inout(TString) between(TString)(inout TString str, inout TString left, inout TString right, int start = 0) nothrow @nogc @safe
 {
     int leftIndex = str.indexOf(left, start);
     if(leftIndex == -1) return null;
@@ -386,7 +386,7 @@ pure string between(TString)(in TString str, in TString left, in TString right, 
     return str[leftIndex+1..rightIndex];
 }
 
-pure int indexOf(TChar)(in TChar[] str, in TChar ch, int startIndex = 0) nothrow @nogc @trusted
+pure int indexOf(TChar)(inout TChar[] str, inout TChar ch, int startIndex = 0) nothrow @nogc @trusted
 {
     char[1] temp = [ch];
     return indexOf(str, cast(TChar[])temp, startIndex);
@@ -401,7 +401,7 @@ TString repeat(TString)(TString str, size_t repeatQuant)
     return ret;
 }
 
-pure int count(TString)(in TString str, in TString countWhat) nothrow @nogc @safe
+pure int count(TString)(inout TString str, inout TString countWhat) nothrow @nogc @safe
 {
     int ret = 0;
     int index = 0;
@@ -417,7 +417,7 @@ pure int count(TString)(in TString str, in TString countWhat) nothrow @nogc @saf
 
 alias countUntil = indexOf;
 
-int lastIndexOf(TString)(in TString str,in TString toFind, int startIndex = -1) pure nothrow @nogc @safe
+int lastIndexOf(TString)(inout TString str,inout TString toFind, int startIndex = -1) pure nothrow @nogc @safe
 {
     if(startIndex == -1) startIndex = cast(int)(str.length)-1;
 
@@ -522,16 +522,16 @@ TString[] split(TString)(TString str, TString separator) pure nothrow @safe
     return ret;
 }
 
-auto splitRange(TString)(TString str, TString separator) pure nothrow @safe @nogc
+auto splitRange(TString, TStrSep)(TString str, TStrSep separator) pure nothrow @safe @nogc
 {
     struct SplitRange
     {
         TString strToSplit;
-        TString sep;
+        TStrSep sep;
         TString frontStr;
         int lastFound, index;
 
-        bool empty(){return frontStr == "" && index == -1 && lastFound == -1;}
+        bool empty(){return frontStr == null && index == -1 && lastFound == -1;}
         TString front()
         {
             if(frontStr == "") popFront();
@@ -541,10 +541,10 @@ auto splitRange(TString)(TString str, TString separator) pure nothrow @safe @nog
         {
             if(index == -1 && lastFound == -1)
             {
-                frontStr = "";
+                frontStr = null;
                 return;
             }
-            index = strToSplit.indexOf(sep, index);
+            index = indexOf(cast(TString)strToSplit, cast(TString)sep, index);
             //When finding, take the string[lastFound..index]
             if(index != -1)
             {

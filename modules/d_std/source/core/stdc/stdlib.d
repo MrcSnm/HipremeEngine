@@ -39,7 +39,13 @@ version(CustomRuntime)
         void* realloc(void* ptr, uint size, string file = __FILE__, size_t line = __LINE__)
         {
             auto nogc_realloc = cast(nogc_realloc_t)&rt.hooks.realloc;
-            return cast(void*)nogc_realloc(cast(ubyte*)ptr, size, file, line).ptr;
+            version(PSVita)
+            {
+                void* ret = cast(void*)nogc_realloc(cast(ubyte*)ptr, size, file, line).ptr;
+                free(ptr);
+                return ret;
+            }
+            else return cast(void*)nogc_realloc(cast(ubyte*)ptr, size, file, line).ptr;
         }
     }   
 }

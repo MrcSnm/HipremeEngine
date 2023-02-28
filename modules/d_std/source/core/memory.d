@@ -3,10 +3,9 @@ module core.memory;
 struct GC
 {
     static void* addrOf(void* addr)@trusted pure nothrow @nogc {return addr;}
-    static void free(void* addr) @trusted nothrow @nogc
+    static void free(void* addr) @trusted nothrow @nogc pure
     {
-        static import core.stdc.stdlib;
-        core.stdc.stdlib.free(addr);
+        pureFree(addr);
     }
 }
 

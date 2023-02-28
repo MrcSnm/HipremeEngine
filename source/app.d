@@ -106,6 +106,11 @@ static void initEngine(bool audio3D = false)
 
 	version(Android){platform = Platforms.ANDROID;}
 	else version(WebAssembly){platform = Platforms.WASM;}
+	else version(PSVita)
+	{
+		platform = Platforms.PSVITA;
+		fsInstallPath = "app0:assets";
+	}
 	else version(UWP)
 	{
 		import std.file:getcwd;
@@ -131,8 +136,6 @@ static void initEngine(bool audio3D = false)
 		else
 			fsInstallPath = getcwd()~"/assets";
 	}
-	version(PSVita){platform = Platforms.PSVITA;}
-	
 	Console.install(platform, printFunc);
 	loglnInfo("Console installed for ", platform);
 	HipFS.install(fsInstallPath, validations);
@@ -155,8 +158,6 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	initEngine(true);
 	if(isUsingInterpreter)
 		startInterpreter(interpreterEntry.intepreter);
-
-
 
 	version(Android)
 	{

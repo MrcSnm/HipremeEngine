@@ -14,27 +14,42 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
     {
         import core.stdc.stdio;
         import hip.error.handler;
+        import hip.util.conv;
         if(ErrorHandler.assertLazyErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
             return false;
 
-        auto f = fopen((path~"\0").ptr, "r");
-        fseek(f, 0, SEEK_END);
+        auto f = fopen((path~"\0").ptr, "rb");
+        if(f is null)
+        {
+            onError("File not found.");
+            return false;
+        }
+        if(fseek(f, 0, SEEK_END))
+        {
+            fclose(f);
+            onError("Could not seek to file end.");
+            return false;
+        }
         auto size = ftell(f);
 
         if(size <= 0)
         {
             fclose(f);
-            onError("Size <= 0");
+            onError("Size <= 0 on file "~path);
             return false;
         }
-        fseek(f, 0, SEEK_SET);
-        ubyte[] output;
-        output.length = cast(size_t)size;
-
-        if(fread(cast(void*)output.ptr, cast(size_t)size, 1, f) != size)
+        if(fseek(f, 0, SEEK_SET))
         {
             fclose(f);
-            onError("File is corrupted. Coult not read file entirely");
+            onError("Could not seek to file beginning");
+            return false;
+        }
+        ubyte[] output = new ubyte[size];
+
+        if(size_t readed = fread(cast(void*)output.ptr, 1, cast(size_t)size, f) != size)
+        {
+            fclose(f);
+            onError("File is corrupted. Could not read file entirely (Readed "~to!string(readed)~") Expected "~to!string(size));
             return false;
         }
         fclose(f);

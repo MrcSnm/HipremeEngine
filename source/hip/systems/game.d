@@ -195,6 +195,9 @@ class GameSystem
             // addScene(new AssetTest());
             import hip.view.testscene;
             import hip.console.log;
+            import hip.api.data.commons;
+            mixin LoadReferencedAssets!(["hip.view.testscene"]);
+            loadReferenced;
             hiplog("starting test scene.");
             addScene(new TestScene());
         }
@@ -237,14 +240,14 @@ class GameSystem
     void addScene(AScene s)
     {
         import hip.assetmanager;
-        // s.preload();
-        // HipAssetManager.addOnLoadingFinish(()
-        // {
+        s.preload();
+        HipAssetManager.addOnLoadingFinish(()
+        {
             import hip.console.log;
             loglnWarn("Initializing scene ", s.getName);
     	    s.initialize();
             scenes~= s;
-        // });
+        });
     }
 
     bool update(float deltaTime)

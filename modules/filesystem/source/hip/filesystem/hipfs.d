@@ -13,20 +13,32 @@ module hip.filesystem.hipfs;
 public import hip.api.filesystem.hipfs;
 import hip.util.reflection;
 
+/** 
+ * Returns whether if the path attempts to exit the initial one.
+ * Params:
+ *   initial = 
+ *   toAppend = 
+ * Returns: 
+ */
 private pure bool validatePath(string initial, string toAppend)
 {
     import hip.util.array:lastIndexOf;
-    import hip.util.string:split;
+    import hip.util.string:splitRange;
     import hip.util.system : sanitizePath;
 
     if(initial.length != 0 && initial[$-1] == '/')
         initial = initial[0..$-1];
-    string newPath = initial.sanitizePath;
-    toAppend = toAppend.sanitizePath;
+    scope char[] newPath = initial.sanitizePath;
+    scope char[] appends = toAppend.sanitizePath;
 
-    string[] appends = toAppend.split("/");
+    scope(exit)
+    {
+        import core.memory:GC;
+        GC.free(newPath.ptr);
+        GC.free(appends.ptr);
+    }
 
-    foreach(a; appends)
+    foreach(a; splitRange(appends, "/"))
     {
         if(a == "" || a == ".")
             continue;
