@@ -154,22 +154,24 @@ class HipArsd_TTF_Font : HipFont
     {
         if(charset.length == 0)
             return null;
-        scope RenderizedChar[] fontChars;
-
+        scope RenderizedChar[] fontChars = new RenderizedChar[charset.length]; //TODO: USe that as it is more optimised
         scope(exit)
         {
             foreach(ch; fontChars)
                 ch.dispose();
+            import core.memory;
+            GC.free(fontChars.ptr);
         }
 
         uint avgWidth = 0;
         uint avgHeight = 0;
+        size_t i = 0;
         foreach(dc; charset)
         {
             RenderizedChar rc = renderCharacter(dc, size);
             avgWidth+= rc.width;
             avgHeight+= rc.height;
-            fontChars~= rc;
+            fontChars[i++] = rc;
         }
         //Add as an error (pixel bleeding)
         avgWidth = cast(uint)(avgWidth / charset.length) + 2;

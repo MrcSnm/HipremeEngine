@@ -31,11 +31,15 @@ class TestScene : Scene, IHipPreloadable
     IHipFont smallFont;
     IHipFont bigFont;
 
+    @Asset("graphics/sprites/sprite.png")
+    __gshared IHipTexture test;
+
 
     float x = 100, y = 100;
 
     override void initialize()
     {
+        logg(getAssetsForPreload);
         geom = new GeometryBatch(null, 5000, 5000);
         geom.setColor(HipColor(0, 1, 0, 1));
         HipRenderer.setViewport(new Viewport(0,0, 800, 600));
@@ -90,6 +94,8 @@ class TestScene : Scene, IHipPreloadable
         drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(cast(int)x, cast(int)y, 100, 100);
         drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+
+        drawTexture(test, 100, 100);
         // drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         // fillRectangle(cast(int)x+200, cast(int)y, 100, 100);
         // drawTexture(null, 300, 500);
@@ -104,7 +110,7 @@ class TestScene : Scene, IHipPreloadable
         // */
         // renderGeometries();
         renderTexts();
-        // renderSprites();
+        renderSprites();
         
     }
 }

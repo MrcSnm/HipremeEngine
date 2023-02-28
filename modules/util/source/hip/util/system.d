@@ -19,7 +19,7 @@ version(WebAssembly) version = NoSharedLibrarySupport;
 
 enum debugger = "asm {int 3;}";
 
-string sanitizePath(string path) @safe pure nothrow
+char[] sanitizePath(string path) @safe pure nothrow
 {
     char[] ret = new char[](path.length);
 

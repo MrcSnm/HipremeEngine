@@ -54,9 +54,13 @@ bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) on
       return false;
    
    import hip.console.log;
+
+   hiplog("Loading default assets");
+   
    auto image = new Image(HIP_DEFAULT_TEXTURE);
    image.loadFromMemory(cast(ubyte[])HipDefaultAssets.textureData, (_)
    {
+      hiplog("Loaded default image");
       HipDefaultAssets._texture = image;
       if(++succeededSteps == ASSETS_TO_LOAD)
          onSuccess();
@@ -67,11 +71,11 @@ bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) on
    });
 
    auto font = new Hip_TTF_Font(HIP_DEFAULT_FONT, HIP_DEFAULT_FONT_SIZE);
-
    if(!font.loadFromMemory(cast(ubyte[])HipDefaultAssets.fontData))
       onFailure("Failed loading default font");
    else
    {
+      hiplog("Loaded default font");
       HipDefaultAssets._font = font;
       if(++succeededSteps == ASSETS_TO_LOAD)
          onSuccess();

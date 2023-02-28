@@ -61,6 +61,7 @@ void toStringRange(Sink)(ref Sink sink, float f)
     toStringRange(sink, cast(int)decimal);
 }
 
+
 void toStringRange(Sink, T)(auto ref Sink sink, T[] arr)
 if(isOutputRange!(Sink, char) && !is(T[] == string)) //There is a better match for string
 {
@@ -133,6 +134,14 @@ if(!isArray!T && (is(T == struct) || is(T == class) || is(T == interface) || isT
     else static assert(0, "Not implemented for "~T.stringof);
 }
 
+// void toStringRange(Sink)(auto ref Sink sink, scope const char[] arr) if(isOutputRange!(Sink, char))
+// {
+//     static if(__traits(compiles, sink.preAllocate))
+//         sink.preAllocate(arr.length);
+//     foreach(ch; arr)
+//         put(sink, ch);
+// }
+
 void   toStringRange(Sink)(auto ref Sink sink, string str) if(isOutputRange!(Sink, char))
 {
     static if(__traits(compiles, sink.preAllocate))
@@ -140,6 +149,7 @@ void   toStringRange(Sink)(auto ref Sink sink, string str) if(isOutputRange!(Sin
     foreach(character; str)
         put(sink, character);
 }
+
 void   toStringRange(Sink)(auto ref Sink sink, const(char)* str) if(isOutputRange!(Sink, char))
 {
     import core.stdc.string:strlen;
@@ -204,7 +214,7 @@ if(isOutputRange!(Sink, char))
 {
     enum numbers = "0123456789ABCDEF";
     int preAllocSize = 1;
-    size_t div = 16;
+    ulong div = 16;
     while(div <= n)
     {
         div*= 16;

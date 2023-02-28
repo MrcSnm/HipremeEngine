@@ -70,7 +70,14 @@ void freeGCMemory(void* data)
 
 void freeGCMemory(ref void* data) //Remove ref.
 {
-    freeGCMemory(cast(void*)data);
+    assert(data !is null, "Tried to free null data.");
+    version(CustomRuntime){rt.hooks.free(cast(ubyte*)data);}
+    else
+    {
+        import core.memory;
+        GC.removeRoot(data);
+        GC.free(data);
+    }
     data = null;
 }
 
