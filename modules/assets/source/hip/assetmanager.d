@@ -272,7 +272,7 @@ class HipAssetManager
 
     public static void initialize()
     {
-        completeMutex = new DebugMutex();
+        completeMutex = new DebugMutex(0);
         workerPool = new HipWorkerPool(HIP_ASSETMANAGER_WORKER_POOL);
     }
 
@@ -384,15 +384,6 @@ class HipAssetManager
             putComplete(task);
         };
     }
-    private static void delegate(void[] partialData) onSuccessLoadFirstStep(HipAssetLoadTask task, 
-    void delegate(string taskName) nextStep)
-    {
-        return (void[] partialData)
-        {
-            task.givePartialData(partialData);
-            workerPool.notifyOnFinishOnMainThread(nextStep, false)(task.name);
-        };
-    }
 
     private static void delegate(string err = "") onFailureLoad(HipAssetLoadTask task)
     {
@@ -423,6 +414,17 @@ class HipAssetManager
 
     version(WebAssembly)
     {
+        
+        private static void delegate(void[] partialData) onSuccessLoadFirstStep(HipAssetLoadTask task, 
+        void delegate(string taskName) nextStep)
+        {
+            return (void[] partialData)
+            {
+                task.givePartialData(partialData);
+                workerPool.notifyOnFinishOnMainThread(nextStep, false)(task.name);
+            };
+        }
+
         /**
         *   The main difference in that version is that it doesn't depends on HipConcurrency to put
         *   on notifyOnFinish. That was decided because it is impossible to actually know when something
@@ -954,7 +956,6 @@ class HipAssetManager
     */
     static void update()
     {
-        workerPool.pollFinished();
         completeMutex.lock();
             if(completeQueue.length)
             {
@@ -972,8 +973,8 @@ class HipAssetManager
                 }
                 completeQueue.length = 0;
             }
-
         completeMutex.unlock();
+        workerPool.pollFinished();
     }
 
     /**

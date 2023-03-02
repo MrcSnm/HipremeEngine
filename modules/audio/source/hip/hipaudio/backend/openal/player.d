@@ -48,15 +48,19 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
     public static bool initializeOpenAL()
     {
         ErrorHandler.startListeningForErrors("HipremeAudio3D initialization");
-        ALSupport sup = loadOpenAL();
-        if(sup != ALSupport.al11) //Probably should not load a non al11 version.
+        version(BindOpenAL_Static){}
+        else
         {
-            if(sup == ALSupport.badLibrary)
-                ErrorHandler.showErrorMessage("Bad OpenAL Support", "Unknown version of OpenAL");
-            else
+            ALSupport sup = loadOpenAL();
+            if(sup != ALSupport.al11) //Probably should not load a non al11 version.
             {
-                ErrorHandler.showErrorMessage("OpenAL not found", "Could not find OpenAL library");
-                return false;
+                if(sup == ALSupport.badLibrary)
+                    ErrorHandler.showErrorMessage("Bad OpenAL Support", "Unknown version of OpenAL");
+                else
+                {
+                    ErrorHandler.showErrorMessage("OpenAL not found", "Could not find OpenAL library");
+                    return false;
+                }
             }
         }
         device = alcOpenDevice(alcGetString(null, ALC_DEVICE_SPECIFIER));
@@ -80,8 +84,16 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         alListener3f(AL_POSITION, 0f, 0f, 0f);
         alListener3f(AL_VELOCITY, 0f, 0f, 0f);
 
-        if(!alEffecti)
-            ErrorHandler.showErrorMessage("OpenAL EFX Error", "Could not load OpenAL EFX");
+        version(BindOpenAL_Static)
+        {
+            if(&alEffecti is null)
+                ErrorHandler.showErrorMessage("OpenAL EFX Error", "Could not load OpenAL EFX");
+        }
+        else
+        {
+            if(!alEffecti)
+                ErrorHandler.showErrorMessage("OpenAL EFX Error", "Could not load OpenAL EFX");
+        }
 
         return ErrorHandler.stopListeningForErrors();
     }
@@ -147,12 +159,12 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         return hint;
     }
 
-    package static AudioConfig config;
-    protected static ALCdevice* device;
-    protected static ALCcontext* context;
+    package __gshared AudioConfig config;
+    protected __gshared ALCdevice* device;
+    protected __gshared ALCcontext* context;
 
     /**
     * Constant used for making the panning distance offset from the listener
     */
-    public static ALfloat PANNING_CONSTANT = 1000;
+    public __gshared ALfloat PANNING_CONSTANT = 1000;
 }

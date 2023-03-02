@@ -173,11 +173,11 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 			getOptimalSampleRate
 		);
 	}
-	else version(Windows)
-		HipAudio.initialize(HipAudioImplementation.XAUDIO2);
-	else version(WebAssembly)
-		HipAudio.initialize(HipAudioImplementation.WEBAUDIO);
-	else
+	// else version(Windows)
+	// 	HipAudio.initialize(HipAudioImplementation.XAUDIO2);
+	// else version(WebAssembly)
+	// 	HipAudio.initialize(HipAudioImplementation.WEBAUDIO);
+	// else
 		HipAudio.initialize(HipAudioImplementation.OPENAL);
 	version(dll)
 	{

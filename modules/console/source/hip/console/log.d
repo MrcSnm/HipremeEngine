@@ -15,6 +15,50 @@ import hip.util.format;
 
 private string[] logHistory = [];
 
+
+///Creates a variable which is always logged whenever modified.
+struct Logged(T)
+{
+    T val;
+    private string name;
+    this(T initial, string name = "")
+    {
+        this.val = initial;
+        this.name = name;
+    }
+
+    pragma(inline, true) void print(T value, string f = __FILE__, size_t l = __LINE__)
+    {
+        rawlog("Modified ", name, " from ", val, " to ", value, " at ", f, ":", l);
+    }
+
+    auto opAssign(T value, string f = __FILE__, size_t l = __LINE__)
+    {
+        print(value, f, l);
+        val = value;
+        return this;
+    }
+    auto opOpAssign(string op, T)(T value, string f = __FILE__, size_t l = __LINE__)
+    {
+        T newV = mixin("val",op,"value");
+        print(newV, f, l);
+        val = newV;
+        return this;
+    }
+    bool opEquals(const T other) const{return val == other;}
+    auto opUnary(string op)(string f = __FILE__, size_t l = __LINE__)
+    {
+        static if(op == "++" || op == "--")
+        {
+            T oldV = val;
+            mixin(op,"val;");
+            rawlog("Modified ", name, " from ", oldV, " to ", val, " at ", f, ":", l);
+            return val;
+        }
+        else
+            return mixin(op,"val;");
+    }
+}
 private string _formatPrettyFunction(string f)
 {
     import hip.util.string : lastIndexOf;
@@ -34,9 +78,9 @@ ulong line = __LINE__)
 {
     import hip.config.opts;
     static if(HIP_TRACK_HIPLOG)
-        Console.DEFAULT.hipLog("HIP: ", a, " [[", file, ":", line, "]]\n");
+        Console.DEFAULT.hipLog("HIP: ", a, " [[", file, ":", line, "]]");
     else
-        Console.DEFAULT.hipLog("HIP: ", a, "\n");
+        Console.DEFAULT.hipLog("HIP: ", a);
 }
 
 

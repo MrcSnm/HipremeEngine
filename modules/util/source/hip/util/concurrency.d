@@ -15,6 +15,8 @@ version(Android) version = HipConcurrency;
 version(UWP) version = HipConcurrency;
 version(Posix) version = HipConcurrency;
 
+
+
 version(HipConcurrency)
 {
 
@@ -60,16 +62,28 @@ version(HipConcurrency)
         private string lastFileLock;
         private size_t lastLineLock;
         private ulong lastID;
+
+        private string lastFileUnlock;
+        private size_t lastLineUnlock;
+
         private Mutex mtx;
-        this()
+
+        private ThreadID mainThreadId;
+
+        this(ThreadID mainId)
         {
+            this.mainThreadId = mainId;
             mtx = new Mutex();
         }
         void lock(string file = __FILE__, size_t line = __LINE__)
         {
             import std.process:thisThreadID;
+            mtx.lock();
             if(lastLineLock == 0)
             {
+                lastLineUnlock = 0;
+                lastFileUnlock = null;
+
                 lastFileLock = file;
                 lastLineLock = line;
                 lastID = thisThreadID;
@@ -79,24 +93,42 @@ version(HipConcurrency)
                 version(Desktop)
                 {
                     import std.stdio;
-                    writeln("Tried to lock a locked mutex at ", lastFileLock, ":",lastLineLock, " Thread(",lastID,")", " Current Thread is ",thisThreadID);
+                    import hip.util.conv:to;
+                    string last = (lastID == mainThreadId ? "Main " : "") ~ "Thread("~to!string(lastID)~")";
+                    string curr = (thisThreadID == mainThreadId ? "Main " : "") ~ "Thread("~to!string(thisThreadID)~")";
+
+                    writeln("Tried to lock a locked mutex at ", file, ":", line,
+                    "\n\tLast locked at ", lastFileLock, ":",lastLineLock, " ", last, 
+                    " Current Thread is ",curr
+                    );
                 }
             }
-            mtx.lock();
         }
-        void unlock()
+        void unlock(string file = __FILE__, size_t line = __LINE__)
         {
+            mtx.unlock();
             version(Desktop)
             {
+                import std.process:thisThreadID;
                 if(lastLineLock == 0)
                 {
                     import std.stdio;
-                    writeln("Tried to unlock an unlocked mutex");
+                    import hip.util.conv:to;
+                    string last = (lastID == mainThreadId ? "Main " : "") ~ "Thread("~to!string(lastID)~")";
+                    string curr = (thisThreadID == mainThreadId ? "Main " : "") ~ "Thread("~to!string(thisThreadID)~")";
+                    
+                    writeln(
+                        "Tried to unlock an unlocked mutex at ", file, ":", line, 
+                        "\n\tLast unlocked at ",  lastFileUnlock, ":",lastLineUnlock, " ", last,
+                        " Current Thread is ",curr
+                    );
+                    throw new Error("Tried to unlock an unlocked mutex");
                 }
             }
+            lastLineUnlock = line;
+            lastFileUnlock = file;
             lastFileLock = null;
             lastLineLock = 0;
-            mtx.unlock();
         }
 
     }
@@ -114,16 +146,18 @@ version(HipConcurrency)
         private bool isAlive;
         private DebugMutex mutex;
         private HipWorkerPool pool;
+        private ThreadID mainThreadID;
 
 
-        this(HipWorkerPool pool = null)
+        this(HipWorkerPool pool = null, ThreadID mainThreadID = 0)
         {
             super(&run);
             if(pool)
                 this.pool = pool;
             isAlive = true;
             semaphore = new Semaphore;
-            mutex = new DebugMutex();
+            this.mainThreadID = mainThreadID;
+            mutex = new DebugMutex(mainThreadID);
         }
         /**
         *   This thread goes into an invalid state after finishing it. It should not be used anymore
@@ -248,15 +282,17 @@ version(HipConcurrency)
         }
         private Task[] mainThreadTasks;
         private uint awaitCount = 0;
-        private size_t tasksCount = 0;
+        private size_t tasksCount;
 
 
         this(size_t poolSize)
         {
             threads = new HipWorkerThread[](poolSize);
-            handlersMutex = new DebugMutex ();
+            import std.process:thisThreadID;
+            auto mainId = thisThreadID;
+            handlersMutex = new DebugMutex(mainId);
             for(size_t i = 0; i < poolSize; i++)
-                threads[i] = new HipWorkerThread(this);
+                threads[i] = new HipWorkerThread(this, mainId);
             awaitSemaphore = new Semaphore(0);
         }
 
@@ -276,7 +312,7 @@ version(HipConcurrency)
             }
             import hip.util.array;
             import std.stdio;
-            writeln("Worker failed with ", isError ? "error" : "exception", ":", message);
+            writeln("Worker ", worker.jobsQueue[0].name, " failed with ", isError ? "error" : "exception", ":", message);
             threads.remove(worker);
         }
         void await()
@@ -306,7 +342,9 @@ version(HipConcurrency)
         */
         HipWorkerThread pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null, bool isOnFinishOnMainThread = false)
         {
+            handlersMutex.lock();
             tasksCount++;
+            handlersMutex.unlock();
             foreach(thread; threads)
             {
                 if(thread.isIdle)
@@ -421,6 +459,7 @@ else
 {
     class DebugMutex
     {
+        this(ThreadID id){}
         final void lock(){}
         final void unlock(){}
     }
@@ -512,7 +551,7 @@ else
         }
         WorkerTask[] tasks;
 
-        this(HipWorkerPool pool){}
+        this(HipWorkerPool pool, ThreadID id){}
         final void pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null)
         {
             tasks~= WorkerTask(task, onTaskFinish, name);
