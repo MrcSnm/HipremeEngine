@@ -15,7 +15,6 @@
 #include <pthread.h>
 
 #include "debugScreen.h"
-#include "tests.h"
 
 extern char* getDebugInfo();
 extern char* getDebugInfoFromApp();
@@ -89,6 +88,13 @@ void hipVitaPollGamepad(HipInputPSVGamepadState* state)
 }
 
 
+typedef struct PSVMemC
+{
+	size_t size;
+	unsigned short magicNumber;
+	char data[0];
+} PSVMemC;
+
 
 ///Function required to check if memory is in heap to being able to reallocate.
 void psv_init_mem();
@@ -102,6 +108,7 @@ unsigned char HipremeUpdate(float dt);
 void hipVitaPollTouch();
 int main(int argc, char* argv)
 {
+	sceClibPrintf("%d\n\n", sizeof(PSVMemC));
 	psv_init_mem();
 	psvDebugScreenInit();
 	initializeVitaGL();
