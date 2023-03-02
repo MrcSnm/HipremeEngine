@@ -128,6 +128,11 @@ static void initEngine(bool audio3D = false)
 			return true;
 		};
 	}
+	else version(GameBuildTest)
+	{
+		import std.file:getcwd;
+		fsInstallPath = getcwd()~"/build/release_game/assets";
+	}
 	else
 	{
 		import std.file:getcwd;
@@ -175,9 +180,9 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	}
 	// else version(Windows)
 	// 	HipAudio.initialize(HipAudioImplementation.XAUDIO2);
-	// else version(WebAssembly)
-	// 	HipAudio.initialize(HipAudioImplementation.WEBAUDIO);
-	// else
+	else version(WebAssembly)
+		HipAudio.initialize(HipAudioImplementation.WEBAUDIO);
+	else
 		HipAudio.initialize(HipAudioImplementation.OPENAL);
 	version(dll)
 	{

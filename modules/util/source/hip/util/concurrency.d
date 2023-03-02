@@ -68,9 +68,9 @@ version(HipConcurrency)
 
         private Mutex mtx;
 
-        private ThreadID mainThreadId;
+        private ulong mainThreadId;
 
-        this(ThreadID mainId)
+        this(ulong mainId)
         {
             this.mainThreadId = mainId;
             mtx = new Mutex();
@@ -78,7 +78,6 @@ version(HipConcurrency)
         void lock(string file = __FILE__, size_t line = __LINE__)
         {
             import std.process:thisThreadID;
-            mtx.lock();
             if(lastLineLock == 0)
             {
                 lastLineUnlock = 0;
@@ -103,10 +102,10 @@ version(HipConcurrency)
                     );
                 }
             }
+            mtx.lock();
         }
         void unlock(string file = __FILE__, size_t line = __LINE__)
         {
-            mtx.unlock();
             version(Desktop)
             {
                 import std.process:thisThreadID;
@@ -122,13 +121,14 @@ version(HipConcurrency)
                         "\n\tLast unlocked at ",  lastFileUnlock, ":",lastLineUnlock, " ", last,
                         " Current Thread is ",curr
                     );
-                    throw new Error("Tried to unlock an unlocked mutex");
+                    // throw new Error("Tried to unlock an unlocked mutex");
                 }
             }
             lastLineUnlock = line;
             lastFileUnlock = file;
             lastFileLock = null;
             lastLineLock = 0;
+            mtx.unlock();
         }
 
     }
@@ -459,7 +459,7 @@ else
 {
     class DebugMutex
     {
-        this(ThreadID id){}
+        this(ulong id){}
         final void lock(){}
         final void unlock(){}
     }
@@ -479,7 +479,7 @@ else
 
         this(size_t poolSize)
         {
-            thread = new HipWorkerThread(this);
+            thread = new HipWorkerThread(this, ulong.max);
         }
         void delegate(string name) notifyOnFinishOnMainThread(void delegate(string taskName) onFinish, bool finished = true)
         {
@@ -551,7 +551,7 @@ else
         }
         WorkerTask[] tasks;
 
-        this(HipWorkerPool pool, ThreadID id){}
+        this(HipWorkerPool pool, ulong id){}
         final void pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null)
         {
             tasks~= WorkerTask(task, onTaskFinish, name);

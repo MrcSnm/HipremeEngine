@@ -20,7 +20,7 @@
 		{
 			"name": "audioformats",
 			"dependencies": {
-				"audio-formats": "~>2.0.1"
+				"audio-formats": "~>2.0.4"
 			},
 			"versions": [
 				"AudioFormatsDecoder"
