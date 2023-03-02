@@ -18,6 +18,9 @@
 #include <pthread.h>
 #include "debugScreen.h"
 #include <psp2/kernel/sysmem.h>
+#include <psp2/kernel/processmgr.h>
+#include <psp2/kernel/threadmgr.h>
+
 #include <psp2/kernel/clib.h>
 
 
@@ -32,6 +35,7 @@ void rtosbackend_arrayBoundFailure(char* file, uint line){assert(0);}
 void psv_abort()
 {
 	sceClibPrintf("DRuntime Aborted PSVita Application.\n");
+	sceKernelDelayThread(1000000 / 2);
 	assert(0);
 }
 
@@ -57,11 +61,6 @@ void psv_init_mem()
 	memoryBoundsEnd = memoryBoundsStart + info.mappedSize - 1;
 
 	sceClibPrintf("\n\nStarted PSV Memory at [%u..%u]\n\n", memoryBoundsStart, memoryBoundsEnd);
-	sceClibPrintf("String address!! %u\n", IS_ON_HEAP("hip.hiprenderer.backend."));
-	sceClibPrintf("String address!! %u\n", IS_ON_HEAP("Woops World"));
-	sceClibPrintf("String address!! %u\n", IS_ON_HEAP("OMG World"));
-	sceClibPrintf("String address!! %u\n", IS_ON_HEAP("OH NO"));
-	sceClibPrintf("String address!! %u\n", IS_ON_HEAP(malloc(1)));
 	free(temp);
 }
 
