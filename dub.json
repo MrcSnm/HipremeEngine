@@ -14,10 +14,8 @@
 	],
 	"dflags": [
 		"-preview=shortenedMethods",
-		"-mixin=mixed.d"
-	],
-	"stringImportPaths": [
-		"."
+		"-mixin=mixed.d",
+		"-J."
 	],
 	"versions": [
 		"HIPREME_DEBUG",
@@ -275,6 +273,7 @@
 			],
 			"subConfigurations": {
 				"runtime": "psvita",
+				"d_std": "psvita",
 				"assets": "psvita",
 				"audio": "psvita",
 				"renderer": "psvita"
@@ -283,6 +282,7 @@
 				"Standalone",
 				"Test",
 				"OpenGL",
+				"OpenAL",
 				"GLES20",
 				"CarelessAlocation",
 				"dll"
