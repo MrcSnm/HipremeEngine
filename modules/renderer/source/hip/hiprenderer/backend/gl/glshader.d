@@ -106,17 +106,12 @@ class Hip_GL3_FragmentShader : FragmentShader
             };
 
 
-            import hip.console.log;
-            string shaderRet = shaderVersion~"\n"~floatPrecision~"\n"~format!q{
+            return shaderVersion~"\n"~floatPrecision~"\n"~format!q{
                     uniform sampler2D uTex1[%s];}(sup)~
                 shaderSource~
             "{"~q{
                     int texId = int(inTexID);
             }~ textureSlotSwitchCase;
-
-            logln(shaderRet, " ", shaderRet.length);
-
-            return shaderRet;
         }
     }
     else

@@ -114,8 +114,6 @@ mixin template LoadReferencedAssets(string[] modules)
                             static if(assetUDA.path !is null)
                             {{
                                 IHipAssetLoadTask task = hip.api.data.commons.loadAsset!(typeof(classMember))(assetUDA.path);
-                                import hip.console.log;
-                                logln("Loading ", assetUDA.path);
                                 static if(!__traits(compiles, classMember.offsetof)) //Static 
                                 {
                                     static if(__traits(hasMember, assetUDA, "conversionFunction"))

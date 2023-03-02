@@ -34,15 +34,26 @@ class TestScene : Scene, IHipPreloadable
     @Asset("graphics/sprites/sprite.png")
     __gshared IHipTexture test;
 
+    @Asset("sounds/pop.wav")
+    __gshared IHipAudioClip pop;
+
+
+    AHipAudioSource src;
+
 
     float x = 100, y = 100;
 
     override void initialize()
     {
         logg(getAssetsForPreload);
+        logg(pop is null);
         geom = new GeometryBatch(null, 5000, 5000);
         geom.setColor(HipColor(0, 1, 0, 1));
         HipRenderer.setViewport(new Viewport(0,0, 800, 600));
+
+        src = HipAudio.getSource();
+        src.clip = pop;
+
 
         smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
         bigFont = HipDefaultAssets.getDefaultFontWithSize(64);
@@ -59,6 +70,7 @@ class TestScene : Scene, IHipPreloadable
         y+= dt*400*v[1];
         if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
         {
+            src.play();
             logg("You just clicked me!");
         }
 
