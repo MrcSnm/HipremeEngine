@@ -64,11 +64,17 @@ class HipTexture : HipAsset, IHipTexture
             load(image);
     }
 
+    import hip.util.string;
+    String toHipString()
+    {
+        return String("TEX[", width, "x",height,"] ", img.getSizeBytes, " bytes");
+    }
     alias load = IHipTexture.load;
 
 
     protected bool loadImpl(in IImage img)
     {
+        this.img = cast(IImage)img;
         successfullyLoaded = textureImpl.load(img);
         width = textureImpl.getWidth;
         height = textureImpl.getHeight;

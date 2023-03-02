@@ -549,7 +549,7 @@ class HipAssetManager
      */
     @ExportD static IHipAssetLoadTask loadAudio(string audioPath, string f = __FILE__, size_t l = __LINE__)
     {
-        hiplog("Loading Audio: ", audioPath);
+        hiplog("AssetManager: Loading Audio: ", audioPath);
         void delegate(string, void delegate(HipAsset), void delegate(string err)) assetLoadFunc =
         (pathOrLocation, onSuccess, onFailure)
         {
@@ -560,6 +560,7 @@ class HipAssetManager
                 clip.loadFromMemory(data, getEncodingFromName(pathOrLocation), HipAudioType.SFX,
                 (in ubyte[] newData)
                 {
+                    hiplog("AssetManager: Audio: Loaded ", audioPath);
                     onSuccess(clip);
                 }, (){onFailure("Could not load HipAudioClip.");});
 
@@ -576,6 +577,7 @@ class HipAssetManager
     @ExportD static IHipAssetLoadTask loadTexture(string texturePath, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.util.memory;
+        hiplog("AssetManager: Loading Texture: ", texturePath);
         void delegate(string, void delegate(void[]), void delegate(string err = "")) assetLoadFunc = 
         (pathOrLocation, onFirstStepComplete, onFailure)
         {
@@ -598,6 +600,7 @@ class HipAssetManager
         {
             Image img = cast(Image)(cast(IImage)partialData.ptr);
             HipTexture ret = new HipTexture(img);
+            hiplog("AssetManager: Texture: Loaded ", texturePath, " ", ret.toHipString);
             onSuccess(ret);
             void* gcObjCopy = cast(void*)img;
             freeGCMemory(gcObjCopy); 
