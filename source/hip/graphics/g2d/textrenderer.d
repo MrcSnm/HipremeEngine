@@ -28,6 +28,10 @@ public import hip.api.graphics.text : HipTextAlign;
     import hip.math.vector;
     Vector2 vPosition;
     Vector2 vTexST;
+
+    static enum size_t floatsCount = (HipTextRendererVertex.sizeof / float.sizeof);
+    static enum size_t quadsCount = floatsCount*4;
+
 }
 
 
@@ -181,7 +185,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             mesh.shader.setVertexVar("Cbuf.uProj", camera.proj);
             mesh.shader.setVertexVar("Cbuf.uView", camera.view);
             mesh.shader.sendVars();
-            mesh.setVertices(vertices);
+            mesh.setVertices(vertices[0..quadsCount*HipTextRendererVertex.quadsCount]);
             mesh.draw(quadsCount*6);
             font.texture.unbind();
             mesh.unbind();
