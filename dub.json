@@ -65,6 +65,9 @@
 			"dflags-ldc": [
 				"--disable-verify"
 			],
+			"lflags-windows": [
+				"/DEBUG:FASTLINK"
+			],
 			"buildOptions": [
 				"debugMode",
 				"debugInfo",
@@ -134,6 +137,9 @@
 		},
 		{
 			"name": "game",
+			"stringImportPaths": [
+				"build/release_game/"
+			],
 			"sourcePaths": [
 				"build/release_game/source"
 			],
@@ -141,6 +147,7 @@
 			"targetType": "executable",
 			"versions": [
 				"OpenGL",
+				"GameBuildTest",
 				"OpenAL",
 				"Standalone",
 				"Desktop"
@@ -280,7 +287,6 @@
 			},
 			"versions": [
 				"Standalone",
-				"Test",
 				"OpenGL",
 				"OpenAL",
 				"GLES20",
@@ -309,14 +315,44 @@
 			},
 			"versions": [
 				"Standalone",
-				"Test",
 				"OpenGL",
+				"OpenAL",
 				"GLES20",
 				"CarelessAlocation",
 				"dll"
 			],
 			"targetPath": "build/vita/hipreme_engine/libs",
 			"targetType": "staticLibrary"
+		},
+		{
+			"name": "customrt",
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
+			},
+			"sourcePaths": [
+				"build/release_game/source"
+			],
+			"stringImportPaths": [
+				"build/release_game/"
+			],
+			"lflags-windows": [
+				"/SUBSYSTEM:CONSOLE"
+			],
+			"subConfigurations": {
+				"runtime": "psvita",
+				"d_std": "psvita",
+				"assets": "gamut"
+			},
+			"versions": [
+				"Standalone",
+				"GameBuildTest",
+				"Desktop",
+				"OpenGL",
+				"OpenAL",
+				"CarelessAlocation"
+			],
+			"targetType": "executable"
 		},
 		{
 			"name": "android",

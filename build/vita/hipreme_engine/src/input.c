@@ -62,8 +62,8 @@ void hipVitaPollTouch()
     {
         if(getTouchId(touch.report[i].id) == -1)
             touches[i].vitaID = touch.report[i].id;
-    }
 
+    }
 
 
     //Release check
@@ -73,12 +73,11 @@ void hipVitaPollTouch()
             continue;
             
         int id = getTouchId(oldTouch.report[i].id);
-        if(id == -1)
+        if(id != -1)
         {
-            sceClibPrintf("Could not find any HipTouch.");
-            psv_abort();
+            HipInputOnTouchReleased(id, (float)oldTouch.report[i].x, (float)oldTouch.report[i].y);
+            touches[i].vitaID = 0xff;
         }
-        HipInputOnTouchReleased(id, (float)oldTouch.report[i].x, (float)oldTouch.report[i].y);
     }
 
     //Press check
@@ -93,12 +92,8 @@ void hipVitaPollTouch()
             continue;
         }
 
-        if(id == -1)
-        {
-            sceClibPrintf("Could not find any HipTouch.");
-            psv_abort();
-        }
-        HipInputOnTouchPressed(id, (float)touch.report[i].x, (float)touch.report[i].y);
+        if(id != -1)
+            HipInputOnTouchPressed(id, (float)touch.report[i].x, (float)touch.report[i].y);
     }
 
     oldTouch = touch;

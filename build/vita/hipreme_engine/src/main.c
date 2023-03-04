@@ -21,8 +21,8 @@ extern char* getDebugInfoFromApp();
 
 #define MAX_PATH 256
 
-int _newlib_heap_size_user   = 16 * 1024 * 1024;
-unsigned int sceLibcHeapSize = 3 * 1024 * 1024;
+unsigned int sceLibcHeapSize = 32 * 1024 * 1024;
+int _newlib_heap_size_user   = 64 * 1024 * 1024;
 
 
 void hipVitaPrint(size_t sz, const char* str)
