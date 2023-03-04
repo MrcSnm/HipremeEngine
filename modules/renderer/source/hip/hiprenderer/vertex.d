@@ -323,15 +323,16 @@ class HipVertexArrayObject
         import std.traits:isFunction;
         HipVertexArrayObject obj = new HipVertexArrayObject();
         static foreach(member; __traits(allMembers, T))
-        {
-            static if(!isFunction!(__traits(getMember, T, member)))
+        {{
+            alias mem = __traits(getMember, T, member);
+            static if(!isFunction!(mem) && __traits(compiles, mem.offsetof))
             {
-                obj.appendAttribute!((typeof(__traits(getMember, T, member))))
+                obj.appendAttribute!((typeof(mem)))
                 (
                     member
                 );
             }
-        }
+        }}
         return obj;
     }
 
