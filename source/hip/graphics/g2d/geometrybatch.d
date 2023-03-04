@@ -365,9 +365,8 @@ class GeometryBatch : IHipBatch
         if(count != 0)
         {
             mesh.bind();
-        
-            mesh.updateVertices(vertices);
-            mesh.updateIndices(indices);
+            mesh.updateVertices(vertices[0..currentVertex]);
+            mesh.updateIndices(indices[0..currentIndex]);
 
             mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1]);
             mesh.shader.setVertexVar("Geom.uProj",  camera.proj);

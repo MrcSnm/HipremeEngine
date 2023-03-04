@@ -1,0 +1,12 @@
+
+.dub
+.history
+.vs
+bin
+*.exe
+*.dll
+*.dll_hiptempdll
+*.so
+*.lib
+*.a
+*.pdb

@@ -517,7 +517,7 @@ TString[] split(TString)(TString str, TString separator) pure nothrow @safe
         }
     }
     while(index != -1);
-    if(last != 0)
+    if(last != index)
         ret~= str[last..$];
     return ret;
 }

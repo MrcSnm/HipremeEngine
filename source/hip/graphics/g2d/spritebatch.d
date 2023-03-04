@@ -447,7 +447,7 @@ class HipSpriteBatch : IHipBatch
                 currentTextures[i].bind(i);
             mesh.shader.sendVars();
 
-            mesh.updateVertices(vertices);
+            mesh.updateVertices(vertices[0..quadsCount*HipSpriteVertex.quadCount]);
             mesh.draw(quadsCount*6);
 
             ///Some operations may require texture unbinding(D3D11 Framebuffer)
