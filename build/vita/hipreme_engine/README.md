@@ -1,4 +1,4 @@
-# hello_world_vita_d
+# Hipreme Engine Vita SDK Port
 Hipreme Engine port for the Vita SDK.
 
 Details into setting up vita sdk on: https://vitasdk.org/
