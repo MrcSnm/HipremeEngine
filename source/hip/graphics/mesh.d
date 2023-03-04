@@ -69,7 +69,7 @@ class Mesh
     /**
     *   Will choose between resizing buffer as needed or only updating it.
     */
-    public void setIndices(ref index_t[] indices)
+    public void setIndices(index_t[] indices)
     {
         if(indices.length <  this.indices.length)
         {
@@ -83,7 +83,7 @@ class Mesh
     /**
     *   Will choose between resizing buffer as needed or only updating it.
     */
-    public void setVertices(ref float[] vertices)
+    public void setVertices(float[] vertices)
     {
         if(vertices.length <=  this.vertices.length)
         {
@@ -93,17 +93,17 @@ class Mesh
         this.vertices = vertices;
         this.vao.setVertices(cast(uint)vertices.length/this.vao.dataCount, vertices.ptr);
     }
-    public void updateIndices(ref index_t[] indices)
+    public void updateIndices(index_t[] indices, int offset = 0)
     {
         import hip.console.log;
         this.indices = indices;
-        this.vao.updateIndices(cast(index_t)indices.length, indices.ptr);
+        this.vao.updateIndices(cast(index_t)indices.length, indices.ptr, offset);
     }
 
-    public void updateVertices(ref float[] vertices)
+    public void updateVertices(float[] vertices, int offset = 0)
     {
         this.vertices = vertices;
-        this.vao.updateVertices(cast(index_t)(vertices.length/this.vao.dataCount), vertices.ptr);
+        this.vao.updateVertices(cast(index_t)(vertices.length/this.vao.dataCount), vertices.ptr, offset);
     }
     public void setShader(Shader s)
     {
