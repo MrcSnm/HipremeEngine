@@ -1,6 +1,9 @@
-[submodule "dependencies/directx-d"]
-	path = dependencies/directx-d
-	url = https://github.com/MrcSnm/directx-d
-[submodule "build/wasm/runtime/webassembly"]
-	path = build/wasm/runtime/webassembly
-	url = https://github.com/MrcSnm/webassembly.git
+[submodule "dependencies/runtime/--force"]
+	path = dependencies/runtime/--force
+	url = https://github.com/MrcSnm/webassembly
+[submodule "dependencies/runtime/runtime"]
+	path = dependencies/runtime/runtime
+	url = https://github.com/MrcSnm/webassembly
+[submodule "dependencies/runtime/druntime"]
+	path = dependencies/runtime/druntime
+	url = https://github.com/MrcSnm/webassembly

@@ -25,7 +25,7 @@ public:
 
 
 
-package __gshared HipGamePad[] gamepads;
+package __gshared HipGamepad[] gamepads;
 
 
 /** 
@@ -48,8 +48,7 @@ class EventDispatcher
         keyboard = new KeyboardHandler();
         mouse = new HipMouse();
         HipEventQueue.newController(); //Creates controller 0
-        import std.stdio;
-        initXboxGamepadInput();
+        initGamepads();
         import hip.windowing.events;
 
         onKeyDown = (uint key)
@@ -149,7 +148,7 @@ class EventDispatcher
                     import hip.console.log;rawlog("Gamepad connected");
                     auto g = ev.get!(HipEventQueue.Gamepad);
                     if(g.id+1 > gamepads.length)
-                        gamepads~= new HipGamePad();
+                        gamepads~= getNewGamepad(g.type);
                     gamepads[g.id].setConnected(true);
                     break;
                 case HipEventQueue.EventType.gamepadDisconnected:
@@ -217,6 +216,23 @@ class EventDispatcher
         if(id >= gamepads.length) return false;
         return gamepads[id].isButtonJustReleased(btn);
     }
+
+    bool areGamepadButtonsPressed(scope HipGamepadButton[] btns, ubyte id = 0)
+    {
+        if(id >= gamepads.length) return false;
+        return gamepads[id].areButtonsPressed(btns);
+    }
+    bool areGamepadButtonsJustPressed(scope HipGamepadButton[] btns, ubyte id = 0)
+    {
+        if(id >= gamepads.length) return false;
+        return gamepads[id].areButtonsJustPressed(btns);
+    }
+    bool areGamepadButtonsJustReleased(scope HipGamepadButton[] btns, ubyte id = 0)
+    {
+        if(id >= gamepads.length) return false;
+        return gamepads[id].areButtonsJustReleased(btns);
+    }
+    
     bool isGamepadWireless(ubyte id = 0)
     {
         if(id >= gamepads.length) return false;
@@ -621,4 +637,8 @@ else version(WebAssembly)
                     return cast(HipKey)k;
         }
     }
+}
+else version(PSVita)
+{
+    private HipKey getHipKeyFromSystem(uint key){return HipKey._0;}
 }

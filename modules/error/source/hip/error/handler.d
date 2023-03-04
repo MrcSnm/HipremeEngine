@@ -56,13 +56,15 @@ public class EngineErrorStack
  */
 public static class ErrorHandler
 {
-    private static bool HAS_ANY_ERROR_HAPPENNED = false;
-
-    private static EngineErrorStack currentStack;
-    private static EngineErrorStack[] stackHistory;
-    private static string[] warnHistory;
-    private static bool isListening = false;
-    public static string LAST_ERROR = "";
+    __gshared
+    {
+        private  bool HAS_ANY_ERROR_HAPPENNED = false;
+        private  EngineErrorStack currentStack;
+        private  EngineErrorStack[] stackHistory;
+        private  string[] warnHistory;
+        private  bool isListening = false;
+        public  string LAST_ERROR = "";
+    }
     
     /** 
      * This function will look wether any error has happenned

@@ -15,7 +15,6 @@ import hip.hiprenderer.shader;
 import hip.error.handler;
 import hip.graphics.mesh;
 import hip.math.matrix;
-import hip.util.format;
 import hip.math.utils;
 import hip.math.vector;
 public import hip.api.graphics.color;
@@ -73,10 +72,12 @@ class GeometryBatch : IHipBatch
 
     protected pragma(inline) void checkVerticesCount(int howMuch)
     {
-        if(verticesCount+howMuch <= this.vertices.length/7)
-            ErrorHandler.assertExit(verticesCount + howMuch <= this.vertices.length/7,
-            format!"Too many vertices (%s) for a buffer of size %s"(verticesCount+howMuch, this.vertices.length/7)
-            );
+        if(verticesCount+howMuch >= this.vertices.length/7)
+        {
+            import hip.util.string;
+            String s = String("Too many vertices ", verticesCount+howMuch, " for a buffer of size ", this.vertices.length/7);
+            ErrorHandler.assertExit(false, s.toString);
+        }
     }
 
 
@@ -100,10 +101,11 @@ class GeometryBatch : IHipBatch
     void addIndex(index_t[] newIndices ...)
     {
         if(currentIndex+newIndices.length >= this.indices.length)
-            ErrorHandler.assertExit(false,
-            format!"Too many indices (%s) for a buffer of size %s"(currentIndex+1, this.indices.length)
-            );
-
+        {
+            import hip.util.string;
+            String s = String("Too many indices ", currentIndex+1, " for a buffer of size ", this.indices.length);
+            ErrorHandler.assertExit(false, s.toString);
+        }
         foreach(index; newIndices)
             indices[currentIndex++] = index;
     }
@@ -360,26 +362,27 @@ class GeometryBatch : IHipBatch
     void flush()
     {
         const uint count = this.currentIndex;
-        if(count == 0)
-            return;
+        if(count != 0)
+        {
+            mesh.bind();
+        
+            mesh.updateVertices(vertices);
+            mesh.updateIndices(indices);
 
-        mesh.bind();
-    
-        mesh.updateVertices(vertices);
-        mesh.updateIndices(indices);
+            mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1]);
+            mesh.shader.setVertexVar("Geom.uProj",  camera.proj);
+            mesh.shader.setVertexVar("Geom.uModel", Matrix4.identity());
+            mesh.shader.setVertexVar("Geom.uView",  camera.view);
 
-        mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1]);
-        mesh.shader.setVertexVar("Geom.uProj",  camera.proj);
-        mesh.shader.setVertexVar("Geom.uModel", Matrix4.identity());
-        mesh.shader.setVertexVar("Geom.uView",  camera.view);
-
-        mesh.shader.sendVars();
-        //Vertices to render = indices.length
-        this.mesh.draw(count);
-        mesh.unbind();
+            mesh.shader.sendVars();
+            //Vertices to render = indices.length
+            this.mesh.draw(count);
+            mesh.unbind();
+        }
         verticesCount = 0;
         currentIndex = 0;
         currentVertex = 0;
+
     }
 
 }

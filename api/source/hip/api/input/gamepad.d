@@ -52,6 +52,8 @@ enum HipGamepadButton : ubyte
     select,
     home,
     printScreen,
+    volumeUp,
+    volumeDown,
 
     ///Internal usage only
     count
@@ -105,7 +107,7 @@ interface IHipGamepad
     /** Returns a Vector3 containing the current state of the analog */
     float[3] getAnalogState(HipGamepadAnalogs analog = HipGamepadAnalogs.leftStick);
     /** This will set a deadzone for making gamepad doesn't issue any kind of event until the threshold*/
-    void setDeadzone(float threshold = 0.2);
+    void setDeadzone(float threshold = 0.1);
 
     /** Returns the battery status in range 0 - 1, only makes sense when wireless*/
     float getBatteryStatus()out(r; (r > 0.0f && r <= 1.0f), "Battery should be 0 > battery <= 1");
@@ -130,12 +132,14 @@ interface IHipGamepad
 
 abstract class AHipGamepad : IHipGamepad
 {
-    protected float vibrationPower;
-    protected float vibrationTime;
-    protected bool _isConnected;
-    protected float deadZone;
+    protected float vibrationPower = 0;
+    protected float vibrationTime = 0;
+    protected bool _isConnected = false;
+    protected float deadZone = 0.1;
+    protected float aliveZone = 0.95;
 
-    void setDeadzone(float threshold = 0.2){deadZone = threshold;}
+    void setDeadzone(float threshold = 0.1){deadZone = threshold;}
+    void setAlivezone(float threshold = 0.95){aliveZone = threshold;}
     bool isVibrating(){return vibrationPower==0;}
     bool isConnected(){return _isConnected;}
     void setConnected(bool connected){_isConnected = connected;}

@@ -67,13 +67,6 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     }
     
 
-    public HipWindow createWindow(uint width, uint height)
-    {
-        HipWindow wnd = new HipWindow(width, height, HipWindowFlags.DEFAULT);
-        wnd.start();
-        return wnd;
-    }
-
     static void assertExit(HRESULT hres, string msg,
     string file = __FILE__, size_t line = __LINE__,
     string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
@@ -344,7 +337,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         {
             DXGI_INFO_QUEUE_MESSAGE* msg;
             bool hasError;
-            ulong msgSize;
+            size_t msgSize;
             for(ulong i = 0, 
             // len = dxgiQueue.GetNumStoredMessagesAllowedByRetrievalFilters(DXGI_DEBUG_DX);
             len = dxgiQueue.GetNumStoredMessages(DXGI_DEBUG_DX);
@@ -394,7 +387,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         return new Hip_D3D11_VertexArrayObject();
     }
-    public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
+    public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage)
     {
         return new Hip_D3D11_VertexBufferObject(size, usage);
     }

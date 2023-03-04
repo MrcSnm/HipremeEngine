@@ -397,6 +397,10 @@ class HipBitmapFont : HipFont
         return ret;
     }
     
+    override int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const
+    {
+        return getKerning(dchar(current.id), dchar(next.id));
+    }
     override int getKerning(dchar current, dchar next) const
     {
         const HipCharKerning* chKerning = current in kerning;

@@ -9,6 +9,10 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.backend.gl.glrenderer;
+
+version(Android) version = ExternallyManagedWindow;
+version(WebAssembly) version = ExternallyManagedWindow;
+version(PSVita) version = ExternallyManagedWindow;
 version(Android)
 {
     public import gles.gl30;
@@ -77,23 +81,12 @@ class Hip_GL3Renderer : IHipRendererImpl
 {
     HipWindow window;
     Shader currentShader;
-    protected static bool isGLBlendEnabled = false;
-    protected static GLenum mode;
+    protected __gshared bool isGLBlendEnabled = false;
+    protected __gshared GLenum mode;
 
     void setErrorCheckingEnabled(bool enable = true){errorCheckEnabled = enable;}
     public final bool isRowMajor(){return true;}
 
-    HipWindow createWindow(uint width, uint height)
-    {
-        version(Android){return null;}
-        else
-        {
-            HipWindow wnd = new HipWindow(width, height, 
-                HipWindowFlags.RESIZABLE | HipWindowFlags.MINIMIZABLE | HipWindowFlags.MAXIMIZABLE);
-            wnd.start();
-            return wnd;
-        }
-    }
     Shader createShader()
     {
         version(HipGL3)
@@ -101,6 +94,7 @@ class Hip_GL3Renderer : IHipRendererImpl
         else
             return new Shader(new Hip_GL_ShaderImpl());
     }
+    version(dll)public bool initExternal(){return init(null);}
     public bool init(HipWindow window)
     {
         this.window = window;
@@ -128,20 +122,22 @@ class Hip_GL3Renderer : IHipRendererImpl
         return true;
     }
 
-    version(dll)public bool initExternal()
-    {
-        return init(null);
-    }
-
     void setShader(Shader s)
     {
         currentShader = s;
     }
     public int queryMaxSupportedPixelShaderTextures()
     {
-        int maxTex;
-        glCall(() => glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTex));
-        return maxTex;
+        version(PSVita)
+        {
+            return 1;
+        }
+        else
+        {
+            int maxTex;
+            glCall(() => glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTex));
+            return maxTex;
+        }
     }
 
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
@@ -242,8 +238,14 @@ class Hip_GL3Renderer : IHipRendererImpl
     */
     public void end()
     {
-        version(Android){}
-        else version(WebAssembly){}
+        version(ExternallyManagedWindow)
+        {
+            version(PSVita)
+            {
+                glCall(() => glFlush());
+                glCall(() => glFinish());
+            }
+        }
         else
         {
             window.rendererPresent();

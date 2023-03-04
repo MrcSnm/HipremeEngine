@@ -50,6 +50,19 @@
 			"subConfigurations": {"audio_decoding": "wasm"}
 		},
 		{
+			"name": "psvita",
+			"dependencies": {
+				"bindbc-openal": "~>1.0.0"
+			},
+			"subConfigurations": {
+				"audio_decoding": "audioformats",
+				"bindbc-openal": "static"
+			},
+			"versions": [
+				"BindOpenAL_Static"
+			]
+		},
+		{
 			"name": "android",
 			"dependencies": {"sles": {"path": "../../dependencies/sles"}},
 			"subConfigurations": {

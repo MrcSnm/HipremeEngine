@@ -4,19 +4,44 @@ import core.stdc.stdio;
 version(WebAssembly)
 {
     import arsd.webassembly;
-
     void writeln(T...)(T t) {
         eval(q{
             console.log.apply(null, arguments);
         }, t);
     }
 }
+version(PSVita)
+{
+    extern(C) void hipVitaPrint(uint length, const(char)* str);
+    import hip.util.conv:to;
+    void writeln(Args...)(Args args)
+    {
+        char[] str;
+        static foreach(arg; args){str~= to!string(arg);}
+        hipVitaPrint(str.length, cast(const(char)*)str.ptr);
+        import hip.util.memory;
+        freeGCMemory(str);
+    }
+}
+version(CustomRuntimeTest)
+{
+    import hip.util.conv:to;
+    void writeln(Args...)(Args args)
+    {
+        char[] str;
+        static foreach(arg; args){str~= to!string(arg);}
+        printf("%.*s", str.length, cast(const(char)*)str.ptr);
+        import hip.util.memory;
+        freeGCMemory(str);
+    }
+}
+
 struct File
 {
     FILE* fptr;
     private size_t _size;
 
-    size_t size(){return size;}
+    size_t size(){return _size;}
 
     this(string path, string openMode = "r")
     {

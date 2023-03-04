@@ -3,6 +3,7 @@
   <head>
 	<title>Hipreme Engine</title>
   	<meta charset="utf-8" />
+	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
 		body {
       	background-color: rgb(50, 50, 50);
@@ -10,8 +11,8 @@
 		#glcanvas {
 			display: block;
 			padding-left: 0;
-			width: 800px;
-			height: 600px;
+			width: 100%;
+			object-fit: contain;
 			padding-right: 0;
 			margin-left: auto;
 			margin-right: auto;
@@ -21,6 +22,7 @@
   </head>
   <body>
     <canvas id="glcanvas" width="800" height="600"></canvas>
+	<script src="window.js"></script>
     <script src="fs.js"></script>
     <script src="decoders.js"></script>
     <script src="webaudio.js"></script>

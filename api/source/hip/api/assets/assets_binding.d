@@ -132,5 +132,5 @@ version(Script) extern(System)
     //TODO: IHipAssetLoadTask function(string path) loadHapFile;
 }
 
-T get(T)(string name){return cast(T)getAsset(name);}
+T get(T)(string name){return cast(T)getAsset(name); }
 T get(T : string)(string name){return cast(T)getStringAsset(name);}

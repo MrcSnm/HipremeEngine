@@ -106,7 +106,6 @@ interface IHipRendererImpl
     version(dll){public bool initExternal();}
     public bool isRowMajor();
     void setErrorCheckingEnabled(bool enable = true);
-    public HipWindow createWindow(uint width, uint height);
     public Shader createShader();
     public IHipFrameBuffer createFrameBuffer(int width, int height);
     public IHipVertexArrayImpl  createVertexArray();
@@ -163,7 +162,7 @@ class HipRenderer
     }
 
     version(Desktop)
-    public static bool init (string confData, string confPath)
+    public static bool initialize (string confData, string confPath)
     {
         import hip.data.ini;
         IniFile ini = IniFile.parse(confData, confPath);
@@ -182,11 +181,11 @@ class HipRenderer
             switch(renderer)
             {
                 case "GL3":
-                    return init(new Hip_GL3Renderer(), &cfg, width, height);
+                    return initialize(new Hip_GL3Renderer(), &cfg, width, height);
                 case "D3D11":
                     version(DirectX)
                     {
-                        return init(new Hip_D3D11_Renderer(), &cfg, width, height);
+                        return initialize(new Hip_D3D11_Renderer(), &cfg, width, height);
                     }
                     else
                     {
@@ -194,6 +193,7 @@ class HipRenderer
                         goto case "GL3";
                     }
                 default:
+                    logln("Invalid renderer?" , renderer, " ' oh my freakin goodness");
                     ErrorHandler.showErrorMessage("Invalid renderer '"~renderer~"'",
                     `
                         Available renderers:
@@ -214,7 +214,7 @@ class HipRenderer
                 rawlog(ini.errors);
             }
         }
-        return init(new Hip_GL3Renderer(), &cfg, 1280, 720);
+        return initialize(new Hip_GL3Renderer(), &cfg, 1280, 720);
     }
     version(dll) private static IHipRendererImpl getRenderer(ref HipRendererType type)
     {
@@ -258,16 +258,18 @@ class HipRenderer
     {
         rendererImpl = getRenderer(type);
         HipRenderer.rendererType = type;
+        logln("Initialized renderer.: ", rendererType, " renderer? ", rendererImpl !is null);
         bool ret = rendererImpl.initExternal();
         if(!ret)
             ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");
 
         if(windowWidth == -1)
-            windowWidth = 800;
+            windowWidth = 1920;
         if(windowHeight == -1)
-            windowHeight = 600;
+            windowHeight = 1080;
 
-        window = new HipWindow(windowWidth, windowHeight, HipWindowFlags.DEFAULT);
+
+        window = createWindow(windowWidth, windowHeight);
         HipRenderer.width = window.width;
         HipRenderer.height = window.height;
         afterInit();
@@ -286,14 +288,25 @@ class HipRenderer
         }
     }
 
-    public static bool init (IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height)
+    private static HipWindow createWindow(uint width, uint height)
+    {
+        version(Android){return null;}
+        else
+        {
+            HipWindow wnd = new HipWindow(width, height, HipWindowFlags.DEFAULT);
+            wnd.start();
+            return wnd;
+        }
+    }
+
+    public static bool initialize (IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height)
     {
         ErrorHandler.startListeningForErrors("Renderer initialization");
         if(config != null)
             currentConfig = *config;
         currentConfig.logConfiguration();
         rendererImpl = impl;
-        window = rendererImpl.createWindow(width, height);
+        window = createWindow(width, height);
         ErrorHandler.assertErrorMessage(window !is null, "Error creating window", "Could not create Window");
         rendererImpl.init(window);
         window.setVSyncActive(currentConfig.vsync);

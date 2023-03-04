@@ -19,10 +19,25 @@
 	"configurations": [
 		{"name": "default"},
 		{
+			"name": "gamut",
+			"subConfigurations": {
+
+				"image": "gamut"
+			}
+		},
+		{
 			"name": "wasm",
 			"subConfigurations": {
 				"audio": "wasm",
 				"renderer": "wasm"
+			}
+		},
+		{
+			"name": "psvita",
+			"subConfigurations": {
+				"image": "gamut",
+				"audio": "psvita",
+				"renderer": "psvita"
 			}
 		}
 	],

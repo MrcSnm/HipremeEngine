@@ -21,7 +21,7 @@ class HipTexture : IHipTexture
     IImage img;
     int width,height;
     TextureFilter min, mag;
-    private static HipTexture pixelTexture;
+    private __gshared HipTexture pixelTexture;
 
     bool hasSuccessfullyLoaded(){return img.getWidth > 0;}
     public static immutable(HipTexture) getPixelTexture()

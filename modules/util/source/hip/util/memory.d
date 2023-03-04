@@ -12,6 +12,13 @@ public import core.stdc.stdlib;
 public import core.stdc.string:memcpy, memcmp, memset;
 import hip.util.reflection;
 
+version(WebAssembly) version = CustomRuntime;
+version(PSVita) version = CustomRuntime;
+version(CustomRuntimeTest) version = CustomRuntime;
+
+version(CustomRuntime)
+    static import rt.hooks;
+
 @nogc:
 void setZeroMemory(T)(ref T variable)
 {
@@ -24,7 +31,7 @@ T[] allocSlice(T)(size_t count){return alloc!T(count)[0..count];}
 
 void* toHeap(T)(in T data) if(isReference!T)
 {
-    version(WebAssembly)
+    version(CustomRuntime)
     {
         void* m = cast(void*)data; //WASM don't need to allocate as it is not ever deleted.
     }
@@ -53,7 +60,7 @@ void[] toHeapSlice(T)(T data) if(!is(T == void[]))
 void freeGCMemory(void* data)
 {
     assert(data !is null, "Tried to free null data.");
-    version(WebAssembly){object.free(cast(ubyte*)data);}
+    version(CustomRuntime){rt.hooks.free(cast(ubyte*)data);}
     else
     {
         import core.memory;
@@ -65,7 +72,7 @@ void freeGCMemory(void* data)
 void freeGCMemory(ref void* data) //Remove ref.
 {
     assert(data !is null, "Tried to free null data.");
-    version(WebAssembly){object.free(cast(ubyte*)data);}
+    version(CustomRuntime){rt.hooks.free(cast(ubyte*)data);}
     else
     {
         import core.memory;
@@ -78,19 +85,19 @@ void freeGCMemory(ref void* data) //Remove ref.
 void freeGCMemory(ref void[] data)
 {
     assert(data.length, "Tried to free null data.");
-    version(WebAssembly){object.free(cast(ubyte*)data.ptr);}
-    else
-    {
-        import core.memory;
-        GC.removeRoot(data.ptr);
-        GC.free(data.ptr);
-    }
+    freeGCMemory(data.ptr);
+    data = null;
+}
+
+void freeGCMemory(T)(ref T[] data)
+{
+    freeGCMemory(cast(void*)data.ptr);
     data = null;
 }
 
 void safeFree(T)(ref T data) if(isReference!T)
 {
-    version(WebAssembly)
+    version(CustomRuntime)
     {
         free(cast(ubyte*)data);
     }

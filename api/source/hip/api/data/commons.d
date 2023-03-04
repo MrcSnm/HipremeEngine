@@ -96,7 +96,6 @@ mixin template LoadReferencedAssets(string[] modules)
 {
     void loadReferenced()
     {
-        import std.traits:isFunction;
         static foreach(modStr; modules)
         {{
             mixin("import ",modStr,";");
@@ -106,27 +105,26 @@ mixin template LoadReferencedAssets(string[] modules)
                 alias moduleMember = __traits(getMember, theModule, moduleMemberStr);
                 static if(!is(moduleMember == module) && is(moduleMember type))
                 {
-                    static if(!isFunction!type)
+                    static if(is(type == class) || is(type == struct))
                     {
-                        static if(is(type == class) || is(type == struct))
-                        {
-                            static foreach(classMemberStr; __traits(derivedMembers, type))
+                        static foreach(classMemberStr; __traits(derivedMembers, type))
+                        {{
+                            alias classMember = __traits(getMember, type, classMemberStr);
+                            alias assetUDA = GetAssetUDA!(__traits(getAttributes, classMember));
+                            static if(assetUDA.path !is null)
                             {{
-                                alias classMember = __traits(getMember, type, classMemberStr);
-                                alias assetUDA = GetAssetUDA!(__traits(getAttributes, classMember));
-                                static if(assetUDA.path !is null)
-                                {{
-                                    IHipAssetLoadTask task = loadAsset!(typeof(classMember))(assetUDA.path);
-                                    static if(!__traits(compiles, classMember.offsetof)) //Static 
-                                    {
-                                        static if(__traits(hasMember, assetUDA, "conversionFunction"))
-                                            task.into(assetUDA.conversionFunction, &classMember);
-                                        else
-                                            task.into(&classMember);
-                                    }
-                                }}
+                                IHipAssetLoadTask task = hip.api.data.commons.loadAsset!(typeof(classMember))(assetUDA.path);
+                                static if(!__traits(compiles, classMember.offsetof)) //Static 
+                                {
+                                    static if(__traits(hasMember, assetUDA, "conversionFunction"))
+                                        task.into(assetUDA.conversionFunction, &classMember);
+                                    else static if(is(typeof(classMember) == string))
+                                        task.into(&classMember);
+                                    else
+                                        task.into!(typeof(classMember))(&classMember);
+                                }
                             }}
-                        }
+                        }}
                     }
                 }
             }}
@@ -199,45 +197,51 @@ interface IHipPreloadable
 
     mixin template Preload()
     {
+
+        mixin template finalImpl()
+        {
+            private __gshared string[] _assetsForPreload;
+            private __gshared void getAsset(T, alias member)(string asset){_assetsForPreload~= asset;}
+            private final void loadAsset(T, alias member)(string asset)
+            {
+                alias mem = __traits(child, this, member);
+                ///Take members that aren't static and populate them after loading.
+                static if(__traits(compiles, mem.offsetof))
+                {
+                    ///Try converting the member with conversion function
+                    static if(!__traits(compiles, HipAssetManager.get!T))
+                    {
+                        alias assetUDA = GetAssetUDA!(__traits(getAttributes, mem));
+                        static assert(__traits(hasMember, assetUDA, "conversionFunction"), 
+                        "Type has no conversion function and HipAssetManager can't infer its type.");
+                        mem = assetUDA.conversionFunction(HipAssetManager.get!string(asset));
+                    }
+                    else //Just get from asset manager
+                        mem = HipAssetManager.get!T(asset);
+                }
+            }
+        }
         mixin template impl()
         {
-            final string[] getAssetsForPreload()
+            string[] getAssetsForPreload()
             {
-                static string[] ret;
-                static void getAsset(T, alias member)(string asset){ret~= asset;}
-                if(ret.length != 0)
+                if(_assetsForPreload.length == 0)
                 {
                     mixin ForeachAssetInClass!(typeof(this), __traits(child, this, getAsset)) f;
                     f.ForeachAssetInClass;
                 }
-                return ret;
+                return _assetsForPreload;
             }
-            final void preload()
+            void preload()
             {
                 mixin ForeachAssetInClass!(typeof(this), loadAsset) f;
                 f.ForeachAssetInClass;
             }
         }
-        private final void loadAsset(T, alias member)(string asset)
-        {
-            ///Don't take static members.
-            alias mem = __traits(child, this, member);
-            static if(__traits(compiles, mem.offsetof))
-            {
-                ///Try converting the member with conversion function
-                static if(!__traits(compiles, HipAssetManager.get!T))
-                {
-                    alias assetUDA = GetAssetUDA!(__traits(getAttributes, mem));
-                    static assert(__traits(hasMember, assetUDA, "conversionFunction"), 
-                    "Type has no conversion function and HipAssetManager can't infer its type.");
-                    mem = assetUDA.conversionFunction(HipAssetManager.get!string(asset));
-                }
-                else //Just get from asset manager
-                    mem = HipAssetManager.get!T(asset);
-            }
-        }
+        
 
         ///Deal with override/no override
+        mixin finalImpl;
         static if(__traits(compiles, typeof(super).preload)){override: mixin impl;}
         else{mixin impl;}
     }
@@ -298,7 +302,7 @@ interface IHipAssetLoadTask
     void await();
     ///When the variables finish loading, it will also assign the asset to the variables 
     void into(void* function(IHipAsset asset) castFunc, IHipAsset*[] variables...);
-    final void into(T)(T*[] variables...){into((asset) => (cast(void*)cast(T)asset), cast(IHipAsset*[])variables);}
+    final void into(T)(T*[] variables...){into((IHipAsset asset) => (cast(void*)cast(T)asset), cast(IHipAsset*[])variables);}
     void into(string*[] variables...);
 
     ///May be executed instantly if the asset is already loaded.

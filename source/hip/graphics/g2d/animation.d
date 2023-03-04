@@ -29,10 +29,10 @@ public import hip.api.graphics.g2d.animation;
     //Those three are a question if they should be in the track or in the animation controller
     protected bool isPlaying = false;
     protected bool isAdvancingForward = true;
-    protected HipAnimationLoopingMode _loopingMode = HipAnimationLoopingMode.none;
+    protected HipAnimationLoopingMode _loopingMode;
     protected bool _reverse  = false;
 
-    this(string trackName, uint framesPerSecond, HipAnimationLoopingMode loopingMode)
+    this(string trackName, uint framesPerSecond, HipAnimationLoopingMode loopingMode = HipAnimationLoopingMode.none)
     {
         this._name = trackName;
         setFramesPerSecond(framesPerSecond);

@@ -12,6 +12,7 @@ module hip.math.random;
 import core.stdc.stdlib;
 
 version(WebAssembly) extern(C) float JS_Math_random() @nogc nothrow;
+version(PSVita) extern(C) int psv_rand() @nogc nothrow;
 
 class Random
 {
@@ -40,11 +41,8 @@ class Random
     {
         static float rangef(float min, float max)
         {
-            version(WebAssembly)
-            {
-                return JS_Math_random() * max + min;
-                // return std.random.uniform(cast(int)min, cast(int)max, randomGenerator);
-            }
+            version(WebAssembly){return JS_Math_random() * max + min;}
+            else version(PSVita){return (cast(float)psv_rand() / RAND_MAX) * max + min;}
             //else version(Android){return std.random.uniform(cast(int)min, cast(int)max, randomGenerator);}
             else
                 return (cast(float)rand() / RAND_MAX) * max + min;

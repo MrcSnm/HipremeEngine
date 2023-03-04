@@ -3,6 +3,11 @@ module hip.graphics.g2d.text;
 import hip.graphics.g2d.textrenderer;
 import hip.api.data.font;
 
+version(WebAssembly) version = UseDRuntimeDecoder;
+version(CustomRuntimeTest) version = UseDRuntimeDecoder;
+version(PSVita) version = UseDRuntimeDecoder;
+
+
 
 /**
 *   Formatting the text:
@@ -57,9 +62,10 @@ class HipText
     
     string text(string newText)
     {
+        import hip.console.log;
         if(newText != _text)
         {
-            version(WebAssembly)
+            version(UseDRuntimeDecoder)
             {
                 dstring dtext;
                 foreach(dchar ch; newText) dtext~= ch;
@@ -105,6 +111,7 @@ class HipText
 
     package void updateText(IHipFont font)
     {
+        import hip.console.log;
         HipTextStopConfig.parseText(_dtext, processedText, textConfig);
         font.calculateTextBounds(processedText, linesWidths, width, height);
         int yoffset = 0;
@@ -114,11 +121,11 @@ class HipText
         alias v = vertices;
         int vI = 0; //vertex buffer index
 
-        dchar lastCharacter = 0;
         int kerningAmount = 0;
         int lineBreakCount = 0;
         int displayX = void, displayY = void;
         updateAlign(0, displayX, displayY, boundsWidth, boundsHeight);
+        HipFontChar* lastCharacter;
         HipFontChar* ch;
         for(int i = 0; i < str.length; i++)
         {
@@ -150,8 +157,8 @@ class HipText
                     break;
                 default:
                     //Find kerning
-
-                    kerningAmount = font.getKerning(lastCharacter, ch.id);
+                    if(lastCharacter)
+                        kerningAmount = font.getKerning(lastCharacter, ch);
                     xoffset+= ch.xoffset+kerningAmount;
                     yoffset+= ch.yoffset;
                     //Gen vertices 
@@ -185,7 +192,7 @@ class HipText
                     xoffset+= ch.xadvance;
 
             }
-            lastCharacter = str[i];
+            lastCharacter = ch;
         }
         shouldUpdateText = false;
     }
@@ -260,6 +267,13 @@ package struct HipTextStopConfig
                     config.length++;
                 config[indexConfig++] = cfg;
             }
+        }
+        //!FIXME: This allocated on each frame. It should both be used a @nogc operation (String) or it should 
+        //!find a way to create a range to be used instead of a string.
+        if(lastParseIndex == 0)
+        {
+            parsedText = text;
+            return;
         }
         parsedText = parsingText ~ text[lastParseIndex..$];
     }

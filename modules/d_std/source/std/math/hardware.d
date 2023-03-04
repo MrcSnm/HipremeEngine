@@ -43,8 +43,15 @@ version (StaticallyHaveSSE)
 }
 else version (X86)
 {
-    static import core.cpuid;
-    private alias haveSSE = core.cpuid.sse;
+    version(CustomRuntimeTest)
+    {
+        private immutable bool haveSSE = false;
+    }
+    else
+    {
+        static import core.cpuid;
+        private alias haveSSE = core.cpuid.sse;
+    }
 }
 
 version (D_SoftFloat)

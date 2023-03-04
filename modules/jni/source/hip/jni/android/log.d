@@ -12,9 +12,9 @@ Distributed under the CC BY-4.0 License.
 
 module hip.jni.android.log;
 
+version (Android):
 import core.stdc.stdarg;
 
-version (Android):
 
 enum android_LogPriority
 {

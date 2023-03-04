@@ -156,5 +156,3 @@ class KeyboardHandler : IHipKeyboard
     }
 
 }
-
-

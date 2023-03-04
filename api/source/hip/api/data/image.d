@@ -18,6 +18,7 @@ public interface IImageBase
     const(ubyte[]) getPixels() const;
     ubyte getBytesPerPixel() const;
     final ushort getBitsPerPixel() const {return getBytesPerPixel()*8;}
+    final size_t getSizeBytes() const{return getBytesPerPixel * getPixels.length;}
     const(ubyte[]) getPalette() const;
     final bool hasPalette() const {return getPalette.length != 0;}
 }

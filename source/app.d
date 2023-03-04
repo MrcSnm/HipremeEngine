@@ -106,6 +106,11 @@ static void initEngine(bool audio3D = false)
 
 	version(Android){platform = Platforms.ANDROID;}
 	else version(WebAssembly){platform = Platforms.WASM;}
+	else version(PSVita)
+	{
+		platform = Platforms.PSVITA;
+		fsInstallPath = "app0:assets";
+	}
 	else version(UWP)
 	{
 		import std.file:getcwd;
@@ -123,6 +128,11 @@ static void initEngine(bool audio3D = false)
 			return true;
 		};
 	}
+	else version(GameBuildTest)
+	{
+		import std.file:getcwd;
+		fsInstallPath = getcwd()~"/build/release_game/assets";
+	}
 	else
 	{
 		import std.file:getcwd;
@@ -131,13 +141,10 @@ static void initEngine(bool audio3D = false)
 		else
 			fsInstallPath = getcwd()~"/assets";
 	}
-	
 	Console.install(platform, printFunc);
+	loglnInfo("Console installed for ", platform);
 	HipFS.install(fsInstallPath, validations);
 	loglnInfo("HipFS installed at path ", fsInstallPath);
-	loglnInfo("Console installed for ", platform);
-
-
 
 	import hip.bind.dependencies;
 	loadEngineDependencies();
@@ -153,12 +160,9 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	import hip.util.time;
 	HipTime.initialize();
 	Random.initialize();
-	Console.initialize();
 	initEngine(true);
 	if(isUsingInterpreter)
 		startInterpreter(interpreterEntry.intepreter);
-
-
 
 	version(Android)
 	{
@@ -174,10 +178,12 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 			getOptimalSampleRate
 		);
 	}
+	else version(Windows)
+		HipAudio.initialize(HipAudioImplementation.XAUDIO2);
 	else version(WebAssembly)
 		HipAudio.initialize(HipAudioImplementation.WEBAUDIO);
 	else
-		HipAudio.initialize(HipAudioImplementation.XAUDIO2);
+		HipAudio.initialize(HipAudioImplementation.OPENAL);
 	version(dll)
 	{
 		import hip.console.log;
@@ -186,30 +192,22 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 		else version(WebAssembly){HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);}
 		else version(Android)
 		{
-			version(Have_gles){}
-			else{static assert(false, "Android build requires GLES on its dependencies.");}
+			version(Have_gles){}else{static assert(false, "Android build requires GLES on its dependencies.");}
 			HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);
 		}
+		else version(PSVita){HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);}
 		else static assert(false, "No renderer for this platform");
 	}
 	else
 	{
 		string confFile;
 		HipFS.absoluteReadText("renderer.conf", confFile); //Ignore return, renderer can handle no conf.
-		HipRenderer.init(confFile, "renderer.conf");
+		HipRenderer.initialize(confFile, "renderer.conf");
 	}
-	version(Desktop)
+	loadDefaultAssets((){gameInitialize();}, (err)
 	{
-		loadDefaultAssets((){}, (err){loglnError("Could not load default assets! ", err);});
-		gameInitialize();
-	}
-	else version(WebAssembly)
-	{
-		loadDefaultAssets((){gameInitialize();}, (err)
-		{
-			loglnError("Could not load default assets! ", err);
-		});
-	}
+		loglnError("Could not load default assets! ", err);
+	});
 	return 0;
 }
 
@@ -318,17 +316,13 @@ export extern(C) void HipremeInit()
 	version(dll)
 	{
 		version(WebAssembly){}
+		else version(PSVita){}
 		else
 		{
 			rt_init();
 			importExternal();
 		}
 	}
-}
-export extern(C) void HipremeTest()
-{
-	import std.stdio;
-	writeln("Executing HipremeTest from a Shared Library");
 }
 /**
 *	Loads shared libraries and setups the engine modules:
@@ -375,6 +369,14 @@ version(WebAssembly)
 		return HipremeUpdateBase();
 	}
 }
+else version(PSVita)
+{
+	export extern(C) bool HipremeUpdate(float dt)
+	{
+		g_deltaTime = dt;
+		return HipremeUpdateBase();
+	}
+}
 else version(dll) export extern(C) bool HipremeUpdate()
 {
 	import hip.util.time;
@@ -401,15 +403,15 @@ version(Desktop)
 	void HipremeDesktopGameLoop()
 	{
 		import hip.util.time;
-		import core.time:dur;
-		import core.thread.osthread;
+		// import core.time:dur;
+		// import core.thread.osthread;
 		while(HipremeUpdateBase())
 		{
 			long initTime = HipTime.getCurrentTime();
 			long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
 			if(sleepTime > 0)
 			{
-				Thread.sleep(dur!"msecs"(sleepTime));
+				// Thread.sleep(dur!"msecs"(sleepTime));
 			}
 			HipremeRender();
 			g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
@@ -428,8 +430,8 @@ export extern(C) void HipremeRender()
 	HipRenderer.begin();
 	HipRenderer.clear(0,0,0,255);
 	sys.render();
-	if(isUsingInterpreter)
-		renderInterpreter();
+	// if(isUsingInterpreter)
+	// 	renderInterpreter();
 	HipRenderer.end();
 }
 export extern(C) void HipremeDestroy()
@@ -439,6 +441,7 @@ export extern(C) void HipremeDestroy()
 	version(dll)
 	{
 		version(WebAssembly){}
+		else version(PSVita){}
 		else
 		{
 			rt_term();

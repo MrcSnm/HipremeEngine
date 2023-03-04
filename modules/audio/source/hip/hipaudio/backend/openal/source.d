@@ -148,7 +148,8 @@ public class HipOpenALAudioSource : HipAudioSource
 
     override bool play()
     {
-        if((cast(HipOpenALClip)clip).hasBuffer)
+        HipOpenALClip clp = clip.getAudioClipBackend!(HipOpenALClip);
+        if(clp.hasBuffer)
         {
             if(isDirty)
             {

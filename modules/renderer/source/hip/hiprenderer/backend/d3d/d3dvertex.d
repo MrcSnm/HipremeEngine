@@ -66,13 +66,13 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         _hip_d3d_device.CreateBuffer(&bd, &sd, &buffer);
         HipRenderer.exitOnError();
     }
-    void setData(ulong size, const void* data)
+    void setData(size_t size, const(void*) data)
     {
         if(data == null || size == 0)
             return;
         createBuffer(size, data);
     }
-    void updateData(int offset, ulong size, const void* data)
+    void updateData(int offset, size_t size, const (void*) data)
     {
         
         ErrorHandler.assertLazyExit(size+offset <= this.size,

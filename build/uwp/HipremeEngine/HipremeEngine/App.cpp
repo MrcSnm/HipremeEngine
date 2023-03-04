@@ -54,6 +54,12 @@ void assertOk(bool res, const char* err = "")
     }
 }
 
+enum HipGamepadTypes
+{
+    HipGamepadTypes_xbox,
+    HipGamepadTypes_psvita
+}
+
 struct App : implements<App, IFrameworkViewSource, IFrameworkView>
 {
     CoreWindow window{ nullptr };
@@ -204,14 +210,14 @@ struct App : implements<App, IFrameworkViewSource, IFrameworkView>
         if (id == 255)
             AddGamepad(gamepad);
 
-        HipInputOnGamepadConnected(GetGamepadID(gamepad));
+        HipInputOnGamepadConnected(GetGamepadID(gamepad), HipGamepadTypes_xbox);
     }
     void OnGamepadRemoved(IInspectable const& obj, Gamepad const & gamepad)
     {
         (void)obj;
         ubyte id = GetGamepadID(gamepad);
         RemoveGamepad(gamepad);
-        HipInputOnGamepadDisconnected(id);
+        HipInputOnGamepadDisconnected(id, HipGamepadTypes_xbox);
     }
 };
 
