@@ -240,9 +240,9 @@ class GameSystem
     void addScene(AScene s)
     {
         import hip.assetmanager;
-        s.preload();
         HipAssetManager.addOnLoadingFinish(()
         {
+            s.preload();
             import hip.console.log;
             loglnWarn("Initializing scene ", s.getName);
     	    s.initialize();

@@ -67,10 +67,12 @@ class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
     }
     void updateData(int offset, size_t size, const(void*) data)
     {
-        ErrorHandler.assertLazyExit(size+offset <= this.size,
-        "Tried to set data with size "~to!string(size)~"and offset "~to!string(offset)~
+        if(size + offset > this.size)
+        {
+            ErrorHandler.assertExit(
+                false, "Tried to set data with size "~to!string(size)~"and offset "~to!string(offset)~
         "for vertex buffer with size "~to!string(this.size));
-
+        }
         this.bind();
         glCall(() => glBufferSubData(GL_ARRAY_BUFFER, offset, size, cast(void*)data));
     }
@@ -100,9 +102,9 @@ class Hip_GL3_IndexBufferObject : IHipIndexBufferImpl
     }
     void updateData(int offset, index_t count, const index_t* data)
     {
-        ErrorHandler.assertExit((offset+count)*index_t.sizeof <= this.size);
+        ErrorHandler.assertExit((offset+count)*index_t.sizeof <= size);
         this.bind();
-        glCall(() => glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, cast(void*)data));
+        glCall(() => glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, (offset+count)*index_t.sizeof, cast(void*)data));
     }
     ~this(){glCall(() => glDeleteBuffers(1, &this.ebo));}
 }
