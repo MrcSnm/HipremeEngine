@@ -95,14 +95,11 @@ class Mesh
     }
     public void updateIndices(index_t[] indices, int offset = 0)
     {
-        import hip.console.log;
-        this.indices = indices;
         this.vao.updateIndices(cast(index_t)indices.length, indices.ptr, offset);
     }
 
     public void updateVertices(float[] vertices, int offset = 0)
     {
-        this.vertices = vertices;
         this.vao.updateVertices(cast(index_t)(vertices.length/this.vao.dataCount), vertices.ptr, offset);
     }
     public void setShader(Shader s)
