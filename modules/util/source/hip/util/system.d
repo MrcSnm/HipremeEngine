@@ -16,6 +16,7 @@ import hip.util.path:pathSeparator;
 
 version(PSVita) version = NoSharedLibrarySupport;
 version(WebAssembly) version = NoSharedLibrarySupport;
+version(CustomRuntimeTest) version = NoSharedLibrarySupport;
 
 enum debugger = "asm {int 3;}";
 
@@ -108,28 +109,28 @@ version(Windows)
 
 string dynamicLibraryGetLibName(string libName)
 {
-    version(Windows) return libName~".dll";
+    version(NoSharedLibrarySupport) return "";
+    else version(Windows) return libName~".dll";
     else version(Posix)
     {
         import hip.util.path;
         libName.filename = "lib"~libName.filename~".so";
         return libName;
     }
-    else version(NoSharedLibrarySupport) return "";
     else static assert(0, "Platform not supported");
 }
 
 bool dynamicLibraryIsLibNameValid(string libName)
 {
-    version(Windows)
+    version(NoSharedLibrarySupport)
+        return true;
+    else version(Windows)
         return libName[$-4..$] == ".dll";
     else version(Posix)
     {
         import hip.util.path;
         return libName.filename[0..3] == "lib" && libName[$-3..$] == ".so";
     }
-    else
-        return true;
 }
 
 ///It will open the current executable if libName == null
@@ -138,7 +139,9 @@ void* dynamicLibraryLoad(string libName)
     void* ret;
     if(libName == null)
     {
-        version(Windows)
+        version(NoSharedLibrarySupport)
+            ret = null;
+        else version(Windows)
         {
             ret = GetModuleHandle(null);
         }
@@ -147,12 +150,12 @@ void* dynamicLibraryLoad(string libName)
             import core.sys.posix.dlfcn : dlopen, RTLD_NOW;
             ret = dlopen(null, RTLD_NOW);
         }
-        else
-            ret = null;
     }
     else
     {
-        version(Android)
+        version(NoSharedLibrarySupport)
+            ret = null;
+        else version(Android)
         {
             import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
             ret = dlopen(libName.toStringz, RTLD_LAZY);
@@ -162,8 +165,6 @@ void* dynamicLibraryLoad(string libName)
             import core.runtime;
             ret = Runtime.loadLibrary(libName);
         }
-        else version(NoSharedLibrarySupport)
-            ret = null;
         else version(Posix)
         {
             import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
@@ -177,7 +178,9 @@ version(Windows) private const (char)* err;
 void* dynamicLibrarySymbolLink(void* dll, const (char)* symbolName)
 {
     void* ret;
-    version(Windows)
+    version(NoSharedLibrarySupport)
+        ret = null;
+    else version(Windows)
     {
         ret = GetProcAddress(dll, symbolName);
         if(!ret)
@@ -194,7 +197,9 @@ void* dynamicLibrarySymbolLink(void* dll, const (char)* symbolName)
 
 string dynamicLibraryError()
 {
-    version(Windows)
+    version(NoSharedLibrarySupport)
+        return "Current platform does not load dynamic libraries";
+    else version(Windows)
     {
         const(char)* ret = err;
         err = null;
@@ -205,14 +210,14 @@ string dynamicLibraryError()
         import core.sys.posix.dlfcn;
         return cast(string)fromStringz(dlerror());
     }
-    else version(NoSharedLibrarySupport)
-        return "Current platform does not load dynamic libraries";
     else static assert(0, "Platform not supported");
 }
 
 bool dynamicLibraryRelease(void* dll)
 {
-    version(UWP)
+    version(NoSharedLibrarySupport)
+        return false;
+    else version(UWP)
     {
         return cast(bool)FreeLibrary(dll);
     }
@@ -226,8 +231,6 @@ bool dynamicLibraryRelease(void* dll)
         import core.sys.linux.dlfcn:dlclose;
         return cast(bool)dlclose(dll);
     }
-    else version(NoSharedLibrarySupport)
-        return false;
     else
     {
         import core.runtime;

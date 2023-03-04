@@ -17,6 +17,7 @@ import hip.console.log : hiplog;
 
 
 version(WebAssembly) version = CustomRuntime;
+version(CustomRuntimeTest) version = CustomRuntime;
 version(PSVita) version = CustomRuntime;
 
 private string buildConstantsFromFolderTree(string code, Node!string node, int depth = 0)

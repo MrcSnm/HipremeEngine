@@ -14,6 +14,7 @@ import hip.util.reflection;
 
 version(WebAssembly) version = CustomRuntime;
 version(PSVita) version = CustomRuntime;
+version(CustomRuntimeTest) version = CustomRuntime;
 
 version(CustomRuntime)
     static import rt.hooks;

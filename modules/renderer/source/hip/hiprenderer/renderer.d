@@ -193,6 +193,7 @@ class HipRenderer
                         goto case "GL3";
                     }
                 default:
+                    logln("Invalid renderer?" , renderer, " ' oh my freakin goodness");
                     ErrorHandler.showErrorMessage("Invalid renderer '"~renderer~"'",
                     `
                         Available renderers:

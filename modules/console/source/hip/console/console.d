@@ -148,9 +148,11 @@ class Console
                     version(WebAssembly) assert(false, s);
                     else
                     {
-                        import core.stdc.stdio:printf, fflush, stdout;
+                        import core.stdc.stdio;
                         printf("%.*s\n", cast(int)s.length, s.ptr);
-                        version(PSVita){}else fflush(stdout);
+                        version(PSVita){}
+                        else version(CustomRuntimeTest){}
+                        else fflush(stdout);
                     }
                 };
                 _info = function(string s)

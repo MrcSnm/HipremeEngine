@@ -178,8 +178,8 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 			getOptimalSampleRate
 		);
 	}
-	// else version(Windows)
-	// 	HipAudio.initialize(HipAudioImplementation.XAUDIO2);
+	else version(Windows)
+		HipAudio.initialize(HipAudioImplementation.XAUDIO2);
 	else version(WebAssembly)
 		HipAudio.initialize(HipAudioImplementation.WEBAUDIO);
 	else
@@ -403,15 +403,15 @@ version(Desktop)
 	void HipremeDesktopGameLoop()
 	{
 		import hip.util.time;
-		import core.time:dur;
-		import core.thread.osthread;
+		// import core.time:dur;
+		// import core.thread.osthread;
 		while(HipremeUpdateBase())
 		{
 			long initTime = HipTime.getCurrentTime();
 			long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
 			if(sleepTime > 0)
 			{
-				Thread.sleep(dur!"msecs"(sleepTime));
+				// Thread.sleep(dur!"msecs"(sleepTime));
 			}
 			HipremeRender();
 			g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds

@@ -23,13 +23,25 @@ version(PSVita)
         freeGCMemory(str);
     }
 }
+version(CustomRuntimeTest)
+{
+    import hip.util.conv:to;
+    void writeln(Args...)(Args args)
+    {
+        char[] str;
+        static foreach(arg; args){str~= to!string(arg);}
+        printf("%.*s", str.length, cast(const(char)*)str.ptr);
+        import hip.util.memory;
+        freeGCMemory(str);
+    }
+}
 
 struct File
 {
     FILE* fptr;
     private size_t _size;
 
-    size_t size(){return size;}
+    size_t size(){return _size;}
 
     this(string path, string openMode = "r")
     {

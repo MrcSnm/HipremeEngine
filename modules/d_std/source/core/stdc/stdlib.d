@@ -14,9 +14,9 @@ version(PSVita) version = CustomRuntime;
 version(CustomRuntime)
 {
     private alias nogc_free_t = @nogc nothrow void function(ubyte* ptr);
-    private alias nogc_malloc_t = @nogc nothrow ubyte[] function(uint size, string file, size_t line);
-    private alias nogc_calloc_t = @nogc nothrow ubyte[] function(uint size, uint count, string file, size_t line);
-    private alias nogc_realloc_t = @nogc nothrow ubyte[] function(ubyte* ptr, uint size, string file, size_t line);
+    private alias nogc_malloc_t = @nogc nothrow ubyte[] function(size_t size, string file, size_t line);
+    private alias nogc_calloc_t = @nogc nothrow ubyte[] function(size_t size, size_t count, string file, size_t line);
+    private alias nogc_realloc_t = @nogc nothrow ubyte[] function(ubyte* ptr, size_t size, string file, size_t line);
     static import rt.hooks;
 
     @nogc nothrow
@@ -26,17 +26,17 @@ version(CustomRuntime)
             auto nogc_free = cast(nogc_free_t)&rt.hooks.free;
             nogc_free(cast(ubyte*)ptr);
         }
-        void* malloc(uint size, string file = __FILE__, size_t line = __LINE__)
+        void* malloc(size_t size, string file = __FILE__, size_t line = __LINE__)
         {
             auto nogc_malloc = cast(nogc_malloc_t)&rt.hooks.malloc;
             return cast(void*)nogc_malloc(size, file, line).ptr;
         }
-        void* calloc(uint count, uint size, string file = __FILE__, size_t line = __LINE__)
+        void* calloc(size_t count, size_t size, string file = __FILE__, size_t line = __LINE__)
         {
             auto nogc_calloc = cast(nogc_calloc_t)&rt.hooks.calloc;
             return cast(void*)nogc_calloc(count, size, file, line).ptr;
         }
-        void* realloc(void* ptr, uint size, string file = __FILE__, size_t line = __LINE__)
+        void* realloc(void* ptr, size_t size, string file = __FILE__, size_t line = __LINE__)
         {
             auto nogc_realloc = cast(nogc_realloc_t)&rt.hooks.realloc;
             version(PSVita)
@@ -53,9 +53,9 @@ else
 {
     extern(C) @nogc extern nothrow:
     void free(void* ptr);
-    void* malloc(uint size);
-    void* calloc(uint count, uint size);
-    void* realloc(void* ptr, uint size);
+    void* malloc(size_t size);
+    void* calloc(size_t count, size_t size);
+    void* realloc(void* ptr, size_t size);
 }
 version(WebAssembly)
 {

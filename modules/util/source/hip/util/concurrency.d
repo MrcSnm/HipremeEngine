@@ -10,10 +10,15 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.util.concurrency;
 
-version(Windows) version = HipConcurrency;
-version(Android) version = HipConcurrency;
-version(UWP) version = HipConcurrency;
-version(Posix) version = HipConcurrency;
+
+version(CustomRuntimeTest){}
+else
+{
+    version(Windows) version = HipConcurrency;
+    version(Android) version = HipConcurrency;
+    version(UWP) version = HipConcurrency;
+    version(Posix) version = HipConcurrency;
+}
 
 
 

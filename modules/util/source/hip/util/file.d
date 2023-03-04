@@ -59,8 +59,12 @@ string stripLineBreaks(string content)
 version(HipDStdFile)
 {
     import std.stdio:File;
-    version(WebAssembly) {void fileTruncate(File file, ptrdiff_t offset){}}
-    else version(PSVita) {void fileTruncate(File file, ptrdiff_t offset){}}
+
+    version(CustomRuntimeTest) version = CustomRuntime;
+    version(WebAssembly) version = CustomRuntime;
+    version(PSVita) version = CustomRuntime;
+
+    version(CustomRuntimeTest) {void fileTruncate(File file, ptrdiff_t offset){}}
     else
     {
         import std.file;
