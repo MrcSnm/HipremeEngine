@@ -18,7 +18,6 @@
 			"**/*.a" : true,
 			"build/android/project/.idea/" : true,
 			"build/android/project/gradle/" : true,
-			"build/vita" : true,
 			"building":true,
 			"*.hap" : true,
 			"*.zip" : true,
