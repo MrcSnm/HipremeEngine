@@ -7,6 +7,14 @@ You'll need the VitaSDK in your path. This process could be automatized in futur
 
 ## Generating a build for Vita
 
+
+Extract `hipreme_engine_vita_dev_files.7z`.
+
+It has the following content:
+    -PVR_PSP2 headers and library
+    -Tools for easing development on Vita such as net logging.
+
+
 You'll need to create a folder "assets" in the same folder this README is located. It will be packaged to vita.
 After that, you can run `./build.sh`. Which you will probably need to modify to get your PS Vita IP Address (The data is sent via CURL).
 
