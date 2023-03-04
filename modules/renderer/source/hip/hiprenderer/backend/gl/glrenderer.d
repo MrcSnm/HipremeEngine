@@ -249,8 +249,8 @@ class Hip_GL3Renderer : IHipRendererImpl
         else
         {
             window.rendererPresent();
-            glCall(() => glFlush());
-            glCall(() => glFinish());
+            // glCall(() => glFlush());
+            // glCall(() => glFinish());
         }
     }
 
