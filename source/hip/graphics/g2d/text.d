@@ -4,6 +4,7 @@ import hip.graphics.g2d.textrenderer;
 import hip.api.data.font;
 
 version(WebAssembly) version = UseDRuntimeDecoder;
+version(CustomRuntimeTest) version = UseDRuntimeDecoder;
 version(PSVita) version = UseDRuntimeDecoder;
 
 

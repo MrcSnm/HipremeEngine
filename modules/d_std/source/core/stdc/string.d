@@ -6,6 +6,7 @@ extern(C) extern @nogc nothrow pure
 
     version(WebAssembly) version = CustomRuntime;
     version(PSVita) version = CustomRuntime;
+    version(CustomRuntimeTest) version = CustomRuntime;
     
 
     version(CustomRuntime)
@@ -32,4 +33,7 @@ extern(C) extern @nogc nothrow pure
     else size_t strlen(const(char*) str) pure;
 
     int strncmp (const(char)* str1, const(char)* str2, size_t num );
+    int strcmp (const char* str1, const char* str2);
+    char *strstr(const char *haystack, const char *needle);
+    char* strcpy(char* destination, const char* source);
 }

@@ -337,7 +337,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         {
             DXGI_INFO_QUEUE_MESSAGE* msg;
             bool hasError;
-            ulong msgSize;
+            size_t msgSize;
             for(ulong i = 0, 
             // len = dxgiQueue.GetNumStoredMessagesAllowedByRetrievalFilters(DXGI_DEBUG_DX);
             len = dxgiQueue.GetNumStoredMessages(DXGI_DEBUG_DX);
@@ -387,7 +387,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         return new Hip_D3D11_VertexArrayObject();
     }
-    public IHipVertexBufferImpl createVertexBuffer(ulong size, HipBufferUsage usage)
+    public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage)
     {
         return new Hip_D3D11_VertexBufferObject(size, usage);
     }

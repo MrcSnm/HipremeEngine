@@ -34,8 +34,8 @@ private pure bool validatePath(string initial, string toAppend)
     scope(exit)
     {
         import core.memory:GC;
-        GC.free(newPath.ptr);
-        GC.free(appends.ptr);
+        // GC.free(newPath.ptr);
+        // GC.free(appends.ptr);
     }
 
     foreach(a; splitRange(appends, "/"))
@@ -156,6 +156,7 @@ class HipFileSystem
     else version(UWP){import hip.filesystem.systems.uwp;}
     else version(WebAssembly){import hip.filesystem.systems.browser;}
     else version(PSVita){import hip.filesystem.systems.cstd;}
+    else version(CustomRuntimeTest){import hip.filesystem.systems.cstd;}
     else version(HipDStdFile){import hip.filesystem.systems.dstd;}
     else {import hip.filesystem.systems.cstd;}
  
@@ -169,6 +170,7 @@ class HipFileSystem
             version(Android){fs = new HipAndroidFileSystemInteraction();}
             else version(UWP){fs = new HipUWPileSystemInteraction();}
             else version(PSVita){fs = new HipCStdioFileSystemInteraction();}
+            else version(CustomRuntimeTest){fs = new HipCStdioFileSystemInteraction();}
             else version(WebAssembly){fs = new HipBrowserFileSystemInteraction();}
             else
             {

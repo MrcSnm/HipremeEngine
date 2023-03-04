@@ -177,7 +177,10 @@ version(AudioFormatsDecoder)
                 duration = lengthFrames/cast(double)sampleRate;
                 size_t bufferSize = cast(size_t)(lengthFrames*channels);
                 decodedBuffer = new float[bufferSize];
+                cast(void)sceClibPrintf("Allocated necessary size for buffer.. (%d)\n", bufferSize);
                 int bytesRead = input.readSamplesFloat(decodedBuffer);
+                cast(void)sceClibPrintf("Decoded..\n");
+
                 clipSize = decodedBuffer.length*float.sizeof;
                 decodeSuccesful = bytesRead == lengthFrames;
             }

@@ -1,6 +1,9 @@
 module core.stdc.time;
 
-version(PSVita)
+version(PSVita) version = CustomRuntime;
+version(CustomRuntimeTest) version = CustomRuntime;
+
+version(CustomRuntime)
 {
     import core.stdc.config;
     alias time_t = c_long;
