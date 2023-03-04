@@ -7,35 +7,64 @@
 		"debugInfo",
 		"debugInfoC"
 	],
-	"targetType": "library",
-	"copyright": "Copyright © 2021, Hipreme",
-	"dependencies": {
-		"hipengine_api": {"path": "../../api", "version": "*"},
-		"error": {"path": "../error", "version": "*"},
-		"util": {"path": "../util", "version": "*"}
-	},
 	"configurations": [
 		{
-			"name": "arsd",
 			"dependencies": {
 				"arsd-official:image_files": "~>10.9.6"
 			},
+			"name": "arsd",
+			"targetType": "library",
 			"versions": [
 				"HipARSDImageDecoder"
 			]
 		},
 		{
-			"name": "wasm",
-			"importPaths": [
-				"../wasm/source"
-			]
+			"dependencies": {
+				"gamut": "~>2.0.9"
+			},
+			"subConfigurations": {
+				"gamut": "just-decode"
+			},
+			"versions": [
+				"HipGamutImageDecoder"
+			],
+			"name": "gamut",
+			"targetType": "library"
 		},
 		{
+			"importPaths": [
+				"../wasm/source"
+			],
+			"name": "wasm",
+			"targetType": "library"
+		},
+		{
+			"dflags": [
+				"-H",
+				"-Hdimport",
+				"-op"
+			],
 			"name": "header",
-			"dflags": ["-H", "-Hdimport", "-op"]
+			"targetType": "library"
 		}
 	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"dependencies": {
+		"error": {
+			"path": "../error",
+			"version": ">=0.0.0"
+		},
+		"hipengine_api": {
+			"path": "../../api",
+			"version": ">=0.0.0"
+		},
+		"util": {
+			"path": "../util",
+			"version": ">=0.0.0"
+		}
+	},
 	"description": "HipremeEngine data module",
 	"license": "proprietary",
-	"name": "image"
+	"name": "image",
+	"targetType": "library"
 }

@@ -9,13 +9,13 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.backend.gl.glshader;
-version(Android)
+version(GLES30)
 {
     enum shaderVersion = "#version 300 es";
     enum floatPrecision = "";
     // enum floatPrecision = "precision mediump;";
 }
-else version(WebAssembly)
+else version(GLES20)
 {
     enum shaderVersion = "#version 100";
     enum floatPrecision = "precision mediump float;";
@@ -76,19 +76,23 @@ class Hip_GL3_FragmentShader : FragmentShader
         };
     }
 
-    version(WebAssembly) //They are very different, so, better to keep them separate
+    version(GLES20) //They are very different, so, better to keep them separate
     {
         override final string getSpriteBatchFragment()
         {
             int sup = HipRenderer.getMaxSupportedShaderTextures();
             string textureSlotSwitchCase;
-            for(int i = 0; i < sup; i++)
+            if(sup == 1) textureSlotSwitchCase = "gl_FragColor = texture2D(uTex1[0], inTexST)*inVertexColor*uBatchColor;\n";
+            else
             {
-                string strI = to!string(i);
-                if(i != 0)
-                    textureSlotSwitchCase~="\t\t\t\telse ";
-                textureSlotSwitchCase~="if(texId == "~strI~")"~
-                "{gl_FragColor = texture2D(uTex1["~strI~"], inTexST)*inVertexColor*uBatchColor;}\n";
+                for(int i = 0; i < sup; i++)
+                {
+                    string strI = to!string(i);
+                    if(i != 0)
+                        textureSlotSwitchCase~="\t\t\t\telse ";
+                    textureSlotSwitchCase~="if(texId == "~strI~")"~
+                    "{gl_FragColor = texture2D(uTex1["~strI~"], inTexST)*inVertexColor*uBatchColor;}\n";
+                }
             }
             textureSlotSwitchCase~="}\n";
             enum shaderSource = q{
@@ -100,6 +104,8 @@ class Hip_GL3_FragmentShader : FragmentShader
 
                 void main()
             };
+
+
             return shaderVersion~"\n"~floatPrecision~"\n"~format!q{
                     uniform sampler2D uTex1[%s];}(sup)~
                 shaderSource~
@@ -150,7 +156,7 @@ class Hip_GL3_FragmentShader : FragmentShader
 
     override final string getGeometryBatchFragment()
     {
-        version(WebAssembly)
+        version(GLES20)
         {
             enum attr1 = q{varying};
             enum outputPixelVar = q{};
@@ -177,7 +183,7 @@ class Hip_GL3_FragmentShader : FragmentShader
 
     override final string getBitmapTextFragment()
     {
-        version(WebAssembly)
+        version(GLES20)
         {
             enum attr1 = q{varying};
             enum outputPixelVar = q{};
@@ -296,7 +302,7 @@ class Hip_GL3_VertexShader : VertexShader
     }
     override final string getGeometryBatchVertex()
     {
-        version(WebAssembly)
+        version(GLES20)
         {
             enum attr1 = q{attribute};
             enum attr2 = q{attribute};
@@ -331,7 +337,7 @@ class Hip_GL3_VertexShader : VertexShader
 
     override final string getBitmapTextVertex()
     {
-        version(WebAssembly)
+        version(GLES20)
         {
             enum attr1 = q{attribute};
             enum attr2 = q{attribute};
@@ -567,7 +573,7 @@ class Hip_GL_ShaderImpl : IShader
     void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount)
     {
         ///Optimization for not allocating when inside loops.
-        static int[] temp;
+        __gshared int[] temp;
         if(slotsCount > temp.length)
             temp.length = slotsCount;
 

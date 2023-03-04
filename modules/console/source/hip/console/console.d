@@ -23,6 +23,7 @@ enum Platforms
     ANDROID,
     UWP,
     WASM,
+    PSVITA,
     NULL
 }
 static enum androidTag = "HipremeEngine";
@@ -34,7 +35,7 @@ __gshared void function(string toPrint) _info;
 __gshared void function(string toPrint) _warn;
 __gshared void function(string toPrint) _err;
 __gshared void function(string toPrint) _fatal;
-
+version(PSVita) extern(C) void hipVitaPrint(uint length, const(char)* str);
 
 version(UWP){}
 else version(Windows)
@@ -69,10 +70,11 @@ class Console
     string name;
     String[] lines;
 
-    static ushort idCount = 0;
+    __gshared ushort idCount = 0;
     ushort id;
 
     private uint logCounter = 0;
+    __gshared Console DEFAULT;
     
     string indentation;
     int indentationCount;
@@ -80,14 +82,11 @@ class Console
     int indentationSize = 4; //? Don't know if it should be used instead of \t
     bool useTab = true;
     bool isShowing = true;
-    static __gshared Console DEFAULT;
-    static void initialize()
-    {
-        DEFAULT = new Console("Output", 99);
-    }
+    
 
     static void install(Platforms p = Platforms.DEFAULT, void function(string) printFunc = null)
     {
+        DEFAULT = new Console("Output", 99);
         version(WindowsNative)
         {
             static void* windowsConsole;
@@ -113,7 +112,16 @@ class Console
                     _err   = function(string s){aloge(androidTag, (s~"\0").ptr);};
                     _fatal = function(string s){alogf(androidTag, (s~"\0").ptr);};
                 }
+                break;  
+            case PSVITA:
+            {
+                version(PSVita)
+                {
+                    _log = function(string s){hipVitaPrint(s.length, s.ptr);};
+                    _info = _warn = _err = _fatal = _log;
+                }
                 break;
+            }
             case WASM:
                 version(WebAssembly)
                 {
@@ -140,9 +148,11 @@ class Console
                     version(WebAssembly) assert(false, s);
                     else
                     {
-                        import core.stdc.stdio:printf, fflush, stdout;
+                        import core.stdc.stdio;
                         printf("%.*s\n", cast(int)s.length, s.ptr);
-                        fflush(stdout);
+                        version(PSVita){}
+                        else version(CustomRuntimeTest){}
+                        else fflush(stdout);
                     }
                 };
                 _info = function(string s)
@@ -220,6 +230,11 @@ class Console
             _log(formatArguments(a).toString);
             //mtx.unlock();
         }
+    }
+
+    void logStr(string str)
+    {
+        _info(str);
     }
     void info(Args...)(Args a)
     {

@@ -14,15 +14,12 @@
 	],
 	"dflags": [
 		"-preview=shortenedMethods",
-		"-mixin=mixed.d"
-	],
-	"stringImportPaths": [
-		"."
+		"-mixin=mixed.d",
+		"-J."
 	],
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipCheckUnknownKeycode",
-		"HipDataStructures",
 		"HipMathAPI",
 		"HipDStdFile",
 		"HipScriptingAPI",
@@ -57,7 +54,6 @@
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
-				"HipConcurrency",
 				"OpenGL",
 				"OpenAL",
 				"Desktop",
@@ -68,6 +64,9 @@
 			],
 			"dflags-ldc": [
 				"--disable-verify"
+			],
+			"lflags-windows": [
+				"/DEBUG:FASTLINK"
 			],
 			"buildOptions": [
 				"debugMode",
@@ -85,7 +84,6 @@
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
-				"HipConcurrency",
 				"OpenGL",
 				"OpenAL",
 				"Desktop",
@@ -112,7 +110,6 @@
 				"fswatch": "~>0.6.0"
 			},
 			"versions": [
-				"HipConcurrency",
 				"OpenGL",
 				"OpenAL",
 				"Desktop",
@@ -140,14 +137,17 @@
 		},
 		{
 			"name": "game",
+			"stringImportPaths": [
+				"build/release_game/"
+			],
 			"sourcePaths": [
 				"build/release_game/source"
 			],
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
-				"HipConcurrency",
 				"OpenGL",
+				"GameBuildTest",
 				"OpenAL",
 				"Standalone",
 				"Desktop"
@@ -173,8 +173,7 @@
 				"Standalone",
 				"OpenGL",
 				"OpenAL",
-				"Desktop",
-				"HipConcurrency"
+				"Desktop"
 			],
 			"versions-windows": [
 				"Direct3D_11",
@@ -199,7 +198,6 @@
 				"DirectX",
 				"XAudio2",
 				"dll",
-				"HipConcurrency",
 				"UWP"
 			]
 		},
@@ -207,7 +205,7 @@
 			"name": "wasm-test",
 			"dependencies": {
 				"d_std": {"path": "modules/d_std", "version": "*"},
-				"runtime": {"path": "build/wasm/runtime", "version": "*"}
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"stringImportPaths": [
 				"build/wasm/generated"
@@ -217,13 +215,13 @@
 				"move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
 			],
 			"subConfigurations": {
+				"runtime": "wasm",
 				"assets": "wasm",
 				"audio": "wasm",
 				"filesystem": "wasm",
 				"renderer": "wasm"
 			},
 			"versions": [
-				"HipDataStructures",
 				"Test",
 				"Standalone",
 				"HipDStdFile",
@@ -238,7 +236,7 @@
 			"name": "wasm",
 			"dependencies": {
 				"d_std": {"path": "modules/d_std", "version": "*"},
-				"runtime": {"path": "build/wasm/runtime", "version": "*"}
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"sourcePaths": [
 				"build/release_game/source"
@@ -252,19 +250,107 @@
 				"move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
 			],
 			"subConfigurations": {
+				"runtime": "wasm",
 				"assets": "wasm",
 				"audio": "wasm",
 				"filesystem": "wasm",
 				"renderer": "wasm"
 			},
 			"versions": [
-				"HipDataStructures",
 				"Standalone",
 				"HipDStdFile",
 				"OpenGL",
 				"GLES20",
 				"CarelessAlocation",
 				"dll"
+			],
+			"targetType": "executable"
+		},
+		{
+			"name": "psvita",
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
+			},
+			"sourcePaths": [
+				"build/release_game/source"
+			],
+			"stringImportPaths": [
+				"build/release_game/"
+			],
+			"subConfigurations": {
+				"runtime": "psvita",
+				"d_std": "psvita",
+				"assets": "psvita",
+				"audio": "psvita",
+				"renderer": "psvita"
+			},
+			"versions": [
+				"Standalone",
+				"OpenGL",
+				"OpenAL",
+				"GLES20",
+				"CarelessAlocation",
+				"dll"
+			],
+			"targetType": "executable"
+		},
+		{
+			"name": "psvita-main",
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
+			},
+			"sourcePaths": [
+				"build/release_game/source"
+			],
+			"stringImportPaths": [
+				"build/release_game/"
+			],
+			"subConfigurations": {
+				"runtime": "psvita",
+				"assets": "psvita",
+				"audio": "psvita",
+				"renderer": "psvita"
+			},
+			"versions": [
+				"Standalone",
+				"OpenGL",
+				"OpenAL",
+				"GLES20",
+				"CarelessAlocation",
+				"dll"
+			],
+			"targetPath": "build/vita/hipreme_engine/libs",
+			"targetType": "staticLibrary"
+		},
+		{
+			"name": "customrt",
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
+			},
+			"sourcePaths": [
+				"build/release_game/source"
+			],
+			"stringImportPaths": [
+				"build/release_game/"
+			],
+			"lflags-windows": [
+				"/SUBSYSTEM:CONSOLE"
+			],
+			"subConfigurations": {
+				"runtime": "psvita",
+				"d_std": "psvita",
+				"assets": "gamut"
+			},
+			"versions": [
+				"Standalone",
+				"GameBuildTest",
+				"Desktop",
+				"OpenGL",
+				"OpenAL",
+				"CarelessAlocation"
 			],
 			"targetType": "executable"
 		},
@@ -308,7 +394,6 @@
 			"versions": [
 				"dll",
 				"Standalone",
-				"HipConcurrency",
 				"GLES30",
 				"OpenGL"
 			]

@@ -32,7 +32,7 @@ public import hip.api.graphics.text : HipTextAlign;
 
 
 
-private Shader bmTextShader = null;
+private __gshared Shader bmTextShader = null;
 
 /**
 *   This class oculd be refactored in the future to actually
@@ -116,6 +116,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
     //Defers a call to updateText
     void draw(string newText, int x, int y, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1)
     {
+        import hip.console.log;
         HipText obj;
         if(poolActive >= textPool.length)
         {
@@ -132,8 +133,18 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         obj.alignv = alignv;
         obj.text = newText;
         obj.setFont(font);
+    }
+
+    /** 
+     * Implementation for unchanging text.
+     *  The text will be saved, represented as an internal ID to a managed static HipText. Which means the texture will be baked
+     *  so it is possible to actually draw it a lot faster as all the preprocessings are done once.
+     */
+    void drawStatic(immutable string newText, int x, int y, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1)
+    {
 
     }
+
 
     void draw(HipText text)
     {
@@ -163,18 +174,18 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         {
             draw(textPool[i]);
         }
-        if(quadsCount == 0)
-            return;
-        mesh.bind();
-        this.font.texture.bind();
-        mesh.shader.setVertexVar("Cbuf.uProj", camera.proj);
-        mesh.shader.setVertexVar("Cbuf.uView", camera.view);
-        mesh.shader.sendVars();
-        mesh.setVertices(vertices);
-        mesh.draw(quadsCount*6);
-        font.texture.unbind();
-        mesh.unbind();
-
+        if(quadsCount != 0)
+        {
+            mesh.bind();
+            this.font.texture.bind();
+            mesh.shader.setVertexVar("Cbuf.uProj", camera.proj);
+            mesh.shader.setVertexVar("Cbuf.uView", camera.view);
+            mesh.shader.sendVars();
+            mesh.setVertices(vertices);
+            mesh.draw(quadsCount*6);
+            font.texture.unbind();
+            mesh.unbind();
+        }
         poolActive = 0;
         quadsCount = 0;
     }

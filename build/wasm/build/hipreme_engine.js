@@ -17,6 +17,8 @@ function initializeHipremeEngine(exports)
     lookupForFunction(exports, "HipInputOnGamepadDisconnected");//(ubyte id)
     lookupForFunction(exports, "HipOnRendererResize");          //(int x, int y)
 
+
+    const canvas = document.getElementById("glcanvas");
     
     const HipInputOnKeyDown = (ev) =>
     {
@@ -26,17 +28,29 @@ function initializeHipremeEngine(exports)
     {
         exports.HipInputOnKeyUp(ev.keyCode); //Use that for now. WILL be updated later.
     };
+
+    function convertToHipremeEngineCoordinates(xy)
+    {
+        const rec = canvas.getBoundingClientRect();
+        xy[0] = Math.floor((xy[0] - rec.left) * devicePixelRatio) | 0;
+        xy[1] = Math.floor((xy[1] - rec.top)* devicePixelRatio) | 0;
+        return xy;
+    }
+
     const HipInputOnTouchPressed = (ev) =>
     {
-        exports.HipInputOnTouchPressed(0, ev.x, ev.y);
+        const [x, y] = convertToHipremeEngineCoordinates([ev.x, ev.y]);
+        exports.HipInputOnTouchPressed(0, x, y);
     };
     const HipInputOnTouchReleased = (ev) =>
     {
-        exports.HipInputOnTouchReleased(0, ev.x, ev.y);
+        const [x, y] = convertToHipremeEngineCoordinates([ev.x, ev.y]);
+        exports.HipInputOnTouchReleased(0, x, y);
     };
     const HipInputOnTouchMoved = (ev) =>
     {
-        exports.HipInputOnTouchMoved(0, ev.x, ev.y);
+        const [x, y] = convertToHipremeEngineCoordinates([ev.x, ev.y]);
+        exports.HipInputOnTouchMoved(0, x, y);
     };
     const HipInputOnTouchScroll = (ev) =>
     {
@@ -44,35 +58,39 @@ function initializeHipremeEngine(exports)
     };
     const HipInputOnGamepadConnected = (ev) =>
     {
-        exports.HipInputOnGamepadConnected(ev.gamepad.id);
+        exports.HipInputOnGamepadConnected(ev.gamepad.id, -1);
     };
     const HipInputOnGamepadDisconnected = (ev) =>
     {
-        exports.HipInputOnGamepadDisconnected(ev.gamepad.id);
+        exports.HipInputOnGamepadDisconnected(ev.gamepad.id, -1);
     };
     const HipOnRendererResize = (ev) =>
     {
-        const scale = window.devicePixelRatio;
-        exports.HipOnRendererResize(800*scale, 600*scale);//Currently maintain it as that.
+        // let {width, height} = getWindowSize();
+        width = window.innerWidth
+        height = window.innerHeight
+        setWindowSize(width, height);
+
+        exports.HipOnRendererResize(width, height);//Currently maintain it as that.
     };
+    canvas.addEventListener("mousedown", HipInputOnTouchPressed);
+    canvas.addEventListener("mouseup", HipInputOnTouchReleased);
+    canvas.addEventListener("mousemove", HipInputOnTouchMoved);
+    canvas.addEventListener("wheel", HipInputOnTouchScroll);
     window.addEventListener("keydown", HipInputOnKeyDown);
     window.addEventListener("keyup", HipInputOnKeyUp);
-    window.addEventListener("mousedown", HipInputOnTouchPressed);
-    window.addEventListener("mouseup", HipInputOnTouchReleased);
-    window.addEventListener("mousemove", HipInputOnTouchMoved);
-    window.addEventListener("wheel", HipInputOnTouchScroll);
     window.addEventListener("gamepadconnected", HipInputOnGamepadConnected);
     window.addEventListener("gamepaddisconnected", HipInputOnGamepadDisconnected);
     window.addEventListener("resize", HipOnRendererResize);
 
     const destroyEngine = () =>
     {
+        canvas.removeEventListener("mousedown", HipInputOnTouchPressed);
+        canvas.removeEventListener("mouseup", HipInputOnTouchReleased);
+        canvas.removeEventListener("mousemove", HipInputOnTouchMoved);
+        canvas.removeEventListener("wheel", HipInputOnTouchScroll);
         window.removeEventListener("keydown", HipInputOnKeyDown);
         window.removeEventListener("keyup", HipInputOnKeyUp);
-        window.removeEventListener("mousedown", HipInputOnTouchPressed);
-        window.removeEventListener("mouseup", HipInputOnTouchReleased);
-        window.removeEventListener("mousemove", HipInputOnTouchMoved);
-        window.removeEventListener("wheel", HipInputOnTouchScroll);
         window.removeEventListener("gamepadconnected", HipInputOnGamepadConnected);
         window.removeEventListener("gamepaddisconnected", HipInputOnGamepadDisconnected);
         window.removeEventListener("resize", HipOnRendererResize);

@@ -29,8 +29,8 @@ version(WindowsNative)
     pragma(lib, "gdi32");
     pragma(lib, "user32"); //Can't import that to UWP
     pragma(lib, "kernel32");//Can't import that to UWP
-
-
+    nothrow ushort LOWORD(ulong l) {return cast(ushort) l;}
+    nothrow ushort HIWORD(ulong l) {return cast(ushort) (l >>> 16);}
     nothrow @system int GET_X_LPARAM(LPARAM lp){return cast(int)cast(short)LOWORD(lp);}
     nothrow @system int GET_Y_LPARAM(LPARAM lp){return cast(int)cast(short)HIWORD(lp);}
     nothrow @system uint GET_XBUTTON_WPARAM(WPARAM wp){ return cast(uint)HIWORD(wp);}
@@ -390,6 +390,22 @@ version(WindowsNative)
     void swapBuffer()
     {
         SwapBuffers(hdc);
+    }
+
+    int[2] getWindowSize(HWND hwnd)
+    {
+        RECT rect;
+        GetWindowRect(hwnd, &rect);
+        return [rect.right - rect.left, rect.bottom - rect.top];
+    }
+    void setWindowName(HWND hwnd, string name)
+    {
+        SetWindowTextA(hwnd, name.ptr);
+    }
+
+    void setWindowSize(HWND hwnd, int width, int height)
+    {
+        SetWindowPos(hwnd, null, 0, 0, width, height, SWP_NOMOVE);
     }
 
     void setVsyncActive(bool active) @nogc nothrow @system

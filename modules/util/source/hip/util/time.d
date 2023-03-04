@@ -14,8 +14,8 @@ import core.stdc.time;
 version(Windows)
 {
     import core.sys.windows.windef;
-    extern(C) BOOL QueryPerformanceFrequency(LARGE_INTEGER* lpPerformanceCount) nothrow;
-    extern(C) BOOL QueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount) nothrow;
+    extern(Windows) BOOL QueryPerformanceFrequency(LARGE_INTEGER* lpPerformanceCount) nothrow;
+    extern(Windows) BOOL QueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount) nothrow;
 }
 else version(WebAssembly)
 {
@@ -33,7 +33,7 @@ else
     extern(C) int clock_gettime(int clock_id, timespec* tm) nothrow;
 }
 
-size_t getSystemTime() nothrow
+ulong getSystemTime() nothrow
 {
     version(Windows)
     {
@@ -53,7 +53,7 @@ size_t getSystemTime() nothrow
         return cast(size_t)(tm.tv_nsec + tm.tv_sec * 1e9);
     }
 }
-private size_t getSystemTicksPerSecond() nothrow
+private ulong getSystemTicksPerSecond() nothrow
 {
     version(Windows)
     {
@@ -70,9 +70,9 @@ private size_t getSystemTicksPerSecond() nothrow
 class HipTime
 {
 
-    private static size_t startTime;
-    private static size_t ticksPerSecond;
-    protected static long[string] performanceMeasurement;
+    private __gshared ulong startTime;
+    private __gshared ulong ticksPerSecond;
+    protected __gshared long[string] performanceMeasurement;
 
     static void initialize()
     {
@@ -82,7 +82,7 @@ class HipTime
 
     static long getCurrentTime() nothrow
     {
-        size_t time = 0;
+        ulong time = 0;
         version(Windows)
         {
             time = (getSystemTime() - startTime) / ticksPerSecond;

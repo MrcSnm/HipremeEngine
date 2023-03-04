@@ -99,6 +99,19 @@ enum SEEK_SET = 0;
 enum SEEK_CUR = 1;
 enum SEEK_END = 2;
 
+version(PSVita)
+{
+    struct _reent  //Minimal required
+    {
+        int _errno;
+        FILE* stdint, stdout, stderr;
+    }
+
+    extern(C) _reent* getreent();
+
+    FILE* stdout (){return getreent().stdout;}
+}
+
 // enum 	stdin	(_REENT->_stdin)
 // #define	stdout	(_REENT->_stdout)
 // #define	stderr	(_REENT->_stderr)
@@ -115,60 +128,61 @@ enum SEEK_END = 2;
 version(WebAssembly)
 {
     extern(C) FILE*	 fopen (const(char*) _name, const(char*) _type){return null;}
-    extern(C) long	 ftell ( FILE *){return EOF;}
+    extern(C) c_long	 ftell ( FILE *){return EOF;}
     extern(C) size_t fread (void *, size_t _size, size_t _n, FILE *){return 0;}
     extern(C) int    fgetc (FILE *){return EOF;}
     extern(C) size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream){return 0;}
     extern(C) int    fflush(FILE *stream){return EOF;}
     extern(C) int    remove(const char *filename){return -1;}
     extern(C) int	 fputc (int, FILE *){return EOF;}
-    extern(C) int	 fseek (FILE *, long, int){return EOF;}
+    extern(C) int	 fseek (FILE *, c_long, int){return EOF;}
     extern(C) int	 fclose (FILE *){return -1;}
 }
 else
 {
-    extern(C) extern FILE *	tmpfile ();
-    extern(C) extern char *	tmpnam (char *);
-    extern(C) extern char *	tempnam (char *, char*);
-    extern(C) extern int	fclose (FILE *);
-    extern(C) extern int	fflush (FILE *);
-    extern(C) extern FILE *	freopen (const(char*), const(char*), FILE *);
-    extern(C) extern void	setbuf (FILE *, char *);
-    extern(C) extern int	setvbuf (FILE *, char *, int, size_t);
-    extern(C) extern int	fprintf (FILE *, const(char*), ...);
-    extern(C) extern int	fscanf (FILE *, const(char*), ...);
-    extern(C) extern int	printf (const(char*), ...);
-    extern(C) extern int	scanf (const(char*), ...);
-    extern(C) extern int	sscanf (const(char*), const(char*), ...);
-    // extern(C) extern int	vfprintf (FILE *, const(char*), __VALIST);
-    // extern(C) extern int	vprintf (const(char*), __VALIST);
-    // extern(C) extern int	vsprintf (char *, const(char*), __VALIST);
-    extern(C) extern int	fgetc (FILE *);
-    extern(C) extern char *  fgets (char *, int, FILE *);
-    extern(C) extern int	fputc (int, FILE *);
-    extern(C) extern int	fputs (const(char*), FILE *);
-    extern(C) extern int	getc (FILE *);
-    extern(C) extern int	getchar ();
-    extern(C) extern char *  gets (char *);
-    extern(C) extern int	putc (int, FILE *);
-    extern(C) extern int	putchar (int);
-    extern(C) extern int	puts (const(char*));
-    extern(C) extern int	ungetc (int, FILE *);
-    extern(C) extern size_t	fread (void *, size_t _size, size_t _n, FILE *);
-    extern(C) extern size_t	fwrite (const void * , size_t _size, size_t _n, FILE *);
-    // extern(C) extern int	fgetpos (FILE *, fpos_t *);
-    extern(C) extern int	fseek (FILE *, long, int);
-    // extern(C) extern int	fsetpos (FILE *, const fpos_t *);
-    extern(C) extern long	ftell ( FILE *);
-    extern(C) extern void	rewind (FILE *);
-    extern(C) extern void	clearerr (FILE *);
-    extern(C) extern int	feof (FILE *);
-    extern(C) extern int	ferror (FILE *);
-    extern(C) extern void    perror (const(char*));
-    extern(C) extern FILE *	fopen (const(char*) _name, const(char*) _type);
-    extern(C) extern int	sprintf (char *, const(char*), ...);
-    extern(C) extern int	remove (const(char*));
-    extern(C) extern int	rename (const(char*), const(char*));
+    extern(C) nothrow @nogc:
+    extern FILE *	tmpfile ();
+    extern char *	tmpnam (char *);
+    extern char *	tempnam (char *, char*);
+    extern int	fclose (FILE *);
+    extern int	fflush (FILE *);
+    extern FILE *	freopen (const(char*), const(char*), FILE *);
+    extern void	setbuf (FILE *, char *);
+    extern int	setvbuf (FILE *, char *, int, size_t);
+    extern int	fprintf (FILE *, const(char*), ...);
+    extern int	fscanf (FILE *, const(char*), ...);
+    extern int	printf (const(char*), ...);
+    extern int	scanf (const(char*), ...);
+    extern int	sscanf (const(char*), const(char*), ...);
+    // extern int	vfprintf (FILE *, const(char*), __VALIST);
+    // extern int	vprintf (const(char*), __VALIST);
+    // extern int	vsprintf (char *, const(char*), __VALIST);
+    extern int	fgetc (FILE *);
+    extern char *  fgets (char *, int, FILE *);
+    extern int	fputc (int, FILE *);
+    extern int	fputs (const(char*), FILE *);
+    extern int	getc (FILE *);
+    extern int	getchar ();
+    extern char *  gets (char *);
+    extern int	putc (int, FILE *);
+    extern int	putchar (int);
+    extern int	puts (const(char*));
+    extern int	ungetc (int, FILE *);
+    extern size_t	fread (void *, size_t _size, size_t _n, FILE *);
+    extern size_t	fwrite (const void * , size_t _size, size_t _n, FILE *);
+    // extern int	fgetpos (FILE *, fpos_t *);
+    extern int	fseek (FILE *, c_long, int);
+    // extern int	fsetpos (FILE *, const fpos_t *);
+    extern c_long	ftell ( FILE *);
+    extern void	rewind (FILE *);
+    extern void	clearerr (FILE *);
+    extern int	feof (FILE *);
+    extern int	ferror (FILE *);
+    extern void    perror (const(char*));
+    extern FILE *	fopen (const(char*) _name, const(char*) _type);
+    extern int	sprintf (char *, const(char*), ...);
+    extern int	remove (const(char*));
+    extern int	rename (const(char*), const(char*));
 }
 
 // extern(C) extern int	fseeko (FILE *, _off_t, int);

@@ -15,6 +15,11 @@ import hip.util.reflection;
 import hip.error.handler;
 import hip.console.log : hiplog;
 
+
+version(WebAssembly) version = CustomRuntime;
+version(CustomRuntimeTest) version = CustomRuntime;
+version(PSVita) version = CustomRuntime;
+
 private string buildConstantsFromFolderTree(string code, Node!string node, int depth = 0)
 {
     import hip.util.path;
@@ -168,7 +173,7 @@ final class HipAssetLoadTask : IHipAssetLoadTask
         import hip.util.conv:to;
         if(partialData !is null)
         {
-            version(WebAssembly)
+            version(CustomRuntime)
                 assert(false, "AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
             else
                 throw new Error("AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
@@ -181,7 +186,7 @@ final class HipAssetLoadTask : IHipAssetLoadTask
         import hip.util.conv:to;
         if(partialData is null)
         {
-            version(WebAssembly)
+            version(CustomRuntime)
                 assert(false, "No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
             else
                 throw new Error("No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
@@ -268,7 +273,7 @@ class HipAssetManager
 
     public static void initialize()
     {
-        completeMutex = new DebugMutex();
+        completeMutex = new DebugMutex(0);
         workerPool = new HipWorkerPool(HIP_ASSETMANAGER_WORKER_POOL);
     }
 
@@ -305,6 +310,7 @@ class HipAssetManager
     }
 
     static pragma(inline, true) T get(T)(string name) {return cast(T)getAsset(name);}
+    static pragma(inline, true) T get(T : string)(string name) {return getStringAsset(name);}
 
     ///Returns whether asset manager is loading anything
     @ExportD static bool isLoading(){return !workerPool.isIdle;}
@@ -379,15 +385,6 @@ class HipAssetManager
             putComplete(task);
         };
     }
-    private static void delegate(void[] partialData) onSuccessLoadFirstStep(HipAssetLoadTask task, 
-    void delegate(string taskName) nextStep)
-    {
-        return (void[] partialData)
-        {
-            task.givePartialData(partialData);
-            workerPool.notifyOnFinishOnMainThread(nextStep, false)(task.name);
-        };
-    }
 
     private static void delegate(string err = "") onFailureLoad(HipAssetLoadTask task)
     {
@@ -418,6 +415,17 @@ class HipAssetManager
 
     version(WebAssembly)
     {
+        
+        private static void delegate(void[] partialData) onSuccessLoadFirstStep(HipAssetLoadTask task, 
+        void delegate(string taskName) nextStep)
+        {
+            return (void[] partialData)
+            {
+                task.givePartialData(partialData);
+                workerPool.notifyOnFinishOnMainThread(nextStep, false)(task.name);
+            };
+        }
+
         /**
         *   The main difference in that version is that it doesn't depends on HipConcurrency to put
         *   on notifyOnFinish. That was decided because it is impossible to actually know when something
@@ -542,7 +550,7 @@ class HipAssetManager
      */
     @ExportD static IHipAssetLoadTask loadAudio(string audioPath, string f = __FILE__, size_t l = __LINE__)
     {
-        hiplog("Loading Audio: ", audioPath);
+        hiplog("AssetManager: Loading Audio: ", audioPath);
         void delegate(string, void delegate(HipAsset), void delegate(string err)) assetLoadFunc =
         (pathOrLocation, onSuccess, onFailure)
         {
@@ -553,6 +561,7 @@ class HipAssetManager
                 clip.loadFromMemory(data, getEncodingFromName(pathOrLocation), HipAudioType.SFX,
                 (in ubyte[] newData)
                 {
+                    hiplog("AssetManager: Audio: Loaded ", audioPath);
                     onSuccess(clip);
                 }, (){onFailure("Could not load HipAudioClip.");});
 
@@ -569,6 +578,7 @@ class HipAssetManager
     @ExportD static IHipAssetLoadTask loadTexture(string texturePath, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.util.memory;
+        hiplog("AssetManager: Loading Texture: ", texturePath);
         void delegate(string, void delegate(void[]), void delegate(string err = "")) assetLoadFunc = 
         (pathOrLocation, onFirstStepComplete, onFailure)
         {
@@ -591,6 +601,7 @@ class HipAssetManager
         {
             Image img = cast(Image)(cast(IImage)partialData.ptr);
             HipTexture ret = new HipTexture(img);
+            hiplog("AssetManager: Texture: Loaded ", texturePath, " ", ret.toHipString);
             onSuccess(ret);
             void* gcObjCopy = cast(void*)img;
             freeGCMemory(gcObjCopy); 
@@ -949,7 +960,6 @@ class HipAssetManager
     */
     static void update()
     {
-        workerPool.pollFinished();
         completeMutex.lock();
             if(completeQueue.length)
             {
@@ -967,8 +977,8 @@ class HipAssetManager
                 }
                 completeQueue.length = 0;
             }
-
         completeMutex.unlock();
+        workerPool.pollFinished();
     }
 
     /**

@@ -26,9 +26,6 @@ struct Pair(A, B, string aliasA = "", string aliasB = "")
         mixin("alias "~aliasB~" = second;");
 }
 
-version(HipDataStructures):
-
-
 
 /** 
  * RangeMap allows specifying a range in which a value spams, quite useful for defining outcomes
@@ -190,7 +187,6 @@ struct Array(T)
     void dispose() @nogc
     {
         import core.stdc.stdlib:free;
-        debug { import std.stdio : writeln; try { writeln("Freed Array"); } catch (Exception) {} }
         if(data != null)
         {
             free(data);

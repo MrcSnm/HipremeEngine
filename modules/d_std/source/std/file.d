@@ -1,9 +1,28 @@
 module std.file;
 import core.stdc.stdio;
 
+version(Windows)
+{
+    import core.sys.windows.windef;
+    extern(Windows) nothrow @nogc DWORD GetCurrentDirectoryA(DWORD, LPSTR);
+}
+
+string getcwd()
+{
+    version(Windows)
+    {
+        char[4096] buff = void;
+        immutable n = GetCurrentDirectoryA(cast(DWORD)buff.length, buff.ptr);
+        char[] ret = new char[n];
+        ret[] = buff[0..n];
+        return cast(string)ret;
+    }
+    else return "";
+}
+
 bool exists(string file)
 {
-    auto fHandle = fopen(file.ptr, "r");
+    auto fHandle = fopen((file~'\0').ptr, "r");
     if(fHandle != null)
     {
         fclose(fHandle);
@@ -14,7 +33,7 @@ bool exists(string file)
 
 ubyte[] read(string file)
 {
-    auto fHandle = fopen(file.ptr, "rb");
+    auto fHandle = fopen((file~'\0').ptr, "rb");
     if(fHandle != null)
     {
         ubyte[] ret;
@@ -57,5 +76,5 @@ void remove(string filename)
 
 bool isDir(string path)
 {
-    assert(false, "No generic implementation for isDir");
+    return path[$-1] == '/' || path[$-1] == '\\';
 }

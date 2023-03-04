@@ -30,24 +30,34 @@ private __gshared
 }
 
 
+import hip.console.log;
 void initialize(HipInterpreterEntry entry = HipInterpreterEntry.init, bool shouldAutoUpdateCameraAndViewport = true)
 {
     autoUpdateCameraAndViewport = shouldAutoUpdateCameraAndViewport;
+    hiplog("2D Renderer: Initializing viewport");
     viewport = new Viewport(0, 0, HipRenderer.width, HipRenderer.height);
     viewport.setWorldSize(HipRenderer.width, HipRenderer.height);
     viewport.setType(ViewportType.fit, HipRenderer.width, HipRenderer.height);
     HipRenderer.setViewport(viewport);
+    hiplog("2D Renderer: Initializing camera 1");
+    hiplog("2D Renderer: Initializing camera 2");
+    hiplog("2D Renderer: Initializing camera 3 ");
+    hiplog("2D Renderer: Initializing camera 4");
     camera = new HipOrthoCamera();
     camera.setSize(viewport.worldWidth, viewport.worldHeight);
 
+    hiplog("2D Renderer: Initializing spritebatch");
     spBatch = new HipSpriteBatch(camera);
+    hiplog("2D Renderer: Initializing geometrybatch");
     geoBatch = new GeometryBatch(camera);
+    hiplog("2D Renderer: Initializing text renderer");
     textBatch = new HipTextRenderer(camera);
     setGeometryColor(HipColor.white);
 
 
     version(HipremeEngineLua)
     {
+        hiplog("2D Renderer: sending lua functions");
         if(entry != HipInterpreterEntry.init)
         {
             sendInterpreterFunc!(renderSprites)(entry.intepreter);

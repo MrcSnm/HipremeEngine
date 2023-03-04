@@ -8,20 +8,20 @@ alias HipFontKerning = HipCharKerning[dchar];
 
 struct HipFontChar
 {
-    ///Not meant to support more than ushort right now
     uint id;
     ///Those are in absolute values
     int x, y, width, height;
 
-    int xoffset, yoffset, xadvance, page, chnl; 
-
+    int xoffset, yoffset, xadvance, page, chnl;
 
     ///Normalized values
     float normalizedX, normalizedY, normalizedWidth, normalizedHeight;
+    int glyphIndex;
 }
 
 interface IHipFont
 {
+    int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const;
     int getKerning(dchar current, dchar next) const;
     void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int maxWidth, out int height) const;
     ref HipFontChar[dchar] characters();
@@ -37,6 +37,7 @@ abstract class HipFont : IHipFont
 {
     
     abstract int getKerning(dchar current, dchar next) const;
+    abstract int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const;
 
     ///Underlying GPU texture
     IHipTexture _texture;
@@ -63,19 +64,25 @@ abstract class HipFont : IHipFont
         int lineIndex = 0;
         linesWidths[] = 0;
 
+        const (HipFontChar)* ch;
+        const (HipFontChar)* next;
         for(int i = 0; i < text.length; i++)
         {
-            const HipFontChar* ch = text[i] in characters;
+            if(ch is null) ch = text[i] in characters;
             if(ch is null)
                 continue;
             int kern = 0;
             if(i+1 < text.length)
             {
-                kern = getKerning(text[i], text[i+1]);
-                if(kern != 0)
+                next = text[i+1] in characters;
+                if(next)
                 {
-                    import std.stdio;
-                    writeln("Kerning Found:", kern);
+                    kern = getKerning(ch, next);
+                    if(kern != 0)
+                    {
+                        import std.stdio;
+                        writeln("Kerning Found:", kern);
+                    }
                 }
             }
             switch(text[i])
@@ -102,5 +109,6 @@ abstract class HipFont : IHipFont
             linesWidths.length++;
         linesWidths[lineIndex] = w;
         height = h;
+        ch = next;
     }
 }

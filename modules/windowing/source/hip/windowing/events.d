@@ -1,7 +1,7 @@
 module hip.windowing.events;
 import hip.windowing.input;
 
-nothrow
+nothrow __gshared
 {
     void function() onWindowClosed;
     void function(uint width, uint height) onWindowResize;

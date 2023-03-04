@@ -18,10 +18,9 @@ string toString(dstring dstr) pure nothrow @safe
     catch(Exception e){return "";}
 }
 
-
-string toString(T)(T[] arr) pure nothrow @safe
+string toString(char[] arr) pure nothrow @trusted @nogc {return cast(string)arr;}
+string toString(T)(T[] arr) pure nothrow @safe if(!is(T == char))
 {
-    
     string ret = "[";
     for(int i = 0; i < arr.length; i++)
     {
@@ -244,7 +243,7 @@ pure string toHex(size_t n) @safe nothrow
 {
     enum numbers = "0123456789ABCDEF";
     int preAllocSize = 1;
-    size_t div = 16;
+    ulong div = 16;
     while(div <= n)
     {
         div*= 16;

@@ -1,0 +1,34 @@
+{
+	"authors": [
+		"Hipreme", "Adam Ruppe"
+	],
+	"dflags": ["-Oz"],
+	"importPaths": ["druntime/arsd-webassembly"],
+	"sourceFiles": [
+		"druntime/arsd-webassembly/arsd/webassembly.d",
+		"druntime/arsd-webassembly/rt/hooks.d",
+		"druntime/arsd-webassembly/rt/tls_armeabi.d",
+		"druntime/arsd-webassembly/core/arsd/memory_allocation.d",
+		"druntime/arsd-webassembly/object.d",
+		"druntime/arsd-webassembly/core/arsd/aa.d",
+		"druntime/arsd-webassembly/core/arsd/objectutils.d",
+		"druntime/arsd-webassembly/core/arsd/utf_decoding.d",
+		"druntime/arsd-webassembly/core/internal/utf.d"
+	],
+	"targetType": "staticLibrary",
+	"versions": ["CarelessAlocation"],
+	"copyright": "Copyright © 2023, Hipreme",
+	"description": "A minimal D application.",
+	"configurations": [
+		{
+			"name": "wasm",
+			"lflags": ["-allow-undefined"]
+		},
+		{
+			"name": "psvita",
+			"importPaths": ["../../modules/util/source"]
+		}
+	],
+	"license": "proprietary",
+	"name": "runtime"
+}

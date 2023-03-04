@@ -194,6 +194,11 @@ class GameSystem
             // addScene(new ChainTestScene());
             // addScene(new AssetTest());
             import hip.view.testscene;
+            import hip.console.log;
+            import hip.api.data.commons;
+            mixin LoadReferencedAssets!(["hip.view.testscene"]);
+            loadReferenced;
+            hiplog("starting test scene.");
             addScene(new TestScene());
         }
         else version(Load_DScript)
