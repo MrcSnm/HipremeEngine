@@ -368,10 +368,10 @@ class GeometryBatch : IHipBatch
             mesh.updateVertices(vertices[0..currentVertex]);
             mesh.updateIndices(indices[0..currentIndex]);
 
-            mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1]);
-            mesh.shader.setVertexVar("Geom.uProj",  camera.proj);
-            mesh.shader.setVertexVar("Geom.uModel", Matrix4.identity());
-            mesh.shader.setVertexVar("Geom.uView",  camera.view);
+            mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1], true);
+            mesh.shader.setVertexVar("Geom.uProj",  camera.proj, true);
+            mesh.shader.setVertexVar("Geom.uModel", Matrix4.identity(), true);
+            mesh.shader.setVertexVar("Geom.uView",  camera.view, true);
 
             mesh.shader.sendVars();
             //Vertices to render = indices.length

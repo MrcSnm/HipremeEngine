@@ -520,26 +520,26 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         return D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT;
     }
 
-    public void setRendererMode(HipRendererMode mode)
+    private int getRendererMode(HipRendererMode mode)
     {
-        final switch(mode) with(HipRendererMode)
+        final switch(mode) with (HipRendererMode)
         {
             case TRIANGLES:
-                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-                break;
+                return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
             case TRIANGLE_STRIP:
-                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-                break;
+                return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
             case LINE:
-                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-                break;
+                return D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
             case LINE_STRIP:
-                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
-                break;
+                return D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP;
             case POINT:
-                _hip_d3d_context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-                break;
+                return D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
         }
+    }
+
+    public void setRendererMode(HipRendererMode mode)
+    {
+        _hip_d3d_context.IASetPrimitiveTopology(getRendererMode(mode));
     }
 
     public void setViewport(Viewport v)

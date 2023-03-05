@@ -122,25 +122,30 @@ class Hip_D3D11_Texture : IHipTexture
         bind();
         return false;
     }
+
+
+    ///256 should be enough too
+    private __gshared Hip_D3D11_Texture[256] boundTextures;
+
     ///Avoids rebinding to the same sl
     void bind (int slot = 0)
     {
-        // if(!slotsBound[slot])
-        // {
-            slotsBound[slot] = true;
+        if(boundTextures[slot] !is this)
+        {
             _hip_d3d_context.PSSetSamplers(slot, 1, &sampler);
             _hip_d3d_context.PSSetShaderResources(slot, 1, &resource);
-        // }
+            boundTextures[slot] = this;
+        }
     }
 
     void unbind (int slot = 0)
     {
-        // if(slotsBound[slot])
-        // {
-            slotsBound[slot] = false;
+        if(boundTextures[slot] is this)
+        {
             _hip_d3d_context.PSSetSamplers(slot, 1, &nullSamplerState);
             _hip_d3d_context.PSSetShaderResources(slot, 1, &nullSRV);
-        // }
+            boundTextures[slot] = null;
+        }
     }
     
     int getWidth() const {return width;}

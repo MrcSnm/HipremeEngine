@@ -60,6 +60,8 @@ struct ShaderVar
     size_t varSize;
     bool isDynamicArrayReference;
 
+    bool isDirty = true;
+
     const T get(T)()
     {
         static if(isDynamicArray!T)
@@ -71,7 +73,7 @@ struct ShaderVar
         else
             return *(cast(T*)this.data);
     }
-    bool set(T)(T value)
+    bool set(T)(T value, bool validateData)
     {
         import core.stdc.string;
         static assert(isNumeric!T ||
@@ -84,6 +86,10 @@ struct ShaderVar
         if(value.sizeof != varSize)
             return false;
 
+        if(validateData && value == get!T)
+            return true;
+
+        isDirty = true;
         static if(isDynamicArray!T)
         {
             if(isDynamicArrayReference)
