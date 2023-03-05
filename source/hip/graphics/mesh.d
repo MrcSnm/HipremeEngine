@@ -23,10 +23,9 @@ class Mesh
     protected Shader currentShader;
     ///Not yet supported
     bool isInstanced;
-    private bool isBonded;
+    private bool isBound;
     HipVertexArrayObject vao;
     Shader shader;
-
     this(HipVertexArrayObject vao, Shader shader)
     {
         this.vao = vao;
@@ -47,9 +46,9 @@ class Mesh
 
     void bind()
     {
-        // if(!this.isBonded)
+        // if(!this.isBound)
         // {
-            this.isBonded = true;
+            this.isBound = true;
             this.shader.bind();
             this.vao.bind();
         // }
@@ -57,9 +56,9 @@ class Mesh
     }
     void unbind()
     {
-        // if(this.isBonded)
+        // if(this.isBound)
         // {
-            this.isBonded = false;
+            this.isBound = false;
             this.shader.unbind();
             this.vao.unbind();
         // }
