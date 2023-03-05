@@ -519,12 +519,14 @@ class Hip_GL_ShaderImpl : IShader
         }
     }
 
-    void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts)
+    void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
     {
-        foreach(l; layouts)
+        foreach(ShaderVariablesLayout l; layouts)
         {
-            foreach (v; l.variables)
+            foreach (ref ShaderVarLayout v; l.variables)
             {
+                if(!v.sVar.isDirty)
+                    continue;
                 int id = getId(prog, v.sVar.name);
                 final switch(v.sVar.type) with(UniformType)
                 {
@@ -575,6 +577,7 @@ class Hip_GL_ShaderImpl : IShader
                         break;
                     case none:break;
                 }
+                v.sVar.isDirty = false;
             }
         }
                 
@@ -587,12 +590,16 @@ class Hip_GL_ShaderImpl : IShader
         if(slotsCount > temp.length)
             temp.length = slotsCount;
 
-        bind(prog);
+        bool shouldControlBind = boundShader !is this;
+
+        if(shouldControlBind)
+            bind(prog);
         int varID = getId(prog, varName);
         for(int i = 0; i < slotsCount; i++)
             temp[i] = i;
         glCall(() => glUniform1iv(varID, slotsCount, temp.ptr));
-        unbind(prog);
+        if(shouldControlBind)
+            unbind(prog);
     }
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
@@ -664,7 +671,7 @@ version(HipGL3) class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
     
 
 
-    override void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts)
+    override void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
     {
         Hip_GL3_ShaderProgram glProg = cast(Hip_GL3_ShaderProgram)prog;
         if(!glProg.isUsingUbo)
