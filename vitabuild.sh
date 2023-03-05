@@ -3,7 +3,7 @@ export DFLAGS="-I=$HIPREME_ENGINE/modules/d_std/source \
 -d-version=PSVita \
 -d-version=PSV \
 -preview=shortenedMethods \
--mtriple=armv7a-unknown-newlib \
+-mtriple=armv7a-unknown-unknown \
 --revert=dtorfields \
 -mcpu=cortex-a9 \
 -O0 \
@@ -12,6 +12,7 @@ export DFLAGS="-I=$HIPREME_ENGINE/modules/d_std/source \
 --relocation-model=static \
 -d-version=CarelessAlocation"
 
-dub -c psvita-main --compiler=ldc2 --arch=armv7a-unknown-newlib
-dub -c psvita --compiler=ldc2 --arch=armv7a-unknown-newlib
+dub -c psvita-main --compiler=ldc2 --arch=armv7a-unknown-unknown
+dub -c psvita --compiler=ldc2 --arch=armv7a-unknown-unknown
+export DFLAGS="";
 rdmd tools/build/vita.d

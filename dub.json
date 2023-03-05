@@ -309,6 +309,7 @@
 			],
 			"subConfigurations": {
 				"runtime": "psvita",
+				"d_std": "psvita",
 				"assets": "psvita",
 				"audio": "psvita",
 				"renderer": "psvita"
