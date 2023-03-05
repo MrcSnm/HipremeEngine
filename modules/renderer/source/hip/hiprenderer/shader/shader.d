@@ -71,7 +71,7 @@ interface IShader
     void deleteShader(VertexShader* vs);
 
     void createVariablesBlock(ref ShaderVariablesLayout layout);
-    void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts);
+    void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts);
 
     ///This function is actually required when working with multiple slots on D3D11.
     void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount);
@@ -218,14 +218,23 @@ public class Shader : IReloadable
         shaderImpl.sendVertexAttribute(layoutIndex, valueAmount, dataType, normalize, stride, offset);
     }
 
-    public void setVertexVar(T)(string name, T val)
+
+    /** 
+     * If validateData is true, it will compare if the data has changed for choosing whether it should or not
+     send to the GPU.
+     * Params:
+     *   name = 
+     *   val = 
+     *   validateData = 
+     */
+    public void setVertexVar(T)(string name, T val, bool validateData = false)
     {
         ShaderVar* v = findByName(name);
         if(v != null)
         {
             if(v.shaderType != ShaderTypes.VERTEX)
                 ErrorHandler.assertExit(false, "Variable named "~name~" must be from Vertex Shader");
-            v.set(val);
+            v.set(val, validateData);
         }
         else
             ErrorHandler.showWarningMessage("Shader Vertex Var not set on shader loaded from '"~vertexShaderPath~"'",
@@ -234,14 +243,22 @@ public class Shader : IReloadable
             "Did you forget to add a layout namespace to the var name?"
             ));
     }
-    public void setFragmentVar(T)(string name, T val)
+    /** 
+     * If validateData is true, it will compare if the data has changed for choosing whether it should or not
+     send to the GPU.
+     * Params:
+     *   name = 
+     *   val = 
+     *   validateData = 
+     */
+    public void setFragmentVar(T)(string name, T val, bool validateData = false)
     {
         ShaderVar* v = findByName(name);
         if(v != null)
         {
             if(v.shaderType != ShaderTypes.FRAGMENT)
                 ErrorHandler.assertExit(false, "Variable named "~name~" must be from Fragment Shader");
-            v.set(val);
+            v.set(val, validateData);
         }
         else
             ErrorHandler.showWarningMessage("Shader Fragment Var not set on shader loaded from '"~fragmentShaderPath~"'",
@@ -320,7 +337,7 @@ public class Shader : IReloadable
     }
     auto opDispatch(string member, T)(T value)
     {
-        if(!defaultLayout.variables[member].sVar.set(value))
+        if(!defaultLayout.variables[member].sVar.set(value, false))
         {
             ErrorHandler.assertExit(false, "Invalid value of type "~
             T.stringof~" passed to "~defaultLayout.name~"."~member);

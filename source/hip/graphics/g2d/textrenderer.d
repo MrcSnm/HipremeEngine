@@ -182,8 +182,8 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         {
             mesh.bind();
             this.font.texture.bind();
-            mesh.shader.setVertexVar("Cbuf.uProj", camera.proj);
-            mesh.shader.setVertexVar("Cbuf.uView", camera.view);
+            mesh.shader.setVertexVar("Cbuf.uProj", camera.proj, true);
+            mesh.shader.setVertexVar("Cbuf.uView", camera.view, true);
             mesh.shader.sendVars();
             mesh.setVertices(vertices[0..quadsCount*HipTextRendererVertex.quadsCount]);
             mesh.draw(quadsCount*6);

@@ -204,7 +204,7 @@ interface IHipPreloadable
             private __gshared void getAsset(T, alias member)(string asset){_assetsForPreload~= asset;}
             private final void loadAsset(T, alias member)(string asset)
             {
-                alias mem = __traits(child, this, member);
+                alias mem = member;
                 ///Take members that aren't static and populate them after loading.
                 static if(__traits(compiles, mem.offsetof))
                 {

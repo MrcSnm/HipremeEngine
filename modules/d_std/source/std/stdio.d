@@ -13,9 +13,9 @@ version(WebAssembly)
 version(PSVita)
 {
     extern(C) void hipVitaPrint(uint length, const(char)* str);
-    import hip.util.conv:to;
     void writeln(Args...)(Args args)
     {
+        import hip.util.conv:to;
         char[] str;
         static foreach(arg; args){str~= to!string(arg);}
         hipVitaPrint(str.length, cast(const(char)*)str.ptr);
@@ -25,9 +25,9 @@ version(PSVita)
 }
 version(CustomRuntimeTest)
 {
-    import hip.util.conv:to;
     void writeln(Args...)(Args args)
     {
+        import hip.util.conv:to;
         char[] str;
         static foreach(arg; args){str~= to!string(arg);}
         printf("%.*s", str.length, cast(const(char)*)str.ptr);

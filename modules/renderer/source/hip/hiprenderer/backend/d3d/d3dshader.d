@@ -434,7 +434,7 @@ class Hip_D3D11_ShaderImpl : IShader
         return output.BindPoint;
     }
 
-    void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts)
+    void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
     {
         D3D11_SHADER_INPUT_BIND_DESC desc;
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
