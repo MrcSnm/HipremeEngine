@@ -122,12 +122,8 @@ class Hip_D3D11_Texture : IHipTexture
         bind();
         return false;
     }
-    void bind()
-    {
-        bind(0);
-    }
     ///Avoids rebinding to the same sl
-    void bind (int slot)
+    void bind (int slot = 0)
     {
         // if(!slotsBound[slot])
         // {
@@ -137,7 +133,7 @@ class Hip_D3D11_Texture : IHipTexture
         // }
     }
 
-    void unbind (int slot)
+    void unbind (int slot = 0)
     {
         // if(slotsBound[slot])
         // {
@@ -146,7 +142,6 @@ class Hip_D3D11_Texture : IHipTexture
             _hip_d3d_context.PSSetShaderResources(slot, 1, &nullSRV);
         // }
     }
-    void unbind(){unbind(0);}
     
     int getWidth() const {return width;}
     int getHeight() const {return height;}

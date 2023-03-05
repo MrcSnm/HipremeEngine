@@ -50,21 +50,13 @@ class HipTexture : IHipTexture
         if(image !is null)
             load(image);
     }
-    /** Binds as the texture target on the renderer. */
-    public void bind()
-    {
-        textureImpl.bind();
-    }
+
     ///Binds texture to the specific slot
-    public void bind(int slot)
+    public void bind(int slot = 0)
     {
         textureImpl.bind(slot);
     }
-    public void unbind()
-    {
-        textureImpl.unbind();
-    }
-    public void unbind(int slot)
+    public void unbind(int slot = 0)
     {
         textureImpl.unbind(slot);
     }

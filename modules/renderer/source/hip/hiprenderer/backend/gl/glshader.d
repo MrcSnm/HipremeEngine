@@ -500,13 +500,23 @@ class Hip_GL_ShaderImpl : IShader
         glCall(() =>glEnableVertexAttribArray(layoutIndex));
     }
 
+    private __gshared Hip_GL_ShaderImpl boundShader;
+
     void bind(ShaderProgram program)
     {
-        glCall(() =>glUseProgram((cast(Hip_GL3_ShaderProgram)program).program));
+        if(boundShader !is this)
+        {
+            glCall(() =>glUseProgram((cast(Hip_GL3_ShaderProgram)program).program));
+            boundShader = this;
+        }
     }
     void unbind(ShaderProgram program)
     {
-        glCall(() =>glUseProgram(0));
+        if(boundShader is this)
+        {
+            glCall(() =>glUseProgram(0));
+            boundShader = null;
+        }
     }
 
     void sendVars(ref ShaderProgram prog, in ShaderVariablesLayout[string] layouts)
