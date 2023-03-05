@@ -46,10 +46,8 @@ interface IHipTexture
             return loadImpl(img);
         return false;
     }
-    void bind();
-    void bind(int slot);
-    void unbind();
-    void unbind(int slot);
+    void bind(int slot = 0);
+    void unbind(int slot = 0);
 
     bool hasSuccessfullyLoaded();
 

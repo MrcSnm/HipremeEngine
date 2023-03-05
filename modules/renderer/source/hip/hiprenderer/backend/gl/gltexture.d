@@ -68,29 +68,38 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
         }
     }
 
-    void bind()
+    private __gshared int globalActiveSlot = 0;
+    ///256 textures should be enough
+    private __gshared Hip_GL3_Texture[256] boundTexture;
+
+    void bind(int slot = 0)
     {
-        glCall(() => glActiveTexture(GL_TEXTURE0));
-        glCall(() => glBindTexture(GL_TEXTURE_2D, textureID));
-    }
-    void unbind()
-    {
-        glCall(() => glActiveTexture(GL_TEXTURE0));
-        glCall(() => glBindTexture(GL_TEXTURE_2D, 0));
+        if(globalActiveSlot != slot)
+        {
+            glCall(() => glActiveTexture(GL_TEXTURE0+slot));
+            globalActiveSlot = slot;
+        }
+        if(boundTexture[globalActiveSlot] !is this)
+        {
+            glCall(() => glBindTexture(GL_TEXTURE_2D, textureID));
+            boundTexture[globalActiveSlot] = this;
+        }
+        currentSlot = slot;
     }
 
-    void bind(int slot)
+    void unbind(int slot = 0)
     {
+        if(globalActiveSlot != slot)
+        {
+            glCall(() => glActiveTexture(GL_TEXTURE0+slot));
+            globalActiveSlot = slot;
+        }
+        if(boundTexture[globalActiveSlot] is this)
+        {
+            glCall(() => glBindTexture(GL_TEXTURE_2D, 0));
+            boundTexture[globalActiveSlot] = null;
+        }
         currentSlot = slot;
-        glCall(() => glActiveTexture(GL_TEXTURE0+slot));
-        glCall(() => glBindTexture(GL_TEXTURE_2D, textureID));
-    }
-
-    void unbind(int slot)
-    {
-        currentSlot = slot;
-        glCall(() => glActiveTexture(GL_TEXTURE0+slot));
-        glCall(() => glBindTexture(GL_TEXTURE_2D, 0));
     }
 
     void setWrapMode(TextureWrapMode mode)
