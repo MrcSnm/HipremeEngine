@@ -25,7 +25,7 @@
 			"name": "default",
 			"dependencies": {
 				"directx-d": {"path": "../../dependencies/directx-d", "optional": true, "default": true},
-				"bindbc-opengl": {"version": "~>1.0.0", "optional": true, "default": true}
+				"bindbc-opengl": {"version": "~>1.0.5", "optional": true, "default": true}
 			},
 			"versions": [
 				"HipGL3",
@@ -37,7 +37,7 @@
 		{
 			"name": "nodx",
 			"dependencies": {
-				"bindbc-opengl": "~>1.0.0"
+				"bindbc-opengl": "~>1.0.5"
 			},
 			"versions": [
 				"HipGL3",
