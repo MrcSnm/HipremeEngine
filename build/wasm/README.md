@@ -1,5 +1,4 @@
-# Hipreme Engine Vita SDK Port
-Hipreme Engine port for the Vita SDK.
+# Hipreme Engine WebAssembly project
 
 ## THIS BUILD REQUIRES HIPREME ENGINE CUSTOM D RUNTIME
 
@@ -28,24 +27,8 @@ phobos and the runtime itself.
 
 This custom runtime allocates memory which will never be freed. For small games, that is okay. HipremeEngine only allocates memory that requires GC on startup. The entire update loop is partially `@nogc`(doesn't allocate but I'm not locking anyone by not using this attribute). That means it won't allocate nor leak memory during gameplay, that means you can create a complete game using the D runtime without getting OutOfMemory. This have been tested a lot and the engine is pretty concerned in how, where and when the memory allocation will happen. It was decided to make the engine do not contribute to a collection occur.
 
-## Get the Vita SDK
 
-Details into setting up vita sdk on: https://vitasdk.org/
+## Generating a build for WASM
 
-You'll need the VitaSDK in your path. This process could be automatized in future.
-
-## Generating a build for Vita
-
-
-Extract `hipreme_engine_vita_dev_files.7z`.
-
-It has the following content:
-    -PVR_PSP2 headers and library
-    -Tools for easing development on Vita such as net logging.
-
-
-You'll need to create a folder "assets" in the same folder this README is located. It will be packaged to vita.
-After that, you can run `./build.sh`. Which you will probably need to modify to get your PS Vita IP Address (The data is sent via CURL).
-
-
-Install the .vpk file, after that, you'll be using from Hipreme Engine root folder `vitarun.sh`. Which will only transfer the binary data required to run your game. That way there won't be any need to install it again.
+Enter HipremeEngine's root and call `wasmtest.bat` (this batch can be easily converted to shell).
+After that, in the very same folder this readme is located, call `dub`. It is the development server for the WASM port. You can access your game at `localhost:9000`
