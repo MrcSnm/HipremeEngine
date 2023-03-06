@@ -21,9 +21,10 @@ The engine mantains some global options which you can modify it on source/global
 
 ## Platforms
 
-- Xbox Series (UWP)
-- Android
-- Browser (WebAssembly)
+- Xbox Series (UWP): [build/uwp](build/uwp/HipremeEngine/HipremeEngine)
+- Android: **build/android**
+- Browser (WebAssembly): [build/wasm](build/wasm)
+- PS Vita: [build/vita](build/vita/hipreme_engine/)
 - Windows
 - Linux
 
