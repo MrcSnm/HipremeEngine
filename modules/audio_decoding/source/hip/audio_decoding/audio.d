@@ -8,6 +8,8 @@ private char* getNameFromEncoding(HipAudioEncoding encoding)
 {
     final switch(encoding)
     {
+        case HipAudioEncoding.MOD: return cast(char*)"mod\0".ptr;
+        case HipAudioEncoding.XM: return cast(char*)"xm\0".ptr;
         case HipAudioEncoding.FLAC:return cast(char*)"flac\0".ptr;
         case HipAudioEncoding.MIDI:return cast(char*)"midi\0".ptr;
         case HipAudioEncoding.MP3:return cast(char*)"mp3\0".ptr;
