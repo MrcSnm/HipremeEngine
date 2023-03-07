@@ -9,7 +9,9 @@ enum HipAudioEncoding
     MP3,
     OGG,
     MIDI, //Probably won't support
-    FLAC
+    FLAC,
+    MOD,
+    XM
 }
 
 HipAudioEncoding getEncodingFromName(string name)
@@ -22,6 +24,8 @@ HipAudioEncoding getEncodingFromName(string name)
         case "ogg":return HipAudioEncoding.OGG;
         case "mp3":return HipAudioEncoding.MP3;
         case "flac":return HipAudioEncoding.FLAC;
+        case "mod": return HipAudioEncoding.MOD;
+        case "xm": return HipAudioEncoding.XM;
         case "mid":
         case "midi":return HipAudioEncoding.MIDI;
         default: assert(false, "Encoding from file '"~name~", is not supported.");
