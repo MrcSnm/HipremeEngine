@@ -1,5 +1,6 @@
 module hip.graphics.g2d.particles;
 import hip.math.vector;
+import hip.api.graphics.color;
 
 struct HipParticle
 {
@@ -83,3 +84,13 @@ class HipParticleSystem
         }
     }
 }   
+
+
+class HipParticleSystemDOD
+{
+    float[] accelerations;
+    float[] velocities;
+    float[] positions;
+    HipColor[] colors;
+
+}

@@ -321,6 +321,9 @@ class ShaderVariablesLayout
                 // if(hint & ShaderHint.D3D_USE_HLSL_4)
                     packFunc = &dxHLSL4;  
                 break;
+            case HipRendererType.METAL:
+                packFunc = &glSTD140;
+                break;
             case HipRendererType.NONE:
             default:break;
         }

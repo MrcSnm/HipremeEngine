@@ -77,8 +77,8 @@ class HipMultiSprite
     ref float[] getVertices()
     {
         //Vertices is already a data sink for the sprites, so no need to reassign.
-        foreach(sp; sprites)
-            sp.getVertices();
+        foreach(i, sp; sprites)
+            sp.getVertices;
         return vertices;
     }
 
