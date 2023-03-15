@@ -7,3 +7,6 @@
 [submodule "dependencies/runtime/druntime"]
 	path = dependencies/runtime/druntime
 	url = https://github.com/MrcSnm/webassembly
+[submodule "dependencies/metal"]
+	path = dependencies/metal
+	url = https://github.com/MrcSnm/D-Metal-Binding

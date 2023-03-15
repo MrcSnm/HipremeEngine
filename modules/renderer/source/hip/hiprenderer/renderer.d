@@ -43,6 +43,7 @@ enum HipRendererType
 {
     GL3,
     D3D11,
+    METAL,
     NONE
 }
 
