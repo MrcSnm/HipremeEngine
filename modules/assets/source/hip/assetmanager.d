@@ -273,7 +273,7 @@ class HipAssetManager
 
     public static void initialize()
     {
-        completeMutex = new DebugMutex(0);
+        completeMutex = new DebugMutex();
         workerPool = new HipWorkerPool(HIP_ASSETMANAGER_WORKER_POOL);
     }
 
