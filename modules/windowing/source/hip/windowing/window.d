@@ -44,6 +44,11 @@ class HipWindow
     {
         import hip.windowing.platforms.browser;
     }
+    else version(AppleOS)
+    {
+        import hip.windowing.platforms.macos;
+        void* MTKView;
+    }
     else
     {
         import hip.windowing.platforms.null_;
@@ -62,6 +67,10 @@ class HipWindow
         else version(WebAssembly)
         {
             openWindow(width, height);
+        }
+        else version(AppleOS)
+        {
+            openWindow(MTKView, width, height);
         }
         else version(X11)
         {
