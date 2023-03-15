@@ -1,11 +1,9 @@
 module hip.hiprenderer.backend.metal.mtlvertex;
 
 import metal;
-import hip.hiprenderer.vertex;
+import hip.hiprenderer;
 import hip.error.handler;
-import metal.vertexdescriptor;
-import metal.mtlshader;
-import metal.metal;
+import hip.hiprenderer.backend.metal.mtlshader;
 
 
 MTLResourceOptions mtlOptions(HipBufferUsage usage)
@@ -27,21 +25,22 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
 {
     MTLBuffer buffer;
     MTLResourceOptions options;
+    MTLDevice device;
 
-    this(MTLDevice device, size_t count, HipBufferUsage usage)
+    this(MTLDevice device, size_t length, HipBufferUsage usage)
     {
+        this.device = device;
         options = usage.mtlOptions;
         buffer = device.newBuffer(length, options);
-        buffer.label = "HipMTLIndexBuffer".ns;
     }
     void bind()
     {
-        boundIndexBuffer = this;
+        boundIndexBuffer = buffer;
     }
 
     void unbind()
     {
-        if(boundIndexBuffer is this) boundIndexBuffer = null;
+        if(boundIndexBuffer is buffer) boundIndexBuffer = null;
     }
 
     void setData(index_t count, const index_t* data)
@@ -51,7 +50,7 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
 
     void updateData(int offset, index_t count, const index_t* data)
     {
-        buffer.contents[offset..count*index_t.sizeof] = data[0..index_t.sizeof*count];
+        buffer.contents[offset..count*index_t.sizeof] = cast(void[])data[0..count];
     }
 }
 
@@ -59,8 +58,11 @@ class HipMTLVertexBuffer : IHipVertexBufferImpl
 {
     MTLBuffer buffer;
     MTLResourceOptions options;
+    MTLDevice device;
+
     this(MTLDevice device, size_t size, HipBufferUsage usage)
     {
+        this.device = device;
         options = usage.mtlOptions;
         buffer = device.newBuffer(size, options);
     }
@@ -76,12 +78,13 @@ class HipMTLVertexBuffer : IHipVertexBufferImpl
 
     void setData(size_t size, const void* data)
     {
-        buffer = newBufferWithBytes(data, size, options);
+        if(buffer) buffer.dealloc();
+        buffer = device.newBuffer(data, size, options);
     }
 
     void updateData(int offset, size_t size, const void* data)
     {
-        buffer.content[offset..size] = data[0..size];
+        buffer.contents[offset..size] = data[0..size];
     }
 }
 
@@ -97,7 +100,6 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeInfo i)
                 case 3: return MTLVertexFormat.float3;
                 case 4: return MTLVertexFormat.float4;
             }
-            break;
         case HipAttributeType.INT:
             final switch(i.count)
             {
@@ -106,7 +108,6 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeInfo i)
                 case 3: return MTLVertexFormat.int3;
                 case 4: return MTLVertexFormat.int4;
             }
-            break;
         case HipAttributeType.BOOL:
             final switch(i.count)
             {
@@ -115,8 +116,8 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeInfo i)
                 case 3: return MTLVertexFormat.char3;
                 case 4: return MTLVertexFormat.char4;
             }
-            break;
     }
+    assert(false, "Unknown format");
 }
 
 class HipMTLVertexArray : IHipVertexArrayImpl
@@ -139,8 +140,8 @@ class HipMTLVertexArray : IHipVertexArrayImpl
 
     void bind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
     {
-        vBuffer = vbo;
-        iBuffer = ebo;
+        vBuffer = cast(HipMTLVertexBuffer)vbo;
+        iBuffer = cast(HipMTLIndexBuffer)ebo;
         vbo.bind();
         ebo.bind();
         cmdEncoder.setVertexBuffer(vBuffer.buffer, 0, 0);
@@ -166,10 +167,10 @@ class HipMTLVertexArray : IHipVertexArrayImpl
 
     void createInputLayout(Shader s)
     {
-        HipMTLShader shader = (cast(HipMTLShader)s.shaderProgram);
+        HipMTLShaderProgram shader = (cast(HipMTLShaderProgram)s.shaderProgram);
         shader.pipelineDescriptor.vertexDescriptor = descriptor;
         NSError err;
-        shader.pipelineState = device.newRenderPipelineStateWithDescriptor(shader.pipelineState, &err);
+        shader.pipelineState = device.newRenderPipelineStateWithDescriptor(shader.pipelineDescriptor, &err);
         if(err !is null || shader.pipelineState is null)
         {
             ErrorHandler.showErrorMessage("Creating Input Layout",  "Could not create RenderPipelineState");

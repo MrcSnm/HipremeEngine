@@ -1,7 +1,7 @@
 module hip.windowing.window;
 
 version(Android){}
-else version(Posix)
+else version(Linux)
     version = X11;
 
 version(UWP){}
@@ -46,7 +46,7 @@ class HipWindow
     }
     else version(AppleOS)
     {
-        import hip.windowing.platforms.macos;
+        import hip.windowing.platforms.appleos;
         void* MTKView;
     }
     else
@@ -70,7 +70,7 @@ class HipWindow
         }
         else version(AppleOS)
         {
-            openWindow(MTKView, width, height);
+            openWindow(&MTKView, width, height);
         }
         else version(X11)
         {

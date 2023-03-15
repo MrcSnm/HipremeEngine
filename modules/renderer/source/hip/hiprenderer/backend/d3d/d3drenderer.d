@@ -387,6 +387,10 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         return new Hip_D3D11_VertexArrayObject();
     }
+    public IHipTexture createTexture()
+    {
+        return new Hip_D3D11_Texture();
+    }
     public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage)
     {
         return new Hip_D3D11_VertexBufferObject(size, usage);

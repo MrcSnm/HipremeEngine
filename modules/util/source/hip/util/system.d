@@ -223,12 +223,12 @@ bool dynamicLibraryRelease(void* dll)
     }
     else version(Android)
     {
-        import core.sys.linux.dlfcn:dlclose;
+        import core.sys.posix.dlfcn:dlclose;
         return cast(bool)dlclose(dll);
     }
     else version(Posix)
     {
-        import core.sys.linux.dlfcn:dlclose;
+        import core.sys.posix.dlfcn:dlclose;
         return cast(bool)dlclose(dll);
     }
     else
