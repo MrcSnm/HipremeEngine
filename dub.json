@@ -80,6 +80,21 @@
 			]
 		},
 		{
+			"name": "appleos",
+			"targetPath": "bin/desktop",
+			"targetType": "executable",
+			"versions": [
+				"OpenAL",
+				"Desktop",
+				"Standalone",
+				"Test",
+				"NO_GLES",
+				"AppleOS",
+				"NO_SLES"
+			],
+			"dflags-ldc": ["--disable-verify"]
+		},
+		{
 			"name": "nodx",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
