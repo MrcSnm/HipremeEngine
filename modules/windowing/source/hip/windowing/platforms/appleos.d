@@ -4,7 +4,7 @@ version(AppleOS):
 
 extern(C) void hipSetMTKView(void** MTKView);
 
-void openWindow(out void* MTKView, ref int width, ref int height)
+void openWindow(void** MTKView, ref int width, ref int height)
 {
     hipSetMTKView(MTKView);
     width = 0;

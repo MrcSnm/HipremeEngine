@@ -70,21 +70,21 @@ class HipMTLShaderProgram : ShaderProgram
     MTLLibrary library;
     MTLFunction vertexShaderFunction;
     MTLFunction fragmentShaderFunction;
-    MTLBuffer uniformbuffer;
+    MTLBuffer uniformBuffer;
 
     MTLRenderPipelineDescriptor pipelineDescriptor;
     MTLRenderPipelineState pipelineState;
 
     this()
     {
-        descriptor = MTLRenderPipelineDescriptor.alloc.initialize;
+        pipelineDescriptor = MTLRenderPipelineDescriptor.alloc.initialize;
         pipelineState = MTLRenderPipelineState.alloc.init;
     }
 }
 
 
 
-__gshared HipMTLShader boundShader;
+__gshared HipMTLShaderProgram boundShader;
 
 class HipMTLShader : IShader
 {
@@ -129,18 +129,18 @@ class HipMTLShader : IShader
         HipMTLShaderProgram p = cast(HipMTLShaderProgram)program;
 
         HipMTLVertexShader v = cast(HipMTLVertexShader)vs;
-        HipMTLVertexShader f = cast(HipMTLFragmentShader)fs;
+        HipMTLFragmentShader f = cast(HipMTLFragmentShader)fs;
 
         string shaderSource = v.shaderSource~f.shaderSource;
         scope(exit)
         {
             import core.memory;
-            GC.free(shaderSource);
+            GC.free(cast(void*)shaderSource.ptr);
         }
 
         NSError err;
-        MTLCompileOptions opts = MTLCompileOptions.alloc.initialize;
-        p.library = newLibraryWithSource(shaderSource.ns, opts, &err);
+        MTLCompileOptions opts = cast(MTLCompileOptions)MTLCompileOptions.alloc.initialize;
+        p.library = device.newLibraryWithSource(shaderSource.ns, opts, &err);
 
         if(p.library is null || err !is null)
             return false;
@@ -164,16 +164,16 @@ class HipMTLShader : IShader
     void bind(ShaderProgram program)
     {
         HipMTLShaderProgram mtlShader = cast(HipMTLShaderProgram)program;
-        encoder.setRenderPipelineState(mtlShader.state);
-        encoder.setFragmentBuffer(mtlShader.uniformbuffer, 0, 0);
-        boundShader = this;
+        encoder.setRenderPipelineState(mtlShader.pipelineState);
+        encoder.setFragmentBuffer(mtlShader.uniformBuffer, 0, 0);
+        boundShader = mtlShader;
     }
 
     void unbind(ShaderProgram program)
     {
         encoder.setRenderPipelineState(null);
-        encoer.setFragmentBuffer(null, 0, 0);
-        if(boundShader is this) boundShader = null;
+        encoder.setFragmentBuffer(null, 0, 0);
+        if(boundShader is program) boundShader = null;
     }
 
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
@@ -190,7 +190,8 @@ class HipMTLShader : IShader
     void deleteShader(VertexShader* vs){}
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
-        uniformBuffer = device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
+        assert(boundShader !is null);
+        boundShader.uniformBuffer = device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
     }
 
     void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
@@ -200,7 +201,7 @@ class HipMTLShader : IShader
         HipMTLShaderProgram mtlShader = cast(HipMTLShaderProgram)prog;
         foreach(layout; layouts)
         {
-            memcpy(mtlShader.uniformbuffer.contents, layout.getBlockData, layout.getLayoutSize);
+            memcpy(mtlShader.uniformBuffer.contents, layout.getBlockData, layout.getLayoutSize);
         }
     }
 

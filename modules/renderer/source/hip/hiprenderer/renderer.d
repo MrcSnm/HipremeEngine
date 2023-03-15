@@ -28,6 +28,11 @@ version(Windows)
     import hip.hiprenderer.backend.d3d.d3drenderer;
     import hip.hiprenderer.backend.d3d.d3dtexture;
 }
+version(AppleOS)
+{
+    import hip.hiprenderer.backend.metal.mtlrenderer;
+    import hip.hiprenderer.backend.metal.mtltexture;
+}
 import hip.hiprenderer.backend.gl.gltexture;
 
 ///Could later be moved to windowing
@@ -112,6 +117,7 @@ interface IHipRendererImpl
     public IHipVertexArrayImpl  createVertexArray();
     public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage);
     public IHipIndexBufferImpl  createIndexBuffer(index_t count, HipBufferUsage usage);
+    public IHipTexture  createTexture();
     public int queryMaxSupportedPixelShaderTextures();
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void setViewport(Viewport v);
@@ -182,16 +188,49 @@ class HipRenderer
             switch(renderer)
             {
                 case "GL3":
-                    return initialize(new Hip_GL3Renderer(), &cfg, width, height);
+                    version(OpenGL)
+                    {
+                        return initialize(new Hip_GL3Renderer(), &cfg, width, height);
+                    }
+                    else version(DirectX)
+                    {
+                        logln("OpenGL wasn't included in this build, using Direct3D");
+                        goto case "D3D11";
+                    }
+                    else version(AppleOS)
+                    {
+                        logln("OpenGL wasn't included in this build, using Metal");
+                        goto case "METAL";
+                    }
                 case "D3D11":
                     version(DirectX)
                     {
                         return initialize(new Hip_D3D11_Renderer(), &cfg, width, height);
                     }
-                    else
+                    else version(OpenGL)
                     {
                         logln("Direct3D wasn't included in this build, using OpenGL 3");
                         goto case "GL3";
+                    }
+                    else version(AppleOS)
+                    {
+                        logln("Direct3D wasn't included in this build, using Metal");
+                        goto case "METAL";
+                    }
+                case "METAL":
+                    version(AppleOS)
+                    {
+                        return initialize(new HipMTLRenderer(), &cfg, width, height);
+                    }
+                    else version(OpenGL)
+                    {
+                        logln("Metal wasn't included in this build, using OpenGL 3");
+                        goto case "GL3";
+                    }
+                    else version(DirectX)
+                    {
+                        logln("Metal wasn't included in this build, using Direct3D");
+                        goto case "D3D11";
                     }
                 default:
                     logln("Invalid renderer?" , renderer, " ' oh my freakin goodness");
@@ -207,15 +246,21 @@ class HipRenderer
         }
         else
         {
+            string defaultRenderer = "OpenGL3";
+            version(AppleOS) defaultRenderer = "Metal";
             if(!ini.configFound)
-                logln("No renderer.conf found, defaulting renderer to OpenGL3");
-            else
+                logln("No renderer.conf found");
+            if(!ini.noError)
             {
-                logln("Renderer.conf parsing error, defaulting renderer to OpenGL3");
-                rawlog(ini.errors);
+                logln("Renderer.conf parsing error");
+                rawerror(ini.errors);
             }
+            hiplog("Defaulting renderer to "~defaultRenderer);
         }
-        return initialize(new Hip_GL3Renderer(), &cfg, 1280, 720);
+        version(OpenGL)
+            return initialize(new Hip_GL3Renderer(), &cfg, 1280, 720);
+        else version(AppleOS)
+            return initialize(new HipMTLRenderer(), &cfg, 1280, 720);
     }
     version(dll) private static IHipRendererImpl getRenderer(ref HipRendererType type)
     {
@@ -228,6 +273,11 @@ class HipRenderer
                 {
                     type = HipRendererType.GL3;
                     return new Hip_GL3Renderer();
+                }
+                else version(AppleOS)
+                {
+                    type = HipRendererType.METAL;
+                    return new HipMTLRenderer();
                 }
                 else
                 {
@@ -334,23 +384,7 @@ class HipRenderer
 
     private static IHipTexture _getTextureImplementation()
     {
-        switch(HipRenderer.getRendererType())
-        {
-            case HipRendererType.GL3:
-                version(OpenGL)
-                    return new Hip_GL3_Texture();
-                else
-                    return null;
-            case HipRendererType.D3D11:
-                version(DirectX)
-                    return new Hip_D3D11_Texture();
-                else
-                    return null;
-            default:
-                ErrorHandler.showErrorMessage("No renderer implementation active",
-                "Can't create a texture without a renderer implementation active");
-                return null;
-        }
+        return rendererImpl.createTexture();
     }
     public static IHipTexture getTextureImplementation()
     {

@@ -62,6 +62,12 @@
 			}
 		},
 		{
+			"name": "appleos",
+			"dependencies": {
+				"d-metal-binding": {"path": "../../dependencies/metal"}
+			}
+		},
+		{
 			"name": "wasm",
 			"dependencies": {
 				"gles" : {"path": "../../dependencies/gles"}

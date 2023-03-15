@@ -7,20 +7,20 @@ import metal.texture;
 
 MTLPixelFormat getPixelFormat(in IImage img)
 {
-    switch(img.getBytesPerPixel)
+    final switch(img.getBytesPerPixel)
     {
         case 1: return MTLPixelFormat.R8Uint;
         case 4: return MTLPixelFormat.RGBA8Uint;
         case 2:
         case 3:
-        default:
     }
+    assert(0);
 }
 
 
 MTLSamplerAddressMode fromHipTextureWrapMode(TextureWrapMode m)
 {
-    switch(m)
+    final switch(m)
     {
         case TextureWrapMode.CLAMP_TO_EDGE:
             return MTLSamplerAddressMode.ClampToEdge;
@@ -28,6 +28,8 @@ MTLSamplerAddressMode fromHipTextureWrapMode(TextureWrapMode m)
             return MTLSamplerAddressMode.MirrorClampToEdge;
         case TextureWrapMode.REPEAT:
             return MTLSamplerAddressMode.Repeat;
+        case TextureWrapMode.MIRRORED_REPEAT:
+            return MTLSamplerAddressMode.MirrorRepeat;
         case TextureWrapMode.CLAMP_TO_BORDER:
             return MTLSamplerAddressMode.ClampToBorderColor;
         case TextureWrapMode.UNKNOWN: assert(false, "Don't use that");
@@ -41,7 +43,7 @@ class HipMTLTexture : IHipTexture
     MTLTexture texture;
     MTLDevice device;
     MTLSamplerState sampler;
-    MTLSamplerStateDescriptor samplerDesc;
+    MTLSamplerDescriptor samplerDesc;
 
     MTLRenderCommandEncoder cmdEncoder;
 
@@ -51,7 +53,7 @@ class HipMTLTexture : IHipTexture
     {
         this.device = device;
         this.cmdEncoder = cmdEncoder;
-        samplerDesc = MTLSamplerStateDescriptor.alloc.init;
+        samplerDesc = cast(MTLSamplerDescriptor)MTLSamplerDescriptor.alloc.initialize;
     }
 
     void setWrapMode(TextureWrapMode mode)
@@ -91,7 +93,7 @@ class HipMTLTexture : IHipTexture
                 samplerDesc.mipFilter = MTLSamplerMipFilter.Linear;
                 break;
         }
-        final switch ( max ) with(TextureFilter)
+        final switch ( mag ) with(TextureFilter)
         {
             case LINEAR:
                 samplerDesc.magFilter = MTLSamplerMinMagFilter.Linear;
