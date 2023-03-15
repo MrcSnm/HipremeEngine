@@ -2,18 +2,19 @@ module hip.hiprenderer.backend.metal.mtlrenderer;
 
 version(AppleOS):
 
-import hip.hiprenderer.renderer;
-import hip.hiprenderer.backend.metal;
 import metal;
+import hip.hiprenderer.renderer;
+import hip.windowing.window;
 import hip.hiprenderer.backend.metal.mtlvertex;
+import hip.hiprenderer.backend.metal.mtltexture;
 
 
 class HipMTLRenderer : IHipRendererImpl
 {
     MTKView view;
     MTLDevice device;
+    MTLCommandBuffer cmdBuffer;
     MTLCommandQueue cmdQueue;
-    MTLCommandQueue cmdBuffer;
     MTLRenderPassDescriptor renderPassDescriptor;
     MTLRenderCommandEncoder cmdEncoder;
     MTLPrimitiveType primitiveType;
@@ -24,9 +25,11 @@ class HipMTLRenderer : IHipRendererImpl
         cmdBuffer = cmdQueue.commandBuffer;
         cmdBuffer.label = "HipremeRenderer".ns;
 
-        view = window.MTKView;
+        view = cast(MTKView)window.MTKView;
         renderPassDescriptor = view.currentRenderPassDescriptor;
         cmdEncoder = cmdBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor);
+
+        return cmdEncoder !is null;
     }
 
     public bool initExternal()
@@ -49,6 +52,11 @@ class HipMTLRenderer : IHipRendererImpl
     public IHipVertexArrayImpl createVertexArray()
     {
         return new HipMTLVertexArray(device, cmdEncoder);
+    }
+
+    public IHipTexture createTexture()
+    {
+        return new HipMTLTexture(device, cmdEncoder);
     }
 
     public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage)
@@ -96,7 +104,7 @@ class HipMTLRenderer : IHipRendererImpl
         
     }
 
-    public bool hasErrorOccurred(out string err, string line = __FILE__, size_t line = __LINE__)
+    public bool hasErrorOccurred(out string err, string file = __FILE__, size_t line = __LINE__)
     {
         return bool.init; // TODO: implement
     }
@@ -108,7 +116,7 @@ class HipMTLRenderer : IHipRendererImpl
 
     public void setRendererMode(HipRendererMode mode)
     {
-        switch(mode)
+        final switch(mode)
         {
             case HipRendererMode.LINE: 
                 primitiveType = MTLPrimitiveType.Line;
