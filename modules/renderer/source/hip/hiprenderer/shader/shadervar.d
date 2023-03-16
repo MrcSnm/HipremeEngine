@@ -343,15 +343,11 @@ class ShaderVariablesLayout
         ErrorHandler.assertExit(data != null, "Out of memory");
     }
 
-    void setOwner(Shader owner)
-    {
-        assert(this.owner is null, "Can only assign owner once");
-        this.owner = owner;
-    }
     Shader getOwnerShader(){return owner;}
-    void lock()
+    void lock(Shader owner)
     {
         calcAlignment();
+        this.owner = owner;
         this.isLocked = true;
     }
 

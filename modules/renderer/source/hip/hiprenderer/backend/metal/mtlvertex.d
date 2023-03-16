@@ -144,12 +144,12 @@ class HipMTLVertexArray : IHipVertexArrayImpl
         iBuffer = cast(HipMTLIndexBuffer)ebo;
         vbo.bind();
         ebo.bind();
-        cmdEncoder.setVertexBuffer(vBuffer.buffer, 0, 0);
+        cmdEncoder.setVertexBuffer(vBuffer.buffer, 0, 1);
     }
 
     void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
     {
-        cmdEncoder.setVertexBuffer(null, 0, 0);
+        cmdEncoder.setVertexBuffer(null, 0, 1);
         vbo.unbind();
         ebo.unbind();
         vBuffer = null;
