@@ -21,7 +21,13 @@ class HipMTLFragmentShader : FragmentShader
 
     override string getGeometryBatchFragment()
     {
-        return string.init; // TODO: implement
+        return q{
+
+fragment float4 fragment_main(FragmentInput in [[stage_in]])
+{
+    return in.inVertexColor * uGlobalColor;
+}
+};
     }
 
     override string getSpriteBatchFragment()
@@ -46,12 +52,56 @@ class HipMTLVertexShader : VertexShader
 
     override string getFrameBufferVertex()
     {
-        return string.init; // TODO: implement
+        return q{
+
+struct VertexInput
+{
+
+};
+struct FragmentInput
+{
+    ///Unused
+    float4 position [[position]];
+    float4 inVertexColor;
+}; 
+
+vertex 
+};
     }
 
     override string getGeometryBatchVertex()
     {
-        return string.init; // TODO: implement
+        return q{
+struct VertexInput
+{
+    float3 vPositionn;
+    float4 vColor;
+};
+struct Uniforms
+{
+    float4x4 uProj;
+    float4x4 uModel;
+    float4x4 uView;
+};
+struct FragmentInput
+{
+    float4 position [[position]];
+    float4 inColor;
+}; 
+
+vertex FragmentInput vertex_main(
+    uint vertexID [[vertex_id]],
+    constant VertexInput* input [[buffer(0)]],
+    constant Uniforms* uniforms [[buffer(1)]]
+)
+    {
+        FragmentInput out;
+        VertexInput v = input[vertexID];
+        out.position = uProj*uView*uModel*float4(v.vPosition, 1.0);
+        out.inColor = v.vColor;
+        return out;
+    }
+};
     }
 
     override string getSpriteBatchVertex()
@@ -70,7 +120,8 @@ class HipMTLShaderProgram : ShaderProgram
     MTLLibrary library;
     MTLFunction vertexShaderFunction;
     MTLFunction fragmentShaderFunction;
-    MTLBuffer uniformBuffer;
+    MTLBuffer uniformBufferVertex;
+    MTLBuffer uniformBufferFragment;
 
     MTLRenderPipelineDescriptor pipelineDescriptor;
     MTLRenderPipelineState pipelineState;
@@ -165,13 +216,17 @@ class HipMTLShader : IShader
     {
         HipMTLShaderProgram mtlShader = cast(HipMTLShaderProgram)program;
         encoder.setRenderPipelineState(mtlShader.pipelineState);
-        encoder.setFragmentBuffer(mtlShader.uniformBuffer, 0, 0);
+        if(mtlShader.uniformBufferVertex)
+            encoder.setVertexBuffer(mtlShader.uniformBufferVertex, 0, 0);
+        if(mtlShader.uniformBufferFragment)
+            encoder.setFragmentBuffer(mtlShader.uniformBufferFragment, 0, 0);
         boundShader = mtlShader;
     }
 
     void unbind(ShaderProgram program)
     {
         encoder.setRenderPipelineState(null);
+        encoder.setVertexBuffer(null, 0, 0);
         encoder.setFragmentBuffer(null, 0, 0);
         if(boundShader is program) boundShader = null;
     }
@@ -190,10 +245,19 @@ class HipMTLShader : IShader
     void deleteShader(VertexShader* vs){}
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
-        assert(boundShader !is null);
-        boundShader.uniformBuffer = device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
+        MTLBuffer buffer = device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
+        Shader s = layout.getShaderOwner();
+        layout.setAdditionalData(cast(void*)buffer, true);
+        final switch(layout.shaderType)
+        {
+            case ShaderTypes.VERTEX:
+                s.uniformBufferVertex = buffer;
+                break;
+            case ShaderTypes.FRAGMENT:
+                s.uniformBufferFragment = buffer;
+                break;
+        }
     }
-
     void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
     {
         import core.stdc.string;
@@ -201,7 +265,8 @@ class HipMTLShader : IShader
         HipMTLShaderProgram mtlShader = cast(HipMTLShaderProgram)prog;
         foreach(layout; layouts)
         {
-            memcpy(mtlShader.uniformBuffer.contents, layout.getBlockData, layout.getLayoutSize);
+            MTLBuffer uniformBuffer = cast(MTLBuffer)layout.getAdditionalData();
+            memcpy(uniformBuffer.contents, layout.getBlockData, layout.getLayoutSize);
         }
     }
 
