@@ -92,6 +92,9 @@
 				"AppleOS",
 				"NO_SLES"
 			],
+			"subConfigurations": {
+				"renderer": "appleos" 
+			},
 			"dflags-ldc": ["--disable-verify"]
 		},
 		{
