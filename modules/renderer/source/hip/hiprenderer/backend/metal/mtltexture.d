@@ -141,11 +141,13 @@ class HipMTLTexture : IHipTexture
 
     void bind(int slot = 0)
     {
+        cmdEncoder.setFragmentSamplerState(sampler, slot);
         cmdEncoder.setFragmentTexture(texture, slot);
     }
 
     void unbind(int slot = 0)
     {
+        cmdEncoder.setFragmentSamplerState(null, slot);
         cmdEncoder.setFragmentTexture(null, slot);
     }
     bool hasSuccessfullyLoaded(){return width != 0;}
