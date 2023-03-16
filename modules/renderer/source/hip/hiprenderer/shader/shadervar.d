@@ -273,6 +273,8 @@ class ShaderVariablesLayout
     private string[] namesOrder;
     string name;
     ShaderTypes shaderType;
+    protected Shader owner;
+
     //Single block representation of variables content
     protected void* data;
     protected void* additionalData;
@@ -340,6 +342,13 @@ class ShaderVariablesLayout
         data = malloc(getLayoutSize());
         ErrorHandler.assertExit(data != null, "Out of memory");
     }
+
+    void setOwner(Shader owner)
+    {
+        assert(this.owner is null, "Can only assign owner once");
+        this.owner = owner;
+    }
+    Shader getOwnerShader(){return owner;}
     void lock()
     {
         calcAlignment();

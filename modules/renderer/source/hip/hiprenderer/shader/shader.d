@@ -300,6 +300,7 @@ public class Shader : IReloadable
         if(defaultLayout is null)
             defaultLayout = layout;
         layouts[layout.name] = layout;
+        layout.setOwner(this);
         layout.lock();
         shaderImpl.createVariablesBlock(layout);
     }
