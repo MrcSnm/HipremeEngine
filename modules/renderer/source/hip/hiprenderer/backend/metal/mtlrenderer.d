@@ -5,6 +5,7 @@ version(AppleOS):
 import metal;
 import hip.hiprenderer.renderer;
 import hip.windowing.window;
+import hip.hiprenderer.backend.metal.mtlshader;
 import hip.hiprenderer.backend.metal.mtlvertex;
 import hip.hiprenderer.backend.metal.mtltexture;
 
@@ -41,7 +42,7 @@ class HipMTLRenderer : IHipRendererImpl
     void setErrorCheckingEnabled(bool enable = true){}
     public Shader createShader()
     {
-        return Shader.init; // TODO: implement
+        return new Shader(new HipMTLShader(device, cmdEncoder));
     }
 
     public IHipFrameBuffer createFrameBuffer(int width, int height)
