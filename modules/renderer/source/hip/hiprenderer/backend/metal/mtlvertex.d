@@ -25,11 +25,13 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
 {
     MTLBuffer buffer;
     MTLResourceOptions options;
+    MTLCommandQueue cmdQueue;
     MTLDevice device;
 
-    this(MTLDevice device, size_t length, HipBufferUsage usage)
+    this(MTLDevice device, MTLCommandQueue cmdQueue, size_t length, HipBufferUsage usage)
     {
         this.device = device;
+        this.cmdQueue = cmdQueue;
         options = usage.mtlOptions;
         buffer = device.newBuffer(length, options);
     }
@@ -45,7 +47,20 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
 
     void setData(index_t count, const index_t* data)
     {
-        buffer = device.newBuffer(data, count*index_t.sizeof, options);
+        if(options == MTLResourceOptions.StorageModePrivate)
+        {
+            MTLBuffer temp = device.newBuffer(data, count*index_t.sizeof, MTLResourceOptions.StorageModeShared);
+            MTLCommandBuffer cmdBuffer = cmdQueue.commandBuffer;
+            MTLBlitCommandEncoder cmdEncoder = cmdBuffer.blitCommandEncoder;
+            cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, count*index_t.sizeof);
+            cmdEncoder.endEncoding();
+            cmdBuffer.commit();
+        }
+        else
+        {
+            if(buffer) buffer.dealloc();
+            buffer = device.newBuffer(data, count*index_t.sizeof, options);
+        }
     }
 
     void updateData(int offset, index_t count, const index_t* data)
@@ -57,12 +72,14 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
 class HipMTLVertexBuffer : IHipVertexBufferImpl
 {
     MTLBuffer buffer;
+    MTLCommandQueue cmdQueue;
     MTLResourceOptions options;
     MTLDevice device;
 
-    this(MTLDevice device, size_t size, HipBufferUsage usage)
+    this(MTLDevice device, MTLCommandQueue cmdQueue, size_t size, HipBufferUsage usage)
     {
         this.device = device;
+        this.cmdQueue = cmdQueue;
         options = usage.mtlOptions;
         buffer = device.newBuffer(size, options);
     }
@@ -78,8 +95,20 @@ class HipMTLVertexBuffer : IHipVertexBufferImpl
 
     void setData(size_t size, const void* data)
     {
-        if(buffer) buffer.dealloc();
-        buffer = device.newBuffer(data, size, options);
+        if(options == MTLResourceOptions.StorageModePrivate)
+        {
+            MTLBuffer temp = device.newBuffer(data, size, MTLResourceOptions.StorageModeShared);
+            MTLCommandBuffer cmdBuffer = cmdQueue.commandBuffer;
+            MTLBlitCommandEncoder cmdEncoder = cmdBuffer.blitCommandEncoder;
+            cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, size);
+            cmdEncoder.endEncoding();
+            cmdBuffer.commit();
+        }
+        else
+        {
+            if(buffer) buffer.dealloc();
+            buffer = device.newBuffer(data, size, options);
+        }
     }
 
     void updateData(int offset, size_t size, const void* data)

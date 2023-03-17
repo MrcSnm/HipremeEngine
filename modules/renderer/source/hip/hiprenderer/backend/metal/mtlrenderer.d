@@ -10,6 +10,7 @@ import hip.hiprenderer.backend.metal.mtlvertex;
 import hip.hiprenderer.backend.metal.mtltexture;
 
 
+
 class HipMTLRenderer : IHipRendererImpl
 {
     MTKView view;
@@ -22,16 +23,34 @@ class HipMTLRenderer : IHipRendererImpl
 
     public bool init(HipWindow window)
     {
+        view = cast(MTKView)window.MTKView;
+        device = view.device();
         cmdQueue = device.newCommandQueue();
         cmdBuffer = cmdQueue.commandBuffer;
         cmdBuffer.label = "HipremeRenderer".ns;
 
-        view = cast(MTKView)window.MTKView;
         renderPassDescriptor = view.currentRenderPassDescriptor;
         cmdEncoder = cmdBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor);
 
         return cmdEncoder !is null;
     }
+
+    /** 
+     * Util for creating MTLResourceOptions.StorageModePrivate buffer with initial data.
+     */
+    package static MTLBuffer createPrivateBufferWithData(MTLCommandQueue cQueue, const(void)* data, size_t size)
+    { 
+        MTLDevice d = cQueue.device;
+        MTLBuffer temp = d.newBuffer(data, size, MTLResourceOptions.StorageModeShared);
+        MTLBuffer ret = d.newBuffer(size, MTLResourceOptions.StorageModePrivate);
+        MTLCommandBuffer _cmdBuffer = cQueue.commandBuffer;
+        MTLBlitCommandEncoder _cmdEncoder = _cmdBuffer.blitCommandEncoder;
+        _cmdEncoder.copyFromBuffer(temp, 0, ret, 0, size);
+        _cmdEncoder.endEncoding();
+        _cmdBuffer.commit();
+        return ret;
+    }
+
 
     public bool initExternal()
     {
@@ -57,17 +76,17 @@ class HipMTLRenderer : IHipRendererImpl
 
     public IHipTexture createTexture()
     {
-        return new HipMTLTexture(device, cmdEncoder);
+        return new HipMTLTexture(device,cmdQueue, cmdEncoder);
     }
 
     public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage)
     {
-        return new HipMTLVertexBuffer(device, size, usage);
+        return new HipMTLVertexBuffer(device, cmdQueue, size, usage);
     }
 
     public IHipIndexBufferImpl createIndexBuffer(index_t count, HipBufferUsage usage)
     {
-        return new HipMTLIndexBuffer(device, count, usage);
+        return new HipMTLIndexBuffer(device, cmdQueue, count, usage);
     }
 
     public int queryMaxSupportedPixelShaderTextures()

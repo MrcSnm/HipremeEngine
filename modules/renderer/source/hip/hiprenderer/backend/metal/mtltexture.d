@@ -2,6 +2,8 @@ module hip.hiprenderer.backend.metal.mtltexture;
 version(AppleOS):
 import metal;
 import hip.hiprenderer;
+import hip.hiprenderer.backend.metal.mtlrenderer;
+import hip.console.log;
 import metal.texture;
 
 
@@ -43,17 +45,19 @@ class HipMTLTexture : IHipTexture
     MTLTexture texture;
     MTLDevice device;
     MTLSamplerState sampler;
-    MTLSamplerDescriptor samplerDesc;
+    MTLSamplerDescriptor samplerDesc = null;
 
     MTLRenderCommandEncoder cmdEncoder;
+    MTLCommandQueue cmdQueue;
 
     uint width, height;
 
-    this(MTLDevice device, MTLRenderCommandEncoder cmdEncoder)
+    this(MTLDevice device, MTLCommandQueue cmdQueue, MTLRenderCommandEncoder cmdEncoder)
     {
         this.device = device;
         this.cmdEncoder = cmdEncoder;
-        samplerDesc = cast(MTLSamplerDescriptor)MTLSamplerDescriptor.alloc.initialize;
+        this.cmdQueue = cmdQueue;
+        samplerDesc = MTLSamplerDescriptor.alloc.initialize;
     }
 
     void setWrapMode(TextureWrapMode mode)
@@ -131,10 +135,16 @@ class HipMTLTexture : IHipTexture
             NO
         );
 
+        if(desc is null)
+            return false;
+
         width = img.getWidth;
         height = img.getHeight;
 
-        texture = device.newBuffer(img.getPixels.ptr, img.getPixels.length, MTLResourceOptions.StorageModePrivate)
+        import hip.console.log;
+        logln("Width: ", img.getWidth, " BytesPerPixel: ", img.getBytesPerPixel);
+
+        texture = HipMTLRenderer.createPrivateBufferWithData(cmdQueue, img.getPixels.ptr, img.getPixels.length)
             .newTextureWithDescriptor(desc, 0, img.getWidth * img.getBytesPerPixel);
         return texture !is null;
     }

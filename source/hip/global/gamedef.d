@@ -70,6 +70,7 @@ bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) on
       onFailure("Failed loading default image.");
    });
 
+   hiplog("Loading default font");
    auto font = new Hip_TTF_Font(HIP_DEFAULT_FONT, HIP_DEFAULT_FONT_SIZE);
    if(!font.loadFromMemory(cast(ubyte[])HipDefaultAssets.fontData))
       onFailure("Failed loading default font");
