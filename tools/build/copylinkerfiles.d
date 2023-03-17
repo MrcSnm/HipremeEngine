@@ -55,6 +55,7 @@ int main(string[] args)
 
 
     string libNames = "";
+    mkdirRecurse(outputPath);
     foreach(l; libraries)
     {
         string n = baseName(l);

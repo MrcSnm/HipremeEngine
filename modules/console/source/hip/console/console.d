@@ -24,6 +24,7 @@ enum Platforms
     UWP,
     WASM,
     PSVITA,
+    APPLEOS,
     NULL
 }
 static enum androidTag = "HipremeEngine";
@@ -140,6 +141,7 @@ class Console
                 _fatal = _err;
                 break;
             case DEFAULT:
+            case APPLEOS:
             case DESKTOP:
             default:
             {

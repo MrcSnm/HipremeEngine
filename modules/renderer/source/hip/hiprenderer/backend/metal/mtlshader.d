@@ -247,11 +247,9 @@ class HipMTLShaderProgram : ShaderProgram
 
     MTLRenderPipelineDescriptor pipelineDescriptor;
     MTLRenderPipelineState pipelineState;
-
     this()
     {
         pipelineDescriptor = MTLRenderPipelineDescriptor.alloc.initialize;
-        pipelineState = MTLRenderPipelineState.alloc.init;
     }
 }
 
@@ -312,7 +310,7 @@ class HipMTLShader : IShader
         }
 
         NSError err;
-        MTLCompileOptions opts = cast(MTLCompileOptions)MTLCompileOptions.alloc.initialize;
+        MTLCompileOptions opts = MTLCompileOptions.alloc.initialize;
         p.library = device.newLibraryWithSource(shaderSource.ns, opts, &err);
 
         if(p.library is null || err !is null)
