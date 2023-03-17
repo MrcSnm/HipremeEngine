@@ -24,7 +24,7 @@ fragment float4 fragment_main(
     sampler uBufferTextureSampler [[sampler(0)]]
 )
 {
-    return uBufferTexture.sample(in.inTexST, uBufferTextureSampler) * u.uColor;
+    return uBufferTexture.sample(uBufferTextureSampler, in.inTexST) * u.uColor;
 }  
 };
     }
@@ -50,7 +50,21 @@ fragment float4 fragment_main(
 
     override string getSpriteBatchFragment()
     {
-        return string.init; // TODO: implement
+        return q{
+struct FragmentUniforms
+{
+    float4 uBatchColor;
+};
+fragment float4 fragment_main(
+    FragmentInput in [[stage_in]],
+    array<texture2d<float>, 3> uTex [[texture(0)]],
+    array<sampler, 3> uSampler [[sampler(0)]]
+)
+{
+    int texID = int(in.inTexID);
+    return uTex[texID].sample(uSampler[texID], in.inTexST)* in.inVertexColor * u.uBatchColor;
+}
+};
     }
 
     override string getBitmapTextFragment()
@@ -67,7 +81,7 @@ fragment float4 fragment_main(
     sampler uTexSampler [[sampler(0)]]
 )
 {
-    float r = uTex.sample(in.inTexST, uTexSampler);
+    float r = uTex.sample(uTexSampler,in.inTexST);
     return float4(r,r,r,r)*u.uColor;
 }
 };
@@ -354,7 +368,7 @@ class HipMTLShader : IShader
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
         MTLBuffer buffer = device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
-        HipMTLShaderProgram s = cast(HipMTLShaderProgram)layout.getShaderOwner().shaderProgram;
+        HipMTLShaderProgram s = cast(HipMTLShaderProgram)(layout.getShader()).shaderProgram;
         layout.setAdditionalData(cast(void*)buffer, true);
         final switch(layout.shaderType)
         {
@@ -363,6 +377,9 @@ class HipMTLShader : IShader
                 break;
             case ShaderTypes.FRAGMENT:
                 s.uniformBufferFragment = buffer;
+                break;
+            case ShaderTypes.GEOMETRY:
+            case ShaderTypes.NONE:
                 break;
         }
     }

@@ -343,7 +343,7 @@ class ShaderVariablesLayout
         ErrorHandler.assertExit(data != null, "Out of memory");
     }
 
-    Shader getOwnerShader(){return owner;}
+    Shader getShader(){return owner;}
     void lock(Shader owner)
     {
         calcAlignment();
