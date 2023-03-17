@@ -1,24 +1,11 @@
 import std;
 
-
-string[] envDflags = 
-[
-"-I=$HIPREME_ENGINE/modules/d_std/source",
-"-I=$HIPREME_ENGINE/dependencies/runtime/druntime/arsd-webassembly",
-"-d-version=PSVita",
-"-d-version=PSV",
-"-preview=shortenedMethods",
-"-fvisibility=hidden",
-"-mtriple=armv7a-unknown-newlib",
-"-mcpu=cortex-a9",
-"--revert=dtorfields",
-"-g",
-"-float-abi=hard",
-"--relocation-model=static",
-"-fthread-model=local-exec",
-"-d-version=CarelessAlocation"
-];
-
+enum Arguments
+{
+    dubArgs = 1,
+    outputPath = 2,
+    dflags = 3
+}
 
 string[] separateFromString(string str)
 {
@@ -28,7 +15,7 @@ string[] separateFromString(string str)
     string currStr;
     foreach(ch; str)
     {
-        if(ch == '"')
+        if(ch == '"' || ch == '\'')
         {
             if(isCapturing)
             {
@@ -42,15 +29,29 @@ string[] separateFromString(string str)
     return strings;
 }
 
-enum outputPath = "build/vita/hipreme_engine/libs/";
-
-void main(string[] args)
+int main(string[] args)
 {
+    if(args.length <= Arguments.dubArgs)
+    {
+        writeln("Missing target dubArgs for calling dub describe");
+        return 1;
+    }
+    if(args.length <= Arguments.outputPath)
+    {
+        writeln("Missing target outputPath for copying linker files");
+        return 1;
+    }
+    string dubArgs = args[Arguments.dubArgs];
+    string outputPath = args[Arguments.outputPath];
+    string[] envDflags;
+    if(args.length > Arguments.dflags)
+        envDflags = args[Arguments.dflags..$];
+
     environment["DFLAGS"] = envDflags.join(" ");
-    auto ret = executeShell("dub describe --data=linker-files -c psvita --compiler=ldc2 --arch=armv7a-unknown-newlib --vquiet");
+    auto ret = executeShell("dub describe --data=linker-files "~dubArgs~" --vquiet");
     string librariesData = ret.output;
     string[] libraries = separateFromString(librariesData);
-    writeln(libraries);
+    writeln("Found libraries ", libraries.map!(lName => lName.baseName));
 
 
     string libNames = "";
@@ -62,6 +63,5 @@ void main(string[] args)
         if(l != libraries[$-1])
             libNames~= " ";
     }
-
-    std.file.write(buildPath(outputPath, "concat.sh"), "arm-vita-eabi-ar crsT libhipreme_engine_vita.a "~libNames);
+    return 0;
 }
