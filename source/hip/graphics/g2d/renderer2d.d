@@ -38,15 +38,12 @@ void initialize(HipInterpreterEntry entry = HipInterpreterEntry.init, bool shoul
     viewport.setWorldSize(HipRenderer.width, HipRenderer.height);
     viewport.setType(ViewportType.fit, HipRenderer.width, HipRenderer.height);
     HipRenderer.setViewport(viewport);
-    hiplog("2D Renderer: Initializing camera 1");
-    hiplog("2D Renderer: Initializing camera 2");
-    hiplog("2D Renderer: Initializing camera 3 ");
-    hiplog("2D Renderer: Initializing camera 4");
+    hiplog("2D Renderer: Initializing camera");
     camera = new HipOrthoCamera();
     camera.setSize(viewport.worldWidth, viewport.worldHeight);
 
-    hiplog("2D Renderer: Initializing spritebatch");
-    spBatch = new HipSpriteBatch(camera);
+    // hiplog("2D Renderer: Initializing spritebatch");
+    // spBatch = new HipSpriteBatch(camera);
     hiplog("2D Renderer: Initializing geometrybatch");
     geoBatch = new GeometryBatch(camera);
     hiplog("2D Renderer: Initializing text renderer");
