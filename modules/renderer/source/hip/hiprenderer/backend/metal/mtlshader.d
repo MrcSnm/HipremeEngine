@@ -1,6 +1,7 @@
 module hip.hiprenderer.backend.metal.mtlshader;
 
 import hip.hiprenderer;
+import hip.console.log;
 import metal;
 import metal.metal;
 
@@ -99,7 +100,11 @@ class HipMTLVertexShader : VertexShader
 
     override string getFrameBufferVertex()
     {
-        return q{
+        return `
+#include <metal_stdlib>
+#include <simd/simd.h>
+
+using namespace metal;
 
 struct VertexInput
 {
@@ -123,15 +128,21 @@ vertex FragmentInput vertex_main(
     out.inTexST = input[vertexID].vTexST;
     return out;
 }
-};
+`;
     }
 
     override string getGeometryBatchVertex()
     {
-        return q{
+        return `
+
+#include <metal_stdlib>
+#include <simd/simd.h>
+
+using namespace metal;
+
 struct VertexInput
 {
-    float3 vPositionn;
+    float3 vPosition;
     float4 vColor;
 };
 struct VertexUniforms
@@ -143,28 +154,31 @@ struct VertexUniforms
 struct FragmentInput
 {
     float4 position [[position]];
-    float4 inColor;
+    float4 inVertexColor;
 }; 
 
 vertex FragmentInput vertex_main(
     uint vertexID [[vertex_id]],
     constant VertexUniforms& u [[buffer(0)]],
-    device VertexInput* input [[buffer(1)]]
+    const device VertexInput* input [[buffer(1)]]
 )
     {
         FragmentInput out;
         VertexInput v = input[vertexID];
         out.position = u.uProj*u.uView*u.uModel*float4(v.vPosition, 1.0);
-        out.inColor = v.vColor;
+        out.inVertexColor = v.vColor;
         return out;
     }
-};
+`;
     }
 
     override string getSpriteBatchVertex()
     {
-        return q{
+        return `
+#include <metal_stdlib>
+#include <simd/simd.h>
 
+using namespace metal;
 struct VertexInput
 {
     float3 vPosition;
@@ -200,12 +214,16 @@ vertex FragmentInput vertex_main(
     out.inTexID = v.vTexID;
     return out;
 }
-};
+`;
     }
-
     override string getBitmapTextVertex()
     {
-        return q{
+        return `
+#include <metal_stdlib>
+#include <simd/simd.h>
+
+using namespace metal;
+
 struct VertexInput
 {
     float2 vPosition;
@@ -232,8 +250,7 @@ vertex FragmentInput vertex_main(
     out.position = u.uProj * u.uView * u.uModel * float4(input[vertexID], 1.0);
     out.inTexST = input[vertexID].vTexST;
     return out;
-}
-};
+}`;
     }
 }
 
@@ -280,7 +297,7 @@ class HipMTLShader : IShader
 
     ShaderProgram createShaderProgram()
     {
-        return ShaderProgram.init; // TODO: implement
+        return new HipMTLShaderProgram();
     }
 
     bool compileShader(FragmentShader fs, string shaderSource)
@@ -314,13 +331,23 @@ class HipMTLShader : IShader
         p.library = device.newLibraryWithSource(shaderSource.ns, opts, &err);
 
         if(p.library is null || err !is null)
+        {
+            loglnError("Could not compile shader.");
+            err.print();
             return false;
+        }
         p.fragmentShaderFunction = p.library.newFunctionWithName("fragment_main".ns);
         if(p.fragmentShaderFunction is null)
+        {
+            loglnError("fragment_main() not found.");
             return false;
+        }
         p.vertexShaderFunction = p.library.newFunctionWithName("vertex_main".ns);
         if(p.vertexShaderFunction is null)
+        {
+            loglnError("vertex_main() not found.");
             return false;
+        }
 
         p.pipelineDescriptor.label = "HipremeShader".ns;
         p.pipelineDescriptor.vertexFunction = p.vertexShaderFunction;
