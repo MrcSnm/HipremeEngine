@@ -11,8 +11,8 @@ MTLPixelFormat getPixelFormat(in IImage img)
 {
     final switch(img.getBytesPerPixel)
     {
-        case 1: return MTLPixelFormat.R8Uint;
-        case 4: return MTLPixelFormat.RGBA8Uint;
+        case 1: return MTLPixelFormat.R8Unorm;
+        case 4: return MTLPixelFormat.RGBA8Unorm;
         case 2:
         case 3:
     }
@@ -126,26 +126,53 @@ class HipMTLTexture : IHipTexture
         }
     }
 
+    private static bool textureToSquare(out ubyte[] ret, const ubyte[] textureData, uint width, uint height)
+    {
+        uint nWidth = width;
+        if(nWidth < height) nWidth = height;
+        else return false;
+        ret = new ubyte[nWidth*height];
+        
+        for(size_t i = 0; i < height; i++)
+            ret[i*nWidth..i*nWidth+width] = textureData[i*width..(i+1)*width];
+        return true;
+    }
+
     protected bool loadImpl(in IImage img)
     {
-        desc = MTLTextureDescriptor.texture2DDescriptorWithPixelFormat(
-            getPixelFormat(img),
-            img.getWidth(),
-            img.getHeight(),
-            NO
-        );
+        desc = MTLTextureDescriptor.alloc.initialize;
+        desc.pixelFormat = getPixelFormat(img);
+        desc.width = img.getWidth();
+        desc.height = img.getHeight();
+        desc.textureType = MTLTextureType._2D;
+        desc.storageMode = MTLStorageMode.Private;
 
         if(desc is null)
             return false;
-
+        
         width = img.getWidth;
         height = img.getHeight;
 
         import hip.console.log;
-        logln("Width: ", img.getWidth, " BytesPerPixel: ", img.getBytesPerPixel);
+        logln("Width: ", img.getWidth, " Height: ", img.getHeight, " BytesPerPixel: ", img.getBytesPerPixel);
 
-        texture = HipMTLRenderer.createPrivateBufferWithData(cmdQueue, img.getPixels.ptr, img.getPixels.length)
-            .newTextureWithDescriptor(desc, 0, img.getWidth * img.getBytesPerPixel);
+        const ubyte[] data = img.getPixels;
+        ubyte[] squareData; 
+
+        if(textureToSquare(squareData, data, img.getWidth, img.getHeight))
+        {
+            assert(img.getHeight > img.getWidth);
+            texture = HipMTLRenderer.createPrivateBufferWithData(cmdQueue, squareData.ptr, squareData.length)
+                .newTextureWithDescriptor(desc, 0, img.getHeight * img.getBytesPerPixel);
+            import core.memory;
+            GC.free(squareData.ptr);
+        }
+        else
+        {
+            texture = HipMTLRenderer.createPrivateBufferWithData(cmdQueue, img.getPixels.ptr, img.getPixels.length)
+                .newTextureWithDescriptor(desc, 0, img.getWidth * img.getBytesPerPixel);
+        }
+
         return texture !is null;
     }
 

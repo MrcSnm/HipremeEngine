@@ -147,6 +147,9 @@ public class Shader : IReloadable
             case HipRendererType.GL3:
                 fragmentShaderPath~= "gl3.shader";
                 break;
+            case HipRendererType.METAL:
+                fragmentShaderPath~= "metal.shader";
+                break;
             default:break;
         }
 
