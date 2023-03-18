@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/hipremeengine_ios
+hipremeengine_ios.so
+hipremeengine_ios.dylib
+hipremeengine_ios.dll
+hipremeengine_ios.a
+hipremeengine_ios.lib
+hipremeengine_ios-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst

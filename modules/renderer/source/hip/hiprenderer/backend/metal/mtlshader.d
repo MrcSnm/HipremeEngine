@@ -4,6 +4,7 @@ import hip.hiprenderer;
 import hip.console.log;
 import metal;
 import metal.metal;
+import hip.hiprenderer.backend.metal.mtlrenderer;
 
 
 class HipMTLFragmentShader : FragmentShader
@@ -82,7 +83,7 @@ fragment float4 fragment_main(
     sampler uTexSampler [[sampler(0)]]
 )
 {
-    float r = uTex.sample(uTexSampler,in.inTexST);
+    float r = uTex.sample(uTexSampler,in.inTexST).r;
     return float4(r,r,r,r)*u.uColor;
 }
 };
@@ -243,11 +244,11 @@ struct FragmentInput
 vertex FragmentInput vertex_main(
     uint vertexID [[vertex_id]],
     constant VertexUniforms& u [[buffer(0)]],
-    device VertexInput* input [[buffer(1)]]
+    const device VertexInput* input [[buffer(1)]]
 )
 {
     FragmentInput out;
-    out.position = u.uProj * u.uView * u.uModel * float4(input[vertexID], 1.0);
+    out.position = u.uProj * u.uView * u.uModel * float4(input[vertexID].vPosition, 1.0, 1.0);
     out.inTexST = input[vertexID].vTexST;
     return out;
 }`;
@@ -277,12 +278,12 @@ __gshared HipMTLShaderProgram boundShader;
 class HipMTLShader : IShader
 {
     MTLDevice device;
-    MTLRenderCommandEncoder encoder;
+    HipMTLRenderer mtlRenderer;
 
-    this(MTLDevice device, MTLRenderCommandEncoder encoder)
+    this(MTLDevice device, HipMTLRenderer mtlRenderer)
     {
         this.device = device;
-        this.encoder = encoder;
+        this.mtlRenderer = mtlRenderer;
     }
 
     VertexShader createVertexShader()
@@ -362,19 +363,22 @@ class HipMTLShader : IShader
     void bind(ShaderProgram program)
     {
         HipMTLShaderProgram mtlShader = cast(HipMTLShaderProgram)program;
-        encoder.setRenderPipelineState(mtlShader.pipelineState);
-        if(mtlShader.uniformBufferVertex)
-            encoder.setVertexBuffer(mtlShader.uniformBufferVertex, 0, 0);
-        if(mtlShader.uniformBufferFragment)
-            encoder.setFragmentBuffer(mtlShader.uniformBufferFragment, 0, 0);
-        boundShader = mtlShader;
+        if(mtlShader.pipelineState !is null)
+        {
+            mtlRenderer.getEncoder.setRenderPipelineState(mtlShader.pipelineState);
+            if(mtlShader.uniformBufferVertex)
+                mtlRenderer.getEncoder.setVertexBuffer(mtlShader.uniformBufferVertex, 0, 0);
+            if(mtlShader.uniformBufferFragment)
+                mtlRenderer.getEncoder.setFragmentBuffer(mtlShader.uniformBufferFragment, 0, 0);
+            boundShader = mtlShader;
+        }
     }
 
     void unbind(ShaderProgram program)
     {
-        encoder.setRenderPipelineState(null);
-        encoder.setVertexBuffer(null, 0, 0);
-        encoder.setFragmentBuffer(null, 0, 0);
+        // encoder.setRenderPipelineState(null);
+        mtlRenderer.getEncoder.setVertexBuffer(null, 0, 0);
+        mtlRenderer.getEncoder.setFragmentBuffer(null, 0, 0);
         if(boundShader is program) boundShader = null;
     }
 
@@ -392,6 +396,7 @@ class HipMTLShader : IShader
     void deleteShader(VertexShader* vs){}
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
+        hiplog("Creating uniform buffer: ", layout.getLayoutSize);
         MTLBuffer buffer = device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
         HipMTLShaderProgram s = cast(HipMTLShaderProgram)(layout.getShader()).shaderProgram;
         layout.setAdditionalData(cast(void*)buffer, true);

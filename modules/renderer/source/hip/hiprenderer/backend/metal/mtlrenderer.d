@@ -26,13 +26,9 @@ class HipMTLRenderer : IHipRendererImpl
         view = cast(MTKView)window.MTKView;
         device = view.device();
         cmdQueue = device.newCommandQueue();
-        cmdBuffer = cmdQueue.commandBuffer;
-        cmdBuffer.label = "HipremeRenderer".ns;
+        cmdQueue.label = "HipremeRendererQueue".ns;
 
-        renderPassDescriptor = view.currentRenderPassDescriptor;
-        cmdEncoder = cmdBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor);
-
-        return cmdEncoder !is null;
+        return cmdQueue !is null;
     }
 
     /** 
@@ -45,7 +41,12 @@ class HipMTLRenderer : IHipRendererImpl
         MTLBuffer ret = d.newBuffer(size, MTLResourceOptions.StorageModePrivate);
         MTLCommandBuffer _cmdBuffer = cQueue.commandBuffer;
         MTLBlitCommandEncoder _cmdEncoder = _cmdBuffer.blitCommandEncoder;
+
+        MTLFence awaiter = d.newFence();
+
+        _cmdEncoder.waitForFence(awaiter);
         _cmdEncoder.copyFromBuffer(temp, 0, ret, 0, size);
+        _cmdEncoder.updateFence(awaiter);
         _cmdEncoder.endEncoding();
         _cmdBuffer.commit();
         return ret;
@@ -61,7 +62,7 @@ class HipMTLRenderer : IHipRendererImpl
     void setErrorCheckingEnabled(bool enable = true){}
     public Shader createShader()
     {
-        return new Shader(new HipMTLShader(device, cmdEncoder));
+        return new Shader(new HipMTLShader(device, this));
     }
 
     public IHipFrameBuffer createFrameBuffer(int width, int height)
@@ -71,18 +72,20 @@ class HipMTLRenderer : IHipRendererImpl
 
     public IHipVertexArrayImpl createVertexArray()
     {
-        return new HipMTLVertexArray(device, cmdEncoder);
+        return new HipMTLVertexArray(device, this);
     }
 
     public IHipTexture createTexture()
     {
-        return new HipMTLTexture(device,cmdQueue, cmdEncoder);
+        return new HipMTLTexture(device,cmdQueue, this);
     }
 
     public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage)
     {
         return new HipMTLVertexBuffer(device, cmdQueue, size, usage);
     }
+
+    package pragma(inline, true) MTLRenderCommandEncoder getEncoder() { return cmdEncoder; }
 
     public IHipIndexBufferImpl createIndexBuffer(index_t count, HipBufferUsage usage)
     {
@@ -131,7 +134,9 @@ class HipMTLRenderer : IHipRendererImpl
 
     public void begin()
     {
-        
+        cmdBuffer = cmdQueue.commandBuffer;
+        cmdBuffer.label = "HipremeRenderer".ns;
+        cmdEncoder = cmdBuffer.renderCommandEncoderWithDescriptor(view.currentRenderPassDescriptor);
     }
 
     public void setRendererMode(HipRendererMode mode)
@@ -174,6 +179,9 @@ class HipMTLRenderer : IHipRendererImpl
         cmdEncoder.endEncoding();
         cmdBuffer.presentDrawable(view.currentDrawable);
         cmdBuffer.commit();
+
+        // cmdBuffer = cmdQueue.commandBuffer;
+        // cmdEncoder = cmdBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor);
     }
 
     public void clear()

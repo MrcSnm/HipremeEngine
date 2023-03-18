@@ -20,7 +20,6 @@ class Mesh
 {
     protected index_t[] indices;
     protected float[] vertices;
-    protected Shader currentShader;
     ///Not yet supported
     bool isInstanced;
     private bool isBound;
@@ -101,10 +100,7 @@ class Mesh
     {
         this.vao.updateVertices(cast(index_t)(vertices.length/this.vao.dataCount), vertices.ptr, offset);
     }
-    public void setShader(Shader s)
-    {
-        this.currentShader = s;
-    }
+    public void setShader(Shader s){this.shader = s;}
 
     /**
     *   How many indices should it draw
