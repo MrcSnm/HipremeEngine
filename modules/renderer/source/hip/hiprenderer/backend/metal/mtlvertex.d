@@ -3,6 +3,7 @@ module hip.hiprenderer.backend.metal.mtlvertex;
 import metal;
 import hip.hiprenderer;
 import hip.error.handler;
+import hip.hiprenderer.backend.metal.mtlrenderer;
 import hip.hiprenderer.backend.metal.mtlshader;
 
 
@@ -33,7 +34,7 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
         this.device = device;
         this.cmdQueue = cmdQueue;
         options = usage.mtlOptions;
-        buffer = device.newBuffer(length, options);
+        buffer = device.newBuffer(length*index_t.sizeof, options);
     }
     void bind()
     {
@@ -52,7 +53,11 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
             MTLBuffer temp = device.newBuffer(data, count*index_t.sizeof, MTLResourceOptions.StorageModeShared);
             MTLCommandBuffer cmdBuffer = cmdQueue.commandBuffer;
             MTLBlitCommandEncoder cmdEncoder = cmdBuffer.blitCommandEncoder;
+
+            MTLFence fence = device.newFence();
+            cmdEncoder.waitForFence(fence);
             cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, count*index_t.sizeof);
+            cmdEncoder.updateFence(fence);
             cmdEncoder.endEncoding();
             cmdBuffer.commit();
         }
@@ -100,7 +105,10 @@ class HipMTLVertexBuffer : IHipVertexBufferImpl
             MTLBuffer temp = device.newBuffer(data, size, MTLResourceOptions.StorageModeShared);
             MTLCommandBuffer cmdBuffer = cmdQueue.commandBuffer;
             MTLBlitCommandEncoder cmdEncoder = cmdBuffer.blitCommandEncoder;
+            MTLFence fence = device.newFence();
+            cmdEncoder.waitForFence(fence);
             cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, size);
+            cmdEncoder.updateFence(fence);
             cmdEncoder.endEncoding();
             cmdBuffer.commit();
         }
@@ -155,30 +163,36 @@ class HipMTLVertexArray : IHipVertexArrayImpl
     HipMTLVertexBuffer vBuffer;
     HipMTLIndexBuffer iBuffer;
 
-    MTLRenderCommandEncoder cmdEncoder;
+    HipMTLRenderer mtlRenderer;
     MTLDevice device;
 
-    this(MTLDevice device, MTLRenderCommandEncoder cmdEncoder)
+    this(MTLDevice device, HipMTLRenderer mtlRenderer)
     {
         this.device = device;
-        this.cmdEncoder = cmdEncoder;
+        this.mtlRenderer = mtlRenderer;
         descriptor = MTLVertexDescriptor.vertexDescriptor();
+
+        // descriptor.layouts[0].stepFunction = MTLVertexStepFunction.Constant;
+        // descriptor.layouts[0].stepRate = 1;
+
         descriptor.layouts[0].stepFunction = MTLVertexStepFunction.PerVertex;
         descriptor.layouts[0].stepRate = 1;
     }
 
     void bind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
     {
+        if(vbo is null || ebo is null)
+            return;
         vBuffer = cast(HipMTLVertexBuffer)vbo;
         iBuffer = cast(HipMTLIndexBuffer)ebo;
         vbo.bind();
         ebo.bind();
-        cmdEncoder.setVertexBuffer(vBuffer.buffer, 0, 1);
+        mtlRenderer.getEncoder.setVertexBuffer(vBuffer.buffer, 0, 1);
     }
 
     void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
     {
-        cmdEncoder.setVertexBuffer(null, 0, 1);
+        mtlRenderer.getEncoder.setVertexBuffer(null, 0, 1);
         vbo.unbind();
         ebo.unbind();
         vBuffer = null;
@@ -191,7 +205,6 @@ class HipMTLVertexArray : IHipVertexArrayImpl
         descriptor.layouts[0].stride = stride;
         attribute.format = mtlVertexFormatFromAttributeInfo(info);
         attribute.offset = info.offset;
-
     }
 
     void createInputLayout(Shader s)
@@ -203,6 +216,7 @@ class HipMTLVertexArray : IHipVertexArrayImpl
         if(err !is null || shader.pipelineState is null)
         {
             ErrorHandler.showErrorMessage("Creating Input Layout",  "Could not create RenderPipelineState");
+            err.print();
         }
     }
 }
