@@ -1,0 +1,24 @@
+{
+	"name": "hipremeengine_ios",
+	"authors": [
+		"Marcelo Silva"
+	],
+	"targetType": "library",
+	"targetPath": "libs",
+	"copyright": "Copyright © 2023, Marcelo Silva",
+	"dependencies": {
+		"metal": {"path": "/Users/marcelosilva/Desktop/D/HipremeEngine/dependencies/metal/"}
+	},
+
+	"configurations": [
+		{
+			"name": "dependencies",
+			"targetType": "staticLibrary",
+			"postGenerateCommands": [
+				"./deps.sh"
+			]
+		}
+	],
+	"description": "A minimal D application.",
+	"license": "proprietary"
+}

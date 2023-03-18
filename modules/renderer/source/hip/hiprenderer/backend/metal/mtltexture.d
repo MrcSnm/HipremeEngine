@@ -47,16 +47,16 @@ class HipMTLTexture : IHipTexture
     MTLSamplerState sampler;
     MTLSamplerDescriptor samplerDesc = null;
 
-    MTLRenderCommandEncoder cmdEncoder;
+    HipMTLRenderer mtlRenderer;
     MTLCommandQueue cmdQueue;
 
     uint width, height;
 
-    this(MTLDevice device, MTLCommandQueue cmdQueue, MTLRenderCommandEncoder cmdEncoder)
+    this(MTLDevice device, MTLCommandQueue cmdQueue, HipMTLRenderer mtlRenderer)
     {
         this.device = device;
-        this.cmdEncoder = cmdEncoder;
         this.cmdQueue = cmdQueue;
+        this.mtlRenderer = mtlRenderer;
         samplerDesc = MTLSamplerDescriptor.alloc.initialize;
     }
 
@@ -178,14 +178,14 @@ class HipMTLTexture : IHipTexture
 
     void bind(int slot = 0)
     {
-        cmdEncoder.setFragmentSamplerState(sampler, slot);
-        cmdEncoder.setFragmentTexture(texture, slot);
+        mtlRenderer.getEncoder.setFragmentSamplerState(sampler, slot);
+        mtlRenderer.getEncoder.setFragmentTexture(texture, slot);
     }
 
     void unbind(int slot = 0)
     {
-        cmdEncoder.setFragmentSamplerState(null, slot);
-        cmdEncoder.setFragmentTexture(null, slot);
+        mtlRenderer.getEncoder.setFragmentSamplerState(null, slot);
+        mtlRenderer.getEncoder.setFragmentTexture(null, slot);
     }
     bool hasSuccessfullyLoaded(){return width != 0;}
     int getWidth() const{return width;}

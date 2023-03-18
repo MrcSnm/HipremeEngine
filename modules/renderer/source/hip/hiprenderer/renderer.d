@@ -33,6 +33,8 @@ version(AppleOS)
     import hip.hiprenderer.backend.metal.mtlrenderer;
     import hip.hiprenderer.backend.metal.mtltexture;
 }
+
+version(dll){} else version = RendererConfigFile;
 import hip.hiprenderer.backend.gl.gltexture;
 
 ///Could later be moved to windowing
@@ -168,7 +170,7 @@ class HipRenderer
         protected HipRendererResources res;
     }
 
-    version(Desktop)
+    version(RendererConfigFile)
     public static bool initialize (string confData, string confPath)
     {
         import hip.data.ini;
@@ -190,6 +192,7 @@ class HipRenderer
                 case "GL3":
                     version(OpenGL)
                     {
+                        rendererType = HipRendererType.GL3;
                         return initialize(new Hip_GL3Renderer(), &cfg, width, height);
                     }
                     else version(DirectX)
@@ -205,6 +208,7 @@ class HipRenderer
                 case "D3D11":
                     version(DirectX)
                     {
+                        rendererType = HipRendererType.D3D11;
                         return initialize(new Hip_D3D11_Renderer(), &cfg, width, height);
                     }
                     else version(OpenGL)
@@ -220,6 +224,7 @@ class HipRenderer
                 case "METAL":
                     version(AppleOS)
                     {
+                        rendererType = HipRendererType.METAL;
                         return initialize(new HipMTLRenderer(), &cfg, width, height);
                     }
                     else version(OpenGL)
@@ -239,6 +244,7 @@ class HipRenderer
                         Available renderers:
                             GL3
                             D3D11
+                            METAL
                         Starting with GL3
                     `);
                     goto case "GL3";
@@ -257,49 +263,45 @@ class HipRenderer
             }
             hiplog("Defaulting renderer to "~defaultRenderer);
         }
+        return initialize(getRendererFromVersion(rendererType), &cfg, 1280, 720);
+    }
+
+    private static IHipRendererImpl getRendererFromVersion(out HipRendererType type)
+    {
         version(OpenGL)
-            return initialize(new Hip_GL3Renderer(), &cfg, 1280, 720);
+        {
+            type = HipRendererType.GL3;
+            return new Hip_GL3Renderer();
+        }
+        else version(DirectX)
+        {
+            type = HipRendererType.D3D11;
+            return new Hip_D3D11_Renderer();
+        }
         else version(AppleOS)
-            return initialize(new HipMTLRenderer(), &cfg, 1280, 720);
+        {
+            type = HipRendererType.METAL;
+            return new HipMTLRenderer();
+        }
+        else
+        {
+            type = HipRendererType.NONE;
+            return null;
+        }
     }
     version(dll) private static IHipRendererImpl getRenderer(ref HipRendererType type)
     {
         final switch(type)
         {
             case HipRendererType.D3D11:
-                version(DirectX)
-                    return new Hip_D3D11_Renderer();
-                else version(OpenGL)
-                {
-                    type = HipRendererType.GL3;
-                    return new Hip_GL3Renderer();
-                }
-                else version(AppleOS)
-                {
-                    type = HipRendererType.METAL;
-                    return new HipMTLRenderer();
-                }
-                else
-                {
-                    type = HipRendererType.NONE;
-                    return null;
-                }
+                version(DirectX) return new Hip_D3D11_Renderer();
+                            else return getRendererFromVersion(type);
             case HipRendererType.GL3:
-                version(OpenGL)
-                    return new Hip_GL3Renderer();
-                else version(DirectX)
-                {
-                    type = HipRendererType.D3D11;
-                    return new Hip_D3D11_Renderer();
-                }
-                else
-                {
-                    type = HipRendererType.NONE;
-                    assert(rendererImpl !is null, "No Renderer was found. Available Versions:
-    OpenGL
-    DirectX");
-                    return null;
-                }
+                version(OpenGL) return new Hip_GL3Renderer();
+                            else return getRendererFromVersion(type);
+            case HipRendererType.METAL:
+                version(AppleOS) return new HipMTLRenderer();
+                            else return getRendererFromVersion(type);
             case HipRendererType.NONE:
                 return null;
         }

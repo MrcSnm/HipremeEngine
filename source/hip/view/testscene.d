@@ -31,11 +31,11 @@ class TestScene : Scene, IHipPreloadable
     IHipFont smallFont;
     IHipFont bigFont;
 
-    @Asset("sounds/pop.wav")
-    __gshared IHipAudioClip pop;
+    // @Asset("sounds/pop.wav")
+    // __gshared IHipAudioClip pop;
 
 
-    AHipAudioSource src;
+    // AHipAudioSource src;
 
 
     float x = 100, y = 100;
@@ -43,17 +43,17 @@ class TestScene : Scene, IHipPreloadable
     override void initialize()
     {
         logg(getAssetsForPreload);
-        logg(pop is null);
-        geom = new GeometryBatch(null, 5000, 5000);
-        geom.setColor(HipColor(0, 1, 0, 1));
-        HipRenderer.setViewport(new Viewport(0,0, 800, 600));
+        // logg(pop is null);
+        // geom = new GeometryBatch(null, 5000, 5000);
+        // geom.setColor(HipColor(0, 1, 0, 1));
+        // HipRenderer.setViewport(new Viewport(0,0, 800, 600));
 
-        src = HipAudio.getSource();
-        src.clip = pop;
+        // src = HipAudio.getSource();
+        // src.clip = pop;
 
 
-        smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
-        bigFont = HipDefaultAssets.getDefaultFontWithSize(64);
+        // smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
+        // bigFont = HipDefaultAssets.getDefaultFontWithSize(64);
     }
     override void update(float dt)
     {
@@ -65,11 +65,11 @@ class TestScene : Scene, IHipPreloadable
 
         x+= dt*400*v[0];
         y+= dt*400*v[1];
-        if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
-        {
-            src.play();
-            logg("You just clicked me!");
-        }
+        // if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
+        // {
+        //     src.play();
+        //     logg("You just clicked me!");
+        // }
 
         if(HipInput.isKeyJustPressed(HipKey.ENTER))
         {
@@ -81,31 +81,31 @@ class TestScene : Scene, IHipPreloadable
     {
         //////////////////////Lower Level////////////////////////
         super.render();
-        geom.setColor(HipColor.red);
-        geom.fillRectangle(0, 0, 200, 200);
-        geom.setColor(HipColor.green);
-        geom.fillRectangle(0, 0, 100, 100);
-        geom.flush();
+        // geom.setColor(HipColor.red);
+        // geom.fillRectangle(0, 0, 200, 200);
+        // geom.setColor(HipColor.green);
+        // geom.fillRectangle(0, 0, 100, 100);
+        // geom.flush();
 
 
         //Use a non GC allocating string on render (String) for drawing the mousePosition
         import hip.util.string;
-        float[2] mousePos = HipInput.getWorldMousePosition();
-        setFont(smallFont);
-        String s = String(mousePos);
-        drawText(s.toString, cast(int)mousePos[0], cast(int)mousePos[1]);
+        // float[2] mousePos = HipInput.getWorldMousePosition();
+        // setFont(smallFont);
+        // String s = String(mousePos);
+        // drawText(s.toString, cast(int)mousePos[0], cast(int)mousePos[1]);
 
         
 
         // ////////////////////////Higher Level////////////////////////
         // setGeometryColor(HipColor.white);
-        setFont(null);
-        drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
-        fillRectangle(cast(int)x, cast(int)y, 100, 100);
+        // setFont(null);
+        // drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        // fillRectangle(cast(int)x, cast(int)y, 100, 100);
 
-        drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        // drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(cast(int)x+200, cast(int)y, 100, 100);
-        drawTexture(null, 300, 500);
+        // drawTexture(null, 300, 500);
 
         // // logg("Render testscene.");
 
@@ -116,8 +116,8 @@ class TestScene : Scene, IHipPreloadable
         // *   TODO: Tutorial to play sounds
         // */
         renderGeometries();
-        renderTexts();
-        renderSprites();
+        // renderTexts();
+        // renderSprites();
         
     }
 }
