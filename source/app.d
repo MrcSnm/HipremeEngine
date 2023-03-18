@@ -32,6 +32,13 @@ import hip.systems.game;
 import hip.bind.interpreters;
 import hip.config.opts;
 
+version(dll)
+{
+	version(WebAssembly){}
+	else version(PSVita){}
+	else version = ManagesMainDRuntime;
+}
+
 
 /**
 * Compiling instructions:
@@ -308,20 +315,13 @@ version(Android)
 
 /**
 *	Initializes the D runtime, import hip.external functions
-*	and initializes GameSystem, as it will handle external API's
-*
 */
 export extern(C) void HipremeInit()
 {
-	version(dll)
+	version(ManagesMainDRuntime)
 	{
-		version(WebAssembly){}
-		else version(PSVita){}
-		else
-		{
-			rt_init();
-			importExternal();
-		}
+		rt_init();
+		importExternal();
 	}
 }
 /**
@@ -340,6 +340,7 @@ version(dll)
 {
 	version(WebAssembly){int main(){return HipremeMain();}}
 }
+else version(AppleOS){}
 else
 {
 	int main(string[] args)
@@ -438,15 +439,8 @@ export extern(C) void HipremeDestroy()
 {
 	logln("Destroying HipremeEngine");
 	destroyEngine();
-	version(dll)
-	{
-		version(WebAssembly){}
-		else version(PSVita){}
-		else
-		{
-			rt_term();
-		}
-	}
+	version(ManagesMainDRuntime)
+		rt_term();
 }
 
 export extern(C) void log(string message)

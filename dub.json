@@ -77,7 +77,6 @@
 			"targetType": "executable",
 			"versions": [
 				"OpenAL",
-				"Desktop",
 				"Standalone",
 				"Test",
 				"AppleOS"
@@ -92,7 +91,6 @@
 			"targetType": "staticLibrary",
 			"versions": [
 				"OpenAL",
-				"Desktop",
 				"Standalone",
 				"Test",
 				"AppleOS"
