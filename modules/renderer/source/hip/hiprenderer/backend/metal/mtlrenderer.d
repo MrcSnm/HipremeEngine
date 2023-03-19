@@ -42,13 +42,10 @@ class HipMTLRenderer : IHipRendererImpl
         MTLCommandBuffer _cmdBuffer = cQueue.commandBuffer;
         MTLBlitCommandEncoder _cmdEncoder = _cmdBuffer.blitCommandEncoder;
 
-        MTLFence awaiter = d.newFence();
-
-        _cmdEncoder.waitForFence(awaiter);
         _cmdEncoder.copyFromBuffer(temp, 0, ret, 0, size);
-        _cmdEncoder.updateFence(awaiter);
         _cmdEncoder.endEncoding();
         _cmdBuffer.commit();
+        _cmdBuffer.waitUntilCompleted();
         return ret;
     }
 
@@ -58,7 +55,7 @@ class HipMTLRenderer : IHipRendererImpl
         return bool.init; // TODO: implement
     }
 
-    public bool isRowMajor(){return false;}
+    public bool isRowMajor(){return true;}
     void setErrorCheckingEnabled(bool enable = true){}
     public Shader createShader()
     {
