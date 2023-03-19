@@ -58,6 +58,9 @@ class HipMTLTexture : IHipTexture
         this.cmdQueue = cmdQueue;
         this.mtlRenderer = mtlRenderer;
         samplerDesc = MTLSamplerDescriptor.alloc.initialize;
+
+        setWrapMode(TextureWrapMode.REPEAT);
+        setTextureFilter(TextureFilter.NEAREST, TextureFilter.NEAREST);
     }
 
     void setWrapMode(TextureWrapMode mode)
@@ -66,6 +69,8 @@ class HipMTLTexture : IHipTexture
         samplerDesc.rAddressMode = wrap;
         samplerDesc.sAddressMode = wrap;
         samplerDesc.tAddressMode = wrap;
+        if(sampler) sampler.release();
+        sampler = device.newSamplerStateWithDescriptor(samplerDesc);
     }
 
     void setTextureFilter(TextureFilter min, TextureFilter mag)
@@ -124,6 +129,8 @@ class HipMTLTexture : IHipTexture
                 samplerDesc.mipFilter = MTLSamplerMipFilter.Linear;
                 break;
         }
+        if(sampler) sampler.release();
+        sampler = device.newSamplerStateWithDescriptor(samplerDesc);
     }
 
     private static bool textureToSquare(out ubyte[] ret, const ubyte[] textureData, uint width, uint height)
@@ -159,6 +166,8 @@ class HipMTLTexture : IHipTexture
         const ubyte[] data = img.getPixels;
         ubyte[] squareData; 
 
+        MTLCommandBuffer b = cmdQueue.commandBuffer();
+
         if(textureToSquare(squareData, data, img.getWidth, img.getHeight))
         {
             assert(img.getHeight > img.getWidth);
@@ -172,6 +181,8 @@ class HipMTLTexture : IHipTexture
             texture = HipMTLRenderer.createPrivateBufferWithData(cmdQueue, img.getPixels.ptr, img.getPixels.length)
                 .newTextureWithDescriptor(desc, 0, img.getWidth * img.getBytesPerPixel);
         }
+        b.commit();
+        b.waitUntilCompleted();
 
         return texture !is null;
     }

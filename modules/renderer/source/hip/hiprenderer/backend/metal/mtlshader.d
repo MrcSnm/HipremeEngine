@@ -396,7 +396,6 @@ class HipMTLShader : IShader
     void deleteShader(VertexShader* vs){}
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
-        hiplog("Creating uniform buffer: ", layout.getLayoutSize);
         MTLBuffer buffer = device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
         HipMTLShaderProgram s = cast(HipMTLShaderProgram)(layout.getShader()).shaderProgram;
         layout.setAdditionalData(cast(void*)buffer, true);

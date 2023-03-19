@@ -100,6 +100,11 @@ enum HipBlendEquation
 
 //Shaders
 enum HipShaderInputLayout;
+/**
+*   Use this special UDA to say this type is only for accumulating stride and thus should not
+*   be defined on shader
+*/
+enum HipShaderInputPadding;
 enum HipVertexVar;
 enum HipFragmentVar;
 alias HipPixelVar = HipFragmentVar;
