@@ -47,7 +47,7 @@ void initialize(HipInterpreterEntry entry = HipInterpreterEntry.init, bool shoul
     hiplog("2D Renderer: Initializing geometrybatch");
     geoBatch = new GeometryBatch(camera);
     hiplog("2D Renderer: Initializing text renderer");
-    // textBatch = new HipTextRenderer(camera);
+    textBatch = new HipTextRenderer(camera);
     setGeometryColor(HipColor.white);
 
 
