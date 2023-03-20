@@ -7,7 +7,6 @@ version(X11):
 
 import hip.windowing.platforms.x11lib.glx;
 import core.stdc.config;
-pragma(lib, "X11");
 
 extern(C):
 
