@@ -198,7 +198,6 @@ void drawSprite(IHipTexture texture, float[] vertices)
         lastBatch.flush();
     lastBatch = spBatch;
     spBatch.draw(texture, vertices);
-    lastBatch = spBatch;
 }
 void drawRegion(IHipTextureRegion reg, int x, int y, int z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
 {
