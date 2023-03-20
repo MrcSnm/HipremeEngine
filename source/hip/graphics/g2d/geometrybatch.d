@@ -44,6 +44,8 @@ class GeometryBatch : IHipBatch
     protected index_t verticesCount;
     protected index_t indicesCount;
     protected HipColor currentColor;
+
+    float managedDepth = 0;
     HipOrthoCamera camera;
     HipGeometryBatchVertex[] vertices;
     index_t[] indices;
@@ -90,6 +92,8 @@ class GeometryBatch : IHipBatch
         }
     }
 
+    void setCurrentDepth(float depth){managedDepth = depth;}
+
 
     /**
     * Adds a vertex to the structure and return its current index.
@@ -124,9 +128,9 @@ class GeometryBatch : IHipBatch
     protected void triangleVertices(int x1, int y1, int x2, int y2, int x3, int y3)
     {
         checkVerticesCount(3);
-        addVertex(x1, y1, 0);
-        addVertex(x2, y2, 0);
-        addVertex(x3, y3, 0);
+        addVertex(x1, y1, managedDepth);
+        addVertex(x2, y2, managedDepth);
+        addVertex(x3, y3, managedDepth);
         addIndex(
             cast(index_t)(verticesCount-3),
             cast(index_t)(verticesCount-2),
@@ -145,9 +149,9 @@ class GeometryBatch : IHipBatch
         float angle_mult = (1.0/precision) * degrees * (PI/180.0);
 
         checkVerticesCount(2);
-        index_t centerIndex = addVertex(x, y, 0);
+        index_t centerIndex = addVertex(x, y, managedDepth);
         //The first vertex
-        index_t lastVert = addVertex(x + radiusW*cos(0.0), y + radiusH*sin(0.0), 0);
+        index_t lastVert = addVertex(x + radiusW*cos(0.0), y + radiusH*sin(0.0), managedDepth);
         index_t firstVert = lastVert;
         
         checkVerticesCount(precision);
@@ -158,7 +162,7 @@ class GeometryBatch : IHipBatch
 
             //Use a temporary variable to hold the new lastVert for more performance
             //on addIndex calls
-            index_t tempNewLastVert = addVertex(x+radiusW*cos(nextAngle), y + radiusH*sin(nextAngle), 0);
+            index_t tempNewLastVert = addVertex(x+radiusW*cos(nextAngle), y + radiusH*sin(nextAngle), managedDepth);
             
             addIndex(
                 centerIndex, //Puts the center first
@@ -188,14 +192,14 @@ class GeometryBatch : IHipBatch
         }   
         float angle_mult = (1.0/precision) * degrees * (PI/180.0);
         checkVerticesCount(1);
-        index_t currVert = addVertex(x+ radiusW*cos(0.0), y + radiusH*sin(0.0), 0);
+        index_t currVert = addVertex(x+ radiusW*cos(0.0), y + radiusH*sin(0.0), managedDepth);
         index_t firstVert = currVert;
 
         checkVerticesCount(precision);
         for(int i = 1; i < precision+1; i++)
         {
             float nextAngle = angle_mult * i;
-            index_t tempNextVert = addVertex(x + radiusW * cos(nextAngle), y + radiusH*sin(nextAngle), 0);
+            index_t tempNextVert = addVertex(x + radiusW * cos(nextAngle), y + radiusH*sin(nextAngle), managedDepth);
 
             addIndex(currVert, tempNextVert);
             currVert = tempNextVert;
@@ -260,8 +264,8 @@ class GeometryBatch : IHipBatch
             HipRenderer.setRendererMode(HipRendererMode.LINE);
         }
         checkVerticesCount(2);
-        addVertex(x1, y1, 0);
-        addVertex(x2, y2, 0);
+        addVertex(x1, y1, managedDepth);
+        addVertex(x2, y2, managedDepth);
 
         addIndex(
             cast(index_t)(verticesCount-2),
@@ -310,7 +314,7 @@ class GeometryBatch : IHipBatch
             HipRenderer.setRendererMode(HipRendererMode.POINT);
         }
         checkVerticesCount(1);
-        addVertex(x, y, 0);
+        addVertex(x, y, managedDepth);
         addIndex(verticesCount);
         setColor(oldColor);
     }
@@ -329,10 +333,10 @@ class GeometryBatch : IHipBatch
     protected void rectangleVertices(int x, int y, int w, int h)
     {
         checkVerticesCount(4);
-        index_t topLeft = addVertex(x, y, 0);
-        index_t botLeft = addVertex(x, y+h, 0);
-        index_t botRight= addVertex(x+w, y+h, 0);
-        index_t topRight= addVertex(x+w, y, 0);
+        index_t topLeft = addVertex(x, y, managedDepth);
+        index_t botLeft = addVertex(x, y+h, managedDepth);
+        index_t botRight= addVertex(x+w, y+h, managedDepth);
+        index_t topRight= addVertex(x+w, y, managedDepth);
  
         addIndex(
             topLeft, botLeft, botRight,

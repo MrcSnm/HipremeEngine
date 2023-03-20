@@ -227,7 +227,7 @@ using namespace metal;
 
 struct VertexInput
 {
-    float2 vPosition;
+    float3 vPosition;
     float2 vTexST;
 };
 struct VertexUniforms
@@ -248,7 +248,7 @@ vertex FragmentInput vertex_main(
 )
 {
     FragmentInput out;
-    out.position = u.uProj * u.uView * u.uModel * float4(input[vertexID].vPosition, 1.0, 1.0);
+    out.position = u.uProj * u.uView * u.uModel * float4(input[vertexID].vPosition, 1.0);
     out.inTexST = input[vertexID].vTexST;
     return out;
 }`;
