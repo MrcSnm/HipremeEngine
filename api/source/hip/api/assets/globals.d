@@ -2,19 +2,26 @@ module hip.api.assets.globals;
 public import hip.api.data.font;
 public import hip.api.renderer.texture;
 
-private alias thisModule = __traits(parent, {});
 
 version(Script) void initGlobalAssets()
 {
     import hip.api.internal;
-    loadModuleFunctionPointers!thisModule;
+    loadClassFunctionPointers!HipGlobalAssetsBinding;
     import hip.api.console;
     log("HipEngineAPI: Initialized Global Assets");
 }
 
-version(Script) extern(System)
+version(Script) 
 {
-    const(IHipFont) function() getDefaultFont;
-    IHipFont function(uint size) getDefaultFontWithSize;
-    const(IHipTexture) function() getDefaultTexture;
+    class HipGlobalAssetsBinding
+    {
+        extern(System) static
+        {
+            const(IHipFont) function() getDefaultFont;
+            IHipFont function(uint size) getDefaultFontWithSize;
+            const(IHipTexture) function() getDefaultTexture;
+        }
+    }
+    import hip.api.internal;
+    ExpandClassFunctionPointers!HipGlobalAssetsBinding;
 }
