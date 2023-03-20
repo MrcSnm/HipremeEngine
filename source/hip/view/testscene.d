@@ -104,7 +104,7 @@ class TestScene : Scene, IHipPreloadable
         fillRectangle(cast(int)x, cast(int)y, 100, 100);
 
         drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
-        // fillRectangle(cast(int)x+200, cast(int)y, 100, 100);
+        fillRectangle(cast(int)x+200, cast(int)y, 100, 100);
         // drawTexture(null, 300, 500);
 
         // // logg("Render testscene.");
@@ -115,9 +115,6 @@ class TestScene : Scene, IHipPreloadable
         // *
         // *   TODO: Tutorial to play sounds
         // */
-        renderGeometries();
-        renderTexts();
-        // renderSprites();
-        
+        finishRender2D();
     }
 }
