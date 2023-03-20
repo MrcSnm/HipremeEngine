@@ -35,6 +35,7 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
         this.cmdQueue = cmdQueue;
         options = usage.mtlOptions;
         buffer = device.newBuffer(length*index_t.sizeof, options);
+        buffer.retain();
     }
     void bind()
     {
@@ -60,8 +61,9 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
         }
         else
         {
-            if(buffer) buffer.dealloc();
+            if(buffer) buffer.release();
             buffer = device.newBuffer(data, count*index_t.sizeof, options);
+            buffer.retain();
         }
     }
 
@@ -84,6 +86,7 @@ class HipMTLVertexBuffer : IHipVertexBufferImpl
         this.cmdQueue = cmdQueue;
         options = usage.mtlOptions;
         buffer = device.newBuffer(size, options);
+        buffer.retain();
     }
     void bind()
     {
@@ -109,8 +112,9 @@ class HipMTLVertexBuffer : IHipVertexBufferImpl
         }
         else
         {
-            if(buffer) buffer.dealloc();
+            if(buffer) buffer.release();
             buffer = device.newBuffer(data, size, options);
+            buffer.retain();
         }
     }
 
