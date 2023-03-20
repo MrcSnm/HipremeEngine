@@ -23,5 +23,5 @@ version(Script)
         }
     }
     import hip.api.internal;
-    ExpandClassFunctionPointers!HipGlobalAssetsBinding;
+    mixin ExpandClassFunctionPointers!HipGlobalAssetsBinding;
 }
