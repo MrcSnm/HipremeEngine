@@ -119,7 +119,7 @@ class Mesh
             HipRenderer.drawInstanced()
         }
         */
-        bind();
+        if(!isBound) bind();
         HipRenderer.drawIndexed(cast(index_t)count);
     }
 

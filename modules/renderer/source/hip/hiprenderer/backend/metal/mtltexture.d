@@ -167,22 +167,42 @@ class HipMTLTexture : IHipTexture
         ubyte[] squareData; 
 
         MTLCommandBuffer b = cmdQueue.commandBuffer();
+        MTLBlitCommandEncoder blit = b.blitCommandEncoder();
+        MTLBuffer imageBuffer;
+        NSUInteger bytesPerRow;
+        NSUInteger bytesPerImage;
+
+        texture = device.newTextureWithDescriptor(desc);
 
         if(textureToSquare(squareData, data, img.getWidth, img.getHeight))
         {
             assert(img.getHeight > img.getWidth);
-            texture = HipMTLRenderer.createPrivateBufferWithData(cmdQueue, squareData.ptr, squareData.length)
-                .newTextureWithDescriptor(desc, 0, img.getHeight * img.getBytesPerPixel);
-            import core.memory;
-            GC.free(squareData.ptr);
+            imageBuffer = device.newBuffer(squareData.ptr, squareData.length, MTLResourceOptions.StorageModeShared);
+            bytesPerRow = img.getHeight * img.getBytesPerPixel;
+            bytesPerImage = squareData.length * img.getBytesPerPixel;
         }
         else
         {
-            texture = HipMTLRenderer.createPrivateBufferWithData(cmdQueue, img.getPixels.ptr, img.getPixels.length)
-                .newTextureWithDescriptor(desc, 0, img.getWidth * img.getBytesPerPixel);
+            imageBuffer = device.newBuffer(img.getPixels.ptr, img.getPixels.length, MTLResourceOptions.StorageModeShared);
+            bytesPerRow = img.getWidth * img.getBytesPerPixel;
+            bytesPerImage = img.getPixels.length * img.getBytesPerPixel;
         }
+
+        blit.copyFromBuffer(
+            imageBuffer, 0, bytesPerRow, bytesPerImage,
+            MTLSize(desc.width, desc.height, 1),
+            texture, 0, 0, MTLOrigin(0,0,0)
+        );
+        blit.optimizeContentsForGPUAccess(texture);
+        blit.endEncoding();
         b.commit();
         b.waitUntilCompleted();
+        // imageBuffer.dealloc();
+        if(squareData.ptr !is null)
+        {
+            import core.memory;
+            GC.free(squareData.ptr);
+        }
 
         return texture !is null;
     }
