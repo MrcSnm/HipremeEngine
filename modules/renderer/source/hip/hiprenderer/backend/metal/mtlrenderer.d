@@ -164,6 +164,7 @@ class HipMTLRenderer : IHipRendererImpl
             cmdEncoder.drawIndexedPrimitives(primitiveType, count, MTLIndexType.UInt16, boundIndexBuffer, offset);
         else 
             cmdEncoder.drawIndexedPrimitives(primitiveType, count, MTLIndexType.UInt32, boundIndexBuffer, offset);
+
     }
 
     public void drawVertices(index_t count, uint offset = 0)
@@ -176,9 +177,7 @@ class HipMTLRenderer : IHipRendererImpl
         cmdEncoder.endEncoding();
         cmdBuffer.presentDrawable(view.currentDrawable);
         cmdBuffer.commit();
-
-        // cmdBuffer = cmdQueue.commandBuffer;
-        // cmdEncoder = cmdBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor);
+        cmdBuffer.waitUntilCompleted();
     }
 
     public void clear()
