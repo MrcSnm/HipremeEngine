@@ -48,7 +48,8 @@
 			"lflags-windows": [
 				"/WX"
 			],
-			"postGenerateCommands": ["cd ..\\..\\ && dub -c script -- .\\projects\\start_here"]
+			"postGenerateCommands-windows": ["cd ..\\..\\ && dub -c script -- .\\projects\\start_here"],
+			"postGenerateCommands-linux": ["cd ../../ && dub -c script -- ./projects/start_here"]
 		}
 	],
 	"versions" : [
