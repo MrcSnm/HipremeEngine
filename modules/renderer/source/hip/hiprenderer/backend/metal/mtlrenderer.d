@@ -11,6 +11,25 @@ import hip.hiprenderer.backend.metal.mtltexture;
 
 
 
+MTLDepthStencilState fromHipDepthTestingFunction(HipDepthTestingFunction fn)
+{
+    MTLDepthStencilDescriptor desc = MTLDepthStencilDescriptor.alloc.ini;
+
+    switch(fn) with(HipDepthTestingFunction)
+    {
+        case Always:
+        case Never:
+        case Equal:
+        case NotEqual:
+        case Less:
+        case LessEqual:
+        case Greater:
+        case GreaterEqual:
+            break;
+
+    }
+}
+
 class HipMTLRenderer : IHipRendererImpl
 {
     MTKView view;
@@ -122,6 +141,10 @@ class HipMTLRenderer : IHipRendererImpl
     public void setBlendingEquation(HipBlendEquation eq)
     {
         
+    }
+    public void setDepthTestingFunction(HipDepthTestingFunction d)
+    {
+        cmdEncoder.setDepthStencilState()
     }
 
     public bool hasErrorOccurred(out string err, string file = __FILE__, size_t line = __LINE__)

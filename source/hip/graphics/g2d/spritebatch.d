@@ -57,7 +57,7 @@ class HipSpriteBatch : IHipBatch
     protected Shader ppShader;
     protected HipFrameBuffer fb;
     protected HipTextureRegion fbTexRegion;
-    
+    protected float managedDepth = 0;
 
     HipOrthoCamera camera;
     Mesh mesh;
@@ -122,6 +122,7 @@ class HipSpriteBatch : IHipBatch
         mesh.setIndices(indices);
         setTexture(HipTexture.getPixelTexture());
     }
+    void setCurrentDepth(float depth){managedDepth = depth;}
 
     void setShader(Shader s)
     {
@@ -272,7 +273,7 @@ class HipSpriteBatch : IHipBatch
         size_t startVertex = HipSpriteVertex.quadCount*quadsCount;
         size_t endVertex = startVertex + HipSpriteVertex.quadCount;
 
-        getTextureVertices(vertices[startVertex..endVertex], slot, texture,x,y,z,color, scaleX, scaleY, rotation);
+        getTextureVertices(vertices[startVertex..endVertex], slot, texture,x,y,managedDepth,color, scaleX, scaleY, rotation);
         quadsCount++;
     }
 
@@ -287,7 +288,7 @@ class HipSpriteBatch : IHipBatch
         int slot = setTexture(reg);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
 
-        getTextureRegionVertices(vertices[startVertex..endVertex], slot, reg,x,y,z,color, scaleX, scaleY, rotation);
+        getTextureRegionVertices(vertices[startVertex..endVertex], slot, reg,x,y,managedDepth,color, scaleX, scaleY, rotation);
         quadsCount++;
     }
 
@@ -383,7 +384,7 @@ class HipSpriteBatch : IHipBatch
 
 
     static void getTextureVertices(float[] output, int slot, IHipTexture texture,
-    int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    int x, int y, float z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         int width = texture.getWidth();
         int height = texture.getHeight();
@@ -400,7 +401,7 @@ class HipSpriteBatch : IHipBatch
     }
 
     static void getTextureRegionVertices(float[] output, int slot, IHipTextureRegion reg,
-    int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    int x, int y, float z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         int width = reg.getWidth();
         int height = reg.getHeight();

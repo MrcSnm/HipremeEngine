@@ -24,6 +24,7 @@ class HipText
     IHipFont font;
 
     int x, y;
+    float depth = 0;
     ///Update dynamically based on the font, the text scale and the text length
     int width, height;
 
@@ -166,24 +167,28 @@ class HipText
                     //Top left
                     v[vI++] = xoffset+displayX; //X
                     v[vI++] = yoffset+displayY; //Y
+                    v[vI+= 2] = depth; //Z + Padding
                     v[vI++] = ch.normalizedX; //S
                     v[vI++] = ch.normalizedY; //T
 
                     //Top Right
                     v[vI++] = xoffset+displayX+ch.width; //X+W
                     v[vI++] = yoffset+displayY; //Y
+                    v[vI+= 2] = depth; //Z + Padding
                     v[vI++] = ch.normalizedX + ch.normalizedWidth; //S+W
                     v[vI++] = ch.normalizedY; //T
 
                     //Bot right
                     v[vI++] = xoffset+displayX+ch.width; //X+W
                     v[vI++] = yoffset+displayY + ch.height; //Y
+                    v[vI+= 2] = depth; //Z + Padding
                     v[vI++] = ch.normalizedX + ch.normalizedWidth; //S+W
                     v[vI++] = ch.normalizedY + ch.normalizedHeight; //T
 
                     //Bot left
                     v[vI++] = xoffset+displayX; //X
                     v[vI++] = yoffset+displayY + ch.height; //Y+H
+                    v[vI+= 2] = depth; //Z + Padding
                     v[vI++] = ch.normalizedX; //S
                     v[vI++] = ch.normalizedY + ch.normalizedHeight; //T+H
 

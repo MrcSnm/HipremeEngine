@@ -26,7 +26,8 @@ public import hip.api.graphics.text : HipTextAlign;
 @HipShaderInputLayout struct HipTextRendererVertex
 {
     import hip.math.vector;
-    Vector2 vPosition;
+    Vector3 vPosition;
+    @HipShaderInputPadding float _;
     Vector2 vTexST;
 
     static enum size_t floatsCount = (HipTextRendererVertex.sizeof / float.sizeof);
@@ -48,13 +49,14 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
     IHipFont font;
     Mesh mesh;
     index_t[] indices;
-    float[] vertices;
+    HipTextRendererVertex[] vertices;
 
     private HipText[] textPool;
     private int poolActive;
     protected HipColor color;
     protected HipOrthoCamera camera;
     private uint quadsCount;
+    protected float managedDepth = 0;
 
     this(HipOrthoCamera camera, index_t maxIndices = index_t_maxQuadIndices)
     {
@@ -97,6 +99,8 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         setFont(cast(IHipFont)HipDefaultAssets.font);
     }
 
+    void setCurrentDepth(float depth){managedDepth = depth;}
+
     void setFont(IHipFont font)
     {
         if(this.font !is null && font !is this.font)
@@ -131,6 +135,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             obj = textPool[poolActive++];
         obj.x = x;
         obj.y = y;
+        obj.depth = managedDepth;
         obj.boundsWidth = boundsWidth;
         obj.boundsHeight = boundsHeight;
         obj.alignh = alignh;
@@ -157,10 +162,10 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         quadsCount+= text.drawableTextCount;
 
 
-        if(vertices.length < quadsCount*4*4) //4 floats, 4 vertices
-            vertices.length = quadsCount*4*4;
+        if(vertices.length < quadsCount*4) //4 vertices
+            vertices.length = quadsCount*4;
         
-        vertices[beforeCount*4*4..quadsCount*4*4] = verts[0..$];
+        vertices[beforeCount*4..quadsCount*4] = cast(HipTextRendererVertex[])(verts[0..$]);
     }
 
 
@@ -185,7 +190,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             mesh.shader.setVertexVar("Cbuf.uProj", camera.proj, true);
             mesh.shader.setVertexVar("Cbuf.uView", camera.view, true);
             mesh.shader.sendVars();
-            mesh.setVertices(vertices[0..quadsCount*HipTextRendererVertex.quadsCount]);
+            mesh.setVertices(cast(float[])vertices[0..quadsCount*4]);
             mesh.draw(quadsCount*6);
             font.texture.unbind();
             mesh.unbind();
