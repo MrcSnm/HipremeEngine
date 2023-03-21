@@ -16,7 +16,6 @@ import hip.assets.texture;
 import hip.hiprenderer.framebuffer;
 import hip.error.handler;
 import hip.hiprenderer.shader;
-import hip.graphics.material;
 public import hip.api.graphics.batch;
 public import hip.api.graphics.color;
 public import hip.math.vector;
@@ -61,7 +60,6 @@ class HipSpriteBatch : IHipBatch
 
     HipOrthoCamera camera;
     Mesh mesh;
-    Material material;
 
     protected IHipTexture[] currentTextures;
     int usingTexturesCount;
@@ -237,11 +235,6 @@ class HipSpriteBatch : IHipBatch
         {
             flush();
             slot = getNextTextureID(texture);
-        }
-        else if(!hasInitTextureSlots)
-        {
-            hasInitTextureSlots = true;
-            spriteBatchShader.initTextureSlots(texture, "uTex1", HipRenderer.getMaxSupportedShaderTextures());
         }
         return slot;
     }
@@ -433,19 +426,15 @@ class HipSpriteBatch : IHipBatch
         if(quadsCount != 0)
         {
             HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
-            // mesh.shader.bind();
-            // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
-            // material.bind();
-
+            for(int i = usingTexturesCount - 1; i < currentTextures.length; i++)
+                currentTextures[i] = currentTextures[0];
             mesh.bind();
-            mesh.shader.initTextureSlots(currentTextures[0], "uTex1", HipRenderer.getMaxSupportedShaderTextures());
 
+            mesh.shader.bindTextureArray(currentTextures, "uTex1");
             mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj, true);
             mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity(), true);
             mesh.shader.setVertexVar("Cbuf1.uView", camera.view, true);
             
-            foreach(i; 0..usingTexturesCount)
-                currentTextures[i].bind(i);
             mesh.shader.sendVars();
 
             mesh.updateVertices(vertices[0..quadsCount*HipSpriteVertex.quadCount]);

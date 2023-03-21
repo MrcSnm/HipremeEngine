@@ -55,7 +55,7 @@ void initialize(HipInterpreterEntry entry = HipInterpreterEntry.init, bool shoul
     camera.setSize(viewport.worldWidth, viewport.worldHeight);
 
     hiplog("2D Renderer: Initializing spritebatch");
-    // spBatch = new HipSpriteBatch(camera);
+    spBatch = new HipSpriteBatch(camera);
     hiplog("2D Renderer: Initializing geometrybatch");
     geoBatch = new GeometryBatch(camera);
     hiplog("2D Renderer: Initializing text renderer");
