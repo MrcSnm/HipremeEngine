@@ -154,11 +154,9 @@ class HipVertexArrayObject
     */
     void createIndexBuffer(index_t count, HipBufferUsage usage)
     {
-        logln("Creating index buffer");
         this.EBO = HipRenderer.createIndexBuffer(count, usage);
         this.bind();
         this.EBO.bind();
-        logln("Bindign");
     }
     /**
     * Creates and binds a vertex buffer.
@@ -175,7 +173,13 @@ class HipVertexArrayObject
     *   This function creates an attribute information,
     * for later sending it(it is necessary as the stride needs to be recalculated)
     */
-    HipVertexArrayObject appendAttribute(uint count, HipAttributeType valueType, uint typeSize, string infoName)
+    HipVertexArrayObject appendAttribute(
+        uint count, 
+        HipAttributeType valueType, 
+        uint typeSize, 
+        string infoName, 
+        bool isPadding = false
+    )
     {
         HipVertexAttributeInfo info;
         info.name = infoName;
@@ -185,13 +189,16 @@ class HipVertexArrayObject
         info.index = cast(uint)infos.length;
         //It actually is the `last stride`, which is the same as the offset is the total current stride
         info.offset = stride;
-        infos~= info;
+        // if(!isPadding)
+        {
+            infos~= info;
+            dataCount+= count;
+        }
         stride+= count*typeSize;
-        dataCount+= count;
         return this;
     }
 
-    HipVertexArrayObject appendAttribute(T)(string infoName)
+    HipVertexArrayObject appendAttribute(T)(string infoName, bool isPadding = false)
     {
         uint count = 1;
         HipAttributeType type = HipAttributeType.FLOAT;
@@ -215,7 +222,7 @@ class HipVertexArrayObject
 
             typeSize = T.sizeof;
         }
-        return appendAttribute(count, type, typeSize ,infoName);
+        return appendAttribute(count, type, typeSize ,infoName, isPadding);
     }
 
     /**
@@ -299,29 +306,13 @@ class HipVertexArrayObject
     }
 
     /**
-    *   Remember calling sendAttributes!
-    *   Defines:
-    *
-    *    vec2 vPosition
-    *   
-    *    vec2 vTexST
-    */
-    static HipVertexArrayObject getXY_ST_VAO()
-    {
-        HipVertexArrayObject obj = new HipVertexArrayObject();
-        with(HipAttributeType)
-        {
-            obj.appendAttribute(2, FLOAT, float.sizeof, "vPosition") //X, Y
-               .appendAttribute(2, FLOAT, float.sizeof, "vTexST"); //ST
-        }
-        return obj;
-    }
-    /**
     * Receives a struct and creates a VAO based on its member types and names.
     */
     static HipVertexArrayObject getVAO(T)() if(is(T == struct))
     {
         import std.traits:isFunction;
+        import hip.util.reflection:hasUDA;
+
         HipVertexArrayObject obj = new HipVertexArrayObject();
         static foreach(member; __traits(allMembers, T))
         {{
@@ -330,26 +321,14 @@ class HipVertexArrayObject
             {
                 obj.appendAttribute!((typeof(mem)))
                 (
-                    member
+                    member,
+                    hasUDA!(mem, HipShaderInputPadding)
                 );
             }
         }}
         return obj;
     }
 
-    /**
-    *   Remember calling sendAttributes!
-    */
-    static HipVertexArrayObject getXYZ_RGBA_VAO()
-    {
-        HipVertexArrayObject obj = new HipVertexArrayObject();
-        with(HipAttributeType)
-        {
-            obj.appendAttribute(3, FLOAT, float.sizeof, "vPosition") //X, Y, Z
-               .appendAttribute(4, FLOAT, float.sizeof, "vColor"); //R, G, B, A
-        }
-        return obj;
-    }
     /**
     *   Remember calling sendAttributes!
     */

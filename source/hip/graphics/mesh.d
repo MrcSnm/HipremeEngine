@@ -55,7 +55,7 @@ class Mesh
     }
     void unbind()
     {
-        // if(this.isBound)
+        // if(this.isBound) 
         // {
             this.isBound = false;
             this.shader.unbind();
@@ -119,7 +119,7 @@ class Mesh
             HipRenderer.drawInstanced()
         }
         */
-        bind();
+        if(!isBound) bind();
         HipRenderer.drawIndexed(cast(index_t)count);
     }
 
