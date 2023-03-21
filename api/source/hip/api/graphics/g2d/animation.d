@@ -10,7 +10,7 @@ public import hip.api.data.textureatlas;
 struct HipAnimationFrame
 {
     IHipTextureRegion region;
-    HipColor color = HipColor(1,1,1,1);
+    HipColorf color = HipColorf(1,1,1,1);
     ///X, Y
     float[2] offset = [0,0];
 
@@ -119,7 +119,7 @@ interface IHipAnimation
                 {
                     anim.addTrack(track = newHipAnimationTrack(name, framesPerSecond, HipAnimationLoopingMode.reset));
                 }
-                track.addFrames(HipAnimationFrame(frame.region, HipColor.white, [0,0]));
+                track.addFrames(HipAnimationFrame(frame.region, HipColorf.white, [0,0]));
 
             }
             return anim;

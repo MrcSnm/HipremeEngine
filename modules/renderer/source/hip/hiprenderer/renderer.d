@@ -151,6 +151,7 @@ interface IHipRendererImpl
     public void setViewport(Viewport v);
     public bool setWindowMode(HipWindowMode mode);
     public bool isBlendingEnabled() const;
+    public void setDepthTestingEnabled(bool);
     public void setDepthTestingFunction(HipDepthTestingFunction);
     public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst);
     public void setBlendingEquation(HipBlendEquation eq);
@@ -195,6 +196,7 @@ class HipRenderer
         protected HipRendererConfig currentConfig;
 
         protected HipRendererResources res;
+        protected bool depthTestingEnabled;
         protected HipDepthTestingFunction currentDepthTestFunction;
     }
 
@@ -586,7 +588,7 @@ class HipRenderer
         rendererImpl.clear();
         stats.drawCalls++;
     }
-    public static void clear(HipColor color)
+    public static void clear(HipColorf color)
     {
         auto rgba = color.unpackRGBA;
         rendererImpl.clear(rgba[0], rgba[1], rgba[2], rgba[3]);
@@ -600,6 +602,14 @@ class HipRenderer
     static HipDepthTestingFunction getDepthTestingFunction()
     {
         return currentDepthTestFunction;
+    }
+    static bool isDepthTestingEnabled()
+    {
+        return depthTestingEnabled;
+    }
+    static void setDepthTestingEnabled(bool enable)
+    {
+        rendererImpl.setDepthTestingEnabled(enable);
     }
     static void setDepthTestingFunction(HipDepthTestingFunction fn)
     {

@@ -11,22 +11,19 @@ import hip.hiprenderer.backend.metal.mtltexture;
 
 
 
-MTLDepthStencilState fromHipDepthTestingFunction(HipDepthTestingFunction fn)
+
+MTLCompareFunction fromHipDepthTestingFunction(HipDepthTestingFunction fn)
 {
-    MTLDepthStencilDescriptor desc = MTLDepthStencilDescriptor.alloc.ini;
-
-    switch(fn) with(HipDepthTestingFunction)
+    final switch(fn) with(HipDepthTestingFunction)
     {
-        case Always:
-        case Never:
-        case Equal:
-        case NotEqual:
-        case Less:
-        case LessEqual:
-        case Greater:
-        case GreaterEqual:
-            break;
-
+        case Always: return MTLCompareFunction.Always;
+        case Never: return MTLCompareFunction.Never;
+        case Equal: return MTLCompareFunction.Equal;
+        case NotEqual: return MTLCompareFunction.NotEqual;
+        case Less: return MTLCompareFunction.Less;
+        case LessEqual: return MTLCompareFunction.LessEqual;
+        case Greater: return MTLCompareFunction.Greater;
+        case GreaterEqual: return MTLCompareFunction.GreaterEqual;
     }
 }
 
@@ -40,12 +37,20 @@ class HipMTLRenderer : IHipRendererImpl
     MTLRenderCommandEncoder cmdEncoder;
     MTLPrimitiveType primitiveType;
 
+    //Descriptors
+        MTLDepthStencilDescriptor depthStencilDescriptor;
+    //
+
     public bool init(HipWindow window)
     {
         view = cast(MTKView)window.MTKView;
         device = view.device();
         cmdQueue = device.newCommandQueue();
         cmdQueue.label = "HipremeRendererQueue".ns;
+
+        depthStencilDescriptor = MTLDepthStencilDescriptor.alloc.ini;
+        renderPassDescriptor.depthAttachment.loadAction = MTLLoadAction.Clear;
+        renderPassDescriptor.depthAttachment.clearDepth = 1.0;
 
         return cmdQueue !is null;
     }
@@ -115,7 +120,12 @@ class HipMTLRenderer : IHipRendererImpl
 
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
-        
+        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(
+            r/255.0f,
+            g/255.0f,
+            b/255.0f,
+            a/255.0f
+        );
     }
 
     public void setViewport(Viewport v)
@@ -135,16 +145,23 @@ class HipMTLRenderer : IHipRendererImpl
 
     public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst)
     {
-        
     }
 
     public void setBlendingEquation(HipBlendEquation eq)
     {
         
     }
+    public void setDepthTestingEnabled(bool enabled)
+    {
+        depthStencilDescriptor.depthWriteEnabled = enabled;
+    }
     public void setDepthTestingFunction(HipDepthTestingFunction d)
     {
-        cmdEncoder.setDepthStencilState()
+        assert(HipRenderer.isDepthTestingEnabled, "DepthTesting must be enabled before setting the function.");
+        depthStencilDescriptor.depthCompareFunction = d.fromHipDepthTestingFunction;
+        cmdEncoder.setDepthStencilState(
+            device.newDepthStencilStateWithDescriptor(depthStencilDescriptor)
+        );
     }
 
     public bool hasErrorOccurred(out string err, string file = __FILE__, size_t line = __LINE__)
@@ -205,12 +222,19 @@ class HipMTLRenderer : IHipRendererImpl
 
     public void clear()
     {
-        
+        renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.Clear;
+        cmdEncoder.endEncoding();
+        cmdBuffer.commit();
+        begin();
     }
 
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
-        
+        setColor(r,g,b,a);
+        renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.Clear;
+        cmdEncoder.endEncoding();
+        cmdBuffer.commit();
+        begin();
     }
 
     public void dispose()

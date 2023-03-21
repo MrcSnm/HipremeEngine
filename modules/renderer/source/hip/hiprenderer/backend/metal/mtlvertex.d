@@ -128,7 +128,7 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeInfo i)
 {
     final switch(i.valueType)
     {
-        case HipAttributeType.FLOAT:
+        case HipAttributeType.Float:
             final switch(i.count)
             {
                 case 1: return MTLVertexFormat.float1;
@@ -136,7 +136,7 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeInfo i)
                 case 3: return MTLVertexFormat.float3;
                 case 4: return MTLVertexFormat.float4;
             }
-        case HipAttributeType.INT:
+        case HipAttributeType.Int:
             final switch(i.count)
             {
                 case 1: return MTLVertexFormat.int1;
@@ -144,7 +144,15 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeInfo i)
                 case 3: return MTLVertexFormat.int3;
                 case 4: return MTLVertexFormat.int4;
             }
-        case HipAttributeType.BOOL:
+        case HipAttributeType.Uint:
+            final switch(i.count)
+            {
+                case 1: return MTLVertexFormat.uint1;
+                case 2: return MTLVertexFormat.uint2;
+                case 3: return MTLVertexFormat.uint3;
+                case 4: return MTLVertexFormat.uint4;
+            }
+        case HipAttributeType.Bool:
             final switch(i.count)
             {
                 case 1: return MTLVertexFormat.char1;
