@@ -21,8 +21,11 @@ struct HipDefaultAssets
    private __gshared IImage _texture;
    private __gshared HipFont _font;
 
-   static const(IImage) texture(){return cast(const)_texture;}
-   static const(IHipFont) font(){return cast(const)_font;}
+   // static const(IImage) texture(){return cast(const)_texture;}
+   // static const(IHipFont) font(){return cast(const)_font;}
+
+   static IImage texture(){return _texture;}
+   static IHipFont font(){return _font;}
 
    immutable static string textureData = import(HIP_DEFAULT_TEXTURE);
    immutable static string fontData = import(HIP_DEFAULT_FONT);
@@ -87,7 +90,7 @@ bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) on
 
 export extern(System)
 {
-   const(IHipFont) getDefaultFont()
+   IHipFont getDefaultFont()
    {
       return HipDefaultAssets.font;
    }
@@ -98,7 +101,7 @@ export extern(System)
    {
       return HipDefaultAssets._font.getFontWithSize(size);
    }
-   const(IHipTexture) getDefaultTexture()
+   IHipTexture getDefaultTexture()
    {
       __gshared IHipTexture texture;
       if(texture is null)
@@ -108,6 +111,7 @@ export extern(System)
          logln("Image has loaded? ", HipDefaultAssets.texture.getName, HipDefaultAssets.texture.getWidth);
          texture = new HipTexture(HipDefaultAssets.texture);
       }
-      return cast(const)texture;
+      // return cast(const)texture;
+      return texture;
    }
 }
