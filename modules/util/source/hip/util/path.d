@@ -215,7 +215,7 @@ string replaceFileName(string filePath, string newFileName) @safe pure nothrow
     char sep = determineSeparator(filePath);
     string[] p = pathSplitter(filePath);
     p[$-1] = newFileName;
-    return joinPath(sep, p);
+    return ((p[0] == "" && sep == '/') ? "/" : "") ~ joinPath(sep, p);
 }
 
 string normalizePath(string path)
