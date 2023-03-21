@@ -19,6 +19,9 @@ public import hip.graphics.orthocamera;
 public import hip.api.graphics.batch;
 public import hip.api.graphics.text : HipTextAlign;
 
+version(AppleOS) version = NeedsAlign16;
+else version = IgnorePadding;
+
 
 /**
 *   Don't change those names. If the variable names are changed, the shaders should stop working
@@ -27,12 +30,18 @@ public import hip.api.graphics.text : HipTextAlign;
 {
     import hip.math.vector;
     Vector3 vPosition;
-    @HipShaderInputPadding float _;
+    version(NeedsAlign16) @HipShaderInputPadding float _ = 0;
     Vector2 vTexST;
+    version(NeedsAlign16) @HipShaderInputPadding Vector2 __;
+
+    this(Vector3 vPosition, Vector2 vTexST)
+    {
+        this.vPosition = vPosition;
+        this.vTexST = vTexST;
+    }
 
     static enum size_t floatsCount = (HipTextRendererVertex.sizeof / float.sizeof);
     static enum size_t quadsCount = floatsCount*4;
-
 }
 
 
@@ -53,7 +62,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
 
     private HipText[] textPool;
     private int poolActive;
-    protected HipColor color;
+    protected HipColorf color;
     protected HipOrthoCamera camera;
     private uint quadsCount;
     protected float managedDepth = 0;
@@ -110,14 +119,14 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         this.font = font;
     }
 
-    void setColor(in HipColor color)
+    void setColor(HipColorf color)
     {
         if(this.color != color)
         {
             render();
         }
         this.color = color;
-        bmTextShader.uColor = cast()color;
+        bmTextShader.uColor = color;
     }
 
 

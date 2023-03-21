@@ -2,6 +2,7 @@ module hip.graphics.g2d.text;
 
 import hip.graphics.g2d.textrenderer;
 import hip.api.data.font;
+import hip.math.vector;
 
 version(WebAssembly) version = UseDRuntimeDecoder;
 version(CustomRuntimeTest) version = UseDRuntimeDecoder;
@@ -43,7 +44,7 @@ class HipText
     protected bool shouldRenderLineBreak = false;
 
     protected HipTextStopConfig[] textConfig;
-    protected float[] vertices;
+    protected HipTextRendererVertex[] vertices;
 
     //Caching
     protected size_t _drawableTextCount = 0;
@@ -80,10 +81,10 @@ class HipText
             shouldUpdateText = true;
             if(_drawableTextCount > maxDrawableTextCount)
             {
-                //As it is a quad, it needs to have floats * 4
-                vertices.length = _drawableTextCount * (HipTextRendererVertex.sizeof/float.sizeof) * 4;
+                //As it is a quad, it needs to have vertices * 4
+                vertices.length = _drawableTextCount * 4;
                 maxDrawableTextCount = _drawableTextCount;
-                vertices[] = 0;
+                vertices[] = HipTextRendererVertex(Vector3.zero, Vector2.zero);
             }
             _text = newText;
             _dtext = dtext;
@@ -96,7 +97,7 @@ class HipText
         if(shouldUpdateText)
             updateText(font);
         
-        return vertices[0..drawableTextCount * (HipTextRendererVertex.sizeof/float.sizeof) * 4];
+        return cast(float[])vertices[0..drawableTextCount * 4];
     }
     
     protected void updateAlign(int lineNumber, out int displayX, out int displayY, int boundsWidth, int boundsHeight)
@@ -165,32 +166,46 @@ class HipText
                     //Gen vertices 
 
                     //Top left
-                    v[vI++] = xoffset+displayX; //X
-                    v[vI++] = yoffset+displayY; //Y
-                    v[vI+= 2] = depth; //Z + Padding
-                    v[vI++] = ch.normalizedX; //S
-                    v[vI++] = ch.normalizedY; //T
-
+                    v[vI++] = HipTextRendererVertex(
+                        Vector3(
+                            xoffset+displayX, //X
+                            yoffset+displayY, //Y
+                            depth
+                        ),
+                        Vector2(ch.normalizedX, ch.normalizedY) //ST
+                    );
                     //Top Right
-                    v[vI++] = xoffset+displayX+ch.width; //X+W
-                    v[vI++] = yoffset+displayY; //Y
-                    v[vI+= 2] = depth; //Z + Padding
-                    v[vI++] = ch.normalizedX + ch.normalizedWidth; //S+W
-                    v[vI++] = ch.normalizedY; //T
-
+                    v[vI++] = HipTextRendererVertex(
+                        Vector3(
+                            xoffset+displayX+ch.width,
+                            yoffset+displayY,
+                            depth
+                        ),
+                        Vector2(ch.normalizedX + ch.normalizedWidth, ch.normalizedY) //S + Wnorm, T
+                    );
                     //Bot right
-                    v[vI++] = xoffset+displayX+ch.width; //X+W
-                    v[vI++] = yoffset+displayY + ch.height; //Y
-                    v[vI+= 2] = depth; //Z + Padding
-                    v[vI++] = ch.normalizedX + ch.normalizedWidth; //S+W
-                    v[vI++] = ch.normalizedY + ch.normalizedHeight; //T
-
+                    v[vI++] = HipTextRendererVertex(
+                        Vector3(
+                            xoffset+displayX+ch.width, //X+W
+                            yoffset+displayY + ch.height,//Y+H
+                            depth
+                        ), 
+                        Vector2(
+                            ch.normalizedX + ch.normalizedWidth, //S+Wnorm
+                            ch.normalizedY + ch.normalizedHeight //T+Hnorm
+                        )
+                    );
                     //Bot left
-                    v[vI++] = xoffset+displayX; //X
-                    v[vI++] = yoffset+displayY + ch.height; //Y+H
-                    v[vI+= 2] = depth; //Z + Padding
-                    v[vI++] = ch.normalizedX; //S
-                    v[vI++] = ch.normalizedY + ch.normalizedHeight; //T+H
+                    v[vI++] = HipTextRendererVertex(
+                        Vector3(
+                            xoffset+displayX, //X
+                            yoffset+displayY + ch.height, //Y+H
+                            depth
+                        ),
+                        Vector2(
+                            ch.normalizedX, ch.normalizedY + ch.normalizedHeight // S, T+Hnorm
+                        )
+                    );
 
                     yoffset-= ch.yoffset;
                     xoffset-= ch.xoffset+kerningAmount;
@@ -211,7 +226,7 @@ package struct HipTextStopConfig
 {
     import hip.api.graphics.color;
     int startIndex;
-    HipColor color;
+    HipColorf color;
 
     //This is just a plan, not supported right now
     public static enum Tokens
@@ -246,13 +261,13 @@ package struct HipTextStopConfig
         {
             case "rgb":
             {
-                HipColor c = HipColor(0, 0, 0, 1.0);
+                HipColorf c = HipColorf(0, 0, 0, 1.0);
                 range.map!((x) => x.trim.to!float).put(&c.r, &c.g, &c.b);
                 return HipTextStopConfig(cast(int)indexToParse, c);
             }
             default: break;
         }
-        return HipTextStopConfig(cast(int)indexToParse, cast()HipColor.white);
+        return HipTextStopConfig(cast(int)indexToParse, cast()HipColorf.white);
     }
 
 
