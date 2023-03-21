@@ -59,8 +59,9 @@ struct FragmentUniforms
 };
 fragment float4 fragment_main(
     FragmentInput in [[stage_in]],
-    array<texture2d<float>, 3> uTex [[texture(0)]],
-    array<sampler, 3> uSampler [[sampler(0)]]
+    constant FragmentUniforms& u [[buffer(0)]],
+    array<texture2d<float>, 16> uTex [[texture(0)]],
+    array<sampler, 16> uSampler [[sampler(0)]]
 )
 {
     int texID = int(in.inTexID);
@@ -204,7 +205,7 @@ struct FragmentInput
 vertex FragmentInput vertex_main(
     uint vertexID [[vertex_id]],
     constant VertexUniforms& u [[buffer(0)]],
-    device VertexInput* input [[buffer(1)]]
+    const device VertexInput* input [[buffer(1)]]
 )
 {
     FragmentInput out;
@@ -424,7 +425,7 @@ class HipMTLShader : IShader
         }
     }
 
-    void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount)
+    void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
     {
         
     }

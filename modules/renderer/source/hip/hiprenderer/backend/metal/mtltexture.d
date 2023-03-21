@@ -160,9 +160,6 @@ class HipMTLTexture : IHipTexture
         width = img.getWidth;
         height = img.getHeight;
 
-        import hip.console.log;
-        logln("Width: ", img.getWidth, " Height: ", img.getHeight, " BytesPerPixel: ", img.getBytesPerPixel);
-
         const ubyte[] data = img.getPixels;
         ubyte[] squareData; 
 
@@ -179,15 +176,14 @@ class HipMTLTexture : IHipTexture
             assert(img.getHeight > img.getWidth);
             imageBuffer = device.newBuffer(squareData.ptr, squareData.length, MTLResourceOptions.StorageModeShared);
             bytesPerRow = img.getHeight * img.getBytesPerPixel;
-            bytesPerImage = squareData.length * img.getBytesPerPixel;
+            bytesPerImage = squareData.length;
         }
         else
         {
             imageBuffer = device.newBuffer(img.getPixels.ptr, img.getPixels.length, MTLResourceOptions.StorageModeShared);
             bytesPerRow = img.getWidth * img.getBytesPerPixel;
-            bytesPerImage = img.getPixels.length * img.getBytesPerPixel;
+            bytesPerImage = img.getPixels.length;
         }
-
         blit.copyFromBuffer(
             imageBuffer, 0, bytesPerRow, bytesPerImage,
             MTLSize(desc.width, desc.height, 1),

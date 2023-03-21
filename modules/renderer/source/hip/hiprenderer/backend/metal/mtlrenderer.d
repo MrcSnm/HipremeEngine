@@ -115,7 +115,7 @@ class HipMTLRenderer : IHipRendererImpl
 
     public int queryMaxSupportedPixelShaderTextures()
     {
-        return int.init; // TODO: implement
+        return 16;
     }
 
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)

@@ -50,7 +50,9 @@ enum HipShaderPresets
     NONE
 }
 
-
+/** 
+ * This interface is currrently a Shader factory.
+ */
 interface IShader
 {
     VertexShader createVertexShader();
@@ -73,8 +75,10 @@ interface IShader
     void createVariablesBlock(ref ShaderVariablesLayout layout);
     void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts);
 
-    ///This function is actually required when working with multiple slots on D3D11.
-    void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount);
+    /** 
+     * Each graphics API has its own way to bind array of textures, thus, this version was required.
+     */
+    void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName);
     void dispose(ref ShaderProgram);
 }
 
@@ -353,12 +357,13 @@ public class Shader : IReloadable
     }
 
     /**
-    *   Bind the texture into all texutre slots. This is required for getting rid of D3D11 warning (which is checked as an error and thus exits the engine)
-    *   varName is currently unused
+    *  Bind array of textures.
+    *   - This is handled a little different than simply blindly binding *  to each slot.
+    *   Since OpenGL, Direct3D and Metal handles that differently, a more general solution is required.
     */
-    void initTextureSlots(IHipTexture texture, string varName, int slotsCount)
+    void bindArrayOfTextures(IHipTexture[] textures, string varName)
     {
-        shaderImpl.initTextureSlots(shaderProgram, texture, varName, slotsCount);
+        shaderImpl.bindArrayOfTextures(shaderProgram, textures, varName);
     }
 
 

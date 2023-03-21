@@ -583,7 +583,7 @@ class Hip_GL_ShaderImpl : IShader
                 
     }
 
-    void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount)
+    void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName,)
     {
         ///Optimization for not allocating when inside loops.
         __gshared int[] temp;
@@ -595,9 +595,11 @@ class Hip_GL_ShaderImpl : IShader
         if(shouldControlBind)
             bind(prog);
         int varID = getId(prog, varName);
-        for(int i = 0; i < slotsCount; i++)
+        foreach(i; 0..textures.length)
             temp[i] = i;
         glCall(() => glUniform1iv(varID, slotsCount, temp.ptr));
+        foreach(i, texture; textures)
+            texture.bind(i);
         if(shouldControlBind)
             unbind(prog);
     }
