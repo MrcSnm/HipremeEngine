@@ -105,7 +105,7 @@ class TestScene : Scene, IHipPreloadable
 
         drawText("Null Textures uses that sprite over here", 300, 480, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(cast(int)x+200, cast(int)y, 100, 100);
-        // drawTexture(null, 300, 500);
+        drawTexture(null, 300, 500);
 
         // // logg("Render testscene.");
 

@@ -75,9 +75,11 @@ class HipTexture : IHipTexture
     */
     protected bool loadImpl(in IImage img)
     {
+        import hip.console.log;
         this.img = cast(IImage)img; //Promise it won't modify
         this.width = img.getWidth;
         this.height = img.getHeight;
+        hiplog("Uploading Texture[",img.getName,"]", img.getWidth, "x", img.getHeight);
         this.textureImpl.load(img);
         return width != 0;
     }
