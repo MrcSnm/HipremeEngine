@@ -35,6 +35,7 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
         this.cmdQueue = cmdQueue;
         options = usage.mtlOptions;
         buffer = device.newBuffer(length*index_t.sizeof, options);
+        buffer.retain();
     }
     void bind()
     {
@@ -53,24 +54,22 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
             MTLBuffer temp = device.newBuffer(data, count*index_t.sizeof, MTLResourceOptions.StorageModeShared);
             MTLCommandBuffer cmdBuffer = cmdQueue.commandBuffer;
             MTLBlitCommandEncoder cmdEncoder = cmdBuffer.blitCommandEncoder;
-
-            MTLFence fence = device.newFence();
-            cmdEncoder.waitForFence(fence);
             cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, count*index_t.sizeof);
-            cmdEncoder.updateFence(fence);
             cmdEncoder.endEncoding();
             cmdBuffer.commit();
+            cmdBuffer.waitUntilCompleted();
         }
         else
         {
-            if(buffer) buffer.dealloc();
+            if(buffer) buffer.release();
             buffer = device.newBuffer(data, count*index_t.sizeof, options);
+            buffer.retain();
         }
     }
 
     void updateData(int offset, index_t count, const index_t* data)
     {
-        buffer.contents[offset..count*index_t.sizeof] = cast(void[])data[0..count];
+        buffer.contents[offset..offset+count*index_t.sizeof] = cast(void[])(data[0..count]);
     }
 }
 
@@ -87,6 +86,7 @@ class HipMTLVertexBuffer : IHipVertexBufferImpl
         this.cmdQueue = cmdQueue;
         options = usage.mtlOptions;
         buffer = device.newBuffer(size, options);
+        buffer.retain();
     }
     void bind()
     {
@@ -105,23 +105,22 @@ class HipMTLVertexBuffer : IHipVertexBufferImpl
             MTLBuffer temp = device.newBuffer(data, size, MTLResourceOptions.StorageModeShared);
             MTLCommandBuffer cmdBuffer = cmdQueue.commandBuffer;
             MTLBlitCommandEncoder cmdEncoder = cmdBuffer.blitCommandEncoder;
-            MTLFence fence = device.newFence();
-            cmdEncoder.waitForFence(fence);
             cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, size);
-            cmdEncoder.updateFence(fence);
             cmdEncoder.endEncoding();
             cmdBuffer.commit();
+            cmdBuffer.waitUntilCompleted();
         }
         else
         {
-            if(buffer) buffer.dealloc();
+            if(buffer) buffer.release();
             buffer = device.newBuffer(data, size, options);
+            buffer.retain();
         }
     }
 
     void updateData(int offset, size_t size, const void* data)
     {
-        buffer.contents[offset..size] = data[0..size];
+        buffer.contents[offset..offset+size] = data[0..size];
     }
 }
 
@@ -171,12 +170,8 @@ class HipMTLVertexArray : IHipVertexArrayImpl
         this.device = device;
         this.mtlRenderer = mtlRenderer;
         descriptor = MTLVertexDescriptor.vertexDescriptor();
-
-        // descriptor.layouts[0].stepFunction = MTLVertexStepFunction.Constant;
-        // descriptor.layouts[0].stepRate = 1;
-
-        descriptor.layouts[0].stepFunction = MTLVertexStepFunction.PerVertex;
-        descriptor.layouts[0].stepRate = 1;
+        descriptor.layouts[1].stepFunction = MTLVertexStepFunction.PerVertex;
+        descriptor.layouts[1].stepRate = 1;
     }
 
     void bind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
@@ -199,12 +194,26 @@ class HipMTLVertexArray : IHipVertexArrayImpl
         iBuffer = null;
     }
 
+    /** 
+     * HipMTLRenderer will ALWAYS assume that:
+     *  Buffer 0 is for uniforms
+     *  Buffer 1 is for vertex attributes
+     */
     void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride)
     {
+        import hip.console.log;
+
+        logln(
+            "Vertex at Index 1 with stride ", stride, "\n",
+            "Attribute Index: ", info.index, "\n",
+            "Attribute format: ", mtlVertexFormatFromAttributeInfo(info), "\n",
+            "Attribute Offset: ", info.offset
+        );
+        descriptor.layouts[1].stride = stride;
         MTLVertexAttributeDescriptor attribute = descriptor.attributes[info.index];
-        descriptor.layouts[0].stride = stride;
         attribute.format = mtlVertexFormatFromAttributeInfo(info);
         attribute.offset = info.offset;
+        attribute.bufferIndex = 1;
     }
 
     void createInputLayout(Shader s)

@@ -11,6 +11,25 @@ import hip.hiprenderer.backend.metal.mtltexture;
 
 
 
+MTLDepthStencilState fromHipDepthTestingFunction(HipDepthTestingFunction fn)
+{
+    MTLDepthStencilDescriptor desc = MTLDepthStencilDescriptor.alloc.ini;
+
+    switch(fn) with(HipDepthTestingFunction)
+    {
+        case Always:
+        case Never:
+        case Equal:
+        case NotEqual:
+        case Less:
+        case LessEqual:
+        case Greater:
+        case GreaterEqual:
+            break;
+
+    }
+}
+
 class HipMTLRenderer : IHipRendererImpl
 {
     MTKView view;
@@ -42,13 +61,10 @@ class HipMTLRenderer : IHipRendererImpl
         MTLCommandBuffer _cmdBuffer = cQueue.commandBuffer;
         MTLBlitCommandEncoder _cmdEncoder = _cmdBuffer.blitCommandEncoder;
 
-        MTLFence awaiter = d.newFence();
-
-        _cmdEncoder.waitForFence(awaiter);
         _cmdEncoder.copyFromBuffer(temp, 0, ret, 0, size);
-        _cmdEncoder.updateFence(awaiter);
         _cmdEncoder.endEncoding();
         _cmdBuffer.commit();
+        _cmdBuffer.waitUntilCompleted();
         return ret;
     }
 
@@ -58,7 +74,7 @@ class HipMTLRenderer : IHipRendererImpl
         return bool.init; // TODO: implement
     }
 
-    public bool isRowMajor(){return false;}
+    public bool isRowMajor(){return true;}
     void setErrorCheckingEnabled(bool enable = true){}
     public Shader createShader()
     {
@@ -126,6 +142,10 @@ class HipMTLRenderer : IHipRendererImpl
     {
         
     }
+    public void setDepthTestingFunction(HipDepthTestingFunction d)
+    {
+        cmdEncoder.setDepthStencilState()
+    }
 
     public bool hasErrorOccurred(out string err, string file = __FILE__, size_t line = __LINE__)
     {
@@ -167,6 +187,7 @@ class HipMTLRenderer : IHipRendererImpl
             cmdEncoder.drawIndexedPrimitives(primitiveType, count, MTLIndexType.UInt16, boundIndexBuffer, offset);
         else 
             cmdEncoder.drawIndexedPrimitives(primitiveType, count, MTLIndexType.UInt32, boundIndexBuffer, offset);
+
     }
 
     public void drawVertices(index_t count, uint offset = 0)
@@ -179,9 +200,7 @@ class HipMTLRenderer : IHipRendererImpl
         cmdEncoder.endEncoding();
         cmdBuffer.presentDrawable(view.currentDrawable);
         cmdBuffer.commit();
-
-        // cmdBuffer = cmdQueue.commandBuffer;
-        // cmdEncoder = cmdBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor);
+        cmdBuffer.waitUntilCompleted();
     }
 
     public void clear()

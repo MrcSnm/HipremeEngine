@@ -96,10 +96,36 @@ enum HipBlendEquation
     MAX
 }
 
+///Which function should be employed whene testing the Depth/Z-Buffer
+enum HipDepthTestingFunction
+{
+    ///Means that nothing will be drawed
+    Never,
+    ///Same as no depth test
+    Always,
+    ///Render if the value is less than the current depth
+    Less,
+    ///Render if the value is less or equal than the current depth
+    LessEqual,
+    ///Render if the value is greater than the current depth
+    Greater,
+    ///Render if the value is greater or equal than the current depth
+    GreaterEqual,
+    ///Render if the value is equal against the current depth
+    Equal,
+    ///Render if the value is not equal against the current depth
+    NotEqual
+}
+
 //////////////////////////////////////////Metadata//////////////////////////////////////////
 
 //Shaders
 enum HipShaderInputLayout;
+/**
+*   Use this special UDA to say this type is only for accumulating stride and thus should not
+*   be defined on shader
+*/
+enum HipShaderInputPadding;
 enum HipVertexVar;
 enum HipFragmentVar;
 alias HipPixelVar = HipFragmentVar;
@@ -125,6 +151,7 @@ interface IHipRendererImpl
     public void setViewport(Viewport v);
     public bool setWindowMode(HipWindowMode mode);
     public bool isBlendingEnabled() const;
+    public void setDepthTestingFunction(HipDepthTestingFunction);
     public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst);
     public void setBlendingEquation(HipBlendEquation eq);
     public bool hasErrorOccurred(out string err, string line = __FILE__, size_t line =__LINE__);
@@ -168,6 +195,7 @@ class HipRenderer
         protected HipRendererConfig currentConfig;
 
         protected HipRendererResources res;
+        protected HipDepthTestingFunction currentDepthTestFunction;
     }
 
     version(RendererConfigFile)
@@ -568,6 +596,15 @@ class HipRenderer
     {
         rendererImpl.clear(r,g,b,a);
         stats.drawCalls++;
+    }
+    static HipDepthTestingFunction getDepthTestingFunction()
+    {
+        return currentDepthTestFunction;
+    }
+    static void setDepthTestingFunction(HipDepthTestingFunction fn)
+    {
+        rendererImpl.setDepthTestingFunction(fn);
+        currentDepthTestFunction = fn;
     }
     
     public static void dispose()
