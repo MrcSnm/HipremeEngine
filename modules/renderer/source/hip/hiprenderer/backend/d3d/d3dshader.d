@@ -184,7 +184,7 @@ class Hip_D3D11_VertexShader : VertexShader
             {
                 float4 inColor : inColor;
                 float2 inTexST : inTexST;
-                float  inTexID : inTexID;
+                int  inTexID : inTexID;
                 float4 vPosition: SV_POSITION;
             };
 
@@ -199,7 +199,7 @@ class Hip_D3D11_VertexShader : VertexShader
                 float3 pos   : vPosition,
                 float4 col   : vColor,
                 float2 texST : vTexST,
-                float  texID : vTexID
+                int  texID : vTexID
                 )
             {
                 VSOut output;
@@ -469,8 +469,8 @@ class Hip_D3D11_ShaderImpl : IShader
 
     void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
     {
-        foreach(texture; textures)
-            texture.bind(i);
+        foreach(i, texture; textures)
+            texture.bind(cast(int)i);
     }
 
     void createVariablesBlock(ref ShaderVariablesLayout layout)

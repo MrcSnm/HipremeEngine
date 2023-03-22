@@ -253,13 +253,14 @@ private DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref HipVertexAttributeInfo info)
             }
             break;
         case HipAttributeType.Uint:
-            switch(info.cont)
+            switch(info.count)
             {
                 case 1: ret = DXGI_FORMAT_R32_UINT; break;
                 default:
                     ErrorHandler.showErrorMessage("DXGI Format Error",
                     "Unknown format type from uint with length " ~ to!string(info.count));
             }
+            break;
         case HipAttributeType.Bool:
         case HipAttributeType.Int:
             switch(info.count)

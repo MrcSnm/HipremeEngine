@@ -34,8 +34,6 @@ version(OpenGL):
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
 import hip.hiprenderer.shader;
-import hip.hiprenderer.backend.gl.glframebuffer;
-import hip.hiprenderer.backend.gl.glshader;
 import hip.hiprenderer.viewport;
 import hip.windowing.window;
 import hip.util.conv;
@@ -43,6 +41,9 @@ import hip.math.rect;
 import hip.console.log;
 import hip.error.handler;
 
+import hip.hiprenderer.backend.gl.gltexture;
+import hip.hiprenderer.backend.gl.glframebuffer;
+import hip.hiprenderer.backend.gl.glshader;
 
 private __gshared bool errorCheckEnabled = true;
 
@@ -380,4 +381,13 @@ class Hip_GL3Renderer : IHipRendererImpl
             window.destroyOpenGLContext();
         }
     }
+    
+    public void setDepthTestingFunction(HipDepthTestingFunction)
+    {
+    }
+    public void setDepthTestingEnabled(bool)
+    {
+
+    }
+    
 }
