@@ -26,10 +26,10 @@ public import hip.math.matrix;
 */
 @HipShaderInputLayout struct HipSpriteVertex
 {
-    Vector3 position;
-    HipColorf color;
-    Vector2 tex_uv;
-    int texID;
+    Vector3 vPosition;
+    HipColorf vColor;
+    Vector2 vTexST;
+    int vTexID;
 
     static enum floatCount = cast(size_t)(HipSpriteVertex.sizeof/float.sizeof);
     static enum quadCount = floatCount*4;
@@ -430,7 +430,7 @@ class HipSpriteBatch : IHipBatch
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
 
-            mesh.shader.bindTextureArray(currentTextures, "uTex1");
+            mesh.shader.bindArrayOfTextures(currentTextures, "uTex1");
             mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj, true);
             mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity(), true);
             mesh.shader.setVertexVar("Cbuf1.uView", camera.view, true);

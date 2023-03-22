@@ -35,11 +35,13 @@ private int getGLAttributeType(HipAttributeType _t)
 {
     final switch(_t) with(HipAttributeType)
     {
-        case FLOAT:
+        case Float:
             return GL_FLOAT;
-        case INT:
+        case Int:
             return GL_INT;
-        case BOOL:
+        case Uint:
+            return GL_UNSIGNED_INT;
+        case Bool:
             return GL_BOOL;
     }
 }
