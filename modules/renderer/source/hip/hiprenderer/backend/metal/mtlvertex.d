@@ -1,5 +1,6 @@
 module hip.hiprenderer.backend.metal.mtlvertex;
 
+version(AppleOS):
 import metal;
 import hip.hiprenderer;
 import hip.error.handler;

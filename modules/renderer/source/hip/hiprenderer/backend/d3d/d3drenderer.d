@@ -38,6 +38,7 @@ import hip.hiprenderer.framebuffer;
 import hip.hiprenderer.backend.d3d.d3dshader;
 import hip.hiprenderer.backend.d3d.d3dframebuffer;
 import hip.hiprenderer.backend.d3d.d3dvertex;
+import hip.hiprenderer.backend.d3d.d3dtexture;
 
 
 version(UWP)
@@ -600,6 +601,16 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         Hip_D3D11_Dispose();
     }
+    
+    public void setDepthTestingFunction(HipDepthTestingFunction)
+    {
+        
+    }
+    public void setDepthTestingEnabled(bool)
+    {
+        
+    }
+    
 }
 
 private void Hip_D3D11_Dispose()

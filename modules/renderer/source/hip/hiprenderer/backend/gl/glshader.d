@@ -587,19 +587,23 @@ class Hip_GL_ShaderImpl : IShader
     {
         ///Optimization for not allocating when inside loops.
         __gshared int[] temp;
-        if(slotsCount > temp.length)
-            temp.length = slotsCount;
+        if(textures.length > temp.length)
+            temp.length = textures.length;
 
         bool shouldControlBind = boundShader !is this;
 
         if(shouldControlBind)
             bind(prog);
         int varID = getId(prog, varName);
-        foreach(i; 0..textures.length)
+        int length = cast(int)textures.length;
+        foreach(i; 0..length)
             temp[i] = i;
-        glCall(() => glUniform1iv(varID, slotsCount, temp.ptr));
-        foreach(i, texture; textures)
-            texture.bind(i);
+
+        
+        glCall(() => glUniform1iv(varID, length, temp.ptr));
+
+        foreach(int i; 0..length)
+            textures[i].bind(i);
         if(shouldControlBind)
             unbind(prog);
     }
