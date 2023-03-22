@@ -1,5 +1,7 @@
 module hip.hiprenderer.backend.metal.mtlshader;
 
+version(AppleOS):
+
 import hip.hiprenderer;
 import hip.console.log;
 import metal;
