@@ -35,6 +35,22 @@ public import hip.math.matrix;
     static enum quadCount = floatCount*4;
     static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
 }
+
+@HipShaderVertexUniform("Cbuf1")
+struct HipSpriteVertexUniform
+{
+    Matrix4 uModel = Matrix4.identity;
+    Matrix4 uView = Matrix4.identity;
+    Matrix4 uProj = Matrix4.identity;
+}
+
+@HipShaderFragmentUniform("Cbuf")
+struct HipSpriteFragmentUniform
+{
+    float[4] uBatchColor = [0,0,0,0];
+    // @(ShaderHint.Optional) IHipTexture[] uTex;
+}
+
 /**
 *   The spritebatch contains 2 shaders.
 *   One shader is entirely internal, which you don't have any control, this is for actually being able
@@ -86,15 +102,8 @@ class HipSpriteBatch : IHipBatch
         mesh.sendAttributes();
         
 
-        spriteBatchShader.addVarLayout(new ShaderVariablesLayout("Cbuf1", ShaderTypes.VERTEX, ShaderHint.NONE)
-        .append("uModel", Matrix4.identity)
-        .append("uView", Matrix4.identity)
-        .append("uProj", Matrix4.identity));
-
-        spriteBatchShader.addVarLayout(new ShaderVariablesLayout("Cbuf", ShaderTypes.FRAGMENT, ShaderHint.NONE)
-        .append("uBatchColor", cast(float[4])[1,1,1,1])
-        );
-
+        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!HipSpriteVertexUniform);
+        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!HipSpriteFragmentUniform);
 
         spriteBatchShader.useLayout.Cbuf;
         spriteBatchShader.bind();
@@ -103,19 +112,7 @@ class HipSpriteBatch : IHipBatch
         if(camera is null)
             camera = new HipOrthoCamera();
         this.camera = camera;
-
-        index_t offset = 0;
-        for(index_t i = 0; i < cast(index_t)(maxQuads*6); i+=6)
-        {
-            indices[i + 0] = cast(index_t)(0+offset);
-            indices[i + 1] = cast(index_t)(1+offset);
-            indices[i + 2] = cast(index_t)(2+offset);
-
-            indices[i + 3] = cast(index_t)(2+offset);
-            indices[i + 4] = cast(index_t)(3+offset);
-            indices[i + 5] = cast(index_t)(0+offset);
-            offset+= 4; //Offset calculated for each quad
-        }
+        HipVertexArrayObject.putQuadBatchIndices(indices, maxQuads);
         mesh.setVertices(vertices);
         mesh.setIndices(indices);
         setTexture(HipTexture.getPixelTexture());

@@ -27,6 +27,16 @@ MTLCompareFunction fromHipDepthTestingFunction(HipDepthTestingFunction fn)
     }
 }
 
+/** 
+ * Used to be sent as a way to interface with ShaderVar uniforms.
+ * Whenever needing to bind more than one texture.
+ */
+package struct HipMTLShaderVarTexture
+{
+    MTLTexture[] textures;
+    MTLSampleState[] samplers;
+}
+
 class HipMTLRenderer : IHipRendererImpl
 {
     MTKView view;
@@ -84,6 +94,25 @@ class HipMTLRenderer : IHipRendererImpl
     public Shader createShader()
     {
         return new Shader(new HipMTLShader(device, this));
+    }
+
+    ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length, out size_t typeSize)
+    {
+        if(shaderType != UniformType.texture_array) return null;
+
+        auto textures = Array!HipMTLShaderVarTexture(length, null);
+        typeSize = textures[0].sizeof;
+
+        ShaderVar* ret = ShaderVar.create(
+            shaderType, 
+            varName,
+            &textures, 
+            uniformType, 
+            textures.sizeof, 
+            textures[0].sizeof, 
+            true
+        );
+        return ret;
     }
 
     public IHipFrameBuffer createFrameBuffer(int width, int height)

@@ -165,6 +165,14 @@ struct Array(T)
         ret.initialize(capacity);
         return ret;
     }
+
+    static Array!T opCall(size_t length, T value) @nogc
+    {
+        Array!T ret = Array!(T)(length);
+        ret.length = length;
+        ret[] = value;
+        return ret;
+    }
     
     static Array!T opCall(scope T[] arr) @nogc
     {
