@@ -39,7 +39,8 @@ else version = UseExternalScene;
 ///Most important functions here
 version(UseExternalScene)
 {
-	extern(System) __gshared  void function(Object) hipDestroy;
+	alias hipDestroyFn = extern(System) void function(Object);
+	__gshared hipDestroyFn hipDestroy;
 }
 
 
