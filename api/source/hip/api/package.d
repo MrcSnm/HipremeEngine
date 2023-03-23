@@ -33,18 +33,20 @@ enum HipAssetLoadStrategy
 	loadAll
 }
 
+version(Have_hipreme_engine){}
+else version = UseExternalScene;
+
 ///Most important functions here
-version(Script)
+version(UseExternalScene)
 {
-	private alias hipDestroyFn = extern(C) void function(Object obj);
-	hipDestroyFn hipDestroy;
+	extern(System) __gshared  void function(Object) hipDestroy;
 }
 
 
 mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = HipAssetLoadStrategy.loadAll)
 {
 	immutable string ScriptModules = import("scriptmodules.txt");
-	version(Script)
+	version(UseExternalScene)
 	{
 		__gshared AScene _exportedScene;
 		version(Windows)
@@ -55,7 +57,6 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 		export extern(System) AScene HipremeEngineGameInit()
 		{
 			import hip.api;
-			import hip.api.math.math_binding;
 			import hip.api.systems.system_binding;
 			import hip.api.game.game_binding;
 			import core.runtime;
@@ -65,7 +66,6 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 			initializeHip();
 			initConsole();
 			HipFS.initFS();
-			initMath();
 			initG2D();
 			HipAudio.initAudio();
 			HipInput.initInput();

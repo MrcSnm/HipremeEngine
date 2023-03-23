@@ -1,28 +1,23 @@
 module hip.api.filesystem.fs_binding;
+public import hip.api.filesystem.hipfs;
+version(Have_hipreme_engine) version = DirectCall;
 
-version(Script) void initFS()
-{
-    import hip.api.internal;
-    loadClassFunctionPointers!(HipFSBinding, "HipFileSystem");
-
-    import hip.api.console;
-    log("HipengineAPI: Initialized FS");
-}
-
-
-version(Have_hipreme_engine)
-{
-    public import hip.filesystem.hipfs;
-}
+version(DirectCall){ public import hip.filesystem.hipfs; }
 else
 {
-    import hip.api.internal;
-    public import hip.api.filesystem.hipfs;
+    void initFS()
+    {
+        import hip.api.internal;
+        loadClassFunctionPointers!(HipFSBinding, "HipFileSystem");
 
+        import hip.api.console;
+        log("HipengineAPI: Initialized FS");
+    }
+    import hip.api.internal;
     class HipFSBinding
     {
         @disable this();
-        extern(System) static
+        extern(System) __gshared
         {
             string function (string path) getPath;
             bool function (string path, bool expectsFile = true, bool shouldVerify = true) isPathValid;
@@ -48,3 +43,6 @@ else
     }
     mixin ExpandClassFunctionPointers!(HipFSBinding);
 }
+
+
+

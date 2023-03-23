@@ -1,20 +1,20 @@
 module hip.api.audio.audio_binding;
 public import hip.api.audio.audiosource;
 
-version(Script) void initAudio()
+version(Have_hipreme_engine) version = DirectCall;
+version(DirectCall){}
+else
 {
-    import hip.api.internal;
-    loadClassFunctionPointers!(HipAudioBinding, "HipAudio");
-    import hip.api.console;
-    log("HipengineAPI: Initialized Audio");
-}
-
-
-version(Script)
-{
+    void initAudio()
+    {
+        import hip.api.internal;
+        loadClassFunctionPointers!(HipAudioBinding, "HipAudio");
+        import hip.api.console;
+        log("HipengineAPI: Initialized Audio");
+    }
     class HipAudioBinding
     {
-        extern(System) static
+        extern(System) __gshared
         {
             bool function (AHipAudioSource src) pause;
             bool function (AHipAudioSource src) play_streamed;
@@ -27,6 +27,4 @@ version(Script)
     import hip.api.internal;
     mixin ExpandClassFunctionPointers!HipAudioBinding;
 
-
-    
 }

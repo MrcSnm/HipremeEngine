@@ -20,7 +20,8 @@ public import hip.api.graphics.text;
 public import hip.api.graphics.g2d.animation;
 public import hip.api.graphics.g2d.g2d_binding;
 
-version(Script)
+version(Have_hipreme_engine) {} else version = DefineOverloadings;
+version(DefineOverloadings)
 {
 	private alias G2D = hip.api.graphics.g2d.g2d_binding;
 	///Sets the font for the next drawText commands

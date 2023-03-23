@@ -17,9 +17,30 @@ struct Overload
 {
 	string targetName;
 }
+version(Have_hipreme) version = DirectCall;
+else version = LoadFunctionPointers;
+version(WebAssembly) version = ErrorOnLoadSymbol;
+version(PSVita) version = ErrorOnLoadSymbol;
 
-
-version(Script){__gshared void* _dll;}
+version(LoadFunctionPointers)
+{
+	__gshared void* _dll;
+	void initializeHip()
+	{
+		version(Windows){_dll = GetModuleHandle(null);}
+		else
+		{
+			import core.sys.posix.dlfcn:dlopen, RTLD_NOW;
+			_dll = dlopen(null, RTLD_NOW);
+		}
+		import std.stdio;
+		if(_dll == null)
+			writeln("Could not load GetModuleHandle(null)");
+		hipDestroy = cast(typeof(hipDestroy))_loadSymbol(_dll, "hipDestroy");
+		if(hipDestroy == null)
+			writeln("Fatal error: could not load hipDestroy");
+	}
+}
 version(Windows)
 {
 	@nogc nothrow extern(Windows)
@@ -30,40 +51,15 @@ version(Windows)
 		uint GetLastError();
 	}
 	alias GetModuleHandle = GetModuleHandleW;
-}
-
-version(Script) void initializeHip()
-{
-	version(Windows)
-	{
-		_dll = GetModuleHandle(null);
-	}
-	else
-	{
-		import core.sys.posix.dlfcn:dlopen, RTLD_NOW;
-		_dll = dlopen(null, RTLD_NOW);
-	}
-	import std.stdio;
-	if(_dll == null)
-		writeln("Could not load GetModuleHandle(null)");
-	hipDestroy = cast(typeof(hipDestroy))_loadSymbol(_dll, "hipDestroy");
-	if(hipDestroy == null)
-		writeln("Fatal error: could not load hipDestroy");
-}
-
-version(Windows)
-{
 	alias _loadSymbol = GetProcAddress;
 }
-else version(Posix)
+
+version(Posix)
 {
 	import core.sys.posix.dlfcn:dlsym;
 	alias _loadSymbol = dlsym;
 }
-else
-{
-	void* _loadSymbol(void* dll, string name){assert(false, "Can't load shared libraries in Wasm/PSVita: "~name);}
-}
+version(ErrorOnLoadSymbol){void* _loadSymbol(void* dll, string name){assert(false, "Can't load shared libraries in Wasm/PSVita: "~name);}}
 
 enum bool isFunctionPointer(alias T) = is(typeof(*T) == function);
 

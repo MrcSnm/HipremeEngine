@@ -1,5 +1,7 @@
 module hip.api.impl;
 
+version(Have_hipreme_engine) version = DirectCall;
+
 //Console
 public import hip.api.console;
 
@@ -25,8 +27,6 @@ public import hip.api.filesystem.hipfs;
 //Audio
 public import hip.api.audio;
 
-//Math
-public import hip.api.math.random;
 
 //Game
 public import hip.api.systems.timer;
@@ -41,22 +41,22 @@ alias IHipInputMap = HipInput.IHipInputMap;
 
 
 //Realiasing based on function pointers
-version(Script)
+
+version(DirectCall)
+{
+    public import hip.filesystem.hipfs;
+    public import hip.assetmanager;
+    public import hip.game.utils : HipGameUtils;
+    public import hip.systems.timer_manager : HipTimerManager;
+    public import HipDefaultAssets = hip.global.gamedef : getDefaultFont, getDefaultTexture, getDefaultFontWithSize;
+    ///All other functions that are actually exported is expected to be in that module.
+    // public import exportd;
+}
+else
 {
 	public import HipFS = hip.api.filesystem.definitions;
     public import HipAssetManager = hip.api.assets.assets_binding;
     public import hip.api.game.game_binding : HipGameUtils;
     public import hip.api.systems.system_binding: HipTimerManager;
     public import HipDefaultAssets = hip.api.assets.globals: getDefaultFont, getDefaultTexture, getDefaultFontWithSize;
-}
-else version(Have_hipreme_engine)
-{
-	public import hip.filesystem.hipfs;
-    public import hip.assetmanager;
-    public import hip.game.utils : HipGameUtils;
-    public import hip.systems.timer_manager : HipTimerManager;
-    public import HipDefaultAssets = hip.global.gamedef : getDefaultFont, getDefaultTexture, getDefaultFontWithSize;
-    
-    ///All other functions that are actually exported is expected to be in that module.
-    // public import exportd;
 }

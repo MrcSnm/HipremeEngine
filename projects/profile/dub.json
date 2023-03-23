@@ -29,7 +29,6 @@
 		{
 			"name" : "script",
 			"targetType": "dynamicLibrary",
-			"versions": ["Script"],
 			"lflags-windows": [
 				"/WX"
 			]
@@ -37,7 +36,6 @@
 		{
 			"name": "run",
 			"targetType": "dynamicLibrary",
-			"versions": ["Script"],
 			"lflags-windows": [
 				"/WX"
 			],

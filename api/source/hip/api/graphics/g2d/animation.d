@@ -80,6 +80,8 @@ interface IHipAnimationTrack
 }
 
 
+version(Have_hipreme_engine) {} else version = DefineCreateFromAtlas;
+
 interface IHipAnimation
 {
     IHipAnimationTrack getCurrentTrack();
@@ -92,7 +94,7 @@ interface IHipAnimation
         return frame.region;
     }
 
-    version(Have_util) version(Script)
+    version(Have_util) version(DefineCreateFromAtlas)
     {
         /**
         *   Creates an IHipAnimation from a loaded texture atlas.

@@ -1,25 +1,21 @@
 module hip.api.input.binding;
 
-
-version(Script) void initInput()
-{
-    import hip.api.internal;
-    loadClassFunctionPointers!HipInputBinding;
-    enum InputMapClass = "HipInputMap";
-    mixin(loadSymbolsFromExportD!(InputMapClass,
-        parseInputMap_Mem
-    ));
-    import hip.api.console;
-    log("HipengineAPI: Initialized Input");
-}
-
-
-version(Have_hipreme_engine)
-{
-    public import hip.event.api;
-}
+version(Have_hipreme_engine) version = DirectCall;
+version(DirectCall) { public import hip.event.api; }
 else
 {
+    void initInput()
+    {
+        import hip.api.internal;
+        import hip.api.console;
+        loadClassFunctionPointers!HipInputBinding;
+        enum InputMapClass = "HipInputMap";
+        mixin(loadSymbolsFromExportD!(InputMapClass,
+            parseInputMap_Mem
+        ));
+        log("HipengineAPI: Initialized Input");
+    }
+
     public import hip.api.input.button;
     public import hip.api.input.gamepad;
     public import hip.api.input.mouse;
@@ -30,7 +26,7 @@ else
 
     class HipInputBinding
     {
-        extern(System) static
+        extern(System) __gshared
         {
             bool function(char key, uint id = 0) isKeyPressed;
             bool function(char key, uint id = 0) isKeyJustPressed;
@@ -84,58 +80,58 @@ else
     }
 
     mixin ExpandClassFunctionPointers!HipInputBinding;
-    version(none) //Code suggestion
-    {
-        bool function(char key, uint id = 0) isKeyPressed;
-        bool function(char key, uint id = 0) isKeyJustPressed;
-        bool function(char key, uint id = 0) isKeyJustReleased;
-        float function(char key, uint id = 0) getKeyDownTime;
-        float function(char key, uint id = 0) getKeyUpTime;
+}
 
-        //Mouse/Touch functions
-        bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonPressed;
-        bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonJustPressed;
-        bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonJustReleased;
+version(none) //Code suggestion
+{
+    bool function(char key, uint id = 0) isKeyPressed;
+    bool function(char key, uint id = 0) isKeyJustPressed;
+    bool function(char key, uint id = 0) isKeyJustReleased;
+    float function(char key, uint id = 0) getKeyDownTime;
+    float function(char key, uint id = 0) getKeyUpTime;
 
-        ///Gets Raw touch/mouse position
-        float[2] function(uint id = 0) getTouchPosition;
-        ///Gets normallized to the window touch/mouse position
-        float[2] function(uint id = 0) getNormallizedTouchPosition;
-        ///Gets touch position in world transform. The world transform can both be based in Viewport argument, if none is passed, it is based on the currently active viewport
-        float[2] function(uint id = 0, Viewport vp = null) getWorldTouchPosition;
-        float[2] function(uint id=0) getTouchDeltaPosition;
-        float[3] function(uint id=0) getScroll;
-        //Gamepad Functions
-        ubyte function() getGamepadCount;
-        AHipGamepad function(ubyte id = 0) getGamepad;
-        float[3] function(HipGamepadAnalogs analog, ubyte id = 0) getAnalog;
-        bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonPressed;
-        bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustPressed;
-        bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustReleased;
+    //Mouse/Touch functions
+    bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonPressed;
+    bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonJustPressed;
+    bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonJustReleased;
 
-
-        bool function(scope HipGamepadButton[] btn, ubyte id = 0) areGamepadButtonsPressed;
-        bool function(scope HipGamepadButton[] btn, ubyte id = 0) areGamepadButtonsJustPressed;
-        bool function(scope HipGamepadButton[] btn, ubyte id = 0) areGamepadButtonsJustReleased;
-        
-        bool function(float vibrationPower, float time, ubyte id = 0) setGamepadVibrating;
-        float function(ubyte id = 0) getGamepadBatteryStatus;
-        bool function(ubyte id = 0) isGamepadWireless;
-
-        const(HipButton)* function(HipKey key, HipInputAction action,
-        HipButtonType type = HipButtonType.down,
-        AutoRemove remove = AutoRemove.no) addKeyboardListener;
-
-        const(HipButton)* function (HipMouseButton btn, HipInputAction action,
-        HipButtonType type = HipButtonType.down,
-        AutoRemove remove = AutoRemove.no) addTouchListener;
+    ///Gets Raw touch/mouse position
+    float[2] function(uint id = 0) getTouchPosition;
+    ///Gets normallized to the window touch/mouse position
+    float[2] function(uint id = 0) getNormallizedTouchPosition;
+    ///Gets touch position in world transform. The world transform can both be based in Viewport argument, if none is passed, it is based on the currently active viewport
+    float[2] function(uint id = 0, Viewport vp = null) getWorldTouchPosition;
+    float[2] function(uint id=0) getTouchDeltaPosition;
+    float[3] function(uint id=0) getScroll;
+    //Gamepad Functions
+    ubyte function() getGamepadCount;
+    AHipGamepad function(ubyte id = 0) getGamepad;
+    float[3] function(HipGamepadAnalogs analog, ubyte id = 0) getAnalog;
+    bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonPressed;
+    bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustPressed;
+    bool function(HipGamepadButton btn, ubyte id = 0) isGamepadButtonJustReleased;
 
 
-
-        bool function(const(HipButton)* button) removeKeyboardListener;
-        bool function(const(HipButton)* btn) removeTouchListener;
-    }
+    bool function(scope HipGamepadButton[] btn, ubyte id = 0) areGamepadButtonsPressed;
+    bool function(scope HipGamepadButton[] btn, ubyte id = 0) areGamepadButtonsJustPressed;
+    bool function(scope HipGamepadButton[] btn, ubyte id = 0) areGamepadButtonsJustReleased;
     
+    bool function(float vibrationPower, float time, ubyte id = 0) setGamepadVibrating;
+    float function(ubyte id = 0) getGamepadBatteryStatus;
+    bool function(ubyte id = 0) isGamepadWireless;
+
+    const(HipButton)* function(HipKey key, HipInputAction action,
+    HipButtonType type = HipButtonType.down,
+    AutoRemove remove = AutoRemove.no) addKeyboardListener;
+
+    const(HipButton)* function (HipMouseButton btn, HipInputAction action,
+    HipButtonType type = HipButtonType.down,
+    AutoRemove remove = AutoRemove.no) addTouchListener;
+
+
+
+    bool function(const(HipButton)* button) removeKeyboardListener;
+    bool function(const(HipButton)* btn) removeTouchListener;
 }
 
 

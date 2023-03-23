@@ -1,9 +1,21 @@
 module hip.api.console;
 
-
-version(Script)
+version(Have_hipreme_engine) version = DirectCall;
+version(DirectCall)
 {
-    void function(string s) log;
+	import hip.console.log:logln, rawlog;
+    alias log = rawlog;
+	alias logg = logln;
+}
+else
+{
+    extern(System) __gshared void function(string s) log;
+	void initConsole()
+	{
+		import hip.api.internal : _loadSymbol, _dll;
+		log = cast(typeof(log))_loadSymbol(_dll, "log".ptr);
+		log("HipengineAPI: Initialized Console");
+	}
     void logg(Args...)(Args a, string file = __FILE__, size_t line = __LINE__)
 	{
 		import hip.util.conv;
@@ -12,12 +24,6 @@ version(Script)
 			toLog~= arg.to!string;
 		log(toLog ~ "\n\t at "~file~":"~to!string(line));
 	}
-}
-else version(Have_hipreme_engine)
-{
-    import hip.console.log:logln, rawlog;
-    alias log = rawlog;
-	alias logg = logln;
 }
 
 void logVars(Args...)(string file = __FILE__, size_t line = __LINE__)
@@ -39,11 +45,4 @@ void logVars(Args...)(string file = __FILE__, size_t line = __LINE__)
 	}
 	else
 		log(toPrint ~ "\n\t at "~file~":"~to!string(line));
-}
-
-version(Script) void initConsole()
-{
-	import hip.api.internal : _loadSymbol, _dll;
-	log = cast(typeof(log))_loadSymbol(_dll, "log".ptr);
-	log("HipengineAPI: Initialized Console");
 }

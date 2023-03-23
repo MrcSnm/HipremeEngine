@@ -21,9 +21,6 @@
 		
 		{
 			"name": "script",
-			"versions": [
-				"Script"
-			],
 			"targetType": "library"
 		},
 		{
