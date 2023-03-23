@@ -17,7 +17,7 @@ struct Overload
 {
 	string targetName;
 }
-version(Have_hipreme) version = DirectCall;
+version(Have_hipreme_engine) version = DirectCall;
 else version = LoadFunctionPointers;
 version(WebAssembly) version = ErrorOnLoadSymbol;
 version(PSVita) version = ErrorOnLoadSymbol;
