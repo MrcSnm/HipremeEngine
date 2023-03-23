@@ -126,10 +126,28 @@ enum HipShaderInputLayout;
 *   be defined on shader
 */
 enum HipShaderInputPadding;
-enum HipVertexVar;
-enum HipFragmentVar;
-alias HipPixelVar = HipFragmentVar;
-
+/**
+*   Declares that the struct is as VertexUniform block. 
+*/
+struct HipShaderVertexUniform
+{
+    /**
+    *   This name is the base uniform name accessed when dealing with HLSL Api.
+    *   i.e: Constant Buffer block name
+    */
+    string name; 
+}
+/**
+*   Declares that the struct is as FragmentUniform block. 
+*/
+struct HipShaderFragmentUniform
+{
+    /**
+    *   This name is the base uniform name accessed when dealing with HLSL Api.
+    *   i.e: Constant Buffer block name
+    */
+    string name;
+}
 
 /**
 *   Minimal interface for another API implementation

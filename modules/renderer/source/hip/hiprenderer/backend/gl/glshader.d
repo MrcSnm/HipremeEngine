@@ -575,6 +575,10 @@ class Hip_GL_ShaderImpl : IShader
                         float[] temp = v.sVar.get!(float[]);
                         glCall(() => glUniform1fv(id, cast(int)temp.length, temp.ptr));
                         break;
+                    case texture_array:
+                        GLuint[] temp = v.sVar.get!(GLuint[]);
+                        glCall(() => glUniform1iv(varID, cast(int)temp.length, temp.ptr));
+                        break;
                     case none:break;
                 }
                 v.sVar.isDirty = false;
