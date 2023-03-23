@@ -450,7 +450,7 @@ class HipTilemap : HipAsset, IHipTilemap
 {
 
     int _x, _y;
-    HipColor _color = HipColor.white;
+    HipColorf _color = HipColorf.white;
     float _scaleX = 1.0, _scaleY = 1.0;
     float _rotation = 0;
 
@@ -475,7 +475,7 @@ class HipTilemap : HipAsset, IHipTilemap
 
     ref int x() => _x;
     ref int y() => _y;
-    ref HipColor color() => _color;
+    ref HipColorf color() => _color;
     ref float scaleX() => _scaleX;
     ref float scaleY() => _scaleY;
     float scale() => _scaleX;

@@ -94,7 +94,7 @@ class HipMultiSprite
 class HipSprite 
 {
     IHipTextureRegion texture;
-    HipColor color;
+    HipColorf color;
     float x = 0, y = 0;
     float scrollX = 0, scrollY = 0;
     float rotation = 0;
@@ -117,14 +117,14 @@ class HipSprite
     package this(float[] sink)
     {
         this.vertices = sink;
-        setColor(HipColor.white);
+        setColor(HipColorf.white);
     }
 
     this()
     {
         vertices = new float[40];
         vertices[] = 0;
-        setColor(HipColor.white);
+        setColor(HipColorf.white);
         setTexture(cast()getDefaultTexture());
     }
     this(IHipAssetLoadTask task)
@@ -145,14 +145,14 @@ class HipSprite
     {
         vertices = new float[40];
         vertices[] = 0;
-        setColor(HipColor.white);
+        setColor(HipColorf.white);
         setTexture(texture);
     }
     this(IHipTextureRegion region)
     {
         vertices = new float[40];
         vertices[] = 0;
-        setColor(HipColor.white);
+        setColor(HipColorf.white);
         this.texture = region;
         width  = region.getWidth();
         height = region.getHeight();
@@ -300,7 +300,7 @@ class HipSprite
         return vertices[0..40];
     }
 
-    void setColor(HipColor color)
+    void setColor(HipColorf color)
     {
         this.color = color;
         vertices[R1] = color.r;

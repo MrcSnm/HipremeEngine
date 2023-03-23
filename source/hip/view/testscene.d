@@ -45,7 +45,7 @@ class TestScene : Scene, IHipPreloadable
         logg(getAssetsForPreload);
         // logg(pop is null);
         geom = new GeometryBatch(null, 5000, 5000);
-        geom.setColor(HipColor(0, 1, 0, 1));
+        geom.setColor(HipColorf(0, 1, 0, 1));
         HipRenderer.setViewport(new Viewport(0,0, 800, 600));
 
         // src = HipAudio.getSource();
@@ -98,12 +98,12 @@ class TestScene : Scene, IHipPreloadable
         
 
         // ////////////////////////Higher Level////////////////////////
-        // setGeometryColor(HipColor.white);
+        // setGeometryColor(HipColorf.white);
         // setFont(null);
-        drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        drawText("Hello World Test Scene (Default Font)", 300, 280, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(cast(int)x, cast(int)y, 100, 100);
 
-        drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        drawText("Null Textures uses that sprite over here", 300, 480, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(cast(int)x+200, cast(int)y, 100, 100);
         // drawTexture(null, 300, 500);
 

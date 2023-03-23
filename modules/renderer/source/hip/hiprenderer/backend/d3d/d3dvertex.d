@@ -240,42 +240,34 @@ private DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref HipVertexAttributeInfo info)
     DXGI_FORMAT ret;
     switch(info.valueType)
     {
-        case HipAttributeType.FLOAT:
+        case HipAttributeType.Float:
             switch(info.count)
             {
-                case 1:
-                    ret = DXGI_FORMAT_R32_FLOAT;
-                    break;
-                case 2:
-                    ret = DXGI_FORMAT_R32G32_FLOAT;
-                    break;
-                case 3:
-                    ret = DXGI_FORMAT_R32G32B32_FLOAT;
-                    break;
-                case 4:
-                    ret = DXGI_FORMAT_R32G32B32A32_FLOAT;
-                    break;
+                case 1: ret = DXGI_FORMAT_R32_FLOAT; break;
+                case 2: ret = DXGI_FORMAT_R32G32_FLOAT; break;
+                case 3: ret = DXGI_FORMAT_R32G32B32_FLOAT; break;
+                case 4: ret = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
                 default:
                     ErrorHandler.showErrorMessage("DXGI Format Error",
                     "Unknown format type from float with length " ~ to!string(info.count));
             }
             break;
-        case HipAttributeType.BOOL:
-        case HipAttributeType.INT:
+        case HipAttributeType.Uint:
+            switch(info.cont)
+            {
+                case 1: ret = DXGI_FORMAT_R32_UINT; break;
+                default:
+                    ErrorHandler.showErrorMessage("DXGI Format Error",
+                    "Unknown format type from uint with length " ~ to!string(info.count));
+            }
+        case HipAttributeType.Bool:
+        case HipAttributeType.Int:
             switch(info.count)
             {
-                case 1:
-                    ret = DXGI_FORMAT_R32_SINT;
-                    break;
-                case 2:
-                    ret = DXGI_FORMAT_R32G32_SINT;
-                    break;
-                case 3:
-                    ret = DXGI_FORMAT_R32G32B32_SINT;
-                    break;
-                case 4:
-                    ret = DXGI_FORMAT_R32G32B32A32_SINT;
-                    break;
+                case 1: ret = DXGI_FORMAT_R32_SINT; break;
+                case 2: ret = DXGI_FORMAT_R32G32_SINT; break;
+                case 3: ret = DXGI_FORMAT_R32G32B32_SINT; break;
+                case 4: ret = DXGI_FORMAT_R32G32B32A32_SINT; break;
                 default:
                     ErrorHandler.showErrorMessage("DXGI Format Error",
                     "Unknown format type from int/bool with length " ~ to!string(info.count));
