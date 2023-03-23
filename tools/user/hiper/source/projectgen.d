@@ -121,7 +121,6 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 		{
 			"name" : "script",
 			"targetType": "dynamicLibrary",
-			"versions": ["Script"],
 			"lflags-windows": [
 				"/WX"
 			]
@@ -129,7 +128,6 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 		{
 			"name": "run",
 			"targetType": "dynamicLibrary",
-			"versions": ["Script"],
 			"lflags-windows": [
 				"/WX"
 			],

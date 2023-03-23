@@ -25,7 +25,6 @@
 		{
 			"name" : "script",
 			"targetType": "dynamicLibrary",
-			"versions": ["Script"],
 			"lflags-windows": [
 				"/WX"
 			]
@@ -33,7 +32,6 @@
 		{
 			"name": "ldc",
 			"targetType": "dynamicLibrary",
-			"versions": ["Script"],
 			"dflags": [
 				"-link-defaultlib-shared=false"
 			],
@@ -44,7 +42,6 @@
 		{
 			"name": "run",
 			"targetType": "dynamicLibrary",
-			"versions": ["Script"],
 			"lflags-windows": [
 				"/WX"
 			],

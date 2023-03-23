@@ -1,7 +1,7 @@
 module hip.graphics.g2d.renderer2d;
 
-version(Have_bindbc_lua)
-    version = HipremeEngineLua;
+version(Have_bindbc_lua) version = HipremeEngineLua;
+
 import hip.graphics.g2d.spritebatch;
 import hip.graphics.g2d.tilemap;
 import hip.graphics.g2d.geometrybatch;
@@ -9,7 +9,6 @@ import hip.graphics.orthocamera;
 import hip.hiprenderer;
 import hip.bind.interpreters;
 public import hip.api.graphics.color;
-public import hip.api.math.random;
 public import hip.api.data.commons:IHipAssetLoadTask;
 public import hip.graphics.g2d.textrenderer;
 public import hip.api.renderer.viewport;

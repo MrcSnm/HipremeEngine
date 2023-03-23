@@ -5,20 +5,22 @@ public import hip.api.data.textureatlas;
 public import hip.api.data.tilemap;
 public import hip.api.renderer.texture;
 
-version(Script) void initAssetManager()
+version(Have_hipreme_engine) version = DirectCall;
+version(DirectCall){}
+else
 {
-    import hip.api.internal;
-    loadClassFunctionPointers!(HipAssetsBinding, "HipAssetManager");
-    import hip.api.console;
-    log("HipengineAPI: Initialized AssetManager");
-}
+    void initAssetManager()
+    {
+        import hip.api.internal;
+        loadClassFunctionPointers!(HipAssetsBinding, "HipAssetManager");
+        import hip.api.console;
+        log("HipengineAPI: Initialized AssetManager");
+    }
 
-version(Script)
-{
 
     class HipAssetsBinding
     {
-        extern(System) static
+        extern(System) __gshared
         {
             ///Returns whether asset manager is loading anything
             bool function() isLoading;
@@ -138,6 +140,9 @@ version(Script)
     import hip.api.internal;
     mixin ExpandClassFunctionPointers!HipAssetsBinding;
 }
+
+
+
 
 T get(T)(string name){return cast(T)getAsset(name); }
 T get(T : string)(string name){return cast(T)getStringAsset(name);}
