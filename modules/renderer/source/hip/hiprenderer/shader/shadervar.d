@@ -16,15 +16,28 @@ import hip.util.conv:to;
 import hip.math.matrix;
 import hip.api.graphics.color;
 
+/**
+*   Changes how the Shader behaves based on the backend
+*/
 enum ShaderHint : uint
 {
     NONE = 0,
     GL_USE_BLOCK = 1<<0,
     GL_USE_STD_140 = 1<<1,
-
-    D3D_USE_HLSL_4 = 1<<2
+    D3D_USE_HLSL_4 = 1<<2,
+    /** 
+     * Meant for usage in uniform variables.
+     * That means one Shader Variable may not be sent to the backend depending on its requirements.
+     * An example for that is Array of Textures. In D3D11, it depends only on the resource being bound,
+     * while on Metal and GL3, they are required to be inside a MTLBuffer or being sent as an Uniform.
+     */ 
+    Optional = 1 << 3
 }
 
+/**
+*   Should not be used directly. The D type inference can already set that for you.
+*   This is stored by the variable to know how to access itself and comunicate the shader.
+*/
 enum UniformType
 {
     boolean,
@@ -40,6 +53,7 @@ enum UniformType
     floating3x3,
     floating4x4,
     floating_array,
+    texture_array,
     none
 }
 
@@ -52,26 +66,27 @@ struct ShaderVar
 {
     import hip.util.data_structures:Array;
     import std.traits;
-    void* data;
+    void[] data;
     string name;
     ShaderTypes shaderType;
     UniformType type;
     size_t singleSize;
-    size_t varSize;
     bool isDynamicArrayReference;
 
     bool isDirty = true;
+
+    size_t varSize() const{return data.length;}
 
     const T get(T)()
     {
         static if(isDynamicArray!T)
         {
             alias _t = typeof(T.init[0]);
-            Array!(_t)* arr = cast(Array!(_t)*)data;
+            Array!(_t)* arr = cast(Array!(_t)*)data.ptr;
             return arr.data[0..arr.length];
         }
         else
-            return *(cast(T*)this.data);
+            return *(cast(T*)this.data.ptr);
     }
     bool set(T)(T value, bool validateData)
     {
@@ -173,18 +188,12 @@ struct ShaderVar
         throwOnOutOfBounds(index);
         switch(type) with(UniformType)
         {
-            case floating2:
-                return get!(float[2])[index];
-            case floating3:
-                return get!(float[3])[index];
-            case floating4:
-                return get!(float[4])[index];
-            case floating2x2:
-                return get!(float[4])[index];
-            case floating3x3:
-                return get!(float[9])[index];
-            case floating4x4:
-                return get!(float[16])[index];
+            case floating2: return get!(float[2])[index];
+            case floating3: return get!(float[3])[index];
+            case floating4: return get!(float[4])[index];
+            case floating2x2: return get!(float[4])[index];
+            case floating3x3: return get!(float[9])[index];
+            case floating4x4: return get!(float[16])[index];
             default:
                 ErrorHandler.assertExit(false, "opIndex is unsupported in var of type "~to!string(type));
                 return 0;
@@ -216,19 +225,24 @@ struct ShaderVar
         return ShaderVar.create(t, varName, &dRef, UniformType.floating_array, dRef.sizeof, dRef[0].sizeof, true);
     }
 
-    protected static ShaderVar* create(ShaderTypes t, string varName, void* varData, UniformType type, size_t varSize, size_t singleSize, bool isDynamicArrayReference=false)
+    protected static ShaderVar* create(
+        ShaderTypes t,
+        string varName,
+        void* varData,
+        UniformType type,
+        size_t varSize,
+        size_t singleSize,
+        bool isDynamicArrayReference=false
+    )
     {
         import core.stdc.string : memcpy;
-        import core.stdc.stdlib : malloc;
         ErrorHandler.assertExit(isShaderVarNameValid(varName), "Variable '"~varName~"' is invalid.");
         ShaderVar* s = new ShaderVar();
-        s.data = malloc(varSize);
-        memcpy(s.data, varData, varSize);   
-        ErrorHandler.assertExit(s.data !is null, "Out of memory");
+        s.data = new void[varSize];
+        memcpy(s.data.ptr, varData, varSize);   
         s.name = varName;
         s.shaderType = t;
         s.type = type;
-        s.varSize = varSize;
         s.isDynamicArrayReference = isDynamicArrayReference;
         s.singleSize = singleSize;
         return s;
@@ -236,18 +250,19 @@ struct ShaderVar
 
     void dispose()
     {
-        import core.stdc.stdlib:free;
         type = UniformType.none;
         shaderType = ShaderTypes.NONE;
         singleSize = 0;
-        varSize = 0;
         if(isDynamicArrayReference)
         {
             (cast(Array!(int)*)data).dispose();
         }
         else if(data != null)
-            free(data);
-        data = null;
+        {
+            import core.memory;
+            GC.free(data.ptr);
+            data = null;
+        }
     }
 }
 
@@ -343,6 +358,30 @@ class ShaderVariablesLayout
         ErrorHandler.assertExit(data != null, "Out of memory");
     }
 
+    static ShaderVariablesLayout from(T)()
+    {
+        enum attr = __traits(getAttributes, T);
+        static if(is(typeof(attr[0]) == HipShaderVertexUniform))
+            enum shaderType = ShaderTypes.VERTEX;
+        else static if(is(typeof(attr[0]) == HipShaderFragmentUniform))
+            enum shaderType = ShaderTypes.FRAGMENT;
+        else static assert(false, 
+            "Type "~T.stringof~" doesn't have a HipShaderVertexUniform nor " ~ 
+            "HipShaderFragmentUniform attached to it."
+        );
+        static assert(
+            attr[0].name !is null,
+            "HipShaderUniform "~T.stringof~" must contain a name as it is required to work in Direct3D 11"
+        );
+        ShaderVariablesLayout ret = new ShaderVariablesLayout(attr[0].name, shaderType, ShaderHint.NONE);
+        static foreach(mem; __traits(allMembers, T))
+        {
+            ret.append(mem, __traits(getMember, T.init, mem));
+        }
+
+        return ret;
+    }
+
     Shader getShader(){return owner;}
     void lock(Shader owner)
     {
@@ -375,7 +414,7 @@ class ShaderVariablesLayout
     {
         import core.stdc.string:memcpy;
         foreach(v; variables)
-            memcpy(data+v.alignment, v.sVar.data, v.size);
+            memcpy(data+v.alignment, v.sVar.data.ptr, v.size);
         return data;
     }
 
