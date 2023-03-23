@@ -28,7 +28,7 @@ public import hip.math.matrix;
 @HipShaderInputLayout struct HipSpriteVertex
 {
     Vector3 position;
-    HipColor color;
+    HipColorf color;
     Vector2 tex_uv;
     int texID;
 
@@ -81,7 +81,7 @@ class HipSpriteBatch : IHipBatch
         usingTexturesCount = 0;
 
         this.spriteBatchShader = HipRenderer.newShader(HipShaderPresets.SPRITE_BATCH);
-        mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_ST_TID_VAO(), spriteBatchShader);
+        mesh = new Mesh(HipVertexArrayObject.getVAO!HipSpriteVertex, spriteBatchShader);
         mesh.vao.bind();
         mesh.createVertexBuffer(cast(index_t)(maxQuads*HipSpriteVertex.quadCount), HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(cast(index_t)(maxQuads*6), HipBufferUsage.STATIC);
@@ -259,7 +259,7 @@ class HipSpriteBatch : IHipBatch
             addQuads(vertices, slot);
     }
 
-    void draw(IHipTexture texture, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    void draw(IHipTexture texture, int x, int y, int z = 0, in HipColorf color = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         import hip.global.gamedef;
         if(quadsCount+1 > maxQuads)
@@ -278,7 +278,7 @@ class HipSpriteBatch : IHipBatch
     }
 
 
-    void draw(IHipTextureRegion reg, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    void draw(IHipTextureRegion reg, int x, int y, int z = 0, in HipColorf color = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         if(quadsCount+1 > maxQuads)
             flush();
@@ -292,7 +292,7 @@ class HipSpriteBatch : IHipBatch
         quadsCount++;
     }
 
-    private static void setColor(float[] ret, in HipColor color)
+    private static void setColor(float[] ret, in HipColorf color)
     {
         ret[R1] = color.r;
         ret[G1] = color.g;
@@ -384,7 +384,7 @@ class HipSpriteBatch : IHipBatch
 
 
     static void getTextureVertices(float[] output, int slot, IHipTexture texture,
-    int x, int y, float z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    int x, int y, float z = 0, in HipColorf color = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         int width = texture.getWidth();
         int height = texture.getHeight();
@@ -401,7 +401,7 @@ class HipSpriteBatch : IHipBatch
     }
 
     static void getTextureRegionVertices(float[] output, int slot, IHipTextureRegion reg,
-    int x, int y, float z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    int x, int y, float z = 0, in HipColorf color = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         int width = reg.getWidth();
         int height = reg.getHeight();

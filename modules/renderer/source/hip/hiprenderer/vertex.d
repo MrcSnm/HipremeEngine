@@ -58,9 +58,10 @@ enum HipBufferUsage
 
 enum HipAttributeType
 {
-    FLOAT,
-    INT,
-    BOOL
+    Float,
+    Uint,
+    Int,
+    Bool
 }
 
 
@@ -178,7 +179,7 @@ class HipVertexArrayObject
         HipAttributeType valueType, 
         uint typeSize, 
         string infoName, 
-        bool isPadding = false
+        bool isPadding = false,
     )
     {
         HipVertexAttributeInfo info;
@@ -201,22 +202,18 @@ class HipVertexArrayObject
     HipVertexArrayObject appendAttribute(T)(string infoName, bool isPadding = false)
     {
         uint count = 1;
-        HipAttributeType type = HipAttributeType.FLOAT;
+        HipAttributeType type = HipAttributeType.Float;
         uint typeSize = float.sizeof;
         import hip.math.vector;
 
-        static if(is(T == Vector2))
-            count = 2;
-        else static if(is(T == Vector3))
-            count = 3;
-        else static if(is(T == Vector4) || is(T == HipColor))
-            count = 4;
+        static if(is(T == Vector2)) count = 2;
+        else static if(is(T == Vector3)) count = 3;
+        else static if(is(T == Vector4) || is(T == HipColorf)) count = 4;
         else
         {
-            static if(is(T == int))
-                type = HipAttributeType.INT;
-            else static if(is(T == bool))
-                type = HipAttributeType.BOOL;
+            static if(is(T == int)) type = HipAttributeType.Int;
+            else static if(is(T == uint) || is(T == HipColor)) type = HipAttributeType.Uint;
+            else static if(is(T == bool)) type = HipAttributeType.Bool;
             else
                 static assert(is(T == float), "Unrecognized type for attribute: "~T.stringof);
 
@@ -329,48 +326,4 @@ class HipVertexArrayObject
         return obj;
     }
 
-    /**
-    *   Remember calling sendAttributes!
-    */
-    static HipVertexArrayObject getXYZ_RGBA_ST_VAO()
-    {
-        HipVertexArrayObject obj = new HipVertexArrayObject();
-        with(HipAttributeType)
-        {
-            obj.appendAttribute(3, FLOAT, float.sizeof, "vPosition") //X, Y, Z
-               .appendAttribute(4, FLOAT, float.sizeof, "vColor") //R, G, B, A
-               .appendAttribute(2, FLOAT, float.sizeof, "vTexST"); //S, T (Texture coordinates)
-        }
-        return obj;
-    }
-
-    /**
-    *   Remember calling sendAttributes!
-    */
-    static HipVertexArrayObject getXYZ_RGBA_ST_TID_VAO()
-    {
-        HipVertexArrayObject obj = new HipVertexArrayObject();
-        with(HipAttributeType)
-        {
-            obj.appendAttribute(3, FLOAT, float.sizeof, "vPosition") //X, Y, Z
-               .appendAttribute(4, FLOAT, float.sizeof, "vColor") //R, G, B, A
-               .appendAttribute(2, FLOAT, float.sizeof, "vTexST") //S, T (Texture coordinates)
-               .appendAttribute(1, FLOAT, float.sizeof, "vTexID");
-        }
-        return obj;
-    }
-    /**
-    *   Remember calling sendAttributes!
-    */
-    static HipVertexArrayObject getXY_RGBA_ST_VAO()
-    {
-        HipVertexArrayObject obj = new HipVertexArrayObject();
-        with(HipAttributeType)
-        {
-            obj.appendAttribute(2, FLOAT, float.sizeof, "position"); //X, Y, Z
-            obj.appendAttribute(4, FLOAT, float.sizeof, "color"); //R, G, B, A
-            obj.appendAttribute(2, FLOAT, float.sizeof, "tex_st"); //S, T (Texture coordinates)
-        }
-        return obj;
-    }
 }
