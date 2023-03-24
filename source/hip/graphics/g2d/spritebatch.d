@@ -27,11 +27,9 @@ public import hip.math.matrix;
 @HipShaderInputLayout struct HipSpriteVertex
 {
     Vector3 vPosition;
-    @HipShaderInputPadding float __padding = 0;
     HipColorf vColor;
     Vector2 vTexST;
     float vTexID;
-    @HipShaderInputPadding float __padding2 = 0;
 
     static enum floatCount = cast(size_t)(HipSpriteVertex.sizeof/float.sizeof);
     static enum quadCount = floatCount*4;
@@ -116,6 +114,9 @@ class HipSpriteBatch : IHipBatch
         mesh.sendAttributes();
         
 
+        spriteBatchShader.useLayout.Cbuf;
+        spriteBatchShader.bind();
+        spriteBatchShader.sendVars();
 
         if(camera is null)
             camera = new HipOrthoCamera();
@@ -435,6 +436,7 @@ class HipSpriteBatch : IHipBatch
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
 
+            mesh.shader.bindArrayOfTextures(currentTextures, "uTex1");
             mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj, true);
             mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity(), true);
             mesh.shader.setVertexVar("Cbuf1.uView", camera.view, true);
