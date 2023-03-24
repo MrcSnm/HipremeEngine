@@ -47,12 +47,6 @@
 			]
 		},
 		{
-			"name": "macos",
-			"dependencies": {
-				"d-metal-binding": {"path": "../../dependencies/metal"}
-			}
-		},
-		{
 			"name": "uwp",
 			"dependencies": {
 				"directx-d": {"path": "../../dependencies/directx-d"}
@@ -63,6 +57,9 @@
 		},
 		{
 			"name": "appleos",
+			"stringImportPaths": [
+				"."
+			],
 			"dependencies": {
 				"d-metal-binding": {"path": "../../dependencies/metal"}
 			}

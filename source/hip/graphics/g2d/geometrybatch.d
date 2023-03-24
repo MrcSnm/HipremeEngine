@@ -27,7 +27,7 @@ enum defaultColor = HipColorf.white;
 {
     import hip.math.vector;
     Vector3 vPosition;
-    @HipShaderInputPadding float __padding = 0;
+    // @HipShaderInputPadding float __padding = 0;
     Vector4 vColor;
 
     static enum floatCount = HipGeometryBatchVertex.sizeof / float.sizeof;
@@ -112,7 +112,6 @@ class GeometryBatch : IHipBatch
         alias c = currentColor;
         vertices[verticesCount] = HipGeometryBatchVertex(
             Vector3(x,y,z),
-            0,
             Vector4(c.r, c.g, c.b, c.a)
         );
         return verticesCount++;
