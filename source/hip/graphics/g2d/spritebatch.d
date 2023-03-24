@@ -27,13 +27,15 @@ public import hip.math.matrix;
 @HipShaderInputLayout struct HipSpriteVertex
 {
     Vector3 vPosition;
+    @HipShaderInputPadding float __padding = 0;
     HipColorf vColor;
     Vector2 vTexST;
-    int vTexID;
+    float vTexID;
+    @HipShaderInputPadding float __padding2 = 0;
 
     static enum floatCount = cast(size_t)(HipSpriteVertex.sizeof/float.sizeof);
     static enum quadCount = floatCount*4;
-    static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
+    // static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
 }
 
 @HipShaderVertexUniform("Cbuf1")
@@ -48,7 +50,9 @@ struct HipSpriteVertexUniform
 struct HipSpriteFragmentUniform
 {
     float[4] uBatchColor = [0,0,0,0];
-    // @(ShaderHint.Optional) IHipTexture[] uTex;
+    
+    @(ShaderHint.Blackbox | ShaderHint.MaxTextures) 
+    IHipTexture[] uTex;
 }
 
 /**
@@ -95,19 +99,23 @@ class HipSpriteBatch : IHipBatch
         usingTexturesCount = 0;
 
         this.spriteBatchShader = HipRenderer.newShader(HipShaderPresets.SPRITE_BATCH);
+        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!HipSpriteVertexUniform);
+        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!HipSpriteFragmentUniform);
+
         mesh = new Mesh(HipVertexArrayObject.getVAO!HipSpriteVertex, spriteBatchShader);
         mesh.vao.bind();
         mesh.createVertexBuffer(cast(index_t)(maxQuads*HipSpriteVertex.quadCount), HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(cast(index_t)(maxQuads*6), HipBufferUsage.STATIC);
+
+        
+
+        spriteBatchShader.useLayout.Cbuf;
+        // spriteBatchShader.bind();
+        // spriteBatchShader.sendVars();
+
         mesh.sendAttributes();
         
 
-        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!HipSpriteVertexUniform);
-        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!HipSpriteFragmentUniform);
-
-        spriteBatchShader.useLayout.Cbuf;
-        spriteBatchShader.bind();
-        spriteBatchShader.sendVars();
 
         if(camera is null)
             camera = new HipOrthoCamera();
@@ -427,10 +435,11 @@ class HipSpriteBatch : IHipBatch
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
 
-            mesh.shader.bindArrayOfTextures(currentTextures, "uTex1");
             mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj, true);
             mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity(), true);
             mesh.shader.setVertexVar("Cbuf1.uView", camera.view, true);
+            mesh.shader.setFragmentVar("Cbuf.uTex", currentTextures);
+            mesh.shader.bindArrayOfTextures(currentTextures, "uTex");
             
             mesh.shader.sendVars();
 

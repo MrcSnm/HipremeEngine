@@ -44,6 +44,20 @@ else version = IgnorePadding;
     static enum size_t quadsCount = floatsCount*4;
 }
 
+@HipShaderVertexUniform("Cbuf")
+struct HipTextRendererVertexUniforms
+{
+    Matrix4 uModel = Matrix4.identity;
+    Matrix4 uView = Matrix4.identity;
+    Matrix4 uProj = Matrix4.identity;
+}
+
+@HipShaderFragmentUniform("FragVars")
+struct HipTextRendererFragmentUniforms
+{
+    float[4] uColor = [1,1,1,1];
+}
+
 
 
 private __gshared Shader bmTextShader = null;
@@ -72,19 +86,9 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         if(bmTextShader is null)
         {
             bmTextShader = HipRenderer.newShader(HipShaderPresets.BITMAP_TEXT);
-            bmTextShader.addVarLayout(new ShaderVariablesLayout("Cbuf", ShaderTypes.VERTEX, 0)
-            .append("uModel", Matrix4.identity)
-            .append("uView", Matrix4.identity)
-            .append("uProj", Matrix4.identity)
-            );
-            bmTextShader.addVarLayout(new ShaderVariablesLayout("FragVars", ShaderTypes.FRAGMENT, 0)
-            .append("uColor", cast(float[4])[1.0,1.0,1.0,1.0])
-            );
-
-            bmTextShader.setFragmentVar("FragVars.uColor", cast(float[4])[1.0, 1.0, 1.0, 1.0]);
-            bmTextShader.uModel = Matrix4.identity;
+            bmTextShader.addVarLayout(ShaderVariablesLayout.from!HipTextRendererVertexUniforms);
+            bmTextShader.addVarLayout(ShaderVariablesLayout.from!HipTextRendererFragmentUniforms);
             const Viewport v = HipRenderer.getCurrentViewport();
-            bmTextShader.uView = Matrix4.identity;
             bmTextShader.uProj = Matrix4.orthoLH(0, v.width, v.height, 0, 0.01, 100);
             bmTextShader.setDefaultBlock("FragVars");
             bmTextShader.bind();

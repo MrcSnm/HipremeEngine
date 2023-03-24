@@ -33,6 +33,20 @@ enum defaultColor = HipColorf.white;
     static enum floatCount = HipGeometryBatchVertex.sizeof / float.sizeof;
 }
 
+@HipShaderVertexUniform("Geom")
+struct HipGeometryBatchVertexUniforms
+{
+    Matrix4 uModel = Matrix4.identity;
+    Matrix4 uView = Matrix4.identity;
+    Matrix4 uProj = Matrix4.identity;
+}
+
+@HipShaderFragmentUniform("FragVars")
+struct HipGeometryBatchFragmentUniforms
+{
+    float[4] uGlobalColor = [1,1,1,1];
+}
+
 /**
 *   This class uses the vertex layout XYZ RGBA.
 *   it is meant to be a 2D API for drawing primitives
@@ -53,13 +67,8 @@ class GeometryBatch : IHipBatch
     this(HipOrthoCamera camera = null, index_t verticesCount=64_000, index_t indicesCount=64_000)
     {
         Shader s = HipRenderer.newShader(HipShaderPresets.GEOMETRY_BATCH); 
-        s.addVarLayout(new ShaderVariablesLayout("Geom", ShaderTypes.VERTEX, 0)
-        .append("uModel", Matrix4.identity)
-        .append("uView", Matrix4.identity)
-        .append("uProj", Matrix4.identity));
-
-        s.addVarLayout(new ShaderVariablesLayout("FragVars", ShaderTypes.FRAGMENT, 0)
-        .append("uGlobalColor", cast(float[4])[1,1,1,1]));
+        s.addVarLayout(ShaderVariablesLayout.from!HipGeometryBatchVertexUniforms);
+        s.addVarLayout(ShaderVariablesLayout.from!HipGeometryBatchFragmentUniforms);
 
         mesh = new Mesh(HipVertexArrayObject.getVAO!HipGeometryBatchVertex, s);
         vertices = new HipGeometryBatchVertex[verticesCount];
