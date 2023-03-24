@@ -19,10 +19,6 @@ public import hip.graphics.orthocamera;
 public import hip.api.graphics.batch;
 public import hip.api.graphics.text : HipTextAlign;
 
-version(AppleOS) version = NeedsAlign16;
-else version = IgnorePadding;
-
-
 /**
 *   Don't change those names. If the variable names are changed, the shaders should stop working
 */
@@ -30,9 +26,7 @@ else version = IgnorePadding;
 {
     import hip.math.vector;
     Vector3 vPosition;
-    version(NeedsAlign16) @HipShaderInputPadding float _ = 0;
     Vector2 vTexST;
-    version(NeedsAlign16) @HipShaderInputPadding Vector2 __;
 
     this(Vector3 vPosition, Vector2 vTexST)
     {
