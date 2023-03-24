@@ -66,6 +66,7 @@ interface IShader
     void unbind(ShaderProgram program);
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
     int  getId(ref ShaderProgram prog, string name);
+    
 
     ///Used as intermediary for deleting non program intermediary in opengl
     void deleteShader(FragmentShader* fs);
@@ -73,6 +74,7 @@ interface IShader
     void deleteShader(VertexShader* vs);
 
     void createVariablesBlock(ref ShaderVariablesLayout layout);
+    bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value);
     void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts);
 
     /** 
@@ -236,19 +238,30 @@ public class Shader : IReloadable
      */
     public void setVertexVar(T)(string name, T val, bool validateData = false)
     {
-        ShaderVar* v = findByName(name);
+        ShaderVar* v = tryGetShaderVar(name, ShaderTypes.VERTEX);
         if(v != null)
         {
-            if(v.shaderType != ShaderTypes.VERTEX)
-                ErrorHandler.assertExit(false, "Variable named "~name~" must be from Vertex Shader");
             v.set(val, validateData);
         }
-        else
-            ErrorHandler.showWarningMessage("Shader Vertex Var not set on shader loaded from '"~vertexShaderPath~"'",
+    }
+
+    private ShaderVar* tryGetShaderVar(string name, ShaderTypes type)
+    {
+        import hip.util.conv:to;
+        ShaderVar* v = findByName(name);
+        if(v is null)
+        {
+            ErrorHandler.showWarningMessage("Shader " ~ type.to!string ~ " Var not set on shader loaded from '"~fragmentShaderPath~"'",
             "Could not find shader var with name "~name~
             ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
-            "Did you forget to add a layout namespace to the var name?"
+            " Did you forget to add a layout namespace to the var name?"
             ));
+        }
+        if(v.shaderType != type)
+        {
+            ErrorHandler.assertExit(v.shaderType == type, "Variable named "~name~" must be from " ~ type.to!string ~ " Shader");
+        }
+        return v;
     }
     /** 
      * If validateData is true, it will compare if the data has changed for choosing whether it should or not
@@ -260,19 +273,14 @@ public class Shader : IReloadable
      */
     public void setFragmentVar(T)(string name, T val, bool validateData = false)
     {
-        ShaderVar* v = findByName(name);
+        ShaderVar* v = tryGetShaderVar(name, ShaderTypes.FRAGMENT);
         if(v != null)
         {
-            if(v.shaderType != ShaderTypes.FRAGMENT)
-                ErrorHandler.assertExit(false, "Variable named "~name~" must be from Fragment Shader");
-            v.set(val, validateData);
+            if(v.isBlackboxed)
+                shaderImpl.setShaderVar(v,shaderProgram, cast(void*)&val);
+            else
+                v.set(val, validateData);
         }
-        else
-            ErrorHandler.showWarningMessage("Shader Fragment Var not set on shader loaded from '"~fragmentShaderPath~"'",
-            "Could not find shader var with name "~name~
-            ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
-            "Did you forget to add a layout namespace to the var name?"
-            ));
     }
 
     protected ShaderVar* findByName(string name) @nogc

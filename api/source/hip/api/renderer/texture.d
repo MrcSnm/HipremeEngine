@@ -38,6 +38,7 @@ interface IHipTexture
 {
     void setWrapMode(TextureWrapMode mode);
     void setTextureFilter(TextureFilter min, TextureFilter mag);
+    IHipTexture getBackendHandle();
 
     protected bool loadImpl(in IImage img);
     final bool load(in IImage img)

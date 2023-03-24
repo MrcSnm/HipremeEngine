@@ -210,14 +210,6 @@ class HipMTLVertexArray : IHipVertexArrayImpl
      */
     void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride)
     {
-        import hip.console.log;
-
-        logln(
-            "Vertex at Index 1 with stride ", stride, "\n",
-            "Attribute Index: ", info.index, "\n",
-            "Attribute format: ", mtlVertexFormatFromAttributeInfo(info), "\n",
-            "Attribute Offset: ", info.offset
-        );
         descriptor.layouts[1].stride = stride;
         MTLVertexAttributeDescriptor attribute = descriptor.attributes[info.index];
         attribute.format = mtlVertexFormatFromAttributeInfo(info);

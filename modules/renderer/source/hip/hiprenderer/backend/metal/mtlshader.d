@@ -7,6 +7,7 @@ import hip.console.log;
 import metal;
 import metal.metal;
 import hip.hiprenderer.backend.metal.mtlrenderer;
+import hip.hiprenderer.backend.metal.mtltexture;
 
 
 class HipMTLFragmentShader : FragmentShader
@@ -62,9 +63,9 @@ struct FragmentUniforms
 fragment float4 fragment_main(
     FragmentInput in [[stage_in]],
     constant FragmentUniforms& u [[buffer(0)]],
-    array<texture2d<float>, 16> uTex [[texture(0)]],
-    array<sampler, 16> uSampler [[sampler(0)]]
-)
+    texture2d<float, access::sample> uTex[16] [[texture(0)]],
+    sampler uSampler[16] [[sampler(0)]]
+
 {
     int texID = int(in.inTexID);
     return uTex[texID].sample(uSampler[texID], in.inTexST)* in.inVertexColor * u.uBatchColor;
@@ -363,6 +364,27 @@ class HipMTLShader : IShader
         return true;
     }
 
+    bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
+    {
+        switch(sv.type) with(UniformType)
+        {
+            case texture_array:
+            {
+                import hip.util.algorithm;
+                IHipTexture[] textures = *cast(IHipTexture[]*)value;
+                HipMTLShaderVarTexture tempTex;
+                foreach(size_t i, HipMTLTexture tex; textures.map((IHipTexture itex) => cast(HipMTLTexture)itex.getBackendHandle()))
+                {
+                    tempTex.textures[i] = tex.texture;
+                    tempTex.samplers[i] = tex.sampler;
+                }
+                sv.setBlackboxed(tempTex);
+                return true;
+            }
+            default: return false;
+        }
+    }
+
     void bind(ShaderProgram program)
     {
         HipMTLShaderProgram mtlShader = cast(HipMTLShaderProgram)program;
@@ -429,7 +451,25 @@ class HipMTLShader : IShader
 
     void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
     {
-        
+        __gshared MTLTexture[] mtlTextures;
+        __gshared MTLSamplerState[] mtlSamplers;
+        if(textures.length > mtlTextures.length)
+        {
+            import hip.util.memory;
+            mtlTextures = allocSlice!MTLTexture(textures.length);
+            mtlSamplers = allocSlice!MTLSamplerState(textures.length);
+        }
+
+        foreach(i; 0..textures.length)
+        {
+            HipMTLTexture hMtl = cast(HipMTLTexture)textures[i].getBackendHandle();
+            mtlTextures[i] = hMtl.texture;
+            mtlSamplers[i] = hMtl.sampler;
+        }
+
+        mtlRenderer.getEncoder.setFragmentSamplerStates(mtlSamplers.ptr, NSRange(0, textures.length));
+        mtlRenderer.getEncoder.setFragmentTextures(mtlTextures.ptr, NSRange(0, textures.length));
+
     }
 
     void dispose(ref ShaderProgram){}

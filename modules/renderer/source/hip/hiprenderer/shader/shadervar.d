@@ -31,7 +31,8 @@ enum ShaderHint : uint
      * An example for that is Array of Textures. In D3D11, it depends only on the resource being bound,
      * while on Metal and GL3, they are required to be inside a MTLBuffer or being sent as an Uniform.
      */ 
-    Optional = 1 << 3
+    Blackbox = 1 << 3,
+    MaxTextures = 1 << 4
 }
 
 /**
@@ -53,8 +54,30 @@ enum UniformType
     floating3x3,
     floating4x4,
     floating_array,
+    ///Special type that is implemented by renderers backend
     texture_array,
     none
+}
+
+UniformType uniformTypeFrom(T)()
+{
+    with(UniformType)
+    {
+        static if(is(T == bool)) return boolean;
+        else static if(is(T == int)) return integer;
+        else static if(is(T == int[])) return integer_array;
+        else static if(is(T == uint) || is(T == HipColor)) return uinteger;
+        else static if(is(T == uint[])) return uinteger_array;
+        else static if(is(T == float)) return floating;
+        else static if(is(T == float[2])) return floating2;
+        else static if(is(T == float[3])) return floating3;
+        else static if(is(T == float[4]) || is(T == HipColorf)) return floating4;
+        else static if(is(T == Matrix3)) return floating3x3;
+        else static if(is(T == Matrix4)) return floating4x4;
+        else static if(is(T == float[])) return floating_array;
+        else static if(is(T == IHipTexture[])) return texture_array;
+        else return none;
+    }
 }
 
 /**
@@ -73,12 +96,17 @@ struct ShaderVar
     size_t singleSize;
     bool isDynamicArrayReference;
 
-    bool isDirty = true;
+    private bool isDirty = true;
+    private bool _isBlackboxed = false;
+    public bool isBlackboxed() const { return _isBlackboxed;}
+
 
     size_t varSize() const{return data.length;}
+    size_t length() const {return varSize / singleSize;}
 
     const T get(T)()
     {
+        if(_isBlackboxed) return T.init;
         static if(isDynamicArray!T)
         {
             alias _t = typeof(T.init[0]);
@@ -88,20 +116,25 @@ struct ShaderVar
         else
             return *(cast(T*)this.data.ptr);
     }
+
+    bool setBlackboxed(T)(T value)
+    {
+        import core.stdc.string;
+        if(value.sizeof != varSize || !_isBlackboxed) return false;
+        isDirty = true;
+        memcpy(data.ptr, &value, varSize);
+        return true;
+    }
     bool set(T)(T value, bool validateData)
     {
         import core.stdc.string;
-        static assert(isNumeric!T ||
-        isBoolean!T || isStaticArray!T || isDynamicArray!T ||
-        is(T == Matrix3) || is(T == Matrix4) || is(T == HipColor) || is(T == HipColorf), "Invalid type "~T.stringof);
-
+        static assert(uniformTypeFrom!T != UniformType.none, "Invalid type "~T.stringof);
+        if(value.sizeof != varSize) 
+            return false;
         static if(is(T == Matrix3) || is(T == Matrix4))
             value = HipRenderer.getMatrix(value);
 
-        if(value.sizeof != varSize)
-            return false;
-
-        if(validateData && value == get!T)
+        if(!_isBlackboxed && validateData && value == get!T)
             return true;
 
         isDirty = true;
@@ -109,22 +142,21 @@ struct ShaderVar
         {
             if(isDynamicArrayReference)
             {
-                import hip.util.memory;
                 alias TI = typeof(T.init[0]);
                 if(data != null)
                 {
                     Array!(TI)* arr = cast(Array!(TI)*)data;
                     arr.dispose();
-                    free(data);
                 }
                 auto temp = Array!TI(value);
-                data = temp.getRef;
+                //TODO: May need to check how alignment works when dealing with dynamic arrays.
+                data = temp.getRef[0..(void*).sizeof];
             }
             else
-                memcpy(data, value.ptr, varSize);
+                memcpy(data.ptr, value.ptr, varSize);
         }
         else
-            memcpy(data, &value, varSize);
+            memcpy(data.ptr, &value, varSize);
         return true;
     }
     auto opAssign(T)(T value)
@@ -134,7 +166,6 @@ struct ShaderVar
             this.data = value.data;
             this.name = value.name;
             this.shaderType = value.shaderType;
-            this.varSize = value.varSize;
             this.singleSize = value.singleSize;
         }
         else
@@ -247,6 +278,22 @@ struct ShaderVar
         s.singleSize = singleSize;
         return s;
     }
+    public static ShaderVar* createBlackboxed(
+        ShaderTypes t,
+        string varName,
+        UniformType type,
+        size_t varSize,
+        size_t singleSize)
+    {
+        ErrorHandler.assertExit(isShaderVarNameValid(varName), "Variable '"~varName~"' is invalid.");
+        ShaderVar* s = new ShaderVar();
+        s.data = new void[varSize];
+        s.name = varName;
+        s.singleSize = singleSize;
+        s.shaderType = t;
+        s.type = type;
+        return s;
+    }
 
     void dispose()
     {
@@ -269,8 +316,8 @@ struct ShaderVar
 struct ShaderVarLayout
 {
     ShaderVar* sVar;
-    uint alignment;
-    uint size;
+    size_t alignment;
+    size_t size;
 }
 
 /**
@@ -299,15 +346,14 @@ class ShaderVariablesLayout
 
     ///The hint are used for the Shader backend as a notifier
     public immutable int hint;
-    protected uint lastPosition;
+    protected size_t lastPosition;
 
     ///A function that must return a variable size when position = 0
     private VarPosition function(
         ref ShaderVar* v,
-        uint lastAlignment = 0,
-        bool isLast = false,
-        uint n = float.sizeof)
-    packFunc;
+        size_t lastAlignment,
+        bool isLast
+    ) packFunc;
 
 
     /**
@@ -373,11 +419,23 @@ class ShaderVariablesLayout
             attr[0].name !is null,
             "HipShaderUniform "~T.stringof~" must contain a name as it is required to work in Direct3D 11"
         );
-        ShaderVariablesLayout ret = new ShaderVariablesLayout(attr[0].name, shaderType, ShaderHint.NONE);
+        ShaderVariablesLayout ret = new ShaderVariablesLayout(attr[0].name, shaderType, 0);
         static foreach(mem; __traits(allMembers, T))
-        {
-            ret.append(mem, __traits(getMember, T.init, mem));
-        }
+        {{
+            alias member = __traits(getMember, T.init, mem);
+            alias a = __traits(getAttributes, member);
+            static if(is(typeof(a[0]) == ShaderHint) && a[0] & ShaderHint.Blackbox)
+            {
+                size_t length = 1;
+                if(a[0] & ShaderHint.MaxTextures) length =  HipRenderer.getMaxSupportedShaderTextures();
+                ret.appendBlackboxed(mem, uniformTypeFrom!(typeof(member)), length);
+            }
+            else
+            {
+                ret.append(mem, __traits(getMember, T.init, mem));
+            }
+
+        }}
 
         return ret;
     }
@@ -397,7 +455,7 @@ class ShaderVariablesLayout
     */
     final void calcAlignment()
     {
-        uint lastAlign = 0;
+        size_t lastAlign = 0;
         for(int i = 0; i < namesOrder.length; i++)
         {
             ShaderVarLayout* l = &variables[namesOrder[i]];
@@ -438,6 +496,17 @@ class ShaderVariablesLayout
     ShaderVariablesLayout append(T)(string varName, T data)
     {
         return append(varName, ShaderVar.create(this.shaderType, varName, data));
+    }
+    /**
+    *   Appends a new variable to this layout.
+    *   Type is inferred.
+    */
+    ShaderVariablesLayout appendBlackboxed(string varName, UniformType t, size_t length)
+    {
+        ShaderVar* sV = HipRenderer.createShaderVar(this.shaderType, t, varName, length);
+        if(sV is null)
+            return this;
+        return append(varName, sV);
     }
 
     final size_t getLayoutSize(){return lastPosition;}

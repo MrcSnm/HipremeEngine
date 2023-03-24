@@ -95,23 +95,16 @@ class Hip_GL3Renderer : IHipRendererImpl
         else
             return new Shader(new Hip_GL_ShaderImpl());
     }
-    ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length, out size_t typeSize)
+    ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length)
     {
-        if(shaderType != UniformType.texture_array) return null;
-
-        Array!GLuint textures = Array!GLuint(length, 0);
-        typeSize = textures[0].sizeof;
-
-        ShaderVar* ret = ShaderVar.create(
-            shaderType, 
-            varName,
-            &textures, 
-            uniformType, 
-            textures.sizeof, 
-            textures[0].sizeof, 
-            true
-        );
-        return ret;
+        switch(uniformType) with(UniformType)
+        {
+            case texture_array:
+            {
+                return ShaderVar.createBlackboxed(shaderType, varName, uniformType, GLuint.sizeof*length, GLuint.sizeof);
+            }
+            default: return null;
+        }
     }
     version(dll)public bool initExternal(){return init(null);}
     public bool init(HipWindow window)

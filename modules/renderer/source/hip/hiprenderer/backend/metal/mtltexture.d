@@ -52,6 +52,8 @@ class HipMTLTexture : IHipTexture
 
     uint width, height;
 
+    IHipTexture getBackendHandle(){return this;}
+
     this(MTLDevice device, MTLCommandQueue cmdQueue, HipMTLRenderer mtlRenderer)
     {
         this.device = device;
