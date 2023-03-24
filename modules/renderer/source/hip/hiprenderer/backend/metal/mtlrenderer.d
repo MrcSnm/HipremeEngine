@@ -33,8 +33,8 @@ MTLCompareFunction fromHipDepthTestingFunction(HipDepthTestingFunction fn)
  */
 package struct HipMTLShaderVarTexture
 {
-    MTLTexture[] textures;
-    MTLSampleState[] samplers;
+    MTLTexture[16] textures;
+    MTLSamplerState[16] samplers;
 }
 
 class HipMTLRenderer : IHipRendererImpl
@@ -96,24 +96,20 @@ class HipMTLRenderer : IHipRendererImpl
         return new Shader(new HipMTLShader(device, this));
     }
 
-    ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length, out size_t typeSize)
+    ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length)
     {
-        if(shaderType != UniformType.texture_array) return null;
-
-        auto textures = Array!HipMTLShaderVarTexture(length, null);
-        typeSize = textures[0].sizeof;
-
-        ShaderVar* ret = ShaderVar.create(
-            shaderType, 
-            varName,
-            &textures, 
-            uniformType, 
-            textures.sizeof, 
-            textures[0].sizeof, 
-            true
-        );
-        return ret;
+        switch(uniformType) with(UniformType)
+        {
+            case texture_array:
+            {
+                size_t single = (MTLTexture.sizeof + MTLSamplerState.sizeof);
+                return ShaderVar.createBlackboxed(shaderType, varName, uniformType, length*single, single);
+            }
+            default: return null;
+        }
     }
+
+    
 
     public IHipFrameBuffer createFrameBuffer(int width, int height)
     {

@@ -26,7 +26,7 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
     uint currentSlot;
 
     private IImage loadedImage;
-
+    IHipTexture getBackendHandle(){return this;}
     bool hasSuccessfullyLoaded(){return width > 0;}
     protected int getGLWrapMode(TextureWrapMode mode)
     {

@@ -51,6 +51,8 @@ class HipTexture : IHipTexture
             load(image);
     }
 
+    public IHipTexture getBackendHandle(){return textureImpl;}
+
     ///Binds texture to the specific slot
     public void bind(int slot = 0)
     {

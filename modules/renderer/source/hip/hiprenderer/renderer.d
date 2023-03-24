@@ -16,6 +16,7 @@ public import hip.hiprenderer.framebuffer;
 public import hip.hiprenderer.viewport;
 public import hip.api.renderer.texture;
 public import hip.api.graphics.color;
+public import hip.hiprenderer.shader.shadervar;
 import hip.windowing.window;
 import hip.math.rect;
 import hip.error.handler;
@@ -159,6 +160,7 @@ interface IHipRendererImpl
     public bool isRowMajor();
     void setErrorCheckingEnabled(bool enable = true);
     public Shader createShader();
+    public ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length);
     public IHipFrameBuffer createFrameBuffer(int width, int height);
     public IHipVertexArrayImpl  createVertexArray();
     public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage);
@@ -504,6 +506,11 @@ class HipRenderer
         res.shaders~= rendererImpl.createShader();
         return res.shaders[$-1];
     }
+    public static ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length)
+    {
+        return rendererImpl.createShaderVar(shaderType, uniformType, varName, length);
+    }
+
 
     public static Shader newShader(HipShaderPresets shaderPreset = HipShaderPresets.DEFAULT)
     {

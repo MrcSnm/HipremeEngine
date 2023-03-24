@@ -16,9 +16,40 @@ auto map(Range, From, To)(Range range, scope To delegate (From data) func)
     {
         Range inputRange;
         To delegate(From data) convert;
-        void popFront(){inputRange.popFront;}
-        bool empty(){return inputRange.empty;}
-        To front(){return convert(inputRange.front);}
+        import std.traits :isArray;
+        static if(isArray!Range)
+        {
+            size_t counter = 0;
+            void popFront(){counter++;}
+            bool empty(){return counter == inputRange.length;}
+            To front(){return convert(inputRange[counter]);}
+        }
+        else
+        {
+            void popFront(){inputRange.popFront;}
+            bool empty(){return inputRange.empty;}
+            To front(){return convert(inputRange.front);}
+        }
+
+        int opApply(scope int delegate(To) dg)
+        {
+            foreach(v; inputRange)
+            {
+                int ret = dg(convert(v));
+                if(ret) return ret;
+            }
+            return 0;
+        }
+        int opApply(scope int delegate(size_t, To) dg)
+        {
+            size_t i = 0;
+            foreach(v; inputRange)
+            {
+                int ret = dg(i++, convert(v));
+                if(ret) return ret;
+            }
+            return 0;
+        }
     }
     return Return(range, func);
 }
