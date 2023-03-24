@@ -108,7 +108,7 @@ else
             }
 
         }
-    }    
+    }
     version(ImportSpritesheet)
     Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
     {
