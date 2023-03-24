@@ -104,6 +104,8 @@ struct ShaderVar
     size_t varSize() const{return data.length;}
     size_t length() const {return varSize / singleSize;}
 
+    size_t varSize() const{return data.length;}
+
     const T get(T)()
     {
         if(_isBlackboxed) return T.init;
