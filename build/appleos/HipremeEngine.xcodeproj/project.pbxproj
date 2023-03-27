@@ -30,11 +30,11 @@
 		3156446329A1546900559889 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3156442129A1546900559889 /* Assets.xcassets */; };
 		3156446429A1546900559889 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3156442129A1546900559889 /* Assets.xcassets */; };
 		3156446529A1546900559889 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3156442129A1546900559889 /* Assets.xcassets */; };
-		315C6FBE29B55114007F19C0 /* HipremeEngine Shared in Resources */ = {isa = PBXBuildFile; fileRef = 315C6FBD29B55114007F19C0 /* HipremeEngine Shared */; };
-		315C6FBF29B55114007F19C0 /* HipremeEngine Shared in Resources */ = {isa = PBXBuildFile; fileRef = 315C6FBD29B55114007F19C0 /* HipremeEngine Shared */; };
-		315C6FC029B55114007F19C0 /* HipremeEngine Shared in Resources */ = {isa = PBXBuildFile; fileRef = 315C6FBD29B55114007F19C0 /* HipremeEngine Shared */; };
 		315C6FCE29B57D20007F19C0 /* libhipremeengine_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 315C6FCD29B57D20007F19C0 /* libhipremeengine_ios.a */; };
 		315C6FCF29B57D20007F19C0 /* libhipremeengine_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 315C6FCD29B57D20007F19C0 /* libhipremeengine_ios.a */; };
+		315FEE5829D1BFDE00761BF1 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315FEE5729D1BFDE00761BF1 /* InputView.m */; };
+		315FEE5929D1BFDE00761BF1 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315FEE5729D1BFDE00761BF1 /* InputView.m */; };
+		315FEE5A29D1BFDE00761BF1 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315FEE5729D1BFDE00761BF1 /* InputView.m */; };
 		3164622129C4C23F001CE578 /* libphobos2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164622029C4C221001CE578 /* libphobos2.a */; };
 		3164624029C4C950001CE578 /* libarsd-official_bmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164623229C4C944001CE578 /* libarsd-official_bmp.a */; };
 		3164624129C4C951001CE578 /* libarsd-official_color_base.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164623329C4C945001CE578 /* libarsd-official_color_base.a */; };
@@ -103,9 +103,10 @@
 		3156445829A1546900559889 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		3156445A29A1546900559889 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		3156445C29A1546900559889 /* HipremeEngine_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HipremeEngine_macOS.entitlements; sourceTree = "<group>"; };
-		315C6FBD29B55114007F19C0 /* HipremeEngine Shared */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "HipremeEngine Shared"; sourceTree = "<group>"; };
 		315C6FCB29B55DBE007F19C0 /* hipreme_engine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hipreme_engine.h; sourceTree = "<group>"; };
 		315C6FCD29B57D20007F19C0 /* libhipremeengine_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libhipremeengine_ios.a; sourceTree = "<group>"; };
+		315FEE5529D1BEFC00761BF1 /* InputView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InputView.h; sourceTree = "<group>"; };
+		315FEE5729D1BFDE00761BF1 /* InputView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InputView.m; sourceTree = "<group>"; };
 		3164622029C4C221001CE578 /* libphobos2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libphobos2.a; path = ../../../../../../../Library/D/dmd/lib/libphobos2.a; sourceTree = "<group>"; };
 		3164622329C4C932001CE578 /* libBindBC_OpenAL.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libBindBC_OpenAL.a; path = "HipremeEngine D/libs/libBindBC_OpenAL.a"; sourceTree = "<group>"; };
 		3164622429C4C933001CE578 /* libarsd-official_png.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_png.a"; path = "HipremeEngine D/libs/libarsd-official_png.a"; sourceTree = "<group>"; };
@@ -214,7 +215,6 @@
 			children = (
 				315C6FC529B55CF8007F19C0 /* HipremeEngine D */,
 				3156441C29A1546600559889 /* HipremeEngine Shared */,
-				315C6FBD29B55114007F19C0 /* HipremeEngine Shared */,
 				3156442829A1546900559889 /* HipremeEngine iOS */,
 				3156443C29A1546900559889 /* HipremeEngine tvOS */,
 				3156445029A1546900559889 /* HipremeEngine macOS */,
@@ -231,6 +231,8 @@
 				3156441F29A1546600559889 /* ShaderTypes.h */,
 				3156442029A1546600559889 /* Shaders.metal */,
 				3156442129A1546900559889 /* Assets.xcassets */,
+				315FEE5529D1BEFC00761BF1 /* InputView.h */,
+				315FEE5729D1BFDE00761BF1 /* InputView.m */,
 			);
 			path = "HipremeEngine Shared";
 			sourceTree = "<group>";
@@ -451,7 +453,6 @@
 				3156443129A1546900559889 /* Main.storyboard in Resources */,
 				3156446329A1546900559889 /* Assets.xcassets in Resources */,
 				3156443429A1546900559889 /* LaunchScreen.storyboard in Resources */,
-				315C6FBE29B55114007F19C0 /* HipremeEngine Shared in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -462,7 +463,6 @@
 				3156444529A1546900559889 /* Main.storyboard in Resources */,
 				3156446429A1546900559889 /* Assets.xcassets in Resources */,
 				3156444829A1546900559889 /* LaunchScreen.storyboard in Resources */,
-				315C6FBF29B55114007F19C0 /* HipremeEngine Shared in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -470,7 +470,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				315C6FC029B55114007F19C0 /* HipremeEngine Shared in Resources */,
 				3156446529A1546900559889 /* Assets.xcassets in Resources */,
 				3156445929A1546900559889 /* Main.storyboard in Resources */,
 			);
@@ -486,6 +485,7 @@
 				3156445D29A1546900559889 /* Renderer.m in Sources */,
 				3156442E29A1546900559889 /* GameViewController.m in Sources */,
 				3156443629A1546900559889 /* main.m in Sources */,
+				315FEE5829D1BFDE00761BF1 /* InputView.m in Sources */,
 				3156442B29A1546900559889 /* AppDelegate.m in Sources */,
 				3156446029A1546900559889 /* Shaders.metal in Sources */,
 			);
@@ -498,6 +498,7 @@
 				3156445E29A1546900559889 /* Renderer.m in Sources */,
 				3156444229A1546900559889 /* GameViewController.m in Sources */,
 				3156444A29A1546900559889 /* main.m in Sources */,
+				315FEE5929D1BFDE00761BF1 /* InputView.m in Sources */,
 				3156443F29A1546900559889 /* AppDelegate.m in Sources */,
 				3156446129A1546900559889 /* Shaders.metal in Sources */,
 			);
@@ -510,6 +511,7 @@
 				3156445F29A1546900559889 /* Renderer.m in Sources */,
 				3156445629A1546900559889 /* GameViewController.m in Sources */,
 				3156445B29A1546900559889 /* main.m in Sources */,
+				315FEE5A29D1BFDE00761BF1 /* InputView.m in Sources */,
 				3156445329A1546900559889 /* AppDelegate.m in Sources */,
 				3156446229A1546900559889 /* Shaders.metal in Sources */,
 			);

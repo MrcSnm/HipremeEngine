@@ -248,18 +248,23 @@ public class Shader : IReloadable
     private ShaderVar* tryGetShaderVar(string name, ShaderTypes type)
     {
         import hip.util.conv:to;
-        ShaderVar* v = findByName(name);
+        bool isUnused;
+        ShaderVar* v = findByName(name, isUnused);
         if(v is null)
         {
-            ErrorHandler.showWarningMessage("Shader " ~ type.to!string ~ " Var not set on shader loaded from '"~fragmentShaderPath~"'",
-            "Could not find shader var with name "~name~
-            ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
-            " Did you forget to add a layout namespace to the var name?"
-            ));
+            if(!isUnused)
+                ErrorHandler.showWarningMessage("Shader " ~ type.to!string ~ " Var not set on shader loaded from '"~fragmentShaderPath~"'",
+                "Could not find shader var with name "~name~
+                ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
+                " Did you forget to add a layout namespace to the var name?"
+                ));
+            return null;
         }
         if(v.shaderType != type)
         {
-            ErrorHandler.assertExit(v.shaderType == type, "Variable named "~name~" must be from " ~ type.to!string ~ " Shader");
+            import hip.console.log;
+            logln = v.shaderType;
+            ErrorHandler.assertExit(false, "Variable named "~name~" must be from " ~ type.to!string ~ " Shader");
         }
         return v;
     }
@@ -283,7 +288,7 @@ public class Shader : IReloadable
         }
     }
 
-    protected ShaderVar* findByName(string name) @nogc
+    protected ShaderVar* findByName(string name, out bool isUnused) @nogc
     {
         int accessorSeparatorIndex = name.indexOf(".");
 
@@ -293,6 +298,7 @@ public class Shader : IReloadable
             ShaderVarLayout* sL = name in defaultLayout.variables;
             if(sL !is null)
                 return sL.sVar;
+            isUnused = defaultLayout.isUnused(name);
         }
         else
         {
@@ -302,11 +308,16 @@ public class Shader : IReloadable
                 ShaderVarLayout* sL = name[accessorSeparatorIndex+1..$] in l.variables;
                 if(sL !is null)
                     return sL.sVar;
+                isUnused = l.isUnused(name[accessorSeparatorIndex+1..$]);
             }
         }
         return null;
     }
-    public ShaderVar* get(string name){return findByName(name);}
+    public ShaderVar* get(string name)
+    {
+        bool ignored;
+        return findByName(name, ignored);
+    }
 
 
     public void addVarLayout(ShaderVariablesLayout layout)

@@ -378,6 +378,10 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
+    void draw()
+    {
+    }
+
     void flush()
     {
         const uint count = this.currentIndex;

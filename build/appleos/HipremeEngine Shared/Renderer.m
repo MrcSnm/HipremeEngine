@@ -44,7 +44,8 @@ MTKView* mtkView;
     if(self)
     {
         [self _loadMetalWithView:view];
-        HipremeMain(800, 600);
+        CGSize sz = view.frame.size;
+        HipremeMain((int)sz.width, (int)sz.height);
     }
 
     return self;
@@ -63,12 +64,14 @@ MTKView* mtkView;
 - (void)_updateGameState
 {
     /// Update any game state before encoding renderint commands to our drawable
+    HipremeUpdate(0.016f);
 
 }
 
 - (void)drawInMTKView:(nonnull MTKView *)view
 {
     /// Per frame updates here
+    [self _updateGameState];
     HipremeRender();
    
 }
@@ -125,7 +128,13 @@ matrix_float4x4 matrix_perspective_right_hand(float fovyRadians, float aspect, f
 
 @end
 
-void hipSetMTKView(void** MTKView)
+void hipSetMTKView(void** MTKView, int* outWidth, int* outHeight)
 {
     *MTKView = (__bridge void*)mtkView;
+    CGSize sz = mtkView.frame.size;
+    *outWidth = (int)sz.width;
+    *outHeight = (int)sz.height;
+    
+    
+    NSLog(@"Size: %f %f\n\n", sz.width, sz.height);
 }

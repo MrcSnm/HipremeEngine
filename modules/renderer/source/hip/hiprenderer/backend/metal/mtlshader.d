@@ -128,6 +128,9 @@ class HipMTLShader : IShader
 
         NSError err;
         MTLCompileOptions opts = MTLCompileOptions.alloc.initialize;
+        ///Macros
+        opts.preprocessorMacros = ["ARGS_TIER2": 0].ns;
+        
         p.library = device.newLibraryWithSource(shaderSource.ns, opts, &err);
 
         if(p.library is null || err !is null)
@@ -251,6 +254,11 @@ class HipMTLShader : IShader
         if(textures.length > mtlTextures.length)
         {
             import hip.util.memory;
+            if(mtlTextures !is null)
+            {
+                free(mtlTextures.ptr);
+                free(mtlSamplers.ptr);   
+            }
             mtlTextures = allocSlice!MTLTexture(textures.length);
             mtlSamplers = allocSlice!MTLSamplerState(textures.length);
         }

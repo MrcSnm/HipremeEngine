@@ -176,6 +176,10 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
     }
 
 
+    void draw()
+    {
+        
+    }
     alias render = flush;
     void flush()
     {
