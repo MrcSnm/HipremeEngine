@@ -15,6 +15,7 @@ import hip.error.handler;
 version(WebAssembly) version = QueuePopulatedExternally;
 else version(UWP) version = QueuePopulatedExternally;
 else version(PSVita) version = QueuePopulatedExternally;
+else version(AppleOS) version = QueuePopulatedExternally;
 
 version(Android)
 {
@@ -79,11 +80,13 @@ else version(QueuePopulatedExternally)
         }
         void HipInputOnKeyDown(uint virtualKey)
         {
-            HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)virtualKey));
+            import hip.event.dispatcher;
+            HipEventQueue.post(0, HipEventQueue.EventType.keyDown, HipEventQueue.Key(cast(ushort)virtualKey.getHipKeyFromSystem));
         }
         void HipInputOnKeyUp(uint virtualKey)
         {
-            HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)virtualKey));
+            import hip.event.dispatcher;
+            HipEventQueue.post(0, HipEventQueue.EventType.keyUp, HipEventQueue.Key(cast(ushort)virtualKey.getHipKeyFromSystem));
         }
         void HipInputOnGamepadConnected(ubyte id, ubyte type)
         {

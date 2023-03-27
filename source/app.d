@@ -378,6 +378,14 @@ else version(PSVita)
 		return HipremeUpdateBase();
 	}
 }
+else version(AppleOS)
+{
+	export extern(C) bool HipremeUpdate(float dt)
+	{
+		g_deltaTime = dt;
+		return HipremeUpdateBase();
+	}
+}
 else version(dll) export extern(C) bool HipremeUpdate()
 {
 	import hip.util.time;

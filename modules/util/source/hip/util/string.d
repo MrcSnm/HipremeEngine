@@ -61,7 +61,7 @@ struct String
         s.initialize(128);
         static foreach(a; args)
         {
-            static if(isAppendable!(typeof(a)))
+            static if(isAppendable!(typeof(a)) )
                 s~= a;
             else static if(__traits(hasMember, a, "toString"))
                 s~= a.toString;
@@ -106,6 +106,7 @@ struct String
     auto ref opOpAssign(string op, T)(T value)
     if(op == "~")
     {
+        String temp;
         char[] chs;
         static if(is(T == String))
             chs = value.chars;
@@ -121,8 +122,8 @@ struct String
         }
         else
         {
-            //TODO: Use toStringRange for optimizations
-            chs = cast(char[])to!string(value);
+            temp = String(value);
+            chs = temp.chars;
         }
         if(!updateBorrowed(chs.length) && chs.length + this.length >= this._capacity) //New size is greater than capacity
             resize(cast(uint)((chs.length + this.length)*1.5));

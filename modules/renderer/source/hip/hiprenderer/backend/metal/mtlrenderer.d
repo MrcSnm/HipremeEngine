@@ -27,6 +27,22 @@ MTLCompareFunction fromHipDepthTestingFunction(HipDepthTestingFunction fn)
     }
 }
 
+private string getGPUFamily(MTLDevice device)
+{
+    string ret = "";
+    static foreach(mem; __traits(allMembers, MTLGPUFamily))
+    {
+        if(device.supportsFamily(__traits(getMember, MTLGPUFamily, mem)))
+        {
+            if(ret != "") ret~= ", ";
+            ret~= mem;
+        }
+    }
+    if(ret == "")
+        return "unknown";
+    return ret;
+}
+
 /** 
  * Used to be sent as a way to interface with ShaderVar uniforms.
  * Whenever needing to bind more than one texture.
@@ -47,6 +63,8 @@ class HipMTLRenderer : IHipRendererImpl
     MTLRenderCommandEncoder cmdEncoder;
     MTLPrimitiveType primitiveType;
 
+    package MTLArgumentBuffersTier argsTier;
+
     //Descriptors
         MTLDepthStencilDescriptor depthStencilDescriptor;
     //
@@ -57,6 +75,23 @@ class HipMTLRenderer : IHipRendererImpl
         device = view.device();
         cmdQueue = device.newCommandQueue();
         cmdQueue.label = "HipremeRendererQueue".ns;
+        // argsTier = device.argumentBuffersSupport;
+        ///Experimental Tier2 conditionals support, since I can't test them.
+        argsTier = MTLArgumentBuffersTier.Tier1;
+
+        import hip.console.log;
+        {
+            MTLCompileOptions _temp = MTLCompileOptions.alloc.ini;
+
+            loglnInfo(
+                "GPU Name: ", device.name, "\n",
+                "GPU Family: ", getGPUFamily(device), "\n",
+                "Metal Version: ", _temp.languageVersion, "\n",
+                "ArgumentBuffer: ", argsTier
+            );
+            _temp.dealloc;
+        }
+
 
         depthStencilDescriptor = MTLDepthStencilDescriptor.alloc.ini;
         renderPassDescriptor.depthAttachment.loadAction = MTLLoadAction.Clear;
@@ -98,6 +133,8 @@ class HipMTLRenderer : IHipRendererImpl
 
     ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length)
     {
+        if(argsTier == MTLArgumentBuffersTier.Tier1) return null;
+        
         switch(uniformType) with(UniformType)
         {
             case texture_array:
@@ -109,7 +146,7 @@ class HipMTLRenderer : IHipRendererImpl
         }
     }
 
-    
+
 
     public IHipFrameBuffer createFrameBuffer(int width, int height)
     {
@@ -140,7 +177,7 @@ class HipMTLRenderer : IHipRendererImpl
 
     public int queryMaxSupportedPixelShaderTextures()
     {
-        return 16;
+        return 8;///Max used in SpritebatchShader.
     }
 
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)

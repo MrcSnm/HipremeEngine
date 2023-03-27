@@ -7,12 +7,13 @@
 
 #import "GameViewController.h"
 #import "Renderer.h"
+#import "InputView.h"
 #import "hipreme_engine.h"
 
 @implementation GameViewController
 {
     MTKView *_view;
-
+    InputView* inputView;
     Renderer *_renderer;
 }
 
@@ -21,6 +22,7 @@
     [super viewDidLoad];
 
     _view = (MTKView *)self.view;
+    inputView = [[InputView alloc] initWithFrame:_view.frame];
 
     _view.device = MTLCreateSystemDefaultDevice();
 
@@ -34,8 +36,15 @@
     _renderer = [[Renderer alloc] initWithMetalKitView:_view];
 
     [_renderer mtkView:_view drawableSizeWillChange:_view.bounds.size];
+    [_view addSubview:inputView];
+    [inputView becomeFirstResponder];
+    
+    
+
 
     _view.delegate = _renderer;
 }
+
+
 
 @end

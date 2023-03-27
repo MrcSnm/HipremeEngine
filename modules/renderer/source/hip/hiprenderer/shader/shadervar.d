@@ -333,6 +333,7 @@ class ShaderVariablesLayout
 
     ShaderVarLayout[string] variables;
     private string[] namesOrder;
+    private string[] unusedBlackboxed;
     string name;
     ShaderTypes shaderType;
     protected Shader owner;
@@ -505,8 +506,20 @@ class ShaderVariablesLayout
     {
         ShaderVar* sV = HipRenderer.createShaderVar(this.shaderType, t, varName, length);
         if(sV is null)
+        {
+            unusedBlackboxed~= varName;
             return this;
+        }
         return append(varName, sV);
+    }
+    /**
+    *   For speed sake, it doesn't check whether it is valid.
+    *   That means both a valid and invalid variable would return false (meaning used.)
+    */
+    bool isUnused(string varName) @nogc const
+    {
+        foreach(v; unusedBlackboxed) if(v == varName) return true;
+        return false;
     }
 
     final size_t getLayoutSize(){return lastPosition;}

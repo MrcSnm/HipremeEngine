@@ -47,7 +47,7 @@ struct HipSpriteVertexUniform
 @HipShaderFragmentUniform("Cbuf")
 struct HipSpriteFragmentUniform
 {
-    float[4] uBatchColor = [0,0,0,0];
+    float[4] uBatchColor = [1,1,1,1];
     
     @(ShaderHint.Blackbox | ShaderHint.MaxTextures) 
     IHipTexture[] uTex;
@@ -427,6 +427,11 @@ class HipSpriteBatch : IHipBatch
         }
     }
 
+    void draw()
+    {
+
+    }
+
     void flush()
     {
         if(quadsCount != 0)
@@ -436,7 +441,6 @@ class HipSpriteBatch : IHipBatch
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
 
-            mesh.shader.bindArrayOfTextures(currentTextures, "uTex1");
             mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj, true);
             mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity(), true);
             mesh.shader.setVertexVar("Cbuf1.uView", camera.view, true);
