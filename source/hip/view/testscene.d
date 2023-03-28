@@ -47,6 +47,7 @@ class TestScene : Scene, IHipPreloadable
         geom = new GeometryBatch(null, 5000, 5000);
         geom.setColor(HipColorf(0, 1, 0, 1));
 
+        setWindowSize(HipRenderer.width, HipRenderer.height);
         // src = HipAudio.getSource();
         // src.clip = pop;
 
@@ -64,11 +65,11 @@ class TestScene : Scene, IHipPreloadable
 
         x+= dt*400*v[0];
         y+= dt*400*v[1];
-        // if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
-        // {
+        if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
+        {
         //     src.play();
-        //     logg("You just clicked me!");
-        // }
+            logg("You just clicked me!");
+        }
 
         if(HipInput.isKeyJustPressed(HipKey.ENTER))
         {
@@ -97,23 +98,16 @@ class TestScene : Scene, IHipPreloadable
         
 
         // ////////////////////////Higher Level////////////////////////
-        // setGeometryColor(HipColorf.white);
-        // setFont(null);
-        // drawText("Hello World Test Scene (Default Font)", 300, 280, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
-        // fillRectangle(cast(int)x, cast(int)y, 100, 100);
+        setGeometryColor(HipColorf.white);
+        setFont(null);
+        drawText("Hello World Test Scene (Default Font)", 300, 280, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        fillRectangle(cast(int)x, cast(int)y, 100, 100);
 
-        // drawText("Null Textures uses that sprite over here", 300, 480, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
-        // fillRectangle(cast(int)x+200, cast(int)y, 100, 100);
-        // drawTexture(null, 300, 500);
+        drawText("Null Textures uses that sprite over here", 300, 480, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        fillRectangle(cast(int)x+200, cast(int)y, 100, 100);
+        drawTexture(null, 300, 500);
 
-        // // logg("Render testscene.");
 
-        // /**
-        // *   For loading a texture you can execute
-        // *   IHipTexture myTexture = HipAssetManager.loadTexture("sprites/theTexture.png").awaitAs!IHipTexture;
-        // *
-        // *   TODO: Tutorial to play sounds
-        // */
         finishRender2D();
     }
 }

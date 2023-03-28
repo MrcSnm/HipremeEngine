@@ -67,9 +67,6 @@ void initialize(HipInterpreterEntry entry = HipInterpreterEntry.init, bool shoul
         hiplog("2D Renderer: sending lua functions");
         if(entry != HipInterpreterEntry.init)
         {
-            sendInterpreterFunc!(renderSprites)(entry.intepreter);
-            sendInterpreterFunc!(renderGeometries)(entry.intepreter);
-            sendInterpreterFunc!(renderTexts)(entry.intepreter);
             sendInterpreterFunc!(setGeometryColor)(entry.intepreter);
             sendInterpreterFunc!(drawPixel)(entry.intepreter);
             sendInterpreterFunc!(drawRectangle)(entry.intepreter);
@@ -122,21 +119,10 @@ Viewport getCurrentViewport()
     import hip.util.lifetime;
     return cast(typeof(return))hipSaveRef(HipRenderer.getCurrentViewport());
 }
-void renderSprites()
-{
-    spBatch.render();
-}
+
 void setRendererErrorCheckingEnabled(bool enable)
 {
     HipRenderer.setErrorCheckingEnabled(enable);
-}
-void renderGeometries()
-{
-    geoBatch.flush();
-}
-void renderTexts()
-{
-    textBatch.flush();
 }
 void setGeometryColor(in HipColorf color){geoBatch.setColor(color);}
 void drawPixel(int x, int y, in HipColorf color = HipColorf.invalid)
@@ -264,9 +250,9 @@ Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint r
 
 void finishRender2D()
 {
-    if(geoBatch) renderGeometries();
-    if(spBatch) renderSprites();
-    if(textBatch) renderTexts();
+    if(geoBatch) geoBatch.flush();
+    if(spBatch) spBatch.flush();
+    if(textBatch) textBatch.flush();
     lastBatch = null;
     sharedDepth = 0;
     if(geoBatch) geoBatch.setCurrentDepth(0);

@@ -113,6 +113,8 @@ class HipWindow
             hip.windowing.platforms.windows.setWindowSize(hwnd, width, height);
         else version(X11)
             return hip.windowing.platforms.x11.setWindowSize(width, height);
+        else version(AppleOS)
+            return hip.windowing.platforms.appleos.setWindowSize(width, height);
         else
             errors~= "setSize is not implemented for this platform";
     }
@@ -122,6 +124,8 @@ class HipWindow
             return hip.windowing.platforms.windows.getWindowSize(hwnd);
         else version(X11)
             return hip.windowing.platforms.x11.getWindowSize();
+        else version(AppleOS)
+            return hip.windowing.platforms.appleos.getWindowSize();
         else
         {
             errors~= "getSize is not implemented for this platform";

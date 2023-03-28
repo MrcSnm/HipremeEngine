@@ -426,8 +426,9 @@ class HipRenderer
     {
         assert(width > 0 && height > 0, "Window width and height must be greater than 0");
         logln("Changing window size to ", [width, height]);
-        HipRenderer.width = window.width = width;
-        HipRenderer.height = window.height = height;
+        window.setSize(cast(uint)width, cast(uint)height);
+        HipRenderer.width  = width;
+        HipRenderer.height = height;
     }
     public static HipRendererType getRendererType(){return rendererType;}
     public static HipRendererConfig getCurrentConfig(){return currentConfig;}
@@ -578,7 +579,6 @@ class HipRenderer
     {
         rendererMode = mode;
         rendererImpl.setRendererMode(mode);
-        stats.drawCalls++;
     }
     public static HipRendererMode getMode(){return rendererMode;}
 
@@ -589,9 +589,11 @@ class HipRenderer
     }
     public static void drawIndexed(HipRendererMode mode, index_t count, uint offset = 0)
     {
-        HipRenderer.setRendererMode(mode);
+        HipRendererMode currMode = rendererMode;
+        if(mode != currMode) HipRenderer.setRendererMode(mode);
         HipRenderer.drawIndexed(count, offset);
         stats.drawCalls++;
+        if(mode != currMode) HipRenderer.setRendererMode(currMode);
     }
     public static void drawVertices(index_t count, uint offset = 0)
     {

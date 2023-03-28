@@ -276,7 +276,7 @@ class HipVertexArrayObject
         if(VBO is null)
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
         this.bind();
-        this.VBO.updateData(offset, count*this.stride, data);
+        this.VBO.updateData(offset*this.stride, count*this.stride, data);
     }
     /**
     *   Will set the indices data. Beware that this function may allocate memory.
@@ -299,7 +299,7 @@ class HipVertexArrayObject
         if(EBO is null)
             ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");
         this.bind();
-        this.EBO.updateData(offset, count, data);
+        this.EBO.updateData(cast(int)(offset*index_t.sizeof), count, data);
     }
 
     /**

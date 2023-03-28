@@ -54,6 +54,8 @@ struct HipGeometryBatchFragmentUniforms
 class GeometryBatch : IHipBatch
 {
     protected Mesh mesh;
+    protected index_t lastIndexDrawn;
+    protected index_t lastVertexDrawn;
     protected index_t currentIndex;
     protected index_t verticesCount;
     protected index_t indicesCount;
@@ -63,6 +65,7 @@ class GeometryBatch : IHipBatch
     HipOrthoCamera camera;
     HipGeometryBatchVertex[] vertices;
     index_t[] indices;
+
     
     this(HipOrthoCamera camera = null, index_t verticesCount=64_000, index_t indicesCount=64_000)
     {
@@ -380,16 +383,12 @@ class GeometryBatch : IHipBatch
 
     void draw()
     {
-    }
-
-    void flush()
-    {
         const uint count = this.currentIndex;
         if(count != 0)
         {
             mesh.bind();
-            mesh.updateVertices(cast(float[])vertices[0..verticesCount]);
-            mesh.updateIndices(indices[0..currentIndex]);
+            mesh.updateVertices(cast(float[])vertices[lastVertexDrawn..verticesCount], lastVertexDrawn);
+            mesh.updateIndices(indices[0..currentIndex], lastIndexDrawn);
 
             mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1], true);
             mesh.shader.setVertexVar("Geom.uProj",  camera.proj, true);
@@ -398,11 +397,18 @@ class GeometryBatch : IHipBatch
 
             mesh.shader.sendVars();
             //Vertices to render = indices.length
-            this.mesh.draw(count);
+            this.mesh.draw(count - lastIndexDrawn, HipRenderer.getMode, lastIndexDrawn);
             mesh.unbind();
         }
-        verticesCount = 0;
-        currentIndex = 0;
+        lastIndexDrawn = count;
+        lastVertexDrawn = verticesCount;
+    }
+
+    void flush()
+    {
+        draw();
+        lastVertexDrawn = verticesCount = 0;
+        lastIndexDrawn = currentIndex = 0;
     }
 
 }

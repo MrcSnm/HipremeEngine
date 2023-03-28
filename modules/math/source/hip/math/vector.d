@@ -93,6 +93,18 @@ struct Vector(uint N, T)
                     data = [v[0], v[1], v[2], v[3]];
             }
         }
+        static if(N >= 3)
+        {
+            Vector2 xy(){return Vector2(x, y);}
+            Vector2 xy(Vector2 v){x = v.x; y = v.y; return v;}
+            Vector2 yx(){return Vector2(y, x);}
+            Vector2 yx(Vector2 v){y = v.x; x = v.y; return yx;}
+        }
+        static if(N == 4)
+        {
+            Vector3 xyz(){return Vector3(x, y, z);}
+            Vector3 xyz(Vector3 v){x = v.x; y = v.y;z = v.z; return v;}
+        }
         T opIndexUnary(string op)(size_t index) if(op == "-")
         {
             assert(index >= 0 && index <= N);

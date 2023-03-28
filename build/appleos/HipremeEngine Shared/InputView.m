@@ -9,13 +9,21 @@
 #import "InputView.h"
 #import "hipreme_engine.h"
 
-@implementation InputView
+MTKView* mtkView;
+InputView* mainInputView;
 
-- (instancetype) initWithFrame:(NSRect)frameRect
+@implementation InputView
+NSTrackingArea* trackingArea;
+
+- (instancetype) initWithFrameAndView:(NSRect)frame view:(MTKView*)view;
 {
-    self = [super initWithFrame:frameRect];
-    NSTrackingArea* ta = [[NSTrackingArea alloc] initWithRect:CGRectZero options:NSTrackingMouseMoved | NSTrackingInVisibleRect | NSTrackingActiveAlways owner:self userInfo:nil];
-    [self addTrackingArea:ta];
+    self = [super initWithFrame:frame];
+    mainInputView = self;
+    mtkView = view;
+
+    trackingArea = [[NSTrackingArea alloc] initWithRect:CGRectZero options:NSTrackingMouseMoved | NSTrackingInVisibleRect | NSTrackingActiveAlways owner:self userInfo:nil];
+    [self addTrackingArea:trackingArea];
+    
     return self;
 }
 
@@ -110,3 +118,34 @@
 
 @end
 
+
+
+void hipSetMTKView(void** MTKView, int* outWidth, int* outHeight)
+{
+    *MTKView = (__bridge void*)mtkView;
+    CGSize sz = mtkView.frame.size;
+    *outWidth = (int)sz.width;
+    *outHeight = (int)sz.height;
+    
+    
+    NSLog(@"Size: %f %f\n\n", sz.width, sz.height);
+}
+typedef struct
+{
+    int width, height;
+}  HipWindowSize;
+
+HipWindowSize hipGetWindowSize(void)
+{
+    HipWindowSize ret;
+    ret.width = (int)mtkView.frame.size.width;
+    ret.height = (int)mtkView.frame.size.height;
+    return ret;
+}
+
+void hipSetWindowSize(unsigned int width, unsigned int height)
+{
+    CGRect frame = mtkView.frame;
+    frame.size = CGSizeMake((CGFloat)width, (CGFloat)height);
+    mainInputView.frame = mtkView.frame = frame;
+}

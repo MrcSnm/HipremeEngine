@@ -15,8 +15,6 @@
 
 static const NSUInteger MaxBuffersInFlight = 3;
 
-MTKView* mtkView;
-
 @implementation Renderer
 {
     dispatch_semaphore_t _inFlightSemaphore;
@@ -40,7 +38,6 @@ MTKView* mtkView;
 -(nonnull instancetype)initWithMetalKitView:(nonnull MTKView *)view;
 {
     self = [super init];
-    mtkView = view;
     if(self)
     {
         [self _loadMetalWithView:view];
@@ -127,14 +124,3 @@ matrix_float4x4 matrix_perspective_right_hand(float fovyRadians, float aspect, f
 }
 
 @end
-
-void hipSetMTKView(void** MTKView, int* outWidth, int* outHeight)
-{
-    *MTKView = (__bridge void*)mtkView;
-    CGSize sz = mtkView.frame.size;
-    *outWidth = (int)sz.width;
-    *outHeight = (int)sz.height;
-    
-    
-    NSLog(@"Size: %f %f\n\n", sz.width, sz.height);
-}
