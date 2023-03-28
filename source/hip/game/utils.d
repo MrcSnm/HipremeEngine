@@ -23,7 +23,6 @@ class HipGameUtils
                     x, y,
                     0, frame.color
                 );
-                renderSprites();
             })
         );
     }

@@ -22,7 +22,7 @@
     [super viewDidLoad];
 
     _view = (MTKView *)self.view;
-    inputView = [[InputView alloc] initWithFrame:_view.frame];
+    inputView = [[InputView alloc] initWithFrameAndView:_view.frame view:_view];
 
     _view.device = MTLCreateSystemDefaultDevice();
 
@@ -32,12 +32,11 @@
         self.view = [[NSView alloc] initWithFrame:self.view.frame];
         return;
     }
-
-    _renderer = [[Renderer alloc] initWithMetalKitView:_view];
-
-    [_renderer mtkView:_view drawableSizeWillChange:_view.bounds.size];
     [_view addSubview:inputView];
     [inputView becomeFirstResponder];
+
+    _renderer = [[Renderer alloc] initWithMetalKitView:_view];
+    [_renderer mtkView:_view drawableSizeWillChange:_view.bounds.size];
     
     
 

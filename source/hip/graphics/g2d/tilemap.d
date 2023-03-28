@@ -52,7 +52,7 @@ void render(HipTileLayer layer, IHipTilemap map, HipSpriteBatch batch, bool shou
         }
 
     if(shouldRenderBatch)
-        batch.render();
+        batch.draw();
 }
 
 void render(IHipTilemap map, HipSpriteBatch batch, bool shouldRenderBatch)
@@ -60,5 +60,5 @@ void render(IHipTilemap map, HipSpriteBatch batch, bool shouldRenderBatch)
     foreach(l; map.layers)
         l.render(map, batch, false);
     if(shouldRenderBatch)
-        batch.flush();
+        batch.draw();
 }

@@ -263,9 +263,9 @@ class HipMTLRenderer : IHipRendererImpl
     public void drawIndexed(index_t count, uint offset = 0)
     {
         static if(is(index_t == ushort))
-            cmdEncoder.drawIndexedPrimitives(primitiveType, count, MTLIndexType.UInt16, boundIndexBuffer, offset);
+            cmdEncoder.drawIndexedPrimitives(primitiveType, count, MTLIndexType.UInt16, boundIndexBuffer, offset*index_t.sizeof);
         else 
-            cmdEncoder.drawIndexedPrimitives(primitiveType, count, MTLIndexType.UInt32, boundIndexBuffer, offset);
+            cmdEncoder.drawIndexedPrimitives(primitiveType, count, MTLIndexType.UInt32, boundIndexBuffer, offset*index_t.sizeof);
 
     }
 
