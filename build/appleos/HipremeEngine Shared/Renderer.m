@@ -14,6 +14,7 @@
 
 @implementation Renderer
 {
+    CFTimeInterval lastTimeStamp;
     matrix_float4x4 _projectionMatrix;
     float _rotation;
 }
@@ -23,6 +24,7 @@
     self = [super init];
     if(self)
     {
+        lastTimeStamp = 0;
         [self _loadMetalWithView:view];
         CGSize sz = view.frame.size;
         HipremeMain((int)sz.width, (int)sz.height);
@@ -41,17 +43,17 @@
 }
 
 
-- (void)_updateGameState
-{
-    /// Update any game state before encoding renderint commands to our drawable
-    HipremeUpdate(0.016f);
-
-}
-
 - (void)drawInMTKView:(nonnull MTKView *)view
 {
     /// Per frame updates here
-    [self _updateGameState];
+    CFTimeInterval timeNow = CACurrentMediaTime();
+    CFTimeInterval dt = timeNow - lastTimeStamp;
+    lastTimeStamp = timeNow;
+    if(!HipremeUpdate((float)dt))
+    {
+        [[NSApplication sharedApplication] terminate:self];
+    }
+    
     HipremeRender();
    
 }

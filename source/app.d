@@ -39,6 +39,10 @@ version(dll)
 	else version = ManagesMainDRuntime;
 }
 
+version(WebAssembly) version = ExternallyManagedDeltaTime;
+version(AppleOS)     version = ExternallyManagedDeltaTime;
+version(PSVita)      version = ExternallyManagedDeltaTime;
+
 
 /**
 * Compiling instructions:
@@ -366,24 +370,7 @@ bool HipremeUpdateBase()
 	return true;
 }
 
-version(WebAssembly)
-{
-	export extern(C) bool HipremeUpdate(float dt)
-	{
-		dt/= 1000; //To seconds. Javascript gives in MS.
-		g_deltaTime = dt;
-		return HipremeUpdateBase();
-	}
-}
-else version(PSVita)
-{
-	export extern(C) bool HipremeUpdate(float dt)
-	{
-		g_deltaTime = dt;
-		return HipremeUpdateBase();
-	}
-}
-else version(AppleOS)
+version(ExternallyManagedDeltaTime)
 {
 	export extern(C) bool HipremeUpdate(float dt)
 	{
@@ -419,7 +406,8 @@ version(Desktop)
 		import hip.util.time;
 		// import core.time:dur;
 		// import core.thread.osthread;
-		while(HipremeUpdateBase())
+		bool isUpdating = true;
+		while(isUpdating)
 		{
 			long initTime = HipTime.getCurrentTime();
 			long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
@@ -427,6 +415,7 @@ version(Desktop)
 			{
 				// Thread.sleep(dur!"msecs"(sleepTime));
 			}
+			isUpdating = HipremeUpdateBase();
 			HipremeRender();
 			g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
 		}

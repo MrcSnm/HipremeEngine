@@ -103,7 +103,8 @@ function initializeHipremeEngine(exports)
     {
         try
         {
-            if(!exports.HipremeUpdate(performance.now() - lastTime))
+            //To seconds. Javascript gives in MS.
+            if(!exports.HipremeUpdate((performance.now() - lastTime)/1000))
             {
                 finished = true;
                 destroyEngine();

@@ -35,3 +35,24 @@ const char* hipGetResourcesPath(void)
 {
     return [[NSBundle mainBundle].resourcePath UTF8String];
 }
+
+NSWindow* getGameWindow(void)
+{return [NSApplication sharedApplication].windows[0];}
+
+void hipSetApplicationFullscreen(BOOL shouldMakeFullscreen)
+{
+    NSWindow* wnd = getGameWindow();
+    if(wnd.styleMask & NSWindowStyleMaskFullScreen && !shouldMakeFullscreen)
+    {
+        [wnd toggleFullScreen:nil];
+    }
+    else if((wnd.styleMask & NSWindowStyleMaskFullScreen) == 0 && shouldMakeFullscreen)
+    {
+        [wnd toggleFullScreen:nil];
+    }
+}
+
+void hipSetApplicationTitle(const char* title)
+{
+    getGameWindow().title = [[NSString alloc] initWithUTF8String:title];
+}

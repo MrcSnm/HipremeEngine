@@ -1,12 +1,10 @@
 module hip.windowing.window;
 
 version(Android){}
-else version(Linux)
-    version = X11;
+else version(linux) version = X11;
 
 version(UWP){}
-else version(Windows)
-    version = WindowsNative;
+else version(Windows) version = WindowsNative;
 
 
 enum HipWindowFlags
@@ -104,6 +102,8 @@ class HipWindow
             hip.windowing.platforms.windows.setWindowName(hwnd, name);
         else version(X11)
             hip.windowing.platforms.x11.setWindowName(name);
+        else version(AppleOS)
+            hip.windowing.platforms.appleos.setWindowName(name);
         else
             errors~= "setName is not implemented for this platform";
     }
@@ -145,7 +145,10 @@ class HipWindow
     }
     void setFullscreen(bool fullscreen)
     {
-        errors~= "Fullscreen is not implemented for this platform";
+        version(AppleOS)
+            hip.windowing.platforms.appleos.setFullscreen(fullscreen);
+        else
+            errors~= "Fullscreen is not implemented for this platform";
     }
     
     void show()
@@ -155,6 +158,7 @@ class HipWindow
         else version(X11)
             return hip.windowing.platforms.x11.show();
         else version(WebAssembly){} //Has no show
+        else version(AppleOS){} //Has no show
         else
             errors~= "Show is not implemented for this platform";
     }
