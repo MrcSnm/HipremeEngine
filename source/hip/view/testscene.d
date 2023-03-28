@@ -107,7 +107,5 @@ class TestScene : Scene, IHipPreloadable
         fillRectangle(cast(int)x+200, cast(int)y, 100, 100);
         drawTexture(null, 300, 500);
 
-
-        finishRender2D();
     }
 }

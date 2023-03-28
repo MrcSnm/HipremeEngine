@@ -12,10 +12,9 @@ struct TemplateInfo
 	},
 	update="",
 	render=q{
-		drawText("You can start using the D Scripting API Here!", 400, 300, HipColor.white, 
+		drawText("You can start using the D Scripting API Here!", 400, 300, HipColorf.white, 
 			HipTextAlign.CENTER,  HipTextAlign.CENTER
 		);
-		renderTexts();
 	},
 	dispose="";
 }
