@@ -13,6 +13,7 @@
 		"local-history.saveDelay": 1,
 		"files.exclude": 
 		{
+			"build/appleos/HipremeEngine.xcodeproj/": true,
 			"**/.dub" : true,
 			"**/*.lib": true,
 			"**/*.a" : true,
