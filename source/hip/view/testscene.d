@@ -31,11 +31,11 @@ class TestScene : Scene, IHipPreloadable
     IHipFont smallFont;
     IHipFont bigFont;
 
-    // @Asset("sounds/pop.wav")
-    // __gshared IHipAudioClip pop;
+    @Asset("sounds/pop.wav")
+    __gshared IHipAudioClip pop;
 
 
-    // AHipAudioSource src;
+    AHipAudioSource src;
 
 
     float x = 100, y = 100;
@@ -48,8 +48,8 @@ class TestScene : Scene, IHipPreloadable
         geom.setColor(HipColorf(0, 1, 0, 1));
 
         setWindowSize(HipRenderer.width, HipRenderer.height);
-        // src = HipAudio.getSource();
-        // src.clip = pop;
+        src = HipAudio.getSource();
+        src.clip = pop;
 
 
         smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
@@ -67,7 +67,7 @@ class TestScene : Scene, IHipPreloadable
         y+= dt*400*v[1];
         if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
         {
-        //     src.play();
+            src.play();
             logg("You just clicked me!");
         }
 
