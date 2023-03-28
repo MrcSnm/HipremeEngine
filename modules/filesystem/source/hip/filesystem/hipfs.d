@@ -58,6 +58,9 @@ private pure bool validatePath(string initial, string toAppend)
     return true;
 }
 
+///Function is implemented AppDelegate.m
+version(AppleOS)
+private extern(C) const(char*) hipGetResourcesPath();
 
 abstract class HipFile : IHipFileItf
 {
@@ -180,6 +183,17 @@ class HipFileSystem
             setPath("");
             hasSetInitial = true;
         }
+    }
+    /**
+    *   This function may be refactored in future since having different
+    *   directories to resources to writeable paths is becoming more common
+    */
+    version(AppleOS)
+    public static string getResourcesPath()
+    {
+        import core.stdc.string;
+        auto str = hipGetResourcesPath;
+        return cast(string)str[0..strlen(str)];
     }
 
     

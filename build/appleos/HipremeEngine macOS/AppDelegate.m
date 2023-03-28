@@ -30,3 +30,8 @@
 
 
 @end
+
+const char* hipGetResourcesPath(void)
+{
+    return [[NSBundle mainBundle].resourcePath UTF8String];
+}

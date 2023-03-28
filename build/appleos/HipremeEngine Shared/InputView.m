@@ -24,6 +24,7 @@ NSTrackingArea* trackingArea;
     trackingArea = [[NSTrackingArea alloc] initWithRect:CGRectZero options:NSTrackingMouseMoved | NSTrackingInVisibleRect | NSTrackingActiveAlways owner:self userInfo:nil];
     [self addTrackingArea:trackingArea];
     
+    NSLog(@"%@", [NSBundle mainBundle].resourcePath);
     return self;
 }
 

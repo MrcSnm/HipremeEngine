@@ -75,6 +75,9 @@
 			"name": "appleos",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
+			"dflags": [
+				"-checkaction=D"
+			],
 			"versions": [
 				"OpenAL",
 				"Standalone",
@@ -89,6 +92,9 @@
 			"name": "appleos-main",
 			"targetPath": "build/appleos/HipremeEngine D/libs",
 			"targetType": "staticLibrary",
+			"dflags": [
+				"-checkaction=D"
+			],
 			"versions": [
 				"OpenAL",
 				"Standalone",

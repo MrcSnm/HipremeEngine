@@ -17,7 +17,7 @@ else
     version(Windows) version = HipConcurrency;
     version(Android) version = HipConcurrency;
     version(UWP) version = HipConcurrency;
-    version(Posix) version = HipConcurrency;
+    version(linux) version = HipConcurrency;
 }
 
 
@@ -464,7 +464,7 @@ else
 {
     class DebugMutex
     {
-        this(ulong id){}
+        this(ulong id = 0){}
         final void lock(){}
         final void unlock(){}
     }

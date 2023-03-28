@@ -24,12 +24,12 @@
 		3156445D29A1546900559889 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156441E29A1546600559889 /* Renderer.m */; };
 		3156445E29A1546900559889 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156441E29A1546600559889 /* Renderer.m */; };
 		3156445F29A1546900559889 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156441E29A1546600559889 /* Renderer.m */; };
-		3156446029A1546900559889 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 3156442029A1546600559889 /* Shaders.metal */; };
-		3156446129A1546900559889 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 3156442029A1546600559889 /* Shaders.metal */; };
-		3156446229A1546900559889 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 3156442029A1546600559889 /* Shaders.metal */; };
 		3156446329A1546900559889 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3156442129A1546900559889 /* Assets.xcassets */; };
 		3156446429A1546900559889 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3156442129A1546900559889 /* Assets.xcassets */; };
 		3156446529A1546900559889 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3156442129A1546900559889 /* Assets.xcassets */; };
+		3158411629D2FB5500FDD0FD /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3158411529D2FB5500FDD0FD /* assets */; };
+		3158411729D2FB5500FDD0FD /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3158411529D2FB5500FDD0FD /* assets */; };
+		3158411829D2FB5500FDD0FD /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3158411529D2FB5500FDD0FD /* assets */; };
 		315C6FCE29B57D20007F19C0 /* libhipremeengine_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 315C6FCD29B57D20007F19C0 /* libhipremeengine_ios.a */; };
 		315C6FCF29B57D20007F19C0 /* libhipremeengine_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 315C6FCD29B57D20007F19C0 /* libhipremeengine_ios.a */; };
 		315FEE5829D1BFDE00761BF1 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315FEE5729D1BFDE00761BF1 /* InputView.m */; };
@@ -76,8 +76,6 @@
 /* Begin PBXFileReference section */
 		3156441D29A1546600559889 /* Renderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Renderer.h; sourceTree = "<group>"; };
 		3156441E29A1546600559889 /* Renderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Renderer.m; sourceTree = "<group>"; };
-		3156441F29A1546600559889 /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderTypes.h; sourceTree = "<group>"; };
-		3156442029A1546600559889 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		3156442129A1546900559889 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3156442629A1546900559889 /* HipremeEngine.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HipremeEngine.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3156442929A1546900559889 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -103,6 +101,7 @@
 		3156445829A1546900559889 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		3156445A29A1546900559889 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		3156445C29A1546900559889 /* HipremeEngine_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HipremeEngine_macOS.entitlements; sourceTree = "<group>"; };
+		3158411529D2FB5500FDD0FD /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../../assets; sourceTree = "<group>"; };
 		315C6FCB29B55DBE007F19C0 /* hipreme_engine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hipreme_engine.h; sourceTree = "<group>"; };
 		315C6FCD29B57D20007F19C0 /* libhipremeengine_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libhipremeengine_ios.a; sourceTree = "<group>"; };
 		315FEE5529D1BEFC00761BF1 /* InputView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InputView.h; sourceTree = "<group>"; };
@@ -213,6 +212,7 @@
 		3156441729A1546600559889 = {
 			isa = PBXGroup;
 			children = (
+				3158411029D2F96600FDD0FD /* Assets */,
 				315C6FC529B55CF8007F19C0 /* HipremeEngine D */,
 				3156441C29A1546600559889 /* HipremeEngine Shared */,
 				3156442829A1546900559889 /* HipremeEngine iOS */,
@@ -228,8 +228,6 @@
 			children = (
 				3156441D29A1546600559889 /* Renderer.h */,
 				3156441E29A1546600559889 /* Renderer.m */,
-				3156441F29A1546600559889 /* ShaderTypes.h */,
-				3156442029A1546600559889 /* Shaders.metal */,
 				3156442129A1546900559889 /* Assets.xcassets */,
 				315FEE5529D1BEFC00761BF1 /* InputView.h */,
 				315FEE5729D1BFDE00761BF1 /* InputView.m */,
@@ -332,6 +330,14 @@
 				3164622029C4C221001CE578 /* libphobos2.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		3158411029D2F96600FDD0FD /* Assets */ = {
+			isa = PBXGroup;
+			children = (
+				3158411529D2FB5500FDD0FD /* assets */,
+			);
+			path = Assets;
 			sourceTree = "<group>";
 		};
 		315C6FC529B55CF8007F19C0 /* HipremeEngine D */ = {
@@ -451,6 +457,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3156443129A1546900559889 /* Main.storyboard in Resources */,
+				3158411629D2FB5500FDD0FD /* assets in Resources */,
 				3156446329A1546900559889 /* Assets.xcassets in Resources */,
 				3156443429A1546900559889 /* LaunchScreen.storyboard in Resources */,
 			);
@@ -461,6 +468,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3156444529A1546900559889 /* Main.storyboard in Resources */,
+				3158411729D2FB5500FDD0FD /* assets in Resources */,
 				3156446429A1546900559889 /* Assets.xcassets in Resources */,
 				3156444829A1546900559889 /* LaunchScreen.storyboard in Resources */,
 			);
@@ -470,6 +478,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3158411829D2FB5500FDD0FD /* assets in Resources */,
 				3156446529A1546900559889 /* Assets.xcassets in Resources */,
 				3156445929A1546900559889 /* Main.storyboard in Resources */,
 			);
@@ -487,7 +496,6 @@
 				3156443629A1546900559889 /* main.m in Sources */,
 				315FEE5829D1BFDE00761BF1 /* InputView.m in Sources */,
 				3156442B29A1546900559889 /* AppDelegate.m in Sources */,
-				3156446029A1546900559889 /* Shaders.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -500,7 +508,6 @@
 				3156444A29A1546900559889 /* main.m in Sources */,
 				315FEE5929D1BFDE00761BF1 /* InputView.m in Sources */,
 				3156443F29A1546900559889 /* AppDelegate.m in Sources */,
-				3156446129A1546900559889 /* Shaders.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -513,7 +520,6 @@
 				3156445B29A1546900559889 /* main.m in Sources */,
 				315FEE5A29D1BFDE00761BF1 /* InputView.m in Sources */,
 				3156445329A1546900559889 /* AppDelegate.m in Sources */,
-				3156446229A1546900559889 /* Shaders.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

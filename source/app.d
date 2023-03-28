@@ -135,6 +135,11 @@ static void initEngine(bool audio3D = false)
 			return true;
 		};
 	}
+	else version(AppleOS)
+	{
+		platform = Platforms.APPLEOS;
+		fsInstallPath = HipFS.getResourcesPath ~ "/assets";
+	}
 	else version(GameBuildTest)
 	{
 		import std.file:getcwd;
