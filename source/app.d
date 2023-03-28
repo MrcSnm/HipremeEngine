@@ -436,11 +436,13 @@ version(Desktop)
 export extern(C) void HipremeRender()
 {
 	import hip.bind.interpreters;
+	import hip.graphics.g2d.renderer2d;
 	HipRenderer.begin();
 	HipRenderer.clear(0,0,0,255);
 	sys.render();
-	// if(isUsingInterpreter)
-	// 	renderInterpreter();
+	if(isUsingInterpreter)
+		renderInterpreter();
+	finishRender2D();
 	HipRenderer.end();
 }
 export extern(C) void HipremeDestroy()

@@ -34,12 +34,6 @@ else
     {
         extern(System) __gshared //All functions there will be loaded
         {
-            ///Call this function when finishing to add sprites to the scene
-            void function() renderSprites;
-            ///Call this function when finishing to add geometries to the scene
-            void function() renderGeometries;
-            ///Call this function when finishing to add texts to the scene
-            void function() renderTexts;
             ///Use this only when you're sure you don't need!
             void function(bool enable = true) setRendererErrorCheckingEnabled;
 
@@ -127,12 +121,6 @@ version(none)
 {
     extern(System) __gshared //All functions there will be loaded
     {
-        ///Call this function when finishing to add sprites to the scene
-        void function() renderSprites;
-        ///Call this function when finishing to add geometries to the scene
-        void function() renderGeometries;
-        ///Call this function when finishing to add texts to the scene
-        void function() renderTexts;
         ///Use this only when you're sure you don't need!
         void function(bool enable = true) setRendererErrorCheckingEnabled;
 
