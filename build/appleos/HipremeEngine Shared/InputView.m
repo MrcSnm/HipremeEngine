@@ -24,7 +24,6 @@ NSTrackingArea* trackingArea;
     trackingArea = [[NSTrackingArea alloc] initWithRect:CGRectZero options:NSTrackingMouseMoved | NSTrackingInVisibleRect | NSTrackingActiveAlways owner:self userInfo:nil];
     [self addTrackingArea:trackingArea];
     
-    NSLog(@"%@", [NSBundle mainBundle].resourcePath);
     return self;
 }
 
@@ -128,8 +127,6 @@ void hipSetMTKView(void** MTKView, int* outWidth, int* outHeight)
     *outWidth = (int)sz.width;
     *outHeight = (int)sz.height;
     
-    
-    NSLog(@"Size: %f %f\n\n", sz.width, sz.height);
 }
 typedef struct
 {
@@ -149,4 +146,19 @@ void hipSetWindowSize(unsigned int width, unsigned int height)
     CGRect frame = mtkView.frame;
     frame.size = CGSizeMake((CGFloat)width, (CGFloat)height);
     mainInputView.frame = mtkView.frame = frame;
+}
+
+
+///Unimplemented for now
+void hipSetApplicationVSyncActive(BOOL isVSync)
+{
+    if(isVSync)
+    {
+//        mtkView.wantsLayer = YES;
+//        mtkView.layer.vsyncEnabled = YES;
+    }
+    else
+    {
+        
+    }
 }
