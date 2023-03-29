@@ -9,7 +9,8 @@ version(DirectCall)
 }
 else
 {
-    extern(System) __gshared void function(string s) log;
+	alias logFn = extern(System) void function(string);
+    __gshared logFn log;
 	void initConsole()
 	{
 		import hip.api.internal : _loadSymbol, _dll;
@@ -38,7 +39,7 @@ void logVars(Args...)(string file = __FILE__, size_t line = __LINE__)
 		toPrint~= __traits(identifier, Args[i])~": "~Args[i].to!string;
 		isFirst = false;
 	}
-	version(Have_hipreme_engine)
+	version(DirectCall)
 	{
 		import hip.console.log:rawlog;
 		rawlog(toPrint ~ "\n\t at "~file~":"~to!string(line));
