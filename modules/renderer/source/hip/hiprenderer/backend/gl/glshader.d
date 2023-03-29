@@ -649,7 +649,7 @@ class Hip_GL_ShaderImpl : IShader
                         glCall(() => glUniform1fv(id, cast(int)temp.length, temp.ptr));
                         break;
                     case texture_array:
-                        GLuint[] temp = v.sVar.get!(GLuint[]);
+                        GLint[] temp = v.sVar.get!(GLint[]);
                         glCall(() => glUniform1iv(id, cast(int)temp.length, cast(int*)temp.ptr));
                         break;
                     case none:break;
@@ -674,7 +674,7 @@ class Hip_GL_ShaderImpl : IShader
                 int length = cast(int)textures.length;
                 foreach(i; 0..length)
                     temp[i] = i;
-                sv.set(temp, true);
+                sv.set(temp, false);
                 return true;
             }
             default: return false;

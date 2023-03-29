@@ -284,7 +284,10 @@ public class Shader : IReloadable
         if(v != null)
         {
             if(v.isBlackboxed)
-                shaderImpl.setShaderVar(v,shaderProgram, cast(void*)&val);
+            {
+                if(shaderImpl.setShaderVar(v,shaderProgram, cast(void*)&val))
+                    v.isDirty = true;
+            }
             else
                 v.set(val, validateData);
         }
