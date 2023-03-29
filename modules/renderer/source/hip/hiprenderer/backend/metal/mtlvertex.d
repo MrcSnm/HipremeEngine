@@ -220,13 +220,6 @@ class HipMTLVertexArray : IHipVertexArrayImpl
     void createInputLayout(Shader s)
     {
         HipMTLShaderProgram shader = (cast(HipMTLShaderProgram)s.shaderProgram);
-        shader.pipelineDescriptor.vertexDescriptor = descriptor;
-        NSError err;
-        shader.pipelineState = device.newRenderPipelineStateWithDescriptor(shader.pipelineDescriptor, &err);
-        if(err !is null || shader.pipelineState is null)
-        {
-            ErrorHandler.showErrorMessage("Creating Input Layout",  "Could not create RenderPipelineState");
-            err.print();
-        }
+        shader.createInputLayout(device, descriptor);
     }
 }

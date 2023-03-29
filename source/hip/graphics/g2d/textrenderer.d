@@ -83,6 +83,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             bmTextShader = HipRenderer.newShader(HipShaderPresets.BITMAP_TEXT);
             bmTextShader.addVarLayout(ShaderVariablesLayout.from!HipTextRendererVertexUniforms);
             bmTextShader.addVarLayout(ShaderVariablesLayout.from!HipTextRendererFragmentUniforms);
+            bmTextShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
             const Viewport v = HipRenderer.getCurrentViewport();
             bmTextShader.uProj = Matrix4.orthoLH(0, v.width, v.height, 0, 0.01, 100);
             bmTextShader.setDefaultBlock("FragVars");
