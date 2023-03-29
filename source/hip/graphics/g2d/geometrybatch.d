@@ -386,7 +386,7 @@ class GeometryBatch : IHipBatch
     void draw()
     {
         const uint count = this.currentIndex;
-        if(count != 0)
+        if(count - lastIndexDrawn != 0)
         {
             mesh.bind();
             mesh.updateVertices(cast(float[])vertices[lastVertexDrawn..verticesCount], lastVertexDrawn);
