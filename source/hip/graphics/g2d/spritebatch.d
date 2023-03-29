@@ -401,12 +401,11 @@ class HipSpriteBatch : IHipBatch
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
 
-            mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj, true);
-            mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity(), true);
-            mesh.shader.setVertexVar("Cbuf1.uView", camera.view, true);
+            mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj, false);
+            mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity(), false);
+            mesh.shader.setVertexVar("Cbuf1.uView", camera.view, false);
             mesh.shader.setFragmentVar("Cbuf.uTex", currentTextures);
             mesh.shader.bindArrayOfTextures(currentTextures, "uTex");
-            
             mesh.shader.sendVars();
 
             size_t start = lastDrawQuadsCount*4;
