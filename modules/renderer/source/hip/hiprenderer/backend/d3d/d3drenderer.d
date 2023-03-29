@@ -51,6 +51,17 @@ IDXGISwapChain3 _hip_d3d_swapChain = null;
 ID3D11RenderTargetView _hip_d3d_mainRenderTarget = null;
 private __gshared bool errorCheckEnabled = true;
 
+
+void d3dCall(HRESULT delegate() dg, string file = __FILE__, size_t line = __LINE__)
+{
+    auto res = dg();
+    if(FAILED(res))
+    {
+        // getWindowsErrorMessage(hr);
+        HipRenderer.exitOnError(file, line);
+    }
+}
+
 class Hip_D3D11_Renderer : IHipRendererImpl
 {
     import hip.windowing.window;
@@ -466,14 +477,18 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
     public void setViewport(Viewport v)
     {
+        import hip.windowing.platforms.windows;
+        int[2] borders = getWindowBorder(window.hwnd);
+
         D3D11_VIEWPORT vp;
         memset(&vp, 0, D3D11_VIEWPORT.sizeof);
-        vp.Width = v.width;
-        vp.Height = v.height;
+        vp.Width = v.width - borders[0];
+        vp.Height = v.height - borders[1];
         vp.TopLeftX = v.x;
         vp.TopLeftY = v.y;
         // vp.MinDepth = 0;
         // vp.MaxDepth = 1;
+
 
         currentViewport = v;
         _hip_d3d_context.RSSetViewports(1u, &vp);
@@ -527,6 +542,12 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         
     }
+    
+    public ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length)
+    {
+        return null;
+    }
+    
     
 }
 

@@ -382,7 +382,6 @@ GLenum getGLBlendFunction(HipBlendFunction func)
 {
     final switch(func) with(HipBlendFunction)
     {
-        case  DISABLED: return GL_ZERO;
         case  ZERO: return GL_ZERO;
         case  ONE: return GL_ONE;
         case  SRC_COLOR: return GL_SRC_COLOR;
@@ -651,7 +650,7 @@ class Hip_GL_ShaderImpl : IShader
                         break;
                     case texture_array:
                         GLuint[] temp = v.sVar.get!(GLuint[]);
-                        glCall(() => glUniform1iv(varID, cast(int)temp.length, temp.ptr));
+                        glCall(() => glUniform1iv(id, cast(int)temp.length, cast(int*)temp.ptr));
                         break;
                     case none:break;
                 }
@@ -669,13 +668,14 @@ class Hip_GL_ShaderImpl : IShader
         {
             case texture_array:
             {
-                IHipTexture[] textures = cast(IHipTexture[])value;
+                IHipTexture[] textures = *cast(IHipTexture[]*)value;
                 if(textures.length > temp.length)
                     temp.length = textures.length;
                 int length = cast(int)textures.length;
                 foreach(i; 0..length)
                     temp[i] = i;
-                sv.set(temp);
+                sv.set(temp, true);
+                return true;
             }
             default: return false;
         }
@@ -688,7 +688,7 @@ class Hip_GL_ShaderImpl : IShader
         if(shouldControlBind)
             bind(prog);
         
-        foreach(int i; 0..length)
+        foreach(int i; 0..cast(int)textures.length)
             textures[i].bind(i);
         if(shouldControlBind)
             unbind(prog);

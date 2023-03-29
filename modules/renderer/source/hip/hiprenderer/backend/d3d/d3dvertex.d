@@ -48,8 +48,12 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         _hip_d3d_context.IASetVertexBuffers(0, 0, null, null, null);
         HipRenderer.exitOnError();
     }
+
+
+    bool started = false;
     void createBuffer(ulong size, const void* data)
     {
+        started = true;
         this.size = size;
         D3D11_BUFFER_DESC bd;
         bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -63,7 +67,9 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         sd.pSysMem = cast(void*)data;
 
         //TODO: Check failure
-        _hip_d3d_device.CreateBuffer(&bd, &sd, &buffer);
+
+        d3dCall(() => _hip_d3d_device.CreateBuffer(&bd, &sd, &buffer));
+        
         HipRenderer.exitOnError();
     }
     void setData(size_t size, const(void*) data)
@@ -78,6 +84,7 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         ErrorHandler.assertLazyExit(size+offset <= this.size,
         "Tried to set data with size "~to!string(size)~" and offset "~to!string(offset)~
         "for vertex buffer with size "~to!string(this.size));
+
         D3D11_MAPPED_SUBRESOURCE resource;
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
         memcpy(resource.pData+offset, data, size);

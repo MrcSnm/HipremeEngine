@@ -116,6 +116,8 @@ class HipVertexArrayObject
     HipVertexAttributeInfo[] infos;
 
     protected bool isBonded;
+    protected bool hasVertexInitialized;
+    protected bool hasIndexInitialized;
     
     /**
     *   Remember calling sendAttributes
@@ -264,9 +266,12 @@ class HipVertexArrayObject
     {
         if(VBO is null)
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
-            
-        this.bind(); 
-        this.VBO.setData(count*this.stride, data);
+        else
+        {
+            hasVertexInitialized = true;
+            this.bind(); 
+            this.VBO.setData(count*this.stride, data);
+        }
     }
     /**
     *   Update the VBO. Won't cause memory allocation
@@ -275,6 +280,7 @@ class HipVertexArrayObject
     {
         if(VBO is null)
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
+        ErrorHandler.assertExit(hasVertexInitialized, "Vertex must setData before updating its contents.");
         this.bind();
         this.VBO.updateData(offset*this.stride, count*this.stride, data);
     }
@@ -288,8 +294,12 @@ class HipVertexArrayObject
     {
         if(EBO is null)
             ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");
-        this.bind();
-        this.EBO.setData(count, data);
+        else
+        {
+            hasIndexInitialized = true;
+            this.bind();
+            this.EBO.setData(count, data);
+        }
     }
     /**
     *   Updates the index buffer's data. It won't allocate memory
@@ -298,8 +308,12 @@ class HipVertexArrayObject
     {
         if(EBO is null)
             ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");
-        this.bind();
-        this.EBO.updateData(cast(int)(offset*index_t.sizeof), count, data);
+        else
+        {
+            ErrorHandler.assertExit(hasIndexInitialized, "Index must setData before updating its contents.");
+            this.bind();
+            this.EBO.updateData(cast(int)(offset*index_t.sizeof), count, data);
+        }
     }
 
     /**
