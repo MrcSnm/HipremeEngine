@@ -25,6 +25,7 @@ The engine mantains some global options which you can modify it on source/global
 - Android: **build/android**
 - Browser (WebAssembly): [build/wasm](build/wasm)
 - PS Vita: [build/vita](build/vita/hipreme_engine/)
+- MacOS : [build/appleos](build/appleos/)
 - Windows
 - Linux
 
@@ -38,6 +39,7 @@ The engine mantains some global options which you can modify it on source/global
 
 ## Rendering
 
+- Metal 2.4
 - Direct X 11
 - OpenGL 3
 - OpenGL ES 3
