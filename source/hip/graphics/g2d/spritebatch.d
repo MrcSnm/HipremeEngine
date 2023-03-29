@@ -100,6 +100,7 @@ class HipSpriteBatch : IHipBatch
         this.spriteBatchShader = HipRenderer.newShader(HipShaderPresets.SPRITE_BATCH);
         spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!HipSpriteVertexUniform);
         spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!HipSpriteFragmentUniform);
+        spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 
         mesh = new Mesh(HipVertexArrayObject.getVAO!HipSpriteVertex, spriteBatchShader);
         mesh.vao.bind();
@@ -246,8 +247,15 @@ class HipSpriteBatch : IHipBatch
     }
     protected int setTexture(IHipTextureRegion reg){return setTexture(reg.getTexture());}
 
+    protected static bool isZeroAlpha(float[] vertices)
+    {
+        HipSpriteVertex[] v = cast(HipSpriteVertex[])vertices;
+        return v[0].vColor.a == 0 && v[1].vColor.a == 0 && v[2].vColor.a == 0 && v[3].vColor.a == 0;
+    }
+
     void draw(IHipTexture t, float[] vertices)
     {
+        if(isZeroAlpha(vertices)) return;
         ErrorHandler.assertExit(t.getWidth != 0 && t.getHeight != 0, "Tried to draw 0 bounds sprite");
         int slot = setTexture(t);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
@@ -261,6 +269,7 @@ class HipSpriteBatch : IHipBatch
     void draw(IHipTexture texture, int x, int y, int z = 0, in HipColorf color = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         import hip.global.gamedef;
+        if(color.a == 0) return;
         if(quadsCount+1 > maxQuads)
             flush();
         if(texture is null)
@@ -269,8 +278,8 @@ class HipSpriteBatch : IHipBatch
         int slot = setTexture(texture);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
 
-        size_t startVertex = HipSpriteVertex.quadCount*quadsCount;
-        size_t endVertex = startVertex + HipSpriteVertex.quadCount;
+        size_t startVertex = quadsCount *4;
+        size_t endVertex = startVertex + 4;
 
         getTextureVertices(vertices[startVertex..endVertex], slot, texture,x,y,managedDepth,color, scaleX, scaleY, rotation);
         quadsCount++;
@@ -279,13 +288,14 @@ class HipSpriteBatch : IHipBatch
 
     void draw(IHipTextureRegion reg, int x, int y, int z = 0, in HipColorf color = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
+        if(color.a == 0) return;
         if(quadsCount+1 > maxQuads)
             flush();
-        size_t startVertex = HipSpriteVertex.quadCount*quadsCount;
-        size_t endVertex = startVertex + HipSpriteVertex.quadCount;
         ErrorHandler.assertExit(reg.getWidth() != 0 && reg.getHeight() != 0, "Tried to draw 0 bounds region");
         int slot = setTexture(reg);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
+        size_t startVertex = quadsCount*4;
+        size_t endVertex = startVertex + 4;
 
         getTextureRegionVertices(vertices[startVertex..endVertex], slot, reg,x,y,managedDepth,color, scaleX, scaleY, rotation);
         quadsCount++;
@@ -387,7 +397,9 @@ class HipSpriteBatch : IHipBatch
     {
         if(quadsCount - lastDrawQuadsCount != 0)
         {
-            for(int i = usingTexturesCount - 1; i < currentTextures.length; i++)
+            import hip.console.log;
+            rawlog("Using ", usingTexturesCount);
+            for(int i = usingTexturesCount; i < currentTextures.length; i++)
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
 
@@ -399,8 +411,8 @@ class HipSpriteBatch : IHipBatch
             
             mesh.shader.sendVars();
 
-            size_t start = lastDrawQuadsCount*HipSpriteVertex.quadCount;
-            size_t end = quadsCount*HipSpriteVertex.quadCount;
+            size_t start = lastDrawQuadsCount*4;
+            size_t end = quadsCount*4;
             mesh.updateVertices(cast(float[])vertices[start..end],cast(int)start);
             mesh.draw((quadsCount-lastDrawQuadsCount)*6, HipRendererMode.TRIANGLES, lastDrawQuadsCount*6);
 

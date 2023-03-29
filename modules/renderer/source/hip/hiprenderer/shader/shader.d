@@ -62,6 +62,8 @@ interface IShader
     bool compileShader(FragmentShader fs, string shaderSource);
     bool compileShader(VertexShader vs, string shaderSource);
     bool linkProgram(ref ShaderProgram program, VertexShader vs,  FragmentShader fs);
+
+    void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq);
     void bind(ShaderProgram program);
     void unbind(ShaderProgram program);
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
@@ -341,6 +343,10 @@ public class Shader : IReloadable
 
     void bind(){shaderImpl.bind(shaderProgram);}
     void unbind(){shaderImpl.unbind(shaderProgram);}
+    void setBlending(HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
+    {
+        shaderImpl.setBlending(shaderProgram, src, dest, eq);
+    }
 
     auto opDispatch(string member)()
     {

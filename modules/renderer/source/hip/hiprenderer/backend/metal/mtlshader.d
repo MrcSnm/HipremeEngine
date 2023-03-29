@@ -54,6 +54,40 @@ class HipMTLVertexShader : VertexShader
     }
 }
 
+MTLBlendOperation fromHipBlendEquation(HipBlendEquation eq)
+{
+    final switch(eq) with(HipBlendEquation)
+    {
+        case DISABLED: return MTLBlendOperation.Add;
+        case ADD: return MTLBlendOperation.Add;
+        case SUBTRACT: return MTLBlendOperation.Subtract;
+        case REVERSE_SUBTRACT: return MTLBlendOperation.ReverseSubtract;
+        case MIN: return MTLBlendOperation.Min;
+        case MAX: return MTLBlendOperation.Max;
+    }
+}
+
+MTLBlendFactor fromHipBlendFunction(HipBlendFunction fn)
+{
+    final switch(fn) with(HipBlendFunction)
+    {
+        case ZERO: return MTLBlendFactor.Zero;
+        case ONE: return MTLBlendFactor.One;
+        case SRC_COLOR: return MTLBlendFactor.SourceColor;
+        case ONE_MINUS_SRC_COLOR: return MTLBlendFactor.OneMinusSourceColor;
+        case SRC_ALPHA: return MTLBlendFactor.SourceAlpha;
+        case ONE_MINUS_SRC_ALPHA: return MTLBlendFactor.OneMinusSourceAlpha;
+        case DST_COLOR: return MTLBlendFactor.DestinationColor;
+        case ONE_MINUS_DST_COLOR: return MTLBlendFactor.OneMinusDestinationColor;
+        case DST_ALPHA: return MTLBlendFactor.DestinationAlpha;
+        case ONE_MINUS_DST_ALPHA: return MTLBlendFactor.OneMinusDestinationAlpha;
+        case CONSTANT_COLOR: return MTLBlendFactor.Source1Color;
+        case ONE_MINUS_CONSTANT_COLOR: return MTLBlendFactor.OneMinusSource1Color;
+        case CONSTANT_ALPHA: return MTLBlendFactor.Source1Alpha;
+        case ONE_MINUS_CONSTANT_ALPHA: return MTLBlendFactor.OneMinusSource1Alpha;
+    }
+}
+
 class HipMTLShaderProgram : ShaderProgram
 {
     MTLLibrary library;
@@ -64,9 +98,28 @@ class HipMTLShaderProgram : ShaderProgram
 
     MTLRenderPipelineDescriptor pipelineDescriptor;
     MTLRenderPipelineState pipelineState;
+    HipBlendFunction blendSrc, blendDst;
+    HipBlendEquation blendEq;
     this()
     {
         pipelineDescriptor = MTLRenderPipelineDescriptor.alloc.initialize;
+    }
+
+    void createInputLayout(MTLDevice device, MTLVertexDescriptor descriptor)
+    {
+        if(pipelineState !is null)
+        {
+           pipelineState.release(); 
+        }
+        NSError err;
+        pipelineDescriptor.vertexDescriptor = descriptor;
+        pipelineState = device.newRenderPipelineStateWithDescriptor(pipelineDescriptor, &err);
+        if(err !is null || pipelineState is null)
+        {
+            import hip.error.handler;
+            ErrorHandler.showErrorMessage("Creating Input Layout",  "Could not create RenderPipelineState");
+            err.print();
+        }
     }
 }
 
@@ -85,21 +138,9 @@ class HipMTLShader : IShader
         this.mtlRenderer = mtlRenderer;
     }
 
-    VertexShader createVertexShader()
-    {
-        return new HipMTLVertexShader(device);
-    }
-
-    FragmentShader createFragmentShader()
-    {
-        return new HipMTLFragmentShader(device);
-    }
-
-    ShaderProgram createShaderProgram()
-    {
-        return new HipMTLShaderProgram();
-    }
-
+    VertexShader createVertexShader(){return new HipMTLVertexShader(device);}
+    FragmentShader createFragmentShader(){return new HipMTLFragmentShader(device);}
+    ShaderProgram createShaderProgram(){return new HipMTLShaderProgram();}
     bool compileShader(FragmentShader fs, string shaderSource)
     {
         (cast(HipMTLFragmentShader)fs).shaderSource = shaderSource;
@@ -115,7 +156,6 @@ class HipMTLShader : IShader
     bool linkProgram(ref ShaderProgram program, VertexShader vs, FragmentShader fs)
     {
         HipMTLShaderProgram p = cast(HipMTLShaderProgram)program;
-
         HipMTLVertexShader v = cast(HipMTLVertexShader)vs;
         HipMTLFragmentShader f = cast(HipMTLFragmentShader)fs;
 
@@ -181,6 +221,27 @@ class HipMTLShader : IShader
             }
             default: return false;
         }
+    }
+    void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
+    {
+        HipMTLShaderProgram p = cast(HipMTLShaderProgram)prog;
+        p.blendSrc = src;
+        p.blendDst = dest;
+        p.blendEq = eq;
+
+        MTLBlendFactor mtlSrc = src.fromHipBlendFunction;
+        MTLBlendFactor mtlDest = dest.fromHipBlendFunction;
+        MTLBlendOperation mtlOp = eq.fromHipBlendEquation;
+        p.pipelineDescriptor.colorAttachments[0].blendingEnabled = eq != HipBlendEquation.DISABLED;
+        p.pipelineDescriptor.colorAttachments[0].rgbBlendOperation = mtlOp;
+        p.pipelineDescriptor.colorAttachments[0].alphaBlendOperation = mtlOp;
+        p.pipelineDescriptor.colorAttachments[0].sourceRGBBlendFactor = mtlSrc;
+        p.pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = mtlDest;
+        p.pipelineDescriptor.colorAttachments[0].sourceAlphaBlendFactor = mtlSrc;
+        p.pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = mtlDest;
+
+        if(p.pipelineState !is null)
+            p.createInputLayout(device, p.pipelineDescriptor.vertexDescriptor);
     }
 
     void bind(ShaderProgram program)

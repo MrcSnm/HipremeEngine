@@ -287,66 +287,11 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         final switch(mode) with(HipRendererMode)
         {
-            case POINT:
-                return GL_POINTS;
-            case LINE:
-                return GL_LINES;
-            case LINE_STRIP:
-                return GL_LINE_STRIP;
-            case TRIANGLES:
-                return GL_TRIANGLES;
-            case TRIANGLE_STRIP:
-                return GL_TRIANGLE_STRIP;
-        }
-    }
-    protected GLenum getGLBlendFunction(HipBlendFunction func)
-    {
-        final switch(func) with(HipBlendFunction)
-        {
-            case  ZERO:
-                return GL_ZERO;
-            case  ONE:
-                return GL_ONE;
-            case  SRC_COLOR:
-                return GL_SRC_COLOR;
-            case  ONE_MINUS_SRC_COLOR:
-                return GL_ONE_MINUS_SRC_COLOR;
-            case  DST_COLOR:
-                return GL_DST_COLOR;
-            case  ONE_MINUS_DST_COLOR:
-                return GL_ONE_MINUS_DST_COLOR;
-            case  SRC_ALPHA:
-                return GL_SRC_ALPHA;
-            case  ONE_MINUS_SRC_ALPHA:
-                return GL_ONE_MINUS_SRC_ALPHA;
-            case  DST_ALPHA:
-                return GL_DST_ALPHA;
-            case  ONE_MINUST_DST_ALPHA:
-                return GL_ONE_MINUS_DST_ALPHA;
-            case  CONSTANT_COLOR:
-                return GL_CONSTANT_COLOR;
-            case  ONE_MINUS_CONSTANT_COLOR:
-                return GL_ONE_MINUS_CONSTANT_COLOR;
-            case  CONSTANT_ALPHA:
-                return GL_CONSTANT_ALPHA;
-            case  ONE_MINUS_CONSTANT_ALPHA:
-                return GL_ONE_MINUS_CONSTANT_ALPHA;
-        }
-    }
-    protected GLenum getGLBlendEquation(HipBlendEquation eq)
-    {
-        final switch(eq) with (HipBlendEquation)
-        {
-            case ADD:
-                return GL_FUNC_ADD;
-            case SUBTRACT:
-                return GL_FUNC_SUBTRACT;
-            case REVERSE_SUBTRACT:
-                return GL_FUNC_REVERSE_SUBTRACT;
-            case MIN:
-                return GL_MIN;
-            case MAX:
-                return GL_MAX;
+            case POINT: return GL_POINTS;
+            case LINE: return GL_LINES;
+            case LINE_STRIP: return GL_LINE_STRIP;
+            case TRIANGLES: return GL_TRIANGLES;
+            case TRIANGLE_STRIP: return GL_TRIANGLE_STRIP;
         }
     }
     public void setRendererMode(HipRendererMode mode)
@@ -366,26 +311,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     }
 
     bool isBlendingEnabled() const {return isGLBlendEnabled;}
-    public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst)
-    {
-        if(!isGLBlendEnabled)
-        {
-            glCall(() => glEnable(GL_BLEND));
-            isGLBlendEnabled = true;
-        }
-        glCall(() => glBlendFunc(getGLBlendFunction(src), getGLBlendFunction(dst)));
-    }
-
-    public void setBlendingEquation(HipBlendEquation eq)
-    {
-        if(!isGLBlendEnabled)
-        {
-            glCall(() => glEnable(GL_BLEND));
-            isGLBlendEnabled = true;
-        }
-        glCall(() => glBlendEquation(getGLBlendEquation(eq)));
-    }
-
+    
     public void dispose()
     {
         if(window !is null)

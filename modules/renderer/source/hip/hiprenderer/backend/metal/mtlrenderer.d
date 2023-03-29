@@ -205,14 +205,6 @@ class HipMTLRenderer : IHipRendererImpl
         return bool.init; // TODO: implement
     }
 
-    public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst)
-    {
-    }
-
-    public void setBlendingEquation(HipBlendEquation eq)
-    {
-        
-    }
     public void setDepthTestingEnabled(bool enabled)
     {
         depthStencilDescriptor.depthWriteEnabled = enabled;
@@ -243,20 +235,15 @@ class HipMTLRenderer : IHipRendererImpl
         final switch(mode)
         {
             case HipRendererMode.LINE: 
-                primitiveType = MTLPrimitiveType.Line;
-                break;
+                primitiveType = MTLPrimitiveType.Line; break;
             case HipRendererMode.LINE_STRIP: 
-                primitiveType = MTLPrimitiveType.LineStrip;
-                break;
+                primitiveType = MTLPrimitiveType.LineStrip; break;
             case HipRendererMode.POINT: 
-                primitiveType = MTLPrimitiveType.Point;
-                break;
+                primitiveType = MTLPrimitiveType.Point; break;
             case HipRendererMode.TRIANGLES:
-                primitiveType = MTLPrimitiveType.Triangle;
-                break;
+                primitiveType = MTLPrimitiveType.Triangle; break;
             case HipRendererMode.TRIANGLE_STRIP:
-                primitiveType = MTLPrimitiveType.TriangleStrip;
-                break;
+                primitiveType = MTLPrimitiveType.TriangleStrip; break;
         }
     }
 

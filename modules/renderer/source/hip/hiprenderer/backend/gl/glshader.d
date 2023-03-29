@@ -373,9 +373,44 @@ class Hip_GL3_ShaderProgram : ShaderProgram
 {
     bool isUsingUbo;
     uint program;
+    protected HipBlendFunction blendSrc = HipBlendFunction.CONSTANT_COLOR, blendDst = HipBlendFunction.CONSTANT_COLOR;
+    protected HipBlendEquation blendEq = HipBlendEquation.DISABLED;
 }
 
 
+GLenum getGLBlendFunction(HipBlendFunction func)
+{
+    final switch(func) with(HipBlendFunction)
+    {
+        case  DISABLED: return GL_ZERO;
+        case  ZERO: return GL_ZERO;
+        case  ONE: return GL_ONE;
+        case  SRC_COLOR: return GL_SRC_COLOR;
+        case  ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
+        case  DST_COLOR: return GL_DST_COLOR;
+        case  ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
+        case  SRC_ALPHA: return GL_SRC_ALPHA;
+        case  ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
+        case  DST_ALPHA: return GL_DST_ALPHA;
+        case  ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
+        case  CONSTANT_COLOR: return GL_CONSTANT_COLOR;
+        case  ONE_MINUS_CONSTANT_COLOR: return GL_ONE_MINUS_CONSTANT_COLOR;
+        case  CONSTANT_ALPHA: return GL_CONSTANT_ALPHA;
+        case  ONE_MINUS_CONSTANT_ALPHA: return GL_ONE_MINUS_CONSTANT_ALPHA;
+    }
+}
+GLenum getGLBlendEquation(HipBlendEquation eq)
+{
+    final switch(eq) with (HipBlendEquation)
+    {
+        case DISABLED: return GL_FUNC_ADD;
+        case ADD: return GL_FUNC_ADD;
+        case SUBTRACT: return GL_FUNC_SUBTRACT;
+        case REVERSE_SUBTRACT: return GL_FUNC_REVERSE_SUBTRACT;
+        case MIN: return GL_MIN;
+        case MAX: return GL_MAX;
+    }
+}
 class Hip_GL_ShaderImpl : IShader
 {
     import hip.util.data_structures:Pair;
@@ -501,12 +536,51 @@ class Hip_GL_ShaderImpl : IShader
     }
 
     private __gshared Hip_GL_ShaderImpl boundShader;
+    private __gshared HipBlendFunction currSrc, currDst;
+    private __gshared HipBlendEquation currEq;
+    private __gshared blendingEnabled = false;
+
+    public void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq)
+    {
+        Hip_GL3_ShaderProgram p = cast(Hip_GL3_ShaderProgram)prog;
+        p.blendSrc = src;
+        p.blendDst = dst;
+        p.blendEq = eq;
+    }
 
     void bind(ShaderProgram program)
     {
         if(boundShader !is this)
         {
-            glCall(() =>glUseProgram((cast(Hip_GL3_ShaderProgram)program).program));
+            Hip_GL3_ShaderProgram p = cast(Hip_GL3_ShaderProgram)program;
+            if(p.blendEq == HipBlendEquation.DISABLED)
+            {
+                if(blendingEnabled)
+                {
+                    glCall(() => glDisable(GL_BLEND));
+                    blendingEnabled = false;
+                }
+            }
+            else
+            {
+                if(!blendingEnabled)
+                {
+                    glCall(() => glEnable(GL_BLEND));
+                    blendingEnabled = true;
+                }
+                if(currEq != p.blendEq)
+                {
+                    currEq = p.blendEq;
+                    glCall(() => glBlendEquation(getGLBlendEquation(p.blendEq)));
+                }
+                if(currSrc != p.blendSrc || currDst != p.blendDst)
+                {
+                    currSrc = p.blendSrc;
+                    currDst = p.blendDst;
+                    glCall(() => glBlendFunc(getGLBlendFunction(p.blendSrc), getGLBlendFunction(p.blendDst)));
+                }
+            }
+            glCall(() =>glUseProgram(p.program));
             boundShader = this;
         }
     }
