@@ -217,7 +217,7 @@ class NinePatch
     }
 
 
-   void setColor(HipColor color)
+   void setColor(HipColorf color)
    {
        int quad = 0;
        for(int i = 0; i < 9; i++)

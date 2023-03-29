@@ -43,11 +43,11 @@ class TestScene : Scene, IHipPreloadable
     override void initialize()
     {
         logg(getAssetsForPreload);
-        logg(pop is null);
+        // logg(pop is null);
         geom = new GeometryBatch(null, 5000, 5000);
-        geom.setColor(HipColor(0, 1, 0, 1));
-        HipRenderer.setViewport(new Viewport(0,0, 800, 600));
+        geom.setColor(HipColorf(0, 1, 0, 1));
 
+        setWindowSize(HipRenderer.width, HipRenderer.height);
         src = HipAudio.getSource();
         src.clip = pop;
 
@@ -81,43 +81,31 @@ class TestScene : Scene, IHipPreloadable
     {
         //////////////////////Lower Level////////////////////////
         super.render();
-        geom.setColor(HipColor.red);
+        geom.setColor(HipColorf.red);
         geom.fillRectangle(0, 0, 200, 200);
-        geom.setColor(HipColor.green);
+        geom.setColor(HipColorf.green);
         geom.fillRectangle(0, 0, 100, 100);
         geom.flush();
 
 
         //Use a non GC allocating string on render (String) for drawing the mousePosition
         import hip.util.string;
-        float[2] mousePos = HipInput.getWorldMousePosition();
+        float[2] mousePos = HipInput.getMousePosition();
         setFont(smallFont);
         String s = String(mousePos);
         drawText(s.toString, cast(int)mousePos[0], cast(int)mousePos[1]);
 
         
 
-        // ////////////////////////Higher Level////////////////////////
-        // setGeometryColor(HipColor.white);
+        ////////////////////////Higher Level////////////////////////
+        setGeometryColor(HipColorf.white);
         setFont(null);
-        drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        drawText("Hello World Test Scene (Default Font)", 300, 280, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(cast(int)x, cast(int)y, 100, 100);
 
-        drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        drawText("Null Textures uses that sprite over here", 300, 480, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(cast(int)x+200, cast(int)y, 100, 100);
         drawTexture(null, 300, 500);
 
-        // // logg("Render testscene.");
-
-        // /**
-        // *   For loading a texture you can execute
-        // *   IHipTexture myTexture = HipAssetManager.loadTexture("sprites/theTexture.png").awaitAs!IHipTexture;
-        // *
-        // *   TODO: Tutorial to play sounds
-        // */
-        renderGeometries();
-        renderTexts();
-        renderSprites();
-        
     }
 }

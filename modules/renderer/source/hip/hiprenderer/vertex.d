@@ -58,9 +58,10 @@ enum HipBufferUsage
 
 enum HipAttributeType
 {
-    FLOAT,
-    INT,
-    BOOL
+    Float,
+    Uint,
+    Int,
+    Bool
 }
 
 
@@ -115,6 +116,8 @@ class HipVertexArrayObject
     HipVertexAttributeInfo[] infos;
 
     protected bool isBonded;
+    protected bool hasVertexInitialized;
+    protected bool hasIndexInitialized;
     
     /**
     *   Remember calling sendAttributes
@@ -157,7 +160,6 @@ class HipVertexArrayObject
         this.EBO = HipRenderer.createIndexBuffer(count, usage);
         this.bind();
         this.EBO.bind();
-
     }
     /**
     * Creates and binds a vertex buffer.
@@ -174,7 +176,13 @@ class HipVertexArrayObject
     *   This function creates an attribute information,
     * for later sending it(it is necessary as the stride needs to be recalculated)
     */
-    HipVertexArrayObject appendAttribute(uint count, HipAttributeType valueType, uint typeSize, string infoName)
+    HipVertexArrayObject appendAttribute(
+        uint count, 
+        HipAttributeType valueType, 
+        uint typeSize, 
+        string infoName, 
+        bool isPadding = false,
+    )
     {
         HipVertexAttributeInfo info;
         info.name = infoName;
@@ -184,37 +192,36 @@ class HipVertexArrayObject
         info.index = cast(uint)infos.length;
         //It actually is the `last stride`, which is the same as the offset is the total current stride
         info.offset = stride;
-        infos~= info;
+        // if(!isPadding)
+        {
+            infos~= info;
+            dataCount+= count;
+        }
         stride+= count*typeSize;
-        dataCount+= count;
         return this;
     }
 
-    HipVertexArrayObject appendAttribute(T)(string infoName)
+    HipVertexArrayObject appendAttribute(T)(string infoName, bool isPadding = false)
     {
         uint count = 1;
-        HipAttributeType type = HipAttributeType.FLOAT;
+        HipAttributeType type = HipAttributeType.Float;
         uint typeSize = float.sizeof;
         import hip.math.vector;
 
-        static if(is(T == Vector2))
-            count = 2;
-        else static if(is(T == Vector3))
-            count = 3;
-        else static if(is(T == Vector4) || is(T == HipColor))
-            count = 4;
+        static if(is(T == Vector2)) count = 2;
+        else static if(is(T == Vector3)) count = 3;
+        else static if(is(T == Vector4) || is(T == HipColorf)) count = 4;
         else
         {
-            static if(is(T == int))
-                type = HipAttributeType.INT;
-            else static if(is(T == bool))
-                type = HipAttributeType.BOOL;
+            static if(is(T == int)) type = HipAttributeType.Int;
+            else static if(is(T == uint) || is(T == HipColor)) type = HipAttributeType.Uint;
+            else static if(is(T == bool)) type = HipAttributeType.Bool;
             else
                 static assert(is(T == float), "Unrecognized type for attribute: "~T.stringof);
 
             typeSize = T.sizeof;
         }
-        return appendAttribute(count, type, typeSize ,infoName);
+        return appendAttribute(count, type, typeSize ,infoName, isPadding);
     }
 
     /**
@@ -259,9 +266,12 @@ class HipVertexArrayObject
     {
         if(VBO is null)
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
-            
-        this.bind(); 
-        this.VBO.setData(count*this.stride, data);
+        else
+        {
+            hasVertexInitialized = true;
+            this.bind(); 
+            this.VBO.setData(count*this.stride, data);
+        }
     }
     /**
     *   Update the VBO. Won't cause memory allocation
@@ -270,8 +280,9 @@ class HipVertexArrayObject
     {
         if(VBO is null)
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
+        ErrorHandler.assertExit(hasVertexInitialized, "Vertex must setData before updating its contents.");
         this.bind();
-        this.VBO.updateData(offset, count*this.stride, data);
+        this.VBO.updateData(offset*this.stride, count*this.stride, data);
     }
     /**
     *   Will set the indices data. Beware that this function may allocate memory.
@@ -283,8 +294,12 @@ class HipVertexArrayObject
     {
         if(EBO is null)
             ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");
-        this.bind();
-        this.EBO.setData(count, data);
+        else
+        {
+            hasIndexInitialized = true;
+            this.bind();
+            this.EBO.setData(count, data);
+        }
     }
     /**
     *   Updates the index buffer's data. It won't allocate memory
@@ -293,34 +308,22 @@ class HipVertexArrayObject
     {
         if(EBO is null)
             ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");
-        this.bind();
-        this.EBO.updateData(offset, count, data);
+        else
+        {
+            ErrorHandler.assertExit(hasIndexInitialized, "Index must setData before updating its contents.");
+            this.bind();
+            this.EBO.updateData(cast(int)(offset*index_t.sizeof), count, data);
+        }
     }
 
-    /**
-    *   Remember calling sendAttributes!
-    *   Defines:
-    *
-    *    vec2 vPosition
-    *   
-    *    vec2 vTexST
-    */
-    static HipVertexArrayObject getXY_ST_VAO()
-    {
-        HipVertexArrayObject obj = new HipVertexArrayObject();
-        with(HipAttributeType)
-        {
-            obj.appendAttribute(2, FLOAT, float.sizeof, "vPosition") //X, Y
-               .appendAttribute(2, FLOAT, float.sizeof, "vTexST"); //ST
-        }
-        return obj;
-    }
     /**
     * Receives a struct and creates a VAO based on its member types and names.
     */
     static HipVertexArrayObject getVAO(T)() if(is(T == struct))
     {
         import std.traits:isFunction;
+        import hip.util.reflection:hasUDA;
+
         HipVertexArrayObject obj = new HipVertexArrayObject();
         static foreach(member; __traits(allMembers, T))
         {{
@@ -329,68 +332,12 @@ class HipVertexArrayObject
             {
                 obj.appendAttribute!((typeof(mem)))
                 (
-                    member
+                    member,
+                    hasUDA!(mem, HipShaderInputPadding)
                 );
             }
         }}
         return obj;
     }
 
-    /**
-    *   Remember calling sendAttributes!
-    */
-    static HipVertexArrayObject getXYZ_RGBA_VAO()
-    {
-        HipVertexArrayObject obj = new HipVertexArrayObject();
-        with(HipAttributeType)
-        {
-            obj.appendAttribute(3, FLOAT, float.sizeof, "vPosition") //X, Y, Z
-               .appendAttribute(4, FLOAT, float.sizeof, "vColor"); //R, G, B, A
-        }
-        return obj;
-    }
-    /**
-    *   Remember calling sendAttributes!
-    */
-    static HipVertexArrayObject getXYZ_RGBA_ST_VAO()
-    {
-        HipVertexArrayObject obj = new HipVertexArrayObject();
-        with(HipAttributeType)
-        {
-            obj.appendAttribute(3, FLOAT, float.sizeof, "vPosition") //X, Y, Z
-               .appendAttribute(4, FLOAT, float.sizeof, "vColor") //R, G, B, A
-               .appendAttribute(2, FLOAT, float.sizeof, "vTexST"); //S, T (Texture coordinates)
-        }
-        return obj;
-    }
-
-    /**
-    *   Remember calling sendAttributes!
-    */
-    static HipVertexArrayObject getXYZ_RGBA_ST_TID_VAO()
-    {
-        HipVertexArrayObject obj = new HipVertexArrayObject();
-        with(HipAttributeType)
-        {
-            obj.appendAttribute(3, FLOAT, float.sizeof, "vPosition") //X, Y, Z
-               .appendAttribute(4, FLOAT, float.sizeof, "vColor") //R, G, B, A
-               .appendAttribute(2, FLOAT, float.sizeof, "vTexST") //S, T (Texture coordinates)
-               .appendAttribute(1, FLOAT, float.sizeof, "vTexID");
-        }
-        return obj;
-    }
-    /**
-    *   Remember calling sendAttributes!
-    */
-    static HipVertexArrayObject getXY_RGBA_ST_VAO()
-    {
-        HipVertexArrayObject obj = new HipVertexArrayObject();
-        with(HipAttributeType)
-        {
-            obj.appendAttribute(2, FLOAT, float.sizeof, "position"); //X, Y, Z
-            obj.appendAttribute(4, FLOAT, float.sizeof, "color"); //R, G, B, A
-            obj.appendAttribute(2, FLOAT, float.sizeof, "tex_st"); //S, T (Texture coordinates)
-        }
-        return obj;
-    }
 }

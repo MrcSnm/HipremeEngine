@@ -33,6 +33,7 @@ class Hip_D3D11_Texture : IHipTexture
     int wrap = Hip_D3D11_getWrapMode(TextureWrapMode.REPEAT);
     bool[] slotsBound;
 
+    IHipTexture getBackendHandle(){return this;}
     this()
     {
         import hip.hiprenderer:HipRenderer;

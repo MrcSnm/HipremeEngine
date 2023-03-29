@@ -16,6 +16,7 @@ public import hip.hiprenderer.framebuffer;
 public import hip.hiprenderer.viewport;
 public import hip.api.renderer.texture;
 public import hip.api.graphics.color;
+public import hip.hiprenderer.shader.shadervar;
 import hip.windowing.window;
 import hip.math.rect;
 import hip.error.handler;
@@ -28,6 +29,13 @@ version(Windows)
     import hip.hiprenderer.backend.d3d.d3drenderer;
     import hip.hiprenderer.backend.d3d.d3dtexture;
 }
+version(AppleOS)
+{
+    import hip.hiprenderer.backend.metal.mtlrenderer;
+    import hip.hiprenderer.backend.metal.mtltexture;
+}
+
+version(dll){} else version = RendererConfigFile;
 import hip.hiprenderer.backend.gl.gltexture;
 
 ///Could later be moved to windowing
@@ -43,6 +51,7 @@ enum HipRendererType
 {
     GL3,
     D3D11,
+    METAL,
     NONE
 }
 
@@ -68,7 +77,7 @@ enum HipBlendFunction
     SRC_ALPHA,
     ONE_MINUS_SRC_ALPHA,
     DST_ALPHA,
-    ONE_MINUST_DST_ALPHA,
+    ONE_MINUS_DST_ALPHA,
     CONSTANT_COLOR,
     ONE_MINUS_CONSTANT_COLOR,
     CONSTANT_ALPHA,
@@ -81,6 +90,7 @@ enum HipBlendFunction
  */
 enum HipBlendEquation
 {
+    DISABLED,
     ADD,
     SUBTRACT,
     REVERSE_SUBTRACT,
@@ -88,14 +98,58 @@ enum HipBlendEquation
     MAX
 }
 
+///Which function should be employed whene testing the Depth/Z-Buffer
+enum HipDepthTestingFunction
+{
+    ///Means that nothing will be drawed
+    Never,
+    ///Same as no depth test
+    Always,
+    ///Render if the value is less than the current depth
+    Less,
+    ///Render if the value is less or equal than the current depth
+    LessEqual,
+    ///Render if the value is greater than the current depth
+    Greater,
+    ///Render if the value is greater or equal than the current depth
+    GreaterEqual,
+    ///Render if the value is equal against the current depth
+    Equal,
+    ///Render if the value is not equal against the current depth
+    NotEqual
+}
+
 //////////////////////////////////////////Metadata//////////////////////////////////////////
 
 //Shaders
 enum HipShaderInputLayout;
-enum HipVertexVar;
-enum HipFragmentVar;
-alias HipPixelVar = HipFragmentVar;
-
+/**
+*   Use this special UDA to say this type is only for accumulating stride and thus should not
+*   be defined on shader
+*/
+enum HipShaderInputPadding;
+/**
+*   Declares that the struct is as VertexUniform block. 
+*/
+struct HipShaderVertexUniform
+{
+    /**
+    *   This name is the base uniform name accessed when dealing with HLSL Api.
+    *   i.e: Constant Buffer block name
+    */
+    string name; 
+}
+/**
+*   Declares that the struct is as FragmentUniform block. 
+*/
+struct HipShaderFragmentUniform
+{
+    /**
+    *   This name is the base uniform name accessed when dealing with HLSL Api.
+    *   i.e: Constant Buffer block name
+    */
+    string name;
+}
 
 /**
 *   Minimal interface for another API implementation
@@ -107,17 +161,18 @@ interface IHipRendererImpl
     public bool isRowMajor();
     void setErrorCheckingEnabled(bool enable = true);
     public Shader createShader();
+    public ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length);
     public IHipFrameBuffer createFrameBuffer(int width, int height);
     public IHipVertexArrayImpl  createVertexArray();
     public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage);
     public IHipIndexBufferImpl  createIndexBuffer(index_t count, HipBufferUsage usage);
+    public IHipTexture  createTexture();
     public int queryMaxSupportedPixelShaderTextures();
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void setViewport(Viewport v);
     public bool setWindowMode(HipWindowMode mode);
-    public bool isBlendingEnabled() const;
-    public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst);
-    public void setBlendingEquation(HipBlendEquation eq);
+    public void setDepthTestingEnabled(bool);
+    public void setDepthTestingFunction(HipDepthTestingFunction);
     public bool hasErrorOccurred(out string err, string line = __FILE__, size_t line =__LINE__);
     public void begin();
     public void setRendererMode(HipRendererMode mode);
@@ -159,9 +214,11 @@ class HipRenderer
         protected HipRendererConfig currentConfig;
 
         protected HipRendererResources res;
+        protected bool depthTestingEnabled;
+        protected HipDepthTestingFunction currentDepthTestFunction;
     }
 
-    version(Desktop)
+    version(RendererConfigFile)
     public static bool initialize (string confData, string confPath)
     {
         import hip.data.ini;
@@ -181,16 +238,52 @@ class HipRenderer
             switch(renderer)
             {
                 case "GL3":
-                    return initialize(new Hip_GL3Renderer(), &cfg, width, height);
+                    version(OpenGL)
+                    {
+                        rendererType = HipRendererType.GL3;
+                        return initialize(new Hip_GL3Renderer(), &cfg, width, height);
+                    }
+                    else version(DirectX)
+                    {
+                        logln("OpenGL wasn't included in this build, using Direct3D");
+                        goto case "D3D11";
+                    }
+                    else version(AppleOS)
+                    {
+                        logln("OpenGL wasn't included in this build, using Metal");
+                        goto case "METAL";
+                    }
                 case "D3D11":
                     version(DirectX)
                     {
+                        rendererType = HipRendererType.D3D11;
                         return initialize(new Hip_D3D11_Renderer(), &cfg, width, height);
                     }
-                    else
+                    else version(OpenGL)
                     {
                         logln("Direct3D wasn't included in this build, using OpenGL 3");
                         goto case "GL3";
+                    }
+                    else version(AppleOS)
+                    {
+                        logln("Direct3D wasn't included in this build, using Metal");
+                        goto case "METAL";
+                    }
+                case "METAL":
+                    version(AppleOS)
+                    {
+                        rendererType = HipRendererType.METAL;
+                        return initialize(new HipMTLRenderer(), &cfg, width, height);
+                    }
+                    else version(OpenGL)
+                    {
+                        logln("Metal wasn't included in this build, using OpenGL 3");
+                        goto case "GL3";
+                    }
+                    else version(DirectX)
+                    {
+                        logln("Metal wasn't included in this build, using Direct3D");
+                        goto case "D3D11";
                     }
                 default:
                     logln("Invalid renderer?" , renderer, " ' oh my freakin goodness");
@@ -199,6 +292,7 @@ class HipRenderer
                         Available renderers:
                             GL3
                             D3D11
+                            METAL
                         Starting with GL3
                     `);
                     goto case "GL3";
@@ -206,49 +300,56 @@ class HipRenderer
         }
         else
         {
+            string defaultRenderer = "OpenGL3";
+            version(AppleOS) defaultRenderer = "Metal";
             if(!ini.configFound)
-                logln("No renderer.conf found, defaulting renderer to OpenGL3");
-            else
+                logln("No renderer.conf found");
+            if(!ini.noError)
             {
-                logln("Renderer.conf parsing error, defaulting renderer to OpenGL3");
-                rawlog(ini.errors);
+                logln("Renderer.conf parsing error");
+                rawerror(ini.errors);
             }
+            hiplog("Defaulting renderer to "~defaultRenderer);
         }
-        return initialize(new Hip_GL3Renderer(), &cfg, 1280, 720);
+        return initialize(getRendererFromVersion(rendererType), &cfg, 1280, 720);
+    }
+
+    private static IHipRendererImpl getRendererFromVersion(out HipRendererType type)
+    {
+        version(OpenGL)
+        {
+            type = HipRendererType.GL3;
+            return new Hip_GL3Renderer();
+        }
+        else version(DirectX)
+        {
+            type = HipRendererType.D3D11;
+            return new Hip_D3D11_Renderer();
+        }
+        else version(AppleOS)
+        {
+            type = HipRendererType.METAL;
+            return new HipMTLRenderer();
+        }
+        else
+        {
+            type = HipRendererType.NONE;
+            return null;
+        }
     }
     version(dll) private static IHipRendererImpl getRenderer(ref HipRendererType type)
     {
         final switch(type)
         {
             case HipRendererType.D3D11:
-                version(DirectX)
-                    return new Hip_D3D11_Renderer();
-                else version(OpenGL)
-                {
-                    type = HipRendererType.GL3;
-                    return new Hip_GL3Renderer();
-                }
-                else
-                {
-                    type = HipRendererType.NONE;
-                    return null;
-                }
+                version(DirectX) return new Hip_D3D11_Renderer();
+                            else return getRendererFromVersion(type);
             case HipRendererType.GL3:
-                version(OpenGL)
-                    return new Hip_GL3Renderer();
-                else version(DirectX)
-                {
-                    type = HipRendererType.D3D11;
-                    return new Hip_D3D11_Renderer();
-                }
-                else
-                {
-                    type = HipRendererType.NONE;
-                    assert(rendererImpl !is null, "No Renderer was found. Available Versions:
-    OpenGL
-    DirectX");
-                    return null;
-                }
+                version(OpenGL) return new Hip_GL3Renderer();
+                            else return getRendererFromVersion(type);
+            case HipRendererType.METAL:
+                version(AppleOS) return new HipMTLRenderer();
+                            else return getRendererFromVersion(type);
             case HipRendererType.NONE:
                 return null;
         }
@@ -282,10 +383,6 @@ class HipRenderer
         setViewport(mainViewport);
         setColor();
         HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
-        static if(HIP_ALPHA_BLEND_DEFAULT)
-        {
-            activateAlphaBlending();
-        }
     }
 
     private static HipWindow createWindow(uint width, uint height)
@@ -323,8 +420,9 @@ class HipRenderer
     {
         assert(width > 0 && height > 0, "Window width and height must be greater than 0");
         logln("Changing window size to ", [width, height]);
-        HipRenderer.width = window.width = width;
-        HipRenderer.height = window.height = height;
+        window.setSize(cast(uint)width, cast(uint)height);
+        HipRenderer.width  = width;
+        HipRenderer.height = height;
     }
     public static HipRendererType getRendererType(){return rendererType;}
     public static HipRendererConfig getCurrentConfig(){return currentConfig;}
@@ -333,23 +431,7 @@ class HipRenderer
 
     private static IHipTexture _getTextureImplementation()
     {
-        switch(HipRenderer.getRendererType())
-        {
-            case HipRendererType.GL3:
-                version(OpenGL)
-                    return new Hip_GL3_Texture();
-                else
-                    return null;
-            case HipRendererType.D3D11:
-                version(DirectX)
-                    return new Hip_D3D11_Texture();
-                else
-                    return null;
-            default:
-                ErrorHandler.showErrorMessage("No renderer implementation active",
-                "Can't create a texture without a renderer implementation active");
-                return null;
-        }
+        return rendererImpl.createTexture();
     }
     public static IHipTexture getTextureImplementation()
     {
@@ -360,20 +442,6 @@ class HipRenderer
     public static void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         rendererImpl.setColor(r,g,b,a);
-    }
-
-    public static bool isBlendingEnabled()
-    {
-        return rendererImpl.isBlendingEnabled();
-    }
-    public static void setBlendFunction(HipBlendFunction sourceFunction, HipBlendFunction destinationFunction)
-    {
-        rendererImpl.setBlendFunction(sourceFunction, destinationFunction);
-    }
-
-    static final void activateAlphaBlending()
-    {
-        rendererImpl.setBlendFunction(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA);
     }
 
     public static Viewport getCurrentViewport(){return currentViewport;}
@@ -419,6 +487,11 @@ class HipRenderer
         res.shaders~= rendererImpl.createShader();
         return res.shaders[$-1];
     }
+    public static ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length)
+    {
+        return rendererImpl.createShaderVar(shaderType, uniformType, varName, length);
+    }
+
 
     public static Shader newShader(HipShaderPresets shaderPreset = HipShaderPresets.DEFAULT)
     {
@@ -486,7 +559,6 @@ class HipRenderer
     {
         rendererMode = mode;
         rendererImpl.setRendererMode(mode);
-        stats.drawCalls++;
     }
     public static HipRendererMode getMode(){return rendererMode;}
 
@@ -497,9 +569,11 @@ class HipRenderer
     }
     public static void drawIndexed(HipRendererMode mode, index_t count, uint offset = 0)
     {
-        HipRenderer.setRendererMode(mode);
+        HipRendererMode currMode = rendererMode;
+        if(mode != currMode) HipRenderer.setRendererMode(mode);
         HipRenderer.drawIndexed(count, offset);
         stats.drawCalls++;
+        if(mode != currMode) HipRenderer.setRendererMode(currMode);
     }
     public static void drawVertices(index_t count, uint offset = 0)
     {
@@ -521,7 +595,7 @@ class HipRenderer
         rendererImpl.clear();
         stats.drawCalls++;
     }
-    public static void clear(HipColor color)
+    public static void clear(HipColorf color)
     {
         auto rgba = color.unpackRGBA;
         rendererImpl.clear(rgba[0], rgba[1], rgba[2], rgba[3]);
@@ -531,6 +605,23 @@ class HipRenderer
     {
         rendererImpl.clear(r,g,b,a);
         stats.drawCalls++;
+    }
+    static HipDepthTestingFunction getDepthTestingFunction()
+    {
+        return currentDepthTestFunction;
+    }
+    static bool isDepthTestingEnabled()
+    {
+        return depthTestingEnabled;
+    }
+    static void setDepthTestingEnabled(bool enable)
+    {
+        rendererImpl.setDepthTestingEnabled(enable);
+    }
+    static void setDepthTestingFunction(HipDepthTestingFunction fn)
+    {
+        rendererImpl.setDepthTestingFunction(fn);
+        currentDepthTestFunction = fn;
     }
     
     public static void dispose()

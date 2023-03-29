@@ -17,7 +17,7 @@ else
     version(Windows) version = HipConcurrency;
     version(Android) version = HipConcurrency;
     version(UWP) version = HipConcurrency;
-    version(Posix) version = HipConcurrency;
+    version(linux) version = HipConcurrency;
 }
 
 
@@ -66,16 +66,16 @@ version(HipConcurrency)
     {
         private string lastFileLock;
         private size_t lastLineLock;
-        private ulong lastID;
+        private ThreadID lastID;
 
         private string lastFileUnlock;
         private size_t lastLineUnlock;
 
         private Mutex mtx;
 
-        private ulong mainThreadId;
+        private ThreadID mainThreadId;
 
-        this(ulong mainId)
+        this(ThreadID mainId = ThreadID.init)
         {
             this.mainThreadId = mainId;
             mtx = new Mutex();
@@ -154,7 +154,7 @@ version(HipConcurrency)
         private ThreadID mainThreadID;
 
 
-        this(HipWorkerPool pool = null, ThreadID mainThreadID = 0)
+        this(HipWorkerPool pool = null, ThreadID mainThreadID = ThreadID.init)
         {
             super(&run);
             if(pool)
@@ -464,7 +464,7 @@ else
 {
     class DebugMutex
     {
-        this(ulong id){}
+        this(ulong id = 0){}
         final void lock(){}
         final void unlock(){}
     }

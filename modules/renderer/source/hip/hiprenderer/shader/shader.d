@@ -50,7 +50,9 @@ enum HipShaderPresets
     NONE
 }
 
-
+/** 
+ * This interface is currrently a Shader factory.
+ */
 interface IShader
 {
     VertexShader createVertexShader();
@@ -60,10 +62,13 @@ interface IShader
     bool compileShader(FragmentShader fs, string shaderSource);
     bool compileShader(VertexShader vs, string shaderSource);
     bool linkProgram(ref ShaderProgram program, VertexShader vs,  FragmentShader fs);
+
+    void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq);
     void bind(ShaderProgram program);
     void unbind(ShaderProgram program);
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
     int  getId(ref ShaderProgram prog, string name);
+    
 
     ///Used as intermediary for deleting non program intermediary in opengl
     void deleteShader(FragmentShader* fs);
@@ -71,10 +76,13 @@ interface IShader
     void deleteShader(VertexShader* vs);
 
     void createVariablesBlock(ref ShaderVariablesLayout layout);
+    bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value);
     void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts);
 
-    ///This function is actually required when working with multiple slots on D3D11.
-    void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount);
+    /** 
+     * Each graphics API has its own way to bind array of textures, thus, this version was required.
+     */
+    void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName);
     void dispose(ref ShaderProgram);
 }
 
@@ -146,6 +154,9 @@ public class Shader : IReloadable
                 break;
             case HipRendererType.GL3:
                 fragmentShaderPath~= "gl3.shader";
+                break;
+            case HipRendererType.METAL:
+                fragmentShaderPath~= "metal.shader";
                 break;
             default:break;
         }
@@ -229,19 +240,35 @@ public class Shader : IReloadable
      */
     public void setVertexVar(T)(string name, T val, bool validateData = false)
     {
-        ShaderVar* v = findByName(name);
+        ShaderVar* v = tryGetShaderVar(name, ShaderTypes.VERTEX);
         if(v != null)
         {
-            if(v.shaderType != ShaderTypes.VERTEX)
-                ErrorHandler.assertExit(false, "Variable named "~name~" must be from Vertex Shader");
             v.set(val, validateData);
         }
-        else
-            ErrorHandler.showWarningMessage("Shader Vertex Var not set on shader loaded from '"~vertexShaderPath~"'",
-            "Could not find shader var with name "~name~
-            ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
-            "Did you forget to add a layout namespace to the var name?"
-            ));
+    }
+
+    private ShaderVar* tryGetShaderVar(string name, ShaderTypes type)
+    {
+        import hip.util.conv:to;
+        bool isUnused;
+        ShaderVar* v = findByName(name, isUnused);
+        if(v is null)
+        {
+            if(!isUnused)
+                ErrorHandler.showWarningMessage("Shader " ~ type.to!string ~ " Var not set on shader loaded from '"~fragmentShaderPath~"'",
+                "Could not find shader var with name "~name~
+                ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
+                " Did you forget to add a layout namespace to the var name?"
+                ));
+            return null;
+        }
+        if(v.shaderType != type)
+        {
+            import hip.console.log;
+            logln = v.shaderType;
+            ErrorHandler.assertExit(false, "Variable named "~name~" must be from " ~ type.to!string ~ " Shader");
+        }
+        return v;
     }
     /** 
      * If validateData is true, it will compare if the data has changed for choosing whether it should or not
@@ -253,22 +280,20 @@ public class Shader : IReloadable
      */
     public void setFragmentVar(T)(string name, T val, bool validateData = false)
     {
-        ShaderVar* v = findByName(name);
+        ShaderVar* v = tryGetShaderVar(name, ShaderTypes.FRAGMENT);
         if(v != null)
         {
-            if(v.shaderType != ShaderTypes.FRAGMENT)
-                ErrorHandler.assertExit(false, "Variable named "~name~" must be from Fragment Shader");
-            v.set(val, validateData);
+            if(v.isBlackboxed)
+            {
+                if(shaderImpl.setShaderVar(v,shaderProgram, cast(void*)&val))
+                    v.isDirty = true;
+            }
+            else
+                v.set(val, validateData);
         }
-        else
-            ErrorHandler.showWarningMessage("Shader Fragment Var not set on shader loaded from '"~fragmentShaderPath~"'",
-            "Could not find shader var with name "~name~
-            ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
-            "Did you forget to add a layout namespace to the var name?"
-            ));
     }
 
-    protected ShaderVar* findByName(string name) @nogc
+    protected ShaderVar* findByName(string name, out bool isUnused) @nogc
     {
         int accessorSeparatorIndex = name.indexOf(".");
 
@@ -278,6 +303,7 @@ public class Shader : IReloadable
             ShaderVarLayout* sL = name in defaultLayout.variables;
             if(sL !is null)
                 return sL.sVar;
+            isUnused = defaultLayout.isUnused(name);
         }
         else
         {
@@ -287,11 +313,16 @@ public class Shader : IReloadable
                 ShaderVarLayout* sL = name[accessorSeparatorIndex+1..$] in l.variables;
                 if(sL !is null)
                     return sL.sVar;
+                isUnused = l.isUnused(name[accessorSeparatorIndex+1..$]);
             }
         }
         return null;
     }
-    public ShaderVar* get(string name){return findByName(name);}
+    public ShaderVar* get(string name)
+    {
+        bool ignored;
+        return findByName(name, ignored);
+    }
 
 
     public void addVarLayout(ShaderVariablesLayout layout)
@@ -300,7 +331,7 @@ public class Shader : IReloadable
         if(defaultLayout is null)
             defaultLayout = layout;
         layouts[layout.name] = layout;
-        layout.lock();
+        layout.lock(this);
         shaderImpl.createVariablesBlock(layout);
     }
 
@@ -315,6 +346,10 @@ public class Shader : IReloadable
 
     void bind(){shaderImpl.bind(shaderProgram);}
     void unbind(){shaderImpl.unbind(shaderProgram);}
+    void setBlending(HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
+    {
+        shaderImpl.setBlending(shaderProgram, src, dest, eq);
+    }
 
     auto opDispatch(string member)()
     {
@@ -350,12 +385,13 @@ public class Shader : IReloadable
     }
 
     /**
-    *   Bind the texture into all texutre slots. This is required for getting rid of D3D11 warning (which is checked as an error and thus exits the engine)
-    *   varName is currently unused
+    *  Bind array of textures.
+    *   - This is handled a little different than simply blindly binding *  to each slot.
+    *   Since OpenGL, Direct3D and Metal handles that differently, a more general solution is required.
     */
-    void initTextureSlots(IHipTexture texture, string varName, int slotsCount)
+    void bindArrayOfTextures(IHipTexture[] textures, string varName)
     {
-        shaderImpl.initTextureSlots(shaderProgram, texture, varName, slotsCount);
+        shaderImpl.bindArrayOfTextures(shaderProgram, textures, varName);
     }
 
 

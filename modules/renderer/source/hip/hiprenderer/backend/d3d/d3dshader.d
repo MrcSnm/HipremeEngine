@@ -76,12 +76,12 @@ class Hip_D3D11_FragmentShader : FragmentShader
         for(int i = 1; i < sup; i++)
         {
             textureSlotSwitchCase~= "\t\tcase "~ to!string(i)~": "~
-            "return uTex1["~to!string(i)~"].Sample(state["~to!string(i)~"], texST) * inVertexColor * uBatchColor;\n";
+            "return uTex["~to!string(i)~"].Sample(state["~to!string(i)~"], texST) * inVertexColor * uBatchColor;\n";
         }
-        textureSlotSwitchCase~= "\t\tdefault: return uTex1[0].Sample(state[0], texST) * inVertexColor * uBatchColor;";
+        textureSlotSwitchCase~= "\t\tdefault: return uTex[0].Sample(state[0], texST) * inVertexColor * uBatchColor;";
         textureSlotSwitchCase~= "\n\t}";
 
-        return "Texture2D uTex1["~to!string(sup)~"];
+        return "Texture2D uTex["~to!string(sup)~"];
 SamplerState state["~to!string(sup)~"];"~q{
 cbuffer input
 {
@@ -91,12 +91,12 @@ cbuffer input
 float4 main(float4 inVertexColor : inColor, float2 texST : inTexST, float inTexID : inTexID) : SV_TARGET
 }~"{"~
 q{
-        // return uBatchColor * uTex1.Sample(state, inTexST);
+        // return uBatchColor * uTex.Sample(state, inTexST);
         int tid = int(inTexID);
 
         //switch(tid)...
         //case 1:
-            //return uTex1[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
+            //return uTex[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
 } ~ textureSlotSwitchCase ~ "\n}";
     }
     override final string getBitmapTextFragment()
@@ -245,6 +245,10 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
     Hip_D3D11_VertexShader vs;
     Hip_D3D11_FragmentShader fs;
 
+    protected HipBlendFunction blendSrc, blendDst;
+    protected HipBlendEquation blendEq;
+    protected ID3D11BlendState blendState;
+
     ID3D11ShaderReflection vReflector;
     ID3D11ShaderReflection pReflector;
 
@@ -275,6 +279,45 @@ struct Hip_D3D11_ShaderVarAdditionalData
 {
     ID3D11Buffer buffer;
     uint id;
+}
+
+package D3D11_BLEND getD3DBlendFunc(HipBlendFunction func)
+{
+    final switch(func) with(HipBlendFunction)
+    {
+        case  ZERO: return D3D11_BLEND_ZERO;
+        case  ONE: return D3D11_BLEND_ONE;
+
+        case  SRC_COLOR: return D3D11_BLEND_SRC_COLOR;
+        case  ONE_MINUS_SRC_COLOR: return D3D11_BLEND_INV_SRC_COLOR;
+    
+        case  DST_COLOR: return D3D11_BLEND_DEST_COLOR;
+        case  ONE_MINUS_DST_COLOR: return D3D11_BLEND_INV_DEST_COLOR;
+        
+        case  SRC_ALPHA: return D3D11_BLEND_SRC_ALPHA;
+        case  ONE_MINUS_SRC_ALPHA: return  D3D11_BLEND_INV_SRC_ALPHA;
+    
+        case  DST_ALPHA: return  D3D11_BLEND_DEST_ALPHA;
+        case  ONE_MINUS_DST_ALPHA: return D3D11_BLEND_INV_DEST_ALPHA;
+    
+        case  CONSTANT_COLOR: return D3D11_BLEND_SRC1_COLOR;
+        case  ONE_MINUS_CONSTANT_COLOR: return D3D11_BLEND_INV_SRC1_COLOR;
+        
+        case  CONSTANT_ALPHA: return D3D11_BLEND_SRC1_ALPHA;
+        case  ONE_MINUS_CONSTANT_ALPHA: return D3D11_BLEND_INV_SRC1_ALPHA;
+    }
+}
+package D3D11_BLEND_OP getD3DBlendEquation(HipBlendEquation eq)
+{
+    final switch(eq) with (HipBlendEquation)
+    {
+        case DISABLED:return D3D11_BLEND_OP_ADD;
+        case ADD:return D3D11_BLEND_OP_ADD;
+        case SUBTRACT:return D3D11_BLEND_OP_SUBTRACT;
+        case REVERSE_SUBTRACT:return D3D11_BLEND_OP_REV_SUBTRACT;
+        case MIN:return D3D11_BLEND_OP_MIN;
+        case MAX:return D3D11_BLEND_OP_MAX;
+    }
 }
 
 class Hip_D3D11_ShaderImpl : IShader
@@ -408,9 +451,19 @@ class Hip_D3D11_ShaderImpl : IShader
 
     void bind(ShaderProgram _program)
     {
-        auto program = cast(Hip_D3D11_ShaderProgram)_program;
-        _hip_d3d_context.VSSetShader(program.vs.vs, cast(ID3D11ClassInstance*)0, 0u);
-        _hip_d3d_context.PSSetShader(program.fs.fs, cast(ID3D11ClassInstance*)0, 0u);
+        Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)_program;
+        if(p.blendState !is null && 
+            (p.blendDst != currDst ||
+            p.blendSrc != currSrc ||
+            p.blendEq != currEq))
+        {
+            currEq  = p.blendEq;
+            currSrc = p.blendSrc;
+            currDst = p.blendDst;
+            _hip_d3d_context.OMSetBlendState(p.blendState, null, 0xFF_FF_FF_FF);
+        }
+        _hip_d3d_context.VSSetShader(p.vs.vs, cast(ID3D11ClassInstance*)0, 0u);
+        _hip_d3d_context.PSSetShader(p.fs.fs, cast(ID3D11ClassInstance*)0, 0u);
     }
     void unbind(ShaderProgram _program)
     {
@@ -467,11 +520,10 @@ class Hip_D3D11_ShaderImpl : IShader
         }
     }
 
-    void initTextureSlots(ref ShaderProgram prog, IHipTexture texture, string varName, int slotsCount)
+    void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
     {
-        for(int i = 0; i < slotsCount; i++)
-            texture.bind(i);
-            
+        foreach(i, texture; textures)
+            texture.bind(cast(int)i);
     }
 
     void createVariablesBlock(ref ShaderVariablesLayout layout)
@@ -497,6 +549,40 @@ class Hip_D3D11_ShaderImpl : IShader
             "Error while creating variable buffer for Shader with type "~to!string(layout.shaderType));
     }
 
+    protected __gshared HipBlendFunction currSrc, currDst;
+    protected __gshared HipBlendEquation currEq;
+
+
+    void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
+    {
+        Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
+        p.blendSrc = src;
+        p.blendDst = dest;
+        p.blendEq = eq;
+        auto b = &Hip_D3D11_Renderer.blend.RenderTarget[0];
+
+        if(eq == HipBlendEquation.DISABLED)
+        {
+            b.BlendEnable = cast(int)false;
+        }
+        else
+        {
+            b.BlendEnable = cast(int)true;
+            b.SrcBlend = getD3DBlendFunc(src);
+            b.DestBlend = getD3DBlendFunc(dest);
+            b.BlendOp = getD3DBlendEquation(eq);
+            b.BlendOpAlpha = getD3DBlendEquation(eq);
+
+            b.SrcBlendAlpha = getD3DBlendFunc(HipBlendFunction.ZERO);
+            b.DestBlendAlpha = getD3DBlendFunc(HipBlendFunction.ZERO);
+            b.BlendOp = getD3DBlendEquation(HipBlendEquation.ADD);
+            b.BlendOpAlpha = getD3DBlendEquation(HipBlendEquation.ADD);
+            b.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+        }        
+        _hip_d3d_device.CreateBlendState(&Hip_D3D11_Renderer.blend, &p.blendState);
+    }
+    
+
     void deleteShader(FragmentShader* _fs){}
     void deleteShader(VertexShader* _vs){}
     void dispose(ref ShaderProgram prog)
@@ -517,4 +603,10 @@ class Hip_D3D11_ShaderImpl : IShader
             vs.vs.Release();
         vs.vs = null;
     }
+    
+    bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
+    {
+        return false;
+    }
+    
 }

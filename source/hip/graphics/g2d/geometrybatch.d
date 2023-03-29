@@ -21,7 +21,31 @@ public import hip.api.graphics.color;
 public import hip.api.graphics.batch;
 
 
-enum defaultColor = HipColor.white;
+enum defaultColor = HipColorf.white;
+
+@HipShaderInputLayout struct HipGeometryBatchVertex
+{
+    import hip.math.vector;
+    Vector3 vPosition;
+    // @HipShaderInputPadding float __padding = 0;
+    Vector4 vColor;
+
+    static enum floatCount = HipGeometryBatchVertex.sizeof / float.sizeof;
+}
+
+@HipShaderVertexUniform("Geom")
+struct HipGeometryBatchVertexUniforms
+{
+    Matrix4 uModel = Matrix4.identity;
+    Matrix4 uView = Matrix4.identity;
+    Matrix4 uProj = Matrix4.identity;
+}
+
+@HipShaderFragmentUniform("FragVars")
+struct HipGeometryBatchFragmentUniforms
+{
+    float[4] uGlobalColor = [1,1,1,1];
+}
 
 /**
 *   This class uses the vertex layout XYZ RGBA.
@@ -30,37 +54,37 @@ enum defaultColor = HipColor.white;
 class GeometryBatch : IHipBatch
 {
     protected Mesh mesh;
+    protected index_t lastIndexDrawn;
+    protected index_t lastVertexDrawn;
     protected index_t currentIndex;
-    protected index_t currentVertex;
     protected index_t verticesCount;
     protected index_t indicesCount;
-    protected HipColor currentColor;
+    protected HipColorf currentColor;
+
+    float managedDepth = 0;
     HipOrthoCamera camera;
-    float[] vertices;
+    HipGeometryBatchVertex[] vertices;
     index_t[] indices;
+
     
     this(HipOrthoCamera camera = null, index_t verticesCount=64_000, index_t indicesCount=64_000)
     {
         Shader s = HipRenderer.newShader(HipShaderPresets.GEOMETRY_BATCH); 
-        s.addVarLayout(new ShaderVariablesLayout("Geom", ShaderTypes.VERTEX, 0)
-        .append("uModel", Matrix4.identity)
-        .append("uView", Matrix4.identity)
-        .append("uProj", Matrix4.identity));
+        s.addVarLayout(ShaderVariablesLayout.from!HipGeometryBatchVertexUniforms);
+        s.addVarLayout(ShaderVariablesLayout.from!HipGeometryBatchFragmentUniforms);
+        s.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 
-        s.addVarLayout(new ShaderVariablesLayout("FragVars", ShaderTypes.FRAGMENT, 0)
-        .append("uGlobalColor", cast(float[4])[1,1,1,1]));
 
-        mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_VAO(), s);
-        vertices = new float[verticesCount*7]; //XYZ, RGBA
+        mesh = new Mesh(HipVertexArrayObject.getVAO!HipGeometryBatchVertex, s);
+        vertices = new HipGeometryBatchVertex[verticesCount];
         indices = new index_t[indicesCount];
         indices[] = 0;
-        vertices[] = 0;
         //Initialize the mesh with 0
         mesh.createVertexBuffer(verticesCount, HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(indicesCount, HipBufferUsage.DYNAMIC);
         mesh.vao.bind();
         mesh.setIndices(indices);
-        mesh.setVertices(vertices);
+        mesh.setVertices(cast(float[])vertices);
         mesh.sendAttributes();
         this.setColor(defaultColor);
 
@@ -72,13 +96,17 @@ class GeometryBatch : IHipBatch
 
     protected pragma(inline) void checkVerticesCount(int howMuch)
     {
-        if(verticesCount+howMuch >= this.vertices.length/7)
+        if(verticesCount+howMuch >= this.vertices.length/HipGeometryBatchVertex.floatCount)
         {
             import hip.util.string;
-            String s = String("Too many vertices ", verticesCount+howMuch, " for a buffer of size ", this.vertices.length/7);
+            String s = String("Too many vertices ", verticesCount+howMuch, " for a buffer of size ", 
+                this.vertices.length/HipGeometryBatchVertex.floatCount
+            );
             ErrorHandler.assertExit(false, s.toString);
         }
     }
+
+    void setCurrentDepth(float depth){managedDepth = depth;}
 
 
     /**
@@ -87,14 +115,10 @@ class GeometryBatch : IHipBatch
     index_t addVertex(float x, float y, float z)
     {
         alias c = currentColor;
-        vertices[currentVertex++] = x;
-        vertices[currentVertex++] = y;
-        vertices[currentVertex++] = z;
-        vertices[currentVertex++] = c.r;
-        vertices[currentVertex++] = c.g;
-        vertices[currentVertex++] = c.b;
-        vertices[currentVertex++] = c.a;
-
+        vertices[verticesCount] = HipGeometryBatchVertex(
+            Vector3(x,y,z),
+            Vector4(c.r, c.g, c.b, c.a)
+        );
         return verticesCount++;
     }
     pragma(inline, true)
@@ -109,7 +133,7 @@ class GeometryBatch : IHipBatch
         foreach(index; newIndices)
             indices[currentIndex++] = index;
     }
-    void setColor(in HipColor c)
+    void setColor(HipColorf c)
     {
         currentColor = c;
     }
@@ -117,9 +141,9 @@ class GeometryBatch : IHipBatch
     protected void triangleVertices(int x1, int y1, int x2, int y2, int x3, int y3)
     {
         checkVerticesCount(3);
-        addVertex(x1, y1, 0);
-        addVertex(x2, y2, 0);
-        addVertex(x3, y3, 0);
+        addVertex(x1, y1, managedDepth);
+        addVertex(x2, y2, managedDepth);
+        addVertex(x3, y3, managedDepth);
         addIndex(
             cast(index_t)(verticesCount-3),
             cast(index_t)(verticesCount-2),
@@ -138,9 +162,9 @@ class GeometryBatch : IHipBatch
         float angle_mult = (1.0/precision) * degrees * (PI/180.0);
 
         checkVerticesCount(2);
-        index_t centerIndex = addVertex(x, y, 0);
+        index_t centerIndex = addVertex(x, y, managedDepth);
         //The first vertex
-        index_t lastVert = addVertex(x + radiusW*cos(0.0), y + radiusH*sin(0.0), 0);
+        index_t lastVert = addVertex(x + radiusW*cos(0.0), y + radiusH*sin(0.0), managedDepth);
         index_t firstVert = lastVert;
         
         checkVerticesCount(precision);
@@ -151,7 +175,7 @@ class GeometryBatch : IHipBatch
 
             //Use a temporary variable to hold the new lastVert for more performance
             //on addIndex calls
-            index_t tempNewLastVert = addVertex(x+radiusW*cos(nextAngle), y + radiusH*sin(nextAngle), 0);
+            index_t tempNewLastVert = addVertex(x+radiusW*cos(nextAngle), y + radiusH*sin(nextAngle), managedDepth);
             
             addIndex(
                 centerIndex, //Puts the center first
@@ -171,9 +195,9 @@ class GeometryBatch : IHipBatch
 
 
 
-    void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24)
+    void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColorf color = HipColorf.invalid, int precision = 24)
     {
-        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.LINE)
         {
             flush();
@@ -181,14 +205,14 @@ class GeometryBatch : IHipBatch
         }   
         float angle_mult = (1.0/precision) * degrees * (PI/180.0);
         checkVerticesCount(1);
-        index_t currVert = addVertex(x+ radiusW*cos(0.0), y + radiusH*sin(0.0), 0);
+        index_t currVert = addVertex(x+ radiusW*cos(0.0), y + radiusH*sin(0.0), managedDepth);
         index_t firstVert = currVert;
 
         checkVerticesCount(precision);
         for(int i = 1; i < precision+1; i++)
         {
             float nextAngle = angle_mult * i;
-            index_t tempNextVert = addVertex(x + radiusW * cos(nextAngle), y + radiusH*sin(nextAngle), 0);
+            index_t tempNextVert = addVertex(x + radiusW * cos(nextAngle), y + radiusH*sin(nextAngle), managedDepth);
 
             addIndex(currVert, tempNextVert);
             currVert = tempNextVert;
@@ -198,18 +222,18 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    private HipColor setColorIfChangedAndGetOldColor(in HipColor color)
+    private HipColorf setColorIfChangedAndGetOldColor(in HipColorf color)
     {
-        HipColor oldColor = currentColor;
-        if(color != HipColor.invalid)
+        HipColorf oldColor = currentColor;
+        if(color != HipColorf.invalid)
             setColor(color);
         return oldColor;
     }
 
     ///With this default precision, the circle should be smooth enough
-    void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, in HipColor color = HipColor.invalid, int precision = 24)
+    void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, in HipColorf color = HipColorf.invalid, int precision = 24)
     {
-        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
         if(radiusH == -1)
             radiusH = radiusW;
         if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
@@ -221,9 +245,9 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, in HipColor color = HipColor.invalid)
+    void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, in HipColorf color = HipColorf.invalid)
     {
-        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
         {
             flush();
@@ -232,9 +256,9 @@ class GeometryBatch : IHipBatch
         triangleVertices(x1,y1,x2,y2,x3,y3);
         setColor(oldColor);
     }
-    void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, in HipColor color = HipColor.invalid)
+    void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, in HipColorf color = HipColorf.invalid)
     {
-        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.LINE_STRIP)
         {
             flush();
@@ -244,17 +268,17 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
     
-    void drawLine(int x1, int y1, int x2, int y2, in HipColor color = HipColor.invalid)
+    void drawLine(int x1, int y1, int x2, int y2, in HipColorf color = HipColorf.invalid)
     {
-        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.LINE)
         {
             flush();
             HipRenderer.setRendererMode(HipRendererMode.LINE);
         }
         checkVerticesCount(2);
-        addVertex(x1, y1, 0);
-        addVertex(x2, y2, 0);
+        addVertex(x1, y1, managedDepth);
+        addVertex(x2, y2, managedDepth);
 
         addIndex(
             cast(index_t)(verticesCount-2),
@@ -263,7 +287,7 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    pragma(inline) void drawLine(float x1, float y1, float x2, float y2, in HipColor color = HipColor.invalid)
+    pragma(inline) void drawLine(float x1, float y1, float x2, float y2, in HipColorf color = HipColorf.invalid)
     {
         drawLine(
             cast(int)x1,
@@ -274,9 +298,9 @@ class GeometryBatch : IHipBatch
         );
     }
 
-    void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, in HipColor color = HipColor.invalid)
+    void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, in HipColorf color = HipColorf.invalid)
     {
-        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
 
         Vector2 last = Vector2(x0, y0);
 
@@ -294,16 +318,16 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    void drawPixel(int x, int y, in HipColor color = HipColor.invalid)
+    void drawPixel(int x, int y, in HipColorf color = HipColorf.invalid)
     {
-        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.POINT)
         {
             flush();
             HipRenderer.setRendererMode(HipRendererMode.POINT);
         }
         checkVerticesCount(1);
-        addVertex(x, y, 0);
+        addVertex(x, y, managedDepth);
         addIndex(verticesCount);
         setColor(oldColor);
     }
@@ -322,10 +346,10 @@ class GeometryBatch : IHipBatch
     protected void rectangleVertices(int x, int y, int w, int h)
     {
         checkVerticesCount(4);
-        index_t topLeft = addVertex(x, y, 0);
-        index_t botLeft = addVertex(x, y+h, 0);
-        index_t botRight= addVertex(x+w, y+h, 0);
-        index_t topRight= addVertex(x+w, y, 0);
+        index_t topLeft = addVertex(x, y, managedDepth);
+        index_t botLeft = addVertex(x, y+h, managedDepth);
+        index_t botRight= addVertex(x+w, y+h, managedDepth);
+        index_t topRight= addVertex(x+w, y, managedDepth);
  
         addIndex(
             topLeft, botLeft, botRight,
@@ -334,9 +358,9 @@ class GeometryBatch : IHipBatch
 
     }
 
-    void drawRectangle(int x, int y, int w, int h, in HipColor color = HipColor.invalid)
+    void drawRectangle(int x, int y, int w, int h, in HipColorf color = HipColorf.invalid)
     {
-        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.LINE_STRIP)
         {
             flush();
@@ -347,9 +371,9 @@ class GeometryBatch : IHipBatch
     }
   
 
-    void fillRectangle(int x, int y, int w, int h, in HipColor color = HipColor.invalid)
+    void fillRectangle(int x, int y, int w, int h, in HipColorf color = HipColorf.invalid)
     {
-        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
         {
             flush();
@@ -359,14 +383,14 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    void flush()
+    void draw()
     {
         const uint count = this.currentIndex;
-        if(count != 0)
+        if(count - lastIndexDrawn != 0)
         {
             mesh.bind();
-            mesh.updateVertices(vertices[0..currentVertex]);
-            mesh.updateIndices(indices[0..currentIndex]);
+            mesh.updateVertices(cast(float[])vertices[lastVertexDrawn..verticesCount], lastVertexDrawn);
+            mesh.updateIndices(indices[0..currentIndex], lastIndexDrawn);
 
             mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1], true);
             mesh.shader.setVertexVar("Geom.uProj",  camera.proj, true);
@@ -375,13 +399,18 @@ class GeometryBatch : IHipBatch
 
             mesh.shader.sendVars();
             //Vertices to render = indices.length
-            this.mesh.draw(count);
+            this.mesh.draw(count - lastIndexDrawn, HipRenderer.getMode, lastIndexDrawn);
             mesh.unbind();
         }
-        verticesCount = 0;
-        currentIndex = 0;
-        currentVertex = 0;
+        lastIndexDrawn = count;
+        lastVertexDrawn = verticesCount;
+    }
 
+    void flush()
+    {
+        draw();
+        lastVertexDrawn = verticesCount = 0;
+        lastIndexDrawn = currentIndex = 0;
     }
 
 }

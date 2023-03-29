@@ -395,17 +395,32 @@ version(WindowsNative)
     int[2] getWindowSize(HWND hwnd)
     {
         RECT rect;
-        GetWindowRect(hwnd, &rect);
+        GetClientRect(hwnd, &rect);
         return [rect.right - rect.left, rect.bottom - rect.top];
     }
     void setWindowName(HWND hwnd, string name)
     {
         SetWindowTextA(hwnd, name.ptr);
     }
+    int[2] getWindowBorder(HWND hwnd)
+    {
+        RECT rBorders;
+        GetWindowRect(hwnd, &rBorders);
+        RECT rNoBorders;
+        GetClientRect(hwnd, &rNoBorders);
+        RECT r;
+        r.left = rBorders.left - rNoBorders.left;
+        r.right = rBorders.right - rNoBorders.right;
+        r.top = rBorders.top - rNoBorders.top;
+        r.bottom = rBorders.bottom - rNoBorders.bottom;
+
+        return[r.right - r.left, r.bottom - r.top];
+    }
 
     void setWindowSize(HWND hwnd, int width, int height)
     {
-        SetWindowPos(hwnd, null, 0, 0, width, height, SWP_NOMOVE);
+        int[2] borders = getWindowBorder(hwnd);
+        SetWindowPos(hwnd, null, 0, 0, width + borders[0], height+borders[1], SWP_NOMOVE);
     }
 
     void setVsyncActive(bool active) @nogc nothrow @system
