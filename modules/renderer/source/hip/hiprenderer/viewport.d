@@ -48,6 +48,6 @@ void updateForWindowSize(ref Viewport v, int windowWidth, int windowHeight)
         case ViewportType.fit:
             v.setFitViewport(windowWidth, windowHeight);
             break;
-    }   
+    }
     v.sanityCheck();
 }

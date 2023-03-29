@@ -16,7 +16,6 @@ import hip.assets.texture;
 import hip.hiprenderer.framebuffer;
 import hip.error.handler;
 import hip.hiprenderer.shader;
-import hip.graphics.material;
 public import hip.api.graphics.batch;
 public import hip.api.graphics.color;
 public import hip.math.vector;
@@ -27,15 +26,33 @@ public import hip.math.matrix;
 */
 @HipShaderInputLayout struct HipSpriteVertex
 {
-    Vector3 position;
-    HipColor color;
-    Vector2 tex_uv;
-    int texID;
+    Vector3 vPosition = Vector3.zero;
+    HipColorf vColor = HipColorf(0,0,0,0);
+    Vector2 vTexST = Vector2.zero;
+    float vTexID = 0;
 
     static enum floatCount = cast(size_t)(HipSpriteVertex.sizeof/float.sizeof);
     static enum quadCount = floatCount*4;
-    static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
+    // static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
 }
+
+@HipShaderVertexUniform("Cbuf1")
+struct HipSpriteVertexUniform
+{
+    Matrix4 uModel = Matrix4.identity;
+    Matrix4 uView = Matrix4.identity;
+    Matrix4 uProj = Matrix4.identity;
+}
+
+@HipShaderFragmentUniform("Cbuf")
+struct HipSpriteFragmentUniform
+{
+    float[4] uBatchColor = [1,1,1,1];
+    
+    @(ShaderHint.Blackbox | ShaderHint.MaxTextures) 
+    IHipTexture[] uTex;
+}
+
 /**
 *   The spritebatch contains 2 shaders.
 *   One shader is entirely internal, which you don't have any control, this is for actually being able
@@ -48,7 +65,7 @@ class HipSpriteBatch : IHipBatch
 {
     index_t maxQuads;
     index_t[] indices;
-    float[] vertices;
+    HipSpriteVertex[] vertices;
 
     protected bool hasInitTextureSlots;
     protected Shader spriteBatchShader;
@@ -57,15 +74,15 @@ class HipSpriteBatch : IHipBatch
     protected Shader ppShader;
     protected HipFrameBuffer fb;
     protected HipTextureRegion fbTexRegion;
-    
+    protected float managedDepth = 0;
 
     HipOrthoCamera camera;
     Mesh mesh;
-    Material material;
 
     protected IHipTexture[] currentTextures;
     int usingTexturesCount;
 
+    uint lastDrawQuadsCount = 0;
     uint quadsCount;
 
 
@@ -75,28 +92,29 @@ class HipSpriteBatch : IHipBatch
         ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
         this.maxQuads = maxQuads;
         indices = new index_t[maxQuads*6];
-        vertices = new float[maxQuads*HipSpriteVertex.quadCount]; //XYZ -> 3, RGBA -> 4, ST -> 2, TexID 3+4+2+1=10
-        vertices[] = 0;
+        vertices = new HipSpriteVertex[maxQuads]; //XYZ -> 3, RGBA -> 4, ST -> 2, TexID 3+4+2+1=10
+        vertices[] = HipSpriteVertex.init;
         currentTextures = new IHipTexture[](HipRenderer.getMaxSupportedShaderTextures());
         usingTexturesCount = 0;
 
         this.spriteBatchShader = HipRenderer.newShader(HipShaderPresets.SPRITE_BATCH);
-        mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_ST_TID_VAO(), spriteBatchShader);
+        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!HipSpriteVertexUniform);
+        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!HipSpriteFragmentUniform);
+        spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
+
+        mesh = new Mesh(HipVertexArrayObject.getVAO!HipSpriteVertex, spriteBatchShader);
         mesh.vao.bind();
         mesh.createVertexBuffer(cast(index_t)(maxQuads*HipSpriteVertex.quadCount), HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(cast(index_t)(maxQuads*6), HipBufferUsage.STATIC);
-        mesh.sendAttributes();
+
         
 
-        spriteBatchShader.addVarLayout(new ShaderVariablesLayout("Cbuf1", ShaderTypes.VERTEX, ShaderHint.NONE)
-        .append("uModel", Matrix4.identity)
-        .append("uView", Matrix4.identity)
-        .append("uProj", Matrix4.identity));
+        spriteBatchShader.useLayout.Cbuf;
+        // spriteBatchShader.bind();
+        // spriteBatchShader.sendVars();
 
-        spriteBatchShader.addVarLayout(new ShaderVariablesLayout("Cbuf", ShaderTypes.FRAGMENT, ShaderHint.NONE)
-        .append("uBatchColor", cast(float[4])[1,1,1,1])
-        );
-
+        mesh.sendAttributes();
+        
 
         spriteBatchShader.useLayout.Cbuf;
         spriteBatchShader.bind();
@@ -105,23 +123,12 @@ class HipSpriteBatch : IHipBatch
         if(camera is null)
             camera = new HipOrthoCamera();
         this.camera = camera;
-
-        index_t offset = 0;
-        for(index_t i = 0; i < cast(index_t)(maxQuads*6); i+=6)
-        {
-            indices[i + 0] = cast(index_t)(0+offset);
-            indices[i + 1] = cast(index_t)(1+offset);
-            indices[i + 2] = cast(index_t)(2+offset);
-
-            indices[i + 3] = cast(index_t)(2+offset);
-            indices[i + 4] = cast(index_t)(3+offset);
-            indices[i + 5] = cast(index_t)(0+offset);
-            offset+= 4; //Offset calculated for each quad
-        }
-        mesh.setVertices(vertices);
+        HipVertexArrayObject.putQuadBatchIndices(indices, maxQuads);
+        mesh.setVertices(cast(float[])vertices);
         mesh.setIndices(indices);
         setTexture(HipTexture.getPixelTexture());
     }
+    void setCurrentDepth(float depth){managedDepth = depth;}
 
     void setShader(Shader s)
     {
@@ -142,7 +149,7 @@ class HipSpriteBatch : IHipBatch
         if(quadsCount+1 > maxQuads)
             flush();
 
-        size_t start = HipSpriteVertex.quadCount*quadsCount;
+        size_t start = quadsCount;
         version(none) //D way to do it, but it is also slower
         {
             size_t end = start + HipSpriteVertex.quadCount;
@@ -155,12 +162,12 @@ class HipSpriteBatch : IHipBatch
         else
         {
             import core.stdc.string;
-            float* v = vertices.ptr;
-            memcpy(v + start, quad.ptr, HipSpriteVertex.quadCount * float.sizeof);
-            *(v + T1) = slot;
-            *(v + T2) = slot;
-            *(v + T3) = slot;
-            *(v + T4) = slot;
+            HipSpriteVertex* v = cast(HipSpriteVertex*)vertices.ptr;
+            memcpy(v + start, quad.ptr, HipSpriteVertex.sizeof * 4);
+            v[0].vTexID = slot;
+            v[1].vTexID = slot;
+            v[2].vTexID = slot;
+            v[3].vTexID = slot;
         }
         
         quadsCount++;
@@ -190,14 +197,13 @@ class HipSpriteBatch : IHipBatch
 
 
 
-            vertices[start..end] = quadsVertices[0..quadsToDraw*HipSpriteVertex.quadCount];
+            vertices[start..end] = cast(HipSpriteVertex[])quadsVertices[0..quadsToDraw*HipSpriteVertex.quadCount];
             for(int i = 0; i < quadsToDraw; i++)
             {
-                const size_t quadStart = i*HipSpriteVertex.quadCount;
-                vertices[start + quadStart + T1] = slot;
-                vertices[start + quadStart + T2] = slot;
-                vertices[start + quadStart + T3] = slot;
-                vertices[start + quadStart + T4] = slot;
+                vertices[start + i].vTexID = slot;
+                vertices[start + i+1].vTexID = slot;
+                vertices[start + i+2].vTexID = slot;
+                vertices[start + i+3].vTexID = slot;
             }
             quadsVertices = quadsVertices[quadsToDraw*HipSpriteVertex.quadCount..$];
 
@@ -237,17 +243,19 @@ class HipSpriteBatch : IHipBatch
             flush();
             slot = getNextTextureID(texture);
         }
-        else if(!hasInitTextureSlots)
-        {
-            hasInitTextureSlots = true;
-            spriteBatchShader.initTextureSlots(texture, "uTex1", HipRenderer.getMaxSupportedShaderTextures());
-        }
         return slot;
     }
     protected int setTexture(IHipTextureRegion reg){return setTexture(reg.getTexture());}
 
+    protected static bool isZeroAlpha(float[] vertices)
+    {
+        HipSpriteVertex[] v = cast(HipSpriteVertex[])vertices;
+        return v[0].vColor.a == 0 && v[1].vColor.a == 0 && v[2].vColor.a == 0 && v[3].vColor.a == 0;
+    }
+
     void draw(IHipTexture t, float[] vertices)
     {
+        if(isZeroAlpha(vertices)) return;
         ErrorHandler.assertExit(t.getWidth != 0 && t.getHeight != 0, "Tried to draw 0 bounds sprite");
         int slot = setTexture(t);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
@@ -258,9 +266,10 @@ class HipSpriteBatch : IHipBatch
             addQuads(vertices, slot);
     }
 
-    void draw(IHipTexture texture, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    void draw(IHipTexture texture, int x, int y, int z = 0, in HipColorf color = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         import hip.global.gamedef;
+        if(color.a == 0) return;
         if(quadsCount+1 > maxQuads)
             flush();
         if(texture is null)
@@ -269,94 +278,69 @@ class HipSpriteBatch : IHipBatch
         int slot = setTexture(texture);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
 
-        size_t startVertex = HipSpriteVertex.quadCount*quadsCount;
-        size_t endVertex = startVertex + HipSpriteVertex.quadCount;
+        size_t startVertex = quadsCount *4;
+        size_t endVertex = startVertex + 4;
 
-        getTextureVertices(vertices[startVertex..endVertex], slot, texture,x,y,z,color, scaleX, scaleY, rotation);
+        getTextureVertices(vertices[startVertex..endVertex], slot, texture,x,y,managedDepth,color, scaleX, scaleY, rotation);
         quadsCount++;
     }
 
 
-    void draw(IHipTextureRegion reg, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    void draw(IHipTextureRegion reg, int x, int y, int z = 0, in HipColorf color = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
+        if(color.a == 0) return;
         if(quadsCount+1 > maxQuads)
             flush();
-        size_t startVertex = HipSpriteVertex.quadCount*quadsCount;
-        size_t endVertex = startVertex + HipSpriteVertex.quadCount;
         ErrorHandler.assertExit(reg.getWidth() != 0 && reg.getHeight() != 0, "Tried to draw 0 bounds region");
         int slot = setTexture(reg);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
+        size_t startVertex = quadsCount*4;
+        size_t endVertex = startVertex + 4;
 
-        getTextureRegionVertices(vertices[startVertex..endVertex], slot, reg,x,y,z,color, scaleX, scaleY, rotation);
+        getTextureRegionVertices(vertices[startVertex..endVertex], slot, reg,x,y,managedDepth,color, scaleX, scaleY, rotation);
         quadsCount++;
     }
 
-    private static void setColor(float[] ret, in HipColor color)
+    private static void setColor(HipSpriteVertex[] ret, in HipColorf color)
     {
-        ret[R1] = color.r;
-        ret[G1] = color.g;
-        ret[B1] = color.b;
-        ret[A1] = color.a;
-
-        ret[R2] = color.r;
-        ret[G2] = color.g;
-        ret[B2] = color.b;
-        ret[A2] = color.a;
-
-        ret[R3] = color.r;
-        ret[G3] = color.g;
-        ret[B3] = color.b;
-        ret[A3] = color.a;
-
-        ret[R4] = color.r;
-        ret[G4] = color.g;
-        ret[B4] = color.b;
-        ret[A4] = color.a;
+        ret[0].vColor = color;
+        ret[1].vColor = color;
+        ret[2].vColor = color;
+        ret[3].vColor = color;
     }
 
-    private static void setZ(float[] vertices, float z)
+    private static void setZ(HipSpriteVertex[] vertices, float z)
     {
-        vertices[Z1] = z;
-        vertices[Z2] = z;
-        vertices[Z3] = z;
-        vertices[Z4] = z;
+        vertices[0].vPosition.z = z;
+        vertices[1].vPosition.z = z;
+        vertices[2].vPosition.z = z;
+        vertices[3].vPosition.z = z;
     }
-    private static void setUV(float[] vertices, in float[8] uv)
+    private static void setUV(HipSpriteVertex[] vertices, in float[8] uv)
     {
-        vertices[U1] = uv[0];
-        vertices[V1] = uv[1];
-        vertices[U2] = uv[2];
-        vertices[V2] = uv[3];
-        vertices[U3] = uv[4];
-        vertices[V3] = uv[5];
-        vertices[U4] = uv[6];
-        vertices[V4] = uv[7];
+        vertices[0].vTexST = Vector2(uv[0], uv[1]);
+        vertices[1].vTexST = Vector2(uv[2], uv[3]);
+        vertices[2].vTexST = Vector2(uv[4], uv[5]);
+        vertices[3].vTexST = Vector2(uv[6], uv[7]);
     }
-    private static void setTID(float[] vertices, int tid)
+    private static void setTID(HipSpriteVertex[] vertices, int tid)
     {
-        vertices[T1] = tid;
-        vertices[T2] = tid;
-        vertices[T3] = tid;
-        vertices[T4] = tid;
+        vertices[0].vTexID = tid;
+        vertices[1].vTexID = tid;
+        vertices[2].vTexID = tid;
+        vertices[3].vTexID = tid;
     }
-    private static void setBounds(float[] vertices, float x, float y, float width, float height, float scaleX = 1, float scaleY = 1)
+    private static void setBounds(HipSpriteVertex[] vertices, float x, float y, float width, float height, float scaleX = 1, float scaleY = 1)
     {
         width*= scaleX;
         height*= scaleY;
-        vertices[X1] = x;
-        vertices[Y1] = y;
-
-        vertices[X2] = x+width;
-        vertices[Y2] = y;
-        
-        vertices[X3] = x+width;
-        vertices[Y3] = y+height;
-
-        vertices[X4] = x;
-        vertices[Y4] = y+height;
+        vertices[0].vPosition.xy = Vector2(x, y);
+        vertices[1].vPosition.xy = Vector2(x+width, y);
+        vertices[2].vPosition.xy = Vector2(x+width, y+height);
+        vertices[3].vPosition.xy = Vector2(x, y+height);
     }
 
-    private static void setBoundsFromRotation(float[] vertices, float x, float y, float width, float height, float rotation, float scaleX = 1, float scaleY = 1)
+    private static void setBoundsFromRotation(HipSpriteVertex[] vertices, float x, float y, float width, float height, float rotation, float scaleX = 1, float scaleY = 1)
     {
         import hip.math.utils:cos,sin;
         width*= scaleX;
@@ -368,22 +352,15 @@ class HipSpriteBatch : IHipBatch
         float c = cos(rotation);
         float s = sin(rotation);
 
-        vertices[X1] = c*centerX - s*centerY + x;
-        vertices[Y1] = c*centerY + s*centerX + y;
-
-        vertices[X2] = c*x2 - s*centerY + x;
-        vertices[Y2] = c*centerY + s*x2 + y;
-        
-        vertices[X3] = c*x2 - s*y2 + x;
-        vertices[Y3] = c*y2 + s*x2 + y;
-
-        vertices[X4] = c*centerX - s*y2 + x;
-        vertices[Y4] = c*y2 + s*centerX + y;
+        vertices[0].vPosition.xy = Vector2(c*centerX - s*centerY + x, c*centerY + s*centerX + y);
+        vertices[1].vPosition.xy = Vector2(c*x2 - s*centerY + x, c*centerY + s*x2 + y);
+        vertices[2].vPosition.xy = Vector2(c*x2 - s*y2 + x, c*y2 + s*x2 + y);
+        vertices[3].vPosition.xy = Vector2(c*centerX - s*y2 + x, c*y2 + s*centerX + y);
     }
 
 
-    static void getTextureVertices(float[] output, int slot, IHipTexture texture,
-    int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    static void getTextureVertices(HipSpriteVertex[] output, int slot, IHipTexture texture,
+    int x, int y, float z = 0, in HipColorf color = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         int width = texture.getWidth();
         int height = texture.getHeight();
@@ -399,8 +376,8 @@ class HipSpriteBatch : IHipBatch
             setBoundsFromRotation(output, x, y, width, height, rotation, scaleX, scaleY);
     }
 
-    static void getTextureRegionVertices(float[] output, int slot, IHipTextureRegion reg,
-    int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    static void getTextureRegionVertices(HipSpriteVertex[] output, int slot, IHipTextureRegion reg,
+    int x, int y, float z = 0, in HipColorf color = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         int width = reg.getWidth();
         int height = reg.getHeight();
@@ -414,100 +391,48 @@ class HipSpriteBatch : IHipBatch
             setBoundsFromRotation(output, x, y, width, height, rotation, scaleX, scaleY);
     }
 
-    void render()
-    {
-        if(ppShader !is null)
-            fb.bind();
-        flush();
-        if(ppShader !is null)
-        {
-            fb.unbind();
-            draw(fbTexRegion, 0,0 );
-            flush();
-        }
-    }
+    
 
-    void flush()
+    void draw()
     {
-        if(quadsCount != 0)
+        if(quadsCount - lastDrawQuadsCount != 0)
         {
-            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
-            // mesh.shader.bind();
-            // mesh.shader.setFragmentVar("uBatchColor", cast(float[4])[1,1,1,1]);
-            // material.bind();
-
+            for(int i = usingTexturesCount; i < currentTextures.length; i++)
+                currentTextures[i] = currentTextures[0];
             mesh.bind();
-            mesh.shader.initTextureSlots(currentTextures[0], "uTex1", HipRenderer.getMaxSupportedShaderTextures());
 
-            mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj, true);
-            mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity(), true);
-            mesh.shader.setVertexVar("Cbuf1.uView", camera.view, true);
-            
-            foreach(i; 0..usingTexturesCount)
-                currentTextures[i].bind(i);
+            mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj, false);
+            mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity(), false);
+            mesh.shader.setVertexVar("Cbuf1.uView", camera.view, false);
+            mesh.shader.setFragmentVar("Cbuf.uTex", currentTextures);
+            mesh.shader.bindArrayOfTextures(currentTextures, "uTex");
             mesh.shader.sendVars();
 
-            mesh.updateVertices(vertices[0..quadsCount*HipSpriteVertex.quadCount]);
-            mesh.draw(quadsCount*6);
+            size_t start = lastDrawQuadsCount*4;
+            size_t end = quadsCount*4;
+            mesh.updateVertices(cast(float[])vertices[start..end],cast(int)start);
+            mesh.draw((quadsCount-lastDrawQuadsCount)*6, HipRendererMode.TRIANGLES, lastDrawQuadsCount*6);
 
             ///Some operations may require texture unbinding(D3D11 Framebuffer)
             foreach(i; 0..usingTexturesCount)
                 currentTextures[i].unbind(i);
             mesh.unbind();
         }
-        quadsCount = 0;
-        usingTexturesCount = 0;
+        lastDrawQuadsCount = quadsCount;
     }
-}
 
-
-enum
-{
-    //X, Y, Z (Position)
-    //R, G, B, A (Color)
-    //U, V (HipTexture Coordinates)
-    //T (HipTexture Slot/Index)
-    X1 = 0,
-    Y1,
-    Z1,
-    R1,
-    G1,
-    B1,
-    A1,
-    U1,
-    V1,
-    T1,
-
-    X2,
-    Y2,
-    Z2,
-    R2,
-    G2,
-    B2,
-    A2,
-    U2,
-    V2,
-    T2,
-
-    X3,
-    Y3,
-    Z3,
-    R3,
-    G3,
-    B3,
-    A3,
-    U3,
-    V3,
-    T3,
-
-    X4,
-    Y4,
-    Z4,
-    R4,
-    G4,
-    B4,
-    A4,
-    U4,
-    V4,
-    T4
+    void flush()
+    {
+        if(ppShader !is null)
+            fb.bind();
+        draw();
+        lastDrawQuadsCount = quadsCount = usingTexturesCount = 0;
+        if(ppShader !is null)
+        {
+            fb.unbind();
+            draw(fbTexRegion, 0,0 );
+            draw();
+        }
+        lastDrawQuadsCount = quadsCount = usingTexturesCount = 0;
+    }
 }

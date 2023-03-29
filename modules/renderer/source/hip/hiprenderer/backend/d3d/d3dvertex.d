@@ -48,8 +48,12 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         _hip_d3d_context.IASetVertexBuffers(0, 0, null, null, null);
         HipRenderer.exitOnError();
     }
+
+
+    bool started = false;
     void createBuffer(ulong size, const void* data)
     {
+        started = true;
         this.size = size;
         D3D11_BUFFER_DESC bd;
         bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -63,7 +67,9 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         sd.pSysMem = cast(void*)data;
 
         //TODO: Check failure
-        _hip_d3d_device.CreateBuffer(&bd, &sd, &buffer);
+
+        d3dCall(() => _hip_d3d_device.CreateBuffer(&bd, &sd, &buffer));
+        
         HipRenderer.exitOnError();
     }
     void setData(size_t size, const(void*) data)
@@ -78,6 +84,7 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         ErrorHandler.assertLazyExit(size+offset <= this.size,
         "Tried to set data with size "~to!string(size)~" and offset "~to!string(offset)~
         "for vertex buffer with size "~to!string(this.size));
+
         D3D11_MAPPED_SUBRESOURCE resource;
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
         memcpy(resource.pData+offset, data, size);
@@ -240,42 +247,35 @@ private DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref HipVertexAttributeInfo info)
     DXGI_FORMAT ret;
     switch(info.valueType)
     {
-        case HipAttributeType.FLOAT:
+        case HipAttributeType.Float:
             switch(info.count)
             {
-                case 1:
-                    ret = DXGI_FORMAT_R32_FLOAT;
-                    break;
-                case 2:
-                    ret = DXGI_FORMAT_R32G32_FLOAT;
-                    break;
-                case 3:
-                    ret = DXGI_FORMAT_R32G32B32_FLOAT;
-                    break;
-                case 4:
-                    ret = DXGI_FORMAT_R32G32B32A32_FLOAT;
-                    break;
+                case 1: ret = DXGI_FORMAT_R32_FLOAT; break;
+                case 2: ret = DXGI_FORMAT_R32G32_FLOAT; break;
+                case 3: ret = DXGI_FORMAT_R32G32B32_FLOAT; break;
+                case 4: ret = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
                 default:
                     ErrorHandler.showErrorMessage("DXGI Format Error",
                     "Unknown format type from float with length " ~ to!string(info.count));
             }
             break;
-        case HipAttributeType.BOOL:
-        case HipAttributeType.INT:
+        case HipAttributeType.Uint:
             switch(info.count)
             {
-                case 1:
-                    ret = DXGI_FORMAT_R32_SINT;
-                    break;
-                case 2:
-                    ret = DXGI_FORMAT_R32G32_SINT;
-                    break;
-                case 3:
-                    ret = DXGI_FORMAT_R32G32B32_SINT;
-                    break;
-                case 4:
-                    ret = DXGI_FORMAT_R32G32B32A32_SINT;
-                    break;
+                case 1: ret = DXGI_FORMAT_R32_UINT; break;
+                default:
+                    ErrorHandler.showErrorMessage("DXGI Format Error",
+                    "Unknown format type from uint with length " ~ to!string(info.count));
+            }
+            break;
+        case HipAttributeType.Bool:
+        case HipAttributeType.Int:
+            switch(info.count)
+            {
+                case 1: ret = DXGI_FORMAT_R32_SINT; break;
+                case 2: ret = DXGI_FORMAT_R32G32_SINT; break;
+                case 3: ret = DXGI_FORMAT_R32G32B32_SINT; break;
+                case 4: ret = DXGI_FORMAT_R32G32B32A32_SINT; break;
                 default:
                     ErrorHandler.showErrorMessage("DXGI Format Error",
                     "Unknown format type from int/bool with length " ~ to!string(info.count));

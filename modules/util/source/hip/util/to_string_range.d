@@ -63,7 +63,7 @@ void toStringRange(Sink)(ref Sink sink, float f)
 
 
 void toStringRange(Sink, T)(auto ref Sink sink, T[] arr)
-if(isOutputRange!(Sink, char) && !is(T[] == string)) //There is a better match for string
+if(isOutputRange!(Sink, char) && !is(T[] == string) && !is(T[] == char[])) //There is a better match for char/string
 {
     static if(__traits(compiles, sink.preAllocate))
     {

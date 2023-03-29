@@ -34,8 +34,6 @@ version(OpenGL):
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
 import hip.hiprenderer.shader;
-import hip.hiprenderer.backend.gl.glframebuffer;
-import hip.hiprenderer.backend.gl.glshader;
 import hip.hiprenderer.viewport;
 import hip.windowing.window;
 import hip.util.conv;
@@ -43,6 +41,9 @@ import hip.math.rect;
 import hip.console.log;
 import hip.error.handler;
 
+import hip.hiprenderer.backend.gl.gltexture;
+import hip.hiprenderer.backend.gl.glframebuffer;
+import hip.hiprenderer.backend.gl.glshader;
 
 private __gshared bool errorCheckEnabled = true;
 
@@ -93,6 +94,17 @@ class Hip_GL3Renderer : IHipRendererImpl
             return new Shader(new Hip_GL3_ShaderImpl());
         else
             return new Shader(new Hip_GL_ShaderImpl());
+    }
+    ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length)
+    {
+        switch(uniformType) with(UniformType)
+        {
+            case texture_array:
+            {
+                return ShaderVar.createBlackboxed(shaderType, varName, uniformType, GLuint.sizeof*length, GLuint.sizeof);
+            }
+            default: return null;
+        }
     }
     version(dll)public bool initExternal(){return init(null);}
     public bool init(HipWindow window)
@@ -157,6 +169,10 @@ class Hip_GL3Renderer : IHipRendererImpl
         else
             return new Hip_GL_VertexArrayObject();
     }
+    public IHipTexture createTexture()
+    {
+        return new Hip_GL3_Texture();
+    }
     public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage)
     {
         return new Hip_GL3_VertexBufferObject(size, usage);
@@ -165,6 +181,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         return new Hip_GL3_IndexBufferObject(count, usage);
     }
+
 
     public void setViewport(Viewport v)
     {
@@ -270,105 +287,37 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         final switch(mode) with(HipRendererMode)
         {
-            case POINT:
-                return GL_POINTS;
-            case LINE:
-                return GL_LINES;
-            case LINE_STRIP:
-                return GL_LINE_STRIP;
-            case TRIANGLES:
-                return GL_TRIANGLES;
-            case TRIANGLE_STRIP:
-                return GL_TRIANGLE_STRIP;
-        }
-    }
-    protected GLenum getGLBlendFunction(HipBlendFunction func)
-    {
-        final switch(func) with(HipBlendFunction)
-        {
-            case  ZERO:
-                return GL_ZERO;
-            case  ONE:
-                return GL_ONE;
-            case  SRC_COLOR:
-                return GL_SRC_COLOR;
-            case  ONE_MINUS_SRC_COLOR:
-                return GL_ONE_MINUS_SRC_COLOR;
-            case  DST_COLOR:
-                return GL_DST_COLOR;
-            case  ONE_MINUS_DST_COLOR:
-                return GL_ONE_MINUS_DST_COLOR;
-            case  SRC_ALPHA:
-                return GL_SRC_ALPHA;
-            case  ONE_MINUS_SRC_ALPHA:
-                return GL_ONE_MINUS_SRC_ALPHA;
-            case  DST_ALPHA:
-                return GL_DST_ALPHA;
-            case  ONE_MINUST_DST_ALPHA:
-                return GL_ONE_MINUS_DST_ALPHA;
-            case  CONSTANT_COLOR:
-                return GL_CONSTANT_COLOR;
-            case  ONE_MINUS_CONSTANT_COLOR:
-                return GL_ONE_MINUS_CONSTANT_COLOR;
-            case  CONSTANT_ALPHA:
-                return GL_CONSTANT_ALPHA;
-            case  ONE_MINUS_CONSTANT_ALPHA:
-                return GL_ONE_MINUS_CONSTANT_ALPHA;
-        }
-    }
-    protected GLenum getGLBlendEquation(HipBlendEquation eq)
-    {
-        final switch(eq) with (HipBlendEquation)
-        {
-            case ADD:
-                return GL_FUNC_ADD;
-            case SUBTRACT:
-                return GL_FUNC_SUBTRACT;
-            case REVERSE_SUBTRACT:
-                return GL_FUNC_REVERSE_SUBTRACT;
-            case MIN:
-                return GL_MIN;
-            case MAX:
-                return GL_MAX;
+            case POINT: return GL_POINTS;
+            case LINE: return GL_LINES;
+            case LINE_STRIP: return GL_LINE_STRIP;
+            case TRIANGLES: return GL_TRIANGLES;
+            case TRIANGLE_STRIP: return GL_TRIANGLE_STRIP;
         }
     }
     public void setRendererMode(HipRendererMode mode)
     {
         this.mode = getGLRendererMode(mode);
     }
+    /**
+    *   Offset is per byte based
+    */
     public void drawVertices(index_t count, uint offset)
     {
         glCall(() => glDrawArrays(this.mode, offset, count));
     }
+    /**
+    *   Offset will always be based per index_t.
+    */
     public void drawIndexed(index_t indicesCount, uint offset = 0)
     {
         static if(is(index_t == uint))
-            glCall(() => glDrawElements(this.mode, indicesCount, GL_UNSIGNED_INT, cast(void*)offset));
+            glCall(() => glDrawElements(this.mode, indicesCount, GL_UNSIGNED_INT, cast(void*)(offset*index_t.sizeof)));
         else
-            glCall(() => glDrawElements(this.mode, indicesCount, GL_UNSIGNED_SHORT, cast(void*)offset));
+            glCall(() => glDrawElements(this.mode, indicesCount, GL_UNSIGNED_SHORT, cast(void*)(offset*index_t.sizeof)));
     }
 
     bool isBlendingEnabled() const {return isGLBlendEnabled;}
-    public void setBlendFunction(HipBlendFunction src, HipBlendFunction dst)
-    {
-        if(!isGLBlendEnabled)
-        {
-            glCall(() => glEnable(GL_BLEND));
-            isGLBlendEnabled = true;
-        }
-        glCall(() => glBlendFunc(getGLBlendFunction(src), getGLBlendFunction(dst)));
-    }
-
-    public void setBlendingEquation(HipBlendEquation eq)
-    {
-        if(!isGLBlendEnabled)
-        {
-            glCall(() => glEnable(GL_BLEND));
-            isGLBlendEnabled = true;
-        }
-        glCall(() => glBlendEquation(getGLBlendEquation(eq)));
-    }
-
+    
     public void dispose()
     {
         if(window !is null)
@@ -376,4 +325,13 @@ class Hip_GL3Renderer : IHipRendererImpl
             window.destroyOpenGLContext();
         }
     }
+    
+    public void setDepthTestingFunction(HipDepthTestingFunction)
+    {
+    }
+    public void setDepthTestingEnabled(bool)
+    {
+
+    }
+    
 }

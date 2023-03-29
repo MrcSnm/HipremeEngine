@@ -17,6 +17,11 @@
 		"-mixin=mixed.d",
 		"-J."
 	],
+	"dflags-dmd": ["-op"],
+	"dflags-ldc": ["--disable-verify", "--oq"],
+	"lflags-windows": [
+		"/DEBUG:FASTLINK"
+	],
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipCheckUnknownKeycode",
@@ -58,26 +63,57 @@
 				"OpenAL",
 				"Desktop",
 				"Standalone",
-				"Test",
-				"NO_GLES",
-				"NO_SLES"
-			],
-			"dflags-ldc": [
-				"--disable-verify"
-			],
-			"lflags-windows": [
-				"/DEBUG:FASTLINK"
-			],
-			"buildOptions": [
-				"debugMode",
-				"debugInfo",
-				"debugInfoC"
+				"Test"
 			],
 			"versions-windows": [
 				"Direct3D_11",
 				"DirectX",
 				"XAudio2"
 			]
+		},
+		{
+			"name": "appleos",
+			"targetPath": "bin/desktop",
+			"targetType": "executable",
+			"dflags": [
+				"-checkaction=D"
+			],
+			"stringImportPaths": [
+				"tools/build/release_game/"
+			],
+			"sourcePaths": [
+				"tools/build/release_game/source"
+			],
+			"versions": [
+				"OpenAL",
+				"Standalone",
+				"AppleOS"
+			],
+			"subConfigurations": {
+				"renderer": "appleos" 
+			}
+		},
+		{
+			"name": "appleos-main",
+			"targetPath": "build/appleos/HipremeEngine D/libs",
+			"targetType": "staticLibrary",
+			"dflags": [
+				"-checkaction=D"
+			],
+			"stringImportPaths": [
+				"tools/build/release_game/"
+			],
+			"sourcePaths": [
+				"tools/build/release_game/source"
+			],
+			"versions": [
+				"OpenAL",
+				"Standalone",
+				"AppleOS"
+			],
+			"subConfigurations": {
+				"renderer": "appleos" 
+			}
 		},
 		{
 			"name": "nodx",
@@ -88,19 +124,12 @@
 				"OpenAL",
 				"Desktop",
 				"Standalone",
-				"Test",
-				"NO_GLES",
-				"NO_SLES"
+				"Test"
 			],
 			"subConfigurations": {
 				"audio": "nodx",
 				"renderer": "nodx"
-			},
-			"buildOptions": [
-				"debugMode",
-				"debugInfo",
-				"debugInfoC"
-			]
+			}
 		},
 		{
 			"name": "script",
@@ -114,20 +143,13 @@
 				"OpenAL",
 				"Desktop",
 				"Load_DScript",
-				"Standalone",
-				"NO_GLES",
-				"NO_SLES"
+				"Standalone"
 			],
 			"dflags-linux": [
 				"-link-defaultlib-shared"
 			],
 			"lflags-linux": [
 				"--export-dynamic"
-			],
-			"buildOptions": [
-				"debugMode",
-				"debugInfo",
-				"debugInfoC"
 			],
 			"versions-windows": [
 				"Direct3D_11",
@@ -138,10 +160,10 @@
 		{
 			"name": "game",
 			"stringImportPaths": [
-				"build/release_game/"
+				"tools/build/release_game/"
 			],
 			"sourcePaths": [
-				"build/release_game/source"
+				"tools/build/release_game/source"
 			],
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
@@ -165,7 +187,7 @@
 				"optimize"
 			],
 			"sourcePaths": [
-				"build/release_game/source"
+				"tools/build/release_game/source"
 			],
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
@@ -184,7 +206,7 @@
 		{
 			"name": "uwp",
 			"sourcePaths": [
-				"build/release_game/source"
+				"tools/build/release_game/source"
 			],
 			"subConfigurations": {
 				"audio": "uwp",
@@ -239,11 +261,11 @@
 				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"sourcePaths": [
-				"build/release_game/source"
+				"tools/build/release_game/source"
 			],
 			"stringImportPaths": [
 				"build/wasm/generated",
-				"build/release_game/"
+				"tools/build/release_game/"
 			],
 			"postGenerateCommands": [
 				"set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true",
@@ -273,10 +295,10 @@
 				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"sourcePaths": [
-				"build/release_game/source"
+				"tools/build/release_game/source"
 			],
 			"stringImportPaths": [
-				"build/release_game/"
+				"tools/build/release_game/"
 			],
 			"subConfigurations": {
 				"runtime": "psvita",
@@ -302,10 +324,10 @@
 				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"sourcePaths": [
-				"build/release_game/source"
+				"tools/build/release_game/source"
 			],
 			"stringImportPaths": [
-				"build/release_game/"
+				"tools/build/release_game/"
 			],
 			"subConfigurations": {
 				"runtime": "psvita",
@@ -332,10 +354,10 @@
 				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"sourcePaths": [
-				"build/release_game/source"
+				"tools/build/release_game/source"
 			],
 			"stringImportPaths": [
-				"build/release_game/"
+				"tools/build/release_game/"
 			],
 			"lflags-windows": [
 				"/SUBSYSTEM:CONSOLE"
@@ -371,7 +393,7 @@
 				"GLESv3"
 			],
 			"sourcePaths": [
-				"build/release_game"
+				"tools/build/release_game"
 			],
 			"dependencies": {
 				"jni": {"path": "./modules/jni", "version": "*"},

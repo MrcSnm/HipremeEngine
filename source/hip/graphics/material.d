@@ -54,17 +54,15 @@ class Material
         ShaderVar* variable = (varName in variables);
         if(variable is null)
         {
-            import core.stdc.stdlib : malloc;
             ShaderVar s;
-            s.data = malloc(varSize);
+            s.data = new void[varSize];
             s.name = varName;
             s.shaderType = t;
             s.type = type;
-            s.varSize = varSize;
             variables[varName] = s;
             variable = (varName in variables);
         }
-        memcpy(variable.data, varData, variable.varSize);
+        memcpy(variable.data.ptr, varData, variable.varSize);
     }
 
     protected void setShaderVar(ref ShaderVar v)
@@ -134,6 +132,8 @@ private string getSetShaderVarCall(string shaderT)
             break;
         case floating_array:
             shader.set$Var(v.name, *cast(float[]*)v.data);
+            break;
+        case texture_array:
             break;
         case none:
             ErrorHandler.assertExit(false, "Can't set ShaderVar of type 'none'");

@@ -15,82 +15,50 @@ import hip.error.handler;
 
 struct VarPosition
 {
-    uint startPos;
-    uint endPos;
-    uint size;
+    size_t startPos;
+    size_t endPos;
+    size_t size;
 }
-
-private uint getVarSize(ref ShaderVar* v, uint n)
-{
-    final switch(v.type) with(UniformType)
-    {
-        case floating:
-        case uinteger:
-        case integer:
-        case boolean:
-            return n;
-        case integer_array:
-            return cast(uint)(n * v.get!(int[]).length);
-        case uinteger_array:
-            return cast(uint)(n * v.get!(uint[]).length);
-        case floating_array:
-            return cast(uint)(n * v.get!(float[]).length);
-        case floating2:
-            return n*2;
-        case floating3:
-        case floating4:
-        case floating2x2:
-            return n*4;
-        case floating3x3:
-            return n*12;
-        case floating4x4:
-            return n*16;
-        case none:
-            ErrorHandler.assertExit(false, "Can't use none uniform type on ShaderVariablesLayout");
-            return 0;
-    }
-}
-
 
 /**
 *   Uses the OpenGL's GLSL Std 140 for getting the variable position.
 *   This function must return what is the end position given the last variable size.
 */
-VarPosition glSTD140(ref ShaderVar* v, uint lastAlignment = 0, bool isLast = false, uint n = float.sizeof)
+VarPosition glSTD140(ref ShaderVar* v, size_t lastAlignment = 0, bool isLast = false)
 {
-    uint newN = getVarSize(v, n);
+    size_t size = v.varSize;
     
     if(lastAlignment == 0)
-        return VarPosition(0,newN,newN);
+        return VarPosition(0,size,size);
 
-    uint n4 = n*4;
+    size_t size4 = size*4;
 
     //((8 % 16) > (8+8) % 16  || 8 % 16 == 0) && (8+8 % 16 != 0)
     // 8 + (8 % 16) + 8 
     
-    if((lastAlignment % n4 > (lastAlignment+newN) % n4 || newN % n4 == 0) && (lastAlignment+newN) % n4 != 0)
+    if((lastAlignment % size4 > (lastAlignment+size) % size4 || size % size4 == 0) && (lastAlignment+size) % size4 != 0)
     {
-        uint startPos = lastAlignment;
-        if(startPos % n4 != 0) startPos = startPos + (n4 - (startPos % n4));
+        size_t startPos = lastAlignment;
+        if(startPos % size4 != 0) startPos = startPos + (size4 - (startPos % size4));
 
-        return VarPosition(startPos, startPos+newN, newN);
+        return VarPosition(startPos, startPos+size, size);
     }
     
-    return VarPosition(lastAlignment, lastAlignment + newN, newN);
+    return VarPosition(lastAlignment, lastAlignment + size, size);
 }
 
 /**
 *   Uses the OpenGL's GLSL Std 140 for getting the variable position.
 *   This function must return what is the end position given the last variable size.
 */
-VarPosition dxHLSL4(ref ShaderVar* v, uint lastAlignment = 0, bool isLast = false, uint n = float.sizeof)
+VarPosition dxHLSL4(ref ShaderVar* v, size_t lastAlignment = 0, bool isLast = false)
 {
-    uint newN = getVarSize(v,n);
+    size_t newN = v.varSize;
     if(isLast)
     {
-        uint startPos = lastAlignment;
+        size_t startPos = lastAlignment;
         if(startPos % 16 != 0) startPos = startPos + (16 - (startPos % 16));
-        uint endPos = startPos+newN;
+        size_t endPos = startPos+newN;
         if(endPos % 16 != 0) endPos = endPos + (16 - (endPos % 16));
         return VarPosition(startPos, endPos, newN);
     }
@@ -98,21 +66,21 @@ VarPosition dxHLSL4(ref ShaderVar* v, uint lastAlignment = 0, bool isLast = fals
         return VarPosition(0,newN,newN);
 
    
-    uint n4 = n*4;
+    size_t n4 = newN*4;
 
     //((8 % 16) > (8+8) % 16  || 8 % 16 == 0) && (8+8 % 16 != 0)
     // 8 + (8 % 16) + 8 
     
     if((lastAlignment % n4 > (lastAlignment+newN) % n4 || newN % n4 == 0) && (lastAlignment+newN) % n4 != 0)
     {
-        uint startPos = lastAlignment+ (lastAlignment % n4);
+        size_t startPos = lastAlignment+ (lastAlignment % n4);
         return VarPosition(startPos, startPos+newN, newN);
     }
     
     return VarPosition(lastAlignment, lastAlignment + newN, newN);
 }
 
-VarPosition nonePack(ref ShaderVar* v, uint lastAlignment = 0, bool isLast = false, uint n = float.sizeof)
+VarPosition nonePack(ref ShaderVar* v, size_t lastAlignment = 0, bool isLast = false)
 {
     return VarPosition(0,0,0);
 }

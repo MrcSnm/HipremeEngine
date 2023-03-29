@@ -261,7 +261,7 @@ class EventDispatcher
 
 version(Windows)
 {
-    private HipKey getHipKeyFromSystem(uint key)
+    public HipKey getHipKeyFromSystem(uint key)
     {
         import core.sys.windows.winuser;
         ushort k = cast(ushort)(key);
@@ -389,9 +389,9 @@ version(Windows)
         }
     }
 }
-else version(Posix)
+else version(linux)
 {
-    private HipKey getHipKeyFromSystem(uint key)
+    public HipKey getHipKeyFromSystem(uint key)
     {
         import hip.windowing.platforms.x11lib.keysym;
         switch(key)
@@ -511,7 +511,9 @@ else version(Posix)
                 version(HipCheckUnknownKeycode)
                 {
                     import hip.util.conv:to;
-                    assert(false, "Unknown key received ("~to!string(key)~")");
+                    import hip.error.handler;
+                    ErrorHandler.assertExit(false, "Unknown key received ("~to!string(key)~")");
+                    return cast(HipKey)0;
                 }
                 else
                     return cast(HipKey)key;
@@ -521,9 +523,8 @@ else version(Posix)
 }
 else version(WebAssembly)
 {
-    private HipKey getHipKeyFromSystem(uint key)
+    public HipKey getHipKeyFromSystem(uint key)
     {
-        import core.sys.windows.winuser;
         ushort k = cast(ushort)(key);
         assert(k > 0 && k < ubyte.max, "Key out of range");
         switch(k)
@@ -638,7 +639,92 @@ else version(WebAssembly)
         }
     }
 }
+else version(AppleOS)
+{
+    public HipKey getHipKeyFromSystem(uint key)
+    {
+        switch(key)
+        {
+
+            //Special Chars
+            case  0x31: return HipKey.SPACE; //space
+            case  0x24: return HipKey.ENTER; //returnKey
+            case  0x4C: return HipKey.ENTER; //enterKey
+            case  0x35: return HipKey.ESCAPE; //escape
+            case  0x38: return HipKey.SHIFT; //shift
+            case  0x37: return HipKey.ALT; //command
+            
+            //DPad Keys
+            case  0x7B: return HipKey.ARROW_LEFT; //leftArrow
+            case  0x7C: return HipKey.ARROW_RIGHT; //rightArrow
+            case  0x7D: return HipKey.ARROW_DOWN; //downArrow
+            case  0x7E: return HipKey.ARROW_UP; //upArrow
+            
+            //Alphabet
+            case  0x00: return HipKey.A; //a
+            case  0x0B: return HipKey.B; //b
+            case  0x08: return HipKey.C; //c
+            case  0x02: return HipKey.D; //d
+            case  0x0E: return HipKey.E; //e
+            case  0x03: return HipKey.F; //f
+            case  0x05: return HipKey.G; //g
+            case  0x04: return HipKey.H; //h
+            case  0x22: return HipKey.I; //i
+            case  0x26: return HipKey.J; //j
+            case  0x28: return HipKey.K; //k
+            case  0x25: return HipKey.L; //l
+            case  0x2E: return HipKey.M; //m
+            case  0x2D: return HipKey.N; //n
+            case  0x1F: return HipKey.O; //o
+            case  0x23: return HipKey.P; //p
+            case  0x0C: return HipKey.Q; //q
+            case  0x0F: return HipKey.R; //r
+            case  0x01: return HipKey.S; //s
+            case  0x11: return HipKey.T; //t
+            case  0x20: return HipKey.U; //u
+            case  0x09: return HipKey.V; //v
+            case  0x0D: return HipKey.W; //w
+            case  0x07: return HipKey.X; //x
+            case  0x10: return HipKey.Y; //y
+            case  0x06: return HipKey.Z; //z
+            
+            //Top Numbers
+            case  0x1D: return HipKey._0;//zero
+            case  0x12: return HipKey._1; //one
+            case  0x13: return HipKey._2;//two
+            case  0x14: return HipKey._3;//three
+            case  0x15: return HipKey._4;//four
+            case  0x17: return HipKey._5;//five
+            case  0x16: return HipKey._6;//six
+            case  0x1A: return HipKey._7;//seven
+            case  0x1C: return HipKey._8;//eight
+            case  0x19: return HipKey._9;//nine
+            
+            //Keypad Numbers
+            case  0x52: return HipKey._0; //keypad0
+            case  0x53: return HipKey._1; //keypad1
+            case  0x54: return HipKey._2; //keypad2
+            case  0x55: return HipKey._3; //keypad3
+            case  0x56: return HipKey._4; //keypad4
+            case  0x57: return HipKey._5; //keypad5
+            case  0x58: return HipKey._6; //keypad6
+            case  0x59: return HipKey._7; //keypad7
+            case  0x5B: return HipKey._8; //keypad8
+            case  0x5C: return HipKey._9; //keypad9
+            default:
+                // version(HipCheckUnknownKeycode)
+                // {
+                //     import hip.console.log;
+                //     loglnError("Unknown key received ("~to!string(k)~")");
+                //     assert(false, "Unknown key received ("~to!string(k)~")");
+                // }
+                // else
+                    return cast(HipKey)key;
+
+        }
+    }
+}
 else version(PSVita)
 {
-    private HipKey getHipKeyFromSystem(uint key){return HipKey._0;}
+    public HipKey getHipKeyFromSystem(uint key){return HipKey._0;}
 }

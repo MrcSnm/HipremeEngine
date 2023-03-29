@@ -46,6 +46,8 @@ class HipTexture : HipAsset, IHipTexture
         }
         return pixelTexture;
     }
+
+    IHipTexture getBackendHandle(){return textureImpl.getBackendHandle();}
     /**
     *   Initializes with the current renderer type
     */

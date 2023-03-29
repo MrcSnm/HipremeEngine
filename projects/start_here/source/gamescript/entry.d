@@ -34,8 +34,8 @@ class MainScene : AScene, IHipPreloadable
 	/** Renderer only, may not be called every frame */
 	override void render()
 	{
-        fillRectangle(0, 0, 200, 200, HipColor.red);
-        fillRectangle(0, 0, 100, 100, HipColor.green);
+        fillRectangle(0, 0, 200, 200, HipColorf.red);
+        fillRectangle(0, 0, 100, 100, HipColorf.green);
 
         //Use a non GC allocating string on render (String) for drawing the mousePosition
         import hip.util.string;
@@ -47,23 +47,14 @@ class MainScene : AScene, IHipPreloadable
         
 
         ////////////////////////Higher Level////////////////////////
-        setGeometryColor(HipColor.white);
+        setGeometryColor(HipColorf.white);
         setFont(null);
-        drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        drawText("Hello World Test Scene (Default Font)", 300, 280, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(300, 300, 100, 100);
 
-        drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        drawText("Null Textures uses that sprite over here", 300, 480, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         drawTexture(null, 300, 500);
 
-        /**
-        *   For loading a texture you can execute
-        *   IHipTexture myTexture = HipAssetManager.loadTexture("sprites/theTexture.png").awaitAs!IHipTexture;
-        *
-        *   TODO: Tutorial to play sounds
-        */
-        renderGeometries();
-        renderTexts();
-        renderSprites();
 	}
 	/** Pre destroy */
 	override void dispose()

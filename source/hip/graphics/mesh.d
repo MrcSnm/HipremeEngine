@@ -20,7 +20,6 @@ class Mesh
 {
     protected index_t[] indices;
     protected float[] vertices;
-    protected Shader currentShader;
     ///Not yet supported
     bool isInstanced;
     private bool isBound;
@@ -56,7 +55,7 @@ class Mesh
     }
     void unbind()
     {
-        // if(this.isBound)
+        // if(this.isBound) 
         // {
             this.isBound = false;
             this.shader.unbind();
@@ -96,20 +95,20 @@ class Mesh
     {
         this.vao.updateIndices(cast(index_t)indices.length, indices.ptr, offset);
     }
-
+    /**
+    *   The offset is used to update the GPU internal buffer.
+    *   The offset is always multiplied by the target vertex buffer stride.
+    */
     public void updateVertices(float[] vertices, int offset = 0)
     {
         this.vao.updateVertices(cast(index_t)(vertices.length/this.vao.dataCount), vertices.ptr, offset);
     }
-    public void setShader(Shader s)
-    {
-        this.currentShader = s;
-    }
+    public void setShader(Shader s){this.shader = s;}
 
     /**
     *   How many indices should it draw
     */
-    public void draw(T)(T count)
+    public void draw(T)(T count, HipRendererMode mode, uint offset = 0)
     {
         static assert(isUnsigned!T, "Mesh must receive an integral type in its draw");
         ErrorHandler.assertExit(count < T.max, "Can't draw more than T.max");
@@ -123,8 +122,8 @@ class Mesh
             HipRenderer.drawInstanced()
         }
         */
-        bind();
-        HipRenderer.drawIndexed(cast(index_t)count);
+        if(!isBound) bind();
+        HipRenderer.drawIndexed(mode, cast(index_t)count, offset);
     }
 
 }

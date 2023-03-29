@@ -87,7 +87,8 @@ class GameSystem
         dispatcher = new EventDispatcher(HipRenderer.window);
         dispatcher.addOnResizeListener((uint width, uint height)
         {
-            HipRenderer.setWindowSize(width, height);
+            HipRenderer.width  = width;
+            HipRenderer.height = height;
             resizeRenderer2D(width, height);
             foreach (AScene s; scenes)
                 s.onResize(width, height);
@@ -112,8 +113,6 @@ class GameSystem
                 }, HipButtonType.up
             );
         }
-
-        
         
     }
 
