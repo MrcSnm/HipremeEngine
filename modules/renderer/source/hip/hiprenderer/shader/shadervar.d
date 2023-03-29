@@ -492,15 +492,13 @@ class ShaderVariablesLayout
     */
     ShaderVariablesLayout appendBlackboxed(string varName, UniformType t, size_t length)
     {
-        import hip.console.log;
         ShaderVar* sV = HipRenderer.createShaderVar(this.shaderType, t, varName, length);
-        logln(sV.length, sV.singleSize);
-        sV._isBlackboxed = true;
         if(sV is null)
         {
             unusedBlackboxed~= varName;
             return this;
         }
+        sV._isBlackboxed = true;
         return append(varName, sV);
     }
     /**

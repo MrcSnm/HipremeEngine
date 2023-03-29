@@ -33,10 +33,11 @@ void manageBatchChange(IHipBatch newBatch)
 {
     if(lastBatch !is null && lastBatch !is newBatch)
     {
-        sharedDepth+= 0.01;
-        lastBatch = newBatch;
+        sharedDepth+= 0.1;
+        lastBatch.draw();
         newBatch.setCurrentDepth(sharedDepth);
     }
+    lastBatch = newBatch;
 }
 
 
