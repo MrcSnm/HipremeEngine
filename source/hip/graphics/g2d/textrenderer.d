@@ -98,6 +98,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         mesh.createVertexBuffer(cast(index_t)vertices.length, HipBufferUsage.DYNAMIC);
         mesh.sendAttributes();
         HipVertexArrayObject.putQuadBatchIndices(indices, maxIndices / 6);
+        mesh.setVertices(cast(float[])vertices);
         mesh.setIndices(indices);
         if(camera is null)
             camera = new HipOrthoCamera();
@@ -204,10 +205,8 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             ErrorHandler.showWarningMessage("Font Missing", "No font attached on HipTextRenderer");
             return;
         }
-        import hip.console.log;
-        // if(lastDrawQuadsCount != 0) return;
-        foreach(t; textPool)
-        addVerticesFrom(t);
+        foreach(t; textPool[0..poolActive])
+            addVerticesFrom(t);
         if(quadsCount - lastDrawQuadsCount != 0)
         {
             mesh.bind();

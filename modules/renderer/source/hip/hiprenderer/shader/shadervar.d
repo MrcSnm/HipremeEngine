@@ -96,7 +96,7 @@ struct ShaderVar
     size_t singleSize;
     bool isDynamicArrayReference;
 
-    private bool isDirty = true;
+    bool isDirty = true;
     private bool _isBlackboxed = false;
     public bool isBlackboxed() const { return _isBlackboxed;}
 

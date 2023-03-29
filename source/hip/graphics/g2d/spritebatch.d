@@ -397,8 +397,6 @@ class HipSpriteBatch : IHipBatch
     {
         if(quadsCount - lastDrawQuadsCount != 0)
         {
-            import hip.console.log;
-            rawlog("Using ", usingTexturesCount);
             for(int i = usingTexturesCount; i < currentTextures.length; i++)
                 currentTextures[i] = currentTextures[0];
             mesh.bind();

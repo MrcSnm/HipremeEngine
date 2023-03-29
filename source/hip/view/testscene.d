@@ -90,14 +90,14 @@ class TestScene : Scene, IHipPreloadable
 
         //Use a non GC allocating string on render (String) for drawing the mousePosition
         import hip.util.string;
-        float[2] mousePos = HipInput.getWorldMousePosition();
+        float[2] mousePos = HipInput.getMousePosition();
         setFont(smallFont);
         String s = String(mousePos);
         drawText(s.toString, cast(int)mousePos[0], cast(int)mousePos[1]);
 
         
 
-        // ////////////////////////Higher Level////////////////////////
+        ////////////////////////Higher Level////////////////////////
         setGeometryColor(HipColorf.white);
         setFont(null);
         drawText("Hello World Test Scene (Default Font)", 300, 280, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);

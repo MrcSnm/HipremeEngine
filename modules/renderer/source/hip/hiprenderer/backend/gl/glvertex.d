@@ -92,7 +92,7 @@ class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
         "for vertex buffer with size "~to!string(this.size));
         }
         this.bind();
-        glCall(() => glBufferSubData(GL_ARRAY_BUFFER, offset, size, cast(void*)data));
+        glCall(() => glBufferSubData(GL_ARRAY_BUFFER, offset, size, data));
     }
     ~this(){glCall(() => glDeleteBuffers(1, &this.vbo));}
 }
@@ -139,7 +139,7 @@ class Hip_GL3_IndexBufferObject : IHipIndexBufferImpl
     {
         ErrorHandler.assertExit((offset+count)*index_t.sizeof <= size);
         this.bind();
-        glCall(() => glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, (offset+count)*index_t.sizeof, cast(void*)data));
+        glCall(() => glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, count*index_t.sizeof, cast(void*)data));
     }
     ~this(){glCall(() => glDeleteBuffers(1, &this.ebo));}
 }

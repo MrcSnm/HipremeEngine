@@ -14,6 +14,7 @@
 		"files.exclude": 
 		{
 			"build/appleos/HipremeEngine.xcodeproj/": true,
+			"build/appleos/HipremeEngine Shared/Assets.xcassets": true,
 			"**/.dub" : true,
 			"**/*.lib": true,
 			"**/*.a" : true,

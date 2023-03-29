@@ -184,7 +184,7 @@ class Hip_D3D11_VertexShader : VertexShader
             {
                 float4 inColor : inColor;
                 float2 inTexST : inTexST;
-                int  inTexID : inTexID;
+                float  inTexID : inTexID;
                 float4 vPosition: SV_POSITION;
             };
 
@@ -199,7 +199,7 @@ class Hip_D3D11_VertexShader : VertexShader
                 float3 pos   : vPosition,
                 float4 col   : vColor,
                 float2 texST : vTexST,
-                int  texID : vTexID
+                float  texID : vTexID
                 )
             {
                 VSOut output;
@@ -579,7 +579,7 @@ class Hip_D3D11_ShaderImpl : IShader
             b.BlendOpAlpha = getD3DBlendEquation(HipBlendEquation.ADD);
             b.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
         }        
-        _hip_d3d_device.CreateBlendState(&blend, &p.blendState);
+        _hip_d3d_device.CreateBlendState(&Hip_D3D11_Renderer.blend, &p.blendState);
     }
     
 
@@ -603,4 +603,10 @@ class Hip_D3D11_ShaderImpl : IShader
             vs.vs.Release();
         vs.vs = null;
     }
+    
+    bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
+    {
+        return false;
+    }
+    
 }

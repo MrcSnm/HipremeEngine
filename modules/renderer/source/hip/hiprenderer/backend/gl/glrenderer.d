@@ -185,6 +185,9 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public void setViewport(Viewport v)
     {
+                import hip.console.log;
+        logln("AAAAAAAAAAAAAAAAAAAA\n\n\n\"", v.width, " ", v.height," ", v.x, " ", v.y);
+
         glCall(() => glViewport(cast(int)v.x, cast(int)v.y, cast(GLsizei)v.width, cast(GLsizei)v.height));
     }
     public bool setWindowMode(HipWindowMode mode)
@@ -298,16 +301,22 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         this.mode = getGLRendererMode(mode);
     }
+    /**
+    *   Offset is per byte based
+    */
     public void drawVertices(index_t count, uint offset)
     {
         glCall(() => glDrawArrays(this.mode, offset, count));
     }
+    /**
+    *   Offset will always be based per index_t.
+    */
     public void drawIndexed(index_t indicesCount, uint offset = 0)
     {
         static if(is(index_t == uint))
-            glCall(() => glDrawElements(this.mode, indicesCount, GL_UNSIGNED_INT, cast(void*)offset));
+            glCall(() => glDrawElements(this.mode, indicesCount, GL_UNSIGNED_INT, cast(void*)(offset*index_t.sizeof)));
         else
-            glCall(() => glDrawElements(this.mode, indicesCount, GL_UNSIGNED_SHORT, cast(void*)offset));
+            glCall(() => glDrawElements(this.mode, indicesCount, GL_UNSIGNED_SHORT, cast(void*)(offset*index_t.sizeof)));
     }
 
     bool isBlendingEnabled() const {return isGLBlendEnabled;}
