@@ -5,6 +5,7 @@ import std.array;
 import std.path;
 import std.file;
 import core.stdc.stdlib:EXIT_FAILURE, EXIT_SUCCESS;
+import std.process;
 
 
 
@@ -73,28 +74,6 @@ string findSourceFolder(string gamePath)
 string outputPath = "release_game";
 
 
-// void copyWithNewModuleName(string relativizedName,  string absPath)
-// {
-//     string fileContent = readText(absPath);
-//     long moduleIndex = countUntil(fileContent, "module ");
-
-//     string moduleName = relativizedName.stripExtension.pathSplitter.join(".");
-    
-//     string outputFilePath = buildNormalizedPath(outputPath, relativizedName);
-//     string moduleDef = "module "~outputPath~"."~moduleName~";\n";
-//     if(moduleIndex == -1)
-//         std.file.write(outputFilePath, moduleDef~fileContent);
-//     else
-//     {
-//         long moduleIndexEnd = fileContent[cast(uint)moduleIndex..$].countUntil(";")+1;
-//         std.file.write(outputFilePath,
-//         fileContent[0..cast(uint)moduleIndex]
-//         ~moduleDef~fileContent[cast(uint)moduleIndexEnd..$]); 
-//     }
-// }
-
-
-
 
 int main(string[] args)
 {
@@ -114,12 +93,12 @@ int main(string[] args)
         writeln("releasegame.d game path '", gamePath, " does not exists");
         return EXIT_FAILURE;
     }
-    writeln("Creating directory: ", outputPath);
-    mkdirRecurse(outputPath);
-
+    string absoluteOutput = buildNormalizedPath(__FILE_FULL_PATH__, "..", "..", "..", "build", outputPath);
+    absoluteOutput~= dirSeparator;
+    writeln("Creating directory: ", absoluteOutput);
+    mkdirRecurse(absoluteOutput);
 
     string[] validFiles = getGameValidFiles(gamePath);
-    string absoluteOutput = getcwd()~dirSeparator~outputPath~dirSeparator;
     foreach(f; validFiles)
     {
         if(isDir(f))

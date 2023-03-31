@@ -1,0 +1,12 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2023, Hipreme",
+	"dependencies": {
+		"arsd-official:terminal": "~>10.9.9"
+	},
+	"description": "A minimal D application.",
+	"license": "proprietary",
+	"name": "build_selector"
+}
