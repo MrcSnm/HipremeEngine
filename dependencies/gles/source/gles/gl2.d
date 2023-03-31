@@ -383,7 +383,7 @@ alias PFNGLBLENDEQUATIONSEPARATEPROC = void function (GLenum modeRGB, GLenum mod
 alias PFNGLBLENDFUNCPROC = void function (GLenum sfactor, GLenum dfactor);
 alias PFNGLBLENDFUNCSEPARATEPROC = void function (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 alias PFNGLBUFFERDATAPROC = void function (GLenum target, GLsizeiptr size, void* data, GLenum usage);
-alias PFNGLBUFFERSUBDATAPROC = void function (GLenum target, GLintptr offset, GLsizeiptr size, void* data);
+alias PFNGLBUFFERSUBDATAPROC = void function (GLenum target, GLintptr offset, GLsizeiptr size, const(void)* data);
 alias PFNGLCHECKFRAMEBUFFERSTATUSPROC = uint function (GLenum target);
 alias PFNGLCLEARPROC = void function (GLbitfield mask);
 alias PFNGLCLEARCOLORPROC = void function (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
@@ -527,12 +527,12 @@ void glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAl
 version(WebAssembly)
 {
     void glBufferData (GLenum target, GLuint size, void* data, GLenum usage);
-    void glBufferSubData (GLenum target, GLint offset, GLuint size, void* data);
+    void glBufferSubData (GLenum target, GLint offset, GLuint size, const(void)* data);
 }
 else
 {
     void glBufferData (GLenum target, GLsizeiptr size, void* data, GLenum usage);
-    void glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, void* data);
+    void glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, const(void)* data);
 }
 GLenum glCheckFramebufferStatus (GLenum target);
 void glClear (GLbitfield mask);
