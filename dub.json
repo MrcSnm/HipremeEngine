@@ -79,10 +79,10 @@
 				"-checkaction=D"
 			],
 			"stringImportPaths": [
-				"tools/build/release_game/"
+				"build/release_game/"
 			],
 			"sourcePaths": [
-				"tools/build/release_game/source"
+				"build/release_game/source"
 			],
 			"versions": [
 				"OpenAL",
@@ -101,10 +101,10 @@
 				"-checkaction=D"
 			],
 			"stringImportPaths": [
-				"tools/build/release_game/"
+				"build/release_game/"
 			],
 			"sourcePaths": [
-				"tools/build/release_game/source"
+				"build/release_game/source"
 			],
 			"versions": [
 				"OpenAL",
@@ -160,10 +160,10 @@
 		{
 			"name": "game",
 			"stringImportPaths": [
-				"tools/build/release_game/"
+				"build/release_game/"
 			],
 			"sourcePaths": [
-				"tools/build/release_game/source"
+				"build/release_game/source"
 			],
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
@@ -187,7 +187,7 @@
 				"optimize"
 			],
 			"sourcePaths": [
-				"tools/build/release_game/source"
+				"build/release_game/source"
 			],
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
@@ -206,7 +206,7 @@
 		{
 			"name": "uwp",
 			"sourcePaths": [
-				"tools/build/release_game/source"
+				"build/release_game/source"
 			],
 			"subConfigurations": {
 				"audio": "uwp",
@@ -261,11 +261,11 @@
 				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"sourcePaths": [
-				"tools/build/release_game/source"
+				"build/release_game/source"
 			],
 			"stringImportPaths": [
 				"build/wasm/generated",
-				"tools/build/release_game/"
+				"build/release_game/"
 			],
 			"postGenerateCommands": [
 				"set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true",
@@ -295,10 +295,10 @@
 				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"sourcePaths": [
-				"tools/build/release_game/source"
+				"build/release_game/source"
 			],
 			"stringImportPaths": [
-				"tools/build/release_game/"
+				"build/release_game/"
 			],
 			"subConfigurations": {
 				"runtime": "psvita",
@@ -324,10 +324,10 @@
 				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"sourcePaths": [
-				"tools/build/release_game/source"
+				"build/release_game/source"
 			],
 			"stringImportPaths": [
-				"tools/build/release_game/"
+				"build/release_game/"
 			],
 			"subConfigurations": {
 				"runtime": "psvita",
@@ -354,10 +354,10 @@
 				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
 			"sourcePaths": [
-				"tools/build/release_game/source"
+				"build/release_game/source"
 			],
 			"stringImportPaths": [
-				"tools/build/release_game/"
+				"build/release_game/"
 			],
 			"lflags-windows": [
 				"/SUBSYSTEM:CONSOLE"
@@ -393,7 +393,7 @@
 				"GLESv3"
 			],
 			"sourcePaths": [
-				"tools/build/release_game"
+				"build/release_game"
 			],
 			"dependencies": {
 				"jni": {"path": "./modules/jni", "version": "*"},

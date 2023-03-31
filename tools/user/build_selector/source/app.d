@@ -1,5 +1,6 @@
 import arsd.terminal;
 static import std.file;
+import std.array:join, split;
 import std.json;
 import std.path;
 import std.process;
@@ -117,12 +118,20 @@ string findProgramPath(string program)
    	return null;
 }
 
-void writelnHighlighted(ref Terminal t, string what)
+void writelnHighlighted(ref Terminal t, scope string[] what...)
 {
 	t.color(Color.yellow, Color.DEFAULT);
-	t.writeln(what);
-	t.color(Color.white, Color.DEFAULT);
+	t.writeln(what.join());
+	t.color(Color.DEFAULT, Color.DEFAULT);
 }
+
+void writelnSuccess(ref Terminal t, scope string[] what...)
+{
+	t.color(Color.green, Color.DEFAULT);
+	t.writeln(what.join());
+	t.color(Color.DEFAULT, Color.DEFAULT);
+}
+
 
 void promptForConfigCreation(ref Terminal t)
 {
@@ -183,7 +192,8 @@ void loadSubmodules(ref Terminal t)
 	import std.process;
 	if(!findProgramPath("git"))
 		throw new Error("Git wasn't found. Git is necessary for loading the engine submodules.");
-	t.writeln("Updating Git Submodules");
+	t.writelnSuccess("Updating Git Submodules");
+	t.flush;
 	executeShell("git submodule update --init --recursive");
 }
 
@@ -198,12 +208,13 @@ void prepareWASM(Choice* c, ref Terminal t)
 void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 {
 	t.writeln("Executing engine script ", script, " with arguments ", args);
+	t.flush;
 	execute(["rdmd", buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)] ~ args);
 }
 
 void putResourcesIn(ref Terminal t, string where)
 {
-	runEngineDScript(t, "copyresources.d", configs["gamePath"].str, where);
+	runEngineDScript(t, "copyresources.d", buildNormalizedPath(configs["gamePath"].str, "assets"), where);
 }
 
 void prepareAppleOS(Choice* c, ref Terminal t)
@@ -218,13 +229,23 @@ void prepareAppleOS(Choice* c, ref Terminal t)
 	);
 	std.file.mkdirRecurse(outputPhobos);
 	outputPhobos = buildNormalizedPath(outputPhobos, phobosLib.baseName);
-	t.writeln("Copying phobos to XCode ", phobosLib, "->", outputPhobos);
+	t.writelnSuccess("Copying phobos to XCode ", phobosLib, "->", outputPhobos);
+	t.flush;
 	std.file.copy(phobosLib, outputPhobos);
 	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "appleos", "assets"));
-
-	if(!environment["HIPREME_ENGINE"])
-		environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
+
+	environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;
+
+	t.writelnSuccess("Building your game for AppleOS");
+	t.flush;
+
+	string script = import("appleosbuild.sh");
+	t.writeln("Executing script appleosbuild.sh");
+	t.flush;
+
+	auto pid = spawnShell(script);
+	wait(pid);
 }
 
 void main()
