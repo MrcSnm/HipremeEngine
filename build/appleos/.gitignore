@@ -1,3 +1,5 @@
 HipremeEngine\ D/libs/
+bin/
+build/
 HipremeEngine.xcodeproj/project.xcworkspace/xcuserdata/
 HipremeEngine.xcodeproj/xcuserdata/
