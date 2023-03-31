@@ -1,5 +1,6 @@
 .dub
 .history
+.cache
 docs.json
 __dummy.html
 docs/
