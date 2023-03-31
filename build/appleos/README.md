@@ -9,7 +9,7 @@
 
 ### Quick Start
 
-- Go to the root folder and run `./appleosbuild.sh`. This will compile all Hipreme Engine's dependencies and move them to HipremeEngine D/lib folder.
+- Go to the tools/user/build_selector folder and run dub on there. After that, just run `dub` and you will be prompted with a quick setup.
 
 - All the libs are manually listed in the XCode project, if your project is not working, please check that all the libs are listed in Frameworks.
 
