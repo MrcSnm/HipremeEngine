@@ -20,7 +20,7 @@ struct Choice
 Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices)
 {
 	bool exit = false;
-	size_t selectedChoice = 0;
+	size_t selectedChoice = configs["selectedChoice"].integer;
 
 	Choice ret;
 	enum ArrowUp = 983078;
@@ -69,6 +69,8 @@ Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choic
 		}
 		terminal.clear();
 	}
+	configs["selectedChoice"] = selectedChoice;
+	std.file.write(ConfigFile, toJSON(configs));
 	return ret;
 }
 
@@ -132,6 +134,13 @@ void writelnSuccess(ref Terminal t, scope string[] what...)
 	t.color(Color.DEFAULT, Color.DEFAULT);
 }
 
+void writelnError(ref Terminal t, scope string[] what...)
+{
+	t.color(Color.red, Color.DEFAULT);
+	t.writeln(what.join());
+	t.color(Color.DEFAULT, Color.DEFAULT);
+}
+
 
 void promptForConfigCreation(ref Terminal t)
 {
@@ -183,7 +192,8 @@ void promptForConfigCreation(ref Terminal t)
 	std.file.write(ConfigFile, 
 		"{ \"hipremeEnginePath\": \"" ~ hipremeEnginePath ~ "\"," ~
 		"\"gamePath\": \"" ~ gamePath ~ "\","~
-		"\"phobosLibPath\": \"" ~ phobosLibPath ~ "\"}"
+		"\"phobosLibPath\": \"" ~ phobosLibPath ~
+		"\", \"selectedChoice\": 0}"
 	);
 }
 
@@ -200,11 +210,6 @@ void loadSubmodules(ref Terminal t)
 
 __gshared JSONValue configs;
 
-void prepareWASM(Choice* c, ref Terminal t)
-{
-	loadSubmodules(t);
-}
-
 void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 {
 	t.writeln("Executing engine script ", script, " with arguments ", args);
@@ -216,6 +221,35 @@ void putResourcesIn(ref Terminal t, string where)
 {
 	runEngineDScript(t, "copyresources.d", buildNormalizedPath(configs["gamePath"].str, "assets"), where);
 }
+
+void prepareWASM(Choice* c, ref Terminal t)
+{
+
+	if(findProgramPath("ldc2") == null)
+	{
+		t.writelnError("WASM build requires ldc2 in path. Please install it before building to it.");
+		return;
+	}
+	loadSubmodules(t);
+	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "wasm", "assets"));
+	environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;
+
+
+	runEngineDScript(t, "gendir.d", 
+		buildNormalizedPath("build", "release_game", "assets"),
+		buildNormalizedPath("build", "wasm", "generated")
+	);
+
+	environment["DFLAGS"] = 
+		"-I="~buildNormalizedPath(configs["hipremeEnginePath"].str, "modules", "d_std", "source") ~" "~
+		"-I="~buildNormalizedPath(configs["hipremeEnginePath"].str, "dependencies", "runtime", "druntime", "arsd-webassembly") ~" " ~
+		"-preview=shortenedMethods -L-allow-undefined -fvisibility=hidden -d-version=CarelessAlocation";
+
+	std.file.chdir(configs["hipremeEnginePath"].str);
+	wait(spawnShell("dub build --compiler=ldc2 --build=debug -c wasm --arch=wasm32-unknown-unknown-wasm"));
+
+}
+
 
 void prepareAppleOS(Choice* c, ref Terminal t)
 {
@@ -256,8 +290,17 @@ void main()
 
 	if(!std.file.exists(ConfigFile))
 		promptForConfigCreation(terminal);
-
 	configs = parseJSON(std.file.readText(ConfigFile));
+	if(("hipremeEnginePath" in configs) is null ||
+	   ("gamePath" in configs) is null ||
+	   ("phobosLibPath" in configs) is null || 
+	   ("selectedChoice" in configs) is null)
+	{
+		terminal.writelnError("ConfigFile is corrupted. Requesting reconfiguration.");
+		terminal.flush;
+		promptForConfigCreation(terminal);
+		configs = parseJSON(std.file.readText(ConfigFile));
+	}
 	Choice[] choices;
 	version(OSX) choices~= Choice("AppleOS", &prepareAppleOS);
 

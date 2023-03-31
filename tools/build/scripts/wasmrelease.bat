@@ -14,4 +14,4 @@ set DFLAGS=-I=%HIPREME_ENGINE%/modules/d_std/source ^
 @REM -fvisibility=hidden makes it only export symbols marked with `export`
 @REM CarelessAlocation is necessary for allowing allocations that depends on GC implementation on Runtime.
 
-dub build --build=debug -c wasm  --arch=wasm32-unknown-unknown-wasm
+dub build --build=debug -c wasm --arch=wasm32-unknown-unknown-wasm

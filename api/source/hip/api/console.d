@@ -1,5 +1,8 @@
 module hip.api.console;
 
+version(PSVita) version = ErrorOnLoadSymbol;
+version(WebAssembly) version = ErrorOnLoadSymbol;
+
 version(Have_hipreme_engine) version = DirectCall;
 version(DirectCall)
 {
@@ -13,9 +16,16 @@ else
     __gshared logFn log;
 	void initConsole()
 	{
-		import hip.api.internal : _loadSymbol, _dll;
-		log = cast(typeof(log))_loadSymbol(_dll, "log".ptr);
-		log("HipengineAPI: Initialized Console");
+		version(ErrorOnLoadSymbol)
+		{
+			assert(false, "Cannot load symbols in this version.");
+		}
+		else
+		{
+			import hip.api.internal : _loadSymbol, _dll;
+			log = cast(typeof(log))_loadSymbol(_dll, "log".ptr);
+			log("HipengineAPI: Initialized Console");
+		}
 	}
     void logg(Args...)(Args a, string file = __FILE__, size_t line = __LINE__)
 	{
