@@ -27,17 +27,18 @@ Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choic
 
 	while(!exit)
 	{
-		terminal.writeln("Select an option by using W/S or Arrow Up, or Arrow Down and choose it by pressing Enter.");
+		terminal.color(Color.DEFAULT, Color.DEFAULT);
+		terminal.writeln("Select an option by using W/S or Arrow Up/Down and choose it by pressing Enter.");
 		foreach(i, choice; choices)
 		{
 			if(i == selectedChoice)
 			{
-				terminal.color(Color.green, Color.black);
+				terminal.color(Color.green, Color.DEFAULT);
 				terminal.writeln(">> ", choice.name);
 			}
 			else
 			{
-				terminal.color(Color.white, Color.black);
+				terminal.color(Color.DEFAULT, Color.DEFAULT);
 				terminal.writeln(choice.name);
 			}
 		}
@@ -118,9 +119,9 @@ string findProgramPath(string program)
 
 void writelnHighlighted(ref Terminal t, string what)
 {
-	t.color(Color.yellow, Color.black);
+	t.color(Color.yellow, Color.DEFAULT);
 	t.writeln(what);
-	t.color(Color.white, Color.black);
+	t.color(Color.white, Color.DEFAULT);
 }
 
 void promptForConfigCreation(ref Terminal t)
@@ -134,7 +135,18 @@ void promptForConfigCreation(ref Terminal t)
 	else
 		getValidPath(t, "HipremeEngine path: ");
 	string gamePath 		 = getValidPath(t, "Your game path: ");
-	string phobosLibPath = findProgramPath("dmd");
+	string phobosLibPath;
+	version(OSX)
+	{
+		if(std.file.exists("/Library/D/dmd/lib/"))
+		{
+			phobosLibPath = "/Library/D/dmd/lib/";
+			t.writelnHighlighted("Found phobosLibPath in /Library/D/dmd/lib. `which` won't be executed.");
+			goto saveConfig;
+		}
+	}
+	if(!phobosLibPath)
+		phobosLibPath = findProgramPath("dmd");
 	if(!phobosLibPath)
 	{
 		t.writeln("Phobos path wasn't found in dmd, searching for ldc.");
@@ -166,12 +178,13 @@ void promptForConfigCreation(ref Terminal t)
 	);
 }
 
-void loadSubmodules()
+void loadSubmodules(ref Terminal t)
 {
 	import std.process;
 	if(!findProgramPath("git"))
 		throw new Error("Git wasn't found. Git is necessary for loading the engine submodules.");
-	execute("git submodule update --init --recursive");
+	t.writeln("Updating Git Submodules");
+	executeShell("git submodule update --init --recursive");
 }
 
 
@@ -179,41 +192,45 @@ __gshared JSONValue configs;
 
 void prepareWASM(Choice* c, ref Terminal t)
 {
-	loadSubmodules();
+	loadSubmodules(t);
 }
 
-void putResourcesIn(string where)
+void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 {
-	execute([
-		"rdmd", 
-		buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", "copyresources.d"), 
-		configs["gamePath"].str,
-		where
-	]);
-}
-
-void runEngineDScript(string script, scope string[] args...)
-{
+	t.writeln("Executing engine script ", script, " with arguments ", args);
 	execute(["rdmd", buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)] ~ args);
+}
+
+void putResourcesIn(ref Terminal t, string where)
+{
+	runEngineDScript(t, "copyresources.d", configs["gamePath"].str, where);
 }
 
 void prepareAppleOS(Choice* c, ref Terminal t)
 {
-	loadSubmodules();
+	loadSubmodules(t);
 	string phobosLib = configs["phobosLibPath"].str.getFirstExisting("libphobos2.a", "libphobos.a");
-	if(!phobosLib)  throw new Error("Could not find your phobos library");
-	std.file.copy(phobosLib, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "appleos", "HipremeEngine D", phobosLib.baseName));
-	putResourcesIn(buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "appleos", "assets"));
+	if(phobosLib == null) throw new Error("Could not find your phobos library");
+	t.writeln(phobosLib.length, cast(void*)phobosLib.ptr);
+	string outputPhobos = buildNormalizedPath(
+		configs["hipremeEnginePath"].str, 
+		"build", "appleos", "HipremeEngine D",
+		"libs", phobosLib.baseName
+	);
+	t.writeln("Copying phobos to XCode ", phobosLib, "->", outputPhobos);
+	std.file.copy(phobosLib, outputPhobos);
+	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "appleos", "assets"));
 
 	if(!environment["HIPREME_ENGINE"])
 		environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;
-	runEngineDScript("releasegame.d", configs["gamePath"].str);
+	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
 }
 
 void main()
 {
 	auto terminal = Terminal(ConsoleOutputType.linear);
 	auto input = RealTimeConsoleInput(&terminal, ConsoleInputFlags.raw);
+	terminal.clear();
 
 	if(!std.file.exists(ConfigFile))
 		promptForConfigCreation(terminal);
@@ -223,7 +240,7 @@ void main()
 	version(OSX) choices~= Choice("AppleOS", &prepareAppleOS);
 
 	
-	selectChoice(terminal, input, choices~[
+	Choice selection = selectChoice(terminal, input, choices~[
 		// Choice("PSVita"),
 		// Choice("Xbox Series"),
 		// Choice("Android"),
@@ -231,5 +248,6 @@ void main()
 		// Choice("Linux"),
 		Choice("WebAssembly", &prepareWASM)
 	]);
+	if(selection.onSelected) selection.onSelected(&selection, terminal);
 
 }
