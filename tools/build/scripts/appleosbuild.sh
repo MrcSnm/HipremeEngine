@@ -1,3 +1,4 @@
+cd $HIPREME_ENGINE
 rm -r build/appleos/HipremeEngine\ D/libs
 dub -c appleos
 dub -c appleos-main
