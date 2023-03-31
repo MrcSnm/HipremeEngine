@@ -51,7 +51,10 @@
     lastTimeStamp = timeNow;
     if(!HipremeUpdate((float)dt))
     {
+#if TARGET_OS_IPHONE
+#elif TARGET_OS_MAC
         [[NSApplication sharedApplication] terminate:self];
+#endif
     }
     
     HipremeRender();
