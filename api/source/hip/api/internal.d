@@ -17,28 +17,38 @@ struct Overload
 {
 	string targetName;
 }
-version(Have_hipreme_engine) version = DirectCall;
-else version = LoadFunctionPointers;
+
 version(WebAssembly) version = ErrorOnLoadSymbol;
 version(PSVita) version = ErrorOnLoadSymbol;
+
+version(Have_hipreme_engine) version = DirectCall;
+else version = LoadFunctionPointers;
+
 
 version(LoadFunctionPointers)
 {
 	__gshared void* _dll;
 	void initializeHip()
 	{
-		version(Windows){_dll = GetModuleHandle(null);}
+		version(ErrorOnLoadSymbol)
+		{
+			assert(false, "Cannot load symbols in this version.");
+		}
 		else
 		{
-			import core.sys.posix.dlfcn:dlopen, RTLD_NOW;
-			_dll = dlopen(null, RTLD_NOW);
+			version(Windows){_dll = GetModuleHandle(null);}
+			else
+			{
+				import core.sys.posix.dlfcn:dlopen, RTLD_NOW;
+				_dll = dlopen(null, RTLD_NOW);
+			}
+			import std.stdio;
+			if(_dll == null)
+				writeln("Could not load GetModuleHandle(null)");
+			hipDestroy = cast(typeof(hipDestroy))_loadSymbol(_dll, "hipDestroy");
+			if(hipDestroy == null)
+				writeln("Fatal error: could not load hipDestroy");
 		}
-		import std.stdio;
-		if(_dll == null)
-			writeln("Could not load GetModuleHandle(null)");
-		hipDestroy = cast(typeof(hipDestroy))_loadSymbol(_dll, "hipDestroy");
-		if(hipDestroy == null)
-			writeln("Fatal error: could not load hipDestroy");
 	}
 }
 version(Windows)
@@ -59,8 +69,6 @@ version(Posix)
 	import core.sys.posix.dlfcn:dlsym;
 	alias _loadSymbol = dlsym;
 }
-version(ErrorOnLoadSymbol){void* _loadSymbol(void* dll, string name){assert(false, "Can't load shared libraries in Wasm/PSVita: "~name);}}
-
 enum bool isFunctionPointer(alias T) = is(typeof(*T) == function);
 
 /**
@@ -161,63 +169,57 @@ enum loadClassFunctionPointers(alias targetClass, string exportedClass = "")()
 	string prefix = "";
 	string importedFunctionName;
 
-	static if(exportedClass == "")
-		exportedClass = targetClass.stringof;
-	prefix = exportedClass~"_";
-	static foreach(member; __traits(allMembers, targetClass))
-	{{
-		alias f = __traits(getMember, targetClass, member);
-		static if(isFunctionPointer!(f))
-		{
-			importedFunctionName = prefix~member~'\0';
-			f = cast(typeof(f))_loadSymbol(_dll, importedFunctionName.ptr);
-			if(f is null)
+	version(ErrorOnLoadSymbol)
+	{
+		assert(false, "Cannot load symbols in this version.");
+	}
+	else
+	{
+		string nExportedClass = exportedClass;
+		static if(exportedClass == "")
+			nExportedClass = targetClass.stringof;
+		prefix = nExportedClass~"_";
+		static foreach(member; __traits(allMembers, targetClass))
+		{{
+			alias f = __traits(getMember, targetClass, member);
+			static if(isFunctionPointer!(f))
 			{
-				import std.stdio;
-				writeln(f.stringof, " wasn't able to load (tried with ", importedFunctionName,")");
+				importedFunctionName = prefix~member~'\0';
+				f = cast(typeof(f))_loadSymbol(_dll, importedFunctionName.ptr);
+				if(f is null)
+				{
+					import std.stdio;
+					writeln(f.stringof, " wasn't able to load (tried with ", importedFunctionName,")");
+				}
 			}
-		}
-	}}
+		}}
+	}
 }
-
-enum loadClassFunctionPointers(alias targetClass)()
-{
-	string importedFunctionName;
-	static foreach(member; __traits(allMembers, targetClass))
-	{{
-		alias f = __traits(getMember, targetClass, member);
-		static if(isFunctionPointer!(f))
-		{
-			importedFunctionName = member~'\0';
-			f = cast(typeof(f))_loadSymbol(_dll, importedFunctionName.ptr);
-			if(f is null)
-			{
-				import std.stdio;
-				writeln(f.stringof, " wasn't able to load (tried with ", importedFunctionName,")");
-			}
-		}
-	}}
-}
-
-
 
 template loadSymbolsFromExportD(string exportedClass, Ts...)
 {
-	enum impl = ()
+	version(ErrorOnLoadSymbol)
 	{
-		enum e = '"'~exportedClass~"_\"";
-		string ret;
-		static foreach(i, s; Ts)
+		enum impl = "";
+	}
+	else
+	{
+		enum impl = ()
 		{
-			ret~= s.stringof ~"= cast(typeof("~s.stringof~ " ))_loadSymbol(_dll, ("~e~"~\""~s.stringof~"\\0\").ptr);";
-			if(s.stringof is null)
+			enum e = '"'~exportedClass~"_\"";
+			string ret;
+			static foreach(i, s; Ts)
 			{
-				import std.stdio;
-				writeln("Could not load ",s.stringof, " (tried with ", e~s.stringof,")");
+				ret~= s.stringof ~"= cast(typeof("~s.stringof~ " ))_loadSymbol(_dll, ("~e~"~\""~s.stringof~"\\0\").ptr);";
+				if(s.stringof is null)
+				{
+					import std.stdio;
+					writeln("Could not load ",s.stringof, " (tried with ", e~s.stringof,")");
+				}
 			}
-		}
-		return ret;
-	}();
+			return ret;
+		}();
+	}
 
 	enum loadSymbolsFromExportD = impl;
 }
