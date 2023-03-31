@@ -1,5 +1,5 @@
 import std.stdio;
-import std.path:relativePath, buildPath, absolutePath;
+import std.path:relativePath, buildPath, absolutePath, baseName;
 import std.conv:to;
 import std.array:appender;
 import std.file:dirEntries, DirEntry, SpanMode, exists, write;
@@ -16,8 +16,13 @@ int main(string[] args)
         return EXIT_FAILURE;
     }
     auto output = appender!string;
-    
-    genJson(absolutePath(args[1]), output);
+    string inputDir = absolutePath(args[1]);
+    output~= "{\"";
+    output~= inputDir.baseName;
+    output~= "\" : ";
+    genJson(inputDir, output);
+    output~= "}";
+
 
     if(exists(args[2]))
         write(buildPath(args[2], OUTPUT_NAME), output[]);
@@ -45,4 +50,4 @@ void genJson(T)(string startDir, ref T output)
         }
     }
     output~= "}";
-};
+}
