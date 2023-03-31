@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		3130368829D670A500895DD5 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3130368729D670A400895DD5 /* assets */; };
+		3130368A29D672C700895DD5 /* libs in Resources */ = {isa = PBXBuildFile; fileRef = 3130368929D672C700895DD5 /* libs */; };
+		3130368C29D6740B00895DD5 /* libphobos2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3130368B29D673F600895DD5 /* libphobos2.a */; };
 		3156442B29A1546900559889 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156442A29A1546900559889 /* AppDelegate.m */; };
 		3156442E29A1546900559889 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156442D29A1546900559889 /* GameViewController.m */; };
 		3156443129A1546900559889 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3156442F29A1546900559889 /* Main.storyboard */; };
@@ -31,7 +33,6 @@
 		315FEE5829D1BFDE00761BF1 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315FEE5729D1BFDE00761BF1 /* InputView.m */; };
 		315FEE5929D1BFDE00761BF1 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315FEE5729D1BFDE00761BF1 /* InputView.m */; };
 		315FEE5A29D1BFDE00761BF1 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315FEE5729D1BFDE00761BF1 /* InputView.m */; };
-		3164622129C4C23F001CE578 /* libphobos2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164622029C4C221001CE578 /* libphobos2.a */; };
 		3164624029C4C950001CE578 /* libarsd-official_bmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164623229C4C944001CE578 /* libarsd-official_bmp.a */; };
 		3164624129C4C951001CE578 /* libarsd-official_color_base.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164623329C4C945001CE578 /* libarsd-official_color_base.a */; };
 		3164624229C4C952001CE578 /* libarsd-official_image_files.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164623E29C4C94D001CE578 /* libarsd-official_image_files.a */; };
@@ -71,8 +72,9 @@
 
 /* Begin PBXFileReference section */
 		3130368529D66E6900895DD5 /* static */ = {isa = PBXFileReference; lastKnownFileType = folder; path = static; sourceTree = "<group>"; };
-		3130368629D6706700895DD5 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		3130368729D670A400895DD5 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
+		3130368929D672C700895DD5 /* libs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = libs; sourceTree = "<group>"; };
+		3130368B29D673F600895DD5 /* libphobos2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libphobos2.a; path = "HipremeEngine D/static/libphobos2.a"; sourceTree = "<group>"; };
 		3156441D29A1546600559889 /* Renderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Renderer.h; sourceTree = "<group>"; };
 		3156441E29A1546600559889 /* Renderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Renderer.m; sourceTree = "<group>"; };
 		3156442129A1546900559889 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -103,7 +105,6 @@
 		315C6FCB29B55DBE007F19C0 /* hipreme_engine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hipreme_engine.h; sourceTree = "<group>"; };
 		315FEE5529D1BEFC00761BF1 /* InputView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InputView.h; sourceTree = "<group>"; };
 		315FEE5729D1BFDE00761BF1 /* InputView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InputView.m; sourceTree = "<group>"; };
-		3164622029C4C221001CE578 /* libphobos2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libphobos2.a; path = ../../../../../../../Library/D/dmd/lib/libphobos2.a; sourceTree = "<group>"; };
 		3164622329C4C932001CE578 /* libBindBC_OpenAL.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libBindBC_OpenAL.a; path = "HipremeEngine D/libs/libBindBC_OpenAL.a"; sourceTree = "<group>"; };
 		3164622429C4C933001CE578 /* libarsd-official_png.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_png.a"; path = "HipremeEngine D/libs/libarsd-official_png.a"; sourceTree = "<group>"; };
 		3164622529C4C934001CE578 /* libmetal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmetal.a; path = "HipremeEngine D/libs/libmetal.a"; sourceTree = "<group>"; };
@@ -167,13 +168,13 @@
 				3164624229C4C952001CE578 /* libarsd-official_image_files.a in Frameworks */,
 				3164624029C4C950001CE578 /* libarsd-official_bmp.a in Frameworks */,
 				3164625929C4C9B4001CE578 /* libtimer.a in Frameworks */,
-				3164622129C4C23F001CE578 /* libphobos2.a in Frameworks */,
 				3164624E29C4C96F001CE578 /* libconsole.a in Frameworks */,
 				3164625229C4C980001CE578 /* liberror.a in Frameworks */,
 				3164624129C4C951001CE578 /* libarsd-official_color_base.a in Frameworks */,
 				3164625829C4C9AC001CE578 /* librenderer.a in Frameworks */,
 				3164624D29C4C96B001CE578 /* libconfig.a in Frameworks */,
 				3164626829C4CCAF001CE578 /* libaudio_decoding.a in Frameworks */,
+				3130368C29D6740B00895DD5 /* libphobos2.a in Frameworks */,
 				3164625029C4C977001CE578 /* libdebugging.a in Frameworks */,
 				3164624F29C4C973001CE578 /* libdata.a in Frameworks */,
 				3164625529C4C997001CE578 /* libimage.a in Frameworks */,
@@ -285,6 +286,7 @@
 		315796D729B6771F00CE2D39 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3130368B29D673F600895DD5 /* libphobos2.a */,
 				3164626229C4C9E0001CE578 /* libaudio_decoding.a */,
 				3164626329C4C9E1001CE578 /* libaudio.a */,
 				3164626029C4C9DD001CE578 /* libfilesystem.a */,
@@ -322,7 +324,6 @@
 				3164623529C4C946001CE578 /* libtween.a */,
 				3164622829C4C937001CE578 /* libutil.a */,
 				3164623F29C4C94E001CE578 /* libwindowing.a */,
-				3164622029C4C221001CE578 /* libphobos2.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -330,7 +331,7 @@
 		315C6FC529B55CF8007F19C0 /* HipremeEngine D */ = {
 			isa = PBXGroup;
 			children = (
-				3130368629D6706700895DD5 /* lib */,
+				3130368929D672C700895DD5 /* libs */,
 				3130368529D66E6900895DD5 /* static */,
 				315C6FCB29B55DBE007F19C0 /* hipreme_engine.h */,
 			);
@@ -436,6 +437,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3130368A29D672C700895DD5 /* libs in Resources */,
 				3156443129A1546900559889 /* Main.storyboard in Resources */,
 				3130368829D670A500895DD5 /* assets in Resources */,
 				3156446329A1546900559889 /* Assets.xcassets in Resources */,
@@ -597,6 +599,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
+					"$(PROJECT_DIR)/HipremeEngine\\ D/static",
+				);
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -647,6 +653,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
+					"$(PROJECT_DIR)/HipremeEngine\\ D/static",
+				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 			};
@@ -671,10 +681,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -703,10 +710,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -732,10 +736,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -761,10 +762,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -795,44 +793,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(LOCAL_LIBRARY_DIR)/D/dmd/lib",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
+					"$(PROJECT_DIR)/HipremeEngine\\ D/static",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.6;
 				MARKETING_VERSION = 1.0;
@@ -862,44 +823,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(LOCAL_LIBRARY_DIR)/D/dmd/lib",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
+					"$(PROJECT_DIR)/HipremeEngine\\ D/static",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.6;
 				MARKETING_VERSION = 1.0;
