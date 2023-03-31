@@ -113,22 +113,22 @@ Options:
 
     if(!exists(from))
     {
-        writeln("Source path does not exists");
+        writeln("Source path '", from, "' does not exists");
         return EXIT_FAILURE;
     }
     if(!exists(toWhere))
     {
-        writeln("Target path does not exists");
+        writeln("Target path '", toWhere, "' does not exists");
         return EXIT_FAILURE;
     }
     if(!isDir(from))
     {
-        writeln("Source path is not a directory");
+        writeln("Source path '", from,"' is not a directory");
         return EXIT_FAILURE;
     }
     if(!isDir(toWhere))
     {
-        writeln("Target path is not a directory");
+        writeln("Target path '", toWhere, "' is not a directory");
         return EXIT_FAILURE;
     }
 

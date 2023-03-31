@@ -214,7 +214,13 @@ void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 {
 	t.writeln("Executing engine script ", script, " with arguments ", args);
 	t.flush;
-	execute(["rdmd", buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)] ~ args);
+	auto output = execute(["rdmd", buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)] ~ args);
+	if(output.status)
+	{
+		t.writelnError("Script ", script, " failed with: ", output.output);
+		t.flush;
+		throw new Error("Failed on engine script");
+	}
 }
 
 void putResourcesIn(ref Terminal t, string where)
@@ -231,13 +237,13 @@ void prepareWASM(Choice* c, ref Terminal t)
 		return;
 	}
 	loadSubmodules(t);
-	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "wasm", "assets"));
+	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "wasm", "build", "assets"));
 	environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;
 
 
 	runEngineDScript(t, "gendir.d", 
-		buildNormalizedPath("build", "release_game", "assets"),
-		buildNormalizedPath("build", "wasm", "generated")
+		buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "release_game", "assets"),
+		buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "wasm", "generated")
 	);
 
 	environment["DFLAGS"] = 

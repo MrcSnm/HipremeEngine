@@ -116,7 +116,11 @@ static void initEngine(bool audio3D = false)
 	bool function(string path, out string msg)[] validations;
 
 	version(Android){platform = Platforms.ANDROID;}
-	else version(WebAssembly){platform = Platforms.WASM;}
+	else version(WebAssembly)
+	{
+		platform = Platforms.WASM;
+		fsInstallPath = "assets";
+	}
 	else version(PSVita)
 	{
 		platform = Platforms.PSVITA;

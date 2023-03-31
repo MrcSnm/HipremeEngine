@@ -1,6 +1,7 @@
 function initializeWebglContext()
 {
     const canvas = document.querySelector("#glcanvas");
+    /** @type {WebGL2RenderingContext} */
     const gl = canvas.getContext("webgl");
     if(gl === null)
         return alert("Unable to initialize WebGL. Your browser or machine may not support it.");
@@ -8,7 +9,6 @@ function initializeWebglContext()
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    
 
     const addObject = WasmUtils.addObject;
     const removeObject = WasmUtils.removeObject;
@@ -123,6 +123,10 @@ function initializeWebglContext()
         },
         glEnable ( cap ) {
             gl.enable(cap);
+        },
+        glDisable ( cap )
+        {
+            gl.disable(cap);
         },
         glEnableVertexAttribArray ( index ) {
             gl.enableVertexAttribArray(index);
