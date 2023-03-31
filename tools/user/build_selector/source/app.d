@@ -211,7 +211,6 @@ void prepareAppleOS(Choice* c, ref Terminal t)
 	loadSubmodules(t);
 	string phobosLib = configs["phobosLibPath"].str.getFirstExisting("libphobos2.a", "libphobos.a");
 	if(phobosLib == null) throw new Error("Could not find your phobos library");
-	t.writeln(phobosLib.length, cast(void*)phobosLib.ptr);
 	string outputPhobos = buildNormalizedPath(
 		configs["hipremeEnginePath"].str, 
 		"build", "appleos", "HipremeEngine D",
