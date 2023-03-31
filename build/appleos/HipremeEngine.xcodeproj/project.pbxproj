@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3130368829D670A500895DD5 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3130368729D670A400895DD5 /* assets */; };
 		3156442B29A1546900559889 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156442A29A1546900559889 /* AppDelegate.m */; };
 		3156442E29A1546900559889 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156442D29A1546900559889 /* GameViewController.m */; };
 		3156443129A1546900559889 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3156442F29A1546900559889 /* Main.storyboard */; };
@@ -27,11 +28,6 @@
 		3156446329A1546900559889 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3156442129A1546900559889 /* Assets.xcassets */; };
 		3156446429A1546900559889 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3156442129A1546900559889 /* Assets.xcassets */; };
 		3156446529A1546900559889 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3156442129A1546900559889 /* Assets.xcassets */; };
-		3158411629D2FB5500FDD0FD /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3158411529D2FB5500FDD0FD /* assets */; };
-		3158411729D2FB5500FDD0FD /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3158411529D2FB5500FDD0FD /* assets */; };
-		3158411829D2FB5500FDD0FD /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3158411529D2FB5500FDD0FD /* assets */; };
-		315C6FCE29B57D20007F19C0 /* libhipremeengine_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 315C6FCD29B57D20007F19C0 /* libhipremeengine_ios.a */; };
-		315C6FCF29B57D20007F19C0 /* libhipremeengine_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 315C6FCD29B57D20007F19C0 /* libhipremeengine_ios.a */; };
 		315FEE5829D1BFDE00761BF1 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315FEE5729D1BFDE00761BF1 /* InputView.m */; };
 		315FEE5929D1BFDE00761BF1 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315FEE5729D1BFDE00761BF1 /* InputView.m */; };
 		315FEE5A29D1BFDE00761BF1 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315FEE5729D1BFDE00761BF1 /* InputView.m */; };
@@ -74,6 +70,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3130368529D66E6900895DD5 /* static */ = {isa = PBXFileReference; lastKnownFileType = folder; path = static; sourceTree = "<group>"; };
+		3130368629D6706700895DD5 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
+		3130368729D670A400895DD5 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		3156441D29A1546600559889 /* Renderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Renderer.h; sourceTree = "<group>"; };
 		3156441E29A1546600559889 /* Renderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Renderer.m; sourceTree = "<group>"; };
 		3156442129A1546900559889 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -101,9 +100,7 @@
 		3156445829A1546900559889 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		3156445A29A1546900559889 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		3156445C29A1546900559889 /* HipremeEngine_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HipremeEngine_macOS.entitlements; sourceTree = "<group>"; };
-		3158411529D2FB5500FDD0FD /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../../assets; sourceTree = "<group>"; };
 		315C6FCB29B55DBE007F19C0 /* hipreme_engine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hipreme_engine.h; sourceTree = "<group>"; };
-		315C6FCD29B57D20007F19C0 /* libhipremeengine_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libhipremeengine_ios.a; sourceTree = "<group>"; };
 		315FEE5529D1BEFC00761BF1 /* InputView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InputView.h; sourceTree = "<group>"; };
 		315FEE5729D1BFDE00761BF1 /* InputView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InputView.m; sourceTree = "<group>"; };
 		3164622029C4C221001CE578 /* libphobos2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libphobos2.a; path = ../../../../../../../Library/D/dmd/lib/libphobos2.a; sourceTree = "<group>"; };
@@ -151,7 +148,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				315C6FCE29B57D20007F19C0 /* libhipremeengine_ios.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -159,7 +155,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				315C6FCF29B57D20007F19C0 /* libhipremeengine_ios.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,7 +207,7 @@
 		3156441729A1546600559889 = {
 			isa = PBXGroup;
 			children = (
-				3158411029D2F96600FDD0FD /* Assets */,
+				3130368729D670A400895DD5 /* assets */,
 				315C6FC529B55CF8007F19C0 /* HipremeEngine D */,
 				3156441C29A1546600559889 /* HipremeEngine Shared */,
 				3156442829A1546900559889 /* HipremeEngine iOS */,
@@ -332,29 +327,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		3158411029D2F96600FDD0FD /* Assets */ = {
-			isa = PBXGroup;
-			children = (
-				3158411529D2FB5500FDD0FD /* assets */,
-			);
-			path = Assets;
-			sourceTree = "<group>";
-		};
 		315C6FC529B55CF8007F19C0 /* HipremeEngine D */ = {
 			isa = PBXGroup;
 			children = (
-				315C6FCC29B55E12007F19C0 /* libs */,
+				3130368629D6706700895DD5 /* lib */,
+				3130368529D66E6900895DD5 /* static */,
 				315C6FCB29B55DBE007F19C0 /* hipreme_engine.h */,
 			);
 			path = "HipremeEngine D";
-			sourceTree = "<group>";
-		};
-		315C6FCC29B55E12007F19C0 /* libs */ = {
-			isa = PBXGroup;
-			children = (
-				315C6FCD29B57D20007F19C0 /* libhipremeengine_ios.a */,
-			);
-			path = libs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -457,7 +437,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3156443129A1546900559889 /* Main.storyboard in Resources */,
-				3158411629D2FB5500FDD0FD /* assets in Resources */,
+				3130368829D670A500895DD5 /* assets in Resources */,
 				3156446329A1546900559889 /* Assets.xcassets in Resources */,
 				3156443429A1546900559889 /* LaunchScreen.storyboard in Resources */,
 			);
@@ -468,7 +448,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				3156444529A1546900559889 /* Main.storyboard in Resources */,
-				3158411729D2FB5500FDD0FD /* assets in Resources */,
 				3156446429A1546900559889 /* Assets.xcassets in Resources */,
 				3156444829A1546900559889 /* LaunchScreen.storyboard in Resources */,
 			);
@@ -478,7 +457,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3158411829D2FB5500FDD0FD /* assets in Resources */,
 				3156446529A1546900559889 /* Assets.xcassets in Resources */,
 				3156445929A1546900559889 /* Main.storyboard in Resources */,
 			);
