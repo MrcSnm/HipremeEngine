@@ -214,8 +214,10 @@ void prepareAppleOS(Choice* c, ref Terminal t)
 	string outputPhobos = buildNormalizedPath(
 		configs["hipremeEnginePath"].str, 
 		"build", "appleos", "HipremeEngine D",
-		"libs", phobosLib.baseName
+		"static"
 	);
+	std.file.mkdirRecurse(outputPhobos);
+	outputPhobos = buildNormalizedPath(outputPhobos, phobosLib.baseName);
 	t.writeln("Copying phobos to XCode ", phobosLib, "->", outputPhobos);
 	std.file.copy(phobosLib, outputPhobos);
 	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "appleos", "assets"));
