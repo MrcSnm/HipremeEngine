@@ -71,6 +71,9 @@
 		3164626829C4CCAF001CE578 /* libaudio_decoding.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164626229C4C9E0001CE578 /* libaudio_decoding.a */; };
 		3164626929C4CCCE001CE578 /* libmetal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164622529C4C934001CE578 /* libmetal.a */; };
 		3164626A29C4CE72001CE578 /* libmetal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164622529C4C934001CE578 /* libmetal.a */; };
+		31B53C1529D68FD400108E4C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1429D68FD400108E4C /* Cocoa.framework */; };
+		31B53C1629D6902C00108E4C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1129D68FC500108E4C /* Metal.framework */; };
+		31B53C1729D6902C00108E4C /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1029D68FC500108E4C /* MetalKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -145,6 +148,9 @@
 		3164626229C4C9E0001CE578 /* libaudio_decoding.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaudio_decoding.a; path = "HipremeEngine D/libs/libaudio_decoding.a"; sourceTree = "<group>"; };
 		3164626329C4C9E1001CE578 /* libaudio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaudio.a; path = "HipremeEngine D/libs/libaudio.a"; sourceTree = "<group>"; };
 		3164626429C4C9EC001CE578 /* libhipengine_api.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhipengine_api.a; path = "HipremeEngine D/libs/libhipengine_api.a"; sourceTree = "<group>"; };
+		31B53C1029D68FC500108E4C /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		31B53C1129D68FC500108E4C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		31B53C1429D68FD400108E4C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -166,6 +172,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				31B53C1629D6902C00108E4C /* Metal.framework in Frameworks */,
+				31B53C1729D6902C00108E4C /* MetalKit.framework in Frameworks */,
+				31B53C1529D68FD400108E4C /* Cocoa.framework in Frameworks */,
 				3164624C29C4C968001CE578 /* libBindBC_OpenAL.a in Frameworks */,
 				3164624829C4C95C001CE578 /* libassets.a in Frameworks */,
 				3164624229C4C952001CE578 /* libarsd-official_image_files.a in Frameworks */,
@@ -289,6 +298,9 @@
 		315796D729B6771F00CE2D39 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				31B53C1429D68FD400108E4C /* Cocoa.framework */,
+				31B53C1129D68FC500108E4C /* Metal.framework */,
+				31B53C1029D68FC500108E4C /* MetalKit.framework */,
 				3130368B29D673F600895DD5 /* libphobos2.a */,
 				3164626229C4C9E0001CE578 /* libaudio_decoding.a */,
 				3164626329C4C9E1001CE578 /* libaudio.a */,
@@ -786,6 +798,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "HipremeEngine macOS/HipremeEngine_macOS.entitlements";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -816,6 +829,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "HipremeEngine macOS/HipremeEngine_macOS.entitlements";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
