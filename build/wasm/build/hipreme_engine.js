@@ -40,17 +40,23 @@ function initializeHipremeEngine(exports)
     const HipInputOnTouchPressed = (ev) =>
     {
         const [x, y] = convertToHipremeEngineCoordinates([ev.x, ev.y]);
-        exports.HipInputOnTouchPressed(0, x, y);
+        let id = 0;
+        if(ev.id) id = ev.id;
+        exports.HipInputOnTouchPressed(id, x, y);
     };
     const HipInputOnTouchReleased = (ev) =>
     {
         const [x, y] = convertToHipremeEngineCoordinates([ev.x, ev.y]);
-        exports.HipInputOnTouchReleased(0, x, y);
+        let id = 0;
+        if(ev.id) id = ev.id;
+        exports.HipInputOnTouchReleased(id, x, y);
     };
     const HipInputOnTouchMoved = (ev) =>
     {
         const [x, y] = convertToHipremeEngineCoordinates([ev.x, ev.y]);
-        exports.HipInputOnTouchMoved(0, x, y);
+        let id = 0;
+        if(ev.id) id = ev.id;
+        exports.HipInputOnTouchMoved(id, x, y);
     };
     const HipInputOnTouchScroll = (ev) =>
     {
@@ -73,6 +79,23 @@ function initializeHipremeEngine(exports)
 
         exports.HipOnRendererResize(width, height);//Currently maintain it as that.
     };
+
+    canvas.addEventListener("touchstart", (ev) =>
+    {
+        for(let i = 0; i < ev.touches.length; i++)
+            HipInputOnTouchPressed({x: ev.touches[i].clientX, y: ev.touches[i].clientY, id:i});
+    });
+    canvas.addEventListener("touchmove", (ev) =>
+    {
+        for(let i = 0; i < ev.touches.length; i++)
+            HipInputOnTouchMoved({x: ev.touches[i].clientX, y: ev.touches[i].clientY, id:i});
+    });
+    canvas.addEventListener("touchend", (ev) =>
+    {
+        for(let i = 0; i < ev.touches.length; i++)
+            HipInputOnTouchReleased({x: ev.touches[i].clientX, y: ev.touches[i].clientY, id:i});
+    });
+    canvas.addEventListener("mousedown", HipInputOnTouchPressed);
     canvas.addEventListener("mousedown", HipInputOnTouchPressed);
     canvas.addEventListener("mouseup", HipInputOnTouchReleased);
     canvas.addEventListener("mousemove", HipInputOnTouchMoved);
