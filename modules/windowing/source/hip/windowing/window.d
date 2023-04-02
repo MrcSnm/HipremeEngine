@@ -115,6 +115,8 @@ class HipWindow
             return hip.windowing.platforms.x11.setWindowSize(width, height);
         else version(AppleOS)
             return hip.windowing.platforms.appleos.setWindowSize(width, height);
+        else version(WebASsembly)
+            return hip.windowing.platforms.browser.setWindowSize(width, height);
         else
             errors~= "setSize is not implemented for this platform";
     }
@@ -124,6 +126,8 @@ class HipWindow
             return hip.windowing.platforms.windows.getWindowSize(hwnd);
         else version(X11)
             return hip.windowing.platforms.x11.getWindowSize();
+        else version(WebAssembly)
+            return hip.windowing.platforms.browser.getWindowSize();
         else version(AppleOS)
             return hip.windowing.platforms.appleos.getWindowSize();
         else

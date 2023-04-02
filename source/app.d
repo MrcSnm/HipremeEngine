@@ -351,7 +351,15 @@ export extern(C) void HipremeInit()
 */
 version(dll)
 {
-	version(WebAssembly){int main(){return HipremeMain();}}
+	version(WebAssembly)
+	{
+		import hip.windowing.platforms.browser;
+		int main()
+		{
+			int[2] windowSize = getWindowSize();
+			return HipremeMain(windowSize[0], windowSize[1]);
+		}
+	}
 }
 else version(AppleOS){}
 else

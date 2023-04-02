@@ -369,7 +369,6 @@ class HipRenderer
         if(windowHeight == -1)
             windowHeight = 1080;
 
-
         window = createWindow(windowWidth, windowHeight);
         HipRenderer.width = window.width;
         HipRenderer.height = window.height;

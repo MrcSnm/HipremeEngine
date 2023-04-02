@@ -23,7 +23,7 @@ function initializeWindowing()
         },
         WasmGetWindowSize()
         {
-            return WasmUtils.toDArray([canvas.width, canvas.height]);
+            return WasmUtils.toDArray([innerWidth, innerHeight]);
         },
         WasmSetFullscreen(shouldSet)
         {
