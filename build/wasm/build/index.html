@@ -31,7 +31,7 @@
     <script src="webassembly-core.js"></script>
     <script>
 	// WebAssembly.instantiateStreaming(fetch('/hipreme_engine.wasm'), importObject)
-	WebAssembly.instantiateStreaming(fetch('/hipreme_engine.wasm'), importObject)
+	WebAssembly.instantiateStreaming(fetch('hipreme_engine.wasm', {}), importObject)
 		.then(function(obj) {
 
 			const canvas = document.getElementById("glcanvas");
