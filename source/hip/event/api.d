@@ -31,6 +31,14 @@ export extern(System)
     {
         return sys.dispatcher.getKeyUpTime(key, id);
     }
+    ubyte getMulticlickCount(HipMouseButton btn = HipMouseButton.any, uint id = 0)
+    {
+        return sys.dispatcher.getMulticlickCount(btn, id);
+    }
+    bool isDoubleClicked(HipMouseButton btn = HipMouseButton.any, uint id = 0)
+    {
+        return sys.dispatcher.isDoubleClicked(btn, id);
+    }
     bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.any, uint id = 0) 
     {
         return sys.dispatcher.isMouseButtonPressed(btn, id);

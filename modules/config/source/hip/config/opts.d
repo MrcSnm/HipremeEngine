@@ -47,6 +47,9 @@ enum HE_ERR_ONLY = false;
 ///Unused yet?
 enum HIP_OPTIMIZE = false;
 
+///Default time in millis to restart the click count on Mouse and Keyboard
+enum HIP_DEFAULT_TIME_UNTIL_CLICK_COUNT_RESTART = 400;
+
 ///////////////////////////////// Default Asset Files /////////////////////////////////
 enum HIP_ASSETMANAGER_WORKER_POOL = 8;
 enum HIP_DEFAULT_FONT = "assets/defaults/fonts/WarsawGothic-BnBV.otf";

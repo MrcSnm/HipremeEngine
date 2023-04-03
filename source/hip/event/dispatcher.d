@@ -181,6 +181,8 @@ class EventDispatcher
     ///Public API
     Vector2 getTouchPosition(uint id = 0){return mouse.getPosition(id);}
     Vector2 getTouchDeltaPosition(uint id = 0){return mouse.getDeltaPosition(id);}
+    ubyte getMulticlickCount(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.getMulticlickCount(btn);}
+    bool isDoubleClicked(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.isDoubleClicked(btn);}
     bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.isPressed(btn);}
     bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.isJustPressed(btn);}
     bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.isJustReleased(btn);}

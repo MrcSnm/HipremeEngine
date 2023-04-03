@@ -6,13 +6,13 @@ import hip.error.handler;
 import hip.util.data_structures;
 import hip.util.reflection;
 
-// class HipMouse : IHipMouse
 class HipMouse
 {
     Vector2[] positions;
     Vector2[] lastPositions;
     Vector3 scroll;
     HipButtonMetadata[enumLength!HipMouseButton] metadatas;
+
     this()
     {
         positions = new Vector2[](1); //Start it with at least 1
@@ -118,9 +118,34 @@ class HipMouse
         return positions[id] - lastPositions[id];
     }
     Vector3 getScroll(){return scroll;}
+    ubyte getMulticlickCount(HipMouseButton btn = HipMouseButton.left)
+    {
+        import hip.error.handler;
+        if(btn == HipMouseButton.any)
+            ErrorHandler.showWarningMessage("getMulticlickCount", "Can't get multiclick count for any button.");
+        return metadatas[btn].clickCount;
+    }
+
+    bool isDoubleClicked(HipMouseButton btn = HipMouseButton.left)
+    {
+        if(btn == HipMouseButton.any)
+        {
+            foreach(b; __traits(allMembers, HipMouseButton))
+            {
+                HipMouseButton mem = __traits(getMember, HipMouseButton, b);
+                if(mem >= HipMouseButton.any)
+                    return false;
+                if(metadatas[mem].clickCount == 2 && metadatas[mem]._isNewState)
+                    return true;
+            }
+            return false;
+        }
+        return metadatas[btn].clickCount == 2 && metadatas[btn]._isNewState;
+    }
 
     void postUpdate()
     {
+        import hip.util.time;
         for(int i = 0; i < metadatas.length; i++)
             metadatas[i]._isNewState = false;
     }
