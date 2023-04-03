@@ -3,12 +3,21 @@ module hip.event.handlers.button;
 public import hip.api.input.button;
 import hip.util.time;
 
+
 final class HipButtonMetadata : AHipButtonMetadata
 {
+    import hip.config.opts;
+
     float lastDownTime, downTimeStamp;
     float lastUpTime, upTimeStamp;
+
     bool _isPressed = false;
     bool _isNewState = false;
+    float timeStartedCheckingRestart = 0;
+    float timeUntilRestartMulticlick = HIP_DEFAULT_TIME_UNTIL_CLICK_COUNT_RESTART;
+
+    ubyte clickCount = 0;
+
     override bool isNewState() const {return _isNewState;}
     override bool isPressed() const {return _isPressed;}
     override float getLastDownTimeDuration() const {return lastDownTime;}
@@ -31,18 +40,25 @@ final class HipButtonMetadata : AHipButtonMetadata
     override void setPressed(bool press)
     {
         _isNewState = false;
+        float currTime = HipTime.getCurrentTimeAsMilliseconds();
+        if(currTime - timeStartedCheckingRestart > timeUntilRestartMulticlick)
+        {
+            clickCount = 0;
+            timeStartedCheckingRestart = currTime;
+        }
         if(press != _isPressed)
         {
             _isNewState = true;
             if(_isPressed)
             {
                 lastDownTime = getDownTimeDuration();
-                upTimeStamp = HipTime.getCurrentTimeAsMilliseconds();
+                upTimeStamp = currTime;
+                clickCount++;
             }
             else
             {
                 lastUpTime = getUpTimeDuration();
-                downTimeStamp = HipTime.getCurrentTimeAsMilliseconds();
+                downTimeStamp = currTime;
             }
             _isPressed = press;
         }

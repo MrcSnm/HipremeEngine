@@ -65,10 +65,14 @@ class TestScene : Scene, IHipPreloadable
 
         x+= dt*400*v[0];
         y+= dt*400*v[1];
+
         if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
         {
             src.play();
-            logg("You just clicked me!");
+            if(HipInput.isDoubleClicked(HipMouseButton.left))
+                logg("You just clicked me!");
+            else
+                logg("Double clicked");
         }
 
         if(HipInput.isKeyJustPressed(HipKey.ENTER))
