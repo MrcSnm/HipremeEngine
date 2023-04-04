@@ -249,7 +249,7 @@ void prepareWASM(Choice* c, ref Terminal t)
 	environment["DFLAGS"] = 
 		"-I="~buildNormalizedPath(configs["hipremeEnginePath"].str, "modules", "d_std", "source") ~" "~
 		"-I="~buildNormalizedPath(configs["hipremeEnginePath"].str, "dependencies", "runtime", "druntime", "arsd-webassembly") ~" " ~
-		"-preview=shortenedMethods -L-allow-undefined -fvisibility=hidden -d-version=CarelessAlocation";
+		"-preview=shortenedMethods -L-allow-undefined -d-version=CarelessAlocation";
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
 	wait(spawnShell("dub build --compiler=ldc2 --build=debug -c wasm --arch=wasm32-unknown-unknown-wasm"));
