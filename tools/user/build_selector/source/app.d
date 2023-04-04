@@ -254,6 +254,12 @@ void prepareWASM(Choice* c, ref Terminal t)
 	std.file.chdir(configs["hipremeEnginePath"].str);
 	wait(spawnShell("dub build --compiler=ldc2 --build=debug -c wasm --arch=wasm32-unknown-unknown-wasm"));
 
+	version(Posix) //Seems like dub is not detectign -posix in macOS
+	{
+		wait(spawnShell("export DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true"));
+		wait(spawnShell("mv hipreme_engine.wasm* ./build/wasm/build/"));
+	}
+
 }
 
 

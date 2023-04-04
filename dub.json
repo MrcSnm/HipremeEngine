@@ -267,7 +267,7 @@
 				"build/wasm/generated",
 				"build/release_game/"
 			],
-			"postGenerateCommands": [
+			"postGenerateCommands-windows": [
 				"set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true",
 				"move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
 			],
