@@ -260,6 +260,9 @@
 				"d_std": {"path": "modules/d_std", "version": "*"},
 				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
+			"dflags": [
+				"--fvisibility=hidden"
+			],
 			"sourcePaths": [
 				"build/release_game/source"
 			],
