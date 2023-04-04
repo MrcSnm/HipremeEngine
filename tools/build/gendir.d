@@ -2,7 +2,7 @@ import std.stdio;
 import std.path:relativePath, buildPath, absolutePath, baseName;
 import std.conv:to;
 import std.array:appender;
-import std.file:dirEntries, DirEntry, SpanMode, exists, write;
+import std.file:dirEntries, DirEntry, SpanMode, exists, write, mkdirRecurse;
 import core.stdc.stdlib;
 
 enum OUTPUT_NAME = "directories.json";
@@ -24,8 +24,10 @@ int main(string[] args)
     output~= "}";
 
 
-    if(exists(args[2]))
-        write(buildPath(args[2], OUTPUT_NAME), output[]);
+    if(!exists(args[2]))
+        mkdirRecurse(args[2]);
+
+    write(buildPath(args[2], OUTPUT_NAME), output[]);
 
     return EXIT_SUCCESS;
 }
