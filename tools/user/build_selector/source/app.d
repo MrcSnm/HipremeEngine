@@ -259,6 +259,11 @@ void prepareWASM(Choice* c, ref Terminal t)
 		wait(spawnShell("export DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true"));
 		wait(spawnShell("mv hipreme_engine.wasm* ./build/wasm/build/"));
 	}
+	else version(Windows)
+	{
+		wait(spawnShell("set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true"));
+		wait(spawnShell("move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"));
+	}
 
 }
 
