@@ -145,7 +145,6 @@ class HipMouse
 
     void postUpdate()
     {
-        import hip.util.time;
         for(int i = 0; i < metadatas.length; i++)
             metadatas[i]._isNewState = false;
     }

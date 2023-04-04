@@ -28,5 +28,11 @@ interface IHipMouse
     bool isPressed(HipMouseButton btn = HipMouseButton.left);
     bool isJustPressed(HipMouseButton btn = HipMouseButton.left);
     bool isJustReleased(HipMouseButton btn = HipMouseButton.left);
+
+    ubyte getMulticlickCount(HipMouseButton btn = HipMouseButton.left);
+    final bool isDoubleClicked(HipMouseButton btn = HipMouseButton.left)
+    {
+        return getMulticlickCount(btn) >= 2;
+    }
     float[3] getScroll();
 }

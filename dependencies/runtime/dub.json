@@ -2,13 +2,15 @@
 	"authors": [
 		"Hipreme", "Adam Ruppe"
 	],
-	"dflags": ["-Oz"],
 	"importPaths": ["druntime/arsd-webassembly"],
 	"sourceFiles": [
 		"druntime/arsd-webassembly/arsd/webassembly.d",
 		"druntime/arsd-webassembly/rt/hooks.d",
-		"druntime/arsd-webassembly/rt/tls_armeabi.d",
 		"druntime/arsd-webassembly/core/arsd/memory_allocation.d",
+		"druntime/arsd-webassembly/core/array/v2102.d",
+		"druntime/arsd-webassembly/core/array/common.d",
+		"druntime/arsd-webassembly/core/array/v2099.d",
+		"druntime/arsd-webassembly/rt/tls_armeabi.d",
 		"druntime/arsd-webassembly/object.d",
 		"druntime/arsd-webassembly/core/arsd/aa.d",
 		"druntime/arsd-webassembly/core/arsd/objectutils.d",

@@ -35,6 +35,8 @@ else
             float function(char key, uint id = 0) getKeyUpTime;
 
             //Mouse/Touch functions
+            ubyte function(HipMouseButton btn = HipMouseButton.any, uint id = 0) getMulticlickCount;
+            bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isDoubleClicked;
             bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonPressed;
             bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonJustPressed;
             bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonJustReleased;
@@ -91,6 +93,8 @@ version(none) //Code suggestion
     float function(char key, uint id = 0) getKeyUpTime;
 
     //Mouse/Touch functions
+    ubyte function(HipMouseButton btn = HipMouseButton.any, uint id = 0) getMulticlickCount;
+    bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isDoubleClicked;
     bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonPressed;
     bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonJustPressed;
     bool function(HipMouseButton btn = HipMouseButton.any, uint id = 0) isMouseButtonJustReleased;
