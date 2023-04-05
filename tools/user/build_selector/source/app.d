@@ -237,6 +237,7 @@ void prepareWASM(Choice* c, ref Terminal t)
 		return;
 	}
 	loadSubmodules(t);
+	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
 	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "wasm", "build", "assets"));
 	environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;
 

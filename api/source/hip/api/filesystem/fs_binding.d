@@ -8,7 +8,7 @@ else
     void initFS()
     {
         import hip.api.internal;
-        loadClassFunctionPointers!(HipFSBinding, "HipFileSystem");
+        loadClassFunctionPointers!(HipFSBinding, UseExportedClass.Yes, "HipFileSystem");
 
         import hip.api.console;
         log("HipengineAPI: Initialized FS");

@@ -8,7 +8,7 @@ else
     void initAudio()
     {
         import hip.api.internal;
-        loadClassFunctionPointers!(HipAudioBinding, "HipAudio");
+        loadClassFunctionPointers!(HipAudioBinding, UseExportedClass.Yes, "HipAudio");
         import hip.api.console;
         log("HipengineAPI: Initialized Audio");
     }

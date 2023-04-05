@@ -9,7 +9,7 @@ else
 {
     void initGameAPI()
     {
-        loadClassFunctionPointers!(HipGameUtils, "HipGameUtils");
+        loadClassFunctionPointers!(HipGameUtils, UseExportedClass.Yes, "HipGameUtils");
         import hip.api.console;
         log("HipengineAPI: Initialized GameUtils");
     }

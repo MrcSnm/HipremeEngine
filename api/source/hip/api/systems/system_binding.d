@@ -8,7 +8,7 @@ else
 {
     void initTimerAPI()
     {
-        loadClassFunctionPointers!(HipTimerManager, "HipTimerManager");
+        loadClassFunctionPointers!(HipTimerManager, UseExportedClass.Yes, "HipTimerManager");
         import hip.api.console;
         log("HipengineAPI: Initialized TimerManager");
     }

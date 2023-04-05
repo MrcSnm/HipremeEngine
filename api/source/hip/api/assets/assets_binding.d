@@ -12,7 +12,7 @@ else
     void initAssetManager()
     {
         import hip.api.internal;
-        loadClassFunctionPointers!(HipAssetsBinding, "HipAssetManager");
+        loadClassFunctionPointers!(HipAssetsBinding, UseExportedClass.Yes, "HipAssetManager");
         import hip.api.console;
         log("HipengineAPI: Initialized AssetManager");
     }

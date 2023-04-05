@@ -69,7 +69,6 @@ export extern(System)
     float[2] getWorldTouchPosition(uint id=0, Viewport vp = null) 
     {
         import hip.math.utils:clamp;
-        import hip.console.log;
         float[2] ret = cast(float[2])sys.dispatcher.getTouchPosition(id);
         if(vp is null)
             vp = HipRenderer.getCurrentViewport();
