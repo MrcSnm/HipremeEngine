@@ -65,8 +65,7 @@ else
             void function(IHipTextureRegion reg, int x, int y, int z = 0, HipColorf = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawRegion;
             void function(IHipTilemap reg) drawMap;
             ///Sets the font for the next drawText commands
-            package void function (IHipFont font) setFont;
-            package void function (typeof(null)) setFontNull;
+            void function (IHipFont font) setFont;
             ///Sets the font using HipAssetManager.loadFont
             package void function (IHipAssetLoadTask font) setFontDeferred;
             ///Draws a text using the last font set
@@ -153,7 +152,6 @@ version(none)
         void function(IHipTilemap reg) drawMap;
         ///Sets the font for the next drawText commands
         package void function (IHipFont font) setFont;
-        package void function (typeof(null)) setFontNull;
         ///Sets the font using HipAssetManager.loadFont
         package void function (IHipAssetLoadTask font) setFontDeferred;
         ///Draws a text using the last font set

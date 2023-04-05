@@ -214,22 +214,19 @@ Array2D_GC!IHipTextureRegion cropSpritesheet(
     ).toGC());
 }
 
-void setFontNull(typeof(null))
-{
-    import hip.global.gamedef;
-    textBatch.setFont(cast(IHipFont)HipDefaultAssets.font);
-}
 void setFont(IHipFont font)
 {
+    import hip.global.gamedef;
     if(font is null)
-        setFontNull(null);
+        textBatch.setFont(cast(IHipFont)HipDefaultAssets.font);
     else
         textBatch.setFont(font);
 }
 void setFontDeferred(IHipAssetLoadTask task)
 {
+    import hip.global.gamedef;
     if(task is null)
-        setFontNull(null);
+        textBatch.setFont(cast(IHipFont)HipDefaultAssets.font);
     else
         textBatch.setFont(task);
 }

@@ -163,8 +163,21 @@ mixin template ExpandClassFunctionPointers(alias targetClass)
 		}
 	}
 }
+template Flag(string f)
+{
+	enum Flag : bool
+	{
+		No = false,
+		Yes = true
+	}
+}
 
-enum loadClassFunctionPointers(alias targetClass, string exportedClass = "")()
+alias UseExportedClass = Flag!"UseExportedClass";
+
+enum loadClassFunctionPointers(alias targetClass, 
+	UseExportedClass useExported = UseExportedClass.No, 
+	string exportedClass = "")
+()
 {
 	string prefix = "";
 	string importedFunctionName;
@@ -176,9 +189,12 @@ enum loadClassFunctionPointers(alias targetClass, string exportedClass = "")()
 	else
 	{
 		string nExportedClass = exportedClass;
-		static if(exportedClass == "")
-			nExportedClass = targetClass.stringof;
-		prefix = nExportedClass~"_";
+		static if(useExported)
+		{
+			static if(exportedClass == "")
+				nExportedClass = targetClass.stringof;
+			prefix = nExportedClass~"_";
+		}
 		static foreach(member; __traits(allMembers, targetClass))
 		{{
 			alias f = __traits(getMember, targetClass, member);
