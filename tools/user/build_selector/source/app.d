@@ -304,12 +304,12 @@ void prepareLinux(Choice* c, ref Terminal t)
 {
 	if(!std.file.exists("/usr/include/GL/gl.h"))
 	{
-		t.writeln("/usr/include/GL/gl.h wasn't found in your system. This is required for the OpenGL implementation.");
-		t.writeln("\t The following command will be executed to install it: sudo apt-get install libgl1-mesa-dev");
+		t.writelnError("/usr/include/GL/gl.h wasn't found in your system. This is required for the OpenGL implementation.");
+		t.writelnHighlighted("\t The following command will be executed to install it: sudo apt-get install libgl1-mesa-dev");
 		t.flush;
 		wait(spawnShell("sudo apt-get install libgl1-mesa-dev"));
 	}
-	auto pid = spawnShell("dub");
+	auto pid = spawnShell("cd ../../../ && dub");
 	wait(pid);
 }
 
