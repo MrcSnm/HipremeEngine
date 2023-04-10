@@ -32,6 +32,14 @@ Call `dub -c script -- path/to/project` dub -c script requires that argument.");
 
         if(HipFS.absoluteIsDir(path))
             path = joinPath(path, path.filenameNoExt);
+        else
+        {
+            import std.path;
+            path = absolutePath(path);
+            if(HipFS.absoluteIsDir(path))
+                path = joinPath(path, path.filenameNoExt);
+        }
+
 
         
         if(!dynamicLibraryIsLibNameValid(path))
