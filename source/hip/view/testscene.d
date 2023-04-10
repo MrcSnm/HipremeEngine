@@ -37,6 +37,9 @@ class TestScene : Scene, IHipPreloadable
 
     AHipAudioSource src;
 
+    import hip.graphics.g2d.particles;
+    HipParticleSystem sys;
+
 
     float x = 100, y = 100;
 
@@ -54,6 +57,11 @@ class TestScene : Scene, IHipPreloadable
 
         smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
         bigFont = HipDefaultAssets.getDefaultFontWithSize(64);
+
+        sys = new HipParticleSystem(500);
+        sys.config.colors = [HipColorStop(HipColor.red, 0), HipColorStop(HipColor(0x000000ff), 0.2)];
+        sys.config.velocityYInit = ValueRange(0, -300);
+        sys.setEmissionZone(100, 150, 100, 150);
     }
     override void update(float dt)
     {
@@ -66,19 +74,20 @@ class TestScene : Scene, IHipPreloadable
         x+= dt*400*v[0];
         y+= dt*400*v[1];
 
-        if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
+        if(HipInput.isMouseButtonJustReleased(HipMouseButton.left))
         {
             src.play();
             if(HipInput.isDoubleClicked(HipMouseButton.left))
-                logg("You just clicked me!");
-            else
                 logg("Double clicked");
+            else
+                logg("You just clicked me!");
         }
 
         if(HipInput.isKeyJustPressed(HipKey.ENTER))
         {
             logg("Don't press ENTER!");
         }
+        sys.update(dt);
     }
 
     override void render()
@@ -110,6 +119,8 @@ class TestScene : Scene, IHipPreloadable
         drawText("Null Textures uses that sprite over here", 300, 480, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(cast(int)x+200, cast(int)y, 100, 100);
         drawTexture(null, 300, 500);
+
+        sys.draw();
 
     }
 }

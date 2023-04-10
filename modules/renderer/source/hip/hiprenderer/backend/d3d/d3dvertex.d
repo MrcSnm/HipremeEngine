@@ -80,10 +80,12 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
     }
     void updateData(int offset, size_t size, const (void*) data)
     {
-        
-        ErrorHandler.assertLazyExit(size+offset <= this.size,
-        "Tried to set data with size "~to!string(size)~" and offset "~to!string(offset)~
-        "for vertex buffer with size "~to!string(this.size));
+        if(size + offset >= this.size)
+        {
+            ErrorHandler.assertExit(false,
+            "Tried to set data with size "~to!string(size)~" and offset "~to!string(offset)~
+            "for vertex buffer with size "~to!string(this.size));
+        }
 
         D3D11_MAPPED_SUBRESOURCE resource;
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
@@ -129,7 +131,7 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
     void unbind()
     {
         static if(is(index_t == uint))
-            _hip_d3d_context.IASetIndexBuffer(null, DXGI_FORMAT_R16_UINT, 0);
+            _hip_d3d_context.IASetIndexBuffer(null, DXGI_FORMAT_R32_UINT, 0);
         else
             _hip_d3d_context.IASetIndexBuffer(null, DXGI_FORMAT_R16_UINT, 0);
     }
@@ -149,9 +151,12 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
     }
     void updateData(int offset, index_t count, const index_t* data)
     {
-        ErrorHandler.assertLazyExit(count*index_t.sizeof+offset <= this.size, 
-        "Tried to set data with size "~to!string(count*index_t.sizeof)~" and offset "~to!string(offset)~
-        "for vertex buffer with size "~to!string(this.size));
+        if(count*index_t.sizeof + offset >= this.size)
+        {
+            ErrorHandler.assertExit(false, 
+            "Tried to set data with size "~to!string(count*index_t.sizeof)~" and offset "~to!string(offset)~
+            "for vertex buffer with size "~to!string(this.size));
+        }
         D3D11_MAPPED_SUBRESOURCE resource;
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
         memcpy(resource.pData+offset, data, count*index_t.sizeof);
@@ -247,6 +252,8 @@ private DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref HipVertexAttributeInfo info)
     DXGI_FORMAT ret;
     switch(info.valueType)
     {
+        case HipAttributeType.Rgba32:
+            return DXGI_FORMAT_R8G8B8A8_UNORM;
         case HipAttributeType.Float:
             switch(info.count)
             {

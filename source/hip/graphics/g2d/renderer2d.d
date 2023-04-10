@@ -172,12 +172,12 @@ void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3, in HipColorf 
     geoBatch.fillTriangle(x1,y1,x2,y2,x3,y3,color);
 }
 
-void drawSprite(IHipTexture texture, float[] vertices)
+void drawSprite(IHipTexture texture, void[] vertices)
 {
     manageBatchChange(spBatch);
     spBatch.draw(texture, vertices);
 }
-void drawRegion(IHipTextureRegion reg, int x, int y, int z = 0, const HipColorf color = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+void drawRegion(IHipTextureRegion reg, int x, int y, int z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
 {
     manageBatchChange(spBatch);
     spBatch.draw(reg, x, y, z, color, scaleX, scaleY, rotation);
@@ -188,7 +188,7 @@ void drawMap(IHipTilemap map)
     map.render(spBatch, false);
 }
 
-void drawTexture(IHipTexture texture, int x, int y, int z = 0, const HipColorf color = HipColorf.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+void drawTexture(IHipTexture texture, int x, int y, int z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
 {
     manageBatchChange(spBatch);
     spBatch.draw(texture, x, y, z, color, scaleX, scaleY, rotation);

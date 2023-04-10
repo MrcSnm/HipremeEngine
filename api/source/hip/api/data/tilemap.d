@@ -242,7 +242,7 @@ interface IHipTilemap
 {
     @nogc ref int x();
     @nogc ref int y();
-    @nogc ref HipColorf color();
+    @nogc ref HipColor color();
     @nogc ref float scaleX();
     @nogc ref float scaleY();
 

@@ -4,45 +4,63 @@ import hip.api.graphics.color;
 
 struct HipParticle
 {
-    Vector2 position;
-    Vector2 velocity;
-    Vector2 acceleration;
-    Vector2 force;
-
-    float lifeTime;
-    float mass = 1.0;
-    float invMass;
-
-    this(float x, float y, float mass = 1.0f)
-    {
-        position = Vector2(x,y);
-        velocity = Vector2.zero;
-        acceleration = Vector2.zero;
-        force = Vector2.zero;
-        assert(mass != 0, "Mass can't be 0");
-        this.mass = mass;
-        invMass = 1.0/mass;
-        lifeTime = 0;
-    }
-
-    void addForce(Vector2 force)
-    {
-        this.force+= force;
-    }
-
-    void update(float dt)
-    {
-        acceleration = force * invMass;
-        velocity+= acceleration * dt;
-        position+= velocity * dt;
-        force = Vector2.zero;
-    }
-
+    Vector2 initPosition;
+    Vector2 initVelocity;
+    Vector2 initAcceleration;
+    float initAngle = 0;
+    float initScale = 0;
+    float timeStamp = 0;
 }
+struct ValueRange
+{
+    float min = 0, max = 0;
+
+    float rnd()
+    {
+        import hip.math.random;
+        return Random.rangef(min, max);
+    }
+}
+
+struct HipParticleSystemConfig
+{
+    ///Means a variating initial value (random)
+    
+    ValueRange scaleInit = ValueRange(1,1);
+    ValueRange scaleEnd = ValueRange(0,0);
+    ValueRange velocityXInit = ValueRange(0,0);
+    ValueRange velocityYInit = ValueRange(0,0);
+    ///In which angle will apply the acceleration
+    ValueRange angleInit = ValueRange(0,0);
+
+    ValueRange accelerationXInit = ValueRange(0,0);
+    ValueRange accelerationYInit = ValueRange(0,0);
+
+    ///In which rotation will init.
+    ValueRange rotationInit = ValueRange(0,0);
+    ///Default color stop is to go from opaque white to transparent white.
+    immutable DefaultParticleColorStops = [HipColorStop(HipColor.white, 0), HipColorStop(HipColor(255,255,255,0), 1)];
+
+    HipColorStop[] colors = DefaultParticleColorStops;
+    float lifeTime = 2.0;
+}
+
+/** 
+ * 2D Particle System 
+ */
 class HipParticleSystem
 {
     HipParticle[] particles;
-    uint active;
+    HipParticleSystemConfig config;
+    float currentTime = 0;
+    ///How many particles to spawn per second.
+    float emissionRate = 200;
+    ///Will never spawn more than that value
+    uint maxActive = 500;
+    ///Stores how many particles to spawn, accumulates when not integer.
+    protected float spawnAccumulator = 0;
+    ///Particles to iterate
+    protected uint active;
 
     this(uint maxParticles)
     {
@@ -59,6 +77,17 @@ class HipParticleSystem
         particles[active] = temp;   
     }
 
+    struct EmissionZone
+    {
+        ValueRange x, y;
+    }
+    EmissionZone emissionZone;
+
+    void setEmissionZone(int minX, int maxX, int minY, int maxY)
+    {
+        emissionZone =  EmissionZone(ValueRange(minX, maxX), ValueRange(minY, maxY));
+    }
+
     void spawnParticles(uint count)
     {
         uint i = 0;
@@ -67,20 +96,52 @@ class HipParticleSystem
         while(i < count && newActive < max)
         {
             //Maybe here should have an initialize particle function
+
+            particles[newActive] = HipParticle(
+                Vector2(emissionZone.x.rnd, emissionZone.y.rnd), 
+                Vector2(config.velocityXInit.rnd, config.velocityYInit.rnd),
+                Vector2(config.accelerationXInit.rnd, config.accelerationYInit.rnd),
+                config.angleInit.rnd(),
+                config.scaleInit.rnd(),
+                currentTime
+            );
             newActive++;
             i++;
         }
+
+        active = newActive;
     }
 
     void update(float dt)
     {
+        currentTime+= dt;
+        uint currActive = active;
+        for(uint i = 0; i < currActive; i++)
+        {
+            HipParticle* p = &particles[i];
+            if(currentTime - p.timeStamp >= config.lifeTime)
+                killParticle(i);
+        }
+        spawnAccumulator+= dt*emissionRate;
+        spawnParticles(cast(uint)spawnAccumulator);
+        spawnAccumulator-= cast(uint)spawnAccumulator;
+    }
+
+    void draw()
+    {
+        import hip.graphics.g2d.renderer2d;
+        import hip.math.utils;
+        float invLifetime = 1.0f / config.lifeTime;
         for(uint i = 0; i < active; i++)
         {
             HipParticle* p = &particles[i];
-            p.acceleration+= p.force * p.invMass * dt;
-            p.velocity+= p.acceleration * dt;
-            p.position+= p.velocity * dt;
-            p.force = Vector2.zero;
+            float t = (currentTime - p.timeStamp) * invLifetime;
+
+            Vector2 partPos = p.initPosition + p.initVelocity*t + p.initAcceleration*0.5*t*t;
+            HipColor partColor = config.colors.gradientColor(t);
+
+            float scale = lerp(p.initScale, config.scaleEnd.max, t);
+            drawTexture(null, cast(int)partPos.x, cast(int)partPos.y, 0, partColor, scale, scale);
         }
     }
 }   

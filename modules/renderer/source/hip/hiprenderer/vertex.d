@@ -58,6 +58,8 @@ enum HipBufferUsage
 
 enum HipAttributeType
 {
+    ///Used as a unsigned r8g8b8a8 normalized type.
+    Rgba32,
     Float,
     Uint,
     Int,
@@ -211,10 +213,16 @@ class HipVertexArrayObject
         static if(is(T == Vector2)) count = 2;
         else static if(is(T == Vector3)) count = 3;
         else static if(is(T == Vector4) || is(T == HipColorf)) count = 4;
+        else static if(is(T == HipColor))
+        {
+            type = HipAttributeType.Rgba32;
+            count = 4;
+            typeSize = ubyte.sizeof;
+        }
         else
         {
             static if(is(T == int)) type = HipAttributeType.Int;
-            else static if(is(T == uint) || is(T == HipColor)) type = HipAttributeType.Uint;
+            else static if(is(T == uint)) type = HipAttributeType.Uint;
             else static if(is(T == bool)) type = HipAttributeType.Bool;
             else
                 static assert(is(T == float), "Unrecognized type for attribute: "~T.stringof);
@@ -273,9 +281,13 @@ class HipVertexArrayObject
             this.VBO.setData(count*this.stride, data);
         }
     }
-    /**
-    *   Update the VBO. Won't cause memory allocation
-    */
+    /** 
+     * Update the VBO. Won't cause memory allocation.
+     * Params:
+     *   count = How many vertices to update
+     *   data = The data containing a type which is conforming to the VAO.
+     *   offset = The offset is always multiplied by this vertex array object stride.
+     */
     void updateVertices(index_t count, const void* data, int offset = 0)
     {
         if(VBO is null)

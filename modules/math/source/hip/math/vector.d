@@ -95,22 +95,28 @@ struct Vector(uint N, T)
         }
         static if(N >= 3)
         {
-            Vector2 xy(){return Vector2(x, y);}
-            Vector2 xy(Vector2 v){x = v.x; y = v.y; return v;}
-            Vector2 yx(){return Vector2(y, x);}
-            Vector2 yx(Vector2 v){y = v.x; x = v.y; return yx;}
+            pragma(inline, true)
+            {
+                Vector2 xy(){return Vector2(x, y);}
+                Vector2 xy(Vector2 v){x = v.x; y = v.y; return v;}
+                Vector2 yx(){return Vector2(y, x);}
+                Vector2 yx(Vector2 v){y = v.x; x = v.y; return yx;}
+            }
         }
         static if(N == 4)
         {
-            Vector3 xyz(){return Vector3(x, y, z);}
-            Vector3 xyz(Vector3 v){x = v.x; y = v.y;z = v.z; return v;}
+            pragma(inline, true)
+            {
+                Vector3 xyz(){return Vector3(x, y, z);}
+                Vector3 xyz(Vector3 v){x = v.x; y = v.y;z = v.z; return v;}
+            }
         }
-        T opIndexUnary(string op)(size_t index) if(op == "-")
+        pragma(inline, true) T opIndexUnary(string op)(size_t index) if(op == "-")
         {
             assert(index >= 0 && index <= N);
             return mixin(op ~ "data[",index,"];");
         }
-        ref T[N] opCast() const
+        pragma(inline, true) ref T[N] opCast() const
         {
             return data;
         }
@@ -222,79 +228,83 @@ struct Vector(uint N, T)
             }
         }
 
-        VectorN opBinary(string op)(in VectorN rhs) inout if(op == "*" || op == "/" || op == "+" || op == "-")
+        pragma(inline, true)
         {
-            VectorN ret;
-            for(size_t i = 0; i < N; i++)   
+            VectorN opBinary(string op)(in VectorN rhs) inout if(op == "*" || op == "/" || op == "+" || op == "-")
             {
-                ret[i] = mixin("data[i] ", op,"rhs[i]");
-                version(HipMathSkipNanCheck){}
-                else static if(op == "/" || op == "-") assert(ret[i] == ret[i]); //Check for float.nan
+                VectorN ret;
+                for(size_t i = 0; i < N; i++)   
+                {
+                    ret[i] = mixin("data[i] ", op,"rhs[i]");
+                    version(HipMathSkipNanCheck){}
+                    else static if(op == "/" || op == "-") assert(ret[i] == ret[i]); //Check for float.nan
+                }
+                return ret;
             }
-            return ret;
-        }
-        VectorN opBinary(string op)(float rhs) inout
-        {
-            VectorN ret;
-            for(size_t i = 0; i < N; i++)
+            VectorN opBinary(string op)(float rhs) inout
             {
-                ret[i] = mixin("data[i]", op, "rhs");
-                version(HipMathSkipNanCheck){}
-                else static if(op == "/" || op == "-") assert(ret[i] == ret[i]); //Check for float.nan
-            }
-            return ret;
-        }
-
-        alias opBinaryRight = opBinary;
-        auto opOpAssign(string op)(VectorN other) return
-        {
-            version(HipMathSkipNanCheck)
-                mixin("data[]",op,"= other.data[];");
-            else
-            {
+                VectorN ret;
                 for(size_t i = 0; i < N; i++)
                 {
-                    mixin("data[i]",op,"= other[i];");
-                    static if(op == "/" || op == "-") 
-                    assert(data[i] == data[i]); //Check for float.nan
+                    ret[i] = mixin("data[i]", op, "rhs");
+                    version(HipMathSkipNanCheck){}
+                    else static if(op == "/" || op == "-") assert(ret[i] == ret[i]); //Check for float.nan
                 }
+                return ret;
             }
-            return this;
-        }
 
-        auto opOpAssign(string op)(float value) return
-        {
-            version(HipMathSkipNanCheck)
-                mixin("data[]",op,"= value;");
-            else
+            alias opBinaryRight = opBinary;
+            auto opOpAssign(string op)(VectorN other) return
+            {
+                version(HipMathSkipNanCheck)
+                    mixin("data[]",op,"= other.data[];");
+                else
+                {
+                    for(size_t i = 0; i < N; i++)
+                    {
+                        mixin("data[i]",op,"= other[i];");
+                        static if(op == "/" || op == "-") 
+                        assert(data[i] == data[i]); //Check for float.nan
+                    }
+                }
+                return this;
+            }
+
+            auto opOpAssign(string op)(float value) return
+            {
+                version(HipMathSkipNanCheck)
+                    mixin("data[]",op,"= value;");
+                else
+                {
+                    for(size_t i = 0; i < N; i++)
+                    {
+                        mixin("data[i]",op,"= value;");
+                        static if(op == "/" || op == "-") 
+                        assert(data[i] == data[i]); //Check for float.nan
+                    }
+                }
+                return this;
+            }
+
+            ref VectorN opAssign(in VectorN other) return
             {
                 for(size_t i = 0; i < N; i++)
-                {
-                    mixin("data[i]",op,"= value;");
-                    static if(op == "/" || op == "-") 
-                    assert(data[i] == data[i]); //Check for float.nan
-                }
+                    data[i] = other[i];
+                return this;
             }
-            return this;
-        }
 
-        ref VectorN opAssign(in VectorN other) return
-        {
-             for(size_t i = 0; i < N; i++)
-                data[i] = other[i];
-            return this;
-        }
+            ref VectorN opAssign(in T[N] other) return
+            {
+                for(size_t i = 0; i < N; i++)
+                    data[i] = other[i];
+                return this;
+            }
 
-        ref VectorN opAssign(in T[N] other) return
-        {
-            for(size_t i = 0; i < N; i++)
-                data[i] = other[i];
-            return this;
-        }
+            static VectorN zero()
+            {
+                return VectorN.init;
+            }
 
-        static VectorN zero()
-        {
-            return VectorN.init;
         }
 
         private enum isSIMD = false;
@@ -310,46 +320,49 @@ struct Vector(uint N, T)
             private T[N] data = 0;
         }
 
-        @trusted inout auto ref x() return 
+        pragma(inline, true)
         {
-            static if(isSIMD)
-                return (cast(T*)&data)[0];
-            else
-                return data[0];
-        }
-        @trusted inout auto ref y() return 
-        {
-            static if(isSIMD)
-                return (cast(T*)&data)[1];
-            else
-                return data[1];
-        }
-        static if(N >= 3)
-        {
-            @trusted inout auto ref z() return 
+            @trusted inout auto ref x() return 
             {
                 static if(isSIMD)
-                    return (cast(T*)&data)[2];
+                    return (cast(T*)&data)[0];
                 else
-                    return data[2];
+                    return data[0];
             }
-        }
-        static if(N == 4)
-        {
-            @trusted inout auto ref w() return 
+            @trusted inout auto ref y() return 
             {
                 static if(isSIMD)
-                    return (cast(T*)&data)[3];
+                    return (cast(T*)&data)[1];
                 else
-                    return data[3];
+                    return data[1];
+            }
+            static if(N >= 3)
+            {
+                @trusted inout auto ref z() return 
+                {
+                    static if(isSIMD)
+                        return (cast(T*)&data)[2];
+                    else
+                        return data[2];
+                }
+            }
+            static if(N == 4)
+            {
+                @trusted inout auto ref w() return 
+                {
+                    static if(isSIMD)
+                        return (cast(T*)&data)[3];
+                    else
+                        return data[3];
+                }
+            }
+
+            inout auto ref opIndex(size_t index)
+            {
+                return data[index];
             }
         }
 
-        inout auto ref opIndex(size_t index)
-        {
-            assert(index >= 0 && index <= N, "Out of bounds");
-            return data[index];
-        }
     }
 }
 

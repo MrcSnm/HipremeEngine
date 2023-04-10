@@ -19,7 +19,7 @@ import std.traits;
 class Mesh
 {
     protected index_t[] indices;
-    protected float[] vertices;
+    protected void[] vertices;
     ///Not yet supported
     bool isInstanced;
     private bool isBound;
@@ -83,25 +83,35 @@ class Mesh
     */
     public void setVertices(float[] vertices)
     {
-        if(vertices.length <=  this.vertices.length)
+        setVertices(cast(void[])vertices);
+    }
+
+    public void setVertices(void[] vertices)
+    {
+        if(vertices.length <= this.vertices.length)
         {
             updateVertices(vertices);
             return;
         }
         this.vertices = vertices;
-        this.vao.setVertices(cast(uint)vertices.length/this.vao.dataCount, vertices.ptr);
+        this.vao.setVertices(cast(uint)vertices.length/this.vao.stride, vertices.ptr);
     }
+    /**
+    *   Updates the GPU internal buffer by using the buffer sent.
+    *   The offset is always multiplied by the target vertex buffer stride.
+    */
+    public void updateVertices(void[] vertices, int offset = 0)
+    {
+        this.vao.updateVertices(cast(index_t)(vertices.length/this.vao.stride), vertices.ptr, offset);
+    }
+    public void updateVertices(float[] vertices, int offset = 0)
+    {
+        updateVertices(cast(void[])vertices, offset);
+    }
+
     public void updateIndices(index_t[] indices, int offset = 0)
     {
         this.vao.updateIndices(cast(index_t)indices.length, indices.ptr, offset);
-    }
-    /**
-    *   The offset is used to update the GPU internal buffer.
-    *   The offset is always multiplied by the target vertex buffer stride.
-    */
-    public void updateVertices(float[] vertices, int offset = 0)
-    {
-        this.vao.updateVertices(cast(index_t)(vertices.length/this.vao.dataCount), vertices.ptr, offset);
     }
     public void setShader(Shader s){this.shader = s;}
 
