@@ -300,6 +300,19 @@ void prepareAppleOS(Choice* c, ref Terminal t)
 	wait(pid);
 }
 
+void prepareLinux(Choice* c, ref Terminal t)
+{
+	if(!std.file.exists("/usr/include/GL/gl.h"))
+	{
+		t.writeln("/usr/include/GL/gl.h wasn't found in your system. This is required for the OpenGL implementation.");
+		t.writeln("\t The following command will be executed to install it: sudo apt-get install libgl1-mesa-dev");
+		t.flush;
+		wait(spawnShell("sudo apt-get install libgl1-mesa-dev"));
+	}
+	auto pid = spawnShell("dub");
+	wait(pid);
+}
+
 void main()
 {
 	auto terminal = Terminal(ConsoleOutputType.linear);
@@ -321,6 +334,7 @@ void main()
 	}
 	Choice[] choices;
 	version(OSX) choices~= Choice("AppleOS", &prepareAppleOS);
+	version(linux) choices~= Choice("Linux", &prepareLinux);
 
 	
 	Choice selection = selectChoice(terminal, input, choices~[
