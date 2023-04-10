@@ -61,7 +61,7 @@
 				"."
 			],
 			"dependencies": {
-				"d-metal-binding": {"path": "../../dependencies/metal"}
+				"d-metal-binding": {"path": "../../dependencies/metal", "optional": true}
 			}
 		},
 		{
