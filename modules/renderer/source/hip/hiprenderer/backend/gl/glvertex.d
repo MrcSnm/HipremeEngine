@@ -35,16 +35,27 @@ private int getGLAttributeType(HipAttributeType _t)
 {
     final switch(_t) with(HipAttributeType)
     {
-        case Float:
-            return GL_FLOAT;
-        case Int:
-            return GL_INT;
-        case Uint:
-            return GL_UNSIGNED_INT;
-        case Bool:
-            return GL_BOOL;
+        case Rgba32: return GL_UNSIGNED_BYTE;
+        case Float: return GL_FLOAT;
+        case Int: return GL_INT;
+        case Uint: return GL_UNSIGNED_INT;
+        case Bool: return GL_BOOL;
     }
 }
+
+private ubyte isGLAttributeNormalized(HipAttributeType _t)
+{
+    final switch(_t) with(HipAttributeType)
+    {
+        case Rgba32: return GL_TRUE;
+        case Float: return GL_FALSE;
+        case Int: return GL_FALSE;
+        case Uint: return GL_FALSE;
+        case Bool: return GL_FALSE;
+    }
+}
+
+
 
 
 class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
@@ -185,7 +196,7 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
                     vao.info.index,
                     vao.info.count,
                     getGLAttributeType(vao.info.valueType),
-                    GL_FALSE,
+                    isGLAttributeNormalized(vao.info.valueType),
                     vao.stride,
                     cast(void*)vao.info.offset
                 ));
@@ -247,7 +258,7 @@ version(HipGLUseVertexArray) class Hip_GL3_VertexArrayObject : IHipVertexArrayIm
             info.index,
             info.count, 
             getGLAttributeType(info.valueType),
-            GL_FALSE,
+            isGLAttributeNormalized(info.valueType),
             stride,
             cast(void*)info.offset
         ));

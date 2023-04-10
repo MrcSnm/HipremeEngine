@@ -62,6 +62,19 @@ uint roundPow2(uint n)
     return n + 1;
 }
 
+/** 
+ * 
+ * Params:
+ *   from = From which value to interpolate
+ *   to = To which value
+ *   t = The T of interpolation
+ * Returns: 
+ */
+float lerp(float from, float to, float t)
+{
+    return (1.0f-t)*from + t*to;
+}
+
 bool isPowerOf2(size_t num)
 {
     return (num & (num - 1)) == 0;

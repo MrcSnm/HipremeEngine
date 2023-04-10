@@ -39,7 +39,56 @@ struct HipColor
     static enum no      = HipColor(0x00000000);
 
     alias values this;
+
+    HipColor lerp(HipColor to, float t) const
+    {
+        float fromT = 1.0 - t;
+
+        ushort nR = cast(ushort)(fromT*r + t*to.r);
+        ushort nG = cast(ushort)(fromT*g + t*to.g);
+        ushort nB = cast(ushort)(fromT*b + t*to.b);
+        ushort nA = cast(ushort)(fromT*a + t*to.a);
+
+        return HipColor(
+            cast(ubyte)(nR > 255 ? 255 : nR),
+            cast(ubyte)(nG > 255 ? 255 : nG),
+            cast(ubyte)(nB > 255 ? 255 : nB),
+            cast(ubyte)(nA > 255 ? 255 : nA),
+        );
+    }
 }
+
+
+/** 
+ *  A struct containing a HipColor and a T which describes what color is in this T.
+ *  This is useful for doing color interpolation and gradients.
+ */
+struct HipColorStop
+{
+    HipColor color;
+    float t = 0;
+}
+
+/** 
+ * 
+ * Params:
+ *   colorStops = A sorted array of color stops.
+ *   t = What is the current T. Ranging from 0 to 1
+ * Returns: The lerped color in the stop.
+ */
+HipColor gradientColor(const scope ref HipColorStop[] colorStops, float t)
+{
+    if(colorStops.length == 0) return HipColor.no;
+    if(t >= 1) return colorStops[$-1].color;
+    for(uint i = 1 ; i < colorStops.length; i++)
+    {
+        if(t > colorStops[i].t) continue;
+        float currLerpT = t / (colorStops[i].t - colorStops[i-1].t);
+        return colorStops[i-1].color.lerp(colorStops[i].color, currLerpT);
+    }
+    return colorStops[$-1].color;
+}
+
 /**
 *   This construct is compatible with float[4] when setting a shader variable.
 */

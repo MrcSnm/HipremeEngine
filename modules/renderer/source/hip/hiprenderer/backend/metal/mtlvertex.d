@@ -129,6 +129,7 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeInfo i)
 {
     final switch(i.valueType)
     {
+        case HipAttributeType.Rgba32: return MTLVertexFormat.uchar4Normalized;
         case HipAttributeType.Float:
             final switch(i.count)
             {
