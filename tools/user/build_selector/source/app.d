@@ -145,7 +145,7 @@ void writelnError(ref Terminal t, scope string[] what...)
 void promptForConfigCreation(ref Terminal t)
 {
 	string hipremeEnginePath;
-	if(environment["HIPREME_ENGINE"])
+	if("HIPREME_ENGINE" in environment)
 	{
 		hipremeEnginePath = environment["HIPREME_ENGINE"];
 		t.writelnHighlighted("Using existing environment variable 'HIPREME_ENGINE' for hipremeEnginePath");
