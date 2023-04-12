@@ -1,7 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"arsd-official": "10.8.4",
+		"arsd-official": "10.9.9",
 		"automem": "0.6.7",
 		"dwt": "1.0.5+swt-3.4.1",
 		"gfm": "8.0.6",
