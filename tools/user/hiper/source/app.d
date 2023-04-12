@@ -1,6 +1,6 @@
 module app;
 import projectgen;
-import arsd.minigui;
+import ui;
 import std.file;
 import std.stdio;
 import std.path;
@@ -40,22 +40,22 @@ int onPathSelected(string path)
 	return 0;
 }
 
-void popupForProjectName()
+int popupForProjectName()
 {
-	getSaveFileName((string folderName)
+	string folderName = showSaveFileDialog("Name of your project(Should not contain spaces)", ["HipremeProject"]);
+	if(folderName.length == 0)
 	{
-		if(folderName.hasSpace)
-		{
-			messageBox("Save Project Error", "Your project name should not contain spaces", MessageBoxStyle.OK, MessageBoxIcon.Error);
-			popupForProjectName();
-		}
-		else
-		{
-			if(folderName[$-1] == '\0')
-				folderName = folderName[0..$-1];
-			onPathSelected(folderName);
-		}
-	}, "Name of your project(Should not contain spaces)", ["HipremeProject"]);
+		writeln("Execution cancelled. No project will be created.");
+		return 1;
+	}
+	else if(folderName.hasSpace)
+	{
+		showErrorMessage("Save Project Error", "Your project name should not contain spaces");
+		return popupForProjectName();
+	}
+	else if(folderName[$-1] == '\0')
+		folderName = folderName[0..$-1];
+	return onPathSelected(folderName);
 }
 
 int main(string[] args)
@@ -67,11 +67,8 @@ int main(string[] args)
 		return 1;
 	}
 	if(args.length < 2)
-		popupForProjectName();
+		return popupForProjectName();
 	else
-	{
 		writeln("Getting the path from argument ", args[1]);
-		onPathSelected(args[1]);
-	}
-	return 0;
+	return onPathSelected(args[1]);
 }
