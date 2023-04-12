@@ -145,10 +145,10 @@
 				"Load_DScript",
 				"Standalone"
 			],
-			"dflags-linux": [
+			"dflags-linux-ldc": [
 				"-link-defaultlib-shared"
 			],
-			"lflags-linux": [
+			"lflags-linux-ldc": [
 				"--export-dynamic"
 			],
 			"versions-windows": [

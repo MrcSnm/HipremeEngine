@@ -4,7 +4,7 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"arsd-official:minigui": "~>10.8.4"
+		"arsd-official:minigui": "~>10.9.9"
 	},
 	"description": "Hipreme Engine editor",
 	"license": "proprietary",
