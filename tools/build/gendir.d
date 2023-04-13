@@ -36,7 +36,7 @@ void genJson(T)(string startDir, ref T output)
 {
     bool first = true;
     output~= "{";
-    foreach(DirEntry e; dirEntries(startDir, SpanMode.shallow))
+    if(exists(startDir)) foreach(DirEntry e; dirEntries(startDir, SpanMode.shallow))
     {
         if(!first)
             output~=",";
