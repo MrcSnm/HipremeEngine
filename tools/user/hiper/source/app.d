@@ -19,6 +19,13 @@ bool isProjectNameValid(string name)
 	return name != "" && name != "hiper";
 }
 
+bool isFolderEmpty(string folderPath)
+{
+	foreach (DirEntry e; dirEntries(folderPath, SpanMode.shallow))
+		return false;
+	return true;
+}
+
 int onPathSelected(string path)
 {
 	if(path == "")
@@ -28,9 +35,9 @@ int onPathSelected(string path)
 	}
 
 	path = absolutePath(path);
-	if(path.exists)
+	if(path.exists && isDir(path) && !isFolderEmpty(path))
 	{
-		writeln("Can't generate project at path ", path, ". Folder already exists.");
+		writeln("Can't generate project at path ", path, ". Please select an inexistent folder or an empty one.");
 		return 1;
 	}
 	writeln("Generating project at path ", path);
