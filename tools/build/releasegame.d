@@ -11,7 +11,7 @@ import std.process;
 
 bool verbose = false;
 enum string[] availableSourceFolders = ["source", "src", "scripts"];
-enum string[] ignoreExtensions = [".dll", ".lib", ".so", ".obj", ".pdb"];
+enum string[] ignoreExtensions = [".dll", ".lib", ".so", ".obj", ".pdb", ".gitkeep"];
 enum string[] ignoreFolders = [".dub", ".git", ".history"];
 
 
