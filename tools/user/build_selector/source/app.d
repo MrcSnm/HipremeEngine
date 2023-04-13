@@ -151,7 +151,7 @@ void promptForConfigCreation(ref Terminal t)
 		t.writelnHighlighted("Using existing environment variable 'HIPREME_ENGINE' for hipremeEnginePath");
 	}
 	else
-		getValidPath(t, "HipremeEngine path: ");
+		hipremeEnginePath = getValidPath(t, "HipremeEngine path: ");
 	string gamePath 		 = getValidPath(t, "Your game path: ");
 	string phobosLibPath;
 	version(OSX)

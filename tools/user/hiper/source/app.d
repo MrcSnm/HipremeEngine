@@ -57,7 +57,7 @@ int popupForProjectName()
 	}
 	else if(folderName.hasSpace)
 	{
-		showErrorMessage("Save Project Error", "Your project name should not contain spaces");
+		showErrorMessage("Save Project Error", "Your project name '"~folderName~"' should not contain spaces");
 		return popupForProjectName();
 	}
 	else if(folderName[$-1] == '\0')
