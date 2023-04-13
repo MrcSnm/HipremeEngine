@@ -27,7 +27,7 @@ The engine mantains some global options which you can modify it on source/global
 - PS Vita: [build/vita](build/vita/hipreme_engine/)
 - MacOS : [build/appleos](build/appleos/)
 - Windows
-- Linux
+- Linux: Requires libgl1-mesa-dev for opening X11 window and OpenGL
 
 ### Features
 
