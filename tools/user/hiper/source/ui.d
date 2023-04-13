@@ -53,6 +53,14 @@ else
             if(cmd.length)
             {
                 string ret = executeShell(cmd).output;
+                import std.string:splitLines;
+                import std.array:join;
+                string[] lines = splitLines(ret);
+                if(lines.length > 1)
+                {
+                    executeShell("zenity --warning --title=\"'zenity' command warnings: \", --text=\""~join(lines[0..$-1])~"\"");
+                    ret = lines[$-1];
+                }
                 if(ret.length != 0 && ret[$-1] == '\n') ret = ret[0..$-1];
                 return ret;
             }
