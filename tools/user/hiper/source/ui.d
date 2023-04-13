@@ -51,7 +51,11 @@ else
         {
             string cmd = getCommandToSaveFileDialog(initialName, filters[0]);
             if(cmd.length)
-                return executeShell(cmd).output;
+            {
+                string ret = executeShell(cmd).output;
+                if(ret.length != 0 && ret[$-1] == '\n') ret = ret[0..$-1];
+                return ret;
+            }
             return defaultShowSaveFileDialog(initialName, filters);
         }
     }
