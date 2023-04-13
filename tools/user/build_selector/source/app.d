@@ -17,18 +17,17 @@ struct Choice
 	}
 }
 
-Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices)
+size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices, 
+	string selectionTitle, size_t selectedChoice = 0)
 {
-	bool exit = false;
-	size_t selectedChoice = configs["selectedChoice"].integer;
-
-	Choice ret;
+	bool exit;
 	enum ArrowUp = 983078;
 	enum ArrowDown = 983080;
-
 	while(!exit)
 	{
 		terminal.color(Color.DEFAULT, Color.DEFAULT);
+		if(selectionTitle.length != 0)
+			terminal.writeln(selectionTitle);
 		terminal.writeln("Select an option by using W/S or Arrow Up/Down and choose it by pressing Enter.");
 		foreach(i, choice; choices)
 		{
@@ -60,7 +59,6 @@ Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choic
 			}
 			else if(ch == '\n')
 			{
-				ret = choices[selectedChoice];
 				inputLoop = false;
 				exit = true;
 			}
@@ -69,9 +67,18 @@ Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choic
 		}
 		terminal.clear();
 	}
+	return selectedChoice;
+}
+
+Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices)
+{
+	size_t selectedChoice = selectChoiceBase(
+		terminal, input, choices, "Select a target platform to build.", 
+		configs["selectedChoice"].integer);
+
 	configs["selectedChoice"] = selectedChoice;
 	std.file.write(ConfigFile, toJSON(configs));
-	return ret;
+	return choices[ret];
 }
 
 
@@ -311,6 +318,89 @@ void prepareLinux(Choice* c, ref Terminal t)
 	}
 	auto pid = spawnShell("cd ../../../ && dub");
 	wait(pid);
+}
+
+string selectInFolder(string directory, ref Terminal t, ref RealTimeConsoleInput input)
+{
+	Choice[] choices;
+	foreach(std.file.DirEntry e; std.file.dirEntries(directory, std.file.SpanMode.shallow))
+		choices~= Choice(e.name, null);
+	size_t choice;
+	choice = selectChoiceBase(t, input, choices, "Select the NDK which you want to use. Remember that only NDK <= 21 is supported.");
+
+	return choices[choice].name;
+}
+
+enum FindAndroidNdkResult
+{
+	NotFound,
+	Found,
+	MustInstallSdk,
+	MustInstallNdk
+}
+
+FindAndroidNdkResult tryFindAndroidNDK(ref Terminal t, ref RealTimeConsoleInput input)
+{
+	if("ANDROID_NDK_HOME" in environment)
+	{
+		configs["androidNdkPath"] = environment["ANDROID_NDK_HOME"];
+		return FindAndroidNdkResult.Found;
+	}
+	bool isValidNDK(string chosenNDK)
+	{
+		import std.conv:to;
+		int ndkVer = chosenNDK[0..2].to!int;
+		return ndkVer <= 21;
+	}
+	version(Windows)
+	{
+		string locAppData = environment["LOCALAPPDATA"];
+		if(locAppData == null)
+		{
+			t.writelnError("Could not find %LOCALAPPDATA% in your Windows.");
+			t.flush;
+			return FindAndroidNdkResult.NotFound;
+		}
+		string tempNdkPath = buildNormalizedPath(locAppData, "Android", "Sdk");
+		if(!std.file.exists(tempNdkPath))
+		{
+			t.writelnError("Could not find ", tempNdkPath, ". You need to install Android SDK.");
+			t.flush;
+			return FindAndroidNdkResult.MustInstallSdk;
+		}
+		tempNdkPath = buildNormalizedPath(tempNdkPath, "ndk");
+		if(!std.file.exists(tempNdkPath))
+		{
+			t.writelnError("Could not find ", tempNdkPath, ". You need to have at least one NDK installed.");
+			t.flush;
+			return FindAndroidNdkResult.MustInstallNdk;
+		}
+		do
+		{
+			string ndkPath = selectInFolder(tempNdkPath, t, input);
+			if(isValidNDK(ndkPath))
+			{
+				tempNdkPath = ndkPath;
+				break;
+			}
+			t.writelnError("Please select a valid NDK (<= 21)");
+		} while(true);
+		t.writelnSuccess("Chosen "~ tempNdkPath~ " as your NDK.");
+		environment["androidNdkPath"] = tempNdkPath;
+		return FindAndroidNdkResult.Found;
+	}
+	else version(linux)
+	{
+		return FindAndroidNdkResult.NotFound;
+	}
+
+}
+
+void prepareAndroid(Choice* c, ref Terminal t)
+{
+
+	environment["DFLAGS"]= "-gcc="~configs["androidNdkPath"].str~"toolchains/llvm/prebuild/windows-x86_64/bin/aarch64-linux-android21-clang.cmd " ~
+		"-linker="~configs["androidNdkPath"].str~"toolchains/llvm/prebuild/windows-x86_64/bin/aarch64-linux-android-ld.bfd.exe";
 }
 
 void main()
