@@ -63,12 +63,7 @@ class HipOpenSLESAudioSource : HipAudioSource
         SLIAudioPlayer.pause(*audioPlayer);
         return false;
     }
-    override bool play()
-    {
-        SLIAudioPlayer.play(*audioPlayer);
-        return false;
-    }
-    override bool resume()
+    bool resume()
     {
         SLIAudioPlayer.resume(*audioPlayer);
         return false;   
@@ -83,7 +78,7 @@ class HipOpenSLESAudioSource : HipAudioSource
         ErrorHandler.assertExit(audioPlayer.playerObj != null, "Can't pull stream data without null audioplayer");
         uint decoded = clip.updateStream();
         import hip.console.log;
-        HipAudioBufferWrapper2* freeBuf = getFreeBuffer();
+        HipAudioBufferWrapper* freeBuf = getFreeBuffer();
         
         if(freeBuf != null)
         {
@@ -96,7 +91,7 @@ class HipOpenSLESAudioSource : HipAudioSource
 
     }
 
-    override HipAudioBufferWrapper2* getFreeBuffer()
+    override HipAudioBufferWrapper* getFreeBuffer()
     {
         SLIBuffer* b = audioPlayer.getProcessedBuffer();
         if(b == null)

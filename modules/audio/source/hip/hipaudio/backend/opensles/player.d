@@ -255,7 +255,7 @@ outputSampleRate: ", cfg.sampleRate);
     public HipAudioClipAPI loadStreamed(string path, uint chunkSize)
     {
         HipAudioClipAPI buffer = new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true), chunkSize);
-        buffer.loadStreamed(path, getEncodingFromName(path));
+        // buffer.loadStreamed(path, getEncodingFromName(path));
         return buffer;
     }
     void updateStream(AHipAudioSource source){}
