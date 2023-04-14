@@ -28,6 +28,9 @@ struct HipColor
         values[] = color.values[];  
         return this;
     }
+
+    static HipColor alpha(ubyte alpha){return HipColor(255, 255, 255, alpha);}
+    static HipColor alpha(float alpha){return HipColor(255, 255, 255, cast(ubyte)(alpha*255));}
     static enum white   = HipColor(0xffffffff);
     static enum black   = HipColor(0x000000ff);
     static enum red     = HipColor(0xff0000ff);

@@ -90,7 +90,6 @@
 				"bind" : {"path": "../bind", "version": "*", "optional": true}
 			},
 			"subConfigurations": {
-				"bind": "android",
 				"windowing": "android"
 			},
 			"versions": [

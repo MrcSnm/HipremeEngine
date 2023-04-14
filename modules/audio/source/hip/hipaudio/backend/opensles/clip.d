@@ -23,9 +23,9 @@ class HipOpenSLESAudioClip : HipAudioClip
     override void onUpdateStream(ubyte[] data, uint decodedSize){}
 
     /** Allocates SLIBuffer* in the wrapper*/
-    override HipAudioBufferWrapper2 createBuffer(ubyte[] data)
+    override HipAudioBufferWrapper createBuffer(ubyte[] data)
     {
-        HipAudioBufferWrapper2 w;
+        HipAudioBufferWrapper w;
         w.buffer.sles = sliGenBuffer(null, data.length); //Null init buffer
         hasBuffer = true;
         return w;

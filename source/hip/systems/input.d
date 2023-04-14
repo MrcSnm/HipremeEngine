@@ -55,8 +55,8 @@ version(Android)
         // HipEventQueue.post(0, HipEventQueue.EventType.windowResize, HipEventQueue.Resize(cast(uint)x, cast(uint)y));
     }
 
-    mixin javaGenerateModuleMethodsForPackage!(HipAndroidInput, hip.systems.input, true);
-    mixin javaGenerateModuleMethodsForPackage!(HipAndroidRenderer, hip.systems.input, true);
+    mixin javaGenerateModuleMethodsForPackage!(HipAndroidInput, hip.systems.input, false);
+    mixin javaGenerateModuleMethodsForPackage!(HipAndroidRenderer, hip.systems.input, false);
 }
 else version(QueuePopulatedExternally)
 {

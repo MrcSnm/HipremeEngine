@@ -56,9 +56,9 @@ version(Android)
 
     class HipAndroidFileSystemInteraction : IHipFileSystemInteraction
     {
-        bool read(string path, void delegate(void[] data) onSuccess, void delegate(string err) onError)
+        bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err) onError)
         {
-            void[] output;
+            ubyte[] output;
             HipAndroidFile f = new HipAndroidFile(path, FileMode.READ);
             output.length = f.size;
             bool ret = f.read(output.ptr, f.size) >= 0;

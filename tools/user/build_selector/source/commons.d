@@ -130,6 +130,68 @@ void writelnError(ref Terminal t, scope string[] what...)
 	t.color(Color.DEFAULT, Color.DEFAULT);
 }
 
+bool pollForExecutionPermission(ref Terminal t, ref RealTimeConsoleInput input, string operation)
+{
+	dchar shouldPermit;
+	t.writelnHighlighted(operation);
+	t.flush;
+	while(true)
+	{
+		shouldPermit = input.getch;
+		if(shouldPermit == 'y' || shouldPermit == 'Y') break;
+		else if(shouldPermit == 'n' || shouldPermit == 'N') return false;
+	}
+	return true;
+}
+
+bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
+{
+	import std.zip;
+	ZipArchive zip = new ZipArchive(std.file.read(zipPath));
+	if(!std.file.exists(outputDirectory))
+	{
+		t.writeln("Creating directory ", outputDirectory);
+		t.flush;
+		std.file.mkdirRecurse(outputDirectory);
+	}
+	foreach(fileName, archiveMember; zip.directory)
+	{
+		string outputFile = buildNormalizedPath(outputDirectory, fileName);
+		if(!std.file.exists(outputFile))
+		{
+			string currentDirName = outputFile;
+			if(currentDirName.extension != null)
+			{
+				t.writeln("Extracting ", currentDirName, " ", outputFile);
+				t.flush;
+				currentDirName = currentDirName.dirName;
+				std.file.mkdirRecurse(currentDirName);
+				std.file.write(outputFile, zip.expand(archiveMember));
+			}
+			else
+				std.file.mkdirRecurse(currentDirName);
+		}
+	}
+	return true;
+}
+
+bool downloadFileIfNotExists(
+	string purpose, string link, string outputName,
+	ref Terminal t, ref RealTimeConsoleInput input
+)
+{
+	import std.net.curl;
+	if(!std.file.exists(outputName))
+	{
+		if(!pollForExecutionPermission(t, input, purpose~" [Y]es/[N]o"))
+			return false;
+		download(link, outputName);
+		t.writeln("Download succeeded!");
+		t.flush;
+	}
+	return true;
+}
+
 void updateConfigFile()
 {
 	std.file.write(ConfigFile, configs.toJSON());
