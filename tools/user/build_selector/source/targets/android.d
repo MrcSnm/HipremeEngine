@@ -92,6 +92,14 @@ private string getAndroidFlagsToolchains()
 		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/").replace("\\", "/")~"\" "
 		;
 	}
+	else version(linux)
+	{
+		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang.cmd") ~"\" " ~
+		"-linker=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ld.bfd.exe") ~"\" " ~
+		///Put the lib path for finding libandroid, liblog, libOpenSLES, libEGL and libGLESv3
+		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/30/")~"\" "
+		;
+	}
 }
 
 private string getPackagesToInstall()
