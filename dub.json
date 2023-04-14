@@ -399,16 +399,14 @@
 				"build/release_game"
 			],
 			"dependencies": {
-				"jni": {"path": "./modules/jni", "version": "*"},
-				"sles": {"path": "./dependencies/sles", "version": "*"},
-				"gles" : {"path": "./dependencies/gles", "version": "*"}
+				"jni": {"path": "./modules/jni", "version": "*"}
 			},
 			"subConfigurations": {
 				"audio": "android",
 				"console": "android",
 				"renderer": "android"
 			},
-			"postBuildCommands": [
+			"postBuildCommands-windows": [
 				"copy /B .\\bin\\android\\libhipreme_engine.so .\\build\\android\\project\\app\\src\\main\\jniLibs\\arm64-v8a\\libhipreme_engine.so",
 				"cd .\\tools\\build && rdmd copyresources.d .\\release_game\\assets .\\android\\project\\app\\src\\main\\assets",
 				"REM .\\build\\android\\project\\ && .\\gradlew.bat :app:assembleDebug && adb install -r .\\app\\build\\outputs\\apk\\debug\\app-debug.apk",

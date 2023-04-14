@@ -20,10 +20,6 @@
 				"-H",
 				"-Hd=./import"
 			]
-		},
-		{
-			"name": "source",
-			"targetType": "sourceLibrary"
 		}
 	],
 	"description": "HipremeEngine data module",

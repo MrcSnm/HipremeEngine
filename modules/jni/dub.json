@@ -9,7 +9,7 @@
 	],
 	"dependencies": 
 	{
-		"util" : {"path" : "../util"}
+		"util" : {"path" : "../util", "version": "*"}
 	},
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "HipremeEngine JNI module",

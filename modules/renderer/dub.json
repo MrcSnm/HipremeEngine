@@ -86,8 +86,8 @@
 		{
 			"name": "android",
 			"dependencies": {
-				"gles" : {"path": "../../dependencies/gles"},
-				"bind" : {"path": "../bind", "optional": true}
+				"gles" : {"path": "../../dependencies/gles", "version": "*"},
+				"bind" : {"path": "../bind", "version": "*", "optional": true}
 			},
 			"subConfigurations": {
 				"bind": "android",

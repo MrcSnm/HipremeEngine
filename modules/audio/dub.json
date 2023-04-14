@@ -9,9 +9,9 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"math": {"path": "../math"},
-		"error": {"path": "../error"},
-		"audio_decoding": {"path": "../audio_decoding"}
+		"math": {"path": "../math", "version": "*"},
+		"error": {"path": "../error", "version": "*"},
+		"audio_decoding": {"path": "../audio_decoding", "version": "*"}
 	},
 	"configurations": [
 		{
@@ -64,7 +64,7 @@
 		},
 		{
 			"name": "android",
-			"dependencies": {"sles": {"path": "../../dependencies/sles"}},
+			"dependencies": {"sles": {"path": "../../dependencies/sles", "version": "*"}},
 			"subConfigurations": {
 				"audio_decoding": "audioformats"
 			},
