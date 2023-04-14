@@ -9,6 +9,7 @@
 	"stringImportPaths": [
 		"../../build/scripts"
 	],
+	"libs": ["curl"],
 	"description": "A minimal D application.",
 	"license": "proprietary",
 	"name": "build_selector"

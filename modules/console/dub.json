@@ -20,7 +20,7 @@
 		{
 			"name": "android",
 			"dependencies": {
-				"jni" : {"path": "../jni", "optional": true}
+				"jni" : {"path": "../jni", "version": "*"}
 			}
 		},
 		{
