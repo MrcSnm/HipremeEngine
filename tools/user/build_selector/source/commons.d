@@ -160,9 +160,9 @@ bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
 		if(!std.file.exists(outputFile))
 		{
 			string currentDirName = outputFile;
-			if(currentDirName.extension != null)
+			if(std.file.attrIsFile(archiveMember.fileAttributes))
 			{
-				t.writeln("Extracting ", currentDirName, " ", outputFile);
+				t.writeln("Extracting ", fileName);
 				t.flush;
 				currentDirName = currentDirName.dirName;
 				std.file.mkdirRecurse(currentDirName);
