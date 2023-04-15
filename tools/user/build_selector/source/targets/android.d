@@ -40,7 +40,8 @@ private FindAndroidNdkResult tryFindAndroidNDK(ref Terminal t, ref RealTimeConso
 			t.flush;
 			return FindAndroidNdkResult.NotFound;
 		}
-		string tempNdkPath = buildNormalizedPath(locAppData, "Android", "Sdk");
+		string sdkPath = buildNormalizedPath(locAppData, "Android", "Sdk");
+		string tempNdkPath = sdkPath;
 		if(!std.file.exists(tempNdkPath))
 		{
 			t.writelnError("Could not find ", tempNdkPath, ". You need to install Android SDK.");
@@ -65,7 +66,8 @@ private FindAndroidNdkResult tryFindAndroidNDK(ref Terminal t, ref RealTimeConso
 			t.writelnError("Please select a valid NDK (<= 21)");
 		} while(true);
 		t.writelnSuccess("Chosen "~ tempNdkPath~ " as your NDK.");
-		environment["androidNdkPath"] = tempNdkPath;
+		environment["androidNdkPath"] = sdkPath;
+		environment["androidSdkPath"] = tempNdkPath;
 		return FindAndroidNdkResult.Found;
 	}
 	else version(linux)
@@ -117,6 +119,7 @@ private string getPackagesToInstall()
 	import std.conv:to;
 	string packages = `"build-tools;`~to!string(TargetAndroidSDK)~`.0.0" `~ 
 		`"extras;google;webdriver" ` ~
+		`"platform-tools" ` ~
 		`"ndk;`~TargetAndroidNDK~`" `~
 		`"platforms;android-`~to!string(TargetAndroidSDK)~`" `~
 		`"sources;android-`~to!string(TargetAndroidSDK)~`" `;
@@ -197,6 +200,12 @@ private bool installAndroidNDK(ref Terminal t, string sdkPath)
 		t.flush;
 		return false;
 	}
+	if(!makeFileExecutable(buildNormalizedPath(sdkPath, "platform-tools", "adb")))
+	{
+		t.writeln("Failed to set adb as executable.");
+		t.flush;
+		return false;
+	}
 
 	string execSdkManager = "sdkmanager ";
 	version(Posix) execSdkManager = "./sdkmanager";
@@ -218,14 +227,13 @@ private bool installAndroidNDK(ref Terminal t, string sdkPath)
 		return false;
 	}
 
+	configs["androidSdkPath"] = sdkPath;
 	configs["androidNdkPath"] = buildNormalizedPath(sdkPath, "ndk", TargetAndroidNDK);
 	updateConfigFile();
 	return true;
 }
 
-
-
-void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
+private bool installOpenJDK(ref Terminal t, ref RealTimeConsoleInput input)
 {
 	if(!("javaHome" in configs))
 	{
@@ -234,15 +242,15 @@ void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 			t.writelnHighlighted("JAVA_HOME wasn't found in your environment. 
 				Build Selector will download a compatible OpenJDK for Android Development.");
 			t.flush;
-		
 			if(!downloadOpenJDK(t, input))
 			{
 				t.writelnError("Could not download OpenJDK");
-				return;
+				return false;
 			}
 			string javaHome = buildNormalizedPath(std.file.getcwd(), "Android", "openjdk_11");
 			version(Windows) javaHome = buildNormalizedPath(javaHome, "jdk-11.0.18+10");
-			configs["javaHome"] = buildNormalizedPath(javaHome, "bin");
+			version(Posix) javaHome = buildNormalizedPath(javaHome, "jdk-11.0.2");
+			configs["javaHome"] = javaHome;
 			updateConfigFile();
 		}
 		else
@@ -251,7 +259,11 @@ void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 			updateConfigFile();
 		}
 	}
-	environment["JAVA_HOME"] = configs["javaHome"].str;
+	return true;
+}
+
+private bool installAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input)
+{
 	if(!("androidNdkPath" in configs))
 	{
 		FindAndroidNdkResult res = tryFindAndroidNDK(t, input);
@@ -263,12 +275,12 @@ void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 				if(!downloadAndroidSDK(t, input, sdkPath))
 				{
 					t.writelnError("Android SDK download didn't succeed");
-					return;
+					return false;
 				}
 				if(!installAndroidNDK(t, sdkPath))
 				{
 					t.writelnError("Could not install Android NDK.");
-					return;
+					return false;
 				}
 				break;
 			}
@@ -278,6 +290,50 @@ void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 			default: assert(false, "Case not yet implemented.");
 		}
 	}
+	return true;
+}
+
+
+private void runAndroidApplication(ref Terminal t)
+{
+	version(Windows)
+	{
+		string adb = buildNormalizedPath(configs["androidSdkPath"].str, "platform-tools", "adb.exe");
+		string gradlew = "gradlew.bat";
+	}
+	else version(Posix)
+	{
+		string adb = buildNormalizedPath(configs["androidSdkPath"].str, "platform-tools", "adb");
+		string gradlew = "./gradlew";
+	}
+
+	std.file.chdir(buildNormalizedPath("build", "android", "project"));
+
+	wait(spawnShell(gradlew ~ " :app:assembleDebug"));
+
+	string adbInstall = adb~" install -r "~
+		buildNormalizedPath(std.file.getcwd(), "app", "build", "outputs", "apk", "debug", "app-debug.apk");
+
+	t.writeln("Executing adb install: ", adbInstall);
+	t.flush;
+	wait(spawnShell(adbInstall));
+	wait(spawnShell(adb~" shell monkey -p com.hipremeengine.app 1"));
+}
+
+void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
+{
+	if(!installOpenJDK(t, input))
+	{
+		t.writelnError("Failed installing OpenJDK.");
+		return;
+	}
+	environment["JAVA_HOME"] = configs["javaHome"].str;
+	if(!installAndroidSDK(t, input))
+	{
+		t.writelnError("Failed installing Android SDK.");
+		return;
+	}
+	
 
 	if(!std.file.exists(
 		buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "android", "lib", "libdruntime-ldc.a")))
@@ -312,4 +368,10 @@ void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
 	wait(spawnShell("dub build --parallel -c android --compiler=ldc2 -a aarch64--linux-android"));
+
+	std.file.rename(
+		buildNormalizedPath("bin", "android", "libhipreme_engine.so"),
+		buildNormalizedPath("build", "android", "project", "app", "src", "main", "jniLibs", "arm64-v8a", "libhipreme_engine.so")
+	);
+	runAndroidApplication(t);
 }

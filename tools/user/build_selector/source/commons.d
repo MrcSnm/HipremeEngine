@@ -241,10 +241,10 @@ void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 {
 	t.writeln("Executing engine script ", script, " with arguments ", args);
 	t.flush;
-	auto output = execute(["rdmd", buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)] ~ args);
-	if(output.status)
+	auto exec = execute(["rdmd", buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)] ~ args);
+	if(exec.status)
 	{
-		t.writelnError("Script ", script, " failed with: ", output.output);
+		t.writelnError("Script ", script, " failed with: ", exec.output);
 		t.flush;
 		throw new Error("Failed on engine script");
 	}
