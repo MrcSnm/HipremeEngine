@@ -13,7 +13,7 @@ Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choic
 		configs["selectedChoice"].integer);
 
 	configs["selectedChoice"] = selectedChoice;
-	std.file.write(ConfigFile, toJSON(configs));
+	std.file.write(ConfigFile, configs.toPrettyString);
 	return choices[selectedChoice];
 }
 

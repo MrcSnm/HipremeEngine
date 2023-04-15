@@ -1,6 +1,8 @@
 module targets.android;
 import commons;
 import std.net.curl;
+import arsd.terminal;
+import std.path;
 
 ///This is the one which will be installed when using the SDK.
 enum TargetAndroidSDK = 31;
@@ -81,6 +83,14 @@ private string getAndroidSDKDownloadLink()
 	else assert(false, "Your system does not have an Android SDK.");
 }
 
+private string getOpenJDKDownloadLink()
+{
+	version(Windows) return "https://aka.ms/download-jdk/microsoft-jdk-11.0.18-windows-x64.zip";
+	else version(linux) return "https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_linux-x64_bin.tar.gz";
+	else version(OSX) return "https://download.java.net/java/GA/jdk11/13/GPL/openjdk-11.0.1_osx-x64_bin.tar.gz";
+	else assert(false, "Your system does not have an OpenJDK");
+}
+
 private string getAndroidFlagsToolchains()
 {
 	version(Windows)
@@ -117,6 +127,19 @@ private string getPackagesToInstall()
 					`"extras;google;usb_driver" `;
 	}
 	return packages;
+}
+
+
+private bool downloadOpenJDK(ref Terminal t, ref RealTimeConsoleInput input)
+{
+	string javaContainer = "openjdk_11.zip";
+	version(Posix) javaContainer = javaContainer.setExtension(".tar.gz");
+	javaContainer = buildNormalizedPath(std.file.tempDir, javaContainer);
+	downloadFileIfNotExists("OpenJDK for building to Android. ", getOpenJDKDownloadLink(), javaContainer, t, input);
+
+	string outputPath = buildNormalizedPath(std.file.getcwd(), "Android", "openjdk_11");
+	version(Windows) return extractZipToFolder(javaContainer, outputPath, t);
+	else version(Posix) return extractTarGzToFolder(javaContainer, outputPath, t);
 }
 
 private bool downloadAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, out string sdkPath)
@@ -157,6 +180,7 @@ private bool downloadAndroidLibraries(ref Terminal t, ref RealTimeConsoleInput i
 
 	return true;
 }
+
 
 private bool installAndroidNDK(ref Terminal t, string sdkPath)
 {
@@ -203,6 +227,31 @@ private bool installAndroidNDK(ref Terminal t, string sdkPath)
 
 void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 {
+	if(!("javaHome" in configs))
+	{
+		if(!("JAVA_HOME" in environment))
+		{
+			t.writelnHighlighted("JAVA_HOME wasn't found in your environment. 
+				Build Selector will download a compatible OpenJDK for Android Development.");
+			t.flush;
+		
+			if(!downloadOpenJDK(t, input))
+			{
+				t.writelnError("Could not download OpenJDK");
+				return;
+			}
+			string javaHome = buildNormalizedPath(std.file.getcwd(), "Android", "openjdk_11");
+			version(Windows) javaHome = buildNormalizedPath(javaHome, "jdk-11.0.18+10");
+			configs["javaHome"] = buildNormalizedPath(javaHome, "bin");
+			updateConfigFile();
+		}
+		else
+		{
+			configs["javaHome"] = environment["JAVA_HOME"];
+			updateConfigFile();
+		}
+	}
+	environment["JAVA_HOME"] = configs["javaHome"].str;
 	if(!("androidNdkPath" in configs))
 	{
 		FindAndroidNdkResult res = tryFindAndroidNDK(t, input);

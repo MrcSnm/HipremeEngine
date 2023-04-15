@@ -159,20 +159,32 @@ bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
 		string outputFile = buildNormalizedPath(outputDirectory, fileName);
 		if(!std.file.exists(outputFile))
 		{
-			string currentDirName = outputFile;
-			///For some reason on linux it thinks that .a files are directories
-			if(std.file.attrIsFile(archiveMember.fileAttributes) || currentDirName.extension == ".a")
+			if(archiveMember.expandedSize == 0)
+				std.file.mkdirRecurse(outputFile);
+			else
 			{
+				string currentDirName = outputFile;
+				///For some reason on linux it thinks that .a files are directories
 				t.writeln("Extracting ", fileName);
 				t.flush;
 				currentDirName = currentDirName.dirName;
-				std.file.mkdirRecurse(currentDirName);
+				if(!std.file.exists(currentDirName))
+					std.file.mkdirRecurse(currentDirName);
 				std.file.write(outputFile, zip.expand(archiveMember));
 			}
-			else
-				std.file.mkdirRecurse(currentDirName);
 		}
 	}
+	return true;
+}
+
+version(Posix)
+bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal t)
+{
+	if(!std.file.exists(tarGzPath)) return false;
+	t.writeln("Extracting ", tarGzPath);
+	t.flush;
+	if(executeShell("tar -xzf "~tarGzPath~" -C "~outputDirectory).status != 0)
+		return false;
 	return true;
 }
 
@@ -196,8 +208,9 @@ bool downloadFileIfNotExists(
 	import std.net.curl;
 	if(!std.file.exists(outputName))
 	{
-		if(!pollForExecutionPermission(t, input, purpose~" [Y]es/[N]o"))
+		if(!pollForExecutionPermission(t, input, "Your system will donwload a file: "~ purpose~" [Y]es/[N]o"))
 			return false;
+		t.writeln("Download started.");
 		download(link, outputName);
 		t.writeln("Download succeeded!");
 		t.flush;
@@ -207,7 +220,7 @@ bool downloadFileIfNotExists(
 
 void updateConfigFile()
 {
-	std.file.write(ConfigFile, configs.toJSON());
+	std.file.write(ConfigFile, configs.toPrettyString());
 }
 
 void loadSubmodules(ref Terminal t)
