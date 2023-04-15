@@ -248,15 +248,16 @@ void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 	string ldcLibsPath = buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "android", "lib");
 
 
-	///The commented commands will have to wait a rework in dub cli handling.
-	environment["DFLAGS"] = 
-		// "-defaultlib=phobos2-ldc,druntime-ldc " ~
-		// "-link-defaultlib-shared=false " ~
-		// "-L-L\""~ ldcLibsPath ~"\" " ~
-		// "-L-rpath=\""~ ldcLibsPath~"\" "~
-		getAndroidFlagsToolchains()
-	;
+	///The commented commands will have to wait a rework in dub cli handling.e
 
+	string nextReleaseFlags;
+	version(Posix)
+		nextReleaseFlags = "-defaultlib=phobos2-ldc,druntime-ldc " ~
+		"-link-defaultlib-shared=false " ~
+		"-L-L\""~ ldcLibsPath ~"\" " ~
+		"-L-rpath=\""~ ldcLibsPath~"\" ";
+
+	environment["DFLAGS"] = nextReleaseFlags ~ getAndroidFlagsToolchains();
 	t.writeln(environment["DFLAGS"]);
 	t.flush;
 
