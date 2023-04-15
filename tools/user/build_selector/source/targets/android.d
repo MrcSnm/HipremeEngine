@@ -105,14 +105,15 @@ private string getAndroidFlagsToolchains()
 private string getPackagesToInstall()
 {
 	import std.conv:to;
-	return `"build-tools;`~to!string(TargetAndroidSDK)~`.0.0" `~ 
-		`"extras;google;usb_driver" ` ~
+	string packages = `"build-tools;`~to!string(TargetAndroidSDK)~`.0.0" `~ 
 		`"extras;google;webdriver" ` ~
 		`"extras;intel;Hardware_Accelerated_Execution_Manager" `~
 		`"ndk;`~TargetAndroidNDK~`" `~
 		`"platforms;android-`~to!string(TargetAndroidSDK)~`" `~
-		`"sources;android-`~to!string(TargetAndroidSDK)~`" `
-	;
+		`"sources;android-`~to!string(TargetAndroidSDK)~`" `;
+
+	version(Windows) packages~= `"extras;google;usb_driver" `;
+	return packages;
 }
 
 private bool downloadAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, out string sdkPath)
