@@ -117,10 +117,7 @@ Options:
         return EXIT_FAILURE;
     }
     if(!exists(toWhere))
-    {
-        writeln("Target path '", toWhere, "' does not exists");
-        return EXIT_FAILURE;
-    }
+        mkdirRecurse(toWhere);
     if(!isDir(from))
     {
         writeln("Source path '", from,"' is not a directory");
