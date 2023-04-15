@@ -183,6 +183,8 @@ bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal
 	if(!std.file.exists(tarGzPath)) return false;
 	t.writeln("Extracting ", tarGzPath);
 	t.flush;
+	if(!std.file.exists(outputDirectory))
+		std.file.mkdirRecurse(outputDirectory);
 	if(executeShell("tar -xzf "~tarGzPath~" -C "~outputDirectory).status != 0)
 		return false;
 	return true;
@@ -210,9 +212,10 @@ bool downloadFileIfNotExists(
 	{
 		if(!pollForExecutionPermission(t, input, "Your system will donwload a file: "~ purpose~" [Y]es/[N]o"))
 			return false;
-		t.writeln("Download started.");
+		t.writelnHighlighted("Download started.");
+		t.flush;
 		download(link, outputName);
-		t.writeln("Download succeeded!");
+		t.writelnSuccess("Download succeeded!");
 		t.flush;
 	}
 	return true;
