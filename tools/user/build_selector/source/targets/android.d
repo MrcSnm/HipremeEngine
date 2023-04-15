@@ -94,8 +94,8 @@ private string getAndroidFlagsToolchains()
 	}
 	else version(linux)
 	{
-		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang.cmd") ~"\" " ~
-		"-linker=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ld.bfd.exe") ~"\" " ~
+		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang") ~"\" " ~
+		"-linker=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ld.bfd") ~"\" " ~
 		///Put the lib path for finding libandroid, liblog, libOpenSLES, libEGL and libGLESv3
 		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/30/")~"\" "
 		;
