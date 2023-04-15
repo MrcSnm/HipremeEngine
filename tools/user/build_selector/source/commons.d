@@ -160,7 +160,8 @@ bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
 		if(!std.file.exists(outputFile))
 		{
 			string currentDirName = outputFile;
-			if(std.file.attrIsFile(archiveMember.fileAttributes))
+			///For some reason on linux it thinks that .a files are directories
+			if(std.file.attrIsFile(archiveMember.fileAttributes) || currentDirName.extension == ".a")
 			{
 				t.writeln("Extracting ", fileName);
 				t.flush;

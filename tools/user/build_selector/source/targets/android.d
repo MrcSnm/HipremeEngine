@@ -262,5 +262,5 @@ void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 	t.flush;
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	wait(spawnShell("dub build --parallel -c android --compiler=ldc2 -a aarch64--linux-android -v"));
+	wait(spawnShell("dub build --parallel -c android --compiler=ldc2 -a aarch64--linux-android"));
 }
