@@ -382,6 +382,9 @@
 		},
 		{
 			"name": "android",
+			"stringImportPaths": [
+				"build/release_game/"
+			],
 			"lflags": [
 				"-LC:/Users/Hipreme/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/33/"
 			],
