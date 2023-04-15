@@ -160,13 +160,35 @@ private bool installAndroidNDK(ref Terminal t, string sdkPath)
 	t.writeln("Updating SDK manager.");
 	t.flush;
 
+
 	string sdkManagerPath = buildNormalizedPath(finalOutput, "bin");
-	wait(spawnShell("cd "~sdkManagerPath~" && sdkmanager --install"));
+
+	if(!makeFileExecutable(buildNormalizedPath(sdkManagerPath, "sdkmanager")))
+	{
+		t.writeln("Failed to set sdkmanager as executable.");
+		t.flush;
+		return false;
+	}
+
+	string execSdkManager = "sdkmanager ";
+	version(Posix) execSdkManager = "./sdkmanager";
+
+	if(wait(spawnShell("cd "~sdkManagerPath~" && "~execSdkManager~" --install")) != 0)
+	{
+		t.writeln("Failed on installing SDK.");
+		t.flush;
+		return false;
+	}
 
 	t.writeln("Installing packages: ", getPackagesToInstall());
 	t.writeln("You will need to accept some permissions, this process may take a little bit of time.");
 	t.flush;
-	wait(spawnShell("cd "~sdkManagerPath~" && sdkmanager "~getPackagesToInstall()));
+	if(wait(spawnShell("cd "~sdkManagerPath~" && "~execSdkManager ~" " ~getPackagesToInstall())) != 0)
+	{
+		t.writeln("Failed on installing NDK.");
+		t.flush;
+		return false;
+	}
 
 	configs["androidNdkPath"] = buildNormalizedPath(sdkPath, "ndk", TargetAndroidNDK);
 	updateConfigFile();

@@ -175,6 +175,18 @@ bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
 	return true;
 }
 
+bool makeFileExecutable(string filePath)
+{
+	version(Windows) return true;
+	version(linux)
+	{
+		if(!std.file.exists(filePath)) return false;
+		import std.conv:octal;
+		std.file.setAttributes(filePath, octal!700);
+		return true;
+	}
+}
+
 bool downloadFileIfNotExists(
 	string purpose, string link, string outputName,
 	ref Terminal t, ref RealTimeConsoleInput input
