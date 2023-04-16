@@ -76,6 +76,10 @@ private FindAndroidNdkResult tryFindAndroidNDK(ref Terminal t, ref RealTimeConso
 	{
 		return FindAndroidNdkResult.NotFound;
 	}
+	else version(OSX)
+	{
+		return FindAndroidNdkResult.NotFound;
+	}
 
 }
 
@@ -112,6 +116,14 @@ private string getAndroidFlagsToolchains()
 		"-linker=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ld.bfd") ~"\" " ~
 		///Put the lib path for finding libandroid, liblog, libOpenSLES, libEGL and libGLESv3
 		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/30/")~"\" "
+		;
+	}
+	else version(OSX)
+	{
+		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android21-clang") ~"\" " ~
+		"-linker=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android-ld.bfd") ~"\" " ~
+		///Put the lib path for finding libandroid, liblog, libOpenSLES, libEGL and libGLESv3
+		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/30/")~"\" "
 		;
 	}
 }
@@ -251,7 +263,15 @@ private bool installOpenJDK(ref Terminal t, ref RealTimeConsoleInput input)
 			}
 			string javaHome = buildNormalizedPath(std.file.getcwd(), "Android", "openjdk_11");
 			version(Windows) javaHome = buildNormalizedPath(javaHome, "jdk-11.0.18+10");
-			version(Posix) javaHome = buildNormalizedPath(javaHome, "jdk-11.0.2");
+			else version(linux) javaHome = buildNormalizedPath(javaHome, "jdk-11.0.2");
+			else version(OSX) javaHome = buildNormalizedPath(javaHome, "jdk-11.0.1.jdk", "Contents", "Home");
+			else assert(false, "Your OS is not supported.");
+			if(!std.file.exists(javaHome))
+			{
+				t.writelnError("Expected JAVA_HOME at automatic installation does not exists:" ~ javaHome);
+				t.flush();
+				return false;
+			}
 			configs["javaHome"] = javaHome;
 			updateConfigFile();
 		}

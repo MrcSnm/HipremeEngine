@@ -193,7 +193,7 @@ bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal
 bool makeFileExecutable(string filePath)
 {
 	version(Windows) return true;
-	version(linux)
+	version(Posix)
 	{
 		if(!std.file.exists(filePath)) return false;
 		import std.conv:octal;
