@@ -9,6 +9,8 @@ enum TargetAndroidSDK = 31;
 enum TargetAndroidNDK = "21.4.7075529";
 enum Ldc2AndroidAarchLibReleaseLink = "https://github.com/MrcSnm/HipremeEngine/releases/download/BuildAssets.v1.0.0/android.zip";
 enum CurrentlySupportedLdc2Version = "ldc2 1.32.0";
+///Use a random Adb Port 
+enum HipremeEngineAdbPort = "55565";
 
 enum FindAndroidNdkResult
 {
@@ -322,6 +324,7 @@ private void runAndroidApplication(ref Terminal t)
 
 	t.writeln("Executing adb install: ", adbInstall);
 	t.flush;
+	environment["ANDROID_ADB_SERVER_PORT"] = HipremeEngineAdbPort;
 	wait(spawnShell(adbInstall));
 	wait(spawnShell(adb~" shell monkey -p com.hipremeengine.app 1"));
 }
