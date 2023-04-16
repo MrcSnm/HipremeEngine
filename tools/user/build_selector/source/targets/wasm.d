@@ -26,7 +26,11 @@ void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 		"-preview=shortenedMethods -L-allow-undefined -d-version=CarelessAlocation";
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	wait(spawnShell("dub build --compiler=ldc2 --build=debug -c wasm --arch=wasm32-unknown-unknown-wasm"));
+	if(wait(spawnShell("dub build --compiler=ldc2 --build=debug -c wasm --arch=wasm32-unknown-unknown-wasm")) != 0)
+	{
+		t.writelnError("Could not build for WebAssembly.");
+		return;
+	}
 
 	version(Posix) //Seems like dub is not detectign -posix in macOS
 	{
@@ -38,4 +42,9 @@ void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 		wait(spawnShell("set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true"));
 		wait(spawnShell("move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"));
 	}
+	
+	t.writelnSuccess("Succesfully built for WebAssembly.
+Run `dub` at $HIPREME_ENGINE/build/wasm, it will starrt a local server for hosting the game.
+Your link should be in localhost:9000");
+
 }
