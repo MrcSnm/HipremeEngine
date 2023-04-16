@@ -200,12 +200,6 @@ private bool installAndroidNDK(ref Terminal t, string sdkPath)
 		t.flush;
 		return false;
 	}
-	if(!makeFileExecutable(buildNormalizedPath(sdkPath, "platform-tools", "adb")))
-	{
-		t.writeln("Failed to set adb as executable.");
-		t.flush;
-		return false;
-	}
 
 	string execSdkManager = "sdkmanager ";
 	version(Posix) execSdkManager = "./sdkmanager";
@@ -223,6 +217,12 @@ private bool installAndroidNDK(ref Terminal t, string sdkPath)
 	if(wait(spawnShell("cd "~sdkManagerPath~" && "~execSdkManager ~" " ~getPackagesToInstall())) != 0)
 	{
 		t.writeln("Failed on installing NDK.");
+		t.flush;
+		return false;
+	}
+	if(!makeFileExecutable(buildNormalizedPath(sdkPath, "platform-tools", "adb")))
+	{
+		t.writeln("Failed to set adb as executable.");
 		t.flush;
 		return false;
 	}
