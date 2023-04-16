@@ -43,8 +43,8 @@ void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 		wait(spawnShell("move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"));
 	}
 	
-	t.writelnSuccess("Succesfully built for WebAssembly.
-Run `dub` at $HIPREME_ENGINE/build/wasm, it will starrt a local server for hosting the game.
+	t.writelnSuccess("Succesfully built for WebAssembly.");
+t.writelnHighlighted("Run `dub` at $HIPREME_ENGINE/build/wasm, for starting a local server for the game.
 Your link should be in localhost:9000");
 
 }
