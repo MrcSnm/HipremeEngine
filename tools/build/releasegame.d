@@ -133,7 +133,7 @@ int main(string[] args)
         }
         else if(!shouldFileSkip(f))
         {
-            string relativizedName = f[gamePath.length+1..$];
+            string relativizedName = relativePath(f, gamePath);
             if(verbose)
                 writeln("Copying [",f,"] -> ", absoluteOutput~relativizedName);
             copy(f, absoluteOutput~relativizedName);
