@@ -106,7 +106,7 @@ int main(string[] args)
             writeln("Copying contents from folder ", f);
             foreach(DirEntry e; dirEntries(f, SpanMode.breadth))
             {
-                string relativizedName = e.name[gamePath.length+1..$];
+                string relativizedName = relativePath(e.name, gamePath);
                 string outputBasedOnGame = absoluteOutput~relativizedName;
                 if(isDir(e.name))
                 {
