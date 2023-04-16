@@ -5,7 +5,7 @@
 	],
 	"copyright": "Copyright © 2023, Hipreme",
 	"dependencies": {
-		"arsd-official:cgi": "~>10.9.8"
+		"arsd-official:cgi": "~10.9.10"
 	},
 	"description": "WASM build for Hipreme Engine",
 	"license": "proprietary",

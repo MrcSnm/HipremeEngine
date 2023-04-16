@@ -41,9 +41,30 @@ import hip.error.handler;
 class Hip_GL3_FragmentShader : FragmentShader
 {
     uint shader;
+    private static string getBaseFragment()
+    {
+        __gshared string baseShader;
+        if(baseShader is null)
+        {
+            string wasmDef;
+            version(WebAssembly) wasmDef = "#define WASM\n";
+            baseShader = shaderVersion~"\n"~floatPrecision~"\n"~wasmDef ~ getTexture2DDefine;
+            
+        }
+        return baseShader;
+    }
+    private static string getTexture2DDefine()
+    {
+        return 
+`#ifdef WASM
+    #define TEXTURE_2D texture2D
+#else
+    #define TEXTURE_2D texture
+#endif`;
+    }
     override final string getDefaultFragment()
     {
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
+        return getBaseFragment~q{
             
             uniform vec4 globalColor;
             in vec4 vertexColor;
@@ -53,14 +74,13 @@ class Hip_GL3_FragmentShader : FragmentShader
 
             void main()
             {
-                outPixelColor = vertexColor*globalColor*texture(tex1, tex_uv);
+                outPixelColor = vertexColor*globalColor*TEXTURE_2D(tex1, tex_uv);
             }
         };
     }
     override final string getFrameBufferFragment()
     {
-        return shaderVersion~"\n"~floatPrecision~"\n"~q{
-            
+        return getBaseFragment~q{
 
             in vec2 inTexST;
             uniform sampler2D uBufferTexture;
@@ -69,7 +89,7 @@ class Hip_GL3_FragmentShader : FragmentShader
 
             void main()
             {
-                vec4 col = texture(uBufferTexture, inTexST);
+                vec4 col = TEXTURE_2D(uBufferTexture, inTexST);
                 float grey = (col.r+col.g+col.b)/3.0;
                 outPixelColor = grey * uColor;
             }
@@ -82,7 +102,7 @@ class Hip_GL3_FragmentShader : FragmentShader
         {
             int sup = HipRenderer.getMaxSupportedShaderTextures();
             string textureSlotSwitchCase;
-            if(sup == 1) textureSlotSwitchCase = "gl_FragColor = texture(uTex[0], inTexST)*inVertexColor*uBatchColor;\n";
+            if(sup == 1) textureSlotSwitchCase = "gl_FragColor = TEXTURE_2D(uTex[0], inTexST)*inVertexColor*uBatchColor;\n";
             else
             {
                 for(int i = 0; i < sup; i++)
@@ -91,7 +111,7 @@ class Hip_GL3_FragmentShader : FragmentShader
                     if(i != 0)
                         textureSlotSwitchCase~="\t\t\t\telse ";
                     textureSlotSwitchCase~="if(texId == "~strI~")"~
-                    "{gl_FragColor = texture(uTex["~strI~"], inTexST)*inVertexColor*uBatchColor;}\n";
+                    "{gl_FragColor = TEXTURE_2D(uTex["~strI~"], inTexST)*inVertexColor*uBatchColor;}\n";
                 }
             }
             textureSlotSwitchCase~="}\n";
@@ -106,7 +126,7 @@ class Hip_GL3_FragmentShader : FragmentShader
             };
 
 
-            return shaderVersion~"\n"~floatPrecision~"\n"~format!q{
+            return getBaseFragment~format!q{
                     uniform sampler2D uTex[%s];}(sup)~
                 shaderSource~
             "{"~q{
@@ -125,7 +145,7 @@ class Hip_GL3_FragmentShader : FragmentShader
             {
                 string strI = to!string(i);
                 textureSlotSwitchCase~="case "~strI~": "~
-                "\t\toutPixelColor = texture(uTex["~strI~"], inTexST)*inVertexColor*uBatchColor;break;\n";
+                "\t\toutPixelColor = TEXTURE_2D(uTex["~strI~"], inTexST)*inVertexColor*uBatchColor;break;\n";
             }
             textureSlotSwitchCase~="}\n";
 
@@ -140,7 +160,7 @@ class Hip_GL3_FragmentShader : FragmentShader
                     out vec4 outPixelColor;
                     void main()
                 };
-            return shaderVersion~"\n"~floatPrecision~"\n"~format!q{
+            return getBaseFragment~format!q{
                     uniform sampler2D uTex[%s];}(sup)~
                 shaderSource~
             "{"~q{
@@ -178,7 +198,7 @@ class Hip_GL3_FragmentShader : FragmentShader
                 %s = inVertexColor * uGlobalColor;
             }
         }.fastUnsafeCTFEFormat(attr1, outputPixelVar, outputAssignment);
-        return shaderVersion~"\n"~floatPrecision~"\n"~shaderSource;
+        return getBaseFragment~shaderSource;
     }
 
     override final string getBitmapTextFragment()
@@ -205,11 +225,11 @@ class Hip_GL3_FragmentShader : FragmentShader
 
             void main()
             {
-                float r = texture(uTex, inTexST).r;
+                float r = TEXTURE_2D(uTex, inTexST).r;
                 %s = vec4(r,r,r,r)*uColor;
             }
         }.fastUnsafeCTFEFormat(attr1, outputPixelVar, outputAssignment);
-        return shaderVersion~"\n"~floatPrecision~"\n"~shaderSource;
+        return getBaseFragment~shaderSource;
     }
 }
 class Hip_GL3_VertexShader : VertexShader
@@ -276,7 +296,6 @@ class Hip_GL3_VertexShader : VertexShader
             enum out3 = q{out};
         }
         enum shaderSource = q{
-            
             %s vec3 vPosition;
             %s vec4 vColor;
             %s vec2 vTexST;
