@@ -130,6 +130,10 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
     {
         loadedImage = cast(IImage)image;
         glCall(() => glGenTextures(1, &textureID));
+        if(textureID == 0)
+        {
+            ErrorHandler.assertExit(false, "No texture was generated for image ", image.getName);
+        }
         int mode;
         int internalFormat;
         const(void)[] pixels = image.getPixels;

@@ -178,14 +178,17 @@ package SLIAudioPlayer* hipGetPlayerFromPool()
 
 class HipOpenSLESAudioPlayer : IHipAudioPlayer
 {
-    static AudioConfig config;
     SLIOutputMix output;
     SLEngineItf itf;
 
-    static bool hasProAudio;
-    static bool hasLowLatencyAudio;
-    static int  optimalBufferSize;
-    static int  optimalSampleRate;
+    __gshared
+    {
+        AudioConfig config;
+        bool hasProAudio;
+        bool hasLowLatencyAudio;
+        int  optimalBufferSize;
+        int  optimalSampleRate;
+    }
 
     protected SLIAudioPlayer*[] spawnedPlayers;
 
@@ -224,11 +227,10 @@ class HipOpenSLESAudioPlayer : IHipAudioPlayer
 hasProAudio? ", hasProAudio, "
 hasLowLatencyAudio? ", hasLowLatencyAudio, "
 optimalBufferSize: ", optimalBufferSize, " 
-outputSampleRate: ", cfg.sampleRate);
+outputSampleRate: ", cfg.sampleRate,
+cfg);
 
         
-
-        // HipSDL_SoundDecoder.initDecoder(cfg, optimalBufferSize);
         ErrorHandler.assertLazyErrorMessage(sliCreateOutputContext(
             hasProAudio,
             hasLowLatencyAudio,

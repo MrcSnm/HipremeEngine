@@ -82,7 +82,7 @@ class Hip_GL3_FragmentShader : FragmentShader
         {
             int sup = HipRenderer.getMaxSupportedShaderTextures();
             string textureSlotSwitchCase;
-            if(sup == 1) textureSlotSwitchCase = "gl_FragColor = texture2D(uTex[0], inTexST)*inVertexColor*uBatchColor;\n";
+            if(sup == 1) textureSlotSwitchCase = "gl_FragColor = texture(uTex[0], inTexST)*inVertexColor*uBatchColor;\n";
             else
             {
                 for(int i = 0; i < sup; i++)
@@ -91,7 +91,7 @@ class Hip_GL3_FragmentShader : FragmentShader
                     if(i != 0)
                         textureSlotSwitchCase~="\t\t\t\telse ";
                     textureSlotSwitchCase~="if(texId == "~strI~")"~
-                    "{gl_FragColor = texture2D(uTex["~strI~"], inTexST)*inVertexColor*uBatchColor;}\n";
+                    "{gl_FragColor = texture(uTex["~strI~"], inTexST)*inVertexColor*uBatchColor;}\n";
                 }
             }
             textureSlotSwitchCase~="}\n";
@@ -205,7 +205,7 @@ class Hip_GL3_FragmentShader : FragmentShader
 
             void main()
             {
-                float r = texture2D(uTex, inTexST).r;
+                float r = texture(uTex, inTexST).r;
                 %s = vec4(r,r,r,r)*uColor;
             }
         }.fastUnsafeCTFEFormat(attr1, outputPixelVar, outputAssignment);

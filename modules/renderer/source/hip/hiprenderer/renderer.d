@@ -386,13 +386,10 @@ class HipRenderer
 
     private static HipWindow createWindow(uint width, uint height)
     {
-        version(Android){return null;}
-        else
-        {
-            HipWindow wnd = new HipWindow(width, height, HipWindowFlags.DEFAULT);
-            wnd.start();
-            return wnd;
-        }
+        HipWindow wnd = new HipWindow(width, height, HipWindowFlags.DEFAULT);
+        version(Android){}
+        else wnd.start();
+        return wnd;
     }
 
     public static bool initialize (IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height)

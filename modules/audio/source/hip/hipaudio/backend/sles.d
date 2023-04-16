@@ -395,7 +395,7 @@ __gshared struct SLIAudioPlayer
             }
             else
             {
-                logln("STOPPED!");
+                // logln("STOPPED!");
                 SLIAudioPlayer.stop(this);
             }
         }            
