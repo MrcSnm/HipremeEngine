@@ -20,21 +20,23 @@ public class Hip_GLES30_Renderer implements GLSurfaceView.Renderer
     {
         HipremeEngine.HipremeInit();
         HipremeEngine.HipremeMain();
-        HipremeEngine.gameThread = new Thread(() ->
-        {
-            long initialTime, deltaTime;
-            while(HipremeEngine.isRunning)
-            {
-                try{ Thread.sleep(16); }
-                catch(InterruptedException e) { e.printStackTrace();}
 
-                initialTime =  System.nanoTime();
-                HipremeEngine.HipremeUpdate();
-                deltaTime = System.nanoTime() - initialTime;
-                //System.out.println(deltaTime/1000);
-            }
-        });
-        HipremeEngine.gameThread.start();
+        //This may be reserved to the future.
+//        HipremeEngine.gameThread = new Thread(() ->
+//        {
+//            long initialTime, deltaTime;
+//            while(HipremeEngine.isRunning)
+//            {
+//                try{ Thread.sleep(16); }
+//                catch(InterruptedException e) { e.printStackTrace();}
+//
+//                initialTime =  System.nanoTime();
+//                //HipremeEngine.HipremeUpdate();
+//                deltaTime = System.nanoTime() - initialTime;
+//                //System.out.println(deltaTime/1000);
+//            }
+//        });
+//        HipremeEngine.gameThread.start();
         GLES20.glClearColor(0, 0, 0, 1);
 
     }
@@ -50,6 +52,7 @@ public class Hip_GLES30_Renderer implements GLSurfaceView.Renderer
     {
         //By doing that, it is possible to save little battery when the renderer
         //is not dirty
+        HipremeEngine.HipremeUpdate();
         HipremeEngine.HipremeRender();
     }
 }
