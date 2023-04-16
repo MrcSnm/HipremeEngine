@@ -305,6 +305,12 @@ private void runAndroidApplication(ref Terminal t)
 	{
 		string adb = buildNormalizedPath(configs["androidSdkPath"].str, "platform-tools", "adb");
 		string gradlew = "./gradlew";
+
+		if(!makeFileExecutable(buildNormalizedPath("build", "android", "project", "gradlew")))
+		{
+			t.writelnError("Could not make gradlew executable.");
+			return;
+		}
 	}
 
 	std.file.chdir(buildNormalizedPath("build", "android", "project"));
