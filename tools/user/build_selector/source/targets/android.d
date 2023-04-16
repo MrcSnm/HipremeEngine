@@ -351,6 +351,7 @@ void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 			return;
 		}
 	}
+	environment["ANDROID_HOME"] = configs["androidSdkPath"].str;
 
 
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
