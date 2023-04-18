@@ -28,6 +28,16 @@
 			}
 		},
 		{
+			"name": "null",
+			"dependencies": {
+				"bindbc-openal": "~>1.0.0"
+			},
+			"versions": ["NullAudio"],
+			"subConfigurations": {
+				"audio_decoding": "audioformats"
+			}
+		},
+		{
 			"name": "nodx",
 			"dependencies": {
 				"bindbc-openal": "~>1.0.0"

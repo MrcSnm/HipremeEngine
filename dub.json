@@ -19,9 +19,7 @@
 	],
 	"dflags-dmd": ["-op"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
-	"lflags-windows": [
-		"/DEBUG:FASTLINK"
-	],
+	
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipCheckUnknownKeycode",
@@ -66,6 +64,34 @@
 				"Test"
 			],
 			"versions-windows": [
+				"Direct3D_11",
+				"DirectX",
+				"XAudio2"
+			]
+		},
+		{
+			"name": "4mb",
+			"targetPath": "bin/desktop",
+			"targetType": "executable",
+			"subConfigurations": {
+				"renderer": "dxonly",
+				"audio": "dxonly",
+				"assets": "gamut"
+			},
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
+			},
+			"lflags-windows": [
+				"/SUBSYSTEM:CONSOLE"
+			],
+			"dflags": [
+				"-Oz"
+			],
+			"versions-windows": [
+				"Desktop",
+				"Standalone",
+				"Test",
 				"Direct3D_11",
 				"DirectX",
 				"XAudio2"
@@ -368,7 +394,8 @@
 			"subConfigurations": {
 				"runtime": "psvita",
 				"d_std": "psvita",
-				"assets": "gamut"
+				"assets": "gamut",
+				"audio": "null"
 			},
 			"versions": [
 				"Standalone",
@@ -422,6 +449,7 @@
 				"dll",
 				"Standalone",
 				"GLES30",
+				"OpenSLES1_1",
 				"OpenGL"
 			]
 		}

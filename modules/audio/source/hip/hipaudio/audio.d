@@ -18,6 +18,7 @@ public import hip.api.audio;
 version(OpenAL){import hip.hipaudio.backend.openal.player;}
 version(Android){import hip.hipaudio.backend.opensles.player;}
 version(XAudio2){import hip.hipaudio.backend.xaudio.player;}
+version(NullAudio){import hip.hipaudio.backend.nullaudio;}
 
 
 import hip.audio_decoding.audio;
@@ -100,6 +101,7 @@ class HipAudio
                 {
                     //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
                     audioInterface = new HipOpenALAudioPlayer(AudioConfig.musicConfig);
+                    // audioInterface = new HipNullAudio();
                     break;
                 }
                 else
