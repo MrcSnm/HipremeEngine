@@ -96,7 +96,7 @@ final class HipGamutImageDecoder : IHipAnyImageDecoder
     }
     bool startDecoding(ubyte[] data, void delegate() onSuccess, void delegate() onFailure)
     {
-        img.loadFromMemory(data);
+        img.loadFromMemory(data, LOAD_RGB | LOAD_ALPHA | LOAD_8BIT);
         if(img.isValid)
         {
             img.changeLayout(LAYOUT_GAPLESS | LAYOUT_VERT_STRAIGHT);

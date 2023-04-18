@@ -1,4 +1,4 @@
-export IP=192.168.0.180
+export IP=192.168.0.248
 export APP_ID=VSDK00007
 export PORT=1337
 export CMD_PORT=1338
