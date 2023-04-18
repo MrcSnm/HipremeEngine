@@ -11,7 +11,8 @@ struct GC
 
 void pureFree(void* addr) pure nothrow @trusted @nogc
 {
-    import core.stdc.stdlib;
-    auto freeAddr = cast(void function(void* addr) pure nothrow @trusted @nogc)&free;
+    import rt.hooks;
+    alias pureFreeT = extern(C) void function(void* addr) pure nothrow @trusted @nogc;
+    auto freeAddr = cast(pureFreeT)&free;
     freeAddr(addr);
 }
