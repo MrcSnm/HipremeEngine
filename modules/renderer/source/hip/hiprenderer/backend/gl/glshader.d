@@ -46,9 +46,10 @@ class Hip_GL3_FragmentShader : FragmentShader
         __gshared string baseShader;
         if(baseShader is null)
         {
-            string wasmDef;
-            version(WebAssembly) wasmDef = "#define WASM\n";
-            baseShader = shaderVersion~"\n"~floatPrecision~"\n"~wasmDef ~ getTexture2DDefine;
+            string defs;
+            version(WebAssembly) defs~= "#define WASM\n";
+            version(PSVita) defs~= "#define PSVITA\n";
+            baseShader = shaderVersion~"\n"~floatPrecision~"\n"~defs ~ getTexture2DDefine;
             
         }
         return baseShader;
@@ -57,6 +58,8 @@ class Hip_GL3_FragmentShader : FragmentShader
     {
         return 
 `#ifdef WASM
+    #define TEXTURE_2D texture2D
+#elif defined(PSVITA)
     #define TEXTURE_2D texture2D
 #else
     #define TEXTURE_2D texture

@@ -35,6 +35,10 @@
 			]
 		},
 		{
+			"name": "dxonly",
+			"dependencies": {"directx-d": {"path": "../../dependencies/directx-d"}}
+		},
+		{
 			"name": "nodx",
 			"dependencies": {
 				"bindbc-opengl": "~>1.0.5"
