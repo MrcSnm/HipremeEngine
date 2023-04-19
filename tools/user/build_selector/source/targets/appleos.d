@@ -3,6 +3,9 @@ import commons;
 
 void prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
+	environment["PATH"] = pathBeforeNewLdc;
+	t.writelnHighlighted("LDC not supported for building AppleOS yet. Use system path.");
+	t.flush;
 	loadSubmodules(t);
 	string phobosLib = configs["phobosLibPath"].str.getFirstExisting("libphobos2.a", "libphobos.a");
 	if(phobosLib == null) throw new Error("Could not find your phobos library");
