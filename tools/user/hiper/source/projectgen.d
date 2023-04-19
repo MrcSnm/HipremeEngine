@@ -131,7 +131,7 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 				"/WX"
 			],
 			"postGenerateCommands-windows": ["cd /d %s && dub -c script -- %s"],
-			"postGenerateCommands-linux": ["cd %s && dub -c script -- %s"]
+			"postGenerateCommands-posix": ["cd %s && dub -c script -- %s"]
 		}
 	],
 	"versions" : [
