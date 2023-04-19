@@ -1,5 +1,6 @@
 import arsd.terminal;
 import commons;
+import d_getter;
 import targets.android;
 import targets.appleos;
 import targets.linux;
@@ -76,27 +77,32 @@ void promptForConfigCreation(ref Terminal t)
 	phobosLibPath = phobosLibPath.replace("\\", "\\\\");
 
 
+	configs["hipremeEnginePath"] = hipremeEnginePath;
+	configs["gamePath"] = gamePath;
+	configs["phobosLibPath"] = phobosLibPath;
+	configs["selectedChoice"] = 0;
 	t.writeln("Saving your ", ConfigFile);
-	std.file.write(ConfigFile, 
-		"{ \"hipremeEnginePath\": \"" ~ hipremeEnginePath ~ "\"," ~
-		"\"gamePath\": \"" ~ gamePath ~ "\","~
-		"\"phobosLibPath\": \"" ~ phobosLibPath ~
-		"\", \"selectedChoice\": 0}"
-	);
+	updateConfigFile();
 }
 
 
 CompilationOptions cOpts;
-
 void main(string[] args)
 {
 	auto terminal = Terminal(ConsoleOutputType.linear);
 	auto input = RealTimeConsoleInput(&terminal, ConsoleInputFlags.raw);
 	terminal.clear();
+	pathBeforeNewLdc = environment["PATH"];
+	if(std.file.exists(ConfigFile))
+		configs = parseJSON(std.file.readText(ConfigFile));
+	else
+		configs = parseJSON("{}");
 
-	if(!std.file.exists(ConfigFile))
-		promptForConfigCreation(terminal);
-	configs = parseJSON(std.file.readText(ConfigFile));
+	if(!setupD(terminal, input))
+	{
+		terminal.writelnError("D needs to be installed to use Build Selector.");
+		return;
+	}
 	if(("hipremeEnginePath" in configs) is null ||
 	   ("gamePath" in configs) is null ||
 	   ("phobosLibPath" in configs) is null || 

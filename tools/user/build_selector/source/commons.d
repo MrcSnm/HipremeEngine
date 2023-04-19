@@ -9,6 +9,8 @@ public static import std.file;
 enum ConfigFile = "gamebuild.json";
 __gshared JSONValue configs;
 
+string pathBeforeNewLdc;
+
 struct Choice
 {
 	string name;
@@ -186,6 +188,15 @@ bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
 	return true;
 }
 
+
+bool extract7ZipToFolder(string zPath, string outputDirectory, ref Terminal t)
+{
+	if(!std.file.exists(zPath)) return false;
+	t.writeln("Extracting ", zPath);
+	t.flush;
+	return executeShell(configs["7zip"].str ~ " x -o"~outputDirectory~ " "~zPath).status == 0;
+}
+
 version(Posix)
 bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal t)
 {
@@ -219,7 +230,7 @@ bool downloadFileIfNotExists(
 	import std.net.curl;
 	if(!std.file.exists(outputName))
 	{
-		if(!pollForExecutionPermission(t, input, "Your system will donwload a file: "~ purpose~" [Y]es/[N]o"))
+		if(!pollForExecutionPermission(t, input, "Your system will download a file: "~ purpose~" [Y]es/[N]o"))
 			return false;
 		t.writelnHighlighted("Download started.");
 		t.flush;
@@ -243,6 +254,27 @@ void loadSubmodules(ref Terminal t)
 	t.writelnSuccess("Updating Git Submodules");
 	t.flush;
 	executeShell("git submodule update --init --recursive");
+}
+
+bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInput input)
+{
+	if(!("7zip" in configs))
+	{
+		version(Windows)
+		{
+			if(!downloadFileIfNotExists("Needs 7zip for "~purpose, "https://www.7-zip.org/a/7z2201-x64.exe", 
+				buildNormalizedPath(std.file.tempDir, "7z.exe"), t, input
+			))
+				return false;
+
+			string outFolder = buildNormalizedPath(std.file.getcwd(), "buildtools");
+			mkdirRecurse(outFolder);
+			std.file.rename(buildNormalizedPath(std.file.getcwd(), "7z.exe"), buildNormalizedPath(outFolder, "7z.exe"));
+			configs["7zip"] = buildNormalizedPath(outFolder, "7z.exe");
+			updateConfigFile();
+		}
+	}
+	return true;
 }
 
 
