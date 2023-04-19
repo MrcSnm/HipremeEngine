@@ -83,6 +83,7 @@ private void defaultShowErrorMessage(string title, string message)
 private string defaultShowSaveFileDialog(string initialName, string[] filters)
 {
     import std.stdio;
+    import std.string : chomp;
     writeln("Write a folder name to save HipProject: ", initialName);
-    return readln();
+    return readln().chomp();
 }
