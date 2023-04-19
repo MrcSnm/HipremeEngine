@@ -262,13 +262,13 @@ bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInput input)
 	{
 		version(Windows)
 		{
-			if(!downloadFileIfNotExists("Needs 7zip for "~purpose, "https://www.7-zip.org/a/7z2201-x64.exe", 
-				buildNormalizedPath(std.file.tempDir, "7z.exe"), t, input
+			if(!downloadFileIfNotExists("Needs 7zip for "~purpose, "https://www.7-zip.org/a/7zr.exe", 
+				buildNormalizedPath(std.file.getcwd(), "7z.exe"), t, input
 			))
 				return false;
 
 			string outFolder = buildNormalizedPath(std.file.getcwd(), "buildtools");
-			mkdirRecurse(outFolder);
+			std.file.mkdirRecurse(outFolder);
 			std.file.rename(buildNormalizedPath(std.file.getcwd(), "7z.exe"), buildNormalizedPath(outFolder, "7z.exe"));
 			configs["7zip"] = buildNormalizedPath(outFolder, "7z.exe");
 			updateConfigFile();

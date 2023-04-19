@@ -1,6 +1,6 @@
 module d_getter;
 import commons;
-enum LdcVersion = "1.32.0";
+enum LdcVersion = "1.32.1";
 
 
 private string getLdcLink()
@@ -56,8 +56,11 @@ bool installD(ref Terminal t, ref RealTimeConsoleInput input)
     if("ldcVersion" in configs)
     {
         isExpectedVersion = configs["ldcVersion"].str == LdcVersion;
-        t.writelnError("Different LDC Version. Your system will attempt to install LDC2 " ~LdcVersion);
-        t.flush;
+        if(!isExpectedVersion)
+        {
+            t.writelnError("Different LDC Version. Your system will attempt to install LDC2 " ~LdcVersion);
+            t.flush;
+        }
     }
     else
     {
@@ -74,7 +77,7 @@ bool installD(ref Terminal t, ref RealTimeConsoleInput input)
 
         version(Windows)
         {
-            if(!install7Zip("extract and install D compiler"))
+            if(!install7Zip("extract and install D compiler", t, input))
                 return false;
             if(!extract7ZipToFolder(getLdcDownloadOutputName, 
                 buildNormalizedPath(std.file.getcwd, "D"), t
