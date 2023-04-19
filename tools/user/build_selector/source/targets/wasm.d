@@ -1,7 +1,7 @@
 module targets.wasm;
 import commons;
 
-void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
+void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 
 	if(findProgramPath("ldc2") == null)
@@ -26,7 +26,7 @@ void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 		"-preview=shortenedMethods -L-allow-undefined -d-version=CarelessAlocation";
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	if(wait(spawnShell("dub build --compiler=ldc2 --build=debug -c wasm --arch=wasm32-unknown-unknown-wasm")) != 0)
+	if(wait(spawnShell("dub build --compiler=ldc2 --build=debug -c wasm --arch=wasm32-unknown-unknown-wasm"~cOpts.getDubOptions)) != 0)
 	{
 		t.writelnError("Could not build for WebAssembly.");
 		return;

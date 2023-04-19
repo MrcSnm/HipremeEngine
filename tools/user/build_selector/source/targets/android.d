@@ -349,7 +349,7 @@ private void runAndroidApplication(ref Terminal t)
 	wait(spawnShell(adb~" shell monkey -p com.hipremeengine.app 1"));
 }
 
-void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
+void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	if(!installOpenJDK(t, input))
 	{
@@ -397,7 +397,7 @@ void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 	t.flush;
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	wait(spawnShell("dub build --parallel -c android --compiler=ldc2 -a aarch64--linux-android"));
+	wait(spawnShell("dub build --parallel -c android --compiler=ldc2 -a aarch64--linux-android"~cOpts.getDubOptions));
 
 	std.file.rename(
 		buildNormalizedPath("bin", "android", "libhipreme_engine.so"),
