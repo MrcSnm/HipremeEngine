@@ -70,7 +70,7 @@ jobs:
       run: |
         # Build the project, with its main file included, without unittests
         cd tools/user/build_selector
-        dub build --compiler=%DC%
+        dub build
     - name: 'Upload'
       uses: actions/upload-artifact@v3.1.2
       with:
