@@ -53,12 +53,27 @@ jobs:
         # Build the project, with its main file included, without unittests
         cd tools/user/build_selector
         dub build --compiler=$DC
-        # Build and run tests, as defined by `unittest` configuration
-        # In this mode, `mainSourceFile` is excluded and `version (unittest)` are included
-        # See https://dub.pm/package-format-json.html#configurations
     - name: 'Upload'
       uses: actions/upload-artifact@v3.1.2
       with:
         name: macos64-build_selector
+        path: tools/user/build_selector/build_selector
+        
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dlang-community/setup-dlang@4c99aa991ce7d19dd3064de0a4f2f6b2f152e2d7
+    - name: 'Build'
+      run: |
+        # Build the project, with its main file included, without unittests
+        cd tools/user/build_selector
+        dub build --compiler=$DC
+    - name: 'Upload'
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: win64-build_selector
         path: tools/user/build_selector/build_selector
         
