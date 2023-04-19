@@ -24,7 +24,7 @@ jobs:
     - name: 'Install libcurl dev'
       run: |
         sudo apt-get update
-        sudo apt-get upgrade
+        # sudo apt-get upgrade
         sudo apt-get install libcurl4-gnutls-dev -y
 
     - name: 'Build'
@@ -39,5 +39,5 @@ jobs:
       uses: actions/upload-artifact@v3.1.2
       with:
         name: linux64-build_selector
-        path: build_selector
+        path: tools/user/build_selector/build_selector
         
