@@ -74,6 +74,6 @@ jobs:
     - name: 'Upload'
       uses: actions/upload-artifact@v3.1.2
       with:
-        name: win64-build_selector
-        path: tools/user/build_selector/build_selector
+        name: win64-build_selector.exe
+        path: tools/user/build_selector/build_selector.exe
         
