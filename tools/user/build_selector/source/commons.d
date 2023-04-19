@@ -12,10 +12,19 @@ __gshared JSONValue configs;
 struct Choice
 {
 	string name;
-	void function(Choice* self, ref Terminal t, ref RealTimeConsoleInput input) onSelected;
+	void function(Choice* self, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions opts) onSelected;
 	bool opEquals(string choiceName) const
 	{
 		return name == choiceName;	
+	}
+}
+
+struct CompilationOptions
+{
+	bool force;
+	string getDubOptions() const
+	{
+		return force? " --force" : "";
 	}
 }
 

@@ -86,8 +86,9 @@ void promptForConfigCreation(ref Terminal t)
 }
 
 
+CompilationOptions cOpts;
 
-void main()
+void main(string[] args)
 {
 	auto terminal = Terminal(ConsoleOutputType.linear);
 	auto input = RealTimeConsoleInput(&terminal, ConsoleInputFlags.raw);
@@ -106,6 +107,11 @@ void main()
 		promptForConfigCreation(terminal);
 		configs = parseJSON(std.file.readText(ConfigFile));
 	}
+
+	if(args.length > 1)
+	{
+		cOpts = CompilationOptions(args[1] == "--force");
+	}
 	Choice[] choices;
 	version(OSX) choices~= Choice("AppleOS", &prepareAppleOS);
 	version(linux) choices~= Choice("Linux", &prepareLinux);
@@ -119,6 +125,6 @@ void main()
 		// Choice("Linux"),
 		Choice("WebAssembly", &prepareWASM)
 	]);
-	if(selection.onSelected) selection.onSelected(&selection, terminal, input);
+	if(selection.onSelected) selection.onSelected(&selection, terminal, input, cOpts);
 
 }

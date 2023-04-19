@@ -1,7 +1,7 @@
 module targets.linux;
 import commons;
 
-void prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
+void prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	if(!std.file.exists("/usr/include/GL/gl.h"))
 	{
@@ -10,6 +10,6 @@ void prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 		t.flush;
 		wait(spawnShell("sudo apt-get install libgl1-mesa-dev"));
 	}
-	auto pid = spawnShell("cd ../../../ && dub");
+	auto pid = spawnShell("cd ../../../ && dub" ~ cOpts.getDubOptions);
 	wait(pid);
 }

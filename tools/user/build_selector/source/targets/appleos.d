@@ -1,7 +1,7 @@
 module targets.appleos;
 import commons;
 
-void prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
+void prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	loadSubmodules(t);
 	string phobosLib = configs["phobosLibPath"].str.getFirstExisting("libphobos2.a", "libphobos.a");
