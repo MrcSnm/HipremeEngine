@@ -295,10 +295,8 @@ void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 	string rdmd = buildNormalizedPath(configs["ldcPath"].str, "bin", "rdmd");
 	version(Windows) rdmd = rdmd.setExtension("exe");
 
-	auto exec = executeShell(rdmd ~ buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)~" " ~ args.join(" "), 
-	[
-		"PATH": environment["PATH"]
-	]);
+	auto exec = executeShell(rdmd ~ " " ~ buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)~" " ~ args.join(" "), 
+	environment.toAA);
 	if(exec.status)
 	{
 		t.writelnError("Script ", script, " failed with: ", exec.output);
