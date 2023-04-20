@@ -205,7 +205,7 @@ bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal
 	t.flush;
 	if(!std.file.exists(outputDirectory))
 		std.file.mkdirRecurse(outputDirectory);
-	if(executeShell("tar -xzf "~tarGzPath~" -C "~outputDirectory).status != 0)
+	if(executeShell("tar -xf "~tarGzPath~" -C "~outputDirectory).status != 0)
 		return false;
 	return true;
 }
