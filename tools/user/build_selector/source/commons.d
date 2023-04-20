@@ -286,9 +286,10 @@ bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInput input)
 
 void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 {
+	import std.array;
 	t.writeln("Executing engine script ", script, " with arguments ", args);
 	t.flush;
-	auto exec = executeShell("rdmd " ~ buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)~" " ~ args);
+	auto exec = executeShell("rdmd " ~ buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)~" " ~ args.join(" "));
 	if(exec.status)
 	{
 		t.writelnError("Script ", script, " failed with: ", exec.output);
