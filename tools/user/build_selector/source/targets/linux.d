@@ -10,6 +10,7 @@ void prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in 
 		t.flush;
 		wait(spawnShell("sudo apt-get install libgl1-mesa-dev"));
 	}
-	auto pid = spawnShell("cd ../../../ && dub" ~ cOpts.getDubOptions);
+	std.file.chdir(configs["HIPREME_ENGINE"].str);
+	auto pid = spawnShell("dub" ~ cOpts.getDubOptions);
 	wait(pid);
 }

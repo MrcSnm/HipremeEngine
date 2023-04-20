@@ -9,6 +9,17 @@
 	"stringImportPaths": [
 		"../../build/scripts"
 	],
+	"targetType": "executable",
+	"configurations": [
+		{"name": "default"},
+		{
+			"name": "ci",
+			"dflags": ["-Oz"],
+			"postBuildCommands-windows": ["move build_selector win64-build_selector"],
+			"postBuildCommands-linux": ["mv build_selector linux64-build_selector"],
+			"postBuildCommands-macos": ["mv build_selector macos64-build_selector"]
+		}
+	],
 	"libs": ["curl"],
 	"description": "A minimal D application.",
 	"license": "proprietary",

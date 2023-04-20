@@ -37,7 +37,7 @@ jobs:
       uses: actions/upload-artifact@v3.1.2
       with:
         name: linux64-build_selector
-        path: tools/user/build_selector/build_selector
+        path: tools/user/build_selector/linux64-build_selector
         
   build-macos:
 
@@ -55,7 +55,7 @@ jobs:
       uses: actions/upload-artifact@v3.1.2
       with:
         name: macos64-build_selector
-        path: tools/user/build_selector/build_selector
+        path: tools/user/build_selector/macos64-build_selector
         
   build-windows:
 
@@ -73,5 +73,5 @@ jobs:
       uses: actions/upload-artifact@v3.1.2
       with:
         name: win64-build_selector.exe
-        path: tools/user/build_selector/build_selector.exe
+        path: tools/user/build_selector/win64-build_selector.exe
         
