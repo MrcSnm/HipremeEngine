@@ -23,7 +23,7 @@ private string getOutputPath()
     string outputPath = buildNormalizedPath(std.file.getcwd(), "D");
     string fileName = "ldc2-"~LdcVersion~"-";
     version(Windows) fileName~= "windows-x64";
-    else version(linux) fileName~= "linux-x86_x64";
+    else version(linux) fileName~= "linux-x86_64";
     else version(OSX) fileName~= "osx-universal";
     else assert(false, "Not implemented for your system.");
     return buildNormalizedPath(outputPath, fileName);
