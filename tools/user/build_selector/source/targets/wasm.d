@@ -25,7 +25,7 @@ void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in C
 		"-preview=shortenedMethods -L-allow-undefined -d-version=CarelessAlocation";
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	if(wait(spawnShell("dub build --compiler=ldc2 --build=debug -c wasm --arch=wasm32-unknown-unknown-wasm"~cOpts.getDubOptions)) != 0)
+	if(wait(runDub("build --compiler=ldc2 --build=debug -c wasm --arch=wasm32-unknown-unknown-wasm"~cOpts.getDubOptions)) != 0)
 	{
 		t.writelnError("Could not build for WebAssembly.");
 		return;
@@ -33,12 +33,12 @@ void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in C
 
 	version(Posix) //Seems like dub is not detectign -posix in macOS
 	{
-		wait(spawnShell("export DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true"));
+		wait(runDub("run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true", "export DFLAGS=\"\" && "));
 		wait(spawnShell("mv hipreme_engine.wasm* ./build/wasm/build/"));
 	}
 	else version(Windows)
 	{
-		wait(spawnShell("set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true"));
+		wait(runDub("run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true", "set DFLAGS=\"\" && "));
 		wait(spawnShell("move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"));
 	}
 	

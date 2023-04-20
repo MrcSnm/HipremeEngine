@@ -305,6 +305,13 @@ void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 	}
 }
 
+Pid runDub(string commands, string preCommands = "")
+{
+	string dub = buildNormalizedPath(configs["ldcPath"].str, "bin", "dub");
+	version(Windows) dub = dub.setExtension("exe");
+	return spawnShell(preCommands~dub~" "~commands);
+}
+
 
 void putResourcesIn(ref Terminal t, string where)
 {

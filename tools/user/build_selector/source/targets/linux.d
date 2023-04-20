@@ -11,6 +11,6 @@ void prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in 
 		wait(spawnShell("sudo apt-get install libgl1-mesa-dev"));
 	}
 	std.file.chdir(configs["HIPREME_ENGINE"].str);
-	auto pid = spawnShell("dub" ~ cOpts.getDubOptions);
+	auto pid = runDub(cOpts.getDubOptions);
 	wait(pid);
 }
