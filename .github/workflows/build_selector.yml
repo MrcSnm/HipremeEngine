@@ -8,6 +8,7 @@ on:
   push:
     paths:
       - "tools/user/build_selector/**"
+      - ".github/workflows/build_selector.yml"
 permissions:
   contents: read
 
