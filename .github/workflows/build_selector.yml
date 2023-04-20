@@ -6,10 +6,8 @@ name: Build Selector
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
-
+    paths:
+      - "tools/user/build_selector/**"
 permissions:
   contents: read
 
