@@ -120,7 +120,7 @@ string findProgramPath(string program)
 	version(Windows) searcher = "where";
 	else version(Posix) searcher = "which";
 	else static assert(false, "No searcher program found in this OS.");
-	auto shellRes = execute([searcher, program]);
+	auto shellRes = executeShell(searcher ~" " ~ program);
     if(shellRes.output)
 		return shellRes.output[0..shellRes.output.countUntil("\n")];
    	return null;
@@ -288,7 +288,7 @@ void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 {
 	t.writeln("Executing engine script ", script, " with arguments ", args);
 	t.flush;
-	auto exec = execute(["rdmd", buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)] ~ args);
+	auto exec = executeShell("rdmd " ~ buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)~" " ~ args);
 	if(exec.status)
 	{
 		t.writelnError("Script ", script, " failed with: ", exec.output);
