@@ -120,7 +120,10 @@ string findProgramPath(string program)
 	version(Windows) searcher = "where";
 	else version(Posix) searcher = "which";
 	else static assert(false, "No searcher program found in this OS.");
-	auto shellRes = executeShell(searcher ~" " ~ program);
+	auto shellRes = executeShell(searcher ~" " ~ program,
+	[
+		"PATH": environment["PATH"]
+	]);
     if(shellRes.output)
 		return shellRes.output[0..shellRes.output.countUntil("\n")];
    	return null;
@@ -289,7 +292,10 @@ void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 	import std.array;
 	t.writeln("Executing engine script ", script, " with arguments ", args);
 	t.flush;
-	auto exec = executeShell("rdmd " ~ buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)~" " ~ args.join(" "));
+	auto exec = executeShell("rdmd " ~ buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)~" " ~ args.join(" "), 
+	[
+		"PATH": environment["PATH"]
+	]);
 	if(exec.status)
 	{
 		t.writelnError("Script ", script, " failed with: ", exec.output);
