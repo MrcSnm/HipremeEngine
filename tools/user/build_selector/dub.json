@@ -16,8 +16,8 @@
 			"name": "ci",
 			"dflags-ldc": ["-Oz"],
 			"postBuildCommands-windows": ["move build_selector.exe win64-build_selector.exe"],
-			"postBuildCommands-linux": ["mv build_selector linux64-build_selector"],
-			"postBuildCommands-osx": ["mv build_selector macos64-build_selector"]
+			"postBuildCommands-linux": ["mv build_selector linux64-build_selector && chmod +x linux64-build_selector"],
+			"postBuildCommands-osx": ["mv build_selector macos64-build_selector && chmod +x linux64-build_selector"]
 		}
 	],
 	"libs": ["curl"],
