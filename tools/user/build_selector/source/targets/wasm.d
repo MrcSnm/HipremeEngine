@@ -3,8 +3,7 @@ import commons;
 
 void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-
-	if(findProgramPath("ldc2") == null)
+	if(!hasLdc)
 	{
 		t.writelnError("WASM build requires ldc2 in path. Please install it before building to it.");
 		return;

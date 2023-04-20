@@ -106,6 +106,12 @@ string getFirstExisting(string basePath, scope string[] tests...)
 }
 
 
+
+bool hasLdc()
+{
+	return ("ldcPath" in configs) !is null;
+}
+
 string findProgramPath(string program)
 {
 	import std.algorithm:countUntil;
