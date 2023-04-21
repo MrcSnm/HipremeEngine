@@ -21,14 +21,14 @@ public import hip.api.graphics.color;
 public import hip.api.graphics.batch;
 
 
-enum defaultColor = HipColorf.white;
+enum defaultColor = HipColor.white;
 
 @HipShaderInputLayout struct HipGeometryBatchVertex
 {
     import hip.math.vector;
     Vector3 vPosition;
     // @HipShaderInputPadding float __padding = 0;
-    Vector4 vColor;
+    HipColor vColor;
 
     static enum floatCount = HipGeometryBatchVertex.sizeof / float.sizeof;
 }
@@ -59,7 +59,7 @@ class GeometryBatch : IHipBatch
     protected index_t currentIndex;
     protected index_t verticesCount;
     protected index_t indicesCount;
-    protected HipColorf currentColor;
+    protected HipColor currentColor;
 
     float managedDepth = 0;
     HipOrthoCamera camera;
@@ -84,7 +84,7 @@ class GeometryBatch : IHipBatch
         mesh.createIndexBuffer(indicesCount, HipBufferUsage.DYNAMIC);
         mesh.vao.bind();
         mesh.setIndices(indices);
-        mesh.setVertices(cast(float[])vertices);
+        mesh.setVertices(vertices);
         mesh.sendAttributes();
         this.setColor(defaultColor);
 
@@ -114,10 +114,9 @@ class GeometryBatch : IHipBatch
     */
     index_t addVertex(float x, float y, float z)
     {
-        alias c = currentColor;
         vertices[verticesCount] = HipGeometryBatchVertex(
             Vector3(x,y,z),
-            Vector4(c.r, c.g, c.b, c.a)
+            currentColor
         );
         return verticesCount++;
     }
@@ -133,7 +132,7 @@ class GeometryBatch : IHipBatch
         foreach(index; newIndices)
             indices[currentIndex++] = index;
     }
-    void setColor(HipColorf c)
+    void setColor(HipColor c)
     {
         currentColor = c;
     }
@@ -195,9 +194,9 @@ class GeometryBatch : IHipBatch
 
 
 
-    void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColorf color = HipColorf.invalid, int precision = 24)
+    void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, HipColor color = HipColor.no, int precision = 24)
     {
-        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.LINE)
         {
             flush();
@@ -222,18 +221,18 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    private HipColorf setColorIfChangedAndGetOldColor(in HipColorf color)
+    private HipColor setColorIfChangedAndGetOldColor(in HipColor color)
     {
-        HipColorf oldColor = currentColor;
-        if(color != HipColorf.invalid)
+        HipColor oldColor = currentColor;
+        if(color != HipColor.no)
             setColor(color);
         return oldColor;
     }
 
     ///With this default precision, the circle should be smooth enough
-    void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, in HipColorf color = HipColorf.invalid, int precision = 24)
+    void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, HipColor color = HipColor.no, int precision = 24)
     {
-        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(radiusH == -1)
             radiusH = radiusW;
         if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
@@ -245,9 +244,9 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, in HipColorf color = HipColorf.invalid)
+    void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no)
     {
-        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
         {
             flush();
@@ -256,9 +255,9 @@ class GeometryBatch : IHipBatch
         triangleVertices(x1,y1,x2,y2,x3,y3);
         setColor(oldColor);
     }
-    void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, in HipColorf color = HipColorf.invalid)
+    void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no)
     {
-        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.LINE_STRIP)
         {
             flush();
@@ -268,9 +267,9 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
     
-    void drawLine(int x1, int y1, int x2, int y2, in HipColorf color = HipColorf.invalid)
+    void drawLine(int x1, int y1, int x2, int y2, HipColor color = HipColor.no)
     {
-        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.LINE)
         {
             flush();
@@ -287,7 +286,7 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    pragma(inline) void drawLine(float x1, float y1, float x2, float y2, in HipColorf color = HipColorf.invalid)
+    pragma(inline) void drawLine(float x1, float y1, float x2, float y2, HipColor color = HipColor.no)
     {
         drawLine(
             cast(int)x1,
@@ -298,9 +297,9 @@ class GeometryBatch : IHipBatch
         );
     }
 
-    void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, in HipColorf color = HipColorf.invalid)
+    void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, HipColor color = HipColor.no)
     {
-        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
 
         Vector2 last = Vector2(x0, y0);
 
@@ -318,9 +317,9 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    void drawPixel(int x, int y, in HipColorf color = HipColorf.invalid)
+    void drawPixel(int x, int y, HipColor color = HipColor.no)
     {
-        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.POINT)
         {
             flush();
@@ -358,9 +357,9 @@ class GeometryBatch : IHipBatch
 
     }
 
-    void drawRectangle(int x, int y, int w, int h, in HipColorf color = HipColorf.invalid)
+    void drawRectangle(int x, int y, int w, int h, HipColor color = HipColor.no)
     {
-        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.LINE_STRIP)
         {
             flush();
@@ -371,9 +370,9 @@ class GeometryBatch : IHipBatch
     }
   
 
-    void fillRectangle(int x, int y, int w, int h, in HipColorf color = HipColorf.invalid)
+    void fillRectangle(int x, int y, int w, int h, HipColor color = HipColor.no)
     {
-        HipColorf oldColor = setColorIfChangedAndGetOldColor(color);
+        HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
         {
             flush();

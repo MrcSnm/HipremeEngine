@@ -60,7 +60,7 @@ void initialize(HipInterpreterEntry entry = HipInterpreterEntry.init, bool shoul
     geoBatch = new GeometryBatch(camera);
     hiplog("2D Renderer: Initializing text renderer");
     textBatch = new HipTextRenderer(camera);
-    setGeometryColor(HipColorf.white);
+    setGeometryColor(HipColor.white);
 
 
     version(HipremeEngineLua)
@@ -125,48 +125,48 @@ void setRendererErrorCheckingEnabled(bool enable)
 {
     HipRenderer.setErrorCheckingEnabled(enable);
 }
-void setGeometryColor(in HipColorf color){geoBatch.setColor(color);}
-void drawPixel(int x, int y, in HipColorf color = HipColorf.invalid)
+void setGeometryColor(in HipColor color){geoBatch.setColor(color);}
+void drawPixel(int x, int y, HipColor color = HipColor.alpha(0))
 {
     manageBatchChange(geoBatch);
     geoBatch.drawPixel(x, y,color);
 }
-void drawRectangle(int x, int y, int w, int h, in HipColorf color = HipColorf.invalid)
+void drawRectangle(int x, int y, int w, int h, HipColor color = HipColor.alpha(0))
 {
     manageBatchChange(geoBatch);
     geoBatch.drawRectangle(x,y,w,h,color);
 }
-void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, in HipColorf color = HipColorf.invalid)
+void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.alpha(0))
 {
     manageBatchChange(geoBatch);
     geoBatch.drawTriangle(x1,y1,x2,y2,x3,y3,color);
 }
-void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColorf color = HipColorf.invalid, int precision = 24)
+void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, HipColor color = HipColor.alpha(0), int precision = 24)
 {
     manageBatchChange(geoBatch);
     geoBatch.drawEllipse(x,y,radiusW,radiusH,degrees,color,precision);
 }
-void drawLine(int x1, int y1, int x2, int y2, in HipColorf color = HipColorf.invalid)
+void drawLine(int x1, int y1, int x2, int y2, HipColor color = HipColor.alpha(0))
 {
     manageBatchChange(geoBatch);
     geoBatch.drawLine(x1,y1,x2,y2,color);
 }
-void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, in HipColorf color = HipColorf.invalid)
+void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, HipColor color = HipColor.alpha(0))
 {
     manageBatchChange(geoBatch);
     geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision,color);
 }
-void fillRectangle(int x, int y, int w, int h, in HipColorf color = HipColorf.invalid)
+void fillRectangle(int x, int y, int w, int h, HipColor color = HipColor.alpha(0))
 {
     manageBatchChange(geoBatch);
     geoBatch.fillRectangle(x,y,w,h,color);
 }
-void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, in HipColorf color = HipColorf.invalid, int precision = 24)
+void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, HipColor color = HipColor.alpha(0), int precision = 24)
 {
     manageBatchChange(geoBatch);
     geoBatch.fillEllipse(x,y,radiusW,radiusH,degrees,color,precision);
 }
-void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3, in HipColorf color = HipColorf.invalid)
+void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3, HipColor color = HipColor.alpha(0))
 {
     manageBatchChange(geoBatch);
     geoBatch.fillTriangle(x1,y1,x2,y2,x3,y3,color);

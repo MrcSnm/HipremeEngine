@@ -135,7 +135,7 @@ struct HipColorf
 
     auto opAssign(in HipColorf color)
     {
-        values[] = color.values[];  
+        values[] = color.values[];
         return this;
     }
     

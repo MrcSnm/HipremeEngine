@@ -48,7 +48,7 @@ class TestScene : Scene, IHipPreloadable
         logg(getAssetsForPreload);
         // logg(pop is null);
         geom = new GeometryBatch(null, 5000, 5000);
-        geom.setColor(HipColorf(0, 1, 0, 1));
+        geom.setColor(HipColor.green);
 
         setWindowSize(HipRenderer.width, HipRenderer.height);
         src = HipAudio.getSource();
@@ -94,9 +94,9 @@ class TestScene : Scene, IHipPreloadable
     {
         //////////////////////Lower Level////////////////////////
         super.render();
-        geom.setColor(HipColorf.red);
+        geom.setColor(HipColor.red);
         geom.fillRectangle(0, 0, 200, 200);
-        geom.setColor(HipColorf.green);
+        geom.setColor(HipColor.green);
         geom.fillRectangle(0, 0, 100, 100);
         geom.flush();
 
@@ -111,7 +111,7 @@ class TestScene : Scene, IHipPreloadable
         
 
         ////////////////////////Higher Level////////////////////////
-        setGeometryColor(HipColorf.white);
+        setGeometryColor(HipColor.white);
         setFont(null);
         drawText("Hello World Test Scene (Default Font)", 300, 280, HipColorf.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(cast(int)x, cast(int)y, 100, 100);
