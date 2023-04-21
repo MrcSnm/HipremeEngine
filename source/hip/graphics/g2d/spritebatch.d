@@ -27,7 +27,7 @@ public import hip.math.matrix;
 @HipShaderInputLayout struct HipSpriteVertex
 {
     Vector3 vPosition = Vector3.zero;
-    HipColor vColor = HipColor(0,0,0,0);
+    HipColor vColor = HipColor.white;
     Vector2 vTexST = Vector2.zero;
     float vTexID = 0;
 
@@ -253,7 +253,7 @@ class HipSpriteBatch : IHipBatch
         return v[0].vColor.a == 0 && v[1].vColor.a == 0 && v[2].vColor.a == 0 && v[3].vColor.a == 0;
     }
 
-    void draw(IHipTexture t, void[] vertices)
+    void draw(IHipTexture t, ubyte[] vertices)
     {
         if(isZeroAlpha(vertices)) return;
         ErrorHandler.assertExit(t.getWidth != 0 && t.getHeight != 0, "Tried to draw 0 bounds sprite");

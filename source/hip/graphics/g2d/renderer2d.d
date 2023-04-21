@@ -172,7 +172,7 @@ void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3, in HipColorf 
     geoBatch.fillTriangle(x1,y1,x2,y2,x3,y3,color);
 }
 
-void drawSprite(IHipTexture texture, void[] vertices)
+void drawSprite(IHipTexture texture, ubyte[] vertices)
 {
     manageBatchChange(spBatch);
     spBatch.draw(texture, vertices);

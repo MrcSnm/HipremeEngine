@@ -27,16 +27,15 @@ import hip.game2d.renderer_data;
 */
 class HipMultiSprite
 {
-    protected float[] vertices;
+    protected HipSpriteVertex[] vertices;
     HipSprite[] sprites;
     IHipTexture texture;
     this(size_t spritesCount)
     {
-        vertices = new float[HipSpriteVertexQuadCount*spritesCount];
-        vertices[] = 0;
+        vertices = new HipSpriteVertex[4*spritesCount];
         sprites = new HipSprite[spritesCount];
         foreach(i; 0..spritesCount)
-            sprites[i] = new HipSprite(vertices[i*HipSpriteVertexQuadCount..(i+1)*HipSpriteVertexQuadCount]);
+            sprites[i] = new HipSprite(vertices[i*4..(i+1)*4]);
     }
 
     ref HipSprite opIndex(size_t index){return sprites[index];}
@@ -94,7 +93,7 @@ class HipMultiSprite
 class HipSprite 
 {
     IHipTextureRegion texture;
-    HipColorf color;
+    HipColor color = HipColor.white;
     float x = 0, y = 0;
     float scrollX = 0, scrollY = 0;
     float rotation = 0;
@@ -112,19 +111,18 @@ class HipSprite
     private bool flippedX, flippedY;
 
     protected bool isDirty = true;
-    protected float[] vertices;
+    protected HipSpriteVertex[] vertices;
 
-    package this(float[] sink)
+    package this(HipSpriteVertex[] sink)
     {
         this.vertices = sink;
-        setColor(HipColorf.white);
+        setColor(HipColor.white);
     }
 
     this()
     {
-        vertices = new float[40];
-        vertices[] = 0;
-        setColor(HipColorf.white);
+        vertices = new HipSpriteVertex[4];
+        setColor(HipColor.white);
         setTexture(cast()getDefaultTexture());
     }
     this(IHipAssetLoadTask task)
@@ -143,16 +141,12 @@ class HipSprite
 
     this(IHipTexture texture)
     {
-        vertices = new float[40];
-        vertices[] = 0;
-        setColor(HipColorf.white);
+        vertices = new HipSpriteVertex[4];
         setTexture(texture);
     }
     this(IHipTextureRegion region)
     {
-        vertices = new float[40];
-        vertices[] = 0;
-        setColor(HipColorf.white);
+        vertices = new HipSpriteVertex[4];
         this.texture = region;
         width  = region.getWidth();
         height = region.getHeight();
@@ -194,14 +188,11 @@ class HipSprite
         this.v2 = c.v2;
         texture.setRegion(c.u1, c.v1, c.u2, c.v2);
         const float[] v = texture.getVertices();
-        vertices[U1] = v[0];
-        vertices[V1] = v[1];
-        vertices[U2] = v[2];
-        vertices[V2] = v[3];
-        vertices[U3] = v[4];
-        vertices[V3] = v[5];
-        vertices[U4] = v[6];
-        vertices[V4] = v[7];
+
+        vertices[0] = Vector2(v[0], v[1]);
+        vertices[1] = Vector2(v[2], v[3]);
+        vertices[2] = Vector2(v[4], v[5]);
+        vertices[3] = Vector2(v[6], v[7]);
         if(flippedX)
         {
             flippedX = false;
@@ -231,23 +222,19 @@ class HipSprite
         float y2 = y+height;
 
         //Top left
-        vertices[X1] = x;
-        vertices[Y1] = y;
+        vertices[0].vPosition = Vector2(x, y);
 
         //Top right
-        vertices[X2] = x2;
-        vertices[Y2] = y;
+        vertices[1].vPosition = Vector2(x2, y);
 
         //Bot right
-        vertices[X3] = x2;
-        vertices[Y3] = y2;
+        vertices[2].vPosition = Vector2(x2, y2);
 
         //Bot left
-        vertices[X4] = x;
-        vertices[Y4] = y2;
+        vertices[3].vPosition = Vector2(x, y2);
     }
 
-    ref float[HipSpriteVertexQuadCount] getVertices()
+    ref HipSpriteVertex[] getVertices()
     {
         if(isDirty)
         {
@@ -259,69 +246,46 @@ class HipSprite
             if(rotation == 0)
             {
                 //Top left
-                vertices[X1] = _x + x;
-                vertices[Y1] = _y + y;
+                vertices[0].vPosition = Vector3(_x+x, _y+y);
 
                 //Top right
-                vertices[X2] = x2 + x;
-                vertices[Y2] = _y + y;
+                vertices[1].vPosition = Vector3(x2+x, _y+y);
 
                 //Bot right
-                vertices[X3] = x2 + x;
-                vertices[Y3] = y2 + y;
+                vertices[2].vPosition = Vector3(x2+x, y2+y);
 
                 //Bot left
-                vertices[X4] = _x + x;
-                vertices[Y4] = y2 + y;
+                vertices[3].vPosition = Vector3(_x+x, y2+y);
             }
             else
             {
                 import core.math:sin,cos;
                 float c = cos(rotation);
                 float s = sin(rotation);
+
                 //Top left
-                vertices[X1] = c*_x - s*_y + this.x;
-                vertices[Y1] = c*_y + s*_x + this.y;
+                vertices[0].vPosition = Vector3(c*_x - s*_y + this.x, c*_y + s*_x + this.y);
 
                 //Top right
-                vertices[X2] = c*x2 - s*_y + this.x;
-                vertices[Y2] = c*_y + s*x2 + this.y;
+                vertices[1].vPosition = Vector3(c*x2 - s*_y + this.x, c*_y + s*x2 + this.y);
 
                 //Bot right
-                vertices[X3] = c*x2 - s*y2 + this.x;
-                vertices[Y3] = c*y2 + s*x2 + this.y;
+                vertices[2].vPosition = Vector3(c*x2 - s*y2 + this.x, c*y2 + s*x2 + this.y);
 
                 //Bot left
-                vertices[X4] = c*_x - s*y2 + this.x;
-                vertices[Y4] = c*y2 + s*_x + this.y;
+                vertices[3].vPosition = Vector3(c*_x - s*y2 + this.x, c*y2 + s*_x + this.y);
             }
         }
-
-        return vertices[0..40];
+        return vertices;
     }
 
-    void setColor(HipColorf color)
+    void setColor(HipColor color)
     {
         this.color = color;
-        vertices[R1] = color.r;
-        vertices[G1] = color.g;
-        vertices[B1] = color.b;
-        vertices[A1] = color.a;
-
-        vertices[R2] = color.r;
-        vertices[G2] = color.g;
-        vertices[B2] = color.b;
-        vertices[A2] = color.a;
-
-        vertices[R3] = color.r;
-        vertices[G3] = color.g;
-        vertices[B3] = color.b;
-        vertices[A3] = color.a;
-
-        vertices[R4] = color.r;
-        vertices[G4] = color.g;
-        vertices[B4] = color.b;
-        vertices[A4] = color.a;
+        vertices[0].color = color;
+        vertices[1].color = color;
+        vertices[2].color = color;
+        vertices[3].color = color;
     }
 
     void setScale(float scaleX, float scaleY)
@@ -370,10 +334,10 @@ class HipSprite
         {
             auto reg = texture.getRegion;
             flippedX = flip;
-            vertices[U1] = flip ? reg.u2 : reg.u1;
-            vertices[U2] = flip ? reg.u1 : reg.u2;
-            vertices[U3] = flip ? reg.u1 : reg.u2;
-            vertices[U4] = flip ? reg.u2 : reg.u1;
+            vertices[0].vTexST.x = flip ? reg.u2 : reg.u1;
+            vertices[1].vTexST.x = flip ? reg.u1 : reg.u2;
+            vertices[2].vTexST.x = flip ? reg.u1 : reg.u2;
+            vertices[3].vTexST.x = flip ? reg.u2 : reg.u1;
         }
     }
     void setFlippedY(bool flip)
@@ -382,10 +346,10 @@ class HipSprite
         {
             auto reg = texture.getRegion;
             flippedY = flip;
-            vertices[V1] = flip ? reg.v2 : reg.v1;
-            vertices[V2] = flip ? reg.v2 : reg.v1;
-            vertices[V3] = flip ? reg.v1 : reg.v2;
-            vertices[V4] = flip ? reg.v1 : reg.v2;
+            vertices[0].vTexST.y = flip ? reg.v2 : reg.v1;
+            vertices[1].vTexST.y = flip ? reg.v2 : reg.v1;
+            vertices[2].vTexST.y = flip ? reg.v1 : reg.v2;
+            vertices[3].vTexST.y = flip ? reg.v1 : reg.v2;
         }
     }
     bool isFlippedX() => flippedX;
