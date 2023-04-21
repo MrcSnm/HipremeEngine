@@ -1,6 +1,7 @@
 import arsd.terminal;
 import commons;
 import d_getter;
+import targets.windows;
 import targets.android;
 import targets.appleos;
 import targets.linux;
