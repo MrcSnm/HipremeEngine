@@ -262,7 +262,7 @@ void loadSubmodules(ref Terminal t)
 		throw new Error("Git wasn't found. Git is necessary for loading the engine submodules.");
 	t.writelnSuccess("Updating Git Submodules");
 	t.flush;
-	executeShell("git submodule update --init --recursive");
+	executeShell("cd "~ configs["hipremeEnginePath"].str ~ " && " ~"git submodule update --init --recursive");
 }
 
 bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInput input)
