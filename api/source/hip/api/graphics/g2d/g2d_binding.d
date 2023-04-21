@@ -38,25 +38,25 @@ else
             void function(bool enable = true) setRendererErrorCheckingEnabled;
 
             ///Will change the color for the next calls to drawPixel, drawRectangle, drawTriangle, fillRectangle, fillTriangle, drawLine, drawQuadraticBezierLine
-            void function(in HipColorf color) setGeometryColor;
+            void function(HipColor color) setGeometryColor;
             ///Draw a pixel at (x, y) with the color specified at setGeometryColor
-            void function(int x, int y, in HipColorf color = HipColorf.invalid) drawPixel;
+            void function(int x, int y, HipColor color = HipColor.no) drawPixel;
             ///Draws an unfilled rectangle
-            void function(int x, int y, int w, int h, in HipColorf color = HipColorf.invalid) drawRectangle;
+            void function(int x, int y, int w, int h, HipColor color = HipColor.no) drawRectangle;
             ///Draws an unfilled triangle
-            void function(int x1, int y1, int x2, int y2, int x3, int y3, in HipColorf color = HipColorf.invalid) drawTriangle;
+            void function(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no) drawTriangle;
             ///Draws a filled rectangle
-            void function(int x, int y, int w, int h, in HipColorf color = HipColorf.invalid) fillRectangle;
+            void function(int x, int y, int w, int h, HipColor color = HipColor.no) fillRectangle;
             ///Draws a filled triangle
-            void function(int x1, int y1, int x2, int y2, int x3, int y3, in HipColorf color = HipColorf.invalid) fillTriangle;
+            void function(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no) fillTriangle;
             ///Draws unfilled circle
-            void function(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColorf color = HipColorf.invalid, int precision = 24) drawEllipse;
+            void function(int x, int y, int radiusW, int radiusH, int degrees = 360, HipColor color = HipColor.no, int precision = 24) drawEllipse;
             ///Draws a filled circle
-            void function(int x, int y, int radiusW, int radiusH, int degrees = 360, in HipColorf color = HipColorf.invalid, int precision = 24) fillEllipse;
+            void function(int x, int y, int radiusW, int radiusH, int degrees = 360, HipColor color = HipColor.no, int precision = 24) fillEllipse;
             ///Draws a line from (x1, y1) to (x2, y2)
-            void function(int x1, int y1, int x2, int y2, in HipColorf color = HipColorf.invalid) drawLine;
+            void function(int x1, int y1, int x2, int y2, HipColor color = HipColor.no) drawLine;
             ///Draws a line using bezier points. The higher the precision, the smoother the line, the heavier it is to execute
-            void function(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, in HipColorf color = HipColorf.invalid) drawQuadraticBezierLine;
+            void function(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, HipColor color = HipColor.no) drawQuadraticBezierLine;
             ///Draws the target sprite instance
             void function(IHipTexture texture, float[] vertices) drawSprite;
             ///Draws a texture at a specified place
