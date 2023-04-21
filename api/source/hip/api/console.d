@@ -13,7 +13,7 @@ version(DirectCall)
 else
 {
 	alias logFn = extern(System) void function(string);
-    __gshared logFn log;
+    __gshared logFn log = null;
 	void initConsole()
 	{
 		version(ErrorOnLoadSymbol)
