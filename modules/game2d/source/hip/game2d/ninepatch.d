@@ -15,7 +15,7 @@ class NinePatch
     float x, y;
     float scaleX, scaleY;
     protected HipSprite[9] sprites;
-    protected float[HipSpriteVertexQuadCount*9] vertices;
+    protected HipSpriteVertex[9*4] vertices;
     IHipTexture texture;
     NinePatchType stretchStrategy;
 
@@ -25,7 +25,6 @@ class NinePatch
         this.height = height;
         x = y = 0;
         scaleX = scaleY = 1;
-        vertices[] = 0;
         texture = tex;
         stretchStrategy = type;
         for(int i = 0; i < 9; i++)
@@ -181,18 +180,16 @@ class NinePatch
         //     sprites[BOT_MID].setScale(0,0);
         // }
 
-        for(int i = 0; i < HipSpriteVertexQuadCount; i++)
-        {
-            vertices[i] = sprites[TOP_LEFT].getVertices()[i];
-            vertices[HipSpriteVertexQuadCount*1+i] = sprites[TOP_MID].getVertices()[i];
-            vertices[HipSpriteVertexQuadCount*2+i] = sprites[TOP_RIGHT].getVertices()[i];
-            vertices[HipSpriteVertexQuadCount*3+i] = sprites[MID_LEFT].getVertices()[i];
-            vertices[HipSpriteVertexQuadCount*4+i] = sprites[MID_MID].getVertices()[i];
-            vertices[HipSpriteVertexQuadCount*5+i] = sprites[MID_RIGHT].getVertices()[i];
-            vertices[HipSpriteVertexQuadCount*6+i] = sprites[BOT_LEFT].getVertices()[i];
-            vertices[HipSpriteVertexQuadCount*7+i] = sprites[BOT_MID].getVertices()[i];
-            vertices[HipSpriteVertexQuadCount*8+i] = sprites[BOT_RIGHT].getVertices()[i];
-        }
+        uint i = 0;
+        vertices[i++..i*4] = sprites[TOP_LEFT].getVertices();
+        vertices[i++..i*4] = sprites[TOP_MID].getVertices();
+        vertices[i++..i*4] = sprites[TOP_RIGHT].getVertices();
+        vertices[i++..i*4] = sprites[MID_LEFT].getVertices();
+        vertices[i++..i*4] = sprites[MID_MID].getVertices();
+        vertices[i++..i*4] = sprites[MID_RIGHT].getVertices();
+        vertices[i++..i*4] = sprites[BOT_LEFT].getVertices();
+        vertices[i++..i*4] = sprites[BOT_MID].getVertices();
+        vertices[i++..i*4] = sprites[BOT_RIGHT].getVertices();
     }
 
     void setTopLeft(uint u1, uint v1, uint u2, uint v2){sprites[TOP_LEFT].setRegion(u1,v1,u2,v2);}
@@ -217,34 +214,19 @@ class NinePatch
     }
 
 
-   void setColor(HipColorf color)
+   void setColor(HipColor color)
    {
        int quad = 0;
        for(int i = 0; i < 9; i++)
        {
-           quad = cast(int)(HipSpriteVertexQuadCount*i);
-           vertices[quad+R1] = color.r;
-           vertices[quad+R2] = color.r;
-           vertices[quad+R3] = color.r;
-           vertices[quad+R4] = color.r;
-
-           vertices[quad+G1] = color.g;
-           vertices[quad+G2] = color.g;
-           vertices[quad+G3] = color.g;
-           vertices[quad+G4] = color.g;
-
-           vertices[quad+B1] = color.b;
-           vertices[quad+B2] = color.b;
-           vertices[quad+B3] = color.b;
-           vertices[quad+B4] = color.b;
-
-           vertices[quad+A1] = color.a;
-           vertices[quad+A2] = color.a;
-           vertices[quad+A3] = color.a;
-           vertices[quad+A4] = color.a;
-       }
+            quad = cast(int)(i*4);
+            vertices[quad].vColor = color;
+            vertices[quad+1].vColor = color;
+            vertices[quad+2].vColor = color;
+            vertices[quad+3].vColor = color;
+        }
    }
-   public ref float[HipSpriteVertexQuadCount*9] getVertices(){return vertices;}
+   public ref HipSpriteVertex[4*9] getVertices(){return vertices;}
 
 
     /**
@@ -266,16 +248,12 @@ class NinePatch
 
         for(uint i = 0; i < 9; i++)
         {
-            uint quad = cast(uint)HipSpriteVertexQuadCount*i;
-            vertices[quad+X1] = sprites[i].getVertices()[X1];
-            vertices[quad+X2] = sprites[i].getVertices()[X2];
-            vertices[quad+X3] = sprites[i].getVertices()[X3];
-            vertices[quad+X4] = sprites[i].getVertices()[X4];
-
-            vertices[quad+Y1] = sprites[i].getVertices()[Y1];
-            vertices[quad+Y2] = sprites[i].getVertices()[Y2];
-            vertices[quad+Y3] = sprites[i].getVertices()[Y3];
-            vertices[quad+Y4] = sprites[i].getVertices()[Y4];
+            uint quad = i*4;
+            HipSpriteVertex[] verts = sprites[i].getVertices();
+            vertices[quad].vPosition = verts[0].vPosition;
+            vertices[quad+1].vPosition = verts[1].vPosition;
+            vertices[quad+2].vPosition = verts[2].vPosition;
+            vertices[quad+3].vPosition = verts[3].vPosition;
         }
     }
 

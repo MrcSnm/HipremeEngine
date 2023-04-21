@@ -1,10 +1,8 @@
 module hip.game2d.renderer_data;
 
 ///See hip.graphics.g2d.spritebatch
-    enum HipSpriteVertexFloatCount = 10;
-    enum HipSpriteVertexQuadCount = HipSpriteVertexFloatCount*4;
     import hip.math.vector;
-    import hip.api.color;
+    import hip.api.graphics.color;
     struct HipSpriteVertex
     {
         Vector3 vPosition = Vector3.zero;

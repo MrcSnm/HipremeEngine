@@ -58,7 +58,7 @@ else
             ///Draws a line using bezier points. The higher the precision, the smoother the line, the heavier it is to execute
             void function(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, HipColor color = HipColor.no) drawQuadraticBezierLine;
             ///Draws the target sprite instance
-            void function(IHipTexture texture, float[] vertices) drawSprite;
+            void function(IHipTexture texture, ubyte[] vertices) drawSprite;
             ///Draws a texture at a specified place
             void function(IHipTexture reg, int x, int y, int z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawTexture;
             ///Draws a texture region at a specified place

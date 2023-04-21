@@ -175,9 +175,10 @@ class HipSpriteBatch : IHipBatch
 
     void addQuads(void[] quadsVertices, int slot)
     {
-        assert(quadsVertices.length % HipSpriteVertex.quadCount == 0, "Count must be divisible by 40");
         import hip.util.array:swapAt;
-        uint countOfQuads = cast(int)(quadsVertices.length /HipSpriteVertex.quadCount);
+        assert(quadsVertices.length % (HipSpriteVertex.sizeof*4) == 0, "Count must be divisible by HipSpriteVertex.sizeof*4");
+        HipSpriteVertex[] v = cast(HipSpriteVertex[])quadsVertices;
+        uint countOfQuads = cast(uint)(v.length / 4);
 
 
         while(countOfQuads > 0)
@@ -192,12 +193,10 @@ class HipSpriteBatch : IHipBatch
             }
             size_t quadsToDraw = (countOfQuads < remainingQuads) ? countOfQuads : remainingQuads;
 
-            size_t start = cast(size_t)(HipSpriteVertex.quadCount*this.quadsCount);
-            size_t end = start + quadsToDraw * HipSpriteVertex.quadCount;
+            size_t start = quadsCount;
+            size_t end = (start + quadsToDraw)*4;
 
-
-
-            vertices[start..end] = cast(HipSpriteVertex[])quadsVertices[0..quadsToDraw*HipSpriteVertex.quadCount];
+            vertices[start..end] = v;
             for(int i = 0; i < quadsToDraw; i++)
             {
                 vertices[start + i].vTexID = slot;
@@ -205,8 +204,7 @@ class HipSpriteBatch : IHipBatch
                 vertices[start + i+2].vTexID = slot;
                 vertices[start + i+3].vTexID = slot;
             }
-            quadsVertices = quadsVertices[quadsToDraw*HipSpriteVertex.quadCount..$];
-
+            v = v[quadsToDraw..$];
 
             if(quadsToDraw + remainingQuads == maxQuads)
             {

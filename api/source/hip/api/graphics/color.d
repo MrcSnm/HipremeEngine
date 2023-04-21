@@ -105,7 +105,7 @@ struct HipColorf
         }
         float[4] values;
     }
-
+    this(HipColor c){values = [cast(float)c.r / 255, cast(float)c.g/255, cast(float)c.b/255, cast(float)c.a/255];}
     this(float r, float g, float b, float a){values = [r,g,b,a];}
     ubyte[4] unpackRGBA()
     {

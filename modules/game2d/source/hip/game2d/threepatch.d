@@ -17,7 +17,7 @@ class ThreePatch
 {
     int x, y;
     int width, height;
-    float[HipSpriteVertexQuadCount*3] vertices;
+    HipSpriteVertex[4*3] vertices;
     HipSprite[3] sprites;
     ThreePatchOrientation orientation;
     ThreePatchOrientation inferredOrientation = ThreePatchOrientation.inferred;
@@ -31,7 +31,6 @@ class ThreePatch
         for(int i = 0; i < 3; i++)
             sprites[i] = new HipSprite(texture);
 
-        vertices[] = 0;
         this.orientation = orientation;
         this.inferredOrientation = infer(width, height);
         setSize(width, height);
@@ -133,7 +132,7 @@ class ThreePatch
         updatePosition();
     }
 
-    ref float[HipSpriteVertexQuadCount*3] getVertices(){return vertices;}
+    ref HipSpriteVertex[4*3] getVertices(){return vertices;}
 
 }
 

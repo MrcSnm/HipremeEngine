@@ -15,9 +15,6 @@
 		"tween": {"path": "G:\\HipremeEngine/modules/tween"},
 		"math": {"path": "G:\\HipremeEngine/modules/math"}
 	},
-	"dflags-ldc": [
-		"-link-defaultlib-shared=false"
-	],
 	"dflags": [
 		"-J."
 	],
