@@ -117,7 +117,9 @@ bool setupD(ref Terminal t, ref RealTimeConsoleInput input)
         t.writelnError("Could not setup D. Aborting process");
         return false;
     }
-    environment["PATH"] = buildNormalizedPath(configs["ldcPath"].str, "bin")~";"~environment["PATH"];
+    string concatPath = ":";
+    version(Windows) concatPath = ";";
+    environment["PATH"] = buildNormalizedPath(configs["ldcPath"].str, "bin")~concatPath~environment["PATH"];
 
 
     return true;
