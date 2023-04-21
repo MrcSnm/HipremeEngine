@@ -119,6 +119,7 @@ void main(string[] args)
 		cOpts = CompilationOptions(args[1] == "--force");
 	}
 	Choice[] choices;
+	version(Windows) choices~= Choice("Windows", &prepareWindows);
 	version(OSX) choices~= Choice("AppleOS", &prepareAppleOS);
 	version(linux) choices~= Choice("Linux", &prepareLinux);
 
@@ -127,7 +128,6 @@ void main(string[] args)
 		// Choice("PSVita"),
 		// Choice("Xbox Series"),
 		Choice("Android", &prepareAndroid),
-		// Choice("Windows"),
 		// Choice("Linux"),
 		Choice("WebAssembly", &prepareWASM)
 	]);
