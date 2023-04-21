@@ -231,7 +231,7 @@ void setFontDeferred(IHipAssetLoadTask task)
         textBatch.setFont(task);
 }
 
-void drawText(string text, int x, int y, in HipColorf color = HipColorf.white, HipTextAlign alignH = HipTextAlign.LEFT, HipTextAlign alignV = HipTextAlign.CENTER, 
+void drawText(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.LEFT, HipTextAlign alignV = HipTextAlign.CENTER, 
 int boundsWidth = -1, int boundsHeight = -1)
 {
     manageBatchChange(textBatch);

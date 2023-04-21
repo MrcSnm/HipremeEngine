@@ -13,6 +13,7 @@ module hip.game2d.sprite;
 public import hip.api.renderer.texture;
 public import hip.api.graphics.color;
 public import hip.api.data.commons;
+import hip.math.vector;
 import hip.api.assets.assets_binding;
 import hip.api.assets.globals;
 import hip.game2d.renderer_data;
@@ -73,7 +74,7 @@ class HipMultiSprite
             sp.setTexture(texture);
     }
 
-    ref float[] getVertices()
+    ref HipSpriteVertex[] getVertices()
     {
         //Vertices is already a data sink for the sprites, so no need to reassign.
         foreach(i, sp; sprites)
@@ -86,7 +87,7 @@ class HipMultiSprite
         import hip.api.graphics.g2d.renderer2d;
         foreach(sp; sprites)
             sp.isDirty = true;
-        drawSprite(texture, getVertices());
+        drawSprite(texture, cast(ubyte[])getVertices());
     }
 }
 
@@ -189,10 +190,10 @@ class HipSprite
         texture.setRegion(c.u1, c.v1, c.u2, c.v2);
         const float[] v = texture.getVertices();
 
-        vertices[0] = Vector2(v[0], v[1]);
-        vertices[1] = Vector2(v[2], v[3]);
-        vertices[2] = Vector2(v[4], v[5]);
-        vertices[3] = Vector2(v[6], v[7]);
+        vertices[0].vTexST = Vector2(v[0], v[1]);
+        vertices[1].vTexST = Vector2(v[2], v[3]);
+        vertices[2].vTexST = Vector2(v[4], v[5]);
+        vertices[3].vTexST = Vector2(v[6], v[7]);
         if(flippedX)
         {
             flippedX = false;
@@ -222,16 +223,16 @@ class HipSprite
         float y2 = y+height;
 
         //Top left
-        vertices[0].vPosition = Vector2(x, y);
+        vertices[0].vPosition = Vector3(x, y,0);
 
         //Top right
-        vertices[1].vPosition = Vector2(x2, y);
+        vertices[1].vPosition = Vector3(x2, y,0);
 
         //Bot right
-        vertices[2].vPosition = Vector2(x2, y2);
+        vertices[2].vPosition = Vector3(x2, y2,0);
 
         //Bot left
-        vertices[3].vPosition = Vector2(x, y2);
+        vertices[3].vPosition = Vector3(x, y2,0);
     }
 
     ref HipSpriteVertex[] getVertices()
@@ -246,16 +247,16 @@ class HipSprite
             if(rotation == 0)
             {
                 //Top left
-                vertices[0].vPosition = Vector3(_x+x, _y+y);
+                vertices[0].vPosition = Vector3(_x+x, _y+y,0);
 
                 //Top right
-                vertices[1].vPosition = Vector3(x2+x, _y+y);
+                vertices[1].vPosition = Vector3(x2+x, _y+y,0);
 
                 //Bot right
-                vertices[2].vPosition = Vector3(x2+x, y2+y);
+                vertices[2].vPosition = Vector3(x2+x, y2+y,0);
 
                 //Bot left
-                vertices[3].vPosition = Vector3(_x+x, y2+y);
+                vertices[3].vPosition = Vector3(_x+x, y2+y,0);
             }
             else
             {
@@ -264,16 +265,16 @@ class HipSprite
                 float s = sin(rotation);
 
                 //Top left
-                vertices[0].vPosition = Vector3(c*_x - s*_y + this.x, c*_y + s*_x + this.y);
+                vertices[0].vPosition = Vector3(c*_x - s*_y + this.x, c*_y + s*_x + this.y,0);
 
                 //Top right
-                vertices[1].vPosition = Vector3(c*x2 - s*_y + this.x, c*_y + s*x2 + this.y);
+                vertices[1].vPosition = Vector3(c*x2 - s*_y + this.x, c*_y + s*x2 + this.y,0);
 
                 //Bot right
-                vertices[2].vPosition = Vector3(c*x2 - s*y2 + this.x, c*y2 + s*x2 + this.y);
+                vertices[2].vPosition = Vector3(c*x2 - s*y2 + this.x, c*y2 + s*x2 + this.y,0);
 
                 //Bot left
-                vertices[3].vPosition = Vector3(c*_x - s*y2 + this.x, c*y2 + s*_x + this.y);
+                vertices[3].vPosition = Vector3(c*_x - s*y2 + this.x, c*y2 + s*_x + this.y,0);
             }
         }
         return vertices;
@@ -282,10 +283,10 @@ class HipSprite
     void setColor(HipColor color)
     {
         this.color = color;
-        vertices[0].color = color;
-        vertices[1].color = color;
-        vertices[2].color = color;
-        vertices[3].color = color;
+        vertices[0].vColor = color;
+        vertices[1].vColor = color;
+        vertices[2].vColor = color;
+        vertices[3].vColor = color;
     }
 
     void setScale(float scaleX, float scaleY)
@@ -377,7 +378,7 @@ class HipSprite
     {
         import hip.api.graphics.g2d.renderer2d;
         this.isDirty = true;
-        drawSprite(texture.getTexture, getVertices[]);
+        drawSprite(texture.getTexture, cast(ubyte[])getVertices[]);
     }
 }
 

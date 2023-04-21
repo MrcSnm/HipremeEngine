@@ -70,7 +70,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
 
     private HipText[] textPool;
     private int poolActive;
-    protected HipColorf color;
+    protected HipColor color;
     protected HipOrthoCamera camera;
     protected float managedDepth = 0;
     private uint quadsCount;
@@ -120,14 +120,12 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         this.font = font;
     }
 
-    void setColor(HipColorf color)
+    void setColor(HipColor color)
     {
         if(this.color != color)
-        {
             draw();
-        }
         this.color = color;
-        bmTextShader.uColor = color;
+        bmTextShader.uColor = HipColorf(color);
     }
 
 
