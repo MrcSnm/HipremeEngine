@@ -15,7 +15,7 @@
 		"."
 	],
 	"dflags-ldc": [
-		"-link-defaultlib-shared=false"
+		"--fvisibility=hidden"
 	],
 	"preBuildCommands": [
 		"rdmd ../../tools/build/getmodules.d source/ scriptmodules.txt"

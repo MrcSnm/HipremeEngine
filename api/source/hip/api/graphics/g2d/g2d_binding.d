@@ -69,7 +69,7 @@ else
             ///Sets the font using HipAssetManager.loadFont
             package void function (IHipAssetLoadTask font) setFontDeferred;
             ///Draws a text using the last font set
-            void function(string text, int x, int y, HipColorf color = HipColorf.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1) drawText;
+            void function(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1) drawText;
             
             ///Sets active the viewport passed
             void function(Viewport v) setViewport;
