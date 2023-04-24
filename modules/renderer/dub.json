@@ -10,6 +10,9 @@
 	"sourcePaths": [
 		"source"
 	],
+	"lflags-windows": [
+		"-Llib/win64"
+	],
 	"dependencies": {
 		"hipengine_api": {"path": "../../api"},
 		"data" : {"path": "../data"},

@@ -13,8 +13,8 @@ version(Windows):
 version(DirectX):
 
 pragma(lib, "ole32");
-pragma(lib, "d3dcompiler");
-//pragma(lib, "d3dcompiler_47");
+// pragma(lib, "d3dcompiler");
+pragma(lib, "d3dcompiler_47");
 pragma(lib, "d3d11");
 pragma(lib, "dxgi");
 
