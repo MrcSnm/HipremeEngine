@@ -90,8 +90,7 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 	projectPath = projectPath.escapeWindowsPathSep;
 
 
-	return format!`
-{
+	return format!`{
 	"authors": ["%s"],
 	"description" : "%s",
 	"license": "proprietary",
@@ -138,6 +137,7 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 		"HipMathAPI",
 		"HipremeAudio"
 	]
+}
 `(info.author, info.desc, outputName, name, 
 	//Modules Here
 	hipEnginePath, hipEnginePath, hipEnginePath, hipEnginePath, hipEnginePath, 
