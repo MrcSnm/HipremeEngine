@@ -309,7 +309,13 @@ Pid runDub(string commands, string preCommands = "")
 {
 	string dub = buildNormalizedPath(configs["ldcPath"].str, "bin", "dub");
 	version(Windows) dub = dub.setExtension("exe");
-	return pipeShell(preCommands~dub~" "~commands).pid;
+	return spawnShell(preCommands~dub~" "~commands);
+}
+
+bool waitAndPrint(ref Terminal t, Pid pid)
+{
+	wait(pid);
+	return true;
 }
 
 
