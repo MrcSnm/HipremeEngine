@@ -111,7 +111,7 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 	"preBuildCommands": [
 		"rdmd $HIPREME_ENGINE/tools/build/getmodules.d source/ scriptmodules.txt"
 	],
-	"dflags-ldc": [
+	"dflags-linux-ldc": [
 		"-link-defaultlib-shared=false"
 	],
 	"configurations": 
