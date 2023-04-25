@@ -305,17 +305,26 @@ void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 	}
 }
 
-Pid runDub(string commands, string preCommands = "")
+Pid runDub(string commands, string preCommands = "", bool confirmKey = false)
 {
 	string dub = buildNormalizedPath(configs["ldcPath"].str, "bin", "dub");
-	version(Windows) dub = dub.setExtension("exe");
+	version(Windows)
+	{
+		dub = dub.setExtension("exe");
+		if(confirmKey)
+			dub~= " && pause";
+	}
+	else version(Posix)
+	{
+		if(confirmKey) dub~= " && read -p \"Press any key to continue... \" -n1 -s";
+	}
+
 	return spawnShell(preCommands~dub~" "~commands);
 }
 
-bool waitAndPrint(ref Terminal t, Pid pid, bool confirmKey = false)
+bool waitAndPrint(ref Terminal t, Pid pid)
 {
 	wait(pid);
-	if(confirmKey) t.getline("Press any key to exit.");
 	return true;
 }
 
