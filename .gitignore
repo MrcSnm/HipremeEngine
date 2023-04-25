@@ -8,11 +8,10 @@ __dummy.html
 docs/
 build/.cache
 dependencies/**/*.lib
+hipreme_engine.lib
 dependencies/**/*.a
 build/android/project/app/release/*
 building/openal-soft-1.20.1-bin
-modules/**/*.a
-modules/**/*.lib
 .history
 *.exe
 bin/desktop/*.exe
