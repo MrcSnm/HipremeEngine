@@ -397,7 +397,7 @@ void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, i
 	t.flush;
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	waitAndPrint(t, runDub("build --parallel -c android --compiler=ldc2 -a aarch64--linux-android"~cOpts.getDubOptions));
+	waitAndPrint(t, runDub("build --parallel -c android --compiler=ldc2 -a aarch64--linux-android"~cOpts.getDubOptions), true);
 
 	std.file.rename(
 		buildNormalizedPath("bin", "android", "libhipreme_engine.so"),

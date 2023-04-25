@@ -312,9 +312,10 @@ Pid runDub(string commands, string preCommands = "")
 	return spawnShell(preCommands~dub~" "~commands);
 }
 
-bool waitAndPrint(ref Terminal t, Pid pid)
+bool waitAndPrint(ref Terminal t, Pid pid, bool confirmKey = false)
 {
 	wait(pid);
+	if(confirmKey) t.getline("Press any key to exit.");
 	return true;
 }
 
