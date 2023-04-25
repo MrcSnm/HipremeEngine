@@ -322,10 +322,9 @@ Pid runDub(string commands, string preCommands = "", bool confirmKey = false)
 	return spawnShell(preCommands~dub~" "~commands);
 }
 
-bool waitAndPrint(ref Terminal t, Pid pid)
+int waitAndPrint(ref Terminal t, Pid pid)
 {
-	wait(pid);
-	return true;
+	return wait(pid);
 }
 
 
