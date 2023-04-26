@@ -11,7 +11,7 @@ void prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in 
 		wait(spawnShell("sudo apt-get install libgl1-mesa-dev"));
 	}
 	std.file.chdir(configs["gamePath"].str);
-	waitDub(t, "-c script "~cOpts.getDubOptions, "");
+	waitDub(t, "build -c script "~cOpts.getDubOptions, "");
 	std.file.chdir(configs["hipremeEnginePath"].str);
 	waitDub(t, "-c script "~cOpts.getDubOptions ~ " -- "~configs["gamePath"].str, "", true);
 
