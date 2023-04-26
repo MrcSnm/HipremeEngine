@@ -94,7 +94,7 @@ jobs:
     steps:
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "*-build_selector"
+        artifacts: "{{ github.workspace }}/*build_selector*"
         allowUpdates: "true"
         tag: "BuildAssets.v1.0.0"
         
