@@ -8,7 +8,7 @@ void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in C
 		t.writelnError("WASM build requires ldc2 in path. Please install it before building to it.");
 		return;
 	}
-	loadSubmodules(t);
+	loadSubmodules(t, input);
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
 	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "wasm", "build", "assets"));
 	environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;

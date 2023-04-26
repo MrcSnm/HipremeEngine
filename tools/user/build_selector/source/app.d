@@ -1,6 +1,7 @@
 import arsd.terminal;
 import commons;
 import d_getter;
+import engine_getter;
 import targets.windows;
 import targets.android;
 import targets.appleos;
@@ -34,14 +35,6 @@ struct EngineVariables
 
 void promptForConfigCreation(ref Terminal t)
 {
-	string hipremeEnginePath;
-	if("HIPREME_ENGINE" in environment)
-	{
-		hipremeEnginePath = environment["HIPREME_ENGINE"];
-		t.writelnHighlighted("Using existing environment variable 'HIPREME_ENGINE' for hipremeEnginePath");
-	}
-	else
-		hipremeEnginePath = getValidPath(t, "HipremeEngine path: ");
 	string gamePath 		 = getValidPath(t, "Your game path: ");
 	string phobosLibPath;
 	version(OSX)
@@ -73,12 +66,10 @@ void promptForConfigCreation(ref Terminal t)
 	saveConfig:
 
 	import std.array:replace;
-	hipremeEnginePath = hipremeEnginePath.replace("\\", "\\\\");
 	gamePath = gamePath.replace("\\", "\\\\");
 	phobosLibPath = phobosLibPath.replace("\\", "\\\\");
 
 
-	configs["hipremeEnginePath"] = hipremeEnginePath;
 	configs["gamePath"] = gamePath;
 	configs["phobosLibPath"] = phobosLibPath;
 	configs["selectedChoice"] = 0;
@@ -93,6 +84,8 @@ void main(string[] args)
 	auto terminal = Terminal(ConsoleOutputType.linear);
 	auto input = RealTimeConsoleInput(&terminal, ConsoleInputFlags.raw);
 	terminal.clear();
+	if(!("PATH" in environment))
+		environment["PATH"] = "";
 	pathBeforeNewLdc = environment["PATH"];
 	if(std.file.exists(ConfigFile))
 		configs = parseJSON(std.file.readText(ConfigFile));
@@ -102,6 +95,11 @@ void main(string[] args)
 	if(!setupD(terminal, input))
 	{
 		terminal.writelnError("D needs to be installed to use Build Selector.");
+		return;
+	}
+	if(!setupEngine(terminal, input))
+	{
+		terminal.writelnError("HipremeEngine needs Git.");
 		return;
 	}
 	if(("hipremeEnginePath" in configs) is null ||

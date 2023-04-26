@@ -6,6 +6,8 @@ public import std.path;
 public import std.process;
 public static import std.file;
 
+
+enum hipremeEngineRepo = "https://github.com/MrcSnm/HipremeEngine.git";
 enum ConfigFile = "gamebuild.json";
 __gshared JSONValue configs;
 
@@ -200,8 +202,12 @@ bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
 
 bool extract7ZipToFolder(string zPath, string outputDirectory, ref Terminal t)
 {
-	if(!std.file.exists(zPath)) return false;
-	t.writeln("Extracting ", zPath);
+	if(!std.file.exists(zPath)) 
+	{
+		t.writelnError("File ", zPath, " does not exists.");
+		return false;
+	}
+	t.writeln("Extracting ", zPath, " to ", outputDirectory);
 	t.flush;
 	return executeShell(configs["7zip"].str ~ " x -o"~outputDirectory~ " "~zPath).status == 0;
 }
@@ -209,8 +215,12 @@ bool extract7ZipToFolder(string zPath, string outputDirectory, ref Terminal t)
 version(Posix)
 bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal t)
 {
-	if(!std.file.exists(tarGzPath)) return false;
-	t.writeln("Extracting ", tarGzPath);
+	if(!std.file.exists(tarGzPath))
+	{
+		t.writelnError("File ", tarGzPath, " does not exists.");
+		return false;
+	}
+	t.writeln("Extracting ", tarGzPath, " to ", outputDirectory);
 	t.flush;
 	if(!std.file.exists(outputDirectory))
 		std.file.mkdirRecurse(outputDirectory);
@@ -255,14 +265,30 @@ void updateConfigFile()
 	std.file.write(ConfigFile, configs.toPrettyString());
 }
 
-void loadSubmodules(ref Terminal t)
+string getGitExec()
+{
+	if("git" in configs)
+		return configs["git"].str ~ " ";
+	return "git ";
+}
+
+bool hasGit()
+{
+	if(findProgramPath("git")) return true;
+	return ("git" in configs) != null;
+}
+
+void loadSubmodules(ref Terminal t, ref RealTimeConsoleInput input)
 {
 	import std.process;
-	if(!findProgramPath("git"))
-		throw new Error("Git wasn't found. Git is necessary for loading the engine submodules.");
+	if(!hasGit)
+	{
+		if(!installGit(t, input))
+			throw new Error("Git wasn't found. Git is necessary for loading the engine submodules.");
+	}
 	t.writelnSuccess("Updating Git Submodules");
 	t.flush;
-	executeShell("cd "~ configs["hipremeEnginePath"].str ~ " && " ~"git submodule update --init --recursive");
+	executeShell("cd "~ configs["hipremeEnginePath"].str ~ " && " ~ getGitExec~" submodule update --init --recursive");
 }
 
 bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInput input)
@@ -284,6 +310,46 @@ bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInput input)
 		}
 	}
 	return true;
+}
+
+
+private string getGitDownloadLink()
+{
+	version(Windows) return "https://github.com/git-for-windows/git/releases/download/v2.40.1.windows.1/MinGit-2.40.1-64-bit.zip";
+	else return "";
+}
+
+
+
+
+bool installGit(ref Terminal t, ref RealTimeConsoleInput input)
+{
+	version(Windows)
+	{
+		if(!("git" in configs))
+		{
+			if(!downloadFileIfNotExists("Download Git for getting HipremeEngine's source code.", getGitDownloadLink(), 
+			buildNormalizedPath(std.file.tempDir(), "git.zip"), t, input))
+			{
+				t.writelnError("Could not download git.");
+				return false;
+			}
+			string gitPath = buildNormalizedPath(std.file.getcwd(), "buildtools", "git");
+			if(!extractZipToFolder(buildNormalizedPath(std.file.tempDir, "git.zip"), gitPath, t))
+			{
+				t.writelnError("Could not extract git.");
+				return false;
+			}
+			configs["git"] = buildNormalizedPath(gitPath, "cmd");
+			updateConfigFile();
+		}
+		return true;
+	}
+	else version(Posix)
+	{
+		t.writelnError("Please install Git to use build_selector.");
+		return false;
+	}
 }
 
 
