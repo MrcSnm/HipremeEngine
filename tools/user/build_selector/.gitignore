@@ -13,6 +13,7 @@ build_selector.lib
 build_selector-test-*
 Android/
 D/
+buildtools/
 *.exe
 *.pdb
 *.o
