@@ -126,7 +126,7 @@ string findProgramPath(string program)
 	[
 		"PATH": environment["PATH"]
 	]);
-    if(shellRes.output)
+    if(shellRes.status == 0)
 		return shellRes.output[0..shellRes.output.countUntil("\n")];
    	return null;
 }
