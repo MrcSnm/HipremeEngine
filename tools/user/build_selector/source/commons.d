@@ -268,7 +268,10 @@ void updateConfigFile()
 string getGitExec()
 {
 	if("git" in configs)
-		return configs["git"].str ~ " ";
+	{
+		version(Windows) return buildNormalizedPath(configs["git"].str, "git.exe");
+		else return buildNormalizedPath(configs["git"].str, "git");
+	}
 	return "git ";
 }
 
