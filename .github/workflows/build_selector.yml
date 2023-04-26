@@ -70,9 +70,36 @@ jobs:
         # Build the project, with its main file included, without unittests
         cd tools/user/build_selector
         dub build -c ci
+        mkdir win-release
+        copy win64-build_selector.exe win-release/win64-build_selector.exe
+        copy libcurl.dll win-release/libcurl.dll
+    - name: 'Zip EXE with DLL'
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        type: 'zip'
+        filename: 'win64-build_selector.zip'
+        directory: 'tools/user/build_selector/'
+        path: 'win-release'
     - name: 'Upload'
       uses: actions/upload-artifact@v3.1.2
       with:
-        name: win64-build_selector.exe
-        path: tools/user/build_selector/win64-build_selector.exe
+        name: win64-build_selector.zip
+        path: tools/user/build_selector/win64-build_selector.zip
+
+  update-release:
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-macos, build-windows]
+    permissions:
+      contents: write
+    steps:
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "win64-build_selector.zip,macos64-build_selector,linux64-build_selector"
+        allowUpdates: "true"
+        tag: "BuildAssets.v1.0.0"
+        
+      
+      
+      
+  
         
