@@ -92,9 +92,12 @@ jobs:
     permissions:
       contents: write
     steps:
-    - uses: ncipollo/release-action@v1
+    - name: "Download build artifacts"
+      uses: actions/download-artifact@v2.1.1
+    - name: "Update BuildAssets"
+      uses: ncipollo/release-action@v1
       with:
-        artifacts: "win64-build_selector.zip,macos64-build_selector,linux64-build_selector"
+        artifacts: "win64-build_selector.zip/win64-build_selector.zip,linux64-build_selector/linux64-build_selector,macos64-build_selector/macos64-build_selector"
         allowUpdates: "true"
         tag: "BuildAssets.v1.0.0"
         
