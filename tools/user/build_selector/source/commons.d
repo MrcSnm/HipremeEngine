@@ -247,6 +247,9 @@ bool downloadFileIfNotExists(
 )
 {
 	import std.net.curl;
+	string theDir = dirName(outputName);
+	if(!std.file.exists(theDir))
+		mkdirRecurse(theDir);
 	if(!std.file.exists(outputName))
 	{
 		if(!pollForExecutionPermission(t, input, "Your system will download a file: "~ purpose~" [Y]es/[N]o"))
