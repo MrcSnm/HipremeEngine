@@ -14,8 +14,14 @@ bool hasVCRuntime140()
 	string[] paths = ["SOFTWARE", "WOW6432Node", "Microsoft", "VisualStudio", "14.0", "VC", "Runtimes", arch];
 	foreach(p; paths)
 	{
-		currKey = currKey.getKey(p);
-		if(currKey is null) return false;
+		try{
+			currKey = currKey.getKey(p);
+			if(currKey is null) return false;
+		}
+		catch(Exception e)
+		{
+			return false;
+		}
 	}
 	return currKey.getValue("Installed").value_DWORD == 1;
 }
