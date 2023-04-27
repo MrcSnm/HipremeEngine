@@ -36,15 +36,20 @@ private string getVCDownloadLink()
 private bool installVCRuntime140(ref Terminal t, ref RealTimeConsoleInput input)
 {
 	string vcredist = buildNormalizedPath(std.file.getcwd(), "buildtools", "vcredist.exe");
-	if(!downloadFileIfNotExists("Get Microsoft Visual C++ Redistributable", getVCDownloadLink, vcredist, t, input))
+	if(!downloadFileIfNotExists("Get Microsoft Visual C++ Redistributable for being able to compile D Programming Language", getVCDownloadLink, vcredist, t, input))
 	{
 		t.writelnError("Needs to download VCRuntime.");
 		return false;
 	}
-	return wait(spawnShell(vcredist~" /install /quiet /norestart")) == 0;
+	t.writelnHighlighted("Installing Microsoft Visual C++ Redistributable");
+
+	auto ret = wait(spawnShell(vcredist~" /install /quiet /norestart")) == 0;
+	if(ret)
+		t.writelnSuccess("Successfully installed Microsoft Visual C++ Redistributable.");
+	else 
+		t.writelnError("Could not install Microsoft Visual C++ Redistributable.");
+	return ret;
 }
-
-
 
 void prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {

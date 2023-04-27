@@ -19,7 +19,6 @@
 	],
 	"dflags-dmd": ["-op"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
-	
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipCheckUnknownKeycode",
@@ -56,6 +55,7 @@
 			"name": "desktop",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
+			"lflags-windows-ldc": ["-Lmodules/renderer/lib/win64"],
 			"versions": [
 				"OpenGL",
 				"OpenAL",
@@ -161,6 +161,7 @@
 			"name": "script",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
+			"lflags-windows-ldc": ["-Lmodules/renderer/lib/win64"],
 			"dependencies": {
 				"fswatch": "~>0.6.0"
 			},
