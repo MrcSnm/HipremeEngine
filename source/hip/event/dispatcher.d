@@ -267,7 +267,7 @@ version(Windows)
     {
         import core.sys.windows.winuser;
         ushort k = cast(ushort)(key);
-        assert(k > 0 && k < ubyte.max, "Key out of range");
+        assert(k > 0 && k <= ubyte.max, "Key out of range");
         switch(k)
         {
             case VK_BACK: return HipKey.BACKSPACE;
@@ -379,6 +379,7 @@ version(Windows)
             case VK_OEM_5: return HipKey.BACKSLASH;
             case VK_OEM_6: return HipKey.BRACKET_RIGHT;
             case VK_OEM_7: return HipKey.QUOTE;
+            case  0xFF: return HipKey.NONE; //Invalid
 
             default:
                 version(HipCheckUnknownKeycode)
@@ -528,7 +529,7 @@ else version(WebAssembly)
     public HipKey getHipKeyFromSystem(uint key)
     {
         ushort k = cast(ushort)(key);
-        assert(k > 0 && k < ubyte.max, "Key out of range");
+        assert(k > 0 && k <= ubyte.max, "Key out of range");
         switch(k)
         {
             case 8: return HipKey.BACKSPACE;
@@ -629,6 +630,7 @@ else version(WebAssembly)
             case 220: return HipKey.BRACKET_RIGHT;
             case 226: return HipKey.BACKSLASH;
             case 192: return HipKey.QUOTE;
+            case  0xFF: return HipKey.NONE; //Invalid
 
             default:
                 version(HipCheckUnknownKeycode)
@@ -713,6 +715,7 @@ else version(AppleOS)
             case  0x59: return HipKey._7; //keypad7
             case  0x5B: return HipKey._8; //keypad8
             case  0x5C: return HipKey._9; //keypad9
+            case  0xFF: return HipKey.NONE; //Invalid
             default:
                 // version(HipCheckUnknownKeycode)
                 // {
