@@ -1,7 +1,7 @@
 module targets.linux;
 import commons;
 
-void prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+ChoiceResult prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	if(!std.file.exists("/usr/include/GL/gl.h"))
 	{
@@ -15,4 +15,5 @@ void prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in 
 	std.file.chdir(configs["hipremeEnginePath"].str);
 	waitDub(t, "-c script "~cOpts.getDubOptions ~ " -- "~configs["gamePath"].str, "", true);
 
+	return ChoiceResult.Continue;
 }

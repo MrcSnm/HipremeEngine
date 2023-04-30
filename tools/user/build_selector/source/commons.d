@@ -13,10 +13,18 @@ __gshared JSONValue configs;
 
 string pathBeforeNewLdc;
 
+enum ChoiceResult
+{
+	None,
+	Continue,
+	Error,
+	Back,
+}
+
 struct Choice
 {
 	string name;
-	void function(Choice* self, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions opts) onSelected;
+	ChoiceResult function(Choice* self, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions opts) onSelected;
 	bool opEquals(string choiceName) const
 	{
 		return name == choiceName;	
@@ -42,7 +50,7 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	{
 		terminal.color(Color.DEFAULT, Color.DEFAULT);
 		if(selectionTitle.length != 0)
-			terminal.writeln(selectionTitle);
+			terminal.writelnHighlighted(selectionTitle);
 		terminal.writeln("Select an option by using W/S or Arrow Up/Down and choose it by pressing Enter.");
 		foreach(i, choice; choices)
 		{
@@ -326,6 +334,14 @@ private string getGitDownloadLink()
 }
 
 
+private ChoiceResult _backFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+{
+	return ChoiceResult.Back;
+}
+Choice getBackChoice()
+{
+	return Choice("Back", &_backFn);
+}
 
 
 bool installGit(ref Terminal t, ref RealTimeConsoleInput input)
@@ -419,13 +435,36 @@ void putResourcesIn(ref Terminal t, string where)
 }
 
 
-string selectInFolder(string directory, ref Terminal t, ref RealTimeConsoleInput input)
+string selectInFolder(string selectWhat, string directory, ref Terminal t, ref RealTimeConsoleInput input)
 {
 	Choice[] choices;
 	foreach(std.file.DirEntry e; std.file.dirEntries(directory, std.file.SpanMode.shallow))
 		choices~= Choice(e.name, null);
 	size_t choice;
-	choice = selectChoiceBase(t, input, choices, "Select the NDK which you want to use. Remember that only NDK <= 21 is supported.");
+	choice = selectChoiceBase(t, input, choices, selectWhat);
 
 	return choices[choice].name;
+}
+
+/** 
+ * Main difference from selectInFolder is that it returns the choice and also acacepts extra choices.
+ * Params:
+ *   selectWhat = Description
+ *   directory = Directory to iterate
+ *   t = 
+ *   input = 
+ *   extraChoices = May be used to go back or cancel process
+ * Returns: Selected choice
+ */
+Choice* selectInFolderExtra(string selectWhat, string directory, ref Terminal t, ref RealTimeConsoleInput input,
+scope Choice[] extraChoices)
+{
+	Choice[] choices;
+	foreach(std.file.DirEntry e; std.file.dirEntries(directory, std.file.SpanMode.shallow))
+		choices~= Choice(e.name, null);
+	choices~= extraChoices;
+	size_t choice;
+	choice = selectChoiceBase(t, input, choices, selectWhat);
+
+	return &choices[choice];
 }

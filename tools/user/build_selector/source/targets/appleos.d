@@ -1,7 +1,7 @@
 module targets.appleos;
 import commons;
 
-void prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	environment["PATH"] = pathBeforeNewLdc;
 	t.writelnHighlighted("LDC not supported for building AppleOS yet. Use system path.");
@@ -33,4 +33,6 @@ void prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, i
 
 	auto pid = spawnShell(script);
 	wait(pid);
+
+	return ChoiceResult.Continue;
 }

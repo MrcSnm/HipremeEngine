@@ -1,6 +1,8 @@
 import arsd.terminal;
+import std.conv:to;
 import commons;
 import d_getter;
+import game_selector;
 import engine_getter;
 import targets.windows;
 import targets.android;
@@ -11,12 +13,20 @@ import targets.wasm;
 
 Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices)
 {
-	size_t selectedChoice = selectChoiceBase(
-		terminal, input, choices, "Select a target platform to build.", 
-		configs["selectedChoice"].integer);
+	string currentGame = "Current Game: ";
+	if("gamePath" in configs)
+		currentGame~= configs["gamePath"].str;
 
-	configs["selectedChoice"] = selectedChoice;
-	std.file.write(ConfigFile, configs.toPrettyString);
+	size_t selectedChoice;
+	if("selectedChoice" in configs)
+		selectedChoice = configs["selectedChoice"].integer;
+
+	selectedChoice = selectChoiceBase(
+		terminal, input, choices, "Select a target platform to build.\n\t"~currentGame, 
+		selectedChoice);
+
+	configs["selectedChoice"] = cast(long)selectedChoice;
+	updateConfigFile();
 	return choices[selectedChoice];
 }
 
@@ -77,6 +87,23 @@ void promptForConfigCreation(ref Terminal t)
 	updateConfigFile();
 }
 
+ChoiceResult createProject(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+{
+	string currDir = std.file.getcwd();
+	std.file.chdir(buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "user", "hiper"));
+	waitDub(t, "");
+	std.file.chdir(currDir);
+	configs["selectedChoice"] = 0;
+	updateConfigFile();
+	return ChoiceResult.Back;
+}
+
+ChoiceResult exitFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+{
+	configs["selectedChoice"] = 0;
+	updateConfigFile();
+	return ChoiceResult.Continue;
+}
 
 CompilationOptions cOpts;
 void main(string[] args)
@@ -122,14 +149,24 @@ void main(string[] args)
 	version(OSX) choices~= Choice("AppleOS", &prepareAppleOS);
 	version(linux) choices~= Choice("Linux", &prepareLinux);
 
-	
-	Choice selection = selectChoice(terminal, input, choices~[
+	choices~=[
 		// Choice("PSVita"),
 		// Choice("Xbox Series"),
 		Choice("Android", &prepareAndroid),
 		// Choice("Linux"),
-		Choice("WebAssembly", &prepareWASM)
-	]);
-	if(selection.onSelected) selection.onSelected(&selection, terminal, input, cOpts);
+		Choice("WebAssembly", &prepareWASM),
+		Choice("Create Project", &createProject),
+		Choice("Select Game", &selectGameFolder),
+		Choice("Exit", &exitFn)
+	];
+
+	while(true)
+	{
+		Choice selection = selectChoice(terminal, input, choices);
+		ChoiceResult res = selection.onSelected(&selection, terminal, input, cOpts);
+		if(res == ChoiceResult.Continue)
+			break;
+	}
+	
 
 }
