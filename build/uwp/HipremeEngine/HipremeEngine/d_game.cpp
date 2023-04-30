@@ -14,8 +14,8 @@ void(*HipInputOnTouchReleased)(uint32_t, float, float) = nullptr;
 void(*HipInputOnTouchScroll)(float, float, float) = nullptr;
 void(*HipInputOnKeyDown)(uint32_t) = nullptr;
 void(*HipInputOnKeyUp)(uint32_t) = nullptr;
-void(*HipInputOnGamepadConnected)(ubyte) = nullptr;
-void(*HipInputOnGamepadDisconnected)(ubyte) = nullptr;
+void(*HipInputOnGamepadConnected)(ubyte, ubyte) = nullptr;
+void(*HipInputOnGamepadDisconnected)(ubyte, ubyte) = nullptr;
 
 #define D_ENGINE_IMPORT_LIST \
 X(HipremeInit) \

@@ -58,7 +58,7 @@ enum HipGamepadTypes
 {
     HipGamepadTypes_xbox,
     HipGamepadTypes_psvita
-}
+};
 
 struct App : implements<App, IFrameworkViewSource, IFrameworkView>
 {

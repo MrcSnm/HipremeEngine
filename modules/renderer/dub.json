@@ -56,7 +56,8 @@
 		{
 			"name": "uwp",
 			"dependencies": {
-				"directx-d": {"path": "../../dependencies/directx-d"}
+				"directx-d": {"path": "../../dependencies/directx-d"},
+				"bind" : {"path": "../bind", "version": "*"}
 			},
 			"subConfigurations": {
 				"image": "arsd"

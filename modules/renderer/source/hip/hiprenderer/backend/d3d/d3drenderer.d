@@ -42,7 +42,10 @@ import hip.hiprenderer.backend.d3d.d3dtexture;
 
 
 version(UWP)
+{
     import hip.bind.external : getCoreWindow, HipExternalCoreWindow;
+}
+else version = WindowsNative;
 
 ID3D11Device3 _hip_d3d_device = null;
 ID3D11DeviceContext _hip_d3d_context = null;
@@ -478,7 +481,10 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     public void setViewport(Viewport v)
     {
         import hip.windowing.platforms.windows;
-        int[2] borders = getWindowBorder(window.hwnd);
+        version(WindowsNative)
+            int[2] borders = getWindowBorder(window.hwnd);
+        else
+            int[2] borders = [0,0];
 
         D3D11_VIEWPORT vp;
         memset(&vp, 0, D3D11_VIEWPORT.sizeof);
