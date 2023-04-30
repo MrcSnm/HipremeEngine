@@ -235,6 +235,18 @@
 			"sourcePaths": [
 				"build/release_game/source"
 			],
+			"lflags-windows": [
+				"/WHOLEARCHIVE:windowing",
+				"/WHOLEARCHIVE:bind",
+				"/WHOLEARCHIVE:audio_decoding",
+				"/WHOLEARCHIVE:directx-d",
+				"/WHOLEARCHIVE:audio",
+				"/WHOLEARCHIVE:hipengine_api",
+				"-Lmodules/renderer/lib/win64"
+			],
+			"stringImportPaths": [
+				"build/release_game/"
+			],
 			"subConfigurations": {
 				"audio": "uwp",
 				"renderer": "uwp"
