@@ -59,7 +59,10 @@ private FindAndroidNdkResult tryFindAndroidNDK(ref Terminal t, ref RealTimeConso
 		}
 		do
 		{
-			string ndkPath = selectInFolder(tempNdkPath, t, input);
+			string ndkPath = selectInFolder(
+				"Select the NDK which you want to use. Remember that only NDK <= 21 is supported.", 
+				tempNdkPath, t, input
+			);
 			if(isValidNDK(ndkPath))
 			{
 				tempNdkPath = ndkPath;
@@ -349,18 +352,18 @@ private void runAndroidApplication(ref Terminal t)
 	wait(spawnShell(adb~" shell monkey -p com.hipremeengine.app 1"));
 }
 
-void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	if(!installOpenJDK(t, input))
 	{
 		t.writelnError("Failed installing OpenJDK.");
-		return;
+		return ChoiceResult.Error;
 	}
 	environment["JAVA_HOME"] = configs["javaHome"].str;
 	if(!installAndroidSDK(t, input))
 	{
 		t.writelnError("Failed installing Android SDK.");
-		return;
+		return ChoiceResult.Error;
 	}
 	
 
@@ -371,7 +374,7 @@ void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, i
 		{
 			t.writelnError("Failed downloading ldc android libraries.");
 			t.flush;
-			return;
+			return ChoiceResult.Error;
 		}
 	}
 	environment["ANDROID_HOME"] = configs["androidSdkPath"].str;
@@ -404,4 +407,6 @@ void prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, i
 		buildNormalizedPath("build", "android", "project", "app", "src", "main", "jniLibs", "arm64-v8a", "libhipreme_engine.so")
 	);
 	runAndroidApplication(t);
+
+	return ChoiceResult.Continue;
 }

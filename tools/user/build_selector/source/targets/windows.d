@@ -51,18 +51,20 @@ private bool installVCRuntime140(ref Terminal t, ref RealTimeConsoleInput input)
 	return ret;
 }
 
-void prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+ChoiceResult prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	if(!hasVCRuntime140)
 	{
 		if(!installVCRuntime140(t, input))
 		{
 			t.writelnError("Your system must install Microsoft Visual C++ 14 for using the D Programming Language.");
-			return;
+			return ChoiceResult.Error;
 		}
 	}
     std.file.chdir(configs["gamePath"].str);
 	waitDub(t, "build -c script "~cOpts.getDubOptions, "");
 	std.file.chdir(configs["hipremeEnginePath"].str);
 	waitDub(t, "-c script "~cOpts.getDubOptions ~ " -- "~configs["gamePath"].str, "", true);
+
+	return ChoiceResult.Continue;
 }

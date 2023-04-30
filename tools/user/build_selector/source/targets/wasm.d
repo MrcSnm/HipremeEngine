@@ -1,12 +1,12 @@
 module targets.wasm;
 import commons;
 
-void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	if(!hasLdc)
 	{
 		t.writelnError("WASM build requires ldc2 in path. Please install it before building to it.");
-		return;
+		return ChoiceResult.Error;
 	}
 	loadSubmodules(t, input);
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
@@ -28,7 +28,7 @@ void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in C
 	if(waitDub(t, "build --compiler=ldc2 --build=debug -c wasm --arch=wasm32-unknown-unknown-wasm"~cOpts.getDubOptions) != 0)
 	{
 		t.writelnError("Could not build for WebAssembly.");
-		return;
+		return ChoiceResult.Error;
 	}
 
 	version(Posix) //Seems like dub is not detectign -posix in macOS
@@ -46,4 +46,5 @@ void prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in C
 t.writelnHighlighted("Run `dub` at $HIPREME_ENGINE/build/wasm, for starting a local server for the game.
 Your link should be in localhost:9000");
 
+	return ChoiceResult.Continue;
 }
