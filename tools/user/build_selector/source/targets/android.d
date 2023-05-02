@@ -25,6 +25,10 @@ private FindAndroidNdkResult tryFindAndroidNDK(ref Terminal t, ref RealTimeConso
 	if("ANDROID_NDK_HOME" in environment)
 	{
 		configs["androidNdkPath"] = environment["ANDROID_NDK_HOME"];
+		string sdk = getFirstExistingVar("ANDROID_SDK", "ANDROID_SDK_HOME");
+		if(!sdk.length)
+			sdk = buildNormalizedPath(configs["androidNdkPath"].str, "..", "..");
+		configs["androidSdkPath"] = sdk;
 		return FindAndroidNdkResult.Found;
 	}
 	bool isValidNDK(string chosenNDK)
@@ -289,7 +293,7 @@ private bool installOpenJDK(ref Terminal t, ref RealTimeConsoleInput input)
 
 private bool installAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input)
 {
-	if(!("androidNdkPath" in configs))
+	if(!("androidNdkPath" in configs) || !("androidSdkPath" in configs))
 	{
 		FindAndroidNdkResult res = tryFindAndroidNDK(t, input);
 		switch(res)
@@ -379,7 +383,6 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	}
 	environment["ANDROID_HOME"] = configs["androidSdkPath"].str;
 
-
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
 	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "android", "project", "app", "src", "main", "assets"));
 
@@ -400,7 +403,7 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	t.flush;
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	waitDub(t, "build --parallel -c android --compiler=ldc2 -a aarch64--linux-android"~cOpts.getDubOptions);
+	waitDub(t, "build --parallel -c android --compiler=ldc2 -a aarch64--linux-android "~cOpts.getDubOptions);
 
 	std.file.rename(
 		buildNormalizedPath("bin", "android", "libhipreme_engine.so"),

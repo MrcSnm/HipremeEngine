@@ -115,6 +115,16 @@ string getFirstExisting(string basePath, scope string[] tests...)
 	return "";
 }
 
+string getFirstExistingVar(scope string[] vars...)
+{
+	foreach(variable; vars)
+	{
+		if(variable in environment)
+			return environment[variable];
+	}
+	return "";
+}
+
 
 
 bool hasLdc()
@@ -396,7 +406,7 @@ void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 
 private string getDubRunCommand(string commands, string preCommands = "", bool confirmKey = false)
 {
-	string dub = buildNormalizedPath(configs["ldcPath"].str, "bin", "dub");
+	string dub = buildNormalizedPath(configs["dubPath"].str, "dub");
 	version(Windows)
 	{
 		dub = dub.setExtension("exe");
