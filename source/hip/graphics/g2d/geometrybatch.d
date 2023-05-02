@@ -28,7 +28,7 @@ enum defaultColor = HipColor.white;
     import hip.math.vector;
     Vector3 vPosition;
     // @HipShaderInputPadding float __padding = 0;
-    HipColor vColor;
+    HipColor vColor = HipColor.white;
 
     static enum floatCount = HipGeometryBatchVertex.sizeof / float.sizeof;
 }
@@ -134,6 +134,7 @@ class GeometryBatch : IHipBatch
     }
     void setColor(HipColor c)
     {
+        assert(c != HipColor.no, "Can't use 'no' color on geometry batch");
         currentColor = c;
     }
     pragma(inline, true)
