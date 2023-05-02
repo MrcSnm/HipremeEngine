@@ -104,6 +104,7 @@ bool installD(ref Terminal t, ref RealTimeConsoleInput input)
         makeFileExecutable(buildNormalizedPath(binPath, "dub"));
         configs["ldcVersion"] = LdcVersion;
         configs["ldcPath"] = getOutputPath;
+        configs["dubPath"] = binPath;
         updateConfigFile();
     }
 
