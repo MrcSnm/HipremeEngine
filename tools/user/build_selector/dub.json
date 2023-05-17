@@ -4,7 +4,7 @@
 	],
 	"copyright": "Copyright © 2023, Hipreme",
 	"dependencies": {
-		"arsd-official:terminal": "~>10.9.9"
+		"arsd-official:terminal": "~master"
 	},
 	"stringImportPaths": [
 		"../../build/scripts"
