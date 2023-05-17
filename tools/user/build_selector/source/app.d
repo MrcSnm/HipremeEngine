@@ -67,7 +67,7 @@ struct EngineVariables
 
 void promptForConfigCreation(ref Terminal t)
 {
-	string gamePath 		 = getValidPath(t, "Your game path: ");
+	string gamePath = buildNormalizedPath(configs["hipremeEnginePath"].str, "projects", "start_here");
 	string phobosLibPath;
 	version(OSX)
 	{
