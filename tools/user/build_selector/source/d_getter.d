@@ -1,6 +1,6 @@
 module d_getter;
 import commons;
-enum LdcVersion = "1.32.1";
+enum LdcVersion = "1.33.0-beta1";
 
 
 private string getLdcLink()
