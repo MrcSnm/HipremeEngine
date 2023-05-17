@@ -15,6 +15,7 @@ public import hip.hiprenderer.vertex;
 public import hip.hiprenderer.framebuffer;
 public import hip.hiprenderer.viewport;
 public import hip.api.renderer.texture;
+public import hip.api.renderer.operations;
 public import hip.api.graphics.color;
 public import hip.hiprenderer.shader.shadervar;
 import hip.windowing.window;
@@ -65,59 +66,8 @@ enum HipRendererMode
     TRIANGLE_STRIP
 }
 
-/// Those are fairly known functions in the graphics programming world
-enum HipBlendFunction
-{
-    ZERO,
-    ONE,
-    SRC_COLOR,
-    ONE_MINUS_SRC_COLOR,
-    DST_COLOR,
-    ONE_MINUS_DST_COLOR,
-    SRC_ALPHA,
-    ONE_MINUS_SRC_ALPHA,
-    DST_ALPHA,
-    ONE_MINUS_DST_ALPHA,
-    CONSTANT_COLOR,
-    ONE_MINUS_CONSTANT_COLOR,
-    CONSTANT_ALPHA,
-    ONE_MINUS_CONSTANT_ALPHA,
-}
 
-/** 
- * The equation is made by:
- * HipBlendEquation(HipBlendFunction, HipBlendFunction)
- */
-enum HipBlendEquation
-{
-    DISABLED,
-    ADD,
-    SUBTRACT,
-    REVERSE_SUBTRACT,
-    MIN,
-    MAX
-}
 
-///Which function should be employed whene testing the Depth/Z-Buffer
-enum HipDepthTestingFunction
-{
-    ///Means that nothing will be drawed
-    Never,
-    ///Same as no depth test
-    Always,
-    ///Render if the value is less than the current depth
-    Less,
-    ///Render if the value is less or equal than the current depth
-    LessEqual,
-    ///Render if the value is greater than the current depth
-    Greater,
-    ///Render if the value is greater or equal than the current depth
-    GreaterEqual,
-    ///Render if the value is equal against the current depth
-    Equal,
-    ///Render if the value is not equal against the current depth
-    NotEqual
-}
 
 //////////////////////////////////////////Metadata//////////////////////////////////////////
 
@@ -173,6 +123,12 @@ interface IHipRendererImpl
     public bool setWindowMode(HipWindowMode mode);
     public void setDepthTestingEnabled(bool);
     public void setDepthTestingFunction(HipDepthTestingFunction);
+    public void setStencilTestingEnabled(bool);
+    public void setStencilTestingMask(uint mask);
+    public void setColorMask(ubyte r, ubyte g, ubyte b, ubyte a);
+    ///When pass func evaluates to true, then it is said to be passed
+    public void setStencilTestingFunction(HipStencilTestingFunction passFunc, uint reference, uint mask);
+    public void setStencilOperation(HipStencilOperation stencilFail, HipStencilOperation depthFail, HipStencilOperation stencilAndDephPass);
     public bool hasErrorOccurred(out string err, string line = __FILE__, size_t line =__LINE__);
     public void begin();
     public void setRendererMode(HipRendererMode mode);
@@ -618,6 +574,27 @@ class HipRenderer
     {
         rendererImpl.setDepthTestingFunction(fn);
         currentDepthTestFunction = fn;
+    }
+
+    static void setStencilTestingEnabled(bool bEnable)
+    {
+        rendererImpl.setStencilTestingEnabled(bEnable);
+    }
+    static void setStencilTestingMask(uint mask)
+    {
+        rendererImpl.setStencilTestingMask(mask);
+    }
+    static void setColorMask(ubyte r, ubyte g, ubyte b, ubyte a)
+    {
+        rendererImpl.setColorMask(r,g,b,a);
+    }
+    static void setStencilTestingFunction(HipStencilTestingFunction passFunc, uint reference, uint mask)
+    {
+        rendererImpl.setStencilTestingFunction(passFunc, reference, mask);
+    }
+    static void setStencilOperation(HipStencilOperation stencilFail, HipStencilOperation depthFail, HipStencilOperation stencilAndDephPass)
+    {
+        rendererImpl.setStencilOperation(stencilFail, depthFail, stencilAndDephPass);
     }
     
     public static void dispose()

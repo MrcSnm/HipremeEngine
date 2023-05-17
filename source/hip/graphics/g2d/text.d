@@ -26,7 +26,7 @@ class HipText
 
     int x, y;
     float depth = 0;
-    ///Update dynamically based on the font, the text scale and the text length
+    ///Update dynamically based on the font, the text scale and the text content
     int width, height;
 
     int boundsWidth = -1, boundsHeight = -1;
@@ -102,7 +102,6 @@ class HipText
     
     protected void updateAlign(int lineNumber, out int displayX, out int displayY, int boundsWidth, int boundsHeight)
     {
-         
         getAlign(x, y, linesWidths[lineNumber], height, alignh, alignv, displayX, displayY, boundsWidth, boundsHeight);
     }
     public void setFont(IHipFont font)

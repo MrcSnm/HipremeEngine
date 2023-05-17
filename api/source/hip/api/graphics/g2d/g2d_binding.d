@@ -1,5 +1,6 @@
 module hip.api.graphics.g2d.g2d_binding;
 public import hip.api.data.commons;
+public import hip.api.renderer.operations;
 import hip.api.graphics.g2d.animation;
 import hip.api.graphics.color;
 import hip.api.renderer.viewport;
@@ -47,6 +48,8 @@ else
             void function(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no) drawTriangle;
             ///Draws a filled rectangle
             void function(int x, int y, int w, int h, HipColor color = HipColor.no) fillRectangle;
+            ///Draws a filled rectangle with rounded borders
+            void function(int x, int y, int w, int h, int radius = 4, HipColor color = HipColor.no, int precision = 16) fillRoundRect;
             ///Draws a filled triangle
             void function(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no) fillTriangle;
             ///Draws unfilled circle
@@ -70,17 +73,24 @@ else
             package void function (IHipAssetLoadTask font) setFontDeferred;
             ///Draws a text using the last font set
             void function(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1) drawText;
+
+
             
             ///Sets active the viewport passed
             void function(Viewport v) setViewport;
             ///Gets the active viewport
             Viewport function() getCurrentViewport;
 
+            void function(bool bEnable) setStencilTestingEnabled;
+            void function(uint mask) setStencilTestingMask;
+            void function(ubyte r, ubyte g, ubyte b, ubyte a) setRendererColorMask;
+            void function(HipStencilTestingFunction passFunc, uint reference, uint mask) setStencilTestingFunction;
+            void function(HipStencilOperation stencilFail, HipStencilOperation depthFail, HipStencilOperation stencilAndDephPass) setStencilOperation;
+
             ///Width, Height
             int[2] function() getWindowSize;
 
             void function(uint width, uint height) setWindowSize;
-
             void function(uint width, uint height) setCameraSize;
 
             ///Creates a track for the animation controller
@@ -133,6 +143,8 @@ version(none)
         void function(int x1, int y1, int x2, int y2, int x3, int y3, in HipColor color = HipColor.no) drawTriangle;
         ///Draws a filled rectangle
         void function(int x, int y, int w, int h, in HipColor color = HipColor.no) fillRectangle;
+        ///Draws a filled rectangle with rounded borders
+        void function(int x, int y, int w, int h, int radius = 4, HipColor color = HipColor.no, int precision = 16) fillRoundRect;
         ///Draws a filled triangle
         void function(int x1, int y1, int x2, int y2, int x3, int y3, in HipColor color = HipColor.no) fillTriangle;
         ///Draws unfilled circle
@@ -161,6 +173,11 @@ version(none)
         void function(Viewport v) setViewport;
         ///Gets the active viewport
         Viewport function() getCurrentViewport;
+        void function(bool bEnable) setStencilTestingEnabled;
+        void function(uint mask) setStencilTestingMask;
+        void function(ubyte r, ubyte g, ubyte b, ubyte a) setRendererColorMask;
+        void function(HipStencilTestingFunction passFunc, uint reference, uint mask) setStencilTestingFunction;
+        void function(HipStencilOperation stencilFail, HipStencilOperation depthFail, HipStencilOperation stencilAndDephPass) setStencilOperation;
 
         ///Width, Height
         int[2] function() getWindowSize;

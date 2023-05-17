@@ -155,13 +155,34 @@ export extern(System)
         return sys.scriptInputListener.addTouchListener(btn,action,type,remove);
     }
 
+    const(ScrollListener)* addScrollListener(HipScrollAction onScroll,
+        AutoRemove remove = AutoRemove.no)
+    {
+        return sys.scriptInputListener.addScrollListener(onScroll, remove);
+    }
+
+    const(TouchMoveListener)* addTouchMoveListener(HipTouchMoveAction onMove,
+        AutoRemove remove = AutoRemove.no)
+    {
+        return sys.scriptInputListener.addTouchMoveListener(onMove, remove);
+    }
+
     bool removeKeyboardListener(const(HipButton)* btn)
     {
         return sys.scriptInputListener.removeKeyboardListener(btn);
     }
-
     bool removeTouchListener(const(HipButton)* btn)
     {
         return sys.scriptInputListener.removeTouchListener(btn);
     }
+    bool removeScrollListener(const(ScrollListener)* l)
+    {
+        return sys.scriptInputListener.removeScrollListener(l);
+    }
+    bool removeTouchMoveListener(const(TouchMoveListener)* l)
+    {
+        return sys.scriptInputListener.removeTouchMoveListener(l);
+    }
+
+
 }
