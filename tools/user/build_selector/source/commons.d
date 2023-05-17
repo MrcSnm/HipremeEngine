@@ -105,6 +105,16 @@ string getValidPath(ref Terminal t, string pathRequired)
 	}
 }
 
+bool filesExists(string basePath, scope immutable string[] files...)
+{
+	foreach(f; files)
+	{
+		auto temp = buildNormalizedPath(basePath, f);
+		if(!std.file.exists(temp)) return false;
+	}
+	return true;
+}
+
 string getFirstExisting(string basePath, scope string[] tests...)
 {
 	foreach(t; tests)
