@@ -46,7 +46,7 @@ bool setupEngine(ref Terminal t, ref RealTimeConsoleInput input)
                 if(!isValidEnginePath(hipremeEnginePath))
                 {
                     import std.string:join;
-                    t.writelnHighlighted("Path is not valid. HipremeEngine path should have "~requiredFiles.join("\n"));
+                    t.writelnHighlighted("Path is not valid. HipremeEngine path should have: \n\t"~requiredFiles.join("\n\t"));
                     goto clone;
                 }
             }

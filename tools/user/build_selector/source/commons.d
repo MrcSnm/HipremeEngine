@@ -183,7 +183,7 @@ void writelnError(ref Terminal t, scope string[] what...)
 bool pollForExecutionPermission(ref Terminal t, ref RealTimeConsoleInput input, string operation)
 {
 	dchar shouldPermit;
-	t.writelnHighlighted(operation);
+	t.writelnHighlighted(operation~" [Y]es/[N]o");
 	t.flush;
 	while(true)
 	{
@@ -280,7 +280,7 @@ bool downloadFileIfNotExists(
 		std.file.mkdirRecurse(theDir);
 	if(!std.file.exists(outputName))
 	{
-		if(!pollForExecutionPermission(t, input, "Your system will download a file: "~ purpose~" [Y]es/[N]o"))
+		if(!pollForExecutionPermission(t, input, "Your system will download a file: "~ purpose))
 			return false;
 		t.writelnHighlighted("Download started.");
 		t.flush;
