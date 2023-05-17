@@ -224,6 +224,7 @@ class GameSystem
             {
                 rawlog("Recompiling game");
                 HipTimerManager.clearSchedule();
+                scriptInputListener.clearAll();
                 HipremeEngineGameDestroy();
                 scenes.remove(externalScene);
                 externalScene = null;

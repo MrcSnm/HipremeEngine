@@ -217,6 +217,25 @@ class HipMTLRenderer : IHipRendererImpl
             device.newDepthStencilStateWithDescriptor(depthStencilDescriptor)
         );
     }
+    public void setStencilTestingEnabled(bool bEnable)
+    {
+    }
+
+    public void setStencilTestingMask(uint mask)
+    {
+    }
+    public void setColorMask(ubyte r, ubyte g, ubyte b, ubyte a)
+    {
+        
+    }
+
+    public void setStencilTestingFunction(HipStencilTestingFunction passFunc, uint reference, uint mask)
+    {
+    }
+
+    public void setStencilOperation(HipStencilOperation stencilFail, HipStencilOperation depthFail, HipStencilOperation stencilAndDephPass)
+    {
+    }
 
     public bool hasErrorOccurred(out string err, string file = __FILE__, size_t line = __LINE__)
     {

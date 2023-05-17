@@ -74,10 +74,16 @@ else
             HipButtonType type = HipButtonType.down,
             AutoRemove remove = AutoRemove.no) addTouchListener;
 
+            const(ScrollListener)* function (HipScrollAction onScoll,
+            AutoRemove remove = AutoRemove.no) addScrollListener;
 
+            const(TouchMoveListener)* function(HipTouchMoveAction onMove,
+            AutoRemove remove = AutoRemove.no) addTouchMoveListener;
 
             bool function(const(HipButton)* button) removeKeyboardListener;
             bool function(const(HipButton)* btn) removeTouchListener;
+            bool function(const(ScrollListener)*) removeScrollListener;
+            bool function(const(TouchMoveListener)*) removeTouchMoveListener;
         }
     }
 
@@ -133,9 +139,16 @@ version(none) //Code suggestion
     AutoRemove remove = AutoRemove.no) addTouchListener;
 
 
+    const(ScrollListener)* function (HipScrollAction onScoll,
+    AutoRemove remove = AutoRemove.no) addScrollListener;
+
+    const(TouchMoveListener)* function(HipTouchMoveAction onMove,
+    AutoRemove remove = AutoRemove.no) addTouchMoveListener;
 
     bool function(const(HipButton)* button) removeKeyboardListener;
     bool function(const(HipButton)* btn) removeTouchListener;
+    bool function(const(ScrollListener)*) removeScrollListener;
+    bool function(const(TouchMoveListener)*) removeTouchMoveListener;
 }
 
 

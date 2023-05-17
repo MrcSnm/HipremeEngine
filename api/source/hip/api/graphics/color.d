@@ -20,6 +20,7 @@ struct HipColor
         ubyte[4] values;
         uint value;
     }
+    this(ubyte r, ubyte g, ubyte b){values = [r,g,b,255];}
     this(ubyte r, ubyte g, ubyte b, ubyte a){values = [r,g,b,a];}
     this(float r, float g, float b, float a){values = [cast(ubyte)(r*255),cast(ubyte)(g*255),cast(ubyte)(b*255),cast(ubyte)(a*255)];}
     this(ubyte[4] rgba){values = rgba;}

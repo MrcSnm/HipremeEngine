@@ -120,7 +120,7 @@ class GeometryBatch : IHipBatch
         );
         return verticesCount++;
     }
-    pragma(inline, true)
+    
     void addIndex(index_t[] newIndices ...)
     {
         if(currentIndex+newIndices.length >= this.indices.length)
@@ -137,7 +137,7 @@ class GeometryBatch : IHipBatch
         assert(c != HipColor.no, "Can't use 'no' color on geometry batch");
         currentColor = c;
     }
-    pragma(inline, true)
+
     protected void triangleVertices(int x1, int y1, int x2, int y2, int x3, int y3)
     {
         checkVerticesCount(3);
@@ -152,26 +152,27 @@ class GeometryBatch : IHipBatch
     }
 
 
-    pragma(inline)
-    protected void fillEllipseVertices(int x, int y, int radiusW, int radiusH, int degrees, int precision)
+    protected void fillEllipseVertices(int x, int y, int radiusW, int radiusH, int degrees, int startDegrees ,int precision)
     {
-        assert(precision >= 3, "Can't have a circle with less than 3 vertices");
+        // assert(precision >= 3, "Can't have a circle with less than 3 vertices");
 
         //Normalize the precision for iterating it on the loop,
         //Multiply by degrees * DEG_TO_RAD
-        float angle_mult = (1.0/precision) * degrees * (PI/180.0);
+        float angle_mult = (1.0/precision) * (degrees) * (PI/180.0);
+
+        float startAngle = (PI/180.0) * startDegrees;
 
         checkVerticesCount(2);
         index_t centerIndex = addVertex(x, y, managedDepth);
         //The first vertex
-        index_t lastVert = addVertex(x + radiusW*cos(0.0), y + radiusH*sin(0.0), managedDepth);
+        index_t lastVert = addVertex(x + radiusW*cos(startAngle), y + radiusH*sin(startAngle), managedDepth);
         index_t firstVert = lastVert;
         
         checkVerticesCount(precision);
         for(int i = 0; i < precision; i++)
         {
             //Divide degrees for the total iterations
-            float nextAngle = (i+1)*angle_mult;
+            float nextAngle = (i+1)*angle_mult + startAngle;
 
             //Use a temporary variable to hold the new lastVert for more performance
             //on addIndex calls
@@ -241,7 +242,7 @@ class GeometryBatch : IHipBatch
             flush();
             HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
         }
-        fillEllipseVertices(x, y, radiusW, radiusH, degrees, precision);
+        fillEllipseVertices(x, y, radiusW, radiusH, degrees, 0, precision);
         setColor(oldColor);
     }
 
@@ -369,6 +370,39 @@ class GeometryBatch : IHipBatch
         rectangleVertices(x,y,w,h);
         setColor(oldColor);
     }
+
+    void fillRoundRect(int x, int y, int w, int h, int radius = 4, HipColor color = HipColor.no, int vertices = 16)
+    {
+        if(radius == 0)
+            return fillRectangle(x,y,w,h,color);
+        if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
+        {
+            flush();
+            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+        }
+        int vPerEdge = vertices/4;
+        int r2 = radius*2;
+        HipColor old = setColorIfChangedAndGetOldColor(color);
+
+        ///Draw internal rect.
+        rectangleVertices(x+radius, y+radius, w-r2, h-r2);
+
+        ///Draw ellipses and also draw border rects
+        //Top Left
+        fillEllipseVertices(x+radius, y+radius, radius, radius, 90, 180, vPerEdge);
+        rectangleVertices(x+radius, y, w - r2, radius);
+        //Top Right
+        fillEllipseVertices(x+w-radius, y+radius, radius, radius, 90, 270, vPerEdge);
+        rectangleVertices(x+w-radius, y+radius, radius, h-r2);
+        // Bottom Right
+        fillEllipseVertices(x+w-radius, y+h-radius, radius, radius, 90, 0, vPerEdge);
+        rectangleVertices(x+radius, y+h-radius, w-r2, radius);
+        //Bottom Left
+        fillEllipseVertices(x+radius, y+h-radius, radius, radius, 90, 90, vPerEdge);
+        rectangleVertices(x, y+radius, radius, h-r2);
+
+        setColor(old);
+    }
   
 
     void fillRectangle(int x, int y, int w, int h, HipColor color = HipColor.no)
@@ -386,11 +420,13 @@ class GeometryBatch : IHipBatch
     void draw()
     {
         const uint count = this.currentIndex;
+        import hip.console.log;
+
         if(count - lastIndexDrawn != 0)
         {
             mesh.bind();
             mesh.updateVertices(cast(float[])vertices[lastVertexDrawn..verticesCount], lastVertexDrawn);
-            mesh.updateIndices(indices[0..currentIndex], lastIndexDrawn);
+            mesh.updateIndices(indices[lastIndexDrawn..currentIndex], lastIndexDrawn);
 
             mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1], true);
             mesh.shader.setVertexVar("Geom.uProj",  camera.proj, true);

@@ -71,6 +71,35 @@ auto glCall(T)(scope T delegate() dg, string file = __FILE__, size_t line = __LI
     return ret;
 }
 
+GLenum fromHipStencilFunc(HipStencilTestingFunction fn)
+{
+    final switch(fn) with(HipStencilTestingFunction)
+    {
+        case Never: return GL_NEVER;
+        case Always: return GL_ALWAYS;
+        case Less: return GL_LESS;
+        case LessEqual: return GL_LEQUAL;
+        case Greater: return GL_GREATER;
+        case GreaterEqual: return  GL_GEQUAL;
+        case Equal: return GL_EQUAL;
+        case NotEqual: return GL_NOTEQUAL;
+    }
+}
+
+GLenum fromHipStencilOperation(HipStencilOperation op)
+{
+    final switch(op) with(HipStencilOperation)
+    {
+        case Keep: return GL_KEEP;
+        case Zero: return GL_ZERO;
+        case Replace: return GL_REPLACE;
+        case Increment: return GL_INCR;
+        case IncrementWrap: return GL_INCR_WRAP;
+        case Decrement: return  GL_DECR;
+        case DecrementWrap: return GL_DECR_WRAP;
+        case Invert: return GL_INVERT;
+    }
+}
 
 /**
 *
@@ -83,6 +112,8 @@ class Hip_GL3Renderer : IHipRendererImpl
     HipWindow window;
     Shader currentShader;
     protected __gshared bool isGLBlendEnabled = false;
+    protected __gshared bool isGLDepthEnabled = false;
+    protected __gshared bool isGLStencilEnabled = false;
     protected __gshared GLenum mode;
 
     void setErrorCheckingEnabled(bool enable = true){errorCheckEnabled = enable;}
@@ -271,16 +302,19 @@ class Hip_GL3Renderer : IHipRendererImpl
         }
     }
 
-    pragma(inline, true)
     public void clear()
     {
-        glCall(() => glClear(GL_COLOR_BUFFER_BIT));
+        uint clearMask = GL_COLOR_BUFFER_BIT;
+        if(isGLDepthEnabled) clearMask|= GL_DEPTH_BUFFER_BIT;
+        if(isGLStencilEnabled) clearMask|= GL_STENCIL_BUFFER_BIT;
+
+        glCall(() => glClear(clearMask));
     }
 
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         setColor(r,g,b,a);
-        glCall(() => glClear(GL_COLOR_BUFFER_BIT));
+        clear();
     }
 
     protected GLenum getGLRendererMode(HipRendererMode mode)
@@ -329,9 +363,44 @@ class Hip_GL3Renderer : IHipRendererImpl
     public void setDepthTestingFunction(HipDepthTestingFunction)
     {
     }
-    public void setDepthTestingEnabled(bool)
+    public void setDepthTestingEnabled(bool bEnable)
     {
+        isGLDepthEnabled = bEnable;
+        if(bEnable) glCall(() => glEnable(GL_DEPTH_TEST));
+        else glCall(() => glDisable(GL_DEPTH_TEST));
+    }
 
+    public void setStencilTestingEnabled(bool bEnable)
+    {
+        // isGLStencilEnabled = bEnable;
+        isGLStencilEnabled = true;
+        GLboolean r = bEnable ? GL_FALSE : GL_TRUE;
+        // glCall(() => glColorMask(r, r, r, r));
+        // glCall(() => glDepthMask(r));
+        if(bEnable) glCall(() => glEnable(GL_STENCIL_TEST));
+        else glCall(() => glDisable(GL_STENCIL_TEST));
+        glClearStencil(0);
+    }
+
+    public void setColorMask(ubyte r, ubyte g, ubyte b, ubyte a)
+    {
+        glCall(() => glColorMask(r>0, g>0, b>0, a>0));
+    }
+
+    public void setStencilTestingMask(uint mask)
+    {
+        if(mask > 0xFF) mask = 0xFF;
+        glCall(() => glStencilMask(mask));
+    }
+
+    public void setStencilTestingFunction(HipStencilTestingFunction passFunc, uint reference, uint mask)
+    {
+        glCall(() => glStencilFunc(passFunc.fromHipStencilFunc, reference, mask));
+    }
+
+    public void setStencilOperation(HipStencilOperation stencilFail, HipStencilOperation depthFail, HipStencilOperation stencilAndDephPass)
+    {
+        glCall(() => glStencilOp(stencilFail.fromHipStencilOperation, depthFail.fromHipStencilOperation, stencilAndDephPass.fromHipStencilOperation));
     }
     
 }

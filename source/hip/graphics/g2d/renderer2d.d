@@ -35,7 +35,9 @@ void manageBatchChange(IHipBatch newBatch)
     {
         sharedDepth+= 0.1;
         lastBatch.draw();
-        newBatch.setCurrentDepth(sharedDepth);
+
+        if(newBatch !is null)
+            newBatch.setCurrentDepth(sharedDepth);
     }
     lastBatch = newBatch;
 }
@@ -115,6 +117,31 @@ void setViewport(Viewport v)
 {
     HipRenderer.setViewport(v);
 }
+void setStencilTestingEnabled(bool bEnable)
+{
+    manageBatchChange(null);
+    HipRenderer.setStencilTestingEnabled(bEnable);
+}
+void setStencilTestingMask(uint mask)
+{
+    manageBatchChange(null);
+    HipRenderer.setStencilTestingMask(mask);
+}
+void setRendererColorMask(ubyte r, ubyte g, ubyte b, ubyte a)
+{
+    manageBatchChange(null);
+    HipRenderer.setColorMask(r,g,b,a);
+}
+void setStencilTestingFunction(HipStencilTestingFunction passFunc, uint reference, uint mask)
+{
+    manageBatchChange(null);
+    HipRenderer.setStencilTestingFunction(passFunc, reference, mask);
+}
+void setStencilOperation(HipStencilOperation stencilFail, HipStencilOperation depthFail, HipStencilOperation stencilAndDephPass)
+{
+    manageBatchChange(null);
+    HipRenderer.setStencilOperation(stencilFail, depthFail, stencilAndDephPass);
+}
 Viewport getCurrentViewport()
 {
     import hip.util.lifetime;
@@ -160,6 +187,11 @@ void fillRectangle(int x, int y, int w, int h, HipColor color = HipColor.no)
 {
     manageBatchChange(geoBatch);
     geoBatch.fillRectangle(x,y,w,h,color);
+}
+void fillRoundRect(int x, int y, int w, int h, int radius = 4, HipColor color = HipColor.no, int precision = 16)
+{
+    manageBatchChange(geoBatch);
+    geoBatch.fillRoundRect(x,y,w,h,radius, color, precision);
 }
 void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, HipColor color = HipColor.no, int precision = 24)
 {

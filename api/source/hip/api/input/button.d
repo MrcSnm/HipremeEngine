@@ -21,6 +21,8 @@ import std.typecons:Flag;
 
 alias AutoRemove = Flag!"AutoRemove";
 alias HipInputAction = void delegate(const(AHipButtonMetadata) meta);
+alias HipTouchMoveAction = void delegate(int x, int y);
+alias HipScrollAction = void delegate(float[3]);
 
 /** 
  * Handler for any kind of button
@@ -33,6 +35,18 @@ struct HipButton
     AutoRemove isAutoRemove;
 
     alias id this;
+}
+
+struct TouchMoveListener
+{
+    HipTouchMoveAction action;
+    AutoRemove isAutoRemove;
+}
+
+struct ScrollListener
+{
+    HipScrollAction action;
+    AutoRemove isAutoRemove;
 }
 
 abstract class AHipButtonMetadata

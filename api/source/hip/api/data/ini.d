@@ -66,5 +66,4 @@ interface IHipIniFile
         }
     }
     auto opDispatch(string member)() => blocks[member];
-    alias blocks this;
 }
