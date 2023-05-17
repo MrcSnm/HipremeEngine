@@ -8,7 +8,7 @@ import std.path;
 enum TargetAndroidSDK = 31;
 enum TargetAndroidNDK = "21.4.7075529";
 enum Ldc2AndroidAarchLibReleaseLink = "https://github.com/MrcSnm/HipremeEngine/releases/download/BuildAssets.v1.0.0/android.zip";
-enum CurrentlySupportedLdc2Version = "ldc2 1.32.0";
+enum CurrentlySupportedLdc2Version = "ldc2 1.33.0-beta1";
 ///Use a random Adb Port 
 enum HipremeEngineAdbPort = "55565";
 
@@ -389,11 +389,7 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	string ldcLibsPath = buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "android", "lib");
 
 
-	///The commented commands will have to wait a rework in dub cli handling.e
-
-	string nextReleaseFlags;
-	version(Posix)
-		nextReleaseFlags = "-defaultlib=phobos2-ldc,druntime-ldc " ~
+	string nextReleaseFlags = "-defaultlib=phobos2-ldc,druntime-ldc " ~
 		"-link-defaultlib-shared=false " ~
 		"-L-L\""~ ldcLibsPath ~"\" " ~
 		"-L-rpath=\""~ ldcLibsPath~"\" ";
@@ -403,7 +399,11 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	t.flush;
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	waitDub(t, "build --parallel -c android --compiler=ldc2 -a aarch64--linux-android "~cOpts.getDubOptions);
+	if(waitDub(t, "build --parallel -c android --compiler=ldc2 -a aarch64--linux-android "~cOpts.getDubOptions) != 0)
+	{
+		t.writelnError("Compilation failed.");
+		return ChoiceResult.Error;
+	}
 
 	std.file.rename(
 		buildNormalizedPath("bin", "android", "libhipreme_engine.so"),
