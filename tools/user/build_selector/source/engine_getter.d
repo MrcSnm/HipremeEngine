@@ -1,6 +1,14 @@
 module engine_getter;
 import commons;
 
+
+private immutable requiredFiles = ["dub.json", "hipreme_engine.sln", "HipremeEngine.code-workspace"];
+
+private bool isValidEnginePath(string path)
+{
+    return filesExists(path, requiredFiles);
+}
+
 bool setupEngine(ref Terminal t, ref RealTimeConsoleInput input)
 {
     if(!("hipremeEnginePath" in configs))
@@ -12,27 +20,37 @@ bool setupEngine(ref Terminal t, ref RealTimeConsoleInput input)
             hipremeEnginePath = environment["HIPREME_ENGINE"];
             t.writelnHighlighted("Using existing environment variable 'HIPREME_ENGINE' for hipremeEnginePath");
         }
-        else if(!pollForExecutionPermission(t, input, "HipremeEngine path wasn't found in configs. Do you want to clone the engine?"))
+        else 
         {
-            hipremeEnginePath = getValidPath(t, "HipremeEngine Path: ");
-            if(!hipremeEnginePath)
-                return false;
-        }
-        if(!hasGit)
-        {
-            if(!installGit(t, input))
+            clone: bool canClone = pollForExecutionPermission(t, input, "HipremeEngine path wasn't found in configs. Do you want to clone the engine?");
+            if(canClone)
             {
-                t.writelnError("Could not install Git.");
-                return false;
+                if(!hasGit)
+                {
+                    if(!installGit(t, input))
+                    {
+                        t.writelnError("Could not install Git.");
+                        return false;
+                    }
+                }
+                if(wait(spawnShell(getGitExec~" clone "~hipremeEngineRepo)) != 0)
+                {
+                    t.writelnError("Could not clone HipremeEngine on repo ", hipremeEngineRepo);
+                    return false;
+                }
+                hipremeEnginePath = buildNormalizedPath(std.file.getcwd(), "HipremeEngine");
             }
-            if(wait(spawnShell(getGitExec~" clone "~hipremeEngineRepo)) != 0)
+            else 
             {
-                t.writelnError("Could not clone HipremeEngine on repo ", hipremeEngineRepo);
-                return false;
+                hipremeEnginePath = getValidPath(t, "HipremeEngine Path: ");
+                if(!isValidEnginePath(hipremeEnginePath))
+                {
+                    import std.string:join;
+                    t.writelnHighlighted("Path is not valid. HipremeEngine path should have "~requiredFiles.join("\n"));
+                    goto clone;
+                }
             }
-            hipremeEnginePath = buildNormalizedPath(std.file.getcwd(), "HipremeEngine");
         }
-	    hipremeEnginePath = hipremeEnginePath.replace("\\", "\\\\");
         configs["hipremeEnginePath"] = hipremeEnginePath;
         updateConfigFile();
     }

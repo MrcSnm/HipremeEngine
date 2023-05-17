@@ -33,14 +33,36 @@ Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choic
 ///Meta struct for the time.
 struct EngineVariables
 {
+	///Required for extracting ldc2 on Windows
+	string _7zip;
+
 	///Required for putting the copying the game folder to the engine build path
 	string hipremeEnginePath;
 	///Required for compiling the XCode project.
 	string phobosLibPath;
 	///Required for compiling your game together with the engine
 	string gamePath;
-	///Unused yet.
+
+	///Some may want a custom dub path for executing engine, dub may be installed
+	///separately in future for bug fixes
+	string dubPath;
+
+	///Path for the ldc compiler
+	string ldcPath;
+	///Save the ldc version here for checking up to date compiler
+	string ldcVersion;
+
+
+	
+	///SDK Path both found or manually downloaded
+	string androidSdkPath;
+	///NDK Path usually set up after android installation
 	string androidNdkPath;
+	///Java is required for building to Android (Gradle)
+	string javaHome;
+
+	///Cache for last selected choice
+	uint selectedChoice;
 }
 
 void promptForConfigCreation(ref Terminal t)
