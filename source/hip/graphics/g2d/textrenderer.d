@@ -13,7 +13,6 @@ import hip.graphics.mesh;
 import hip.math.matrix;
 import hip.api.data.font;
 import hip.hiprenderer;
-import hip.graphics.g2d.text;
 import hip.assetmanager;
 public import hip.graphics.orthocamera;
 public import hip.api.graphics.batch;
@@ -68,13 +67,13 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
     index_t[] indices;
     HipTextRendererVertex[] vertices;
 
-    private HipText[] textPool;
-    private int poolActive;
     protected HipColor color;
     protected HipOrthoCamera camera;
     protected float managedDepth = 0;
     private uint quadsCount;
     private uint lastDrawQuadsCount;
+    bool shouldRenderLineBreak, shouldRenderSpace;
+    private __gshared uint[] linesWidths;
 
     this(HipOrthoCamera camera, index_t maxIndices = index_t_maxQuadIndices)
     {
@@ -128,69 +127,131 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         bmTextShader.uColor = HipColorf(color);
     }
 
-
-    //Defers a call to updateText
-    void draw(string newText, int x, int y, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1)
-    {
-        HipText obj;
-        if(poolActive >= textPool.length)
-        {
-            textPool.length = ++poolActive;
-            obj = textPool[$-1] = new HipText(boundsWidth, boundsHeight);
-        }
-        else
-            obj = textPool[poolActive++];
-        obj.x = x;
-        obj.y = y;
-        obj.depth = managedDepth;
-        obj.boundsWidth = boundsWidth;
-        obj.boundsHeight = boundsHeight;
-        obj.alignh = alignh;
-        obj.alignv = alignv;
-        obj.text = newText;
-        obj.setFont(font);
-    }
-
     /** 
      * Implementation for unchanging text.
      *  The text will be saved, represented as an internal ID to a managed static HipText. Which means the texture will be baked
      *  so it is possible to actually draw it a lot faster as all the preprocessings are done once.
      */
-    void drawStatic(immutable string newText, int x, int y, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1)
+    void draw(string text, int x, int y, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1)
     {
+        import hip.util.string : toUTF32;
+        import hip.api.graphics.text;
+        import hip.math.vector;
 
-    }
+        dstring str = text.toUTF32;
+        int width = void, height = void;
+        font.calculateTextBounds(str, linesWidths, width, height);
+        int yoffset = 0;
+        int xoffset = 0;
+        //4 floats(vec2 pos, vec2 texst) and 4 vertices per character
+        alias v = vertices;
+        int vI = quadsCount; //vertex buffer index
 
+        int kerningAmount = 0;
+        int lineBreakCount = 0;
+        int displayX = void, displayY = void;
+        getPositionFromAlignment(x, y, linesWidths[0], height, alignh, alignv, displayX, displayY, boundsWidth, boundsHeight);
+        HipFontChar* lastCharacter;
+        HipFontChar* ch;
+        for(int i = 0; i < str.length; i++)
+        {
+            ch = str[i] in font.characters;
+            if(ch is null)
+            {
+                import hip.error.handler;
+                import hip.util.conv;
+                ErrorHandler.showWarningMessage("Unrecognized character found", "Unrecognized: "~to!string(str[i]));
+                continue;
+            }
+            switch(str[i])
+            {
+                case '\n':
+                    xoffset = 0;
+                    getPositionFromAlignment(x, y, linesWidths[++lineBreakCount], height, alignh, alignv, displayX, displayY, boundsWidth, boundsHeight);
+                    if(ch && ch.width != 0 && ch.height != 0 && shouldRenderLineBreak)
+                        goto default;
+                    else
+                    {
+                        yoffset+= ch && ch.height != 0 ? ch.height : font.lineBreakHeight;
+                    }
+                    break;
+                case ' ':
+                    if(shouldRenderSpace)
+                        goto default;
+                    else
+                        xoffset+= ch && ch.width != 0 ? ch.width : font.spaceWidth;
+                    break;
+                default:
+                    //Find kerning
+                    if(lastCharacter)
+                        kerningAmount = font.getKerning(lastCharacter, ch);
+                    xoffset+= ch.xoffset+kerningAmount;
+                    yoffset+= ch.yoffset;
+                    //Gen vertices 
 
-    void addVerticesFrom(HipText text)
-    {
-        float[] verts = text.getVertices;
-        uint beforeCount = quadsCount;
-        quadsCount+= text.drawableTextCount;
+                    //Top left
+                    v[vI++] = HipTextRendererVertex(
+                        Vector3(
+                            xoffset+displayX, //X
+                            yoffset+displayY, //Y
+                            managedDepth
+                        ),
+                        Vector2(ch.normalizedX, ch.normalizedY) //ST
+                    );
+                    //Top Right
+                    v[vI++] = HipTextRendererVertex(
+                        Vector3(
+                            xoffset+displayX+ch.width,
+                            yoffset+displayY,
+                            managedDepth
+                        ),
+                        Vector2(ch.normalizedX + ch.normalizedWidth, ch.normalizedY) //S + Wnorm, T
+                    );
+                    //Bot right
+                    v[vI++] = HipTextRendererVertex(
+                        Vector3(
+                            xoffset+displayX+ch.width, //X+W
+                            yoffset+displayY + ch.height,//Y+H
+                            managedDepth
+                        ), 
+                        Vector2(
+                            ch.normalizedX + ch.normalizedWidth, //S+Wnorm
+                            ch.normalizedY + ch.normalizedHeight //T+Hnorm
+                        )
+                    );
+                    //Bot left
+                    v[vI++] = HipTextRendererVertex(
+                        Vector3(
+                            xoffset+displayX, //X
+                            yoffset+displayY + ch.height, //Y+H
+                            managedDepth
+                        ),
+                        Vector2(
+                            ch.normalizedX, ch.normalizedY + ch.normalizedHeight // S, T+Hnorm
+                        )
+                    );
 
+                    yoffset-= ch.yoffset;
+                    xoffset-= ch.xoffset+kerningAmount;
+                    xoffset+= ch.xadvance;
 
-        if(vertices.length < quadsCount*4) //4 vertices
-            vertices.length = quadsCount*4;
-        
-        vertices[beforeCount*4..quadsCount*4] = cast(HipTextRendererVertex[])(verts[0..$]);
+            }
+            lastCharacter = ch;
+        }
+        quadsCount = vI;
     }
 
     ///This way it will reallocate once.
-    void addVerticesFrom(HipText[] text)
+    void addVertices(void[] vertices, IHipFont font)
     {
-        if(text.length == 0) return;
-        uint beforeCount = quadsCount;
-        foreach(t; text) quadsCount+= t.drawableTextCount;
-        if(vertices.length < quadsCount*4)
-            vertices.length = quadsCount*4;
-
-        import hip.console.log;
-        // mixin loglnVars!(beforeCount, quadsCount, lastDrawQuadsCount);log();
-        foreach(t; text)
+        if(vertices.length > 0)
         {
-            vertices[beforeCount*4..(beforeCount+ t.drawableTextCount)*4] = 
-                cast(HipTextRendererVertex[])(t.getVertices[]);
-            beforeCount+= t.drawableTextCount;
+            setFont(font);
+            HipTextRendererVertex[] theVerts = cast(HipTextRendererVertex[])vertices;
+            if(theVerts.length+quadsCount*4 > this.vertices.length)
+                this.vertices.length = theVerts.length+quadsCount*4;
+            this.vertices[quadsCount*4..quadsCount*4+theVerts.length] = theVerts[0..$];
+            quadsCount+= theVerts.length/4;
         }
     }
 
@@ -202,8 +263,6 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             ErrorHandler.showWarningMessage("Font Missing", "No font attached on HipTextRenderer");
             return;
         }
-        foreach(t; textPool[0..poolActive])
-            addVerticesFrom(t);
         if(quadsCount - lastDrawQuadsCount != 0)
         {
             mesh.bind();
@@ -220,7 +279,6 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             font.texture.unbind();
             mesh.unbind();
         }
-        poolActive = 0;
         lastDrawQuadsCount = quadsCount;
     }
     /**

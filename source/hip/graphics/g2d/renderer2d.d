@@ -271,6 +271,12 @@ int boundsWidth = -1, int boundsHeight = -1)
     textBatch.draw(text, x, y, alignH, alignV, boundsWidth, boundsHeight);
 }
 
+void drawTextVertices(void[] vertices, IHipFont font)
+{
+    manageBatchChange(textBatch);
+    textBatch.addVertices(vertices, font);
+}
+
 Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
 {
     uint frameWidth = t.getWidth() / columns;
