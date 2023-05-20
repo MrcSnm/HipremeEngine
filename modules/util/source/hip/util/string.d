@@ -11,6 +11,10 @@ Distributed under the CC BY-4.0 License.
 module hip.util.string;
 public import hip.util.conv:to;
 
+version(WebAssembly) version = UseDRuntimeDecoder;
+version(CustomRuntimeTest) version = UseDRuntimeDecoder;
+version(PSVita) version = UseDRuntimeDecoder;
+
 /** 
  *  RefCounted, @nogc string, OutputRange compatible, 
  */
@@ -290,6 +294,20 @@ struct StringBuilder
 }
 
 
+pure dstring toUTF32(string encoded)
+{
+    dstring decoded;
+    version(UseDRuntimeDecoder)
+    {
+        foreach(dchar ch; encoded) decoded~= ch;
+    }
+    else
+    {
+        static import std.utf;
+        decoded = std.utf.toUTF32(encoded);
+    }
+    return decoded;
+}
 
 pure TString replaceAll(TChar, TString = TChar[])(TString str, TChar what, TString replaceWith = "")
 {

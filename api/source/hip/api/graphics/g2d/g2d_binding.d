@@ -73,6 +73,8 @@ else
             package void function (IHipAssetLoadTask font) setFontDeferred;
             ///Draws a text using the last font set
             void function(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1) drawText;
+            ///Draw text using those vertices. Low level API
+            void function(void[] vertices, IHipFont font)  drawTextVertices;
 
 
             
@@ -168,6 +170,8 @@ version(none)
         package void function (IHipAssetLoadTask font) setFontDeferred;
         ///Draws a text using the last font set
         void function(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1) drawText;
+        ///Draw text using those vertices. Low level API
+        void function(void[] vertices, IHipFont font)  drawTextVertices;
         
         ///Sets active the viewport passed
         void function(Viewport v) setViewport;

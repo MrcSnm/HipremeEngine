@@ -15,6 +15,7 @@
 	"dflags": [
 		"-preview=shortenedMethods",
 		"-mixin=mixed.d",
+		"-checkaction=D",
 		"-J."
 	],
 	"dflags-dmd": ["-op"],
@@ -123,9 +124,6 @@
 			"name": "appleos-main",
 			"targetPath": "build/appleos/HipremeEngine D/libs",
 			"targetType": "staticLibrary",
-			"dflags": [
-				"-checkaction=D"
-			],
 			"stringImportPaths": [
 				"build/release_game/"
 			],
