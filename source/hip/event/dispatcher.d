@@ -79,6 +79,11 @@ class EventDispatcher
             try{HipEventQueue.post(0, HipEventQueue.EventType.touchDown, HipEventQueue.Touch(0, x, y));}
             catch(Exception e){assert(false);}
         };
+        onMouseWheel = (int moveX, int moveY)
+        {
+            try{HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Scroll(moveX, moveY, 0));}
+            catch(Exception e){assert(false);}
+        };
 
         onWindowResize = (uint width, uint height)
         {

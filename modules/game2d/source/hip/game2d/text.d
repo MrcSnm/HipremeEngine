@@ -2,8 +2,6 @@ module hip.game2d.text;
 
 import hip.api.data.font;
 import hip.api.graphics.text;
-import hip.math.vector;
-import hip.game2d.renderer_data;
 import std.encoding;
 
 
@@ -34,6 +32,7 @@ class HipText
     protected string _text;
     protected dstring _dtext;
     protected dstring processedText;
+    protected bool _wordWrap;
 
     //Debugging?
 
@@ -41,24 +40,24 @@ class HipText
     protected bool shouldRenderLineBreak = false;
 
     protected HipTextStopConfig[] textConfig;
-    protected HipTextRendererVertex[] vertices;
+    protected HipTextRendererVertexAPI[] vertices;
 
     //Caching
     protected size_t _drawableTextCount = 0;
     protected size_t maxDrawableTextCount = 0;
-    protected bool shouldUpdateText = true;
+    public bool shouldUpdateText = true;
 
-    this(int boundsWidth = -1, int boundsHeight = -1)
+    this(int boundsWidth = -1, int boundsHeight = -1, bool bWordWrap = false)
     {
         import hip.api;
         this.font = cast()HipDefaultAssets.getDefaultFont();
         linesWidths.length = 1;
+        _wordWrap = bWordWrap;
         this.boundsWidth = boundsWidth;
         this.boundsHeight = boundsHeight;
     }
-    string text(){return _text;}
-
-    size_t drawableTextCount(){return _drawableTextCount;}
+    string text() const {return _text;}
+    size_t drawableTextCount() const {return _drawableTextCount;}
 
     
     string text(string newText)
@@ -66,7 +65,6 @@ class HipText
         if(newText != _text)
         {
             import hip.util.string;
-            import hip.api;
             dstring dtext = newText.toUTF32;
             _drawableTextCount = countVertices(dtext);
             shouldUpdateText = true;
@@ -80,6 +78,25 @@ class HipText
             _dtext = dtext;
         }
         return _text;
+    }
+
+    bool wordWrap() const{ return _wordWrap;}
+    bool wordWrap(bool bWordWrap)
+    {
+        if(bWordWrap != _wordWrap)
+        {
+            _wordWrap = bWordWrap;
+            shouldUpdateText = true;
+        }
+        return bWordWrap;
+    }
+
+    void setPosition(int x, int y)
+    {
+        if(x != this.x || y != this.y)
+            shouldUpdateText = true;
+        this.x = x;
+        this.y = y;
     }
 
     void[] getVertices()
@@ -101,106 +118,62 @@ class HipText
         this.updateText(font);
     }
 
+    public void getSize(out int width, out int height)
+    {
+        font.calculateTextBounds(processedText, linesWidths, width, height);
+        this.width = width;
+        this.height = height;
+    }
+    public void setAlign(HipTextAlign alignh, HipTextAlign alignv)
+    {
+        if(this.alignh != alignh || this.alignv != alignv)
+            shouldUpdateText = true;
+        this.alignh = alignh;
+        this.alignv = alignv;
+    }
+
     package void updateText(IHipFont font)
     {
         HipTextStopConfig.parseText(_dtext, processedText, textConfig);
-        font.calculateTextBounds(processedText, linesWidths, width, height);
-        int yoffset = 0;
-        int xoffset = 0;
-        dstring str = processedText;
-        //4 floats(vec2 pos, vec2 texst) and 4 vertices per character
-        alias v = vertices;
         int vI = 0; //vertex buffer index
 
-        int kerningAmount = 0;
-        int lineBreakCount = 0;
-        int displayX = void, displayY = void;
-        updateAlign(0, displayX, displayY, boundsWidth, boundsHeight);
-        HipFontChar* lastCharacter;
-        HipFontChar* ch;
-        for(int i = 0; i < str.length; i++)
+        bool isFirstLine = true;
+        int yoffset = 0;
+        foreach(HipLineInfo lineInfo; font.wordWrapRange(processedText, wordWrap ? boundsWidth : -1))
         {
-            ch = str[i] in font.characters;
-            if(ch is null)
+            if(!isFirstLine)
             {
-                import hip.api;
-                logg("Unrecognized: ", str[i]);
-                continue;
+                yoffset+= font.lineBreakHeight;
             }
-            switch(str[i])
+            isFirstLine = false;
+            int xoffset = 0;
+            int displayX = void, displayY = void;
+            getPositionFromAlignment(x, y, lineInfo.width, height, alignh, alignv, displayX, displayY, boundsWidth, boundsHeight);
+            for(int i = 0; i < lineInfo.line.length; i++)
             {
-                case '\n':
-                    xoffset = 0;
-                    updateAlign(++lineBreakCount, displayX, displayY, boundsWidth, boundsHeight);
-                    if(ch && ch.width != 0 && ch.height != 0 && shouldRenderLineBreak)
+                int kerning = lineInfo.kerningCache[i];
+                const(HipFontChar)* ch = lineInfo.fontCharCache[i];
+
+                switch(lineInfo.line[i])
+                {
+                    case ' ':
+                        if(!shouldRenderSpace)
+                        {
+                            xoffset+= font.spaceWidth;
+                            break;
+                        }
                         goto default;
-                    else
-                    {
-                        yoffset+= ch && ch.height != 0 ? ch.height : font.lineBreakHeight;
-                    }
-                    break;
-                case ' ':
-                    if(shouldRenderSpace)
-                        goto default;
-                    else
-                        xoffset+= ch && ch.width != 0 ? ch.width : font.spaceWidth;
-                    break;
-                default:
-                    //Find kerning
-                    if(lastCharacter)
-                        kerningAmount = font.getKerning(lastCharacter, ch);
-                    xoffset+= ch.xoffset+kerningAmount;
-                    yoffset+= ch.yoffset;
-                    //Gen vertices 
-
-                    //Top left
-                    v[vI++] = HipTextRendererVertex(
-                        Vector3(
-                            xoffset+displayX, //X
-                            yoffset+displayY, //Y
-                            depth
-                        ),
-                        Vector2(ch.normalizedX, ch.normalizedY) //ST
-                    );
-                    //Top Right
-                    v[vI++] = HipTextRendererVertex(
-                        Vector3(
-                            xoffset+displayX+ch.width,
-                            yoffset+displayY,
-                            depth
-                        ),
-                        Vector2(ch.normalizedX + ch.normalizedWidth, ch.normalizedY) //S + Wnorm, T
-                    );
-                    //Bot right
-                    v[vI++] = HipTextRendererVertex(
-                        Vector3(
-                            xoffset+displayX+ch.width, //X+W
-                            yoffset+displayY + ch.height,//Y+H
-                            depth
-                        ), 
-                        Vector2(
-                            ch.normalizedX + ch.normalizedWidth, //S+Wnorm
-                            ch.normalizedY + ch.normalizedHeight //T+Hnorm
-                        )
-                    );
-                    //Bot left
-                    v[vI++] = HipTextRendererVertex(
-                        Vector3(
-                            xoffset+displayX, //X
-                            yoffset+displayY + ch.height, //Y+H
-                            depth
-                        ),
-                        Vector2(
-                            ch.normalizedX, ch.normalizedY + ch.normalizedHeight // S, T+Hnorm
-                        )
-                    );
-
-                    yoffset-= ch.yoffset;
-                    xoffset-= ch.xoffset+kerningAmount;
-                    xoffset+= ch.xadvance;
-
+                    default:
+                        if(ch is null) continue;
+                        ch.putCharacterQuad(
+                            cast(float)(xoffset+displayX+ch.xoffset+kerning),
+                            cast(float)(yoffset+displayY+ch.yoffset), depth,
+                            vertices[vI..vI+4]
+                        );
+                        vI+= 4;
+                        xoffset+= ch.xadvance;
+                }
             }
-            lastCharacter = ch;
         }
         shouldUpdateText = false;
     }
@@ -208,7 +181,6 @@ class HipText
     void draw()
     {
         import hip.api.graphics.g2d.g2d_binding;
-        import hip.api;
         drawTextVertices(getVertices, font);
     }
 }

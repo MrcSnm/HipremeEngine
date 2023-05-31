@@ -149,5 +149,6 @@ class HipMouse
             metadatas[i]._isNewState = false;
         for(int i = 0; i < lastPositions.length; i++)
             lastPositions[i] = positions[i];
+        setScroll(0,0,0);
     }
 }

@@ -5,7 +5,7 @@ nothrow __gshared
 {
     void function() onWindowClosed;
     void function(uint width, uint height) onWindowResize;
-    void function(int moveY, int moveX) onMouseWheel;
+    void function(int moveX, int moveY) onMouseWheel;
     void function(int x, int y) onMouseMove;
     void function(ubyte btn, int x, int y) onMouseDown;
     void function(ubyte btn, int x, int y) onMouseUp;

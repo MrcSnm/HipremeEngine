@@ -1,4 +1,5 @@
 import arsd.terminal;
+import std.getopt;
 import std.conv:to;
 import commons;
 import d_getter;
@@ -11,6 +12,19 @@ import targets.linux;
 import targets.wasm;
 
 
+bool isChoiceValid(string selected)
+{
+	switch(selected)
+	{
+		version(Windows) case "Windows": return true;
+		version(OSX) case "AppleOS": return true;
+		version(linux) case "Linux": return true;
+		case "Android": return true;
+		case "WebAssembly": return true;
+		default: return false;
+	}
+}
+
 Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices)
 {
 	string currentGame = "Current Game: ";
@@ -21,14 +35,24 @@ Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choic
 	if("selectedChoice" in configs)
 		selectedChoice = configs["selectedChoice"].integer;
 
-	selectedChoice = selectChoiceBase(
-		terminal, input, choices, "Select a target platform to build.\n\t"~currentGame, 
-		selectedChoice);
+	if(autoSelect && autoSelect.isChoiceValid)
+	{
+		import std.algorithm;
+		selectedChoice = countUntil!"a.name == b"(choices, autoSelect);
+	}
+	else
+	{
+		selectedChoice = selectChoiceBase(
+			terminal, input, choices, "Select a target platform to build.\n\t"~currentGame, 
+			selectedChoice);
+	}
+
 
 	configs["selectedChoice"] = cast(long)selectedChoice;
 	updateConfigFile();
 	return choices[selectedChoice];
 }
+
 
 ///Meta struct for the time.
 struct EngineVariables
@@ -128,6 +152,8 @@ ChoiceResult exitFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, i
 }
 
 CompilationOptions cOpts;
+
+string autoSelect;
 void main(string[] args)
 {
 	auto terminal = Terminal(ConsoleOutputType.linear);
@@ -140,6 +166,7 @@ void main(string[] args)
 		configs = parseJSON(std.file.readText(ConfigFile));
 	else
 		configs = parseJSON("{}");
+
 
 	if(!setupD(terminal, input))
 	{
@@ -165,6 +192,15 @@ void main(string[] args)
 	if(args.length > 1)
 	{
 		cOpts = CompilationOptions(args[1] == "--force");
+		auto opts = getopt(args, 
+			"force", "Force for a recompilation", &cOpts.force,
+			"autoSelect", "Execute a compilation option without needing to select", &autoSelect
+		);
+		if(opts.helpWanted)
+		{
+			defaultGetoptPrinter("Operate the builder without selecting", opts.options);
+			return;
+		}
 	}
 	Choice[] choices;
 	version(Windows) choices~= Choice("Windows", &prepareWindows);

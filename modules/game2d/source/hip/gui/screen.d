@@ -46,6 +46,10 @@ class Screen : Widget
             startDragging(x, y);
         });
         
+        scrollEv = HipInput.addScrollListener((float[3] scroll)
+        {
+            handleScroll(scroll);
+        });
     }
     
 
@@ -76,6 +80,18 @@ class Screen : Widget
         }
         widgetHolded = null;
     }
+    private void handleScroll(float[3] scroll)
+    {
+        import hip.api;
+        Widget w = findWidgetAt(HipInput.getWorldTouchPosition());
+        setFocusOn(w);
+        if(w !is null)
+        {
+            import hip.gui.scroll_area;
+            IRawScrollable scrollable = cast(IRawScrollable)w;
+            if(scrollable !is null) scrollable.onRawScroll(scroll);
+        }
+    }
 
     private void handleMouseEnter(int x, int y)
     {
@@ -102,10 +118,12 @@ class Screen : Widget
     private void pushToTop(Widget w)
     {
         int pos = findWidget(w);
-        if(pos == children.length) return;
+        if(pos == children.length-1) return;
         else if(pos != -1)
         {
-            children[pos..$-1] = children[pos+1..$];
+            import hip.api;
+            import hip.util.algorithm;
+            children[pos+1..$].copyInto(children[pos..$-1]);
             children[$-1] = w;
         }
     }

@@ -83,6 +83,7 @@ class HipTexture : IHipTexture
         this.height = img.getHeight;
         hiplog("Uploading Texture[",img.getName,"]", img.getWidth, "x", img.getHeight);
         this.textureImpl.load(img);
+        setTextureFilter(TextureFilter.NEAREST, TextureFilter.NEAREST);
         return width != 0;
     }
     int getWidth() const {return width;}

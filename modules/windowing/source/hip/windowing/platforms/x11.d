@@ -288,11 +288,11 @@ void poll()
                         break;
                     case 4: //Scroll up
                         if(onMouseWheel != null)
-                            onMouseWheel(-1, 0);
+                            onMouseWheel(0, -1);
                         break;
                     case 5: //Scroll down
                         if(onMouseWheel != null)
-                            onMouseWheel(1, 0);
+                            onMouseWheel(0, 1);
                         break;
                     default: break;
                 }

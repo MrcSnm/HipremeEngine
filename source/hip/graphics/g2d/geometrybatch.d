@@ -114,6 +114,7 @@ class GeometryBatch : IHipBatch
     */
     index_t addVertex(float x, float y, float z)
     {
+        if(currentColor.a == 0) return verticesCount;
         vertices[verticesCount] = HipGeometryBatchVertex(
             Vector3(x,y,z),
             currentColor
@@ -123,6 +124,7 @@ class GeometryBatch : IHipBatch
     
     void addIndex(index_t[] newIndices ...)
     {
+        if(currentColor.a == 0) return;
         if(currentIndex+newIndices.length >= this.indices.length)
         {
             import hip.util.string;
@@ -203,7 +205,7 @@ class GeometryBatch : IHipBatch
         {
             flush();
             HipRenderer.setRendererMode(HipRendererMode.LINE);
-        }   
+        }
         float angle_mult = (1.0/precision) * degrees * (PI/180.0);
         checkVerticesCount(1);
         index_t currVert = addVertex(x+ radiusW*cos(0.0), y + radiusH*sin(0.0), managedDepth);
@@ -288,7 +290,7 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    pragma(inline) void drawLine(float x1, float y1, float x2, float y2, HipColor color = HipColor.no)
+    void drawLine(float x1, float y1, float x2, float y2, HipColor color = HipColor.no)
     {
         drawLine(
             cast(int)x1,

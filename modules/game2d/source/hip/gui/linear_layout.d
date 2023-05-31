@@ -47,9 +47,9 @@ class LinearLayout : Widget
             if(!ch.visible) continue;
             ch.setPosition(x,y);
             if(dir == Direction.horizontal)
-                x+= spacing;
+                x+= spacing + ch.width;
             else 
-                y+= spacing;
+                y+= spacing + ch.height;
         }
     }
     override void preRender()

@@ -264,11 +264,11 @@ void setFontDeferred(IHipAssetLoadTask task)
 }
 
 void drawText(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.LEFT, HipTextAlign alignV = HipTextAlign.CENTER, 
-int boundsWidth = -1, int boundsHeight = -1)
+int boundsWidth = -1, int boundsHeight = -1, bool wordWrap = false)
 {
     manageBatchChange(textBatch);
     textBatch.setColor(color);
-    textBatch.draw(text, x, y, alignH, alignV, boundsWidth, boundsHeight);
+    textBatch.draw(text, x, y, alignH, alignV, boundsWidth, boundsHeight, wordWrap);
 }
 
 void drawTextVertices(void[] vertices, IHipFont font)
