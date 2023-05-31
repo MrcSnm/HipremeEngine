@@ -38,6 +38,9 @@ version(dll)
 	else version(PSVita){}
 	else version = ManagesMainDRuntime;
 }
+version(dll){}
+else version(AppleOS) {}
+else version = HandleArguments;
 
 version(WebAssembly) version = ExternallyManagedDeltaTime;
 version(AppleOS)     version = ExternallyManagedDeltaTime;
@@ -77,26 +80,49 @@ __gshared HipInterpreterEntry interpreterEntry;
  *	- Project Path specified: Loads the DLL found in the project path
  *
  */
-void HipremeHandleArguments(string[] args)
+version(HandleArguments)
+void HipremeHandleArguments()
 {
-	if(args.length < 2)
+	import hip.util.path;
+	if(arguments.length < 2)
+	{
+		import hip.data.json;
+		import hip.filesystem.hipfs;
+		string engineExe = arguments[0];
+		string engineOpts = engineExe.dirName.joinPath("engine_opts.json").normalizePath;
+		hiplog("Loading ", engineOpts);
+		if(HipFS.absoluteExists(engineOpts))
+		{
+			string data;
+			ErrorHandler.assertExit(HipFS.absoluteReadText(engineOpts, data), "Error reading engine_opts.json");
+			JSONValue v = parseJSON(data);
+			if(v.hasErrorOccurred)
+			{
+				ErrorHandler.assertExit(false, "Error parsing engine_opts.json", v.error);
+			}
+			else
+			{
+				projectToLoad = v["defaultProject"].str;
+			}
+		}
 		return;
+	}
 
-	if(args.length == 2) //Project Path
+	if(arguments.length == 2) //Project Path
 	{
 		import hip.util.path;
-		projectToLoad = args[1];
+		projectToLoad = arguments[1];
 	}
-	else if(args[1] == "lua")
+	else if(arguments[1] == "lua")
 	{
 		interpreterEntry.intepreter = HipInterpreter.lua;
 		interpreterEntry.sourceEntry = "source/scripting/lua/main.lua";
 		isUsingInterpreter = true;
 	}
-	else if(args[1][$-4..$] == ".lua")
+	else if(arguments[1].extension == ".lua")
 	{
 		interpreterEntry.intepreter = HipInterpreter.lua;
-		interpreterEntry.sourceEntry = args[1];
+		interpreterEntry.sourceEntry = arguments[1];
 		isUsingInterpreter = true;
 	}
 }
@@ -165,6 +191,7 @@ static void initEngine(bool audio3D = false)
 	loglnInfo("Console installed for ", platform);
 	HipFS.install(fsInstallPath, validations);
 	loglnInfo("HipFS installed at path ", fsInstallPath);
+	version(HandleArguments) HipremeHandleArguments();
 
 	import hip.bind.dependencies;
 	loadEngineDependencies();
@@ -364,9 +391,10 @@ version(dll)
 else version(AppleOS){}
 else
 {
+	private string[] arguments;
 	int main(string[] args)
 	{
-		HipremeHandleArguments(args);
+		arguments = args;
 		return HipremeMain();
 	}
 }

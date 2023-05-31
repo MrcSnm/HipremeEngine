@@ -281,13 +281,13 @@ class GameSystem
             return false;
         foreach(s; scenes)
         {
+            import hip.console.log;
             if(s is null)
-            {
-                import hip.console.log;
                 logln("SCENE IS NULL");
-            }
             else
+            {
                 s.update(deltaTime);
+            }
         }
 
         return true;

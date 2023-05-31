@@ -123,7 +123,7 @@ version(WindowsNative)
             case WM_MOUSEWHEEL:
                 if(onMouseWheel != null)
                     onMouseWheel(
-                        HIWORD(wParam), 0
+                        0, cast(int)GET_WHEEL_DELTA_WPARAM(wParam)/WHEEL_DELTA
                     );
                 break;
             default:

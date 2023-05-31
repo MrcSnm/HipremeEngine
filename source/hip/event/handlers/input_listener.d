@@ -121,6 +121,16 @@ class HipInputListener
                     removeTouchMoveListener(&move);
             }
         }
+        auto scroll = mouse.getScroll();
+        if(scroll.magSquare != 0)
+        {
+            foreach(ref listener; scrollListeners)
+            {
+                listener.action(cast(float[3])scroll);
+                if(listener.isAutoRemove)
+                    removeScrollListener(&listener);
+            }
+        }
 
         foreach(ref touch; touchListeners)
         {

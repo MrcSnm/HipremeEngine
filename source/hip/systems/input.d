@@ -42,7 +42,7 @@ version(Android)
 	}
     @JavaFunc!(HipAndroidInput) void onMotionEventActionScroll(float x, float y)
 	{
-        HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Touch(ushort.max, x,y));
+        HipEventQueue.post(0, HipEventQueue.EventType.touchScroll, HipEventQueue.Scroll(x,x,0));
 	}
 
     @JavaFunc!(HipAndroidRenderer) void onRendererResize(int x, int y)

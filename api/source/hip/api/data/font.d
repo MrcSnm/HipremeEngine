@@ -4,7 +4,130 @@ public import hip.api.renderer.texture;
 
 alias HipCharKerning = int[dchar];
 alias HipFontKerning = HipCharKerning[dchar];
+///see hip.graphics.g2d.textrenderer
+struct HipTextRendererVertexAPI
+{
+    float[3] vPosition;
+    float[2] vTexST;
+}
 
+/** 
+ *  A text information that is returned from the word wrap range.
+ *  Beyond the information with line and width, it also has a cache.
+ *  This cache is used for optimization in both kerning and associative array
+ *  lookup. This can make a big difference by having a single lookup instead of
+ *  2. The lookup is the slowest part of text rendering, which makes this a lot faster.
+ */
+struct HipLineInfo
+{
+    dstring line;
+    int width;
+    const(HipFontChar)*[512] fontCharCache;
+    int[512] kerningCache;
+}
+
+struct HipWordWrapRange
+{
+    private dstring inputText;
+    private IHipFont font;
+    private int maxWidth, currIndex;
+    private HipLineInfo currLine;
+    private bool hasFinished;
+
+    this(dstring inputText, IHipFont font, int maxWidth)
+    {
+        this.inputText = inputText;
+        this.font = font;
+        this.maxWidth = maxWidth <= 0 ? int.max : maxWidth;
+    }
+
+    bool empty(){return hasFinished;}
+    /** 
+     * Every time it pops the front, it will search for words. Words are defined as text delimited
+     * by spaces. If a word is bigger than the max width, it will be cutten and the word will spam
+     * through multiple lines. 
+     */
+    void popFront()
+    {
+        const(HipFontChar)* ch, next;
+        int currWidth = 0, wordWidth = 0, wordStartIndex = currIndex;
+        for(int i = currIndex, it = 0; i < inputText.length; i++, it++)
+        {
+            if(ch is null)
+            {
+                ch = inputText[i] in font.characters;
+                if(ch is null)
+                {
+                    currLine.kerningCache[it] = 0;
+                    currLine.fontCharCache[it] = null;
+                    continue;
+                }
+            }
+            int kern = 0;
+            if(i + 1 < inputText.length)
+            {
+                next = inputText[i+1] in font.characters;
+                if(next) kern = font.getKerning(ch, next);
+            }
+            currLine.kerningCache[it] = kern;
+            currLine.fontCharCache[it] = ch;
+            switch(inputText[i])
+            {
+                case '\n':
+                    currLine.line = inputText[currIndex..i];
+                    currLine.width = currWidth;
+                    currIndex = i+1;
+                    return;
+                case ' ':
+                    if(font.spaceWidth + wordWidth + currWidth > maxWidth)
+                    {
+                        currLine.line = inputText[currIndex..i];
+                        currLine.width = currWidth+wordWidth;
+                        currIndex = i+1;
+                        return;
+                    }
+                    else
+                    {
+                        currWidth+= wordWidth + font.spaceWidth;
+                        wordStartIndex = i;
+                        wordWidth = 0;
+                    }
+                    break;
+                default:
+                    if(wordWidth + ch.xadvance + kern + currWidth > maxWidth)
+                    {
+                        if(wordStartIndex == currIndex)
+                        {
+                            currWidth = wordWidth;
+                            wordStartIndex = i;
+                        }
+                        ///Subtract one for ignoring the space.
+                        currLine.line = inputText[currIndex..wordStartIndex];
+                        currLine.width = currWidth;
+                        if(wordStartIndex < inputText.length && inputText[wordStartIndex] == ' ')
+                            wordStartIndex++;
+                        currIndex = wordStartIndex;
+                        return;
+                    }
+                    wordWidth += ch.xadvance + kern;
+                    break;
+            }
+            ch = next;
+        }
+        if(currIndex < inputText.length && inputText[currIndex] == ' ')
+            currIndex++;
+        currLine.line = inputText[currIndex..$];
+        currLine.width = currWidth+wordWidth;
+        currIndex = cast(int)inputText.length;
+        if(currLine.line.length == 0) hasFinished = true;
+    }
+
+    HipLineInfo front()
+    {
+        if(currIndex == 0) popFront();
+        return currLine;
+    }
+}
 
 struct HipFontChar
 {
@@ -17,6 +140,33 @@ struct HipFontChar
     ///Normalized values
     float normalizedX, normalizedY, normalizedWidth, normalizedHeight;
     int glyphIndex;
+    void putCharacterQuad(float x, float y, float depth, HipTextRendererVertexAPI[] quad) const
+    {
+        //Gen vertices 
+        //Top left
+        quad[0] = HipTextRendererVertexAPI(
+            [x, y, depth],
+            [normalizedX, normalizedY] //ST
+        );
+        //Top Right
+        quad[1] = HipTextRendererVertexAPI(
+            [x+width, y,depth],
+            [normalizedX + normalizedWidth, normalizedY] //S + Wnorm, T
+        );
+        //Bot right
+        quad[2] = HipTextRendererVertexAPI(
+            [x+ width, y +height, depth],
+            [
+                normalizedX + normalizedWidth, //S+Wnorm
+                normalizedY + normalizedHeight //T+Hnorm
+            ]
+        );
+        //Bot left
+        quad[3] = HipTextRendererVertexAPI(
+            [x, y + height, depth],
+            [normalizedX, normalizedY + normalizedHeight] // S, T+Hnorm
+        );
+    }
 }
 
 interface IHipFont
@@ -24,6 +174,7 @@ interface IHipFont
     int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const;
     int getKerning(dchar current, dchar next) const;
     void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int maxWidth, out int height) const;
+    HipWordWrapRange wordWrapRange(dstring text, int maxWidth) const;
     ref HipFontChar[dchar] characters();
     ref IHipTexture texture();
     uint spaceWidth() const;
@@ -31,6 +182,7 @@ interface IHipFont
     uint lineBreakHeight() const;
     uint lineBreakHeight(uint newHeight);
     IHipFont getFontWithSize(uint size);
+
 }
 
 abstract class HipFont : IHipFont
@@ -56,59 +208,22 @@ abstract class HipFont : IHipFont
     final uint lineBreakHeight() const {return _lineBreakHeight;}
     final uint lineBreakHeight(uint newHeight){return _lineBreakHeight = newHeight;}
 
+    final HipWordWrapRange wordWrapRange(dstring text, int maxWidth) const
+    {
+        return HipWordWrapRange(text, cast(IHipFont)this, maxWidth);
+    }
+    
 
     final void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int maxWidth, out int height) const
     {
-        int w = 0, h = lineBreakHeight;
-        int lastMaxW = 0;
-        int lineIndex = 0;
-        linesWidths[] = 0;
-
-        const (HipFontChar)* ch;
-        const (HipFontChar)* next;
-        for(int i = 0; i < text.length; i++)
+        int i = 0;
+        foreach(HipLineInfo lineInfo; wordWrapRange(text, -1))
         {
-            if(ch is null) ch = text[i] in characters;
-            if(ch is null)
-                continue;
-            int kern = 0;
-            if(i+1 < text.length)
-            {
-                next = text[i+1] in characters;
-                if(next)
-                {
-                    kern = getKerning(ch, next);
-                    if(kern != 0)
-                    {
-                        import std.stdio;
-                        writeln("Kerning Found:", kern);
-                    }
-                }
-            }
-            switch(text[i])
-            {
-                case '\n':
-                    h+= ch && ch.height != 0 ? ch.height : lineBreakHeight;
-                    lastMaxW = w > lastMaxW ? w : lastMaxW;
-                    if(lineIndex + 1 > linesWidths.length)
-                        linesWidths.length = lineIndex + 1;
-                    linesWidths[lineIndex++] = w;
-                    w = 0;
-                    break;
-                case ' ':
-                    w+= ch && ch.width != 0 ? ch.width : spaceWidth;
-                    break;
-                default:
-                    w+= ch.xadvance + kern;
-
-                    break;
-            }
+            if(lineInfo.width > maxWidth) maxWidth = lineInfo.width;
+            if(linesWidths.length < i+1)
+                linesWidths.length++;
+            linesWidths[i++] = lineInfo.width;
         }
-        maxWidth = w > lastMaxW ? w : lastMaxW;
-        if(lineIndex >= linesWidths.length)
-            linesWidths.length++;
-        linesWidths[lineIndex] = w;
-        height = h;
-        ch = next;
+        height = lineBreakHeight*i;
     }
 }

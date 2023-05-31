@@ -3,7 +3,12 @@ import hip.gui.widget;
 import hip.gui.button;
 
 
-class ScrollArea : Widget
+interface IRawScrollable
+{
+    void onRawScroll(float[3] scroll);
+}
+
+class ScrollArea : Widget, IRawScrollable
 {
     private static IWidgetRenderer DebugRenderer()
     {
@@ -13,19 +18,45 @@ class ScrollArea : Widget
         return dbgRenderer;
     }
     private IWidgetRenderer renderer;
-    this()
+    private float scrollRate = -10, currentScroll = 0, lastScroll = 0;
+
+    this(int width, int height)
     {
+        this.width = width;
+        this.height = height;
         renderer = DebugRenderer();
     }
+
+    override Bounds getWorldBounds(){return Bounds(worldTransform.x, worldTransform.y, width, height);}
     void setRenderer(IWidgetRenderer renderer)
     {
         assert(renderer !is null);
         this.renderer = renderer;
     }
 
+    void setScrollRate(float rate)
+    {
+        this.scrollRate = rate;
+    }
+
+    void setScroll(float scroll)
+    {
+        lastScroll = currentScroll;
+        currentScroll = scroll;
+        foreach(ch; children)
+            ch.onScroll([0,currentScroll,0], [0,lastScroll,0]);
+    }
+
+    void onRawScroll(float[3] scroll)
+    {
+        import hip.api;
+        setScroll(currentScroll + scroll[1]*scrollRate);
+    }
+
     override void onRender()
     {
         import hip.api.graphics.g2d.renderer2d;
+
         setStencilTestingEnabled(true);
         setStencilTestingFunction(HipStencilTestingFunction.Always, 1, 0xFF);
         setStencilOperation(HipStencilOperation.Keep, HipStencilOperation.Keep, HipStencilOperation.Replace);
@@ -44,16 +75,15 @@ class ScrollArea : Widget
 import hip.gui.linear_layout;
 class ScrollBar : LinearLayout
 {
-
     private
     {
         Button backward;
-        Button holder;
+        Button thumb;
         Button forward;
     }
 
     ///Used to keep the layout size fixed
-    private Widget holderFixer;
+    private Widget thumbFixer;
     private int barSize = 50;
     private int barRate = 1;
     private float barScale = 1;
@@ -75,20 +105,19 @@ class ScrollBar : LinearLayout
     {
         backward.setOnClick((){*target = *target - barRate;});
         forward.setOnClick((){*target = *target + barRate;});
-        
     }
 
     private void setDimensionFromDirection(int dimensionSize)
     {
         if(dir == LinearLayout.Direction.horizontal)
         {
-            holder.width = cast(int)(dimensionSize * barScale);
-            holderFixer.width = dimensionSize;
+            thumb.width = cast(int)(dimensionSize * barScale);
+            thumbFixer.width = dimensionSize;
         }
         else
         {
-            holder.height = cast(int)(dimensionSize * barScale);
-            holderFixer.height = dimensionSize;
+            thumb.height = cast(int)(dimensionSize * barScale);
+            thumbFixer.height = dimensionSize;
         }
     }
 
@@ -101,11 +130,11 @@ class ScrollBar : LinearLayout
     this(LinearLayout.Direction direction)
     {
         setDirection(direction);
-        holderFixer = new Widget();
-        holderFixer.addChild(holder = new Button(0,0, 50, 50));
+        thumbFixer = new Widget();
+        thumbFixer.addChild(thumb = new Button(0,0, 50, 50));
         backward = new Button(0,0, 50, 50);
         forward = new Button(0,0, 50, 50);
 
-        addChild(backward, holderFixer, forward);
+        addChild(backward, thumbFixer, forward);
     }
 }

@@ -26,6 +26,11 @@ private uint nextPowerOfTwo(uint number)
     return cast(uint)value;
 }
 
+private int round(float f)
+{
+    return cast(int)(f+0.5);
+}
+
 class HipNullFont : HipFont
 {
     string path;
@@ -234,7 +239,8 @@ class HipArsd_TTF_Font : HipFont
 
 
             characters[fontCh.ch] = HipFontChar(fontCh.ch, cast(int)x, cast(int)y, fontCh.width, fontCh.height, 
-                xOffset, yOffset, cast(int)(xAdvance*scale), 0, 0,
+
+                xOffset, yOffset, round(xAdvance*scale), 0, 0,
                 cast(float)x/imageWidth, cast(float)y/imageHeight,
                 cast(float)fontCh.width/imageWidth, cast(float)fontCh.height/imageHeight, 
                 g

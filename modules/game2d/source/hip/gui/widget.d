@@ -41,7 +41,7 @@ class Widget
     Widget findWidgetAt(int x, int y)
     {
         import hip.math.collision;
-        foreach(w; children)
+        foreach_reverse(w; children)
         {
             Bounds wb = w.getWorldBounds();
             if(w.visible && isPointInRect(x, y, wb.x, wb.y, wb.width, wb.height))
@@ -119,14 +119,14 @@ class Widget
     void addChild(Widget w)
     {
         children~= w;
+        w.isDirty = true;
         w.parent = this;
+        w.setChildrenDirty();
     }
 
     void setParent(Widget w)
     {
         w.addChild(this);
-        isDirty = true;
-        setChildrenDirty();
     }
 
     //Event Methods
@@ -139,6 +139,13 @@ class Widget
             isFocused = false;
         }
 
+        void onScroll(float[3] currentScroll, float[3] lastScroll)
+        {
+            setPosition(
+                cast(int)(localTransform.x + currentScroll[0] - lastScroll[0]),
+                cast(int)(localTransform.y + currentScroll[1] - lastScroll[1])
+            );
+        }
         ///Executed the first time the mouse enters in the widget's boundaries
         void onMouseEnter(){}
         ///Executed when the mouse goes down inside the widget
