@@ -98,6 +98,21 @@ function initializeWebglContext()
         glClearColor ( red, green, blue, alpha ) {
             gl.clearColor(red, green, blue, alpha);
         },
+        glClearStencil(value){
+            gl.clearStencil(value);
+        },
+        glStencilFunc(func, ref, mask){
+            gl.stencilFunc(func, ref, mask);
+        },
+        glStencilOp(fail, zfail, zpass) {
+            gl.stencilOp(fail, zfail, zpass);
+        },
+        glColorMask(red, green, blue, alpha) {
+            gl.colorMask(red, green, blue, alpha);
+        },
+        glStencilMask(mask) {
+            gl.stencilMask(mask);
+        },
         glCompileShader ( shader ) {
             gl.compileShader(_objects[shader]);
         },
