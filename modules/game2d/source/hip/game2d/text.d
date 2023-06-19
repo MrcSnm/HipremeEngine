@@ -120,7 +120,9 @@ class HipText
 
     public void getSize(out int width, out int height)
     {
-        font.calculateTextBounds(processedText, linesWidths, width, height);
+        if(processedText == null)
+            HipTextStopConfig.parseText(_dtext, processedText, textConfig);
+        font.calculateTextBounds(processedText, linesWidths, width, height, boundsWidth);
         this.width = width;
         this.height = height;
     }
