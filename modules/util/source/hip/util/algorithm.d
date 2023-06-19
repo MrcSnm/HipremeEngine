@@ -1,6 +1,10 @@
 module hip.util.algorithm;
 public import std.algorithm:map;
+import std.algorithm.mutation : copy;
 import std.traits:ReturnType;
+
+///An alias made of std.algorithm.mutation.copy for the intention to be clearer since the `from` is the first argument
+alias copyInto = copy;
 
 ReturnType!(Range.front)[] array(Range)(Range range)
 {

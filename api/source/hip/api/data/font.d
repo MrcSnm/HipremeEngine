@@ -173,7 +173,16 @@ interface IHipFont
 {
     int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const;
     int getKerning(dchar current, dchar next) const;
-    void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int maxWidth, out int height) const;
+    /** 
+     * 
+     * Params:
+     *   text = The text
+     *   linesWidths = Save width per line
+     *   biggestWidth = The biggest width in lines
+     *   height = Height of all the lines together
+     *   maxWidth = If maxWidth != -1, it will break the text into lines automatically. 
+     */
+    void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int biggestWidth, out int height, int maxWidth = -1) const;
     HipWordWrapRange wordWrapRange(dstring text, int maxWidth) const;
     ref HipFontChar[dchar] characters();
     ref IHipTexture texture();
@@ -214,12 +223,12 @@ abstract class HipFont : IHipFont
     }
     
 
-    final void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int maxWidth, out int height) const
+    final void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int biggestWidth, out int height, int maxWidth = -1) const
     {
         int i = 0;
-        foreach(HipLineInfo lineInfo; wordWrapRange(text, -1))
+        foreach(HipLineInfo lineInfo; wordWrapRange(text, maxWidth))
         {
-            if(lineInfo.width > maxWidth) maxWidth = lineInfo.width;
+            if(lineInfo.width > biggestWidth) biggestWidth = lineInfo.width;
             if(linesWidths.length < i+1)
                 linesWidths.length++;
             linesWidths[i++] = lineInfo.width;

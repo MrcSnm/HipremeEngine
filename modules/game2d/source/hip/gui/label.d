@@ -43,6 +43,7 @@ class Label : Widget
     {
         txtDraw.boundsWidth = width;
         txtDraw.boundsHeight = height;
+        txtDraw.getSize(this.width, this.height);
     }
     private void getTextPosition(out int x, out int y)
     {
