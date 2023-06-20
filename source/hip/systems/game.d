@@ -299,7 +299,8 @@ class GameSystem
     void scriptFatalError(Error e, string file = __FILE__, size_t line = __LINE__, string func = __PRETTY_FUNCTION__)
     {
         import hip.console.log;
-        loglnError(e.msg, " (", e.file, ":",e.line, ")");
+        import hip.util.path;
+        loglnError(e.msg, " (", joinPath(projectDir, e.file), ":",e.line, ")");
         quit();
         ErrorHandler.assertExit(false, "Script Fatal Error", file, line, __MODULE__, func);
     }
