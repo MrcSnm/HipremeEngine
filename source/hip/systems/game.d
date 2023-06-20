@@ -242,11 +242,14 @@ class GameSystem
         import hip.assetmanager;
         HipAssetManager.addOnLoadingFinish(()
         {
-            s.preload();
             import hip.console.log;
-            loglnWarn("Initializing scene ", s.getName);
-    	    s.initialize();
-            scenes~= s;
+            try{
+                s.preload();
+                loglnWarn("Initializing scene ", s.getName);
+                s.initialize();
+                scenes~= s;
+            }
+            catch (Error e){scriptFatalError(e);}
         });
     }
 
@@ -282,20 +285,32 @@ class GameSystem
         foreach(s; scenes)
         {
             import hip.console.log;
-            if(s is null)
-                logln("SCENE IS NULL");
-            else
+            try
             {
-                s.update(deltaTime);
+                if(s is null) logln("SCENE IS NULL");
+                else s.update(deltaTime);
             }
+            catch (Error e){scriptFatalError(e);}
         }
 
         return true;
     }
+
+    void scriptFatalError(Error e, string file = __FILE__, size_t line = __LINE__, string func = __PRETTY_FUNCTION__)
+    {
+        import hip.console.log;
+        loglnError(e.msg, " (", e.file, ":",e.line, ")");
+        quit();
+        ErrorHandler.assertExit(false, "Script Fatal Error", file, line, __MODULE__, func);
+    }
     void render()
     {
-        foreach (AScene s; scenes)
-            s.render();
+        try
+        {
+            foreach (AScene s; scenes)
+                s.render();
+        }
+        catch(Error e){scriptFatalError(e);}
         HipTimerManager.render();
     }
     void postUpdate()
