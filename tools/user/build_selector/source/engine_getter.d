@@ -18,6 +18,8 @@ bool setupEngine(ref Terminal t, ref RealTimeConsoleInput input)
         if("HIPREME_ENGINE" in environment)
         {
             hipremeEnginePath = environment["HIPREME_ENGINE"];
+            if(hipremeEnginePath[0] == '"' && hipremeEnginePath[$-1] == '"') 
+                hipremeEnginePath = hipremeEnginePath[1..$-2];
             t.writelnHighlighted("Using existing environment variable 'HIPREME_ENGINE' for hipremeEnginePath");
         }
         else 
