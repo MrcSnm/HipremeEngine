@@ -120,10 +120,11 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 		"-link-defaultlib-shared=false"
 	],
 	"lflags-windows-ldc": [
+		"/WHOLEARCHIVE:hipengine_api",
 		"/WHOLEARCHIVE:util",
 		"/WHOLEARCHIVE:timer",
 		"/WHOLEARCHIVE:tween",
-		"/WHOLEARCHIVE:math",
+		"/WHOLEARCHIVE:math"
 	],
 	"configurations": 
 	[

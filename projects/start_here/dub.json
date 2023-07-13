@@ -18,6 +18,7 @@
 		"--fvisibility=hidden"
 	],
 	"lflags-windows-ldc": [
+		"/WHOLEARCHIVE:hipengine_api",
 		"/WHOLEARCHIVE:util",
 		"/WHOLEARCHIVE:math"
 	],
