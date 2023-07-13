@@ -87,6 +87,11 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 	dstring name = outputName.map!(character => character.toLower).array;
 
 	string hipEnginePath = environment["HIPREME_ENGINE"].escapeWindowsPathSep;
+	if(hipEnginePath.length)
+	{
+		if(hipEnginePath[0] == '"') hipEnginePath = hipEnginePath[1..$-1];
+		if(hipEnginePath[$-1] == '"') hipEnginePath = hipEnginePath[0..$-2];
+	}
 	projectPath = projectPath.escapeWindowsPathSep;
 
 
