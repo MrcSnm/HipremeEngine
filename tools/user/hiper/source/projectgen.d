@@ -119,6 +119,12 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 	"dflags-linux-ldc": [
 		"-link-defaultlib-shared=false"
 	],
+	"lflags-windows-ldc": [
+		"/WHOLEARCHIVE:util",
+		"/WHOLEARCHIVE:timer",
+		"/WHOLEARCHIVE:tween",
+		"/WHOLEARCHIVE:math",
+	],
 	"configurations": 
 	[
 		{
