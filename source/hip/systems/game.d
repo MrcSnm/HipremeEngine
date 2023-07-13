@@ -25,6 +25,10 @@ import hip.hiprenderer.renderer;
 import hip.graphics.g2d.renderer2d;
 public import hip.event.handlers.input_listener;
 
+version(WebAssembly) version = CustomRuntime;
+version(CustomRuntimeTest) version = CustomRuntime;
+version(PSVita) version = CustomRuntime;
+
 version(Load_DScript)
 {
     import hip.systems.hotload;
@@ -243,13 +247,23 @@ class GameSystem
         HipAssetManager.addOnLoadingFinish(()
         {
             import hip.console.log;
-            try{
+            version(CustomRuntime)
+            {
                 s.preload();
                 loglnWarn("Initializing scene ", s.getName);
                 s.initialize();
                 scenes~= s;
             }
-            catch (Error e){scriptFatalError(e);}
+            else
+            {
+                try{
+                    s.preload();
+                    loglnWarn("Initializing scene ", s.getName);
+                    s.initialize();
+                    scenes~= s;
+                }
+                catch (Error e){scriptFatalError(e);}
+            }
         });
     }
 
@@ -285,17 +299,27 @@ class GameSystem
         foreach(s; scenes)
         {
             import hip.console.log;
-            try
+            version(CustomRuntime)
             {
                 if(s is null) logln("SCENE IS NULL");
                 else s.update(deltaTime);
             }
-            catch (Error e){scriptFatalError(e);}
+            else
+            {
+                try
+                {
+                    if(s is null) logln("SCENE IS NULL");
+                    else s.update(deltaTime);
+                }
+                catch (Error e){scriptFatalError(e);}
+            }
         }
 
         return true;
     }
 
+    version(CustomRuntime){}
+    else
     void scriptFatalError(Error e, string file = __FILE__, size_t line = __LINE__, string func = __PRETTY_FUNCTION__)
     {
         import hip.console.log;
@@ -306,12 +330,20 @@ class GameSystem
     }
     void render()
     {
-        try
+        version(CustomRuntime)
         {
             foreach (AScene s; scenes)
                 s.render();
         }
-        catch(Error e){scriptFatalError(e);}
+        else
+        {
+            try
+            {
+                foreach (AScene s; scenes)
+                    s.render();
+            }
+            catch(Error e){scriptFatalError(e);}
+        }
         HipTimerManager.render();
     }
     void postUpdate()
