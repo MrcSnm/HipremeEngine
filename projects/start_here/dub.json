@@ -17,6 +17,10 @@
 	"dflags-ldc": [
 		"--fvisibility=hidden"
 	],
+	"lflags-windows-ldc": [
+		"/WHOLEARCHIVE:util",
+		"/WHOLEARCHIVE:math"
+	],
 	"preBuildCommands": [
 		"rdmd ../../tools/build/getmodules.d source/ scriptmodules.txt"
 	],
