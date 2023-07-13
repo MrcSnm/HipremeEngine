@@ -5,6 +5,17 @@ import std.format:format;
 import std.process;
 import std.array:join,split,array;
 
+string getHipremeEnginePathFromEnv()
+{
+	string hipEnginePath = environment["HIPREME_ENGINE"].escapeWindowsPathSep;
+	if(hipEnginePath.length)
+	{
+		if(hipEnginePath[0] == '"') hipEnginePath = hipEnginePath[1..$];
+		if(hipEnginePath[$-1] == '"') hipEnginePath = hipEnginePath[0..$-1];
+	}
+	return hipEnginePath;
+}
+
 struct TemplateInfo
 {
 	string initMethod=q{
@@ -86,12 +97,7 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 	dstring outputName = info.projectName.split(" ").join("_").array;
 	dstring name = outputName.map!(character => character.toLower).array;
 
-	string hipEnginePath = environment["HIPREME_ENGINE"].escapeWindowsPathSep;
-	if(hipEnginePath.length)
-	{
-		if(hipEnginePath[0] == '"') hipEnginePath = hipEnginePath[1..$-1];
-		if(hipEnginePath[$-1] == '"') hipEnginePath = hipEnginePath[0..$-2];
-	}
+	string hipEnginePath = getHipremeEnginePathFromEnv();
 	projectPath = projectPath.escapeWindowsPathSep;
 
 
@@ -161,7 +167,7 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 string generateVSCodeDebuggerLaunch()
 {
 	import std.system;
-	string hipEnginePath = environment["HIPREME_ENGINE"].escapeWindowsPathSep;
+	string hipEnginePath = getHipremeEnginePathFromEnv();
 	string hipEngineExecutable = (buildNormalizedPath(hipEnginePath, "bin", "desktop", "hipreme_engine") ~ ((os == OS.linux) ? "" : ".exe")).escapeWindowsPathSep;
 	return format!q{
 {
