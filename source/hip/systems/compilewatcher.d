@@ -78,6 +78,14 @@ immutable(string[]) acceptedExtensions, immutable(string[]) ignoreDirs)
     send(tid, true);
 }
 
+
+///Use these property and function for not allocating closures everytime
+private __gshared string compilerWatcherFileUpdate;
+private void checkFileWatcher(string theFile)
+{
+    compilerWatcherFileUpdate = theFile;
+}
+
 class CompileWatcher
 {
     string watchDir;
@@ -120,16 +128,11 @@ class CompileWatcher
 
     string update()
     {
-        string ret;
         if(isRunning)
         {
-            receiveTimeout(timeout, 
-            (string file)
-            {
-                ret = file;
-            });
+            receiveTimeout(timeout, &checkFileWatcher);
         }
-        return ret;
+        return compilerWatcherFileUpdate;
     }
 
     ~this()

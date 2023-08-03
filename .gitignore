@@ -38,3 +38,5 @@ bin/uwp
 build/android/project/app/src/main/jniLibs/**/libhipreme_engine.so
 .vscode
 .DS_Store
+.vs
+.cache
