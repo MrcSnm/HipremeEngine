@@ -84,28 +84,31 @@ version(HandleArguments)
 void HipremeHandleArguments()
 {
 	import hip.util.path;
-	if(arguments.length < 2)
+	version(Load_DScript)
 	{
-		import hip.data.json;
-		import hip.filesystem.hipfs;
-		string engineExe = arguments[0];
-		string engineOpts = engineExe.dirName.joinPath("engine_opts.json").normalizePath;
-		hiplog("Loading ", engineOpts);
-		if(HipFS.absoluteExists(engineOpts))
+		if(arguments.length < 2)
 		{
-			string data;
-			ErrorHandler.assertExit(HipFS.absoluteReadText(engineOpts, data), "Error reading engine_opts.json");
-			JSONValue v = parseJSON(data);
-			if(v.hasErrorOccurred)
+			import hip.data.json;
+			import hip.filesystem.hipfs;
+			string engineExe = arguments[0];
+			string engineOpts = engineExe.dirName.joinPath("engine_opts.json").normalizePath;
+			hiplog("Loading ", engineOpts);
+			if(HipFS.absoluteExists(engineOpts))
 			{
-				ErrorHandler.assertExit(false, "Error parsing engine_opts.json", v.error);
+				string data;
+				ErrorHandler.assertExit(HipFS.absoluteReadText(engineOpts, data), "Error reading engine_opts.json");
+				JSONValue v = parseJSON(data);
+				if(v.hasErrorOccurred)
+				{
+					ErrorHandler.assertExit(false, "Error parsing engine_opts.json", v.error);
+				}
+				else
+				{
+					projectToLoad = v["defaultProject"].str;
+				}
 			}
-			else
-			{
-				projectToLoad = v["defaultProject"].str;
-			}
+			return;
 		}
-		return;
 	}
 
 	if(arguments.length == 2) //Project Path
@@ -136,62 +139,16 @@ void HipremeHandleArguments()
 
 static void initEngine(bool audio3D = false)
 {
-	Platforms platform = Platforms.DEFAULT;
-	void function(string) printFunc;
-	string fsInstallPath = "";
-	bool function(string path, out string msg)[] validations;
+	import hip.internal_configuration;
+	Console.install(ActivePlatform, getPlatformPrintFunction());
+	loglnInfo("Console installed for ", ActivePlatform);
+	HipFS.initializeAbsolute();
+	version(HandleArguments)
+		HipremeHandleArguments();
 
-	version(Android){platform = Platforms.ANDROID;}
-	else version(WebAssembly)
-	{
-		platform = Platforms.WASM;
-		fsInstallPath = "assets";
-	}
-	else version(PSVita)
-	{
-		platform = Platforms.PSVITA;
-		fsInstallPath = "app0:assets";
-	}
-	else version(UWP)
-	{
-		import std.file:getcwd;
-		platform = Platforms.UWP;
-		printFunc = &uwpPrint;
-		fsInstallPath = getcwd()~"\\UWPResources\\";
-		validations~= (string path, out string msg)
-		{
-			//As the path is installed already, it should check only for absolute paths.
-			if(!HipFS.absoluteExists(path))
-			{
-				msg = "File at path "~path~" does not exists. Did you forget to add it to the AppX Resources?";
-				return false;
-			}
-			return true;
-		};
-	}
-	else version(AppleOS)
-	{
-		platform = Platforms.APPLEOS;
-		fsInstallPath = HipFS.getResourcesPath ~ "/assets";
-	}
-	else version(GameBuildTest)
-	{
-		import std.file:getcwd;
-		fsInstallPath = getcwd()~"/build/release_game/assets";
-	}
-	else
-	{
-		import std.file:getcwd;
-		if(projectToLoad != "")
-			fsInstallPath = projectToLoad~"/assets";
-		else
-			fsInstallPath = getcwd()~"/assets";
-	}
-	Console.install(platform, printFunc);
-	loglnInfo("Console installed for ", platform);
-	HipFS.install(fsInstallPath, validations);
+	string fsInstallPath = getFSInstallPath(projectToLoad);
+	HipFS.install(fsInstallPath, getFilesystemValidations());
 	loglnInfo("HipFS installed at path ", fsInstallPath);
-	version(HandleArguments) HipremeHandleArguments();
 
 	import hip.bind.dependencies;
 	loadEngineDependencies();
@@ -291,68 +248,6 @@ static void destroyEngine()
 
 
 
-version(Android)
-{
-	
-	import hip.jni.helper.androidlog;
-	import hip.jni.jni;
-	import hip.jni.helper.jnicall;
-	///Setups an Android Package for HipremeEngine
-	alias HipAndroid = javaGetPackage!("com.hipremeengine.app.HipremeEngine");
-	import hip.systems.input;
-	import hip.console.log;
-
-	export extern(C)
-	{
-		private __gshared bool _hasExecInit = false;
-		void Java_com_hipremeengine_app_HipremeEngine_HipremeInit(JNIEnv* env, jclass clazz)
-		{
-			if(!_hasExecInit)
-			{
-				_hasExecInit = true;
-				import hip.filesystem.systems.android;
-				HipremeInit();
-				JNISetEnv(env);
-				aaMgr = cast(AAssetManager*)HipAndroid.javaCall!(Object, "getAssetManager");
-				aaMgr = AAssetManager_fromJava(env, aaMgr);
-			}
-		}
-
-		private __gshared bool _hasExecMain;
-		private __gshared int  _mainRet;
-		jint Java_com_hipremeengine_app_HipremeEngine_HipremeMain(JNIEnv* env, jclass clazz)
-		{
-			if(!_hasExecMain)
-			{
-				_hasExecMain = true;
-				int[2] wsize = HipAndroid.javaCall!(int[2], "getWindowSize");
-				_mainRet = HipremeMain(wsize[0], wsize[1]);
-			}
-			return _mainRet;
-		}
-		jboolean Java_com_hipremeengine_app_HipremeEngine_HipremeUpdate(JNIEnv* env, jclass clazz)
-		{
-			return HipremeUpdate();
-		}
-		void Java_com_hipremeengine_app_HipremeEngine_HipremeRender(JNIEnv* env, jclass clazz)
-		{
-			HipremeRender();
-		}
-
-		void Java_com_hipremeengine_app_HipremeEngine_HipremeReinitialize(JNIEnv* env, jclass clazz)
-		{
-			HipRenderer.reinitialize();
-		}
-
-		void  Java_com_hipremeengine_app_HipremeEngine_HipremeDestroy(JNIEnv* env, jclass clazz)
-		{
-			JNISetEnv(null);
-			HipremeDestroy();
-		}
-	}
-	
-}
-
 /**
 *	Initializes the D runtime, import hip.external functions
 */
@@ -412,13 +307,13 @@ bool HipremeUpdateBase()
 
 version(ExternallyManagedDeltaTime)
 {
-	export extern(C) bool HipremeUpdate(float dt)
+	export extern(System) bool HipremeUpdate(float dt)
 	{
 		g_deltaTime = dt;
 		return HipremeUpdateBase();
 	}
 }
-else version(dll) export extern(C) bool HipremeUpdate()
+else version(dll) export extern(System) bool HipremeUpdate()
 {
 	import hip.util.time;
 	import core.time:dur;
@@ -467,7 +362,7 @@ version(Desktop)
 * the game is only rendered when the renderer is dirty, it is absolutely
 * not recommended to do game logic on the render
 */
-export extern(C) void HipremeRender()
+export extern(System) void HipremeRender()
 {
 	import hip.bind.interpreters;
 	import hip.graphics.g2d.renderer2d;
@@ -479,7 +374,7 @@ export extern(C) void HipremeRender()
 	finishRender2D();
 	HipRenderer.end();
 }
-export extern(C) void HipremeDestroy()
+export extern(System) void HipremeDestroy()
 {
 	logln("Destroying HipremeEngine");
 	destroyEngine();
@@ -487,7 +382,7 @@ export extern(C) void HipremeDestroy()
 		rt_term();
 }
 
-export extern(C) void log(string message)
+export extern(System) void log(string message)
 {
 	import hip.console.log;
 	rawlog(message);
@@ -499,4 +394,6 @@ version(UWP)
 	mixin SimpleDllMain;
 
 }
+
 public import exportd;
+import android_entry;

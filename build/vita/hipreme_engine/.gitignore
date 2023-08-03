@@ -22,3 +22,8 @@ param.sfo
 vita_sample.elf
 vita_sample.velf
 vita_sample.vpk
+dub.selections.json
+include
+libs
+module
+tools
