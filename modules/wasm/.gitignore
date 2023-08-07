@@ -8,7 +8,6 @@ wasm.dylib
 wasm.dll
 wasm.a
 wasm.lib
-wasm-test-*
 *.exe
 *.o
 *.obj

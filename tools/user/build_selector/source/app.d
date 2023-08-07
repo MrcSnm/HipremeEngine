@@ -151,9 +151,37 @@ ChoiceResult exitFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, i
 	return ChoiceResult.Continue;
 }
 
+ChoiceResult addEnvVar(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+{
+	version(Windows)
+	{
+		import core.runtime;
+		string err;
+
+		if(!addSystemVariable("HIPBUILD", Runtime.args[0], err))
+		{
+			if(err == "ADMIN")
+			{
+				t.writelnError("Needs administrator rights rights.");
+				return ChoiceResult.None;
+			}
+			else
+				t.writelnError("Could not add a variable to the system env: "~err);
+		}
+		//HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
+		return ChoiceResult.None;
+	}
+	else
+	{
+		assert(false, "Uninmplemented addEndVar to this system.");
+	}
+}
+
 CompilationOptions cOpts;
 
+bool addEnv;
 string autoSelect;
+
 void main(string[] args)
 {
 	auto terminal = Terminal(ConsoleOutputType.linear);
@@ -191,9 +219,9 @@ void main(string[] args)
 
 	if(args.length > 1)
 	{
-		cOpts = CompilationOptions(args[1] == "--force");
 		auto opts = getopt(args, 
 			"force", "Force for a recompilation", &cOpts.force,
+			"addEnv", "Adds this executable to the environment variables - Require admin rights", &addEnv,
 			"autoSelect", "Execute a compilation option without needing to select", &autoSelect
 		);
 		if(opts.helpWanted)
@@ -207,6 +235,14 @@ void main(string[] args)
 	version(OSX) choices~= Choice("AppleOS", &prepareAppleOS);
 	version(linux) choices~= Choice("Linux", &prepareLinux);
 
+	if(addEnv)
+	{
+		if(hasAdminRights())
+			addEnvVar(null, terminal, input, cOpts);
+		else
+			terminal.writelnError("Can not add environment variable without admin rights.");
+	}
+
 	choices~=[
 		// Choice("PSVita"),
 		// Choice("Xbox Series"),
@@ -215,6 +251,7 @@ void main(string[] args)
 		Choice("WebAssembly", &prepareWASM),
 		Choice("Create Project", &createProject),
 		Choice("Select Game", &selectGameFolder),
+		Choice("Add environment variable", &addEnvVar),
 		Choice("Exit", &exitFn)
 	];
 

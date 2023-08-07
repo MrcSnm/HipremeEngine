@@ -488,3 +488,90 @@ scope Choice[] extraChoices)
 
 	return &choices[choice];
 }
+
+
+
+version(Windows)
+{
+	import std.windows.registry;
+	Key windowsGetKeyWithPath(string[] path...)
+	{
+		Key hklm = Registry.localMachine;
+		if(hklm is null) throw new Error("No HKEY_LOCAL_MACHINE in this system.");
+		Key currKey = hklm;
+		foreach(p; path)
+		{
+			try{
+				currKey = currKey.getKey(p);
+				if(currKey is null) return null;
+			}
+			catch(Exception e)
+			{
+				return null;
+			}
+		}
+		return currKey;
+	}
+}
+
+
+
+bool hasAdminRights()
+{
+	version(Windows)
+	{
+		///https://stackoverflow.com/questions/8046097/how-to-check-if-a-process-has-the-administrative-rights
+		import core.sys.windows.windows;
+		bool hasRights = false;
+		HANDLE hToken = NULL;
+		if( OpenProcessToken( GetCurrentProcess( ),TOKEN_QUERY,&hToken ) ) {
+			TOKEN_ELEVATION Elevation;
+			DWORD cbSize = TOKEN_ELEVATION.sizeof;
+			if(GetTokenInformation(hToken, TOKEN_INFORMATION_CLASS.TokenElevation, &Elevation, Elevation.sizeof, &cbSize))
+				hasRights = Elevation.TokenIsElevated == 1;
+		}
+		if(hToken) CloseHandle(hToken);
+		return hasRights;
+	}
+	else return false;
+}
+
+///This idea didn't work: Will be removed.
+bool addSystemVariable(string key, string value, out string errReason)
+{
+	version(Windows)
+	{
+		import core.sys.windows.windows;
+		import core.runtime;
+		Key k = windowsGetKeyWithPath("SYSTEM", "CurrentControlSet", "Control", "Session Manager", "Environment");
+		if(!hasAdminRights() || k is null)
+		{
+			errReason = "ADMIN";
+			return false;
+		}
+		try{
+			k.setValue(key, value);
+			SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, cast(LONG)"Environment".ptr, SMTO_BLOCK, 5000, null);
+		}
+		catch(Exception e)
+		{
+			errReason = e.msg;
+			return false;
+		}
+		return true;
+	}
+	else return false;
+}
+bool removeSystemVariable()
+{
+	return false;	
+}
+
+bool addVariableToPath()
+{
+	return false;
+}
+bool removeVariableFromPath()
+{
+	return false;
+}

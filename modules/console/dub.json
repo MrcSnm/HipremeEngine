@@ -22,16 +22,6 @@
 			"dependencies": {
 				"jni" : {"path": "../jni", "version": "*"}
 			}
-		},
-		{
-			"name": "source",
-			"targetType": "sourceLibrary",
-			"importPaths": [
-				"source",
-				"../debugging/source",
-				"../config/source",
-				"../util/source"
-			]
 		}
 	],
 	"description": "HipremeEngine console module",

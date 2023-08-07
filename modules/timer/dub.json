@@ -22,9 +22,6 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "HipremeEngine game module",
-	"importPaths": [
-		"source"
-	],
 	"license": "proprietary",
 	"name": "timer",
 	"sourcePaths": [
