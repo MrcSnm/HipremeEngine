@@ -149,7 +149,7 @@ class HipFileSystem
     protected __gshared string defPath;
     protected __gshared string initialPath = "";
     protected __gshared string combinedPath;
-    protected __gshared bool hasSetInitial;
+    protected __gshared bool isInstalled;
     protected __gshared IHipFileSystemInteraction fs;
     protected __gshared size_t filesReadingCount = 0;
 
@@ -162,14 +162,11 @@ class HipFileSystem
     else version(CustomRuntimeTest){import hip.filesystem.systems.cstd;}
     else version(HipDStdFile){import hip.filesystem.systems.dstd;}
     else {import hip.filesystem.systems.cstd;}
- 
-    
-    public static void install(string path)
+
+    public static void initializeAbsolute()
     {
-        import hip.util.system : sanitizePath;
-        if(!hasSetInitial)
+        if(fs is null)
         {
-            initialPath = path.sanitizePath;
             version(Android){fs = new HipAndroidFileSystemInteraction();}
             else version(UWP){fs = new HipUWPileSystemInteraction();}
             else version(PSVita){fs = new HipCStdioFileSystemInteraction();}
@@ -180,8 +177,18 @@ class HipFileSystem
                 version(HipDStdFile){}else{static assert(false, "HipDStdFile should be marked to be used.");}
                 fs = new HipStdFileSystemInteraction();
             }
+        }
+    }
+ 
+    
+    public static void install(string path)
+    {
+        import hip.util.system : sanitizePath;
+        if(!isInstalled)
+        {
+            initialPath = path.sanitizePath;
             setPath("");
-            hasSetInitial = true;
+            isInstalled = true;
         }
     }
     /**
@@ -201,7 +208,7 @@ class HipFileSystem
     bool function(string path, out string errMessage)[] validations ...)
     {
         import hip.util.system : sanitizePath;
-        if(!hasSetInitial)
+        if(!isInstalled)
         {
             install(path);
             foreach (v; validations){extraValidations~=v;}
@@ -211,6 +218,8 @@ class HipFileSystem
     {
         import hip.util.path:joinPath;
         import hip.util.system : sanitizePath;
+        import hip.console.log;
+
         if(combinedPath)
             return joinPath(combinedPath, path.sanitizePath);
         return path.sanitizePath;
@@ -236,6 +245,7 @@ class HipFileSystem
     @ExportD public static bool isPathValid(string path, bool expectsFile = true, bool shouldVerify = true)
     {
         import hip.error.handler;
+        if(!initialPath) return false;
         if(!validatePath(initialPath, defPath~path))
         {
             ErrorHandler.showErrorMessage("Path failed default validation: can't reference external path.", path);
@@ -258,6 +268,7 @@ class HipFileSystem
     {
         import hip.util.path:joinPath;
         import hip.util.system : sanitizePath;
+        import hip.console.log;
         if(path)
         {
             defPath = path.sanitizePath;
@@ -268,14 +279,11 @@ class HipFileSystem
         return validatePath(initialPath, combinedPath);
     }
 
-    private static void delegate(string err) defaultErrorHandler()
+    private static void defaultErrorHandler(string err = "")
     {
-        return (err)
-        {
-            import hip.error.handler;
-            filesReadingCount--;
-            ErrorHandler.assertExit(false, "HipFS Error: "~err);
-        };
+        import hip.error.handler;
+        filesReadingCount--;
+        ErrorHandler.assertExit(false, "HipFS Error: "~err);
     }
     
     @ExportD public static IHipFSPromise read(string path)
@@ -296,7 +304,7 @@ class HipFileSystem
         }, (string err)
         {
             promise.setFinished(null);
-            defaultErrorHandler()(err);
+            defaultErrorHandler(err);
         });
         
         return promise;
@@ -350,10 +358,11 @@ class HipFileSystem
     @ExportD public static bool absoluteIsDir(string path){return fs.isDir(path);}
     @ExportD public static bool absoluteIsFile(string path){return fs.isFile(path);}
     @ExportD public static bool absoluteRemove(string path){return fs.remove(path);}
-
     @ExportD public static bool absoluteRead(string path, out void[] output)
     {
-        return fs.read(path, (void[] data){output = data;}, defaultErrorHandler);
+        ///This may need to be refactored in the future.
+        // import std.functional:toDelegate;
+        return fs.read(path, (void[] data){output = data;}, (err) => defaultErrorHandler(err));
     }
     @ExportD("ubyte") public static bool absoluteRead(string path, out ubyte[] output)
     {

@@ -35,7 +35,12 @@ void toStringRange(Sink)(ref Sink sink, float f)
     {
         put(sink, "nan");
         return;
-    } 
+    }
+    else if(f == -float.infinity)
+    {
+        put(sink, "-inf");
+        return;
+    }
     if(f == float.infinity)
     {
         put(sink, "inf");

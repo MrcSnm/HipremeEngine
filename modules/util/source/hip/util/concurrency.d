@@ -329,8 +329,8 @@ version(HipConcurrency)
                 {
                     thread.pushTask("Await", ()
                     {
-                        awaitSemaphore.notify;}
-                    );
+                        awaitSemaphore.notify;
+                    });
                     awaitCount++;
                 }
             }

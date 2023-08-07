@@ -8,20 +8,7 @@
 		"debugInfoC"
 	],
 	"copyright": "Copyright © 2021, Hipreme",
-	"configurations": [
-		{
-			"name": "default",
-			"targetType": "staticLibrary"
-		},
-		{
-			"name": "dinterface",
-			"targetType": "staticLibrary",
-			"dflags-dmd": [
-				"-H",
-				"-Hd=./import"
-			]
-		}
-	],
+	"targetType": "staticLibrary",
 	"description": "HipremeEngine data module",
 	"license": "proprietary",
 	"name": "util"

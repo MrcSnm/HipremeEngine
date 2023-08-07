@@ -16,6 +16,7 @@ template FilterAsset(Attributes...)
 {
     import std.traits:isInstanceOf;
     import std.meta:AliasSeq;
+    import std.string;
     alias FilterAsset = AliasSeq!();
     static foreach(attr; Attributes)
         static if(isInstanceOf!(HipAssetUDA, typeof(attr)))
@@ -32,10 +33,26 @@ template GetAssetUDA(Attributes...)
 }
 
 
+public string[] splitLines(string input)
+{
+    string[] ret;
+    size_t lastCut = 0;
+    foreach(i, ch; input)
+    {
+        if(ch == '\n')
+        {
+            ret~= input[lastCut..i];
+            lastCut = i+1;
+        }
+    }
+    if(lastCut < input.length) ret~= input[lastCut..$];
+    return ret;
+}
+
+
 string[] getModulesFromRoot(string modules, string root)
 {
-    import hip.util.string:split;
-    string[] ret = modules.split("\n");
+    string[] ret = splitLines(modules);
 
     ptrdiff_t rootStart = -1;
     foreach(i, mod; ret)
@@ -89,8 +106,8 @@ IHipAssetLoadTask loadAsset(type)(string assetPath)
 
 mixin template LoadAllAssets(string modules)
 {
-    import hip.util.string:split;
-    mixin LoadReferencedAssets!(modules.split("\n"));
+    import hip.api.data.commons;
+    mixin LoadReferencedAssets!(splitLines(modules));
 }
 mixin template LoadReferencedAssets(string[] modules)
 {

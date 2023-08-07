@@ -1,7 +1,7 @@
 module hip.util.conv;
 import hip.util.string;
 import std.typecons;
-import std.traits:isArray;
+import std.traits:isArray, isCallable;
 public import hip.util.to_string_range;
 public import hip.util.string:toStringz;
 
@@ -211,7 +211,8 @@ string toString(long x) pure nothrow @safe
 string toString(float f) pure nothrow @safe 
 {
     if(f != f) return "nan";
-    if(f == float.infinity) return "inf";
+    else if(f == -float.infinity) return "-inf";
+    else if(f == float.infinity) return "inf";
 
     bool isNegative = f < 0;
     if(isNegative)
@@ -351,6 +352,7 @@ float toFloat(string str) pure nothrow @safe @nogc
     }
     return (integer + decimal) * (isNegative ? -1 : 1);
 }
+
 
 unittest
 {

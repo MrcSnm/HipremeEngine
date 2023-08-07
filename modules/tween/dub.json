@@ -22,10 +22,6 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "HipremeEngine game module",
-	"importPaths": [
-		"source",
-		"../../api/source"
-	],
 	"license": "proprietary",
 	"name": "tween",
 	"sourcePaths": [

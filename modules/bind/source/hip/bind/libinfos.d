@@ -25,10 +25,10 @@ version(Have_bindbc_openal)
         ret~= "----------\n";
         while (device && *device != '\0' && next && *next != '\0') 
         {
-            ret~= device.fromStringz~"\n";
-            len = strlen(device);
-            device += (len + 1);
-            next += (len + 2);
+            // ret~= device.fromStringz~"\n";
+            // len = strlen(device);
+            // device += (len + 1);
+            // next += (len + 2);
         }
         ret~= "----------\n";
         return ret;
