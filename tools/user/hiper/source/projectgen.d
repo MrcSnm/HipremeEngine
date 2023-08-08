@@ -5,17 +5,6 @@ import std.format:format;
 import std.process;
 import std.array:join,split,array;
 
-string getHipremeEnginePathFromEnv()
-{
-	string hipEnginePath = environment["HIPREME_ENGINE"].escapeWindowsPathSep;
-	if(hipEnginePath.length)
-	{
-		if(hipEnginePath[0] == '"') hipEnginePath = hipEnginePath[1..$];
-		if(hipEnginePath[$-1] == '"') hipEnginePath = hipEnginePath[0..$-1];
-	}
-	return hipEnginePath;
-}
-
 struct TemplateInfo
 {
 	string initMethod=q{
@@ -89,7 +78,7 @@ string escapeWindowsPathSep(string input)
 	return output;
 }
 
-string generateDubProject(DubProjectInfo info, string projectPath)
+string generateDubProject(DubProjectInfo info)
 {
 	import std.conv;
 	import std.uni:toLower;
@@ -97,40 +86,28 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 	dstring outputName = info.projectName.split(" ").join("_").array;
 	dstring name = outputName.map!(character => character.toLower).array;
 
-	string hipEnginePath = getHipremeEnginePathFromEnv();
-	projectPath = projectPath.escapeWindowsPathSep;
-
-
 	return format!`{
+	"$schema": "https://raw.githubusercontent.com/Pure-D/code-d/master/json-validation/dub.schema.json",
 	"authors": ["%s"],
 	"description" : "%s",
 	"license": "proprietary",
 	"targetName" : "%s",
 	"name" : "%s",
-	"sourcePaths"  : ["source"],
-	"dependencies": 
-	{
-		"hipengine_api": {"path": "%s/api"},
-		"util": {"path": "%s/modules/util"},
-		"timer": {"path": "%s/modules/timer"},
-		"tween": {"path": "%s/modules/tween"},
-		"math": {"path": "%s/modules/math"}
-	},
+	"engineModules": [
+		"util",
+		"timer",
+		"tween",
+		"math"
+	],
+	"linkedDependencies": {"hipengine_api": {"path": "#HIPREME_ENGINE/api"}},
 	"stringImportPaths": [
 		"."
 	],
 	"preBuildCommands": [
-		"rdmd $HIPREME_ENGINE/tools/build/getmodules.d source/ scriptmodules.txt"
+		"rdmd #HIPREME_ENGINE/tools/build/getmodules.d source/ scriptmodules.txt"
 	],
 	"dflags-linux-ldc": [
 		"-link-defaultlib-shared=false"
-	],
-	"lflags-windows-ldc": [
-		"/WHOLEARCHIVE:hipengine_api",
-		"/WHOLEARCHIVE:util",
-		"/WHOLEARCHIVE:timer",
-		"/WHOLEARCHIVE:tween",
-		"/WHOLEARCHIVE:math"
 	],
 	"configurations": 
 	[
@@ -147,8 +124,8 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 			"lflags-windows": [
 				"/WX"
 			],
-			"postGenerateCommands-windows": ["cd /d %s && dub -c script -- %s"],
-			"postGenerateCommands-linux": ["cd %s && dub -c script -- %s"]
+			"postGenerateCommands-windows": ["cd /d #HIPREME_ENGINE && dub -c script -- $PACKAGE_DIR"],
+			"postGenerateCommands-linux": ["cd #HIPREME_ENGINE && dub -c script -- $PACKAGE_DIR"]
 		}
 	],
 	"versions" : [
@@ -156,18 +133,13 @@ string generateDubProject(DubProjectInfo info, string projectPath)
 		"HipremeAudio"
 	]
 }
-`(info.author, info.desc, outputName, name, 
-	//Modules Here
-	hipEnginePath, hipEnginePath, hipEnginePath, hipEnginePath, hipEnginePath, 
-	//Post Build Commands
-	hipEnginePath, projectPath,
-	hipEnginePath, projectPath);
+`(info.author, info.desc, outputName, name);
 }
 
-string generateVSCodeDebuggerLaunch()
+string generateVSCodeDebuggerLaunch(string enginePath)
 {
 	import std.system;
-	string hipEnginePath = getHipremeEnginePathFromEnv();
+	string hipEnginePath = enginePath;
 	string hipEngineExecutable = (buildNormalizedPath(hipEnginePath, "bin", "desktop", "hipreme_engine") ~ ((os == OS.linux) ? "" : ".exe")).escapeWindowsPathSep;
 	return format!q{
 {
@@ -195,12 +167,12 @@ string generateVSCodeDebuggerLaunch()
 }(hipEngineExecutable);
 }
 
-void generateProject(string projectPath,
+void generateProject(string projectPath, string enginePath,
 DubProjectInfo dubInfo, TemplateInfo templateInfo)
 {
-	string dubProj = generateDubProject(dubInfo, projectPath);
+	string dubProj = generateDubProject(dubInfo);
 	string codeTemplate = generateCodeTemplate(templateInfo);
-	string debugLauncher = generateVSCodeDebuggerLaunch();
+	string debugLauncher = generateVSCodeDebuggerLaunch(enginePath);
 	import std.stdio;
 	try
 	{
@@ -219,8 +191,8 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
 
 		writeln("Writing code template for gamescript/entry.d");
 		std.file.write(buildNormalizedPath(projectPath, "source", "gamescript", "entry.d"), codeTemplate);
-		writeln("Writing dub.json");
-		std.file.write(buildNormalizedPath(projectPath, "dub.json"), dubProj);
+		writeln("Writing dub.template.json");
+		std.file.write(buildNormalizedPath(projectPath, "dub.template.json"), dubProj);
 		writeln("Writing README.md");
 		std.file.write(buildNormalizedPath(projectPath, "README.md"), dubInfo.projectName~" made using Hipreme Engine");
 		writeln("Writing VSCode debug launcher");
