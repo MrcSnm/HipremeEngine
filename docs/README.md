@@ -18,6 +18,6 @@ It has planned support for:
 
 * iOS
 
-## [Getting Started](https://github.com/MrcSnm/HipremeEngine/wiki/Getting-Started)
+## [Getting Started](home/getting-started.md)
 
 * The following link aims into showing to build your first project with HipremeEngine.

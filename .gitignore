@@ -5,7 +5,6 @@ build/android/project/app/src/main/assets/**
 build/android/project/app/build
 docs.json
 __dummy.html
-docs/
 build/.cache
 dependencies/**/*.lib
 hipreme_engine.lib
