@@ -438,6 +438,30 @@ Pid runDub(string commands, string preCommands = "", bool confirmKey = false)
 
 int waitDub(ref Terminal t, string commands, string preCommands = "", bool confirmKey = false)
 {
+	import std.conv:to;
+
+	///Detects the presence of a template file before executing.
+	if(absolutePath(configs["hipremeEnginePath"].str) != absolutePath(std.file.getcwd()))
+	if(std.file.exists("dub.template.json"))
+	{
+	
+		import template_processor;
+		string out_DubFile;
+		auto res = processTemplate(std.file.getcwd(), configs["hipremeEnginePath"].str, out_DubFile);
+		if(res != TemplateProcessorResult.success)
+		{
+			t.writelnError(res.to!string, ":", out_DubFile);
+			return -1;
+		}
+		else
+		{
+			try{std.file.write("dub.json", out_DubFile);}
+			catch(Exception e){
+				t.writelnError("Could not write dub.json");
+				return -1;
+			}
+		}
+	}
 	string toExec = getDubRunCommand(commands, preCommands, confirmKey);
 	t.writeln(toExec);
 	return wait(spawnShell(toExec));
@@ -516,7 +540,10 @@ version(Windows)
 
 
 
-bool hasAdminRights()
+/** 
+ * May be used in future. Kept for reference.
+ */
+private bool hasAdminRights()
 {
 	version(Windows)
 	{
@@ -534,44 +561,4 @@ bool hasAdminRights()
 		return hasRights;
 	}
 	else return false;
-}
-
-///This idea didn't work: Will be removed.
-bool addSystemVariable(string key, string value, out string errReason)
-{
-	version(Windows)
-	{
-		import core.sys.windows.windows;
-		import core.runtime;
-		Key k = windowsGetKeyWithPath("SYSTEM", "CurrentControlSet", "Control", "Session Manager", "Environment");
-		if(!hasAdminRights() || k is null)
-		{
-			errReason = "ADMIN";
-			return false;
-		}
-		try{
-			k.setValue(key, value);
-			SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, cast(LONG)"Environment".ptr, SMTO_BLOCK, 5000, null);
-		}
-		catch(Exception e)
-		{
-			errReason = e.msg;
-			return false;
-		}
-		return true;
-	}
-	else return false;
-}
-bool removeSystemVariable()
-{
-	return false;	
-}
-
-bool addVariableToPath()
-{
-	return false;
-}
-bool removeVariableFromPath()
-{
-	return false;
 }

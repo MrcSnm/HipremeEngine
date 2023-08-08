@@ -16,7 +16,7 @@ bool hasSpace(string name)
 
 bool isProjectNameValid(string name)
 {
-	return name != "" && name != "hiper";
+	return name != "";
 }
 
 bool isFolderEmpty(string folderPath)
@@ -26,7 +26,7 @@ bool isFolderEmpty(string folderPath)
 	return true;
 }
 
-int onPathSelected(string path)
+int onPathSelected(string path, string enginePath)
 {
 	if(path == "")
 	{
@@ -43,11 +43,11 @@ int onPathSelected(string path)
 	writeln("Generating project at path ", path);
 
 	string projName = pathSplitter(path).array[$-1];
-	generateProject(path, DubProjectInfo("HipremeEngine", projName), TemplateInfo());
+	generateProject(path, enginePath, DubProjectInfo("HipremeEngine", projName), TemplateInfo());
 	return 0;
 }
 
-int popupForProjectName()
+int popupForProjectName(string enginePath)
 {
 	string folderName = showSaveFileDialog("Name of your project(Should not contain spaces)", ["HipremeProject"]);
 	if(folderName.length == 0)
@@ -58,24 +58,38 @@ int popupForProjectName()
 	else if(folderName.hasSpace)
 	{
 		showErrorMessage("Save Project Error", "Your project name '"~folderName~"' should not contain spaces");
-		return popupForProjectName();
+		return popupForProjectName(enginePath);
 	}
 	else if(folderName[$-1] == '\0')
 		folderName = folderName[0..$-1];
-	return onPathSelected(folderName);
+	return onPathSelected(folderName, enginePath);
 }
 
 int main(string[] args)
 {
-	import std.process;
-	if(!("HIPREME_ENGINE" in environment))
+	import std.getopt;
+	struct Args
 	{
-		writeln("Please setup HIPREME_ENGINE environment variable to hiper being able to correctly generate your project");
-		return 1;
+		string projectPath;
+		string enginePath;
 	}
-	if(args.length < 2)
-		return popupForProjectName();
+	Args a;
+	GetoptResult helpInfo = getopt(args,
+		"path", "Path where the project will be generated. If no path is given, this program will popup a window prompting for selection.",&a.projectPath,
+		"engine", "Path where the engine is located. Always required", &a.enginePath
+	);
+	if(helpInfo.helpWanted || a.enginePath == "")
+	{
+		if(a.enginePath == "")
+			writeln("Path to the engine with the argument --engine is required.");
+		defaultGetoptPrinter("How to use Hiper - Hipreme Engine Project Generator.", helpInfo.options);
+		return -1;
+	}
+	if(a.projectPath == "")
+		return popupForProjectName(a.enginePath);
 	else
-		writeln("Getting the path from argument ", args[1]);
-	return onPathSelected(args[1]);
+	{
+		writeln("Getting the path from argument ", a.projectPath);
+	}
+	return onPathSelected(a.projectPath, a.enginePath);
 }

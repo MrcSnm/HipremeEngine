@@ -1,12 +1,9 @@
-import std.stdio;
-import std.getopt;
+module template_processor;
 import std.algorithm;
 import std.file;
 import std.json;
 import std.path;
 import std.uni;
-import core.stdc.stdlib;
-
 
 
 /** 
@@ -61,20 +58,20 @@ If the path does not exists, it will be ignored and simply do nothing. Also chec
 
 enum string templateName = "dub.template.json";
 
-immutable string[] systems = 
+private immutable string[] systems = 
 [
 	"windows",
 	"linux"
 ];
 
-enum VariableType
+private enum VariableType
 {
 	_default,
 	currentSystem,
 	otherSystem
 }
 
-VariableType getType(string keyName)
+private VariableType getType(string keyName)
 {
 	string currentSystem = "unknown";
 	version(Windows)
@@ -89,31 +86,15 @@ VariableType getType(string keyName)
 	return VariableType._default;
 }
 
-long findMatching(in string str, char matchLeft, char matchRight, long start = 0)
-{
-	int openCount = 0;
-	for(long i = start; i < str.length; i++)
-	{
-		if(str[i] == matchLeft)
-			openCount++;
-		else if(str[i] == matchRight)
-		{
-			openCount--;
-			if(openCount == 0)
-				return i;
-		}
-	}
-	return -1;
-}
 
 /** 
  * 
  * Params:
  *   f = The file
- *   variables = Variables to replace in the $VARIABLE text.
+ *   variables = Variables to replace in the #VARIABLE text.
  * Returns: File with replaced text.
  */
-string processFile(string f, string[string] variables)
+private string processFile(string f, string[string] variables)
 {
 	long getVariableName(in string str, long start, out string varName)
 	{
@@ -147,49 +128,67 @@ string processFile(string f, string[string] variables)
 	return output;
 }
 
-string getVariableValue(string inputValue)
+/** 
+ * 
+ * Params:
+ *   json = The parsed dub.template.json
+ * Returns: The variables inside "params".
+ */
+private string[string] getParamsInTemplate(JSONValue json)
 {
-	switch(inputValue)
+	string[string] variables;
+	if(const(JSONValue)* params = "params" in json)
 	{
-		case "#CD":
-			return globals.projectPath;
-		default:
-			return inputValue;
+		foreach(key, value; params.object)
+		{
+			switch(getType(key))
+			{
+				case VariableType.currentSystem:
+				{
+					foreach(sysKey, sysValue; value.object)
+						variables[sysKey] = sysValue.str;
+					break;
+				}
+				case VariableType._default:
+				{
+					if((key in variables) is null)
+						variables[key] = value.str;
+					break;
+				}
+				default:break;
+			}
+		}
 	}
+	return variables;
+}
+
+private string escapeWindowsSep(string thePath)
+{
+	string ret;
+	foreach(ch; thePath)
+		if(ch == '\\')
+			ret~= "\\\\";
+		else ret~= ch;
+	return ret;
 }
 
 /** 
  * Saves the current system variables in the cache.
  * Saves the default type in the cache too.
  * Params:
- *   templatePath = 
- * Returns: 
+ *   templatePath = Where the file containing the template json is.
+ *   projectPath = The path where the project is contained. May be deprecated in future
+ *	 enginePath = Path where the engine is located. Used for the reserved #HIPREME_ENGINE
+ *   settings = Extra settings that will be processed inside the template.
+ * Returns: THe resulting string
  */
-string processTemplate(string templatePath, const AdditionalSetting[] settings)
+private string processTemplateImpl(string templatePath, string projectPath, string enginePath, const AdditionalSetting[] settings)
 {
 	string file = readText(templatePath);
 	JSONValue json = parseJSON(file);
-	string[string] variables;
-
-	if(const(JSONValue)* params = "params" in json)
-	{
-		foreach(key, value; params.object)
-		{
-			VariableType type = getType(key);
-			
-			if(type == VariableType.currentSystem)
-			{
-				foreach(sysKey, sysValue; value.object)
-					variables[sysKey] = getVariableValue(sysValue.str);
-			}
-			else if(type == VariableType._default)
-			{
-				if((key in variables) is null)
-					variables[key] = getVariableValue(value.str);
-			}
-		}
-	}
+	string[string] variables = getParamsInTemplate(json);
 	json.object.remove("params");
+	json.object.remove("$schema");
 	foreach(op; settings)
 	{
 		if(op.name in json)
@@ -203,65 +202,59 @@ string processTemplate(string templatePath, const AdditionalSetting[] settings)
 			cfg.object.remove(op.name);
 		}
 	}
-
-
+	variables["CD"] = projectPath.absolutePath.escapeWindowsSep;
+	variables["HIPREME_ENGINE"] = enginePath.absolutePath.escapeWindowsSep;
 	file = processFile(json.toPrettyString(JSONOptions.doNotEscapeSlashes), variables);
 	return file;
 }
 
 
-struct Globals
-{
-	string enginePath;
-	string projectPath;
-}
-
-struct AdditionalSetting
+private struct AdditionalSetting
 {
 	string name;
-	JSONValue function(JSONValue dubFile) handler;
+	JSONValue delegate(JSONValue dubFile) handler;
 }
-Globals globals;
+private enum emptyObject = JSONValue(string[string].init);
+private enum emptyArray = JSONValue(JSONValue[].init);
 
-enum emptyObject = JSONValue(string[string].init);
-enum emptyArray = JSONValue(JSONValue[].init);
-
-/**
-*	Expects path/to/folder/containing/ (dub.template.json)
-*/
-int main(string[] args)
+enum TemplateProcessorResult
 {
-	string processedPath;
-	auto helpInfo = getopt(args, 
-		"processedPath", "Path to a folder containing a dub.template.json", &processedPath,
-		"enginePath", "Path to the HipremeEngine path. Used for engineModules", &globals.enginePath
-	);
-	if(helpInfo.helpWanted || !processedPath)
-	{
-		defaultGetoptPrinter("Dub Preprocessor reference:", helpInfo.options);
-		return EXIT_FAILURE;
-	}
-	if(!exists(processedPath))
-	{
-		writeln("Path received '", processedPath, "' does not exists");
-		return EXIT_FAILURE;
-	}
-	string templatePath = buildPath(processedPath, templateName);
-	if(!exists(templatePath))
-	{
-		writeln("File ", templatePath, " does not exists");
-		return EXIT_FAILURE;
-	}
+    notFound,
+    invalid,
+    success
+}
 
-	globals.projectPath = processedPath.absolutePath;
-	AdditionalSetting[] additionals = [
+/** 
+ * 
+ * Params:
+ *   templatePath = path/to/folder/with/dub.template.json
+ *   enginePath = The engine path which will be used for the configuration engineModules
+ *   templateResult = The resulting string which can be used to cache internally or even save a file.
+ * Returns: The result of the operation
+ */
+TemplateProcessorResult processTemplate(string templatePath, string enginePath, out string templateResult)
+{
+    string processedPath = templatePath;
+    processedPath = processedPath.absolutePath;
+    if(!exists(templatePath))
+	{
+		templateResult = "Path received '" ~ templatePath ~"' does not exists";
+		return TemplateProcessorResult.notFound;
+	}
+    templatePath = buildPath(templatePath, templateName);
+    if(!exists(templatePath))
+	{
+		templateResult = "File "~ templatePath~ " does not exists";
+		return TemplateProcessorResult.notFound;
+	}
+    AdditionalSetting[] additionals = [
 		{"engineModules", (JSONValue json) 
 		{
 			foreach(mod; json["engineModules"].array)
 			{
 				if(!("linkedDependencies" in json))
 					json.object["linkedDependencies"] = emptyObject;
-				json["linkedDependencies"].object[mod.str] = ["path": buildPath(globals.enginePath, "modules", mod.str)];
+				json["linkedDependencies"].object[mod.str] = ["path": buildPath(enginePath, "modules", mod.str)];
 			}
 			return json;
 		}},
@@ -282,7 +275,7 @@ int main(string[] args)
 		{
 			foreach(path; json["unnamedDependencies"].array)
 			{
-				string dubPath = buildNormalizedPath(globals.projectPath, path.str, "dub.json");
+				string dubPath = buildNormalizedPath(processedPath, path.str, "dub.json");
 				if(exists(dubPath))
 				{
 					if(!("dependencies" in json))
@@ -300,20 +293,6 @@ int main(string[] args)
 		}}
 	];
 
-	string processedFile = processTemplate(templatePath, additionals);
-	string outputFilePath = buildPath(processedPath, "dub.json");
-
-
-	try
-	{
-		std.file.write(outputFilePath, processedFile);
-	}
-	catch(Exception e)
-	{
-		writeln("Could not write to ", outputFilePath, " error: ", e.toString);
-		return EXIT_FAILURE;
-	}
-
-	return EXIT_SUCCESS;
-
+    templateResult = processTemplateImpl(templatePath, processedPath, enginePath, additionals);
+    return TemplateProcessorResult.success;
 }
