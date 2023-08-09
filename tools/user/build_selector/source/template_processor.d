@@ -1,5 +1,6 @@
 module template_processor;
 import std.algorithm;
+import std.typecons:Flag,Yes,No;
 import std.file;
 import std.json;
 import std.path;
@@ -21,6 +22,12 @@ For not conflicting with dub's internal parameters, it uses the syntax #PARAMETE
 	},
 	"SOME_GLOBAL_VAR": "This parameter can be used anywhere here by simply using #SOME_GLOBAL_VAR"
  }
+```
+
+A dub.template.json can have a parent dub.json(or dub.template.json), this is used for separating some
+configurations, such as the release one, since things can get hairy quite fast if not done.
+```json
+"$extends": "#HIPREME_ENGINE/dub.json"
 ```
 
 
@@ -90,41 +97,74 @@ private VariableType getType(string keyName)
 /** 
  * 
  * Params:
+ *   str = Any string
+ *   start = Where the check will start
+ *   varName = Out variable containing the variable name found
+ * Returns: The index where the search stopped
+ */
+private long getVariableName(in string str, long start, out string varName)
+{
+	assert(str[start] == '#');
+	long curr = start+1;
+	while(curr < str.length)
+	{
+		char ch = str[curr];
+		if(!(ch.isNumber || ch.isAlpha || ch == '_'))
+			break;
+		curr++;
+	}
+	varName = str[start+1..curr];
+	return curr;
+}
+
+
+private string processString(JSONValue json, string str)
+{
+	import std.exception:enforce;
+	string returnString;
+	size_t lastStop = 0;
+	for(size_t i = 0; i < str.length; i++)
+	{
+		if(str[i] == '#')
+		{
+			returnString~= str[lastStop..i];
+			string varName;
+			i = getVariableName(str, i, varName);
+			enforce(varName in json["params"], "Variable "~varName~" not found");
+			returnString~= json["params"][varName].str;
+			lastStop = i;
+			i--; //For not updating too much
+		}
+	}
+	if(lastStop != str.length) returnString~= str[lastStop..$];
+	return returnString;
+}
+
+/** 
+ * 
+ * Params:
  *   f = The file
  *   variables = Variables to replace in the #VARIABLE text.
  * Returns: File with replaced text.
  */
 private string processFile(string f, string[string] variables)
 {
-	long getVariableName(in string str, long start, out string varName)
-	{
-		assert(str[start] == '#');
-		long curr = start+1;
-		while(curr < str.length)
-		{
-			char ch = str[curr];
-			if(!(ch.isNumber || ch.isAlpha || ch == '_'))
-				break;
-			curr++;
-		}
-		varName = str[start+1..curr];
-		return curr;
-	}
-
 	string output = "";
+	size_t lastStop = 0;
 	for(size_t i = 0; i < f.length; i++)
 	{
 		if(f[i] == '#')
 		{
+			output~= f[lastStop..i];
 			string varName;
 			i = getVariableName(f, i, varName);
 			assert(varName in variables, "Variable "~varName~" not found");
 			output~= variables[varName];
+			lastStop = i;
 			i--; //For not updating too much
 		}
-		else
-			output~= f[i];
 	}
+	if(lastStop != f.length) output~= f[lastStop..$];
 	return output;
 }
 
@@ -187,8 +227,11 @@ private string processTemplateImpl(string templatePath, string projectPath, stri
 	string file = readText(templatePath);
 	JSONValue json = parseJSON(file);
 	string[string] variables = getParamsInTemplate(json);
-	json.object.remove("params");
-	json.object.remove("$schema");
+	string hipremeEngine = enginePath.absolutePath.escapeWindowsSep;
+	if(!("params" in json))
+		json.object["params"] = emptyObject;
+	json["params"].object["HIPREME_ENGINE"] = hipremeEngine;
+
 	foreach(op; settings)
 	{
 		if(op.name in json)
@@ -196,14 +239,19 @@ private string processTemplateImpl(string templatePath, string projectPath, stri
 			op.handler(json);
 			json.object.remove(op.name);
 		}
-		foreach(cfg; json["configurations"].array) if(op.name in cfg)
+		if("configurations" in json)
 		{
-			op.handler(cfg);
-			cfg.object.remove(op.name);
+			foreach(cfg; json["configurations"].array) if(op.name in cfg)
+			{
+				op.handler(cfg);
+				cfg.object.remove(op.name);
+			}
 		}
 	}
 	variables["CD"] = projectPath.absolutePath.escapeWindowsSep;
-	variables["HIPREME_ENGINE"] = enginePath.absolutePath.escapeWindowsSep;
+	variables["HIPREME_ENGINE"] = hipremeEngine;
+	json.object.remove("params");
+	json.object.remove("$schema");
 	file = processFile(json.toPrettyString(JSONOptions.doNotEscapeSlashes), variables);
 	return file;
 }
@@ -213,6 +261,7 @@ private struct AdditionalSetting
 {
 	string name;
 	JSONValue delegate(JSONValue dubFile) handler;
+	Flag!"configAvailable" config = Yes.configAvailable;
 }
 private enum emptyObject = JSONValue(string[string].init);
 private enum emptyArray = JSONValue(JSONValue[].init);
@@ -222,6 +271,14 @@ enum TemplateProcessorResult
     notFound,
     invalid,
     success
+}
+
+JSONValue getDubFromTemplate(string templatePath, string enginePath)
+{
+	string out_jsonFile;
+	if(processTemplate(templatePath, enginePath, out_jsonFile) != TemplateProcessorResult.success)
+		throw new JSONException("Could not succesfully process template at path "~templatePath);
+	return parseJSON(out_jsonFile);
 }
 
 /** 
@@ -248,6 +305,69 @@ TemplateProcessorResult processTemplate(string templatePath, string enginePath, 
 		return TemplateProcessorResult.notFound;
 	}
     AdditionalSetting[] additionals = [
+		{"$extends", (JSONValue json)
+		{
+			import std.exception:enforce;
+			string parentDub = json["$extends"].str;
+			string[] options = [
+				parentDub,
+				buildPath(parentDub, "dub.json"),
+				buildPath(parentDub, "dub.template.json")
+			];
+			string[] excludeKeys = ["configurations", "subPackages"];
+			JSONValue parentJson;
+			foreach(i, opt; options)
+			{
+				opt = processString(json, opt);
+				enforce(opt != templatePath, "Parent can't point to itself.");
+				if(exists(opt))
+				{
+					if(i == 2)
+						parentJson = getDubFromTemplate(opt, enginePath);
+					else
+						parentJson = parseJSON(cast(string)read(opt));
+					break;
+				}
+			}
+			import std.conv:to;
+			enforce(parentJson != JSONValue.init, "Could not find json in paths "~options.to!string);
+			foreach(key, value; parentJson.object)
+			{
+				import std.algorithm:countUntil;
+				if(excludeKeys.countUntil(key) == -1)
+				{
+					if(!(key in json)) json.object[key] = parentJson[key];
+					else
+					{
+						enforce(parentJson[key].type == json[key].type);
+						//New values that aren't array or object will be overridden
+						switch(json[key].type)
+						{
+							case JSONType.array:
+							{
+								JSONValue[] arr = parentJson[key].array;
+								foreach(parentValue; arr)
+									json[key].array ~= parentValue;
+								break;
+							}
+							case JSONType.object:
+							{
+								foreach(parentKey, parentValue; parentJson[key].object)
+								{
+									if(!(parentKey in json[key]))
+										json[key].object[parentKey] = parentValue;
+								}
+								break;
+							}
+							//If both define, child json overrides it.
+							default: continue;
+						}
+					}
+				}
+			}
+
+			return json;
+		}, No.configAvailable},
 		{"engineModules", (JSONValue json) 
 		{
 			foreach(mod; json["engineModules"].array)

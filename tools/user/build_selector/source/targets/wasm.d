@@ -41,9 +41,8 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		waitDub(t, "run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true", "set DFLAGS=\"\" && ");
 		wait(spawnShell("move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"));
 	}
-	
 	t.writelnSuccess("Succesfully built for WebAssembly.");
-t.writelnHighlighted("Run `dub` at $HIPREME_ENGINE/build/wasm, for starting a local server for the game.
+	t.writelnHighlighted("Run `dub` at $HIPREME_ENGINE/build/wasm, for starting a local server for the game.
 Your link should be in localhost:9000");
 
 	return ChoiceResult.Continue;
