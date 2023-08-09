@@ -144,6 +144,18 @@ ChoiceResult createProject(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 	return ChoiceResult.Back;
 }
 
+ChoiceResult releaseGame(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+{
+	import template_processor;
+	import std.file;
+	string out_templ;
+	string mainPath = buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets", "wasm");
+	processTemplate(mainPath, configs["hipremeEnginePath"].str, out_templ);
+	std.file.write(buildPath(mainPath, "dub.json"), out_templ);
+
+	return ChoiceResult.Continue;
+}
+
 ChoiceResult exitFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	configs["selectedChoice"] = 0;
@@ -216,6 +228,7 @@ void main(string[] args)
 		Choice("WebAssembly", &prepareWASM),
 		Choice("Create Project", &createProject),
 		Choice("Select Game", &selectGameFolder),
+		Choice("Release Game", &releaseGame),
 		Choice("Exit", &exitFn)
 	];
 
