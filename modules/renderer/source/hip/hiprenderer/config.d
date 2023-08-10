@@ -10,6 +10,21 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hiprenderer.config;
 
+version(Android) enum UseGLES = true;
+else version(PSVita) enum UseGLES = true;
+else version(WebAssembly) enum UseGLES = true;
+else enum UseGLES = false;
+
+version(OpenGL)
+{
+    version(Android){}
+    else version(PSVita){}
+    else version(WebAssembly){}
+    else version(Have_bindbc_opengl){}
+    else static assert(false, "Tried to use OpenGL, but supplied no platform or library containing OpenGL.");
+}
+
+
 struct HipRendererConfig
 {
     ///Use level 0 for pixel art games

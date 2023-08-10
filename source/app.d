@@ -110,23 +110,23 @@ void HipremeHandleArguments()
 			return;
 		}
 	}
-
 	if(arguments.length == 2) //Project Path
 	{
 		import hip.util.path;
-		projectToLoad = arguments[1];
-	}
-	else if(arguments[1] == "lua")
-	{
-		interpreterEntry.intepreter = HipInterpreter.lua;
-		interpreterEntry.sourceEntry = "source/scripting/lua/main.lua";
-		isUsingInterpreter = true;
-	}
-	else if(arguments[1].extension == ".lua")
-	{
-		interpreterEntry.intepreter = HipInterpreter.lua;
-		interpreterEntry.sourceEntry = arguments[1];
-		isUsingInterpreter = true;
+		if(arguments[1] == "lua")
+		{
+			interpreterEntry.intepreter = HipInterpreter.lua;
+			interpreterEntry.sourceEntry = "source/scripting/lua/main.lua";
+			isUsingInterpreter = true;
+		}
+		else if(arguments[1].extension == ".lua")
+		{
+			interpreterEntry.intepreter = HipInterpreter.lua;
+			interpreterEntry.sourceEntry = arguments[1];
+			isUsingInterpreter = true;
+		}
+		else
+			projectToLoad = arguments[1];
 	}
 }
 
