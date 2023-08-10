@@ -10,9 +10,6 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hiprenderer.backend.gl.glrenderer;
 
-version(Android) version = ExternallyManagedWindow;
-version(WebAssembly) version = ExternallyManagedWindow;
-version(PSVita) version = ExternallyManagedWindow;
 version(Android)
 {
     public import gles.gl30;
@@ -31,6 +28,7 @@ else version(Have_bindbc_opengl)
 }
 version(OpenGL):
 
+import hip.hiprenderer.config;
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
 import hip.hiprenderer.shader;
@@ -286,7 +284,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     */
     public void end()
     {
-        version(ExternallyManagedWindow)
+        version(UseGLES)
         {
             version(PSVita)
             {

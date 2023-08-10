@@ -1,6 +1,7 @@
 module core.stdc.config;
 
 version(PSVita) version = UseCustomRuntime;
+else version(WebAssembly) version = UseCustomRuntime;
 version(CustomRuntimeTest) version = UseCustomRuntime;
 
 version(UseCustomRuntime)

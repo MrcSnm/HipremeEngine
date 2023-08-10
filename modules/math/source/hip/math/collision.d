@@ -44,6 +44,21 @@ if(isNumeric!T)
 
     return sqrt(lineLength).approximatelyEqual(sqrt(distLeft)+sqrt(distRight), error);
 }
+bool isPointInLine2(T)(in T px, in T py, in T lx1, in T ly1, in T lx2, in T ly2, in float error = 0.01)
+if(isNumeric!T)
+{
+    import hip.math.utils;
+
+    if(px < lx1 || px > lx2) return false;
+
+    float dx = lx2 - lx1;
+    float dy = ly2 - ly1;
+
+    float slope = dy/dx;
+    float yIntercept = ly1 - (slope*lx1);
+
+    return py.approximatelyEqual(slope*px + yIntercept, error);
+}
 
 pragma(inline, true)
 bool isPointInLine(T)(in T[2] point, in T[2] lineStart, in T[2] lineEnd, in float error = 0.01)

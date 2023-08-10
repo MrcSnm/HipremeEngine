@@ -13,6 +13,7 @@ module hip.hiprenderer.backend.gl.gltexture;
 version(OpenGL):
 public import hip.api.renderer.texture;
 public import hip.api.data.commons:IReloadable;
+import hip.hiprenderer.config;
 
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
@@ -35,10 +36,7 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
             case TextureWrapMode.CLAMP_TO_EDGE: return GL_CLAMP_TO_EDGE;
             case TextureWrapMode.REPEAT: return GL_REPEAT;
             case TextureWrapMode.MIRRORED_REPEAT: return GL_MIRRORED_REPEAT;
-            version(Android){}
-            else version(PSVita){}
-            else version(WebAssembly){}
-            else
+            static if(!UseGLES)
             {
                 //assert here would be better, as simply returning a default can be misleading.
                 case TextureWrapMode.MIRRORED_CLAMP_TO_EDGE: return GL_MIRROR_CLAMP_TO_EDGE;
