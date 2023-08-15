@@ -17,4 +17,5 @@
 * [HipRenderer - WebGL 1, OpenGL ES 2/3, OpenGL 2/3, Direct3D 11 and Metal 2.4 Abstraction](internals/hiprenderer-webgl-1-opengl-es-2-3-opengl-2-3-direct3d-11-and-metal-2.4-abstraction.md)
 * [HipAudio](internals/hipaudio.md)
 * [Hipreme Engine Tools](internals/hipreme-engine-tools.md)
-* [Building](internals/building.md)
+* [Building](internals/building/README.md)
+  * [dub.template.json reference](internals/building/dub.template.json-reference.md)
