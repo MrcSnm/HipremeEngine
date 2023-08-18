@@ -43,16 +43,27 @@ int main(string[] args)
     }
     string dubArgs = args[Arguments.dubArgs];
     string outputPath = args[Arguments.outputPath];
+    writeln(dubArgs);
+    writeln(outputPath);
+
     string[] envDflags;
     if(args.length > Arguments.dflags)
         envDflags = args[Arguments.dflags..$];
 
     environment["DFLAGS"] = envDflags.join(" ");
-    auto ret = executeShell("dub describe --data=linker-files "~dubArgs~" --vquiet");
+    string dub = "dub ";
+    if("DUB" in environment)
+    {
+        dub = environment["DUB"];
+        writeln("Using dub: ", dub);
+    }
+    auto ret = executeShell(dub~" describe --data=linker-files "~dubArgs~" --vquiet");
     string librariesData = ret.output;
     string[] libraries = separateFromString(librariesData);
     writeln("Found libraries ", libraries.map!(lName => lName.baseName));
 
+    string libIncludes = buildNormalizedPath(outputPath, "..", "libIncludes.txt");
+    std.file.write(libIncludes, libraries.map!(lName => "-l"~lName.baseName.stripExtension[3..$]).join(" "));
 
     string libNames = "";
     mkdirRecurse(outputPath);

@@ -25,6 +25,7 @@ struct Choice
 {
 	string name;
 	ChoiceResult function(Choice* self, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions opts) onSelected;
+	bool shouldTime;
 	bool opEquals(string choiceName) const
 	{
 		return name == choiceName;	
@@ -125,6 +126,11 @@ string getFirstExisting(string basePath, scope string[] tests...)
 	return "";
 }
 
+string getHipPath(scope string[] paths...)
+{
+	return buildPath([configs["hipremeEnginePath"].str] ~ paths);
+}
+
 string getFirstExistingVar(scope string[] vars...)
 {
 	foreach(variable; vars)
@@ -180,6 +186,44 @@ void writelnError(ref Terminal t, scope string[] what...)
 	t.color(Color.DEFAULT, Color.DEFAULT);
 }
 
+auto timed(T)(scope T delegate() dg)
+{
+	import std.datetime.stopwatch;
+	import std.stdio;
+	StopWatch sw = StopWatch(AutoStart.yes);
+	static if(is(T == void))
+	{
+		dg();
+		writeln(sw.peek.total!"msecs", "ms");
+	}
+	else 
+	{
+		auto ret = dg();
+		writeln(sw.peek.total!"msecs", "ms");
+		return ret;
+	}
+}
+
+struct Session
+{
+	struct Cache
+	{
+		size_t line;
+		string file;
+	}
+	bool[Cache] cache;
+}
+private __gshared Session session;
+
+void cached(scope void delegate() dg, string f = __FILE__, size_t l = __LINE__)
+{
+	if(!(Session.Cache(l, f) in session.cache))
+	{
+		session.cache[Session.Cache(l, f)] = true;
+		dg();
+	}
+}
+
 bool pollForExecutionPermission(ref Terminal t, ref RealTimeConsoleInput input, string operation)
 {
 	dchar shouldPermit;
@@ -228,8 +272,13 @@ bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
 }
 
 
-bool extract7ZipToFolder(string zPath, string outputDirectory, ref Terminal t)
+bool extract7ZipToFolder(string zPath, string outputDirectory, ref Terminal t, ref RealTimeConsoleInput input)
 {
+	if(!install7Zip("Extracting the file at"~zPath, t, input))
+	{
+		t.writelnError("This operation requires a 7zip installation.");
+		return false;
+	}
 	if(!std.file.exists(zPath)) 
 	{
 		t.writelnError("File ", zPath, " does not exists.");
@@ -237,7 +286,15 @@ bool extract7ZipToFolder(string zPath, string outputDirectory, ref Terminal t)
 	}
 	t.writeln("Extracting ", zPath, " to ", outputDirectory);
 	t.flush;
-	return executeShell(configs["7zip"].str ~ " x -o"~outputDirectory~ " "~zPath).status == 0;
+	string cwd = std.file.getcwd();
+
+	if(!std.file.exists(outputDirectory))
+		std.file.mkdirRecurse(outputDirectory);
+	
+	std.file.chdir(outputDirectory);
+	bool ret = executeShell(configs["7zip"].str ~ " x "~zPath~" -y").status == 0;
+	std.file.chdir(cwd);
+	return ret;
 }
 
 version(Posix)
@@ -291,9 +348,19 @@ bool downloadFileIfNotExists(
 	return true;
 }
 
+
+private string getConfigPath()
+{
+	import core.runtime;
+	static string cfgPath;
+	if(cfgPath == "")
+		cfgPath = buildNormalizedPath(Runtime.args[0].dirName, ConfigFile);
+	return cfgPath;
+}
+
 void updateConfigFile()
 {
-	std.file.write(ConfigFile, configs.toPrettyString());
+	std.file.write(getConfigPath, configs.toPrettyString());
 }
 
 string getGitExec()
@@ -322,10 +389,13 @@ void loadSubmodules(ref Terminal t, ref RealTimeConsoleInput input)
 	}
 	t.writelnSuccess("Updating Git Submodules");
 	t.flush;
+
+	if(!("last"))
 	executeShell("cd "~ configs["hipremeEnginePath"].str ~ " && " ~ getGitExec~" submodule update --init --recursive");
+
 }
 
-bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInput input)
+private bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInput input)
 {
 	if(!("7zip" in configs))
 	{
@@ -398,13 +468,17 @@ bool installGit(ref Terminal t, ref RealTimeConsoleInput input)
 void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 {
 	import std.array;
+	import std.datetime.stopwatch;
+	StopWatch sw = StopWatch(AutoStart.yes);
 	t.writeln("Executing engine script ", script, " with arguments ", args);
 	t.flush;
 	string rdmd = buildNormalizedPath(configs["ldcPath"].str, "bin", "rdmd");
 	version(Windows) rdmd = rdmd.setExtension("exe");
-
 	auto exec = executeShell(rdmd ~ " " ~ buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)~" " ~ args.join(" "), 
 	environment.toAA);
+	t.writeln("    Finished in ", sw.peek.total!"msecs", "ms");
+	t.writeln(exec.output);
+	t.flush;
 	if(exec.status)
 	{
 		t.writelnError("Script ", script, " failed with: ", exec.output);
@@ -413,13 +487,19 @@ void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 	}
 }
 
+string getDubPath()
+{
+	string dub = buildNormalizedPath(configs["dubPath"].str, "dub");
+	version(Windows) dub = dub.setExtension("exe");
+	return dub;
+}
+
 
 private string getDubRunCommand(string commands, string preCommands = "", bool confirmKey = false)
 {
-	string dub = buildNormalizedPath(configs["dubPath"].str, "dub");
+	string dub = getDubPath();
 	version(Windows)
 	{
-		dub = dub.setExtension("exe");
 		if(confirmKey)
 			commands~= " && pause";
 	}
@@ -465,6 +545,11 @@ int waitDub(ref Terminal t, string commands, string preCommands = "", bool confi
 	string toExec = getDubRunCommand(commands, preCommands, confirmKey);
 	t.writeln(toExec);
 	return wait(spawnShell(toExec));
+}
+
+int waitDubTarget(ref Terminal t, string target, string commands, string preCommands = "", bool confirmKey = false)
+{
+	return waitDub(t, commands~" --recipe="~buildPath(getBuildTarget(target), "dub.json"), preCommands, confirmKey);
 }
 
 int waitAndPrint(ref Terminal t, Pid pid)
@@ -538,6 +623,42 @@ version(Windows)
 	}
 }
 
+string getBuildTarget(string target = __MODULE__)
+{
+	import std.exception:enforce;
+	string path = buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets");
+	enforce(std.file.exists(path = buildPath(path, target)), "Target "~target~" does not exists.");
+	return path;
+}
+
+void outputTemplate(string templatePath)
+{
+	import template_processor;
+	string out_templ;
+	processTemplate(templatePath, configs["hipremeEnginePath"].str, out_templ, [
+		"TARGET_PROJECT": configs["gamePath"].str
+	]);
+	std.file.write(buildPath(templatePath, "dub.json"), out_templ);
+}
+
+void outputTemplateForTarget(ref Terminal t, string target = __MODULE__)
+{
+	import std.array:split;
+	///If it is the default, the target will be "targets.wasm", so, split and get the last.
+	string buildTarget = getBuildTarget(target.split(".")[$-1]);
+	t.writeln("Regenerating buildscript for target ", buildTarget);
+	outputTemplate(buildTarget);
+}
+
+void requireConfiguration(string cfgRequired, string purpose, ref Terminal t, ref RealTimeConsoleInput input)
+{
+	if(!(cfgRequired in configs))
+	{
+		configs[cfgRequired] = t.getline("Config '"~cfgRequired~"' is required for "~ purpose~ ". \n\tWrite here: ");
+		updateConfigFile();
+	}
+}
+
 /** 
 * 
 * Params:
@@ -603,4 +724,14 @@ private bool hasAdminRights()
 		return hasRights;
 	}
 	else return false;
+}
+
+
+
+static this()
+{
+	if(std.file.exists(getConfigPath))
+		configs = parseJSON(std.file.readText(getConfigPath));
+	else
+		configs = parseJSON("{}");
 }

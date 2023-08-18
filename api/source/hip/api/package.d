@@ -47,6 +47,7 @@ version(UseExternalScene)
 mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = HipAssetLoadStrategy.loadAll)
 {
 	immutable string ScriptModules = import("scriptmodules.txt");
+	pragma(msg, ScriptModules);
 	version(UseExternalScene)
 	{
 		__gshared AScene _exportedScene;
@@ -92,7 +93,8 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 	}
 	else
 	{
-		AScene HipremeEngineMainScene()
+		pragma(msg, "HipremeEngineMainScene FOUND");
+		export AScene HipremeEngineMainScene()
 		{
 			mixin LoadAllAssets!(ScriptModules);
 			loadReferenced();

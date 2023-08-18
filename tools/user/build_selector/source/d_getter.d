@@ -77,10 +77,8 @@ bool installD(ref Terminal t, ref RealTimeConsoleInput input)
 
         version(Windows)
         {
-            if(!install7Zip("extract and install D compiler", t, input))
-                return false;
             if(!extract7ZipToFolder(getLdcDownloadOutputName, 
-                buildNormalizedPath(std.file.getcwd, "D"), t
+                buildNormalizedPath(std.file.getcwd, "D"), t, input
             ))
             {
                 t.writelnError("Could not extract LDC.");

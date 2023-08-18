@@ -30,8 +30,6 @@ configurations, such as the release one, since things can get hairy quite fast i
 "$extends": "#HIPREME_ENGINE/dub.json"
 ```
 
-
-
 Adding the engine separate modules can be done by using engineModules. They will automatically
 use the absolute path and be added to the linkedDependencies on the current section. Also checked in configurations.
 ```json
@@ -217,20 +215,25 @@ private string escapeWindowsSep(string thePath)
  * Saves the default type in the cache too.
  * Params:
  *   templatePath = Where the file containing the template json is.
- *   projectPath = The path where the project is contained. May be deprecated in future
+ *   projectPath = The path where the project is contained. Used for the reserved #PROJECT
  *	 enginePath = Path where the engine is located. Used for the reserved #HIPREME_ENGINE
  *   settings = Extra settings that will be processed inside the template.
+ *   extraVariables = Optional variables which are always defined.
  * Returns: THe resulting string
  */
-private string processTemplateImpl(string templatePath, string projectPath, string enginePath, const AdditionalSetting[] settings)
+private string processTemplateImpl(string templatePath, string projectPath, string enginePath, const AdditionalSetting[] settings,
+in string[string] extraVariables)
 {
 	string file = readText(templatePath);
 	JSONValue json = parseJSON(file);
 	string[string] variables = getParamsInTemplate(json);
 	string hipremeEngine = enginePath.absolutePath.escapeWindowsSep;
+	string project = projectPath.absolutePath.escapeWindowsSep;
 	if(!("params" in json))
 		json.object["params"] = emptyObject;
 	json["params"].object["HIPREME_ENGINE"] = hipremeEngine;
+	json["params"].object["PROJECT"] = project;
+	foreach(k, v; extraVariables) json["params"].object[k] = v;
 
 	foreach(op; settings)
 	{
@@ -248,8 +251,9 @@ private string processTemplateImpl(string templatePath, string projectPath, stri
 			}
 		}
 	}
-	variables["CD"] = projectPath.absolutePath.escapeWindowsSep;
+	variables["PROJECT"] = projectPath.absolutePath.escapeWindowsSep;
 	variables["HIPREME_ENGINE"] = hipremeEngine;
+	foreach(k, v; extraVariables) variables[k] = v;
 	json.object.remove("params");
 	json.object.remove("$schema");
 	file = processFile(json.toPrettyString(JSONOptions.doNotEscapeSlashes), variables);
@@ -287,9 +291,11 @@ JSONValue getDubFromTemplate(string templatePath, string enginePath)
  *   templatePath = path/to/folder/with/dub.template.json
  *   enginePath = The engine path which will be used for the configuration engineModules
  *   templateResult = The resulting string which can be used to cache internally or even save a file.
+ *	 additionalVariables = Additional variables that may come as an always defined. Used internally
  * Returns: The result of the operation
  */
-TemplateProcessorResult processTemplate(string templatePath, string enginePath, out string templateResult)
+TemplateProcessorResult processTemplate(string templatePath, string enginePath, out string templateResult,
+in string[string] additionalVariables = string[string].init)
 {
     string processedPath = templatePath;
     processedPath = processedPath.absolutePath;
@@ -393,26 +399,41 @@ TemplateProcessorResult processTemplate(string templatePath, string enginePath, 
 		}},
 		{"unnamedDependencies", (JSONValue json)
 		{
-			foreach(path; json["unnamedDependencies"].array)
+			foreach(unnamedDep; json["unnamedDependencies"].array)
 			{
-				string dubPath = buildNormalizedPath(processedPath, path.str, "dub.json");
+				import std.stdio;
+				import std.exception:enforce;
+				string endingPath;
+				JSONValue* subConfiguration;
+				if(unnamedDep.type == JSONType.object)
+				{
+					enforce("path" in unnamedDep, "Unnamed dependencies with type object must contain a \"path\"");
+					endingPath = unnamedDep["path"].str;
+					subConfiguration = ("subConfiguration" in unnamedDep);
+					if(subConfiguration && !("subConfigurations" in json))
+						json.object["subConfigurations"] = emptyObject;
+				}
+				else
+					endingPath = unnamedDep.str;
+
+				endingPath = processString(json, endingPath);
+				string dubPath = buildPath(processedPath, endingPath, "dub.json");
 				if(exists(dubPath))
 				{
 					if(!("dependencies" in json))
 						json.object["dependencies"] = emptyObject;
 					JSONValue dubJson = parseJSON(readText(dubPath));
 					string packageName = dubJson["name"].str;
-					if(packageName in json["dependencies"])
-						throw new Error("Package "~packageName~" from path "~path.str~" is already present in the dependencies.");
-					
-
-					json["dependencies"][packageName] = ["path": path.str];
+					enforce(!(packageName in json["dependencies"]), "Package "~packageName~" from path "~endingPath~" is already present in the dependencies.");
+					json["dependencies"][packageName] = ["path": endingPath];
+					if(subConfiguration)
+						json["subConfigurations"].object[packageName] = subConfiguration.str;
 				}
 			}
 			return json;
 		}}
 	];
 
-    templateResult = processTemplateImpl(templatePath, processedPath, enginePath, additionals);
+    templateResult = processTemplateImpl(templatePath, processedPath, enginePath, additionals, additionalVariables);
     return TemplateProcessorResult.success;
 }

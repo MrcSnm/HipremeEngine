@@ -1,6 +1,7 @@
 module android_entry;
 
 version(Android):
+import app;
 import hip.jni.helper.androidlog;
 import hip.jni.jni;
 import hip.jni.helper.jnicall;
@@ -48,6 +49,7 @@ export extern(C)
 
     void Java_com_hipremeengine_app_HipremeEngine_HipremeReinitialize(JNIEnv* env, jclass clazz)
     {
+        import hip.hiprenderer.renderer;
         HipRenderer.reinitialize();
     }
 

@@ -8,7 +8,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		t.writelnError("WASM build requires ldc2 in path. Please install it before building to it.");
 		return ChoiceResult.Error;
 	}
-	loadSubmodules(t, input);
+	cached(() => timed(() => loadSubmodules(t, input)));
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
 	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "wasm", "build", "assets"));
 	environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;
@@ -18,6 +18,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "release_game", "assets"),
 		buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "wasm", "generated")
 	);
+	cached(() => timed(() => outputTemplateForTarget(t)));
 
 	environment["DFLAGS"] = 
 		"-I="~buildNormalizedPath(configs["hipremeEnginePath"].str, "modules", "d_std", "source") ~" "~
@@ -25,25 +26,25 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		"-preview=shortenedMethods -L-allow-undefined -d-version=CarelessAlocation";
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	if(waitDub(t, "build --compiler=ldc2 --build=debug -c wasm --arch=wasm32-unknown-unknown-wasm"~cOpts.getDubOptions) != 0)
+	if(timed(() =>waitDubTarget(t, "wasm", "build --parallel --compiler=ldc2 --build=debug --arch=wasm32-unknown-unknown-wasm"~cOpts.getDubOptions)) != 0)
 	{
 		t.writelnError("Could not build for WebAssembly.");
 		return ChoiceResult.Error;
 	}
+	environment["DFLAGS"]= "";
+	timed(() => waitDub(t, "run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true"));
 
 	version(Posix) //Seems like dub is not detectign -posix in macOS
 	{
-		waitDub(t, "run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true", "export DFLAGS=\"\" && ");
 		wait(spawnShell("mv hipreme_engine.wasm* ./build/wasm/build/"));
 	}
 	else version(Windows)
 	{
-		waitDub(t, "run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true", "set DFLAGS=\"\" && ");
 		wait(spawnShell("move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"));
 	}
 	t.writelnSuccess("Succesfully built for WebAssembly.");
 	t.writelnHighlighted("Run `dub` at $HIPREME_ENGINE/build/wasm, for starting a local server for the game.
 Your link should be in localhost:9000");
 
-	return ChoiceResult.Continue;
+	return ChoiceResult.None;
 }
