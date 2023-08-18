@@ -1,0 +1,38 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Pure-D/code-d/master/json-validation/dub.schema.json",
+    "$extends": "#HIPREME_ENGINE/dub.json",
+    "unnamedDependencies": [
+        {"path": "#TARGET_PROJECT", "subConfiguration": "release"}
+    ],
+    "dependencies": {
+        "d_std": {"path": "modules/d_std", "version": "*"},
+        "runtime": {"path": "dependencies/runtime", "version": "*"}
+    },
+    "dflags": [
+        "--fvisibility=hidden"
+    ],
+    "stringImportPaths": [
+        "build/wasm/generated",
+        "build/release_game/"
+    ],
+    "postGenerateCommands-windows": [
+        "set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true",
+        "move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
+    ],
+    "subConfigurations": {
+        "runtime": "wasm",
+        "assets": "wasm",
+        "audio": "wasm",
+        "filesystem": "wasm",
+        "renderer": "wasm"
+    },
+    "versions": [
+        "Standalone",
+        "HipDStdFile",
+        "OpenGL",
+        "GLES20",
+        "CarelessAlocation",
+        "dll"
+    ],
+    "targetType": "executable"
+}

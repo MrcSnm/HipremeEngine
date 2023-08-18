@@ -6,6 +6,7 @@
 	"dependencies": {
 		"arsd-official:terminal": "~master"
 	},
+	"versions-windows": ["WindowsVista"],
 	"stringImportPaths": [
 		"../../build/scripts"
 	],

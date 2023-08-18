@@ -1,28 +1,22 @@
 {
-	"authors": ["HipremeEngine"],
-	"description" : "Hipreme Engine test scene",
+    "$schema": "https://raw.githubusercontent.com/Pure-D/code-d/master/json-validation/dub.schema.json",
+    "description" : "Hipreme Engine test scene",
 	"license": "proprietary",
 	"targetName" : "start_here",
 	"name" : "start_here",
 	"sourcePaths"  : ["source"],
-	"dependencies": 
-	{
-		"hipengine_api": {"path": "../../api"},
-		"util": {"path": "../../modules/util"},
-		"math": {"path": "../../modules/math"}
-	},
-	"stringImportPaths": [
-		"."
-	],
+    "linkedDependencies": {
+        "hipengine_api": {"path": "#HIPREME_ENGINE/api"}
+    },
+    "engineModules": [
+        "util",
+        "math"
+    ],
+    "stringImportPaths": ["."],
 	"dflags-ldc": [
 		"--fvisibility=hidden"
 	],
-	"lflags-windows-ldc": [
-		"/WHOLEARCHIVE:hipengine_api",
-		"/WHOLEARCHIVE:util",
-		"/WHOLEARCHIVE:math"
-	],
-	"preBuildCommands": [
+    "preBuildCommands": [
 		"rdmd ../../tools/build/getmodules.d source/ scriptmodules.txt"
 	],
 	"configurations": 
@@ -30,16 +24,6 @@
 		{
 			"name" : "script",
 			"targetType": "dynamicLibrary",
-			"lflags-windows": [
-				"/WX"
-			]
-		},
-		{
-			"name": "ldc",
-			"targetType": "dynamicLibrary",
-			"dflags": [
-				"-link-defaultlib-shared=false"
-			],
 			"lflags-windows": [
 				"/WX"
 			]
