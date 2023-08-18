@@ -1,4 +1,5 @@
 import arsd.terminal;
+import std.datetime.stopwatch;
 import std.getopt;
 import std.conv:to;
 import commons;
@@ -10,6 +11,7 @@ import targets.android;
 import targets.appleos;
 import targets.linux;
 import targets.wasm;
+import targets.psvita;
 
 
 bool isChoiceValid(string selected)
@@ -146,13 +148,7 @@ ChoiceResult createProject(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 
 ChoiceResult releaseGame(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-	import template_processor;
-	import std.file;
-	string out_templ;
-	string mainPath = buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets", "wasm");
-	processTemplate(mainPath, configs["hipremeEnginePath"].str, out_templ);
-	std.file.write(buildPath(mainPath, "dub.json"), out_templ);
-
+	outputTemplate(buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets", "uwp"));
 	return ChoiceResult.Continue;
 }
 
@@ -176,10 +172,6 @@ void main(string[] args)
 	if(!("PATH" in environment))
 		environment["PATH"] = "";
 	pathBeforeNewLdc = environment["PATH"];
-	if(std.file.exists(ConfigFile))
-		configs = parseJSON(std.file.readText(ConfigFile));
-	else
-		configs = parseJSON("{}");
 
 
 	if(!setupD(terminal, input))
@@ -200,7 +192,6 @@ void main(string[] args)
 		terminal.writelnError("ConfigFile is corrupted. Requesting reconfiguration.");
 		terminal.flush;
 		promptForConfigCreation(terminal);
-		configs = parseJSON(std.file.readText(ConfigFile));
 	}
 
 	if(args.length > 1)
@@ -215,6 +206,8 @@ void main(string[] args)
 			return;
 		}
 	}
+	if(!("DUB" in environment))
+		environment["DUB"] = getDubPath();
 	Choice[] choices;
 	version(Windows) choices~= Choice("Windows", &prepareWindows);
 	version(OSX) choices~= Choice("AppleOS", &prepareAppleOS);
@@ -223,19 +216,28 @@ void main(string[] args)
 	choices~=[
 		// Choice("PSVita"),
 		// Choice("Xbox Series"),
-		Choice("Android", &prepareAndroid),
+		Choice("Android", &prepareAndroid, true),
 		// Choice("Linux"),
-		Choice("WebAssembly", &prepareWASM),
+		Choice("WebAssembly", &prepareWASM, true),
+		Choice("PSVita", &preparePSVita, true),
 		Choice("Create Project", &createProject),
 		Choice("Select Game", &selectGameFolder),
 		Choice("Release Game", &releaseGame),
 		Choice("Exit", &exitFn)
 	];
 
+	StopWatch sw = StopWatch(AutoStart.yes);
 	while(true)
 	{
 		Choice selection = selectChoice(terminal, input, choices);
+		if(selection.shouldTime)
+			sw.reset();
 		ChoiceResult res = selection.onSelected(&selection, terminal, input, cOpts);
+		if(selection.shouldTime)
+		{
+			import std.conv:to;
+			terminal.writelnSuccess("Completed ", selection.name," in ", sw.peek.total!"msecs".to!string, " ms");
+		}
 		if(res == ChoiceResult.Continue)
 			break;
 	}

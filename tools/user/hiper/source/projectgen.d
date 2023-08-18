@@ -101,10 +101,10 @@ string generateDubProject(DubProjectInfo info)
 	],
 	"linkedDependencies": {"hipengine_api": {"path": "#HIPREME_ENGINE/api"}},
 	"stringImportPaths": [
-		"."
+		"#PROJECT"
 	],
 	"preBuildCommands": [
-		"rdmd #HIPREME_ENGINE/tools/build/getmodules.d source/ scriptmodules.txt"
+		"rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
 	"dflags-linux-ldc": [
 		"-link-defaultlib-shared=false"
@@ -114,10 +114,9 @@ string generateDubProject(DubProjectInfo info)
 		{
 			"name" : "script",
 			"targetType": "dynamicLibrary",
-			"lflags-windows": [
-				"/WX"
-			]
+			"lflags-windows": ["/WX"]
 		},
+		{"name": "release", "targetType": "sourceLibrary"},
 		{
 			"name": "run",
 			"targetType": "dynamicLibrary",

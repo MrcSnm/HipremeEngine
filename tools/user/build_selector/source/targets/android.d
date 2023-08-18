@@ -385,6 +385,7 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
 	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "android", "project", "app", "src", "main", "assets"));
+	cached(() => timed(() => outputTemplateForTarget(t)));
 
 	string ldcLibsPath = buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "android", "lib");
 
@@ -399,7 +400,7 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	t.flush;
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	if(waitDub(t, "build --parallel -c android --compiler=ldc2 -a aarch64--linux-android "~cOpts.getDubOptions) != 0)
+	if(waitDubTarget(t, "android", "build --parallel --compiler=ldc2 -a aarch64--linux-android "~cOpts.getDubOptions) != 0)
 	{
 		t.writelnError("Compilation failed.");
 		return ChoiceResult.Error;

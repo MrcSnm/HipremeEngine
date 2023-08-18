@@ -112,7 +112,7 @@ class HipInputListener
         {
             import hip.api.input;
             import hip.console.log;
-            float[2] pos = getWorldTouchPosition;
+            float[2] pos = getWorldTouchPosition();
             int x = cast(int)pos[0], y = cast(int)pos[1];
             foreach(ref move; moveListeners)
             {
