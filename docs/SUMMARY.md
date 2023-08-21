@@ -19,3 +19,7 @@
 * [Hipreme Engine Tools](internals/hipreme-engine-tools.md)
 * [Building](internals/building/README.md)
   * [dub.template.json reference](internals/building/dub.template.json-reference.md)
+
+***
+
+* [WebAssembly D Delegate Call in JS](webassembly-d-delegate-call-in-js.md)
