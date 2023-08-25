@@ -106,14 +106,14 @@ string generateDubProject(DubProjectInfo info)
 	"preBuildCommands": [
 		"rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
-	"dflags-linux-ldc": [
-		"-link-defaultlib-shared=false"
-	],
 	"configurations": 
 	[
 		{
 			"name" : "script",
 			"targetType": "dynamicLibrary",
+			"dflags-ldc": [
+				"-link-defaultlib-shared=true"
+			],
 			"lflags-windows": ["/WX"]
 		},
 		{"name": "release", "targetType": "sourceLibrary"},
