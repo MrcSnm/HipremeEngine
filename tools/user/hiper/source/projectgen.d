@@ -103,7 +103,7 @@ string generateDubProject(DubProjectInfo info)
 	"stringImportPaths": [
 		"#PROJECT"
 	],
-	"dflags-ldc": ["--disable-verify", "--oq"]
+	"dflags-ldc": ["--disable-verify", "--oq"],
 	"preBuildCommands": [
 		"rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
