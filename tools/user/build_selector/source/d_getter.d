@@ -49,6 +49,23 @@ bool downloadLdc(ref Terminal t, ref RealTimeConsoleInput input)
     return true;
 }
 
+
+
+/** 
+ * Must check if ~/.ldc2.conf (%APPDATA%\.ldc\ldc2.conf) exists and then ignore it.
+ * This is a fix since Hipreme Engine should contain the entire build command and make it
+ * predictable.
+ *  Here, it uses the 2nd ldc2.conf, so, one is still able to tweak although not recommended
+ * https://wiki.dlang.org/Using_LDC - Next to ldc2 executable.
+ */
+private void overrideLdcConf(ref Terminal t)
+{
+    static import std.file;
+    string ldc2Conf = buildNormalizedPath(getOutputPath(), "etc", "ldc2.conf");
+    t.writelnHighlighted("Overriding ldc2.conf to use one next to ldc executable.");
+    std.file.copy(ldc2Conf, buildNormalizedPath(getOutputPath(), "bin", "ldc2.conf"));
+}
+
 bool installD(ref Terminal t, ref RealTimeConsoleInput input)
 {
     bool existsLdc = ("ldcPath" in configs) !is null;
@@ -100,6 +117,7 @@ bool installD(ref Terminal t, ref RealTimeConsoleInput input)
         makeFileExecutable(buildNormalizedPath(binPath, "ldc2"));
         makeFileExecutable(buildNormalizedPath(binPath, "ldmd2"));
         makeFileExecutable(buildNormalizedPath(binPath, "dub"));
+        overrideLdcConf(t);
         configs["ldcVersion"] = LdcVersion;
         configs["ldcPath"] = getOutputPath;
         configs["dubPath"] = binPath;
@@ -108,6 +126,7 @@ bool installD(ref Terminal t, ref RealTimeConsoleInput input)
 
     return true;
 }
+
 
 bool setupD(ref Terminal t, ref RealTimeConsoleInput input)
 {

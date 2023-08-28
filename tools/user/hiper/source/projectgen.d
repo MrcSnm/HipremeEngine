@@ -103,6 +103,7 @@ string generateDubProject(DubProjectInfo info)
 	"stringImportPaths": [
 		"#PROJECT"
 	],
+	"dflags-ldc": ["--disable-verify", "--oq"]
 	"preBuildCommands": [
 		"rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
@@ -111,9 +112,7 @@ string generateDubProject(DubProjectInfo info)
 		{
 			"name" : "script",
 			"targetType": "dynamicLibrary",
-			"dflags-ldc": [
-				"-link-defaultlib-shared=true"
-			],
+			"dflags-ldc": ["-link-defaultlib-shared=true"],
 			"lflags-windows": ["/WX"]
 		},
 		{"name": "release", "targetType": "sourceLibrary"},

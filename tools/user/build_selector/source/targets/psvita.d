@@ -41,6 +41,16 @@ private auto getExecFunc()
         else return wait(spawnShell(arg));
     };
 }
+
+/** 
+ * The first build will simply generate the VPK, by mapping assets, compiling
+ * all the required stuff for PSVita, and also including the main binary (eboot.bin)
+ * after the first build is done, one must manually install the vita_sample.vpk 
+ * by using the vitashell utility.
+ * Params:
+ *   t = 
+ * Returns: 
+ */
 private bool firstBuild(ref Terminal t)
 {
     string cwd = std.file.getcwd();
@@ -60,6 +70,17 @@ private bool firstBuild(ref Terminal t)
     return true;
 }
 
+/** 
+ * Instead of building the entire VPK for PS Vita, it only changes the binary, after that,
+ * it directly sends this new binary to the Package folder, so, there will be no need
+ * to extract a VPK by going into the Install Process again, making it a lot faster
+ * to both build and test.
+ *
+ *  For even faster installation, it is recomended to run a background FTP on PSV
+ * Params:
+ *   t = 
+ * Returns: 
+ */
 private bool fastBuild(ref Terminal t)
 {
     enum APP_ID = "VSDK00007";
@@ -67,6 +88,10 @@ private bool fastBuild(ref Terminal t)
 
     string cwd = std.file.getcwd();
     std.file.chdir(getHipPath("build", "vita", "hipreme_engine"));
+
+    version(Windows) enum pipe = "^|";
+    else enum pipe = "|";
+
     scope(exit) std.file.chdir(cwd);
     exec("make clean");
     if(exec("make eboot.bin") != 0)
@@ -74,13 +99,13 @@ private bool fastBuild(ref Terminal t)
         t.writelnError("Could not rebuild.");
         return false;
     }
-    exec("echo screen on | nc "~configs["psvIp"].str~" "~configs["psvCmdPort"].str);
+    exec("echo screen on "~pipe~" nc "~configs["psvIp"].str~" "~configs["psvCmdPort"].str);
     if(exec("curl ftp://"~configs["psvIp"].str~":1337/ux0:/app/"~APP_ID~"/ -T ./eboot.bin") != 0)
     {
         t.writelnError("Could not send eboot.bin");
         return false;
     }
-    exec("echo launch "~APP_ID~" | nc "~configs["psvIp"].str~" "~configs["psvCmdPort"].str);
+    exec("echo launch "~APP_ID~" "~pipe~" nc "~configs["psvIp"].str~" "~configs["psvCmdPort"].str);
     return true;
 }
 
