@@ -214,7 +214,6 @@ interface IHipPreloadable
 
     mixin template Preload()
     {
-
         mixin template finalImpl()
         {
             private __gshared string[] _assetsForPreload;

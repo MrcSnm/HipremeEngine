@@ -12,8 +12,8 @@ module hip.hiprenderer.backend.gl.glshader;
 version(GLES30)
 {
     enum shaderVersion = "#version 300 es";
-    enum floatPrecision = "";
-    // enum floatPrecision = "precision mediump;";
+    enum floatPrecision = "precision mediump float;";
+    // enum floatPrecision = "";
 }
 else version(GLES20)
 {
