@@ -93,7 +93,6 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 	}
 	else
 	{
-		pragma(msg, "HipremeEngineMainScene FOUND");
 		export AScene HipremeEngineMainScene()
 		{
 			mixin LoadAllAssets!(ScriptModules);
