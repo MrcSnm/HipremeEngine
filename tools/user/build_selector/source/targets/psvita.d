@@ -20,7 +20,7 @@ private enum vdpmInstallCmd =
 
 private bool setupPsvitaLinux(ref Terminal t, ref RealTimeConsoleInput input)
 {
-    std.file.mkdir("/usr/local/vitasdk");
+    std.file.mkdirRecurse("/usr/local/vitasdk");
     std.file.append(buildPath(environment["HOME"], ".bashrc"), vitasdkExports);
     wait(spawnShell(updateCmd));
     wait(spawnShell(depsInstallCmd));

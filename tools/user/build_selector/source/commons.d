@@ -9,7 +9,7 @@ public static import std.file;
 
 enum hipremeEngineRepo = "https://github.com/MrcSnm/HipremeEngine.git";
 enum ConfigFile = "gamebuild.json";
-__gshared JSONValue configs;
+__gshared Config configs;
 
 string pathBeforeNewLdc;
 
@@ -29,6 +29,44 @@ struct Choice
 	bool opEquals(string choiceName) const
 	{
 		return name == choiceName;	
+	}
+}
+
+struct Config
+{
+	JSONValue cfg;
+
+	this(JSONValue js)
+	{
+		cfg = js;
+		if(!("windows" in cfg)) cfg.object["windows"] = JSONValue(string[string].init);
+		if(!("posix" in cfg)) cfg["posix"] = JSONValue(string[string].init);
+	}
+	string toString()
+	{
+		return cfg.toPrettyString(JSONOptions.doNotEscapeSlashes);
+	}
+
+	auto opBinaryRight(string op, R)(const R rhs) const
+	if(op == "in")
+	{
+		version(Windows){return rhs in cfg["windows"];}
+		else version(Posix){return rhs in cfg["posix"];}
+		else static assert(false, "OS not supported");
+	}
+
+	auto opIndexAssign(T)(T value, string obj)
+	{
+		version(Windows){return cfg["windows"][obj] = value;}
+		else version(Posix){return cfg["posix"][obj] = value;}
+		else static assert(false, "OS not supported");
+	}
+
+	auto opIndex(string obj)
+	{
+		version(Windows){return cfg["windows"][obj];}
+		else version(Posix){return cfg["posix"][obj];}
+		else static assert(false, "OS not supported");
 	}
 }
 
@@ -292,7 +330,10 @@ bool extract7ZipToFolder(string zPath, string outputDirectory, ref Terminal t, r
 		std.file.mkdirRecurse(outputDirectory);
 	
 	std.file.chdir(outputDirectory);
-	bool ret = executeShell(configs["7zip"].str ~ " x "~zPath~" -y").status == 0;
+	version(Windows)
+		bool ret = executeShell(configs["7zip"].str ~ " x "~zPath~" -y").status == 0;
+	else
+		bool ret = executeShell("7za x "~zPath~" -y").status == 0;
 	std.file.chdir(cwd);
 	return ret;
 }
@@ -360,7 +401,7 @@ private string getConfigPath()
 
 void updateConfigFile()
 {
-	std.file.write(getConfigPath, configs.toPrettyString());
+	std.file.write(getConfigPath, configs.toString());
 }
 
 string getGitExec()
@@ -410,6 +451,11 @@ private bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInpu
 			std.file.mkdirRecurse(outFolder);
 			std.file.rename(buildNormalizedPath(std.file.getcwd(), "7z.exe"), buildNormalizedPath(outFolder, "7z.exe"));
 			configs["7zip"] = buildNormalizedPath(outFolder, "7z.exe");
+			updateConfigFile();
+		}
+		else version(Posix)
+		{
+			configs["7zip"] = "7za";
 			updateConfigFile();
 		}
 	}
@@ -472,9 +518,7 @@ void runEngineDScript(ref Terminal t, string script, scope string[] args...)
 	StopWatch sw = StopWatch(AutoStart.yes);
 	t.writeln("Executing engine script ", script, " with arguments ", args);
 	t.flush;
-	string rdmd = buildNormalizedPath(configs["ldcPath"].str, "bin", "rdmd");
-	version(Windows) rdmd = rdmd.setExtension("exe");
-	auto exec = executeShell(rdmd ~ " " ~ buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)~" " ~ args.join(" "), 
+	auto exec = executeShell(configs["rdmdPath"].str ~ " " ~ buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)~" " ~ args.join(" "), 
 	environment.toAA);
 	t.writeln("    Finished in ", sw.peek.total!"msecs", "ms");
 	t.writeln(exec.output);
@@ -727,12 +771,10 @@ private bool hasAdminRights()
 	else return false;
 }
 
-
-
 static this()
 {
 	if(std.file.exists(getConfigPath))
-		configs = parseJSON(std.file.readText(getConfigPath));
+		configs = Config(parseJSON(std.file.readText(getConfigPath)));
 	else
-		configs = parseJSON("{}");
+		configs = Config(parseJSON("{}"));
 }
