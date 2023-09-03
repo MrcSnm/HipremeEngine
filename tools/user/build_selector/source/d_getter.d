@@ -118,8 +118,12 @@ bool installD(ref Terminal t, ref RealTimeConsoleInput input)
         makeFileExecutable(buildNormalizedPath(binPath, "ldmd2"));
         makeFileExecutable(buildNormalizedPath(binPath, "dub"));
         overrideLdcConf(t);
+
+        string rdmd = buildNormalizedPath(binPath, "rdmd");
+        version(Windows) rdmd = rdmd.setExtension("exe");
         configs["ldcVersion"] = LdcVersion;
         configs["ldcPath"] = getOutputPath;
+        configs["rdmdPath"] = rdmd;
         configs["dubPath"] = binPath;
         updateConfigFile();
     }
