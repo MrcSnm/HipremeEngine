@@ -37,7 +37,6 @@ mixin template IncludeComponents(Components...)
     }
 }
 
-
 class IBaseComponent(T) : IComponent
 {
     final int getID(){return getComponentID!T;}

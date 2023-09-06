@@ -14,7 +14,7 @@ private void put(Sink, E)(ref Sink sink, E e)
             sink.put(element);
     }
     else
-        sink.put(e);
+        std.range.primitives.put(sink, e);
 }
 
 
@@ -30,6 +30,7 @@ void toStringRange(Sink, Enum)(ref Sink sink, Enum enumMember) if(is(Enum == enu
 }
 
 void toStringRange(Sink)(ref Sink sink, float f)
+if(isOutputRange!(Sink, char))
 {
     if(f != f) //nan
     {
@@ -183,7 +184,7 @@ void toStringRange(Sink)(auto ref Sink sink, bool b) if(isOutputRange!(Sink, cha
     put(sink, b ? "true" :"false");
 }
 
-void toStringRange(Sink)(ref Sink sink, long x) 
+void toStringRange(Sink)(auto ref Sink sink, long x) 
 if(isOutputRange!(Sink, char))
 {
     enum numbers = "0123456789";

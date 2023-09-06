@@ -2,6 +2,7 @@
 	"authors": [
 		"Hipreme"
 	],
+	"dflags-ldc": ["--disable-verify"],
 	"buildOptions": [
 		"debugMode",
 		"debugInfo",
