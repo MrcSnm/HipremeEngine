@@ -5,6 +5,7 @@
 	"targetType": "staticLibrary",
 	"dependencies": {
 		"hipengine_api": {"path": "../../api", "version": "*"},
+		"util": {"path": "../util", "version": "*"},
 		"math": {"path": "../math", "version": "*"}
 	},
 	"copyright": "Copyright © 2022, Hipreme",
