@@ -42,12 +42,12 @@ version(LoadFunctionPointers)
 				import core.sys.posix.dlfcn:dlopen, RTLD_NOW;
 				_dll = dlopen(null, RTLD_NOW);
 			}
-			import std.stdio;
+			import core.stdc.stdio;
 			if(_dll == null)
-				writeln("Could not load GetModuleHandle(null)");
+				printf("Could not load GetModuleHandle(null)\n");
 			hipDestroy = cast(typeof(hipDestroy))_loadSymbol(_dll, "hipDestroy");
 			if(hipDestroy == null)
-				writeln("Fatal error: could not load hipDestroy");
+				printf("Fatal error: could not load hipDestroy\n");
 		}
 	}
 }
@@ -104,8 +104,8 @@ enum loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
 				f = cast(typeof(f))_loadSymbol(_dll, importedFunctionName.ptr);
 				if(f is null)
 				{
-					import std.stdio;
-					writeln(f.stringof, " wasn't able to load (tried with ", importedFunctionName, ")");
+					import core.stdc.stdio;
+					printf(f.stringof~" wasn't able to load (tried with %s)\n", importedFunctionName.ptr);
 				}
 			}
 		}
@@ -204,8 +204,8 @@ enum loadClassFunctionPointers(alias targetClass,
 				f = cast(typeof(f))_loadSymbol(_dll, importedFunctionName.ptr);
 				if(f is null)
 				{
-					import std.stdio;
-					writeln(f.stringof, " wasn't able to load (tried with ", importedFunctionName,")");
+					import core.stdc.stdio;
+					printf(f.stringof ~ " wasn't able to load (tried with %s)\n", importedFunctionName.ptr);
 				}
 			}
 		}}
@@ -229,8 +229,8 @@ template loadSymbolsFromExportD(string exportedClass, Ts...)
 				ret~= s.stringof ~"= cast(typeof("~s.stringof~ " ))_loadSymbol(_dll, ("~e~"~\""~s.stringof~"\\0\").ptr);";
 				if(s.stringof is null)
 				{
-					import std.stdio;
-					writeln("Could not load ",s.stringof, " (tried with ", e~s.stringof,")");
+					import core.stdc.stdio;
+					printf("Could not load "~s.stringof~" (tried with %s"~ e~s.stringof~")\n");
 				}
 			}
 			return ret;
