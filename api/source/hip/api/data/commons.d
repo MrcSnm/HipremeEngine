@@ -7,10 +7,28 @@ struct HipAssetUDA(T)
     string path;
     static if(!(is(T == void)))
         T function(string data) conversionFunction;
+    int start, end;
 }
 
-HipAssetUDA!T Asset(T)(string path, T function(string) conversionFunc){return HipAssetUDA!T(path, conversionFunc);}
-HipAssetUDA!void Asset(string path){return HipAssetUDA!void(path);}
+/** 
+ * Params:
+ *   path = Path where the asset is located. 
+        It may receive an $ for path formatting with numbers(only valid when array is used.)
+ *   conversionFunc = A function with input the data located at "path", and return any data.
+ *   start = For Arrays. Inclusive. May be greater than end for reverse counting.
+ *   end = For Arrays. Inclusive.
+ * Returns: 
+ */
+HipAssetUDA!T Asset(T)(string path, T function(string) conversionFunc, int start = 0, int end = 0){return HipAssetUDA!T(path, conversionFunc, start, end);}
+/** 
+ * Params:
+ *   path = Path where the asset is located. 
+        It may receive an $ for path formatting with numbers(only valid when array is used.)
+ *   start = For Arrays. Inclusive. May be greater than end for reverse counting.
+ *   end = For Arrays. Inclusive.
+ * Returns: 
+ */
+HipAssetUDA!void Asset(string path, int start = 0, int end = 0){return HipAssetUDA!void(path, start, end);}
 
 template FilterAsset(Attributes...)
 {
@@ -103,6 +121,38 @@ IHipAssetLoadTask loadAsset(type)(string assetPath)
     else
         return HipAssetManager.loadFile(assetPath);
 }
+IHipAssetLoadTask[] loadAsset(type)(string assetPath, int start, int end)
+{
+    int sign = end - start >= 0 ? 1 : -1;
+    ///Include 1 for the upper bounds 
+    int count = ((end - start) * sign) + 1;
+    if(count == 1) return [loadAsset!type(assetPath)];
+    IHipAssetLoadTask[] ret = new IHipAssetLoadTask[count];
+
+    static string formatStr(string str, int number)
+    {
+        import hip.util.to_string_range;
+        char[32] numSink = 0xff;
+        toStringRange(numSink[], number);
+        int charCount = 0;
+        while(numSink[charCount++] != 0xff){} charCount--;
+        //-1 for the $
+        char[] formattedStr = new char[(cast(int)str.length)-1+charCount];
+        int i = 0;
+        foreach(ch; str)
+        {
+            if(ch == '$')
+                formattedStr[i..i+=charCount] = numSink[0..charCount];
+            else
+                formattedStr[i++] = ch;
+        }
+        return formattedStr;
+    }
+
+    foreach(i; 0..count) 
+        ret[i] = loadAsset!type(formatStr(assetPath, start+i*sign));
+    return ret;
+}
 
 mixin template LoadAllAssets(string modules)
 {
@@ -130,15 +180,32 @@ mixin template LoadReferencedAssets(string[] modules)
                             alias assetUDA = GetAssetUDA!(__traits(getAttributes, classMember));
                             static if(assetUDA.path !is null)
                             {{
-                                IHipAssetLoadTask task = hip.api.data.commons.loadAsset!(typeof(classMember))(assetUDA.path);
+                                import std.traits:isArray;
+                                static if(isArray!(typeof(classMember))) alias memberType = typeof(classMember.init[0]);
+                                else alias memberType = typeof(classMember);
+
+                                IHipAssetLoadTask[] tasks = hip.api.data.commons.loadAsset!(memberType)(assetUDA.path, assetUDA.start, assetUDA.end);
                                 static if(!__traits(compiles, classMember.offsetof)) //Static 
                                 {
-                                    static if(__traits(hasMember, assetUDA, "conversionFunction"))
-                                        task.into(assetUDA.conversionFunction, &classMember);
-                                    else static if(is(typeof(classMember) == string))
-                                        task.into(&classMember);
+                                    
+                                    void loadTaskInto(IHipAssetLoadTask task, ref memberType member)
+                                    {
+                                        static if(__traits(hasMember, assetUDA, "conversionFunction"))
+                                            task.into(assetUDA.conversionFunction, &member);
+                                        else static if(is(memberType == string))
+                                            task.into(&member);
+                                        else
+                                            task.into!(memberType)(&member);
+                                    }
+                                    static if(isArray!(typeof(classMember)))
+                                    {
+                                        size_t start = classMember.length;
+                                        classMember.length+= tasks.length;
+                                        foreach(i, task; tasks)
+                                            loadTaskInto(task, classMember[start+i]);
+                                    }
                                     else
-                                        task.into!(typeof(classMember))(&classMember);
+                                        loadTaskInto(tasks[0], classMember);
                                 }
                             }}
                         }}
