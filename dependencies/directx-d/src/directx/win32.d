@@ -2,8 +2,10 @@ module directx.win32;
 
 version(Windows):
 
-public import core.sys.windows.windows;
-public import core.sys.windows.com;
+public import core.sys.windows.windef;
+public import core.sys.windows.winbase;
+public import core.sys.windows.mmsystem;
+public import core.sys.windows.basetyps;
 
 pure nothrow @safe @nogc
 HRESULT MAKE_HRESULT(bool s, uint f, uint c) {

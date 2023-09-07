@@ -13,7 +13,6 @@ module hip.bind.external;
 
 version(UWP)
 {
-    // import core.sys.windows.windows;
     import core.sys.windows.windef;
     import core.sys.windows.unknwn;
     import core.sys.windows.winbase;
