@@ -27,7 +27,8 @@ enum HipXboxGamepadButton : int
 }
 
 
-pragma(inline, true) enum isXboxGamepadButtonPressed(int gamepadState, HipXboxGamepadButton btn){return (gamepadState & btn) == btn;}
+pragma(inline, true) 
+bool isXboxGamepadButtonPressed(int gamepadState, HipXboxGamepadButton btn){return (gamepadState & btn) == btn;}
 
 struct HipInputXboxGamepadState
 {

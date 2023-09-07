@@ -9,7 +9,7 @@ module directx.d2d1effects;
 
 version(Windows):
 version(Direct2D_Effects):
-import core.sys.windows.com;
+import core.sys.windows.basetyps;
 
 // Built in effect CLSIDs
 const GUID CLSID_D2D12DAffineTransform        = { 0x6AA97485, 0x6354, 0x4cfc, [0x90, 0x8C, 0xE4, 0xA7, 0x4F, 0x62, 0xC9, 0x6C] };

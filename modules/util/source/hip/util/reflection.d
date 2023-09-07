@@ -23,7 +23,7 @@ int asInt(alias enumMember)()
 /**
 *   Used when wanting to represent any struct compatible with a static array.
 */
-enum isTypeArrayOf(Type, Array, int Count)()
+bool isTypeArrayOf(Type, Array, int Count)()
 {
     static if(is(Array == Type[Count]))
         return true;
@@ -219,7 +219,7 @@ template generateExportName(string className, alias funcSymbol)
 *   If isRef, it will call with hipSaveRef for not being colled
 *   funcCallCode can be anything as `className.functionName` or even `new Class`
 */
-private enum getExportedFuncImpl(bool isRef, string funcCallCode)
+private string getExportedFuncImpl(bool isRef, string funcCallCode)
 {
     string ret;
     if(isRef)
@@ -266,7 +266,7 @@ template generateExportFunc(string className, alias funcSymbol)
     enum impl = ()
     {
         alias RetType = ReturnType!funcSymbol;
-        string ret = "export extern(System) ReturnType!(sym)"~" "~generateExportName!(className, funcSymbol);
+        string ret = "export extern(System) "~RetType.stringof~" "~generateExportName!(className, funcSymbol);
         ret~= "(getParams!(sym)){";
 
         ret~= getExportedFuncImpl
@@ -423,7 +423,7 @@ string attributes(alias member)()
 
 template hasOverload(T,string member, OverloadType)
 {
-    enum impl()
+    bool impl()
     {
         bool ret = false;
         static foreach(ov; __traits(getVirtualMethods, T, member))
@@ -436,7 +436,7 @@ template hasOverload(T,string member, OverloadType)
 }
 
 
-enum isMethodImplemented(T, string member, FuncType)()
+bool isMethodImplemented(T, string member, FuncType)()
 {
     bool ret;
     static foreach(overload; __traits(getVirtualMethods, T, member))
@@ -449,7 +449,7 @@ enum isMethodImplemented(T, string member, FuncType)()
 /** 
  * Private to forward interface
  */
-enum ForwardFunc(alias func, string funcName, string member)()
+string ForwardFunc(alias func, string funcName, string member)()
 {
     return attributes!func~ " ReturnType!(ov) " ~ funcName ~ "(getParams!(ov))"~
          "{ return " ~ member ~ "." ~funcName ~ "(__traits(parameters));}";
@@ -463,7 +463,7 @@ enum ForwardFunc(alias func, string funcName, string member)()
 *
 *   [Dev: Futurely, it should be changed to use `alias member` instead of getting its string.]
 */
-enum ForwardInterface(string member, I)() if(is(I == interface))
+string ForwardInterface(string member, I)() if(is(I == interface))
 {
     import hip.util.string:replaceAll;
 
@@ -509,7 +509,7 @@ mixin template MultiInherit(I) if(is(I == interface))
 }
 
 
-enum GenerateGetterSettersInterfaceImpl(interface_)()
+void GenerateGetterSettersInterfaceImpl(interface_)()
 {
     import hip.util.array;
     foreach(mem; __traits(allMembers, interface_))

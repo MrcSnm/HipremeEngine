@@ -9,9 +9,20 @@ import hip.audio_decoding.audio;
 import hip.error.handler;
 import hip.hipaudio.audio;
 import core.sys.windows.windef;
-import core.sys.windows.objbase;
 import directx.xaudio2;
 
+extern(Windows)
+{
+    // import core.sys.windows.objbase; //This would import all the uuid table.
+    enum COINIT {
+        COINIT_APARTMENTTHREADED = 2,
+        COINIT_MULTITHREADED     = 0,
+        COINIT_DISABLE_OLE1DDE   = 4,
+        COINIT_SPEED_OVER_MEMORY = 8
+    }
+    HRESULT CoInitialize(PVOID);
+    HRESULT CoInitializeEx(LPVOID, DWORD);
+}
 
 class HipXAudioPlayer : IHipAudioPlayer
 {

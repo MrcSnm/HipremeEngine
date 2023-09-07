@@ -23,6 +23,7 @@ struct String
     @nogc:
     import core.stdc.string;
     import core.stdc.stdlib;
+    import core.int128;
     char[] chars;
     private size_t _capacity;
     private int* countPtr;
@@ -322,21 +323,33 @@ pure TString replaceAll(TChar, TString = TChar[])(TString str, TChar what, TStri
 
 pure TString replaceAll(TString)(TString str, TString what, TString replaceWith = "")
 {
-    TString ret;
-    uint z = 0;
-    for(uint i = 0; i < str.length; i++)
+    char[] ret;
+    int last;
+    int i;
+    do
     {
-        while(z < what.length && str[i+z] == what[z])
-            z++;
-        if(z == what.length)
+        i = indexOf(str, what, i);
+        if(i != -1)
         {
-            ret~= replaceWith;
-            i+=z;
+            int copyLength = i - last;
+            int currLength = cast(int)ret.length;
+            ret.length+= copyLength+replaceWith.length;
+            //Copy old content
+            ret[currLength..currLength+copyLength] = str[last..i];
+            //Copy replace
+            ret[currLength+copyLength..$] = replaceWith[];
+            //Skip what
+            i+= what.length;
+            last = i;
         }
-        z = 0;
-        ret~= str[i];
-    }
-    return ret;
+    } while(i != -1);
+
+    int copyLength = cast(int)(str.length - last);
+    int currLength = cast(int)ret.length;
+    ret.length+= copyLength;
+    ret[currLength..$] = str[last..$];
+
+    return cast(TString)ret;
 }
 
 pure int indexOf (TString)(inout TString str,inout TString toFind, int startIndex = 0) nothrow @nogc @safe
@@ -500,7 +513,7 @@ string toLowerCase(string str)
     return cast(string)ret;
 }
 
-pragma(inline, true) enum toUpper(char c)
+pragma(inline, true) char toUpper(char c) pure nothrow @nogc @safe
 {
     if(c < 'a' || c > 'z')
         return c;

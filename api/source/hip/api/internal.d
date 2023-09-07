@@ -78,7 +78,7 @@ enum bool isFunctionPointer(alias T) = is(typeof(*T) == function);
 *	The problem is not yet solved, but it is a lot better than doing several
 *	template instantiations
 */
-enum loadSymbols(Ts...)()
+void loadSymbols(Ts...)()
 {
 	static foreach(s; Ts)
 		s = cast(typeof(s))_loadSymbol(_dll, s.stringof);
@@ -87,7 +87,7 @@ enum loadSymbols(Ts...)()
 /**
 *	This function will load all function pointers defined in the module passed.
 */
-enum loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
+void loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
 {
 	string prefix = "";
 	string importedFunctionName;
@@ -113,7 +113,7 @@ enum loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
 }
 
 
-enum generateFunctionDefinitionFromFunctionPointer(alias funcPointerSymbol, string name)()
+string generateFunctionDefinitionFromFunctionPointer(alias funcPointerSymbol, string name)()
 {
 	import std.traits;
 	string params;
@@ -136,8 +136,8 @@ enum generateFunctionDefinitionFromFunctionPointer(alias funcPointerSymbol, stri
 		identifiers~= "_"~i.stringof;
 	}
 
-	return (ReturnType!funcPointerSymbol).stringof ~ " "~ name ~ "("~params ~"){"~
-		(is(ReturnType!funcPointerSymbol == void) ? "" : "return ")~ funcPointerSymbol.stringof ~ "("~identifiers ~ ");}";
+	return (ReturnType!funcPointerSymbol).stringof ~ " "~ name ~ "("~params 
+	~"){return "~ funcPointerSymbol.stringof ~ "("~identifiers ~ ");}";
 
 }
 
@@ -174,7 +174,7 @@ template Flag(string f)
 
 alias UseExportedClass = Flag!"UseExportedClass";
 
-enum loadClassFunctionPointers(alias targetClass, 
+void loadClassFunctionPointers(alias targetClass, 
 	UseExportedClass useExported = UseExportedClass.No, 
 	string exportedClass = "")
 ()

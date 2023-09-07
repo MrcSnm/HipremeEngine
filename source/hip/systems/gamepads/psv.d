@@ -34,7 +34,7 @@ enum PsvButtons : uint
 	SQUARE      = 0x00008000,       //!< Square button.
 }
 
-pragma(inline, true) enum isPSVButtonPressed(uint btns, PsvButtons btn){return (btns & btn) == btn;}
+pragma(inline, true) bool isPSVButtonPressed(uint btns, PsvButtons btn){return (btns & btn) == btn;}
 extern(C) void hipVitaPollGamepad(HipInputPSVGamepadState* state);
 
 struct HipInputPSVGamepadState

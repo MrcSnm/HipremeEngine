@@ -157,6 +157,7 @@ IHipAssetLoadTask[] loadAsset(type)(string assetPath, int start, int end)
 mixin template LoadAllAssets(string modules)
 {
     import hip.api.data.commons;
+    import std.file;
     mixin LoadReferencedAssets!(splitLines(modules));
 }
 mixin template LoadReferencedAssets(string[] modules)
