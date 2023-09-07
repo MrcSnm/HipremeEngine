@@ -199,12 +199,17 @@ ChoiceResult prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 			return ChoiceResult.Error;
 		}
 	}
-    std.file.chdir(configs["gamePath"].str);
-	if(timed(() => waitDub(t, "build --parallel -c script "~cOpts.getDubOptions, "")) != 0)
-		return ChoiceResult.Error;
-	std.file.chdir(configs["hipremeEnginePath"].str);
 
-	timed(() => waitDub(t, "build --parallel -c script "~cOpts.getDubOptions, ""));
+	waitOperations([{
+		if(timed(t, () => execDub(t, "build --parallel -c script --root="~configs["gamePath"].str~" "~cOpts.getDubOptions, "")) != 0)
+			return false;
+		return true;
+	},
+	{
+		timed(t, () => execDub(t, "build --parallel -c script --root="~getHipPath~" "~cOpts.getDubOptions, ""));
+		return true;
+	}]);
+	
 	executeShell(getHipPath("bin", "desktop", "hipreme_engine.exe") ~ " "~ configs["gamePath"].str);
 
 	return ChoiceResult.Continue;

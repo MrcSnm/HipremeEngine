@@ -241,6 +241,23 @@ auto timed(T)(scope T delegate() dg)
 		return ret;
 	}
 }
+auto timed(T)(ref Terminal t, scope T delegate() dg)
+{
+	import std.datetime.stopwatch;
+	StopWatch sw = StopWatch(AutoStart.yes);
+	static if(is(T == void))
+	{
+		dg();
+		t.writeln(sw.peek.total!"msecs", "ms");
+	}
+	else 
+	{
+		auto ret = dg();
+		t.writeln(sw.peek.total!"msecs", "ms");
+		return ret;
+	}
+}
+
 
 struct Session
 {
@@ -560,11 +577,9 @@ Pid runDub(string commands, string preCommands = "", bool confirmKey = false)
 	return spawnShell(getDubRunCommand(commands, preCommands, confirmKey));
 }
 
-int waitDub(ref Terminal t, string commands, string preCommands = "", bool confirmKey = false)
+private int execDubBase(ref Terminal t)
 {
 	import std.conv:to;
-
-	///Detects the presence of a template file before executing.
 	if(absolutePath(configs["hipremeEnginePath"].str) != absolutePath(std.file.getcwd()))
 	if(std.file.exists("dub.template.json"))
 	{
@@ -586,10 +601,32 @@ int waitDub(ref Terminal t, string commands, string preCommands = "", bool confi
 			}
 		}
 	}
+	return 0;
+}	
+
+int waitDub(ref Terminal t, string commands, string preCommands = "", bool confirmKey = false)
+{
+	///Detects the presence of a template file before executing.
+	if(execDubBase(t) == -1) return -1;
 	string toExec = getDubRunCommand(commands, preCommands, confirmKey);
 	t.writeln(toExec);
 	return wait(spawnShell(toExec));
 }
+
+int execDub(ref Terminal t, string commands, string preCommands = "", bool confirmKey = false)
+{
+	if(execDubBase(t) == -1) return -1;
+	string toExec = getDubRunCommand(commands~" --color=always", preCommands, confirmKey);
+	t.writeln(toExec);
+	auto pipes = pipeShell(toExec);
+	foreach(l; pipes.stdout.byLine) t.writeStringRaw(l~"\n"), t.flush;
+	foreach(l; pipes.stderr.byLine) 
+		t.writeStringRaw(l~"\n"), t.flush;
+	t.flush;
+	int code = wait(pipes.pid);
+	return code;
+}
+
 
 int waitDubTarget(ref Terminal t, string target, string commands, string preCommands = "", bool confirmKey = false)
 {
@@ -599,6 +636,23 @@ int waitDubTarget(ref Terminal t, string target, string commands, string preComm
 int waitAndPrint(ref Terminal t, Pid pid)
 {
 	return wait(pid);
+}
+
+public import std.concurrency;
+bool waitOperations(immutable bool delegate()[] operations)
+{
+	foreach(op; operations)
+	{
+		spawn((bool delegate() targetOperation)
+		{
+			ownerTid.send(targetOperation());
+		}, op);
+	}
+
+	foreach(i; 0..operations.length)
+		if(!receiveOnly!bool) 
+			return false;
+	return true;
 }
 
 
