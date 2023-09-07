@@ -157,7 +157,7 @@
 			"targetType": "executable",
 			"lflags-windows-ldc": ["-Lmodules/renderer/lib/win64"],
 			"dependencies": {
-				"fswatch": "~>0.6.0"
+				"fswatch": "~>0.6.1"
 			},
 			"versions": [
 				"OpenGL",
@@ -166,15 +166,11 @@
 				"Load_DScript",
 				"Standalone"
 			],
-			"dflags-windows-ldc": [
-				"--link-internally"
+			"dflags-ldc": [
+				"--ftime-trace",
+				"--ftime-trace-file=./my-trace.json"
 			],
-			"dflags-linux-ldc": [
-				"-link-defaultlib-shared"
-			],
-			"lflags-linux-ldc": [
-				"--export-dynamic"
-			],
+			"lflags-linux-ldc": ["--export-dynamic"],
 			"versions-windows": [
 				"Direct3D_11",
 				"DirectX",
@@ -202,29 +198,6 @@
 				"Direct3D_11",
 				"XAudio2",
 				"DirectX"
-			]
-		},
-		{
-			"name": "game_optimize",
-			"buildOptions": [
-				"releaseMode",
-				"optimize"
-			],
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"targetPath": "bin/desktop",
-			"targetType": "executable",
-			"versions": [
-				"Standalone",
-				"OpenGL",
-				"OpenAL",
-				"Desktop"
-			],
-			"versions-windows": [
-				"Direct3D_11",
-				"DirectX",
-				"XAudio2"
 			]
 		},
 		{
