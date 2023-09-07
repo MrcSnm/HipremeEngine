@@ -166,6 +166,12 @@ string autoSelect;
 
 void main(string[] args)
 {
+	version(Windows)
+	{
+		import core.sys.windows.wincon;
+		import core.sys.windows.windows;
+		SetConsoleMode(GetModuleHandle(null), ENABLE_VIRTUAL_TERMINAL_PROCESSING|ENABLE_VIRTUAL_TERMINAL_INPUT);
+	}
 	auto terminal = Terminal(ConsoleOutputType.linear);
 	auto input = RealTimeConsoleInput(&terminal, ConsoleInputFlags.raw);
 	terminal.clear();
