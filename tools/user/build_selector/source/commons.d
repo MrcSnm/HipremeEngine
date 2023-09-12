@@ -399,11 +399,67 @@ bool downloadFileIfNotExists(
 			return false;
 		t.writelnHighlighted("Download started.");
 		t.flush;
-		download(link, outputName);
-		t.writelnSuccess("Download succeeded!");
+		downloadWithProgressBar(t, link, outputName);
+		t.writelnSuccess("\nDownload succeeded!");
 		t.flush;
 	}
 	return true;
+}
+
+private void terminalProgressBar(ref Terminal t, float percentage, ubyte ticksCount = 32)
+{
+	assert(percentage <= 1.0 && percentage >= 0, "Invalid percentage.");
+
+	ubyte drawnTicks = cast(ubyte)(ticksCount*percentage);
+	int line = t.cursorY;
+	t.moveTo(0, line);
+	t.clearToEndOfLine();
+	t.write("<");
+	foreach(int i; 0..ticksCount)
+	{
+		t.color(i < drawnTicks ? Color.green : Color.red, Color.DEFAULT);
+		t.write(i < drawnTicks ? "=" : ".");
+	}
+	t.color(Color.DEFAULT, Color.DEFAULT);
+	t.write("> (", percentage*100, "%)");
+	t.flush();
+}
+
+/**
+*	Same as std.net.curl.download
+*	Difference is that it shows a progress bar while downloading.
+*/
+void downloadWithProgressBar(ref Terminal t, string url, string saveToPath, ulong updateDelay = 125)
+{
+	import std.net.curl:HTTP;
+	import std.datetime.stopwatch:StopWatch, AutoStart;
+	import std.stdio : File;
+	size_t received, contentLength;
+
+	HTTP conn = HTTP();
+	conn.url = url;
+	auto f = File(saveToPath, "wb");
+	
+	t.hideCursor();
+	StopWatch sw = StopWatch(AutoStart.yes);
+	conn.onReceive = (ubyte[] data)
+	{
+		if(contentLength == 0)
+		{
+			import std.conv:to;
+			contentLength = conn.responseHeaders["content-length"].to!size_t;
+		}
+		received+= data.length;
+		if(sw.peek.total!"msecs" >= updateDelay || received == contentLength)
+		{
+			terminalProgressBar(t, cast(float)received/contentLength);
+			sw.reset();
+		}
+		f.rawWrite(data);
+		return data.length;
+	};	
+	conn.perform();
+	t.showCursor();
 }
 
 
@@ -613,18 +669,15 @@ int waitDub(ref Terminal t, string commands, string preCommands = "", bool confi
 	return wait(spawnShell(toExec));
 }
 
-int execDub(ref Terminal t, string commands, string preCommands = "", bool confirmKey = false)
+int execDub(ref Terminal t, string commands, string preCommands = "", string dir = "", bool confirmKey = false)
 {
+	import std.string:lineSplitter;
 	if(execDubBase(t) == -1) return -1;
 	string toExec = getDubRunCommand(commands~" --color=always", preCommands, confirmKey);
 	t.writeln(toExec);
-	auto pipes = pipeShell(toExec);
-	foreach(l; pipes.stdout.byLine) t.writeStringRaw(l~"\n"), t.flush;
-	foreach(l; pipes.stderr.byLine) 
-		t.writeStringRaw(l~"\n"), t.flush;
-	t.flush;
-	int code = wait(pipes.pid);
-	return code;
+	auto res = executeShell(toExec, null, std.process.Config.none, size_t.max, dir);
+	foreach(l; res.output.lineSplitter) t.writeln("\t", l);
+	return res.status;
 }
 
 
