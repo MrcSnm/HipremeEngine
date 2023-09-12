@@ -468,7 +468,7 @@ size_t downloadWithProgressBar(ref Terminal t, string url, string saveToPath, si
 			terminalProgressBar(t, cast(float)received/contentLength);
 			sw.reset();
 		}
-		send(writerTid, cast(immutable(ubyte)[])data);
+		send(writerTid, data.idup);
 		return data.length;
 	};
 	conn.perform();
