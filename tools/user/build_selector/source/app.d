@@ -148,7 +148,11 @@ ChoiceResult createProject(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 
 ChoiceResult releaseGame(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
+	import std.net.curl;
 	outputTemplate(buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets", "uwp"));
+	downloadFileIfNotExists("Visual C Redist.", "https://aka.ms/vs/17/release/vc_redist.x64.exe", "target.exe", t, input);
+	std.file.remove("target.exe");
+
 	return ChoiceResult.Continue;
 }
 
