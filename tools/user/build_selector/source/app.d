@@ -224,10 +224,8 @@ void main(string[] args)
 	version(linux) choices~= Choice("Linux", &prepareLinux);
 
 	choices~=[
-		// Choice("PSVita"),
 		// Choice("Xbox Series"),
 		Choice("Android", &prepareAndroid, true),
-		// Choice("Linux"),
 		Choice("WebAssembly", &prepareWASM, true),
 		Choice("PSVita", &preparePSVita, true),
 		Choice("Create Project", &createProject),
@@ -251,6 +249,4 @@ void main(string[] args)
 		if(res == ChoiceResult.Continue)
 			break;
 	}
-	
-
 }
