@@ -390,6 +390,7 @@ bool downloadFileIfNotExists(
 )
 {
 	import std.net.curl;
+	import std.conv:to;
 	string theDir = dirName(outputName);
 	if(!std.file.exists(theDir))
 		std.file.mkdirRecurse(theDir);
@@ -399,8 +400,8 @@ bool downloadFileIfNotExists(
 			return false;
 		t.writelnHighlighted("Download started.");
 		t.flush;
-		downloadWithProgressBar(t, link, outputName);
-		t.writelnSuccess("\nDownload succeeded!");
+		size_t time = downloadWithProgressBar(t, link, outputName);
+		t.writelnSuccess("\nDownload succeeded after ", time.to!string, " msecs!");
 		t.flush;
 	}
 	return true;
@@ -428,38 +429,53 @@ private void terminalProgressBar(ref Terminal t, float percentage, ubyte ticksCo
 /**
 *	Same as std.net.curl.download
 *	Difference is that it shows a progress bar while downloading.
+*	Returns the time needed to download.
 */
-void downloadWithProgressBar(ref Terminal t, string url, string saveToPath, ulong updateDelay = 125)
+size_t downloadWithProgressBar(ref Terminal t, string url, string saveToPath, size_t updateDelay = 125)
 {
 	import std.net.curl:HTTP;
+	import core.time:dur;
 	import std.datetime.stopwatch:StopWatch, AutoStart;
 	import std.stdio : File;
 	size_t received, contentLength;
-
 	HTTP conn = HTTP();
 	conn.url = url;
-	auto f = File(saveToPath, "wb");
-	
+	auto writer = (string path)
+	{
+		auto f = File(path, "wb");
+		while(true)
+		{
+			immutable(ubyte)[] data = receiveOnly!(immutable(ubyte)[]);
+			if(data.length == 0)
+				break;
+			f.rawWrite(data);
+		}
+		ownerTid.send(true);
+	};
+	auto writerTid = spawn(writer, saveToPath);
 	t.hideCursor();
 	StopWatch sw = StopWatch(AutoStart.yes);
+	size_t downloadTime;
 	conn.onReceive = (ubyte[] data)
 	{
+		import std.conv:to;
 		if(contentLength == 0)
-		{
-			import std.conv:to;
 			contentLength = conn.responseHeaders["content-length"].to!size_t;
-		}
 		received+= data.length;
 		if(sw.peek.total!"msecs" >= updateDelay || received == contentLength)
 		{
+			downloadTime+= sw.peek.total!"msecs";
 			terminalProgressBar(t, cast(float)received/contentLength);
 			sw.reset();
 		}
-		f.rawWrite(data);
+		send(writerTid, cast(immutable(ubyte)[])data);
 		return data.length;
-	};	
+	};
 	conn.perform();
+	send(writerTid, (immutable(ubyte)[]).init);
+	receiveTimeout(dur!"msecs"(1000), (bool){}); //Block until finish
 	t.showCursor();
+	return downloadTime; 
 }
 
 
