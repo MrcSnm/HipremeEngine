@@ -179,7 +179,7 @@ private bool setupPsvitaWindows(ref Terminal t, ref RealTimeConsoleInput input)
 
 bool setupPsvita(ref Terminal t, ref RealTimeConsoleInput input)
 {
-     if(!extract7ZipToFolder(
+     if(!extractToFolder(
         getHipPath("build", "vita", "hipreme_engine", "hipreme_engine_vita_dev_files.7z"),
         getHipPath("build", "vita", "hipreme_engine"),
         t, input

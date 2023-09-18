@@ -644,16 +644,11 @@ bool installGit(ref Terminal t, ref RealTimeConsoleInput input)
 	{
 		if(!("git" in configs))
 		{
-			if(!downloadFileIfNotExists("Download Git for getting HipremeEngine's source code.", getGitDownloadLink(), 
-			buildNormalizedPath(std.file.tempDir(), "git.zip"), t, input))
-			{
-				t.writelnError("Could not download git.");
-				return false;
-			}
 			string gitPath = buildNormalizedPath(std.file.getcwd(), "buildtools", "git");
-			if(!extractZipToFolder(buildNormalizedPath(std.file.tempDir, "git.zip"), gitPath, t))
+			if(!installFileTo("Download Git for getting HipremeEngine's source code.", getGitDownloadLink(), "git.zip",
+			gitPath, t, input))
 			{
-				t.writelnError("Could not extract git.");
+				t.writelnError("Git installation failed");
 				return false;
 			}
 			configs["git"] = buildNormalizedPath(gitPath, "cmd");

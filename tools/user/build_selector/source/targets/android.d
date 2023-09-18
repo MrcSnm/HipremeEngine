@@ -162,8 +162,7 @@ private bool downloadOpenJDK(ref Terminal t, ref RealTimeConsoleInput input)
 	downloadFileIfNotExists("OpenJDK for building to Android. ", getOpenJDKDownloadLink(), javaContainer, t, input);
 
 	string outputPath = buildNormalizedPath(std.file.getcwd(), "Android", "openjdk_11");
-	version(Windows) return extractZipToFolder(javaContainer, outputPath, t);
-	else version(Posix) return extractTarGzToFolder(javaContainer, outputPath, t);
+	return extractToFolder(javaContainer, outputPath, t, input);
 }
 
 private bool downloadAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, out string sdkPath)
