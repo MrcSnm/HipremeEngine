@@ -1,6 +1,20 @@
 module d_getter;
 import commons;
+
+enum DmdVersion = "2.105.0";
 enum LdcVersion = "1.33.0-beta1";
+
+private string getDmdLink()
+{
+    import std.system;
+    string link = "https://downloads.dlang.org/releases/2.x/" ~ DmdVersion ~ "/dmd." ~ DmdVersion;
+    return link ~ (os == OS.linux ? ".linux.tar.xz" : os == OS.osx ? ".osx.tar.xz" : "windows.7z");
+}
+private string getDmdDownloadOutputName()
+{
+    version(Posix) return "dmd-"~DmdVersion~".tar.xz";
+    else return "dmd-"~DmdVersion~".7z";
+}
 
 
 private string getLdcLink()
@@ -28,27 +42,23 @@ private string getOutputPath()
     else assert(false, "Not implemented for your system.");
     return buildNormalizedPath(outputPath, fileName);
 }
+private string getDmdOutputPath()
+{
+    string outputPath = buildNormalizedPath(std.file.getcwd(), "D");
+    string fileName = "dmd-"~DmdVersion~"-";
+    version(Windows) fileName~= "windows-x64";
+    else version(linux) fileName~= "linux-x86_64";
+    else version(OSX) fileName~= "osx-universal";
+    else assert(false, "Not implemented for your system.");
+    return buildNormalizedPath(outputPath, fileName);
+}
 
 private string getLdcDownloadOutputName()
 {
-    version(Windows) return buildNormalizedPath(std.file.tempDir, "ldc2-"~LdcVersion~".7z");
-    else version(Posix) return buildNormalizedPath(std.file.tempDir, "ldc2-"~LdcVersion~".tar.xz");
+    version(Windows) return "ldc2-"~LdcVersion~".7z";
+    else version(Posix) return "ldc2-"~LdcVersion~".tar.xz";
     else assert(false, "System not supported.");
 }
-
-bool downloadLdc(ref Terminal t, ref RealTimeConsoleInput input)
-{
-    if(!downloadFileIfNotExists("Get LDC2 "~LdcVersion~" and dub.", getLdcLink, 
-        buildNormalizedPath(std.file.tempDir, getLdcDownloadOutputName), t, input
-    ))
-    {
-        t.writelnError("Could not download Ldc.");
-        t.flush;
-        return false;
-    }
-    return true;
-}
-
 
 
 /** 
@@ -68,49 +78,23 @@ private void overrideLdcConf(ref Terminal t)
 
 bool installD(ref Terminal t, ref RealTimeConsoleInput input)
 {
+    bool existsDmd = ("dmdPath" in configs) !is null;
     bool existsLdc = ("ldcPath" in configs) !is null;
-    bool isExpectedVersion;
-    if("ldcVersion" in configs)
+    bool isDmdExpectedVersion = existsDmd && configs["dmdVersion"].str == DmdVersion;
+    bool isLdcExpectedVersion = existsLdc && configs["ldcVersion"].str == LdcVersion;
+    
+    if(!isLdcExpectedVersion)
     {
-        isExpectedVersion = configs["ldcVersion"].str == LdcVersion;
-        if(!isExpectedVersion)
-        {
+        if(!existsLdc)
+            t.writelnHighlighted("No ldcVersion specified, your system will attempt to install LDC2 " ~LdcVersion);
+        else
             t.writelnError("Different LDC Version. Your system will attempt to install LDC2 " ~LdcVersion);
-            t.flush;
-        }
-    }
-    else
-    {
-        t.writelnHighlighted("No ldcVersion specified, your system will attempt to install LDC2 " ~LdcVersion);
         t.flush;
-    }
-    if(!existsLdc || !isExpectedVersion)
-    {
-        if(!downloadLdc(t, input))
+        if(!installFileTo("Download D cross compiler LDC2 "~LdcVersion, getLdcLink,
+        getLdcDownloadOutputName, buildNormalizedPath(std.file.getcwd, "D"), t, input))
         {
             t.writelnError("Install failed");
             return false;
-        }
-
-        version(Windows)
-        {
-            if(!extract7ZipToFolder(getLdcDownloadOutputName, 
-                buildNormalizedPath(std.file.getcwd, "D"), t, input
-            ))
-            {
-                t.writelnError("Could not extract LDC.");
-                return false;
-            }
-        }
-        else version(Posix)
-        {
-            if(!extractTarGzToFolder(getLdcDownloadOutputName,
-                buildNormalizedPath(std.file.getcwd, "D"), t
-            ))
-            {
-                t.writelnError("Could not extract LDC.");
-                return false;
-            }
         }
         auto binPath = buildNormalizedPath(getOutputPath, "bin");
         makeFileExecutable(buildNormalizedPath(binPath, "rdmd"));
@@ -125,6 +109,40 @@ bool installD(ref Terminal t, ref RealTimeConsoleInput input)
         configs["ldcPath"] = getOutputPath;
         configs["rdmdPath"] = rdmd;
         configs["dubPath"] = binPath;
+        updateConfigFile();
+    }
+    if(!isDmdExpectedVersion)
+    {
+        if(!existsDmd)
+            t.writelnHighlighted("No dmdVersion specified, your system will attempt to install DMD " ~DmdVersion);
+        else
+            t.writelnError("Different DMD Version. Your system will attempt to install DMD " ~DmdVersion);
+        t.flush;
+        if(!installFileTo("Download D fast iteration compiler DMD "~DmdVersion, getDmdLink,
+        getDmdDownloadOutputName, buildNormalizedPath(std.file.getcwd, "D"), t, input))
+        {
+            t.writelnError("Install failed");
+            t.flush;
+            return false;
+        }
+        import std.system;
+
+        string sys;
+        string bin = "bin";
+        switch(os) with(OS)
+        {
+            case osx: sys = "osx"; break;
+            case win32, win64: sys = "windows"; break;
+            case linux: sys = "linux"; bin = "bin64"; break;
+            default: assert(false, "System not supported.");
+        }
+        string binPath = buildNormalizedPath(getDmdOutputPath, "dmd2", sys, bin);
+        makeFileExecutable(buildNormalizedPath(binPath, "dmd"));
+        makeFileExecutable(buildNormalizedPath(binPath, "dub"));
+        makeFileExecutable(buildNormalizedPath(binPath, "rdmd"));
+
+        configs["dmdVersion"] = DmdVersion;
+        configs["dmdPath"] = buildNormalizedPath(binPath, "dmd.exe");
         updateConfigFile();
     }
 
