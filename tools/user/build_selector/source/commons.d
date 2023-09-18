@@ -326,10 +326,30 @@ bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
 	return true;
 }
 
+bool extractToFolder(string zPath, string outputDirectory, ref Terminal t, ref RealTimeConsoleInput input)
+{
+	import std.path;
+	switch(zPath.extension)
+	{
+		case ".gz", ".xz":
+			version(Posix)
+			{
+				return extractTarGzToFolder(zPath, outputDirectory, t);
+			}
+			else assert(false, "No .tar.gz support on non Posix");
+		case ".zip":
+			return extractZipToFolder(zPath, outputDirectory, t);
+		case ".7zip", ".7z":
+			return extract7ZipToFolder(zPath, outputDirectory, t, input);
+		default:
+			t.writelnError("Could not detect compressed archive type for "~zPath);
+			return false;
+	}
+}
 
 bool extract7ZipToFolder(string zPath, string outputDirectory, ref Terminal t, ref RealTimeConsoleInput input)
 {
-	if(!install7Zip("Extracting the file at"~zPath, t, input))
+	if(!install7Zip("Extracting the file at"~zPath, t, input))	
 	{
 		t.writelnError("This operation requires a 7zip installation.");
 		return false;
@@ -369,6 +389,55 @@ bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal
 		std.file.mkdirRecurse(outputDirectory);
 	if(executeShell("tar -xf "~tarGzPath~" -C "~outputDirectory).status != 0)
 		return false;
+	return true;
+}
+
+/** 
+ * Removes the extension (while keeping numeric extensions such as dmd-2.105.0)
+ * Params:
+ *   input = Input to remove extension
+ * Returns: 
+ */
+string removeExtension(string input)
+{
+	import std.string:isNumeric;
+	string ext;
+	while((ext = input.extension).length && !ext.isNumeric)
+		input = input.setExtension("");
+	return input;
+}
+
+/** 
+ * 
+ * Params:
+ *   purpose = A message for the user to understand what is happening
+ *   link = The link to file which will be downloaded to a temp dir
+ *   outputName = A file name with a compressed archive extension (e.g: .zip, .7z, .tar.xz)
+ *   outputDirectory = Where the file from outputName will be extracted
+ *   t = Terminal 
+ *   input = RealTimeInput
+ * Returns: 
+ */
+bool installFileTo(string purpose, string link, string outputName,
+string outputDirectory, ref Terminal t, ref RealTimeConsoleInput input)
+{
+	string downloadDir = buildNormalizedPath(std.file.tempDir, outputName);
+	if(!downloadFileIfNotExists(purpose, link, downloadDir, t, input))
+	{
+		t.writelnError("Download failed");
+		t.flush;
+		return false;
+	}
+
+	outputName = outputName.removeExtension;
+
+	string installDir = buildNormalizedPath(outputDirectory, outputName);
+	if(!extractToFolder(downloadDir, installDir, t, input))
+	{
+		t.writelnError("Could not extract ",downloadDir, " to ", installDir);
+		return false;
+	}
+
 	return true;
 }
 
