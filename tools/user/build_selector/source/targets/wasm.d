@@ -19,6 +19,8 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "wasm", "generated")
 	);
 	cached(() => timed(() => outputTemplateForTarget(t)));
+	//The template may not be present
+	outputTemplate(configs["gamePath"].str);
 
 	environment["DFLAGS"] = 
 		"-I="~buildNormalizedPath(configs["hipremeEnginePath"].str, "modules", "d_std", "source") ~" "~

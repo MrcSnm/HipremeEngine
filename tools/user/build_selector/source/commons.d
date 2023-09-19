@@ -589,9 +589,7 @@ void loadSubmodules(ref Terminal t, ref RealTimeConsoleInput input)
 	t.writelnSuccess("Updating Git Submodules");
 	t.flush;
 
-	if(!("last"))
 	executeShell("cd "~ configs["hipremeEnginePath"].str ~ " && " ~ getGitExec~" submodule update --init --recursive");
-
 }
 
 private bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInput input)
@@ -728,13 +726,10 @@ private int execDubBase(ref Terminal t)
 			t.writelnError(res.to!string, ":", out_DubFile);
 			return -1;
 		}
-		else
-		{
-			try{std.file.write("dub.json", out_DubFile);}
-			catch(Exception e){
-				t.writelnError("Could not write dub.json");
-				return -1;
-			}
+		try std.file.write("dub.json", out_DubFile);
+		catch(Exception e){
+			t.writelnError("Could not write dub.json");
+			return -1;
 		}
 	}
 	return 0;

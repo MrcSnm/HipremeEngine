@@ -12,22 +12,23 @@
         "util",
         "math"
     ],
-    "stringImportPaths": ["."],
-	"dflags-ldc": [
-		"--fvisibility=hidden"
+    "stringImportPaths": ["#PROJECT"],
+	"dflags-ldc": ["--disable-verify", "--oq"],
+    "preBuildCommands-posix": [
+		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
-    "preBuildCommands": [
-		"rdmd ../../tools/build/getmodules.d source/ scriptmodules.txt"
+	"preBuildCommands-windows": [
+		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
 	"configurations": 
 	[
 		{
 			"name" : "script",
 			"targetType": "dynamicLibrary",
-			"lflags-windows": [
-				"/WX"
-			]
+			"dflags-ldc": ["-link-defaultlib-shared=true"],
+			"lflags-windows": ["/WX"]
 		},
+		{"name": "release", "targetType": "sourceLibrary"},
 		{
 			"name": "run",
 			"targetType": "dynamicLibrary",
