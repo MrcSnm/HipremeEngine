@@ -104,8 +104,11 @@ string generateDubProject(DubProjectInfo info)
 		"#PROJECT"
 	],
 	"dflags-ldc": ["--disable-verify", "--oq"],
-	"preBuildCommands": [
-		"rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+	"preBuildCommands-posix": [
+		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+	],
+	"preBuildCommands-windows": [
+		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
 	"configurations": 
 	[

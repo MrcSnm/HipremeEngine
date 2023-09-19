@@ -417,18 +417,27 @@ in string[string] additionalVariables = string[string].init)
 					endingPath = unnamedDep.str;
 
 				endingPath = processString(json, endingPath);
-				string dubPath = buildPath(processedPath, endingPath, "dub.json");
-				if(exists(dubPath))
+
+
+				string[] dubPath = find!((string f) => exists(f))(
+				[
+					buildPath(processedPath, endingPath, "dub.json"),
+					buildPath(processedPath, endingPath, "dub.template.json")
+				]);
+
+				if(dubPath.length)
 				{
 					if(!("dependencies" in json))
 						json.object["dependencies"] = emptyObject;
-					JSONValue dubJson = parseJSON(readText(dubPath));
+					JSONValue dubJson = parseJSON(readText(dubPath[0]));
 					string packageName = dubJson["name"].str;
 					enforce(!(packageName in json["dependencies"]), "Package "~packageName~" from path "~endingPath~" is already present in the dependencies.");
 					json["dependencies"][packageName] = ["path": endingPath];
 					if(subConfiguration)
 						json["subConfigurations"].object[packageName] = subConfiguration.str;
 				}
+				else
+					writeln("Warning: Unnamed dependency at path ", endingPath, " not found");
 			}
 			return json;
 		}}
