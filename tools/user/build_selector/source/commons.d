@@ -12,6 +12,19 @@ enum ConfigFile = "gamebuild.json";
 __gshared Config configs;
 
 string pathBeforeNewLdc;
+struct TerminalColors
+{
+	private Terminal* _t;
+	this(Color main, Color secondary, ref Terminal terminal)
+	{
+		_t = &terminal;
+		_t.color(main, secondary);
+	}
+	~this()
+	{
+		_t.color(Color.DEFAULT, Color.DEFAULT);
+	}
+}
 
 enum ChoiceResult
 {
@@ -85,50 +98,62 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	bool exit;
 	enum ArrowUp = 983078;
 	enum ArrowDown = 983080;
+	terminal.clear();
+	terminal.color(Color.DEFAULT, Color.DEFAULT);
+	terminal.writelnHighlighted(selectionTitle);
+	terminal.writeln("Select an option by using W/S or Arrow Up/Down and choose it by pressing Enter.");
+
+	static void changeChoice(ref Terminal t, Choice current, Choice next, int nextCursorOffset)
+	{
+		int currCursor = t.cursorY;
+		t.moveTo(0, currCursor);
+		t.clearToEndOfLine();
+		t.write(current.name);
+
+		t.moveTo(0, currCursor+nextCursorOffset);
+		t.clearToEndOfLine();
+		with(TerminalColors(Color.green, Color.DEFAULT, t))
+			t.write(">> ", next.name);
+	}
+
+	int startLine = terminal.cursorY;
+	terminal.color(Color.DEFAULT, Color.DEFAULT);
+
+	foreach(i, choice; choices)
+		terminal.write(choice.name, i == choices.length - 1 ? "" : "\n");
+	terminal.flush();
+
+	terminal.moveTo(0, startLine + cast(int)selectedChoice);
+	terminal.hideCursor();
+
+
+	size_t oldChoice = selectedChoice;
 	while(!exit)
 	{
-		terminal.color(Color.DEFAULT, Color.DEFAULT);
-		if(selectionTitle.length != 0)
-			terminal.writelnHighlighted(selectionTitle);
-		terminal.writeln("Select an option by using W/S or Arrow Up/Down and choose it by pressing Enter.");
-		foreach(i, choice; choices)
+		changeChoice(terminal, choices[oldChoice], choices[selectedChoice], cast(int)(cast(long)selectedChoice-oldChoice));
+		oldChoice = selectedChoice;
+		CheckInput: switch(input.getch)
 		{
-			if(i == selectedChoice)
-			{
-				terminal.color(Color.green, Color.DEFAULT);
-				terminal.writeln(">> ", choice.name);
-			}
-			else
-			{
-				terminal.color(Color.DEFAULT, Color.DEFAULT);
-				terminal.writeln(choice.name);
-			}
-		}
-		dchar ch;
-		bool inputLoop = true;
-		while(inputLoop)
-		{
-			if(ch == 'w' || ch == 'W' || ch == ArrowUp)
-			{
-				inputLoop = false;
-				if(selectedChoice == 0) selectedChoice = choices.length - 1;
-				else selectedChoice--;
-			}
-			else if(ch == 's' || ch == 'S' || ch == ArrowDown)
-			{
+			case 'w', 'W', ArrowUp:
+				selectedChoice = (selectedChoice + choices.length - 1) % choices.length;
+				break;
+			case 's', 'S', ArrowDown:
 				selectedChoice = (selectedChoice+1) % choices.length;
-				inputLoop = false;
-			}
-			else if(ch == '\n')
-			{
-				inputLoop = false;
+				break;
+			case '\n':
 				exit = true;
-			}
-			else
-				ch =input.getch;
+				break;
+			default: goto CheckInput;
 		}
-		terminal.clear();
+		// terminal.clear();
 	}
+	terminal.moveTo(0, cast(int)startLine);
+	foreach(i; 0..choices.length)
+		terminal.moveTo(0, cast(int)(startLine+i)), terminal.clearToEndOfLine();
+	terminal.moveTo(0, cast(int)startLine);
+	terminal.writelnSuccess(">> ", choices[selectedChoice].name);
+
+	terminal.showCursor();
 	return selectedChoice;
 }
 
@@ -184,6 +209,14 @@ string getFirstExistingVar(scope string[] vars...)
 bool hasLdc()
 {
 	return ("ldcPath" in configs) !is null;
+}
+
+private bool dbgExecuteShell(scope const(char)[] command, ref Terminal t, const string[string] env = null)
+{
+	auto ret = executeShell(command, env);
+	if(ret.status)
+		t.writelnError(cast(string)("Command '"~command~"' failed with: "~ ret.output));
+	return ret.status == 0;
 }
 
 string findProgramPath(string program)
@@ -326,6 +359,7 @@ bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
 	return true;
 }
 
+
 bool extractToFolder(string zPath, string outputDirectory, ref Terminal t, ref RealTimeConsoleInput input)
 {
 	import std.path;
@@ -367,10 +401,7 @@ bool extract7ZipToFolder(string zPath, string outputDirectory, ref Terminal t, r
 		std.file.mkdirRecurse(outputDirectory);
 	
 	std.file.chdir(outputDirectory);
-	version(Windows)
-		bool ret = executeShell(configs["7zip"].str ~ " x "~zPath~" -y").status == 0;
-	else
-		bool ret = executeShell("7za x "~zPath~" -y").status == 0;
+	bool ret = dbgExecuteShell(configs["7zip"].str ~ " x "~zPath~" -y", t);
 	std.file.chdir(cwd);
 	return ret;
 }
@@ -387,9 +418,7 @@ bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal
 	t.flush;
 	if(!std.file.exists(outputDirectory))
 		std.file.mkdirRecurse(outputDirectory);
-	if(executeShell("tar -xf "~tarGzPath~" -C "~outputDirectory).status != 0)
-		return false;
-	return true;
+	return dbgExecuteShell("tar -xf "~tarGzPath~" -C "~outputDirectory, t);
 }
 
 /** 
@@ -465,7 +494,7 @@ bool downloadFileIfNotExists(
 		std.file.mkdirRecurse(theDir);
 	if(!std.file.exists(outputName))
 	{
-		if(!pollForExecutionPermission(t, input, "Your system will download a file: "~ purpose))
+		if(!pollForExecutionPermission(t, input, "Your system will download a file: "~ purpose~"("~link~")"))
 			return false;
 		t.writelnHighlighted("Download started.");
 		t.flush;
@@ -952,6 +981,7 @@ private bool hasAdminRights()
 	}
 	else return false;
 }
+
 
 static this()
 {

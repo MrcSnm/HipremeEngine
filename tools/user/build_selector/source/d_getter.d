@@ -8,7 +8,7 @@ private string getDmdLink()
 {
     import std.system;
     string link = "https://downloads.dlang.org/releases/2.x/" ~ DmdVersion ~ "/dmd." ~ DmdVersion;
-    return link ~ (os == OS.linux ? ".linux.tar.xz" : os == OS.osx ? ".osx.tar.xz" : "windows.7z");
+    return link ~ (os == OS.linux ? ".linux.tar.xz" : os == OS.osx ? ".osx.tar.xz" : ".windows.7z");
 }
 private string getDmdDownloadOutputName()
 {
