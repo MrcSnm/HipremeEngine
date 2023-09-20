@@ -11,9 +11,14 @@ ChoiceResult prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput in
 		wait(spawnShell("sudo apt-get install libgl1-mesa-dev"));
 	}
 	std.file.chdir(configs["gamePath"].str);
-	waitDub(t, "build -c script "~cOpts.getDubOptions, "");
+	waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts));
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	waitDub(t, "-c script "~cOpts.getDubOptions ~ " -- "~configs["gamePath"].str, "", true);
+
+	waitDub(t, DubArguments()
+		.configuration("script")
+		.runArgs(configs["gamePath"].str)
+		.confirmKey(true)
+	);
 
 	return ChoiceResult.Continue;
 }

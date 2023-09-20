@@ -28,13 +28,15 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		"-preview=shortenedMethods -L-allow-undefined -d-version=CarelessAlocation";
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	if(timed(() =>waitDubTarget(t, "wasm", "build --parallel --compiler=ldc2 --build=debug --arch=wasm32-unknown-unknown-wasm"~cOpts.getDubOptions)) != 0)
+	if(timed(() =>waitDubTarget(t, "wasm", DubArguments()
+		.command("build").compiler("ldc2").build("debug")
+		.arch("wasm32-unknown-unknown-wasm").opts(cOpts))) != 0)
 	{
 		t.writelnError("Could not build for WebAssembly.");
 		return ChoiceResult.Error;
 	}
 	environment["DFLAGS"]= "";
-	timed(() => waitDub(t, "run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true"));
+	timed(() => waitDub(t, DubArguments().command("run wasm-sourcemaps").runArgs("hipreme_engine.wasm --include-sources=true")));
 
 	version(Posix) //Seems like dub is not detectign -posix in macOS
 	{

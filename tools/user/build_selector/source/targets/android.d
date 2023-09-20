@@ -399,7 +399,7 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	t.flush;
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	if(waitDubTarget(t, "android", "build --parallel --compiler=ldc2 -a aarch64--linux-android "~cOpts.getDubOptions) != 0)
+	if(waitDubTarget(t, "android", DubArguments().command("build").arch("aarch64--linux-android").opts(cOpts)) != 0)
 	{
 		t.writelnError("Compilation failed.");
 		return ChoiceResult.Error;
