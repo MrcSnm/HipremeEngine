@@ -27,7 +27,7 @@ bool isChoiceValid(string selected)
 	}
 }
 
-Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices)
+Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices)
 {
 	string currentGame = "Current Game: ";
 	if("gamePath" in configs)
@@ -52,7 +52,7 @@ Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choic
 
 	configs["selectedChoice"] = cast(long)selectedChoice;
 	updateConfigFile();
-	return choices[selectedChoice];
+	return &choices[selectedChoice];
 }
 
 
@@ -139,7 +139,7 @@ ChoiceResult createProject(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 {
 	string currDir = std.file.getcwd();
 	std.file.chdir(buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "user", "hiper"));
-	waitDub(t, " -- --engine="~configs["hipremeEnginePath"].str);
+	waitDub(t, DubArguments().runArgs("--engine="~configs["hipremeEnginePath"].str));
 	std.file.chdir(currDir);
 	configs["selectedChoice"] = 0;
 	updateConfigFile();
@@ -154,6 +154,23 @@ ChoiceResult releaseGame(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	std.file.remove("target.exe");
 
 	return ChoiceResult.Continue;
+}
+
+ChoiceResult changeCompiler(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+{
+	if(("selectedCompiler" in configs) is null)
+		configs["selectedCompiler"] = 0;
+	configs["selectedCompiler"] = (configs["selectedCompiler"].get!int + 1) % compilers.length;
+	c.name = c.updateChoice();
+	updateConfigFile();
+	return ChoiceResult.Back;
+}
+
+string updateSelectedCompiler()
+{
+	if(!("selectedCompiler" in configs))
+		configs["selectedCompiler"] = 0, updateConfigFile();
+	return "Selected Compiler: "~compilers[configs["selectedCompiler"].get!uint];
 }
 
 ChoiceResult exitFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
@@ -208,6 +225,7 @@ void main(string[] args)
 	{
 		auto opts = getopt(args, 
 			"force", "Force for a recompilation", &cOpts.force,
+			"skipRegistry", "Skips dub registry with --skip-registry=all", &cOpts.skipRegistry,
 			"autoSelect", "Execute a compilation option without needing to select", &autoSelect
 		);
 		if(opts.helpWanted)
@@ -231,16 +249,17 @@ void main(string[] args)
 		Choice("Create Project", &createProject),
 		Choice("Select Game", &selectGameFolder),
 		Choice("Release Game", &releaseGame),
+		Choice("Selected Compiler: ", &changeCompiler, false, &updateSelectedCompiler),
 		Choice("Exit", &exitFn)
 	];
 
 	StopWatch sw = StopWatch(AutoStart.yes);
 	while(true)
 	{
-		Choice selection = selectChoice(terminal, input, choices);
+		Choice* selection = selectChoice(terminal, input, choices);
 		if(selection.shouldTime)
 			sw.reset();
-		ChoiceResult res = selection.onSelected(&selection, terminal, input, cOpts);
+		ChoiceResult res = selection.onSelected(selection, terminal, input, cOpts);
 		if(selection.shouldTime)
 		{
 			import std.conv:to;

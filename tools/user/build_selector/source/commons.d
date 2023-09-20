@@ -39,6 +39,19 @@ struct Choice
 	string name;
 	ChoiceResult function(Choice* self, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions opts) onSelected;
 	bool shouldTime;
+	string function() updateChoice;
+
+	this(string name,
+	ChoiceResult function(Choice* self, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions opts) onSelected,
+	bool shouldTime = false,
+	string function() updateChoice = null)
+	{
+		this.name = updateChoice ? updateChoice() : name;
+		this.onSelected = onSelected;
+		this.shouldTime = shouldTime;
+		this.updateChoice = updateChoice;
+	}
+
 	bool opEquals(string choiceName) const
 	{
 		return name == choiceName;	
@@ -85,10 +98,14 @@ struct Config
 
 struct CompilationOptions
 {
+	bool skipRegistry;
 	bool force;
 	string getDubOptions() const
 	{
-		return force? " --force" : "";
+		string ret;
+		if(force) ret~= " --force";
+		if(skipRegistry) ret~= " --skip-registry=all";
+		return ret;
 	}
 }
 
@@ -238,23 +255,20 @@ string findProgramPath(string program)
 
 void writelnHighlighted(ref Terminal t, scope string[] what...)
 {
-	t.color(Color.yellow, Color.DEFAULT);
-	t.writeln(what.join());
-	t.color(Color.DEFAULT, Color.DEFAULT);
+	with(TerminalColors(Color.yellow, Color.DEFAULT, t))
+		t.writeln(what.join());
 }
 
 void writelnSuccess(ref Terminal t, scope string[] what...)
 {
-	t.color(Color.green, Color.DEFAULT);
-	t.writeln(what.join());
-	t.color(Color.DEFAULT, Color.DEFAULT);
+	with(TerminalColors(Color.green, Color.DEFAULT, t))
+		t.writeln(what.join());
 }
 
 void writelnError(ref Terminal t, scope string[] what...)
 {
-	t.color(Color.red, Color.DEFAULT);
-	t.writeln(what.join());
-	t.color(Color.DEFAULT, Color.DEFAULT);
+	with(TerminalColors(Color.red, Color.DEFAULT, t))
+		t.writeln(what.join());
 }
 
 auto timed(T)(scope T delegate() dg)
@@ -718,35 +732,12 @@ string getDubPath()
 	return dub;
 }
 
-
-private string getDubRunCommand(string commands, string preCommands = "", bool confirmKey = false)
-{
-	string dub = getDubPath();
-	version(Windows)
-	{
-		if(confirmKey)
-			commands~= " && pause";
-	}
-	else version(Posix)
-	{
-		if(confirmKey) commands~= " && read -p \"Press any key to continue... \" -n1 -s";
-	}
-	
-	return preCommands~dub~" "~commands;
-}
-
-Pid runDub(string commands, string preCommands = "", bool confirmKey = false)
-{
-	return spawnShell(getDubRunCommand(commands, preCommands, confirmKey));
-}
-
 private int execDubBase(ref Terminal t)
 {
 	import std.conv:to;
 	if(absolutePath(configs["hipremeEnginePath"].str) != absolutePath(std.file.getcwd()))
 	if(std.file.exists("dub.template.json"))
 	{
-	
 		import template_processor;
 		string out_DubFile;
 		auto res = processTemplate(std.file.getcwd(), configs["hipremeEnginePath"].str, out_DubFile);
@@ -762,32 +753,107 @@ private int execDubBase(ref Terminal t)
 		}
 	}
 	return 0;
-}	
+}
 
-int waitDub(ref Terminal t, string commands, string preCommands = "", bool confirmKey = false)
+
+mixin template BuilderPattern(Struct)
+{
+	static foreach(mem; __traits(allMembers, Struct))
+	{
+		import std.traits:isFunction;
+		static if(!isFunction!(__traits(getMember, Struct, mem)) && mem[0] == '_')
+		{
+			mixin(typeof(__traits(getMember, Struct, mem)), " ", mem[1..$], "() => ", mem, ";",
+			Struct, " ", mem[1..$], "(", typeof(__traits(getMember, Struct, mem)), " arg )",
+			"{this.",mem, " = arg; return this;}");
+		}
+	}
+}
+
+
+immutable string[] compilers = ["auto", "ldc2", "dmd"];
+private string getSelectedCompiler()
+{
+	const(JSONValue)* c = "selectedCompiler" in configs;
+	if(!c) return "auto";
+	return compilers[c.get!uint];
+}
+struct DubArguments
+{
+	string _command;
+	string _configuration;
+	CompilationOptions _opts;
+	string _dir;
+	string _preCommands;
+	string _compiler = "auto";
+	string _arch;
+	string _build;
+	string _recipe;
+	string _runArgs;
+	bool _confirmKey;
+	bool _parallel = true;
+
+	mixin BuilderPattern!(DubArguments);
+	
+	string getDubRunCommand()
+	{
+		string dub = getDubPath();
+		string a = command; ///Arguments
+		if(parallel)           a~= " --parallel";
+		if(recipe)             a~= " --recipe="~recipe;
+		if(build)              a~= " --build="~build;
+		if(arch)               a~= " --arch="~arch;
+		if(compiler == "auto")
+		{
+			if(arch) compiler = "ldc2";
+			compiler = getSelectedCompiler();
+		}
+		if(compiler != "auto") a~= " --compiler="~compiler;
+		if(configuration)      a~= " -c "~configuration;
+		if(opts != CompilationOptions.init) a~= opts.getDubOptions();
+		if(runArgs)            a~= " -- "~runArgs;
+
+
+		version(Windows)
+		{
+			if(confirmKey) a~= " && pause";
+		}
+		else version(Posix)
+		{
+			if(confirmKey) a~= " && read -p \"Press any key to continue... \" -n1 -s";
+		}
+		
+
+		return preCommands~dub~" "~a;
+	}
+}
+
+int waitDub(ref Terminal t, DubArguments dArgs)
 {
 	///Detects the presence of a template file before executing.
 	if(execDubBase(t) == -1) return -1;
-	string toExec = getDubRunCommand(commands, preCommands, confirmKey);
+	string toExec = dArgs.getDubRunCommand();
 	t.writeln(toExec);
+	t.flush;
 	return wait(spawnShell(toExec));
 }
 
-int execDub(ref Terminal t, string commands, string preCommands = "", string dir = "", bool confirmKey = false)
+int execDub(ref Terminal t, DubArguments dArgs)
 {
 	import std.string:lineSplitter;
 	if(execDubBase(t) == -1) return -1;
-	string toExec = getDubRunCommand(commands~" --color=always", preCommands, confirmKey);
+	string toExec = dArgs.getDubRunCommand();
 	t.writeln(toExec);
-	auto res = executeShell(toExec, null, std.process.Config.none, size_t.max, dir);
+	t.flush;
+	auto res = executeShell(toExec, null, std.process.Config.none, size_t.max, dArgs.dir);
 	foreach(l; res.output.lineSplitter) t.writeln("\t", l);
 	return res.status;
 }
 
 
-int waitDubTarget(ref Terminal t, string target, string commands, string preCommands = "", bool confirmKey = false)
+int waitDubTarget(ref Terminal t, string target, DubArguments dArgs)
 {
-	return waitDub(t, commands~" --recipe="~buildPath(getBuildTarget(target), "dub.json"), preCommands, confirmKey);
+	return waitDub(t, dArgs.recipe(buildPath(getBuildTarget(target), "dub.json")));
 }
 
 int waitAndPrint(ref Terminal t, Pid pid)

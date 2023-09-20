@@ -142,7 +142,7 @@ bool installD(ref Terminal t, ref RealTimeConsoleInput input)
         makeFileExecutable(buildNormalizedPath(binPath, "rdmd"));
 
         configs["dmdVersion"] = DmdVersion;
-        configs["dmdPath"] = buildNormalizedPath(binPath, "dmd.exe");
+        configs["dmdPath"] = binPath;
         updateConfigFile();
     }
 
@@ -159,7 +159,13 @@ bool setupD(ref Terminal t, ref RealTimeConsoleInput input)
     }
     string concatPath = ":";
     version(Windows) concatPath = ";";
-    environment["PATH"] = buildNormalizedPath(configs["ldcPath"].str, "bin")~concatPath~environment["PATH"];
+
+    import std.array:join;
+    environment["PATH"] = join([
+        configs["dmdPath"].str,
+        buildNormalizedPath(configs["ldcPath"].str, "bin"),
+        environment["PATH"]
+    ], concatPath);
 
 
     return true;

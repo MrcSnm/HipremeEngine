@@ -202,7 +202,7 @@ ChoiceResult prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 
 	// waitOperations([{
 		std.file.chdir(configs["gamePath"].str);
-		if(timed(() => waitDub(t, "build --parallel -c script "~cOpts.getDubOptions, "")) != 0)
+		if(timed(() => waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts)) != 0))
 			return ChoiceResult.Error;
 		// if(timed(() => execDub(t, "build --parallel -c script "~cOpts.getDubOptions, "", configs["gamePath"].str)) != 0)
 			// return false;
@@ -210,7 +210,7 @@ ChoiceResult prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	// },
 	// {
 		std.file.chdir(getHipPath);
-		timed(() => waitDub(t, "build --parallel -c script "~cOpts.getDubOptions, ""));
+		timed(() => waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts)));
 		// timed(() => waitDub(t, "build --parallel -c script "~cOpts.getDubOptions, "", getHipPath));
 		// return true;
 	// }]);
