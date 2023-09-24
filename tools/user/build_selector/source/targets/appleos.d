@@ -56,13 +56,6 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 				" && cd bin && HipremeEngine.app/Contents/MacOS/HipremeEngine")
 			);
 		}
-		
-		// string script = import("appleosbuild.sh");
-		// t.writeln("Executing script appleosbuild.sh");
-		// t.flush;
-
-		// auto pid = spawnShell(script);
-		// wait(pid);
 	}
 
 
