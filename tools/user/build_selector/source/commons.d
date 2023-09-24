@@ -26,6 +26,17 @@ struct TerminalColors
 	}
 }
 
+struct WorkingDir
+{
+	private string _currDir;
+	this(string targetDir)
+	{
+		_currDir = std.file.getcwd();
+		std.file.chdir(targetDir);
+	}
+	~this(){std.file.chdir(_currDir);}
+}
+
 enum ChoiceResult
 {
 	None,
@@ -115,10 +126,11 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	bool exit;
 	enum ArrowUp = 983078;
 	enum ArrowDown = 983080;
+	enum SelectionHint = "Select an option by using W/S or Arrow Up/Down and choose it by pressing Enter.";
 	terminal.clear();
 	terminal.color(Color.DEFAULT, Color.DEFAULT);
 	terminal.writelnHighlighted(selectionTitle);
-	terminal.writeln("Select an option by using W/S or Arrow Up/Down and choose it by pressing Enter.");
+	terminal.writeln(SelectionHint);
 
 	static void changeChoice(ref Terminal t, Choice current, Choice next, int nextCursorOffset)
 	{
@@ -131,6 +143,21 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 		t.clearToEndOfLine();
 		with(TerminalColors(Color.green, Color.DEFAULT, t))
 			t.write(">> ", next.name);
+	}
+
+	static void changeChoiceClear(ref Terminal t, Choice[] choices, string title, Choice current, Choice next, int nextCursorOffset)
+	{
+		t.color(Color.DEFAULT, Color.DEFAULT);
+		t.clear();
+		t.writelnHighlighted(title);
+		t.writeln(SelectionHint);
+		foreach(i, c; choices)
+		{
+			if(c.name == next.name) with(TerminalColors(Color.green, Color.DEFAULT, t))
+				t.writeln(">> ", c.name);
+			else t.writeln(c.name);
+		}
+		t.flush;
 	}
 
 	int startLine = terminal.cursorY;
@@ -147,7 +174,7 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	size_t oldChoice = selectedChoice;
 	while(!exit)
 	{
-		changeChoice(terminal, choices[oldChoice], choices[selectedChoice], cast(int)(cast(long)selectedChoice-oldChoice));
+		changeChoiceClear(terminal, choices, selectionTitle, choices[oldChoice], choices[selectedChoice], cast(int)(cast(long)selectedChoice-oldChoice));
 		oldChoice = selectedChoice;
 		CheckInput: switch(input.getch)
 		{
@@ -162,7 +189,6 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 				break;
 			default: goto CheckInput;
 		}
-		// terminal.clear();
 	}
 	terminal.moveTo(0, cast(int)startLine);
 	foreach(i; 0..choices.length)
@@ -328,16 +354,17 @@ void cached(scope void delegate() dg, string f = __FILE__, size_t l = __LINE__)
 
 bool pollForExecutionPermission(ref Terminal t, ref RealTimeConsoleInput input, string operation)
 {
-	dchar shouldPermit;
 	t.writelnHighlighted(operation~" [Y]es/[N]o");
 	t.flush;
 	while(true)
 	{
-		shouldPermit = input.getch;
-		if(shouldPermit == 'y' || shouldPermit == 'Y') break;
-		else if(shouldPermit == 'n' || shouldPermit == 'N') return false;
+		switch(input.getch)
+		{
+			case 'y', 'Y': return true;
+			case 'n', 'N': return false;
+			default: break;
+		}
 	}
-	return true;
 }
 
 bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
@@ -778,6 +805,8 @@ private string getSelectedCompiler()
 	if(!c) return "auto";
 	return compilers[c.get!uint];
 }
+
+
 struct DubArguments
 {
 	string _command;
@@ -791,6 +820,7 @@ struct DubArguments
 	string _recipe;
 	string _runArgs;
 	bool _confirmKey;
+	bool _deep;
 	bool _parallel = true;
 
 	mixin BuilderPattern!(DubArguments);
@@ -809,6 +839,7 @@ struct DubArguments
 			compiler = getSelectedCompiler();
 		}
 		if(compiler != "auto") a~= " --compiler="~compiler;
+		if(deep)			   a~= " --deep";
 		if(configuration)      a~= " -c "~configuration;
 		if(opts != CompilationOptions.init) a~= opts.getDubOptions();
 		if(runArgs)            a~= " -- "~runArgs;
@@ -947,7 +978,9 @@ version(Windows)
 
 string getBuildTarget(string target = __MODULE__)
 {
+	import std.string:split;
 	import std.exception:enforce;
+	target = target.split(".")[$-1];
 	string path = buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets");
 	enforce(std.file.exists(path = buildPath(path, target)), "Target "~target~" does not exists.");
 	return path;

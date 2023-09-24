@@ -27,12 +27,39 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	t.writelnSuccess("Building your game for AppleOS");
 	t.flush;
 
-	string script = import("appleosbuild.sh");
-	t.writeln("Executing script appleosbuild.sh");
-	t.flush;
+	cached(() => timed(() => outputTemplateForTarget(t)));
+	//The template may not be present
+	outputTemplate(configs["gamePath"].str);
 
-	auto pid = spawnShell(script);
-	wait(pid);
+	with(WorkingDir(getHipPath))
+	{
+		string targetDir = getHipPath("build", "appleos", "HipremeEngine D", "libs");
+		if(std.file.exists(targetDir))
+			std.file.rmdirRecurse(targetDir);
+		std.file.mkdirRecurse(targetDir);
+		if(timed(() => waitDubTarget(t, getBuildTarget, DubArguments().
+			command("build").recipe("appleos").deep(true).compiler("dmd").opts(cOpts))) != 0)
+		{
+			t.writelnError("Could not build for AppleOS.");
+			return ChoiceResult.Error;
+		}
+		
+		with(WorkingDir(getHipPath("build", "appleos")))
+		{
+			wait(spawnShell(
+				"xcodebuild -jobs 8 -configuration Debug -scheme HipremeEngine macOS build CONFIGURATION_BUILD_DIR=\"bin\""~ 
+				" && cd bin && HipremeEngine.app/Contents/MacOS/HipremeEngine")
+			);
+		}
+		
+		// string script = import("appleosbuild.sh");
+		// t.writeln("Executing script appleosbuild.sh");
+		// t.flush;
+
+		// auto pid = spawnShell(script);
+		// wait(pid);
+	}
+
 
 	return ChoiceResult.Continue;
 }

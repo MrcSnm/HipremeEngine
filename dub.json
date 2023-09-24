@@ -98,44 +98,6 @@
 			]
 		},
 		{
-			"name": "appleos",
-			"targetPath": "bin/desktop",
-			"targetType": "executable",
-			"stringImportPaths": [
-				"build/release_game/"
-			],
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"versions": [
-				"OpenAL",
-				"Standalone",
-				"AppleOS"
-			],
-			"subConfigurations": {
-				"renderer": "appleos" 
-			}
-		},
-		{
-			"name": "appleos-main",
-			"targetPath": "build/appleos/HipremeEngine D/libs",
-			"targetType": "staticLibrary",
-			"stringImportPaths": [
-				"build/release_game/"
-			],
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"versions": [
-				"OpenAL",
-				"Standalone",
-				"AppleOS"
-			],
-			"subConfigurations": {
-				"renderer": "appleos" 
-			}
-		},
-		{
 			"name": "nodx",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",

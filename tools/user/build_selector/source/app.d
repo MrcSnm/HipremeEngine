@@ -265,7 +265,14 @@ void main(string[] args)
 			import std.conv:to;
 			terminal.writelnSuccess("Completed ", selection.name," in ", sw.peek.total!"msecs".to!string, " ms");
 		}
-		if(res == ChoiceResult.Continue)
-			break;
+		if(res != ChoiceResult.Continue)
+		{
+			if(selection.onSelected != &changeCompiler)
+			{
+				terminal.writeln("Press Enter to continue");
+				while(input.getch != '\n'){}
+			}
+		}
+		else break;
 	}
 }

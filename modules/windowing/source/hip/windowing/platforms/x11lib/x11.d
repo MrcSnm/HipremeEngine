@@ -1,7 +1,7 @@
 module hip.windowing.platforms.x11lib.x11;
 
 version(Android){}
-else version(Posix)
+else version(linux)
     version = X11;
 version(X11):
 
@@ -161,8 +161,8 @@ enum BadName		   = 15;	/* font or color name doesn't exist */
 enum BadLength	       = 16;	/* Request length incorrect */
 enum BadImplementation = 17;	/* server is defective */
 
-autoo ScreenOfDisplay(Display* dpy, int scr){return &(cast(_XPrivDisplay)(dpy)).screens[scr];}
-autoo DefaultScreenOfDisplay(Display* dpy){return ScreenOfDisplay(dpy,DefaultScreen(dpy));}
+auto ScreenOfDisplay(Display* dpy, int scr){return &(cast(_XPrivDisplay)(dpy)).screens[scr];}
+auto DefaultScreenOfDisplay(Display* dpy){return ScreenOfDisplay(dpy,DefaultScreen(dpy));}
 auto DisplayOfScreen(Screen* s){return s.display;}
 
 auto BlackPixel(Display* dpy, int  scr)

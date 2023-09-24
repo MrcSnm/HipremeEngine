@@ -1,0 +1,20 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Pure-D/code-d/master/json-validation/dub.schema.json",
+    "$extends": "#HIPREME_ENGINE/dub.json",
+    "targetPath": "build/appleos/HipremeEngine D/libs",
+    "unnamedDependencies": [
+        {"path": "#TARGET_PROJECT", "subConfiguration": "release"}
+    ],
+    "stringImportPaths": [
+        "build/release_game/"
+    ],
+    "subConfigurations": {
+        "renderer": "appleos"
+    },
+    "versions": [
+        "OpenAL",
+        "Standalone",
+        "AppleOS"
+    ],
+    "targetType": "staticLibrary"
+}
