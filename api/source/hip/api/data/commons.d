@@ -34,17 +34,15 @@ template FilterAsset(Attributes...)
 {
     import std.traits:isInstanceOf;
     import std.meta:AliasSeq;
-    import std.string;
-    alias FilterAsset = AliasSeq!();
     static foreach(attr; Attributes)
         static if(isInstanceOf!(HipAssetUDA, typeof(attr)))
-        	FilterAsset = attr;
+        	alias FilterAsset = attr;
 }
 
 template GetAssetUDA(Attributes...)
 {
     alias asset = FilterAsset!(Attributes);
-    static if(is(typeof(asset)))
+    static if(is(asset))
         enum GetAssetUDA = asset;
     else
         enum GetAssetUDA = HipAssetUDA!void();
