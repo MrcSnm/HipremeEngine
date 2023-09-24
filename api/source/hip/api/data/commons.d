@@ -42,7 +42,7 @@ template FilterAsset(Attributes...)
 template GetAssetUDA(Attributes...)
 {
     alias asset = FilterAsset!(Attributes);
-    static if(is(asset))
+    static if(!is(typeof(asset) == void)) //Means it is a real struct.
         enum GetAssetUDA = asset;
     else
         enum GetAssetUDA = HipAssetUDA!void();
@@ -177,6 +177,7 @@ mixin template LoadReferencedAssets(string[] modules)
                         {{
                             alias classMember = __traits(getMember, type, classMemberStr);
                             alias assetUDA = GetAssetUDA!(__traits(getAttributes, classMember));
+                            // pragma(msg, assetUDA);
                             static if(assetUDA.path !is null)
                             {{
                                 import std.traits:isArray;
