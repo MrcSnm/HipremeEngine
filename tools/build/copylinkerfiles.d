@@ -7,28 +7,6 @@ enum Arguments
     dflags = 3
 }
 
-string[] separateFromString(string str)
-{
-    string[] strings;
-    
-    bool isCapturing = false;
-    string currStr;
-    foreach(ch; str)
-    {
-        if(ch == '"' || ch == '\'')
-        {
-            if(isCapturing)
-            {
-                strings~= currStr;
-                currStr = "";
-            }
-            isCapturing = !isCapturing;
-        } else if(isCapturing) currStr~= ch;
-    }
-    if(currStr.length) strings~= currStr;
-    return strings;
-}
-
 int main(string[] args)
 {
     if(args.length <= Arguments.dubArgs)
@@ -59,7 +37,9 @@ int main(string[] args)
     }
     auto ret = executeShell(dub~" describe --data=linker-files "~dubArgs~" --vquiet");
     string librariesData = ret.output;
-    string[] libraries = separateFromString(librariesData);
+
+    import std.string:replace, split;
+    string[] libraries = librariesData.replace("\"", "").replace("'", "").replace("\n", "").split(" ");
     writeln("Found libraries ", libraries.map!(lName => lName.baseName));
 
     string libIncludes = buildNormalizedPath(outputPath, "..", "libIncludes.txt");

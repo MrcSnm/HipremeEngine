@@ -43,11 +43,16 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 			t.writelnError("Could not build for AppleOS.");
 			return ChoiceResult.Error;
 		}
+		runEngineDScript(t, "copylinkerfiles.d", 
+			"\"--recipe="~buildPath(getBuildTarget, "dub.json")~"\"",
+			getHipPath("build", "appleos", "\"HipremeEngine D\"", "libs")
+		);
 		
-		with(WorkingDir(getHipPath("build", "appleos")))
+		string path = getHipPath("build", "appleos");
+		with(WorkingDir(path))
 		{
 			wait(spawnShell(
-				"xcodebuild -jobs 8 -configuration Debug -scheme HipremeEngine macOS build CONFIGURATION_BUILD_DIR=\"bin\""~ 
+				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine macOS' build CONFIGURATION_BUILD_DIR=\"bin\""~ 
 				" && cd bin && HipremeEngine.app/Contents/MacOS/HipremeEngine")
 			);
 		}
