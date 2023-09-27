@@ -209,8 +209,12 @@ ChoiceResult prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 		// return true;
 	// },
 	// {
-		std.file.chdir(getHipPath);
-		timed(() => waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts)));
+		if(!c.scriptOnly)
+		{
+			std.file.chdir(getHipPath);
+			if(timed(() => waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts))) != 0)
+				return ChoiceResult.Error;
+		}
 		// timed(() => waitDub(t, "build --parallel -c script "~cOpts.getDubOptions, "", getHipPath));
 		// return true;
 	// }]);

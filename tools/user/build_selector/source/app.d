@@ -14,7 +14,7 @@ import targets.wasm;
 import targets.psvita;
 
 
-bool isChoiceValid(string selected)
+bool isChoiceAutoSelectable(string selected)
 {
 	switch(selected)
 	{
@@ -37,7 +37,7 @@ Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choi
 	if("selectedChoice" in configs)
 		selectedChoice = configs["selectedChoice"].integer;
 
-	if(autoSelect && autoSelect.isChoiceValid)
+	if(autoSelect && autoSelect.isChoiceAutoSelectable)
 	{
 		import std.algorithm;
 		selectedChoice = countUntil!"a.name == b"(choices, autoSelect);
@@ -182,19 +182,13 @@ ChoiceResult exitFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, i
 
 CompilationOptions cOpts;
 
-bool addEnv;
+bool scriptOnly;
 string autoSelect;
 
 void main(string[] args)
 {
-	version(Windows)
-	{
-		import core.sys.windows.wincon;
-		import core.sys.windows.windows;
-		SetConsoleMode(GetModuleHandle(null), ENABLE_VIRTUAL_TERMINAL_PROCESSING|ENABLE_VIRTUAL_TERMINAL_INPUT);
-	}
 	auto terminal = Terminal(ConsoleOutputType.linear);
-	auto input = RealTimeConsoleInput(&terminal, ConsoleInputFlags.raw);
+	RealTimeConsoleInput input = RealTimeConsoleInput(&terminal, ConsoleInputFlags.raw);
 	terminal.clear();
 	if(!("PATH" in environment))
 		environment["PATH"] = "";
@@ -220,12 +214,15 @@ void main(string[] args)
 		terminal.flush;
 		promptForConfigCreation(terminal);
 	}
+	engineConfig["builderPath"] = args[0];
+	updateEngineFile();
 
 	if(args.length > 1)
 	{
 		auto opts = getopt(args, 
 			"force", "Force for a recompilation", &cOpts.force,
 			"skipRegistry", "Skips dub registry with --skip-registry=all", &cOpts.skipRegistry,
+			"scriptOnly", "Only the script will be built, internally used for rebuilding", &scriptOnly,
 			"autoSelect", "Execute a compilation option without needing to select", &autoSelect
 		);
 		if(opts.helpWanted)
@@ -237,9 +234,9 @@ void main(string[] args)
 	if(!("DUB" in environment))
 		environment["DUB"] = getDubPath();
 	Choice[] choices;
-	version(Windows) choices~= Choice("Windows", &prepareWindows);
-	version(OSX) choices~= Choice("AppleOS", &prepareAppleOS);
-	version(linux) choices~= Choice("Linux", &prepareLinux);
+	version(Windows) choices~= Choice("Windows", &prepareWindows, false, null, scriptOnly);
+	version(OSX) choices~= Choice("AppleOS", &prepareAppleOS, false, null, scriptOnly);
+	version(linux) choices~= Choice("Linux", &prepareLinux, false, null, scriptOnly);
 
 	choices~=[
 		// Choice("Xbox Series"),
@@ -265,9 +262,14 @@ void main(string[] args)
 			import std.conv:to;
 			terminal.writelnSuccess("Completed ", selection.name," in ", sw.peek.total!"msecs".to!string, " ms");
 		}
+		if(selection.name.isChoiceAutoSelectable)
+		{
+			engineConfig["buildCmd"] = args[0]~" --autoSelect="~selection.name~" --scriptOnly";
+			updateEngineFile();
+		}
 		if(res != ChoiceResult.Continue)
 		{
-			if(selection.onSelected != &changeCompiler)
+			if(selection.onSelected != &changeCompiler && !autoSelect)
 			{
 				terminal.writeln("Press Enter to continue");
 				while(input.getch != '\n'){}

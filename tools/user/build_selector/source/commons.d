@@ -9,6 +9,8 @@ public static import std.file;
 
 enum hipremeEngineRepo = "https://github.com/MrcSnm/HipremeEngine.git";
 enum ConfigFile = "gamebuild.json";
+
+__gshared JSONValue engineConfig;
 __gshared Config configs;
 
 string pathBeforeNewLdc;
@@ -51,16 +53,18 @@ struct Choice
 	ChoiceResult function(Choice* self, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions opts) onSelected;
 	bool shouldTime;
 	string function() updateChoice;
+	bool scriptOnly;
 
 	this(string name,
 	ChoiceResult function(Choice* self, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions opts) onSelected,
 	bool shouldTime = false,
-	string function() updateChoice = null)
+	string function() updateChoice = null, bool scriptOnly = false)
 	{
 		this.name = updateChoice ? updateChoice() : name;
 		this.onSelected = onSelected;
 		this.shouldTime = shouldTime;
 		this.updateChoice = updateChoice;
+		this.scriptOnly = scriptOnly;
 	}
 
 	bool opEquals(string choiceName) const
@@ -626,7 +630,14 @@ private string getConfigPath()
 		cfgPath = buildNormalizedPath(Runtime.args[0].dirName, ConfigFile);
 	return cfgPath;
 }
-
+private string getEngineConfigPath()
+{
+	return getHipPath("bin" ,"desktop", "engine_opts.json");
+}
+void updateEngineFile()
+{
+	std.file.write(getEngineConfigPath, engineConfig.toPrettyString());
+}
 void updateConfigFile()
 {
 	std.file.write(getConfigPath, configs.toString());
@@ -759,7 +770,7 @@ string getDubPath()
 	return dub;
 }
 
-private int execDubBase(ref Terminal t)
+private int execDubBase(ref Terminal t, in DubArguments dArgs)
 {
 	import std.conv:to;
 	if(absolutePath(configs["hipremeEnginePath"].str) != absolutePath(std.file.getcwd()))
@@ -829,20 +840,21 @@ struct DubArguments
 	{
 		string dub = getDubPath();
 		string a = command; ///Arguments
-		if(parallel)           a~= " --parallel";
-		if(recipe)             a~= " --recipe="~recipe;
-		if(build)              a~= " --build="~build;
-		if(arch)               a~= " --arch="~arch;
-		if(compiler == "auto")
+		if(compiler == "auto") 
 		{
-			if(arch) compiler = "ldc2";
-			compiler = getSelectedCompiler();
+			compiler = arch ? "ldc2" : getSelectedCompiler();
+			compiler = compiler == "auto" ? "" : compiler;
 		}
-		if(compiler != "auto") a~= " --compiler="~compiler;
-		if(deep)			   a~= " --deep";
-		if(configuration)      a~= " -c "~configuration;
+
+		if(parallel)      a~= " --parallel";
+		if(recipe)        a~= " --recipe="~recipe;
+		if(build)         a~= " --build="~build;
+		if(arch)          a~= " --arch="~arch;
+		if(compiler != "")a~= " --compiler="~compiler;
+		if(deep)		  a~= " --deep";
+		if(configuration) a~= " -c "~configuration;
 		if(opts != CompilationOptions.init) a~= opts.getDubOptions();
-		if(runArgs)            a~= " -- "~runArgs;
+		if(runArgs)       a~= " -- "~runArgs;
 
 
 		version(Windows)
@@ -862,7 +874,7 @@ struct DubArguments
 int waitDub(ref Terminal t, DubArguments dArgs)
 {
 	///Detects the presence of a template file before executing.
-	if(execDubBase(t) == -1) return -1;
+	if(execDubBase(t, dArgs) == -1) return -1;
 	string toExec = dArgs.getDubRunCommand();
 	t.writeln(toExec);
 	t.flush;
@@ -872,7 +884,7 @@ int waitDub(ref Terminal t, DubArguments dArgs)
 int execDub(ref Terminal t, DubArguments dArgs)
 {
 	import std.string:lineSplitter;
-	if(execDubBase(t) == -1) return -1;
+	if(execDubBase(t, dArgs) == -1) return -1;
 	string toExec = dArgs.getDubRunCommand();
 	t.writeln(toExec);
 	t.flush;
@@ -1084,8 +1096,6 @@ private bool hasAdminRights()
 
 static this()
 {
-	if(std.file.exists(getConfigPath))
-		configs = Config(parseJSON(std.file.readText(getConfigPath)));
-	else
-		configs = Config(parseJSON("{}"));
+	configs = std.file.exists(getConfigPath) ? Config(parseJSON(std.file.readText(getConfigPath))) : Config(parseJSON("{}"));
+	engineConfig = std.file.exists(getEngineConfigPath) ? parseJSON(std.file.readText(getEngineConfigPath)) : parseJSON("{}");
 }

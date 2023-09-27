@@ -207,6 +207,12 @@ class HipSpawn : HipTimer, IHipTimerList
     protected IHipTimer[] timerList;
     protected void delegate()[] onFinishList;
 
+    /**
+    *   Will receive a list of timers and update them at the same time.
+    *   Total duration is equal to the max timer duration.
+    *   Call `.play()` after `new HipSpawn`, it is necessary for the timers
+    *   to be updated.
+    */
     this(string name = "Spawn", scope IHipTimer[] timers = []...)
     {
         super(name, 0, HipTimerType.progressive);

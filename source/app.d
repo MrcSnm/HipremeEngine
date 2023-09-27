@@ -67,6 +67,8 @@ version(PSVita)      version = ExternallyManagedDeltaTime;
 
 
 __gshared string projectToLoad;
+///Came from bin/desktop/engine_opts.json 
+__gshared string buildCommand;
 __gshared bool isUsingInterpreter = false;
 __gshared HipInterpreterEntry interpreterEntry;
 
@@ -105,6 +107,7 @@ void HipremeHandleArguments()
 				else
 				{
 					projectToLoad = v["defaultProject"].str;
+					buildCommand = v["buildCmd"].str;
 				}
 			}
 			return;
@@ -230,7 +233,7 @@ void gameInitialize()
 	if(isUsingInterpreter)
 		loadInterpreterEntry(interpreterEntry.intepreter, interpreterEntry.sourceEntry);
 	//After initializing engine, every dependency has been load
-	sys.loadGame(projectToLoad);
+	sys.loadGame(projectToLoad, buildCommand);
 	sys.startGame();
 	version(Desktop){HipremeDesktopGameLoop();}
 	else version(WebAssembly){WasmStartGameLoop();}
