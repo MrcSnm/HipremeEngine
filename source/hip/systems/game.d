@@ -33,28 +33,13 @@ version(Load_DScript)
 {
     import hip.systems.hotload;
     import hip.systems.compilewatcher;
-    import std.typecons:Tuple;
-    private bool getDubError(Tuple!(int, "status", string, "output") dubObj, out string err)
+    private bool getDubError(string line)
     {
         import hip.console.log;
-        if(dubObj.status != 2)
-        {
-            import core.stdc.stdlib:exit;
-            import std.stdio;
-            writeln("Dub error: ", dubObj);
-            exit(1); 
-        }
-        else
-        {
-            import hip.util.string:indexOf, lastIndexOf;
-            int errInd = dubObj.output.indexOf("Warning:");
-            if(errInd == -1)
-                errInd = dubObj.output.indexOf("Error:"); //Check first for warnings
-            if(errInd == -1) return false;
-            errInd = dubObj.output.lastIndexOf("\n", errInd)-1;
-            err = dubObj.output[errInd..$];
-            return true;
-        }
+        import hip.util.string:indexOf, lastIndexOf;
+        int errInd = line.indexOf("Warning:");
+        if(errInd == -1) errInd = line.indexOf("Error:"); //Check first for warnings
+        return errInd != -1;
     }
     extern(System) AScene function() HipremeEngineGameInit;
     extern(System) void function() HipremeEngineGameDestroy;
@@ -71,7 +56,9 @@ class GameSystem
 
     HipInputListener inputListener;
     HipInputListener scriptInputListener;
-    string projectDir;
+    string projectDir, buildCommand = "dub build --parallel --skip-registry=all";
+    ///Resets delta time after a reload for not jumping frames.
+    protected bool shouldResetDelta;
     protected __gshared AScene externalScene;
 
     version(Load_DScript)
@@ -120,7 +107,7 @@ class GameSystem
         
     }
 
-    void loadGame(string gameDll)
+    void loadGame(string gameDll, string buildCommand)
     {
         version(Load_DScript)
         {
@@ -144,6 +131,7 @@ class GameSystem
                 projectDir = gameDll;
 
             watcher = new CompileWatcher(projectDir, null, ["d"]).run;
+            this.buildCommand = buildCommand ? buildCommand : this.buildCommand;
 
             hotload = new HotloadableDLL(gameDll, (void* lib)
             {
@@ -166,26 +154,26 @@ class GameSystem
     {
         version(Load_DScript)
         {
-            import std.process:executeShell;
-            import std.stdio;
-            auto dub = executeShell("cd "~projectDir~" && dub");
+            import std.process:pipeShell, Redirect, wait;
+            import hip.console.log;
+            auto dub = pipeShell("cd "~projectDir~" && "~buildCommand, Redirect.stderrToStdout | Redirect.stdout);
 
-            writeln(projectDir);
-            writeln(dub);
-            
-            //2 == up to date
-            string err;
-            if(getDubError(dub, err))
+            scope string[] errors;
+            foreach(l; dub.stdout.byLine)
             {
-                version(Windows)
-                {
-                    import core.sys.windows.winuser;
-                    MessageBoxA(null, (err~"\0").ptr, "GameDLL Compilation Failure\0".ptr,  MB_ICONERROR | MB_OK);
-                }
-                import hip.console.log;
-                loglnError(err, " GameDLL Compilation Failure");
+                if(getDubError(cast(string)l))
+                    errors~= l.idup;
+                else logln(cast(string)l);
             }
-            hotload.reload();
+            int status = wait(dub.pid);
+            //2 == up to date
+            if(errors.length) 
+            {
+                loglnError(errors);
+                foreach(err; errors) loglnError(err);
+            }
+            else
+                hotload.reload();
         }
     }
 
@@ -226,6 +214,7 @@ class GameSystem
             import hip.console.log;
             if(hotload)
             {
+                shouldResetDelta = true;
                 rawlog("Recompiling game");
                 HipTimerManager.clearSchedule();
                 scriptInputListener.clearAll();
@@ -273,6 +262,11 @@ class GameSystem
         import std.stdio;
         frames++;
         fpsAccumulator+= deltaTime;
+        if(shouldResetDelta)
+        {
+            deltaTime = 0;
+            shouldResetDelta = false;
+        }
         if(fpsAccumulator >= 1.0)
         {
             import hip.console.log;
