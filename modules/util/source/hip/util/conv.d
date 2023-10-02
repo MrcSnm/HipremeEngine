@@ -217,6 +217,7 @@ string toString(float f) pure nothrow @safe
     bool isNegative = f < 0;
     if(isNegative)
         f = -f;
+    
     float decimal = f - cast(int)f;
     string ret = (cast(int)f).toString;
     if(isNegative)
@@ -225,13 +226,14 @@ string toString(float f) pure nothrow @safe
     if(decimal == 0)
         return ret;
     ret~= '.';
-    while(cast(int)decimal != decimal)
+    long multiplier = 10;
+    while(cast(long)(decimal*multiplier) < (decimal*multiplier))
     {
-        decimal*=10;
-        if(cast(int)decimal == 0)
+        if(cast(long)(decimal*multiplier) == 0)
         	ret~= '0';
+        multiplier*=10;
     }
-    return ret ~ (cast(int)decimal).toString;
+    return ret ~ (cast(long)(decimal*multiplier)).toString;
 }
 
 pure string toString(void* ptr) @safe nothrow
@@ -362,6 +364,8 @@ unittest
     assert(toInt("-500") == -500);
     assert(toString("Hello") == "Hello");
     assert(toString(true) == "true");
+
+    import std.stdio;
     assert(toString(50.25)== "50.25");
     assert(toString(0.003) == "0.003");
     assert(toString(0.999) == "0.999");

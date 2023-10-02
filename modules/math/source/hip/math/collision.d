@@ -243,7 +243,7 @@ struct RectWorld
             }
             if(collisionList.length > 0)
             {
-                import std.algorithm:sort;
+                import std.algorithm.sorting:sort;
                 foreach(col; sort!((DynamicRectCollision a, DynamicRectCollision b) => a.time < b.time)(collisionList))
                 {
                     resolveDynamicRectOverlappingRect(col.normal, dynamic.velocity, col.time);

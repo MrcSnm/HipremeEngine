@@ -181,7 +181,7 @@ class HipArsd_TTF_Font : HipFont
         //Add as an error (pixel bleeding)
         avgWidth = cast(uint)(avgWidth / charset.length) + 2;
         avgHeight = cast(uint)(avgHeight / charset.length) + 2;
-        import std.algorithm:sort;
+        import std.algorithm.sorting:sort;
         enum hSpacing = 1;
         enum vSpacing = 1;
         float x = 1;

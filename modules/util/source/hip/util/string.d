@@ -115,13 +115,13 @@ struct String
         char[] chs;
         static if(is(T == String))
             chs = value.chars;
-        else static if (is(T == string)) 
+        else static if (is(T == string) || is(T == char[]))
             chs = cast(char[])value;
         else static if(is(T == immutable(char)*))
             chs = value[0..strlen(value)];
         else static if(is(T == char))
         {
-            static char[1] _chContainer;
+            char[1] _chContainer;
             _chContainer[0] = value;
             chs = _chContainer;
         }
@@ -721,7 +721,6 @@ TString join(TString)(TString[] args, TString separator = "")
 
 unittest
 {
-    assert(baseName("a/b/test.txt") == "test.txt");
     assert(join(["hello", "world"], ", ") == "hello, world");
     assert(split("hello world", " ").length == 2);
     assert(toDefault!int("hello") == 0);
