@@ -1,5 +1,5 @@
 module hip.util.algorithm;
-public import std.algorithm:map;
+public import std.algorithm.iteration : map;
 import std.algorithm.mutation : copy;
 import std.traits:ReturnType;
 
