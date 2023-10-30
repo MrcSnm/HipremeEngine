@@ -364,8 +364,6 @@ unittest
     assert(toInt("-500") == -500);
     assert(toString("Hello") == "Hello");
     assert(toString(true) == "true");
-
-    import std.stdio;
     assert(toString(50.25)== "50.25");
     assert(toString(0.003) == "0.003");
     assert(toString(0.999) == "0.999");

@@ -18,6 +18,28 @@ version(PSVita) version = NoSharedLibrarySupport;
 version(WebAssembly) version = NoSharedLibrarySupport;
 version(CustomRuntimeTest) version = NoSharedLibrarySupport;
 
+debug version(Windows)
+{
+    pragma(lib, "psapi.lib");
+    pragma(lib, "dbghelp.lib");
+    private struct MODLOAD_DATA {DWORD ssize; DWORD ssig; PVOID data; DWORD size; DWORD flags; }
+    import core.sys.windows.windef;
+    extern(Windows) private 
+    {
+        alias SymUnloadModule = SymUnloadModule64;
+        BOOL SymUnloadModule64(HANDLE hProcess, DWORD64 BaseOfDll);
+        DWORD64 SymLoadModuleEx(
+            HANDLE        hProcess,
+            HANDLE        hFile,
+            PCSTR         ImageName,
+            PCSTR         ModuleName,
+            DWORD64       BaseOfDll,
+            DWORD         DllSize,
+            MODLOAD_DATA* Data,
+            DWORD         Flags
+        );
+    }
+}
 enum debugger = "asm {int 3;}";
 
 char[] sanitizePath(string path) @safe pure nothrow
@@ -104,6 +126,12 @@ version(Windows)
 
         return ret;
     }
+
+    void winEnforce(scope BOOL delegate() dg, scope string message)
+    {
+        if(!dg())
+            throw new Error(message~": "~getWindowsErrorMessage(GetLastError()));
+    }
 }
 
 
@@ -164,6 +192,18 @@ void* dynamicLibraryLoad(string libName)
         {
             import core.runtime;
             ret = Runtime.loadLibrary(libName);
+            debug
+            {
+                import core.sys.windows.psapi;
+                import core.sys.windows.winbase;
+                MODULEINFO moduleInfo;
+	            winEnforce(() => GetModuleInformation(GetCurrentProcess(), ret, &moduleInfo, MODULEINFO.sizeof), "Could not get module information");
+                if (!SymLoadModuleEx(GetCurrentProcess(), null, (libName~'\0').ptr, null, cast(ulong)moduleInfo.lpBaseOfDll, moduleInfo.SizeOfImage, null, 0))
+                {
+                    throw new Error("Failed to load the DLL named "~libName~" pdb symbols");
+                }
+                
+            }
         }
         else version(Posix)
         {
@@ -234,6 +274,14 @@ bool dynamicLibraryRelease(void* dll)
     else
     {
         import core.runtime;
+        debug version(Windows)
+        {
+            import core.sys.windows.winbase;
+            import core.sys.windows.psapi;
+            MODULEINFO moduleInfo;
+            winEnforce(() => GetModuleInformation(GetCurrentProcess(), dll, &moduleInfo, MODULEINFO.sizeof), "Could not get module information");
+            winEnforce(() => SymUnloadModule(GetCurrentProcess(), cast(ulong)moduleInfo.lpBaseOfDll), "Could not unload PDB");
+        }
         return Runtime.unloadLibrary(dll);
     }
 }
