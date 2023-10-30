@@ -33,20 +33,11 @@ void toStringRange(Sink)(ref Sink sink, float f)
 if(isOutputRange!(Sink, char))
 {
     if(f != f) //nan
-    {
-        put(sink, "nan");
-        return;
-    }
+        return put(sink, "nan");
     else if(f == -float.infinity)
-    {
-        put(sink, "-inf");
-        return;
-    }
+        return put(sink, "-inf");
     if(f == float.infinity)
-    {
-        put(sink, "inf");
-        return;
-    }
+        return put(sink, "inf");
     if(f < 0)
     {
         f = -f;
@@ -58,13 +49,14 @@ if(isOutputRange!(Sink, char))
     if(decimal == 0)
         return;
     put(sink, '.');
-    while(cast(int)decimal != decimal)
+    long multiplier = 10;
+    while(cast(long)(decimal*multiplier) < (decimal*multiplier))
     {
-        decimal*=10;
-        if(cast(int)decimal == 0)
+        if(cast(long)(decimal*multiplier) == 0)
             put(sink, '0');
+        multiplier*=10;
     }
-    toStringRange(sink, cast(int)decimal);
+    toStringRange(sink, (cast(long)(decimal*multiplier)));
 }
 
 
