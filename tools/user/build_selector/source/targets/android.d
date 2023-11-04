@@ -1,7 +1,6 @@
 module targets.android;
 import commons;
 import std.net.curl;
-import arsd.terminal;
 import std.path;
 
 ///This is the one which will be installed when using the SDK.
@@ -48,13 +47,14 @@ private FindAndroidNdkResult tryFindAndroidNDK(ref Terminal t, ref RealTimeConso
 		}
 		string sdkPath = buildNormalizedPath(locAppData, "Android", "Sdk");
 		string tempNdkPath = sdkPath;
-		if(!std.file.exists(tempNdkPath))
+
+		if(!std.file.exists(sdkPath))
 		{
-			t.writelnError("Could not find ", tempNdkPath, ". You need to install Android SDK.");
+			t.writelnError("Could not find ", sdkPath, ". You need to install Android SDK.");
 			t.flush;
 			return FindAndroidNdkResult.MustInstallSdk;
 		}
-		tempNdkPath = buildNormalizedPath(tempNdkPath, "ndk");
+		tempNdkPath = buildNormalizedPath(sdkPath, "ndk");
 		if(!std.file.exists(tempNdkPath))
 		{
 			t.writelnError("Could not find ", tempNdkPath, ". You need to have at least one NDK installed.");

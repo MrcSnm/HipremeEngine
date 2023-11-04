@@ -1,5 +1,4 @@
 module template_processor;
-import std.algorithm;
 import std.typecons:Flag,Yes,No;
 import std.file;
 import std.json;
@@ -78,6 +77,7 @@ private enum VariableType
 
 private VariableType getType(string keyName)
 {
+	import std.algorithm.searching : countUntil;
 	string currentSystem = "unknown";
 	version(Windows)
 		currentSystem = "windows";
@@ -339,7 +339,7 @@ in string[string] additionalVariables = string[string].init)
 			enforce(parentJson != JSONValue.init, "Could not find json in paths "~options.to!string);
 			foreach(key, value; parentJson.object)
 			{
-				import std.algorithm:countUntil;
+				import std.algorithm.searching : countUntil;
 				if(excludeKeys.countUntil(key) == -1)
 				{
 					if(!(key in json)) json.object[key] = parentJson[key];
@@ -417,8 +417,8 @@ in string[string] additionalVariables = string[string].init)
 					endingPath = unnamedDep.str;
 
 				endingPath = processString(json, endingPath);
-
-
+				import std.algorithm.searching : find;
+				
 				string[] dubPath = find!((string f) => exists(f))(
 				[
 					buildPath(processedPath, endingPath, "dub.json"),

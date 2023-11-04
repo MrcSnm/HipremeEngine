@@ -314,11 +314,11 @@ class GameSystem
 
     version(CustomRuntime){}
     else
-    void scriptFatalError(Error e, string file = __FILE__, size_t line = __LINE__, string func = __PRETTY_FUNCTION__)
+    void scriptFatalError(Throwable e, string file = __FILE__, size_t line = __LINE__, string func = __PRETTY_FUNCTION__)
     {
         import hip.console.log;
         import hip.util.path;
-        loglnError(e.msg, " (", joinPath(projectDir, e.file), ":",e.line, ")");
+        loglnError(e.msg, ". Project: (", projectDir, ") at file (", e.file, ":",e.line, ")");
         quit();
         ErrorHandler.assertExit(false, "Script Fatal Error", file, line, __MODULE__, func);
     }
@@ -336,7 +336,7 @@ class GameSystem
                 foreach (AScene s; scenes)
                     s.render();
             }
-            catch(Error e){scriptFatalError(e);}
+            catch(Throwable e){scriptFatalError(e);}
         }
         HipTimerManager.render();
     }
@@ -351,12 +351,12 @@ class GameSystem
         {
             if(hotload !is null)
             {
-                destroy(watcher);
                 if(HipremeEngineGameDestroy != null)
                     HipremeEngineGameDestroy();
                 scenes.length = 0;
                 externalScene = null;
                 hotload.dispose();
+                watcher.stop();
             }
         }
         import hip.assetmanager;
