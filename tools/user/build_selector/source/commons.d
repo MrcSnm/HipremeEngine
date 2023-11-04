@@ -1156,5 +1156,6 @@ private bool hasAdminRights()
 static this()
 {
 	configs = std.file.exists(getConfigPath) ? Config(parseJSON(std.file.readText(getConfigPath))) : Config(parseJSON("{}"));
-	engineConfig = std.file.exists(getEngineConfigPath) ? parseJSON(std.file.readText(getEngineConfigPath)) : parseJSON("{}");
+	try engineConfig = std.file.exists(getEngineConfigPath) ? parseJSON(std.file.readText(getEngineConfigPath)) : parseJSON("{}");
+	catch(Exception e) engineConfig = parseJSON("{}");
 }
