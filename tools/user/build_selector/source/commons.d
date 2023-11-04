@@ -1,5 +1,6 @@
 module commons;
-public import arsd.terminal;
+public import arsd.terminal : Color, ConsoleOutputType, ConsoleInputFlags;
+public static import arsd.terminal;
 public import std.array:join, split;
 public import std.json;
 public import std.path;
@@ -14,6 +15,62 @@ __gshared JSONValue engineConfig;
 __gshared Config configs;
 
 string pathBeforeNewLdc;
+
+struct Terminal
+{
+	import std.stdio;
+	private arsd.terminal.Terminal* arsdTerminal;
+	this(ref arsd.terminal.Terminal arsdTerminal)
+	{
+		this.arsdTerminal = &arsdTerminal;
+	}
+
+	void color(Color main, Color secondary){if(arsdTerminal) arsdTerminal.color(main, secondary);}
+	int cursorY()
+	{
+		if(arsdTerminal) return arsdTerminal.cursorY;
+		return 0;
+	}
+	string getline(string message)
+	{
+		if(arsdTerminal) return arsdTerminal.getline(message); 
+		std.stdio.writeln("Can't get line with message [", message, "]");
+		return "";
+	}
+	void moveTo(int x, int y){if(arsdTerminal) arsdTerminal.moveTo(x, y);}
+	void clear(){if(arsdTerminal) arsdTerminal.clear();}
+	void write(T...)(T args)
+	{
+		if(arsdTerminal) arsdTerminal.write(args);
+		else std.stdio.write(args);
+	}
+	void flush()
+	{
+		if(arsdTerminal) arsdTerminal.flush();
+	}
+	void hideCursor(){ if(arsdTerminal) arsdTerminal.hideCursor();}
+	void showCursor(){ if(arsdTerminal) arsdTerminal.showCursor();}
+	void clearToEndOfLine(){ if(arsdTerminal) arsdTerminal.clearToEndOfLine();}
+
+	void writeln(T...)(T args)
+	{
+		if (arsdTerminal) arsdTerminal.writeln(args);
+		else std.stdio.writeln(args);
+	}
+}
+
+struct RealTimeConsoleInput
+{
+	private arsd.terminal.RealTimeConsoleInput* input;
+	this(ref arsd.terminal.RealTimeConsoleInput input){this.input = &input;}
+	dchar getch()
+	{
+		if(input) return input.getch();
+		return '\0';
+	}
+
+}
+
 struct TerminalColors
 {
 	private Terminal* _t;
@@ -115,11 +172,13 @@ struct CompilationOptions
 {
 	bool skipRegistry;
 	bool force;
+	bool tempBuild;
 	string getDubOptions() const
 	{
 		string ret;
 		if(force) ret~= " --force";
 		if(skipRegistry) ret~= " --skip-registry=all";
+		if(tempBuild) ret~= " --temp-build";
 		return ret;
 	}
 }
@@ -583,7 +642,7 @@ size_t downloadWithProgressBar(ref Terminal t, string url, string saveToPath, si
 	size_t received, contentLength;
 	HTTP conn = HTTP();
 	conn.url = url;
-	auto writer = (string path)
+	static void writer(string path)
 	{
 		auto f = File(path, "wb");
 		while(true)
@@ -594,8 +653,8 @@ size_t downloadWithProgressBar(ref Terminal t, string url, string saveToPath, si
 			f.rawWrite(data);
 		}
 		ownerTid.send(true);
-	};
-	auto writerTid = spawn(writer, saveToPath);
+	}
+	auto writerTid = spawn(&writer, saveToPath);
 	t.hideCursor();
 	StopWatch sw = StopWatch(AutoStart.yes);
 	size_t downloadTime;

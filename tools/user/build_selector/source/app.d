@@ -1,4 +1,3 @@
-import arsd.terminal;
 import std.datetime.stopwatch;
 import std.getopt;
 import std.conv:to;
@@ -39,7 +38,7 @@ Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choi
 
 	if(autoSelect && autoSelect.isChoiceAutoSelectable)
 	{
-		import std.algorithm;
+		import std.algorithm.searching:countUntil;
 		selectedChoice = countUntil!"a.name == b"(choices, autoSelect);
 	}
 	else
@@ -187,8 +186,21 @@ string autoSelect;
 
 void main(string[] args)
 {
-	auto terminal = Terminal(ConsoleOutputType.linear);
-	RealTimeConsoleInput input = RealTimeConsoleInput(&terminal, ConsoleInputFlags.raw);
+	Terminal terminal;
+	RealTimeConsoleInput input;
+	try
+	{
+		auto arsdTerminal = arsd.terminal.Terminal(ConsoleOutputType.linear);
+		auto arsdInput = arsd.terminal.RealTimeConsoleInput(&arsdTerminal, ConsoleInputFlags.raw);
+		terminal = Terminal(arsdTerminal);
+		input = RealTimeConsoleInput(arsdInput);
+	}
+	catch(Exception e)
+	{
+		terminal = Terminal.init;
+		input = RealTimeConsoleInput.init;
+		terminal.writeln("This terminal will only be able to output... No interaction will be available");
+	}
 	terminal.clear();
 	if(!("PATH" in environment))
 		environment["PATH"] = "";
@@ -223,7 +235,8 @@ void main(string[] args)
 			"force", "Force for a recompilation", &cOpts.force,
 			"skipRegistry", "Skips dub registry with --skip-registry=all", &cOpts.skipRegistry,
 			"scriptOnly", "Only the script will be built, internally used for rebuilding", &scriptOnly,
-			"autoSelect", "Execute a compilation option without needing to select", &autoSelect
+			"autoSelect", "Execute a compilation option without needing to select", &autoSelect,
+			"tempBuild", "Executes dub with --temp-build", &cOpts.tempBuild
 		);
 		if(opts.helpWanted)
 		{
