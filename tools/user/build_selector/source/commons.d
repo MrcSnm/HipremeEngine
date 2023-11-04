@@ -520,9 +520,7 @@ bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal
 	}
 	t.writeln("Extracting ", tarGzPath, " to ", outputDirectory);
 	t.flush;
-	if(!std.file.exists(outputDirectory))
-		std.file.mkdirRecurse(outputDirectory);
-	return dbgExecuteShell("tar -xf "~tarGzPath~" -C "~outputDirectory, t);
+	return dbgExecuteShell("tar -xf "~tarGzPath~" "~outputDirectory, t);
 }
 
 /** 
