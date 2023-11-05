@@ -520,8 +520,7 @@ bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal
 	}
 	t.writeln("Extracting ", tarGzPath, " to ", outputDirectory);
 	t.flush;
-	with(WorkingDir(outputDirectory.dirName))
-		return dbgExecuteShell("tar -xf "~tarGzPath~" "~outputDirectory.baseName, t);
+	return dbgExecuteShell("tar -xf "~tarGzPath~" -C "~outputDirectory.dirName, t);
 }
 
 bool isRecognizedExtension(string ext)
