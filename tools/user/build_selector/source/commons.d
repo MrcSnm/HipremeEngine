@@ -520,14 +520,15 @@ bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal
 	}
 	t.writeln("Extracting ", tarGzPath, " to ", outputDirectory);
 	t.flush;
-	return dbgExecuteShell("tar -xf "~tarGzPath~" "~outputDirectory, t);
+	with(WorkingDir(outputDirectory.dirName))
+		return dbgExecuteShell("tar -xf "~tarGzPath~" "~outputDirectory.baseName, t);
 }
 
 bool isRecognizedExtension(string ext)
 {
 	switch(ext)
 	{
-		case ".7z", ".7zip", ".tar", ".xz", ".zf", ".bz", ".zip": return true;
+		case ".7z", ".7zip", ".tar", ".xz", ".zf", ".bz", ".gz", ".zip": return true;
 		default: return false;
 	}
 }
