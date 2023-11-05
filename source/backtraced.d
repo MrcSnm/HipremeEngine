@@ -105,7 +105,7 @@ version (Windows)
     }
 }
 
-version (Posix)
+version (linux)
 {
     import core.stdc.signal : SIGSEGV, SIGFPE, SIGILL, SIGABRT, signal;
     import core.stdc.stdlib : free, exit;
