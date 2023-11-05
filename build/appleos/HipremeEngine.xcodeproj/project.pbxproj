@@ -221,7 +221,7 @@
 			isa = PBXGroup;
 			children = (
 				3130368729D670A400895DD5 /* assets */,
-				315C6FC529B55CF8007F19C0 /* HipremeEngine D */,
+				315C6FC529B55CF8007F19C0 /* HipremeEngine_D */,
 				3156441C29A1546600559889 /* HipremeEngine Shared */,
 				3156442829A1546900559889 /* HipremeEngine iOS */,
 				3156443C29A1546900559889 /* HipremeEngine tvOS */,
@@ -343,14 +343,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		315C6FC529B55CF8007F19C0 /* HipremeEngine D */ = {
+		315C6FC529B55CF8007F19C0 /* HipremeEngine_D */ = {
 			isa = PBXGroup;
 			children = (
 				3130368929D672C700895DD5 /* libs */,
 				3130368529D66E6900895DD5 /* static */,
 				315C6FCB29B55DBE007F19C0 /* hipreme_engine.h */,
 			);
-			path = "HipremeEngine D";
+			path = HipremeEngine_D;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -618,8 +618,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LIBRARY_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/HipremeEngine D/libs/",
-					"$(PROJECT_DIR)/HipremeEngine D/static/",
+					"$(PROJECT_DIR)/HipremeEngine_D/libs/",
+					"$(PROJECT_DIR)/HipremeEngine_D/static/",
 				);
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -672,8 +672,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LIBRARY_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/HipremeEngine\\ D/libs",
-					"$(PROJECT_DIR)/HipremeEngine\\ D/static",
+					"$(PROJECT_DIR)/HipremeEngine_D/libs/",
+					"$(PROJECT_DIR)/HipremeEngine_D/static/",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
