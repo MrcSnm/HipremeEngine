@@ -190,10 +190,8 @@ void main(string[] args)
 	RealTimeConsoleInput input;
 	try
 	{
-		auto arsdTerminal = arsd.terminal.Terminal(ConsoleOutputType.linear);
-		auto arsdInput = arsd.terminal.RealTimeConsoleInput(&arsdTerminal, ConsoleInputFlags.raw);
-		terminal = Terminal(arsdTerminal);
-		input = RealTimeConsoleInput(arsdInput);
+		terminal = Terminal(new arsd.terminal.Terminal(ConsoleOutputType.linear));
+		input = RealTimeConsoleInput(new arsd.terminal.RealTimeConsoleInput(terminal.arsdTerminal, ConsoleInputFlags.raw));
 	}
 	catch(Exception e)
 	{
