@@ -55,9 +55,16 @@ private string getDmdOutputPath()
 
 private string getLdcDownloadOutputName()
 {
-    version(Windows) return "ldc2-"~LdcVersion~".7z";
-    else version(Posix) return "ldc2-"~LdcVersion~".tar.xz";
-    else assert(false, "System not supported.");
+    static string fileName;
+    if(!fileName)
+    {
+        fileName = "ldc2-"~LdcVersion~"-";
+        version(Windows) fileName~= "windows-x64.7z";
+        else version(linux) fileName~= "linux-x86_64.tar.xz";
+        else version(OSX) fileName~= "osx-universal.tar.xz";
+        else assert(false, "System not supported.");
+    }
+    return fileName;
 }
 
 
