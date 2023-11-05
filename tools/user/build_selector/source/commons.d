@@ -19,10 +19,10 @@ string pathBeforeNewLdc;
 struct Terminal
 {
 	import std.stdio;
-	private arsd.terminal.Terminal* arsdTerminal;
-	this(ref arsd.terminal.Terminal arsdTerminal)
+	arsd.terminal.Terminal* arsdTerminal;
+	this(arsd.terminal.Terminal* arsdTerminal)
 	{
-		this.arsdTerminal = &arsdTerminal;
+		this.arsdTerminal = arsdTerminal;
 	}
 
 	void color(Color main, Color secondary){if(arsdTerminal) arsdTerminal.color(main, secondary);}
@@ -57,18 +57,25 @@ struct Terminal
 		if (arsdTerminal) arsdTerminal.writeln(args);
 		else std.stdio.writeln(args);
 	}
+	~this()
+	{
+		if(arsdTerminal) arsdTerminal.destroy();
+	}
 }
 
 struct RealTimeConsoleInput
 {
 	private arsd.terminal.RealTimeConsoleInput* input;
-	this(ref arsd.terminal.RealTimeConsoleInput input){this.input = &input;}
+	this(arsd.terminal.RealTimeConsoleInput* input){this.input = input;}
 	dchar getch()
 	{
 		if(input) return input.getch();
 		return '\0';
 	}
-
+	~this()
+	{
+		if(input) input.destroy();
+	}
 }
 
 struct TerminalColors
@@ -195,7 +202,7 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	terminal.writelnHighlighted(selectionTitle);
 	terminal.writeln(SelectionHint);
 
-	static void changeChoice(ref Terminal t, Choice current, Choice next, int nextCursorOffset)
+	static void changeChoice(ref Terminal t, Choice[] choices, string title, Choice current, Choice next, int nextCursorOffset)
 	{
 		int currCursor = t.cursorY;
 		t.moveTo(0, currCursor);
@@ -206,6 +213,7 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 		t.clearToEndOfLine();
 		with(TerminalColors(Color.green, Color.DEFAULT, t))
 			t.write(">> ", next.name);
+		t.flush;
 	}
 
 	static void changeChoiceClear(ref Terminal t, Choice[] choices, string title, Choice current, Choice next, int nextCursorOffset)
