@@ -1,6 +1,8 @@
 module targets.appleos;
 import commons;
 
+enum XCodeDFolder = "HipremeEngine_D";
+
 ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	environment["PATH"] = pathBeforeNewLdc;
@@ -11,7 +13,7 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	if(phobosLib == null) throw new Error("Could not find your phobos library");
 	string outputPhobos = buildNormalizedPath(
 		configs["hipremeEnginePath"].str, 
-		"build", "appleos", "HipremeEngine D",
+		"build", "appleos", XCodeDFolder,
 		"static"
 	);
 	std.file.mkdirRecurse(outputPhobos);
@@ -33,7 +35,7 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 
 	with(WorkingDir(getHipPath))
 	{
-		string targetDir = getHipPath("build", "appleos", "HipremeEngine D", "libs");
+		string targetDir = getHipPath("build", "appleos", XCodeDFolder, "libs");
 		if(std.file.exists(targetDir))
 			std.file.rmdirRecurse(targetDir);
 		std.file.mkdirRecurse(targetDir);
@@ -45,7 +47,7 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 		}
 		runEngineDScript(t, "copylinkerfiles.d", 
 			"\"--recipe="~buildPath(getBuildTarget, "dub.json")~"\"",
-			getHipPath("build", "appleos", "\"HipremeEngine D\"", "libs")
+			getHipPath("build", "appleos", XCodeDFolder, "libs")
 		);
 		
 		string path = getHipPath("build", "appleos");
