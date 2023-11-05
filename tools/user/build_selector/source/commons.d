@@ -523,6 +523,15 @@ bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal
 	return dbgExecuteShell("tar -xf "~tarGzPath~" "~outputDirectory, t);
 }
 
+bool isRecognizedExtension(string ext)
+{
+	switch(ext)
+	{
+		case ".7z", ".7zip", ".tar", ".xz", ".zf", ".bz", ".zip": return true;
+		default: return false;
+	}
+}
+
 /** 
  * Removes the extension (while keeping numeric extensions such as dmd-2.105.0)
  * Params:
@@ -533,7 +542,7 @@ string removeExtension(string input)
 {
 	import std.string:isNumeric;
 	string ext;
-	while((ext = input.extension).length && !ext.isNumeric)
+	while((ext = input.extension).length && ext.isRecognizedExtension)
 		input = input.setExtension("");
 	return input;
 }
