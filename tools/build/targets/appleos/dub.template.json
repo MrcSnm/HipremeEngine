@@ -9,7 +9,8 @@
         "build/release_game/"
     ],
     "subConfigurations": {
-        "renderer": "appleos"
+        "renderer": "appleos",
+        "audio": "nodx"
     },
     "versions": [
         "OpenAL",
