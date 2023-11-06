@@ -7,7 +7,7 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 {
 	t.writelnHighlighted("LDC not supported for building AppleOS yet. Use system path.");
 	t.flush;
-	// loadSubmodules(t, input);
+	loadSubmodules(t, input);
 	string phobosLib = configs["phobosLibPath"].str.getFirstExisting("libphobos2.a", "libphobos.a", "libphobos2-ldc.a");
 	if(phobosLib == null) throw new Error("Could not find your phobos library");
 	string outputPhobos = buildNormalizedPath(
