@@ -73,7 +73,6 @@
 		31B53C1529D68FD400108E4C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1429D68FD400108E4C /* Cocoa.framework */; };
 		31B53C1629D6902C00108E4C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1129D68FC500108E4C /* Metal.framework */; };
 		31B53C1729D6902C00108E4C /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1029D68FC500108E4C /* MetalKit.framework */; };
-		EBD5D7C42AF7F89C00494F59 /* libdruntime-ldc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7C32AF7F89C00494F59 /* libdruntime-ldc.a */; settings = {ATTRIBUTES = (Weak, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -173,7 +172,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EBD5D7C42AF7F89C00494F59 /* libdruntime-ldc.a in Frameworks */,
 				31B53C1629D6902C00108E4C /* Metal.framework in Frameworks */,
 				31B53C1729D6902C00108E4C /* MetalKit.framework in Frameworks */,
 				31B53C1529D68FD400108E4C /* Cocoa.framework in Frameworks */,

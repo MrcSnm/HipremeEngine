@@ -3,7 +3,7 @@ import commons;
 
 enum XCodeDFolder = "HipremeEngine_D";
 
-void setupPerCompiler(ref Terminal t)
+void setupPerCompiler(ref Terminal t, out string extraLinkerFlags)
 {
 	switch(getSelectedCompiler)	
 	{
@@ -17,6 +17,7 @@ void setupPerCompiler(ref Terminal t)
 			t.writelnSuccess("Copying druntime to XCode ", druntimeLib, " -> ", outputDruntime);
 			t.flush;
 			std.file.copy(druntimeLib, outputDruntime);
+			extraLinkerFlags = "OTHER_LDFLAGS=\"-ldruntime-ldc\"";
 			break;
 		}
 		case "dmd":
@@ -44,7 +45,8 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	t.flush;
 	cached(() => timed(() => loadSubmodules(t, input)));
 
-	setupPerCompiler(t);
+	string out_extraLinkerFlags;
+	setupPerCompiler(t, out_extraLinkerFlags);
 	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "appleos", "assets"));
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
 
@@ -78,8 +80,8 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 		with(WorkingDir(path))
 		{
 			wait(spawnShell(
-				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine macOS' build CONFIGURATION_BUILD_DIR=\"bin\""~ 
-				" && cd bin && HipremeEngine.app/Contents/MacOS/HipremeEngine")
+				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine macOS' build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
+				out_extraLinkerFlags ~ " && cd bin && HipremeEngine.app/Contents/MacOS/HipremeEngine")
 			);
 		}
 	}
