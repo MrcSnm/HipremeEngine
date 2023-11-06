@@ -22,10 +22,6 @@ version(Windows)
 {
 	import hip.hiprenderer.backend.d3d.d3drenderer;
 }
-version(dll)
-{
-	import core.runtime;
-}
 import hip.hiprenderer.renderer;
 import hip.view;
 import hip.systems.game;
@@ -39,9 +35,13 @@ version(dll)
 	else version = ManagesMainDRuntime;
 }
 version(dll){}
-else version(AppleOS) {}
+else version(AppleOS) { version = ManagesMainDRuntime;}
 else version = HandleArguments;
 
+version(ManagesMainDRuntime)
+{
+	import core.runtime;
+}
 version(WebAssembly) version = ExternallyManagedDeltaTime;
 version(AppleOS)     version = ExternallyManagedDeltaTime;
 version(PSVita)      version = ExternallyManagedDeltaTime;
