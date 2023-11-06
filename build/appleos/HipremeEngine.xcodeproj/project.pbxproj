@@ -53,7 +53,6 @@
 		3164624E29C4C96F001CE578 /* libconsole.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164622F29C4C941001CE578 /* libconsole.a */; };
 		3164624F29C4C973001CE578 /* libdata.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164623029C4C942001CE578 /* libdata.a */; };
 		3164625029C4C977001CE578 /* libdebugging.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164623729C4C948001CE578 /* libdebugging.a */; };
-		3164625129C4C97B001CE578 /* libdirectx-d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164623929C4C94A001CE578 /* libdirectx-d.a */; };
 		3164625229C4C980001CE578 /* liberror.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164623C29C4C94C001CE578 /* liberror.a */; };
 		3164625329C4C986001CE578 /* libfont.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164623129C4C943001CE578 /* libfont.a */; };
 		3164625429C4C98F001CE578 /* libhipreme_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3164622729C4C936001CE578 /* libhipreme_engine.a */; };
@@ -74,6 +73,7 @@
 		31B53C1529D68FD400108E4C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1429D68FD400108E4C /* Cocoa.framework */; };
 		31B53C1629D6902C00108E4C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1129D68FC500108E4C /* Metal.framework */; };
 		31B53C1729D6902C00108E4C /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1029D68FC500108E4C /* MetalKit.framework */; };
+		EBD5D7C42AF7F89C00494F59 /* libdruntime-ldc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7C32AF7F89C00494F59 /* libdruntime-ldc.a */; settings = {ATTRIBUTES = (Weak, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -151,6 +151,7 @@
 		31B53C1029D68FC500108E4C /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		31B53C1129D68FC500108E4C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		31B53C1429D68FD400108E4C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		EBD5D7C32AF7F89C00494F59 /* libdruntime-ldc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libdruntime-ldc.a"; path = "HipremeEngine_D/static/libdruntime-ldc.a"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -172,6 +173,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EBD5D7C42AF7F89C00494F59 /* libdruntime-ldc.a in Frameworks */,
 				31B53C1629D6902C00108E4C /* Metal.framework in Frameworks */,
 				31B53C1729D6902C00108E4C /* MetalKit.framework in Frameworks */,
 				31B53C1529D68FD400108E4C /* Cocoa.framework in Frameworks */,
@@ -205,7 +207,6 @@
 				3164625629C4C99F001CE578 /* libmath.a in Frameworks */,
 				3164624A29C4C962001CE578 /* libbind.a in Frameworks */,
 				3164626629C4CC59001CE578 /* libfilesystem.a in Frameworks */,
-				3164625129C4C97B001CE578 /* libdirectx-d.a in Frameworks */,
 				3164626A29C4CE72001CE578 /* libmetal.a in Frameworks */,
 				3164625329C4C986001CE578 /* libfont.a in Frameworks */,
 				3164624329C4C953001CE578 /* libarsd-official_imageresize.a in Frameworks */,
@@ -298,6 +299,7 @@
 		315796D729B6771F00CE2D39 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EBD5D7C32AF7F89C00494F59 /* libdruntime-ldc.a */,
 				31B53C1429D68FD400108E4C /* Cocoa.framework */,
 				31B53C1129D68FC500108E4C /* Metal.framework */,
 				31B53C1029D68FC500108E4C /* MetalKit.framework */,
@@ -812,6 +814,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/HipremeEngine_D/static",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.6;
 				MARKETING_VERSION = 1.0;
@@ -842,6 +845,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/HipremeEngine_D/static",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.6;
 				MARKETING_VERSION = 1.0;

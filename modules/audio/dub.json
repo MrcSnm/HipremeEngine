@@ -18,7 +18,9 @@
 			"name": "default",
 			"libs-windows": ["xaudio2_8"],
 			"dependencies": {
-				"bindbc-openal": "~>1.0.0",
+				"bindbc-openal": "~>1.0.0"
+			},
+			"dependencies-windows": {
 				"directx-d":{"path" : "../../dependencies/directx-d", "optional": true}
 			},
 			"subConfigurations": {

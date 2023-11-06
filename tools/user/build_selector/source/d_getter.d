@@ -174,6 +174,5 @@ bool setupD(ref Terminal t, ref RealTimeConsoleInput input)
         environment["PATH"]
     ], concatPath);
 
-
     return true;
 }
