@@ -169,7 +169,7 @@ class HipMTLShader : IShader
         NSError err;
         MTLCompileOptions opts = MTLCompileOptions.alloc.initialize;
         ///Macros
-        opts.preprocessorMacros = nscast!(NSDictionary)(["ARGS_TIER2": 0].ns);
+        opts.preprocessorMacros = cast(NSDictionary)(["ARGS_TIER2": 0].ns);
         
         p.library = device.newLibraryWithSource(shaderSource.ns, opts, &err);
 
