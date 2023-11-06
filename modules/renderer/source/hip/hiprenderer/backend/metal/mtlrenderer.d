@@ -94,8 +94,9 @@ class HipMTLRenderer : IHipRendererImpl
 
 
         depthStencilDescriptor = MTLDepthStencilDescriptor.alloc.ini;
-        renderPassDescriptor.depthAttachment.loadAction = MTLLoadAction.Clear;
-        renderPassDescriptor.depthAttachment.clearDepth = 1.0;
+        // renderPassDescriptor = MTLRenderPassDescriptor.renderPassDescriptor;
+        // renderPassDescriptor.depthAttachment.loadAction = MTLLoadAction.Clear;
+        // renderPassDescriptor.depthAttachment.clearDepth = 1.0;
 
         return cmdQueue !is null;
     }
@@ -182,12 +183,12 @@ class HipMTLRenderer : IHipRendererImpl
 
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
-        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(
-            r/255.0f,
-            g/255.0f,
-            b/255.0f,
-            a/255.0f
-        );
+        // renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(
+        //     r/255.0f,
+        //     g/255.0f,
+        //     b/255.0f,
+        //     a/255.0f
+        // );
     }
 
     public void setViewport(Viewport v)
@@ -290,7 +291,7 @@ class HipMTLRenderer : IHipRendererImpl
 
     public void clear()
     {
-        renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.Clear;
+        // renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.Clear;
         cmdEncoder.endEncoding();
         cmdBuffer.commit();
         begin();
@@ -299,7 +300,7 @@ class HipMTLRenderer : IHipRendererImpl
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         setColor(r,g,b,a);
-        renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.Clear;
+        // renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.Clear;
         cmdEncoder.endEncoding();
         cmdBuffer.commit();
         begin();
