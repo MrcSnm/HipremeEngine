@@ -41,8 +41,6 @@ void setupPerCompiler(ref Terminal t, out string extraLinkerFlags)
 
 ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-	t.writelnHighlighted("LDC not supported for building AppleOS yet. Use system path.");
-	t.flush;
 	cached(() => timed(() => loadSubmodules(t, input)));
 
 	string out_extraLinkerFlags;
