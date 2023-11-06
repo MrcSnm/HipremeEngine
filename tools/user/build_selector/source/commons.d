@@ -884,7 +884,7 @@ mixin template BuilderPattern(Struct)
 
 
 immutable string[] compilers = ["auto", "ldc2", "dmd"];
-private string getSelectedCompiler()
+string getSelectedCompiler()
 {
 	const(JSONValue)* c = "selectedCompiler" in configs;
 	if(!c) return "auto";
