@@ -3,24 +3,48 @@ import commons;
 
 enum XCodeDFolder = "HipremeEngine_D";
 
+void setupPerCompiler(ref Terminal t)
+{
+	switch(getSelectedCompiler)	
+	{
+		default:
+		case "auto", "ldc2":
+		{
+			string outputDruntime = getHipPath("build", "appleos", XCodeDFolder, "static", "libdruntime-ldc.a");
+			string druntimeLib = buildNormalizedPath(configs["ldcPath"].str, "lib-x86_64").getFirstExisting("libdruntime-ldc.a");
+			if(druntimeLib == null) 
+				throw new Error("DRuntime Library not found on path "~configs["ldcPath"].str);
+			t.writelnSuccess("Copying druntime to XCode ", druntimeLib, " -> ", outputDruntime);
+			t.flush;
+			std.file.copy(druntimeLib, outputDruntime);
+			break;
+		}
+		case "dmd":
+		{
+			string outputDruntime = getHipPath("build", "appleos", XCodeDFolder, "static", "libdruntime-ldc.a");
+			if(std.file.exists(outputDruntime)) std.file.remove(outputDruntime);
+
+			string phobosLib = configs["phobosLibPath"].str.getFirstExisting("libphobos2.a", "libphobos.a", "libphobos2-ldc.a");
+			if(phobosLib == null) throw new Error("Could not find your phobos library");
+
+			string outputPhobos = getHipPath("build", "appleos", XCodeDFolder,"static");
+			std.file.mkdirRecurse(outputPhobos);
+			outputPhobos = buildNormalizedPath(outputPhobos, "libphobos2.a");
+			t.writelnSuccess("Copying phobos to XCode ", phobosLib, "->", outputPhobos);
+			t.flush;
+			std.file.copy(phobosLib, outputPhobos);
+		}
+	}
+}
+
+
 ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	t.writelnHighlighted("LDC not supported for building AppleOS yet. Use system path.");
 	t.flush;
-	loadSubmodules(t, input);
-	string phobosLib = configs["phobosLibPath"].str.getFirstExisting("libphobos2.a", "libphobos.a", "libphobos2-ldc.a");
-	if(phobosLib == null) throw new Error("Could not find your phobos library");
-	string outputPhobos = buildNormalizedPath(
-		configs["hipremeEnginePath"].str, 
-		"build", "appleos", XCodeDFolder,
-		"static"
-	);
-	std.file.mkdirRecurse(outputPhobos);
-	// outputPhobos = buildNormalizedPath(outputPhobos, phobosLib.baseName);
-	outputPhobos = buildNormalizedPath(outputPhobos, "libphobos2.a");
-	t.writelnSuccess("Copying phobos to XCode ", phobosLib, "->", outputPhobos);
-	t.flush;
-	std.file.copy(phobosLib, outputPhobos);
+	cached(() => timed(() => loadSubmodules(t, input)));
+
+	setupPerCompiler(t);
 	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "appleos", "assets"));
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
 
@@ -30,9 +54,8 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	t.flush;
 
 	cached(() => timed(() => outputTemplateForTarget(t)));
-
 	//The template may not be present
-	outputTemplate(configs["gamePath"].str);
+	cached(() => timed(() => outputTemplate(configs["gamePath"].str)));
 
 	with(WorkingDir(getHipPath))
 	{
