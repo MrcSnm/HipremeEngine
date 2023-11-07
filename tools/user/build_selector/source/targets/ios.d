@@ -2,14 +2,20 @@ module targets.ios;
 import common_macos;
 import commons;
 
+enum iosArch =
+[
+	"simulator" : "x86_64",
+	"hardware"  : "arm64"
+];
 
 ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	string buildTarget = getBuildTarget("appleos");
+	string arch = iosArch["simulator"];
 	prepareAppleOSBase(c,t,input);
 
 	string out_extraLinkerFlags;
-	setupPerCompiler(t, "ldc2", "ios-arm64", out_extraLinkerFlags);
+	setupPerCompiler(t, "ldc2", "ios-"~arch, out_extraLinkerFlags);
 
 	cached(() => timed(() => outputTemplateForTarget(t, buildTarget)));
 	
@@ -19,7 +25,7 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 		cleanAppleOSLibFolder();
 
 		if(timed(() => waitDubTarget(t, buildTarget, DubArguments().
-			command("build").recipe("appleos").deep(true).arch("arm64-apple-ios").compiler("ldc2").opts(cOpts))) != 0)
+			command("build").recipe("appleos").deep(true).arch(arch~"-apple-ios12.0").compiler("ldc2").opts(cOpts))) != 0)
 		{
 			t.writelnError("Could not build for AppleOS.");
 			return ChoiceResult.Error;
@@ -33,7 +39,7 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 		with(WorkingDir(path))
 		{
 			wait(spawnShell(
-				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine iOS' build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
+				"xcodebuild -jobs 8 -configuration Debug -allowProvisioningUpdates -scheme 'HipremeEngine iOS' build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
 				out_extraLinkerFlags ~ " && cd bin && HipremeEngine.app/Contents/iOS/HipremeEngine")
 			);
 		}
