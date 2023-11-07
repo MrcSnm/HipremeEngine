@@ -10,21 +10,20 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	}
 	cached(() => timed(() => loadSubmodules(t, input)));
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
-	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "wasm", "build", "assets"));
-	environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;
+	putResourcesIn(t, getHipPath("build", "wasm", "build", "assets"));
 
 
 	runEngineDScript(t, "gendir.d", 
-		buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "release_game", "assets"),
-		buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "wasm", "generated")
+		getHipPath("build", "release_game", "assets"),
+		getHipPath("build", "wasm", "generated")
 	);
 	cached(() => timed(() => outputTemplateForTarget(t)));
 	//The template may not be present
 	outputTemplate(configs["gamePath"].str);
 
 	environment["DFLAGS"] = 
-		"-I="~buildNormalizedPath(configs["hipremeEnginePath"].str, "modules", "d_std", "source") ~" "~
-		"-I="~buildNormalizedPath(configs["hipremeEnginePath"].str, "dependencies", "runtime", "druntime", "arsd-webassembly") ~" " ~
+		"-I="~getHipPath("modules", "d_std", "source") ~" "~
+		"-I="~getHipPath("dependencies", "runtime", "druntime", "arsd-webassembly") ~" " ~
 		"-preview=shortenedMethods -L-allow-undefined -d-version=CarelessAlocation";
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
