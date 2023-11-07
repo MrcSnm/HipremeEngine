@@ -1067,7 +1067,7 @@ string getBuildTarget(string target = __MODULE__)
 	import std.string:split;
 	import std.exception:enforce;
 	target = target.split(".")[$-1];
-	string path = buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets");
+	string path = getHipPath("tools", "build", "targets");
 	enforce(std.file.exists(path = buildPath(path, target)), "Target "~target~" does not exists.");
 	return path;
 }

@@ -15,8 +15,6 @@
 		3130369329D6808100895DD5 /* libs in Resources */ = {isa = PBXBuildFile; fileRef = 3130368929D672C700895DD5 /* libs */; };
 		3130369429D680EB00895DD5 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156441E29A1546600559889 /* Renderer.m */; };
 		3130369529D680EB00895DD5 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156441E29A1546600559889 /* Renderer.m */; };
-		3130369629D680EF00895DD5 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315FEE5729D1BFDE00761BF1 /* InputView.m */; };
-		3130369729D680EF00895DD5 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315FEE5729D1BFDE00761BF1 /* InputView.m */; };
 		3156442B29A1546900559889 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156442A29A1546900559889 /* AppDelegate.m */; };
 		3156442E29A1546900559889 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156442D29A1546900559889 /* GameViewController.m */; };
 		3156443129A1546900559889 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3156442F29A1546900559889 /* Main.storyboard */; };
@@ -73,6 +71,44 @@
 		31B53C1529D68FD400108E4C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1429D68FD400108E4C /* Cocoa.framework */; };
 		31B53C1629D6902C00108E4C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1129D68FC500108E4C /* Metal.framework */; };
 		31B53C1729D6902C00108E4C /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1029D68FC500108E4C /* MetalKit.framework */; };
+		EBD5D7C72AF9C14B00494F59 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = EBD5D7C52AF9C14B00494F59 /* InputView.m */; };
+		EBD5D7C92AFA13E300494F59 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7C82AFA13E300494F59 /* Metal.framework */; };
+		EBD5D7CB2AFA13EA00494F59 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7CA2AFA13EA00494F59 /* MetalKit.framework */; };
+		EBD5D7CD2AFA13F000494F59 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7CC2AFA13F000494F59 /* UIKit.framework */; };
+		EBD5D7CE2AFA140A00494F59 /* libdruntime-ldc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7C32AF7F89C00494F59 /* libdruntime-ldc.a */; };
+		EBD5D7D02AFA140A00494F59 /* libphobos2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7CF2AFA140A00494F59 /* libphobos2.a */; };
+		EBD5D7F12AFA152500494F59 /* libarsd-official_jpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D12AFA152200494F59 /* libarsd-official_jpeg.a */; };
+		EBD5D7F22AFA152500494F59 /* libBindBC_Loader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D22AFA152200494F59 /* libBindBC_Loader.a */; };
+		EBD5D7F32AFA152500494F59 /* libhipengine_api.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D32AFA152200494F59 /* libhipengine_api.a */; };
+		EBD5D7F42AFA152500494F59 /* libhipreme_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D42AFA152200494F59 /* libhipreme_engine.a */; };
+		EBD5D7F52AFA152500494F59 /* libassets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D52AFA152200494F59 /* libassets.a */; };
+		EBD5D7F62AFA152500494F59 /* libBindBC_OpenAL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D62AFA152200494F59 /* libBindBC_OpenAL.a */; };
+		EBD5D7F72AFA152500494F59 /* liberror.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D72AFA152200494F59 /* liberror.a */; };
+		EBD5D7F82AFA152500494F59 /* libarsd-official_svg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D82AFA152200494F59 /* libarsd-official_svg.a */; };
+		EBD5D7F92AFA152500494F59 /* libarsd-official_image_files.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D92AFA152200494F59 /* libarsd-official_image_files.a */; };
+		EBD5D7FA2AFA152500494F59 /* libimage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DA2AFA152300494F59 /* libimage.a */; };
+		EBD5D7FB2AFA152500494F59 /* libmath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DB2AFA152300494F59 /* libmath.a */; };
+		EBD5D7FC2AFA152500494F59 /* libfilesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DC2AFA152300494F59 /* libfilesystem.a */; };
+		EBD5D7FD2AFA152500494F59 /* libconfig.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DD2AFA152300494F59 /* libconfig.a */; };
+		EBD5D7FE2AFA152500494F59 /* libfont.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DE2AFA152300494F59 /* libfont.a */; };
+		EBD5D7FF2AFA152500494F59 /* libbind.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DF2AFA152300494F59 /* libbind.a */; };
+		EBD5D8002AFA152500494F59 /* libtimer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E02AFA152300494F59 /* libtimer.a */; };
+		EBD5D8012AFA152500494F59 /* libtween.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E12AFA152300494F59 /* libtween.a */; };
+		EBD5D8022AFA152500494F59 /* libarsd-official_color_base.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E22AFA152300494F59 /* libarsd-official_color_base.a */; };
+		EBD5D8032AFA152500494F59 /* libutil.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E32AFA152300494F59 /* libutil.a */; };
+		EBD5D8042AFA152500494F59 /* libdebugging.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E42AFA152300494F59 /* libdebugging.a */; };
+		EBD5D8052AFA152500494F59 /* libdata.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E52AFA152400494F59 /* libdata.a */; };
+		EBD5D8062AFA152500494F59 /* librenderer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E62AFA152400494F59 /* librenderer.a */; };
+		EBD5D8072AFA152500494F59 /* libconsole.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E72AFA152400494F59 /* libconsole.a */; };
+		EBD5D8082AFA152500494F59 /* libarsd-official_ttf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E82AFA152400494F59 /* libarsd-official_ttf.a */; };
+		EBD5D8092AFA152500494F59 /* libarsd-official_bmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E92AFA152400494F59 /* libarsd-official_bmp.a */; };
+		EBD5D80A2AFA152500494F59 /* libaudio_decoding.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EA2AFA152400494F59 /* libaudio_decoding.a */; };
+		EBD5D80B2AFA152500494F59 /* libarsd-official_imageresize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EB2AFA152400494F59 /* libarsd-official_imageresize.a */; };
+		EBD5D80C2AFA152500494F59 /* libarsd-official_png.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EC2AFA152400494F59 /* libarsd-official_png.a */; };
+		EBD5D80D2AFA152500494F59 /* libaudio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7ED2AFA152400494F59 /* libaudio.a */; };
+		EBD5D80E2AFA152500494F59 /* libaudio-formats.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EE2AFA152400494F59 /* libaudio-formats.a */; };
+		EBD5D80F2AFA152500494F59 /* libwindowing.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EF2AFA152400494F59 /* libwindowing.a */; };
+		EBD5D8102AFA152500494F59 /* libmetal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7F02AFA152500494F59 /* libmetal.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -151,6 +187,44 @@
 		31B53C1129D68FC500108E4C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		31B53C1429D68FD400108E4C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		EBD5D7C32AF7F89C00494F59 /* libdruntime-ldc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libdruntime-ldc.a"; path = "HipremeEngine_D/static/libdruntime-ldc.a"; sourceTree = "<group>"; };
+		EBD5D7C52AF9C14B00494F59 /* InputView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InputView.m; sourceTree = "<group>"; };
+		EBD5D7C62AF9C14B00494F59 /* InputView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InputView.h; sourceTree = "<group>"; };
+		EBD5D7C82AFA13E300494F59 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
+		EBD5D7CA2AFA13EA00494F59 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/MetalKit.framework; sourceTree = DEVELOPER_DIR; };
+		EBD5D7CC2AFA13F000494F59 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		EBD5D7CF2AFA140A00494F59 /* libphobos2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libphobos2.a; path = HipremeEngine_D/static/libphobos2.a; sourceTree = "<group>"; };
+		EBD5D7D12AFA152200494F59 /* libarsd-official_jpeg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_jpeg.a"; path = "HipremeEngine_D/libs/libarsd-official_jpeg.a"; sourceTree = "<group>"; };
+		EBD5D7D22AFA152200494F59 /* libBindBC_Loader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libBindBC_Loader.a; path = HipremeEngine_D/libs/libBindBC_Loader.a; sourceTree = "<group>"; };
+		EBD5D7D32AFA152200494F59 /* libhipengine_api.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhipengine_api.a; path = HipremeEngine_D/libs/libhipengine_api.a; sourceTree = "<group>"; };
+		EBD5D7D42AFA152200494F59 /* libhipreme_engine.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhipreme_engine.a; path = HipremeEngine_D/libs/libhipreme_engine.a; sourceTree = "<group>"; };
+		EBD5D7D52AFA152200494F59 /* libassets.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libassets.a; path = HipremeEngine_D/libs/libassets.a; sourceTree = "<group>"; };
+		EBD5D7D62AFA152200494F59 /* libBindBC_OpenAL.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libBindBC_OpenAL.a; path = HipremeEngine_D/libs/libBindBC_OpenAL.a; sourceTree = "<group>"; };
+		EBD5D7D72AFA152200494F59 /* liberror.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liberror.a; path = HipremeEngine_D/libs/liberror.a; sourceTree = "<group>"; };
+		EBD5D7D82AFA152200494F59 /* libarsd-official_svg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_svg.a"; path = "HipremeEngine_D/libs/libarsd-official_svg.a"; sourceTree = "<group>"; };
+		EBD5D7D92AFA152200494F59 /* libarsd-official_image_files.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_image_files.a"; path = "HipremeEngine_D/libs/libarsd-official_image_files.a"; sourceTree = "<group>"; };
+		EBD5D7DA2AFA152300494F59 /* libimage.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libimage.a; path = HipremeEngine_D/libs/libimage.a; sourceTree = "<group>"; };
+		EBD5D7DB2AFA152300494F59 /* libmath.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmath.a; path = HipremeEngine_D/libs/libmath.a; sourceTree = "<group>"; };
+		EBD5D7DC2AFA152300494F59 /* libfilesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfilesystem.a; path = HipremeEngine_D/libs/libfilesystem.a; sourceTree = "<group>"; };
+		EBD5D7DD2AFA152300494F59 /* libconfig.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libconfig.a; path = HipremeEngine_D/libs/libconfig.a; sourceTree = "<group>"; };
+		EBD5D7DE2AFA152300494F59 /* libfont.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfont.a; path = HipremeEngine_D/libs/libfont.a; sourceTree = "<group>"; };
+		EBD5D7DF2AFA152300494F59 /* libbind.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libbind.a; path = HipremeEngine_D/libs/libbind.a; sourceTree = "<group>"; };
+		EBD5D7E02AFA152300494F59 /* libtimer.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtimer.a; path = HipremeEngine_D/libs/libtimer.a; sourceTree = "<group>"; };
+		EBD5D7E12AFA152300494F59 /* libtween.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtween.a; path = HipremeEngine_D/libs/libtween.a; sourceTree = "<group>"; };
+		EBD5D7E22AFA152300494F59 /* libarsd-official_color_base.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_color_base.a"; path = "HipremeEngine_D/libs/libarsd-official_color_base.a"; sourceTree = "<group>"; };
+		EBD5D7E32AFA152300494F59 /* libutil.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libutil.a; path = HipremeEngine_D/libs/libutil.a; sourceTree = "<group>"; };
+		EBD5D7E42AFA152300494F59 /* libdebugging.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdebugging.a; path = HipremeEngine_D/libs/libdebugging.a; sourceTree = "<group>"; };
+		EBD5D7E52AFA152400494F59 /* libdata.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdata.a; path = HipremeEngine_D/libs/libdata.a; sourceTree = "<group>"; };
+		EBD5D7E62AFA152400494F59 /* librenderer.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = librenderer.a; path = HipremeEngine_D/libs/librenderer.a; sourceTree = "<group>"; };
+		EBD5D7E72AFA152400494F59 /* libconsole.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libconsole.a; path = HipremeEngine_D/libs/libconsole.a; sourceTree = "<group>"; };
+		EBD5D7E82AFA152400494F59 /* libarsd-official_ttf.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_ttf.a"; path = "HipremeEngine_D/libs/libarsd-official_ttf.a"; sourceTree = "<group>"; };
+		EBD5D7E92AFA152400494F59 /* libarsd-official_bmp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_bmp.a"; path = "HipremeEngine_D/libs/libarsd-official_bmp.a"; sourceTree = "<group>"; };
+		EBD5D7EA2AFA152400494F59 /* libaudio_decoding.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaudio_decoding.a; path = HipremeEngine_D/libs/libaudio_decoding.a; sourceTree = "<group>"; };
+		EBD5D7EB2AFA152400494F59 /* libarsd-official_imageresize.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_imageresize.a"; path = "HipremeEngine_D/libs/libarsd-official_imageresize.a"; sourceTree = "<group>"; };
+		EBD5D7EC2AFA152400494F59 /* libarsd-official_png.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_png.a"; path = "HipremeEngine_D/libs/libarsd-official_png.a"; sourceTree = "<group>"; };
+		EBD5D7ED2AFA152400494F59 /* libaudio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaudio.a; path = HipremeEngine_D/libs/libaudio.a; sourceTree = "<group>"; };
+		EBD5D7EE2AFA152400494F59 /* libaudio-formats.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libaudio-formats.a"; path = "HipremeEngine_D/libs/libaudio-formats.a"; sourceTree = "<group>"; };
+		EBD5D7EF2AFA152400494F59 /* libwindowing.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwindowing.a; path = HipremeEngine_D/libs/libwindowing.a; sourceTree = "<group>"; };
+		EBD5D7F02AFA152500494F59 /* libmetal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmetal.a; path = HipremeEngine_D/libs/libmetal.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -158,6 +232,43 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EBD5D7F12AFA152500494F59 /* libarsd-official_jpeg.a in Frameworks */,
+				EBD5D7F22AFA152500494F59 /* libBindBC_Loader.a in Frameworks */,
+				EBD5D7F32AFA152500494F59 /* libhipengine_api.a in Frameworks */,
+				EBD5D7F42AFA152500494F59 /* libhipreme_engine.a in Frameworks */,
+				EBD5D7F52AFA152500494F59 /* libassets.a in Frameworks */,
+				EBD5D7F62AFA152500494F59 /* libBindBC_OpenAL.a in Frameworks */,
+				EBD5D7F72AFA152500494F59 /* liberror.a in Frameworks */,
+				EBD5D7F82AFA152500494F59 /* libarsd-official_svg.a in Frameworks */,
+				EBD5D7F92AFA152500494F59 /* libarsd-official_image_files.a in Frameworks */,
+				EBD5D7FA2AFA152500494F59 /* libimage.a in Frameworks */,
+				EBD5D7FB2AFA152500494F59 /* libmath.a in Frameworks */,
+				EBD5D7FC2AFA152500494F59 /* libfilesystem.a in Frameworks */,
+				EBD5D7FD2AFA152500494F59 /* libconfig.a in Frameworks */,
+				EBD5D7FE2AFA152500494F59 /* libfont.a in Frameworks */,
+				EBD5D7FF2AFA152500494F59 /* libbind.a in Frameworks */,
+				EBD5D8002AFA152500494F59 /* libtimer.a in Frameworks */,
+				EBD5D8012AFA152500494F59 /* libtween.a in Frameworks */,
+				EBD5D8022AFA152500494F59 /* libarsd-official_color_base.a in Frameworks */,
+				EBD5D8032AFA152500494F59 /* libutil.a in Frameworks */,
+				EBD5D8042AFA152500494F59 /* libdebugging.a in Frameworks */,
+				EBD5D8052AFA152500494F59 /* libdata.a in Frameworks */,
+				EBD5D8062AFA152500494F59 /* librenderer.a in Frameworks */,
+				EBD5D8072AFA152500494F59 /* libconsole.a in Frameworks */,
+				EBD5D8082AFA152500494F59 /* libarsd-official_ttf.a in Frameworks */,
+				EBD5D8092AFA152500494F59 /* libarsd-official_bmp.a in Frameworks */,
+				EBD5D80A2AFA152500494F59 /* libaudio_decoding.a in Frameworks */,
+				EBD5D80B2AFA152500494F59 /* libarsd-official_imageresize.a in Frameworks */,
+				EBD5D80C2AFA152500494F59 /* libarsd-official_png.a in Frameworks */,
+				EBD5D80D2AFA152500494F59 /* libaudio.a in Frameworks */,
+				EBD5D80E2AFA152500494F59 /* libaudio-formats.a in Frameworks */,
+				EBD5D80F2AFA152500494F59 /* libwindowing.a in Frameworks */,
+				EBD5D8102AFA152500494F59 /* libmetal.a in Frameworks */,
+				EBD5D7D02AFA140A00494F59 /* libphobos2.a in Frameworks */,
+				EBD5D7CE2AFA140A00494F59 /* libdruntime-ldc.a in Frameworks */,
+				EBD5D7CD2AFA13F000494F59 /* UIKit.framework in Frameworks */,
+				EBD5D7CB2AFA13EA00494F59 /* MetalKit.framework in Frameworks */,
+				EBD5D7C92AFA13E300494F59 /* Metal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,8 +347,6 @@
 				3156441D29A1546600559889 /* Renderer.h */,
 				3156441E29A1546600559889 /* Renderer.m */,
 				3156442129A1546900559889 /* Assets.xcassets */,
-				315FEE5529D1BEFC00761BF1 /* InputView.h */,
-				315FEE5729D1BFDE00761BF1 /* InputView.m */,
 			);
 			path = "HipremeEngine Shared";
 			sourceTree = "<group>";
@@ -255,6 +364,8 @@
 		3156442829A1546900559889 /* HipremeEngine iOS */ = {
 			isa = PBXGroup;
 			children = (
+				EBD5D7C62AF9C14B00494F59 /* InputView.h */,
+				EBD5D7C52AF9C14B00494F59 /* InputView.m */,
 				3156442929A1546900559889 /* AppDelegate.h */,
 				3156442A29A1546900559889 /* AppDelegate.m */,
 				3156442C29A1546900559889 /* GameViewController.h */,
@@ -283,6 +394,8 @@
 		3156445029A1546900559889 /* HipremeEngine macOS */ = {
 			isa = PBXGroup;
 			children = (
+				315FEE5729D1BFDE00761BF1 /* InputView.m */,
+				315FEE5529D1BEFC00761BF1 /* InputView.h */,
 				3156445129A1546900559889 /* AppDelegate.h */,
 				3156445229A1546900559889 /* AppDelegate.m */,
 				3156445429A1546900559889 /* GameViewController.h */,
@@ -297,6 +410,42 @@
 		315796D729B6771F00CE2D39 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EBD5D7E92AFA152400494F59 /* libarsd-official_bmp.a */,
+				EBD5D7E22AFA152300494F59 /* libarsd-official_color_base.a */,
+				EBD5D7D92AFA152200494F59 /* libarsd-official_image_files.a */,
+				EBD5D7EB2AFA152400494F59 /* libarsd-official_imageresize.a */,
+				EBD5D7D12AFA152200494F59 /* libarsd-official_jpeg.a */,
+				EBD5D7EC2AFA152400494F59 /* libarsd-official_png.a */,
+				EBD5D7D82AFA152200494F59 /* libarsd-official_svg.a */,
+				EBD5D7E82AFA152400494F59 /* libarsd-official_ttf.a */,
+				EBD5D7D52AFA152200494F59 /* libassets.a */,
+				EBD5D7EA2AFA152400494F59 /* libaudio_decoding.a */,
+				EBD5D7EE2AFA152400494F59 /* libaudio-formats.a */,
+				EBD5D7ED2AFA152400494F59 /* libaudio.a */,
+				EBD5D7DF2AFA152300494F59 /* libbind.a */,
+				EBD5D7D22AFA152200494F59 /* libBindBC_Loader.a */,
+				EBD5D7D62AFA152200494F59 /* libBindBC_OpenAL.a */,
+				EBD5D7DD2AFA152300494F59 /* libconfig.a */,
+				EBD5D7E72AFA152400494F59 /* libconsole.a */,
+				EBD5D7E52AFA152400494F59 /* libdata.a */,
+				EBD5D7E42AFA152300494F59 /* libdebugging.a */,
+				EBD5D7D72AFA152200494F59 /* liberror.a */,
+				EBD5D7DC2AFA152300494F59 /* libfilesystem.a */,
+				EBD5D7DE2AFA152300494F59 /* libfont.a */,
+				EBD5D7D32AFA152200494F59 /* libhipengine_api.a */,
+				EBD5D7D42AFA152200494F59 /* libhipreme_engine.a */,
+				EBD5D7DA2AFA152300494F59 /* libimage.a */,
+				EBD5D7DB2AFA152300494F59 /* libmath.a */,
+				EBD5D7F02AFA152500494F59 /* libmetal.a */,
+				EBD5D7E62AFA152400494F59 /* librenderer.a */,
+				EBD5D7E02AFA152300494F59 /* libtimer.a */,
+				EBD5D7E12AFA152300494F59 /* libtween.a */,
+				EBD5D7E32AFA152300494F59 /* libutil.a */,
+				EBD5D7EF2AFA152400494F59 /* libwindowing.a */,
+				EBD5D7CF2AFA140A00494F59 /* libphobos2.a */,
+				EBD5D7CC2AFA13F000494F59 /* UIKit.framework */,
+				EBD5D7CA2AFA13EA00494F59 /* MetalKit.framework */,
+				EBD5D7C82AFA13E300494F59 /* Metal.framework */,
 				EBD5D7C32AF7F89C00494F59 /* libdruntime-ldc.a */,
 				31B53C1429D68FD400108E4C /* Cocoa.framework */,
 				31B53C1129D68FC500108E4C /* Metal.framework */,
@@ -491,7 +640,7 @@
 			files = (
 				3130369529D680EB00895DD5 /* Renderer.m in Sources */,
 				3156442E29A1546900559889 /* GameViewController.m in Sources */,
-				3130369729D680EF00895DD5 /* InputView.m in Sources */,
+				EBD5D7C72AF9C14B00494F59 /* InputView.m in Sources */,
 				3156443629A1546900559889 /* main.m in Sources */,
 				3156442B29A1546900559889 /* AppDelegate.m in Sources */,
 			);
@@ -503,7 +652,6 @@
 			files = (
 				3130369429D680EB00895DD5 /* Renderer.m in Sources */,
 				3156444229A1546900559889 /* GameViewController.m in Sources */,
-				3130369629D680EF00895DD5 /* InputView.m in Sources */,
 				3156444A29A1546900559889 /* main.m in Sources */,
 				3156443F29A1546900559889 /* AppDelegate.m in Sources */,
 			);
@@ -699,7 +847,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/HipremeEngine_D/static",
+					"$(PROJECT_DIR)/HipremeEngine_D/libs",
+				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -728,7 +880,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/HipremeEngine_D/static",
+					"$(PROJECT_DIR)/HipremeEngine_D/libs",
+				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
