@@ -204,7 +204,7 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 	cached(() => timed(() => loadSubmodules(t, input)));    
 	cached(() => timed(() => outputTemplateForTarget(t)));    
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
-    putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "vita", "hipreme_engine", "assets"));
+    putResourcesIn(t, getHipPath("build", "vita", "hipreme_engine", "assets"));
 
     string dflags = "-I="~configs["hipremeEnginePath"].str~"/modules/d_std/source "~
     "-I="~configs["hipremeEnginePath"].str~"/dependencies/runtime/druntime/arsd-webassembly "~

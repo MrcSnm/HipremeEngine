@@ -8,6 +8,7 @@ import engine_getter;
 import targets.windows;
 import targets.android;
 import targets.appleos;
+import targets.ios;
 import targets.linux;
 import targets.wasm;
 import targets.psvita;
@@ -246,7 +247,11 @@ void main(string[] args)
 		environment["DUB"] = getDubPath();
 	Choice[] choices;
 	version(Windows) choices~= Choice("Windows", &prepareWindows, false, null, scriptOnly);
-	version(OSX) choices~= Choice("AppleOS", &prepareAppleOS, false, null, scriptOnly);
+	version(OSX) 
+	{
+		choices~= Choice("AppleOS", &prepareAppleOS, false, null, scriptOnly);
+		choices~= Choice("iOS", &prepareiOS, false, null, scriptOnly);
+	}
 	version(linux) choices~= Choice("Linux", &prepareLinux, false, null, scriptOnly);
 
 	choices~=[

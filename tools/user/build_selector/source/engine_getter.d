@@ -64,5 +64,6 @@ bool setupEngine(ref Terminal t, ref RealTimeConsoleInput input)
         configs["hipremeEnginePath"] = hipremeEnginePath;
         updateConfigFile();
     }
+	environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;
     return true;
 }
