@@ -34,7 +34,7 @@ ChoiceResult selectGameFolder(Choice* c, ref Terminal t, ref RealTimeConsoleInpu
 {
     Choice* selectedChoice = selectInFolderExtra(
         "Select your game",
-        buildNormalizedPath(configs["hipremeEnginePath"].str, "projects"), t, input,
+        getHipPath("projects"), t, input,
         [
             Choice("Type the game path manually", &typeGamePath),
             getBackChoice()

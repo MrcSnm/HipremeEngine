@@ -40,34 +40,53 @@ InputView* mainInputView;
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
     NSLog(@"Touches began");
-//    NSPoint p = event.locationInWindow;
-//    HipInputOnTouchPressed(0, (float)p.x, [self getY:p.y]);
+    int id_ = 0;
+    for(UITouch* touch in touches)
+    {
+        CGPoint xy = [touch locationInView:nil];
+        HipInputOnTouchPressed(id_++, xy.x, [self getY:xy.y]);
+        
+    }
 }
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
     NSLog(@"Touches moved");
-//    NSPoint p = event.locationInWindow;
-//    HipInputOnTouchMoved(0, (float)p.x, [self getY:p.y]);
+    int id_ = 0;
+    for(UITouch* touch in touches)
+    {
+        CGPoint xy = [touch locationInView:nil];
+        HipInputOnTouchMoved(id_++, xy.x, [self getY:xy.y]);
+    }
+
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
     NSLog(@"Touches ended");
-//    NSPoint p = event.locationInWindow;
-//    HipInputOnTouchReleased(0, (float)p.x, [self getY:p.y]);
+    int id_ = 0;
+    for(UITouch* touch in touches)
+    {
+        CGPoint xy = [touch locationInView:nil];
+        HipInputOnTouchReleased(id_++, xy.x, [self getY:xy.y]);
+    }
 }
 
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
     NSLog(@"Touches cancelled");
-    // Your code for touch cancellation
+    int id_ = 0;
+    for(UITouch* touch in touches)
+    {
+        CGPoint xy = [touch locationInView:nil];
+        HipInputOnTouchReleased(id_++, xy.x, [self getY:xy.y]);
+    }
 }
 
 
 -(float) getY:(int) y
 {
-    return self.bounds.size.height - y;
+    return y;
 }
 
 @end
