@@ -149,7 +149,7 @@ ChoiceResult createProject(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 ChoiceResult releaseGame(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	import std.net.curl;
-	outputTemplate(buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets", "uwp"));
+	outputTemplate(t, buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets", "uwp"));
 	downloadFileIfNotExists("Visual C Redist.", "https://aka.ms/vs/17/release/vc_redist.x64.exe", "target.exe", t, input);
 	std.file.remove("target.exe");
 
@@ -266,13 +266,21 @@ void main(string[] args)
 		Choice("Exit", &exitFn)
 	];
 
+	bool usesDflags = "DFLAGS" in environment;
+	string preDflags = usesDflags ? environment["DFLAGS"] : null;
 	StopWatch sw = StopWatch(AutoStart.yes);
 	while(true)
 	{
 		Choice* selection = selectChoice(terminal, input, choices);
 		if(selection.shouldTime)
 			sw.reset();
+		
+
 		ChoiceResult res = selection.onSelected(selection, terminal, input, cOpts);
+
+		if(usesDflags) environment["DFLAGS"] = preDflags;
+		else environment.remove("DFLAGS");
+
 		if(selection.shouldTime)
 		{
 			import std.conv:to;

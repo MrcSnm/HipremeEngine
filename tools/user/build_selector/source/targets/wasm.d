@@ -19,7 +19,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	);
 	cached(() => timed(() => outputTemplateForTarget(t)));
 	//The template may not be present
-	outputTemplate(configs["gamePath"].str);
+	outputTemplate(t, configs["gamePath"].str);
 
 	environment["DFLAGS"] = 
 		"-I="~getHipPath("modules", "d_std", "source") ~" "~
