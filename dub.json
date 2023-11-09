@@ -15,7 +15,7 @@
 	"dflags": [
 		"-preview=shortenedMethods",
 		"-mixin=mixed.d",
-		"-J."
+		"-Jassets"
 	],
 	"dflags-dmd": ["-op"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
