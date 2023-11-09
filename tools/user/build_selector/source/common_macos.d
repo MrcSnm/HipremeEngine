@@ -55,7 +55,7 @@ void prepareAppleOSBase(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
     putResourcesIn(t, getHipPath("build", "appleos", "assets"));
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
     //The template may not be present
-	cached(() => timed(() => outputTemplate(configs["gamePath"].str)));
+	cached(() => timed(() => outputTemplate(t, configs["gamePath"].str)));
 }
 
 void cleanAppleOSLibFolder()

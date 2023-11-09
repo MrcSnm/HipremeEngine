@@ -507,15 +507,17 @@ bool extract7ZipToFolder(string zPath, string outputDirectory, ref Terminal t, r
 	}
 	t.writeln("Extracting ", zPath, " to ", outputDirectory);
 	t.flush;
-	string cwd = std.file.getcwd();
 
+	string folderName = baseName(outputDirectory);
+	outputDirectory = dirName(outputDirectory);
 	if(!std.file.exists(outputDirectory))
 		std.file.mkdirRecurse(outputDirectory);
-	
-	std.file.chdir(outputDirectory);
-	bool ret = dbgExecuteShell(configs["7zip"].str ~ " x "~zPath~" -y", t);
-	std.file.chdir(cwd);
-	return ret;
+
+	with(WorkingDir(outputDirectory))
+	{
+		bool ret = dbgExecuteShell(configs["7zip"].str ~ " x -y "~zPath~" "~folderName, t);
+		return ret;
+	}
 }
 
 version(Posix)
@@ -1083,14 +1085,26 @@ string getBuildTarget(string target = __MODULE__)
 	return path;
 }
 
-void outputTemplate(string templatePath)
+void outputTemplate(ref Terminal t, string templatePath)
 {
 	import template_processor;
 	string out_templ;
-	processTemplate(templatePath, configs["hipremeEnginePath"].str, out_templ, [
+	
+	switch(processTemplate(templatePath, configs["hipremeEnginePath"].str, out_templ, [
 		"TARGET_PROJECT": configs["gamePath"].str
-	]);
-	std.file.write(buildPath(templatePath, "dub.json"), out_templ);
+	]))
+	{
+		case TemplateProcessorResult.invalid:
+			t.writelnError("Could not process template from path ",templatePath);
+			throw new Error("Can't build with invalid template.");
+		case TemplateProcessorResult.notFound:
+			t.writelnHighlighted("Template at ", templatePath, " not found, your game may use dub.json instead.");
+			break;
+		default: case TemplateProcessorResult.success:
+			t.writelnSuccess("Template at path ", templatePath, " successfully generated");
+			std.file.write(buildPath(templatePath, "dub.json"), out_templ);
+			break;
+	}
 }
 
 void outputTemplateForTarget(ref Terminal t, string target = __MODULE__)
@@ -1099,7 +1113,7 @@ void outputTemplateForTarget(ref Terminal t, string target = __MODULE__)
 	///If it is the default, the target will be "targets.wasm", so, split and get the last.
 	string buildTarget = getBuildTarget(target.split(".")[$-1]);
 	t.writeln("Regenerating buildscript for target ", buildTarget);
-	outputTemplate(buildTarget);
+	outputTemplate(t, buildTarget);
 }
 
 void requireConfiguration(string cfgRequired, string purpose, ref Terminal t, ref RealTimeConsoleInput input)

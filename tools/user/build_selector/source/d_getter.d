@@ -2,7 +2,7 @@ module d_getter;
 import commons;
 
 enum DmdVersion = "2.105.0";
-enum LdcVersion = "1.33.0-beta1";
+enum LdcVersion = "1.35.0";
 
 private string getDmdLink()
 {
