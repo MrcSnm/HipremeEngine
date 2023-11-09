@@ -10,7 +10,7 @@
 #import <Metal/Metal.h>
 
 
-void HipremeInit();
+void HipremeInit(void);
 int HipremeMain(int windowWidth, int windowHeight);
 void HipremeRender(void);
 bool HipremeUpdate(float deltaTime);
