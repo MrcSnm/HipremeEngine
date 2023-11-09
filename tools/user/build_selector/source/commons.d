@@ -1003,11 +1003,17 @@ void putResourcesIn(ref Terminal t, string where)
 
 
 
-string selectInFolder(string selectWhat, string directory, ref Terminal t, ref RealTimeConsoleInput input)
+string selectInFolder(string selectWhat, string directory, ref Terminal t, ref RealTimeConsoleInput input, 
+scope string[] extFilters = [".DS_Store"])
 {
+	import std.string;
 	Choice[] choices;
-	foreach(std.file.DirEntry e; std.file.dirEntries(directory, std.file.SpanMode.shallow))
+	LISTING_FILE: foreach(std.file.DirEntry e; std.file.dirEntries(directory, std.file.SpanMode.shallow))
+	{
+		foreach(f; extFilters)
+			if(e.name.endsWith(f)) continue LISTING_FILE;
 		choices~= Choice(e.name, null);
+	}
 	size_t choice;
 	choice = selectChoiceBase(t, input, choices, selectWhat);
 
@@ -1025,11 +1031,16 @@ string selectInFolder(string selectWhat, string directory, ref Terminal t, ref R
  * Returns: Selected choice
  */
 Choice* selectInFolderExtra(string selectWhat, string directory, ref Terminal t, ref RealTimeConsoleInput input,
-scope Choice[] extraChoices)
+scope Choice[] extraChoices, scope string[] extFilters = [".DS_Store"])
 {
+	import std.string;
 	Choice[] choices;
+	LISTING_FILES: 
 	foreach(std.file.DirEntry e; std.file.dirEntries(directory, std.file.SpanMode.shallow))
+	{
+		foreach(f; extFilters) if(e.name.endsWith(f)) continue LISTING_FILES;
 		choices~= Choice(e.name, null);
+	}
 	choices~= extraChoices;
 	size_t choice;
 	choice = selectChoiceBase(t, input, choices, selectWhat);
@@ -1067,7 +1078,7 @@ string getBuildTarget(string target = __MODULE__)
 	import std.string:split;
 	import std.exception:enforce;
 	target = target.split(".")[$-1];
-	string path = buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets");
+	string path = getHipPath("tools", "build", "targets");
 	enforce(std.file.exists(path = buildPath(path, target)), "Target "~target~" does not exists.");
 	return path;
 }
