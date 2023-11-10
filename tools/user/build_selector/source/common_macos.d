@@ -27,7 +27,7 @@ void setupPerCompiler(ref Terminal t, string compiler, string arch, out string e
 			t.flush;
 			std.file.copy(phobosLib, outputPhobos);
 
-			extraLinkerFlags = "OTHER_LDFLAGS=\"-ldruntime-ldc\"";
+			extraLinkerFlags = "OTHER_LDFLAGS=\"-ldruntime-ldc\" ";
 			break;
 		}
 		case "dmd":
@@ -64,4 +64,20 @@ void cleanAppleOSLibFolder()
     if(std.file.exists(targetDir))
         std.file.rmdirRecurse(targetDir);
     std.file.mkdirRecurse(targetDir);
+}
+
+private __gshared string codeSignUuid;
+string getCodeSignCommand(ref Terminal t)
+{
+	cached(
+	{
+		auto res = executeShell("security find-identity -v -p codesigning");
+		if(res.status)
+			throw new Error("Could not get codesigning UUID for building to iOS");
+		import std.string:indexOf, chomp;
+		string uuid = res.output;
+		codeSignUuid = uuid[uuid.indexOf(')')+1..uuid.indexOf('"')].chomp;
+		t.writelnHighlighted("CodeSign UUID: ", codeSignUuid);	
+	});
+	return "PROVISIONING_PROFILE='"~codeSignUuid~"' ";
 }

@@ -8,8 +8,6 @@ enum iosArch =
 	"hardware"  : "arm64"
 ];
 
-private __gshared string codeSignUuid;
-
 ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	string buildTarget = getBuildTarget("appleos");
@@ -20,18 +18,7 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 	setupPerCompiler(t, "ldc2", "ios-"~arch, out_extraLinkerFlags);
 
 	cached(() => timed(() => outputTemplateForTarget(t, buildTarget)));
-
-	cached(
-	{
-		auto res = executeShell("security find-identity -v -p codesigning");
-		if(res.status)
-			throw new Error("Could not get codesigning UUID for building to iOS");
-		import std.string:indexOf, chomp;
-		string uuid = res.output;
-		codeSignUuid = uuid[uuid.indexOf(')')+1..uuid.indexOf('"')].chomp;
-		t.writelnHighlighted("CodeSign UUID: ", codeSignUuid);
-	});
-	
+	string codeSignCommand = getCodeSignCommand(t);
 
 	with(WorkingDir(getHipPath))
 	{
@@ -55,7 +42,7 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 		{
 			wait(spawnShell(
 				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine iOS' clean build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
-				"PROVISIONING_PROFILE='"~codeSignUuid~"' " ~
+				codeSignCommand ~
 				"-destination 'platform=iOS Simulator,name=iPhone 14,OS=16.2' " ~
 				out_extraLinkerFlags ~ " && cd bin && HipremeEngine.app/Contents/iOS/HipremeEngine")
 			);

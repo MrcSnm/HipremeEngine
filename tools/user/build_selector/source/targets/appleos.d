@@ -11,7 +11,7 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	setupPerCompiler(t, getSelectedCompiler, "x86_64", out_extraLinkerFlags);
 
 	cached(() => timed(() => outputTemplateForTarget(t)));
-	
+	string codeSignCommand = getCodeSignCommand(t);
 
 	with(WorkingDir(getHipPath))
 	{
@@ -32,8 +32,10 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 		with(WorkingDir(path))
 		{
 			wait(spawnShell(
-				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine macOS' build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
-				out_extraLinkerFlags ~ " && cd bin && HipremeEngine.app/Contents/MacOS/HipremeEngine")
+				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine macOS' clean build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
+				out_extraLinkerFlags ~ 
+				codeSignCommand ~
+				" && cd bin && HipremeEngine.app/Contents/MacOS/HipremeEngine")
 			);
 		}
 	}
