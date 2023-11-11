@@ -16,6 +16,7 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 
 	string out_extraLinkerFlags;
 	setupPerCompiler(t, "ldc2", "ios-"~arch, out_extraLinkerFlags);
+	injectLinkerFlagsOnXcode(t, input, out_extraLinkerFlags);
 
 	cached(() => timed(() => outputTemplateForTarget(t, buildTarget)));
 	string codeSignCommand = getCodeSignCommand(t);
@@ -44,7 +45,7 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine iOS' clean build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
 				codeSignCommand ~
 				"-destination 'platform=iOS Simulator,name=iPhone 14,OS=16.2' " ~
-				out_extraLinkerFlags ~ " && cd bin && HipremeEngine.app/Contents/iOS/HipremeEngine")
+				" && cd bin && HipremeEngine.app/Contents/iOS/HipremeEngine")
 			);
 		}
 	}

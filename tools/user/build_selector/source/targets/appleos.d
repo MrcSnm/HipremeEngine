@@ -27,13 +27,12 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 			"\"--recipe="~buildPath(getBuildTarget, "dub.json")~"\"",
 			getHipPath("build", "appleos", XCodeDFolder, "libs")
 		);
-		
+		injectLinkerFlagsOnXcode(t, input, out_extraLinkerFlags);
 		string path = getHipPath("build", "appleos");
 		with(WorkingDir(path))
 		{
 			wait(spawnShell(
 				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine macOS' clean build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
-				out_extraLinkerFlags ~ 
 				codeSignCommand ~
 				" && cd bin && HipremeEngine.app/Contents/MacOS/HipremeEngine")
 			);
