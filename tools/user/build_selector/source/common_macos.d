@@ -27,7 +27,7 @@ void setupPerCompiler(ref Terminal t, string compiler, string arch, out string e
 			t.flush;
 			std.file.copy(phobosLib, outputPhobos);
 
-			extraLinkerFlags = "OTHER_LDFLAGS=\"-ldruntime-ldc\" ";
+			extraLinkerFlags = "-ldruntime-ldc ";
 			break;
 		}
 		case "dmd":
@@ -64,6 +64,20 @@ void cleanAppleOSLibFolder()
     if(std.file.exists(targetDir))
         std.file.rmdirRecurse(targetDir);
     std.file.mkdirRecurse(targetDir);
+}
+
+void injectLinkerFlagsOnXcode(ref Terminal t, ref RealTimeConsoleInput input, string extraLinkerFlags)
+{
+	with(WorkingDir(getHipPath("build", "appleos")))
+	{
+		if(executeShell("gem list | grep xcodeproj").status)
+		{
+			if(!pollForExecutionPermission(t, input ,"Ruby `gem` called 'xcodeproj' is not installed, attempt to install?"))
+				throw new Error("Can't update HipremeEngine.xcodeproj without installing dependency for ruby script.");
+			wait(spawnShell("sudo gem install xcodeproj"));
+		}
+		spawnShell("ruby injectLib.rb "~extraLinkerFlags);
+	}
 }
 
 private __gshared string codeSignUuid;
