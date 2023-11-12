@@ -3,7 +3,6 @@ module hip.api.console;
 version(PSVita) version = ErrorOnLoadSymbol;
 version(WebAssembly) version = ErrorOnLoadSymbol;
 
-version(Have_hipreme_engine) version = DirectCall;
 version(DirectCall)
 {
 	import hip.console.log:logln, rawlog;

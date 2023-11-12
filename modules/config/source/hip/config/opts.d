@@ -97,5 +97,3 @@ static if(HIP_OPENSLES_FAST_MIXER)
 	static assert(HIP_OPENSLES_OPTIMAL, "Can't use OpenSL ES fast mixer without using its optimal 
 buffer size and sample rate");
 }
-
-extern(C) char* getDebugInfo(){return cast(char*)"Debug Info?".ptr;}

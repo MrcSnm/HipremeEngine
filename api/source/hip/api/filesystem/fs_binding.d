@@ -1,6 +1,5 @@
 module hip.api.filesystem.fs_binding;
 public import hip.api.filesystem.hipfs;
-version(Have_hipreme_engine) version = DirectCall;
 
 version(DirectCall){ public import hip.filesystem.hipfs; }
 else

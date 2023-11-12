@@ -1,9 +1,6 @@
 module hip.api.input.inputmap;
 public import hip.api.input.gamepad;
 
-version(Have_hipreme_engine) version = DirectCall;
-
-
 interface IHipInputMap
 {
     struct Context

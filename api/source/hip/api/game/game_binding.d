@@ -2,8 +2,6 @@ module hip.api.game.game_binding;
 import hip.api.internal;
 public import hip.api.graphics.g2d.animation;
 
-version(Have_hipreme_engine) version = DirectCall;
-
 version(DirectCall){}
 else
 {
