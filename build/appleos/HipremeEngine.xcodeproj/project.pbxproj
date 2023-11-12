@@ -853,6 +853,42 @@
 					"$(PROJECT_DIR)/HipremeEngine_D/libs",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lassets",
+					"-laudio",
+					"-lfilesystem",
+					"-lfont",
+					"-larsd-official_ttf",
+					"-lrenderer",
+					"-laudio_decoding",
+					"-laudio-formats",
+					"-lBindBC_OpenAL",
+					"-lBindBC_Loader",
+					"-lbind",
+					"-lgame2d",
+					"-ltween",
+					"-lmetal",
+					"-ldata",
+					"-limage",
+					"-larsd-official_image_files",
+					"-larsd-official_bmp",
+					"-larsd-official_imageresize",
+					"-larsd-official_jpeg",
+					"-larsd-official_png",
+					"-larsd-official_color_base",
+					"-larsd-official_svg",
+					"-lerror",
+					"-lconsole",
+					"-lconfig",
+					"-ldebugging",
+					"-lmath",
+					"-lwindowing",
+					"-ltimer",
+					"-lhipengine_api",
+					"-lutil",
+					"-ldruntime-ldc",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -889,6 +925,42 @@
 					"$(PROJECT_DIR)/HipremeEngine_D/libs",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lassets",
+					"-laudio",
+					"-lfilesystem",
+					"-lfont",
+					"-larsd-official_ttf",
+					"-lrenderer",
+					"-laudio_decoding",
+					"-laudio-formats",
+					"-lBindBC_OpenAL",
+					"-lBindBC_Loader",
+					"-lbind",
+					"-lgame2d",
+					"-ltween",
+					"-lmetal",
+					"-ldata",
+					"-limage",
+					"-larsd-official_image_files",
+					"-larsd-official_bmp",
+					"-larsd-official_imageresize",
+					"-larsd-official_jpeg",
+					"-larsd-official_png",
+					"-larsd-official_color_base",
+					"-larsd-official_svg",
+					"-lerror",
+					"-lconsole",
+					"-lconfig",
+					"-ldebugging",
+					"-lmath",
+					"-lwindowing",
+					"-ltimer",
+					"-lhipengine_api",
+					"-lutil",
+					"-ldruntime-ldc",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -916,6 +988,42 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lassets",
+					"-laudio",
+					"-lfilesystem",
+					"-lfont",
+					"-larsd-official_ttf",
+					"-lrenderer",
+					"-laudio_decoding",
+					"-laudio-formats",
+					"-lBindBC_OpenAL",
+					"-lBindBC_Loader",
+					"-lbind",
+					"-lgame2d",
+					"-ltween",
+					"-lmetal",
+					"-ldata",
+					"-limage",
+					"-larsd-official_image_files",
+					"-larsd-official_bmp",
+					"-larsd-official_imageresize",
+					"-larsd-official_jpeg",
+					"-larsd-official_png",
+					"-larsd-official_color_base",
+					"-larsd-official_svg",
+					"-lerror",
+					"-lconsole",
+					"-lconfig",
+					"-ldebugging",
+					"-lmath",
+					"-lwindowing",
+					"-ltimer",
+					"-lhipengine_api",
+					"-lutil",
+					"-ldruntime-ldc",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
 				SDKROOT = appletvos;
@@ -942,6 +1050,42 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lassets",
+					"-laudio",
+					"-lfilesystem",
+					"-lfont",
+					"-larsd-official_ttf",
+					"-lrenderer",
+					"-laudio_decoding",
+					"-laudio-formats",
+					"-lBindBC_OpenAL",
+					"-lBindBC_Loader",
+					"-lbind",
+					"-lgame2d",
+					"-ltween",
+					"-lmetal",
+					"-ldata",
+					"-limage",
+					"-larsd-official_image_files",
+					"-larsd-official_bmp",
+					"-larsd-official_imageresize",
+					"-larsd-official_jpeg",
+					"-larsd-official_png",
+					"-larsd-official_color_base",
+					"-larsd-official_svg",
+					"-lerror",
+					"-lconsole",
+					"-lconfig",
+					"-ldebugging",
+					"-lmath",
+					"-lwindowing",
+					"-ltimer",
+					"-lhipengine_api",
+					"-lutil",
+					"-ldruntime-ldc",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
 				SDKROOT = appletvos;
@@ -977,6 +1121,42 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.6;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lassets",
+					"-laudio",
+					"-lfilesystem",
+					"-lfont",
+					"-larsd-official_ttf",
+					"-lrenderer",
+					"-laudio_decoding",
+					"-laudio-formats",
+					"-lBindBC_OpenAL",
+					"-lBindBC_Loader",
+					"-lbind",
+					"-lgame2d",
+					"-ltween",
+					"-lmetal",
+					"-ldata",
+					"-limage",
+					"-larsd-official_image_files",
+					"-larsd-official_bmp",
+					"-larsd-official_imageresize",
+					"-larsd-official_jpeg",
+					"-larsd-official_png",
+					"-larsd-official_color_base",
+					"-larsd-official_svg",
+					"-lerror",
+					"-lconsole",
+					"-lconfig",
+					"-ldebugging",
+					"-lmath",
+					"-lwindowing",
+					"-ltimer",
+					"-lhipengine_api",
+					"-lutil",
+					"-ldruntime-ldc",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
 				SDKROOT = macosx;
@@ -1009,6 +1189,42 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.6;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lassets",
+					"-laudio",
+					"-lfilesystem",
+					"-lfont",
+					"-larsd-official_ttf",
+					"-lrenderer",
+					"-laudio_decoding",
+					"-laudio-formats",
+					"-lBindBC_OpenAL",
+					"-lBindBC_Loader",
+					"-lbind",
+					"-lgame2d",
+					"-ltween",
+					"-lmetal",
+					"-ldata",
+					"-limage",
+					"-larsd-official_image_files",
+					"-larsd-official_bmp",
+					"-larsd-official_imageresize",
+					"-larsd-official_jpeg",
+					"-larsd-official_png",
+					"-larsd-official_color_base",
+					"-larsd-official_svg",
+					"-lerror",
+					"-lconsole",
+					"-lconfig",
+					"-ldebugging",
+					"-lmath",
+					"-lwindowing",
+					"-ltimer",
+					"-lhipengine_api",
+					"-lutil",
+					"-ldruntime-ldc",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
 				SDKROOT = macosx;
