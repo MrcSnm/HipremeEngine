@@ -1,7 +1,5 @@
 module hip.api.impl;
 
-version(Have_hipreme_engine) version = DirectCall;
-
 //Console
 public import hip.api.console;
 

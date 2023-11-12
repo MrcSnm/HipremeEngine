@@ -1,6 +1,5 @@
 module hip.api.input.binding;
 
-version(Have_hipreme_engine) version = DirectCall;
 version(DirectCall) { public import hip.event.api; }
 else
 {

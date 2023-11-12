@@ -8,7 +8,6 @@ import hip.api.data.font;
 import hip.api.data.tilemap;
 import hip.api.graphics.text;
 
-version(Have_hipreme_engine) version = DirectCall;
 version(Have_util) version = ImportSpritesheet;
 
 version(ImportSpritesheet)

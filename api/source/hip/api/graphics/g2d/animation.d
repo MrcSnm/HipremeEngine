@@ -80,7 +80,7 @@ interface IHipAnimationTrack
 }
 
 
-version(Have_hipreme_engine) {} else version = DefineCreateFromAtlas;
+version(DirectCall) {} else version = DefineCreateFromAtlas;
 
 interface IHipAnimation
 {

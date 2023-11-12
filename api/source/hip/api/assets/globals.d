@@ -2,7 +2,6 @@ module hip.api.assets.globals;
 public import hip.api.data.font;
 public import hip.api.renderer.texture;
 
-version(Have_hipreme_engine) version = DirectCall;
 version(DirectCall){}
 else
 {

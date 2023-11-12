@@ -2,8 +2,6 @@ module hip.api.filesystem.definitions;
 public import hip.api.filesystem.hipfs;
 //FIXME: Workaround for the issue https://issues.dlang.org/show_bug.cgi?id=23455
 
-version(Have_hipreme_engine) version = DirectCall;
-
 version(DirectCall)
 {
     public import hip.api.filesystem.fs_binding;
