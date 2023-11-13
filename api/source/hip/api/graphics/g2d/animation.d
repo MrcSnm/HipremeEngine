@@ -80,7 +80,7 @@ interface IHipAnimationTrack
 }
 
 
-version(DirectCall) {} else version = DefineCreateFromAtlas;
+version(ScriptAPI) version = DefineCreateFromAtlas;
 
 interface IHipAnimation
 {

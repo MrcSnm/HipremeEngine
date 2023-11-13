@@ -10,19 +10,28 @@
 	"dependencies": {
 		"util": {"path": "../modules/util", "optional": true}
 	},
+	"sourcePaths" : ["source"],
 	"configurations": 
 	[
 		{
 			"name": "script",
 			"targetType": "library"
 		},
-		{
-			"name": "source",
-			"targetType": "sourceLibrary"
-		},
+		
 		{
 			"name": "hipengine",
 			"targetType": "library"
+		}
+	],
+	"subPackages": [
+		{
+			"name": "direct",
+			"versions": ["DirectCall"],
+			"targetType": "sourceLibrary",
+			"importPaths": [
+				"source",
+				"import"
+			]
 		}
 	],
 	"versions" : [

@@ -2,7 +2,7 @@ module hip.api.filesystem.fs_binding;
 public import hip.api.filesystem.hipfs;
 
 version(DirectCall){ public import hip.filesystem.hipfs; }
-else
+else version(ScriptAPI)
 {
     void initFS()
     {
@@ -22,10 +22,6 @@ else
             bool function (string path, bool expectsFile = true, bool shouldVerify = true) isPathValid;
             bool function (string path) isPathValidExtra;
             bool function (string path) setPath;
-            // bool read(string path, out void[] output)
-            // {
-                // return ret(path, cast(ubyte[])output);
-            // }
             IHipFSPromise function (string path, out ubyte[] output) read;
             IHipFSPromise function (string path, out string output) readText;
             bool function (string path, void[] data) write;

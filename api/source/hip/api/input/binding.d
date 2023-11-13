@@ -1,7 +1,7 @@
 module hip.api.input.binding;
 
 version(DirectCall) { public import hip.event.api; }
-else
+else version(ScriptAPI)
 {
     void initInput()
     {
@@ -87,6 +87,10 @@ else
     }
 
     mixin ExpandClassFunctionPointers!HipInputBinding;
+    alias addMouseListener = addTouchListener;
+    alias isTouchPressed = isMouseButtonPressed;
+    alias isTouchJustPressed = isMouseButtonJustPressed;
+    alias isTouchJustReleased = isMouseButtonJustReleased;
 }
 
 version(none) //Code suggestion
@@ -149,9 +153,3 @@ version(none) //Code suggestion
     bool function(const(ScrollListener)*) removeScrollListener;
     bool function(const(TouchMoveListener)*) removeTouchMoveListener;
 }
-
-
-alias addMouseListener = addTouchListener;
-alias isTouchPressed = isMouseButtonPressed;
-alias isTouchJustPressed = isMouseButtonJustPressed;
-alias isTouchJustReleased = isMouseButtonJustReleased;

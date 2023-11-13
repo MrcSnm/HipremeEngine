@@ -17,8 +17,12 @@ public import hip.api.input.inputmap;
 public import hip.api.input.binding;
 
 
-
-alias getMousePosition = getTouchPosition;
-alias getNormallizedMousePosition = getNormallizedTouchPosition;
-alias getWorldMousePosition = getWorldTouchPosition;
-alias getMouseDeltaPosition = getTouchDeltaPosition;
+version(ScriptAPI) version = InputAPI;
+version(DirectCall) version = InputAPI;
+version(InputAPI)
+{
+	alias getMousePosition = getTouchPosition;
+	alias getNormallizedMousePosition = getNormallizedTouchPosition;
+	alias getWorldMousePosition = getWorldTouchPosition;
+	alias getMouseDeltaPosition = getTouchDeltaPosition;
+}

@@ -2,8 +2,7 @@ module hip.api.systems.system_binding;
 import hip.api.internal;
 public import hip.api.systems.timer;
 
-version(DirectCall){}
-else
+version(ScriptAPI)
 {
     void initTimerAPI()
     {

@@ -3,6 +3,7 @@ public import hip.api.input.button;
 public import hip.api.input.keyboard;
 public import hip.api.input.mouse;
 import hip.event.dispatcher;
+import hip.event.api;
 import hip.event.handlers.keyboard;
 import hip.event.handlers.mouse;
 
