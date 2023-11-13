@@ -2,7 +2,8 @@ module core.stdc.string;
 
 extern(C) extern @nogc nothrow pure
 {
-    version(WebAssembly) version = CustomStrLen;
+    version(WebAssembly) version = CustomDefinitions;
+
 
     version(WebAssembly) version = CustomRuntime;
     version(PSVita) version = CustomRuntime;
@@ -20,7 +21,7 @@ extern(C) extern @nogc nothrow pure
         int memcmp(const(void*) str1, const(void*) str2, size_t n) pure;
     }
 
-    version(CustomStrLen)
+    version(CustomDefinitions)
     {
         size_t strlen(const(char*) str) pure
         {
@@ -29,6 +30,8 @@ extern(C) extern @nogc nothrow pure
             while(str[l] != '\0') l++;
             return l;
         }
+
+        const(char)* strerror(int errnum){return errnum == 0 ? "Success" : "Error";}
     }
     else size_t strlen(const(char*) str) pure;
 
