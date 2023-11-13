@@ -99,7 +99,6 @@ string generateDubProject(DubProjectInfo info)
 		"tween",
 		"math"
 	],
-	"linkedDependencies": {"hipengine_api": {"path": "#HIPREME_ENGINE/api"}},
 	"stringImportPaths": [
 		"#PROJECT"
 	],
@@ -116,9 +115,14 @@ string generateDubProject(DubProjectInfo info)
 			"name" : "script",
 			"targetType": "dynamicLibrary",
 			"dflags-ldc": ["-link-defaultlib-shared=true"],
+			"linkedDependencies": {"hipengine_api": {"path": "#HIPREME_ENGINE/api"}},
 			"lflags-windows": ["/WX"]
 		},
-		{"name": "release", "targetType": "sourceLibrary"},
+		{
+			"name": "release", 
+			"targetType": "sourceLibrary", 
+			"dependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api}}
+		},
 		{
 			"name": "run",
 			"targetType": "dynamicLibrary",

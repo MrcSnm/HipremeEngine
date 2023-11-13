@@ -2,8 +2,7 @@ module hip.api.assets.globals;
 public import hip.api.data.font;
 public import hip.api.renderer.texture;
 
-version(DirectCall){}
-else
+version(ScriptAPI)
 {
     void initGlobalAssets()
     {
