@@ -229,7 +229,7 @@ template loadSymbolsFromExportD(string exportedClass, Ts...)
 				if(s.stringof is null)
 				{
 					import core.stdc.stdio;
-					printf("Could not load "~s.stringof~" (tried with %s"~ e~s.stringof~")\n");
+					printf("Could not load "~s.stringof~" (tried with "~ e~s.stringof~")\n");
 				}
 			}
 			return ret;
