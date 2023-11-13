@@ -29,8 +29,17 @@ configurations, such as the release one, since things can get hairy quite fast i
 "$extends": "#HIPREME_ENGINE/dub.json"
 ```
 
-Adding the engine separate modules can be done by using engineModules. They will automatically
-use the absolute path and be added to the linkedDependencies on the current section. Also checked in configurations.
+## Adding the engine optional modules 
+This can be done by using engineModules property. They will automatically
+use the absolute path and be added to the linkedDependencies on the current section. It is checked on
+both root and configurations.
+
+Another important feature of it is that the engine distributed modules requires a special distribution of hipengine_api.
+This distribution is hipengine_api:direct. This module optimizes the function calls to instead of using function pointers,
+it uses extern definitions, this way, it can be built as a static library.
+This way, it is checked inside the "release" configuration, for making every of them use the subConfiguration of
+"direct".
+
 ```json
  "engineModules": [
 	"util",
@@ -89,6 +98,15 @@ private VariableType getType(string keyName)
 	else if(systems.countUntil(keyName) != -1)
 		return VariableType.otherSystem;
 	return VariableType._default;
+}
+
+bool moduleHasDirect(string moduleName)
+{
+	switch(moduleName)
+	{
+		case "game2d":return true;
+		default: return false;
+	}
 }
 
 
@@ -235,20 +253,26 @@ in string[string] extraVariables)
 	json["params"].object["PROJECT"] = project;
 	foreach(k, v; extraVariables) json["params"].object[k] = v;
 
+
 	foreach(op; settings)
 	{
+		JSONValue inherited = emptyObject;
 		if(op.name in json)
 		{
-			op.handler(json);
-			json.object.remove(op.name);
+			inherited = json;
+			op.handler(json, emptyObject);
 		}
 		if("configurations" in json)
 		{
-			foreach(cfg; json["configurations"].array) if(op.name in cfg)
+			foreach(cfg; json["configurations"].array)
 			{
-				op.handler(cfg);
+				op.handler(cfg, inherited);
 				cfg.object.remove(op.name);
 			}
+		}
+		if(op.name in json)
+		{
+			json.object.remove(op.name);
 		}
 	}
 	variables["PROJECT"] = projectPath.absolutePath.escapeWindowsSep;
@@ -264,7 +288,7 @@ in string[string] extraVariables)
 private struct AdditionalSetting
 {
 	string name;
-	JSONValue delegate(JSONValue dubFile) handler;
+	JSONValue delegate(JSONValue dubFile, JSONValue inherited = emptyObject) handler;
 	Flag!"configAvailable" config = Yes.configAvailable;
 }
 private enum emptyObject = JSONValue(string[string].init);
@@ -311,9 +335,11 @@ in string[string] additionalVariables = string[string].init)
 		return TemplateProcessorResult.notFound;
 	}
     AdditionalSetting[] additionals = [
-		{"$extends", (JSONValue json)
+		{"$extends", (JSONValue json, JSONValue inherited)
 		{
 			import std.exception:enforce;
+			if(!("$extends" in json))
+				return json;
 			string parentDub = json["$extends"].str;
 			string[] options = [
 				parentDub,
@@ -374,18 +400,39 @@ in string[string] additionalVariables = string[string].init)
 
 			return json;
 		}, No.configAvailable},
-		{"engineModules", (JSONValue json) 
+		{"engineModules", (JSONValue json, JSONValue inherited) 
 		{
+			if("engineModules" in json)
 			foreach(mod; json["engineModules"].array)
 			{
 				if(!("linkedDependencies" in json))
 					json.object["linkedDependencies"] = emptyObject;
 				json["linkedDependencies"].object[mod.str] = ["path": buildPath(enginePath, "modules", mod.str)];
 			}
+			if(json["name"].str == "release")
+			{
+				if(!("subConfigurations" in json))
+					json["subConfigurations"] = emptyObject;
+				
+				static void putDirectSubconfiguration(ref JSONValue input, ref JSONValue fromCfg)
+				{
+					if("engineModules" in fromCfg) 
+					foreach(mod; fromCfg["engineModules"].array) 
+					{
+						if(moduleHasDirect(mod.str))
+							input["subConfigurations"][mod.str] = "direct";
+					}
+				}
+				///Put direct from inherited
+				putDirectSubconfiguration(json, inherited);
+				putDirectSubconfiguration(json, json);
+			}
 			return json;
 		}},
-		{"linkedDependencies", (JSONValue json)
+		{"linkedDependencies", (JSONValue json, JSONValue inherited)
 		{
+			if(!("linkedDependencies" in json))
+				return json;
 			foreach(key, value; json["linkedDependencies"].object)
 			{
 				if(!("dependencies" in json))
@@ -397,8 +444,10 @@ in string[string] additionalVariables = string[string].init)
 			}
 			return json;
 		}},
-		{"unnamedDependencies", (JSONValue json)
+		{"unnamedDependencies", (JSONValue json, JSONValue inherited)
 		{
+			if(!("unnamedDependencies" in json))
+				return json;
 			foreach(unnamedDep; json["unnamedDependencies"].array)
 			{
 				import std.stdio;

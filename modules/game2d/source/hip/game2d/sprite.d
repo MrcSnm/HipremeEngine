@@ -14,8 +14,7 @@ public import hip.api.renderer.texture;
 public import hip.api.graphics.color;
 public import hip.api.data.commons;
 import hip.math.vector;
-import hip.api.assets.assets_binding;
-import hip.api.assets.globals;
+import hip.api;
 import hip.game2d.renderer_data;
 
 /**
@@ -124,7 +123,7 @@ class HipSprite
     {
         vertices = new HipSpriteVertex[4];
         setColor(HipColor.white);
-        setTexture(cast()getDefaultTexture());
+        setTexture(cast()HipDefaultAssets.getDefaultTexture());
     }
     this(IHipAssetLoadTask task)
     {
@@ -137,7 +136,7 @@ class HipSprite
     */
     this(string texturePath)
     {
-        this(createTextureRegion(loadTexture(texturePath).awaitAs!IHipTexture));
+        this(HipAssetManager.createTextureRegion(HipAssetManager.loadTexture(texturePath).awaitAs!IHipTexture));
     }
 
     this(IHipTexture texture)
@@ -157,15 +156,14 @@ class HipSprite
     void setTexture(IHipTexture texture)
     {
         import hip.api;
-        logg(texture is null, " ", &createTextureRegion is null);
-        this.texture = createTextureRegion(texture);
+        this.texture = HipAssetManager.createTextureRegion(texture);
         width  = texture.getWidth;
         height = texture.getHeight;
         setRegion(this.texture.getRegion());
     }
     void setTexture(IHipAssetLoadTask task)
     {
-        addOnCompleteHandler(task, (asset)
+        HipAssetManager.addOnCompleteHandler(task, (asset)
         {
             this.setTexture(cast(IHipTexture)asset);
         });
