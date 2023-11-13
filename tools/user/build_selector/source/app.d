@@ -234,6 +234,7 @@ void main(string[] args)
 		auto opts = getopt(args, 
 			"force", "Force for a recompilation", &cOpts.force,
 			"skipRegistry", "Skips dub registry with --skip-registry=all", &cOpts.skipRegistry,
+			"dubVerbose", "Builds with --verbose in dub", &cOpts.dubVerbose,
 			"scriptOnly", "Only the script will be built, internally used for rebuilding", &scriptOnly,
 			"appleClean", "Used to clean appleos/ios build. Useful for when your build is failing", &appleClean,
 			"autoSelect", "Execute a compilation option without needing to select", &autoSelect,

@@ -178,6 +178,7 @@ struct Config
 struct CompilationOptions
 {
 	bool skipRegistry;
+	bool dubVerbose;
 	bool force;
 	bool tempBuild;
 	string getDubOptions() const
@@ -186,6 +187,7 @@ struct CompilationOptions
 		if(force) ret~= " --force";
 		if(skipRegistry) ret~= " --skip-registry=all";
 		if(tempBuild) ret~= " --temp-build";
+		if(dubVerbose) ret~= " --verbose";
 		return ret;
 	}
 }

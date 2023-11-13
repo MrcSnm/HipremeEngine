@@ -28,6 +28,7 @@
 			"name": "direct",
 			"versions": ["DirectCall"],
 			"targetType": "sourceLibrary",
+			"sourcePaths": [],
 			"importPaths": [
 				"source",
 				"import"
