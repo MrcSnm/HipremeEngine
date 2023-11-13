@@ -20,7 +20,7 @@ public import hip.api.graphics.text;
 public import hip.api.graphics.g2d.animation;
 public import hip.api.graphics.g2d.g2d_binding;
 
-version(DirectCall) {} else version = DefineOverloadings;
+version(ScriptAPI) version = DefineOverloadings;
 version(DefineOverloadings)
 {
 	private alias G2D = hip.api.graphics.g2d.g2d_binding;

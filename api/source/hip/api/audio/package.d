@@ -44,7 +44,7 @@ enum HipAudioImplementation
 }
 
 version(DirectCall) { public import hip.hipaudio; }
-else
+else version(ScriptAPI)
 {
     public import HipAudio = hip.api.audio.audio_binding;
     public import hip.api.audio.audioclip:IHipAudioClip;

@@ -30,6 +30,10 @@
 				"/WX"
 			]
 		},
+        {
+            "name": "release",
+            "targetType": "sourceLibrary"
+        },
 		{
 			"name": "run",
 			"targetType": "dynamicLibrary",
@@ -44,4 +48,3 @@
 		"HipremeAudio"
 	]
 }
-	

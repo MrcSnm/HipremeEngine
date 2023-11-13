@@ -6,7 +6,7 @@ version(DirectCall)
 {
     public import hip.api.filesystem.fs_binding;
 }
-else
+else version(ScriptAPI)
 {
     public import hip.api.filesystem.fs_binding : initFS,
         getPath,

@@ -33,8 +33,7 @@ enum HipAssetLoadStrategy
 	loadAll
 }
 
-version(DirectCall){}
-else version = UseExternalScene;
+version(ScriptAPI) version = UseExternalScene;
 
 ///Most important functions here
 version(UseExternalScene)

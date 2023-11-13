@@ -4,6 +4,7 @@ import hip.data.jsonc;
 import hip.filesystem.hipfs;
 import hip.error.handler;
 import hip.api.input;
+import hip.event.api;
 
 class HipInputMap : IHipInputMap
 {

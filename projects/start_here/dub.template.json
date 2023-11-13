@@ -5,9 +5,6 @@
 	"targetName" : "start_here",
 	"name" : "start_here",
 	"sourcePaths"  : ["source"],
-    "linkedDependencies": {
-        "hipengine_api": {"path": "#HIPREME_ENGINE/api"}
-    },
     "engineModules": [
         "util",
         "math"
@@ -26,9 +23,15 @@
 			"name" : "script",
 			"targetType": "dynamicLibrary",
 			"dflags-ldc": ["-link-defaultlib-shared=true"],
+			"linkedDependencies": {
+				"hipengine_api": {"path": "#HIPREME_ENGINE/api"}
+			},
+			"versions": ["ScriptAPI"],
 			"lflags-windows": ["/WX"]
 		},
-		{"name": "release", "targetType": "sourceLibrary", "versions": ["DirectCall"]},
+		{
+			"name": "release", "targetType": "library", "linkedDependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api"}}
+		},
 		{
 			"name": "run",
 			"targetType": "dynamicLibrary",
