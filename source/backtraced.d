@@ -1,5 +1,9 @@
 module backtraced;
 
+version(Windows) version = UseBacktraced;
+else version(linux) version = UseBacktraced;
+
+version(UseBacktraced):
 debug:
 import core.demangle;
 import std.algorithm.searching;
