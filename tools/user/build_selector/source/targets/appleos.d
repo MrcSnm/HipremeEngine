@@ -1,6 +1,7 @@
 module targets.appleos;
 import commons;
 import common_macos;
+import global_opts;
 
 
 ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
@@ -9,10 +10,8 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 
 	string out_extraLinkerFlags;
 	setupPerCompiler(t, getSelectedCompiler, "x86_64", out_extraLinkerFlags);
-
 	cached(() => timed(() => outputTemplateForTarget(t)));
 	string codeSignCommand = getCodeSignCommand(t);
-
 	with(WorkingDir(getHipPath))
 	{
 		cleanAppleOSLibFolder();
@@ -29,10 +28,12 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 		);
 		injectLinkerFlagsOnXcode(t, input, out_extraLinkerFlags);
 		string path = getHipPath("build", "appleos");
+		string clean = appleClean ? "clean " : "";
 		with(WorkingDir(path))
 		{
 			wait(spawnShell(
-				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine macOS' clean build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
+				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine macOS' " ~ clean ~ 
+				" build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
 				codeSignCommand ~
 				" && cd bin && HipremeEngine.app/Contents/MacOS/HipremeEngine")
 			);

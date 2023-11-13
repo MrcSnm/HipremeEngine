@@ -1,6 +1,7 @@
 module targets.ios;
 import common_macos;
 import commons;
+import global_opts;
 
 enum iosArch =
 [
@@ -37,12 +38,15 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 		);
 		
 		string path = getHipPath("build", "appleos");
+		string clean = appleClean ? "clean " : "";
 
 		
 		with(WorkingDir(path))
 		{
 			wait(spawnShell(
-				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine iOS' clean build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
+				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine iOS' " ~
+				clean ~
+				"build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
 				codeSignCommand ~
 				"-destination 'platform=iOS Simulator,name=iPhone 14,OS=16.2' " ~
 				" && cd bin && HipremeEngine.app/Contents/iOS/HipremeEngine")
