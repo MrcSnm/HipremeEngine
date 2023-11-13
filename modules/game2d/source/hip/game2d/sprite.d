@@ -156,6 +156,8 @@ class HipSprite
 
     void setTexture(IHipTexture texture)
     {
+        import hip.api;
+        logg(texture is null, " ", &createTextureRegion is null);
         this.texture = createTextureRegion(texture);
         width  = texture.getWidth;
         height = texture.getHeight;

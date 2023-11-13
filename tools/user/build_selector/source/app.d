@@ -3,6 +3,7 @@ import std.getopt;
 import std.conv:to;
 import commons;
 import d_getter;
+import global_opts;
 import game_selector;
 import engine_getter;
 import targets.windows;
@@ -234,6 +235,7 @@ void main(string[] args)
 			"force", "Force for a recompilation", &cOpts.force,
 			"skipRegistry", "Skips dub registry with --skip-registry=all", &cOpts.skipRegistry,
 			"scriptOnly", "Only the script will be built, internally used for rebuilding", &scriptOnly,
+			"appleClean", "Used to clean appleos/ios build. Useful for when your build is failing", &appleClean,
 			"autoSelect", "Execute a compilation option without needing to select", &autoSelect,
 			"tempBuild", "Executes dub with --temp-build", &cOpts.tempBuild
 		);
