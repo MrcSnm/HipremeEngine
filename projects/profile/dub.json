@@ -1,49 +1,86 @@
 {
-	"authors": ["HipremeEngine"],
-	"description" : "Hipreme Engine test scene",
-	"license": "proprietary",
-	"targetName" : "profile",
-	"name" : "profile",
-	"sourcePaths"  : ["source"],
-	"dependencies": 
-	{
-		"hipengine_api": {"path": "G:\\HipremeEngine/api"},
-		"game2d": {"path": "G:\\HipremeEngine/modules/game2d"},
-		"util": {"path": "G:\\HipremeEngine/modules/util"},
-		"timer": {"path": "G:\\HipremeEngine/modules/timer"},
-		"tween": {"path": "G:\\HipremeEngine/modules/tween"},
-		"math": {"path": "G:\\HipremeEngine/modules/math"}
-	},
-	"dflags": [
-		"-J."
-	],
-	"preBuildCommands": [
-		"rdmd $HIPREME_ENGINE/tools/build/getmodules.d source/ scriptmodules.txt"
-	],
-	"configurations": 
-	[
-		{
-			"name" : "script",
-			"targetType": "dynamicLibrary",
-			"lflags-windows": [
-				"/WX"
-			]
-		},
+    "authors": [
+        "HipremeEngine"
+    ],
+    "configurations": [
+        {
+            "dflags-ldc": [
+                "-link-defaultlib-shared=true"
+            ],
+            "lflags-windows": [
+                "/WX"
+            ],
+            "name": "script",
+            "targetType": "dynamicLibrary"
+        },
         {
             "name": "release",
-            "targetType": "sourceLibrary"
+            "targetType": "sourceLibrary",
+            "versions": [
+                "DirectCall"
+            ]
         },
-		{
-			"name": "run",
-			"targetType": "dynamicLibrary",
-			"lflags-windows": [
-				"/WX"
-			],
-			"postGenerateCommands": ["cd G:\\HipremeEngine && dub -c script -- G:\\HipremeEngine\\projects\\profile"]
-		}
-	],
-	"versions" : [
-		"HipMathAPI",
-		"HipremeAudio"
-	]
+        {
+            "lflags-windows": [
+                "/WX"
+            ],
+            "name": "run",
+            "postGenerateCommands-linux": [
+                "cd /Users/Hipreme/Downloads/HipremeEngine && dub -c script -- $PACKAGE_DIR"
+            ],
+            "postGenerateCommands-windows": [
+                "cd /d /Users/Hipreme/Downloads/HipremeEngine && dub -c script -- $PACKAGE_DIR"
+            ],
+            "targetType": "dynamicLibrary"
+        }
+    ],
+    "dependencies": {
+        "game2d": {
+            "path": "/Users/Hipreme/Downloads/HipremeEngine/modules/game2d"
+        },
+        "hipengine_api": {
+            "path": "/Users/Hipreme/Downloads/HipremeEngine/api"
+        },
+        "math": {
+            "path": "/Users/Hipreme/Downloads/HipremeEngine/modules/math"
+        },
+        "timer": {
+            "path": "/Users/Hipreme/Downloads/HipremeEngine/modules/timer"
+        },
+        "tween": {
+            "path": "/Users/Hipreme/Downloads/HipremeEngine/modules/tween"
+        },
+        "util": {
+            "path": "/Users/Hipreme/Downloads/HipremeEngine/modules/util"
+        }
+    },
+    "description": "Hipreme Engine test scene",
+    "dflags-ldc": [
+        "--disable-verify",
+        "--oq"
+    ],
+    "lflags-windows-ldc": [
+        "/WHOLEARCHIVE:math",
+        "/WHOLEARCHIVE:game2d",
+        "/WHOLEARCHIVE:util",
+        "/WHOLEARCHIVE:tween",
+        "/WHOLEARCHIVE:hipengine_api",
+        "/WHOLEARCHIVE:timer"
+    ],
+    "license": "proprietary",
+    "name": "profile2",
+    "preBuildCommands-posix": [
+        "export DFLAGS= && rdmd /Users/Hipreme/Downloads/HipremeEngine/tools/build/getmodules.d /Users/Hipreme/Downloads/HipremeEngine/projects/profile/source/ /Users/Hipreme/Downloads/HipremeEngine/projects/profile/scriptmodules.txt"
+    ],
+    "preBuildCommands-windows": [
+        "set DFLAGS= && rdmd /Users/Hipreme/Downloads/HipremeEngine/tools/build/getmodules.d /Users/Hipreme/Downloads/HipremeEngine/projects/profile/source/ /Users/Hipreme/Downloads/HipremeEngine/projects/profile/scriptmodules.txt"
+    ],
+    "stringImportPaths": [
+        "/Users/Hipreme/Downloads/HipremeEngine/projects/profile"
+    ],
+    "targetName": "profile2",
+    "versions": [
+        "HipMathAPI",
+        "HipremeAudio"
+    ]
 }
