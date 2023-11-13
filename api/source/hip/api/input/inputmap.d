@@ -21,7 +21,7 @@ interface IHipInputMap
     {
         static alias parseInputMap = HipInputMap.parseInputMap;
     }
-    else
+    else version(ScriptAPI)
     {
         static IHipInputMap parseInputMap(ubyte[] file, string fileName, ubyte id = 0){return parseInputMap_Mem(file, fileName,id);}
     }

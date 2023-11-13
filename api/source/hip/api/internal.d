@@ -21,8 +21,7 @@ struct Overload
 version(WebAssembly) version = ErrorOnLoadSymbol;
 version(PSVita) version = ErrorOnLoadSymbol;
 
-version(DirectCall){}
-else version = LoadFunctionPointers;
+version(ScriptAPI) version = LoadFunctionPointers;
 
 
 version(LoadFunctionPointers)
