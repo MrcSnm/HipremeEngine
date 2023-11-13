@@ -7,7 +7,8 @@
 	"sourcePaths"  : ["source"],
     "engineModules": [
         "util",
-        "math"
+        "math",
+		"game2d"
     ],
     "stringImportPaths": ["#PROJECT"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
@@ -30,7 +31,9 @@
 			"lflags-windows": ["/WX"]
 		},
 		{
-			"name": "release", "targetType": "library", "linkedDependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api"}}
+			"name": "release",
+			"targetType": "library",
+			"linkedDependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api"}}
 		},
 		{
 			"name": "run",
