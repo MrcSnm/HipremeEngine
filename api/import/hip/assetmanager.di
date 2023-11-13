@@ -8,7 +8,7 @@ public import hip.api.renderer.texture;
 
 extern class HipAssetManager
 {
-    extern(System) __gshared static
+    static
     {
         ///Returns whether asset manager is loading anything
         bool isLoading ();
@@ -116,5 +116,8 @@ extern class HipAssetManager
             IHipTileset tilesetFromSpritesheet (Array2D_GC!IHipTextureRegion spritesheet);
         }   
         IHipTileset tilesetFromAtlas (IHipTextureAtlas atlas);
+
+        static pragma(inline, true) T get(T)(string name) {return cast(T)getAsset(name);}
+        static pragma(inline, true) T get(T : string)(string name) {return getStringAsset(name);}
     }
 }

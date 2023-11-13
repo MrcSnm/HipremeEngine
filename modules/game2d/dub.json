@@ -7,7 +7,8 @@
 		"util": {"path": "../util", "version": "*"},
 		"math": {"path": "../math", "version": "*"}
 	},
-	"configurations": [
+	"configurations": 
+	[
 		{
 			"name": "dynamic",
 			"dependencies": {
