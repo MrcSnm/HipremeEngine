@@ -33,7 +33,11 @@ extern(C) extern @nogc nothrow pure
 
         const(char)* strerror(int errnum){return errnum == 0 ? "Success" : "Error";}
     }
-    else size_t strlen(const(char*) str) pure;
+    else
+    {
+        const(char)* strerror(int errnum);
+        size_t strlen(const(char*) str) pure;
+    }
 
     int strncmp (const(char)* str1, const(char)* str2, size_t num );
     int strcmp (const char* str1, const char* str2);

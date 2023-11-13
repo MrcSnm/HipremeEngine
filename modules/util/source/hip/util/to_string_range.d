@@ -14,7 +14,7 @@ private void put(Sink, E)(ref Sink sink, E e)
             sink.put(element);
     }
     else
-        std.range.primitives.put(sink, e);
+        sink.put(e);
 }
 
 

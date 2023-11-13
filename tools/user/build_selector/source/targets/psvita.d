@@ -218,7 +218,8 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
     "-g "~
     "-float-abi=hard "~
     "--relocation-model=static "~
-    "-d-version=CarelessAlocation ";
+    "-d-version=CarelessAlocation "~
+    "-d-version=ArsdUseCustomRuntime ";
 
     environment["DFLAGS"] = dflags;
 
