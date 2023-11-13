@@ -23,3 +23,7 @@ version(ScriptAPI)
     import hip.api.internal;
     mixin ExpandClassFunctionPointers!HipGlobalAssetsBinding;
 }
+else version(DirectCall)
+{
+    public import hip.global.gamedef;
+}

@@ -8,7 +8,7 @@ public import hip.api.renderer.texture;
 
 extern class HipAssetManager
 {
-    extern(System) __gshared
+    extern(System) __gshared static
     {
         ///Returns whether asset manager is loading anything
         bool isLoading ();

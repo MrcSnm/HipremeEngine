@@ -120,8 +120,8 @@ string generateDubProject(DubProjectInfo info)
 		},
 		{
 			"name": "release", 
-			"targetType": "sourceLibrary", 
-			"dependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api}}
+			"targetType": "staticLibrary", 
+			"dependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api"}}
 		},
 		{
 			"name": "run",
