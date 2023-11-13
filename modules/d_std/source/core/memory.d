@@ -16,3 +16,5 @@ void pureFree(void* addr) pure nothrow @trusted @nogc
     auto freeAddr = cast(pureFreeT)&free;
     freeAddr(addr);
 }
+
+enum pageSize = 516;
