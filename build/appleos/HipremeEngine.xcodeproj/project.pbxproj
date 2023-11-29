@@ -36,6 +36,9 @@
 		31B53C1629D6902C00108E4C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1129D68FC500108E4C /* Metal.framework */; };
 		31B53C1729D6902C00108E4C /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1029D68FC500108E4C /* MetalKit.framework */; };
 		EB5383D72AFA7BE700E3B491 /* libdruntime-ldc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7C32AF7F89C00494F59 /* libdruntime-ldc.a */; };
+		EB8B15332B03D0CF001329EC /* modules in Resources */ = {isa = PBXBuildFile; fileRef = EB8B15322B03D0CF001329EC /* modules */; };
+		EB8B15342B03D0CF001329EC /* modules in Resources */ = {isa = PBXBuildFile; fileRef = EB8B15322B03D0CF001329EC /* modules */; };
+		EB8B15352B03D0CF001329EC /* modules in Resources */ = {isa = PBXBuildFile; fileRef = EB8B15322B03D0CF001329EC /* modules */; };
 		EBD454252AFA596B000F28DF /* libarsd-official_bmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E92AFA152400494F59 /* libarsd-official_bmp.a */; };
 		EBD454262AFA596B000F28DF /* libarsd-official_color_base.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E22AFA152300494F59 /* libarsd-official_color_base.a */; };
 		EBD454272AFA596B000F28DF /* libarsd-official_image_files.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D92AFA152200494F59 /* libarsd-official_image_files.a */; };
@@ -185,6 +188,7 @@
 		31B53C1029D68FC500108E4C /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		31B53C1129D68FC500108E4C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		31B53C1429D68FD400108E4C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		EB8B15322B03D0CF001329EC /* modules */ = {isa = PBXFileReference; lastKnownFileType = folder; name = modules; path = ../../modules; sourceTree = SOURCE_ROOT; };
 		EBD5D7C32AF7F89C00494F59 /* libdruntime-ldc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libdruntime-ldc.a"; path = "HipremeEngine_D/static/libdruntime-ldc.a"; sourceTree = "<group>"; };
 		EBD5D7C82AFA13E300494F59 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
 		EBD5D7CA2AFA13EA00494F59 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/MetalKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -327,6 +331,7 @@
 		3156441729A1546600559889 = {
 			isa = PBXGroup;
 			children = (
+				EB8B15322B03D0CF001329EC /* modules */,
 				3130368729D670A400895DD5 /* assets */,
 				315C6FC529B55CF8007F19C0 /* HipremeEngine_D */,
 				3156441C29A1546600559889 /* HipremeEngine Shared */,
@@ -598,6 +603,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EB8B15342B03D0CF001329EC /* modules in Resources */,
 				EBD5D8372AFA566500494F59 /* libs in Resources */,
 				3130368F29D6807400895DD5 /* assets in Resources */,
 				3156443129A1546900559889 /* Main.storyboard in Resources */,
@@ -612,6 +618,7 @@
 			files = (
 				3156444529A1546900559889 /* Main.storyboard in Resources */,
 				3130369029D6807500895DD5 /* assets in Resources */,
+				EB8B15352B03D0CF001329EC /* modules in Resources */,
 				3156446429A1546900559889 /* Assets.xcassets in Resources */,
 				3156444829A1546900559889 /* LaunchScreen.storyboard in Resources */,
 			);
@@ -621,6 +628,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EB8B15332B03D0CF001329EC /* modules in Resources */,
 				3130369329D6808100895DD5 /* libs in Resources */,
 				3130369129D6807500895DD5 /* assets in Resources */,
 				3156446529A1546900559889 /* Assets.xcassets in Resources */,
@@ -866,9 +874,6 @@
 					"-lBindBC_OpenAL",
 					"-lBindBC_Loader",
 					"-lbind",
-					"-lprofile",
-					"-lgame2d",
-					"-ltween",
 					"-lmetal",
 					"-ldata",
 					"-limage",
@@ -878,13 +883,17 @@
 					"-larsd-official_jpeg",
 					"-larsd-official_png",
 					"-larsd-official_color_base",
+					"-larsd-official_core",
 					"-larsd-official_svg",
 					"-lerror",
 					"-lconsole",
 					"-lconfig",
 					"-ldebugging",
-					"-lmath",
 					"-lwindowing",
+					"-lstart_here",
+					"-lgame2d",
+					"-lmath",
+					"-ltween",
 					"-ltimer",
 					"-lhipengine_api",
 					"-lutil",
@@ -939,9 +948,6 @@
 					"-lBindBC_OpenAL",
 					"-lBindBC_Loader",
 					"-lbind",
-					"-lprofile",
-					"-lgame2d",
-					"-ltween",
 					"-lmetal",
 					"-ldata",
 					"-limage",
@@ -951,13 +957,17 @@
 					"-larsd-official_jpeg",
 					"-larsd-official_png",
 					"-larsd-official_color_base",
+					"-larsd-official_core",
 					"-larsd-official_svg",
 					"-lerror",
 					"-lconsole",
 					"-lconfig",
 					"-ldebugging",
-					"-lmath",
 					"-lwindowing",
+					"-lstart_here",
+					"-lgame2d",
+					"-lmath",
+					"-ltween",
 					"-ltimer",
 					"-lhipengine_api",
 					"-lutil",
@@ -1003,9 +1013,6 @@
 					"-lBindBC_OpenAL",
 					"-lBindBC_Loader",
 					"-lbind",
-					"-lprofile",
-					"-lgame2d",
-					"-ltween",
 					"-lmetal",
 					"-ldata",
 					"-limage",
@@ -1015,13 +1022,17 @@
 					"-larsd-official_jpeg",
 					"-larsd-official_png",
 					"-larsd-official_color_base",
+					"-larsd-official_core",
 					"-larsd-official_svg",
 					"-lerror",
 					"-lconsole",
 					"-lconfig",
 					"-ldebugging",
-					"-lmath",
 					"-lwindowing",
+					"-lstart_here",
+					"-lgame2d",
+					"-lmath",
+					"-ltween",
 					"-ltimer",
 					"-lhipengine_api",
 					"-lutil",
@@ -1066,9 +1077,6 @@
 					"-lBindBC_OpenAL",
 					"-lBindBC_Loader",
 					"-lbind",
-					"-lprofile",
-					"-lgame2d",
-					"-ltween",
 					"-lmetal",
 					"-ldata",
 					"-limage",
@@ -1078,13 +1086,17 @@
 					"-larsd-official_jpeg",
 					"-larsd-official_png",
 					"-larsd-official_color_base",
+					"-larsd-official_core",
 					"-larsd-official_svg",
 					"-lerror",
 					"-lconsole",
 					"-lconfig",
 					"-ldebugging",
-					"-lmath",
 					"-lwindowing",
+					"-lstart_here",
+					"-lgame2d",
+					"-lmath",
+					"-ltween",
 					"-ltimer",
 					"-lhipengine_api",
 					"-lutil",
@@ -1138,9 +1150,6 @@
 					"-lBindBC_OpenAL",
 					"-lBindBC_Loader",
 					"-lbind",
-					"-lprofile",
-					"-lgame2d",
-					"-ltween",
 					"-lmetal",
 					"-ldata",
 					"-limage",
@@ -1150,13 +1159,17 @@
 					"-larsd-official_jpeg",
 					"-larsd-official_png",
 					"-larsd-official_color_base",
+					"-larsd-official_core",
 					"-larsd-official_svg",
 					"-lerror",
 					"-lconsole",
 					"-lconfig",
 					"-ldebugging",
-					"-lmath",
 					"-lwindowing",
+					"-lstart_here",
+					"-lgame2d",
+					"-lmath",
+					"-ltween",
 					"-ltimer",
 					"-lhipengine_api",
 					"-lutil",
@@ -1207,9 +1220,6 @@
 					"-lBindBC_OpenAL",
 					"-lBindBC_Loader",
 					"-lbind",
-					"-lprofile",
-					"-lgame2d",
-					"-ltween",
 					"-lmetal",
 					"-ldata",
 					"-limage",
@@ -1219,13 +1229,17 @@
 					"-larsd-official_jpeg",
 					"-larsd-official_png",
 					"-larsd-official_color_base",
+					"-larsd-official_core",
 					"-larsd-official_svg",
 					"-lerror",
 					"-lconsole",
 					"-lconfig",
 					"-ldebugging",
-					"-lmath",
 					"-lwindowing",
+					"-lstart_here",
+					"-lgame2d",
+					"-lmath",
+					"-ltween",
 					"-ltimer",
 					"-lhipengine_api",
 					"-lutil",
