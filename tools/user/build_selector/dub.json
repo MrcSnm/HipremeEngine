@@ -4,7 +4,8 @@
 	],
 	"copyright": "Copyright © 2023, Hipreme",
 	"dependencies": {
-		"arsd-official:terminal": "~master"
+		"arsd-official:terminal": "~master",
+		"arsd-official:cgi": "~master"
 	},
 	"versions-windows": ["WindowsVista"],
 	"stringImportPaths": [
