@@ -1,5 +1,7 @@
 module targets.wasm;
 import commons;
+import global_opts;
+import serve;
 
 ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
@@ -9,6 +11,12 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		return ChoiceResult.Error;
 	}
 	cached(() => timed(() => loadSubmodules(t, input)));
+	if(!serverStarted)
+	{
+		t.writelnHighlighted("Attempt to start WebAssembly development server.");
+		startServer();
+		t.writelnSuccess("Development started at localhost:9000");
+	}
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
 	putResourcesIn(t, getHipPath("build", "wasm", "build", "assets"));
 
