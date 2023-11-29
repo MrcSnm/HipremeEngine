@@ -11,8 +11,8 @@ public static import std.file;
 enum hipremeEngineRepo = "https://github.com/MrcSnm/HipremeEngine.git";
 enum ConfigFile = "gamebuild.json";
 
-__gshared JSONValue engineConfig;
-__gshared Config configs;
+JSONValue engineConfig;
+Config configs;
 
 string pathBeforeNewLdc;
 

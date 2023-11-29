@@ -46,7 +46,8 @@ Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choi
 	else
 	{
 		selectedChoice = selectChoiceBase(
-			terminal, input, choices, "Select a target platform to build.\n\t"~currentGame, 
+			terminal, input, choices, "Select a target platform to build.\n\t"~currentGame~
+			(serverStarted ? "\n\tWebAssembly server running at localhost:9000" : ""), 
 			selectedChoice);
 	}
 
@@ -304,4 +305,5 @@ void main(string[] args)
 		}
 		else break;
 	}
+	exitServer();
 }
