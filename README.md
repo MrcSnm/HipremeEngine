@@ -1,5 +1,5 @@
 
-<p style="text-align:center;">
+<p align="center">
 <img src="engine_logo.svg" width="300"/>
 </p>
 
