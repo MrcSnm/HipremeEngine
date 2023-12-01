@@ -4,7 +4,7 @@
 </p>
 
 
-<h1 style="text-align:center;">
+<h1 align="center">
 <a href="https://github.com/MrcSnm/HipremeEngine/wiki/Getting-Started">Getting Started</a>
 </h1>
 
