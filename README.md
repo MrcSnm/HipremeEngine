@@ -1,7 +1,14 @@
-# HipremeEngine
 
-## [Getting Started](https://github.com/MrcSnm/HipremeEngine/wiki/Getting-Started)
-- Please check how a game is expected to be developed with Hipreme Engine.
+<p style="text-align:center;">
+<img src="engine_logo.svg" width="300"/>
+</p>
+
+
+<h1 style="text-align:center;">
+<a href="https://github.com/MrcSnm/HipremeEngine/wiki/Getting-Started">Getting Started</a>
+</h1>
+
+
 
 The engine mantains some global options which you can modify it on source/global/opts.d:
 - HE_DEBUG    -> Use that for creating a debug version for the engine only
