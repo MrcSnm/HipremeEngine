@@ -33,20 +33,25 @@
     <script src="webassembly-core.js"></script>
     <script>
 	// WebAssembly.instantiateStreaming(fetch('/hipreme_engine.wasm'), importObject)
-	WebAssembly.instantiateStreaming(fetch('hipreme_engine.wasm', {}), importObject)
-		.then(function(obj) {
 
-			const canvas = document.getElementById("glcanvas");
-			const scale = window.devicePixelRatio;
-
-			canvas.width = Math.floor(canvas.width * scale);
-			canvas.height = Math.floor(canvas.height * scale);
-			memory = obj.instance.exports.memory;
-			bridge_malloc = obj.instance.exports.bridge_malloc;
-			printBlockDebugInfo = obj.instance.exports.printBlockDebugInfo;
-			exports = obj.instance.exports;
-			obj.instance.exports._start();
-		});
+	function __loadGame()
+	{
+		WebAssembly.instantiateStreaming(fetch('hipreme_engine.wasm', {}), importObject)
+			.then(function(obj) {
+	
+				const canvas = document.getElementById("glcanvas");
+				const scale = window.devicePixelRatio;
+	
+				canvas.width = Math.floor(canvas.width * scale);
+				canvas.height = Math.floor(canvas.height * scale);
+				memory = obj.instance.exports.memory;
+				bridge_malloc = obj.instance.exports.bridge_malloc;
+				printBlockDebugInfo = obj.instance.exports.printBlockDebugInfo;
+				exports = obj.instance.exports;
+				obj.instance.exports._start();
+			});
+	}
+	__loadGame();
 
 
     </script>

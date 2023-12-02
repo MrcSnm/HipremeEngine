@@ -23,8 +23,22 @@ _reloadSocket.addEventListener("message", (event) =>
     const serverMsg = String(event.data);
     switch(serverMsg)
     {
-        case "reload": location.reload(); break;
+        case "reload":
+        {
+            __shouldReloadGame = true;
+            break;  
+        } 
         case "close": _reloadSocket.close(0); break;
         default: console.warn("Unknown message from server received: ", serverMsg); break;
     }
 });
+
+
+let __shouldReloadGame = false;
+function __reloadGame()
+{
+    __shouldReloadGame = false;
+    druntimeAbortHook();
+    WasmUtils.cleanup();
+    __loadGame();
+}
