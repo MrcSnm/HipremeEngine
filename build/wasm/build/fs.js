@@ -1,18 +1,27 @@
 function initializeFS()
 {
+    const fileCache = {};
+
     return {
         WasmRead(length, ptr, onSuccessHandle, onSuccessFunc, onSuccessCtx, onErrorHandle, onErrorFunc, onErrorCtx) 
         {
-            let path = WasmUtils.fromDString(length, ptr);
-
             const __callDFunction = exports.__callDFunction;
+
+            let path = WasmUtils.fromDString(length, ptr);
+            if(path in fileCache)
+            {
+                __callDFunction(onSuccessHandle, WasmUtils.toDArguments(onSuccessFunc, onSuccessCtx, fileCache[path]));
+                return;
+            }
+
             console.log("Fetching ", path);
             fetch(path)
             .then((val) =>
             {
                 val.arrayBuffer().then((buffer) =>
                 {
-                    __callDFunction(onSuccessHandle, WasmUtils.toDArguments(onSuccessFunc, onSuccessCtx, new Uint8Array(buffer)));
+                    fileCache[path] = new Uint8Array(buffer);
+                    __callDFunction(onSuccessHandle, WasmUtils.toDArguments(onSuccessFunc, onSuccessCtx, fileCache[path]));
                 });
             })
             .catch((err) =>
