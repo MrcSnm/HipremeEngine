@@ -124,6 +124,11 @@ function initializeHipremeEngine(exports)
     let lastTime = performance.now();
     function nextFrame(step)
     {
+        if(__shouldReloadGame)
+        {
+            __reloadGame();
+            return;
+        }
         try
         {
             //To seconds. Javascript gives in MS.
@@ -146,9 +151,11 @@ function initializeHipremeEngine(exports)
             throw err;
         }
     }
+
     const gameLoop = () =>
     {
         requestAnimationFrame(nextFrame);
     }
+
     requestAnimationFrame(gameLoop);
 }
