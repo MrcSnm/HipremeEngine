@@ -9,7 +9,8 @@
 	},
 	"versions-windows": ["WindowsVista"],
 	"stringImportPaths": [
-		"../../build/scripts"
+		"../../build/scripts",
+		"source"
 	],
 	"targetType": "executable",
 	"configurations": [
