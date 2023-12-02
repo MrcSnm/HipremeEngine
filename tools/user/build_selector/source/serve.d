@@ -27,19 +27,74 @@ string extendedContentTypeFromFileExtension(string thing)
 	return "application/octet-stream";
 }
 
+import core.thread;
+import core.sync.mutex;
+void pushWebsocketMessage(string message)
+{
+	synchronized
+	{
+		foreach(ref conn; connections)
+			conn.messages~= message;
+	}
+	// socket.send(message);
+	// synchronized websocketMessages~= message;
+}
+
+struct Connection
+{
+	size_t id;
+	string[] messages;
+}
+private __gshared size_t id;
+private __gshared Connection*[] connections;
+
 void serveGameFiles(Cgi cgi) 
 {
     import std.path;
     string targetPath = buildNormalizedPath(startPath, DEFAULT_PATH);
 	string contentType = extendedContentTypeFromFileExtension(cgi.pathInfo);
 	string file = buildNormalizedPath(targetPath, cgi.pathInfo[1..$]);
-	
-	if(cgi.pathInfo == "/") 
+
+	if(cgi.websocketRequested())
+	{
+		auto socket = cgi.acceptWebsocket();
+		Connection conn = Connection(id);
+		synchronized
+		{
+			connections~= &conn;
+			id++;
+		}
+		enum __updateMsg = 0xff;
+		auto msg = socket.recv();
+		while(msg.opcode != WebSocketOpcode.close) 
+		{
+			synchronized
+			{
+				foreach(socketMsg; conn.messages)
+					socket.send(socketMsg);
+				conn.messages.length = 0;
+			}
+			msg = socket.recv();
+		}
+
+		synchronized
+		{
+			socket.close();
+			import std.algorithm;
+			ptrdiff_t index = countUntil!((Connection* c) => c.id == conn.id)(connections);
+			if(index != -1)
+			{
+				connections = connections[0..index]~ connections[index+1..$];
+			}
+		}
+		writeln("AutoReloading WebSocket[", conn.id, "] closed.");
+	}
+	else if(cgi.pathInfo == "/") 
 	{
 		string indexHTML = buildNormalizedPath(targetPath, "index.html");
 		if(exists(indexHTML))
 		{
-			cgi.write(readText(indexHTML), true);
+			cgi.write(readText(indexHTML)~"<script> "~import("reload_server.js")~"</script>", true);
 		}
 		else
 		{
@@ -86,6 +141,9 @@ private RequestServer server;
 	History:
 	Documented Sept 26, 2020.
 +/
+
+
+
 void hipengineCgiMain(alias fun, CustomCgi = Cgi, long maxContentLength = defaultMaxContentLength)
 (string[] args, string servePath)  if(is(CustomCgi : Cgi)) 
 {
@@ -105,6 +163,7 @@ void hipengineCgiMain(alias fun, CustomCgi = Cgi, long maxContentLength = defaul
 	// then call this to let the command line args override your default
 	server.configureFromCommandLine(args);
 
+
 	// and serve the request(s).
 	server.serve!(fun, CustomCgi, maxContentLength)();
 
@@ -113,5 +172,6 @@ void hipengineCgiMain(alias fun, CustomCgi = Cgi, long maxContentLength = defaul
 void stopServer()
 {
     import core.stdc.stdlib;
+	pushWebsocketMessage("close");
     exit(0);
 }
