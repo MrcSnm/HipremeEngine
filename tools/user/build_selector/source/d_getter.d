@@ -103,6 +103,7 @@ bool installD(ref Terminal t, ref RealTimeConsoleInput input)
             t.writelnError("Install failed");
             return false;
         }
+        t.writeln("Installed.");
         auto binPath = buildNormalizedPath(getOutputPath, "bin");
         makeFileExecutable(buildNormalizedPath(binPath, "rdmd"));
         makeFileExecutable(buildNormalizedPath(binPath, "ldc2"));
