@@ -26,7 +26,7 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"arsd-official:ttf": "~>11.2.3"
+		"arsd-official:ttf": "~master"
 	},
 	"description": "HipremeEngine bind module",
 	"license": "proprietary",
