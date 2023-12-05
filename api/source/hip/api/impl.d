@@ -1,7 +1,5 @@
 module hip.api.impl;
 
-version(Have_hipreme_engine) version = DirectCall;
-
 //Console
 public import hip.api.console;
 
@@ -52,7 +50,7 @@ version(DirectCall)
     ///All other functions that are actually exported is expected to be in that module.
     // public import exportd;
 }
-else
+else version(ScriptAPI)
 {
 	public import HipFS = hip.api.filesystem.definitions;
     public import HipAssetManager = hip.api.assets.assets_binding;

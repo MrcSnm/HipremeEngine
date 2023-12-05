@@ -1,38 +1,43 @@
 module targets.appleos;
 import commons;
+import common_macos;
+import global_opts;
+
 
 ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-	environment["PATH"] = pathBeforeNewLdc;
-	t.writelnHighlighted("LDC not supported for building AppleOS yet. Use system path.");
-	t.flush;
-	loadSubmodules(t, input);
-	string phobosLib = configs["phobosLibPath"].str.getFirstExisting("libphobos2.a", "libphobos.a");
-	if(phobosLib == null) throw new Error("Could not find your phobos library");
-	string outputPhobos = buildNormalizedPath(
-		configs["hipremeEnginePath"].str, 
-		"build", "appleos", "HipremeEngine D",
-		"static"
-	);
-	std.file.mkdirRecurse(outputPhobos);
-	outputPhobos = buildNormalizedPath(outputPhobos, phobosLib.baseName);
-	t.writelnSuccess("Copying phobos to XCode ", phobosLib, "->", outputPhobos);
-	t.flush;
-	std.file.copy(phobosLib, outputPhobos);
-	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "appleos", "assets"));
-	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
+	prepareAppleOSBase(c,t,input);
 
-	environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;
+	string out_extraLinkerFlags;
+	setupPerCompiler(t, getSelectedCompiler, "x86_64", out_extraLinkerFlags);
+	cached(() => timed(() => outputTemplateForTarget(t)));
+	string codeSignCommand = getCodeSignCommand(t);
+	with(WorkingDir(getHipPath))
+	{
+		cleanAppleOSLibFolder();
 
-	t.writelnSuccess("Building your game for AppleOS");
-	t.flush;
-
-	string script = import("appleosbuild.sh");
-	t.writeln("Executing script appleosbuild.sh");
-	t.flush;
-
-	auto pid = spawnShell(script);
-	wait(pid);
-
+		if(timed(() => waitDubTarget(t, getBuildTarget, DubArguments().
+			command("build").recipe("appleos").deep(true).compiler("auto").opts(cOpts))) != 0)
+		{
+			t.writelnError("Could not build for AppleOS.");
+			return ChoiceResult.Error;
+		}
+		runEngineDScript(t, "copylinkerfiles.d", 
+			"\"--recipe="~buildPath(getBuildTarget, "dub.json")~"\"",
+			getHipPath("build", "appleos", XCodeDFolder, "libs")
+		);
+		injectLinkerFlagsOnXcode(t, input, out_extraLinkerFlags);
+		string path = getHipPath("build", "appleos");
+		string clean = appleClean ? "clean " : "";
+		with(WorkingDir(path))
+		{
+			wait(spawnShell(
+				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine macOS' " ~ clean ~ 
+				" build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
+				codeSignCommand ~
+				" && cd bin && HipremeEngine.app/Contents/MacOS/HipremeEngine")
+			);
+		}
+	}
 	return ChoiceResult.Continue;
 }

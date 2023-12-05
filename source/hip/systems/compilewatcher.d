@@ -28,7 +28,7 @@ pragma(inline, true) private bool hasExtension(string file, ref immutable(string
 
 
 //Don't wait at all
-private __gshared Duration timeout = dur!"nsecs"(-1);
+private __gshared Duration timeout = dur!"msecs"(30);//Saves a lot of CPU Time
 
 enum WatchFSDelay = 250;
 
@@ -72,7 +72,6 @@ immutable(string[]) acceptedExtensions, immutable(string[]) ignoreDirs)
         // else if (event.type == FileChangeEventType.createSelf) The folder should not be created while watching
         // else if (event.type == FileChangeEventType.removeSelf) It should not be removed while watching
 
-        Thread.sleep(dur!"msecs"(30)); //Saves a lot of CPU Time
     }
     stopwatch.stop();
     send(tid, true);

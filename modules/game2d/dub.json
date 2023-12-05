@@ -4,9 +4,24 @@
 	],
 	"targetType": "staticLibrary",
 	"dependencies": {
-		"hipengine_api": {"path": "../../api", "version": "*"},
+		"util": {"path": "../util", "version": "*"},
 		"math": {"path": "../math", "version": "*"}
 	},
+	"configurations": 
+	[
+		{
+			"name": "dynamic",
+			"dependencies": {
+				"hipengine_api": {"path": "../../api", "version": "*"}
+			}
+		},
+		{
+			"name": "direct",
+			"dependencies": {
+				"hipengine_api:direct": {"path": "../../api", "version": "*"}
+			}
+		}
+	],
 	"copyright": "Copyright © 2022, Hipreme",
 	"description": "Hipreme Engine game2d module",
 	"license": "CC-BY 4.0",

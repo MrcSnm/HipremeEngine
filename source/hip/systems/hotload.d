@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.systems.hotload;
 
 version(Load_DScript):
-import std.file : copy;
+import std.file : copy, rename;
 import hip.filesystem.hipfs;
 import hip.util.system;
 import hip.util.path;
@@ -24,7 +24,8 @@ class HotloadableDLL
 
     immutable string trueLibPath;
     void delegate (void* libPointer) onDllLoad;
-    string tempPath;
+    string tempDll;
+    string tempPdb;
     this(string path, void delegate (void* libPointer) onDllLoad)
     {
         ErrorHandler.assertExit(path != null, "DLL path should not be null:
@@ -49,51 +50,77 @@ Call `dub -c script -- path/to/project` dub -c script requires that argument.");
             logln("Does not exists ", path);
             return false;
         }
-        tempPath = getTempName(path);
-        copy(path, tempPath);
+        //Create dll_hiptempdll
+        tempDll = getTempName(path);
+        copy(path, tempDll);
+
+        // version(Windows)
+        // {{
+        //     import std.process:executeShell;
+        //     import hip.util.path;
+        //     string tempDirectory = joinPath(path.dirName, "temp");
+        //     mkdirRecurse(tempDirectory);
+            
+        //     string thePdb = path.extension("pdb");
+        //     tempPdb = getTempName(thePdb);
+        //     if(exists(thePdb))
+        //     {
+        //         copy(thePdb, joinPath(tempDirectory, thePdb.baseName));
+        //         rename(thePdb, tempPdb);
+        //     }
+
+        // }}
+
 
         loglnInfo("Loading dll ", path);
-        lib = dynamicLibraryLoad(tempPath);
+        lib = dynamicLibraryLoad(tempDll);
         if(onDllLoad && lib != null)
             onDllLoad(lib);
         else if(lib == null)
             loglnError("Could not load dll ", path);
         return lib != null;
     }
-
-    string getTempName(string path)
+    /** 
+     * 
+     * Params:
+     *   path = File path
+     * Returns: filePath.(ext)_hiptempdll
+     */
+    static string getTempName(string path)
     {
+        import hip.util.string;
         string d = dirName(path);
         string n = baseName(path);
-        string ext = extension(path);
-        return joinPath(d, n~"_hiptemp"~ext);
+        string ext = extension(n);
+        
+        int ind = lastIndexOf(n, "_hiptemp");
+        if(ind != -1)
+            return path;
+        return joinPath(d, n[0..$-(ext.length+1)]~"_hiptemp."~ext);
     }
+
     void reload()
     {
         if(lib != null)
+        {
             dynamicLibraryRelease(lib);
+            lib = null;
+        }
         load(trueLibPath);
-        if(onDllLoad)
-            onDllLoad(lib);
     }
 
     void dispose()
     {
+        import hip.error.handler;
         if(lib != null)
         {
             if(!dynamicLibraryRelease(lib))
+                return ErrorHandler.showErrorMessage("Could not unload the dll ", tempDll);
+            
+            foreach(remFile; [tempDll, tempPdb]) 
+            if(remFile && !HipFS.absoluteRemove(remFile))
             {
-                import hip.error.handler;
-                ErrorHandler.showErrorMessage("Could not unload the dll ", tempPath);
-                return;
-            }
-            if(tempPath)
-            {
-                if(!HipFS.absoluteRemove(tempPath))
-                {
-                    import hip.error.handler;
-                    ErrorHandler.showErrorMessage("Could not remove ", tempPath);
-                }
+                ErrorHandler.showErrorMessage("Could not remove ", remFile);
             }
         }
     }

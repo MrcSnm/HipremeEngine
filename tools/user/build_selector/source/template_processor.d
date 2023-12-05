@@ -1,5 +1,4 @@
 module template_processor;
-import std.algorithm;
 import std.typecons:Flag,Yes,No;
 import std.file;
 import std.json;
@@ -30,10 +29,17 @@ configurations, such as the release one, since things can get hairy quite fast i
 "$extends": "#HIPREME_ENGINE/dub.json"
 ```
 
+## Adding the engine optional modules 
+This can be done by using engineModules property. They will automatically
+use the absolute path and be added to the linkedDependencies on the current section. It is checked on
+both root and configurations.
 
+Another important feature of it is that the engine distributed modules requires a special distribution of hipengine_api.
+This distribution is hipengine_api:direct. This module optimizes the function calls to instead of using function pointers,
+it uses extern definitions, this way, it can be built as a static library.
+This way, it is checked inside the "release" configuration, for making every of them use the subConfiguration of
+"direct".
 
-Adding the engine separate modules can be done by using engineModules. They will automatically
-use the absolute path and be added to the linkedDependencies on the current section. Also checked in configurations.
 ```json
  "engineModules": [
 	"util",
@@ -80,6 +86,7 @@ private enum VariableType
 
 private VariableType getType(string keyName)
 {
+	import std.algorithm.searching : countUntil;
 	string currentSystem = "unknown";
 	version(Windows)
 		currentSystem = "windows";
@@ -91,6 +98,15 @@ private VariableType getType(string keyName)
 	else if(systems.countUntil(keyName) != -1)
 		return VariableType.otherSystem;
 	return VariableType._default;
+}
+
+bool moduleHasDirect(string moduleName)
+{
+	switch(moduleName)
+	{
+		case "game2d":return true;
+		default: return false;
+	}
 }
 
 
@@ -217,39 +233,51 @@ private string escapeWindowsSep(string thePath)
  * Saves the default type in the cache too.
  * Params:
  *   templatePath = Where the file containing the template json is.
- *   projectPath = The path where the project is contained. May be deprecated in future
+ *   projectPath = The path where the project is contained. Used for the reserved #PROJECT
  *	 enginePath = Path where the engine is located. Used for the reserved #HIPREME_ENGINE
  *   settings = Extra settings that will be processed inside the template.
+ *   extraVariables = Optional variables which are always defined.
  * Returns: THe resulting string
  */
-private string processTemplateImpl(string templatePath, string projectPath, string enginePath, const AdditionalSetting[] settings)
+private string processTemplateImpl(string templatePath, string projectPath, string enginePath, const AdditionalSetting[] settings,
+in string[string] extraVariables)
 {
 	string file = readText(templatePath);
 	JSONValue json = parseJSON(file);
 	string[string] variables = getParamsInTemplate(json);
 	string hipremeEngine = enginePath.absolutePath.escapeWindowsSep;
+	string project = projectPath.absolutePath.escapeWindowsSep;
 	if(!("params" in json))
 		json.object["params"] = emptyObject;
 	json["params"].object["HIPREME_ENGINE"] = hipremeEngine;
+	json["params"].object["PROJECT"] = project;
+	foreach(k, v; extraVariables) json["params"].object[k] = v;
+
 
 	foreach(op; settings)
 	{
+		JSONValue inherited = emptyObject;
 		if(op.name in json)
 		{
-			op.handler(json);
-			json.object.remove(op.name);
+			inherited = json;
+			op.handler(json, emptyObject);
 		}
 		if("configurations" in json)
 		{
-			foreach(cfg; json["configurations"].array) if(op.name in cfg)
+			foreach(cfg; json["configurations"].array)
 			{
-				op.handler(cfg);
+				op.handler(cfg, inherited);
 				cfg.object.remove(op.name);
 			}
 		}
+		if(op.name in json)
+		{
+			json.object.remove(op.name);
+		}
 	}
-	variables["CD"] = projectPath.absolutePath.escapeWindowsSep;
+	variables["PROJECT"] = projectPath.absolutePath.escapeWindowsSep;
 	variables["HIPREME_ENGINE"] = hipremeEngine;
+	foreach(k, v; extraVariables) variables[k] = v;
 	json.object.remove("params");
 	json.object.remove("$schema");
 	file = processFile(json.toPrettyString(JSONOptions.doNotEscapeSlashes), variables);
@@ -260,7 +288,7 @@ private string processTemplateImpl(string templatePath, string projectPath, stri
 private struct AdditionalSetting
 {
 	string name;
-	JSONValue delegate(JSONValue dubFile) handler;
+	JSONValue delegate(JSONValue dubFile, JSONValue inherited = emptyObject) handler;
 	Flag!"configAvailable" config = Yes.configAvailable;
 }
 private enum emptyObject = JSONValue(string[string].init);
@@ -287,9 +315,11 @@ JSONValue getDubFromTemplate(string templatePath, string enginePath)
  *   templatePath = path/to/folder/with/dub.template.json
  *   enginePath = The engine path which will be used for the configuration engineModules
  *   templateResult = The resulting string which can be used to cache internally or even save a file.
+ *	 additionalVariables = Additional variables that may come as an always defined. Used internally
  * Returns: The result of the operation
  */
-TemplateProcessorResult processTemplate(string templatePath, string enginePath, out string templateResult)
+TemplateProcessorResult processTemplate(string templatePath, string enginePath, out string templateResult,
+in string[string] additionalVariables = string[string].init)
 {
     string processedPath = templatePath;
     processedPath = processedPath.absolutePath;
@@ -305,9 +335,11 @@ TemplateProcessorResult processTemplate(string templatePath, string enginePath, 
 		return TemplateProcessorResult.notFound;
 	}
     AdditionalSetting[] additionals = [
-		{"$extends", (JSONValue json)
+		{"$extends", (JSONValue json, JSONValue inherited)
 		{
 			import std.exception:enforce;
+			if(!("$extends" in json))
+				return json;
 			string parentDub = json["$extends"].str;
 			string[] options = [
 				parentDub,
@@ -333,7 +365,7 @@ TemplateProcessorResult processTemplate(string templatePath, string enginePath, 
 			enforce(parentJson != JSONValue.init, "Could not find json in paths "~options.to!string);
 			foreach(key, value; parentJson.object)
 			{
-				import std.algorithm:countUntil;
+				import std.algorithm.searching : countUntil;
 				if(excludeKeys.countUntil(key) == -1)
 				{
 					if(!(key in json)) json.object[key] = parentJson[key];
@@ -368,18 +400,39 @@ TemplateProcessorResult processTemplate(string templatePath, string enginePath, 
 
 			return json;
 		}, No.configAvailable},
-		{"engineModules", (JSONValue json) 
+		{"engineModules", (JSONValue json, JSONValue inherited) 
 		{
+			if("engineModules" in json)
 			foreach(mod; json["engineModules"].array)
 			{
 				if(!("linkedDependencies" in json))
 					json.object["linkedDependencies"] = emptyObject;
 				json["linkedDependencies"].object[mod.str] = ["path": buildPath(enginePath, "modules", mod.str)];
 			}
+			if(json["name"].str == "release")
+			{
+				if(!("subConfigurations" in json))
+					json["subConfigurations"] = emptyObject;
+				
+				static void putDirectSubconfiguration(ref JSONValue input, ref JSONValue fromCfg)
+				{
+					if("engineModules" in fromCfg) 
+					foreach(mod; fromCfg["engineModules"].array) 
+					{
+						if(moduleHasDirect(mod.str))
+							input["subConfigurations"][mod.str] = "direct";
+					}
+				}
+				///Put direct from inherited
+				putDirectSubconfiguration(json, inherited);
+				putDirectSubconfiguration(json, json);
+			}
 			return json;
 		}},
-		{"linkedDependencies", (JSONValue json)
+		{"linkedDependencies", (JSONValue json, JSONValue inherited)
 		{
+			if(!("linkedDependencies" in json))
+				return json;
 			foreach(key, value; json["linkedDependencies"].object)
 			{
 				if(!("dependencies" in json))
@@ -391,28 +444,54 @@ TemplateProcessorResult processTemplate(string templatePath, string enginePath, 
 			}
 			return json;
 		}},
-		{"unnamedDependencies", (JSONValue json)
+		{"unnamedDependencies", (JSONValue json, JSONValue inherited)
 		{
-			foreach(path; json["unnamedDependencies"].array)
+			if(!("unnamedDependencies" in json))
+				return json;
+			foreach(unnamedDep; json["unnamedDependencies"].array)
 			{
-				string dubPath = buildNormalizedPath(processedPath, path.str, "dub.json");
-				if(exists(dubPath))
+				import std.stdio;
+				import std.exception:enforce;
+				string endingPath;
+				JSONValue* subConfiguration;
+				if(unnamedDep.type == JSONType.object)
+				{
+					enforce("path" in unnamedDep, "Unnamed dependencies with type object must contain a \"path\"");
+					endingPath = unnamedDep["path"].str;
+					subConfiguration = ("subConfiguration" in unnamedDep);
+					if(subConfiguration && !("subConfigurations" in json))
+						json.object["subConfigurations"] = emptyObject;
+				}
+				else
+					endingPath = unnamedDep.str;
+
+				endingPath = processString(json, endingPath);
+				import std.algorithm.searching : find;
+				
+				string[] dubPath = find!((string f) => exists(f))(
+				[
+					buildPath(processedPath, endingPath, "dub.json"),
+					buildPath(processedPath, endingPath, "dub.template.json")
+				]);
+
+				if(dubPath.length)
 				{
 					if(!("dependencies" in json))
 						json.object["dependencies"] = emptyObject;
-					JSONValue dubJson = parseJSON(readText(dubPath));
+					JSONValue dubJson = parseJSON(readText(dubPath[0]));
 					string packageName = dubJson["name"].str;
-					if(packageName in json["dependencies"])
-						throw new Error("Package "~packageName~" from path "~path.str~" is already present in the dependencies.");
-					
-
-					json["dependencies"][packageName] = ["path": path.str];
+					enforce(!(packageName in json["dependencies"]), "Package "~packageName~" from path "~endingPath~" is already present in the dependencies.");
+					json["dependencies"][packageName] = ["path": endingPath];
+					if(subConfiguration)
+						json["subConfigurations"].object[packageName] = subConfiguration.str;
 				}
+				else
+					writeln("Warning: Unnamed dependency at path ", endingPath, " not found");
 			}
 			return json;
 		}}
 	];
 
-    templateResult = processTemplateImpl(templatePath, processedPath, enginePath, additionals);
+    templateResult = processTemplateImpl(templatePath, processedPath, enginePath, additionals, additionalVariables);
     return TemplateProcessorResult.success;
 }

@@ -199,12 +199,25 @@ ChoiceResult prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 			return ChoiceResult.Error;
 		}
 	}
-    std.file.chdir(configs["gamePath"].str);
-	if(waitDub(t, "build -c script "~cOpts.getDubOptions, "") != 0)
-		return ChoiceResult.Error;
-	std.file.chdir(configs["hipremeEnginePath"].str);
 
-	waitDub(t, "-c script "~cOpts.getDubOptions ~ " -- "~configs["gamePath"].str, "", true);
+	// waitOperations([{
+		std.file.chdir(configs["gamePath"].str);
+		if(timed(() => waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts)) != 0))
+			return ChoiceResult.Error;
+			// return false;
+		// return true;
+	// },
+	// {
+		if(!c.scriptOnly)
+		{
+			std.file.chdir(getHipPath);
+			if(timed(() => waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts))) != 0)
+				return ChoiceResult.Error;
+		}
+		// return true;
+	// }]);
+	
+	wait(spawnShell((getHipPath("bin", "desktop", "hipreme_engine.exe") ~ " "~ configs["gamePath"].str)));
 
 	return ChoiceResult.Continue;
 }

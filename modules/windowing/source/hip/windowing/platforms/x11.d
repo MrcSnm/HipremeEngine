@@ -1,9 +1,7 @@
 module hip.windowing.platforms.x11;
 
 version(Android){}
-else version(Posix)
-    version = X11;
-
+else version(linux) version = X11;
 version(X11):
 
 import core.stdc.stdio;

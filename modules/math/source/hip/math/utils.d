@@ -13,12 +13,12 @@ enum PI_4 = PI/4;
 enum RAD_TO_DEG = 180/PI;
 enum DEG_TO_RAD = PI/180;
 
-enum radToDeg(float radians)
+float radToDeg(float radians)
 {
     assert(radians == radians); //float.nan check
     return radians*RAD_TO_DEG;
 }
-enum degToRad(float degrees)
+float degToRad(float degrees)
 {
     assert(degrees == degrees); //float.nan check
     return DEG_TO_RAD * degrees;

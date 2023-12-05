@@ -122,3 +122,78 @@ void safeFree(ref void[] data)
         free(data.ptr);
     data = [];
 }
+
+class Pool(T) if(is(T == class) || is(T == interface))
+{
+    private
+    {
+        T[] objects;
+        int deadCount, maxPoolSize = -1;
+        pragma(inline, true) T getFirstDead(){return objects[getActiveCount];}
+
+        struct TInterface
+        {
+            pragma(inline, true)
+            {
+                static void deinitialize(T obj){obj.deinitialize();}
+                static void initialize(T obj){obj.initialize();}
+            }
+        }
+    }
+
+    /** 
+     * 
+     * Params:
+     *   maxPoolSize = -1 means that Pool will never return null. It may still give array out of bounds if too many objects are created.
+     */
+    this(int maxPoolSize = -1)
+    {
+        this.maxPoolSize = maxPoolSize;
+    }
+    int getActiveCount() => cast(int)objects.length - deadCount;
+    
+    T get(Args...)(Args a)
+    {
+        T ret;
+        if(deadCount > 0)
+        {
+            ret = getFirstDead();
+            deadCount--;
+        }
+        else
+        {
+            if(objects.length + 1 > maxPoolSize) return null;
+            int activeCount = getActiveCount();
+            objects.length++;
+            if(deadCount)
+                objects[$-1] = objects[activeCount];
+            objects[activeCount] = ret = new T(a);
+        }
+        TInterface.initialize(ret);
+        return ret;
+    }
+
+    int opApply(scope int delegate(ref T) dg)
+    {
+        int result = 0;
+        
+        foreach (i; 0..getActiveCount)
+        {
+            result = dg(objects[i]);
+            if (result)
+                break;
+        }
+        return result;
+    }
+
+    void kill(T instance)
+    {
+        TInterface.deinitialize(instance);
+        deadCount++;
+    }
+    void clear()
+    {
+        foreach(obj; this) TInterface.deinitialize(obj);
+        deadCount = cast(int)objects.length;
+    }
+}

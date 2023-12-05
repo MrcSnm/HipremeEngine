@@ -3,6 +3,7 @@ public import hip.api.input.button;
 public import hip.api.input.keyboard;
 public import hip.api.input.mouse;
 import hip.event.dispatcher;
+import hip.event.api;
 import hip.event.handlers.keyboard;
 import hip.event.handlers.mouse;
 
@@ -112,7 +113,7 @@ class HipInputListener
         {
             import hip.api.input;
             import hip.console.log;
-            float[2] pos = getWorldTouchPosition;
+            float[2] pos = getWorldTouchPosition();
             int x = cast(int)pos[0], y = cast(int)pos[1];
             foreach(ref move; moveListeners)
             {

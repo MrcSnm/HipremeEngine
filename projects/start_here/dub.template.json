@@ -1,0 +1,52 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Pure-D/code-d/master/json-validation/dub.schema.json",
+    "description" : "Hipreme Engine test scene",
+	"license": "proprietary",
+	"targetName" : "start_here",
+	"name" : "start_here",
+	"sourcePaths"  : ["source"],
+    "engineModules": [
+        "util",
+        "math",
+		"game2d"
+    ],
+    "stringImportPaths": ["#PROJECT"],
+	"dflags-ldc": ["--disable-verify", "--oq"],
+    "preBuildCommands-posix": [
+		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+	],
+	"preBuildCommands-windows": [
+		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+	],
+	"configurations": 
+	[
+		{
+			"name" : "script",
+			"targetType": "dynamicLibrary",
+			"dflags-ldc": ["-link-defaultlib-shared=true"],
+			"linkedDependencies": {
+				"hipengine_api": {"path": "#HIPREME_ENGINE/api"}
+			},
+			"versions": ["ScriptAPI"],
+			"lflags-windows": ["/WX"]
+		},
+		{
+			"name": "release",
+			"targetType": "library",
+			"linkedDependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api"}}
+		},
+		{
+			"name": "run",
+			"targetType": "dynamicLibrary",
+			"lflags-windows": [
+				"/WX"
+			],
+			"postGenerateCommands-windows": ["cd ..\\..\\ && dub -c script -- .\\projects\\start_here"],
+			"postGenerateCommands-linux": ["cd ../../ && dub -c script -- ./projects/start_here"]
+		}
+	],
+	"versions" : [
+		"HipMathAPI",
+		"HipremeAudio"
+	]
+}

@@ -12,6 +12,7 @@ build_selector.a
 build_selector.lib
 build_selector-test-*
 Android/
+PSVita/
 D/
 buildtools/
 *.exe

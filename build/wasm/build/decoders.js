@@ -1,11 +1,6 @@
 function initializeDecoders()
 {
     const gameAssets = {};
-    function assertNotExist(key)
-    {
-        if(gameAssets[key])
-            throw new Error("HipremeEngine already loaded asset " + key);
-    }
     function substringEquals(input, start, compareWith)
     {
         if(start + compareWith.length >= input.length) return false;
@@ -28,7 +23,14 @@ function initializeDecoders()
         WasmDecodeImage(imgNameLength, imgNamePtr, ptr, length, dFunction, dgFunc, delegateCtx)
         {
             const imgName = WasmUtils.fromDString(imgNameLength, imgNamePtr);
-            assertNotExist(imgName);
+            if(imgName in gameAssets)
+            {
+                setTimeout(() =>
+                {
+                    exports.__callDFunction(dFunction, toDArguments(dgFunc, delegateCtx, gameAssets[imgName].handle));
+                }, 0);
+                return gameAssets[imgName].handle;
+            }
             const extIndex = imgName.lastIndexOf(".") + 1;
             if(extIndex == 0) throw new TypeError("Expected extension on imgName: " + imgName);
 
@@ -42,7 +44,10 @@ function initializeDecoders()
             img.src = 'data:image/'+type+";base64,"+WasmUtils.binToBase64(ptr, length);
 
             // document.body.appendChild(img); Not needed
-            gameAssets[imgName] = img;
+            gameAssets[imgName] = {
+                handle: imgHandle,
+                object: img
+            };
 
             return imgHandle;
         },

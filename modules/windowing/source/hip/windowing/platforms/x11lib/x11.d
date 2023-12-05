@@ -1,7 +1,7 @@
 module hip.windowing.platforms.x11lib.x11;
 
 version(Android){}
-else version(Posix)
+else version(linux)
     version = X11;
 version(X11):
 
@@ -161,21 +161,21 @@ enum BadName		   = 15;	/* font or color name doesn't exist */
 enum BadLength	       = 16;	/* Request length incorrect */
 enum BadImplementation = 17;	/* server is defective */
 
-enum ScreenOfDisplay(Display* dpy, int scr){return &(cast(_XPrivDisplay)(dpy)).screens[scr];}
-enum DefaultScreenOfDisplay(Display* dpy){return ScreenOfDisplay(dpy,DefaultScreen(dpy));}
-enum DisplayOfScreen(Screen* s){return s.display;}
+auto ScreenOfDisplay(Display* dpy, int scr){return &(cast(_XPrivDisplay)(dpy)).screens[scr];}
+auto DefaultScreenOfDisplay(Display* dpy){return ScreenOfDisplay(dpy,DefaultScreen(dpy));}
+auto DisplayOfScreen(Screen* s){return s.display;}
 
-enum BlackPixel(Display* dpy, int  scr)
+auto BlackPixel(Display* dpy, int  scr)
 {
     return ScreenOfDisplay(dpy,scr).black_pixel;
 }
-enum WhitePixel(Display* dpy, int scr)
+auto WhitePixel(Display* dpy, int scr)
 {
     return ScreenOfDisplay(dpy,scr).white_pixel;
 }
-enum DefaultScreen(Display* dpy){return (cast(_XPrivDisplay)dpy).default_screen;}
-enum RootWindow(Display* dpy, int scr){return ScreenOfDisplay(dpy,scr).root;}
-enum RootWindowOfScreen(Screen* s){return s.root;}
+auto DefaultScreen(Display* dpy){return (cast(_XPrivDisplay)dpy).default_screen;}
+auto RootWindow(Display* dpy, int scr){return ScreenOfDisplay(dpy,scr).root;}
+auto RootWindowOfScreen(Screen* s){return s.root;}
 
 
 struct XSetWindowAttributes 

@@ -1,14 +1,13 @@
 module hip.api.graphics.g2d.g2d_binding;
 public import hip.api.data.commons;
 public import hip.api.renderer.operations;
-import hip.api.graphics.g2d.animation;
-import hip.api.graphics.color;
-import hip.api.renderer.viewport;
-import hip.api.data.font;
-import hip.api.data.tilemap;
-import hip.api.graphics.text;
+public import hip.api.graphics.color;
+public import hip.api.graphics.g2d.animation;
+public import hip.api.renderer.viewport;
+public import hip.api.data.font;
+public import hip.api.data.tilemap;
+public import hip.api.graphics.text;
 
-version(Have_hipreme_engine) version = DirectCall;
 version(Have_util) version = ImportSpritesheet;
 
 version(ImportSpritesheet)
@@ -21,7 +20,7 @@ version(DirectCall)
 {
     public import hip.graphics.g2d.renderer2d;
 }
-else
+else version(ScriptAPI)
 {
     void initG2D()
     {

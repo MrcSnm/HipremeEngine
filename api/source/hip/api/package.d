@@ -19,7 +19,7 @@ module hip.api;
 *	build, the can return the entire class.
 *	3: The User API will contain classes named as the same as those defined at the HipremeEngine, so
 *	the user will actually use some aliass.
-*	4: When building for release (version(Have_hipreme_engine)), api should publicly import the actual
+*	4: When building for release (version(DirectCall)), api should publicly import the actual
 *	class definition.
 *	5: For maintaining consistency, this package may declare some public imports that should be delegated
 *	to the actual API when that API is an aliased import.
@@ -33,8 +33,7 @@ enum HipAssetLoadStrategy
 	loadAll
 }
 
-version(Have_hipreme_engine){}
-else version = UseExternalScene;
+version(ScriptAPI) version = UseExternalScene;
 
 ///Most important functions here
 version(UseExternalScene)
@@ -47,6 +46,7 @@ version(UseExternalScene)
 mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = HipAssetLoadStrategy.loadAll)
 {
 	immutable string ScriptModules = import("scriptmodules.txt");
+	pragma(msg, ScriptModules);
 	version(UseExternalScene)
 	{
 		__gshared AScene _exportedScene;
@@ -92,7 +92,7 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 	}
 	else
 	{
-		AScene HipremeEngineMainScene()
+		export AScene HipremeEngineMainScene()
 		{
 			mixin LoadAllAssets!(ScriptModules);
 			loadReferenced();

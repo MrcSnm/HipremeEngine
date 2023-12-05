@@ -10,7 +10,7 @@
 	"configurations": [
 		{
 			"dependencies": {
-				"arsd-official:image_files": "~>10.9.6"
+				"arsd-official:image_files": "~>11.2.3"
 			},
 			"name": "arsd",
 			"targetType": "library",

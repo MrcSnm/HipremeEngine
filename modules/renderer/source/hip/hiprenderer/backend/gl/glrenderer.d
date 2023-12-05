@@ -284,7 +284,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     */
     public void end()
     {
-        version(UseGLES)
+        static if(UseGLES)
         {
             version(PSVita)
             {

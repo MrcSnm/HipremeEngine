@@ -1,7 +1,6 @@
 module targets.android;
 import commons;
 import std.net.curl;
-import arsd.terminal;
 import std.path;
 
 ///This is the one which will be installed when using the SDK.
@@ -48,13 +47,14 @@ private FindAndroidNdkResult tryFindAndroidNDK(ref Terminal t, ref RealTimeConso
 		}
 		string sdkPath = buildNormalizedPath(locAppData, "Android", "Sdk");
 		string tempNdkPath = sdkPath;
-		if(!std.file.exists(tempNdkPath))
+
+		if(!std.file.exists(sdkPath))
 		{
-			t.writelnError("Could not find ", tempNdkPath, ". You need to install Android SDK.");
+			t.writelnError("Could not find ", sdkPath, ". You need to install Android SDK.");
 			t.flush;
 			return FindAndroidNdkResult.MustInstallSdk;
 		}
-		tempNdkPath = buildNormalizedPath(tempNdkPath, "ndk");
+		tempNdkPath = buildNormalizedPath(sdkPath, "ndk");
 		if(!std.file.exists(tempNdkPath))
 		{
 			t.writelnError("Could not find ", tempNdkPath, ". You need to have at least one NDK installed.");
@@ -162,8 +162,7 @@ private bool downloadOpenJDK(ref Terminal t, ref RealTimeConsoleInput input)
 	downloadFileIfNotExists("OpenJDK for building to Android. ", getOpenJDKDownloadLink(), javaContainer, t, input);
 
 	string outputPath = buildNormalizedPath(std.file.getcwd(), "Android", "openjdk_11");
-	version(Windows) return extractZipToFolder(javaContainer, outputPath, t);
-	else version(Posix) return extractTarGzToFolder(javaContainer, outputPath, t);
+	return extractToFolder(javaContainer, outputPath, t, input);
 }
 
 private bool downloadAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, out string sdkPath)
@@ -384,7 +383,8 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	environment["ANDROID_HOME"] = configs["androidSdkPath"].str;
 
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
-	putResourcesIn(t, buildNormalizedPath(configs["hipremeEnginePath"].str, "build", "android", "project", "app", "src", "main", "assets"));
+	putResourcesIn(t, getHipPath("build", "android", "project", "app", "src", "main", "assets"));
+	cached(() => timed(() => outputTemplateForTarget(t)));
 
 	string ldcLibsPath = buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "android", "lib");
 
@@ -399,7 +399,7 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	t.flush;
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
-	if(waitDub(t, "build --parallel -c android --compiler=ldc2 -a aarch64--linux-android "~cOpts.getDubOptions) != 0)
+	if(waitDubTarget(t, "android", DubArguments().command("build").arch("aarch64--linux-android").opts(cOpts)) != 0)
 	{
 		t.writelnError("Compilation failed.");
 		return ChoiceResult.Error;

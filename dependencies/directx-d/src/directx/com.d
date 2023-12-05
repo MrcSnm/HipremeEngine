@@ -3,8 +3,27 @@ module directx.com;
 version(Windows):
 
 public import directx.win32;
-public import core.sys.windows.com;
+public import core.sys.windows.basetyps;
 
+//Copy paste from core.sys.windows.unknwn for less dependencies.
+extern (Windows) {
+    nothrow:
+    void* MIDL_user_allocate(size_t);
+    void MIDL_user_free(void*);
+        interface IUnknown {
+        HRESULT QueryInterface(IID* riid, void** pvObject);
+        ULONG AddRef();
+        ULONG Release();
+    }
+
+    alias IUnknown LPUNKNOWN;
+
+    interface IClassFactory : IUnknown {
+        HRESULT CreateInstance(IUnknown UnkOuter, IID* riid, void** pvObject);
+        HRESULT LockServer(BOOL fLock);
+    }
+    alias IClassFactory LPCLASSFACTORY;
+}
 alias const(GUID)* REFGUID, REFIID, REFCLSID, REFFMTID;
 
 mixin( uuid!(IUnknown, "00000000-0000-0000-C000-000000000046"));

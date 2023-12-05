@@ -1,18 +1,21 @@
-import arsd.terminal;
+import std.datetime.stopwatch;
 import std.getopt;
 import std.conv:to;
 import commons;
 import d_getter;
+import global_opts;
 import game_selector;
 import engine_getter;
 import targets.windows;
 import targets.android;
 import targets.appleos;
+import targets.ios;
 import targets.linux;
 import targets.wasm;
+import targets.psvita;
 
 
-bool isChoiceValid(string selected)
+bool isChoiceAutoSelectable(string selected)
 {
 	switch(selected)
 	{
@@ -25,7 +28,7 @@ bool isChoiceValid(string selected)
 	}
 }
 
-Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices)
+Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices)
 {
 	string currentGame = "Current Game: ";
 	if("gamePath" in configs)
@@ -35,22 +38,23 @@ Choice selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choic
 	if("selectedChoice" in configs)
 		selectedChoice = configs["selectedChoice"].integer;
 
-	if(autoSelect && autoSelect.isChoiceValid)
+	if(autoSelect && autoSelect.isChoiceAutoSelectable)
 	{
-		import std.algorithm;
+		import std.algorithm.searching:countUntil;
 		selectedChoice = countUntil!"a.name == b"(choices, autoSelect);
 	}
 	else
 	{
 		selectedChoice = selectChoiceBase(
-			terminal, input, choices, "Select a target platform to build.\n\t"~currentGame, 
+			terminal, input, choices, "Select a target platform to build.\n\t"~currentGame~
+			(serverStarted ? "\n\tWebAssembly server running at localhost:9000" : ""), 
 			selectedChoice);
 	}
 
 
 	configs["selectedChoice"] = cast(long)selectedChoice;
 	updateConfigFile();
-	return choices[selectedChoice];
+	return &choices[selectedChoice];
 }
 
 
@@ -137,7 +141,7 @@ ChoiceResult createProject(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 {
 	string currDir = std.file.getcwd();
 	std.file.chdir(buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "user", "hiper"));
-	waitDub(t, " -- --engine="~configs["hipremeEnginePath"].str);
+	waitDub(t, DubArguments().runArgs("--engine="~configs["hipremeEnginePath"].str));
 	std.file.chdir(currDir);
 	configs["selectedChoice"] = 0;
 	updateConfigFile();
@@ -146,14 +150,29 @@ ChoiceResult createProject(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 
 ChoiceResult releaseGame(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-	import template_processor;
-	import std.file;
-	string out_templ;
-	string mainPath = buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets", "wasm");
-	processTemplate(mainPath, configs["hipremeEnginePath"].str, out_templ);
-	std.file.write(buildPath(mainPath, "dub.json"), out_templ);
+	import std.net.curl;
+	outputTemplate(t, buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets", "uwp"));
+	downloadFileIfNotExists("Visual C Redist.", "https://aka.ms/vs/17/release/vc_redist.x64.exe", "target.exe", t, input);
+	std.file.remove("target.exe");
 
 	return ChoiceResult.Continue;
+}
+
+ChoiceResult changeCompiler(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+{
+	if(("selectedCompiler" in configs) is null)
+		configs["selectedCompiler"] = 0;
+	configs["selectedCompiler"] = (configs["selectedCompiler"].get!int + 1) % compilers.length;
+	c.name = c.updateChoice();
+	updateConfigFile();
+	return ChoiceResult.Back;
+}
+
+string updateSelectedCompiler()
+{
+	if(!("selectedCompiler" in configs))
+		configs["selectedCompiler"] = 0, updateConfigFile();
+	return "Selected Compiler: "~compilers[configs["selectedCompiler"].get!uint];
 }
 
 ChoiceResult exitFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
@@ -165,21 +184,28 @@ ChoiceResult exitFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, i
 
 CompilationOptions cOpts;
 
-bool addEnv;
+bool scriptOnly;
 string autoSelect;
 
 void main(string[] args)
 {
-	auto terminal = Terminal(ConsoleOutputType.linear);
-	auto input = RealTimeConsoleInput(&terminal, ConsoleInputFlags.raw);
+	Terminal terminal;
+	RealTimeConsoleInput input;
+	try
+	{
+		terminal = Terminal(new arsd.terminal.Terminal(ConsoleOutputType.linear));
+		input = RealTimeConsoleInput(new arsd.terminal.RealTimeConsoleInput(terminal.arsdTerminal, ConsoleInputFlags.raw));
+	}
+	catch(Exception e)
+	{
+		terminal = Terminal.init;
+		input = RealTimeConsoleInput.init;
+		terminal.writeln("This terminal will only be able to output... No interaction will be available");
+	}
 	terminal.clear();
 	if(!("PATH" in environment))
 		environment["PATH"] = "";
 	pathBeforeNewLdc = environment["PATH"];
-	if(std.file.exists(ConfigFile))
-		configs = parseJSON(std.file.readText(ConfigFile));
-	else
-		configs = parseJSON("{}");
 
 
 	if(!setupD(terminal, input))
@@ -200,14 +226,20 @@ void main(string[] args)
 		terminal.writelnError("ConfigFile is corrupted. Requesting reconfiguration.");
 		terminal.flush;
 		promptForConfigCreation(terminal);
-		configs = parseJSON(std.file.readText(ConfigFile));
 	}
+	engineConfig["builderPath"] = args[0];
+	updateEngineFile();
 
 	if(args.length > 1)
 	{
 		auto opts = getopt(args, 
 			"force", "Force for a recompilation", &cOpts.force,
-			"autoSelect", "Execute a compilation option without needing to select", &autoSelect
+			"skipRegistry", "Skips dub registry with --skip-registry=all", &cOpts.skipRegistry,
+			"dubVerbose", "Builds with --verbose in dub", &cOpts.dubVerbose,
+			"scriptOnly", "Only the script will be built, internally used for rebuilding", &scriptOnly,
+			"appleClean", "Used to clean appleos/ios build. Useful for when your build is failing", &appleClean,
+			"autoSelect", "Execute a compilation option without needing to select", &autoSelect,
+			"tempBuild", "Executes dub with --temp-build", &cOpts.tempBuild
 		);
 		if(opts.helpWanted)
 		{
@@ -215,30 +247,63 @@ void main(string[] args)
 			return;
 		}
 	}
+	if(!("DUB" in environment))
+		environment["DUB"] = getDubPath();
 	Choice[] choices;
-	version(Windows) choices~= Choice("Windows", &prepareWindows);
-	version(OSX) choices~= Choice("AppleOS", &prepareAppleOS);
-	version(linux) choices~= Choice("Linux", &prepareLinux);
+	version(Windows) choices~= Choice("Windows", &prepareWindows, false, null, scriptOnly);
+	version(OSX) 
+	{
+		choices~= Choice("AppleOS", &prepareAppleOS, false, null, scriptOnly);
+		choices~= Choice("iOS", &prepareiOS, false, null, scriptOnly);
+	}
+	version(linux) choices~= Choice("Linux", &prepareLinux, false, null, scriptOnly);
 
 	choices~=[
-		// Choice("PSVita"),
 		// Choice("Xbox Series"),
-		Choice("Android", &prepareAndroid),
-		// Choice("Linux"),
-		Choice("WebAssembly", &prepareWASM),
+		Choice("Android", &prepareAndroid, true),
+		Choice("WebAssembly", &prepareWASM, true),
+		Choice("PSVita", &preparePSVita, true),
 		Choice("Create Project", &createProject),
 		Choice("Select Game", &selectGameFolder),
 		Choice("Release Game", &releaseGame),
+		Choice("Selected Compiler: ", &changeCompiler, false, &updateSelectedCompiler),
 		Choice("Exit", &exitFn)
 	];
 
+	bool usesDflags = "DFLAGS" in environment;
+	string preDflags = usesDflags ? environment["DFLAGS"] : null;
+	StopWatch sw = StopWatch(AutoStart.yes);
 	while(true)
 	{
-		Choice selection = selectChoice(terminal, input, choices);
-		ChoiceResult res = selection.onSelected(&selection, terminal, input, cOpts);
-		if(res == ChoiceResult.Continue)
-			break;
-	}
-	
+		Choice* selection = selectChoice(terminal, input, choices);
+		if(selection.shouldTime)
+			sw.reset();
+		
 
+		ChoiceResult res = selection.onSelected(selection, terminal, input, cOpts);
+
+		if(usesDflags) environment["DFLAGS"] = preDflags;
+		else environment.remove("DFLAGS");
+
+		if(selection.shouldTime)
+		{
+			import std.conv:to;
+			terminal.writelnSuccess("Completed ", selection.name," in ", sw.peek.total!"msecs".to!string, " ms");
+		}
+		if(selection.name.isChoiceAutoSelectable)
+		{
+			engineConfig["buildCmd"] = args[0]~" --autoSelect="~selection.name~" --scriptOnly";
+			updateEngineFile();
+		}
+		if(res != ChoiceResult.Continue)
+		{
+			if(selection.onSelected != &changeCompiler && !autoSelect)
+			{
+				terminal.writeln("Press Enter to continue");
+				while(input.getch != '\n'){}
+			}
+		}
+		else break;
+	}
+	exitServer();
 }

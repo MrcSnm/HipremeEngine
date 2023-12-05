@@ -30,22 +30,14 @@ void toStringRange(Sink, Enum)(ref Sink sink, Enum enumMember) if(is(Enum == enu
 }
 
 void toStringRange(Sink)(ref Sink sink, float f)
+if(isOutputRange!(Sink, char))
 {
     if(f != f) //nan
-    {
-        put(sink, "nan");
-        return;
-    }
+        return put(sink, "nan");
     else if(f == -float.infinity)
-    {
-        put(sink, "-inf");
-        return;
-    }
+        return put(sink, "-inf");
     if(f == float.infinity)
-    {
-        put(sink, "inf");
-        return;
-    }
+        return put(sink, "inf");
     if(f < 0)
     {
         f = -f;
@@ -57,13 +49,14 @@ void toStringRange(Sink)(ref Sink sink, float f)
     if(decimal == 0)
         return;
     put(sink, '.');
-    while(cast(int)decimal != decimal)
+    long multiplier = 10;
+    while(cast(long)(decimal*multiplier) < (decimal*multiplier))
     {
-        decimal*=10;
-        if(cast(int)decimal == 0)
+        if(cast(long)(decimal*multiplier) == 0)
             put(sink, '0');
+        multiplier*=10;
     }
-    toStringRange(sink, cast(int)decimal);
+    toStringRange(sink, (cast(long)(decimal*multiplier)));
 }
 
 
@@ -183,7 +176,7 @@ void toStringRange(Sink)(auto ref Sink sink, bool b) if(isOutputRange!(Sink, cha
     put(sink, b ? "true" :"false");
 }
 
-void toStringRange(Sink)(ref Sink sink, long x) 
+void toStringRange(Sink)(auto ref Sink sink, long x) 
 if(isOutputRange!(Sink, char))
 {
     enum numbers = "0123456789";

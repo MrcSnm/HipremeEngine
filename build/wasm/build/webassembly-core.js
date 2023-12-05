@@ -270,7 +270,8 @@ const WasmUtils = {
 	},
 	_objects: [],
     addObject(val){return 0;}, //Overridden in hidden context
-    removeObject(val){return 0;}
+    removeObject(val){return 0;}, //Overridden in hidden context
+	cleanup(){} //Overridden in hidden context
 };
 
 (function()
@@ -290,6 +291,13 @@ const WasmUtils = {
         _freelist.push(val);
         delete _objects[val];
     };
+
+
+	WasmUtils.cleanup = function()
+	{
+		_freelist.length = 0;
+		WasmUtils._objects = [];
+	}
 }());
 
 

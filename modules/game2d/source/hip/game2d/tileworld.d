@@ -94,7 +94,7 @@ class TileWorld
 
     void update2(float dt) @nogc
     {
-        import std.algorithm:sort;
+        import std.algorithm.sorting:sort;
         struct DynamicRectCollision
         {
             Vector2 normal;
@@ -127,7 +127,7 @@ class TileWorld
 
     void update(float dt) @nogc
     {
-        import std.algorithm:sort;
+        import std.algorithm.sorting:sort;
         struct DynamicRectCollision
         {
             Vector2 normal;

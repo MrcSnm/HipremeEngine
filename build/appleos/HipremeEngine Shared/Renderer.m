@@ -27,6 +27,7 @@
         lastTimeStamp = 0;
         [self _loadMetalWithView:view];
         CGSize sz = view.frame.size;
+        HipremeInit();
         HipremeMain((int)sz.width, (int)sz.height);
     }
 
