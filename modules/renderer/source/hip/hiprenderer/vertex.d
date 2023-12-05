@@ -270,7 +270,7 @@ class HipVertexArrayObject
     *
     *   If you wish to only update its data, call updateVertices instead.
     */
-    void setVertices(uint count, const void* data)
+    void setVertices(const void[] data)
     {
         if(VBO is null)
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
@@ -278,7 +278,7 @@ class HipVertexArrayObject
         {
             hasVertexInitialized = true;
             this.bind(); 
-            this.VBO.setData(data[0..count*this.stride]);
+            this.VBO.setData(data);
         }
     }
     /** 
@@ -288,13 +288,13 @@ class HipVertexArrayObject
      *   data = The data containing a type which is conforming to the VAO.
      *   offset = The offset is always multiplied by this vertex array object stride.
      */
-    void updateVertices(index_t count, const void* data, int offset = 0)
+    void updateVertices(const void[] data, int offset = 0)
     {
         if(VBO is null)
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
         ErrorHandler.assertExit(hasVertexInitialized, "Vertex must setData before updating its contents.");
         this.bind();
-        this.VBO.updateData(offset*this.stride, data[0..count*this.stride]);
+        this.VBO.updateData(offset*this.stride, data);
     }
     /**
     *   Will set the indices data. Beware that this function may allocate memory.
@@ -302,7 +302,7 @@ class HipVertexArrayObject
     *   If you need to only change its data value instead of allocating memory for a greater index buffer
     *   call updateIndices
     */
-    void setIndices(index_t count, const index_t* data)
+    void setIndices(const index_t[] data)
     {
         if(EBO is null)
             ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");
@@ -310,13 +310,13 @@ class HipVertexArrayObject
         {
             hasIndexInitialized = true;
             this.bind();
-            this.EBO.setData(data[0..count]);
+            this.EBO.setData(data);
         }
     }
     /**
     *   Updates the index buffer's data. It won't allocate memory
     */
-    void updateIndices(index_t count, index_t* data, int offset = 0)
+    void updateIndices(const index_t[] data, int offset = 0)
     {
         if(EBO is null)
             ErrorHandler.showErrorMessage("Null IndexBuffer", "No index buffer was created before setting its indices");
@@ -324,7 +324,7 @@ class HipVertexArrayObject
         {
             ErrorHandler.assertExit(hasIndexInitialized, "Index must setData before updating its contents.");
             this.bind();
-            this.EBO.updateData(cast(int)(offset*index_t.sizeof), data[0..count]);
+            this.EBO.updateData(cast(int)(offset*index_t.sizeof), data);
         }
     }
 
