@@ -12,6 +12,7 @@ import hip.hiprenderer.backend.metal.mtltexture;
 
 
 
+
 MTLCompareFunction fromHipDepthTestingFunction(HipDepthTestingFunction fn)
 {
     final switch(fn) with(HipDepthTestingFunction)
@@ -25,6 +26,17 @@ MTLCompareFunction fromHipDepthTestingFunction(HipDepthTestingFunction fn)
         case Greater: return MTLCompareFunction.Greater;
         case GreaterEqual: return MTLCompareFunction.GreaterEqual;
     }
+}
+
+package MTLCommandBuffer defaultCommandBuffer(MTLCommandQueue cQueue)
+{
+    static MTLCommandBufferDescriptor desc;
+    if(desc is null)
+    {
+        desc = MTLCommandBufferDescriptor.alloc.initialize;
+        desc.errorOptions = MTLCommandBufferErrorOption.EncoderExecutionStatus;
+    }
+    return cQueue.commandBuffer(desc);
 }
 
 private string getGPUFamily(MTLDevice device)
@@ -113,7 +125,7 @@ class HipMTLRenderer : IHipRendererImpl
         MTLDevice d = cQueue.device;
         MTLBuffer temp = d.newBuffer(data, size, MTLResourceOptions.StorageModeShared);
         MTLBuffer ret = d.newBuffer(size, MTLResourceOptions.StorageModePrivate);
-        MTLCommandBuffer _cmdBuffer = cQueue.commandBuffer;
+        MTLCommandBuffer _cmdBuffer = cQueue.defaultCommandBuffer();
         MTLBlitCommandEncoder _cmdEncoder = _cmdBuffer.blitCommandEncoder;
 
         _cmdEncoder.copyFromBuffer(temp, 0, ret, 0, size);
@@ -249,7 +261,7 @@ class HipMTLRenderer : IHipRendererImpl
 
     public void begin()
     {
-        cmdBuffer = cmdQueue.commandBuffer;
+        cmdBuffer = cmdQueue.defaultCommandBuffer();
         cmdBuffer.label = "HipremeRenderer".ns;
         cmdEncoder = cmdBuffer.renderCommandEncoderWithDescriptor(view.currentRenderPassDescriptor);
         renderPassDescriptor = view.currentRenderPassDescriptor;

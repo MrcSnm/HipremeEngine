@@ -165,7 +165,7 @@ class HipMTLTexture : IHipTexture
         const ubyte[] data = img.getPixels;
         ubyte[] squareData; 
 
-        MTLCommandBuffer b = cmdQueue.commandBuffer();
+        MTLCommandBuffer b = cmdQueue.defaultCommandBuffer();
         MTLBlitCommandEncoder blit = b.blitCommandEncoder();
         MTLBuffer imageBuffer;
         NSUInteger bytesPerRow;

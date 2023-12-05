@@ -53,7 +53,7 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
         if(options == MTLResourceOptions.StorageModePrivate)
         {
             MTLBuffer temp = device.newBuffer(data, count*index_t.sizeof, MTLResourceOptions.StorageModeShared);
-            MTLCommandBuffer cmdBuffer = cmdQueue.commandBuffer;
+            MTLCommandBuffer cmdBuffer = cmdQueue.defaultCommandBuffer();
             MTLBlitCommandEncoder cmdEncoder = cmdBuffer.blitCommandEncoder;
             cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, count*index_t.sizeof);
             cmdEncoder.endEncoding();
@@ -104,7 +104,7 @@ class HipMTLVertexBuffer : IHipVertexBufferImpl
         if(options == MTLResourceOptions.StorageModePrivate)
         {
             MTLBuffer temp = device.newBuffer(data, size, MTLResourceOptions.StorageModeShared);
-            MTLCommandBuffer cmdBuffer = cmdQueue.commandBuffer;
+            MTLCommandBuffer cmdBuffer = cmdQueue.defaultCommandBuffer();
             MTLBlitCommandEncoder cmdEncoder = cmdBuffer.blitCommandEncoder;
             cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, size);
             cmdEncoder.endEncoding();
