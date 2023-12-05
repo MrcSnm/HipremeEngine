@@ -75,7 +75,7 @@ class Mesh
             return;
         }
         this.indices = indices;
-        this.vao.setIndices(cast(index_t)indices.length, indices.ptr);
+        this.vao.setIndices(indices);
     }
 
     /**
@@ -86,32 +86,27 @@ class Mesh
         setVertices(cast(void[])vertices);
     }
 
-    public void setVertices(void[] vertices)
+    public void setVertices(const void[] vertices)
     {
         if(vertices.length <= this.vertices.length)
         {
             updateVertices(vertices);
             return;
         }
-        this.vertices = vertices;
-        this.vao.setVertices(cast(uint)vertices.length/this.vao.stride, vertices.ptr);
+        this.vertices = cast(void[])vertices;
+        this.vao.setVertices(vertices);
     }
     /**
     *   Updates the GPU internal buffer by using the buffer sent.
     *   The offset is always multiplied by the target vertex buffer stride.
     */
-    public void updateVertices(void[] vertices, int offset = 0)
+    public void updateVertices(const void[] vertices, int offset = 0)
     {
-        this.vao.updateVertices(cast(index_t)(vertices.length/this.vao.stride), vertices.ptr, offset);
+        this.vao.updateVertices(vertices, offset);
     }
-    public void updateVertices(float[] vertices, int offset = 0)
+    public void updateIndices(const index_t[] indices, int offset = 0)
     {
-        updateVertices(cast(void[])vertices, offset);
-    }
-
-    public void updateIndices(index_t[] indices, int offset = 0)
-    {
-        this.vao.updateIndices(cast(index_t)indices.length, indices.ptr, offset);
+        this.vao.updateIndices(indices, offset);
     }
     public void setShader(Shader s){this.shader = s;}
 
