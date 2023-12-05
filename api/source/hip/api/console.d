@@ -3,14 +3,13 @@ module hip.api.console;
 version(PSVita) version = ErrorOnLoadSymbol;
 version(WebAssembly) version = ErrorOnLoadSymbol;
 
-version(Have_hipreme_engine) version = DirectCall;
 version(DirectCall)
 {
 	import hip.console.log:logln, rawlog;
     alias log = rawlog;
 	alias logg = logln;
 }
-else
+else version(ScriptAPI)
 {
 	alias logFn = extern(System) void function(string);
     __gshared logFn log = null;
@@ -54,6 +53,6 @@ void logVars(Args...)(string file = __FILE__, size_t line = __LINE__)
 		import hip.console.log:rawlog;
 		rawlog(toPrint ~ "\n\t at "~file~":"~to!string(line));
 	}
-	else
+	else version(ScriptAPI)
 		log(toPrint ~ "\n\t at "~file~":"~to!string(line));
 }

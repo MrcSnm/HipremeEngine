@@ -8,16 +8,32 @@ CC := arm-vita-eabi-gcc
 CXX := arm-vita-eabi-g++
 # D Compiler
 DC := ldc2
-DFLAGS := -betterC -gcc="/usr/local/vitasdk/bin/arm-vita-eabi-gcc.exe" -mtriple=armv7a-unknown-unknown --float-abi=hard -mcpu=cortex-a9
 STRIP := arm-vita-eabi-strip
+VITA_ELF_CREATE := vita-elf-create
+VITA_PACK_VPK := vita-pack-vpk
+VITA_MAKE_FSELF := vita-make-fself
+VITA_MKSFOEX := vita-mksfoex
+
+# Check for WSL
+ifeq ($(shell test -e /proc/sys/fs/binfmt_misc/WSLInterop && echo -n yes), yes)
+	CC := arm-vita-eabi-gcc.exe
+	CXX := arm-vita-eabi-g++.exe
+	DC := ldc2.exe
+	STRIP := arm-vita-eabi-strip.exe
+	VITA_ELF_CREATE := vita-elf-create.exe
+	VITA_MKSFOEX := vita-mksfoex.exe
+	VITA_PACK_VPK := vita-pack-vpk.exe
+	VITA_MAKE_FSELF := vita-make-fself.exe
+endif
+
+DFLAGS := -betterC -gcc="/usr/local/vitasdk/bin/$(CC)" -mtriple=armv7a-unknown-unknown --float-abi=hard -mcpu=cortex-a9
 
 PROJECT_TITLE := Hello World
 PROJECT_TITLEID := VSDK00007
 
 PROJECT := vita_sample
-CFLAGS += -Wl,-q -I/usr/local/samples/common -Iinclude
-CXXFLAGS += -Wl,-q -std=c++11 -I/usr/local/samples/common
-
+CFLAGS += -Wl,-q -Iinclude -Isrc_extra
+CXXFLAGS += -Wl,-q -std=c++11 
 SRC_C :=$(call rwildcard, src/, *.c)
 SRC_CPP :=$(call rwildcard, src/, *.cpp)
 SRC_D := $(call rwildcard, src/, *.d)
@@ -32,6 +48,9 @@ LIBS += -laudio_decoding -laudio-formats -lBindBC_OpenAL -lbind
 LIBS += -ldata -lgles -limage -lerror -lconsole -lconfig -ldebugging -lgamut 
 LIBS += -lintel-intrinsics -lmath -lwindowing -lruntime -ltween -ltimer -lhipengine_api -lutil
 
+# In future try to use the libIncludes.
+# LIBS += $(shell cat libIncludes.txt)
+
 # Needed by psvDebugScreenPrintf
 # Third party
 LIBS += -lopenal -lpthread -llibGLESv2_stub -lSceDisplay_stub -lSceTouch_stub -lSceCtrl_stub -lSceAudio_stub -lSceAudioIn_stub -llibIMGEGL_stub -llibgpu_es4_ext_stub
@@ -41,7 +60,7 @@ all: package
 package: $(PROJECT).vpk
 
 $(PROJECT).vpk: eboot.bin param.sfo
-	vita-pack-vpk -s param.sfo -b eboot.bin \
+	$(VITA_PACK_VPK) -s param.sfo -b eboot.bin \
 		--add module/libIMGEGL.suprx=module/libIMGEGL.suprx \
 		--add module/libpvr2d.suprx=module/libpvr2d.suprx \
 		--add module/libGLESv2.suprx=module/libGLESv2.suprx \
@@ -55,23 +74,23 @@ $(PROJECT).vpk: eboot.bin param.sfo
 	$(PROJECT).vpk
 
 eboot.bin: $(PROJECT).velf
-	vita-make-fself $(PROJECT).velf eboot.bin
+	$(VITA_MAKE_FSELF) $(PROJECT).velf eboot.bin
 
 param.sfo:
-	vita-mksfoex -s TITLE_ID="$(PROJECT_TITLEID)" "$(PROJECT_TITLE)" param.sfo
+	$(VITA_MKSFOEX) -s TITLE_ID="$(PROJECT_TITLEID)" "$(PROJECT_TITLE)" param.sfo
 
 $(PROJECT).velf: $(PROJECT).elf
 	$(STRIP) -g $<
-	vita-elf-create $< $@
+	$(VITA_ELF_CREATE) $< $@
 
 $(PROJECT).elf: $(OBJS)
 	$(CXX) $(CXXFLAGS) $^  -L/usr/local/vitasdk/arm-vita-eabi/lib/ -L. -Llibs -Lthirdparty $(LIBS) -o $@
 
 out/%.o : src/%.cpp | $(OBJ_DIRS)
-	arm-vita-eabi-g++ -c $(CXXFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) -o $@ $<
 
 out/%.o : src/%.c | $(OBJ_DIRS)
-	arm-vita-eabi-gcc -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 out/%.o : src/%.d | $(OBJ_DIRS)
 	$(DC) -c $(DFLAGS) --od=out/ $<

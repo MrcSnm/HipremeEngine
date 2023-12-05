@@ -4,7 +4,7 @@ import hip.api.graphics.g2d.renderer2d;
 import HRandom = hip.math.random:Random;
 import hip.api;
 
-enum SPRITES_COUNT = 10000;
+enum SPRITES_COUNT = 100;
 enum MIN_SPEED = 50;
 enum MAX_SPEED = 150;
 enum SCREEN_W = 800;

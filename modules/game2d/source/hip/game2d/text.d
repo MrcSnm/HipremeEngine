@@ -2,7 +2,6 @@ module hip.game2d.text;
 
 import hip.api.data.font;
 import hip.api.graphics.text;
-import std.encoding;
 
 
 /**
@@ -241,29 +240,29 @@ package struct HipTextStopConfig
 
     static void parseText(in dstring text, out dstring parsedText, ref HipTextStopConfig[] config)
     {
-        size_t indexConfig = 0;
-        size_t lastParseIndex = 0;
-        dstring parsingText;
-        for(size_t i = 0; i < text.length; i++)
-        {
-            if(i+1 < text.length && text[i] == '$' && text[i+1] == '(') //Found something to parse
-            {
-                parsingText~= text[lastParseIndex..i-1];
-                HipTextStopConfig cfg = parseToken(text, i+1, i); //Update i
-                lastParseIndex = i;
-                if(indexConfig >= config.length)
-                    config.length++;
-                config[indexConfig++] = cfg;
-            }
-        }
-        //!FIXME: This allocated on each frame. It should both be used a @nogc operation (String) or it should 
-        //!find a way to create a range to be used instead of a string.
-        if(lastParseIndex == 0)
-        {
-            parsedText = text;
-            return;
-        }
-        parsedText = parsingText ~ text[lastParseIndex..$];
+        // size_t indexConfig = 0;
+        // size_t lastParseIndex = 0;
+        // dstring parsingText;
+        // for(size_t i = 0; i < text.length; i++)
+        // {
+        //     if(i+1 < text.length && text[i] == '$' && text[i+1] == '(') //Found something to parse
+        //     {
+        //         parsingText~= text[lastParseIndex..i-1];
+        //         HipTextStopConfig cfg = parseToken(text, i+1, i); //Update i
+        //         lastParseIndex = i;
+        //         if(indexConfig >= config.length)
+        //             config.length++;
+        //         config[indexConfig++] = cfg;
+        //     }
+        // }
+        // //!FIXME: This allocated on each frame. It should both be used a @nogc operation (String) or it should 
+        // //!find a way to create a range to be used instead of a string.
+        // if(lastParseIndex == 0)
+        // {
+        //     parsedText = text;
+        //     return;
+        // }
+        // parsedText = parsingText ~ text[lastParseIndex..$];
     }
 
 }

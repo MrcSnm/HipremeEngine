@@ -1,5 +1,8 @@
 module hip.windowing.platforms.x11lib.keysym;
 
+version(Android){}
+else version(linux) version = X11;
+version(X11):
 enum {
 
     /*

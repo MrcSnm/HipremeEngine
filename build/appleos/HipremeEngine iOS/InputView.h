@@ -8,13 +8,11 @@
 #ifndef InputView_h
 #define InputView_h
 
-#import <Cocoa/Cocoa.h>
 #import <MetalKit/MetalKit.h>
+#import <UIKit/UIKit.h>
+@interface InputView : UIView
 
-
-@interface InputView : NSView
-
-- (instancetype) initWithFrameAndView:(NSRect)frame view:(MTKView*)view;
+- (instancetype) initWithFrameAndView:(CGRect)frame view:(MTKView*)view;
 @end
 
 #endif /* InputView_h */

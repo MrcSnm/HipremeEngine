@@ -7,28 +7,6 @@ enum Arguments
     dflags = 3
 }
 
-string[] separateFromString(string str)
-{
-    string[] strings;
-    
-    bool isCapturing = false;
-    string currStr;
-    foreach(ch; str)
-    {
-        if(ch == '"' || ch == '\'')
-        {
-            if(isCapturing)
-            {
-                strings~= currStr;
-                currStr = "";
-            }
-            isCapturing = !isCapturing;
-        } else if(isCapturing) currStr~= ch;
-    }
-    if(currStr.length) strings~= currStr;
-    return strings;
-}
-
 int main(string[] args)
 {
     if(args.length <= Arguments.dubArgs)
@@ -43,16 +21,29 @@ int main(string[] args)
     }
     string dubArgs = args[Arguments.dubArgs];
     string outputPath = args[Arguments.outputPath];
+    writeln(dubArgs);
+    writeln(outputPath);
+
     string[] envDflags;
     if(args.length > Arguments.dflags)
         envDflags = args[Arguments.dflags..$];
 
     environment["DFLAGS"] = envDflags.join(" ");
-    auto ret = executeShell("dub describe --data=linker-files "~dubArgs~" --vquiet");
+    string dub = "dub ";
+    if("DUB" in environment)
+    {
+        dub = environment["DUB"];
+        writeln("Using dub: ", dub);
+    }
+    auto ret = executeShell(dub~" describe --data=linker-files "~dubArgs~" --vquiet");
     string librariesData = ret.output;
-    string[] libraries = separateFromString(librariesData);
+
+    import std.string:replace, split;
+    string[] libraries = librariesData.replace("\"", "").replace("'", "").replace("\n", "").split(" ");
     writeln("Found libraries ", libraries.map!(lName => lName.baseName));
 
+    string libIncludes = buildNormalizedPath(outputPath, "..", "libIncludes.txt");
+    std.file.write(libIncludes, libraries.map!(lName => "-l"~lName.baseName.stripExtension[3..$]).join(" "));
 
     string libNames = "";
     mkdirRecurse(outputPath);

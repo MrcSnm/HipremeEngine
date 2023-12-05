@@ -242,7 +242,7 @@ mixin template HipDeferredLoadImpl()
     }
 }
 
-enum HipDeferredLoad()
+string HipDeferredLoad()
 {
     return q{
     mixin HipDeferredLoadImpl __dload__;

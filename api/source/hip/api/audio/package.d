@@ -1,5 +1,4 @@
 module hip.api.audio;
-version(Have_hipreme_engine) version = DirectCall;
 
 //Low weight shared data
 enum HipAudioType
@@ -45,7 +44,7 @@ enum HipAudioImplementation
 }
 
 version(DirectCall) { public import hip.hipaudio; }
-else
+else version(ScriptAPI)
 {
     public import HipAudio = hip.api.audio.audio_binding;
     public import hip.api.audio.audioclip:IHipAudioClip;

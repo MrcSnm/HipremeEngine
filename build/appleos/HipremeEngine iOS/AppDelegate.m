@@ -47,4 +47,23 @@
 }
 
 
+const char* hipGetResourcesPath(void)
+{
+    return [[NSBundle mainBundle].resourcePath UTF8String];
+}
+
+void* getGameWindow(void)
+{return nil;}
+
+void hipSetApplicationFullscreen(BOOL shouldMakeFullscreen)
+{
+    
+}
+
+void hipSetApplicationTitle(const char* title)
+{
+    
+}
+
+
 @end

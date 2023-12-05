@@ -4,31 +4,35 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "Hipreme Engine public API.",
-	"sourcePaths": [
-		"source"
-	],
-	"dflags": [
-		"-preview=shortenedMethods"
-	],
-	"dflags-dmd": [
-		"-op"
-	],
+	"dflags": ["-preview=shortenedMethods"],
+	"dflags-dmd": ["-op"],
+	"dflags-ldc": ["--disable-verify", "--oq"],
 	"dependencies": {
 		"util": {"path": "../modules/util", "optional": true}
 	},
+	"sourcePaths" : ["source"],
 	"configurations": 
 	[
 		{
 			"name": "script",
 			"targetType": "library"
 		},
-		{
-			"name": "source",
-			"targetType": "sourceLibrary"
-		},
+		
 		{
 			"name": "hipengine",
 			"targetType": "library"
+		}
+	],
+	"subPackages": [
+		{
+			"name": "direct",
+			"versions": ["DirectCall"],
+			"targetType": "sourceLibrary",
+			"sourcePaths": [],
+			"importPaths": [
+				"source",
+				"import"
+			]
 		}
 	],
 	"versions" : [

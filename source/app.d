@@ -22,10 +22,6 @@ version(Windows)
 {
 	import hip.hiprenderer.backend.d3d.d3drenderer;
 }
-version(dll)
-{
-	import core.runtime;
-}
 import hip.hiprenderer.renderer;
 import hip.view;
 import hip.systems.game;
@@ -39,9 +35,13 @@ version(dll)
 	else version = ManagesMainDRuntime;
 }
 version(dll){}
-else version(AppleOS) {}
+else version(AppleOS) { version = ManagesMainDRuntime;}
 else version = HandleArguments;
 
+version(ManagesMainDRuntime)
+{
+	import core.runtime;
+}
 version(WebAssembly) version = ExternallyManagedDeltaTime;
 version(AppleOS)     version = ExternallyManagedDeltaTime;
 version(PSVita)      version = ExternallyManagedDeltaTime;
@@ -67,6 +67,8 @@ version(PSVita)      version = ExternallyManagedDeltaTime;
 
 
 __gshared string projectToLoad;
+///Came from bin/desktop/engine_opts.json 
+__gshared string buildCommand;
 __gshared bool isUsingInterpreter = false;
 __gshared HipInterpreterEntry interpreterEntry;
 
@@ -105,6 +107,7 @@ void HipremeHandleArguments()
 				else
 				{
 					projectToLoad = v["defaultProject"].str;
+					buildCommand = v["buildCmd"].str;
 				}
 			}
 			return;
@@ -230,7 +233,7 @@ void gameInitialize()
 	if(isUsingInterpreter)
 		loadInterpreterEntry(interpreterEntry.intepreter, interpreterEntry.sourceEntry);
 	//After initializing engine, every dependency has been load
-	sys.loadGame(projectToLoad);
+	sys.loadGame(projectToLoad, buildCommand);
 	sys.startGame();
 	version(Desktop){HipremeDesktopGameLoop();}
 	else version(WebAssembly){WasmStartGameLoop();}

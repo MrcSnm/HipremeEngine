@@ -21,8 +21,7 @@ struct Overload
 version(WebAssembly) version = ErrorOnLoadSymbol;
 version(PSVita) version = ErrorOnLoadSymbol;
 
-version(Have_hipreme_engine) version = DirectCall;
-else version = LoadFunctionPointers;
+version(ScriptAPI) version = LoadFunctionPointers;
 
 
 version(LoadFunctionPointers)
@@ -42,12 +41,12 @@ version(LoadFunctionPointers)
 				import core.sys.posix.dlfcn:dlopen, RTLD_NOW;
 				_dll = dlopen(null, RTLD_NOW);
 			}
-			import std.stdio;
+			import core.stdc.stdio;
 			if(_dll == null)
-				writeln("Could not load GetModuleHandle(null)");
+				printf("Could not load GetModuleHandle(null)\n");
 			hipDestroy = cast(typeof(hipDestroy))_loadSymbol(_dll, "hipDestroy");
 			if(hipDestroy == null)
-				writeln("Fatal error: could not load hipDestroy");
+				printf("Fatal error: could not load hipDestroy\n");
 		}
 	}
 }
@@ -78,7 +77,7 @@ enum bool isFunctionPointer(alias T) = is(typeof(*T) == function);
 *	The problem is not yet solved, but it is a lot better than doing several
 *	template instantiations
 */
-enum loadSymbols(Ts...)()
+void loadSymbols(Ts...)()
 {
 	static foreach(s; Ts)
 		s = cast(typeof(s))_loadSymbol(_dll, s.stringof);
@@ -87,7 +86,7 @@ enum loadSymbols(Ts...)()
 /**
 *	This function will load all function pointers defined in the module passed.
 */
-enum loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
+void loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
 {
 	string prefix = "";
 	string importedFunctionName;
@@ -104,8 +103,8 @@ enum loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
 				f = cast(typeof(f))_loadSymbol(_dll, importedFunctionName.ptr);
 				if(f is null)
 				{
-					import std.stdio;
-					writeln(f.stringof, " wasn't able to load (tried with ", importedFunctionName, ")");
+					import core.stdc.stdio;
+					printf(f.stringof~" wasn't able to load (tried with %s)\n", importedFunctionName.ptr);
 				}
 			}
 		}
@@ -113,7 +112,7 @@ enum loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
 }
 
 
-enum generateFunctionDefinitionFromFunctionPointer(alias funcPointerSymbol, string name)()
+string generateFunctionDefinitionFromFunctionPointer(alias funcPointerSymbol, string name)()
 {
 	import std.traits;
 	string params;
@@ -136,8 +135,8 @@ enum generateFunctionDefinitionFromFunctionPointer(alias funcPointerSymbol, stri
 		identifiers~= "_"~i.stringof;
 	}
 
-	return (ReturnType!funcPointerSymbol).stringof ~ " "~ name ~ "("~params ~"){"~
-		(is(ReturnType!funcPointerSymbol == void) ? "" : "return ")~ funcPointerSymbol.stringof ~ "("~identifiers ~ ");}";
+	return (ReturnType!funcPointerSymbol).stringof ~ " "~ name ~ "("~params 
+	~"){return "~ funcPointerSymbol.stringof ~ "("~identifiers ~ ");}";
 
 }
 
@@ -174,7 +173,7 @@ template Flag(string f)
 
 alias UseExportedClass = Flag!"UseExportedClass";
 
-enum loadClassFunctionPointers(alias targetClass, 
+void loadClassFunctionPointers(alias targetClass, 
 	UseExportedClass useExported = UseExportedClass.No, 
 	string exportedClass = "")
 ()
@@ -204,8 +203,8 @@ enum loadClassFunctionPointers(alias targetClass,
 				f = cast(typeof(f))_loadSymbol(_dll, importedFunctionName.ptr);
 				if(f is null)
 				{
-					import std.stdio;
-					writeln(f.stringof, " wasn't able to load (tried with ", importedFunctionName,")");
+					import core.stdc.stdio;
+					printf(f.stringof ~ " wasn't able to load (tried with %s)\n", importedFunctionName.ptr);
 				}
 			}
 		}}
@@ -229,8 +228,8 @@ template loadSymbolsFromExportD(string exportedClass, Ts...)
 				ret~= s.stringof ~"= cast(typeof("~s.stringof~ " ))_loadSymbol(_dll, ("~e~"~\""~s.stringof~"\\0\").ptr);";
 				if(s.stringof is null)
 				{
-					import std.stdio;
-					writeln("Could not load ",s.stringof, " (tried with ", e~s.stringof,")");
+					import core.stdc.stdio;
+					printf("Could not load "~s.stringof~" (tried with "~ e~s.stringof~")\n");
 				}
 			}
 			return ret;

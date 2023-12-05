@@ -78,65 +78,39 @@ bool isRootOf(string theRoot, string ofWhat) pure nothrow @nogc
 
 
 
-string relativePath(string filePath, string base, bool caseSensitive = defaultCaseSensitivity) pure nothrow @safe
+string relativePath(bool caseSensitive = defaultCaseSensitivity)(string filePath, string base) pure nothrow @safe
 {
-    string ret;
     int commonIndex = 0;
     bool isEqual = true;
-    if(caseSensitive)
+    for(int i = 0; i < base.length; i++)
     {
-        foreach(i, v; base)
+        if(i == filePath.length || (caseSensitive ? base[i] != filePath[i] : base[i].toLowerCase != filePath[i].toLowerCase))
         {
-            if(base[i] != filePath[i])
-            {
-                isEqual = false;
-                break;
-            }
-           	else if(base[i] == pathSeparator)
-            	commonIndex = cast(int)i;
+            isEqual = false;
+            break;
         }
+        else if(base[i] == pathSeparator)
+            commonIndex = cast(int)i;
     }
-    else
+    if(isEqual)
     {
-        foreach(i, v; base)
-        {
-            if(base[i].toLowerCase != filePath[i].toLowerCase)
-            {
-                isEqual = false;
-                break;
-            }
-           	else if(base[i] == pathSeparator)
-            	commonIndex = cast(int)i;
-        }
-    }
-    if(isEqual && filePath.length == base.length)
-        return ".";
-    else if(isEqual)
-    {
-        ret = filePath[base.length..$];
-        if(ret[0] == pathSeparator)
-            return ret[1..$];
-       	return ret;
-    }
-    else if(commonIndex == base.length)
-        return filePath[commonIndex..$];
+        if(filePath.length == base.length)
+            return ".";
+        else //If the base string is a subset, return part after base.
+            return filePath[base.length + (filePath[base.length] == pathSeparator ? 1 : 0)..$];
+    } 
     else if(commonIndex == 0)
         return filePath;
 
-    uint pathCount = 0;
-        
+    string ret;
     for(uint i = commonIndex; i < base.length; i++)
     {
         if(base[i] == pathSeparator)
-        {
-            pathCount++;
             ret~= ".."~pathSeparator;
-        }
     }
-    ret~= filePath[0] == pathSeparator ? filePath[commonIndex+1..$] : filePath[commonIndex..$];	
+    ret~= filePath[commonIndex] == pathSeparator ? filePath[commonIndex+1..$] : filePath[commonIndex..$];
     return ret;
 }
-
 
 bool isAbsolutePath(string fPath) pure nothrow @nogc @safe
 {
@@ -373,6 +347,7 @@ string buildPath(Node!string node)
 ///Copied from dmd.
 unittest
 {
+    assert(baseName("a/b/test.txt") == "test.txt");
     assert(relativePath("foo", "") == "foo");
     assert(filenameNoExt("helloWorld.zip") == "helloWorld");
     assert("/hello/test/again".isRootOf("/hello/test/again/something/is/here.txt"));

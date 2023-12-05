@@ -5,9 +5,7 @@ public import hip.api.data.textureatlas;
 public import hip.api.data.tilemap;
 public import hip.api.renderer.texture;
 
-version(Have_hipreme_engine) version = DirectCall;
-version(DirectCall){}
-else
+version(ScriptAPI)
 {
     void initAssetManager()
     {

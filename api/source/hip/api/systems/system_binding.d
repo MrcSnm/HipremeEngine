@@ -2,9 +2,7 @@ module hip.api.systems.system_binding;
 import hip.api.internal;
 public import hip.api.systems.timer;
 
-version(Have_hipreme_engine) version = DirectCall;
-version(DirectCall){}
-else
+version(ScriptAPI)
 {
     void initTimerAPI()
     {

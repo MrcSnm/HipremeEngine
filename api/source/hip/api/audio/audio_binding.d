@@ -1,9 +1,7 @@
 module hip.api.audio.audio_binding;
 public import hip.api.audio.audiosource;
 
-version(Have_hipreme_engine) version = DirectCall;
-version(DirectCall){}
-else
+version(ScriptAPI)
 {
     void initAudio()
     {

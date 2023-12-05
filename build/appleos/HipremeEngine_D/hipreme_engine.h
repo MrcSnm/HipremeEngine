@@ -9,6 +9,8 @@
 #define hipreme_engine_h
 #import <Metal/Metal.h>
 
+
+void HipremeInit(void);
 int HipremeMain(int windowWidth, int windowHeight);
 void HipremeRender(void);
 bool HipremeUpdate(float deltaTime);

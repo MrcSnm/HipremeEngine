@@ -6,12 +6,13 @@
 //
 
 #import "GameViewController.h"
+#import "InputView.h"
 #import "Renderer.h"
 
 @implementation GameViewController
 {
     MTKView *_view;
-
+    InputView* inputView;
     Renderer *_renderer;
 }
 
@@ -20,6 +21,8 @@
     [super viewDidLoad];
 
     _view = (MTKView *)self.view;
+    inputView = [[InputView alloc] initWithFrameAndView:_view.frame view:_view];
+
 
     _view.device = MTLCreateSystemDefaultDevice();
     _view.backgroundColor = UIColor.blackColor;
@@ -34,7 +37,10 @@
     _renderer = [[Renderer alloc] initWithMetalKitView:_view];
 
     [_renderer mtkView:_view drawableSizeWillChange:_view.bounds.size];
-
+    
+    [_view addSubview:inputView];
+    [inputView becomeFirstResponder];
+    
     _view.delegate = _renderer;
 }
 

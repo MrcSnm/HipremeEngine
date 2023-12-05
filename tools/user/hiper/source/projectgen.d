@@ -99,24 +99,29 @@ string generateDubProject(DubProjectInfo info)
 		"tween",
 		"math"
 	],
-	"linkedDependencies": {"hipengine_api": {"path": "#HIPREME_ENGINE/api"}},
 	"stringImportPaths": [
-		"."
+		"#PROJECT"
 	],
-	"preBuildCommands": [
-		"rdmd #HIPREME_ENGINE/tools/build/getmodules.d source/ scriptmodules.txt"
+	"dflags-ldc": ["--disable-verify", "--oq"],
+	"preBuildCommands-posix": [
+		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
-	"dflags-linux-ldc": [
-		"-link-defaultlib-shared=false"
+	"preBuildCommands-windows": [
+		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
 	"configurations": 
 	[
 		{
 			"name" : "script",
 			"targetType": "dynamicLibrary",
-			"lflags-windows": [
-				"/WX"
-			]
+			"dflags-ldc": ["-link-defaultlib-shared=true"],
+			"linkedDependencies": {"hipengine_api": {"path": "#HIPREME_ENGINE/api"}},
+			"lflags-windows": ["/WX"]
+		},
+		{
+			"name": "release", 
+			"targetType": "staticLibrary", 
+			"dependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api"}}
 		},
 		{
 			"name": "run",

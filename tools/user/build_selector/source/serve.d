@@ -1,3 +1,5 @@
+module serve;
+
 import arsd.cgi;
 import std.stdio;
 import std.file;
@@ -8,7 +10,8 @@ import std.process;
 
 // https://github.com/skoppe/wasm-sourcemaps
 
-enum DEFAULT_PATH="build/";
+enum DEFAULT_PATH="build";
+private __gshared string startPath;
 
 string extendedContentTypeFromFileExtension(string thing)
 {
@@ -24,29 +27,87 @@ string extendedContentTypeFromFileExtension(string thing)
 	return "application/octet-stream";
 }
 
-void handler(Cgi cgi) 
+import core.thread;
+import core.sync.mutex;
+void pushWebsocketMessage(string message)
 {
-	string contentType = extendedContentTypeFromFileExtension(cgi.pathInfo);
-	string file = DEFAULT_PATH~cgi.pathInfo[1..$];
-	
-	if(cgi.pathInfo == "/") 
+	synchronized
 	{
-		string indexHTML = DEFAULT_PATH~"/index.html";
+		foreach(ref conn; connections)
+			conn.messages~= message;
+	}
+	// socket.send(message);
+	// synchronized websocketMessages~= message;
+}
+
+struct Connection
+{
+	size_t id;
+	string[] messages;
+}
+private __gshared size_t id;
+private __gshared Connection*[] connections;
+
+void serveGameFiles(Cgi cgi) 
+{
+    import std.path;
+    string targetPath = buildNormalizedPath(startPath, DEFAULT_PATH);
+	string contentType = extendedContentTypeFromFileExtension(cgi.pathInfo);
+	string file = buildNormalizedPath(targetPath, cgi.pathInfo[1..$]);
+
+	if(cgi.websocketRequested())
+	{
+		auto socket = cgi.acceptWebsocket();
+		Connection conn = Connection(id);
+		synchronized
+		{
+			connections~= &conn;
+			id++;
+		}
+		enum __updateMsg = 0xff;
+		auto msg = socket.recv();
+		while(msg.opcode != WebSocketOpcode.close) 
+		{
+			synchronized
+			{
+				foreach(socketMsg; conn.messages)
+					socket.send(socketMsg);
+				conn.messages.length = 0;
+			}
+			msg = socket.recv();
+		}
+
+		synchronized
+		{
+			socket.close();
+			import std.algorithm;
+			ptrdiff_t index = countUntil!((Connection* c) => c.id == conn.id)(connections);
+			if(index != -1)
+			{
+				connections = connections[0..index]~ connections[index+1..$];
+			}
+		}
+		writeln("AutoReloading WebSocket[", conn.id, "] closed.");
+	}
+	else if(cgi.pathInfo == "/") 
+	{
+		string indexHTML = buildNormalizedPath(targetPath, "index.html");
 		if(exists(indexHTML))
 		{
-			cgi.write(readText(indexHTML), true);
+			cgi.write(readText(indexHTML)~"<script> "~import("reload_server.js")~"</script>", true);
 		}
 		else
 		{
 			// index
 			string html = "<html><head><title>Hipreme Engine Webassembly Server</title></head><body><ul>";
-			foreach(string name; dirEntries(DEFAULT_PATH, SpanMode.shallow)) 
+			foreach(string name; dirEntries(targetPath, SpanMode.shallow)) 
 			{
-				name = name[DEFAULT_PATH.length..$];
+				name = name[targetPath.length..$];
 				html ~= "<li><a href=\"" ~ name ~ "\">" ~ name ~"</a></li>";
 			}
 			html~= "</body></html>";
 				cgi.write(html, true);
+
 		}
 	}
 	else if(contentType)
@@ -69,6 +130,7 @@ void handler(Cgi cgi)
 
 }
 
+private RequestServer server;
 /++
 	This is the function [GenericMain] calls. View its source for some simple boilerplate you can copy/paste and modify, or you can call it yourself from your `main`.
 	Params:
@@ -79,15 +141,18 @@ void handler(Cgi cgi)
 	History:
 	Documented Sept 26, 2020.
 +/
-void hipengineCgiMain(alias fun, CustomCgi = Cgi, long maxContentLength = defaultMaxContentLength)(string[] args) if(is(CustomCgi : Cgi)) 
+
+
+
+void hipengineCgiMain(alias fun, CustomCgi = Cgi, long maxContentLength = defaultMaxContentLength)
+(string[] args, string servePath)  if(is(CustomCgi : Cgi)) 
 {
+    startPath = servePath;
 	if(tryAddonServers(args))
 		return;
-
 	if(trySimulatedRequest!(fun, CustomCgi)(args))
 		return;
 
-	RequestServer server;
 	// you can change the port here if you like
 	server.listeningPort = 9000;
 
@@ -98,11 +163,15 @@ void hipengineCgiMain(alias fun, CustomCgi = Cgi, long maxContentLength = defaul
 	// then call this to let the command line args override your default
 	server.configureFromCommandLine(args);
 
+
 	// and serve the request(s).
 	server.serve!(fun, CustomCgi, maxContentLength)();
+
 }
 
-void main(string[] args)
+void stopServer()
 {
-	hipengineCgiMain!(handler)(args);
+    import core.stdc.stdlib;
+	pushWebsocketMessage("close");
+    exit(0);
 }

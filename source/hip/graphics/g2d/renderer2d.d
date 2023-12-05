@@ -152,7 +152,7 @@ void setRendererErrorCheckingEnabled(bool enable)
 {
     HipRenderer.setErrorCheckingEnabled(enable);
 }
-void setGeometryColor(in HipColor color){geoBatch.setColor(color);}
+void setGeometryColor(const HipColor color){geoBatch.setColor(color);}
 void drawPixel(int x, int y, HipColor color = HipColor.no)
 {
     manageBatchChange(geoBatch);

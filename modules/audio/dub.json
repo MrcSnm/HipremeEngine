@@ -18,8 +18,8 @@
 			"name": "default",
 			"libs-windows": ["xaudio2_8"],
 			"dependencies": {
-				"bindbc-openal": "~>1.0.0",
-				"directx-d":{"path" : "../../dependencies/directx-d", "optional": true}
+				"bindbc-openal": "~>1.1.0",
+				"directx-d":{"path" : "../../dependencies/directx-d", "optional": true, "default": true}
 			},
 			"subConfigurations": {
 				"audio_decoding": "audioformats"
@@ -28,7 +28,7 @@
 		{
 			"name": "null",
 			"dependencies": {
-				"bindbc-openal": "~>1.0.0"
+				"bindbc-openal": "~>1.1.0"
 			},
 			"versions": ["NullAudio"],
 			"subConfigurations": {
@@ -38,7 +38,7 @@
 		{
 			"name": "nodx",
 			"dependencies": {
-				"bindbc-openal": "~>1.0.0"
+				"bindbc-openal": "~>1.1.0"
 			},
 			"subConfigurations": {
 				"audio_decoding": "audioformats"
@@ -73,7 +73,7 @@
 		{
 			"name": "psvita",
 			"dependencies": {
-				"bindbc-openal": "~>1.0.0"
+				"bindbc-openal": "~>1.1.0"
 			},
 			"subConfigurations": {
 				"audio_decoding": "audioformats",

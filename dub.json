@@ -15,8 +15,7 @@
 	"dflags": [
 		"-preview=shortenedMethods",
 		"-mixin=mixed.d",
-		"-checkaction=D",
-		"-J."
+		"-Jassets"
 	],
 	"dflags-dmd": ["-op"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
@@ -99,47 +98,6 @@
 			]
 		},
 		{
-			"name": "appleos",
-			"targetPath": "bin/desktop",
-			"targetType": "executable",
-			"dflags": [
-				"-checkaction=D"
-			],
-			"stringImportPaths": [
-				"build/release_game/"
-			],
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"versions": [
-				"OpenAL",
-				"Standalone",
-				"AppleOS"
-			],
-			"subConfigurations": {
-				"renderer": "appleos" 
-			}
-		},
-		{
-			"name": "appleos-main",
-			"targetPath": "build/appleos/HipremeEngine D/libs",
-			"targetType": "staticLibrary",
-			"stringImportPaths": [
-				"build/release_game/"
-			],
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"versions": [
-				"OpenAL",
-				"Standalone",
-				"AppleOS"
-			],
-			"subConfigurations": {
-				"renderer": "appleos" 
-			}
-		},
-		{
 			"name": "nodx",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
@@ -161,7 +119,7 @@
 			"targetType": "executable",
 			"lflags-windows-ldc": ["-Lmodules/renderer/lib/win64"],
 			"dependencies": {
-				"fswatch": "~>0.6.0"
+				"fswatch": "~>0.6.1"
 			},
 			"versions": [
 				"OpenGL",
@@ -170,12 +128,11 @@
 				"Load_DScript",
 				"Standalone"
 			],
-			"dflags-linux-ldc": [
-				"-link-defaultlib-shared"
+			"dflags-ldc": [
+				"--ftime-trace",
+				"--ftime-trace-file=./my-trace.json"
 			],
-			"lflags-linux-ldc": [
-				"--export-dynamic"
-			],
+			"lflags-linux-ldc": ["--export-dynamic"],
 			"versions-windows": [
 				"Direct3D_11",
 				"DirectX",
@@ -204,188 +161,6 @@
 				"XAudio2",
 				"DirectX"
 			]
-		},
-		{
-			"name": "game_optimize",
-			"buildOptions": [
-				"releaseMode",
-				"optimize"
-			],
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"targetPath": "bin/desktop",
-			"targetType": "executable",
-			"versions": [
-				"Standalone",
-				"OpenGL",
-				"OpenAL",
-				"Desktop"
-			],
-			"versions-windows": [
-				"Direct3D_11",
-				"DirectX",
-				"XAudio2"
-			]
-		},
-		{
-			"name": "uwp",
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"lflags-windows": [
-				"/WHOLEARCHIVE:windowing",
-				"/WHOLEARCHIVE:bind",
-				"/WHOLEARCHIVE:audio_decoding",
-				"/WHOLEARCHIVE:directx-d",
-				"/WHOLEARCHIVE:audio",
-				"/WHOLEARCHIVE:hipengine_api",
-				"-Lmodules/renderer/lib/win64"
-			],
-			"stringImportPaths": [
-				"build/release_game/"
-			],
-			"subConfigurations": {
-				"audio": "uwp",
-				"renderer": "uwp"
-			},
-			"targetPath": "bin/uwp",
-			"targetType": "dynamicLibrary",
-			"versions-windows": [
-				"Standalone",
-				"Direct3D_11",
-				"DirectX",
-				"XAudio2",
-				"dll",
-				"UWP"
-			]
-		},
-		{
-			"name": "wasm-test",
-			"dependencies": {
-				"d_std": {"path": "modules/d_std", "version": "*"},
-				"runtime": {"path": "dependencies/runtime", "version": "*"}
-			},
-			"stringImportPaths": [
-				"build/wasm/generated"
-			],
-			"postGenerateCommands": [
-				"set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true",
-				"move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
-			],
-			"subConfigurations": {
-				"runtime": "wasm",
-				"assets": "wasm",
-				"audio": "wasm",
-				"filesystem": "wasm",
-				"renderer": "wasm"
-			},
-			"versions": [
-				"Test",
-				"Standalone",
-				"HipDStdFile",
-				"OpenGL",
-				"GLES20",
-				"CarelessAlocation",
-				"dll"
-			],
-			"targetType": "executable"
-		},
-		{
-			"name": "wasm",
-			"dependencies": {
-				"d_std": {"path": "modules/d_std", "version": "*"},
-				"runtime": {"path": "dependencies/runtime", "version": "*"}
-			},
-			"dflags": [
-				"--fvisibility=hidden"
-			],
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"stringImportPaths": [
-				"build/wasm/generated",
-				"build/release_game/"
-			],
-			"postGenerateCommands-windows": [
-				"set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true",
-				"move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
-			],
-			"subConfigurations": {
-				"runtime": "wasm",
-				"assets": "wasm",
-				"audio": "wasm",
-				"filesystem": "wasm",
-				"renderer": "wasm"
-			},
-			"versions": [
-				"Standalone",
-				"HipDStdFile",
-				"OpenGL",
-				"GLES20",
-				"CarelessAlocation",
-				"dll"
-			],
-			"targetType": "executable"
-		},
-		{
-			"name": "psvita",
-			"dependencies": {
-				"d_std": {"path": "modules/d_std", "version": "*"},
-				"runtime": {"path": "dependencies/runtime", "version": "*"}
-			},
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"stringImportPaths": [
-				"build/release_game/"
-			],
-			"subConfigurations": {
-				"runtime": "psvita",
-				"d_std": "psvita",
-				"assets": "psvita",
-				"audio": "psvita",
-				"renderer": "psvita"
-			},
-			"versions": [
-				"Standalone",
-				"OpenGL",
-				"OpenAL",
-				"GLES20",
-				"CarelessAlocation",
-				"dll"
-			],
-			"targetType": "executable"
-		},
-		{
-			"name": "psvita-main",
-			"dependencies": {
-				"d_std": {"path": "modules/d_std", "version": "*"},
-				"runtime": {"path": "dependencies/runtime", "version": "*"}
-			},
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"stringImportPaths": [
-				"build/release_game/"
-			],
-			"subConfigurations": {
-				"runtime": "psvita",
-				"d_std": "psvita",
-				"assets": "psvita",
-				"audio": "psvita",
-				"renderer": "psvita"
-			},
-			"versions": [
-				"Standalone",
-				"OpenGL",
-				"OpenAL",
-				"GLES20",
-				"CarelessAlocation",
-				"dll"
-			],
-			"targetPath": "build/vita/hipreme_engine/libs",
-			"targetType": "staticLibrary"
 		},
 		{
 			"name": "customrt",
@@ -417,56 +192,10 @@
 				"CarelessAlocation"
 			],
 			"targetType": "executable"
-		},
-		{
-			"name": "android",
-			"stringImportPaths": [
-				"build/release_game/"
-			],
-			"lflags": [
-				"-LC:/Users/Hipreme/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/33/"
-			],
-			"dflags": [
-				"-g"
-			],
-			"libs": [
-				"log",
-				"android",
-				"OpenSLES",
-				"EGL",
-				"GLESv3"
-			],
-			"sourcePaths": [
-				"build/release_game"
-			],
-			"dependencies": {
-				"jni": {"path": "./modules/jni", "version": "*"}
-			},
-			"subConfigurations": {
-				"audio": "android",
-				"console": "android",
-				"renderer": "android"
-			},
-			"postBuildCommands-windows": [
-				"copy /B .\\bin\\android\\libhipreme_engine.so .\\build\\android\\project\\app\\src\\main\\jniLibs\\arm64-v8a\\libhipreme_engine.so",
-				"cd .\\tools\\build && rdmd copyresources.d .\\release_game\\assets .\\android\\project\\app\\src\\main\\assets",
-				"REM .\\build\\android\\project\\ && .\\gradlew.bat :app:assembleDebug && adb install -r .\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
-				"REM shell monkey -p com.hipremeengine.app 1",
-				"REM logcat -b all -v color com.hipremengine.app:D | findstr com.hipremeengine.app"
-			],
-			"targetPath": "bin/android/",
-			"targetType": "dynamicLibrary",
-			"versions": [
-				"dll",
-				"Standalone",
-				"GLES30",
-				"OpenSLES1_1",
-				"OpenGL"
-			]
 		}
 	],
 	"toolchainRequirements": {
 		"frontend": ">=2.099",
-		"dub": ">=1.28.0"
+		"dub": ">=1.31.0"
 	}
 }

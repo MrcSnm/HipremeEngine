@@ -94,8 +94,13 @@ class HipMTLRenderer : IHipRendererImpl
 
 
         depthStencilDescriptor = MTLDepthStencilDescriptor.alloc.ini;
-        renderPassDescriptor.depthAttachment.loadAction = MTLLoadAction.Clear;
+        renderPassDescriptor = view.currentRenderPassDescriptor;
+        if(renderPassDescriptor is null)
+            throw new Error("Could not get a render pass descriptor.");
         renderPassDescriptor.depthAttachment.clearDepth = 1.0;
+
+        hiplog(renderPassDescriptor.depthAttachment.level);
+        renderPassDescriptor.depthAttachment.loadAction = MTLLoadAction.Clear;
 
         return cmdQueue !is null;
     }
@@ -247,6 +252,7 @@ class HipMTLRenderer : IHipRendererImpl
         cmdBuffer = cmdQueue.commandBuffer;
         cmdBuffer.label = "HipremeRenderer".ns;
         cmdEncoder = cmdBuffer.renderCommandEncoderWithDescriptor(view.currentRenderPassDescriptor);
+        renderPassDescriptor = view.currentRenderPassDescriptor;
     }
 
     public void setRendererMode(HipRendererMode mode)
@@ -268,10 +274,8 @@ class HipMTLRenderer : IHipRendererImpl
 
     public void drawIndexed(index_t count, uint offset = 0)
     {
-        static if(is(index_t == ushort))
-            cmdEncoder.drawIndexedPrimitives(primitiveType, count, MTLIndexType.UInt16, boundIndexBuffer, offset*index_t.sizeof);
-        else 
-            cmdEncoder.drawIndexedPrimitives(primitiveType, count, MTLIndexType.UInt32, boundIndexBuffer, offset*index_t.sizeof);
+        enum IndexType = is(index_t == ushort) ? MTLIndexType.UInt16 : MTLIndexType.UInt32;
+        cmdEncoder.drawIndexedPrimitives(primitiveType, count, IndexType, boundIndexBuffer, offset*index_t.sizeof);
 
     }
 

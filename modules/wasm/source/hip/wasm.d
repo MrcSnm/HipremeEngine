@@ -128,7 +128,11 @@ JSDelegate sendJSDelegate(alias dg)()
 
 
 
-///Generates a delegate which adds the `this` context from the arguments.
+/**
+* Generates a delegate which adds the `this` context from the arguments.
+* It also packs the arguments sent from Javascript and transform them to the
+* data the D delegate expects. There is also a validation in the arguments received.
+*/
 ubyte* function(ubyte* args) toFunc(alias dg)()
 {
 	import std.traits;
