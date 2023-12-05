@@ -51,10 +51,10 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
 
 
     bool started = false;
-    void createBuffer(ulong size, const void* data)
+    void createBuffer(const void[] data)
     {
         started = true;
-        this.size = size;
+        this.size = data.length;
         D3D11_BUFFER_DESC bd;
         bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         bd.Usage = usage;
@@ -64,7 +64,7 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         bd.StructureByteStride = 0;
 
         D3D11_SUBRESOURCE_DATA sd;
-        sd.pSysMem = cast(void*)data;
+        sd.pSysMem = cast(void*)data.ptr;
 
         //TODO: Check failure
 
@@ -72,15 +72,15 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         
         HipRenderer.exitOnError();
     }
-    void setData(size_t size, const(void*) data)
+    void setData(const(void)[] data)
     {
-        if(data == null || size == 0)
+        if(data == null || data.length == 0)
             return;
-        createBuffer(size, data);
+        createBuffer(data);
     }
-    void updateData(int offset, size_t size, const (void*) data)
+    void updateData(int offset, const (void)[] data)
     {
-        if(size + offset >= this.size)
+        if(data.length + offset > this.size)
         {
             ErrorHandler.assertExit(false,
             "Tried to set data with size "~to!string(size)~" and offset "~to!string(offset)~
@@ -89,7 +89,7 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
 
         D3D11_MAPPED_SUBRESOURCE resource;
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-        memcpy(resource.pData+offset, data, size);
+        memcpy(resource.pData+offset, data.ptr, data.length);
         _hip_d3d_context.Unmap(buffer, 0);
         HipRenderer.exitOnError();
     }
@@ -140,26 +140,26 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
     * If the count is 0, it means that it should create the vertex buffero
     * with its creation size
     */
-    void setData(index_t count, const index_t* data)
+    void setData(const index_t[] data)
     {
         if(count == 0)
         {
-            createBuffer(this.count, cast(void*)data);
+            createBuffer(this.count, cast(void*)data.ptr);
             return;
         }
-        createBuffer(count, cast(void*)data);
+        createBuffer(cast(index_t)data.length, cast(void*)data.ptr);
     }
-    void updateData(int offset, index_t count, const index_t* data)
+    void updateData(int offset, const index_t[] data)
     {
-        if(count*index_t.sizeof + offset >= this.size)
+        if(data.length*index_t.sizeof + offset >= this.size)
         {
             ErrorHandler.assertExit(false, 
-            "Tried to set data with size "~to!string(count*index_t.sizeof)~" and offset "~to!string(offset)~
+            "Tried to set data with size "~to!string(data.length*index_t.sizeof)~" and offset "~to!string(offset)~
             "for vertex buffer with size "~to!string(this.size));
         }
         D3D11_MAPPED_SUBRESOURCE resource;
         _hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-        memcpy(resource.pData+offset, data, count*index_t.sizeof);
+        memcpy(resource.pData+offset, data.ptr, data.length*index_t.sizeof);
         _hip_d3d_context.Unmap(buffer, 0);
         HipRenderer.exitOnError();
     }
