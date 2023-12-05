@@ -48,14 +48,14 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
         if(boundIndexBuffer is buffer) boundIndexBuffer = null;
     }
 
-    void setData(index_t count, const index_t* data)
+    void setData(const index_t[] data)
     {
         if(options == MTLResourceOptions.StorageModePrivate)
         {
-            MTLBuffer temp = device.newBuffer(data, count*index_t.sizeof, MTLResourceOptions.StorageModeShared);
+            MTLBuffer temp = device.newBuffer(data.ptr, data.length*index_t.sizeof, MTLResourceOptions.StorageModeShared);
             MTLCommandBuffer cmdBuffer = cmdQueue.defaultCommandBuffer();
             MTLBlitCommandEncoder cmdEncoder = cmdBuffer.blitCommandEncoder;
-            cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, count*index_t.sizeof);
+            cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, data.length*index_t.sizeof);
             cmdEncoder.endEncoding();
             cmdBuffer.commit();
             cmdBuffer.waitUntilCompleted();
@@ -63,14 +63,14 @@ class HipMTLIndexBuffer : IHipIndexBufferImpl
         else
         {
             if(buffer) buffer.release();
-            buffer = device.newBuffer(data, count*index_t.sizeof, options);
+            buffer = device.newBuffer(data.ptr, data.length*index_t.sizeof, options);
             buffer.retain();
         }
     }
 
-    void updateData(int offset, index_t count, const index_t* data)
+    void updateData(int offset, const index_t[] data)
     {
-        buffer.contents[offset..offset+count*index_t.sizeof] = cast(void[])(data[0..count]);
+        buffer.contents[offset..offset+data.length*index_t.sizeof] = cast(void[])(data[]);
     }
 }
 
@@ -89,39 +89,35 @@ class HipMTLVertexBuffer : IHipVertexBufferImpl
         buffer = device.newBuffer(size, options);
         buffer.retain();
     }
-    void bind()
-    {
-        
-    }
-
-    void unbind()
-    {
-        
-    }
-
-    void setData(size_t size, const void* data)
+    void bind(){}
+    void unbind(){}
+    void setData(const void[] data)
     {
         if(options == MTLResourceOptions.StorageModePrivate)
         {
-            MTLBuffer temp = device.newBuffer(data, size, MTLResourceOptions.StorageModeShared);
+            MTLBuffer temp = device.newBuffer(data.ptr, data.length, MTLResourceOptions.StorageModeShared);
             MTLCommandBuffer cmdBuffer = cmdQueue.defaultCommandBuffer();
             MTLBlitCommandEncoder cmdEncoder = cmdBuffer.blitCommandEncoder;
-            cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, size);
+            cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, data.length);
             cmdEncoder.endEncoding();
             cmdBuffer.commit();
             cmdBuffer.waitUntilCompleted();
+            if(cmdBuffer.error)
+                NSLog("Command Buffer Error: %@".ns, cmdBuffer.error);
         }
         else
         {
             if(buffer) buffer.release();
-            buffer = device.newBuffer(data, size, options);
+            buffer = device.newBuffer(data.ptr, data.length, options);
             buffer.retain();
         }
     }
 
-    void updateData(int offset, size_t size, const void* data)
+    void updateData(int offset, const void[] data)
     {
-        buffer.contents[offset..offset+size] = data[0..size];
+        import hip.console.log;
+        hiplog("Update buffer[",offset,"..",offset+data.length,"]");
+        buffer.contents[offset..offset+data.length] = data[];
     }
 }
 

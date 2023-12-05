@@ -195,6 +195,8 @@ class HipMTLTexture : IHipTexture
         blit.endEncoding();
         b.commit();
         b.waitUntilCompleted();
+        if(b.error)
+            NSLog("Command Buffer Error: %@".ns, b.error);
         // imageBuffer.dealloc();
         if(squareData.ptr !is null)
         {

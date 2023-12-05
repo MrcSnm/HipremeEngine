@@ -82,15 +82,15 @@ interface IHipVertexBufferImpl
 {
     void bind();
     void unbind();
-    void setData(size_t size, const void* data);
-    void updateData(int offset, size_t size, const void* data);
+    void setData(const void[] data);
+    void updateData(int offset, const void[] data);
 }
 interface IHipIndexBufferImpl
 {
     void bind();
     void unbind();
-    void setData(index_t count, const index_t* data);
-    void updateData(int offset, index_t count, const index_t* data);
+    void setData(const index_t[] data);
+    void updateData(int offset, const index_t[] data);
 }
 interface IHipVertexArrayImpl
 {
@@ -278,7 +278,7 @@ class HipVertexArrayObject
         {
             hasVertexInitialized = true;
             this.bind(); 
-            this.VBO.setData(count*this.stride, data);
+            this.VBO.setData(data[0..count*this.stride]);
         }
     }
     /** 
@@ -294,7 +294,7 @@ class HipVertexArrayObject
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
         ErrorHandler.assertExit(hasVertexInitialized, "Vertex must setData before updating its contents.");
         this.bind();
-        this.VBO.updateData(offset*this.stride, count*this.stride, data);
+        this.VBO.updateData(offset*this.stride, data[0..count*this.stride]);
     }
     /**
     *   Will set the indices data. Beware that this function may allocate memory.
@@ -310,7 +310,7 @@ class HipVertexArrayObject
         {
             hasIndexInitialized = true;
             this.bind();
-            this.EBO.setData(count, data);
+            this.EBO.setData(data[0..count]);
         }
     }
     /**
@@ -324,7 +324,7 @@ class HipVertexArrayObject
         {
             ErrorHandler.assertExit(hasIndexInitialized, "Index must setData before updating its contents.");
             this.bind();
-            this.EBO.updateData(cast(int)(offset*index_t.sizeof), count, data);
+            this.EBO.updateData(cast(int)(offset*index_t.sizeof), data[0..count]);
         }
     }
 
