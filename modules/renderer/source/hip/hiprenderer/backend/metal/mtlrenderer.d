@@ -132,6 +132,10 @@ class HipMTLRenderer : IHipRendererImpl
         _cmdEncoder.endEncoding();
         _cmdBuffer.commit();
         _cmdBuffer.waitUntilCompleted();
+        if(_cmdBuffer.error)
+        {
+            NSLog("Command Buffer Error %@".ns, _cmdBuffer.error);
+        }
         return ret;
     }
 

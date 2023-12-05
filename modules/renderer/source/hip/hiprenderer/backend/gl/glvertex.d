@@ -88,22 +88,22 @@ class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
             boundVbo = null;
         }
     }
-    void setData(size_t size, const(void*) data)
+    void setData(const(void)[] data)
     {
-        this.size = size;
+        this.size = data.length;
         this.bind();
-        glCall(() => glBufferData(GL_ARRAY_BUFFER, size, cast(void*)data, this.usage));
+        glCall(() => glBufferData(GL_ARRAY_BUFFER, data.length, cast(void*)data.ptr, this.usage));
     }
-    void updateData(int offset, size_t size, const(void*) data)
+    void updateData(int offset, const(void)[] data)
     {
-        if(size + offset > this.size)
+        if(data.length + offset > this.size)
         {
             ErrorHandler.assertExit(
                 false, "Tried to set data with size "~to!string(size)~"and offset "~to!string(offset)~
         "for vertex buffer with size "~to!string(this.size));
         }
         this.bind();
-        glCall(() => glBufferSubData(GL_ARRAY_BUFFER, offset, size, data));
+        glCall(() => glBufferSubData(GL_ARRAY_BUFFER, offset, data.length, data.ptr));
     }
     ~this(){glCall(() => glDeleteBuffers(1, &this.vbo));}
 }
@@ -139,18 +139,18 @@ class Hip_GL3_IndexBufferObject : IHipIndexBufferImpl
             boundEbo = null;
         }
     }
-    void setData(index_t count, const index_t* data)
+    void setData(const index_t[] data)
     {
-        this.count = count;
-        this.size = index_t.sizeof*count;
+        this.count = cast(index_t)data.length;
+        this.size = index_t.sizeof*data.length;
         this.bind();
-        glCall(() => glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_t.sizeof*count, cast(void*)data, this.usage));
+        glCall(() => glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_t.sizeof*data.length, cast(void*)data.ptr, this.usage));
     }
-    void updateData(int offset, index_t count, const index_t* data)
+    void updateData(int offset, const index_t[] data)
     {
-        ErrorHandler.assertExit((offset+count)*index_t.sizeof <= size);
+        ErrorHandler.assertExit((offset+data.length)*index_t.sizeof <= data.length);
         this.bind();
-        glCall(() => glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, count*index_t.sizeof, cast(void*)data));
+        glCall(() => glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, data.length*index_t.sizeof, cast(void*)data.ptr));
     }
     ~this(){glCall(() => glDeleteBuffers(1, &this.ebo));}
 }
