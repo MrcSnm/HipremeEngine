@@ -97,7 +97,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         mesh.createVertexBuffer(cast(index_t)vertices.length, HipBufferUsage.DYNAMIC);
         mesh.sendAttributes();
         HipVertexArrayObject.putQuadBatchIndices(indices, maxIndices / 6);
-        mesh.setVertices(cast(float[])vertices);
+        mesh.setVertices(vertices);
         mesh.setIndices(indices);
         if(camera is null)
             camera = new HipOrthoCamera();

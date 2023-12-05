@@ -124,7 +124,7 @@ class HipSpriteBatch : IHipBatch
             camera = new HipOrthoCamera();
         this.camera = camera;
         HipVertexArrayObject.putQuadBatchIndices(indices, maxQuads);
-        mesh.setVertices(cast(float[])vertices);
+        mesh.setVertices(vertices);
         mesh.setIndices(indices);
         setTexture(HipTexture.getPixelTexture());
     }

@@ -78,14 +78,6 @@ class Mesh
         this.vao.setIndices(indices);
     }
 
-    /**
-    *   Will choose between resizing buffer as needed or only updating it.
-    */
-    public void setVertices(float[] vertices)
-    {
-        setVertices(cast(void[])vertices);
-    }
-
     public void setVertices(const void[] vertices)
     {
         if(vertices.length <= this.vertices.length)
