@@ -331,7 +331,10 @@ private bool dbgExecuteShell(scope const(char)[] command, ref Terminal t, const 
 {
 	auto ret = executeShell(command, env);
 	if(ret.status)
+	{
 		t.writelnError(cast(string)("Command '"~command~"' failed with: "~ ret.output));
+		t.flush;
+	}
 	return ret.status == 0;
 }
 
@@ -532,6 +535,7 @@ bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal
 	}
 	t.writeln("Extracting ", tarGzPath, " to ", outputDirectory);
 	t.flush;
+	std.file.mkdirRecurse(outputDirectory.dirName);
 	return dbgExecuteShell("tar -xf "~tarGzPath~" -C "~outputDirectory.dirName, t);
 }
 
@@ -580,6 +584,7 @@ string outputDirectory, ref Terminal t, ref RealTimeConsoleInput input)
 		t.flush;
 		return false;
 	}
+
 
 	outputName = outputName.removeExtension;
 
