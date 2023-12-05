@@ -27,7 +27,7 @@ class MainScene : AScene
 	/** Constructor */
 	override void initialize()
 	{
-		logg(getAssetsForPreload);
+		// logg(getAssetsForPreload);
 		sprites = new HipMultiSprite(SPRITES_COUNT);
 		speeds = new float[SPRITES_COUNT];
 		sprites.setTexture(texture);
