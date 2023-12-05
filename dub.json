@@ -13,7 +13,6 @@
 		"warnings"
 	],
 	"dflags": [
-		"-preview=shortenedMethods",
 		"-mixin=mixed.d",
 		"-Jassets"
 	],
