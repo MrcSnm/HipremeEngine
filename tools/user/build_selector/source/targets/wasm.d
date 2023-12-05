@@ -32,7 +32,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	environment["DFLAGS"] = 
 		"-I="~getHipPath("modules", "d_std", "source") ~" "~
 		"-I="~getHipPath("dependencies", "runtime", "druntime", "arsd-webassembly") ~" " ~
-		"-preview=shortenedMethods -L-allow-undefined -d-version=CarelessAlocation";
+		"-L-allow-undefined -d-version=CarelessAlocation";
 
 	std.file.chdir(configs["hipremeEnginePath"].str);
 	if(timed(() =>waitDubTarget(t, "wasm", DubArguments()

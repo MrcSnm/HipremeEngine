@@ -210,7 +210,6 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
     "-I="~configs["hipremeEnginePath"].str~"/dependencies/runtime/druntime/arsd-webassembly "~
     "-d-version=PSVita " ~
     "-d-version=PSV " ~
-    "-preview=shortenedMethods "~
     "-mtriple=armv7a-unknown-unknown " ~
     "--revert=dtorfields "~
     "-mcpu=cortex-a9 "~
