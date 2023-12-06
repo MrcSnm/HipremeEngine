@@ -26,6 +26,32 @@ string format(string fmt, Args...)(Args a)
     return ret;
 }
 
+string formatFromType(T)(T value)
+{
+    string ret;
+    mixin(()
+    {
+        string base = T.init.toString;
+        ptrdiff_t start = -1, lastCapture;
+        string ret;
+        foreach(i, c; base)
+        {
+            import hip.util.string;
+            if(start != -1 && (isWhitespace(c) || !(isAlpha(c) || isNumeric(c))))
+            {
+                ret~= "ret~= \""~base[lastCapture..start]~"\";";
+                ret~= "ret~= value."~base[start+1..i]~".to!string;";
+                lastCapture = i;
+                start = -1;
+            }
+            else if(c == '$')
+                start = i;
+        }
+        ret~= "ret~= \""~base[lastCapture..$]~"\";";
+        return ret;
+    }());
+    return ret;
+}
 
 /** 
 *   Unsafe function. It requires the programmer to use it correctly as the buffer size is preallocated.
