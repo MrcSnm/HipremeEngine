@@ -154,6 +154,7 @@ class HipRenderer
     static struct Statistics 
     {
         ulong drawCalls;
+        ulong renderFrames;
     }
     __gshared
     {
@@ -270,6 +271,7 @@ class HipRenderer
         return initialize(getRendererFromVersion(rendererType), &cfg, 1280, 720);
     }
 
+    public static Statistics getStatistics(){return stats;}
     private static IHipRendererImpl getRendererFromVersion(out HipRendererType type)
     {
         version(OpenGL)
@@ -499,6 +501,7 @@ class HipRenderer
 
     public static void begin()
     {
+
         rendererImpl.begin();
     }
     
@@ -541,6 +544,7 @@ class HipRenderer
     {
         rendererImpl.end();
         stats.drawCalls=0;
+        stats.renderFrames++;
     }
     public static void clear()
     {
