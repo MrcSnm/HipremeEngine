@@ -48,15 +48,24 @@ string toString(T)(T structOrTupleOrEnum) pure nothrow @safe if(!isArray!T)
     }
     else static if(is(T == struct))//For structs declaration
     {
-        alias struct_ = structOrTupleOrEnum;
-        string s = "(";
-        static foreach(i, alias m; T.tupleof)
+        import hip.util.reflection;
+        static if(__traits(hasMember, T, "toString") && hasUDA!(__traits(getMember, T, "toString"), "format"))
         {
-            if(i > 0)
-                s~= ", ";
-            s~= to!string(struct_.tupleof[i]);
+            import hip.util.format;
+            return formatFromType(structOrTupleOrEnum);
         }
-        return T.stringof~s~")";
+        else
+        {
+            alias struct_ = structOrTupleOrEnum;
+            string s = "(";
+            static foreach(i, alias m; T.tupleof)
+            {
+                if(i > 0)
+                    s~= ", ";
+                s~= to!string(struct_.tupleof[i]);
+            }
+            return T.stringof~s~")";
+        }
     }
     else static if(is(T == enum))
     {

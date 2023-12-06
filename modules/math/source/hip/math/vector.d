@@ -14,6 +14,12 @@ float abc(int a, int b) { return cast(float)a+b;}
 
 struct Vector(uint N, T)
 {
+    @"format" string toString()
+    {
+        static if(N == 2) return "<$x, $y>";
+        else static if(N == 3) return "<$x, $y, $z>";
+        else static if(N == 4) return "<$x, $y, $z, $w>";
+    }
     static assert(N >= 2 && N <= 4, "Vector is only implemented for 2, 3 and 4 dimensions");
     private alias VectorN = Vector!(N, T);
     @nogc @safe nothrow
