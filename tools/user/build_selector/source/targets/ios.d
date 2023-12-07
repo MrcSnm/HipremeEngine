@@ -18,6 +18,15 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 	string out_extraLinkerFlags;
 	setupPerCompiler(t, "ldc2", "ios-"~arch, out_extraLinkerFlags);
 	injectLinkerFlagsOnXcode(t, input, out_extraLinkerFlags);
+	if(!("lastUser" in configs))
+	{
+		configs["lastUser"] = environment["USERNAME"];
+		configs["firstiOSRun"] = true;
+	}
+	if(environment["USERNAME"] != configs["lastUser"].str)
+		configs["firstiOSRun"] = true;
+	
+	appleClean = configs["firstiOSRun"].boolean;
 
 	cached(() => timed(() => outputTemplateForTarget(t, buildTarget)));
 	string codeSignCommand = getCodeSignCommand(t);
@@ -52,6 +61,11 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 				" && cd bin && HipremeEngine.app/Contents/iOS/HipremeEngine")
 			);
 		}
+	}
+	if(configs["firstiOSRun"].boolean)
+	{
+		configs["firstiOSRun"] = false;
+		updateConfigFile();
 	}
 	return ChoiceResult.Continue;
 }
