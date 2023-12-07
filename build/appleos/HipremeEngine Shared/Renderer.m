@@ -47,6 +47,8 @@
 - (void)drawInMTKView:(nonnull MTKView *)view
 {
     /// Per frame updates here
+    if(lastTimeStamp == 0)
+        lastTimeStamp = CACurrentMediaTime();
     CFTimeInterval timeNow = CACurrentMediaTime();
     CFTimeInterval dt = timeNow - lastTimeStamp;
     lastTimeStamp = timeNow;
