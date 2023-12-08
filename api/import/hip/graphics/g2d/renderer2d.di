@@ -8,6 +8,14 @@ public import hip.api.data.font;
 public import hip.api.data.tilemap;
 public import hip.api.graphics.text;
 
+version(Have_util) version = ImportSpritesheet;
+
+version(ImportSpritesheet)
+{
+    public import hip.util.data_structures : Array2D, Array2D_GC;
+    public alias Spritesheet = Array2D_GC!IHipTextureRegion;
+}
+
 extern(System):
 ///Use this only when you're sure you don't need!
 void setRendererErrorCheckingEnabled(bool enable = true);
@@ -76,15 +84,13 @@ IHipAnimation newHipAnimation(string name);
 
 
 version(ImportSpritesheet)
-{
-    package Array2D_GC!IHipTextureRegion cropSpritesheet(
-        IHipTexture t,
-        uint frameWidth, uint frameHeight,
-        uint width = 0, uint height = 0,
-        uint offsetX = 0, uint offsetY = 0,
-        uint offsetXPerFrame = 0, uint offsetYPerFrame = 0
-    );
-}
+package Array2D_GC!IHipTextureRegion cropSpritesheet(
+    IHipTexture t,
+    uint frameWidth, uint frameHeight,
+    uint width = 0, uint height = 0,
+    uint offsetX = 0, uint offsetY = 0,
+    uint offsetXPerFrame = 0, uint offsetYPerFrame = 0
+);
 version(ImportSpritesheet)
 Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
 {
