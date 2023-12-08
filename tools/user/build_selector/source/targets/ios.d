@@ -11,7 +11,7 @@ enum iosArch =
 
 ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-	string buildTarget = getBuildTarget("appleos");
+	string buildTarget = getBuildTarget("ios");
 	string arch = iosArch["simulator"];
 	prepareAppleOSBase(c,t,input);
 
@@ -20,10 +20,10 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 	injectLinkerFlagsOnXcode(t, input, out_extraLinkerFlags);
 	if(!("lastUser" in configs))
 	{
-		configs["lastUser"] = environment["USERNAME"];
+		configs["lastUser"] = environment["USER"];
 		configs["firstiOSRun"] = true;
 	}
-	if(environment["USERNAME"] != configs["lastUser"].str)
+	if(environment["USER"] != configs["lastUser"].str)
 		configs["firstiOSRun"] = true;
 	
 	appleClean = configs["firstiOSRun"].boolean;
@@ -36,7 +36,7 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 		cleanAppleOSLibFolder();
 
 		if(timed(() => waitDubTarget(t, buildTarget, DubArguments().
-			command("build").recipe("appleos").deep(true).arch(arch~"-apple-ios12.0").compiler("ldc2").opts(cOpts))) != 0)
+			command("build").recipe("ios").deep(true).arch(arch~"-apple-ios12.0").compiler("ldc2").opts(cOpts))) != 0)
 		{
 			t.writelnError("Could not build for AppleOS.");
 			return ChoiceResult.Error;

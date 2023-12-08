@@ -10,7 +10,7 @@
     ],
     "subConfigurations": {
         "renderer": "appleos",
-        "audio": "ios"
+        "audio": "psvita"
     },
     "versions": [
         "OpenAL",
