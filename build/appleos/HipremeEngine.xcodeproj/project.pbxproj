@@ -39,38 +39,8 @@
 		EB8B15332B03D0CF001329EC /* modules in Resources */ = {isa = PBXBuildFile; fileRef = EB8B15322B03D0CF001329EC /* modules */; };
 		EB8B15342B03D0CF001329EC /* modules in Resources */ = {isa = PBXBuildFile; fileRef = EB8B15322B03D0CF001329EC /* modules */; };
 		EB8B15352B03D0CF001329EC /* modules in Resources */ = {isa = PBXBuildFile; fileRef = EB8B15322B03D0CF001329EC /* modules */; };
-		EBD454252AFA596B000F28DF /* libarsd-official_bmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E92AFA152400494F59 /* libarsd-official_bmp.a */; };
-		EBD454262AFA596B000F28DF /* libarsd-official_color_base.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E22AFA152300494F59 /* libarsd-official_color_base.a */; };
-		EBD454272AFA596B000F28DF /* libarsd-official_image_files.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D92AFA152200494F59 /* libarsd-official_image_files.a */; };
-		EBD454282AFA596B000F28DF /* libarsd-official_imageresize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EB2AFA152400494F59 /* libarsd-official_imageresize.a */; };
-		EBD454292AFA596B000F28DF /* libarsd-official_jpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D12AFA152200494F59 /* libarsd-official_jpeg.a */; };
-		EBD4542A2AFA596B000F28DF /* libarsd-official_png.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EC2AFA152400494F59 /* libarsd-official_png.a */; };
-		EBD4542B2AFA596B000F28DF /* libarsd-official_svg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D82AFA152200494F59 /* libarsd-official_svg.a */; };
-		EBD4542C2AFA596B000F28DF /* libarsd-official_ttf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E82AFA152400494F59 /* libarsd-official_ttf.a */; };
-		EBD4542D2AFA596B000F28DF /* libassets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D52AFA152200494F59 /* libassets.a */; };
-		EBD4542E2AFA596B000F28DF /* libaudio_decoding.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EA2AFA152400494F59 /* libaudio_decoding.a */; };
-		EBD4542F2AFA596B000F28DF /* libaudio-formats.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EE2AFA152400494F59 /* libaudio-formats.a */; };
-		EBD454302AFA596B000F28DF /* libaudio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7ED2AFA152400494F59 /* libaudio.a */; };
-		EBD454312AFA596B000F28DF /* libbind.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DF2AFA152300494F59 /* libbind.a */; };
-		EBD454322AFA596B000F28DF /* libBindBC_Loader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D22AFA152200494F59 /* libBindBC_Loader.a */; };
-		EBD454332AFA596B000F28DF /* libBindBC_OpenAL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D62AFA152200494F59 /* libBindBC_OpenAL.a */; };
-		EBD454342AFA596B000F28DF /* libconfig.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DD2AFA152300494F59 /* libconfig.a */; };
-		EBD454352AFA596B000F28DF /* libconsole.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E72AFA152400494F59 /* libconsole.a */; };
-		EBD454362AFA596B000F28DF /* libdata.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E52AFA152400494F59 /* libdata.a */; };
-		EBD454372AFA596B000F28DF /* libdebugging.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E42AFA152300494F59 /* libdebugging.a */; };
-		EBD454382AFA596B000F28DF /* liberror.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D72AFA152200494F59 /* liberror.a */; };
-		EBD454392AFA596B000F28DF /* libfilesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DC2AFA152300494F59 /* libfilesystem.a */; };
-		EBD4543A2AFA596B000F28DF /* libfont.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DE2AFA152300494F59 /* libfont.a */; };
-		EBD4543B2AFA596B000F28DF /* libhipengine_api.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D32AFA152200494F59 /* libhipengine_api.a */; };
-		EBD4543C2AFA596B000F28DF /* libhipreme_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D42AFA152200494F59 /* libhipreme_engine.a */; };
-		EBD4543D2AFA596B000F28DF /* libimage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DA2AFA152300494F59 /* libimage.a */; };
-		EBD4543E2AFA596B000F28DF /* libmath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DB2AFA152300494F59 /* libmath.a */; };
-		EBD4543F2AFA596B000F28DF /* libmetal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7F02AFA152500494F59 /* libmetal.a */; };
-		EBD454402AFA596B000F28DF /* librenderer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E62AFA152400494F59 /* librenderer.a */; };
-		EBD454412AFA596B000F28DF /* libtimer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E02AFA152300494F59 /* libtimer.a */; };
-		EBD454422AFA596B000F28DF /* libtween.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E12AFA152300494F59 /* libtween.a */; };
-		EBD454432AFA596B000F28DF /* libutil.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E32AFA152300494F59 /* libutil.a */; };
-		EBD454442AFA596B000F28DF /* libwindowing.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EF2AFA152400494F59 /* libwindowing.a */; };
+		EBAF34EE2B233EF8004B90B1 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBAF34ED2B233EF8004B90B1 /* OpenAL.framework */; };
+		EBAF34EF2B2395BF004B90B1 /* libhipreme_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D42AFA152200494F59 /* libhipreme_engine.a */; };
 		EBD5D7C92AFA13E300494F59 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7C82AFA13E300494F59 /* Metal.framework */; };
 		EBD5D7CB2AFA13EA00494F59 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7CA2AFA13EA00494F59 /* MetalKit.framework */; };
 		EBD5D7CD2AFA13F000494F59 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7CC2AFA13F000494F59 /* UIKit.framework */; };
@@ -78,38 +48,7 @@
 		EBD5D8132AFA503F00494F59 /* InputView.m in Sources */ = {isa = PBXBuildFile; fileRef = EBD5D8112AFA503F00494F59 /* InputView.m */; };
 		EBD5D8142AFA54E600494F59 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1429D68FD400108E4C /* Cocoa.framework */; };
 		EBD5D8152AFA54FE00494F59 /* libphobos2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7CF2AFA140A00494F59 /* libphobos2.a */; };
-		EBD5D8162AFA551100494F59 /* libarsd-official_bmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E92AFA152400494F59 /* libarsd-official_bmp.a */; };
-		EBD5D8172AFA551100494F59 /* libarsd-official_color_base.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E22AFA152300494F59 /* libarsd-official_color_base.a */; };
-		EBD5D8182AFA551100494F59 /* libarsd-official_image_files.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D92AFA152200494F59 /* libarsd-official_image_files.a */; };
-		EBD5D8192AFA551100494F59 /* libarsd-official_imageresize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EB2AFA152400494F59 /* libarsd-official_imageresize.a */; };
-		EBD5D81A2AFA551100494F59 /* libarsd-official_jpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D12AFA152200494F59 /* libarsd-official_jpeg.a */; };
-		EBD5D81B2AFA551100494F59 /* libarsd-official_png.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EC2AFA152400494F59 /* libarsd-official_png.a */; };
-		EBD5D81C2AFA551100494F59 /* libarsd-official_svg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D82AFA152200494F59 /* libarsd-official_svg.a */; };
-		EBD5D81D2AFA551200494F59 /* libarsd-official_ttf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E82AFA152400494F59 /* libarsd-official_ttf.a */; };
-		EBD5D81E2AFA551200494F59 /* libassets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D52AFA152200494F59 /* libassets.a */; };
-		EBD5D81F2AFA551200494F59 /* libaudio_decoding.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EA2AFA152400494F59 /* libaudio_decoding.a */; };
-		EBD5D8202AFA551200494F59 /* libaudio-formats.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EE2AFA152400494F59 /* libaudio-formats.a */; };
-		EBD5D8212AFA551200494F59 /* libaudio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7ED2AFA152400494F59 /* libaudio.a */; };
-		EBD5D8222AFA551200494F59 /* libbind.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DF2AFA152300494F59 /* libbind.a */; };
-		EBD5D8232AFA551200494F59 /* libBindBC_Loader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D22AFA152200494F59 /* libBindBC_Loader.a */; };
-		EBD5D8242AFA551200494F59 /* libBindBC_OpenAL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D62AFA152200494F59 /* libBindBC_OpenAL.a */; };
-		EBD5D8252AFA551200494F59 /* libconfig.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DD2AFA152300494F59 /* libconfig.a */; };
-		EBD5D8262AFA551200494F59 /* libconsole.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E72AFA152400494F59 /* libconsole.a */; };
-		EBD5D8272AFA551200494F59 /* libdata.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E52AFA152400494F59 /* libdata.a */; };
-		EBD5D8282AFA551200494F59 /* libdebugging.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E42AFA152300494F59 /* libdebugging.a */; };
-		EBD5D8292AFA551200494F59 /* liberror.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D72AFA152200494F59 /* liberror.a */; };
-		EBD5D82A2AFA551200494F59 /* libfilesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DC2AFA152300494F59 /* libfilesystem.a */; };
-		EBD5D82B2AFA551200494F59 /* libfont.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DE2AFA152300494F59 /* libfont.a */; };
-		EBD5D82C2AFA551200494F59 /* libhipengine_api.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D32AFA152200494F59 /* libhipengine_api.a */; };
 		EBD5D82D2AFA551200494F59 /* libhipreme_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D42AFA152200494F59 /* libhipreme_engine.a */; };
-		EBD5D82E2AFA551200494F59 /* libimage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DA2AFA152300494F59 /* libimage.a */; };
-		EBD5D82F2AFA551200494F59 /* libmath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7DB2AFA152300494F59 /* libmath.a */; };
-		EBD5D8302AFA551200494F59 /* libmetal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7F02AFA152500494F59 /* libmetal.a */; };
-		EBD5D8312AFA551200494F59 /* librenderer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E62AFA152400494F59 /* librenderer.a */; };
-		EBD5D8322AFA551200494F59 /* libtimer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E02AFA152300494F59 /* libtimer.a */; };
-		EBD5D8332AFA551200494F59 /* libtween.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E12AFA152300494F59 /* libtween.a */; };
-		EBD5D8342AFA551200494F59 /* libutil.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7E32AFA152300494F59 /* libutil.a */; };
-		EBD5D8352AFA551200494F59 /* libwindowing.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7EF2AFA152400494F59 /* libwindowing.a */; };
 		EBD5D8372AFA566500494F59 /* libs in Resources */ = {isa = PBXBuildFile; fileRef = 3130368929D672C700895DD5 /* libs */; };
 /* End PBXBuildFile section */
 
@@ -189,6 +128,7 @@
 		31B53C1129D68FC500108E4C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		31B53C1429D68FD400108E4C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		EB8B15322B03D0CF001329EC /* modules */ = {isa = PBXFileReference; lastKnownFileType = folder; name = modules; path = ../../modules; sourceTree = SOURCE_ROOT; };
+		EBAF34ED2B233EF8004B90B1 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/OpenAL.framework; sourceTree = DEVELOPER_DIR; };
 		EBD5D7C32AF7F89C00494F59 /* libdruntime-ldc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libdruntime-ldc.a"; path = "HipremeEngine_D/static/libdruntime-ldc.a"; sourceTree = "<group>"; };
 		EBD5D7C82AFA13E300494F59 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
 		EBD5D7CA2AFA13EA00494F59 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/MetalKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -235,42 +175,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EBAF34EF2B2395BF004B90B1 /* libhipreme_engine.a in Frameworks */,
+				EBAF34EE2B233EF8004B90B1 /* OpenAL.framework in Frameworks */,
 				EB5383D72AFA7BE700E3B491 /* libdruntime-ldc.a in Frameworks */,
 				EBD5D7CD2AFA13F000494F59 /* UIKit.framework in Frameworks */,
 				EBD5D7CB2AFA13EA00494F59 /* MetalKit.framework in Frameworks */,
 				EBD5D7C92AFA13E300494F59 /* Metal.framework in Frameworks */,
-				EBD454252AFA596B000F28DF /* libarsd-official_bmp.a in Frameworks */,
-				EBD454262AFA596B000F28DF /* libarsd-official_color_base.a in Frameworks */,
-				EBD454272AFA596B000F28DF /* libarsd-official_image_files.a in Frameworks */,
-				EBD454282AFA596B000F28DF /* libarsd-official_imageresize.a in Frameworks */,
-				EBD454292AFA596B000F28DF /* libarsd-official_jpeg.a in Frameworks */,
-				EBD4542A2AFA596B000F28DF /* libarsd-official_png.a in Frameworks */,
-				EBD4542B2AFA596B000F28DF /* libarsd-official_svg.a in Frameworks */,
-				EBD4542C2AFA596B000F28DF /* libarsd-official_ttf.a in Frameworks */,
-				EBD4542D2AFA596B000F28DF /* libassets.a in Frameworks */,
-				EBD4542E2AFA596B000F28DF /* libaudio_decoding.a in Frameworks */,
-				EBD4542F2AFA596B000F28DF /* libaudio-formats.a in Frameworks */,
-				EBD454302AFA596B000F28DF /* libaudio.a in Frameworks */,
-				EBD454312AFA596B000F28DF /* libbind.a in Frameworks */,
-				EBD454322AFA596B000F28DF /* libBindBC_Loader.a in Frameworks */,
-				EBD454332AFA596B000F28DF /* libBindBC_OpenAL.a in Frameworks */,
-				EBD454342AFA596B000F28DF /* libconfig.a in Frameworks */,
-				EBD454352AFA596B000F28DF /* libconsole.a in Frameworks */,
-				EBD454362AFA596B000F28DF /* libdata.a in Frameworks */,
-				EBD454372AFA596B000F28DF /* libdebugging.a in Frameworks */,
-				EBD454382AFA596B000F28DF /* liberror.a in Frameworks */,
-				EBD454392AFA596B000F28DF /* libfilesystem.a in Frameworks */,
-				EBD4543A2AFA596B000F28DF /* libfont.a in Frameworks */,
-				EBD4543B2AFA596B000F28DF /* libhipengine_api.a in Frameworks */,
-				EBD4543C2AFA596B000F28DF /* libhipreme_engine.a in Frameworks */,
-				EBD4543D2AFA596B000F28DF /* libimage.a in Frameworks */,
-				EBD4543E2AFA596B000F28DF /* libmath.a in Frameworks */,
-				EBD4543F2AFA596B000F28DF /* libmetal.a in Frameworks */,
-				EBD454402AFA596B000F28DF /* librenderer.a in Frameworks */,
-				EBD454412AFA596B000F28DF /* libtimer.a in Frameworks */,
-				EBD454422AFA596B000F28DF /* libtween.a in Frameworks */,
-				EBD454432AFA596B000F28DF /* libutil.a in Frameworks */,
-				EBD454442AFA596B000F28DF /* libwindowing.a in Frameworks */,
 				EBD5D7D02AFA140A00494F59 /* libphobos2.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -290,38 +200,7 @@
 				31B53C1629D6902C00108E4C /* Metal.framework in Frameworks */,
 				31B53C1729D6902C00108E4C /* MetalKit.framework in Frameworks */,
 				EBD5D8152AFA54FE00494F59 /* libphobos2.a in Frameworks */,
-				EBD5D8162AFA551100494F59 /* libarsd-official_bmp.a in Frameworks */,
-				EBD5D8172AFA551100494F59 /* libarsd-official_color_base.a in Frameworks */,
-				EBD5D8182AFA551100494F59 /* libarsd-official_image_files.a in Frameworks */,
-				EBD5D8192AFA551100494F59 /* libarsd-official_imageresize.a in Frameworks */,
-				EBD5D81A2AFA551100494F59 /* libarsd-official_jpeg.a in Frameworks */,
-				EBD5D81B2AFA551100494F59 /* libarsd-official_png.a in Frameworks */,
-				EBD5D81C2AFA551100494F59 /* libarsd-official_svg.a in Frameworks */,
-				EBD5D81D2AFA551200494F59 /* libarsd-official_ttf.a in Frameworks */,
-				EBD5D81E2AFA551200494F59 /* libassets.a in Frameworks */,
-				EBD5D81F2AFA551200494F59 /* libaudio_decoding.a in Frameworks */,
-				EBD5D8202AFA551200494F59 /* libaudio-formats.a in Frameworks */,
-				EBD5D8212AFA551200494F59 /* libaudio.a in Frameworks */,
-				EBD5D8222AFA551200494F59 /* libbind.a in Frameworks */,
-				EBD5D8232AFA551200494F59 /* libBindBC_Loader.a in Frameworks */,
-				EBD5D8242AFA551200494F59 /* libBindBC_OpenAL.a in Frameworks */,
-				EBD5D8252AFA551200494F59 /* libconfig.a in Frameworks */,
-				EBD5D8262AFA551200494F59 /* libconsole.a in Frameworks */,
-				EBD5D8272AFA551200494F59 /* libdata.a in Frameworks */,
-				EBD5D8282AFA551200494F59 /* libdebugging.a in Frameworks */,
-				EBD5D8292AFA551200494F59 /* liberror.a in Frameworks */,
-				EBD5D82A2AFA551200494F59 /* libfilesystem.a in Frameworks */,
-				EBD5D82B2AFA551200494F59 /* libfont.a in Frameworks */,
-				EBD5D82C2AFA551200494F59 /* libhipengine_api.a in Frameworks */,
 				EBD5D82D2AFA551200494F59 /* libhipreme_engine.a in Frameworks */,
-				EBD5D82E2AFA551200494F59 /* libimage.a in Frameworks */,
-				EBD5D82F2AFA551200494F59 /* libmath.a in Frameworks */,
-				EBD5D8302AFA551200494F59 /* libmetal.a in Frameworks */,
-				EBD5D8312AFA551200494F59 /* librenderer.a in Frameworks */,
-				EBD5D8322AFA551200494F59 /* libtimer.a in Frameworks */,
-				EBD5D8332AFA551200494F59 /* libtween.a in Frameworks */,
-				EBD5D8342AFA551200494F59 /* libutil.a in Frameworks */,
-				EBD5D8352AFA551200494F59 /* libwindowing.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -412,6 +291,7 @@
 		315796D729B6771F00CE2D39 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EBAF34ED2B233EF8004B90B1 /* OpenAL.framework */,
 				EBD5D7E92AFA152400494F59 /* libarsd-official_bmp.a */,
 				EBD5D7E22AFA152300494F59 /* libarsd-official_color_base.a */,
 				EBD5D7D92AFA152200494F59 /* libarsd-official_image_files.a */,
@@ -863,40 +743,39 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lassets",
-					"-laudio",
-					"-lfilesystem",
-					"-lfont",
-					"-larsd-official_ttf",
-					"-lrenderer",
-					"-laudio_decoding",
-					"-laudio-formats",
 					"-lBindBC_OpenAL",
-					"-lBindBC_Loader",
-					"-lbind",
-					"-lmetal",
-					"-ldata",
-					"-limage",
-					"-larsd-official_image_files",
 					"-larsd-official_bmp",
+					"-larsd-official_color_base",
+					"-larsd-official_core",
+					"-larsd-official_image_files",
 					"-larsd-official_imageresize",
 					"-larsd-official_jpeg",
 					"-larsd-official_png",
-					"-larsd-official_color_base",
-					"-larsd-official_core",
 					"-larsd-official_svg",
-					"-lerror",
-					"-lconsole",
+					"-larsd-official_ttf",
+					"-lassets",
+					"-laudio-formats",
+					"-laudio",
+					"-laudio_decoding",
+					"-lbind",
 					"-lconfig",
+					"-lconsole",
+					"-ldata",
 					"-ldebugging",
-					"-lwindowing",
-					"-lstart_here",
+					"-lerror",
+					"-lfilesystem",
+					"-lfont",
 					"-lgame2d",
-					"-lmath",
-					"-ltween",
-					"-ltimer",
 					"-lhipengine_api",
+					"-limage",
+					"-lmatch3",
+					"-lmath",
+					"-lmetal",
+					"-lrenderer",
+					"-ltimer",
+					"-ltween",
 					"-lutil",
+					"-lwindowing",
 					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
@@ -937,40 +816,39 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lassets",
-					"-laudio",
-					"-lfilesystem",
-					"-lfont",
-					"-larsd-official_ttf",
-					"-lrenderer",
-					"-laudio_decoding",
-					"-laudio-formats",
 					"-lBindBC_OpenAL",
-					"-lBindBC_Loader",
-					"-lbind",
-					"-lmetal",
-					"-ldata",
-					"-limage",
-					"-larsd-official_image_files",
 					"-larsd-official_bmp",
+					"-larsd-official_color_base",
+					"-larsd-official_core",
+					"-larsd-official_image_files",
 					"-larsd-official_imageresize",
 					"-larsd-official_jpeg",
 					"-larsd-official_png",
-					"-larsd-official_color_base",
-					"-larsd-official_core",
 					"-larsd-official_svg",
-					"-lerror",
-					"-lconsole",
+					"-larsd-official_ttf",
+					"-lassets",
+					"-laudio-formats",
+					"-laudio",
+					"-laudio_decoding",
+					"-lbind",
 					"-lconfig",
+					"-lconsole",
+					"-ldata",
 					"-ldebugging",
-					"-lwindowing",
-					"-lstart_here",
+					"-lerror",
+					"-lfilesystem",
+					"-lfont",
 					"-lgame2d",
-					"-lmath",
-					"-ltween",
-					"-ltimer",
 					"-lhipengine_api",
+					"-limage",
+					"-lmatch3",
+					"-lmath",
+					"-lmetal",
+					"-lrenderer",
+					"-ltimer",
+					"-ltween",
 					"-lutil",
+					"-lwindowing",
 					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
@@ -1002,40 +880,39 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lassets",
-					"-laudio",
-					"-lfilesystem",
-					"-lfont",
-					"-larsd-official_ttf",
-					"-lrenderer",
-					"-laudio_decoding",
-					"-laudio-formats",
 					"-lBindBC_OpenAL",
-					"-lBindBC_Loader",
-					"-lbind",
-					"-lmetal",
-					"-ldata",
-					"-limage",
-					"-larsd-official_image_files",
 					"-larsd-official_bmp",
+					"-larsd-official_color_base",
+					"-larsd-official_core",
+					"-larsd-official_image_files",
 					"-larsd-official_imageresize",
 					"-larsd-official_jpeg",
 					"-larsd-official_png",
-					"-larsd-official_color_base",
-					"-larsd-official_core",
 					"-larsd-official_svg",
-					"-lerror",
-					"-lconsole",
+					"-larsd-official_ttf",
+					"-lassets",
+					"-laudio-formats",
+					"-laudio",
+					"-laudio_decoding",
+					"-lbind",
 					"-lconfig",
+					"-lconsole",
+					"-ldata",
 					"-ldebugging",
-					"-lwindowing",
-					"-lstart_here",
+					"-lerror",
+					"-lfilesystem",
+					"-lfont",
 					"-lgame2d",
-					"-lmath",
-					"-ltween",
-					"-ltimer",
 					"-lhipengine_api",
+					"-limage",
+					"-lmatch3",
+					"-lmath",
+					"-lmetal",
+					"-lrenderer",
+					"-ltimer",
+					"-ltween",
 					"-lutil",
+					"-lwindowing",
 					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
@@ -1066,40 +943,39 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lassets",
-					"-laudio",
-					"-lfilesystem",
-					"-lfont",
-					"-larsd-official_ttf",
-					"-lrenderer",
-					"-laudio_decoding",
-					"-laudio-formats",
 					"-lBindBC_OpenAL",
-					"-lBindBC_Loader",
-					"-lbind",
-					"-lmetal",
-					"-ldata",
-					"-limage",
-					"-larsd-official_image_files",
 					"-larsd-official_bmp",
+					"-larsd-official_color_base",
+					"-larsd-official_core",
+					"-larsd-official_image_files",
 					"-larsd-official_imageresize",
 					"-larsd-official_jpeg",
 					"-larsd-official_png",
-					"-larsd-official_color_base",
-					"-larsd-official_core",
 					"-larsd-official_svg",
-					"-lerror",
-					"-lconsole",
+					"-larsd-official_ttf",
+					"-lassets",
+					"-laudio-formats",
+					"-laudio",
+					"-laudio_decoding",
+					"-lbind",
 					"-lconfig",
+					"-lconsole",
+					"-ldata",
 					"-ldebugging",
-					"-lwindowing",
-					"-lstart_here",
+					"-lerror",
+					"-lfilesystem",
+					"-lfont",
 					"-lgame2d",
-					"-lmath",
-					"-ltween",
-					"-ltimer",
 					"-lhipengine_api",
+					"-limage",
+					"-lmatch3",
+					"-lmath",
+					"-lmetal",
+					"-lrenderer",
+					"-ltimer",
+					"-ltween",
 					"-lutil",
+					"-lwindowing",
 					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
@@ -1139,40 +1015,39 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lassets",
-					"-laudio",
-					"-lfilesystem",
-					"-lfont",
-					"-larsd-official_ttf",
-					"-lrenderer",
-					"-laudio_decoding",
-					"-laudio-formats",
 					"-lBindBC_OpenAL",
-					"-lBindBC_Loader",
-					"-lbind",
-					"-lmetal",
-					"-ldata",
-					"-limage",
-					"-larsd-official_image_files",
 					"-larsd-official_bmp",
+					"-larsd-official_color_base",
+					"-larsd-official_core",
+					"-larsd-official_image_files",
 					"-larsd-official_imageresize",
 					"-larsd-official_jpeg",
 					"-larsd-official_png",
-					"-larsd-official_color_base",
-					"-larsd-official_core",
 					"-larsd-official_svg",
-					"-lerror",
-					"-lconsole",
+					"-larsd-official_ttf",
+					"-lassets",
+					"-laudio-formats",
+					"-laudio",
+					"-laudio_decoding",
+					"-lbind",
 					"-lconfig",
+					"-lconsole",
+					"-ldata",
 					"-ldebugging",
-					"-lwindowing",
-					"-lstart_here",
+					"-lerror",
+					"-lfilesystem",
+					"-lfont",
 					"-lgame2d",
-					"-lmath",
-					"-ltween",
-					"-ltimer",
 					"-lhipengine_api",
+					"-limage",
+					"-lmatch3",
+					"-lmath",
+					"-lmetal",
+					"-lrenderer",
+					"-ltimer",
+					"-ltween",
 					"-lutil",
+					"-lwindowing",
 					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
@@ -1209,40 +1084,39 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lassets",
-					"-laudio",
-					"-lfilesystem",
-					"-lfont",
-					"-larsd-official_ttf",
-					"-lrenderer",
-					"-laudio_decoding",
-					"-laudio-formats",
 					"-lBindBC_OpenAL",
-					"-lBindBC_Loader",
-					"-lbind",
-					"-lmetal",
-					"-ldata",
-					"-limage",
-					"-larsd-official_image_files",
 					"-larsd-official_bmp",
+					"-larsd-official_color_base",
+					"-larsd-official_core",
+					"-larsd-official_image_files",
 					"-larsd-official_imageresize",
 					"-larsd-official_jpeg",
 					"-larsd-official_png",
-					"-larsd-official_color_base",
-					"-larsd-official_core",
 					"-larsd-official_svg",
-					"-lerror",
-					"-lconsole",
+					"-larsd-official_ttf",
+					"-lassets",
+					"-laudio-formats",
+					"-laudio",
+					"-laudio_decoding",
+					"-lbind",
 					"-lconfig",
+					"-lconsole",
+					"-ldata",
 					"-ldebugging",
-					"-lwindowing",
-					"-lstart_here",
+					"-lerror",
+					"-lfilesystem",
+					"-lfont",
 					"-lgame2d",
-					"-lmath",
-					"-ltween",
-					"-ltimer",
 					"-lhipengine_api",
+					"-limage",
+					"-lmatch3",
+					"-lmath",
+					"-lmetal",
+					"-lrenderer",
+					"-ltimer",
+					"-ltween",
 					"-lutil",
+					"-lwindowing",
 					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;

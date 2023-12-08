@@ -1,4 +1,5 @@
 require 'xcodeproj'
+require 'json'
 
 #############################################################################################################
 ########### This script provides a way to inject linker commands to .xcodeproj                              #
@@ -12,8 +13,17 @@ require 'xcodeproj'
 LIB_INCLUDES_PATH = "HipremeEngine_D/libIncludes.json"
 PROJECT_PATH = 'HipremeEngine.xcodeproj'
 project = Xcodeproj::Project.open(PROJECT_PATH)
-
-includes = File.open(LIB_INCLUDES_PATH).read.split(' ')
+includes = []
+includesJSON = JSON.parse(File.read(LIB_INCLUDES_PATH))
+includesJSON.each do |key, value|
+    if value then
+        theLib = key
+        if theLib[0..2] == 'lib' then
+            theLib = theLib[3..-1]
+        end
+        includes<<= '-l' + theLib[0..-(File.extname(theLib).length+1)]
+    end
+end
 
 for arg in ARGV
     includes <<= arg

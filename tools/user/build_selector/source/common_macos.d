@@ -68,14 +68,20 @@ void cleanAppleOSLibFolder()
 
 void injectLinkerFlagsOnXcode(ref Terminal t, ref RealTimeConsoleInput input, string extraLinkerFlags)
 {
+	string[] gemsToInstall = ["xcodeproj", "json"];
+	static void installGem(ref Terminal t, ref RealTimeConsoleInput input, string gem)
+	{
+		if(executeShell("gem list | grep "~gem).status)
+		{
+			if(!pollForExecutionPermission(t, input ,"Ruby `gem` called '"~gem~"' is not installed, attempt to install?"))
+				throw new Error("Can't update HipremeEngine.xcodeproj without installing dependency for ruby script.");
+			wait(spawnShell("sudo gem install "~gem));
+		}
+	}
 	with(WorkingDir(getHipPath("build", "appleos")))
 	{
-		if(executeShell("gem list | grep xcodeproj").status)
-		{
-			if(!pollForExecutionPermission(t, input ,"Ruby `gem` called 'xcodeproj' is not installed, attempt to install?"))
-				throw new Error("Can't update HipremeEngine.xcodeproj without installing dependency for ruby script.");
-			wait(spawnShell("sudo gem install xcodeproj"));
-		}
+		foreach(gem; gemsToInstall)
+			installGem(t, input, gem);
 		spawnShell("ruby injectLib.rb "~extraLinkerFlags);
 	}
 }
