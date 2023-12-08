@@ -9,7 +9,7 @@ require 'xcodeproj'
 ########### open an issue on github.com/MrcSnm/HipremeEngine for sending your custom linker flags.          #
 #############################################################################################################
 
-LIB_INCLUDES_PATH = "HipremeEngine_D/libIncludes.txt"
+LIB_INCLUDES_PATH = "HipremeEngine_D/libIncludes.json"
 PROJECT_PATH = 'HipremeEngine.xcodeproj'
 project = Xcodeproj::Project.open(PROJECT_PATH)
 

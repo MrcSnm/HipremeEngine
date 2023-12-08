@@ -39,11 +39,21 @@ int main(string[] args)
     string librariesData = ret.output;
 
     import std.string:replace, split;
-    string[] libraries = librariesData.replace("\"", "").replace("'", "").replace("\n", "").split(" ");
+    string[] libraries = librariesData.replace("\"", "").replace("'", "").replace("\n", "").replace("\r", "").split(" ");
     writeln("Found libraries ", libraries.map!(lName => lName.baseName));
+    
+    string libIncludes = buildNormalizedPath(outputPath, "..", "libIncludes.json");
+    JSONValue includes = parseJSON("{}");
 
-    string libIncludes = buildNormalizedPath(outputPath, "..", "libIncludes.txt");
-    std.file.write(libIncludes, libraries.map!(lName => "-l"~lName.baseName.stripExtension[3..$]).join(" "));
+    if(std.file.exists(libIncludes))
+    {
+        includes = parseJSON(cast(string)std.file.read(libIncludes));
+        foreach(key, value; includes.object)
+            includes[key] = false;
+    }
+    foreach(library; libraries)
+        includes[library.baseName] = true;
+    std.file.write(libIncludes, includes.toPrettyString());
 
     string libNames = "";
     mkdirRecurse(outputPath);
