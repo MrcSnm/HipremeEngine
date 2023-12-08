@@ -12,6 +12,11 @@ void rawinfoImpl(string str);
 void rawerrorImpl(string str);
 void rawfatalImpl(string str);
 
+
+/** 
+ * Generates a set of templated functions for the scripting API call.
+ *
+ */
 mixin template mxGenLogDefs()
 {
     static foreach(mem; __traits(allMembers, hip.console.log))
