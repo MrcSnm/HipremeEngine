@@ -1,9 +1,29 @@
 module hip.console.log;
 
 
-void logln(Args...)(Args a, string file = __FILE__, string func = __PRETTY_FUNCTION__, ulong line = __LINE__);
-void loglnInfo(Args...)(Args a, string file = __FILE__, string func = __PRETTY_FUNCTION__, ulong line = __LINE__);
-void loglnWarn(Args...)(Args a, string file = __FILE__, string func = __PRETTY_FUNCTION__, ulong line = __LINE__);
-void loglnError(Args...)(Args a, string file = __FILE__, string func = __PRETTY_FUNCTION__, ulong line = __LINE__);
-void hiplog(Args...)(Args a, string file = __FILE__,string func = __PRETTY_FUNCTION__,ulong line = __LINE__);
-void rawlog(Args...)(Args a);
+
+void loglnImpl(string s, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__);
+void loglnInfoImpl(string s, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__);
+void loglnWarnImpl(string s, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__);
+void loglnErrorImpl(string s, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__);
+void rawlogImpl(string str);
+void rawwarnImpl(string str);
+void rawinfoImpl(string str);
+void rawerrorImpl(string str);
+void rawfatalImpl(string str);
+
+mixin template mxGenLogDefs()
+{
+    static foreach(mem; __traits(allMembers, hip.console.log))
+    {
+        static if(mem[0..3] == "raw")
+        {
+            mixin("void ", mem[0..$-"Impl".length], 
+            " (Args...)(Args a){import hip.util.string; ",mem,"(String(a).toString);}");
+        }
+        else
+        mixin("void ", mem[0..$ -"Impl".length], 
+        " (Args...)(Args a, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__)",
+        " {import hip.util.string; ",mem,"(String(a).toString, f, fn, l);}");
+    }
+}

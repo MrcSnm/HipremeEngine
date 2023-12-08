@@ -126,6 +126,16 @@ ulong line = __LINE__)
 }
 
 
+void loglnImpl(string s, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__){logln(s,f,fn,l);}
+void loglnInfoImpl(string s, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__){loglnInfo(s,f,fn,l);}
+void loglnWarnImpl(string s, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__){loglnWarnImpl(s,f,fn,l);}
+void loglnErrorImpl(string s, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__){loglnErrorImpl(s,f,fn,l);}
+void rawlogImpl(string str){Console.DEFAULT.log(str);}
+void rawwarnImpl(string str){Console.DEFAULT.warn(str);}
+void rawinfoImpl(string str){Console.DEFAULT.info(str);}
+void rawerrorImpl(string str){Console.DEFAULT.error(str);}
+void rawfatalImpl(string str){Console.DEFAULT.fatal(str);}
+
 void rawlog(Args... )(Args a){Console.DEFAULT.log(a);}
 void rawwarn(Args... )(Args a){Console.DEFAULT.warn(a);}
 void rawinfo(Args... )(Args a){Console.DEFAULT.info(a);}
