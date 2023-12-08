@@ -96,7 +96,16 @@ template hasUDA(alias symbol, alias UDA)
     {
         bool ret = false;
         foreach(att; __traits(getAttributes, symbol))
-            if(is(typeof(att) == UDA) || is(att == UDA)) ret = true;
+        {
+            static if(is(typeof(UDA)))
+            {
+                if(att == UDA) ret = true;
+            }
+            else
+            {
+                if(is(typeof(att) == UDA) || is(att == UDA)) ret = true;
+            } 
+        }
         return ret;
     }();
     enum hasUDA = helper;
