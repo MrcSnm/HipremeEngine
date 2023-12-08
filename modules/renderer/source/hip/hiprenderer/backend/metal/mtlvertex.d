@@ -115,8 +115,6 @@ class HipMTLVertexBuffer : IHipVertexBufferImpl
 
     void updateData(int offset, const void[] data)
     {
-        import hip.console.log;
-        hiplog("Update buffer[",offset,"..",offset+data.length,"]");
         buffer.contents[offset..offset+data.length] = data[];
     }
 }

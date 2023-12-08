@@ -318,11 +318,11 @@ class HipMTLRenderer : IHipRendererImpl
 
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
-        setColor(r,g,b,a);
-        renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.Clear;
-        cmdEncoder.endEncoding();
-        cmdBuffer.commit();
-        begin();
+        // setColor(r,g,b,a);
+        // renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.Clear;
+        // cmdEncoder.endEncoding();
+        // cmdBuffer.commit();
+        // begin();
     }
 
     public void dispose()

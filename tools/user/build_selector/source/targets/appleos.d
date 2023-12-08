@@ -22,6 +22,7 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 			t.writelnError("Could not build for AppleOS.");
 			return ChoiceResult.Error;
 		}
+
 		runEngineDScript(t, "copylinkerfiles.d", 
 			"\"--recipe="~buildPath(getBuildTarget, "dub.json")~"\"",
 			getHipPath("build", "appleos", XCodeDFolder, "libs")
