@@ -1,8 +1,7 @@
-module hip.hipaudio;
-public import hip.api.audio.audiosource;
+module hip.hipaudio.audio;
 public import hip.api.audio.audioclip;
-
-extern class HipAudio
+public import hip.api.audio.audiosource;
+class HipAudio
 {
     static
     {
@@ -14,5 +13,3 @@ extern class HipAudio
         AHipAudioSource getSource(bool isStreamed = false, IHipAudioClip clip = null);
     }
 }
-
-extern public abstract class HipAudioClip : IHipAudioClip{}
