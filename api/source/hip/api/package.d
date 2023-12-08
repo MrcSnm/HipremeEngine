@@ -26,6 +26,7 @@ module hip.api;
 */
 
 public import hip.api.impl;
+public import hip.api.config;
 
 
 enum HipAssetLoadStrategy
