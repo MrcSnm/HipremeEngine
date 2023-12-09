@@ -14,14 +14,19 @@ LIB_INCLUDES_PATH = "HipremeEngine_D/libIncludes.json"
 PROJECT_PATH = 'HipremeEngine.xcodeproj'
 project = Xcodeproj::Project.open(PROJECT_PATH)
 includes = []
+removes  = []
 includesJSON = JSON.parse(File.read(LIB_INCLUDES_PATH))
 includesJSON.each do |key, value|
+    theLib = key
+    if theLib[0..2] == 'lib' then
+        theLib = theLib[3..-1]
+    end
+    theLib = '-l' + theLib[0..-(File.extname(theLib).length+1)]
+
     if value then
-        theLib = key
-        if theLib[0..2] == 'lib' then
-            theLib = theLib[3..-1]
-        end
-        includes<<= '-l' + theLib[0..-(File.extname(theLib).length+1)]
+        includes<<= theLib
+    else
+        removes<<= theLib
     end
 end
 
@@ -35,6 +40,12 @@ project.targets.each do |target|
         includes.each do |includeName|
             if config.build_settings['OTHER_LDFLAGS'].index(includeName) == nil then
                 config.build_settings['OTHER_LDFLAGS'] << includeName
+            end
+        end
+        removes.each do |removeName|
+            idx = config.build_settings['OTHER_LDFLAGS'].index(removeName)
+            if idx != nil then
+                config.build_settings['OTHER_LDFLAGS'] -= removeName
             end
         end
     end
