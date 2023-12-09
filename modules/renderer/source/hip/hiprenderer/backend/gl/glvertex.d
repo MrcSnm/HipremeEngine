@@ -148,7 +148,7 @@ class Hip_GL3_IndexBufferObject : IHipIndexBufferImpl
     }
     void updateData(int offset, const index_t[] data)
     {
-        ErrorHandler.assertExit((offset+data.length)*index_t.sizeof <= data.length);
+        ErrorHandler.assertExit((offset+data.length)*index_t.sizeof <= this.size);
         this.bind();
         glCall(() => glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, data.length*index_t.sizeof, cast(void*)data.ptr));
     }
