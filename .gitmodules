@@ -10,3 +10,9 @@
 [submodule "dependencies/metal"]
 	path = dependencies/metal
 	url = https://github.com/MrcSnm/D-Metal-Binding
+[submodule "dependencies/avaudioengine"]
+	path = dependencies/avaudioengine
+	url = https://github.com/MrcSnm/d-avaudioengine-binding
+[submodule "dependencies/objc"]
+	path = dependencies/objc
+	url = https://github.com/MrcSnm/D-objective-c
