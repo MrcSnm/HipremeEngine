@@ -15,7 +15,7 @@ import hip.util.conv;
 /** 
  * Base clas for documenting errors
  */
- 
+
 public class EngineErrorStack
 {
     public string stackName;
@@ -50,6 +50,19 @@ public class EngineErrorStack
     }
 }
 
+
+import core.stdc.stdlib;
+
+version(iOS) 
+{
+    extern(C) void terminateiOSApp(int code);
+    ///iOS has a special terminate function which ought to be called when something happens.
+    alias terminate = terminateiOSApp;
+}
+else
+{
+    alias terminate = core.stdc.stdlib.exit;
+}
 
 /** 
  * Class Used for handling errors
@@ -184,8 +197,7 @@ public static class ErrorHandler
         {
             cast(void)ErrorHandler.assertErrorMessage(false, "HipAssertion", onAssertionFailure, true,
             file, line, mod, func);
-            import core.stdc.stdlib;
-            exit(EXIT_FAILURE);
+            terminate(EXIT_FAILURE);
         }
     }
 
@@ -196,8 +208,7 @@ public static class ErrorHandler
         {
             cast(void)ErrorHandler.assertLazyErrorMessage(false, "HipAssertion", onAssertionFailure, true,
             file, line, mod, func);
-            import core.stdc.stdlib;
-            exit(EXIT_FAILURE);
+            terminate(EXIT_FAILURE);
         }
     }
 

@@ -19,26 +19,32 @@ public import hip.api.audio.audioclip;
 
 union HipAudioBuffer
 {
-    version(Have_bindbc_openal)
+    import hip.hipaudio.config;
+    static if(HasOpenAL)
     {
         import bindbc.openal;
         ALuint al;
     }
-    version(Have_sles)
+    static if(HasOpenSLES)
     {
         import opensles.sles;
         import hip.hipaudio.backend.sles;
         SLIBuffer* sles;
     }
-    version(Windows) version(Have_directx_d)
+    static if(HasXAudio2)
     {
         import directx.xaudio2;
         XAUDIO2_BUFFER* xaudio;
     }
-    version(WebAssembly)
+    static if(HasWebAudio)
     {
         import hip.hipaudio.backend.webaudio.clip;
         size_t webaudio;
+    }
+    static if(HasAVAudioEngine)
+    {
+        import hip.hipaudio.backend.avaudio.clip;
+        AVAudioPCMBuffer avaudio;
     }
 }
 
