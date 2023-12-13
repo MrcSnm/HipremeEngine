@@ -48,7 +48,8 @@ class HipAVAudioSource : HipAudioSource
         if(isPlaying)
         {
         }
-        player.scheduleBuffer(getBufferFromAPI(clip).avaudio);
+        AVAudioPCMBuffer b = getBufferFromAPI(clip).avaudio;
+        player.scheduleBuffer(b);
         player.play();
         return true;
     }

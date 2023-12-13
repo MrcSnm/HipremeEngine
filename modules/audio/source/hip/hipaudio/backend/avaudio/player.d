@@ -71,7 +71,7 @@ class HipAVAudioPlayer : IHipAudioPlayer
     public bool play_streamed(AHipAudioSource src){return src.play_streamed();}
 
     public AHipAudioSource getSource(bool isStreamed){return new HipAVAudioSource(this);}
-    public IHipAudioClip getClip(){return new HipAVAudioClip(new HipAudioDecoder(), HipAudioClipHint(2, 44_100, false, true));}
+    public IHipAudioClip getClip(){return new HipAVAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true));}
 
     public IHipAudioClip loadStreamed(string audioName, uint chunkSize)
     {

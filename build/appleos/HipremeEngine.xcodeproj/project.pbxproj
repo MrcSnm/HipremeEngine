@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3130368F29D6807400895DD5 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3130368729D670A400895DD5 /* assets */; };
-		3130369029D6807500895DD5 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3130368729D670A400895DD5 /* assets */; };
-		3130369129D6807500895DD5 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3130368729D670A400895DD5 /* assets */; };
 		3130369429D680EB00895DD5 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156441E29A1546600559889 /* Renderer.m */; };
 		3130369529D680EB00895DD5 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156441E29A1546600559889 /* Renderer.m */; };
 		3156442B29A1546900559889 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3156442A29A1546900559889 /* AppDelegate.m */; };
@@ -34,8 +31,14 @@
 		31B53C1629D6902C00108E4C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1129D68FC500108E4C /* Metal.framework */; };
 		31B53C1729D6902C00108E4C /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B53C1029D68FC500108E4C /* MetalKit.framework */; };
 		EB5383D72AFA7BE700E3B491 /* libdruntime-ldc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7C32AF7F89C00494F59 /* libdruntime-ldc.a */; };
-		EBAF34EE2B233EF8004B90B1 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBAF34ED2B233EF8004B90B1 /* OpenAL.framework */; };
 		EBAF34EF2B2395BF004B90B1 /* libhipreme_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7D42AFA152200494F59 /* libhipreme_engine.a */; };
+		EBAF34F42B240158004B90B1 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3130368729D670A400895DD5 /* assets */; };
+		EBAF34F52B240159004B90B1 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3130368729D670A400895DD5 /* assets */; };
+		EBAF34F62B24015B004B90B1 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3130368729D670A400895DD5 /* assets */; };
+		EBAF34F82B28913B004B90B1 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBAF34F72B28913B004B90B1 /* AVFAudio.framework */; };
+		EBAF34FC2B289B5A004B90B1 /* CoreAudioKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBAF34F92B289B59004B90B1 /* CoreAudioKit.framework */; };
+		EBAF34FE2B289B5A004B90B1 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBAF34FB2B289B59004B90B1 /* CoreAudio.framework */; };
+		EBAF35012B289B6F004B90B1 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBAF34FF2B289B6F004B90B1 /* AudioToolbox.framework */; };
 		EBD5D7C92AFA13E300494F59 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7C82AFA13E300494F59 /* Metal.framework */; };
 		EBD5D7CB2AFA13EA00494F59 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7CA2AFA13EA00494F59 /* MetalKit.framework */; };
 		EBD5D7CD2AFA13F000494F59 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBD5D7CC2AFA13F000494F59 /* UIKit.framework */; };
@@ -123,6 +126,12 @@
 		31B53C1429D68FD400108E4C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		EB8B15322B03D0CF001329EC /* modules */ = {isa = PBXFileReference; lastKnownFileType = folder; name = modules; path = ../../modules; sourceTree = SOURCE_ROOT; };
 		EBAF34ED2B233EF8004B90B1 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/OpenAL.framework; sourceTree = DEVELOPER_DIR; };
+		EBAF34F72B28913B004B90B1 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/AVFAudio.framework; sourceTree = DEVELOPER_DIR; };
+		EBAF34F92B289B59004B90B1 /* CoreAudioKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/CoreAudioKit.framework; sourceTree = DEVELOPER_DIR; };
+		EBAF34FA2B289B59004B90B1 /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = DEVELOPER_DIR; };
+		EBAF34FB2B289B59004B90B1 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/CoreAudio.framework; sourceTree = DEVELOPER_DIR; };
+		EBAF34FF2B289B6F004B90B1 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/AudioToolbox.framework; sourceTree = DEVELOPER_DIR; };
+		EBAF35002B289B6F004B90B1 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/AudioUnit.framework; sourceTree = DEVELOPER_DIR; };
 		EBD5D7C32AF7F89C00494F59 /* libdruntime-ldc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libdruntime-ldc.a"; path = "HipremeEngine_D/static/libdruntime-ldc.a"; sourceTree = "<group>"; };
 		EBD5D7C82AFA13E300494F59 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
 		EBD5D7CA2AFA13EA00494F59 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/MetalKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -169,8 +178,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EBAF35012B289B6F004B90B1 /* AudioToolbox.framework in Frameworks */,
+				EBAF34FC2B289B5A004B90B1 /* CoreAudioKit.framework in Frameworks */,
+				EBAF34FE2B289B5A004B90B1 /* CoreAudio.framework in Frameworks */,
+				EBAF34F82B28913B004B90B1 /* AVFAudio.framework in Frameworks */,
 				EBAF34EF2B2395BF004B90B1 /* libhipreme_engine.a in Frameworks */,
-				EBAF34EE2B233EF8004B90B1 /* OpenAL.framework in Frameworks */,
 				EB5383D72AFA7BE700E3B491 /* libdruntime-ldc.a in Frameworks */,
 				EBD5D7CD2AFA13F000494F59 /* UIKit.framework in Frameworks */,
 				EBD5D7CB2AFA13EA00494F59 /* MetalKit.framework in Frameworks */,
@@ -285,6 +297,12 @@
 		315796D729B6771F00CE2D39 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EBAF34FF2B289B6F004B90B1 /* AudioToolbox.framework */,
+				EBAF35002B289B6F004B90B1 /* AudioUnit.framework */,
+				EBAF34FB2B289B59004B90B1 /* CoreAudio.framework */,
+				EBAF34F92B289B59004B90B1 /* CoreAudioKit.framework */,
+				EBAF34FA2B289B59004B90B1 /* CoreAudioTypes.framework */,
+				EBAF34F72B28913B004B90B1 /* AVFAudio.framework */,
 				EBAF34ED2B233EF8004B90B1 /* OpenAL.framework */,
 				EBD5D7E92AFA152400494F59 /* libarsd-official_bmp.a */,
 				EBD5D7E22AFA152300494F59 /* libarsd-official_color_base.a */,
@@ -477,8 +495,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3130368F29D6807400895DD5 /* assets in Resources */,
 				3156443129A1546900559889 /* Main.storyboard in Resources */,
+				EBAF34F52B240159004B90B1 /* assets in Resources */,
 				3156446329A1546900559889 /* Assets.xcassets in Resources */,
 				3156443429A1546900559889 /* LaunchScreen.storyboard in Resources */,
 			);
@@ -489,7 +507,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3156444529A1546900559889 /* Main.storyboard in Resources */,
-				3130369029D6807500895DD5 /* assets in Resources */,
+				EBAF34F42B240158004B90B1 /* assets in Resources */,
 				3156446429A1546900559889 /* Assets.xcassets in Resources */,
 				3156444829A1546900559889 /* LaunchScreen.storyboard in Resources */,
 			);
@@ -499,7 +517,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3130369129D6807500895DD5 /* assets in Resources */,
+				EBAF34F62B24015B004B90B1 /* assets in Resources */,
 				3156446529A1546900559889 /* Assets.xcassets in Resources */,
 				3156445929A1546900559889 /* Main.storyboard in Resources */,
 			);
@@ -731,7 +749,6 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lBindBC_OpenAL",
 					"-larsd-official_bmp",
 					"-larsd-official_color_base",
 					"-larsd-official_core",
@@ -745,6 +762,7 @@
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
+					"-lavaudioengine",
 					"-lbind",
 					"-lconfig",
 					"-lconsole",
@@ -759,6 +777,7 @@
 					"-lmatch3",
 					"-lmath",
 					"-lmetal",
+					"-lobjc_meta",
 					"-lrenderer",
 					"-ltimer",
 					"-ltween",
@@ -804,7 +823,6 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lBindBC_OpenAL",
 					"-larsd-official_bmp",
 					"-larsd-official_color_base",
 					"-larsd-official_core",
@@ -818,6 +836,7 @@
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
+					"-lavaudioengine",
 					"-lbind",
 					"-lconfig",
 					"-lconsole",
@@ -832,6 +851,7 @@
 					"-lmatch3",
 					"-lmath",
 					"-lmetal",
+					"-lobjc_meta",
 					"-lrenderer",
 					"-ltimer",
 					"-ltween",
@@ -868,7 +888,6 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lBindBC_OpenAL",
 					"-larsd-official_bmp",
 					"-larsd-official_color_base",
 					"-larsd-official_core",
@@ -882,6 +901,7 @@
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
+					"-lavaudioengine",
 					"-lbind",
 					"-lconfig",
 					"-lconsole",
@@ -896,6 +916,7 @@
 					"-lmatch3",
 					"-lmath",
 					"-lmetal",
+					"-lobjc_meta",
 					"-lrenderer",
 					"-ltimer",
 					"-ltween",
@@ -931,7 +952,6 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lBindBC_OpenAL",
 					"-larsd-official_bmp",
 					"-larsd-official_color_base",
 					"-larsd-official_core",
@@ -945,6 +965,7 @@
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
+					"-lavaudioengine",
 					"-lbind",
 					"-lconfig",
 					"-lconsole",
@@ -959,6 +980,7 @@
 					"-lmatch3",
 					"-lmath",
 					"-lmetal",
+					"-lobjc_meta",
 					"-lrenderer",
 					"-ltimer",
 					"-ltween",
@@ -1003,7 +1025,6 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lBindBC_OpenAL",
 					"-larsd-official_bmp",
 					"-larsd-official_color_base",
 					"-larsd-official_core",
@@ -1017,6 +1038,7 @@
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
+					"-lavaudioengine",
 					"-lbind",
 					"-lconfig",
 					"-lconsole",
@@ -1031,6 +1053,7 @@
 					"-lmatch3",
 					"-lmath",
 					"-lmetal",
+					"-lobjc_meta",
 					"-lrenderer",
 					"-ltimer",
 					"-ltween",
@@ -1072,7 +1095,6 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lBindBC_OpenAL",
 					"-larsd-official_bmp",
 					"-larsd-official_color_base",
 					"-larsd-official_core",
@@ -1086,6 +1108,7 @@
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
+					"-lavaudioengine",
 					"-lbind",
 					"-lconfig",
 					"-lconsole",
@@ -1100,6 +1123,7 @@
 					"-lmatch3",
 					"-lmath",
 					"-lmetal",
+					"-lobjc_meta",
 					"-lrenderer",
 					"-ltimer",
 					"-ltween",
