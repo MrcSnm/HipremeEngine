@@ -81,6 +81,15 @@
 			}
 		},
 		{
+			"name": "ios",
+			"dependencies": {
+				"avaudioengine": {"path": "../../dependencies/avaudioengine"}
+			},
+			"subConfigurations": {
+				"audio_decoding": "audioformats"
+			}
+		},
+		{
 			"name": "android",
 			"dependencies": {"sles": {"path": "../../dependencies/sles", "version": "*"}},
 			"subConfigurations": {
