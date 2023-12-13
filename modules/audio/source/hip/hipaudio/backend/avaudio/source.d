@@ -5,6 +5,7 @@ import avaudiosourcenode;
 import avaudioplayernode;
 import avaudiosinknode;
 import avaudioionode;
+import hip.hipaudio.backend.avaudio.clip;
 import hip.error.handler;
 import hip.hipaudio.backend.avaudio.player;
 import hip.hipaudio.audiosource;
@@ -12,15 +13,15 @@ import hip.hipaudio.audiosource;
 class HipAVAudioSource : HipAudioSource
 {
     AVAudioSinkNode sink;
-    AVAudioOutputNode output;
+    AVAudioPlayerNode player;
+    AVAudioPCMBuffer buffer;
 
     protected bool isClipDirty = true;
 
 
     this(HipAVAudioPlayer player)
     {
-        import hip.util.conv;
-        output = player.engine.outputNode;        
+        this.player = player.playerNode;
     }
     alias clip = HipAudioSource.clip;
 
@@ -47,16 +48,19 @@ class HipAVAudioSource : HipAudioSource
         if(isPlaying)
         {
         }
-
+        player.scheduleBuffer(getBufferFromAPI(clip).avaudio);
+        player.play();
         return true;
     }
     override bool stop()
     {
+        player.stop();
         isPlaying = false;
         return false;
     }
     override bool pause()
     {
+        player.pause();
         isPaused = true;
         return false;
     }
