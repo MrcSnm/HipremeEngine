@@ -122,9 +122,11 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
     void setColor(HipColor color)
     {
         if(this.color != color)
+        {
             draw();
+            bmTextShader.uColor = HipColorf(color);
+        }
         this.color = color;
-        bmTextShader.uColor = HipColorf(color);
     }
 
     /** 
