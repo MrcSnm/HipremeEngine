@@ -109,7 +109,10 @@ class HipText
     {
         checkDirty();
         if(shouldUpdateText)
+        {
             updateText(font);
+            checkDirty.start(this);
+        }
         
         return cast(void[])vertices[0..drawableTextCount * 4];
     }
