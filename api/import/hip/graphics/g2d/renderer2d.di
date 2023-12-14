@@ -53,6 +53,8 @@ void drawMap(IHipTilemap reg);
 void setFont (IHipFont font);
 ///Sets the font using HipAssetManager.loadFont
 package void setFontDeferred (IHipAssetLoadTask font);
+///Changes textBatch state to use this color
+void setTextColor(HipColor);
 ///Draws a text using the last font set
 void drawText(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1, bool wordWrap = false);
 ///Draw text using those vertices. Low level API

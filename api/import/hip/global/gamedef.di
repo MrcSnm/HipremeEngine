@@ -5,7 +5,7 @@ public import hip.api.data.image;
 
 extern(System)
 {
-    IHipFont getDefaultFont();
-    IHipFont getDefaultFontWithSize(uint size);
+    HipFont getDefaultFont();
+    HipFont getDefaultFontWithSize(uint size);
     IHipTexture getDefaultTexture();
 }

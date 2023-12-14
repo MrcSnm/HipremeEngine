@@ -7,8 +7,8 @@ alias HipFontKerning = HipCharKerning[dchar];
 ///see hip.graphics.g2d.textrenderer
 struct HipTextRendererVertexAPI
 {
-    float[3] vPosition;
-    float[2] vTexST;
+    float[3] vPosition = [0,0,0];
+    float[2] vTexST = [0,0];
 }
 
 /** 
@@ -190,7 +190,6 @@ interface IHipFont
     uint spaceWidth(uint newWidth);
     uint lineBreakHeight() const;
     uint lineBreakHeight(uint newHeight);
-    IHipFont getFontWithSize(uint size);
 
 }
 
@@ -235,4 +234,6 @@ abstract class HipFont : IHipFont
         }
         height = lineBreakHeight*i;
     }
+    HipFont getFontWithSize(uint size);
+
 }

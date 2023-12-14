@@ -370,7 +370,7 @@ class HipBitmapFont : HipFont
     /**
     *   This won't do anything in case of a bitmap font, as no one can change it.
     */
-    IHipFont getFontWithSize(uint size)
+    override HipFont getFontWithSize(uint size)
     {
         HipBitmapFont ret = new HipBitmapFont();
         ret.atlasPath = this.atlasPath;
@@ -378,7 +378,7 @@ class HipBitmapFont : HipFont
         ret.kerning = cast(HipFontKerning)this.kerning.dup;
         ret.charactersCount = this.charactersCount;
         ret._texture = cast(IHipTexture)this._texture;
-        return cast(IHipFont)ret;
+        return cast(HipFont)ret;
     }
     void readTexture(string texturePath = "")
     {

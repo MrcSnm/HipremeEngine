@@ -70,6 +70,8 @@ else version(ScriptAPI)
             void function (IHipFont font) setFont;
             ///Sets the font using HipAssetManager.loadFont
             package void function (IHipAssetLoadTask font) setFontDeferred;
+            ///Changes textBatch state to use this color
+            void function(HipColor) setTextColor;
             ///Draws a text using the last font set
             void function(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.CENTER, HipTextAlign alignV = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1, bool wordWrap = false) drawText;
             ///Draw text using those vertices. Low level API
@@ -163,6 +165,9 @@ version(none)
         ///Draws a texture region at a specified place
         void function(IHipTextureRegion reg, int x, int y, int z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawRegion;
         void function(IHipTilemap reg) drawMap;
+
+        ///Changes textBatch state to use this color
+        void function(HipColor) setTextColor;
         ///Sets the font for the next drawText commands
         package void function (IHipFont font) setFont;
         ///Sets the font using HipAssetManager.loadFont

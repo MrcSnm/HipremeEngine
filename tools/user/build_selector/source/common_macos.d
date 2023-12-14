@@ -86,18 +86,28 @@ void injectLinkerFlagsOnXcode(ref Terminal t, ref RealTimeConsoleInput input, st
 	}
 }
 
+
 private __gshared string codeSignUuid;
-string getCodeSignCommand(ref Terminal t)
+/** 
+ * No need to codesign a non release version.
+ */
+string getCodeSignCommand(ref Terminal t, bool isReleaseVersion = false)
 {
-	cached(
+	if(isReleaseVersion)
 	{
-		auto res = executeShell("security find-identity -v -p codesigning");
-		if(res.status)
-			throw new Error("Could not get codesigning UUID for building to iOS");
-		import std.string:indexOf, chomp;
-		string uuid = res.output;
-		codeSignUuid = uuid[uuid.indexOf(')')+1..uuid.indexOf('"')].chomp;
-		t.writelnHighlighted("CodeSign UUID: ", codeSignUuid);	
-	});
-	return "PROVISIONING_PROFILE='"~codeSignUuid~"' ";
+		cached(
+		{
+			auto res = executeShell("security find-identity -v -p codesigning");
+			if(res.status)
+				throw new Error("Could not get codesigning UUID for building to iOS");
+			import std.string:indexOf, chomp;
+			string uuid = res.output;
+			codeSignUuid = uuid[uuid.indexOf(')')+1..uuid.indexOf('"')].chomp;
+			t.writelnHighlighted("CodeSign UUID: ", codeSignUuid);	
+		});
+		return "PROVISIONING_PROFILE='"~codeSignUuid~"' ";
+	}
+	else 
+		return "CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ALLOWED=NO";
 }
+

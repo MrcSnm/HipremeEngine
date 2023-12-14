@@ -47,7 +47,7 @@ class HipNullFont : HipFont
     bool loadTexture(ubyte[] rawImage){return false;}
     override int getKerning(dchar current, dchar next) const{return 0;}
     override int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const{return 0;}
-    IHipFont getFontWithSize(uint size){return new HipNullFont();}
+    override HipFont getFontWithSize(uint size){return new HipNullFont();}
 }
 
 
@@ -129,7 +129,7 @@ class HipArsd_TTF_Font : HipFont
     * This function returns a new font using the same data file, with a new size.
     * The font data will reference to this same one 
     */
-    IHipFont getFontWithSize(uint size)
+    override HipFont getFontWithSize(uint size)
     {
         Hip_TTF_Font ret = new Hip_TTF_Font(this.path, size);
         ret.font = cast(TtfFont)this.font;
@@ -142,7 +142,7 @@ class HipArsd_TTF_Font : HipFont
         if(!ret.loadTexture(ret.generateImage(size, ret._textureWidth, ret._textureHeight)))
             return null;
 
-        return cast(IHipFont)ret;
+        return cast(HipFont)ret;
     }
 
     protected RenderizedChar renderCharacter(dchar ch, int size, float shift_x = 0.0, float shift_y = 0.0)
