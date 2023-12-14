@@ -15,8 +15,8 @@ version(ScriptAPI)
     {
         extern(System) __gshared
         {
-            const(IHipFont) function() getDefaultFont;
-            IHipFont function(uint size) getDefaultFontWithSize;
+            const(HipFont) function() getDefaultFont;
+            HipFont function(uint size) getDefaultFontWithSize;
             const(IHipTexture) function() getDefaultTexture;
         }
     }

@@ -25,6 +25,66 @@ struct Pair(A, B, string aliasA = "", string aliasB = "")
     static if(aliasB != "")
         mixin("alias "~aliasB~" = second;");
 }
+struct Dirty(T)
+{
+    T value;
+    private bool isDirty;
+
+    auto opAssign(T value)
+    {
+        if(value != this.value) this.value = value, isDirty = true;
+        return this;
+    }
+    void clearDirtyFlag(){isDirty = false;}
+}
+
+mixin template DirtyFlagFields(string flagName, T, string[] fields)
+{
+    static foreach(f; fields)
+    {
+        mixin("T _",f,";",
+        "T ",f,"() => _",f,";",
+        "T ",f,"(T v){if(_",f," != v) ",flagName," = true; return _",f," = v;}");
+    }
+}
+
+struct DirtyFlagsCmp(alias flag, Fields...)
+{
+    import std.typecons;
+    static if(is(__traits(parent, Fields[0]) == struct))
+    	private static alias P = __traits(parent, Fields[0])*;
+   	else
+    	private static alias P = __traits(parent, Fields[0]);
+	P parent;
+    Tuple!(typeof(Fields)) base;
+
+    this(P parent)
+    {
+        start(parent);
+    }
+
+    void start(P parent)
+    {
+        this.parent = parent;
+        static foreach (i, f; Fields)
+            base[i] = __traits(child, parent, f);
+    }
+
+    void update()
+    {
+        bool changed;
+        static foreach (i, f; Fields)
+        {
+            {
+                alias T = typeof(f);
+                changed = changed || (__traits(child, parent, f) !is base[i]);
+            }
+        }
+        __traits(child, parent, flag) = __traits(child, parent, flag) || changed;
+    }
+    alias opCall = update;
+}
+
 
 
 /** 

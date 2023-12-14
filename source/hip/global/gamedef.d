@@ -25,7 +25,7 @@ struct HipDefaultAssets
    // static const(IHipFont) font(){return cast(const)_font;}
 
    static IImage texture(){return _texture;}
-   static IHipFont font(){return _font;}
+   static HipFont font(){return _font;}
 
    immutable static string textureData = import(HIP_DEFAULT_TEXTURE);
    immutable static string fontData = import(HIP_DEFAULT_FONT);
@@ -91,14 +91,14 @@ bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) on
 
 export extern(System)
 {
-   IHipFont getDefaultFont()
+   HipFont getDefaultFont()
    {
       return HipDefaultAssets.font;
    }
    /**
    *  Use this instead of getDefaultFont.getFontWithSize, as it changes its internal state.
    */
-   IHipFont getDefaultFontWithSize(uint size)
+   HipFont getDefaultFontWithSize(uint size)
    {
       return HipDefaultAssets._font.getFontWithSize(size);
    }

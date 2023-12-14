@@ -2,6 +2,7 @@ module hip.game2d.text;
 
 import hip.api.data.font;
 import hip.api.graphics.text;
+import hip.util.data_structures;
 
 
 /**
@@ -16,9 +17,17 @@ class HipText
     HipTextAlign alignh = HipTextAlign.LEFT;
     HipTextAlign alignv = HipTextAlign.TOP;
 
-    IHipFont font;
-
+    HipFont font;
     int x, y;
+    bool wordWrap;
+
+    DirtyFlagsCmp!(
+        shouldUpdateText, x, y, 
+        wordWrap, font,
+        alignh, alignv
+    ) checkDirty;
+
+
     float depth = 0;
     ///Update dynamically based on the font, the text scale and the text content
     int width, height;
@@ -31,7 +40,7 @@ class HipText
     protected string _text;
     protected dstring _dtext;
     protected dstring processedText;
-    protected bool _wordWrap;
+    protected HipColor _color = HipColor.black;
 
     //Debugging?
 
@@ -49,11 +58,19 @@ class HipText
     this(int boundsWidth = -1, int boundsHeight = -1, bool bWordWrap = false)
     {
         import hip.api;
+        checkDirty.start(this);
         this.font = cast()HipDefaultAssets.getDefaultFont();
         linesWidths.length = 1;
-        _wordWrap = bWordWrap;
+        wordWrap = bWordWrap;
         this.boundsWidth = boundsWidth;
         this.boundsHeight = boundsHeight;
+    }
+    this(string text, int x, int y, HipFont fnt = null, int boundsWidth = -1, int boundsHeight = -1, bool bWordWrap = false)
+    {
+        this(boundsWidth, boundsHeight, bWordWrap);
+        this.setPosition(x,y);
+        this.text = text;
+        if(fnt) font = fnt;
     }
     string text() const {return _text;}
     size_t drawableTextCount() const {return _drawableTextCount;}
@@ -79,27 +96,18 @@ class HipText
         return _text;
     }
 
-    bool wordWrap() const{ return _wordWrap;}
-    bool wordWrap(bool bWordWrap)
-    {
-        if(bWordWrap != _wordWrap)
-        {
-            _wordWrap = bWordWrap;
-            shouldUpdateText = true;
-        }
-        return bWordWrap;
-    }
-
     void setPosition(int x, int y)
     {
-        if(x != this.x || y != this.y)
-            shouldUpdateText = true;
         this.x = x;
         this.y = y;
     }
 
+    HipColor color() => _color;
+    HipColor color(HipColor c) => _color = c;
+
     void[] getVertices()
     {
+        checkDirty();
         if(shouldUpdateText)
             updateText(font);
         
@@ -111,11 +119,7 @@ class HipText
         import hip.api.graphics.text;
         getPositionFromAlignment(x, y, linesWidths[lineNumber], height, alignh, alignv, displayX, displayY, boundsWidth, boundsHeight);
     }
-    public void setFont(IHipFont font)
-    {
-        this.font = font;
-        this.updateText(font);
-    }
+    
 
     public void getSize(out int width, out int height)
     {
@@ -127,8 +131,6 @@ class HipText
     }
     public void setAlign(HipTextAlign alignh, HipTextAlign alignv)
     {
-        if(this.alignh != alignh || this.alignv != alignv)
-            shouldUpdateText = true;
         this.alignh = alignh;
         this.alignv = alignv;
     }
@@ -182,6 +184,7 @@ class HipText
     void draw()
     {
         import hip.api.graphics.g2d.g2d_binding;
+        setTextColor(color);
         drawTextVertices(getVertices, font);
     }
 }
@@ -240,6 +243,7 @@ package struct HipTextStopConfig
 
     static void parseText(in dstring text, out dstring parsedText, ref HipTextStopConfig[] config)
     {
+        parsedText = text;
         // size_t indexConfig = 0;
         // size_t lastParseIndex = 0;
         // dstring parsingText;
