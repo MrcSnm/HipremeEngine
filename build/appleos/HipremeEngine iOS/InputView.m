@@ -39,47 +39,48 @@ InputView* mainInputView;
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
-    NSLog(@"Touches began");
     int id_ = 0;
+    CGFloat scale = [[UIScreen mainScreen] scale];
     for(UITouch* touch in touches)
     {
         CGPoint xy = [touch locationInView:nil];
-        HipInputOnTouchPressed(id_++, xy.x, [self getY:xy.y]);
+        HipInputOnTouchPressed(id_++, xy.x*scale, [self getY:xy.y*scale]);
         
     }
 }
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
-    NSLog(@"Touches moved");
     int id_ = 0;
+    CGFloat scale = [[UIScreen mainScreen] scale];
     for(UITouch* touch in touches)
     {
         CGPoint xy = [touch locationInView:nil];
-        HipInputOnTouchMoved(id_++, xy.x, [self getY:xy.y]);
+        HipInputOnTouchMoved(id_++, xy.x*scale, [self getY:xy.y*scale]);
     }
 
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
-    NSLog(@"Touches ended");
     int id_ = 0;
+    CGFloat scale = [[UIScreen mainScreen] scale];
     for(UITouch* touch in touches)
     {
         CGPoint xy = [touch locationInView:nil];
-        HipInputOnTouchReleased(id_++, xy.x, [self getY:xy.y]);
+        HipInputOnTouchReleased(id_++, xy.x*scale, [self getY:xy.y*scale]);
     }
 }
 
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
-    NSLog(@"Touches cancelled");
     int id_ = 0;
+    CGFloat scale = [[UIScreen mainScreen] scale];
+
     for(UITouch* touch in touches)
     {
         CGPoint xy = [touch locationInView:nil];
-        HipInputOnTouchReleased(id_++, xy.x, [self getY:xy.y]);
+        HipInputOnTouchReleased(id_++, xy.x*scale, [self getY:xy.y*scale]);
     }
 }
 
@@ -96,9 +97,10 @@ InputView* mainInputView;
 void hipSetMTKView(void** MTKView, int* outWidth, int* outHeight)
 {
     *MTKView = (__bridge void*)mtkView;
+    CGFloat scale = [[UIScreen mainScreen] scale];
     CGSize sz = mtkView.frame.size;
-    *outWidth = (int)sz.width;
-    *outHeight = (int)sz.height;
+    *outWidth = (int)sz.width*scale;
+    *outHeight = (int)sz.height*scale;
     
 }
 typedef struct
@@ -109,15 +111,17 @@ typedef struct
 HipWindowSize hipGetWindowSize(void)
 {
     HipWindowSize ret;
-    ret.width = (int)mtkView.frame.size.width;
-    ret.height = (int)mtkView.frame.size.height;
+    CGFloat scale = [[UIScreen mainScreen] scale];
+    ret.width = (int)mtkView.frame.size.width*scale;
+    ret.height = (int)mtkView.frame.size.height*scale;
     return ret;
 }
 
 void hipSetWindowSize(unsigned int width, unsigned int height)
 {
     CGRect frame = mtkView.frame;
-    frame.size = CGSizeMake((CGFloat)width, (CGFloat)height);
+    CGFloat scale = [[UIScreen mainScreen] scale];
+    frame.size = CGSizeMake((CGFloat)width*scale, (CGFloat)height*scale);
     mainInputView.frame = mtkView.frame = frame;
 }
 

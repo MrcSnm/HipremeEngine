@@ -13,12 +13,15 @@ module hip.hipaudio.audio;
 public import hip.hipaudio.audioclip;
 public import hip.hipaudio.audiosource;
 public import hip.api.audio;
+import hip.hipaudio.config;
 
 //Backends
-version(OpenAL){import hip.hipaudio.backend.openal.player;}
-version(Android){import hip.hipaudio.backend.opensles.player;}
-version(XAudio2){import hip.hipaudio.backend.xaudio.player;}
-version(NullAudio){import hip.hipaudio.backend.nullaudio;}
+
+static if(HasOpenAL){import hip.hipaudio.backend.openal.player;}
+static if(HasOpenSLES){import hip.hipaudio.backend.opensles.player;}
+static if(HasXAudio2){import hip.hipaudio.backend.xaudio.player;}
+static if(HasAVAudioEngine){import hip.hipaudio.backend.avaudio.player;}
+import hip.hipaudio.backend.nullaudio;
 
 
 import hip.audio_decoding.audio;
@@ -57,74 +60,16 @@ public interface IHipAudioPlayer
 
 class HipAudio
 {
-    public static bool initialize(HipAudioImplementation implementation = HipAudioImplementation.OPENAL,
+    public static bool initialize(HipAudioImplementation implementation = HipAudioImplementation.OpenAL,
     bool hasProAudio = false,
     bool hasLowLatencyAudio = false,
     int  optimalBufferSize = 4096,
     int optimalSampleRate = 44_100)
     {
         ErrorHandler.startListeningForErrors("HipremeAudio initialization");
-        version(HIPREME_DEBUG)
-        {
-            hasInitializedAudio = true;
-        }
-        import hip.console.log;
+        _hasInitializedAudio = true;
         HipAudio.is3D = is3D;
-        
-        final switch(implementation)
-        {
-            case HipAudioImplementation.OPENSLES:
-                version(Android)
-                {
-                    audioInterface = new HipOpenSLESAudioPlayer(AudioConfig.androidConfig,
-                    hasProAudio,
-                    hasLowLatencyAudio,
-                    optimalBufferSize,
-                    optimalSampleRate);
-                    break;
-                }
-            case HipAudioImplementation.XAUDIO2:
-                version(XAudio2)
-                {
-                    loglnInfo("Initializing XAudio2 with audio config ", AudioConfig.musicConfig);
-                    audioInterface = new HipXAudioPlayer(AudioConfig.musicConfig);
-                    break;
-                }
-                else 
-                {
-                    loglnWarn("Tried to use XAudio2 implementation, but no XAudio2 version was provided. OpenAL will be used instead");
-                    goto case HipAudioImplementation.OPENAL;
-                }
-            case HipAudioImplementation.OPENAL:
-            {
-                version(OpenAL)
-                {
-                    //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
-                    audioInterface = new HipOpenALAudioPlayer(AudioConfig.musicConfig);
-                    // audioInterface = new HipNullAudio();
-                    break;
-                }
-                else
-                {
-                    loglnWarn("Tried to use OpenAL implementation, but no OpenAL version was provided. No audio available.");
-                    break;
-                }
-            }
-            case HipAudioImplementation.WEBAUDIO:
-            {
-                version(WebAssembly)
-                {
-                    import hip.hipaudio.backend.nullaudio;
-                    audioInterface = new HipWebAudioPlayer(AudioConfig.musicConfig);
-                    break;
-                }
-                else
-                {
-                    loglnWarn("Tried to use WebAudio implementation, but not in WebAssembly. No audio available");
-                    break;
-                }
-            }
-        }
+        audioInterface = getAudioInterface(implementation);
         HipAudio.hasProAudio        = hasProAudio;
         HipAudio.hasLowLatencyAudio = hasLowLatencyAudio;
         HipAudio.optimalBufferSize  = optimalBufferSize;
@@ -179,6 +124,79 @@ class HipAudio
             audioInterface.update();
     }
 
+    private static IHipAudioPlayer getAudioInterface(HipAudioImplementation impl,
+    bool hasProAudio = false,
+    bool hasLowLatencyAudio = false,
+    int  optimalBufferSize = 4096,
+    int optimalSampleRate = 44_100)
+    {
+        import hip.console.log;
+        final switch(impl)
+        {
+            case HipAudioImplementation.WebAudio:
+            {
+                version(WebAssembly)
+                {
+                    return new HipWebAudioPlayer(AudioConfig.musicConfig);
+                }
+                else
+                {
+                    loglnWarn("Tried to use WebAudio implementation, but not in WebAssembly. No audio available");
+                    goto case HipAudioImplementation.Null;
+                }
+            }
+            case HipAudioImplementation.OpenSLES:
+                static if(HasOpenSLES)
+                {
+                    return new HipOpenSLESAudioPlayer(AudioConfig.androidConfig,
+                    hasProAudio,
+                    hasLowLatencyAudio,
+                    optimalBufferSize,
+                    optimalSampleRate);
+                    break;
+                }
+            case HipAudioImplementation.XAudio2:
+                static if(HasXAudio2)
+                {
+                    loglnInfo("Initializing XAudio2 with audio config ", AudioConfig.musicConfig);
+                    return new HipXAudioPlayer(AudioConfig.musicConfig);
+                }
+                else 
+                {
+                    loglnWarn("Tried to use XAudio2 implementation, but no XAudio2 version was provided. OpenAL will be used instead");
+                    goto case HipAudioImplementation.OpenAL;
+                }
+            case HipAudioImplementation.AVAudioEngine:
+            {
+                static if(HasAVAudioEngine)
+                    return new HipAVAudioPlayer(AudioConfig.androidConfig);
+                else
+                {
+                    loglnWarn("Tried to use AVAudioEngine implementation, but no AVAudioEngine found. OpenAL will be used instead");
+                    goto case HipAudioImplementation.OpenAL;
+                }
+            }
+            case HipAudioImplementation.OpenAL:
+            {
+                static if(HasOpenAL)
+                {
+                    //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
+                    return new HipOpenALAudioPlayer(AudioConfig.musicConfig);
+                }
+                else
+                {
+                    loglnWarn("Tried to use OpenAL implementation, but no OpenAL version was provided. No audio available.");
+                    goto case HipAudioImplementation.Null;
+                }
+            }
+            case HipAudioImplementation.Null:
+            {
+                loglnWarn("No AudioInterface was found. Using NullAudio");
+                return new HipNullAudio();
+            }
+        }
+    }
+
 
    
     protected __gshared bool hasProAudio;
@@ -191,8 +209,6 @@ class HipAudio
     __gshared IHipAudioPlayer audioInterface;
 
     //Debug vars
-    version(HIPREME_DEBUG)
-    {
-        public __gshared bool hasInitializedAudio = false;
-    }
+    private __gshared bool _hasInitializedAudio = false;
+    public bool hasInitializedAudio() => _hasInitializedAudio;
 }

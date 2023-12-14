@@ -37,10 +37,25 @@ enum DistanceModel
 
 enum HipAudioImplementation
 {
-    OPENAL,
-    OPENSLES,
-    XAUDIO2,
-    WEBAUDIO
+    Null,
+    OpenAL,
+    OpenSLES,
+    XAudio2,
+    WebAudio,
+    AVAudioEngine
+}
+
+HipAudioImplementation getAudioImplementationForOS()
+{
+    with(HipAudioImplementation)
+    {
+        version(NullAudio) return Null;
+        else version(Android) return OpenSLES;
+        else version(Windows) return XAudio2;
+        else version(WebAssembly) return WebAudio;
+        else version(iOS) return AVAudioEngine;
+        else return OpenAL;
+    }
 }
 
 version(DirectCall) { public import hip.hipaudio; }
