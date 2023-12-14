@@ -428,6 +428,16 @@ void cached(scope void delegate() dg, string f = __FILE__, size_t l = __LINE__)
 	}
 }
 
+/** 
+ * Clears all cache.
+ * This may be useful after a dub.template.json was already generated.
+ * Or for example, after changing the current game.
+ */
+void clearCache()
+{
+	session.cache.clear;
+}
+
 bool pollForExecutionPermission(ref Terminal t, ref RealTimeConsoleInput input, string operation)
 {
 	t.writelnHighlighted(operation~" [Y]es/[N]o");

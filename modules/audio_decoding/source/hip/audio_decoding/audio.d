@@ -4,17 +4,17 @@ public import hip.api.data.audio;
 
 
 
-private char* getNameFromEncoding(HipAudioEncoding encoding)
+private const(char)* getNameFromEncoding(HipAudioEncoding encoding)
 {
-    final switch(encoding)
+    final switch(encoding) with(HipAudioEncoding)
     {
-        case HipAudioEncoding.MOD: return cast(char*)"mod\0".ptr;
-        case HipAudioEncoding.XM: return cast(char*)"xm\0".ptr;
-        case HipAudioEncoding.FLAC:return cast(char*)"flac\0".ptr;
-        case HipAudioEncoding.MIDI:return cast(char*)"midi\0".ptr;
-        case HipAudioEncoding.MP3:return cast(char*)"mp3\0".ptr;
-        case HipAudioEncoding.OGG:return cast(char*)"ogg\0".ptr;
-        case HipAudioEncoding.WAV:return cast(char*)"wav\0".ptr;
+        case MOD: return "mod";
+        case XM: return "xm";
+        case FLAC:return "flac";
+        case MIDI:return "midi";
+        case MP3:return "mp3";
+        case OGG:return "ogg";
+        case WAV:return "wav";
     }
 }
 
@@ -70,7 +70,7 @@ private abstract class AHipAudioDecoder : IHipAudioDecoder
     size_t getClipSize(){return clipSize;}
     float getDuration(){return duration;}
     uint getSamplerate(){return cast(uint)sampleRate;}
-    AudioConfig getAudioConfig(){return AudioConfig.init;}
+    AudioConfig getAudioConfig(){return AudioConfig(getSamplerate, AudioFormat.init, getClipChannels, cast(int)getClipSize);}
     bool resample(in ubyte[] data, HipAudioType type, uint outputSampleRate, uint outputChannels){return false;}
     bool channelConversion(in ubyte[] data, ubyte from, ubyte to){return false;}
 }
@@ -221,6 +221,9 @@ version(AudioFormatsDecoder)
             clipSize+= currentRead;
             return currentRead;
         }
+
+        override AudioConfig getAudioConfig(){return AudioConfig(getSamplerate, AudioFormat.float32Little, getClipChannels, cast(int)getClipSize);}
+        
 
         void dispose(){input.cleanUp();}
 
