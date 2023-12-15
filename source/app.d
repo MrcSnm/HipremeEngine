@@ -178,19 +178,15 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 		int getOptimalAudioBufferSize = HipAndroid.javaCall!(int, "getOptimalAudioBufferSize");
 		int getOptimalSampleRate = HipAndroid.javaCall!(int, "getOptimalSampleRate");
 
-		HipAudio.initialize(HipAudioImplementation.OPENSLES, 
+		HipAudio.initialize(getAudioImplementationForOS, 
 			hasProFeature,
 			hasLowLatencyFeature,
 			getOptimalAudioBufferSize,
 			getOptimalSampleRate
 		);
 	}
-	else version(Windows)
-		HipAudio.initialize(HipAudioImplementation.XAUDIO2);
-	else version(WebAssembly)
-		HipAudio.initialize(HipAudioImplementation.WEBAUDIO);
 	else
-		HipAudio.initialize(HipAudioImplementation.OPENAL);
+		HipAudio.initialize(getAudioImplementationForOS);
 	version(dll)
 	{
 		import hip.console.log;
