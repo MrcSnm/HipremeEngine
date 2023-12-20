@@ -84,6 +84,8 @@ interface IShader
      */
     void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName);
     void dispose(ref ShaderProgram);
+
+    void onRenderFrameEnd(ShaderProgram program);
 }
 
 abstract class VertexShader
@@ -410,5 +412,9 @@ public class Shader : IReloadable
         return loadShaders(internalVertexSource, internalFragmentSource) == ShaderStatus.SUCCESS;
     }
     
+    void onRenderFrameEnd()
+    {
+        shaderImpl.onRenderFrameEnd(shaderProgram);
+    }
 
 }

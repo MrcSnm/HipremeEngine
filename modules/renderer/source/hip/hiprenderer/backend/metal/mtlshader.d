@@ -8,6 +8,7 @@ import metal;
 import metal.metal;
 import hip.hiprenderer.backend.metal.mtlrenderer;
 import hip.hiprenderer.backend.metal.mtltexture;
+import core.int128;
 
 
 class HipMTLFragmentShader : FragmentShader
@@ -23,6 +24,16 @@ class HipMTLFragmentShader : FragmentShader
     override string getGeometryBatchFragment(){return "";}
     override string getSpriteBatchFragment(){return "";}
     override string getBitmapTextFragment(){return "";}
+}
+
+struct BufferedMTLBuffer
+{
+    MTLBuffer[] buffer;
+    ShaderVariablesLayout layout;
+    uint currentBuffer;
+
+    MTLBuffer getBuffer() => buffer[currentBuffer];
+    void reset(){currentBuffer = 0;}
 }
 
 class HipMTLVertexShader : VertexShader
@@ -93,8 +104,10 @@ class HipMTLShaderProgram : ShaderProgram
     MTLLibrary library;
     MTLFunction vertexShaderFunction;
     MTLFunction fragmentShaderFunction;
-    MTLBuffer uniformBufferVertex;
-    MTLBuffer uniformBufferFragment;
+    BufferedMTLBuffer* uniformBufferVertex;
+    BufferedMTLBuffer* uniformBufferFragment;
+
+
 
     MTLRenderPipelineDescriptor pipelineDescriptor;
     MTLRenderPipelineState pipelineState;
@@ -251,9 +264,9 @@ class HipMTLShader : IShader
         {
             mtlRenderer.getEncoder.setRenderPipelineState(mtlShader.pipelineState);
             if(mtlShader.uniformBufferVertex)
-                mtlRenderer.getEncoder.setVertexBuffer(mtlShader.uniformBufferVertex, 0, 0);
+                mtlRenderer.getEncoder.setVertexBuffer(mtlShader.uniformBufferVertex.getBuffer, 0, 0);
             if(mtlShader.uniformBufferFragment)
-                mtlRenderer.getEncoder.setFragmentBuffer(mtlShader.uniformBufferFragment, 0, 0);
+                mtlRenderer.getEncoder.setFragmentBuffer(mtlShader.uniformBufferFragment.getBuffer, 0, 0);
             boundShader = mtlShader;
         }
     }
@@ -278,18 +291,24 @@ class HipMTLShader : IShader
 
     void deleteShader(FragmentShader* fs){}
     void deleteShader(VertexShader* vs){}
+
+    private MTLBuffer getNewMTLBuffer(ShaderVariablesLayout layout)
+    {
+        return device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
+    }
     void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
-        MTLBuffer buffer = device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
+        MTLBuffer buffer = getNewMTLBuffer(layout);
         HipMTLShaderProgram s = cast(HipMTLShaderProgram)(layout.getShader()).shaderProgram;
-        layout.setAdditionalData(cast(void*)buffer, true);
+        BufferedMTLBuffer* buffered; 
+        layout.setAdditionalData(buffered = new BufferedMTLBuffer([buffer], layout), true);
         final switch(layout.shaderType)
         {
             case ShaderTypes.VERTEX:
-                s.uniformBufferVertex = buffer;
+                s.uniformBufferVertex = buffered;
                 break;
             case ShaderTypes.FRAGMENT:
-                s.uniformBufferFragment = buffer;
+                s.uniformBufferFragment = buffered;
                 break;
             case ShaderTypes.GEOMETRY:
             case ShaderTypes.NONE:
@@ -303,8 +322,12 @@ class HipMTLShader : IShader
         HipMTLShaderProgram mtlShader = cast(HipMTLShaderProgram)prog;
         foreach(layout; layouts)
         {
-            MTLBuffer uniformBuffer = cast(MTLBuffer)layout.getAdditionalData();
+            BufferedMTLBuffer* bufferedUniformBuffer = cast(BufferedMTLBuffer*)layout.getAdditionalData();
+            MTLBuffer uniformBuffer = bufferedUniformBuffer.getBuffer;
             memcpy(uniformBuffer.contents, layout.getBlockData, layout.getLayoutSize);
+            bufferedUniformBuffer.currentBuffer++;
+            if(bufferedUniformBuffer.currentBuffer >= bufferedUniformBuffer.buffer.length)
+                bufferedUniformBuffer.buffer~= getNewMTLBuffer(layout);
         }
     }
 
@@ -336,5 +359,19 @@ class HipMTLShader : IShader
 
     }
 
-    void dispose(ref ShaderProgram){}
+    void dispose(ref ShaderProgram p)
+    {
+        HipMTLShaderProgram shader = cast(HipMTLShaderProgram)p;
+        foreach(BufferedMTLBuffer* buff; [shader.uniformBufferFragment, shader.uniformBufferVertex])
+        {
+            foreach(MTLBuffer mtlbuffer; buff.buffer)
+                mtlbuffer.release();
+        }
+    }
+    override void onRenderFrameEnd(ShaderProgram p)
+    {
+        HipMTLShaderProgram shader = cast(HipMTLShaderProgram)p;
+        shader.uniformBufferFragment.reset;
+        shader.uniformBufferVertex.reset;
+    }
 }

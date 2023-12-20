@@ -608,5 +608,8 @@ class Hip_D3D11_ShaderImpl : IShader
     {
         return false;
     }
+
+    override void onRenderFrameEnd(ShaderProgram){}
+
     
 }

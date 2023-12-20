@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.util.string;
 public import hip.util.conv:to;
+public import hip.util.to_string_range;
 
 version(WebAssembly) version = UseDRuntimeDecoder;
 version(CustomRuntimeTest) version = UseDRuntimeDecoder;
@@ -68,10 +69,13 @@ struct String
         {
             static if(isAppendable!(typeof(a)) )
                 s~= a;
+            else static if(is(typeof(a) == struct) || __traits(compiles, toStringRange(s, a)))
+            {
+                toStringRange(s, a);
+            }
             else static if(__traits(hasMember, a, "toString"))
                 s~= a.toString;
-            else
-                toStringRange(s, a);
+            else static assert(false, "No conversion found");
         }
         return s;
     }

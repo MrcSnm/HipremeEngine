@@ -543,6 +543,7 @@ class HipRenderer
     public static void end()
     {
         rendererImpl.end();
+        foreach(sh; res.shaders) sh.onRenderFrameEnd();
         stats.drawCalls=0;
         stats.renderFrames++;
     }

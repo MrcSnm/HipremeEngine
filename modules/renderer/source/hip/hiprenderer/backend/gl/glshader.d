@@ -803,4 +803,5 @@ version(HipGL3) class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
         ubos.length = 0;
         super.dispose(prog);
     }
+    override void onRenderFrameEnd(ShaderProgram){}
 }
