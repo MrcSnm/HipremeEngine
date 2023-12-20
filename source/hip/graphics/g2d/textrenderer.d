@@ -123,7 +123,12 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
     {
         if(this.color != color)
         {
-            draw();
+            if(this.color != HipColor.no)
+            {
+                import hip.console.log;
+                debug logln("Drawed with ", this.color);
+                draw();
+            }
             bmTextShader.uColor = HipColorf(color);
         }
         this.color = color;

@@ -14,7 +14,7 @@ module hip.api.graphics.color;
 ///This struct is ubyte[4] or uint depending on your usages
 struct HipColor
 {
-    @"format" string toString(){return "Color($r, $g, $b, $a)"; }
+    @"format" string toString() @nogc const {return "Color($r, $g, $b, $a)"; }
     union 
     {
         struct {ubyte r, g, b, a;}

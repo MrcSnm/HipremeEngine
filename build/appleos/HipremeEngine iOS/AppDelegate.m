@@ -6,6 +6,7 @@
 //
 
 #import "AppDelegate.h"
+#import <AVFAudio/AVAudioConverter.h>
 
 @interface AppDelegate ()
 
@@ -52,6 +53,11 @@ const char* hipGetResourcesPath(void)
     return [[NSBundle mainBundle].resourcePath UTF8String];
 }
 
+void terminateiOSApp(int code)
+{
+    abort();
+}
+
 void* getGameWindow(void)
 {return nil;}
 
@@ -64,6 +70,5 @@ void hipSetApplicationTitle(const char* title)
 {
     
 }
-
 
 @end

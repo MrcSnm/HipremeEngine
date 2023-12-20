@@ -53,6 +53,32 @@ string formatFromType(T)(T value)
     return ret;
 }
 
+void formatFromType(T, Sink)(ref Sink s, T value)
+{
+    import hip.util.to_string_range;
+    mixin(()
+    {
+        string base = T.init.toString;
+        ptrdiff_t start = -1, lastCapture;
+        string ret;
+        foreach(i, c; base)
+        {
+            import hip.util.string;
+            if(start != -1 && (isWhitespace(c) || !(isAlpha(c) || isNumeric(c))))
+            {
+                ret~= "put(s, \""~base[lastCapture..start]~"\");";
+                ret~= "toStringRange(s, value."~base[start+1..i]~");";
+                lastCapture = i;
+                start = -1;
+            }
+            else if(c == '$')
+                start = i;
+        }
+        ret~= "put(s, \""~base[lastCapture..$]~"\");";
+        return ret;
+    }());
+}
+
 /** 
 *   Unsafe function. It requires the programmer to use it correctly as the buffer size is preallocated.
 */

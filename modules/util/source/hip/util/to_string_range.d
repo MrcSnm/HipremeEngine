@@ -4,7 +4,7 @@ import std.range.primitives;
 import std.traits:isArray;
 import std.typecons:isTuple;
 
-private void put(Sink, E)(ref Sink sink, E e)
+void put(Sink, E)(ref Sink sink, E e)
 {
     static if(is(E == U[], U))
     {
@@ -101,16 +101,25 @@ if(!isArray!T && (is(T == struct) || is(T == class) || is(T == interface) || isT
     }
     else static if(is(T == struct))//For structs declaration
     {
+        import hip.util.reflection;
         alias struct_ = structOrTupleOrClass;
-        put(sink, T.stringof);
-        put(sink, '(');
-        foreach(i, v; struct_.tupleof)
+        static if(__traits(hasMember, T, "toString") && hasUDA!(__traits(getMember, T, "toString"), "format"))
         {
-            if(i > 0)
-                put(sink, ", ");
-            toStringRange(sink, v);
+            import hip.util.format;
+            formatFromType(sink, struct_);
         }
-        put(sink, ')');
+        else
+        {
+            put(sink, T.stringof);
+            put(sink, '(');
+            foreach(i, v; struct_.tupleof)
+            {
+                if(i > 0)
+                    put(sink, ", ");
+                toStringRange(sink, v);
+            }
+            put(sink, ')');
+        }
     }
     else static if(is(T == class))
     {
