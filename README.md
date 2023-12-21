@@ -27,14 +27,24 @@ The engine maintains  some global options which you can modify it on source/glob
 - Multi threaded asset loading and decoding (image).
 
 ## Platforms
+> Almost all of those platforms can be built by using the [build_selector](tools/user/build_selector) project.
+>
+> If you have D installed already, the build_selector can be got by running `dub run hipreme_engine:build_selector`
+>
+> If not, you may go to the [BuildAssets](https://github.com/MrcSnm/HipremeEngine/releases/tag/BuildAssets.v1.0.0) page and select your system. Both the language and engine will be installed locally by using them.
+
+## Build System Showcase
+![Example on build selector running and showing the build system](build_selector_showcase.png)
 
 - Xbox Series (UWP): [build/uwp](build/uwp/HipremeEngine/HipremeEngine)
-- Android: **build/android**
+- Android: [build/android/](build/android/project/)
 - Browser (WebAssembly): [build/wasm](build/wasm)
 - PS Vita: [build/vita](build/vita/hipreme_engine/)
 - MacOS : [build/appleos](build/appleos/)
-- Windows
-- Linux: Requires libgl1-mesa-dev for opening X11 window and OpenGL
+- iOS: [build/appleos](build/appleos/)
+- Windows: [bin/desktop](bin/desktop/)
+- Linux: [bin/desktop](bin/desktop/)
+> Requires libgl1-mesa-dev for opening X11 window and OpenGL
 
 ### Features
 
@@ -66,7 +76,7 @@ The engine maintains  some global options which you can modify it on source/glob
 9. Tiled maps
 
 ## Audio
-
+- AVudioEngine
 - OpenSL ES
 - OpenAL
 - XAudio2
@@ -95,9 +105,12 @@ The engine maintains  some global options which you can modify it on source/glob
 
 1. D ( check api module for reference )
 - Filewatcher for recompiling the script
+- WebAssembly server reloader
 - Live reload ( no engine restart for coding )
+    > State is not saved, it is a simple restart, but all the assets are also cached, so, it is still way faster than reopening. 
 
 2. Lua (outdated)
+- May be subject to removal
   
 
 
@@ -110,6 +123,5 @@ The engine maintains  some global options which you can modify it on source/glob
 
 ## Issues list
 
-- ~~D3DReflect needs to link to D3dcompiler_43 instead of _47~~ -> Fixed, directx-d D3DReflect had a wrong GUID
 - You can't spawn an Object from within an interface without calling `hipSaveRef` or `GC.addRoot`. This is a bug
 on DLL implementation which doesn't actually add the new object spawned from an interface as a leaf.
