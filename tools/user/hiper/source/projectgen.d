@@ -205,6 +205,8 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
 
 		writeln("Writing .gitignore");
 		std.file.write(buildNormalizedPath(projectPath, ".gitignore"),  q{
+dub.selections.json
+.DS_Store
 .dub
 .history
 .vs
