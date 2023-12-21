@@ -83,6 +83,8 @@ private void overrideLdcConf(ref Terminal t)
     std.file.copy(ldc2Conf, buildNormalizedPath(getOutputPath(), "bin", "ldc2.conf"));
 }
 
+enum wontAffectMessage = "\n\tThis compiler version is installed locally and won't affect your system D installation.";
+
 bool installD(ref Terminal t, ref RealTimeConsoleInput input)
 {
     bool existsDmd = ("dmdPath" in configs) !is null;
@@ -93,9 +95,10 @@ bool installD(ref Terminal t, ref RealTimeConsoleInput input)
     if(!isLdcExpectedVersion)
     {
         if(!existsLdc)
-            t.writelnHighlighted("No ldcVersion specified, your system will attempt to install LDC2 " ~LdcVersion);
+            t.writelnHighlighted("No ldcVersion specified, your HipremeEngine will attempt to install locally LDC2 " ~LdcVersion ~ 
+            wontAffectMessage);
         else
-            t.writelnError("Different LDC Version. Your system will attempt to install LDC2 " ~LdcVersion);
+            t.writelnError("Different LDC Version. HipremeEngine will attempt to install locally LDC2 " ~LdcVersion);
         t.flush;
         if(!installFileTo("Download D cross compiler LDC2 "~LdcVersion, getLdcLink,
         getLdcDownloadOutputName, buildNormalizedPath(std.file.getcwd, "D"), t, input))
@@ -122,9 +125,10 @@ bool installD(ref Terminal t, ref RealTimeConsoleInput input)
     if(!isDmdExpectedVersion)
     {
         if(!existsDmd)
-            t.writelnHighlighted("No dmdVersion specified, your system will attempt to install DMD " ~DmdVersion);
+            t.writelnHighlighted("No dmdVersion specified, your HipremeEngine will attempt to install locally DMD " ~DmdVersion ~
+            wontAffectMessage);
         else
-            t.writelnError("Different DMD Version. Your system will attempt to install DMD " ~DmdVersion);
+            t.writelnError("Different DMD Version. HipremeEngine will attempt to install locally DMD " ~DmdVersion);
         t.flush;
         if(!installFileTo("Download D fast iteration compiler DMD "~DmdVersion, getDmdLink,
         getDmdDownloadOutputName, buildNormalizedPath(std.file.getcwd, "D"), t, input))
