@@ -44,7 +44,7 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 	{
 		cleanAppleOSLibFolder();
 
-		if(timed(() => waitDubTarget(t, buildTarget, DubArguments().
+		if(timed(() => waitDubTarget(t, __MODULE__, DubArguments().
 			command("build").recipe("ios").deep(true).arch(arch~"-apple-ios12.0").compiler("ldc2").opts(cOpts))) != 0)
 		{
 			t.writelnError("Could not build for AppleOS.");
