@@ -143,12 +143,12 @@ string generateDubProject(DubProjectInfo info)
 
 string generateReadmeContent(string projectName)
 {
-	return "# "~projectName~"\n"~projectName~" is made using Hipreme Engine." ~
+	return "# "~projectName~"\n"~projectName~" is made using Hipreme Engine.\n" ~
 		"## Building Instructions \n" ~
 		"1. Run hipreme_engine:build_selector\n" ~
 		"2. Select 'Select Game'\n" ~
 		"3. Select the folder containing "~projectName~"\n"~
-		"4. Now you can simply chose the platform to build for";
+		"4. Now you can simply choose the platform to build for";
 }
 
 string generateVSCodeDebuggerLaunch(string enginePath)
