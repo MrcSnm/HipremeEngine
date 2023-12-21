@@ -8,6 +8,10 @@ private bool isValidEnginePath(string path)
 {
     return filesExists(path, requiredFiles);
 }
+private bool isRunningFromDubRun(string enginePath)
+{
+    return executeShell("cd \""~enginePath~"\" && git status").status != 0;
+}
 
 bool setupEngine(ref Terminal t, ref RealTimeConsoleInput input)
 {
@@ -41,9 +45,15 @@ bool setupEngine(ref Terminal t, ref RealTimeConsoleInput input)
                     break;
                 }
             }
-
             if(hipremeEnginePath.length)
             {
+                if(isRunningFromDubRun(hipremeEnginePath))
+                {
+                    t.writelnHighlighted(
+                        "HipremeEngine is present, but dub does not support git repositories containing submodules.\n",
+                        "\tHipremeEngine needs to be cloned.");
+                    goto clone;
+                }
                 t.writelnHighlighted("Using engine path found at directory '"~hipremeEnginePath~"'");
             }
             else
