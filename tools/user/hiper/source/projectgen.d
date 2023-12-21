@@ -141,6 +141,16 @@ string generateDubProject(DubProjectInfo info)
 `(info.author, info.desc, outputName, name);
 }
 
+string generateReadmeContent(string projectName)
+{
+	return "# "~projectName~"\n"~projectName~" is made using Hipreme Engine." ~
+		"## Building Instructions \n" ~
+		"1. Run hipreme_engine:build_selector\n" ~
+		"2. Select 'Select Game'\n" ~
+		"3. Select the folder containing "~projectName~"\n"~
+		"4. Now you can simply chose the platform to build for";
+}
+
 string generateVSCodeDebuggerLaunch(string enginePath)
 {
 	import std.system;
@@ -199,7 +209,7 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
 		writeln("Writing dub.template.json");
 		std.file.write(buildNormalizedPath(projectPath, "dub.template.json"), dubProj);
 		writeln("Writing README.md");
-		std.file.write(buildNormalizedPath(projectPath, "README.md"), dubInfo.projectName~" made using Hipreme Engine");
+		std.file.write(buildNormalizedPath(projectPath, "README.md"), generateReadmeContent(dubInfo.projectName));
 		writeln("Writing VSCode debug launcher");
 		std.file.write(buildNormalizedPath(projectPath, ".vscode", "launch.json"), debugLauncher);
 

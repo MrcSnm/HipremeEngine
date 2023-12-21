@@ -90,6 +90,7 @@ bool setupEngine(ref Terminal t, ref RealTimeConsoleInput input)
         }
         configs["hipremeEnginePath"] = hipremeEnginePath;
         updateConfigFile();
+        loadSubmodules(t, input);
     }
 	environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;
     return true;
