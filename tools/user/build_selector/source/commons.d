@@ -894,7 +894,7 @@ mixin template BuilderPattern(Struct)
 		import std.traits:isFunction;
 		static if(!isFunction!(__traits(getMember, Struct, mem)) && mem[0] == '_')
 		{
-			mixin(typeof(__traits(getMember, Struct, mem)), " ", mem[1..$], "() => ", mem, ";",
+			mixin(typeof(__traits(getMember, Struct, mem)), " ", mem[1..$], "() { return ", mem, ";}",
 			Struct, " ", mem[1..$], "(", typeof(__traits(getMember, Struct, mem)), " arg )",
 			"{this.",mem, " = arg; return this;}");
 		}
