@@ -5,7 +5,7 @@ bool isGameFolderValid(string gameFolder)
 {
     return std.file.exists(buildNormalizedPath(gameFolder, "assets")) &&
             std.file.exists(buildNormalizedPath(gameFolder, "source")) && 
-            std.file.exists(buildNormalizedPath(gameFolder, "dub.json"));
+            std.file.exists(buildNormalizedPath(gameFolder, "dub.template.json"));
 }
 
 
@@ -38,13 +38,16 @@ private void changeGamePath(string newGamePath)
 
 ChoiceResult selectGameFolder(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
+    Choice[] extraChoices = 
+    [
+        Choice("Type the game path manually", &typeGamePath),
+        getBackChoice()
+    ];
+    if(isGameFolderValid(std.file.getcwd()))
+        extraChoices = Choice(std.file.getcwd(), null) ~ extraChoices;
     Choice* selectedChoice = selectInFolderExtra(
         "Select your game",
-        getHipPath("projects"), t, input,
-        [
-            Choice("Type the game path manually", &typeGamePath),
-            getBackChoice()
-        ]
+        getHipPath("projects"), t, input, extraChoices
     );
     if(selectedChoice.onSelected != null)
         selectedChoice.onSelected(selectedChoice, t, input, cOpts);

@@ -45,15 +45,20 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	environment["DFLAGS"]= "";
 	timed(() => waitDub(t, DubArguments().command("run wasm-sourcemaps").runArgs("hipreme_engine.wasm --include-sources=true")));
 
+	int mvStatus;
 	version(Posix) //Seems like dub is not detectign -posix in macOS
 	{
-		wait(spawnShell("mv hipreme_engine.wasm* ./build/wasm/build/"));
+		mvStatus = wait(spawnShell("mv hipreme_engine.wasm* ./build/wasm/build/"));
 	}
 	else version(Windows)
 	{
-		wait(spawnShell("move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"));
+		mvStatus = wait(spawnShell("move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"));
 	}
-	t.writelnSuccess("Succesfully built for WebAssembly. Listening on localhost:9000");
+	if(mvStatus)
+	{
+		t.writelnError("Could not move hipreme_engine.wasm file to build\\wasm\\build\\");
+	}
+	t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:9000");
 	pushWebsocketMessage("reload");
 
 	return ChoiceResult.None;
