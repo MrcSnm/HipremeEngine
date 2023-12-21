@@ -24,10 +24,27 @@ bool setupEngine(ref Terminal t, ref RealTimeConsoleInput input)
         }
         else 
         {
-            if(std.file.exists(buildNormalizedPath(std.file.getcwd(), "..", "..", "..", "HipremeEngine.code-workspace")))
+            ///Check for existing Hipreme Engine
+            import core.runtime;
+            string[] directories = 
+            [
+                ".", 
+                buildNormalizedPath(std.file.getcwd(), "..", "..", ".."), 
+                dirName(Runtime.args[0]),
+                buildNormalizedPath(dirName(Runtime.args[0]), "..", "..", ".."),
+            ];
+            foreach(dir; directories)
             {
-                hipremeEnginePath = buildNormalizedPath(std.file.getcwd(), "..", "..", "..");
-                t.writelnHighlighted("Using engine path found at parent directory. ("~hipremeEnginePath~");");
+                if(isValidEnginePath(dir))
+                {
+                    hipremeEnginePath = dir;
+                    break;
+                }
+            }
+
+            if(hipremeEnginePath.length)
+            {
+                t.writelnHighlighted("Using engine path found at directory '"~hipremeEnginePath~"'");
             }
             else
             {

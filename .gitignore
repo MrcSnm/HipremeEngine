@@ -30,6 +30,7 @@ build/.cache
 build/android/project/app/src/main/assets/**
 build/android/project/app/build
 build/android/project/app/release/*
+build/targets/**/dub.json
 building/openal-soft-1.20.1-bin
 build/android/project/app/src/main/jniLibs/**/libhipreme_engine.so
 dependencies/**/*.lib
