@@ -177,6 +177,7 @@ string updateSelectedCompiler()
 
 ChoiceResult exitFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
+	t.showCursor();
 	configs["selectedChoice"] = 0;
 	updateConfigFile();
 	return ChoiceResult.Continue;
