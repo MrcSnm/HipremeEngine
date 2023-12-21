@@ -53,7 +53,6 @@
 		3130368529D66E6900895DD5 /* static */ = {isa = PBXFileReference; lastKnownFileType = folder; path = static; sourceTree = "<group>"; };
 		3130368729D670A400895DD5 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		3130368929D672C700895DD5 /* libs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = libs; sourceTree = "<group>"; };
-		3130368B29D673F600895DD5 /* libphobos2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libphobos2.a; path = "HipremeEngine D/static/libphobos2.a"; sourceTree = "<group>"; };
 		3156441D29A1546600559889 /* Renderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Renderer.h; sourceTree = "<group>"; };
 		3156441E29A1546600559889 /* Renderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Renderer.m; sourceTree = "<group>"; };
 		3156442129A1546900559889 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -84,43 +83,6 @@
 		315C6FCB29B55DBE007F19C0 /* hipreme_engine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hipreme_engine.h; sourceTree = "<group>"; };
 		315FEE5529D1BEFC00761BF1 /* InputView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InputView.h; sourceTree = "<group>"; };
 		315FEE5729D1BFDE00761BF1 /* InputView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InputView.m; sourceTree = "<group>"; };
-		3164622329C4C932001CE578 /* libBindBC_OpenAL.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libBindBC_OpenAL.a; path = "HipremeEngine D/libs/libBindBC_OpenAL.a"; sourceTree = "<group>"; };
-		3164622429C4C933001CE578 /* libarsd-official_png.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_png.a"; path = "HipremeEngine D/libs/libarsd-official_png.a"; sourceTree = "<group>"; };
-		3164622529C4C934001CE578 /* libmetal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmetal.a; path = "HipremeEngine D/libs/libmetal.a"; sourceTree = "<group>"; };
-		3164622629C4C935001CE578 /* libaudio-formats.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libaudio-formats.a"; path = "HipremeEngine D/libs/libaudio-formats.a"; sourceTree = "<group>"; };
-		3164622729C4C936001CE578 /* libhipreme_engine.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhipreme_engine.a; path = "HipremeEngine D/libs/libhipreme_engine.a"; sourceTree = "<group>"; };
-		3164622829C4C937001CE578 /* libutil.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libutil.a; path = "HipremeEngine D/libs/libutil.a"; sourceTree = "<group>"; };
-		3164622929C4C938001CE578 /* librenderer.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = librenderer.a; path = "HipremeEngine D/libs/librenderer.a"; sourceTree = "<group>"; };
-		3164622A29C4C938001CE578 /* libarsd-official_imageresize.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_imageresize.a"; path = "HipremeEngine D/libs/libarsd-official_imageresize.a"; sourceTree = "<group>"; };
-		3164622B29C4C939001CE578 /* libbind.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libbind.a; path = "HipremeEngine D/libs/libbind.a"; sourceTree = "<group>"; };
-		3164622C29C4C93A001CE578 /* libconfig.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libconfig.a; path = "HipremeEngine D/libs/libconfig.a"; sourceTree = "<group>"; };
-		3164622D29C4C93C001CE578 /* libarsd-official_jpeg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_jpeg.a"; path = "HipremeEngine D/libs/libarsd-official_jpeg.a"; sourceTree = "<group>"; };
-		3164622E29C4C93D001CE578 /* libarsd-official_ttf.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_ttf.a"; path = "HipremeEngine D/libs/libarsd-official_ttf.a"; sourceTree = "<group>"; };
-		3164622F29C4C941001CE578 /* libconsole.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libconsole.a; path = "HipremeEngine D/libs/libconsole.a"; sourceTree = "<group>"; };
-		3164623029C4C942001CE578 /* libdata.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdata.a; path = "HipremeEngine D/libs/libdata.a"; sourceTree = "<group>"; };
-		3164623129C4C943001CE578 /* libfont.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfont.a; path = "HipremeEngine D/libs/libfont.a"; sourceTree = "<group>"; };
-		3164623229C4C944001CE578 /* libarsd-official_bmp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_bmp.a"; path = "HipremeEngine D/libs/libarsd-official_bmp.a"; sourceTree = "<group>"; };
-		3164623329C4C945001CE578 /* libarsd-official_color_base.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_color_base.a"; path = "HipremeEngine D/libs/libarsd-official_color_base.a"; sourceTree = "<group>"; };
-		3164623429C4C945001CE578 /* libmath.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmath.a; path = "HipremeEngine D/libs/libmath.a"; sourceTree = "<group>"; };
-		3164623529C4C946001CE578 /* libtween.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtween.a; path = "HipremeEngine D/libs/libtween.a"; sourceTree = "<group>"; };
-		3164623629C4C947001CE578 /* libarsd-official_svg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_svg.a"; path = "HipremeEngine D/libs/libarsd-official_svg.a"; sourceTree = "<group>"; };
-		3164623729C4C948001CE578 /* libdebugging.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdebugging.a; path = "HipremeEngine D/libs/libdebugging.a"; sourceTree = "<group>"; };
-		3164623829C4C949001CE578 /* libassets.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libassets.a; path = "HipremeEngine D/libs/libassets.a"; sourceTree = "<group>"; };
-		3164623929C4C94A001CE578 /* libdirectx-d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libdirectx-d.a"; path = "HipremeEngine D/libs/libdirectx-d.a"; sourceTree = "<group>"; };
-		3164623A29C4C94B001CE578 /* libBindBC_Loader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libBindBC_Loader.a; path = "HipremeEngine D/libs/libBindBC_Loader.a"; sourceTree = "<group>"; };
-		3164623B29C4C94B001CE578 /* libtimer.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtimer.a; path = "HipremeEngine D/libs/libtimer.a"; sourceTree = "<group>"; };
-		3164623C29C4C94C001CE578 /* liberror.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liberror.a; path = "HipremeEngine D/libs/liberror.a"; sourceTree = "<group>"; };
-		3164623D29C4C94D001CE578 /* libimage.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libimage.a; path = "HipremeEngine D/libs/libimage.a"; sourceTree = "<group>"; };
-		3164623E29C4C94D001CE578 /* libarsd-official_image_files.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libarsd-official_image_files.a"; path = "HipremeEngine D/libs/libarsd-official_image_files.a"; sourceTree = "<group>"; };
-		3164623F29C4C94E001CE578 /* libwindowing.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwindowing.a; path = "HipremeEngine D/libs/libwindowing.a"; sourceTree = "<group>"; };
-		3164625D29C4C9D7001CE578 /* libaudio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaudio.a; path = "HipremeEngine D/libs/libaudio.a"; sourceTree = "<group>"; };
-		3164625E29C4C9DB001CE578 /* libfilesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfilesystem.a; path = "HipremeEngine D/libs/libfilesystem.a"; sourceTree = "<group>"; };
-		3164625F29C4C9DD001CE578 /* libaudio_decoding.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaudio_decoding.a; path = "HipremeEngine D/libs/libaudio_decoding.a"; sourceTree = "<group>"; };
-		3164626029C4C9DD001CE578 /* libfilesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfilesystem.a; path = "HipremeEngine D/libs/libfilesystem.a"; sourceTree = "<group>"; };
-		3164626129C4C9E0001CE578 /* libhipengine_api.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhipengine_api.a; path = "HipremeEngine D/libs/libhipengine_api.a"; sourceTree = "<group>"; };
-		3164626229C4C9E0001CE578 /* libaudio_decoding.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaudio_decoding.a; path = "HipremeEngine D/libs/libaudio_decoding.a"; sourceTree = "<group>"; };
-		3164626329C4C9E1001CE578 /* libaudio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaudio.a; path = "HipremeEngine D/libs/libaudio.a"; sourceTree = "<group>"; };
-		3164626429C4C9EC001CE578 /* libhipengine_api.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhipengine_api.a; path = "HipremeEngine D/libs/libhipengine_api.a"; sourceTree = "<group>"; };
 		31B53C1029D68FC500108E4C /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		31B53C1129D68FC500108E4C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		31B53C1429D68FD400108E4C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -218,24 +180,24 @@
 			children = (
 				EB8B15322B03D0CF001329EC /* modules */,
 				3130368729D670A400895DD5 /* assets */,
-				315C6FC529B55CF8007F19C0 /* HipremeEngine_D */,
-				3156441C29A1546600559889 /* HipremeEngine Shared */,
-				3156442829A1546900559889 /* HipremeEngine iOS */,
-				3156443C29A1546900559889 /* HipremeEngine tvOS */,
-				3156445029A1546900559889 /* HipremeEngine macOS */,
+				315C6FC529B55CF8007F19C0 /* D */,
+				3156441C29A1546600559889 /* Shared */,
+				3156442829A1546900559889 /* iOS */,
+				3156443C29A1546900559889 /* tvOS */,
+				3156445029A1546900559889 /* macOS */,
 				3156442729A1546900559889 /* Products */,
 				315796D729B6771F00CE2D39 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
-		3156441C29A1546600559889 /* HipremeEngine Shared */ = {
+		3156441C29A1546600559889 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
 				3156441D29A1546600559889 /* Renderer.h */,
 				3156441E29A1546600559889 /* Renderer.m */,
 				3156442129A1546900559889 /* Assets.xcassets */,
 			);
-			path = "HipremeEngine Shared";
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		3156442729A1546900559889 /* Products */ = {
@@ -248,7 +210,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		3156442829A1546900559889 /* HipremeEngine iOS */ = {
+		3156442829A1546900559889 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
 				3156442929A1546900559889 /* AppDelegate.h */,
@@ -261,10 +223,10 @@
 				3156443229A1546900559889 /* LaunchScreen.storyboard */,
 				3156443529A1546900559889 /* main.m */,
 			);
-			path = "HipremeEngine iOS";
+			path = iOS;
 			sourceTree = "<group>";
 		};
-		3156443C29A1546900559889 /* HipremeEngine tvOS */ = {
+		3156443C29A1546900559889 /* tvOS */ = {
 			isa = PBXGroup;
 			children = (
 				3156443D29A1546900559889 /* AppDelegate.h */,
@@ -275,10 +237,10 @@
 				3156444629A1546900559889 /* LaunchScreen.storyboard */,
 				3156444929A1546900559889 /* main.m */,
 			);
-			path = "HipremeEngine tvOS";
+			path = tvOS;
 			sourceTree = "<group>";
 		};
-		3156445029A1546900559889 /* HipremeEngine macOS */ = {
+		3156445029A1546900559889 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
 				315FEE5729D1BFDE00761BF1 /* InputView.m */,
@@ -291,7 +253,7 @@
 				3156445A29A1546900559889 /* main.m */,
 				3156445C29A1546900559889 /* HipremeEngine_macOS.entitlements */,
 			);
-			path = "HipremeEngine macOS";
+			path = macOS;
 			sourceTree = "<group>";
 		};
 		315796D729B6771F00CE2D39 /* Frameworks */ = {
@@ -344,56 +306,18 @@
 				31B53C1429D68FD400108E4C /* Cocoa.framework */,
 				31B53C1129D68FC500108E4C /* Metal.framework */,
 				31B53C1029D68FC500108E4C /* MetalKit.framework */,
-				3130368B29D673F600895DD5 /* libphobos2.a */,
-				3164626229C4C9E0001CE578 /* libaudio_decoding.a */,
-				3164626329C4C9E1001CE578 /* libaudio.a */,
-				3164626029C4C9DD001CE578 /* libfilesystem.a */,
-				3164626429C4C9EC001CE578 /* libhipengine_api.a */,
-				3164623229C4C944001CE578 /* libarsd-official_bmp.a */,
-				3164623329C4C945001CE578 /* libarsd-official_color_base.a */,
-				3164623E29C4C94D001CE578 /* libarsd-official_image_files.a */,
-				3164622A29C4C938001CE578 /* libarsd-official_imageresize.a */,
-				3164622D29C4C93C001CE578 /* libarsd-official_jpeg.a */,
-				3164622429C4C933001CE578 /* libarsd-official_png.a */,
-				3164623629C4C947001CE578 /* libarsd-official_svg.a */,
-				3164622E29C4C93D001CE578 /* libarsd-official_ttf.a */,
-				3164623829C4C949001CE578 /* libassets.a */,
-				3164625F29C4C9DD001CE578 /* libaudio_decoding.a */,
-				3164622629C4C935001CE578 /* libaudio-formats.a */,
-				3164625D29C4C9D7001CE578 /* libaudio.a */,
-				3164622B29C4C939001CE578 /* libbind.a */,
-				3164623A29C4C94B001CE578 /* libBindBC_Loader.a */,
-				3164622329C4C932001CE578 /* libBindBC_OpenAL.a */,
-				3164622C29C4C93A001CE578 /* libconfig.a */,
-				3164622F29C4C941001CE578 /* libconsole.a */,
-				3164623029C4C942001CE578 /* libdata.a */,
-				3164623729C4C948001CE578 /* libdebugging.a */,
-				3164623929C4C94A001CE578 /* libdirectx-d.a */,
-				3164623C29C4C94C001CE578 /* liberror.a */,
-				3164625E29C4C9DB001CE578 /* libfilesystem.a */,
-				3164623129C4C943001CE578 /* libfont.a */,
-				3164626129C4C9E0001CE578 /* libhipengine_api.a */,
-				3164622729C4C936001CE578 /* libhipreme_engine.a */,
-				3164623D29C4C94D001CE578 /* libimage.a */,
-				3164623429C4C945001CE578 /* libmath.a */,
-				3164622529C4C934001CE578 /* libmetal.a */,
-				3164622929C4C938001CE578 /* librenderer.a */,
-				3164623B29C4C94B001CE578 /* libtimer.a */,
-				3164623529C4C946001CE578 /* libtween.a */,
-				3164622829C4C937001CE578 /* libutil.a */,
-				3164623F29C4C94E001CE578 /* libwindowing.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		315C6FC529B55CF8007F19C0 /* HipremeEngine_D */ = {
+		315C6FC529B55CF8007F19C0 /* D */ = {
 			isa = PBXGroup;
 			children = (
 				3130368929D672C700895DD5 /* libs */,
 				3130368529D66E6900895DD5 /* static */,
 				315C6FCB29B55DBE007F19C0 /* hipreme_engine.h */,
 			);
-			path = HipremeEngine_D;
+			path = D;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -658,8 +582,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LIBRARY_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/HipremeEngine_D/libs/",
-					"$(PROJECT_DIR)/HipremeEngine_D/static/",
+					"$(PROJECT_DIR)/D/libs/",
+					"$(PROJECT_DIR)/D/static/",
 				);
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -712,8 +636,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LIBRARY_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/HipremeEngine_D/libs/",
-					"$(PROJECT_DIR)/HipremeEngine_D/static/",
+					"$(PROJECT_DIR)/D/libs/",
+					"$(PROJECT_DIR)/D/static/",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -741,14 +665,12 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/HipremeEngine_D/static",
-					"$(PROJECT_DIR)/HipremeEngine_D/libs",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
+					"-lBindBC_Loader",
+					"-lBindBC_OpenAL",
 					"-larsd-official_bmp",
 					"-larsd-official_color_base",
 					"-larsd-official_core",
@@ -762,7 +684,6 @@
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
-					"-lavaudioengine",
 					"-lbind",
 					"-lconfig",
 					"-lconsole",
@@ -815,14 +736,12 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/HipremeEngine_D/static",
-					"$(PROJECT_DIR)/HipremeEngine_D/libs",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
+					"-lBindBC_Loader",
+					"-lBindBC_OpenAL",
 					"-larsd-official_bmp",
 					"-larsd-official_color_base",
 					"-larsd-official_core",
@@ -836,7 +755,6 @@
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
-					"-lavaudioengine",
 					"-lbind",
 					"-lconfig",
 					"-lconsole",
@@ -888,6 +806,8 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
+					"-lBindBC_Loader",
+					"-lBindBC_OpenAL",
 					"-larsd-official_bmp",
 					"-larsd-official_color_base",
 					"-larsd-official_core",
@@ -901,7 +821,6 @@
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
-					"-lavaudioengine",
 					"-lbind",
 					"-lconfig",
 					"-lconsole",
@@ -952,6 +871,8 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
+					"-lBindBC_Loader",
+					"-lBindBC_OpenAL",
 					"-larsd-official_bmp",
 					"-larsd-official_color_base",
 					"-larsd-official_core",
@@ -965,7 +886,6 @@
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
-					"-lavaudioengine",
 					"-lbind",
 					"-lconfig",
 					"-lconsole",
@@ -1016,15 +936,13 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/HipremeEngine_D/static",
-					"$(PROJECT_DIR)/HipremeEngine_D/libs",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 12.6;
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
+					"-lBindBC_Loader",
+					"-lBindBC_OpenAL",
 					"-larsd-official_bmp",
 					"-larsd-official_color_base",
 					"-larsd-official_core",
@@ -1038,7 +956,6 @@
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
-					"-lavaudioengine",
 					"-lbind",
 					"-lconfig",
 					"-lconsole",
@@ -1086,15 +1003,13 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/HipremeEngine_D/static",
-					"$(PROJECT_DIR)/HipremeEngine_D/libs",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 12.6;
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
+					"-lBindBC_Loader",
+					"-lBindBC_OpenAL",
 					"-larsd-official_bmp",
 					"-larsd-official_color_base",
 					"-larsd-official_core",
@@ -1108,7 +1023,6 @@
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
-					"-lavaudioengine",
 					"-lbind",
 					"-lconfig",
 					"-lconsole",

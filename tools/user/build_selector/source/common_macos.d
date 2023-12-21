@@ -1,6 +1,6 @@
 module common_macos;
 import commons;
-enum XCodeDFolder = "HipremeEngine_D";
+enum XCodeDFolder = "D";
 
 void setupPerCompiler(ref Terminal t, string compiler, string arch, out string extraLinkerFlags)
 {

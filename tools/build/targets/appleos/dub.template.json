@@ -1,7 +1,7 @@
 {
     "$schema": "https://raw.githubusercontent.com/Pure-D/code-d/master/json-validation/dub.schema.json",
     "$extends": "#HIPREME_ENGINE/dub.json",
-    "targetPath": "build/appleos/HipremeEngine_D/libs",
+    "targetPath": "build/appleos/D/libs",
     "unnamedDependencies": [
         {"path": "#TARGET_PROJECT", "subConfiguration": "release"}
     ],
