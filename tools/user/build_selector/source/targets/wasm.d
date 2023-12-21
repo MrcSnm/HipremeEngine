@@ -34,32 +34,23 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		"-I="~getHipPath("dependencies", "runtime", "druntime", "arsd-webassembly") ~" " ~
 		"-L-allow-undefined -d-version=CarelessAlocation";
 
-	std.file.chdir(configs["hipremeEnginePath"].str);
-	if(timed(() =>waitDubTarget(t, "wasm", DubArguments()
-		.command("build").compiler("ldc2").build("debug")
-		.arch("wasm32-unknown-unknown-wasm").opts(cOpts))) != 0)
+	with(WorkingDir(getHipPath))
 	{
-		t.writelnError("Could not build for WebAssembly.");
-		return ChoiceResult.Error;
-	}
-	environment["DFLAGS"]= "";
-	timed(() => waitDub(t, DubArguments().command("run wasm-sourcemaps").runArgs("hipreme_engine.wasm --include-sources=true")));
+		if(timed(() =>waitDubTarget(t, "wasm", DubArguments()
+			.command("build").compiler("ldc2").build("debug")
+			.arch("wasm32-unknown-unknown-wasm").opts(cOpts))) != 0)
+		{
+			t.writelnError("Could not build for WebAssembly.");
+			return ChoiceResult.Error;
+		}
+		environment["DFLAGS"]= "";
+		timed(() => waitDub(t, DubArguments().command("run wasm-sourcemaps").runArgs("hipreme_engine.wasm --include-sources=true")));
 
-	int mvStatus;
-	version(Posix) //Seems like dub is not detectign -posix in macOS
-	{
-		mvStatus = wait(spawnShell("mv hipreme_engine.wasm* ./build/wasm/build/"));
+		foreach(file; ["hipreme_engine.wasm", "hipreme_engine.wasm.map"])
+			std.file.rename(file, buildPath("build", "wasm", "build", file));
+		t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:9000");
+		pushWebsocketMessage("reload");
 	}
-	else version(Windows)
-	{
-		mvStatus = wait(spawnShell("move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"));
-	}
-	if(mvStatus)
-	{
-		t.writelnError("Could not move hipreme_engine.wasm file to build\\wasm\\build\\");
-	}
-	t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:9000");
-	pushWebsocketMessage("reload");
 
 	return ChoiceResult.None;
 }
