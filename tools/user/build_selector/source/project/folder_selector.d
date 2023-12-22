@@ -79,11 +79,11 @@ else
 
         void showErrorMessage(ref Terminal t, string title, string message)
         {
-            string cmd = getCommandToShowError(title, message);
+            string cmd = getCommandToShowError(t, title, message);
             if(cmd.length)
                 executeShell(cmd);
             else
-                defaultShowErrorMessage(title, message);
+                defaultShowErrorMessage(t, title, message);
         }
 
 
@@ -104,7 +104,7 @@ else
                 if(ret.length != 0 && ret[$-1] == '\n') ret = ret[0..$-1];
                 return ret;
             }
-            return defaultShowSaveFileDialog(initialName, filters);
+            return defaultShowSaveFileDialog(t, initialName, filters);
         }
     }
     else
