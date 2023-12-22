@@ -2,7 +2,6 @@
 
 Some tools are required for making your project work. Here is a summary of what they do if you intend to debug some step in your project or if you wish to contribute.
 
-* **Hiper**: Template project creator. This is the tool you'll interact most with it. Project names should not contain any spaces.
 * **insertresourcesuwp.d**: Put all the game assets inside a visual studio project for generating the UWP version of the game. Automatic.
 * **copyresources.d**: A tool that create files copy from other place to another with cache. Automatic.
 * **releasegame.d**: Tool for inputting your project path, will put a copy of your project inside a release folder in the engine and setup some versions so you won't have indirect calls to engine functionality. Automatic.
