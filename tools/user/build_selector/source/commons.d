@@ -273,6 +273,14 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	return selectedChoice;
 }
 
+string[] getProjectsAvailable()
+{
+	import std.array;
+	import std.algorithm;
+	if(!("projectsAvailable" in configs))
+		return [];
+	return (configs["projectsAvailable"].array.map!((JSONValue v) => v.str)).array;
+}
 
 string getValidPath(ref Terminal t, string pathRequired)
 {
@@ -1050,10 +1058,9 @@ scope string[] extFilters = [".DS_Store"])
  * Returns: Selected choice
  */
 Choice* selectInFolderExtra(string selectWhat, string directory, ref Terminal t, ref RealTimeConsoleInput input,
-scope Choice[] extraChoices, scope string[] extFilters = [".DS_Store"])
+return scope Choice[] choices, scope Choice[] extraChoices, scope string[] extFilters = [".DS_Store"])
 {
 	import std.string;
-	Choice[] choices;
 	LISTING_FILES: 
 	foreach(std.file.DirEntry e; std.file.dirEntries(directory, std.file.SpanMode.shallow))
 	{

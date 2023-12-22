@@ -38,6 +38,8 @@ private void changeGamePath(string newGamePath)
 
 ChoiceResult selectGameFolder(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
+    import std.array;
+    import std.algorithm;
     Choice[] extraChoices = 
     [
         Choice("Type the game path manually", &typeGamePath),
@@ -45,9 +47,11 @@ ChoiceResult selectGameFolder(Choice* c, ref Terminal t, ref RealTimeConsoleInpu
     ];
     if(isGameFolderValid(std.file.getcwd()))
         extraChoices = Choice(std.file.getcwd(), null) ~ extraChoices;
+    
+    Choice[] choices = getProjectsAvailable().map!((string name) => Choice(name, null)).array;
     Choice* selectedChoice = selectInFolderExtra(
         "Select your game",
-        getHipPath("projects"), t, input, extraChoices
+        getHipPath("projects"), t, input, choices, extraChoices
     );
     if(selectedChoice.onSelected != null)
         selectedChoice.onSelected(selectedChoice, t, input, cOpts);
