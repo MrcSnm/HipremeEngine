@@ -139,10 +139,25 @@ void promptForConfigCreation(ref Terminal t)
 
 ChoiceResult createProject(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-	string currDir = std.file.getcwd();
-	std.file.chdir(buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "user", "hiper"));
-	waitDub(t, DubArguments().runArgs("--engine="~configs["hipremeEnginePath"].str));
-	std.file.chdir(currDir);
+	import project.folder_selector;
+	import project.gen;
+	import std.array;
+
+	string projectPath, err;
+	if(!selectFolderForProject(t, projectPath, err))
+	{
+		t.writelnError(err);
+		return ChoiceResult.Back;
+	}
+	string projName = pathSplitter(projectPath).array[$-1];
+	if(generateProject(t, projectPath, configs["hipremeEnginePath"].str, DubProjectInfo("HipremeEngine", projName), TemplateInfo()))
+	{
+		if(!("projectsAvailable" in configs))
+			configs["projectsAvailable"] = [projectPath];
+		else
+			configs["projectsAvailable"].array ~= JSONValue(projectPath);
+	}
+
 	configs["selectedChoice"] = 0;
 	updateConfigFile();
 	return ChoiceResult.Back;
@@ -187,6 +202,7 @@ CompilationOptions cOpts;
 
 bool scriptOnly;
 string autoSelect;
+string createProjectToFolder;
 
 void main(string[] args)
 {
@@ -237,10 +253,11 @@ void main(string[] args)
 			"force", "Force for a recompilation", &cOpts.force,
 			"skipRegistry", "Skips dub registry with --skip-registry=all", &cOpts.skipRegistry,
 			"dubVerbose", "Builds with --verbose in dub", &cOpts.dubVerbose,
+			"tempBuild", "Executes dub with --temp-build", &cOpts.tempBuild,
+			"projectPath", "Path where the project will be generated. If no path is given, this program will popup a window prompting for selection.",&createProjectToFolder,
 			"scriptOnly", "Only the script will be built, internally used for rebuilding", &scriptOnly,
 			"appleClean", "Used to clean appleos/ios build. Useful for when your build is failing", &appleClean,
 			"autoSelect", "Execute a compilation option without needing to select", &autoSelect,
-			"tempBuild", "Executes dub with --temp-build", &cOpts.tempBuild
 		);
 		if(opts.helpWanted)
 		{

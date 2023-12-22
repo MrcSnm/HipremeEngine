@@ -160,14 +160,14 @@ struct Config
 		else static assert(false, "OS not supported");
 	}
 
-	auto opIndexAssign(T)(T value, string obj)
+	ref auto opIndexAssign(T)(T value, string obj)
 	{
 		version(Windows){return cfg["windows"][obj] = value;}
 		else version(Posix){return cfg["posix"][obj] = value;}
 		else static assert(false, "OS not supported");
 	}
 
-	auto opIndex(string obj)
+	ref auto opIndex(string obj)
 	{
 		version(Windows){return cfg["windows"][obj];}
 		else version(Posix){return cfg["posix"][obj];}
