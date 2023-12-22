@@ -45,10 +45,9 @@ ChoiceResult selectGameFolder(Choice* c, ref Terminal t, ref RealTimeConsoleInpu
         Choice("Type the game path manually", &typeGamePath),
         getBackChoice()
     ];
-    if(isGameFolderValid(std.file.getcwd()))
-        extraChoices = Choice(std.file.getcwd(), null) ~ extraChoices;
-    
     Choice[] choices = getProjectsAvailable().map!((string name) => Choice(name, null)).array;
+    if(isGameFolderValid(std.file.getcwd()))
+        choices = Choice(std.file.getcwd(), null) ~ choices;
     Choice* selectedChoice = selectInFolderExtra(
         "Select your game",
         getHipPath("projects"), t, input, choices, extraChoices
