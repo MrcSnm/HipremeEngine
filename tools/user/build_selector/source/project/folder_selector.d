@@ -79,7 +79,7 @@ else
 
         void showErrorMessage(ref Terminal t, string title, string message)
         {
-            string cmd = getCommandToShowError(t, title, message);
+            string cmd = getCommandToShowError( title, message);
             if(cmd.length)
                 executeShell(cmd);
             else
