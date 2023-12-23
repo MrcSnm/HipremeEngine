@@ -2,8 +2,8 @@
     "$schema": "https://raw.githubusercontent.com/Pure-D/code-d/master/json-validation/dub.schema.json",
     "description" : "Hipreme Engine test scene",
 	"license": "proprietary",
-	"targetName" : "start_here",
-	"name" : "start_here",
+	"targetName" : "test",
+	"name" : "test",
 	"sourcePaths"  : ["source"],
     "engineModules": [
         "util",
