@@ -116,7 +116,8 @@ string generateDubProject(DubProjectInfo info)
 			"targetType": "dynamicLibrary",
 			"dflags-ldc": ["-link-defaultlib-shared=true"],
 			"linkedDependencies": {"hipengine_api": {"path": "#HIPREME_ENGINE/api"}},
-			"lflags-windows": ["/WX"]
+			"lflags-windows": ["/WX"],
+			"versions": ["ScriptAPI"]
 		},
 		{
 			"name": "release", 
