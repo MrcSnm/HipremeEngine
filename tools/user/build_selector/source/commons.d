@@ -60,7 +60,7 @@ struct Terminal
 	}
 	~this()
 	{
-		if(arsdTerminal) arsdTerminal.destroy();
+		if(arsdTerminal) destroy(*arsdTerminal);
 	}
 }
 
@@ -75,7 +75,7 @@ struct RealTimeConsoleInput
 	}
 	~this()
 	{
-		if(input) input.destroy();
+		if(input) destroy(*input);
 	}
 }
 
