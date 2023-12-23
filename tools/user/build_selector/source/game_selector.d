@@ -24,15 +24,17 @@ private ChoiceResult typeGamePath(Choice* self, ref Terminal t, ref RealTimeCons
     }
 
     t.writelnSuccess("Selected game path '", gamePath, "'");
-    changeGamePath(gamePath);
+    changeGamePath(t, gamePath);
     hasTypedGamepath = true;
 
     return ChoiceResult.Continue;
 }
 
-private void changeGamePath(string newGamePath)
+private void changeGamePath(ref Terminal t, string newGamePath)
 {
     configs["gamePath"] = newGamePath;
+    t.writelnHighlighted("Opening project at ", newGamePath);
+    openSourceCodeEditor(newGamePath);
     clearCache();
 }
 
@@ -56,7 +58,7 @@ ChoiceResult selectGameFolder(Choice* c, ref Terminal t, ref RealTimeConsoleInpu
         selectedChoice.onSelected(selectedChoice, t, input, cOpts);
     // Chose a path
     if(selectedChoice.onSelected == null)
-        changeGamePath(selectedChoice.name);
+        changeGamePath(t, selectedChoice.name);
     if(hasTypedGamepath || selectedChoice.onSelected == null)
     {
         configs["selectedChoice"] = 0;
