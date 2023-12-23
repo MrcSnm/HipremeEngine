@@ -30,7 +30,7 @@ private ChoiceResult typeGamePath(Choice* self, ref Terminal t, ref RealTimeCons
     return ChoiceResult.Continue;
 }
 
-private void changeGamePath(ref Terminal t, string newGamePath)
+void changeGamePath(ref Terminal t, string newGamePath)
 {
     configs["gamePath"] = newGamePath;
     t.writelnHighlighted("Opening project at ", newGamePath);

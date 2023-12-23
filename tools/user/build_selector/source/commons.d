@@ -6,6 +6,7 @@ public import std.json;
 public import std.path;
 public import std.process;
 public static import std.file;
+public import default_handlers;
 
 
 enum hipremeEngineRepo = "https://github.com/MrcSnm/HipremeEngine.git";
@@ -762,6 +763,30 @@ void updateConfigFile()
 {
 	std.file.write(getConfigPath, configs.toString());
 }
+string getSourceCodeEditor(string projectPath)
+{
+	if(!("sourceCodeEditor" in configs) || configs["sourceCodeEditor"].str.length == 0)
+	{
+		string out_Editor;
+		if(getDefaultSourceEditor(buildNormalizedPath(projectPath, "source", "gamescript", "entry.d"), out_Editor))
+			configs["sourceCodeEditor"] = out_Editor;
+		else
+			configs["sourceCodeEditor"] = "";
+		updateConfigFile();
+	}
+
+	return configs["sourceCodeEditor"].str;
+}
+
+bool openSourceCodeEditor(string projectPath)
+{
+	string sourceEditor = getSourceCodeEditor(projectPath);
+	if(!sourceEditor.length)
+		return false;
+
+	return executeShell(sourceEditor.escapeShellCommand~" "~projectPath.escapeShellCommand).status == 0;
+}
+
 
 string getGitExec()
 {
@@ -791,55 +816,6 @@ void loadSubmodules(ref Terminal t, ref RealTimeConsoleInput input)
 	t.flush;
 
 	executeShell("cd "~ configs["hipremeEnginePath"].str ~ " && " ~ getGitExec~" submodule update --init --recursive");
-}
-
-bool openDefaultBrowser(string link)
-{
-	string command;
-	version(Windows) command = "explorer";
-	else version(linux) command = "xdg-open";
-	else version(OSX) command = "open";
-	return executeShell(command~" "~link).status == 0;
-}
-
-bool getDefaultSourceEditor(string referenceFile, out string defaultTextEditor)
-{
-	version(Windows)
-	{
-		import core.sys.windows.shellapi;
-		import std.string;
-		char[256] output;
-		void* err = FindExecutableA(toStringz(buildNormalizedPath(referenceFile)), null, output.ptr);
-		if(err <= SE_ERR_ACCESSDENIED)
-			return false;
-		defaultTextEditor = fromStringz(output).idup;
-		return true;
-	}
-	else return false;
-}
-
-string getSourceCodeEditor(string projectPath)
-{
-	if(!("sourceCodeEditor" in configs))
-	{
-		string out_Editor;
-		if(getDefaultSourceEditor(buildNormalizedPath(projectPath, "source", "gamescript", "entry.d"), out_Editor))
-			configs["sourceCodeEditor"] = out_Editor;
-		else
-			configs["sourceCodeEditor"] = "";
-		updateConfigFile();
-	}
-
-	return configs["sourceCodeEditor"].str;
-}
-
-bool openSourceCodeEditor(string projectPath)
-{
-	string sourceEditor = getSourceCodeEditor(projectPath);
-	if(!sourceEditor.length)
-		return false;
-
-	return executeShell(sourceEditor.escapeShellCommand~" "~projectPath.escapeShellCommand).status == 0;
 }
 
 private bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInput input)

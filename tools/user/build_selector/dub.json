@@ -6,8 +6,14 @@
 	"dependencies": {
 		"arsd-official:terminal": "~master",
 		"arsd-official:cgi": "~master",
-		"arsd-official:minigui": "~master"
+		"arsd-official:minigui": "~master",
+		"objc_meta": "~>1.0.11"
 	},
+	"lflags-osx": [
+		"-framework", "Foundation",
+		"-framework", "AppKit",
+		"-lObjC", "-all_load"
+	],
 	"versions-windows": ["WindowsVista"],
 	"stringImportPaths": [
 		"../../build/scripts",
