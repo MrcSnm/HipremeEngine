@@ -157,7 +157,7 @@ ChoiceResult createProject(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 		else
 			configs["projectsAvailable"].array ~= JSONValue(projectPath);
 	}
-
+	openSourceCodeEditor(projectPath);
 	configs["selectedChoice"] = 0;
 	updateConfigFile();
 	return ChoiceResult.Back;

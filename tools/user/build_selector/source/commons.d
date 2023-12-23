@@ -131,6 +131,10 @@ struct Choice
 		this.scriptOnly = scriptOnly;
 	}
 
+	bool opEquals(ref const Choice other) const 
+	{
+		return name == other.name;
+	}
 	bool opEquals(string choiceName) const
 	{
 		return name == choiceName;	
@@ -190,6 +194,21 @@ struct CompilationOptions
 		if(dubVerbose) ret~= " --verbose";
 		return ret;
 	}
+}
+
+T[] unique(T)(T[] input)
+{
+	bool[T] seen;
+	T[] ret;
+	foreach(v; input)
+	{
+		if(!(v in seen))
+		{
+			seen[v] = true;
+			ret~= v;
+		}
+	}
+	return ret;
 }
 
 size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices, 
@@ -774,21 +793,76 @@ void loadSubmodules(ref Terminal t, ref RealTimeConsoleInput input)
 	executeShell("cd "~ configs["hipremeEnginePath"].str ~ " && " ~ getGitExec~" submodule update --init --recursive");
 }
 
+bool openDefaultBrowser(string link)
+{
+	string command;
+	version(Windows) command = "explorer";
+	else version(linux) command = "xdg-open";
+	else version(OSX) command = "open";
+	return executeShell(command~" "~link).status == 0;
+}
+
+bool getDefaultSourceEditor(string referenceFile, out string defaultTextEditor)
+{
+	version(Windows)
+	{
+		import core.sys.windows.shellapi;
+		import std.string;
+		char[256] output;
+		void* err = FindExecutableA(toStringz(buildNormalizedPath(referenceFile)), null, output.ptr);
+		if(err <= SE_ERR_ACCESSDENIED)
+			return false;
+		defaultTextEditor = fromStringz(output).idup;
+		return true;
+	}
+	else return false;
+}
+
+string getSourceCodeEditor(string projectPath)
+{
+	if(!("sourceCodeEditor" in configs))
+	{
+		string out_Editor;
+		if(getDefaultSourceEditor(buildNormalizedPath(projectPath, "source", "gamescript", "entry.d"), out_Editor))
+			configs["sourceCodeEditor"] = out_Editor;
+		else
+			configs["sourceCodeEditor"] = "";
+		updateConfigFile();
+	}
+
+	return configs["sourceCodeEditor"].str;
+}
+
+bool openSourceCodeEditor(string projectPath)
+{
+	string sourceEditor = getSourceCodeEditor(projectPath);
+	if(!sourceEditor.length)
+		return false;
+
+	return executeShell(sourceEditor.escapeShellCommand~" "~projectPath.escapeShellCommand).status == 0;
+}
+
 private bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInput input)
 {
 	if(!("7zip" in configs))
 	{
 		version(Windows)
 		{
-			if(!downloadFileIfNotExists("Needs 7zip for "~purpose, "https://www.7-zip.org/a/7zr.exe", 
-				buildNormalizedPath(std.file.getcwd(), "7z.exe"), t, input
-			))
-				return false;
+			string _7zPath = findProgramPath("7z");
+			if(!_7zPath)
+			{
+				if(!downloadFileIfNotExists("Needs 7zip for "~purpose, "https://www.7-zip.org/a/7zr.exe", 
+					buildNormalizedPath(std.file.getcwd(), "7z.exe"), t, input
+				))
+					return false;
 
-			string outFolder = buildNormalizedPath(std.file.getcwd(), "buildtools");
-			std.file.mkdirRecurse(outFolder);
-			std.file.rename(buildNormalizedPath(std.file.getcwd(), "7z.exe"), buildNormalizedPath(outFolder, "7z.exe"));
-			configs["7zip"] = buildNormalizedPath(outFolder, "7z.exe");
+				string outFolder = buildNormalizedPath(std.file.getcwd(), "buildtools");
+				std.file.mkdirRecurse(outFolder);
+				std.file.rename(buildNormalizedPath(std.file.getcwd(), "7z.exe"), buildNormalizedPath(outFolder, "7z.exe"));
+				configs["7zip"] = buildNormalizedPath(outFolder, "7z.exe");
+			}
+			else
+				configs["7zip"] = buildNormalizedPath(_7zPath);
 			updateConfigFile();
 		}
 		else version(Posix)
@@ -1067,7 +1141,7 @@ return scope Choice[] choices, scope Choice[] extraChoices, scope string[] extFi
 		foreach(f; extFilters) if(e.name.endsWith(f)) continue LISTING_FILES;
 		choices~= Choice(e.name, null);
 	}
-	choices~= extraChoices;
+	choices = (choices ~ extraChoices).unique;
 	size_t choice;
 	choice = selectChoiceBase(t, input, choices, selectWhat);
 

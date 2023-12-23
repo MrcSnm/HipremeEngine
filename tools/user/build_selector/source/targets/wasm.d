@@ -50,6 +50,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 			std.file.rename(file, buildPath("build", "wasm", "build", file));
 		t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:9000");
 		pushWebsocketMessage("reload");
+		cached(() => cast(void)openDefaultBrowser("http://localhost:9000"));
 	}
 
 	return ChoiceResult.None;
