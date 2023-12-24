@@ -690,6 +690,18 @@ private void terminalProgressBar(ref Terminal t, float percentage, ubyte ticksCo
 	t.flush();
 }
 
+///Adds a path to PATH
+void addToPath(string pathToAdd)
+{
+	import std.array:join;
+	string concatPath = ":";
+    version(Windows) concatPath = ";";
+    environment["PATH"] = join([
+		pathToAdd,
+        environment["PATH"]
+    ], concatPath);
+}
+
 /**
 *	Same as std.net.curl.download
 *	Difference is that it shows a progress bar while downloading.
