@@ -6,6 +6,8 @@ name: Build Selector
 
 on:
   push:
+    branches:
+      - master
     paths:
       - "tools/user/build_selector/**"
       - ".github/workflows/build_selector.yml"
@@ -100,9 +102,4 @@ jobs:
         artifacts: "win64-build_selector.zip/win64-build_selector.zip,linux64-build_selector/linux64-build_selector,macos64-build_selector/macos64-build_selector"
         allowUpdates: "true"
         tag: "BuildAssets.v1.0.0"
-        
-      
-      
-      
-  
         
