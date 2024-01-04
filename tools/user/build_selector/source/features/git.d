@@ -40,19 +40,23 @@ Download[] downlloads)
 Feature GitFeature;
 Task!loadSubmodules submoduleLoader;
 
-shared static this()
+void initialize()
 {
 	GitFeature = Feature(
-    "git",
-    "Git Versioning software",
-    ExistenceChecker(null, ["git"]),
-    Installation([Download(
-		DownloadURL(
-			windows: "https://github.com/git-for-windows/git/releases/download/v2.40.1.windows.1/MinGit-2.40.1-64-bit.zip"
-		),
-		"$CWD/buildtools//git"),
+		"git",
+		"Git Versioning software",
+		ExistenceChecker(null, ["git"]),
+		Installation([
+			Download(
+				DownloadURL(
+					windows: "https://github.com/git-for-windows/git/releases/download/v2.40.1.windows.1/MinGit-2.40.1-64-bit.zip"
+				),
+				outputPath: "$CWD/buildtools/git"
+			),
 		], &installGit
 	));
-
-	submoduleLoader = Task!(loadSubmodules)([GitFeature]);
-} 
+}
+void start()
+{
+	submoduleLoader = Task!(loadSubmodules)([&GitFeature]);
+}

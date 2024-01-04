@@ -39,18 +39,26 @@ bool installDmd(
 }
 
 
-Feature DMDFeature = Feature(
-    "DMD",
-    "Digital Mars D Compiler. Used for fast iteration development", 
-    ExistenceChecker(["dmdPath"], ["dmd"]),
-    Installation([Download(
-        DownloadURL(
-            windows: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.windows.7z",
-            linux: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.linux.tar.xz",
-            osx: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.osx.tar.xz",
-        ),
-        outputPath: "$TEMP/$NAME",
-    )], &installDmd), 
-    (ref Terminal){addToPath(configs["dmdPath"].str.buildNormalizedPath);},
-    VersionRange.parse("2.105.0", "2.106.0")
-);
+Feature DMDFeature;
+void initialize()
+{
+    DMDFeature = Feature(
+        "DMD",
+        "Digital Mars D Compiler. Used for fast iteration development", 
+        ExistenceChecker(["dmdPath"], ["dmd"]),
+        Installation([Download(
+            DownloadURL(
+                windows: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.windows.7z",
+                linux: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.linux.tar.xz",
+                osx: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.osx.tar.xz",
+            ),
+            outputPath: "$TEMP/$NAME",
+        )], &installDmd), 
+        (ref Terminal){addToPath(configs["dmdPath"].str.buildNormalizedPath);},
+        VersionRange.parse("2.105.0", "2.106.0")
+    );
+}
+void start()
+{
+    
+}

@@ -5,6 +5,7 @@ import commons;
 import d_getter;
 import global_opts;
 import game_selector;
+import feature;
 import features.hipreme_engine;
 import targets.windows;
 import targets.android;
@@ -13,6 +14,14 @@ import targets.ios;
 import targets.linux;
 import targets.wasm;
 import targets.psvita;
+
+mixin StartFeatures!([
+	"_7zip",
+	"dmd",
+	"git",
+	"hipreme_engine",
+	"ldc"
+]);
 
 
 bool isChoiceAutoSelectable(string selected)

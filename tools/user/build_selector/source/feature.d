@@ -8,15 +8,18 @@ struct DownloadURL
     string linux;
     string osx;
 
-    string get()
+    string get(TargetVersion ver)
     {
-        version(Windows) return windows;
-        else version(linux) return linux;
-        else version(OSX) return osx;
+        import std.string:replace;
+        string ret;
+        version(Windows) ret = windows;
+        else version(linux) ret = linux;
+        else version(OSX) ret = osx;
+        return ret.replace("$VERSION", ver.toString);
     }
-    string getDownloadFileName()
+    string getDownloadFileName(TargetVersion ver)
     {
-        return get.split("/")[$-1];
+        return get(ver).split("/")[$-1];
     }
 }
 
@@ -26,7 +29,7 @@ struct Download
     ///Supports $CWD, $TEMP, $VERSION and $NAME
     string outputPath;
     ///Negative version ignored.
-    int targetVer = -1;
+    TargetVersion ver;
     void function(string outputPath) onDownloadFinish;
 
     string getOutputPath()
@@ -36,10 +39,8 @@ struct Download
         string ret = replace(outputPath, "$CWD", std.file.getcwd);
         ret = replace(ret, "$TEMP", std.file.tempDir);
         //TODO: Replace name
-        ret = replace(ret, "$NAME", url.getDownloadFileName);
-        
-        string v = targetVer < 0 ? "" : to!string(targetVer);
-        ret = replace(ret, "$VERSION", v);
+        ret = replace(ret, "$NAME", url.getDownloadFileName(ver));
+        ret = replace(ret, "$VERSION", ver.toString);
         return ret;
     }
 }
@@ -59,7 +60,7 @@ struct Installation
 struct Task(alias Fn)
 {
     import std.traits;
-    Feature[] dependencies;
+    Feature*[] dependencies;
     private static auto fn = &Fn;
 
     auto execute(Parameters!Fn args)
@@ -75,19 +76,39 @@ struct Feature
     import features.ldc;
     string name;
     string description;
+    /** 
+     * Checks the existence in $PATH
+     * Checks the existence in gameBuild
+     */
     ExistenceChecker existenceChecker;
+    /** 
+     * Gets an optional Download[] array, and an installer function
+     * which contains the downloaded files information
+     */
     Installation installer;
-
+    /** 
+     * A function that is executed exactly once after the installation
+     * was succeeded.
+     */
     void function(ref Terminal t) startUsingFeature;
+    /** 
+     * Range of supported versions. May support in the feature also
+     * version whitelisting. 
+     */
     VersionRange supportedVersion;
-    Feature[] dependencies;
-
     /**
     * When empty it means it is required on every OS.
     * This was made because if it is not required in any OS, simply don't
     * put in the dependencies
     */
     OS[] requiredOn;
+
+    /** 
+     * Dependencies must be initialized in a 2-way start.
+     * First, every dependency is started with its own information
+     * After that, all the dependencies are started.
+     */
+    Feature*[] dependencies;
 
     bool isRequired()
     {
@@ -98,10 +119,10 @@ struct Feature
     }
     
 
-    Feature[] getAllDependencies()
+    Feature*[] getAllDependencies()
     {
-        bool[Feature] visited;
-        Feature[] ret;
+        bool[Feature*] visited;
+        Feature*[] ret;
         foreach(dep; dependencies)
         {
             if(!(dep in visited))
@@ -121,7 +142,7 @@ struct Feature
     {
         if(!supportedVersion.isInRange(v))
             return false;
-        foreach(ref Feature dep; getAllDependencies)
+        foreach(Feature* dep; getAllDependencies)
         {
             if(!dep.getFeature(t, input, dep.supportedVersion.max))
             {
@@ -140,6 +161,21 @@ struct Feature
             startUsingFeature(t);
         }
         return true;
+    }
+}
+mixin template StartFeatures(string[] features)
+{
+    static this()
+    {
+        static foreach(f; features)
+        {
+            mixin("import ",f," = features.",f,";");
+            mixin(f,".initialize();");
+        }
+        static foreach(f; features)
+        {
+            mixin(f,".start();");
+        }
     }
 }
 
@@ -205,7 +241,7 @@ struct TargetVersion
     string toString()
     {
         import std.conv:to;
-        if(major == -1) return "0";
+        if(major == -1) return null;
         string ret = major.to!string;
         if(minor != -1) ret~= "." ~ minor.to!string;
         if(patch != -1) ret~= "." ~ patch.to!string;
