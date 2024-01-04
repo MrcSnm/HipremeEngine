@@ -41,6 +41,7 @@ private bool extract7ZipToFolderImpl(ref Terminal t, ref RealTimeConsoleInput in
 
 void initialize()
 {
+	import std.system;
 	_7zFeature  = Feature(
 		name: "7zip",
 		description: "Compressed file type",
@@ -51,8 +52,8 @@ void initialize()
 		)], &install7Zip),
 		startUsingFeature: null,
 		VersionRange(),
+		requiredOn: [OS.win32, OS.win64],
 		dependencies: null,
-		requiredOn: null
 	);
 }
 
