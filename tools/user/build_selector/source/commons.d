@@ -682,12 +682,7 @@ void addToPath(string pathToAdd)
     ], concatPath);
 }
 
-/**
-*	Same as std.net.curl.download
-*	Difference is that it shows a progress bar while downloading.
-*	Returns the time needed to download.
-*/
-size_t downloadWithProgressBar(ref Terminal t, string url, string saveToPath, size_t updateDelay = 125)
+size_t downloadWithProgress(string url, string saveToPath, void delegate(float t) onProgress, size_t updateDelay = 125)
 {
 	import std.net.curl:HTTP;
 	import core.time:dur;
@@ -709,8 +704,7 @@ size_t downloadWithProgressBar(ref Terminal t, string url, string saveToPath, si
 		ownerTid.send(true);
 	}
 	auto writerTid = spawn(&writer, saveToPath);
-	t.hideCursor();
-	StopWatch sw = StopWatch(AutoStart.yes);
+	StopWatch updateDelayChecker = StopWatch(AutoStart.yes);
 	size_t downloadTime;
 	conn.onReceive = (ubyte[] data)
 	{
@@ -718,11 +712,11 @@ size_t downloadWithProgressBar(ref Terminal t, string url, string saveToPath, si
 		if(contentLength == 0)
 			contentLength = conn.responseHeaders["content-length"].to!size_t;
 		received+= data.length;
-		if(sw.peek.total!"msecs" >= updateDelay || received == contentLength)
+		if(updateDelayChecker.peek.total!"msecs" >= updateDelay || received == contentLength)
 		{
-			downloadTime+= sw.peek.total!"msecs";
-			terminalProgressBar(t, cast(float)received/contentLength);
-			sw.reset();
+			downloadTime+= updateDelayChecker.peek.total!"msecs";
+			onProgress(cast(float)received/contentLength);
+			updateDelayChecker.reset();
 		}
 		send(writerTid, data.idup);
 		return data.length;
@@ -730,8 +724,22 @@ size_t downloadWithProgressBar(ref Terminal t, string url, string saveToPath, si
 	conn.perform();
 	send(writerTid, (immutable(ubyte)[]).init);
 	receiveTimeout(dur!"msecs"(1000), (bool){}); //Block until finish
-	t.showCursor();
 	return downloadTime; 
+}
+
+/**
+*	Same as std.net.curl.download
+*	Difference is that it shows a progress bar while downloading.
+*	Returns the time needed to download.
+*/
+size_t downloadWithProgressBar(ref Terminal t, string url, string saveToPath, size_t updateDelay = 125)
+{
+	t.hideCursor();
+	scope(exit) t.showCursor();
+	return downloadWithProgress(url, saveToPath, (float progress)
+	{
+		terminalProgressBar(t, progress);
+	});
 }
 
 

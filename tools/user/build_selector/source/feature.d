@@ -32,7 +32,18 @@ struct Download
     TargetVersion ver;
     void function(string outputPath) onDownloadFinish;
 
-    string getOutputPath()
+    bool download(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver)
+    {
+        this.ver = ver;
+        commons.downloadWithProgressBar(t, url.get(ver), getOutputPath(ver));
+        return true;
+    }
+    string getOutputPath() const
+    {
+        return getOutputPath(ver);
+    }
+
+    string getOutputPath(TargetVersion ver) const
     {
         import std.conv:to;
         import std.string;
@@ -54,6 +65,17 @@ struct Installation
         TargetVersion ver, 
         Download[] content
     ) installer;
+
+    bool install(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver)
+    {
+        foreach(d; downloadsRequired)
+        {
+            t.writeln("Downloading ", d.url.get(ver), " --> ", d.getOutputPath(ver));
+            t.flush;
+            if(!d.download(t, input, ver)) return false;
+        }
+        return installer(t, input, ver, downloadsRequired);
+    }
 
 }
 
@@ -138,10 +160,16 @@ struct Feature
         return ret.unique;
     }
 
+    private bool startedUsing = false;
+
     bool getFeature(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion v = TargetVersion.init)
     {
+        if(v == TargetVersion.init) v = supportedVersion.max;
         if(!supportedVersion.isInRange(v))
+        {
+            t.writelnError("Unsupported version '",v.toString,"' for feature ", name);
             return false;
+        }
         foreach(Feature* dep; getAllDependencies)
         {
             if(!dep.getFeature(t, input, dep.supportedVersion.max))
@@ -156,8 +184,13 @@ struct Feature
             import std.conv:to;
             t.writeln("Installation: ", name, " v", v.toString, "\n\t", description);
             t.flush;
-            if(!installer.installer(t, input, v, installer.downloadsRequired))
+            if(!installer.install(t, input, v))
                 return false;
+        }
+        if(!startedUsing)
+        {
+            startedUsing = true;
+            t.writeln(status);
             startUsingFeature(t);
         }
         return true;
@@ -183,9 +216,9 @@ struct ExistenceStatus
 {
     static enum Place
     {
-        inPath,
+        notFound,
         inConfig,
-        notFound
+        inPath,
     }
     Place place;
     string where;
@@ -295,10 +328,18 @@ struct TargetVersion
 struct VersionRange
 {
     TargetVersion min, max;
+
     static VersionRange parse(string min, string max)
     {
         return VersionRange(TargetVersion.parse(min), TargetVersion.parse(max));
     }
+    /** 
+     * Compares both major and minor to min and max versions.
+     * Currently, patch, modifier and modifier version are ignored.
+     * Params:
+     *   v = A Target version
+     * Returns: 
+     */
     bool isInRange(TargetVersion v)
     {
         return v.major >= min.major  && v.major <= max.major &&
