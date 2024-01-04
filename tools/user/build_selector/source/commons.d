@@ -536,9 +536,16 @@ bool extractToFolder(string zPath, string outputDirectory, ref Terminal t, ref R
 	}
 }
 
+string executableExtension(string path)
+{
+	version(Windows) return path~".exe";
+	return path;
+}
+
 bool extract7ZipToFolder(string zPath, string outputDirectory, ref Terminal t, ref RealTimeConsoleInput input)
 {
-	if(!install7Zip("Extracting the file at"~zPath, t, input))	
+	import features._7zip;
+	if(_7zFeature.getFeature(t, input))
 	{
 		t.writelnError("This operation requires a 7zip installation.");
 		return false;
@@ -810,11 +817,6 @@ string getGitExec()
 	return "git ";
 }
 
-bool hasGit()
-{
-	if(findProgramPath("git")) return true;
-	return ("git" in configs) != null;
-}
 
 void loadSubmodules(ref Terminal t, ref RealTimeConsoleInput input)
 {
@@ -830,44 +832,8 @@ void loadSubmodules(ref Terminal t, ref RealTimeConsoleInput input)
 	executeShell("cd "~ configs["hipremeEnginePath"].str ~ " && " ~ getGitExec~" submodule update --init --recursive");
 }
 
-private bool install7Zip(string purpose, ref Terminal t, ref RealTimeConsoleInput input)
-{
-	if(!("7zip" in configs))
-	{
-		version(Windows)
-		{
-			string _7zPath = findProgramPath("7z");
-			if(!_7zPath)
-			{
-				if(!downloadFileIfNotExists("Needs 7zip for "~purpose, "https://www.7-zip.org/a/7zr.exe", 
-					buildNormalizedPath(std.file.getcwd(), "7z.exe"), t, input
-				))
-					return false;
-
-				string outFolder = buildNormalizedPath(std.file.getcwd(), "buildtools");
-				std.file.mkdirRecurse(outFolder);
-				std.file.rename(buildNormalizedPath(std.file.getcwd(), "7z.exe"), buildNormalizedPath(outFolder, "7z.exe"));
-				configs["7zip"] = buildNormalizedPath(outFolder, "7z.exe");
-			}
-			else
-				configs["7zip"] = buildNormalizedPath(_7zPath);
-			updateConfigFile();
-		}
-		else version(Posix)
-		{
-			configs["7zip"] = "7za";
-			updateConfigFile();
-		}
-	}
-	return true;
-}
 
 
-private string getGitDownloadLink()
-{
-	version(Windows) return "https://github.com/git-for-windows/git/releases/download/v2.40.1.windows.1/MinGit-2.40.1-64-bit.zip";
-	else return "";
-}
 
 
 private ChoiceResult _backFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
@@ -879,31 +845,6 @@ Choice getBackChoice()
 	return Choice("Back", &_backFn);
 }
 
-
-bool installGit(ref Terminal t, ref RealTimeConsoleInput input)
-{
-	version(Windows)
-	{
-		if(!("git" in configs))
-		{
-			string gitPath = buildNormalizedPath(std.file.getcwd(), "buildtools", "git");
-			if(!installFileTo("Download Git for getting HipremeEngine's source code.", getGitDownloadLink(), "git.zip",
-			gitPath, t, input))
-			{
-				t.writelnError("Git installation failed");
-				return false;
-			}
-			configs["git"] = buildNormalizedPath(gitPath, "cmd");
-			updateConfigFile();
-		}
-		return true;
-	}
-	else version(Posix)
-	{
-		t.writelnError("Please install Git to use build_selector.");
-		return false;
-	}
-}
 
 
 void runEngineDScript(ref Terminal t, string script, scope string[] args...)

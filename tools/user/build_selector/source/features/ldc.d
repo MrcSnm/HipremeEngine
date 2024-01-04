@@ -1,19 +1,16 @@
 module features.ldc;
+import commons;
+import feature;
+enum LdcVersion = "1.36.0-beta1";
 
-private string getLdcLink()
-{
-    string baseDownloadLink = "https://github.com/ldc-developers/ldc/releases/download/";
-    baseDownloadLink~= "v"~LdcVersion;
-    baseDownloadLink~= "/ldc2-"~LdcVersion~"-";
-    version(Windows)
-        baseDownloadLink~= "windows-x64.7z";
-    else version(OSX)
-        baseDownloadLink~= "osx-universal.tar.xz";
-    else version(linux)
-        baseDownloadLink~= "linux-x86_64.tar.xz";
-    else assert(false, "D is not supported in your system.");
-    return baseDownloadLink;
-}
+Download LDCDownload = Download(
+    DownloadURL(
+        windows: "https://github.com/ldc-developers/ldc/releases/download/v$VERSIONldc2-$VERSIONwindows-x64.7z",
+        linux: "https://github.com/ldc-developers/ldc/releases/download/v$VERSIONldc2-$VERSIONlinux-x86_64.tar.xz",
+        osx: "https://github.com/ldc-developers/ldc/releases/download/v$VERSIONldc2-$VERSIONosx-universal.tar.xz"
+    )
+);
+
 
 private string getOutputPath()
 {
@@ -57,44 +54,47 @@ private void overrideLdcConf(ref Terminal t)
 }
 
 
-bool installD(ref Terminal t, ref RealTimeConsoleInput input)
+bool installLdc(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] downloads)
 {
-    bool existsDmd = ("dmdPath" in configs) !is null;
-    bool existsLdc = ("ldcPath" in configs) !is null;
-    bool isDmdExpectedVersion = existsDmd && configs["dmdVersion"].str == DmdVersion;
-    bool isLdcExpectedVersion = existsLdc && configs["ldcVersion"].str == LdcVersion;
-    
-    if(!isLdcExpectedVersion)
+    if(!extractToFolder(downloads[0].getOutputPath, 
+        buildNormalizedPath(std.file.getcwd, "D"), t, input))
     {
-        if(!existsLdc)
-            t.writelnHighlighted("No ldcVersion specified, your HipremeEngine will attempt to install locally LDC2 " ~LdcVersion ~ 
-            wontAffectMessage);
-        else
-            t.writelnError("Different LDC Version. HipremeEngine will attempt to install locally LDC2 " ~LdcVersion);
-        t.flush;
-        if(!installFileTo("Download D cross compiler LDC2 "~LdcVersion, getLdcLink,
-        getLdcDownloadOutputName, buildNormalizedPath(std.file.getcwd, "D"), t, input))
-        {
-            t.writelnError("Install failed");
-            return false;
-        }
-        t.writeln("Installed.");
-        auto binPath = buildNormalizedPath(getOutputPath, "bin");
-        makeFileExecutable(buildNormalizedPath(binPath, "rdmd"));
-        makeFileExecutable(buildNormalizedPath(binPath, "ldc2"));
-        makeFileExecutable(buildNormalizedPath(binPath, "ldmd2"));
-        makeFileExecutable(buildNormalizedPath(binPath, "dub"));
-        overrideLdcConf(t);
-
-        string rdmd = buildNormalizedPath(binPath, "rdmd");
-        version(Windows) rdmd = rdmd.setExtension("exe");
-        configs["ldcVersion"] = LdcVersion;
-        configs["ldcPath"] = getOutputPath;
-        configs["rdmdPath"] = rdmd;
-        configs["dubPath"] = binPath;
-        updateConfigFile();
+        t.writelnError("Install failed");
+        return false;
     }
+    t.writeln("Installed.");
+    auto binPath = buildNormalizedPath(getOutputPath, "bin");
+    foreach(executable; ["ldc2", "ldmd2", "rdmd", "dub"])
+        makeFileExecutable(buildNormalizedPath(binPath, executable));
+    overrideLdcConf(t);
+
+    string rdmd = buildNormalizedPath(binPath, "rdmd");
+    version(Windows) rdmd = rdmd.setExtension("exe");
+    configs["ldcVersion"] = targetVer;
+    configs["ldcPath"] = getOutputPath;
+    configs["rdmdPath"] = rdmd;
+    configs["dubPath"] = binPath;
+    updateConfigFile();
     
 
     return true;
+}
+
+
+
+immutable Feature LDCFeature;
+static this()
+{
+    LDCFeature = Feature(
+        "LDC 2", 
+        "LLVM Backend D Compiler. Used for development on various platforms",
+        ExistenceChecker(["ldcPath"], ["ldc2"]),
+        Installation([LDCDownload], &installLdc),
+        (ref Terminal){addToPath(configs["ldcPath"].str.buildNormalizedPath);},
+        VersionRange(
+            TargetVersion.parse("1.35.0"),
+            TargetVersion.parse("1.36.0-beta1")
+        )
+    );
+
 }
