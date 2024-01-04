@@ -1,28 +1,20 @@
-module targets.windows;
-
-import features.hipreme_engine;
-import features.ldc;
-
-version(Windows):
-import commons;
+module features.msvclinker;
 import feature;
-import features.msvclinker;
-import features.vcruntime140;
-import std.windows.registry;
-static import std.file;
 
+///Feature which gets the msvclinker
+Feature MSVCLinker;
 
-bool hasVCRuntime140()
+version(Posix)
 {
-	string arch = "X64";
-	version(Win32) arch = "X32";
-	Key currKey = windowsGetKeyWithPath("SOFTWARE", "WOW6432Node", "Microsoft", "VisualStudio", "14.0", "VC", "Runtimes", arch);
-	return currKey.getValue("Installed").value_DWORD == 1;
+    void initialize(){}
+    void start(){}
 }
+else version(Windows):
+
 
 pragma(lib, "ole32.lib");
 pragma(lib, "oleaut32.lib");
-bool hasMSVCLinker()
+bool hasMSVCLinker(ref Terminal t, int targetVer)
 {
 	import core.sys.windows.winbase;
 	import core.sys.windows.winnt;
@@ -129,42 +121,8 @@ bool hasMSVCLinker()
 	return false;
 }
 
-private string getVCDownloadLink()
+private bool installMSLinker(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content)
 {
-	version(Win64) return "https://aka.ms/vs/17/release/vc_redist.x64.exe";
-	else version(Win32) return "https://aka.ms/vs/17/release/vc_redist.x86.exe";
-	else version(AArch64) return "https://aka.ms/vs/17/release/vc_redist.arm64.exe";
-}
-
-private bool installVCRuntime140(ref Terminal t, ref RealTimeConsoleInput input)
-{
-	string vcredist = buildNormalizedPath(std.file.getcwd(), "buildtools", "vcredist.exe");
-	if(!downloadFileIfNotExists("Get Microsoft Visual C++ Redistributable for being able to compile D Programming Language", getVCDownloadLink, vcredist, t, input))
-	{
-		t.writelnError("Needs to download VCRuntime.");
-		return false;
-	}
-	t.writelnHighlighted("Installing Microsoft Visual C++ Redistributable");
-
-	auto ret = wait(spawnShell(vcredist~" /install /quiet /norestart")) == 0;
-	if(ret)
-		t.writelnSuccess("Successfully installed Microsoft Visual C++ Redistributable.");
-	else 
-		t.writelnError("Could not install Microsoft Visual C++ Redistributable.");
-	return ret;
-}
-
-private bool installMSLinker(ref Terminal t, ref RealTimeConsoleInput input)
-{
-	string vcBuildTools = buildNormalizedPath(std.file.getcwd(), "buildtools", "vc_BuildTools.exe");
-	enum vcBuildToolsLink = "https://aka.ms/vs/17/release/vs_BuildTools.exe";
-	if(!downloadFileIfNotExists("Get Windows SDK for being able  to compile D programming language", vcBuildToolsLink, vcBuildTools, t, input))
-	{
-		t.writelnError("Need to download vs_BuildTools.exe");
-		return false;
-	}
-	t.writelnHighlighted("Starting Windows SDK Installation.");
-
 	string[] installList = 
 	[
 		"Microsoft.VisualStudio.Workload.VCTools",
@@ -175,57 +133,28 @@ private bool installMSLinker(ref Terminal t, ref RealTimeConsoleInput input)
 
 	import std.algorithm:reduce;
 
-	auto ret = wait(spawnShell(vcBuildTools~" --wait --passive --norestart " ~installList.reduce!((str, last) => "--add "~last~" "~str))) == 0;
+	auto ret = wait(spawnShell(content[0].getOutputPath(ver)~" --wait --passive --norestart " ~installList.reduce!((str, last) => "--add "~last~" "~str))) == 0;
 	return ret == 0;
 }
 
-ChoiceResult prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+
+void initialize()
 {
-	if(!hasVCRuntime140)
-	{
-		if(!installVCRuntime140(t, input))
-		{
-			t.writelnError("Your system must install Microsoft Visual C++ 14 for using the D Programming Language.");
-			return ChoiceResult.Error;
-		}
-	}
-	if(!hasMSVCLinker)
-	{
-		if(!installMSLinker(t, input))
-		{
-			if(hasMSVCLinker)
-				t.writelnSuccess("Succesfully installed Windows SDK.");
-			else
-			{
-				t.writelnError("Could not install Windows SDK.");
-				return ChoiceResult.Error;
-			}
-		}
-		else
-		{
-			t.writelnError("Your system must install the MSLinker. This is important for creating binaries without dependencies.");
-			return ChoiceResult.Error;
-		}
-	}
-
-	// waitOperations([{
-		std.file.chdir(configs["gamePath"].str);
-		if(timed(() => waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts)) != 0))
-			return ChoiceResult.Error;
-			// return false;
-		// return true;
-	// },
-	// {
-		if(!c.scriptOnly)
-		{
-			std.file.chdir(getHipPath);
-			if(timed(() => waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts))) != 0)
-				return ChoiceResult.Error;
-		}
-		// return true;
-	// }]);
-	
-	wait(spawnShell((getHipPath("bin", "desktop", "hipreme_engine.exe") ~ " "~ configs["gamePath"].str)));
-
-	return ChoiceResult.Continue;
+    MSVCLinker = Feature(
+        "MSVCLinker",
+        "Windows SDK for being able to compile using D programming language",
+        ExistenceChecker(null, null, &hasMSVCLinker),
+        Installation([
+            Download(
+                DownloadURL(
+                    windows: "https://aka.ms/vs/17/release/vs_BuildTools.exe"
+                ),
+                outputPath: "$CWD/buildtools/vc_BuildTools.exe"
+            )], &installMSLinker
+        ),
+    );
+}
+void start()
+{
+    
 }
