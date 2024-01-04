@@ -8,7 +8,7 @@ struct DownloadURL
     string linux;
     string osx;
 
-    string get(TargetVersion ver)
+    string get(TargetVersion ver) const
     {
         import std.string:replace;
         string ret;
@@ -17,9 +17,9 @@ struct DownloadURL
         else version(OSX) ret = osx;
         return ret.replace("$VERSION", ver.toString);
     }
-    string getDownloadFileName(TargetVersion ver)
+    string getDownloadFileName(TargetVersion ver) const
     {
-        return get(ver).split("/")[$-1];
+        return get(ver).baseName;
     }
 }
 
@@ -49,7 +49,6 @@ struct Download
         import std.string;
         string ret = replace(outputPath, "$CWD", std.file.getcwd);
         ret = replace(ret, "$TEMP", std.file.tempDir);
-        //TODO: Replace name
         ret = replace(ret, "$NAME", url.getDownloadFileName(ver));
         ret = replace(ret, "$VERSION", ver.toString);
         return ret;
@@ -68,7 +67,7 @@ struct Installation
 
     bool install(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver)
     {
-        foreach(d; downloadsRequired)
+        foreach(ref d; downloadsRequired)
         {
             t.writeln("Downloading ", d.url.get(ver), " --> ", d.getOutputPath(ver));
             t.flush;
@@ -167,7 +166,8 @@ struct Feature
         if(v == TargetVersion.init) v = supportedVersion.max;
         if(!supportedVersion.isInRange(v))
         {
-            t.writelnError("Unsupported version '",v.toString,"' for feature ", name);
+            t.writelnError("Unsupported version '",v.toString,"' for feature ", name, 
+                ".\n\t Supported versions are ", supportedVersion.toString);
             return false;
         }
         foreach(Feature* dep; getAllDependencies)
@@ -191,7 +191,8 @@ struct Feature
         {
             startedUsing = true;
             t.writeln(status);
-            startUsingFeature(t);
+            if(startUsingFeature !is null)
+                startUsingFeature(t);
         }
         return true;
     }
@@ -283,6 +284,13 @@ struct TargetVersion
         return ret;
     }
 
+    static TargetVersion fromGameBuild(string entry)
+    {
+        if(!(entry in configs))
+            return TargetVersion.init;
+        return TargetVersion.parse(configs[entry].str);
+    }
+
     static TargetVersion parse(string ver)
     {
         import std.conv:to;
@@ -329,9 +337,15 @@ struct VersionRange
 {
     TargetVersion min, max;
 
-    static VersionRange parse(string min, string max)
+    static VersionRange parse(string min, string max = null)
     {
+        if(max == null) max = min;
         return VersionRange(TargetVersion.parse(min), TargetVersion.parse(max));
+    }
+
+    string toString()
+    {
+        return min.toString ~ " ~ " ~ max.toString;
     }
     /** 
      * Compares both major and minor to min and max versions.

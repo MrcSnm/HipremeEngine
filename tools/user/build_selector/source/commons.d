@@ -735,7 +735,11 @@ size_t downloadWithProgress(string url, string saveToPath, void delegate(float t
 size_t downloadWithProgressBar(ref Terminal t, string url, string saveToPath, size_t updateDelay = 125)
 {
 	t.hideCursor();
-	scope(exit) t.showCursor();
+	scope(exit)
+	{
+		t.showCursor();
+		t.writeln("");
+	}
 	return downloadWithProgress(url, saveToPath, (float progress)
 	{
 		terminalProgressBar(t, progress);
@@ -874,6 +878,13 @@ mixin template BuilderPattern(Struct)
 			"{this.",mem, " = arg; return this;}");
 		}
 	}
+}
+
+enum Compilers
+{
+	automatic = 0,
+	ldc2,
+	dmd
 }
 
 
