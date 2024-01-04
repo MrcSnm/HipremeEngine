@@ -1,7 +1,10 @@
 module features.git;
 import commons;
+import feature;
 
-bool installGit(ref Terminal t, ref RealTimeConsoleInput input)
+bool installGit(ref Terminal t, ref RealTimeConsoleInput input, 
+    TargetVersion ver,
+ExistenceStatus status)
 {
 	version(Windows)
 	{
@@ -22,3 +25,22 @@ bool installGit(ref Terminal t, ref RealTimeConsoleInput input)
 		return false;
 	}
 }
+
+
+Feature GitFeature;
+Task!loadSubmodules submoduleLoader;
+
+static this()
+{
+	GitFeature = Feature(
+    "git",
+    "Git Versioning software",
+    ExistenceChecker(null, ["git"]),
+    Installation([Download(
+		DownloadURL(
+			windows: "https://github.com/git-for-windows/git/releases/download/v2.40.1.windows.1/MinGit-2.40.1-64-bit.zip"
+		),
+		"$CWD/buildtools//git"),
+		], &installGit
+	));
+} 

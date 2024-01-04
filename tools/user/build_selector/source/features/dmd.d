@@ -64,3 +64,16 @@ bool installDmd(
     configs["dmdPath"] = binPath;
     updateConfigFile();
 }
+
+
+Feature DMDFeature = Feature(
+    "DMD",
+    "Digital Mars D Compiler. Used for fast iteration development", 
+    ExistenceChecker(["dmdPath"], ["dmd"]),
+    Installation(), 
+    (ref Terminal){addToPath(configs["dmdPath"].str.buildNormalizedPath);},
+    VersionRange(
+        TargetVersion.parse("2.105.0"),
+        TargetVersion.parse("2.106.0")
+    )
+);
