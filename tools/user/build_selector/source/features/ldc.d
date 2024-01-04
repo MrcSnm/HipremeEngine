@@ -45,33 +45,33 @@ private string getLdcDownloadOutputName()
  *  Here, it uses the 2nd ldc2.conf, so, one is still able to tweak although not recommended
  * https://wiki.dlang.org/Using_LDC - Next to ldc2 executable.
  */
-private void overrideLdcConf(ref Terminal t)
+private void overrideLdcConf(ref Terminal t, string outputPath)
 {
     static import std.file;
-    string ldc2Conf = buildNormalizedPath(getOutputPath(), "etc", "ldc2.conf");
+    string ldc2Conf = buildNormalizedPath(outputPath, "etc", "ldc2.conf");
     t.writelnHighlighted("Overriding ldc2.conf to use one next to ldc executable.");
-    std.file.copy(ldc2Conf, buildNormalizedPath(getOutputPath(), "bin", "ldc2.conf"));
+    std.file.copy(ldc2Conf, buildNormalizedPath(outputPath, "bin", "ldc2.conf"));
 }
 
 
 bool installLdc(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] downloads)
 {
-    if(!extractToFolder(downloads[0].getOutputPath, 
-        buildNormalizedPath(std.file.getcwd, "D"), t, input))
+    string ldcPath = buildNormalizedPath(std.file.getcwd, "D");
+    if(!extractToFolder(downloads[0].getOutputPath, ldcPath, t, input))
     {
         t.writelnError("Install failed");
         return false;
     }
     t.writeln("Installed.");
-    auto binPath = buildNormalizedPath(getOutputPath, "bin");
+    auto binPath = buildNormalizedPath(ldcPath, "bin");
     foreach(executable; ["ldc2", "ldmd2", "rdmd", "dub"])
         makeFileExecutable(buildNormalizedPath(binPath, executable));
-    overrideLdcConf(t);
+    overrideLdcConf(t, ldcPath);
 
     string rdmd = buildNormalizedPath(binPath, "rdmd");
     version(Windows) rdmd = rdmd.setExtension("exe");
-    configs["ldcVersion"] = targetVer;
-    configs["ldcPath"] = getOutputPath;
+    configs["ldcVersion"] = ver.toString;
+    configs["ldcPath"] = ldcPath;
     configs["rdmdPath"] = rdmd;
     configs["dubPath"] = binPath;
     updateConfigFile();
@@ -83,7 +83,7 @@ bool installLdc(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ve
 
 
 immutable Feature LDCFeature;
-static this()
+shared static this()
 {
     LDCFeature = Feature(
         "LDC 2", 
@@ -91,10 +91,7 @@ static this()
         ExistenceChecker(["ldcPath"], ["ldc2"]),
         Installation([LDCDownload], &installLdc),
         (ref Terminal){addToPath(configs["ldcPath"].str.buildNormalizedPath);},
-        VersionRange(
-            TargetVersion.parse("1.35.0"),
-            TargetVersion.parse("1.36.0-beta1")
-        )
+        VersionRange.parse("1.35.0", "1.36.0-beta1")
     );
 
 }

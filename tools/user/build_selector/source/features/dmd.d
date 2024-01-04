@@ -3,42 +3,14 @@ module features.dmd;
 import commons;
 import feature;
 
-private string getDmdLink()
-{
-    import std.system;
-    string link = "https://downloads.dlang.org/releases/2.x/" ~ DmdVersion ~ "/dmd." ~ DmdVersion;
-    return link ~ (os == OS.linux ? ".linux.tar.xz" : os == OS.osx ? ".osx.tar.xz" : ".windows.7z");
-}
-private string getDmdDownloadOutputName()
-{
-    version(Posix) return "dmd-"~DmdVersion~".tar.xz";
-    else return "dmd-"~DmdVersion~".7z";
-}
-private string getDmdOutputPath()
-{
-    string outputPath = buildNormalizedPath(std.file.getcwd(), "D");
-    string fileName = "dmd-"~DmdVersion~"-";
-    version(Windows) fileName~= "windows-x64";
-    else version(linux) fileName~= "linux-x86_64";
-    else version(OSX) fileName~= "osx-universal";
-    else assert(false, "Not implemented for your system.");
-    return buildNormalizedPath(outputPath, fileName);
-}
-
 bool installDmd(
     ref Terminal t,
     ref RealTimeConsoleInput input,
-    int targetVer,
-    ExistenceStatus status
+    TargetVersion ver,
+    Download[] downloads
 )
 {
-    if(status == ExistenceStatus.inPath)
-    {
-        t.writelnError("Different DMD Version. HipremeEngine will attempt to install locally DMD " ~DmdVersion);
-        t.flush;
-    }
-    if(!installFileTo("Download D fast iteration compiler DMD "~DmdVersion, getDmdLink,
-    getDmdDownloadOutputName, buildNormalizedPath(std.file.getcwd, "D"), t, input))
+    if(!extractToFolder(downloads[0].getOutputPath, buildNormalizedPath(std.file.getcwd, "D"), t, input))
     {
         t.writelnError("Install failed");
         t.flush;
@@ -55,14 +27,15 @@ bool installDmd(
         case linux: sys = "linux"; bin = "bin64"; break;
         default: assert(false, "System not supported.");
     }
-    string binPath = buildNormalizedPath(getDmdOutputPath, "dmd2", sys, bin);
+    string binPath = buildNormalizedPath(downloads[0].getOutputPath, "dmd2", sys, bin);
     makeFileExecutable(buildNormalizedPath(binPath, "dmd"));
     makeFileExecutable(buildNormalizedPath(binPath, "dub"));
     makeFileExecutable(buildNormalizedPath(binPath, "rdmd"));
 
-    configs["dmdVersion"] = DmdVersion;
+    configs["dmdVersion"] = ver.toString;
     configs["dmdPath"] = binPath;
     updateConfigFile();
+    return true;
 }
 
 
@@ -70,10 +43,14 @@ Feature DMDFeature = Feature(
     "DMD",
     "Digital Mars D Compiler. Used for fast iteration development", 
     ExistenceChecker(["dmdPath"], ["dmd"]),
-    Installation(), 
+    Installation([Download(
+        DownloadURL(
+            windows: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.windows.7z",
+            linux: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.linux.tar.xz",
+            osx: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.osx.tar.xz",
+        ),
+        outputPath: "$TEMP/$NAME",
+    )], &installDmd), 
     (ref Terminal){addToPath(configs["dmdPath"].str.buildNormalizedPath);},
-    VersionRange(
-        TargetVersion.parse("2.105.0"),
-        TargetVersion.parse("2.106.0")
-    )
+    VersionRange.parse("2.105.0", "2.106.0")
 );

@@ -19,7 +19,7 @@ struct DownloadURL
 struct Download
 {
     DownloadURL url;
-    ///Supports $CWD and $VERSION
+    ///Supports $CWD, $TEMP, $VERSION and $NAME
     string outputPath;
     ///Negative version ignored.
     int targetVer = -1;
@@ -29,7 +29,10 @@ struct Download
     {
         import std.conv:to;
         import std.string;
-        string ret = replace(outputPath, "$CWD", std.file.cwd);
+        string ret = replace(outputPath, "$CWD", std.file.getcwd);
+        ret = replace(ret, "$TEMP", std.file.tempDir);
+        //TODO: Replace name
+        ret = replace(ret, "$NAME", std.file.tempDir);
         
         string v = targetVer < 0 ? "" : to!string(targetVer);
         ret = replace(ret, "$VERSION", v);
@@ -253,6 +256,10 @@ struct TargetVersion
 struct VersionRange
 {
     TargetVersion min, max;
+    static VersionRange parse(string min, string max)
+    {
+        return VersionRange(TargetVersion.parse(min), TargetVersion.parse(max));
+    }
     bool isInRange(TargetVersion v)
     {
         return v.major >= min.major  && v.major <= max.major &&
