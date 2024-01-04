@@ -80,7 +80,7 @@ bool installHipremeEngine(ref Terminal t, ref RealTimeConsoleInput input, Target
 
 
 Feature HipremeEngineFeature;
-static this()
+void initialize()
 {
     HipremeEngineFeature = Feature(
         "Hipreme Engine",
@@ -89,6 +89,9 @@ static this()
         Installation(null, &installHipremeEngine),
         (ref Terminal){environment["HIPREME_ENGINE"] = configs["hipremeEnginePath"].str;},
         VersionRange(),
-        [GitFeature]
     );
+}
+void start()
+{
+    HipremeEngineFeature.dependencies = [&GitFeature];
 }

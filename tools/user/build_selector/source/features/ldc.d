@@ -23,7 +23,7 @@ private void overrideLdcConf(ref Terminal t, string outputPath)
 bool installLdc(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] downloads)
 {
     import commons:removeExtension;
-    string ldcPath = buildNormalizedPath(std.file.getcwd, "D", downloads[0].url.getDownloadFileName.removeExtension);
+    string ldcPath = buildNormalizedPath(std.file.getcwd, "D", downloads[0].url.getDownloadFileName(ver).removeExtension);
     if(!extractToFolder(downloads[0].getOutputPath, ldcPath, t, input))
     {
         t.writelnError("Failed to extract");
@@ -48,8 +48,8 @@ bool installLdc(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ve
 
 
 
-immutable Feature LDCFeature;
-shared static this()
+Feature LDCFeature;
+void initialize()
 {
     LDCFeature = Feature(
         "LDC 2", 
@@ -69,4 +69,9 @@ shared static this()
         VersionRange.parse("1.35.0", "1.36.0-beta1")
     );
 
+}
+
+void start()
+{
+    
 }

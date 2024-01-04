@@ -2,6 +2,9 @@ module features._7zip;
 public import feature;
 import commons;
 
+Feature _7zFeature;
+Task!(extract7ZipToFolderImpl) extract7ZipToFolder;
+
 bool install7Zip(
     ref Terminal t,
     ref RealTimeConsoleInput input, 
@@ -36,9 +39,7 @@ private bool extract7ZipToFolderImpl(ref Terminal t, ref RealTimeConsoleInput in
 	}
 }
 
-Feature _7zFeature;
-Task!(extract7ZipToFolderImpl) extract7ZipToFolder;
-shared static this()
+void initialize()
 {
 	_7zFeature  = Feature(
 		name: "7zip",
@@ -53,5 +54,9 @@ shared static this()
 		dependencies: null,
 		requiredOn: null
 	);
-	extract7ZipToFolder = Task!(extract7ZipToFolderImpl)([_7zFeature]);
+}
+
+void start()
+{
+	extract7ZipToFolder = Task!(extract7ZipToFolderImpl)([&_7zFeature]);
 }
