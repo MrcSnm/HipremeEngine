@@ -54,15 +54,15 @@ void initialize()
     LDCFeature = Feature(
         "LDC 2", 
         "LLVM Backend D Compiler. Used for development on various platforms",
-        ExistenceChecker(["ldcPath"], ["ldc2"]),
+        ExistenceChecker(["ldcPath"]),
         Installation([
             Download(
                 DownloadURL(
-                    windows: "https://github.com/ldc-developers/ldc/releases/download/v$VERSIONldc2-$VERSIONwindows-x64.7z",
-                    linux: "https://github.com/ldc-developers/ldc/releases/download/v$VERSIONldc2-$VERSIONlinux-x86_64.tar.xz",
-                    osx: "https://github.com/ldc-developers/ldc/releases/download/v$VERSIONldc2-$VERSIONosx-universal.tar.xz"
+                    windows: "https://github.com/ldc-developers/ldc/releases/download/v$VERSION/ldc2-$VERSION-windows-x64.7z",
+                    linux: "https://github.com/ldc-developers/ldc/releases/download/v$VERSION/ldc2-$VERSION-linux-x86_64.tar.xz",
+                    osx: "https://github.com/ldc-developers/ldc/releases/download/v$VERSION/ldc2-$VERSION-osx-universal.tar.xz"
                 ),
-                outputPath: "$TEMP/$NAME",
+                outputPath: "$TEMP$NAME",
             )
         ], &installLdc),
         (ref Terminal){addToPath(configs["ldcPath"].str.buildNormalizedPath);},

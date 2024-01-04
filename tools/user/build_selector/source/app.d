@@ -2,7 +2,6 @@ import std.datetime.stopwatch;
 import std.getopt;
 import std.conv:to;
 import commons;
-import d_getter;
 import global_opts;
 import game_selector;
 import feature;
@@ -14,6 +13,8 @@ import targets.ios;
 import targets.linux;
 import targets.wasm;
 import targets.psvita;
+import features.ldc;
+import features.dmd;
 
 mixin StartFeatures!([
 	"_7zip",
@@ -234,10 +235,14 @@ void main(string[] args)
 		environment["PATH"] = "";
 	pathBeforeNewLdc = environment["PATH"];
 
-
-	if(!setupD(terminal, input))
+	if(!LDCFeature.getFeature(terminal, input))
 	{
-		terminal.writelnError("D needs to be installed to use Build Selector.");
+		terminal.writelnError("HipremeEngine needs LDC");
+		return;
+	}
+	if(!DMDFeature.getFeature(terminal, input))
+	{
+		terminal.writelnError("HipremeEngine needs DMD");
 		return;
 	}
 	if(!HipremeEngineFeature.getFeature(terminal, input))
