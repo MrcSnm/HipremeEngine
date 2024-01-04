@@ -14,18 +14,44 @@ bool install7Zip(
 	return true;
 }
 
+private bool extract7ZipToFolderImpl(ref Terminal t, ref RealTimeConsoleInput input, string zPath, string outputDirectory)
+{
+	if(!std.file.exists(zPath)) 
+	{
+		t.writelnError("File ", zPath, " does not exists.");
+		return false;
+	}
+	t.writeln("Extracting ", zPath, " to ", outputDirectory);
+	t.flush;
 
+	string folderName = baseName(outputDirectory);
+	outputDirectory = dirName(outputDirectory);
+	if(!std.file.exists(outputDirectory))
+		std.file.mkdirRecurse(outputDirectory);
 
-Feature _7zFeature = Feature(
-    name: "7zip",
-    description: "Compressed file type",
-    ExistenceChecker(["7zip"], ["7z", "7za"]),
-    Installation([Download(
-		DownloadURL(windows: "https://www.7-zip.org/a/7zr.exe"),
-    	"$CWD/buildtools/7z".executableExtension
-	)], &install7Zip),
-    startUsingFeature: null,
-    VersionRange(),
-	dependencies: null,
-	requiredOn: null
-);
+	with(WorkingDir(outputDirectory))
+	{
+		bool ret = dbgExecuteShell(configs["7zip"].str ~ " x -y "~zPath~" "~folderName, t);
+		return ret;
+	}
+}
+
+Feature _7zFeature;
+Task!(extract7ZipToFolderImpl) extract7ZipToFolder;
+shared static this()
+{
+	_7zFeature  = Feature(
+		name: "7zip",
+		description: "Compressed file type",
+		ExistenceChecker(["7zip"], ["7z", "7za"]),
+		Installation([Download(
+			DownloadURL(windows: "https://www.7-zip.org/a/7zr.exe"),
+			"$CWD/buildtools/7z".executableExtension
+		)], &install7Zip),
+		startUsingFeature: null,
+		VersionRange(),
+		dependencies: null,
+		requiredOn: null
+	);
+	extract7ZipToFolder = Task!(extract7ZipToFolderImpl)([_7zFeature]);
+}

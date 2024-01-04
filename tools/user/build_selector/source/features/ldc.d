@@ -3,40 +3,6 @@ import commons;
 import feature;
 enum LdcVersion = "1.36.0-beta1";
 
-Download LDCDownload = Download(
-    DownloadURL(
-        windows: "https://github.com/ldc-developers/ldc/releases/download/v$VERSIONldc2-$VERSIONwindows-x64.7z",
-        linux: "https://github.com/ldc-developers/ldc/releases/download/v$VERSIONldc2-$VERSIONlinux-x86_64.tar.xz",
-        osx: "https://github.com/ldc-developers/ldc/releases/download/v$VERSIONldc2-$VERSIONosx-universal.tar.xz"
-    )
-);
-
-
-private string getOutputPath()
-{
-    string outputPath = buildNormalizedPath(std.file.getcwd(), "D");
-    string fileName = "ldc2-"~LdcVersion~"-";
-    version(Windows) fileName~= "windows-x64";
-    else version(linux) fileName~= "linux-x86_64";
-    else version(OSX) fileName~= "osx-universal";
-    else assert(false, "Not implemented for your system.");
-    return buildNormalizedPath(outputPath, fileName);
-}
-
-private string getLdcDownloadOutputName()
-{
-    static string fileName;
-    if(!fileName)
-    {
-        fileName = "ldc2-"~LdcVersion~"-";
-        version(Windows) fileName~= "windows-x64.7z";
-        else version(linux) fileName~= "linux-x86_64.tar.xz";
-        else version(OSX) fileName~= "osx-universal.tar.xz";
-        else assert(false, "System not supported.");
-    }
-    return fileName;
-}
-
 
 /** 
  * Must check if ~/.ldc2.conf (%APPDATA%\.ldc\ldc2.conf) exists and then ignore it.
@@ -56,13 +22,13 @@ private void overrideLdcConf(ref Terminal t, string outputPath)
 
 bool installLdc(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] downloads)
 {
-    string ldcPath = buildNormalizedPath(std.file.getcwd, "D");
+    import commons:removeExtension;
+    string ldcPath = buildNormalizedPath(std.file.getcwd, "D", downloads[0].url.getDownloadFileName.removeExtension);
     if(!extractToFolder(downloads[0].getOutputPath, ldcPath, t, input))
     {
-        t.writelnError("Install failed");
+        t.writelnError("Failed to extract");
         return false;
     }
-    t.writeln("Installed.");
     auto binPath = buildNormalizedPath(ldcPath, "bin");
     foreach(executable; ["ldc2", "ldmd2", "rdmd", "dub"])
         makeFileExecutable(buildNormalizedPath(binPath, executable));
@@ -89,7 +55,16 @@ shared static this()
         "LDC 2", 
         "LLVM Backend D Compiler. Used for development on various platforms",
         ExistenceChecker(["ldcPath"], ["ldc2"]),
-        Installation([LDCDownload], &installLdc),
+        Installation([
+            Download(
+                DownloadURL(
+                    windows: "https://github.com/ldc-developers/ldc/releases/download/v$VERSIONldc2-$VERSIONwindows-x64.7z",
+                    linux: "https://github.com/ldc-developers/ldc/releases/download/v$VERSIONldc2-$VERSIONlinux-x86_64.tar.xz",
+                    osx: "https://github.com/ldc-developers/ldc/releases/download/v$VERSIONldc2-$VERSIONosx-universal.tar.xz"
+                ),
+                outputPath: "$TEMP/$NAME",
+            )
+        ], &installLdc),
         (ref Terminal){addToPath(configs["ldcPath"].str.buildNormalizedPath);},
         VersionRange.parse("1.35.0", "1.36.0-beta1")
     );

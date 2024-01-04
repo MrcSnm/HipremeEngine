@@ -355,7 +355,7 @@ bool hasLdc()
 	return ("ldcPath" in configs) !is null;
 }
 
-private bool dbgExecuteShell(scope const(char)[] command, ref Terminal t, const string[string] env = null)
+bool dbgExecuteShell(scope const(char)[] command, ref Terminal t, const string[string] env = null)
 {
 	auto ret = executeShell(command, env);
 	if(ret.status)
@@ -517,6 +517,7 @@ bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
 
 bool extractToFolder(string zPath, string outputDirectory, ref Terminal t, ref RealTimeConsoleInput input)
 {
+	import features._7zip;
 	import std.path;
 	switch(zPath.extension)
 	{
@@ -529,7 +530,7 @@ bool extractToFolder(string zPath, string outputDirectory, ref Terminal t, ref R
 		case ".zip":
 			return extractZipToFolder(zPath, outputDirectory, t);
 		case ".7zip", ".7z":
-			return extract7ZipToFolder(zPath, outputDirectory, t, input);
+			return extract7ZipToFolder.execute(t, input, zPath, outputDirectory);
 		default:
 			t.writelnError("Could not detect compressed archive type for "~zPath);
 			return false;
@@ -540,34 +541,6 @@ string executableExtension(string path)
 {
 	version(Windows) return path~".exe";
 	return path;
-}
-
-bool extract7ZipToFolder(string zPath, string outputDirectory, ref Terminal t, ref RealTimeConsoleInput input)
-{
-	import features._7zip;
-	if(_7zFeature.getFeature(t, input))
-	{
-		t.writelnError("This operation requires a 7zip installation.");
-		return false;
-	}
-	if(!std.file.exists(zPath)) 
-	{
-		t.writelnError("File ", zPath, " does not exists.");
-		return false;
-	}
-	t.writeln("Extracting ", zPath, " to ", outputDirectory);
-	t.flush;
-
-	string folderName = baseName(outputDirectory);
-	outputDirectory = dirName(outputDirectory);
-	if(!std.file.exists(outputDirectory))
-		std.file.mkdirRecurse(outputDirectory);
-
-	with(WorkingDir(outputDirectory))
-	{
-		bool ret = dbgExecuteShell(configs["7zip"].str ~ " x -y "~zPath~" "~folderName, t);
-		return ret;
-	}
 }
 
 version(Posix)
@@ -816,23 +789,6 @@ string getGitExec()
 	}
 	return "git ";
 }
-
-
-void loadSubmodules(ref Terminal t, ref RealTimeConsoleInput input)
-{
-	import std.process;
-	if(!hasGit)
-	{
-		if(!installGit(t, input))
-			throw new Error("Git wasn't found. Git is necessary for loading the engine submodules.");
-	}
-	t.writelnSuccess("Updating Git Submodules");
-	t.flush;
-
-	executeShell("cd "~ configs["hipremeEnginePath"].str ~ " && " ~ getGitExec~" submodule update --init --recursive");
-}
-
-
 
 
 

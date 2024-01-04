@@ -14,6 +14,10 @@ struct DownloadURL
         else version(linux) return linux;
         else version(OSX) return osx;
     }
+    string getDownloadFileName()
+    {
+        return get.split("/")[$-1];
+    }
 }
 
 struct Download
@@ -32,7 +36,7 @@ struct Download
         string ret = replace(outputPath, "$CWD", std.file.getcwd);
         ret = replace(ret, "$TEMP", std.file.tempDir);
         //TODO: Replace name
-        ret = replace(ret, "$NAME", std.file.tempDir);
+        ret = replace(ret, "$NAME", url.getDownloadFileName);
         
         string v = targetVer < 0 ? "" : to!string(targetVer);
         ret = replace(ret, "$VERSION", v);
@@ -50,7 +54,6 @@ struct Installation
         Download[] content
     ) installer;
 
-    alias opCall = installer;
 }
 
 struct Task(alias Fn)
@@ -61,7 +64,7 @@ struct Task(alias Fn)
 
     auto execute(Parameters!Fn args)
     {
-        foreach(dep; dependencies) dep.getFeature();
+        foreach(dep; dependencies) dep.getFeature(args[0], args[1], dep.supportedVersion.max);
         return fn(args);
     }   
 }
@@ -132,7 +135,7 @@ struct Feature
             import std.conv:to;
             t.writeln("Installation: ", name, " v", v.toString, "\n\t", description);
             t.flush;
-            if(!installer(t, input, v, status))
+            if(!installer.installer(t, input, v, installer.downloadsRequired))
                 return false;
             startUsingFeature(t);
         }
@@ -177,9 +180,9 @@ struct ExistenceChecker
         int validCount = 0;
         foreach(i; gameBuildInput)
             if(i in configs) validCount++;
-        if(validCount == gameBuildInput.length)
+        if(validCount && validCount == gameBuildInput.length)
         {
-            status.place = ExistenceStatus.inConfig;
+            status.place = ExistenceStatus.Place.inConfig;
             status.where = gameBuildInput[0];
         }
         return status;

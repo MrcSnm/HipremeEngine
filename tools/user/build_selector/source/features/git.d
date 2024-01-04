@@ -2,15 +2,25 @@ module features.git;
 import commons;
 import feature;
 
+
+
+void loadSubmodules(ref Terminal t, ref RealTimeConsoleInput input)
+{
+	import std.process;
+	t.writelnSuccess("Updating Git Submodules");
+	t.flush;
+	executeShell("cd "~ configs["hipremeEnginePath"].str ~ " && " ~ getGitExec~" submodule update --init --recursive");
+}
+
 bool installGit(ref Terminal t, ref RealTimeConsoleInput input, 
     TargetVersion ver,
-ExistenceStatus status)
+Download[] downlloads)
 {
 	version(Windows)
 	{
         string gitPath = buildNormalizedPath(std.file.getcwd(), "buildtools", "git");
-        if(!installFileTo("Download Git for getting HipremeEngine's source code.", getGitDownloadLink(), "git.zip",
-        gitPath, t, input))
+        if(!extractToFolder(downlloads[0].getOutputPath, "git.zip",
+        t, input))
         {
             t.writelnError("Git installation failed");
             return false;
@@ -30,7 +40,7 @@ ExistenceStatus status)
 Feature GitFeature;
 Task!loadSubmodules submoduleLoader;
 
-static this()
+shared static this()
 {
 	GitFeature = Feature(
     "git",
@@ -43,4 +53,6 @@ static this()
 		"$CWD/buildtools//git"),
 		], &installGit
 	));
+
+	submoduleLoader = Task!(loadSubmodules)([GitFeature]);
 } 
