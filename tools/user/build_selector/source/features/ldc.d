@@ -66,7 +66,7 @@ void initialize()
             )
         ], &installLdc),
         (ref Terminal){addToPath(configs["ldcPath"].str.buildNormalizedPath);},
-        VersionRange.parse("1.35.0", "1.36.0-beta1")
+        VersionRange.parse("1.36.0-beta1")
     );
 
 }

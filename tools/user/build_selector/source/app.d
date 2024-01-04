@@ -67,40 +67,136 @@ Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choi
 	return &choices[selectedChoice];
 }
 
+struct Section{string name;}
 
 ///Meta struct for the time.
 struct EngineVariables
 {
-	///Required for extracting ldc2 on Windows
-	string _7zip;
-
-	///Required for putting the copying the game folder to the engine build path
-	string hipremeEnginePath;
-	///Required for compiling the XCode project.
-	string phobosLibPath;
-	///Required for compiling your game together with the engine
-	string gamePath;
-
-	///Some may want a custom dub path for executing engine, dub may be installed
-	///separately in future for bug fixes
-	string dubPath;
-
-	///Path for the ldc compiler
-	string ldcPath;
-	///Save the ldc version here for checking up to date compiler
-	string ldcVersion;
+	@Section("Android")
+	{
+		@("SDK Path both found or manually downloaded")
+		string androidSdkPath;
+		@("NDK Path usually set up after android installation")
+		string androidNdkPath;
+		@("Java is required for building to Android (Gradle)")
+		string javaHome;
+	}
 
 
-	
-	///SDK Path both found or manually downloaded
-	string androidSdkPath;
-	///NDK Path usually set up after android installation
-	string androidNdkPath;
-	///Java is required for building to Android (Gradle)
-	string javaHome;
+	@Section("Compilers")
+	{
+		@Section("DMD")
+		{
+			@("Path where DMD is located")
+			string dmdPath;
+			@("The current DMD path is treated as version")
+			string dmdVersion;
 
-	///Cache for last selected choice
-	uint selectedChoice;
+			@("Which dub will be used to compile. Useful for dub development test. Automatically inferred from LDC")
+			string dubPath;
+		}
+		@Section("LDC")
+		{
+			@("Path for the ldc compiler")
+			string ldcPath;
+			@("The current DMD path is treated as version")
+			string ldcVersion;
+			@("Required for extracting ldc2 on Windows")
+			string _7zip;
+		}
+		@Section("Tools")
+		{
+			@("Path where RDMD is located. May be changed to rund or deprecated in the future")
+			string rdmdPath;
+
+		}
+	}
+
+	@Section("AppleOS")
+	{
+		@("When true, it executes some special configurations")
+		bool firstiOSRun;
+
+		@("When the user change, it may need to let it become the firstiOSRun to be true for removing cache")
+		string lastUser;
+
+		@("Required for compiling the XCode project.")
+		string phobosLibPath;
+	}
+
+	@Section("PSVita")
+	{
+		@("Used when it was the first time trying to build to PSVita")
+		bool firstPsvConfig;
+
+		@("Port in which the PSVita is listening to remote commands. Make the game auto restart when building")
+		string psvCmdPort;
+
+		@("IP to use when developing for PSVita for faster iteration when sending files via FTP")
+		string psvIp;
+	}
+
+	@Section("Engine")
+	{
+		@("Required for compiling your game together with the engine")
+		string gamePath;
+
+		@("Required for putting the copying the game folder to the engine build path")
+		string hipremeEnginePath;
+
+		@("Paths which will be shown in the 'Select Game' command. You may add it manually")
+		string[] projectsAvailable;
+
+		@("Which source code editor must be opened whenever you select a game to build")
+		string sourceCodeEditor;
+
+		@Section("Autos")
+		{
+			@("Which compiler is currently being used")
+			Compilers selectedCompiler;
+
+			@("Cache for last selected choice")
+			uint selectedChoice;
+		}
+	}
+}
+string repeat(string a, long n)
+{
+    if(n <= 0) return "";
+    char[] ret = new char[](n*a.length);
+    foreach(time; 0..n)
+    {
+        ret[time*a.length..(time+1)*a.length] = a[];
+    }
+    return cast(string)ret;
+}
+
+string generateHelp(T)()
+{
+	static string generated;
+	if(generated is null)
+	{
+        string[16] sectionCacheCheck;
+		int identLevel = 0;
+		static foreach(member; __traits(allMembers, T))
+        {{
+            alias mem = __traits(getMember, T, member);
+            alias att = __traits(getAttributes, mem);
+            alias sections = att[0..$-1];
+			static foreach(i; 0..sections.length)
+            {
+               	if(sectionCacheCheck[i] != sections[i].name)
+                {
+               		generated~= "\t".repeat(i) ~ " -- " ~ sections[i].name;
+                    sectionCacheCheck[i] = sections[i].name;
+	                generated ~= "\n";
+                }
+            }
+            identLevel = sections.length;
+            generated~= "\n"~"\t".repeat(identLevel) ~ typeof(mem).stringof~ " "~member ~ "\n" ~ "\t".repeat(identLevel+1) ~ att[$-1]~"\n";
+        }}
+	}
+	return generated;
 }
 
 void promptForConfigCreation(ref Terminal t)
@@ -235,12 +331,13 @@ void main(string[] args)
 		environment["PATH"] = "";
 	pathBeforeNewLdc = environment["PATH"];
 
-	if(!LDCFeature.getFeature(terminal, input))
+
+	if(!LDCFeature.getFeature(terminal, input, TargetVersion.fromGameBuild("ldcVersion")))
 	{
 		terminal.writelnError("HipremeEngine needs LDC");
 		return;
 	}
-	if(!DMDFeature.getFeature(terminal, input))
+	if(!DMDFeature.getFeature(terminal, input, TargetVersion.fromGameBuild("dmdVersion")))
 	{
 		terminal.writelnError("HipremeEngine needs DMD");
 		return;
@@ -276,7 +373,13 @@ void main(string[] args)
 		);
 		if(opts.helpWanted)
 		{
-			defaultGetoptPrinter("Operate the builder without selecting", opts.options);
+			char[] output = new char[](8196);
+			output[] = 0;
+			defaultGetoptFormatter(output, "Operate the builder without selecting", opts.options);
+
+			terminal.writeln("gamebuild.json documentation:\n" ~ generateHelp!EngineVariables);
+			terminal.writeln(output);
+
 			return;
 		}
 	}
