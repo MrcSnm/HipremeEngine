@@ -5,7 +5,7 @@ import commons;
 import d_getter;
 import global_opts;
 import game_selector;
-import engine_getter;
+import features.hipreme_engine;
 import targets.windows;
 import targets.android;
 import targets.appleos;
@@ -231,9 +231,9 @@ void main(string[] args)
 		terminal.writelnError("D needs to be installed to use Build Selector.");
 		return;
 	}
-	if(!setupEngine(terminal, input))
+	if(!HipremeEngineFeature.getFeature(terminal, input))
 	{
-		terminal.writelnError("HipremeEngine needs Git.");
+		terminal.writelnError("HipremeEngine needs a copy of its repository to run.");
 		return;
 	}
 	if(("hipremeEnginePath" in configs) is null ||

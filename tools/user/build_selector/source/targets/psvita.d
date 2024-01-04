@@ -1,5 +1,6 @@
 module targets.psvita;
 import std.exception;
+import features.git;
 import commons;
 
 private enum updateCmd = "sudo apt-get update";
@@ -201,7 +202,7 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
         if(!setupPsvita(t, input))
             return ChoiceResult.Error;
     }
-	cached(() => timed(() => loadSubmodules(t, input)));    
+	cached(() => timed(() => submoduleLoader.execute(t, input)));    
 	cached(() => timed(() => outputTemplateForTarget(t)));    
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
     putResourcesIn(t, getHipPath("build", "vita", "hipreme_engine", "assets"));

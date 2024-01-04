@@ -1,4 +1,5 @@
 module targets.wasm;
+import features.git;
 import commons;
 import global_opts;
 import serve;
@@ -10,7 +11,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		t.writelnError("WASM build requires ldc2 in path. Please install it before building to it.");
 		return ChoiceResult.Error;
 	}
-	cached(() => timed(() => loadSubmodules(t, input)));
+	cached(() => timed(() => submoduleLoader.execute(t, input)));
 	if(!serverStarted)
 	{
 		t.writelnHighlighted("Attempt to start WebAssembly development server.");

@@ -14,7 +14,7 @@ private bool isRunningFromDubRun(string enginePath)
     return executeShell("cd \""~enginePath~"\" && git status").status != 0;
 }
 
-bool installHipremeEngine(ref Terminal t, ref RealTimeConsoleInput input, int targetVer, Download[] contents)
+bool installHipremeEngine(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] contents)
 {
     import std.array:replace;
     string hipremeEnginePath;
@@ -35,7 +35,7 @@ bool installHipremeEngine(ref Terminal t, ref RealTimeConsoleInput input, int ta
             buildNormalizedPath(std.file.getcwd(), "..", "..", ".."), 
             dirName(Runtime.args[0]),
             buildNormalizedPath(dirName(Runtime.args[0]), "..", "..", ".."),
-        ].find!((string dir) => isValidEnginePath(dir));
+        ].find!((string dir) => isValidEnginePath(dir))[0];
         
         if(hipremeEnginePath.length)
         {
