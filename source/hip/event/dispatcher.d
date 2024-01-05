@@ -14,6 +14,7 @@ private:
     import hip.event.handlers.mouse;
     import hip.systems.gamepad;
     import hip.windowing.window;
+    import hip.api.config;
 
 public:
     import hip.systems.input;
@@ -397,7 +398,7 @@ version(Windows)
         }
     }
 }
-else version(linux)
+else static if(isLinuxPC)
 {
     public HipKey getHipKeyFromSystem(uint key)
     {
@@ -738,3 +739,4 @@ else version(PSVita)
 {
     public HipKey getHipKeyFromSystem(uint key){return HipKey._0;}
 }
+else public HipKey getHipKeyFromSystem(uint key){return HipKey._0;}

@@ -4,9 +4,16 @@ import commons;
 
 Feature AndroidLDCLibraries;
 
-private bool androidLibrariesExists(ref Terminal t, int targetVer)
+private bool androidLibrariesExists(ref Terminal t, TargetVersion ver, out ExistenceStatus status)
 {
-    return std.file.exists(buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "android", "lib", "libdruntime-ldc.a"));
+    string path = buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "android", "lib", "libdruntime-ldc.a");
+    if(std.file.exists(path))
+    {
+        status.where = path;
+        status.place = ExistenceStatus.Place.custom;
+        return true;
+    }
+    return false;
 }
 void initialize()
 {
@@ -16,7 +23,7 @@ void initialize()
         ExistenceChecker(null, null, &androidLibrariesExists),
         Installation([Download(
             DownloadURL.any("https://github.com/MrcSnm/HipremeEngine/releases/download/BuildAssets.v1.0.0/android.zip")
-        )], null, ["$CWD/Android/ldcLibs/android/lib/libdruntime-ldc.a"])
+        )], null, ["$CWD/Android/ldcLibs"])
     );
 }
 void start(){}

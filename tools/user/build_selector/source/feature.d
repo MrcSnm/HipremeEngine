@@ -200,7 +200,7 @@ struct Feature
                 return false;
             }
         }
-        ExistenceStatus status = existenceChecker.existStatus;
+        ExistenceStatus status = existenceChecker.existStatus(t, v);
         if(status.place == ExistenceStatus.Place.notFound)
         {
             import std.conv:to;
@@ -245,6 +245,7 @@ struct ExistenceStatus
         notFound,
         inConfig,
         inPath,
+        custom
     }
     Place place;
     string where;
@@ -257,10 +258,10 @@ struct ExistenceChecker
     ///All the aliases this feature is expected in path.
     string[] expectedInPathAs;
     ///Optional. 
-    bool function(ref Terminal t, int targetVer) checkExistenceFn;
+    bool function(ref Terminal t, TargetVersion v, out ExistenceStatus where) checkExistenceFn;
 
 
-    ExistenceStatus existStatus()
+    ExistenceStatus existStatus(ref Terminal t, TargetVersion v)
     {
         ExistenceStatus status;
         foreach(anAlias; expectedInPathAs)
@@ -280,6 +281,8 @@ struct ExistenceChecker
             status.place = ExistenceStatus.Place.inConfig;
             status.where = gameBuildInput[0];
         }
+        if(checkExistenceFn)
+            checkExistenceFn(t, v, status);
         return status;
     }
 
