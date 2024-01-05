@@ -245,7 +245,7 @@ class HipFileSystem
     @ExportD public static bool isPathValid(string path, bool expectsFile = true, bool shouldVerify = true)
     {
         import hip.error.handler;
-        if(!initialPath) return false;
+        if(!isInstalled) return false;
         if(!validatePath(initialPath, defPath~path))
         {
             ErrorHandler.showErrorMessage("Path failed default validation: can't reference external path.", path);
@@ -292,7 +292,10 @@ class HipFileSystem
         hiplog("Required path ", path);
         path = getPath(path);
         if(!isPathValid(path))
+        {
+            hiplog("Invalid path ",path," received.");
             return null;
+        }
         hiplog("Path validated.");
         filesReadingCount++;
 

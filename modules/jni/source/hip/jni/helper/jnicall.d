@@ -27,7 +27,7 @@ enum javaRep =
     "Object": "Ljava/lang/Object;"
 ];
 
-enum javaGetTypeRepresentation(T)()
+string javaGetTypeRepresentation(T)()
 {
     static if(isArray!T && !is(T == string))
     {
@@ -307,7 +307,7 @@ mixin template javaGenerateModuleMethodsForPackage(alias javaPackage, alias modu
 */
 struct JavaFunc_{string packageName;}
 
-enum JavaFunc(alias T)()
+JavaFunc_ JavaFunc(alias T)()
 {
     static assert(__traits(hasMember, T, "_packageName"), "JavaFunc error: "~T.stringof~" is not a java package");
     return JavaFunc_(T._packageName);

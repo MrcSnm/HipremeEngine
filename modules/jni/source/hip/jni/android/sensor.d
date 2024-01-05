@@ -54,7 +54,7 @@ import core.stdc.stdint;
 extern(C):
 struct AHardwareBuffer;
 
-enum ASENSOR_RESOLUTION_INVALID()
+auto ASENSOR_RESOLUTION_INVALID()
 {
     return nanf(cast(char*)"\0".ptr);
 }
