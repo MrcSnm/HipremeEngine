@@ -92,7 +92,7 @@ void initialize()
                 osx: "https://dl.google.com/android/repository/commandlinetools-mac-9477386_latest.zip"
             )
         )], &installAndroidSDK),
-        null,
+        (ref Terminal t){environment["ANDROID_HOME"] = configs["androidSdkPath"].str;},
         VersionRange.parse(TargetAndroidSDK.to!string)
     );
 }
