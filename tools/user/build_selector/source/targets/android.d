@@ -87,7 +87,6 @@ private FindAndroidNdkResult tryFindAndroidNDK(ref Terminal t, ref RealTimeConso
 	{
 		return FindAndroidNdkResult.NotFound;
 	}
-
 }
 
 private string getAndroidSDKDownloadLink()
@@ -322,7 +321,7 @@ private bool installAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input)
 }
 
 
-private void runAndroidApplication(ref Terminal t)
+private ChoiceResult runAndroidApplication(ref Terminal t)
 {
 	version(Windows)
 	{
@@ -337,13 +336,17 @@ private void runAndroidApplication(ref Terminal t)
 		if(!makeFileExecutable(buildNormalizedPath("build", "android", "project", "gradlew")))
 		{
 			t.writelnError("Could not make gradlew executable.");
-			return;
+			return ChoiceResult.Error;
 		}
 	}
 
 	std.file.chdir(buildNormalizedPath("build", "android", "project"));
 
-	wait(spawnShell(gradlew ~ " :app:assembleDebug"));
+	if(wait(spawnShell(gradlew ~ " :app:assembleDebug")) != 0)
+	{
+		t.writelnError("Could not build Java code.");
+		return ChoiceResult.Error;
+	}
 
 	string adbInstall = adb~" install -r "~
 		buildNormalizedPath(std.file.getcwd(), "app", "build", "outputs", "apk", "debug", "app-debug.apk");
@@ -351,8 +354,16 @@ private void runAndroidApplication(ref Terminal t)
 	t.writeln("Executing adb install: ", adbInstall);
 	t.flush;
 	environment["ANDROID_ADB_SERVER_PORT"] = HipremeEngineAdbPort;
-	wait(spawnShell(adbInstall));
-	wait(spawnShell(adb~" shell monkey -p com.hipremeengine.app 1"));
+	if(wait(spawnShell(adbInstall)) != 0)
+	{
+		t.writelnError("Could not install application to your device.");
+		return ChoiceResult.Error;
+	}
+	if(wait(spawnShell(adb~" shell monkey -p com.hipremeengine.app 1")) != 0)
+	{
+		t.writelnHighlighted("Could not connect to Android's shell");
+	}
+	return ChoiceResult.Continue;
 }
 
 ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
@@ -421,7 +432,5 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 		buildNormalizedPath("bin", "android", "libhipreme_engine.so"),
 		buildNormalizedPath("build", "android", "project", "app", "src", "main", "jniLibs", "arm64-v8a", "libhipreme_engine.so")
 	);
-	runAndroidApplication(t);
-
-	return ChoiceResult.Continue;
+	return runAndroidApplication(t);
 }

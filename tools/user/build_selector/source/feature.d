@@ -84,7 +84,7 @@ struct Installation
             t.writeln("Downloading ", d.url.get(ver), " --> ", d.getOutputPath(ver));
             t.flush;
             if(!d.download(t, input, ver)) return false;
-            if(i <= extractionPathList.length && extractionPathList[i].length)
+            if(i < extractionPathList.length && extractionPathList[i].length)
             {
                 import std.string;
                 string extractionPath = extractionPathList[i];
@@ -280,6 +280,7 @@ struct ExistenceChecker
         {
             status.place = ExistenceStatus.Place.inConfig;
             status.where = gameBuildInput[0];
+            return status;
         }
         if(checkExistenceFn)
             checkExistenceFn(t, v, status);
