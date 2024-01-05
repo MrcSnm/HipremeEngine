@@ -553,8 +553,8 @@ bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal
 	}
 	t.writeln("Extracting ", tarGzPath, " to ", outputDirectory);
 	t.flush;
-	std.file.mkdirRecurse(outputDirectory.dirName);
-	return dbgExecuteShell("tar -xf "~tarGzPath~" -C "~outputDirectory.dirName, t);
+	std.file.mkdirRecurse(outputDirectory);
+	return dbgExecuteShell("tar -xf "~tarGzPath~" -C "~outputDirectory, t);
 }
 
 bool isRecognizedExtension(string ext)

@@ -21,7 +21,13 @@ mixin StartFeatures!([
 	"dmd",
 	"git",
 	"hipreme_engine",
-	"ldc"
+	"ldc",
+	"java_jdk",
+	"android_ldc",
+	"android_ndk",
+	"android_sdk",
+	"msvclinker",
+	"vcruntime140"
 ]);
 
 

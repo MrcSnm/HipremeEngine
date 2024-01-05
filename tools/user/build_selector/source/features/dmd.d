@@ -10,12 +10,6 @@ bool installDmd(
     Download[] downloads
 )
 {
-    if(!extractToFolder(downloads[0].getOutputPath, buildNormalizedPath(std.file.getcwd, "D"), t, input))
-    {
-        t.writelnError("Install failed");
-        t.flush;
-        return false;
-    }
     import std.system;
 
     string sys;
@@ -53,7 +47,7 @@ void initialize()
                 osx: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.osx.tar.xz",
             ),
             outputPath: "$TEMP/$NAME",
-        )], &installDmd), 
+        )], &installDmd, ["$CWD/D"]), 
         (ref Terminal){addToPath(configs["dmdPath"].str.buildNormalizedPath);},
         VersionRange.parse("2.105.0", "2.106.0")
     );

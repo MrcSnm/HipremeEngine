@@ -357,30 +357,42 @@ private void runAndroidApplication(ref Terminal t)
 
 ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-	if(!installOpenJDK(t, input))
-	{
-		t.writelnError("Failed installing OpenJDK.");
-		return ChoiceResult.Error;
-	}
-	environment["JAVA_HOME"] = configs["javaHome"].str;
-	if(!installAndroidSDK(t, input))
-	{
-		t.writelnError("Failed installing Android SDK.");
-		return ChoiceResult.Error;
-	}
+	// if(!installOpenJDK(t, input))
+	// {
+	// 	t.writelnError("Failed installing OpenJDK.");
+	// 	return ChoiceResult.Error;
+	// }
+	// environment["JAVA_HOME"] = configs["javaHome"].str;
+	// if(!installAndroidSDK(t, input))
+	// {
+	// 	t.writelnError("Failed installing Android SDK.");
+	// 	return ChoiceResult.Error;
+	// }
 	
 
-	if(!std.file.exists(
-		buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "android", "lib", "libdruntime-ldc.a")))
-	{
-		if(!downloadAndroidLibraries(t, input))
-		{
-			t.writelnError("Failed downloading ldc android libraries.");
-			t.flush;
-			return ChoiceResult.Error;
-		}
-	}
-	environment["ANDROID_HOME"] = configs["androidSdkPath"].str;
+	// if(!std.file.exists(
+	// 	buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "android", "lib", "libdruntime-ldc.a")))
+	// {
+	// 	if(!downloadAndroidLibraries(t, input))
+	// 	{
+	// 		t.writelnError("Failed downloading ldc android libraries.");
+	// 		t.flush;
+	// 		return ChoiceResult.Error;
+	// 	}
+	// }
+	// environment["ANDROID_HOME"] = configs["androidSdkPath"].str;
+
+	import features.android_ndk;
+	import features.java_jdk;
+	import features.android_ldc;
+
+	if(!JavaJDKFeature.getFeature(t, input))
+		return ChoiceResult.Error;
+	if(!AndroidNDKFeature.getFeature(t, input, TargetVersion.parse(TargetAndroidNDK)))
+		return ChoiceResult.Error;
+	if(!AndroidLDCLibraries.getFeature(t, input))
+		return ChoiceResult.Error;
+	
 
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
 	putResourcesIn(t, getHipPath("build", "android", "project", "app", "src", "main", "assets"));
