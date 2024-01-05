@@ -24,6 +24,7 @@ string getFSInstallPath(string projectToLoad)
 {
     version(WebAssembly) return "assets";
 	else version(PSVita) return "app0:assets";
+    else version(Android) { return null;}
     else version(AppleOS)
     {
         import hip.filesystem.hipfs;
