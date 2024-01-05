@@ -131,7 +131,7 @@ string getModuleInfoVarName(string moduleName)
     }
     enum moduleInfoStr = "12__ModuleInfoZ";
     ret[length..length+moduleInfoStr.length] = moduleInfoStr;
-    return ret.idup[0..length+moduleInfoStr.length];
+    return ret[0..length+moduleInfoStr.length].idup;
 }
 
 
@@ -149,21 +149,37 @@ version(SecondRun)
     int main(string[] args)
     {
         enum string[] filesToProcess = ApiGenArgs;
+
+        string initializeFunction;
         static foreach(mod; filesToProcess)
-        {
+        {{
             mixin("import ", mod,";");
+            string moduleName = mod.replace(".", "_");
+            string moduleDef;
+            string functionDefinitions;
+            initializeFunction = "void Init_"~moduleName~"()\n{";
+
             static foreach(member; __traits(allMembers, mixin(mod)))
             {{
                 alias mem = __traits(getMember, mixin(mod), member);
+                string exportedModule;
 
                 static if(hasUDA!(mem, ModuleImplementor) && isFunction!mem)
                 {{
                     enum ModuleImplementor mi = __traits(getAttributes, mem)[0];
-                    pragma(msg, ReturnType!mem, " ", mi.apiOutput, "_", member, Parameters!mem);
+                    if(moduleDef is null) moduleDef = "module "~mi.apiOutput~";\n";
+                    if(exportedModule is null) exportedModule = mi.apiOutput.replace(".", "_");
+
+                    initializeFunction~= "\n\t"~member~" = cast(typeof("~member~"))_loadSymbol(_dll, \""~exportedModule~"_"~member~"\");";
+
+                    functionDefinitions~= "\n"~(ReturnType!mem).stringof~ " function "~ (Parameters!mem).stringof~member~";";
 
                 }}
             }}
-        }
+
+            std.file.write("fp.d", moduleDef~initializeFunction~"\n}\nextern(System) __gshared: \n"~functionDefinitions);
+
+        }}
 
         return 0;
     }

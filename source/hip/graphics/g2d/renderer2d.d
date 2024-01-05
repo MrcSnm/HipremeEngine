@@ -1,7 +1,7 @@
 module hip.graphics.g2d.renderer2d;
 
 version(Have_bindbc_lua) version = HipremeEngineLua;
-
+import hip.util.reflection;
 import hip.graphics.g2d.spritebatch;
 import hip.graphics.g2d.tilemap;
 import hip.graphics.g2d.geometrybatch;
@@ -101,7 +101,7 @@ void resizeRenderer2D(uint width, uint height)
     }
 }
 
-export extern(System):
+export extern(System) @ModuleImplementor("hip.api.graphics.g2d_binding"):
 
 
 int[2] getWindowSize(){return [HipRenderer.width, HipRenderer.height];}

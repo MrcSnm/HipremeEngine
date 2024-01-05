@@ -9,6 +9,10 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.util.reflection;
+
+/// Reflection over code
+struct ModuleImplementor{string apiOutput;}
+
 int asInt(alias enumMember)()
 {
     alias T = typeof(enumMember);

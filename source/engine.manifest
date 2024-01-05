@@ -1,0 +1,7 @@
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <application>
+    <windowsSettings>
+      <iconResource path="LOGO.ico" index="0"/>
+    </windowsSettings>
+  </application>
+</assembly>
