@@ -4,6 +4,36 @@ import feature;
 import commons;
 enum TargetAndroidSDK = 31;
 
+
+version(Windows) enum SearchForSDK = true;
+else version(OSX) enum SearchForSDK = true;
+else enum SearchForSDK = false;
+
+private bool androidSdkExists(ref Terminal t, TargetVersion ver, out ExistenceStatus status)
+{
+	static if(SearchForSDK)
+	{
+		string androidStudioSdkPath;
+		version(OSX)
+		{
+			androidStudioSdkPath = buildNormalizedPath("~", "Library", "Android", "sdk");
+		}
+		else version(Windows)
+		{
+			if("LOCALAPPDATA" in environment)
+				androidStudioSdkPath = buildNormalizedPath(environment["LOCALAPPDATA"], "Android", "Sdk");
+		}
+		string sdkManagerPath = androidStudioSdkPath.buildNormalizedPath("cmdline-tools", "latest", "sdkmanager".executableExtension); 
+		if(std.file.exists(sdkManagerPath))
+		{
+			status.place = ExistenceStatus.Place.custom;
+			status.where = androidStudioSdkPath;
+			return true;
+		}
+	}
+	return false;
+}
+
 private string getAndroidSDKPackagesToinstall(string sdkMajorVer)
 {
 	import std.conv:to;
@@ -25,20 +55,16 @@ private string getAndroidSDKPackagesToinstall(string sdkMajorVer)
 private bool installAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content)
 {
     import std.conv:to;
-	string outputDirectory = buildNormalizedPath(std.file.getcwd(), "Android", "Sdk");
-	string finalOutput = buildNormalizedPath(outputDirectory, "cmdline-tools", "latest");
+	string sdkPath = buildNormalizedPath(std.file.getcwd(), "Android", "Sdk");
+	string cmdLineTools = buildNormalizedPath(sdkPath, "cmdline-tools", "latest");
 
-	if(!std.file.exists(finalOutput))
-	{
-		if(!extractToFolder(content[0].getOutputPath, outputDirectory, t, input))
-			return false;
-		std.file.rename(buildNormalizedPath(outputDirectory, "cmdline-tools/"), buildNormalizedPath(outputDirectory, "latest/"));
-		std.file.mkdirRecurse(buildNormalizedPath(outputDirectory, "cmdline-tools"));
-		std.file.rename(buildNormalizedPath(outputDirectory, "latest"), finalOutput);
-	}
+	//Rename cmdline-tools/cmdline-tools to cmdline-tools/latest
+	if(!std.file.exists(cmdLineTools))
+		std.file.rename(buildNormalizedPath(sdkPath, "cmdline-tools", "cmdline-tools"), cmdLineTools);
+	
     t.writeln("Updating SDK manager.");
 	t.flush;
-	string sdkManagerPath = buildNormalizedPath(finalOutput, "bin");
+	string sdkManagerPath = buildNormalizedPath(cmdLineTools, "bin");
 
 	if(!makeFileExecutable(buildNormalizedPath(sdkManagerPath, "sdkmanager")))
 	{
@@ -64,15 +90,14 @@ private bool installAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, T
 		return false;
 	}
 
-    string adbPath = buildNormalizedPath(outputDirectory, "platform-tools", "adb");
+    string adbPath = buildNormalizedPath(sdkPath, "platform-tools", "adb");
     if(!makeFileExecutable(adbPath))
 	{
-		t.writeln("Failed to set ",adbPath," as executable.");
-		t.flush;
+		t.writelnError("Failed to set ",adbPath," as executable.");
 		return false;
 	}
 
-    configs["androidSdkPath"] = outputDirectory;
+    configs["androidSdkPath"] = sdkPath;
     updateConfigFile();
 	return true;
 }
@@ -84,14 +109,14 @@ void initialize()
     AndroidSDKFeature = Feature(
         "Android SDK",
         "Required for being able to develop applications for Android",
-        ExistenceChecker(["androidSdkPath"]),
+        ExistenceChecker(["androidSdkPath"], null, &androidSdkExists),
         Installation([Download(
             DownloadURL(
                 windows:"https://dl.google.com/android/repository/commandlinetools-win-9477386_latest.zip",
                 linux: "https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip",
                 osx: "https://dl.google.com/android/repository/commandlinetools-mac-9477386_latest.zip"
             )
-        )], &installAndroidSDK),
+        )], &installAndroidSDK, extractionPathList: ["$CWD/Android/Sdk/cmdline-tools"]),
         (ref Terminal t){environment["ANDROID_HOME"] = configs["androidSdkPath"].str;},
         VersionRange.parse(TargetAndroidSDK.to!string)
     );
