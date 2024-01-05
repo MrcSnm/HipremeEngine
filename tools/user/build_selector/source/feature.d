@@ -8,6 +8,11 @@ struct DownloadURL
     string linux;
     string osx;
 
+    static DownloadURL any(string url)
+    {
+        return DownloadURL(url, url, url);
+    }
+
     string get(TargetVersion ver) const
     {
         import std.string:replace;
@@ -27,7 +32,7 @@ struct Download
 {
     DownloadURL url;
     ///Supports $CWD, $TEMP, $VERSION and $NAME
-    string outputPath;
+    string outputPath = "$TEMP$NAME";
     ///Negative version ignored.
     TargetVersion ver;
     void function(string outputPath) onDownloadFinish;
@@ -65,15 +70,32 @@ struct Installation
         Download[] content
     ) installer;
 
+    /** 
+     * Follows the same order from `downloadsRequired`
+     * May receive null if no extraction is desired for the download.
+     * Accepts $CWD and $VERSION
+     */
+    string[] extractionPathList;
+
     bool install(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver)
     {
-        foreach(ref d; downloadsRequired)
+        foreach(i, ref d; downloadsRequired)
         {
             t.writeln("Downloading ", d.url.get(ver), " --> ", d.getOutputPath(ver));
             t.flush;
             if(!d.download(t, input, ver)) return false;
+            if(i <= extractionPathList.length && extractionPathList[i].length)
+            {
+                import std.string;
+                string extractionPath = extractionPathList[i];
+                extractionPath = extractionPath.replace("$CWD", std.file.getcwd).replace("$VERSION", ver.toString).buildNormalizedPath;
+                if(!extractToFolder(d.getOutputPath(ver), extractionPath, t, input))
+                    return false;
+            }
         }
-        return installer(t, input, ver, downloadsRequired);
+        if(installer)
+            return installer(t, input, ver, downloadsRequired);
+        return true;
     }
 
 }
@@ -185,7 +207,10 @@ struct Feature
             t.writeln("Installation: ", name, " v", v.toString, "\n\t", description);
             t.flush;
             if(!installer.install(t, input, v))
+            {
+                t.writelnError("Could not install feature ", name);
                 return false;
+            }
         }
         if(!startedUsing)
         {
