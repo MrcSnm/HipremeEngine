@@ -944,21 +944,40 @@ struct DubArguments
 		{
 			if(confirmKey) a~= " && read -p \"Press any key to continue... \" -n1 -s";
 		}
-		
-
 		return preCommands~dub~" "~a;
 	}
 }
 
-int waitDub(ref Terminal t, DubArguments dArgs)
+int waitRedub(ref Terminal t, DubArguments dArgs)
 {
-	///Detects the presence of a template file before executing.
+	import redub.api;
+	import redub.logging;
 	if(execDubBase(t, dArgs) == -1) return -1;
-	string toExec = dArgs.getDubRunCommand();
-	t.writeln(toExec);
-	t.flush;
-	return wait(spawnShell(toExec));
+
+	if(dArgs._compiler == "auto") dArgs._compiler = "dmd";
+
+	setLogLevel(LogLevel.info);
+	ProjectDetails d = resolveDependencies(
+		false, 
+		os,
+		CompilationDetails(dArgs._compiler, dArgs._arch),
+		ProjectToParse(dArgs._configuration, dArgs._dir, null, dArgs._recipe)
+	);
+	if(buildProject(d) == ProjectDetails.init) return 1;
+	return 0;
 }
+
+alias waitDub = waitRedub;
+
+// int waitDub(ref Terminal t, DubArguments dArgs)
+// {
+// 	///Detects the presence of a template file before executing.
+// 	if(execDubBase(t, dArgs) == -1) return -1;
+// 	string toExec = dArgs.getDubRunCommand();
+// 	t.writeln(toExec);
+// 	t.flush;
+// 	return wait(spawnShell(toExec));
+// }
 
 int execDub(ref Terminal t, DubArguments dArgs)
 {
