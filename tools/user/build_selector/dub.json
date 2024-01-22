@@ -6,8 +6,10 @@
 	"dependencies": {
 		"arsd-official:terminal": "~master",
 		"arsd-official:cgi": "~master",
-		"arsd-official:minigui": "~master",
-		"objc_meta": "~>1.0.11"
+		"redub": "~>1.2.1"
+	},
+	"subConfigurations": {
+		"redub": "library"
 	},
 	"lflags-osx": [
 		"-framework", "Foundation",
@@ -21,7 +23,19 @@
 	],
 	"targetType": "executable",
 	"configurations": [
-		{"name": "default"},
+		{
+			"name": "MacOS",
+			"platforms": ["osx"],
+			"dependencies": {
+				"objc_meta": "~>1.0.12"
+			}
+		},
+		{
+			"name": "default",
+			"dependencies": {
+				"arsd-official:minigui": "~master"
+			}
+		},
 		{
 			"name": "ci",
 			"dflags-ldc": ["-Oz"],
