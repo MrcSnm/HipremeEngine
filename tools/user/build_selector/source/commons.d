@@ -961,7 +961,7 @@ int waitRedub(ref Terminal t, DubArguments dArgs)
 		false, 
 		os,
 		CompilationDetails(dArgs._compiler, dArgs._arch),
-		ProjectToParse(dArgs._configuration, dArgs._dir, null, dArgs._recipe)
+		ProjectToParse(dArgs._configuration, std.file.getcwd(), null, dArgs._recipe)
 	);
 	if(buildProject(d) == ProjectDetails.init) return 1;
 	return 0;
