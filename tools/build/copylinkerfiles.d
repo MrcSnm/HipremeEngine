@@ -30,12 +30,18 @@ int main(string[] args)
 
     environment["DFLAGS"] = envDflags.join(" ");
     string dub = "dub ";
+
     if("DUB" in environment)
     {
         dub = environment["DUB"];
         writeln("Using dub: ", dub);
     }
     auto ret = executeShell(dub~" describe --data=linker-files "~dubArgs~" --vquiet");
+    if(ret.status)
+    {
+        writeln(ret.output);
+        return 1;
+    }
     string librariesData = ret.output;
 
     import std.string:replace, split;
@@ -60,7 +66,10 @@ int main(string[] args)
     foreach(l; libraries)
     {
         string n = baseName(l);
-        copy(l, buildPath(outputPath, n));
+        string newPath = buildPath(outputPath, n);
+        if(newPath == l)
+            continue;
+        copy(l, newPath);
         libNames~= n;
         if(l != libraries[$-1])
             libNames~= " ";
