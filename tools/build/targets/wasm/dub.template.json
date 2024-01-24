@@ -23,6 +23,7 @@
         "runtime": "wasm",
         "assets": "wasm",
         "audio": "wasm",
+        "image": "wasm",
         "filesystem": "wasm",
         "renderer": "wasm"
     },
@@ -30,7 +31,6 @@
         "Standalone",
         "HipDStdFile",
         "OpenGL",
-        "GLES20",
         "CarelessAlocation",
         "dll"
     ],
