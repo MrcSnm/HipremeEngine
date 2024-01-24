@@ -8,9 +8,7 @@
         "d_std": {"path": "modules/d_std", "version": "*"},
         "runtime": {"path": "dependencies/runtime", "version": "*"}
     },
-    "dflags": [
-        "--fvisibility=hidden"
-    ],
+    
     "stringImportPaths": [
         "build/wasm/generated",
         "build/release_game/"
@@ -30,7 +28,6 @@
     "versions": [
         "Standalone",
         "HipDStdFile",
-        "OpenGL",
         "CarelessAlocation",
         "dll"
     ],

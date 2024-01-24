@@ -954,7 +954,8 @@ int waitRedub(ref Terminal t, DubArguments dArgs)
 	import redub.logging;
 	if(execDubBase(t, dArgs) == -1) return -1;
 
-	if(dArgs._compiler == "auto") dArgs._compiler = "dmd";
+	if(dArgs._compiler == "auto")
+		dArgs._compiler = dArgs._arch.length ? "ldc2" : "dmd";
 
 	setLogLevel(LogLevel.info);
 	ProjectDetails d = resolveDependencies(
@@ -967,30 +968,16 @@ int waitRedub(ref Terminal t, DubArguments dArgs)
 	return 0;
 }
 
-alias waitDub = waitRedub;
-
-// int waitDub(ref Terminal t, DubArguments dArgs)
-// {
-// 	///Detects the presence of a template file before executing.
-// 	if(execDubBase(t, dArgs) == -1) return -1;
-// 	string toExec = dArgs.getDubRunCommand();
-// 	t.writeln(toExec);
-// 	t.flush;
-// 	return wait(spawnShell(toExec));
-// }
-
-int execDub(ref Terminal t, DubArguments dArgs)
+int waitDub(ref Terminal t, DubArguments dArgs)
 {
-	import std.string:lineSplitter;
+	///Detects the presence of a template file before executing.
+	if(dArgs._command.length >= 3 && dArgs._command[0..3] != "run") return waitRedub(t, dArgs);
 	if(execDubBase(t, dArgs) == -1) return -1;
 	string toExec = dArgs.getDubRunCommand();
 	t.writeln(toExec);
 	t.flush;
-	auto res = executeShell(toExec, null, std.process.Config.none, size_t.max, dArgs.dir);
-	foreach(l; res.output.lineSplitter) t.writeln("\t", l);
-	return res.status;
+	return wait(spawnShell(toExec));
 }
-
 
 int waitDubTarget(ref Terminal t, string target, DubArguments dArgs)
 {
