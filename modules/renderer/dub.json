@@ -32,6 +32,7 @@
 			},
 			"versions": [
 				"HipGL3",
+				"OpenGL",
 				"GL_45",
 				"GL_ARB",
 				"HipGLUseVertexArray"
@@ -48,6 +49,7 @@
 			},
 			"versions": [
 				"HipGL3",
+				"OpenGL",
 				"GL_45",
 				"GL_ARB",
 				"HipGLUseVertexArray"
@@ -80,7 +82,8 @@
 			"subConfigurations": {
 				"windowing": "wasm",
 				"image": "wasm"
-			}
+			},
+			"versions": ["OpenGL", "GLES20"]
 		},
 		{
 			"name": "psvita",
@@ -88,7 +91,7 @@
 				"windowing": "psvita",
 				"image": "gamut"
 			},
-			"versions": ["GLES20"],
+			"versions": ["OpenGL", "GLES20"],
 			"dependencies": {"gles" : {"path": "../../dependencies/gles"}}
 		},
 		{
@@ -101,7 +104,7 @@
 				"windowing": "android"
 			},
 			"versions": [
-				"HipGLUseVertexArray"
+				"OpenGL", "HipGLUseVertexArray"
 			]
 		}
 	],

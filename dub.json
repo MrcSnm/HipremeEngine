@@ -13,9 +13,12 @@
 		"warnings"
 	],
 	"dflags": [
-		"-mixin=mixed.d",
-		"-Jassets"
+		"-mixin=mixed.d"
 	],
+	"stringImportPaths": [
+		"assets"
+	],
+
 	"dflags-dmd": ["-op"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
 	"versions": [
@@ -28,9 +31,6 @@
 		"GL_ARB",
 		"AL_EFX"
 	],
-	"subConfigurations": {
-		"hipengine_api": "hipengine"
-	},
 	"subPackages": [
 		"tools/user/build_selector/"
 	],
@@ -59,8 +59,6 @@
 			"targetType": "executable",
 			"lflags-windows-ldc": ["-Lmodules/renderer/lib/win64"],
 			"versions": [
-				"OpenGL",
-				"OpenAL",
 				"Desktop",
 				"Standalone",
 				"Test"
@@ -104,8 +102,6 @@
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
-				"OpenGL",
-				"OpenAL",
 				"Desktop",
 				"Standalone",
 				"Test"
@@ -124,8 +120,6 @@
 				"fswatch": "~>0.6.1"
 			},
 			"versions": [
-				"OpenGL",
-				"OpenAL",
 				"Desktop",
 				"Load_DScript",
 				"Standalone"
@@ -152,9 +146,7 @@
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
-				"OpenGL",
 				"GameBuildTest",
-				"OpenAL",
 				"Standalone",
 				"Desktop"
 			],
@@ -189,8 +181,6 @@
 				"Standalone",
 				"GameBuildTest",
 				"Desktop",
-				"OpenGL",
-				"OpenAL",
 				"CarelessAlocation"
 			],
 			"targetType": "executable"

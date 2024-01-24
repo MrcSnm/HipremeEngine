@@ -18,7 +18,7 @@
         "build/release_game/"
     ],
     "subConfigurations": {
-        "audio": "uwp",
+        "audio": "dxonly",
         "renderer": "uwp"
     },
     "targetPath": "bin/uwp",
