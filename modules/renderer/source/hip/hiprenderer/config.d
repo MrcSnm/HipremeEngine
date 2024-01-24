@@ -17,10 +17,8 @@ else enum UseGLES = false;
 
 version(OpenGL)
 {
-    version(Android){}
-    else version(PSVita){}
-    else version(WebAssembly){}
-    else version(Have_bindbc_opengl){}
+    version(Have_bindbc_opengl){}
+    else version(Have_gles){}
     else static assert(false, "Tried to use OpenGL, but supplied no platform or library containing OpenGL.");
 }
 

@@ -45,10 +45,10 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 			return ChoiceResult.Error;
 		}
 		environment["DFLAGS"]= "";
-		timed(() => waitDub(t, DubArguments().command("run wasm-sourcemaps").runArgs("hipreme_engine.wasm --include-sources=true")));
+		timed(() => waitDub(t, DubArguments().command("run wasm-sourcemaps").runArgs("bin/hipreme_engine.wasm --include-sources=true")));
 
 		foreach(file; ["hipreme_engine.wasm", "hipreme_engine.wasm.map"])
-			std.file.rename(file, buildPath("build", "wasm", "build", file));
+			std.file.rename(buildPath("bin", file), buildPath("build", "wasm", "build", file));
 		t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:9000");
 		pushWebsocketMessage("reload");
 		cached(() => cast(void)openDefaultBrowser("http://localhost:9000"));

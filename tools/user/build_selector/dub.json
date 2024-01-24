@@ -6,7 +6,7 @@
 	"dependencies": {
 		"arsd-official:terminal": "~master",
 		"arsd-official:cgi": "~master",
-		"redub": "~>1.2.3"
+		"redub": {"path": "/Users/Hipreme/Documents/dubv2"}
 	},
 	"subConfigurations": {
 		"redub": "library"
