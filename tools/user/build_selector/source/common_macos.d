@@ -76,14 +76,16 @@ void injectLinkerFlagsOnXcode(ref Terminal t, ref RealTimeConsoleInput input, st
 		{
 			if(!pollForExecutionPermission(t, input ,"Ruby `gem` called '"~gem~"' is not installed, attempt to install?"))
 				throw new Error("Can't update HipremeEngine.xcodeproj without installing dependency for ruby script.");
-			wait(spawnShell("sudo gem install "~gem));
+			if(wait(spawnShell("sudo gem install "~gem)) != 0)
+				throw new Error("Could not install gem "~gem);
 		}
 	}
 	with(WorkingDir(getHipPath("build", "appleos")))
 	{
 		foreach(gem; gemsToInstall)
 			installGem(t, input, gem);
-		spawnShell("ruby injectLib.rb "~extraLinkerFlags);
+		if(wait(spawnShell("ruby injectLib.rb "~extraLinkerFlags)) != 0)
+			throw new Error("ruby injectLib.rb with flags "~extraLinkerFlags~" failed.");
 	}
 }
 
