@@ -17,7 +17,7 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 		cleanAppleOSLibFolder();
 
 		if(timed(() => waitDubTarget(t, __MODULE__, DubArguments().
-			command("build").recipe("appleos").deep(true).compiler("auto").opts(cOpts))) != 0)
+			command("build").recipe("appleos").deep(true).compiler(getSelectedCompiler).opts(cOpts))) != 0)
 		{
 			t.writelnError("Could not build for AppleOS.");
 			return ChoiceResult.Error;

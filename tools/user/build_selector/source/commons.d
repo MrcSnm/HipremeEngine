@@ -924,6 +924,7 @@ struct DubArguments
 			compiler = arch ? "ldc2" : getSelectedCompiler();
 			compiler = compiler == "auto" ? "" : compiler;
 		}
+		a~= " --verbose";
 
 		if(parallel)      a~= " --parallel";
 		if(recipe)        a~= " --recipe="~recipe;
