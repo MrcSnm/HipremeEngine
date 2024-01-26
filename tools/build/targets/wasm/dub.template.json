@@ -13,15 +13,10 @@
         "build/wasm/generated",
         "build/release_game/"
     ],
-    "postGenerateCommands-windows": [
-        "set DFLAGS=\"\" && dub run wasm-sourcemaps -- hipreme_engine.wasm --include-sources=true",
-        "move /Y hipreme_engine.wasm* .\\build\\wasm\\build\\"
-    ],
     "subConfigurations": {
         "runtime": "wasm",
         "assets": "wasm",
         "audio": "wasm",
-        "image": "wasm",
         "filesystem": "wasm",
         "renderer": "wasm"
     },

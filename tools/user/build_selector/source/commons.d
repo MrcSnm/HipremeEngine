@@ -925,12 +925,11 @@ struct DubArguments
 			compiler = compiler == "auto" ? "" : compiler;
 		}
 		a~= " --verbose";
-
 		if(parallel)      a~= " --parallel";
 		if(recipe)        a~= " --recipe="~recipe;
 		if(build)         a~= " --build="~build;
 		if(arch)          a~= " --arch="~arch;
-		if(compiler != "")a~= " --compiler="~compiler;
+		if(compiler != "")a~= " --compiler="~`G:\HipremeEngine\tools\user\build_selector\D\ldc2-opend-windows-x64\bin\ldc2.exe`;
 		if(deep)		  a~= " --deep";
 		if(configuration) a~= " -c "~configuration;
 		if(opts != CompilationOptions.init) a~= opts.getDubOptions();

@@ -408,6 +408,7 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
 	putResourcesIn(t, getHipPath("build", "android", "project", "app", "src", "main", "assets"));
 	cached(() => timed(() => outputTemplateForTarget(t)));
+	outputTemplate(t, configs["gamePath"].str);
 
 	string ldcLibsPath = buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "android", "lib");
 

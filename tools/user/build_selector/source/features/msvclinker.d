@@ -1,5 +1,6 @@
 module features.msvclinker;
-import feature;
+public import feature;
+import commons;
 
 ///Feature which gets the msvclinker
 Feature MSVCLinker;
@@ -14,12 +15,13 @@ else version(Windows):
 
 pragma(lib, "ole32.lib");
 pragma(lib, "oleaut32.lib");
-bool hasMSVCLinker(ref Terminal t, int targetVer)
+bool hasMSVCLinker(ref Terminal t, TargetVersion v, out ExistenceStatus where)
 {
 	import core.sys.windows.winbase;
 	import core.sys.windows.winnt;
 	import core.sys.windows.com;
 	import core.sys.windows.wtypes;
+	import std.windows.registry;
 	immutable supportedPre2017Versions = ["14.0"];
 	const GUID iid_SetupConfiguration = { 0x177F0C4A, 0x1CD3, 0x4DE7, [ 0xA3, 0x2C, 0x71, 0xDB, 0xBB, 0x9F, 0xA3, 0x6D ] };
 

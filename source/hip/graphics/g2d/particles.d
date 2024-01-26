@@ -41,7 +41,7 @@ struct HipParticleSystemConfig
     ///Default color stop is to go from opaque white to transparent white.
     immutable DefaultParticleColorStops = [HipColorStop(HipColor.white, 0), HipColorStop(HipColor(255,255,255,0), 1)];
 
-    HipColorStop[] colors = DefaultParticleColorStops;
+    HipColorStop[] colors; // = DefaultParticleColorStops;
     float lifeTime = 2.0;
 }
 

@@ -65,7 +65,10 @@ void initialize()
                 outputPath: "$TEMP$NAME",
             )
         ], &installLdc),
-        (ref Terminal){addToPath(configs["ldcPath"].str.buildNormalizedPath);},
+        (ref Terminal t)
+        {
+            addToPath(configs["ldcPath"].str.buildNormalizedPath("bin"));
+        },
         VersionRange.parse("1.36.0-beta1"),
     );
 

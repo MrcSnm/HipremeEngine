@@ -230,7 +230,7 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 
     std.file.chdir(configs["hipremeEnginePath"].str);
 
-    if(waitDubTarget(t, "psvita", DubArguments("build --parallel --deep --compiler=ldc2 --arch=armv7a-unknown-unknown ")) != 0)
+    if(waitDubTarget(t, "psvita", DubArguments().command("build").deep(true).arch("armv7a-unknown-unknown").opts(cOpts)) != 0)
     {
         t.writelnError("Could not build for PSVita.");
         return ChoiceResult.Error;
