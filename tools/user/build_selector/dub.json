@@ -6,10 +6,12 @@
 	"dependencies": {
 		"arsd-official:terminal": "~master",
 		"arsd-official:cgi": "~master",
-		"redub": {"path": "C:\\Users\\Hipreme\\Documents\\dubv2"}
+		"redub": {"path": "C:\\Users\\Hipreme\\Documents\\dubv2"},
+		"wasm-sourcemaps": {"repository": "git+https://github.com/MrcSnm/wasm-sourcemaps", "version": "690b5ea"}
 	},
 	"subConfigurations": {
-		"redub": "library"
+		"redub": "library",
+		"wasm-sourcemaps": "library"
 	},
 	"lflags-osx": [
 		"-framework", "Foundation",
