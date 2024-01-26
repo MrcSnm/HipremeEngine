@@ -57,6 +57,7 @@
 			"name": "desktop",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
+	
 			"lflags-windows-ldc": ["-Lmodules/renderer/lib/win64"],
 			"versions": [
 				"Desktop",
@@ -124,10 +125,7 @@
 				"Load_DScript",
 				"Standalone"
 			],
-			"dflags-ldc": [
-				"--ftime-trace",
-				"--ftime-trace-file=./my-trace.json"
-			],
+			
 			"lflags-linux-ldc": ["--export-dynamic"],
 			"versions-windows": [
 				"Direct3D_11",

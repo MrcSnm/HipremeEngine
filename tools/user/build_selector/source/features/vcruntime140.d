@@ -1,5 +1,7 @@
 module features.vcruntime140;
-import feature;
+public import feature;
+import commons;
+
 
 Feature VCRuntime140Feature;
 version(Posix)
@@ -9,15 +11,17 @@ version(Posix)
 }
 else version(Windows):
 
+enum VCRuntimeVer = "14.0";
+
 import commons;
 import std.windows.registry;
 static import std.file;
 
-bool hasVCRuntime140(ref Terminal t, int targetVer)
+bool hasVCRuntime140(ref Terminal t, TargetVersion ver, out ExistenceStatus status)
 {
 	string arch = "X64";
 	version(Win32) arch = "X32";
-	Key currKey = windowsGetKeyWithPath("SOFTWARE", "WOW6432Node", "Microsoft", "VisualStudio", "14.0", "VC", "Runtimes", arch);
+	Key currKey = windowsGetKeyWithPath("SOFTWARE", "WOW6432Node", "Microsoft", "VisualStudio", ver.toString, "VC", "Runtimes", arch);
 	return currKey.getValue("Installed").value_DWORD == 1;
 }
 
@@ -54,6 +58,8 @@ void initialize()
                 )
             ], &installVCRuntime140
         ),
+        null,
+        VersionRange.parse(VCRuntimeVer),
     );
 }
 void start(){}

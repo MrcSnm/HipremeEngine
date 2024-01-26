@@ -21,6 +21,7 @@ class MainScene : AScene, IHipPreloadable
 	/** Called every frame */
 	override void update(float dt)
 	{
+        logg("Built with redub :)");
         if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
         {
             logg("You just clicked me!");

@@ -5,10 +5,7 @@
 	"configurations": [
 		{
 			"name": "default",
-			"libs-linux" : [
-				"X11",
-				"gl"
-			]
+			"libs-linux" : ["X11", "GL"]
 		},
 		{"name": "android"},
 		{"name": "wasm"},

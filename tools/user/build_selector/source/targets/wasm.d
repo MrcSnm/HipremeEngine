@@ -45,7 +45,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 			return ChoiceResult.Error;
 		}
 		environment["DFLAGS"]= "";
-		timed(() => waitDub(t, DubArguments().command("run wasm-sourcemaps").runArgs("bin/hipreme_engine.wasm --include-sources=true")));
+		timed(() => waitDub(t, DubArguments().command("run wasm-sourcemaps").runArgs(getHipPath("bin", "hipreme_engine.wasm")~" --include-sources=true")));
 
 		foreach(file; ["hipreme_engine.wasm", "hipreme_engine.wasm.map"])
 			std.file.rename(buildPath("bin", file), buildPath("build", "wasm", "build", file));
