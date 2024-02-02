@@ -7,6 +7,10 @@
 		"debugInfo",
 		"debugInfoC"
 	],
+	"dflags-ldc": [
+		"-ftime-trace",
+		"-ftime-trace-file=trace.json"
+	],
 	"sourcePaths": [
 		"source"
 	],
