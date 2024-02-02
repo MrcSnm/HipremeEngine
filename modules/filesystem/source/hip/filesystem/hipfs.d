@@ -324,20 +324,6 @@ class HipFileSystem
         return ret;
     }
     
-
-    version(HipDStdFile)
-    {
-        import std.stdio:File;
-        public static bool getFile(string path, string opts, out File file)
-        {
-            if(!isPathValid(path))
-                return false;
-            file = File(getPath(path), opts);
-            return true;
-        }
-
-    } 
-
     @ExportD public static bool write(string path, void[] data)
     {
         if(!isPathValid(path))
