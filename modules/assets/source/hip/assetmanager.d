@@ -9,7 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.assetmanager;
-import hip.util.concurrency;
 import hip.util.data_structures: Node;
 import hip.util.reflection;
 import hip.error.handler;
@@ -49,7 +48,8 @@ mixin template HipAssetsGenerateEnum(string filePath)
 
 
 import hip.util.system;
-import hip.util.concurrency;
+import hip.concurrency.thread;
+import hip.concurrency.mutex;
 public import hip.asset;
 public import hip.assets.image;
 public import hip.assets.audioclip;
@@ -65,143 +65,7 @@ public import hip.util.data_structures;
 
 
 
-final class HipAssetLoadTask : IHipAssetLoadTask
-{
-    string name;
-    string path;
-    HipAssetResult _result = HipAssetResult.cantLoad;
-    HipAsset _asset = null;
-    protected HipWorkerThread worker;
-    protected void[] partialData;
 
-
-    private string fileRequesting;
-    private size_t lineRequesting;
-
-    this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
-    {
-        assert(name != null, "Asset load task can't receive null name");
-        this.path = path;
-        this.name = name;
-        this._asset = asset;
-        this.fileRequesting = fileRequesting;
-        this.lineRequesting = lineRequesting;
-        if(asset is null)
-            _result = HipAssetResult.cantLoad;
-        else
-            _result = HipAssetResult.loaded;
-    }
-
-    bool hasFinishedLoading() const{return result == HipAssetResult.loaded;}
-    bool opCast(T : bool)() const{return hasFinishedLoading;}
-
-
-    void addOnCompleteHandler(void delegate(IHipAsset) onComplete)
-    {
-        HipAssetManager.addOnCompleteHandler(this, onComplete);
-    }
-    void addOnCompleteHandler(void delegate(string) onComplete)
-    {
-        HipAssetManager.addOnCompleteHandler(this, (asset)
-        {
-            HipFileAsset theAsset = cast(HipFileAsset)asset;
-            assert(theAsset !is null, "Asset received is not a text");
-            onComplete(theAsset.getText);
-        });
-    }
-
-
-    void into(string*[] variables...)
-    {
-        import hip.error.handler;
-        final switch(_result) with(HipAssetResult)
-        {
-            case loaded:
-                foreach(v; variables)
-                    *v = (cast(HipFileAsset)(asset)).getText;
-                break;
-            case loading:
-                //variables are implicitly `scope`, need to duplicate.
-                string*[] vars = variables.dup;
-                addOnCompleteHandler((string data)
-                {
-                    foreach(v; vars)
-                        *v = data;
-                });
-                break;
-            case cantLoad:
-                ErrorHandler.showWarningMessage("Can't load a null asset into a variable address", name);
-                break;
-        }
-    }
-
-
-    void into(void* function(IHipAsset asset) castFunc, IHipAsset*[] variables...)
-    {
-        import hip.error.handler;
-        final switch(_result) with(HipAssetResult)
-        {
-            case loaded:
-                foreach(v; variables)
-                    *v = cast(IHipAsset)castFunc(asset);
-                break;
-            case loading:
-                //variables are implicitly `scope`, need to duplicate.
-                IHipAsset*[] vars = variables.dup;
-                addOnCompleteHandler((IHipAsset completeAsset)
-                {
-                    IHipAsset theAsset = cast(IHipAsset)castFunc(completeAsset);
-                    assert(theAsset !is null, "Null asset received in complete handler?");
-                    foreach(v; vars)
-                        *v = theAsset;
-                });
-                break;
-            case cantLoad:
-                ErrorHandler.showWarningMessage("Can't load a null asset into a variable address", name);
-                break;
-        }
-    }
-    
-    void await()
-    {
-        if(_result == HipAssetResult.loading)
-            HipAssetManager.awaitTask(this);
-    }
-
-    void givePartialData(void[] data)
-    {
-        import hip.util.conv:to;
-        if(partialData !is null)
-        {
-            version(CustomRuntime)
-                assert(false, "AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
-            else
-                throw new Error("AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
-        }
-        partialData = data;
-    }
-
-    void[] takePartialData()
-    {
-        import hip.util.conv:to;
-        if(partialData is null)
-        {
-            version(CustomRuntime)
-                assert(false, "No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
-            else
-                throw new Error("No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
-        }
-        void[] ret = partialData;
-        partialData = null;
-        return ret;
-    }
-    
-    HipAssetResult result() const {return _result;}
-    IHipAsset asset(){return _asset;}
-    HipAssetResult result(HipAssetResult newResult){return _result = newResult;}
-    IHipAsset asset(IHipAsset newAsset){return _asset = cast(HipAsset)newAsset;}
-
-}
 
 
 
@@ -262,12 +126,12 @@ class HipAssetManager
     __gshared float currentTime;
     //Caching
     protected __gshared HipAsset[string] assets;
-    protected __gshared HipAssetLoadTask[string] loadQueue;
+    protected __gshared IHipAssetLoadTask[string] loadQueue;
 
     //Thread Communication
-    protected __gshared HipAssetLoadTask[] completeQueue;
+    protected __gshared IHipAssetLoadTask[] completeQueue;
     protected __gshared DebugMutex completeMutex;
-    protected __gshared void delegate(IHipAsset)[][HipAssetLoadTask] completeHandlers;
+    protected __gshared void delegate(IHipAsset)[][IHipAssetLoadTask] completeHandlers;
     
 
 
@@ -277,15 +141,12 @@ class HipAssetManager
         workerPool = new HipWorkerPool(HIP_ASSETMANAGER_WORKER_POOL);
     }
 
-    version(HipConcurrency)
+    static bool isAsync = HipConcurrency;
+
+    static if(HipConcurrency)
     {
         import core.sync.mutex;
-        import std.compiler;
-        static bool isAsync = true;
-    }
-    else
-    {
-        static bool isAsync = false;
+        // import std.compiler;
     }
 
 
@@ -321,13 +182,16 @@ class HipAssetManager
         update();
     }
 
-    static void awaitTask(HipAssetLoadTask task)
+    static void awaitTask(IHipAssetLoadTask task)
     {
-        version(HipConcurrency)
+        static if(HipConcurrency)
         {
+            import hip.asset_manager.load_task;
             import core.sync.semaphore;
+            HipAssetLoadTask lTask = cast(HipAssetLoadTask)task;
+            
             auto semaphore = new Semaphore(0);
-            task.worker.pushTask("Await Single", ()
+            lTask.worker.pushTask("Await Single", ()
             {
                 semaphore.notify;
             });
@@ -358,11 +222,13 @@ class HipAssetManager
      *  if: returns its previous task
      *  else: Put a new one on load cache and retunr
      */
-    private static HipAssetLoadTask loadBase(string taskName, string path, lazy HipWorkerThread worker, string fileRequesting = __FILE__, size_t lineRequesting = __LINE__)
+    private static IHipAssetLoadTask loadBase(string taskName, string path, lazy HipWorkerThread worker, string fileRequesting = __FILE__, size_t lineRequesting = __LINE__)
     {
+        import hip.asset_manager.load_task;
+
         HipAsset asset = cast(HipAsset)getAsset(path);
         if(asset !is null){return new HipAssetLoadTask(path, taskName, asset, fileRequesting, lineRequesting);}
-        else if(HipAssetLoadTask* task = path in loadQueue){return *task;}
+        else if(IHipAssetLoadTask* task = path in loadQueue){return *task;}
 
         auto task = new HipAssetLoadTask(path, taskName, null, fileRequesting, lineRequesting);
         loadQueue[path] = task;
@@ -371,40 +237,16 @@ class HipAssetManager
         return task;
     }
 
-    private static void delegate(HipAsset) onSuccessLoad(HipAssetLoadTask task)
-    {
-        return (HipAsset asset)
-        {
-            ///Will need specific code. Web works differently
-            version(WebAssembly)
-            {
-                workerPool.signalTaskFinish();
-            }
-            task.asset = asset;
-            task.result = HipAssetResult.loaded;
-            putComplete(task);
-        };
-    }
-
-    private static void delegate(string err = "") onFailureLoad(HipAssetLoadTask task)
-    {
-        return (err)
-        {
-            ErrorHandler.showWarningMessage("Could not load task: "~ task.name, err);
-            task.result = HipAssetResult.cantLoad;
-            putComplete(task);
-        };
-    }
-
 
     /**
     *   loadSimple must be used when the asset can be totally constructed on the worker thread and then returned to the main thread
     */
-    private static HipAssetLoadTask loadSimple(string taskName, string path, void delegate(string pathOrLocation, 
+    private static IHipAssetLoadTask loadSimple(string taskName, string path, void delegate(string pathOrLocation, 
     void delegate(HipAsset) onSuccess, void delegate(string err = "") onFailure) loadAsset, 
     string f = __FILE__, size_t l = __LINE__)
     {
-        HipAssetLoadTask task;
+        import hip.asset_manager.load_task;
+        IHipAssetLoadTask task;
         taskName = taskName~":"~path;
         task = loadBase(taskName, path, loadWorker(taskName, ()
         {
@@ -469,7 +311,7 @@ class HipAssetManager
         /**
         *   loadComplex is used when part of the asset can be constructed on worker thread, but for completing the load, it must finish on main thread
         */
-        private static HipAssetLoadTask loadComplex(
+        private static IHipAssetLoadTask loadComplex(
             string taskName,
             string path,
             void delegate(
@@ -486,10 +328,11 @@ class HipAssetManager
             size_t l = __LINE__
         )
         {
+            import hip.asset_manager.load_task;
             HipAssetLoadTask task;
             taskName = taskName~":"~path;
 
-            task = loadBase(taskName, path, loadWorker(taskName, ()
+            task = cast(HipAssetLoadTask)loadBase(taskName, path, loadWorker(taskName, ()
             {
                 loadAsset(path, (void[] partialData)
                 {
@@ -506,6 +349,7 @@ class HipAssetManager
 
     @ExportD static IHipAssetLoadTask loadFile(string filePath, string f = __FILE__, size_t l = __LINE__)
     {
+        import hip.asset_manager.load_task;
         void delegate(string,void delegate(HipAsset), void delegate(string err = "")) assetLoadFunc = 
         (pathOrLocation,onSuccess, onFailure)
         {
@@ -520,7 +364,7 @@ class HipAssetManager
                 onFailure("Could not read file with err: " ~ err);
             });
         };
-        HipAssetLoadTask task = loadSimple("Load File ", filePath, assetLoadFunc, f, l);
+        IHipAssetLoadTask task = loadSimple("Load File ", filePath, assetLoadFunc, f, l);
         workerPool.startWorking();
         return task;
     }
@@ -540,7 +384,9 @@ class HipAssetManager
                 onFailure("Could not read file with err: " ~ err);
             });
         };
-        HipAssetLoadTask task = loadSimple("Load Image ", imagePath, assetLoadFunc, f, l);
+        import hip.asset_manager.load_task;
+
+        IHipAssetLoadTask task = loadSimple("Load Image ", imagePath, assetLoadFunc, f, l);
         workerPool.startWorking();
         return task;
     }
@@ -570,7 +416,7 @@ class HipAssetManager
                 onFailure("Could not read file "~audioPath~" with error "~err);
             });
         };
-        HipAssetLoadTask task = loadSimple("Load AudioClip", audioPath, assetLoadFunc, f, l);
+        IHipAssetLoadTask task = loadSimple("Load AudioClip", audioPath, assetLoadFunc, f, l);
         workerPool.startWorking();
         return task;
     }
@@ -606,7 +452,7 @@ class HipAssetManager
             void* gcObjCopy = cast(void*)img;
             freeGCMemory(gcObjCopy); 
         };
-        HipAssetLoadTask task = loadComplex("Load Texture", texturePath, assetLoadFunc, onPartialDataLoaded, f, l);
+        IHipAssetLoadTask task = loadComplex("Load Texture", texturePath, assetLoadFunc, onPartialDataLoaded, f, l);
         workerPool.startWorking();
         return task;
     }
@@ -614,7 +460,7 @@ class HipAssetManager
    
     @ExportD static IHipAssetLoadTask loadCSV(string path, string f = __FILE__, size_t l = __LINE__)
     {
-        HipAssetLoadTask task = loadSimple("Load CSV", path, (pathOrLocation, onSuccess, onError)
+        IHipAssetLoadTask task = loadSimple("Load CSV", path, (pathOrLocation, onSuccess, onError)
         {
             import hip.filesystem.hipfs;
             HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
@@ -632,7 +478,7 @@ class HipAssetManager
     }
     @ExportD static IHipAssetLoadTask loadINI(string path, string f = __FILE__, size_t l = __LINE__)
     {
-        HipAssetLoadTask task = loadSimple("Load INI", path, (pathOrLocation, onSuccess, onError)
+        IHipAssetLoadTask task = loadSimple("Load INI", path, (pathOrLocation, onSuccess, onError)
         {
             import hip.filesystem.hipfs;
             HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
@@ -651,7 +497,7 @@ class HipAssetManager
     }
     @ExportD static IHipAssetLoadTask loadJSONC(string path, string f = __FILE__, size_t l = __LINE__)
     {
-        HipAssetLoadTask task = loadSimple("Load JSONC", path, (pathOrLocation, onSuccess, onError)
+        IHipAssetLoadTask task = loadSimple("Load JSONC", path, (pathOrLocation, onSuccess, onError)
         {
             import hip.filesystem.hipfs;
             HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
@@ -714,7 +560,7 @@ class HipAssetManager
             onSuccess(inter.atlas);
             freeGCMemory(partialData);
         };
-        HipAssetLoadTask task = loadComplex("Load TextureAtlas", atlasPath, assetLoadFunc, onPartialDataLoaded, f, l);
+        IHipAssetLoadTask task = loadComplex("Load TextureAtlas", atlasPath, assetLoadFunc, onPartialDataLoaded, f, l);
 
         workerPool.startWorking();
         return task;
@@ -722,10 +568,11 @@ class HipAssetManager
 
     @ExportD static IHipAssetLoadTask loadTilemap(string tilemapPath, string f = __FILE__, size_t l = __LINE__)
     {
+        import hip.asset_manager.load_task;
         import hip.util.memory;
         import hip.assets.tilemap;
 
-        HipAssetLoadTask task = loadComplex("Load Tilemap ", tilemapPath, (pathOrLocation, onSuccess, onFailure)
+        IHipAssetLoadTask task = loadComplex("Load Tilemap ", tilemapPath, (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
             HipTilemap map;
@@ -761,7 +608,7 @@ class HipAssetManager
     {
         import hip.util.memory;
         import hip.assets.tilemap;
-        HipAssetLoadTask task = loadComplex("Load Tileset ", tilesetPath, (pathOrLocation, onSuccess, onFailure)
+        IHipAssetLoadTask task = loadComplex("Load Tileset ", tilesetPath, (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
 
@@ -819,11 +666,13 @@ class HipAssetManager
         }
     }
 
-    private static HipAssetLoadTask loadTTF(string ttfPath, int fontSize, string f = __FILE__, size_t l = __LINE__)
+    private static IHipAssetLoadTask loadTTF(string ttfPath, int fontSize, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.font.ttf;
         import hip.assets.font;
         import hip.util.memory;
+        import hip.asset_manager.load_task;
+
 
         class IntermediaryData
         {
@@ -832,7 +681,7 @@ class HipAssetManager
             this(Hip_TTF_Font fnt, ubyte[] img){font = fnt; rawImage = img;}
         }
 
-        HipAssetLoadTask task = loadComplex("Load TTF", ttfPath, (pathOrLocation, onSuccess, onFailure)
+        IHipAssetLoadTask task = loadComplex("Load TTF", ttfPath, (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
             Hip_TTF_Font font = new Hip_TTF_Font(pathOrLocation, fontSize);
@@ -861,12 +710,13 @@ class HipAssetManager
         return task;
     }
 
-    private static HipAssetLoadTask loadBMFont(string fontPath, string f = __FILE__, size_t l = __LINE__)
+    private static IHipAssetLoadTask loadBMFont(string fontPath, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.font.bmfont;
         import hip.assets.font;
         import hip.image;
         import hip.util.memory;
+        import hip.asset_manager.load_task;
 
         class IntermediaryData
         {
@@ -876,7 +726,7 @@ class HipAssetManager
         }
         hiplog("Loading bmfont");
 
-        HipAssetLoadTask task = loadComplex("Load BMFont", fontPath, 
+        IHipAssetLoadTask task = loadComplex("Load BMFont", fontPath, 
         (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
@@ -926,13 +776,14 @@ class HipAssetManager
     /** 
      * Synchronized function for putting it into the completed queue for preparing the finish handlers
      */
-    private static void putComplete(HipAssetLoadTask task)
+    package static void putComplete(IHipAssetLoadTask task)
     {
+        import hip.asset_manager.load_task;
         completeMutex.lock();
             if(task.result == HipAssetResult.loaded)
             {
                 assert((cast(HipAsset)task.asset) !is null, "Can't putComplete a null asset.");
-                assets[task.path] = cast(HipAsset)task.asset;
+                assets[(cast(HipAssetLoadTask)task).path] = cast(HipAsset)task.asset;
             }
             completeQueue~= task;
         completeMutex.unlock();       
@@ -940,6 +791,7 @@ class HipAssetManager
 
     static void addOnCompleteHandler(IHipAssetLoadTask task, void delegate(IHipAsset) onComplete)
     {
+        import hip.asset_manager.load_task;
         if(task.asset !is null)
             onComplete(task.asset);
         else
@@ -960,17 +812,21 @@ class HipAssetManager
     */
     static void update()
     {
+        import hip.asset_manager.load_task;
         completeMutex.lock();
             if(completeQueue.length)
             {
                 foreach(task; completeQueue)
                 {
+                    HipAssetLoadTask lTask = cast(HipAssetLoadTask)task;
                     //Subject to a logger
-                    hiplog(task.name, " executing handlers");
+                    hiplog(lTask.name, " executing handlers");
                     if(auto handlers = task in completeHandlers)
                     {
                         foreach(handler; *handlers)
-                            handler(task._asset);
+                        {
+                            handler(lTask._asset);
+                        }
                         handlers.length = 0;
                     }
                     completeHandlers.remove(task);
