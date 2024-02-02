@@ -1,6 +1,7 @@
 module hip.asset_manager.load_task;
 import hip.concurrency.thread;
 public import hip.asset;
+import hip.config.opts;
 import hip.api.data.commons;
 import hip.error.handler;
 import hip.assetmanager;
@@ -114,7 +115,7 @@ final class HipAssetLoadTask : IHipAssetLoadTask
         import hip.util.conv:to;
         if(partialData !is null)
         {
-            version(CustomRuntime)
+            static if(CustomRuntime)
                 assert(false, "AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
             else
                 throw new Error("AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
@@ -127,7 +128,7 @@ final class HipAssetLoadTask : IHipAssetLoadTask
         import hip.util.conv:to;
         if(partialData is null)
         {
-            version(CustomRuntime)
+            static if(CustomRuntime)
                 assert(false, "No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
             else
                 throw new Error("No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
@@ -161,7 +162,7 @@ void delegate(HipAsset) onSuccessLoad(IHipAssetLoadTask task)
         ///Will need specific code. Web works differently
         version(WebAssembly)
         {
-            workerPool.signalTaskFinish();
+            HipAssetManager.workerPool.signalTaskFinish();
         }
         lTask.asset = asset;
         lTask.result = HipAssetResult.loaded;

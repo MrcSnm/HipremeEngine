@@ -118,7 +118,7 @@ class HipAssetManager
 {
     import hip.config.opts;
 
-    protected __gshared HipWorkerPool workerPool;
+    package __gshared HipWorkerPool workerPool;
     __gshared float currentTime;
     //Caching
     protected __gshared HipAsset[string] assets;
@@ -254,13 +254,16 @@ class HipAssetManager
     version(WebAssembly)
     {
         
-        private static void delegate(void[] partialData) onSuccessLoadFirstStep(HipAssetLoadTask task, 
+        private static void delegate(void[] partialData) onSuccessLoadFirstStep(IHipAssetLoadTask task, 
         void delegate(string taskName) nextStep)
         {
             return (void[] partialData)
             {
-                task.givePartialData(partialData);
-                workerPool.notifyOnFinishOnMainThread(nextStep, false)(task.name);
+                import hip.asset_manager.load_task;
+                HipAssetLoadTask lTask = (cast(HipAssetLoadTask)task);
+
+                lTask.givePartialData(partialData);
+                workerPool.notifyOnFinishOnMainThread(nextStep, false)(lTask.name);
             };
         }
 
@@ -269,7 +272,7 @@ class HipAssetManager
         *   on notifyOnFinish. That was decided because it is impossible to actually know when something
         *   has finished on Browser. The notfyOnFinish callback must be passed manually.
         */
-        private static HipAssetLoadTask loadComplex(
+        private static IHipAssetLoadTask loadComplex(
             string taskName,
             string path,
             void delegate(
@@ -286,12 +289,14 @@ class HipAssetManager
             size_t l = __LINE__
         )
         {
-            HipAssetLoadTask task;
+            import hip.asset_manager.load_task;
+            IHipAssetLoadTask task;
             taskName = taskName~":"~path;
 
             auto nextStep = (string _)
             {
-                mainThreadLoadFunction(task.takePartialData(), onSuccessLoad(task));
+                HipAssetLoadTask lTask = cast(HipAssetLoadTask)task;
+                mainThreadLoadFunction(lTask.takePartialData(), onSuccessLoad(task));
             };
 
             task = loadBase(taskName, path, loadWorker(taskName, ()
