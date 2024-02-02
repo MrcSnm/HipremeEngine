@@ -67,3 +67,11 @@ alias ulong* PDWORDLONG, PULONGLONG;
 alias HMODULE = void*;
 alias HLOCAL = void*;
 alias SIZE_T = ulong;
+alias ulong ULONG64, DWORD64, UINT64;
+alias HANDLE = void*;
+
+alias const(char)*  PCCH, LPCCH, PCSTR, LPCSTR;
+alias const(wchar)* LPCWCH, PCWCH, LPCWSTR, PCWSTR;
+
+alias PSTR* PZPSTR;
+alias PWSTR* PZPWSTR;
