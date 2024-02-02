@@ -15,6 +15,7 @@ import hip.error.handler;
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
 import hip.hiprenderer.shader;
+import hip.hiprenderer.backend.gl.glrenderer;
 import hip.hiprenderer.backend.gl.gltexture;
 
 

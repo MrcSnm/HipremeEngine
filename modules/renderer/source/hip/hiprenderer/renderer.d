@@ -23,19 +23,6 @@ import hip.math.rect;
 import hip.error.handler;
 import hip.console.log;
 
-public import hip.hiprenderer.backend.gl.glrenderer;
-
-version(Windows)
-{
-    import hip.hiprenderer.backend.d3d.d3drenderer;
-    import hip.hiprenderer.backend.d3d.d3dtexture;
-}
-version(AppleOS)
-{
-    import hip.hiprenderer.backend.metal.mtlrenderer;
-    import hip.hiprenderer.backend.metal.mtltexture;
-}
-
 version(dll){} else version = RendererConfigFile;
 import hip.hiprenderer.backend.gl.gltexture;
 
@@ -197,6 +184,7 @@ class HipRenderer
                 case "GL3":
                     version(OpenGL)
                     {
+                        import hip.hiprenderer.backend.gl.glrenderer;
                         rendererType = HipRendererType.GL3;
                         return initialize(new Hip_GL3Renderer(), &cfg, width, height);
                     }
@@ -213,6 +201,7 @@ class HipRenderer
                 case "D3D11":
                     version(DirectX)
                     {
+                        import hip.hiprenderer.backend.d3d.d3drenderer;
                         rendererType = HipRendererType.D3D11;
                         return initialize(new Hip_D3D11_Renderer(), &cfg, width, height);
                     }
@@ -229,6 +218,7 @@ class HipRenderer
                 case "METAL":
                     version(AppleOS)
                     {
+                        import hip.hiprenderer.backend.metal.mtlrenderer;
                         rendererType = HipRendererType.METAL;
                         return initialize(new HipMTLRenderer(), &cfg, width, height);
                     }
@@ -276,16 +266,19 @@ class HipRenderer
     {
         version(OpenGL)
         {
+            import hip.hiprenderer.backend.gl.glrenderer;
             type = HipRendererType.GL3;
             return new Hip_GL3Renderer();
         }
         else version(DirectX)
         {
+            import hip.hiprenderer.backend.d3d.d3drenderer;
             type = HipRendererType.D3D11;
             return new Hip_D3D11_Renderer();
         }
         else version(AppleOS)
         {
+            import hip.hiprenderer.backend.metal.mtlrenderer;
             type = HipRendererType.METAL;
             return new HipMTLRenderer();
         }
