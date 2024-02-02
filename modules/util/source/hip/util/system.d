@@ -110,6 +110,11 @@ version(Windows)
         return failedFunctions;
     }
 
+    string getLastWindowsErrorMessage()
+    {
+        return getWindowsErrorMessage(GetLastError());
+    }
+
     string getWindowsErrorMessage(HRESULT hr)
     {
         wchar* buffer;

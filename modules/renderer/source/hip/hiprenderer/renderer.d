@@ -226,10 +226,13 @@ class HipRenderer
         ErrorHandler.assertErrorMessage(window !is null, "Error creating window", "Could not create Window");
         if(isExternal)
         {
-            if(!rendererImpl.initExternal())
+            version(dll)
             {
-                ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");
-                return false;
+                if(!rendererImpl.initExternal())
+                {
+                    ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");
+                    return false;
+                }
             }
         }
         else
