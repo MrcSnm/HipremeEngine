@@ -150,7 +150,7 @@ version(WindowsNative)
     extern(Windows) nothrow @nogc void* wglGetProcAddress(const(char)* funcName);
 
 
-    extern(Windows) nothrow @nogc bool initializeOpenGL(ref HWND hwnd, int majorVersion, int minorVersion)
+    extern(Windows) nothrow @nogc bool initializeOpenGL(int majorVersion, int minorVersion, ref void* hwnd)
     {
         PIXELFORMATDESCRIPTOR pfd =
         {
@@ -352,7 +352,7 @@ version(WindowsNative)
         );
     }
 
-    extern(Windows) LRESULT openWindow(out HWND hwnd, ref int width, ref int height)
+    extern(Windows) LRESULT openWindow(ref int width, ref int height, out HWND hwnd)
     {
         static bool registeredClass = false;
         if(!registeredClass)
@@ -392,13 +392,13 @@ version(WindowsNative)
         SwapBuffers(hdc);
     }
 
-    int[2] getWindowSize(HWND hwnd)
+    int[2] getWindowSize(HWND hwnd, ref string[] errors)
     {
         RECT rect;
         GetClientRect(hwnd, &rect);
         return [rect.right - rect.left, rect.bottom - rect.top];
     }
-    void setWindowName(HWND hwnd, string name)
+    void setWindowName(string name, HWND hwnd, ref string[] errors)
     {
         SetWindowTextA(hwnd, name.ptr);
     }
@@ -417,13 +417,13 @@ version(WindowsNative)
         return[r.right - r.left, r.bottom - r.top];
     }
 
-    void setWindowSize(HWND hwnd, int width, int height)
+    void setWindowSize(int width, int height, HWND hwnd, ref string[] errors)
     {
         int[2] borders = getWindowBorder(hwnd);
         SetWindowPos(hwnd, null, 0, 0, width + borders[0], height+borders[1], SWP_NOMOVE);
     }
 
-    void setVsyncActive(bool active) @nogc nothrow @system
+    void setVsyncActive(bool active, void* WindowHandle, ref string[] errors) @nogc nothrow @system
     {
         if(wglSwapIntervalEXT !is null)
         {
@@ -446,6 +446,9 @@ version(WindowsNative)
         glContext = null;
         return true;
     }
+
+    import hip.windowing.platforms.null_;
+    alias setFullscreen =  hip.windowing.platforms.null_.setFullscreen;
 }
 
 

@@ -37,7 +37,7 @@ int ctxErrorHandler( Display *dpy, XErrorEvent *ev )
     return 0;
 }
 
-nothrow @nogc bool initializeOpenGL(int majorVersion, int minorVersion)
+nothrow @nogc bool initializeOpenGL(int majorVersion, int minorVersion, void* WindowHandle)
 {
     GLint[23] glxAttribs = [
         GLX_X_RENDERABLE    , True,
@@ -204,7 +204,7 @@ nothrow @nogc bool initializeOpenGL(int majorVersion, int minorVersion)
     return true;
 }
 
-void show(){}
+void show(void* WindowHandle){}
 void swapBuffer()
 {
     glXSwapBuffers(x11win.display, x11win.window);
@@ -225,7 +225,7 @@ void setVsyncActive(bool active) @nogc nothrow @system
     glXSwapIntervalSGI(cast(int)active);
 }
 
-void setWindowName(string name)
+void setWindowName(string name, void* WindowHandle)
 {
     XStoreName(x11win.display, x11win.window, name.ptr);
 }
@@ -336,7 +336,7 @@ void poll()
 }
 
 ///Returns [width, height]
-int[2] getWindowSize()
+int[2] getWindowSize(void* WindowHandle)
 {
     XWindowAttributes att;
     XGetWindowAttributes(x11win.display, x11win.window, &att);
@@ -351,6 +351,8 @@ void setWindowSize(int width, int height)
     values.height = height;
     XConfigureWindow(x11win.display, x11win.window, change_values, &values);
 }
+import hip.windowing.platforms.null_;
+alias setFullscreen = hip.windowing.platforms.null_.setFullscreen;
 
 bool destroy_GL_Context()
 {
@@ -362,7 +364,7 @@ bool destroy_GL_Context()
     return true;
 }
 
-int openWindow(int width, int height)
+int openWindow(int width, int height, out void* WindowHandle)
 {
     x11win.width = width;
     x11win.height = height;

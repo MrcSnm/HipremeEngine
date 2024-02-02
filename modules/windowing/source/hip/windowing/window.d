@@ -29,28 +29,13 @@ class HipWindow
 
     string[] errors;
 
-    version(WindowsNative)
-    {
-        import hip.windowing.platforms.windows;
-        HWND hwnd;
-    }
-    else version(X11)
-    {
-        import hip.windowing.platforms.x11;
-    }
-    else version(WebAssembly)
-    {
-        import hip.windowing.platforms.browser;
-    }
-    else version(AppleOS)
-    {
-        import hip.windowing.platforms.appleos;
-        void* MTKView;
-    }
-    else
-    {
-        import hip.windowing.platforms.null_;
-    }
+    /** 
+     * HWND on Windows.
+     * MTKView on AppleOS
+     */
+    package void* WindowHandle;
+    version(Windows) void* hwnd(){return WindowHandle;}
+    version(AppleOS) void* MTKView(){return WindowHandle;}
 
     this(int width, int height, HipWindowFlags flags)
     {
@@ -60,111 +45,45 @@ class HipWindow
     }
     void start()
     {
-        version(WindowsNative)
-            openWindow(hwnd, width, height);
-        else version(WebAssembly)
-        {
-            openWindow(width, height);
-        }
-        else version(AppleOS)
-        {
-            openWindow(&MTKView, width, height);
-        }
-        else version(X11)
-        {
-            version(SharedX11)
-                loadX11();
-            openWindow(width, height);
-        }
+        version(X11) version(SharedX11)
+            loadX11();
+        getModule!().openWindow(width, height, WindowHandle);
     }
+
     bool startOpenGLContext(int majorVersion = 3, int minorVersion = 3)
     {
         //Windows must reinitialize the window if it uses modern gl, so, it must update the window here
-        version(WindowsNative)
-            return hip.windowing.platforms.windows.initializeOpenGL(hwnd, majorVersion, minorVersion);
-        else version(X11)
-            return hip.windowing.platforms.x11.initializeOpenGL(majorVersion, minorVersion);
-        else
-            return true; //Assume that OpenGL is started
+        return getModule!().initializeOpenGL(majorVersion, minorVersion, WindowHandle);
     }
-    bool destroyOpenGLContext()
-    {
-        return destroy_GL_Context();
-    }
-    void pollWindowEvents(){poll();}
-    void rendererPresent()
-    {
-        swapBuffer();
-    }
+    bool destroyOpenGLContext(){return getModule!().destroy_GL_Context();}
+    void pollWindowEvents(){getModule!().poll();}
+    void rendererPresent(){getModule!().swapBuffer();}
     void setName(string name)
     {
-        version(WindowsNative)
-            hip.windowing.platforms.windows.setWindowName(hwnd, name);
-        else version(X11)
-            hip.windowing.platforms.x11.setWindowName(name);
-        else version(AppleOS)
-            hip.windowing.platforms.appleos.setWindowName(name);
-        else
-            errors~= "setName is not implemented for this platform";
+        getModule!().setWindowName(name, WindowHandle, errors);
     }
     void setSize(uint width, uint height)
     {
-        version(WindowsNative)
-            hip.windowing.platforms.windows.setWindowSize(hwnd, width, height);
-        else version(X11)
-            return hip.windowing.platforms.x11.setWindowSize(width, height);
-        else version(AppleOS)
-            return hip.windowing.platforms.appleos.setWindowSize(width, height);
-        else version(WebASsembly)
-            return hip.windowing.platforms.browser.setWindowSize(width, height);
-        else
-            errors~= "setSize is not implemented for this platform";
+        getModule!().setWindowSize(width, height, WindowHandle, errors);
     }
     int[2] getSize()
     {
-        version(WindowsNative)
-            return hip.windowing.platforms.windows.getWindowSize(hwnd);
-        else version(X11)
-            return hip.windowing.platforms.x11.getWindowSize();
-        else version(WebAssembly)
-            return hip.windowing.platforms.browser.getWindowSize();
-        else version(AppleOS)
-            return hip.windowing.platforms.appleos.getWindowSize();
-        else
-        {
-            errors~= "getSize is not implemented for this platform";
-            return [0,0];
-        }
+        return getModule!().getWindowSize(WindowHandle, errors);
     }
     void setVSyncActive(bool active)
     {
-         //Windows must reinitialize the window if it uses modern gl, so, it must update the window here
-        version(WindowsNative)
-            hip.windowing.platforms.windows.setVsyncActive(active);
-        else version(X11)
-            hip.windowing.platforms.x11.setVsyncActive(active);
-        else
-            errors~= "VSync is not implemented for this platform";
+        //Windows must reinitialize the window if it uses modern gl, so, it must update the window here
+        getModule!().setVsyncActive(active, WindowHandle, errors);
 
     }
     void setFullscreen(bool fullscreen)
     {
-        version(AppleOS)
-            hip.windowing.platforms.appleos.setFullscreen(fullscreen);
-        else
-            errors~= "Fullscreen is not implemented for this platform";
+        getModule!().setFullscreen(fullscreen, WindowHandle, errors);
     }
     
     void show()
     {
-        version(WindowsNative)
-            return hip.windowing.platforms.windows.show(hwnd);
-        else version(X11)
-            return hip.windowing.platforms.x11.show();
-        else version(WebAssembly){} //Has no show
-        else version(AppleOS){} //Has no show
-        else
-            errors~= "Show is not implemented for this platform";
+        getModule!().show(WindowHandle);
     }
     void hide(){}
     void exit()
@@ -172,6 +91,18 @@ class HipWindow
         version(SharedX11)
             unloadX11();
     } 
+}
 
-
+private template getModule()
+{
+    version(WindowsNative)
+        import getModule = hip.windowing.platforms.windows;
+    else version(X11)
+        import getModule = hip.windowing.platforms.x11;
+    else version(WebAssembly)
+        import getModule = hip.windowing.platforms.browser;
+    else version(AppleOS)
+        import getModule = hip.windowing.platforms.appleos;
+    else
+        import getModule = hip.windowing.platforms.null_;
 }
