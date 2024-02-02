@@ -13,7 +13,9 @@ version (Windows)
 {
 
     pragma(lib, "dbghelp.lib");
-    import core.sys.windows.windows;
+    import core.sys.windows.windef;
+    import core.sys.windows.imagehlp;
+    import core.sys.windows.winbase;
     import core.sys.windows.dbghelp;
     import core.stdc.stdlib : free, calloc;
     import core.stdc.stdio : fprintf, stderr;
