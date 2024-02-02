@@ -200,16 +200,11 @@ class HipRenderer
     version(dll) public static bool initExternal(HipRendererType type, int windowWidth = -1, int windowHeight = -1)
     {
         rendererType = type;
-        if(!rendererImpl.initExternal())
-        {
-            ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");
-            return false;
-        }
         if(windowWidth == -1)
             windowWidth = 1920;
         if(windowHeight == -1)
             windowHeight = 1080;
-        return initialize(getRendererWithFallback(type), null, cast(uint)windowWidth, cast(uint)windowHeight);
+        return initialize(getRendererWithFallback(type), null, cast(uint)windowWidth, cast(uint)windowHeight, true);
     }
 
     private static HipWindow createWindow(uint width, uint height)
@@ -220,7 +215,7 @@ class HipRenderer
         return wnd;
     }
 
-    public static bool initialize (IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height)
+    public static bool initialize (IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height, bool isExternal = false)
     {
         ErrorHandler.startListeningForErrors("Renderer initialization");
         if(config != null)
@@ -229,7 +224,16 @@ class HipRenderer
         rendererImpl = impl;
         window = createWindow(width, height);
         ErrorHandler.assertErrorMessage(window !is null, "Error creating window", "Could not create Window");
-        rendererImpl.init(window);
+        if(isExternal)
+        {
+            if(!rendererImpl.initExternal())
+            {
+                ErrorHandler.showErrorMessage("Error Initializing Renderer", "Renderer could not initialize externally");
+                return false;
+            }
+        }
+        else
+            rendererImpl.init(window);
         window.setVSyncActive(currentConfig.vsync);
         window.setFullscreen(currentConfig.fullscreen);
         window.show();
