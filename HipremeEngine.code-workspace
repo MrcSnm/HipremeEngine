@@ -15,6 +15,7 @@
 		{
 			"build/appleos/HipremeEngine.xcodeproj/": true,
 			"build/appleos/HipremeEngine Shared/Assets.xcassets": true,
+			"build/uwp/HipremeEngine/HipremeEngine/Generated Files/**/*":true,
 			"**/.dub" : true,
 			"**/*.lib": true,
 			"**/*.a" : true,
@@ -29,7 +30,6 @@
 			"build/uwp/HipremeEngine/AppPackages": true,
 			"build/uwp/HipremeEngine/ARM64": true,
 			"build/uwp/HipremeEngine/x64": true,
-			"build/uwp/HipremeEngine/HipremeEngine/Generated Files": true,
 			"build/uwp/HipremeEngine/HipremeEngine/x64": true,
 			"build/uwp/HipremeEngine/HipremeEngine/ARM64": true,
 			"build/uwp/HipremeEngine/HipremeEngine/BundleArtifacts": true,

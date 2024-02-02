@@ -4,16 +4,20 @@
 	],
 	"configurations": [
 		{
-			"name": "default",
+			"name": "default-linux",
+			"platforms": ["linux"],
 			"libs-linux" : ["X11", "GL"]
+		},
+		{
+			"name": "default-windows",
+			"platforms": ["windows"],
+			"dependencies": {
+				"util": {"path": "../util"}
+			}
 		},
 		{"name": "android"},
 		{"name": "wasm"},
-		{"name": "psvita"},
-		{
-			"name": "source",
-			"targetType": "sourceLibrary"
-		}
+		{"name": "psvita"}
 	],
 	"copyright": "Copyright © 2022, Hipreme",
 	"description": "Windowing module for the Hipreme Engine",
