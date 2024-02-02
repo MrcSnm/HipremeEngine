@@ -13,7 +13,7 @@ import core.stdc.time;
 
 version(Windows)
 {
-    import core.sys.windows.windef;
+    import hip.util.windows;
     extern(Windows) BOOL QueryPerformanceFrequency(LARGE_INTEGER* lpPerformanceCount) nothrow;
     extern(Windows) BOOL QueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount) nothrow;
 }

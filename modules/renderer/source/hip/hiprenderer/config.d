@@ -15,6 +15,16 @@ else version(PSVita) enum UseGLES = true;
 else version(WebAssembly) enum UseGLES = true;
 else enum UseGLES = false;
 
+version(OpenGL)  enum HasOpenGL = true;
+else enum HasOpenGL = false;
+
+version(AppleOS) enum HasMetal = true;
+else enum HasMetal = false;
+
+version(DirectX) enum HasDirect3D = true;
+else enum HasDirect3D = false;
+
+
 version(OpenGL)
 {
     version(Have_bindbc_opengl){}
