@@ -112,11 +112,11 @@ public class HipOpenALAudioPlayer : IHipAudioPlayer
         return false;
     }
     
-    public HipAudioClipAPI getClip(){return new HipOpenALClip(new HipAudioDecoder(), getClipHint());}
+    public IHipAudioClip getClip(){return new HipOpenALClip(new HipAudioDecoder(), getClipHint());}
     
-    public HipAudioClipAPI loadStreamed(string path, uint chunkSize)
+    public IHipAudioClip loadStreamed(string path, uint chunkSize)
     {
-        HipAudioClipAPI clip = new HipOpenALClip(new HipAudioDecoder(), getClipHint(), chunkSize);
+        IHipAudioClip clip = new HipOpenALClip(new HipAudioDecoder(), getClipHint(), chunkSize);
         // clip.loadStreamed(path, getEncodingFromName(path));
         return clip;
     }

@@ -9,7 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hipaudio.audiosource;
-import hip.hipaudio.audioclip : HipAudioClip;
 import hip.hipaudio.audio;
 public import hip.api.audio.audiosource;
 
@@ -28,12 +27,6 @@ public class HipAudioSource : AHipAudioSource
         void attachOnDestroy(){}
         override float getProgress(){return time/length;}
         override void pullStreamData(){}
-        override HipAudioBufferWrapper* getFreeBuffer(){return null;}
-
-        final void sendAvailableBuffer(HipAudioBuffer buffer)
-        {
-            (cast(HipAudioClip)clip).setBufferAvailable(buffer);
-        }
 
         override HipAudioSource clean()
         {
@@ -44,19 +37,6 @@ public class HipAudioSource : AHipAudioSource
             clip = null;
             return this;
         }
-}
-
-/** 
- * Unpacks the HipAudioBufferAPI into a HipAudioBuffer. 
- *  ClipSize with size different than 0 is used for streamed audio
- */
-HipAudioBuffer getBufferFromAPI(IHipAudioClip clip, size_t clipSize = 0)
-{
-    import hip.util.memory;
-    if(clipSize == 0)
-        clipSize = clip.getClipSize();
-    HipAudioBufferAPI* api = clip._getBufferAPI(clip.getClipData(), cast(uint)clipSize);
-    HipAudioBuffer buffer = *cast(HipAudioBuffer*)api;
-    freeGCMemory(api);
-    return buffer;
+        override void* getFreeBuffer(){return null;}
+        
 }

@@ -330,6 +330,8 @@ class HipFileSystem
             return false;
         return fs.write(getPath(path), data);
     }
+
+
     @ExportD public static bool exists(string path){return isPathValid(path) && fs.exists(getPath(path));}
     @ExportD public static bool remove(string path)
     {

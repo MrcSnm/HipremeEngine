@@ -7,6 +7,7 @@ import hip.hipaudio.audio;
 import hip.hipaudio.audiosource;
 import hip.util.memory;
 import hip.hipaudio.backend.openal.al_err;
+import hip.hipaudio.backend.audioclipbase;
 import bindbc.openal;
 
 
@@ -231,7 +232,7 @@ public class HipOpenALAudioSource : HipAudioSource
         {
             //Returns the bufferId to freeBuf
             alSourceUnqueueBuffers(id, 1, &buffer.al);
-            sendAvailableBuffer(buffer);
+            (cast(HipAudioClip)this.clip).setBufferAvailable(buffer);
         }
         clip.updateStream();
 
