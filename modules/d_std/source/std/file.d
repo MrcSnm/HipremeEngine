@@ -53,18 +53,18 @@ ubyte[] read(string file)
 }
 
 
-void write(string path, const(ubyte)[] buffer)
+void write(string path, const void[] buffer)
 {
     auto fHandle = fopen((path~"\0").ptr, "w");
+    const ubyte[] realBuffer = cast(const ubyte[])buffer;
     if(fHandle != null)
     {
         scope(exit) fclose(fHandle);
-        foreach(b; buffer)
+        foreach(ubyte b; realBuffer)
             if(fputc(cast(int)b, fHandle) == EOF) return;
     }
 }
-void write(string path, void[] buffer){write(path, cast(ubyte[])buffer);}
-void write(string path, string buffer){write(path, cast(ubyte[])buffer);}
+void write(string path, string buffer){write(path, cast(void[])buffer);}
 
 void remove(string filename)
 {

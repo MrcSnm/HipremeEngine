@@ -17,7 +17,7 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
         onSuccess(output);
         return true;
     }
-    bool write(string path, const(void)[] data)
+    bool write(string path, const void[] data)
     {
         static import std.file; 
         std.file.write(path, data);return true;
