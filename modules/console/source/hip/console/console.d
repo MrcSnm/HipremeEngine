@@ -42,12 +42,6 @@ version(UWP){}
 else version(Windows)
     version = WindowsNative;
 
-version(WindowsNative)
-{
-    import core.sys.windows.winbase;
-    import core.sys.windows.wincon;
-}
-
 
 enum WindowsConsoleColors
 {
@@ -90,6 +84,8 @@ class Console
         DEFAULT = new Console("Output", 99);
         version(WindowsNative)
         {
+            import core.sys.windows.winbase;
+            import core.sys.windows.wincon;
             static void* windowsConsole;
             if(windowsConsole is null)
                 windowsConsole = GetStdHandle(STD_OUTPUT_HANDLE);
