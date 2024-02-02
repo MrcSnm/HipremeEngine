@@ -12,20 +12,14 @@
 		"debugInfoC",
 		"warnings"
 	],
-	"dflags": [
-		"-mixin=mixed.d"
-	],
 	"stringImportPaths": [
 		"assets"
 	],
-
 	"dflags-dmd": ["-op"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipCheckUnknownKeycode",
-		"HipMathAPI",
-		"HipDStdFile",
 		"HipScriptingAPI",
 		"GL_45",
 		"GL_ARB",
@@ -116,7 +110,7 @@
 			"name": "script",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
-			"lflags-windows-ldc": ["-Lmodules/renderer/lib/win64"],
+			"lflags-windows": ["-Lmodules/renderer/lib/win64"],
 			"dependencies": {
 				"fswatch": "~>0.6.1"
 			},

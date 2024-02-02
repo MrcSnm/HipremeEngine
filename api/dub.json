@@ -22,10 +22,6 @@
 			]
 		}
 	],
-	"versions" : [
-		"HipMathAPI",
-		"HipremeAudio"
-	],
 	"license": "proprietary",
 	"name": "hipengine_api"
 }

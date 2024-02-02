@@ -133,10 +133,6 @@ string generateDubProject(DubProjectInfo info)
 			"postGenerateCommands-windows": ["cd /d #HIPREME_ENGINE && dub -c script -- $PACKAGE_DIR"],
 			"postGenerateCommands-linux": ["cd #HIPREME_ENGINE && dub -c script -- $PACKAGE_DIR"]
 		}
-	],
-	"versions" : [
-		"HipMathAPI",
-		"HipremeAudio"
 	]
 }
 `(info.author, info.desc, outputName, name);
