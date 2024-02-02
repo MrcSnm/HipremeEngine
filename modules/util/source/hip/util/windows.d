@@ -75,3 +75,13 @@ alias const(wchar)* LPCWCH, PCWCH, LPCWSTR, PCWSTR;
 
 alias PSTR* PZPSTR;
 alias PWSTR* PZPWSTR;
+
+
+union LARGE_INTEGER {
+    struct {
+        uint LowPart;
+        int  HighPart;
+    }
+    long QuadPart;
+}
+alias LARGE_INTEGER* PLARGE_INTEGER;

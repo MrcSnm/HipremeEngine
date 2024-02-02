@@ -53,7 +53,7 @@ ubyte[] read(string file)
 }
 
 
-void write(string path, ubyte[] buffer)
+void write(string path, const(ubyte)[] buffer)
 {
     auto fHandle = fopen((path~"\0").ptr, "w");
     if(fHandle != null)

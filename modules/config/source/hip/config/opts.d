@@ -99,7 +99,17 @@ buffer size and sample rate");
 }
 
 
-version(CustomRuntimeTest)
+version(WebAssembly) 
+	enum CustomRuntime = true;
+else version(CustomRuntimeTest) 
+	enum CustomRuntime = true;
+else version(PSVita) 
+	enum CustomRuntime = true;
+else
+	enum CustomRuntime = false;
+
+
+static if(CustomRuntime)
 	enum HipConcurrency = false;
 else version(Windows) 
 	enum HipConcurrency = true;

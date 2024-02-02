@@ -4,6 +4,7 @@ module hip.image_backend.webassembly;
 version(WebAssembly)
 {
     import hip.wasm;
+    import hip.api.data.image;
     extern(C) struct BrowserImage
     {
         size_t handle;
