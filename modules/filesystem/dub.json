@@ -7,6 +7,10 @@
 		"debugInfo",
 		"debugInfoC"
 	],
+	"dflags-ldc": [
+		"--ftime-trace",
+		"--ftime-trace-file=trace.json"
+	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
 		"error": {"path": "../error", "version": "*"},
@@ -16,7 +20,10 @@
 	},
 	"configurations": [
 		{
-			"name": "default"
+			"name": "default",
+			"versions": [
+				"HipDStdFile"
+			]
 		},
 		{
 			"name": "wasm",

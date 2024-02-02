@@ -1,7 +1,7 @@
 module hip.hipaudio.backend.opensles.source;
 version(Android):
 import hip.error.handler;
-import hip.hipaudio.audioclip;
+import hip.hipaudio.backend.audioclipbase;
 import hip.hipaudio.backend.sles;
 import hip.util.time;
 import hip.hipaudio.audiosource;
@@ -83,7 +83,7 @@ class HipOpenSLESAudioSource : HipAudioSource
         if(freeBuf != null)
         {
             audioPlayer.removeFreeBuffer(freeBuf.buffer.sles);
-            sendAvailableBuffer(freeBuf.buffer);
+            (cast(HipAudioClip)this.clip).setBufferAvailable(buffer);
         }
         HipAudioClip c = cast(HipAudioClip)clip;
         SLIBuffer* buf = c.getBuffer(c.getClipData(), c.chunkSize).sles;

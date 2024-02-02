@@ -12,6 +12,7 @@ module hip.hipaudio.backend.nullaudio;
 import hip.hipaudio.audio;
 import hip.hipaudio.audiosource;
 import hip.audio_decoding.audio;
+import hip.hipaudio.backend.audioclipbase;
 
 
 public class HipNullAudioClip : HipAudioClip
