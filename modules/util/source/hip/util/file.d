@@ -56,7 +56,7 @@ string stripLineBreaks(string content)
 
 
 
-version(HipDStdFile)
+version(none)
 {
     import std.stdio:File;
 
@@ -89,7 +89,7 @@ version(HipDStdFile)
     }
 }
 
-version(HipDStdFile) class FileProgression
+version(none) class FileProgression
 {
     protected ulong progress;
     protected uint stepSize;
