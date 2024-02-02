@@ -53,7 +53,7 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
         
         return true;
     }
-    bool write(string path, void[] data){return false;}
+    bool write(string path, const(void)[] data){return false;}
 
     private bool getFromPath(string path, out JSONValue output)
     {

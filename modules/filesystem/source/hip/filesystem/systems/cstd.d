@@ -56,7 +56,7 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
         onSuccess(output);
         return true;
     }
-    bool write(string path, void[] data)
+    bool write(string path, const(void)[] data)
     {
         import core.stdc.stdio;
         if(exists(path))

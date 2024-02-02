@@ -17,7 +17,6 @@ import hip.api.renderer.texture;
 import hip.math.matrix;
 import hip.error.handler;
 import hip.hiprenderer.shader.shadervar;
-import hip.hiprenderer.backend.gl.glshader;
 import hip.hiprenderer.shader;
 import hip.hiprenderer.renderer;
 import hip.util.file;
