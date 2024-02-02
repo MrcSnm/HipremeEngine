@@ -24,7 +24,6 @@ import hip.error.handler;
 import hip.console.log;
 
 version(dll){} else version = RendererConfigFile;
-import hip.hiprenderer.backend.gl.gltexture;
 
 ///Could later be moved to windowing
 enum HipWindowMode

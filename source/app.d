@@ -37,7 +37,7 @@ version(dll)
 version(dll){}
 else version(AppleOS) { version = ManagesMainDRuntime;}
 else version = HandleArguments;
-
+///
 version(ManagesMainDRuntime)
 {
 	import core.runtime;

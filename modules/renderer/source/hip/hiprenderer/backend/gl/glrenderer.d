@@ -38,7 +38,7 @@ import hip.util.conv;
 import hip.math.rect;
 import hip.console.log;
 import hip.error.handler;
-
+import hip.hiprenderer.backend.gl.glvertex;
 import hip.hiprenderer.backend.gl.gltexture;
 import hip.hiprenderer.backend.gl.glframebuffer;
 import hip.hiprenderer.backend.gl.glshader;

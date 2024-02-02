@@ -19,7 +19,6 @@ module hip.hiprenderer.vertex;
 import hip.hiprenderer.renderer;
 import hip.error.handler;
 import hip.console.log;
-public import hip.hiprenderer.backend.gl.glvertex;
 // version(Android){alias index_t = ushort;}
 // else{alias index_t = uint;}
 alias index_t = ushort;

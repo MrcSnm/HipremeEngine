@@ -11,7 +11,6 @@ Distributed under the CC BY-4.0 License.
 module hip.systems.hotload;
 
 version(Load_DScript):
-import std.file : copy, rename;
 import hip.filesystem.hipfs;
 import hip.util.system;
 import hip.util.path;
@@ -43,7 +42,6 @@ Call `dub -c script -- path/to/project` dub -c script requires that argument.");
     }
     protected bool load(string path)
     {
-        import std.file;
         if(!HipFS.absoluteExists(path))
         {
             import hip.console.log;
@@ -124,4 +122,15 @@ Call `dub -c script -- path/to/project` dub -c script requires that argument.");
             }
         }
     }
+}
+
+private void copy(string input, string output)
+{
+    import hip.filesystem.hipfs;
+    void[] data;
+    if(!HipFS.absoluteRead(input, data))
+        throw new Error("Could not read input file "~input);
+    if(!HipFS.absoluteWrite(output, data))
+        throw new Error("Could not copy from "~input~" to "~output);
+
 }
