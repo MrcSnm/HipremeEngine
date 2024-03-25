@@ -382,7 +382,7 @@ export extern(System) void HipremeDestroy()
 		rt_term();
 }
 
-export extern(System) void log(string message)
+export extern(System) void logMessage(string message)
 {
 	import hip.console.log;
 	rawlog(message);

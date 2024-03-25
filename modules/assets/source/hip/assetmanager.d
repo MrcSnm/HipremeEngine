@@ -60,11 +60,6 @@ public import hip.assets.textureatlas;
 public import hip.util.data_structures;
 
 
-
-
-
-
-
 import hip.api.data.font;
 
 
@@ -177,6 +172,7 @@ class HipAssetManager
         workerPool.await;
         update();
     }
+
 
     static void awaitTask(IHipAssetLoadTask task)
     {

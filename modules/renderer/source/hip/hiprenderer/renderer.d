@@ -292,7 +292,7 @@ class HipRenderer
         {
             foreach(tex; res.textures)
             {
-                (cast(Hip_GL3_Texture)tex).reload();
+                // (cast(Hip_GL3_Texture)tex).reload();
             }
             foreach(shader; res.shaders)
             {

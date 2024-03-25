@@ -166,11 +166,12 @@ void hipengineCgiMain(alias fun, CustomCgi = Cgi, long maxContentLength = defaul
 
 	// and serve the request(s).
 	server.serve!(fun, CustomCgi, maxContentLength)();
-
 }
+
 
 void stopServer()
 {
+
     import core.stdc.stdlib;
 	pushWebsocketMessage("close");
     exit(0);
