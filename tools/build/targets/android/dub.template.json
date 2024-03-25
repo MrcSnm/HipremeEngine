@@ -37,8 +37,6 @@
     "versions": [
         "dll",
         "Standalone",
-        "GLES30",
-        "OpenSLES1_1",
-        "OpenGL"
+        "OpenSLES1_1"
     ]
 }

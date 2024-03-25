@@ -9,26 +9,16 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.backend.gl.glrenderer;
+import hip.hiprenderer.config;
 
-version(Android)
-{
-    public import gles.gl30;
-}
-else version(PSVita)
-{
+static if(UseGLES)
     public import gles;
-}
-else version(WebAssembly)
-{
-    public import gles;
-}
 else version(Have_bindbc_opengl)
 {
     public import bindbc.opengl;
 }
 version(OpenGL):
 
-import hip.hiprenderer.config;
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
 import hip.hiprenderer.shader;
