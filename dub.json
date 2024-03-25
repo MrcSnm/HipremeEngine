@@ -112,7 +112,7 @@
 			"targetType": "executable",
 			"lflags-windows": ["-Lmodules/renderer/lib/win64"],
 			"dependencies": {
-				"fswatch": "~>0.6.1"
+				"compilewatcher": {"path": "dependencies/compilewatcher"}
 			},
 			"versions": [
 				"Desktop",

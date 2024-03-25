@@ -914,16 +914,23 @@ struct DubArguments
 	bool _parallel = true;
 
 	mixin BuilderPattern!(DubArguments);
+
+	string getCompiler()
+	{
+		if(_compiler == "auto")
+		{
+			if(_arch) return "ldc2";
+			string ret = getSelectedCompiler();
+			return ret == "auto" ? "" : ret;
+		}
+		return _compiler;
+	}
 	
 	string getDubRunCommand()
 	{
 		string dub = getDubPath();
 		string a = command; ///Arguments
-		if(compiler == "auto") 
-		{
-			compiler = arch ? "ldc2" : getSelectedCompiler();
-			compiler = compiler == "auto" ? "" : compiler;
-		}
+		compiler = getCompiler();
 		a~= " --verbose";
 		if(parallel)      a~= " --parallel";
 		if(recipe)        a~= " --recipe="~recipe;
@@ -954,14 +961,11 @@ int waitRedub(ref Terminal t, DubArguments dArgs)
 	import redub.logging;
 	if(execDubBase(t, dArgs) == -1) return -1;
 
-	if(dArgs._compiler == "auto")
-		dArgs._compiler = dArgs._arch.length ? "ldc2" : "dmd";
-
-	setLogLevel(LogLevel.info);
+	setLogLevel(dArgs._opts.dubVerbose ? LogLevel.verbose : LogLevel.info);
 	ProjectDetails d = resolveDependencies(
-		false, 
+		dArgs._opts.force, 
 		os,
-		CompilationDetails(dArgs._compiler, dArgs._arch),
+		CompilationDetails(dArgs.getCompiler(), dArgs._arch),
 		ProjectToParse(dArgs._configuration, std.file.getcwd(), null, dArgs._recipe)
 	);
 	if(buildProject(d) == ProjectDetails.init) return 1;
