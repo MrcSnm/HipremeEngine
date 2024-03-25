@@ -1,13 +1,38 @@
 module hip.data.json;
 
-
 JSONValue parseJSON(string jsonData)
 {
     return JSONValue.parse(jsonData);
 }
 struct JSONArray
 {
-	JSONValue[] value;
+	private JSONValue[] value;
+	size_t length;
+
+	this(JSONValue[] v)
+	{
+		this.value = v;
+		this.length = v.length;
+	}
+
+	ref JSONArray append(JSONValue v)
+	{
+		if(length >= value.length)
+			value~= v;
+		else
+			value[length] = v;
+		length++;
+		return this;
+	}
+	static JSONArray* createNew()
+	{
+		import std.array;
+		JSONArray* ret = new JSONArray([]);
+		ret.value = uninitializedArray!(JSONValue[])(8);
+		return ret;
+	}
+
+	JSONValue[] getArray(){return value[0..length];}
 }
 struct JSONObject
 {
@@ -27,22 +52,32 @@ enum JSONType
 {
 	bool_,
 	float_,
-	int_,
-	string_,
+	int_, integer = int_, uinteger = int_,
+	string_, string = string_,
 	array,
-	object
+	object,
+	null_
 }
 
-bool isWhitespace(char ch){return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r';}
-bool isNumber(char ch){return ch >= '0' && ch <= '9';}
-bool isNumeric(char ch){return (ch >= '0' && ch <= '9') || ch == '-' || ch == '.';}
+pragma(inline, true)
+bool isWhitespace(char ch)
+{
+	switch(ch)
+	{
+		case ' ', '\t', '\n', '\r': return true;
+		default: return false;
+	}
+}
+
+pragma(inline, true) bool isNumber(char ch){return ch >= '0' && ch <= '9';}
+pragma(inline, true) bool isNumeric(char ch){return (ch >= '0' && ch <= '9') || ch == '-' || ch == '.';}
 
 struct JSONValue
 {
 	union JSONData{
 
-		float _float;
-		int _int;
+		double _float;
+		long _int;
 		bool _bool;
 		string _string;
 		JSONObject* object;
@@ -52,6 +87,57 @@ struct JSONValue
 	string key;
 	string error;
 	JSONType type = JSONType.object;
+
+	this(T)(T value)
+	{
+		import std.traits;
+		static if(isIntegral!T)
+		{
+			type = JSONType.int_;
+			data._int = value;
+		}
+		else static if(isFloatingPoint!T)
+		{
+			type = JSONType.float_;
+			data._float = value;
+		}
+		else static if(is(T == bool))
+		{
+			type = JSONType.bool_;
+			data._bool = value;
+		}
+		else static if(is(T == string))
+		{
+			type = JSONType.string_;
+			data._string = value;
+		}
+		else static if(is(T == JSONObject*))
+		{
+			type = JSONType.object;
+			data.object = value;
+		}
+		else static if(is(T == JSONArray*))
+		{
+			type = JSONType.array;
+			data.array = value;
+		}
+		else static if(is(T == JSONValue[]))
+		{
+			data.array = new JSONArray(value);
+			type = JSONType.array;
+		}
+		else static if(is(T == JSONValue))
+		{
+			type = value.type;
+			data = value.data;
+		}
+		else static if(is(T == typeof(null)))
+		{
+			data.object = null;
+			type = JSONType.null_;
+		}
+		else static assert(false, "Unsupported type ", T);
+	}
 
     int integer() const {return get!int;}
     bool boolean() const {return get!bool;}
@@ -64,18 +150,30 @@ struct JSONValue
         {
             private const(JSONArray*) arr;
             private size_t idx = 0;
-            size_t length(){return arr.value.length;}
-            bool empty(){return idx == arr.value.length;}
+            size_t length(){return arr.length;}
+            bool empty(){return idx == arr.length;}
             void popFront(){idx++;}
             JSONValue front(){return arr.value[idx];}
+            JSONValue opIndex(size_t num){return arr.value[num];}
         }
         return JSONValueArrayIterator(data.array);
     }
 
+	JSONValue[] array()
+	{
+		assert(type == JSONType.array, "Tried to iterate a non array object of type "~getTypeName);
+		return data.array.getArray;
+	}
+
     JSONValue object()
     {
-        assert(type == JSONType.object, "Tried to get type object but value is of type "~getTypeName);
-        return JSONValue(data, key, error, JSONType.object);
+        assert(type == JSONType.object, "Tried to get type object but value is of type "~getTypeName); 
+		JSONValue ret;
+		ret.data = data;
+		ret.error = error;
+		ret.key = key;
+		ret.type = JSONType.object;
+        return ret;
     }
 
 	string getTypeName() const
@@ -88,25 +186,28 @@ struct JSONValue
 			case string_: return "string";
 			case object: return "object";
 			case array: return "array";
+			case null_: return "null";
 		}
 	}
 
 	T get(T)() const
 	{
-		static if(is(T == int))
+		import std.traits;
+
+		static if(isIntegral!T)
 		{
 			assert(type == JSONType.int_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
-			return data._int;
+			return cast(Unqual!T)data._int;
 		}
-		else static if(is(T == float))
+		else static if(isFloatingPoint!T)
 		{
 			assert(type == JSONType.float_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
-			return data._float;
+			return cast(Unqual!T)data._float;
 		}
 		else static if(is(T == bool))
 		{
 			assert(type == JSONType.bool_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
-			return data._bool;
+			return cast(Unqual!T)data._bool;
 		}
 		else static if(is(T == string))
 		{
@@ -124,79 +225,87 @@ struct JSONValue
 			return *data.array;
 		}
 	}
-	private static JSONValue create(T)(T data, string key)
+	bool isNull()
+	{
+		with(JSONType)
+		{
+			if(type == null_) return true;
+			if(type == JSONType.object) return data.object == null;
+			if(type == JSONType.array) return data.array == null;
+		}
+		return false;
+	}
+
+	static JSONValue emptyObject()
 	{
 		JSONValue ret;
+		ret.type = JSONType.object;
+		ret.data.object = new JSONObject();
+		return ret;
+	}
+
+	private static JSONValue create(T)(T data, string key)
+	{
+		JSONValue ret = JSONValue(data);
 		ret.key = key;
-		static if(is(T == int))
-		{
-			ret.type = JSONType.int_;
-			ret.data._int = data;
-		}
-		else static if(is(T == float))
-		{
-			ret.type = JSONType.float_;
-			ret.data._float = data;
-		}
-		else static if(is(T == bool))
-		{
-			ret.type = JSONType.bool_;
-			ret.data._bool = data;
-		}
-		else static if(is(T == string))
-		{
-			ret.type = JSONType.string_;
-			ret.data._string = data;
-		}
-		else static if(is(T == JSONObject*))
-		{
-			ret.type = JSONType.object;
-			ret.data.object = data;
-		}
-		else static if(is(T == JSONArray*))
-		{
-			ret.type = JSONType.array;
-			ret.data.array = data;
-		}
-		else static assert(false, "Unsupported type "~T.stringof);
+		return ret;
+	}
+	private static JSONValue errorObj(string message)
+	{
+		JSONValue ret;
+		ret.error = message;
 		return ret;
 	}
 
 
 	private static JSONValue parse(string data)
 	{
+		import core.memory;
+		
 		import hip.util.conv:to;
 		if(!data.length)
 		{
-			return JSONValue(JSONData.init, "", "No data provided");
+			return JSONValue.errorObj("No data provided");
 		}
 		ptrdiff_t index = 0;
 		while(index < data.length && data[index++] != '{'){}
 		if(index == data.length)
 		{
-			return JSONValue(JSONData.init, "", "Valid JSON starts with a '{'.");
+			return JSONValue.errorObj("Valid JSON starts with a '{'.");
 		}
 
 		bool getNextString(string data, ptrdiff_t currentIndex, out ptrdiff_t newIndex, out string theString)
 		{
+			import std.array;
 			assert(data[currentIndex] == '"');
-			newIndex = currentIndex+1;
-			ptrdiff_t left = newIndex;
-			while(newIndex < data.length && data[newIndex] != '"')
+			ptrdiff_t i = currentIndex + 1;
+			size_t returnLength = 0;
+			char[] ret = uninitializedArray!(char[])(128);
+			char ch;
+			
+			LOOP: while(i < data.length)
 			{
-				if(data[newIndex] == '\\')
+				ch = data[i];
+				switch(ch)
 				{
-					theString~= data[left..newIndex];
-					newIndex++;
-					left = newIndex;
+					case '"': break LOOP;
+					case '\\': i++; goto default;
+					default:
+						if(returnLength >= ret.length)
+							ret.length*= 2;
+						ret[returnLength++] = ch;
+						break;
 				}
-				newIndex++;
+				i++;
 			}
+			ret.length = returnLength;
+			newIndex = i;
 			if(newIndex == data.length) //Not found
 				return false;
-			theString~= data[left..newIndex]; //Assign output
+			theString = cast(string)ret;
 			return true;
 		}
+
 
 		bool getNextNumber(string data, ptrdiff_t currentIndex, out ptrdiff_t newIndex, out JSONData theData, out JSONType type)
 		{
@@ -225,12 +334,12 @@ struct JSONValue
 			}
 			if(hasDecimal)
 			{
-				theData._float = to!float(data[currentIndex..newIndex]);
+				theData._float = to!double(data[currentIndex..newIndex]);
 				type = JSONType.float_;
 			}
 			else
 			{
-				theData._int = to!int(data[currentIndex..newIndex]);
+				theData._int = to!long(data[currentIndex..newIndex]);
 				type = JSONType.int_;
 			}
 			//Stopped on a non number. Revert 1 step.
@@ -243,25 +352,38 @@ struct JSONValue
 		JSONState state = JSONState.lookingForNext;
 		JSONValue lastValue = ret;
 
-		scope JSONValue[] stack = [ret];
+		import std.array;
+		scope JSONValue[] stack = uninitializedArray!(JSONValue[])(128);
+		stack[0] = ret;
+		scope ptrdiff_t stackLength = 1;
+
 		void pushNewScope(JSONValue val)
 		{
 			assert(val.type == JSONType.object || val.type == JSONType.array, "Unexpected push.");
 			JSONValue* currTemp = current;
-			stack~= val;
-			current = &stack[$-1];
+
+			stackLength++;
+			if(stackLength > stack.length)
+				stack~= val;
+			else
+				stack[stackLength-1] = val;
+
+			current = &stack[stackLength-1];
+
 			if(currTemp.type == JSONType.object)
 				currTemp.data.object.value[val.key] = *current;
 			else
-				currTemp.data.array.value~= *current;
+				currTemp.data.array.append(*current);
+
 		}
 		void popScope()
 		{
-			assert(stack.length > 0, "Unexpected pop.");
-			stack = stack[0..$-1];
-			if(stack.length > 0)
+			assert(stackLength > 0, "Unexpected pop.");
+			
+			stackLength--;
+			if(stackLength > 0)
 			{
-				current = &stack[$-1];
+				current = &stack[stackLength-1];
 				assert(current.type == JSONType.object || current.type == JSONType.array, "Unexpected value in stack. (Typed "~(cast(size_t)(current.type)).to!string);
 			}
 		}
@@ -274,7 +396,7 @@ struct JSONValue
 					current.data.object.value[val.key] = val;
 					break;
 				case array:
-					current.data.array.value~= val;
+					current.data.array.append(val);
 					break;
 				default: assert(false, "Unexpected stack type: "~current.getTypeName);
 			}
@@ -282,9 +404,9 @@ struct JSONValue
 		}
 
 		size_t line = 0;
-		string getErr(string err="")
+		string getErr(string err="", string f = __FILE_FULL_PATH__, size_t l = __LINE__)
 		{
-			return "Error at line "~line.to!string~" "~err~" on index '"~index.to!string~"' last parsed: "~lastValue.toString;
+			return "Error at line "~line.to!string~" "~err~" on index '"~index.to!string~"' last parsed: "~lastValue.toString~" [Internal: "~f~":"~l.to!string~"]";
 		}
 
 		string lastKey;
@@ -299,7 +421,7 @@ struct JSONValue
 				case '{':
 				{
 					if(state != JSONState.value)
-						return JSONValue(JSONData.init, "", getErr());
+						return JSONValue.errorObj(getErr());
 					JSONValue obj = JSONValue.create(new JSONObject(), lastKey);
 					pushNewScope(obj);
 
@@ -312,7 +434,7 @@ struct JSONValue
 					break;
 				case ':':
 					if(state != JSONState.lookingAssignment)
-						return JSONValue(JSONData.init, "", getErr("expected key before ':'"));
+						return JSONValue.errorObj(getErr("expected key before ':'"));
 					state = JSONState.value;
 					break;
 				case '"':
@@ -330,8 +452,10 @@ struct JSONValue
 						{
 							assert(current.type == JSONType.object, getErr("only object can receive a key."));
 							if(!getNextString(data, index, index, lastKey))
-								return JSONValue(JSONData.init, "", getErr("unclosed quotes."));
-							pushToStack(JSONValue(JSONData.init, lastKey));
+								return JSONValue.errorObj(getErr("unclosed quotes."));
+							JSONValue keyJson;
+							keyJson.key = lastKey;
+							pushToStack(keyJson);
 							state = JSONState.lookingAssignment;
 							break;
 						}
@@ -339,40 +463,40 @@ struct JSONValue
 						{
 							string val;
 							if(!getNextString(data, index, index, val))
-								return JSONValue(JSONData.init, "", getErr("unclosed quotes."));
+								return JSONValue.errorObj(getErr("unclosed quotes."));
 							pushToStack(JSONValue.create!string(val, lastKey));
 							state = JSONState.lookingForNext;
 							break;
 						}
 						default:
-							return JSONValue(JSONData.init, "", getErr("comma expected before key "~lastValue.key));
+							return JSONValue.errorObj(getErr("comma expected before key "~lastValue.key));
 					}
 					break;
 				}
 				case '[':
 				{
 					if(state != JSONState.lookingForNext && state != JSONState.value)
-						return JSONValue(JSONData.init, "", getErr(" expected to be a value. "));
-					pushNewScope(JSONValue.create(new JSONArray(), lastKey));
+						return JSONValue.errorObj(getErr(" expected to be a value. "));
+					pushNewScope(JSONValue.create(JSONArray.createNew(), lastKey));
 					state = JSONState.value;
 					break;
 				}
 				case ']':
 					if(state != JSONState.lookingForNext && state != JSONState.value)
-						return JSONValue(JSONData.init, "", getErr("expected to be a value. "));
+						return JSONValue.errorObj(getErr("expected to be a value. "));
 					popScope();
 					state = JSONState.lookingForNext;
 					break;
 				case ',':
 					if(state != JSONState.lookingForNext)
-						return JSONValue(JSONData.init, "", getErr("unexpected comma. "));
+						return JSONValue.errorObj(getErr("unexpected comma. "));
 					if(current.type != JSONType.object && current.type != JSONType.array)
-						return JSONValue(JSONData.init, "", getErr("unexpected comma. "));
+						return JSONValue.errorObj(getErr("unexpected comma. "));
 
 					switch(current.type) with(JSONType)
 					{
 						case object: state = JSONState.key; break;
-						case array: state = JSONState.lookingForNext; break;
+						case array: state = JSONState.value; break;
 						default: assert(false, "Error?");
 					}
 					break;
@@ -383,7 +507,7 @@ struct JSONValue
 							if(ch.isNumeric)
 							{
 								if(!getNextNumber(data, index, index, lastValue.data, lastValue.type))
-									return JSONValue(JSONData.init, "", getErr("unexpected end of file."));
+									return JSONValue.errorObj(getErr("unexpected end of file."));
 								pushToStack(lastValue);
 								state = JSONState.lookingForNext;
 							}
@@ -397,29 +521,33 @@ struct JSONValue
 								pushToStack(JSONValue.create!bool(false, lastKey));
 								state = JSONState.lookingForNext;
 							}
-
+							else if(index + "null".length < data.length && data[index.."null".length + index] == "null")
+							{
+								pushToStack(JSONValue.create(null, lastKey));
+								state = JSONState.lookingForNext;
+							}
 							break;
 						case JSONState.lookingForNext: //Array
 							if(ch.isNumeric)
 							{
 								if(current.type != JSONType.array)
-									return JSONValue(JSONData.init, "", getErr("unexpected number."));
+									return JSONValue.errorObj(getErr("unexpected number."));
 								if(!getNextNumber(data, index, index, lastValue.data, lastValue.type))
-									return JSONValue(JSONData.init, "", getErr("unexpected end of file."));
+									return JSONValue.errorObj(getErr("unexpected end of file."));
 								pushToStack(lastValue);
 								state = JSONState.lookingForNext;
 							}
 							else if(index + "true".length < data.length && data[index.."true".length + index] == "true")
 							{
 								if(current.type != JSONType.array)
-									return JSONValue(JSONData.init, "", getErr("unexpected number."));
+									return JSONValue.errorObj(getErr("unexpected number."));
 								pushToStack(JSONValue.create!bool(true, lastKey));
 								state = JSONState.lookingForNext;
 							}
 							else if(index + "false".length < data.length && data[index.."false".length + index] == "false")
 							{
 								if(current.type != JSONType.array)
-									return JSONValue(JSONData.init, "", getErr("unexpected number."));
+									return JSONValue.errorObj(getErr("unexpected number."));
 								pushToStack(JSONValue.create!bool(false, lastKey));
 								state = JSONState.lookingForNext;
 							}
@@ -439,6 +567,15 @@ struct JSONValue
 		assert(type == JSONType.object, "Can't get a member from a non object.");
 		return (*data.object)[key];
 	}
+	JSONValue opIndexAssign(JSONValue v, string key)
+	{
+		assert(type == JSONType.object, "Can't get a member from a non object.");
+		assert(data.object !is null, "Can't access a null object");
+		(*data.object)[key] = v;
+		v.key = key;
+		return (*data.object)[key];
+	}
+
 	const(JSONValue)* opBinaryRight(string op)(string key) const
 	if(op == "in")
 	{
@@ -471,45 +608,71 @@ struct JSONValue
 	bool hasErrorOccurred(){ return error.length != 0; }
 
 	//selfPrintKey is only used for object.
-	string toString(bool selfPrintkey = true)
+	string toString(bool selfPrintkey = false)
 	{
 		if(hasErrorOccurred)
 			return error;
 		import hip.util.conv:to;
 		string ret;
-		final switch ( type ) with(JSONType)
+
+		static string escapeBackSlashes(string input)
 		{
-			case int_:
-				ret = data._int.to!string;
+			size_t length = input.length;
+			foreach(ch; input)
+				if(ch == '\\') length++;
+			if(length == input.length) return input;
+			char[] escaped = new char[](length);
+			length = 0;
+			foreach(i; 0..input.length)
+			{
+				if(input[i] == '\\')
+				{
+					escaped[length] = '\\';
+					escaped[++length] = '\\';
+				}
+				else
+					escaped[length] = input[i];
+				length++;
+			}
+			return cast(string)escaped;
+		}
+
+		final switch ( type )
+		{
+			case JSONType.int_:
+				ret = data._int.to!(string);
 				break;
-			case float_:
+			case JSONType.float_:
 				ret = data._float.to!string;
 				break;
-			case bool_:
+			case JSONType.bool_:
 				ret = data._bool ? "true" : "false";
 				break;
-			case string_:
-				ret = '"'~data._string~'"';
+			case JSONType.string_:
+				ret = '"'~escapeBackSlashes(data._string)~'"';
 				break;
-			case array:
+			case JSONType.null_:
+				ret = "null";
+				break;
+			case JSONType.array:
 			{
 				ret = "[";
 				bool isFirst = true;
-				foreach(v; data.array.value)
+				foreach(v; data.array.getArray)
 				{
 					if(!isFirst)
 						ret~=", ";
 					isFirst = false;
-					ret~= v.toString;
+					ret~= v.toString(false);
 				}
 				ret~= "]";
 				break;
 			}
-			case object:
+			case JSONType.object:
 			{
 				if(selfPrintkey)
 				{
-					ret = '"'~key~"\": ";
+					ret = '"'~escapeBackSlashes(key)~"\": ";
 				}
 				ret~= '{';
 				bool isFirst = true;
@@ -518,7 +681,7 @@ struct JSONValue
 					if(!isFirst)
 						ret~= ", ";
 					isFirst = false;
-					ret~= '"'~k~"\" : "~v.toString(false);
+					ret~= '"'~escapeBackSlashes(k)~"\" : "~v.toString(false);
 				}
 				ret~= '}';
 				break;

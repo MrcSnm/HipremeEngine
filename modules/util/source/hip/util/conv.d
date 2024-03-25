@@ -149,12 +149,12 @@ TO to(TO, FROM)(FROM f) pure nothrow
         else
             return toString(f);
     }
-    else static if(is(TO == int))
+    else static if(is(TO == int) || is(TO == long))
     {
         static if(!is(FROM == string))
             return toInt(f.toString);
         else
-            return toInt(f);
+            return cast(TO)toInt(f);
     }
     else static if(is(TO == uint) || is(TO == size_t) || is(TO == ubyte) || is(TO == ushort))
     {
@@ -163,7 +163,7 @@ TO to(TO, FROM)(FROM f) pure nothrow
         else
             return cast(TO)toInt(f);
     }
-    else static if(is(TO == float))
+    else static if(is(TO == float) || is(TO == double))
     {
         static if(!is(FROM == string))
             return toFloat(f.toString);
@@ -282,16 +282,16 @@ string fromUTF16(wstring str) pure nothrow
     return ret;
 }
 
-int toInt(string str) pure nothrow @safe @nogc
+long toInt(string str) pure nothrow @safe @nogc
 {
     if(str.length == 0) return 0;
     str = str.trim;
 
-    int i = (cast(int)str.length)-1;
+    long i = (cast(long)str.length)-1;
 
-    int last = 0;
-    int multiplier = 1;
-    int ret = 0;
+    long last = 0;
+    long multiplier = 1;
+    long ret = 0;
     if(str[0] == '-')
     {
         last++;
@@ -309,12 +309,12 @@ int toInt(string str) pure nothrow @safe @nogc
 }
 
 
-float toFloat(string str) pure nothrow @safe @nogc
+double toFloat(string str) pure nothrow @safe @nogc
 {
     if(str.length == 0) return 0;
     str = str.trim;
-    if(str == "nan" || str == "NaN") return float.init;
-    if(str == "inf" || str == "infinity" || str == "Infinity") return float.infinity;
+    if(str == "nan" || str == "NaN") return double.init;
+    if(str == "inf" || str == "infinity" || str == "Infinity") return double.infinity;
 
     int integerPart = 0;
     int decimalPart = 0;
@@ -340,10 +340,10 @@ float toFloat(string str) pure nothrow @safe @nogc
         return (isNegative ? -1 : 1) * cast(float)str.toInt;
 
     i = 0;
-    float decimal= 0;
-    float integer  = 0;
-    int integerMultiplier = 1;
-    float floatMultiplier = 1.0f/10.0f;
+    double decimal= 0;
+    double integer  = 0;
+    long integerMultiplier = 1;
+    double floatMultiplier = 1.0f/10.0f;
 
     while(integerPart > 0)
     {
