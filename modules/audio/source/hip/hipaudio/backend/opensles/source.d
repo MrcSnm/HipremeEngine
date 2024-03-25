@@ -83,7 +83,7 @@ class HipOpenSLESAudioSource : HipAudioSource
         if(freeBuf != null)
         {
             audioPlayer.removeFreeBuffer(freeBuf.buffer.sles);
-            (cast(HipAudioClip)this.clip).setBufferAvailable(buffer);
+            (cast(HipAudioClip)this.clip).setBufferAvailable(freeBuf.buffer);
         }
         HipAudioClip c = cast(HipAudioClip)clip;
         SLIBuffer* buf = c.getBuffer(c.getClipData(), c.chunkSize).sles;

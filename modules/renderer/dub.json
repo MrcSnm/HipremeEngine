@@ -101,14 +101,13 @@
 		{
 			"name": "android",
 			"dependencies": {
-				"gles" : {"path": "../../dependencies/gles", "version": "*"},
-				"bind" : {"path": "../bind", "version": "*", "optional": true}
+				"gles" : {"path": "../../dependencies/gles", "version": "*"}
 			},
 			"subConfigurations": {
 				"windowing": "android"
 			},
 			"versions": [
-				"OpenGL", "HipGLUseVertexArray"
+				"OpenGL", "GLES32", "HipGLUseVertexArray"
 			]
 		}
 	],
