@@ -33,6 +33,7 @@ struct JSONArray
 	}
 
 	JSONValue[] getArray(){return value[0..length];}
+	const(JSONValue)[] getArray() const{return value[0..length];}
 }
 struct JSONObject
 {
@@ -87,6 +88,8 @@ struct JSONValue
 	string key;
 	string error;
 	JSONType type = JSONType.object;
+
+	private char[] stringPool;
 
 	this(T)(T value)
 	{
@@ -153,8 +156,8 @@ struct JSONValue
             size_t length(){return arr.length;}
             bool empty(){return idx == arr.length;}
             void popFront(){idx++;}
-            JSONValue front(){return arr.value[idx];}
-            JSONValue opIndex(size_t num){return arr.value[num];}
+            const(JSONValue) front(){return arr.value[idx];}
+            const(JSONValue) opIndex(size_t num){return arr.value[num];}
         }
         return JSONValueArrayIterator(data.array);
     }
@@ -274,36 +277,84 @@ struct JSONValue
 			return JSONValue.errorObj("Valid JSON starts with a '{'.");
 		}
 
+		StringPool pool = StringPool(cast(size_t)(data.length*0.75));
+
+		// bool getNextString(string data, ptrdiff_t currentIndex, out ptrdiff_t newIndex, out string theString)
+		// {
+		// 	import std.array;
+		// 	assert(data[currentIndex] == '"');
+		// 	ptrdiff_t i = currentIndex + 1;
+		// 	size_t returnLength = 0;
+		// 	// char[] ret = uninitializedArray!(char[])(128);
+		// 	char[] ret = pool.getNewString(64);
+		// 	char ch;
+
+		// 	ubyte[4] chars;
+		// 	bool escaped;
+		// 	LOOP: while(i < data.length)
+		// 	{
+		// 		ubyte count = nextByte32(chars, data, i);
+		// 		for(size_t byteIndex = 0; byteIndex < count; byteIndex++)
+		// 		{
+		// 			ch = cast(char)chars[byteIndex];
+		// 			if(!escaped)
+		// 			{
+		// 				if(ch == '"')
+		// 				{
+		// 					i+= byteIndex;
+		// 					break LOOP;
+		// 				}
+		// 				else if(ch == '\\')
+		// 				{
+		// 					escaped = true;
+		// 					continue;
+		// 				}
+		// 			}
+		// 			if(returnLength >= ret.length)
+		// 				ret = pool.resizeString(ret, ret.length*2);
+		// 			ret[returnLength++] = cast(char)chars[byteIndex];
+		// 			escaped = false;
+		// 		}
+		// 		i+= count;
+		// 	}
+		// 	ret = pool.resizeString(ret, returnLength);
+		// 	newIndex = i;
+		// 	if(newIndex == data.length) //Not found
+		// 		return false;
+		// 	theString = cast(string)ret;
+		// 	return true;
+		// }
+
 		bool getNextString(string data, ptrdiff_t currentIndex, out ptrdiff_t newIndex, out string theString)
 		{
-			import std.array;
-			assert(data[currentIndex] == '"');
+			assert(data[currentIndex] == '"', "getNextString must start with a quotation mark");
 			ptrdiff_t i = currentIndex + 1;
 			size_t returnLength = 0;
-			char[] ret = uninitializedArray!(char[])(128);
+			char[] ret = pool.getNewString(64);
 			char ch;
-			
-			LOOP: while(i < data.length)
+
+			while(i < data.length)
 			{
 				ch = data[i];
 				switch(ch)
 				{
-					case '"': break LOOP;
-					case '\\': i++; goto default;
-					default:
-						if(returnLength >= ret.length)
-							ret.length*= 2;
-						ret[returnLength++] = ch;
-						break;
+					case '"': 
+					{
+						ret = pool.resizeString(ret, returnLength);
+						newIndex = i;
+						theString = cast(string)ret;
+						return true;
+					}
+					case '\\': i++; ch = data[i]; break;
+					default: break;
 				}
+				if(returnLength >= ret.length)
+					ret = pool.resizeString(ret, ret.length*2);
+				
+				ret[returnLength++] = ch;
 				i++;
 			}
-			ret.length = returnLength;
-			newIndex = i;
-			if(newIndex == data.length) //Not found
-				return false;
-			theString = cast(string)ret;
-			return true;
+			return false;
 		}
 
 
@@ -562,7 +613,7 @@ struct JSONValue
 		return ret;
 	}
 
-	JSONValue opIndex(string key) const
+	const(JSONValue) opIndex(string key) const
 	{
 		assert(type == JSONType.object, "Can't get a member from a non object.");
 		return (*data.object)[key];
@@ -705,4 +756,93 @@ struct JSONValue
         }
         
     }
+}
+
+private struct StringPool
+{
+	private char[] pool;
+	private size_t used;
+
+	this(size_t size)
+	{
+		import std.array;
+		this.pool = uninitializedArray!(char[])(size);
+	}
+
+	bool getSlice(size_t sliceSize, out char[] str)
+	{
+		if(used+sliceSize < pool.length)
+		{
+			str = pool[used..used+sliceSize];
+			used+= sliceSize;
+			return true;
+		}
+		return false;
+	}
+
+	char[] resizeString(char[] str, size_t newSize)
+	{
+		///Inside pool
+		if(newSize == str.length) return str;
+		if(pool.ptr <= str.ptr && pool.ptr + pool.length > str.ptr)
+		{
+			if(newSize > str.length)
+			{
+				if(newSize - str.length + used > pool.length)
+				{
+					used-= str.length;
+					import std.array;
+					char[] ret = uninitializedArray!(char[])(newSize);
+					ret[0..str.length] = str[];
+					return ret;
+				}
+				else
+				{
+					ptrdiff_t offset = str.ptr - pool.ptr;
+					assert(offset > 0, " Out of bounds?");
+					used+= newSize - str.length;
+					return pool[cast(size_t)offset..offset+newSize];
+				}
+			}
+			else
+			{
+				used-= str.length - newSize;
+				return str[0..newSize];
+			}
+		}
+		else
+			str.length = newSize;
+		return str;
+	}
+
+	/**
+	*	If the pool is not enough, it will allocate randomly
+	*/
+	char[] getNewString(size_t strSize)
+	{
+		char[] ret;
+		if(getSlice(strSize, ret))
+			return ret;
+		return new char[](strSize);
+	}
+}
+
+pragma(inline, true)
+ubyte nextByte32(out ubyte[4] output, string input, size_t index)
+{
+	if(index + 4 > input.length)
+	{
+		output[0..input.length - index] = cast(ubyte[])input[index..$];
+		return cast(ubyte)(input.length - index);
+	}
+	else 
+	{
+		output[] = (cast(ubyte*)(input.ptr+index))[0..4];
+		return 4;
+	}
+}
+
+byte indexOf(ubyte[4] input, char needle)
+{
+	return input[0] == needle ? 0 : input[1] == needle ? 1 : input[2] == needle ? 2 : input[3] == needle ? 3 : -1;
 }
