@@ -1,0 +1,12 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"dependencies": {
+		"util": {"path": "../../modules/util"}
+	},
+	"copyright": "Copyright © 2024, Hipreme",
+	"description": "A minimal D application.",
+	"license": "proprietary",
+	"name": "compilewatcher"
+}
