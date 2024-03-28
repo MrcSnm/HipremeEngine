@@ -117,5 +117,7 @@ else version(Android)
 	enum HipConcurrency = true;
 else version(UWP)
 	enum HipConcurrency = true;
+else version(AppleOS)
+	enum HipConcurrency = true;
 else version(linux) 
 	enum HipConcurrency = true;
