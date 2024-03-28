@@ -24,11 +24,6 @@ bool installLdc(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ve
 {
     import commons:removeExtension;
     string ldcPath = buildNormalizedPath(std.file.getcwd, "D", downloads[0].url.getDownloadFileName(ver).removeExtension);
-    if(!extractToFolder(downloads[0].getOutputPath, ldcPath, t, input))
-    {
-        t.writelnError("Failed to extract");
-        return false;
-    }
     auto binPath = buildNormalizedPath(ldcPath, "bin");
     foreach(executable; ["ldc2", "ldmd2", "rdmd", "dub"])
         makeFileExecutable(buildNormalizedPath(binPath, executable));
@@ -64,7 +59,7 @@ void initialize()
                 ),
                 outputPath: "$TEMP$NAME",
             )
-        ], &installLdc),
+        ], &installLdc, ["$CWD/D/"]),
         (ref Terminal t)
         {
             addToPath(configs["ldcPath"].str.buildNormalizedPath("bin"));
