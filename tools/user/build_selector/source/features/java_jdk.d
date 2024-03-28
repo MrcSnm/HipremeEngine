@@ -39,7 +39,7 @@ void initialize()
 				osx: "https://download.java.net/java/GA/jdk11/13/GPL/openjdk-11.0.1_osx-x64_bin.tar.gz"
 			))
 		], &installOpenJDK),
-		(ref Terminal t){environment["JAVA_HOME"] = configs["javaHome"].str;}
+		(ref Terminal t, string where){environment["JAVA_HOME"] = where;}
 	);
 
 }

@@ -633,7 +633,7 @@ bool downloadFileIfNotExists(
 	ref Terminal t, ref RealTimeConsoleInput input
 )
 {
-	import std.net.curl;
+	import std.net.curll;
 	import std.conv:to;
 	string theDir = dirName(outputName);
 	if(!std.file.exists(theDir))
@@ -709,6 +709,7 @@ size_t downloadWithProgress(string url, string saveToPath, void delegate(float t
 	conn.onReceive = (ubyte[] data)
 	{
 		import std.conv:to;
+		import std.stdio;
 		if(contentLength == 0)
 			contentLength = conn.responseHeaders["content-length"].to!size_t;
 		received+= data.length;

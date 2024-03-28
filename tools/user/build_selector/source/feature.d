@@ -133,7 +133,7 @@ struct Feature
      * A function that is executed exactly once after the installation
      * was succeeded.
      */
-    void function(ref Terminal t) startUsingFeature;
+    void function(ref Terminal t, string where) startUsingFeature;
     /** 
      * Range of supported versions. May support in the feature also
      * version whitelisting. 
@@ -212,12 +212,19 @@ struct Feature
                 return false;
             }
         }
+        status = existenceChecker.existStatus(t, v);
+        if(status.place == ExistenceStatus.Place.notFound)
+            throw new Error(`Could not find `~name~` v`~v.toString~"\n\t"~description~" even after installation");
         if(!startedUsing)
         {
             startedUsing = true;
-            t.writeln(status);
             if(startUsingFeature !is null)
-                startUsingFeature(t);
+            {
+                string where = status.where;
+                if(status.place == ExistenceStatus.Place.inConfig)
+                    where = configs[where].str;
+                startUsingFeature(t, where);
+            }
         }
         return true;
     }
@@ -264,15 +271,6 @@ struct ExistenceChecker
     ExistenceStatus existStatus(ref Terminal t, TargetVersion v)
     {
         ExistenceStatus status;
-        foreach(anAlias; expectedInPathAs)
-        {
-            string program = findProgramPath(anAlias);
-            if(program.length)
-            {
-                status.where = program;
-                status.place = ExistenceStatus.Place.inPath;
-            }
-        }
         int validCount = 0;
         foreach(i; gameBuildInput)
             if(i in configs) validCount++;
@@ -281,6 +279,16 @@ struct ExistenceChecker
             status.place = ExistenceStatus.Place.inConfig;
             status.where = gameBuildInput[0];
             return status;
+        }
+        foreach(anAlias; expectedInPathAs)
+        {
+            string program = findProgramPath(anAlias);
+            if(program.length)
+            {
+                status.where = program;
+                status.place = ExistenceStatus.Place.inPath;
+                return status;
+            }
         }
         if(checkExistenceFn)
             checkExistenceFn(t, v, status);

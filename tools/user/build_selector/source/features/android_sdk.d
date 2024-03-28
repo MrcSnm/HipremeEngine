@@ -117,7 +117,7 @@ void initialize()
                 osx: "https://dl.google.com/android/repository/commandlinetools-mac-9477386_latest.zip"
             )
         )], &installAndroidSDK, extractionPathList: ["$CWD/Android/Sdk/cmdline-tools"]),
-        (ref Terminal t){environment["ANDROID_HOME"] = configs["androidSdkPath"].str;},
+        (ref Terminal t, string where){environment["ANDROID_HOME"] = where;},
         VersionRange.parse(TargetAndroidSDK.to!string)
     );
 }
