@@ -1,14 +1,16 @@
 module hip.data.json;
 
+
 JSONValue parseJSON(string jsonData)
 {
     return JSONValue.parse(jsonData);
 }
+
 struct JSONArray
 {
 	size_t length;
-	size_t capacity;
-	private JSONValue[0] value;
+	// size_t capacity;
+	private JSONValue[] value;
 
 	this(JSONValue[] v)
 	{
@@ -21,11 +23,13 @@ struct JSONArray
 		import core.memory;
 		if(v.type == JSONType.array)
 			v.data.array = JSONArray.trim(v.data.array);
-		
-		if(self.length >= self.capacity)
+		size_t capacity = self.length;
+
+		if(self.length >= capacity)
 		{
-			self.capacity = cast(size_t)((self.length+1)*1.5);
-			self = cast(JSONArray*)GC.realloc(self, JSONArray.sizeof + JSONValue.sizeof*(self.capacity));
+			// self.capacity = cast(size_t)((self.length+1)*1.5);
+			self.value.length++;
+			// self = cast(JSONArray*)GC.realloc(self, JSONArray.sizeof + JSONValue.sizeof*(self.capacity));
 		}
 		self.value.ptr[self.length] = v;
 		self.length++;
@@ -36,19 +40,23 @@ struct JSONArray
 	{
 		import core.memory;
 		size_t selfLength = self.length;
-		if(self.length != self.capacity)
-			self = cast(JSONArray*)GC.realloc(self, JSONArray.sizeof + JSONValue.sizeof*selfLength);
-		self.capacity = selfLength;
-		self.length = selfLength;
+		self.value.length = selfLength;
+		// if(self.length != self.capacity)
+		// 	self = cast(JSONArray*)GC.realloc(self, JSONArray.sizeof + JSONValue.sizeof*selfLength);
+		// self.capacity = selfLength;
+		// self.length = selfLength;
 		return self;
 	}
 
 	static JSONArray* createNew(size_t initialSize = 8)
 	{
 		import core.memory;
-		JSONArray* ret = cast(JSONArray*)GC.malloc(JSONArray.sizeof + JSONValue.sizeof*initialSize, GC.BlkAttr.APPENDABLE);
-		ret.length = 0;
-		ret.capacity = initialSize;
+		JSONArray* ret = new JSONArray();
+		ret.value.length = initialSize;
+
+		// JSONArray* ret = cast(JSONArray*)GC.malloc(JSONArray.sizeof + JSONValue.sizeof*initialSize, GC.BlkAttr.APPENDABLE);
+		// ret.length = 0;
+		// ret.capacity = initialSize;
 		return ret;
 	}
 	static JSONArray* createNew(JSONValue[] data)
@@ -63,7 +71,6 @@ struct JSONArray
 	JSONValue[] getArray(){return value.ptr[0..length];}
 	const(JSONValue)[] getArray() const {return value.ptr[0..length];}
 }
-
 struct JSONObject
 {
 	JSONValue[string] value;
@@ -117,8 +124,6 @@ struct JSONValue
 	string key;
 	string error;
 	JSONType type = JSONType.object;
-
-	private char[] stringPool;
 
 	this(T)(T value)
 	{
@@ -185,8 +190,8 @@ struct JSONValue
             size_t length(){return arr.length;}
             bool empty(){return idx == arr.length;}
             void popFront(){idx++;}
-            const(JSONValue) front(){return arr.value[idx];}
-            const(JSONValue) opIndex(size_t num){return arr.value[num];}
+            const(JSONValue) front(){return arr.getArray()[idx];}
+            const(JSONValue) opIndex(size_t num){return arr.getArray()[num];}
         }
         return JSONValueArrayIterator(data.array);
     }
@@ -194,10 +199,10 @@ struct JSONValue
 	JSONValue[] array()
 	{
 		assert(type == JSONType.array, "Tried to iterate a non array object of type "~getTypeName);
-		return data.array.getArray;
+		return data.array.getArray();
 	}
 
-    JSONValue object()
+    JSONValue object() const
     {
         assert(type == JSONType.object, "Tried to get type object but value is of type "~getTypeName); 
 		JSONValue ret;
@@ -300,12 +305,6 @@ struct JSONValue
 			return JSONValue.errorObj("No data provided");
 		}
 		ptrdiff_t index = 0;
-		while(index < data.length && data[index++] != '{'){}
-		if(index == data.length)
-		{
-			return JSONValue.errorObj("Valid JSON starts with a '{'.");
-		}
-
 		StringPool pool = StringPool(cast(size_t)(data.length*0.75));
 
 		// bool getNextString(string data, ptrdiff_t currentIndex, out ptrdiff_t newIndex, out string theString)
@@ -427,19 +426,18 @@ struct JSONValue
 			return newIndex < data.length;
 		}
 		JSONValue ret;
-		ret.data.object = new JSONObject();
+		ret.type = JSONType.null_;
 		JSONValue* current = &ret;
-		JSONState state = JSONState.lookingForNext;
+		JSONState state = JSONState.value;
 		JSONValue lastValue = ret;
 
 		import std.array;
 		scope JSONValue[] stack = uninitializedArray!(JSONValue[])(128);
-		stack[0] = ret;
-		scope ptrdiff_t stackLength = 1;
+		scope ptrdiff_t stackLength = 0;
 
-		void pushNewScope(JSONValue val)
+		bool pushNewScope(JSONValue val)
 		{
-			assert(val.type == JSONType.object || val.type == JSONType.array, "Unexpected push.");
+			assert(val.type == JSONType.object || val.type == JSONType.array || val.type == JSONType.null_, "Unexpected push.");
 			JSONValue* currTemp = current;
 
 			stackLength++;
@@ -450,10 +448,22 @@ struct JSONValue
 
 			current = &stack[stackLength-1];
 
-			if(currTemp.type == JSONType.object)
-				currTemp.data.object.value[val.key] = *current;
-			else
-				currTemp.data.array = JSONArray.append(currTemp.data.array, *current);
+
+			switch(currTemp.type)
+			{
+				case JSONType.object:
+					currTemp.data.object.value[val.key] = *current;
+					break;
+				case JSONType.array:
+					currTemp.data.array = JSONArray.append(currTemp.data.array, *current);
+					break;
+				case JSONType.null_:
+					currTemp.type = val.type;
+					currTemp.data = val.data;
+					break;
+				default: return false;
+			}
+			return true;
 
 		}
 		void popScope()
@@ -465,17 +475,24 @@ struct JSONValue
 			{
 				JSONValue* next = &stack[stackLength-1];
 				if(current.type == JSONType.array)
-					current.data.array = JSONArray.trim(current.data.array);
-				if(next.type == JSONType.array)
-					next.data.array.getArray[$-1] = *current;
-				else if(next.type == JSONType.object)
 				{
-					next.data.object.value[current.key] = *current;
+					current.data.array = JSONArray.trim(current.data.array);
+					if(next.type == JSONType.array)
+					{
+						next.data.array.getArray[$-1] = *current;
+					}
+				// 	else if(next.type == JSONType.object)
+				// 	{
+				// 		JSONValue* v = current.key in next.data.object.value;
+				// 		current.data.array = JSONArray.trim(current.data.array);
+				// 		*v = *current;
+				// 	}
 				}
 				current = next;
 				assert(current.type == JSONType.object || current.type == JSONType.array, "Unexpected value in stack. (Typed "~(cast(size_t)(current.type)).to!string);
 			}
 		}
+
 
 		void pushToStack(JSONValue val)
 		{
@@ -486,6 +503,9 @@ struct JSONValue
 					break;
 				case array:
 					current.data.array = JSONArray.append(current.data.array, val);
+					break;
+				case null_:
+					*current = val;
 					break;
 				default: assert(false, "Unexpected stack type: "~current.getTypeName);
 			}
@@ -512,7 +532,8 @@ struct JSONValue
 					if(state != JSONState.value)
 						return JSONValue.errorObj(getErr());
 					JSONValue obj = JSONValue.create(new JSONObject(), lastKey);
-					pushNewScope(obj);
+					if(!pushNewScope(obj))
+						return JSONValue.errorObj(getErr("Could not push new scope in JSON. Only array, object or null are valid"));
 
 					state = JSONState.key;
 					break;
@@ -564,9 +585,11 @@ struct JSONValue
 				}
 				case '[':
 				{
+					import std.stdio;
 					if(state != JSONState.lookingForNext && state != JSONState.value)
 						return JSONValue.errorObj(getErr(" expected to be a value. "));
-					pushNewScope(JSONValue.create(JSONArray.createNew(), lastKey));
+					if(!pushNewScope(JSONValue.create(JSONArray.createNew(), lastKey)))
+						return JSONValue.errorObj(getErr("Could not push new scope in JSON. Only array, object or null are valid"));
 					state = JSONState.value;
 					break;
 				}
@@ -640,6 +663,11 @@ struct JSONValue
 		assert(type == JSONType.object, "Can't get a member from a non object.");
 		return (*data.object)[key];
 	}
+	JSONValue opIndex(string key)
+	{
+		assert(type == JSONType.object, "Can't get a member from a non object.");
+		return (*data.object)[key];
+	}
 	JSONValue opIndexAssign(JSONValue v, string key)
 	{
 		assert(type == JSONType.object, "Can't get a member from a non object.");
@@ -653,7 +681,7 @@ struct JSONValue
 	if(op == "in")
 	{
 		if(type != JSONType.object)	return null;
-		return key in *(data.object).value;
+		return key in (*data.object).value;
 	}
     JSONValue* opBinaryRight(string op)(string key)
 	if(op == "in")

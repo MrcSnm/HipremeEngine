@@ -287,7 +287,7 @@ long toInt(string str) pure nothrow @safe @nogc
     if(str.length == 0) return 0;
     str = str.trim;
 
-    long i = (cast(long)str.length)-1;
+    ptrdiff_t i = (cast(ptrdiff_t)str.length)-1;
 
     long last = 0;
     long multiplier = 1;
