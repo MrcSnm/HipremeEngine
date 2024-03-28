@@ -11,10 +11,10 @@ extern(C) void   hipSetApplicationTitle(const(char)* title);
 
 void openWindow(ref int width, ref int height, out void* MTKView)
 {
-    hipSetMTKView(MTKView, &width, &height);
+    hipSetMTKView(&MTKView, &width, &height);
 }
 
-void setWindowName(string name, void* WindowHandle)
+void setWindowName(string name, void* WindowHandle, ref string[] errors)
 {
     string nullEndedStr = name ~ '\0';
     hipSetApplicationTitle(nullEndedStr.ptr);
@@ -23,7 +23,6 @@ void setWindowName(string name, void* WindowHandle)
 //Null ops
 import hip.windowing.platforms.null_;
 alias setVsyncActive     = hip.windowing.platforms.null_.setVsyncActive;
-alias setFullscreen      = hip.windowing.platforms.null_.setFullscreen;
 alias show               = hip.windowing.platforms.null_.show;
 alias poll               = hip.windowing.platforms.null_.poll;
 alias swapBuffer         = hip.windowing.platforms.null_.swapBuffer;
@@ -43,3 +42,4 @@ void setFullscreen(bool bFullscreen, void* WindowHandle, ref string[] errors)
 {
     hipSetApplicationFullscreen(bFullscreen);
 }
+bool initializeOpenGL(int majorVersion, int minorVersion, void* WindowHandle){return false;}
