@@ -706,10 +706,10 @@ struct JSONValue
     
         return result;
     }
-	bool hasErrorOccurred(){ return error.length != 0; }
+	bool hasErrorOccurred() const { return error.length != 0; }
 
 	//selfPrintKey is only used for object.
-	string toString(bool selfPrintkey = false)
+	string toString(bool selfPrintkey = false) const
 	{
 		if(hasErrorOccurred)
 			return error;
