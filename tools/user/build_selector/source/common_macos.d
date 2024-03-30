@@ -67,23 +67,26 @@ void cleanAppleOSLibFolder()
     std.file.mkdirRecurse(targetDir);
 }
 
+
+import features.ruby_gem;
+Feature[] requiredGems;
+
+static this()
+{
+	requiredGems = [
+		FeatureMakeRubyGem("xcodeproj", "Used for updating HipremeEngine.xcodeproj with the current project libraries and compiler"),
+		FeatureMakeRubyGem("json", "Used for updating HipremeEngine.xcodeproj with the current project libraries and compiler"),
+	];
+
+}
+
 void injectLinkerFlagsOnXcode(ref Terminal t, ref RealTimeConsoleInput input, string extraLinkerFlags)
 {
-	string[] gemsToInstall = ["xcodeproj", "json"];
-	static void installGem(ref Terminal t, ref RealTimeConsoleInput input, string gem)
-	{
-		if(executeShell("gem list | grep "~gem).status)
-		{
-			if(!pollForExecutionPermission(t, input ,"Ruby `gem` called '"~gem~"' is not installed, attempt to install?"))
-				throw new Error("Can't update HipremeEngine.xcodeproj without installing dependency for ruby script.");
-			if(wait(spawnShell("sudo gem install "~gem)) != 0)
-				throw new Error("Could not install gem "~gem);
-		}
-	}
 	with(WorkingDir(getHipPath("build", "appleos")))
 	{
-		foreach(gem; gemsToInstall)
-			installGem(t, input, gem);
+		foreach(ref Feature gem; requiredGems)
+			if(!gem.getFeature(t, input))
+				throw new Error("Gem is required for continuing building");
 		if(wait(spawnShell("ruby injectLib.rb "~extraLinkerFlags)) != 0)
 			throw new Error("ruby injectLib.rb with flags "~extraLinkerFlags~" failed.");
 	}

@@ -1,5 +1,6 @@
 module feature;
 import commons;
+public import std.functional:toDelegate;
 
 ///URLs supports $VERSION
 struct DownloadURL
@@ -63,7 +64,7 @@ struct Download
 struct Installation
 {
     Download[] downloadsRequired;
-    bool function(
+    bool delegate(
         ref Terminal t, 
         ref RealTimeConsoleInput input, 
         TargetVersion ver, 
@@ -113,10 +114,9 @@ struct Task(alias Fn)
     }   
 }
 
+public import std.system;
 struct Feature
 {
-    import std.system;
-    import features.ldc;
     string name;
     string description;
     /** 
@@ -265,7 +265,7 @@ struct ExistenceChecker
     ///All the aliases this feature is expected in path.
     string[] expectedInPathAs;
     ///Optional. 
-    bool function(ref Terminal t, TargetVersion v, out ExistenceStatus where) checkExistenceFn;
+    bool delegate(ref Terminal t, TargetVersion v, out ExistenceStatus where) checkExistenceFn;
 
 
     ExistenceStatus existStatus(ref Terminal t, TargetVersion v)
