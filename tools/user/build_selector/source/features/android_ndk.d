@@ -32,7 +32,7 @@ void initialize()
         "Android NDK",
         "Android Native Development Kit. Required for developing in other languages than Java/Kotlin for Android",
         ExistenceChecker(["androidNdkPath"], null),
-        Installation(null, &installAndroidNDK),
+        Installation(null, toDelegate(&installAndroidNDK)),
         null,
         VersionRange.parse(TargetAndroidNDK)
     );

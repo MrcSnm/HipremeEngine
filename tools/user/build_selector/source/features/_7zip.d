@@ -49,7 +49,7 @@ void initialize()
 		Installation([Download(
 			DownloadURL(windows: "https://www.7-zip.org/a/7zr.exe"),
 			"$CWD/buildtools/7z".executableExtension
-		)], &install7Zip),
+		)], toDelegate(&install7Zip)),
 		startUsingFeature: null,
 		VersionRange(),
 		requiredOn: [OS.win32, OS.win64],

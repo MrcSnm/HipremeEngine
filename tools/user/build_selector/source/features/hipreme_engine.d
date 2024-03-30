@@ -86,7 +86,7 @@ void initialize()
         "Hipreme Engine",
         "The engine for D game development",
         ExistenceChecker(["hipremeEnginePath"]),
-        Installation(null, &installHipremeEngine),
+        Installation(null, toDelegate(&installHipremeEngine)),
         (ref Terminal, string where){environment["HIPREME_ENGINE"] = where;},
         VersionRange(),
     );

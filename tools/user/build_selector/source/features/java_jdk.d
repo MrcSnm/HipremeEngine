@@ -38,7 +38,7 @@ void initialize()
 				linux: "https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_linux-x64_bin.tar.gz",
 				osx: "https://download.java.net/java/GA/jdk11/13/GPL/openjdk-11.0.1_osx-x64_bin.tar.gz"
 			))
-		], &installOpenJDK),
+		], toDelegate(&installOpenJDK)),
 		(ref Terminal t, string where){environment["JAVA_HOME"] = where;}
 	);
 

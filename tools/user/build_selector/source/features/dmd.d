@@ -47,7 +47,7 @@ void initialize()
                 osx: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.osx.tar.xz",
             ),
             outputPath: "$TEMP/$NAME",
-        )], &installDmd, ["$CWD/D"]), 
+        )], toDelegate(&installDmd), ["$CWD/D"]), 
         (ref Terminal, string installPath){addToPath(installPath.buildNormalizedPath);},
         VersionRange.parse("2.105.0", "2.106.0")
     );

@@ -363,6 +363,7 @@ private ChoiceResult runAndroidApplication(ref Terminal t)
 	{
 		t.writelnHighlighted("Could not connect to Android's shell");
 	}
+	//logcat -b all -v color com.hipremengine.app:D | findstr com.hipremeengine.app
 	return ChoiceResult.Continue;
 }
 

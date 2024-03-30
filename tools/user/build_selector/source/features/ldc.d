@@ -59,7 +59,7 @@ void initialize()
                 ),
                 outputPath: "$TEMP$NAME",
             )
-        ], &installLdc, ["$CWD/D/"]),
+        ], toDelegate(&installLdc), ["$CWD/D/"]),
         (ref Terminal t, string ldcPath)
         {
             addToPath(ldcPath.buildNormalizedPath("bin"));

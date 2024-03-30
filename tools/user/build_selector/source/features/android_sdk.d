@@ -109,14 +109,14 @@ void initialize()
     AndroidSDKFeature = Feature(
         "Android SDK",
         "Required for being able to develop applications for Android",
-        ExistenceChecker(["androidSdkPath"], null, &androidSdkExists),
+        ExistenceChecker(["androidSdkPath"], null, toDelegate(&androidSdkExists)),
         Installation([Download(
             DownloadURL(
                 windows:"https://dl.google.com/android/repository/commandlinetools-win-9477386_latest.zip",
                 linux: "https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip",
                 osx: "https://dl.google.com/android/repository/commandlinetools-mac-9477386_latest.zip"
             )
-        )], &installAndroidSDK, extractionPathList: ["$CWD/Android/Sdk/cmdline-tools"]),
+        )], toDelegate(&installAndroidSDK), extractionPathList: ["$CWD/Android/Sdk/cmdline-tools"]),
         (ref Terminal t, string where){environment["ANDROID_HOME"] = where;},
         VersionRange.parse(TargetAndroidSDK.to!string)
     );

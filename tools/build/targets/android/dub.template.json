@@ -7,9 +7,6 @@
     "stringImportPaths": [
         "build/release_game/"
     ],
-    "dflags": [
-        "-g"
-    ],
     "libs": [
         "log",
         "android",
@@ -25,13 +22,6 @@
         "console": "android",
         "renderer": "android"
     },
-    "postGenerateCommands-linux": [
-        "copy /B .\\bin\\android\\libhipreme_engine.so .\\build\\android\\project\\app\\src\\main\\jniLibs\\arm64-v8a\\libhipreme_engine.so",
-        "cd .\\tools\\build && set DFLAGS= && rdmd copyresources.d .\\release_game\\assets .\\android\\project\\app\\src\\main\\assets",
-        "REM .\\build\\android\\project\\ && .\\gradlew.bat :app:assembleDebug && adb install -r .\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
-        "REM shell monkey -p com.hipremeengine.app 1",
-        "REM logcat -b all -v color com.hipremengine.app:D | findstr com.hipremeengine.app"
-    ],
     "targetPath": "bin/android/",
     "targetType": "dynamicLibrary",
     "versions": [

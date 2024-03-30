@@ -53,7 +53,7 @@ void initialize()
 				),
 				outputPath: "$CWD/buildtools/git"
 			),
-		], &installGit
+		], toDelegate(&installGit)
 	));
 }
 void start()
