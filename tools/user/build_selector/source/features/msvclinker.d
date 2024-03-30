@@ -145,14 +145,14 @@ void initialize()
     MSVCLinker = Feature(
         "MSVCLinker",
         "Windows SDK for being able to compile using D programming language",
-        ExistenceChecker(null, null, &hasMSVCLinker),
+        ExistenceChecker(null, null, toDelegate(&hasMSVCLinker)),
         Installation([
             Download(
                 DownloadURL(
                     windows: "https://aka.ms/vs/17/release/vs_BuildTools.exe"
                 ),
                 outputPath: "$CWD/buildtools/vc_BuildTools.exe"
-            )], &installMSLinker
+            )], toDelegate(&installMSLinker)
         ),
     );
 }

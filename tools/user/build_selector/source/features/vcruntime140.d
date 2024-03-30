@@ -47,7 +47,7 @@ void initialize()
    VCRuntime140Feature = Feature(
         "VCRuntime140",
         "VCRuntime is a binary necessary for running D compiler.",
-        ExistenceChecker(null, null, &hasVCRuntime140),
+        ExistenceChecker(null, null, toDelegate(&hasVCRuntime140)),
         Installation(
             [
                 Download(
@@ -56,7 +56,7 @@ void initialize()
                     ),
                     outputPath: "$CWD/buildtools/vcredist.exe"
                 )
-            ], &installVCRuntime140
+            ], toDelegate(&installVCRuntime140)
         ),
         null,
         VersionRange.parse(VCRuntimeVer),
