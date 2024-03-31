@@ -1,6 +1,7 @@
 module common_macos;
 import commons;
 import features.git;
+import tools.releasegame;
 enum XCodeDFolder = "D";
 
 void setupPerCompiler(ref Terminal t, string compiler, string arch, out string extraLinkerFlags)
@@ -52,11 +53,12 @@ void setupPerCompiler(ref Terminal t, string compiler, string arch, out string e
 
 void prepareAppleOSBase(Choice* c, ref Terminal t, ref RealTimeConsoleInput input)
 {
-    cached(() => timed(() => submoduleLoader.execute(t, input)));
+    cached(() => timed(t, submoduleLoader.execute(t, input)));
     putResourcesIn(t, getHipPath("build", "appleos", "assets"));
-	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
+
+	// executeGameRelease(t);
     //The template may not be present
-	cached(() => timed(() => outputTemplate(t, configs["gamePath"].str)));
+	cached(() => timed(t, outputTemplate(t, configs["gamePath"].str)));
 }
 
 void cleanAppleOSLibFolder()

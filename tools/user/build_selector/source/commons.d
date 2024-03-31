@@ -401,39 +401,24 @@ void writelnError(ref Terminal t, scope string[] what...)
 		t.writeln(what.join());
 }
 
-auto timed(T)(scope T delegate() dg)
-{
-	import std.datetime.stopwatch;
-	import std.stdio;
-	StopWatch sw = StopWatch(AutoStart.yes);
-	static if(is(T == void))
-	{
-		dg();
-		writeln(sw.peek.total!"msecs", "ms");
-	}
-	else 
-	{
-		auto ret = dg();
-		writeln(sw.peek.total!"msecs", "ms");
-		return ret;
-	}
-}
-auto timed(T)(ref Terminal t, scope T delegate() dg)
+auto timed(T)(ref Terminal t, scope lazy T val){return timed(t, "", val);}
+auto timed(T)(ref Terminal t, string measuringWhat, scope lazy T val)
 {
 	import std.datetime.stopwatch;
 	StopWatch sw = StopWatch(AutoStart.yes);
 	static if(is(T == void))
 	{
-		dg();
-		t.writeln(sw.peek.total!"msecs", "ms");
+		val;
+		t.writeln(measuringWhat, sw.peek.total!"msecs", "ms");
 	}
 	else 
 	{
-		auto ret = dg();
-		t.writeln(sw.peek.total!"msecs", "ms");
+		auto ret = val;
+		t.writeln(measuringWhat, sw.peek.total!"msecs", "ms");
 		return ret;
 	}
 }
+
 
 
 struct Session
@@ -815,27 +800,6 @@ Choice getBackChoice()
 }
 
 
-
-void runEngineDScript(ref Terminal t, string script, scope string[] args...)
-{
-	import std.array;
-	import std.datetime.stopwatch;
-	StopWatch sw = StopWatch(AutoStart.yes);
-	t.writeln("Executing engine script ", script, " with arguments ", args);
-	t.flush;
-	auto exec = executeShell(configs["rdmdPath"].str ~ " " ~ buildNormalizedPath(configs["hipremeEnginePath"].str, "tools", "build", script)~" " ~ args.join(" "), 
-	environment.toAA);
-	t.writeln("    Finished in ", sw.peek.total!"msecs", "ms");
-	t.writeln(exec.output);
-	t.flush;
-	if(exec.status)
-	{
-		t.writelnError("Script ", script, " failed with: ", exec.output);
-		t.flush;
-		throw new Error("Failed on engine script");
-	}
-}
-
 string getDubPath()
 {
 	string dub = buildNormalizedPath(configs["dubPath"].str, "dub");
@@ -956,7 +920,7 @@ struct DubArguments
 	}
 }
 
-int waitRedub(ref Terminal t, DubArguments dArgs)
+int waitRedub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = null)
 {
 	import redub.api;
 	import redub.logging;
@@ -969,14 +933,24 @@ int waitRedub(ref Terminal t, DubArguments dArgs)
 		CompilationDetails(dArgs.getCompiler(), dArgs._arch),
 		ProjectToParse(dArgs._configuration, std.file.getcwd(), null, dArgs._recipe)
 	);
-	if(buildProject(d) == ProjectDetails.init) return 1;
+	if(buildProject(d).error) return 1;
+	if(copyLinkerFilesTo.length)
+	{
+		import tools.copylinkerfiles;
+		string[] linkerFiles;
+		timed(t, "Copying Linker Files ",
+		{
+			d.getLinkerFiles(linkerFiles);
+			copyLinkerFiles(linkerFiles, copyLinkerFilesTo);
+		}());
+	}
 	return 0;
 }
 
-int waitDub(ref Terminal t, DubArguments dArgs)
+int waitDub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = null)
 {
 	///Detects the presence of a template file before executing.
-	if(dArgs._command.length >= 3 && dArgs._command[0..3] != "run") return waitRedub(t, dArgs);
+	if(dArgs._command.length >= 3 && dArgs._command[0..3] != "run") return waitRedub(t, dArgs, copyLinkerFilesTo);
 	if(execDubBase(t, dArgs) == -1) return -1;
 	string toExec = dArgs.getDubRunCommand();
 	t.writeln(toExec);
@@ -984,9 +958,9 @@ int waitDub(ref Terminal t, DubArguments dArgs)
 	return wait(spawnShell(toExec));
 }
 
-int waitDubTarget(ref Terminal t, string target, DubArguments dArgs)
+int waitDubTarget(ref Terminal t, string target, DubArguments dArgs, string copyLinkerFilesTo = null)
 {
-	return waitDub(t, dArgs.recipe(buildPath(getBuildTarget(target), "dub.json")));
+	return waitDub(t, dArgs.recipe(buildPath(getBuildTarget(target), "dub.json")), copyLinkerFilesTo);
 }
 
 int waitAndPrint(ref Terminal t, Pid pid)
@@ -1014,7 +988,14 @@ bool waitOperations(immutable bool delegate()[] operations)
 
 void putResourcesIn(ref Terminal t, string where)
 {
-	runEngineDScript(t, "copyresources.d", buildNormalizedPath(configs["gamePath"].str, "assets"), where);
+	import tools.copyresources;
+	copyResources(t, buildNormalizedPath(configs["gamePath"].str, "assets"), where, false);
+}
+
+void executeGameRelease(ref Terminal t)
+{
+	import tools.releasegame;
+	releaseGame(t, configs["gamePath"].str, getHipPath("build", "release_game"), false);
 }
 
 

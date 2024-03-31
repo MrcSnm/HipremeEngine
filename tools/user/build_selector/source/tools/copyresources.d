@@ -1,9 +1,8 @@
-import core.stdc.stdlib;
+module tools.copyresources;
+import commons;
 import std.string;
 import std.conv:to;
 import std.json;
-import std.array;
-import std.stdio;
 import std.file;
 import std.path;
 
@@ -21,7 +20,7 @@ struct AssetCache
 
 string getCachePath(string workingDir, string from, string toWhere)
 {
-    string temp = (workingDir~from~toWhere);
+    string temp = buildNormalizedPath(workingDir, from, toWhere);
     temp = to!string(hashOf(temp));
     return ".cache/"~temp~".json";
 }
@@ -80,88 +79,46 @@ bool isUpToDate(DirEntry which)
     return *time == which.timeLastModified().toSimpleString();
 }
 
-bool willClear;
 
 /**
 *   Receives from and where
 */
-int main(string[] args)
+void copyResources(ref Terminal t, string inputPath, string outputPath, bool clean)
 {
     string workingDir = getcwd();
-    if(args.length < 3)
-    {
-        writeln(`Usage: rdmd copyresources.d <from> <where> [option]
-Options:
-    --clean -> Clears the target folder and copy everything again`);
-        return EXIT_SUCCESS;
-    }
-    if(args.length > 3) willClear = args[3] == "--clean";
-
     //Populate cache with current content
-    readCacheFile(workingDir, args[1], args[2]);
-    string from, toWhere;
-    //Normalize from
-    if(isAbsolute(args[1]))
-        from = asNormalizedPath(args[1]).array;
-    else
-        from = asNormalizedPath(workingDir~"/"~args[1]).array;
-    //Normalize to where
-    if(isAbsolute(args[2]))
-        toWhere = asNormalizedPath(args[2]).array;
-    else
-        toWhere = asNormalizedPath(workingDir~"/"~args[2]).array;
+    readCacheFile(workingDir, inputPath, outputPath);
+    if(clean)
+    {
+        t.writeln("Cleaning target path: ", outputPath);
+        if(exists(outputPath))
+            rmdirRecurse(outputPath);
+    }
+    if(!exists(outputPath))
+        mkdirRecurse(outputPath);
 
-    if(!exists(from))
+    //Copy loop
+    uint copyCount = 0;
+    foreach(DirEntry e; dirEntries(inputPath, SpanMode.depth))
     {
-        writeln("Source path '", from, "' does not exists");
-        return EXIT_FAILURE;
-    }
-    if(!exists(toWhere))
-        mkdirRecurse(toWhere);
-    if(!isDir(from))
-    {
-        writeln("Source path '", from,"' is not a directory");
-        return EXIT_FAILURE;
-    }
-    if(!isDir(toWhere))
-    {
-        writeln("Target path '", toWhere, "' is not a directory");
-        return EXIT_FAILURE;
-    }
-
-    //Check cache validity
-    Cache[] mainEntries;
-    foreach(DirEntry e; dirEntries(from, SpanMode.depth))
-    {
-        Cache c;
         if(e.isDir)
             continue;
-        c = Cache(e, isUpToDate(e));
-        mainEntries~=c;
-    }
-    if(willClear)
-    {
-        writeln("Cleaning target path: ", toWhere);
-        if(exists(toWhere))
-            rmdirRecurse(toWhere);
-        mkdir(toWhere);
-    }
-    //Copy loop
-    uint copyQuant = 0;
-    foreach(c; mainEntries)
-    {
+        Cache c = Cache(e, isUpToDate(e));
+        //Check cache validity
         //Make path relative to where it is started, so it is possible to create same folder structure
-        string relative = c.entry.name[from.length..$];
+        string relative = relativePath(c.entry.name, inputPath);
         
         //Join target path with the source name
-        string name = asNormalizedPath(toWhere~"/"~relative).array;
+        string name = buildNormalizedPath(outputPath, relative);
+
         bool willCopy = false;
 
-        AssetCache* temp = (getCacheName(c.entry.name) in cache);
+        auto cacheName = getCacheName(c.entry.name);
+        AssetCache* temp = (cacheName in cache);
         if(temp is null)
         {
-            cache[getCacheName(c.entry.name)] = AssetCache(c.entry.timeLastModified.toSimpleString, "");
-            temp = (getCacheName(c.entry.name) in cache);
+            cache[cacheName] = AssetCache(c.entry.timeLastModified.toSimpleString, "");
+            temp = (cacheName in cache);
         }
         else
         {
@@ -172,16 +129,13 @@ Options:
         //If the target exists, check its time copied, if it is the same on the cache, willCopy = false
         if(exists(name))
         {
-            DirEntry e = DirEntry(name);
             if(!willCopy)
                 willCopy = (temp.timeCopied == "" || temp.timeCopied != e.timeLastModified.toSimpleString);
         }
         //Check if the path where the name is exists, for creating a folder for it
         else
         {
-            long ind = lastIndexOf(name, '/');
-            if(ind == -1)
-                ind = lastIndexOf(name, '\\');
+            long ind = lastIndexOf(name, dirSeparator);
             string namePath = name[0..ind];
             if(!exists(namePath))
                 mkdirRecurse(namePath);
@@ -190,21 +144,19 @@ Options:
         
         if(willCopy)
         {
-            copyQuant++;
-            writeln(c.entry.name, " -> ", name);
+            copyCount++;
+            t.writeln(c.entry.name, " -> ", name);
             copy(c.entry.name, name);
-            cache[getCacheName(c.entry.name)].timeCopied = DirEntry(name).timeLastModified.toSimpleString;
+            cache[cacheName].timeCopied = DirEntry(name).timeLastModified.toSimpleString;
         }
     }
-    if(copyQuant != 0)
+    if(copyCount != 0)
     {
-        writeCacheFile(workingDir, args[1], args[2]);
-        writeln("CopyResources: Copied ", copyQuant, " files");
+        writeCacheFile(workingDir, inputPath, outputPath);
+        t.writeln("CopyResources: Copied ", copyCount, " files");
     }
     else
     {
-        writeln("CopyResources: Target folder '"~toWhere~"' is up to date");
+        t.writeln("CopyResources: Target folder '"~outputPath~"' is up to date");
     }
-
-    return EXIT_SUCCESS;
 }

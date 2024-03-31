@@ -1,22 +1,16 @@
-import std.stdio;
+module tools.gendir;
 import std.path:relativePath, buildPath, absolutePath, baseName;
 import std.conv:to;
 import std.array:appender;
-import std.file:dirEntries, DirEntry, SpanMode, exists, write, mkdirRecurse;
-import core.stdc.stdlib;
+static import std.file;
 
 enum OUTPUT_NAME = "directories.json";
 
 ///Hipreme Engine that generates a JSON containing the assets directory.
-int main(string[] args)
+void generateDirectoriesJSON(string inputDirectory, string outputDirectory)
 {
-    if(args.length < 3)
-    {
-        writeln("Usage: rdmd gendir.d inputDirectory outputDir");
-        return EXIT_FAILURE;
-    }
     auto output = appender!string;
-    string inputDir = absolutePath(args[1]);
+    string inputDir = absolutePath(inputDirectory);
     output~= "{\"";
     output~= inputDir.baseName;
     output~= "\" : ";
@@ -24,19 +18,17 @@ int main(string[] args)
     output~= "}";
 
 
-    if(!exists(args[2]))
-        mkdirRecurse(args[2]);
+    if(!std.file.exists(outputDirectory))
+        std.file.mkdirRecurse(outputDirectory);
 
-    write(buildPath(args[2], OUTPUT_NAME), output[]);
-
-    return EXIT_SUCCESS;
+    std.file.write(buildPath(outputDirectory, OUTPUT_NAME), output[]);
 }
 
 void genJson(T)(string startDir, ref T output)
 {
     bool first = true;
     output~= "{";
-    if(exists(startDir)) foreach(DirEntry e; dirEntries(startDir, SpanMode.shallow))
+    if(std.file.exists(startDir)) foreach(std.file.DirEntry e; std.file.dirEntries(startDir, std.file.SpanMode.shallow))
     {
         if(!first)
             output~=",";

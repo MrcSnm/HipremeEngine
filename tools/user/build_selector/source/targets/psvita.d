@@ -202,9 +202,9 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
         if(!setupPsvita(t, input))
             return ChoiceResult.Error;
     }
-	cached(() => timed(() => submoduleLoader.execute(t, input)));    
-	cached(() => timed(() => outputTemplateForTarget(t)));    
-	runEngineDScript(t, "releasegame.d", configs["gamePath"].str);
+	cached(() => timed(t, submoduleLoader.execute(t, input)));    
+	cached(() => timed(t, outputTemplateForTarget(t)));    
+	executeGameRelease(t);
     putResourcesIn(t, getHipPath("build", "vita", "hipreme_engine", "assets"));
 
     string dflags = "-I="~configs["hipremeEnginePath"].str~"/modules/d_std/source "~
@@ -230,17 +230,12 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 
     std.file.chdir(configs["hipremeEnginePath"].str);
 
-    if(waitDubTarget(t, "psvita", DubArguments().command("build").deep(true).arch("armv7a-unknown-unknown").opts(cOpts)) != 0)
+    if(waitDubTarget(t, "psvita", DubArguments().command("build").deep(true).arch("armv7a-unknown-unknown").opts(cOpts),
+    getHipPath("build", "vita", "hipreme_engine", "libs")) != 0)
     {
         t.writelnError("Could not build for PSVita.");
         return ChoiceResult.Error;
     }
-    environment["DFLAGS"] = "";    
-    runEngineDScript(t, "copylinkerfiles.d", 
-        "\"--compiler=ldc2 --arch=armv7a-unknown-unknown " ~
-        "--recipe="~buildPath(getBuildTarget("psvita"), "dub.json")~'"', 
-        getHipPath("build", "vita", "hipreme_engine", "libs"), 
-    dflags);
 
     static bool isFirstBuild = true;
     if(isFirstBuild)

@@ -16,23 +16,20 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 
 	string out_extraLinkerFlags;
 	setupPerCompiler(t, getSelectedCompiler, archFolder, out_extraLinkerFlags);
-	cached(() => timed(() => outputTemplateForTarget(t)));
+	cached(() => timed(t, outputTemplateForTarget(t)));
 	string codeSignCommand = getCodeSignCommand(t);
 	with(WorkingDir(getHipPath))
 	{
 		cleanAppleOSLibFolder();
 
-		if(timed(() => waitDubTarget(t, __MODULE__, DubArguments().
-			command("build").recipe("appleos").deep(true).compiler(getSelectedCompiler).opts(cOpts))) != 0)
+		if(timed(t, waitDubTarget(t, __MODULE__, DubArguments().
+			command("build").recipe("appleos").deep(true).compiler(getSelectedCompiler).opts(cOpts),
+			getHipPath("build", "appleos", XCodeDFolder, "libs"))) != 0)
 		{
 			t.writelnError("Could not build for AppleOS.");
 			return ChoiceResult.Error;
 		}
 
-		runEngineDScript(t, "copylinkerfiles.d", 
-			"\"--recipe="~buildPath(getBuildTarget, "dub.json")~"\"",
-			getHipPath("build", "appleos", XCodeDFolder, "libs")
-		);
 		injectLinkerFlagsOnXcode(t, input, out_extraLinkerFlags);
 		string path = getHipPath("build", "appleos");
 		string clean = appleClean ? "clean " : "";

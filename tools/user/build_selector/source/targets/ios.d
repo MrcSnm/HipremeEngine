@@ -36,7 +36,7 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 	
 	appleClean = configs["firstiOSRun"].boolean;
 
-	cached(() => timed(() => outputTemplateForTarget(t, buildTarget)));
+	cached(() => timed(t, outputTemplateForTarget(t, buildTarget)));
 	string codeSignCommand = getCodeSignCommand(t);
 	string extraCommands = getExtraCommand(TARGET_TYPE);
 
@@ -44,17 +44,13 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 	{
 		cleanAppleOSLibFolder();
 
-		if(timed(() => waitDubTarget(t, __MODULE__, DubArguments().
-			command("build").recipe("ios").deep(true).arch(arch~"-apple-ios12.0").compiler("ldc2").opts(cOpts))) != 0)
+		if(timed(t, waitDubTarget(t, __MODULE__, DubArguments().
+			command("build").recipe("ios").deep(true).arch(arch~"-apple-ios12.0").compiler("ldc2").opts(cOpts),
+			getHipPath("build", "appleos", XCodeDFolder, "libs"))) != 0)
 		{
 			t.writelnError("Could not build for AppleOS.");
 			return ChoiceResult.Error;
 		}
-		runEngineDScript(t, "copylinkerfiles.d", 
-			"\"--recipe="~buildPath(buildTarget, "dub.json")~"\"",
-			getHipPath("build", "appleos", XCodeDFolder, "libs")
-		);
-		
 		string path = getHipPath("build", "appleos");
 		string clean = appleClean ? "clean " : "";
 
