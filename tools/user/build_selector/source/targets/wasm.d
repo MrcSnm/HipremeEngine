@@ -14,22 +14,25 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		t.writelnError("WASM build requires ldc2 in path. Please install it before building to it.");
 		return ChoiceResult.Error;
 	}
-	cached(() => timed(t, submoduleLoader.execute(t, input)));
 	if(!serverStarted)
 	{
 		t.writelnHighlighted("Attempt to start WebAssembly development server.");
 		startServer();
 		t.writelnSuccess("Development started at localhost:9000");
 	}
-	putResourcesIn(t, getHipPath("build", "wasm", "build", "assets"));
 
-	generateDirectoriesJSON(
-		getHipPath("build", "release_game", "assets"),
-		getHipPath("build", "wasm", "generated")
+	inParallel(
+		cached(() => timed(t, submoduleLoader.execute(t, input))),
+		putResourcesIn(t, getHipPath("build", "wasm", "build", "assets")),
+		generateDirectoriesJSON(
+			getHipPath("build", "release_game", "assets"),
+			getHipPath("build", "wasm", "generated")
+		),
+		//The template may not be present
+		outputTemplate(t, configs["gamePath"].str),
+		cached(() => timed(t, outputTemplateForTarget(t)))
 	);
-	cached(() => timed(t, outputTemplateForTarget(t)));
-	//The template may not be present
-	outputTemplate(t, configs["gamePath"].str);
+
 
 	environment["DFLAGS"] = 
 		"-I="~getHipPath("modules", "d_std", "source") ~" "~

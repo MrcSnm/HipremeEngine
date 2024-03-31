@@ -618,7 +618,7 @@ bool downloadFileIfNotExists(
 	ref Terminal t, ref RealTimeConsoleInput input
 )
 {
-	import std.net.curll;
+	import std.net.curl;
 	import std.conv:to;
 	string theDir = dirName(outputName);
 	if(!std.file.exists(theDir))
@@ -945,6 +945,14 @@ int waitRedub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = nul
 		}());
 	}
 	return 0;
+}
+
+void inParallel(scope void delegate()[] args...)
+{
+	import std.parallelism;
+	foreach(action; parallel(args, 1))
+		action();
+
 }
 
 int waitDub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = null)

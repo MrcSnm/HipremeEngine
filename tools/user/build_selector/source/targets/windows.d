@@ -210,7 +210,7 @@ ChoiceResult prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 
 	// waitOperations([{
 		std.file.chdir(configs["gamePath"].str);
-		if(timed(waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts)) != 0))
+		if(timed(t, waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts)) != 0))
 			return ChoiceResult.Error;
 			// return false;
 		// return true;
@@ -219,7 +219,7 @@ ChoiceResult prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 		if(!c.scriptOnly)
 		{
 			std.file.chdir(getHipPath);
-			if(timed(waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts))) != 0)
+			if(timed(t, waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts))) != 0)
 				return ChoiceResult.Error;
 		}
 		// return true;
