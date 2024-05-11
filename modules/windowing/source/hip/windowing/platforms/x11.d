@@ -197,8 +197,9 @@ nothrow @nogc bool initializeOpenGL(int majorVersion, int minorVersion, void* Wi
     XClearWindow(x11win.display, x11win.window);
     XMapRaised(x11win.display, x11win.window);
     XStoreName(x11win.display, x11win.window, "HipremeEngine");
-    
-    setVsyncActive(false);
+
+    string[] errors;
+    setVsyncActive(false, null, errors);
 
 
     return true;
@@ -210,7 +211,7 @@ void swapBuffer()
     glXSwapBuffers(x11win.display, x11win.window);
 }
 
-void setVsyncActive(bool active) @nogc nothrow @system
+void setVsyncActive(bool active, void* WindowHandle, ref string[] errors) @nogc nothrow @system
 {
     static bool loadedSymbols = false;
     if(!loadedSymbols)
@@ -225,7 +226,7 @@ void setVsyncActive(bool active) @nogc nothrow @system
     glXSwapIntervalSGI(cast(int)active);
 }
 
-void setWindowName(string name, void* WindowHandle)
+void setWindowName(string name, void* WindowHandle, ref string[] errors)
 {
     XStoreName(x11win.display, x11win.window, name.ptr);
 }
@@ -336,14 +337,14 @@ void poll()
 }
 
 ///Returns [width, height]
-int[2] getWindowSize(void* WindowHandle)
+int[2] getWindowSize(void* WindowHandle, ref string[] errors)
 {
     XWindowAttributes att;
     XGetWindowAttributes(x11win.display, x11win.window, &att);
     return [att.width, att.height];
 }
 
-void setWindowSize(int width, int height)
+void setWindowSize(int width, int height, void* WindowHandle, ref string[] errors)
 {
     uint change_values = CWWidth | CWHeight;
     XWindowChanges values;
