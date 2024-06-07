@@ -60,7 +60,10 @@
 
 	function __loadGame()
 	{
-		WebAssembly.instantiateStreaming(fetch('hipreme_engine.wasm', {}), importObject)
+		WebAssembly.instantiateStreaming(fetchWithProgress('hipreme_engine.wasm', {}, (total, current) =>
+		{
+			console.log(total/current)
+		}), importObject)
 			.then(function(obj) {
 	
 				const canvas = document.getElementById("glcanvas");
@@ -81,6 +84,7 @@
 	}
 	__loadGame();
 
+	
 
     </script>
   </body>

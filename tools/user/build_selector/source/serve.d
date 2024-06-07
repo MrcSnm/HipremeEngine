@@ -118,12 +118,13 @@ void serveGameFiles(Cgi cgi)
 		}
 		else
 		{
+			cgi.setResponseHeader("Access-Control-Expose-Headers: Content-Length");
 			cgi.setResponseContentType(contentType);
 			cgi.setResponseStatus(200);
 			if(contentType[0.."text".length] == "text")
-				cgi.write(readText(file));
+				cgi.write(readText(file), true);
 			else
-				cgi.write(read(file));
+				cgi.write(read(file), true);
 			writeln("GET ", file, " 200");
 		}
 	}
