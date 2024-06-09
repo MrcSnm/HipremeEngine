@@ -41,6 +41,15 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 
 	with(WorkingDir(getHipPath))
 	{
+		//In the future, it will be better to make hipreme_engine precompiled and just relink with the game.
+		// with(WorkingDir(configs["gamePath"].str))
+		// {
+		// 	if(timed(t, waitDub(t, DubArguments().command("build").compiler("ldc2").build("debug").arch("wasm32-unknown-unknown-wasm").configuration("release").opts(cOpts)) != 0))
+		// 	{
+		// 		t.writelnError("Could not build for WebAssembly.");
+		// 		return ChoiceResult.Error;	
+		// 	}
+		// }
 		if(timed(t, waitDubTarget(t, "wasm", DubArguments()
 			.command("build").compiler("ldc2").build("debug")
 			.arch("wasm32-unknown-unknown-wasm").opts(cOpts))) != 0)
@@ -50,11 +59,13 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		}
 		import wasm_sourcemaps.generate;
 
+		///In the current status, wasm sourcemap generation invalidates cache, but since the compilation is really fast right now
+		///We can keep that
 		string[] out_Errors;
 		if(!timed(t, "Generating WASM Sourcemaps ", generateSourceMaps(null, getHipPath("hipreme_engine.wasm"), null, shouldEmbed: true, includeSources:true, out_Errors)))
 			t.writelnError(out_Errors);
 		foreach(file; ["hipreme_engine.wasm", "hipreme_engine.wasm.map"])
-			std.file.copy(file, buildPath("build", "wasm", "build", file));
+			std.file.rename(file, buildPath("build", "wasm", "build", file));
 		t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:9000");
 		pushWebsocketMessage("reload");
 		cached(() => cast(void)openDefaultBrowser("http://localhost:9000"));

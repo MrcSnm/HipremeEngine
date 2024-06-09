@@ -175,7 +175,7 @@ private string processFile(string f, string[string] variables)
 			string varName;
 			i = getVariableName(f, i, varName);
 			assert(varName in variables, "Variable "~varName~" not found");
-			output~= variables[varName];
+			output~= escapeWindowsSep(variables[varName]);
 			lastStop = i;
 			i--; //For not updating too much
 		}
@@ -221,10 +221,16 @@ private string[string] getParamsInTemplate(JSONValue json)
 private string escapeWindowsSep(string thePath)
 {
 	string ret;
-	foreach(ch; thePath)
-		if(ch == '\\')
-			ret~= "\\\\";
-		else ret~= ch;
+	for(size_t i = 0; i < thePath.length; i++)
+	{
+		if(thePath[i] == '\\')
+		{
+			if(i+1 >= thePath.length || thePath[i+1] != '\\')
+				ret~= "\\\\";
+		}
+		else 
+			ret~= thePath[i];
+	}
 	return ret;
 }
 
@@ -277,7 +283,9 @@ in string[string] extraVariables)
 	}
 	variables["PROJECT"] = projectPath.absolutePath.escapeWindowsSep;
 	variables["HIPREME_ENGINE"] = hipremeEngine;
-	foreach(k, v; extraVariables) variables[k] = v;
+	///Push the extra variables.
+	foreach(k, v; extraVariables) 
+		variables[k] = v;
 	json.object.remove("params");
 	json.object.remove("$schema");
 	file = processFile(json.toPrettyString(JSONOptions.doNotEscapeSlashes), variables);
