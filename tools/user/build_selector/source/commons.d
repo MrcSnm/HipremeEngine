@@ -357,6 +357,7 @@ bool hasLdc()
 
 bool dbgExecuteShell(scope const(char)[] command, ref Terminal t, const string[string] env = null)
 {
+	t.writeln("Executing command: ", command);
 	auto ret = executeShell(command, env);
 	if(ret.status)
 	{
@@ -497,6 +498,17 @@ bool extractZipToFolder(string zipPath, string outputDirectory, ref Terminal t)
 		}
 	}
 	return true;
+}
+
+
+bool isCompactedFile(string fileName)
+{
+	import std.path;
+	switch(fileName.extension)
+	{
+		case ".gz", ".xz", ".zip", ".7zip", ".7z": return true;
+		default: return false;
+	}
 }
 
 
@@ -676,6 +688,11 @@ size_t downloadWithProgress(string url, string saveToPath, void delegate(float t
 	size_t received, contentLength;
 	HTTP conn = HTTP();
 	conn.url = url;
+
+	string targetDir = dirName(saveToPath);
+	if(!std.file.exists(targetDir))
+		std.file.mkdirRecurse(targetDir);
+
 	static void writer(string path)
 	{
 		auto f = File(path, "wb");

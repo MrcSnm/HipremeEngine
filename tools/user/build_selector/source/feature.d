@@ -88,8 +88,10 @@ struct Installation
             if(i < extractionPathList.length && extractionPathList[i].length)
             {
                 import std.string;
+                import std.file;
                 string extractionPath = extractionPathList[i];
                 extractionPath = extractionPath.replace("$CWD", std.file.getcwd).replace("$VERSION", ver.toString).buildNormalizedPath;
+                
                 if(!extractToFolder(d.getOutputPath(ver), extractionPath, t, input))
                     return false;
             }

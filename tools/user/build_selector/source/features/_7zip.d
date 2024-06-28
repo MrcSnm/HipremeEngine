@@ -12,6 +12,9 @@ bool install7Zip(
     Download[] content
 )
 {
+	import std.file;
+	if(!exists(content[0].getOutputPath))
+		throw new Exception("7zip wasn't found at its target path: "~content[0].getOutputPath);
     configs["7zip"] = buildNormalizedPath(content[0].getOutputPath);
     updateConfigFile();
 	return true;
@@ -27,14 +30,13 @@ private bool extract7ZipToFolderImpl(ref Terminal t, ref RealTimeConsoleInput in
 	t.writeln("Extracting ", zPath, " to ", outputDirectory);
 	t.flush;
 
-	string folderName = baseName(outputDirectory);
-	outputDirectory = dirName(outputDirectory);
 	if(!std.file.exists(outputDirectory))
 		std.file.mkdirRecurse(outputDirectory);
 
+
 	with(WorkingDir(outputDirectory))
 	{
-		bool ret = dbgExecuteShell(configs["7zip"].str ~ " x -y "~zPath~" "~folderName, t);
+		bool ret = dbgExecuteShell(configs["7zip"].str ~ " x -y "~zPath, t);
 		return ret;
 	}
 }
