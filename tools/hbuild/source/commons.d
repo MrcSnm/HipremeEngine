@@ -1099,7 +1099,7 @@ string getBuildTarget(string target = __MODULE__)
 	import std.string:split;
 	import std.exception:enforce;
 	target = target.split(".")[$-1];
-	string path = getHipPath("tools", "build", "targets");
+	string path = getHipPath("tools", "internal", "targets");
 	enforce(std.file.exists(path = buildPath(path, target)), "Target "~target~" does not exists.");
 	return path;
 }
