@@ -31,7 +31,7 @@ Download[] downlloads)
 	}
 	else version(Posix)
 	{
-		t.writelnError("Please install Git to use build_selector.");
+		t.writelnError("Please install Git to use hbuild.");
 		return false;
 	}
 }

@@ -82,9 +82,12 @@ struct Installation
     {
         foreach(i, ref d; downloadsRequired)
         {
-            t.writeln("Downloading ", d.url.get(ver), " --> ", d.getOutputPath(ver));
-            t.flush;
-            if(!d.download(t, input, ver)) return false;
+            if(!std.file.exists(d.getOutputPath(ver)))
+            {
+                t.writeln("Downloading ", d.url.get(ver), " --> ", d.getOutputPath(ver));
+                t.flush;
+                if(!d.download(t, input, ver)) return false;
+            }
             if(i < extractionPathList.length && extractionPathList[i].length)
             {
                 import std.string;
@@ -196,7 +199,7 @@ struct Feature
         }
         foreach(Feature* dep; getAllDependencies)
         {
-            if(!dep.getFeature(t, input, dep.supportedVersion.max))
+            if(*dep != Feature.init && !dep.getFeature(t, input, dep.supportedVersion.max))
             {
                 t.writelnError("Could not get feature '",name,"': Requires: ", dep.name);
                 return false;
@@ -213,8 +216,8 @@ struct Feature
                 t.writelnError("Could not install feature ", name);
                 return false;
             }
+            status = existenceChecker.existStatus(t, v);
         }
-        status = existenceChecker.existStatus(t, v);
         if(status.place == ExistenceStatus.Place.notFound)
             throw new Error(`Could not find `~name~` v`~v.toString~"\n\t"~description~" even after installation");
         if(!startedUsing)
@@ -275,7 +278,7 @@ struct ExistenceChecker
         ExistenceStatus status;
         int validCount = 0;
         foreach(i; gameBuildInput)
-            if(i in configs) validCount++;
+            if(i in configs && std.file.exists(configs[i].str)) validCount++;
         if(validCount && validCount == gameBuildInput.length)
         {
             status.place = ExistenceStatus.Place.inConfig;

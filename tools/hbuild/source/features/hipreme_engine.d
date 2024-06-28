@@ -32,9 +32,9 @@ bool installHipremeEngine(ref Terminal t, ref RealTimeConsoleInput input, Target
         import std.algorithm:find;
         hipremeEnginePath = [
             ".", 
-            buildNormalizedPath(std.file.getcwd(), "..", "..", ".."), 
+            buildNormalizedPath(std.file.getcwd(), "..", ".."),
             dirName(Runtime.args[0]),
-            buildNormalizedPath(dirName(Runtime.args[0]), "..", "..", ".."),
+            buildNormalizedPath(dirName(Runtime.args[0]), "..", ".."),
         ].find!((string dir) => isValidEnginePath(dir))[0];
         
         if(hipremeEnginePath.length)

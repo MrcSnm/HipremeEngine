@@ -1,0 +1,93 @@
+{
+    "configurations": [
+        {
+            "dependencies": {
+                "hipengine_api": {
+                    "path": "C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine/api"
+                }
+            },
+            "dflags-ldc": [
+                "-link-defaultlib-shared=true"
+            ],
+            "lflags-windows": [
+                "/WX"
+            ],
+            "lflags-windows-ldc": [
+                "/WHOLEARCHIVE:hipengine_api"
+            ],
+            "name": "script",
+            "targetType": "dynamicLibrary",
+            "versions": [
+                "ScriptAPI"
+            ]
+        },
+        {
+            "dependencies": {
+                "hipengine_api:direct": {
+                    "path": "C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine/api"
+                }
+            },
+            "lflags-windows-ldc": [
+                "/WHOLEARCHIVE:hipengine_api:direct"
+            ],
+            "name": "release",
+            "subConfigurations": {
+                "game2d": "direct"
+            },
+            "targetType": "library"
+        },
+        {
+            "lflags-windows": [
+                "/WX"
+            ],
+            "name": "run",
+            "postGenerateCommands-linux": [
+                "cd ../../ && dub -c script -- ./projects/start_here"
+            ],
+            "postGenerateCommands-windows": [
+                "cd ..\\..\\ && dub -c script -- .\\projects\\start_here"
+            ],
+            "targetType": "dynamicLibrary"
+        }
+    ],
+    "dependencies": {
+        "game2d": {
+            "path": "C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\modules\\game2d"
+        },
+        "math": {
+            "path": "C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\modules\\math"
+        },
+        "util": {
+            "path": "C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\modules\\util"
+        }
+    },
+    "description": "Hipreme Engine test scene",
+    "dflags-ldc": [
+        "--disable-verify",
+        "--oq"
+    ],
+    "lflags-windows-ldc": [
+        "/WHOLEARCHIVE:game2d",
+        "/WHOLEARCHIVE:util",
+        "/WHOLEARCHIVE:math"
+    ],
+    "license": "proprietary",
+    "name": "start_here",
+    "preBuildCommands-posix": [
+        "export DFLAGS= && rdmd C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine/tools/internal/getmodules.d C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\projects\\start_here/source/ C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\projects\\start_here/scriptmodules.txt"
+    ],
+    "preBuildCommands-windows": [
+        "set DFLAGS= && rdmd C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine/tools/internal/getmodules.d C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\projects\\start_here/source/ C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\projects\\start_here/scriptmodules.txt"
+    ],
+    "sourcePaths": [
+        "source"
+    ],
+    "stringImportPaths": [
+        "C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\projects\\start_here"
+    ],
+    "targetName": "start_here",
+    "versions": [
+        "HipMathAPI",
+        "HipremeAudio"
+    ]
+}

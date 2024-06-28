@@ -41,13 +41,13 @@
 		{
 			"name": "ci",
 			"dflags-ldc": ["-Oz"],
-			"postBuildCommands-windows": ["move build_selector.exe win64-build_selector.exe"],
-			"postBuildCommands-linux": ["mv build_selector linux64-build_selector && chmod +x linux64-build_selector"],
-			"postBuildCommands-osx": ["mv build_selector macos64-build_selector && chmod +x macos64-build_selector"]
+			"postBuildCommands-windows": ["move hbuild.exe win64-hbuild.exe"],
+			"postBuildCommands-linux": ["mv hbuild linux64-hbuild && chmod +x linux64-hbuild"],
+			"postBuildCommands-osx": ["mv hbuild macos64-hbuild && chmod +x macos64-hbuild"]
 		}
 	],
 	"libs": ["curl"],
 	"description": "The main way to build your game using Hipreme Engine.\nIt can generate projects and select to build to any of the supported platforms",
 	"license": "proprietary",
-	"name": "build_selector"
+	"name": "hbuild"
 }

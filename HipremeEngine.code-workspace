@@ -4,14 +4,14 @@
 			"path": "."
 		}
 	],
-	"settings": 
+	"settings":
 	{
 		"d.disabledRootGlobs": [
 			"dependencies/directx-d/examples/**/*"
 		],
 		"d.manyProjectsThreshold": 64,
 		"local-history.saveDelay": 1,
-		"files.exclude": 
+		"files.exclude":
 		{
 			"build/appleos/HipremeEngine.xcodeproj/": true,
 			"build/appleos/HipremeEngine Shared/Assets.xcassets": true,
@@ -22,11 +22,11 @@
 			"**/*.exp": true,
 			"**/*.pdb": true,
 			"**/*.obj": true,
-			"tools/user/build_selector/Android": true,
+			"tools/user/hbuild/Android": true,
 			"build/android/project/.idea/" : true,
 			"build/android/project/gradle/" : true,
 			"build/android/project/app/build": true,
-			"tools/user/build_selector/D": true,
+			"tools/user/hbuild/D": true,
 			"build/uwp/HipremeEngine/AppPackages": true,
 			"build/uwp/HipremeEngine/ARM64": true,
 			"build/uwp/HipremeEngine/x64": true,
@@ -61,7 +61,7 @@
 			"**/*.pdb": true,
 			"**/*.obj": true,
 			"dependencies/directx-d/examples/**": true,
-			"tools/user/build_selector/Android": true,
+			"tools/user/hbuild/Android": true,
 			"**/.git": true,
 			"linuxlib":true,
 			"bindbc-openal":true,

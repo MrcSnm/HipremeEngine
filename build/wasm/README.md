@@ -22,7 +22,7 @@ phobos and the runtime itself.
 3. Threads: Threading was not implemented for the custom runtime. This may be at least simulated in future.
 4. `static this`
 5. `~static this`: Those 2 aren't actually hard to support, but I decided to not implement them as I don't use it on the engine. Keep in mind that the game engine provides a way to simulate them. It automatically creates `scriptmodules.txt` for you to be able to iterate all your `source` folder directory.
-6. Phobos. You need to keep in mind that the majority of Phobos is unavailable. Basically the only part you can use of phobos is for generic algorithms and compile time informations. 
+6. Phobos. You need to keep in mind that the majority of Phobos is unavailable. Basically the only part you can use of phobos is for generic algorithms and compile time informations.
 
 
 ### Available phobos modules
@@ -39,7 +39,7 @@ This custom runtime allocates memory which will never be freed. For small games,
 
 ## Generating a build for WASM
 
-- Enter HipremeEngine's tools/user/build_selector
+- Enter HipremeEngine's tools/hbuild
 - Select Project
 - Select WebAssembly
 - Your build will be ready inside build/wasm/build.

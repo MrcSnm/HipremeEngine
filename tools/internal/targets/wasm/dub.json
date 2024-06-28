@@ -1,0 +1,120 @@
+{
+    "authors": [
+        "Hipreme"
+    ],
+    "buildOptions": [
+        "debugMode",
+        "debugInfo",
+        "debugInfoC",
+        "warnings"
+    ],
+    "copyright": "Copyright © 2018 - 2022, Hipreme",
+    "dependencies": {
+        "assets": {
+            "path": "./modules/assets",
+            "version": "*"
+        },
+        "audio": {
+            "path": "./modules/audio",
+            "version": "*"
+        },
+        "bind": {
+            "path": "./modules/bind",
+            "version": "*"
+        },
+        "config": {
+            "path": "./modules/config",
+            "version": "*"
+        },
+        "console": {
+            "path": "./modules/console",
+            "version": "*"
+        },
+        "d_std": {
+            "path": "modules/d_std",
+            "version": "*"
+        },
+        "error": {
+            "path": "./modules/error",
+            "version": "*"
+        },
+        "filesystem": {
+            "path": "./modules/filesystem",
+            "version": "*"
+        },
+        "hipengine_api": {
+            "path": "./api",
+            "version": "*"
+        },
+        "math": {
+            "path": "./modules/math",
+            "version": "*"
+        },
+        "renderer": {
+            "path": "./modules/renderer",
+            "version": "*"
+        },
+        "runtime": {
+            "path": "dependencies/runtime",
+            "version": "*"
+        },
+        "start_here": {
+            "path": "C:\\\\Users\\\\Marcelo\\\\Desktop\\\\tests\\\\HipremeEngine\\\\projects\\\\start_here"
+        },
+        "timer": {
+            "path": "./modules/timer",
+            "version": "*"
+        },
+        "tween": {
+            "path": "./modules/tween",
+            "version": "*"
+        },
+        "util": {
+            "path": "./modules/util",
+            "version": "*"
+        }
+    },
+    "description": "Open-Source D Game Engine",
+    "dflags-dmd": [
+        "-op"
+    ],
+    "dflags-ldc": [
+        "--disable-verify",
+        "--oq"
+    ],
+    "license": "CC BY-4.0",
+    "name": "hipreme_engine",
+    "sourcePaths": [
+        "source"
+    ],
+    "stringImportPaths": [
+        "build/wasm/generated",
+        "build/release_game/",
+        "assets"
+    ],
+    "subConfigurations": {
+        "assets": "wasm",
+        "audio": "wasm",
+        "filesystem": "wasm",
+        "renderer": "wasm",
+        "runtime": "wasm",
+        "start_here": "release"
+    },
+    "targetType": "executable",
+    "toolchainRequirements": {
+        "dub": ">=1.31.0",
+        "frontend": ">=2.099"
+    },
+    "versions": [
+        "Standalone",
+        "HipDStdFile",
+        "CarelessAlocation",
+        "dll",
+        "HIPREME_DEBUG",
+        "HipCheckUnknownKeycode",
+        "HipScriptingAPI",
+        "GL_45",
+        "GL_ARB",
+        "AL_EFX"
+    ]
+}

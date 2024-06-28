@@ -26,7 +26,7 @@
 		"AL_EFX"
 	],
 	"subPackages": [
-		"tools/user/build_selector/"
+		"tools/user/hbuild/"
 	],
 	"sourcePaths": [
 		"source"

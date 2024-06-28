@@ -12,7 +12,7 @@ struct TemplateInfo
 	},
 	update="",
 	render=q{
-		drawText("You can start using the D Scripting API Here!", 400, 300, HipColor.white, 
+		drawText("You can start using the D Scripting API Here!", 400, 300, HipColor.white,
 			HipTextAlign.CENTER,  HipTextAlign.CENTER
 		);
 	},
@@ -38,7 +38,7 @@ import hip.api;
 class MainScene : AScene, IHipPreloadable
 {
 	mixin Preload;
-	
+
 	/** Constructor */
 	override void initialize()
 	{
@@ -104,12 +104,12 @@ string generateDubProject(DubProjectInfo info)
 	],
 	"dflags-ldc": ["--disable-verify", "--oq"],
 	"preBuildCommands-posix": [
-		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
 	"preBuildCommands-windows": [
-		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
-	"configurations": 
+	"configurations":
 	[
 		{
 			"name" : "script",
@@ -120,8 +120,8 @@ string generateDubProject(DubProjectInfo info)
 			"versions": ["ScriptAPI"]
 		},
 		{
-			"name": "release", 
-			"targetType": "staticLibrary", 
+			"name": "release",
+			"targetType": "staticLibrary",
 			"dependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api"}}
 		},
 		{
@@ -142,7 +142,7 @@ string generateReadmeContent(string projectName)
 {
 	return "# "~projectName~"\n"~projectName~" is made using Hipreme Engine.\n" ~
 		"## Building Instructions \n" ~
-		"1. Run `dub hipreme_engine:build_selector`\n" ~
+		"1. Run `dub hipreme_engine:hbuild`\n" ~
 		"2. Select 'Select Game'\n" ~
 		"3. Select the folder containing "~projectName~"\n"~
 		"4. Now you can simply choose the platform to build for";

@@ -9,8 +9,8 @@ on:
     branches:
       - master
     paths:
-      - "tools/user/build_selector/**"
-      - ".github/workflows/build_selector.yml"
+      - "tools/hbuild/**"
+      - ".github/workflows/hbuild.yml"
 permissions:
   contents: read
 
@@ -31,7 +31,7 @@ jobs:
     - name: 'Build'
       run: |
         # Build the project, with its main file included, without unittests
-        cd tools/user/build_selector
+        cd tools/hbuild
         dub build --compiler=$DC -c ci
         # Build and run tests, as defined by `unittest` configuration
         # In this mode, `mainSourceFile` is excluded and `version (unittest)` are included
@@ -39,8 +39,8 @@ jobs:
     - name: 'Upload'
       uses: actions/upload-artifact@v3.1.2
       with:
-        name: linux64-build_selector
-        path: tools/user/build_selector/linux64-build_selector
+        name: linux64-hbuild
+        path: tools/hbuild/linux64-hbuild
         
   build-macos:
 
@@ -52,13 +52,13 @@ jobs:
     - name: 'Build'
       run: |
         # Build the project, with its main file included, without unittests
-        cd tools/user/build_selector
+        cd tools/hbuild
         dub build --compiler=$DC -c ci
     - name: 'Upload'
       uses: actions/upload-artifact@v3.1.2
       with:
-        name: macos64-build_selector
-        path: tools/user/build_selector/macos64-build_selector
+        name: macos64-hbuild
+        path: tools/hbuild/macos64-hbuild
         
   build-windows:
 
@@ -70,23 +70,23 @@ jobs:
     - name: 'Build'
       run: |
         # Build the project, with its main file included, without unittests
-        cd tools/user/build_selector
+        cd tools/hbuild
         dub build -c ci
         mkdir win-release
-        copy win64-build_selector.exe win-release/win64-build_selector.exe
+        copy win64-hbuild.exe win-release/win64-hbuild.exe
         copy libcurl.dll win-release/libcurl.dll
     - name: 'Zip EXE with DLL'
       uses: thedoctor0/zip-release@0.7.1
       with:
         type: 'zip'
-        filename: 'win64-build_selector.zip'
-        directory: 'tools/user/build_selector/'
+        filename: 'win64-hbuild.zip'
+        directory: 'tools/hbuild/'
         path: 'win-release'
     - name: 'Upload'
       uses: actions/upload-artifact@v3.1.2
       with:
-        name: win64-build_selector.zip
-        path: tools/user/build_selector/win64-build_selector.zip
+        name: win64-hbuild.zip
+        path: tools/hbuild/win64-hbuild.zip
 
   update-release:
     runs-on: ubuntu-latest
@@ -99,7 +99,7 @@ jobs:
     - name: "Update BuildAssets"
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "win64-build_selector.zip/win64-build_selector.zip,linux64-build_selector/linux64-build_selector,macos64-build_selector/macos64-build_selector"
+        artifacts: "win64-hbuild.zip/win64-hbuild.zip,linux64-hbuild/linux64-hbuild,macos64-hbuild/macos64-hbuild"
         allowUpdates: "true"
         tag: "BuildAssets.v1.0.0"
         
