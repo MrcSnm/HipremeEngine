@@ -716,23 +716,40 @@ struct JSONValue
 		import hip.util.conv:to;
 		string ret;
 
-		static string escapeBackSlashes(string input)
+		static string escapeCharacters(string input)
 		{
 			size_t length = input.length;
 			foreach(ch; input)
-				if(ch == '\\') length++;
+			{
+				if(ch == '\\' || ch == '\n' || ch == '\t' || ch == '\r') length++;
+			}
 			if(length == input.length) return input;
 			char[] escaped = new char[](length);
 			length = 0;
 			foreach(i; 0..input.length)
 			{
-				if(input[i] == '\\')
+				switch(input[i])
 				{
-					escaped[length] = '\\';
-					escaped[++length] = '\\';
+					case '\\':
+						escaped[length] = '\\';
+						escaped[++length] = '\\';
+						break;
+					case '\n':
+						escaped[length] = '\\';
+						escaped[++length] = 'n';
+						break;
+					case '\r':
+						escaped[length] = '\\';
+						escaped[++length] = 'r';
+						break;
+					case '\t':
+						escaped[length] = '\\';
+						escaped[++length] = 't';
+						break;
+					default:
+						escaped[length] = input[i];
+						break;
 				}
-				else
-					escaped[length] = input[i];
 				length++;
 			}
 			return cast(string)escaped;
@@ -750,7 +767,7 @@ struct JSONValue
 				ret = data._bool ? "true" : "false";
 				break;
 			case JSONType.string_:
-				ret = '"'~escapeBackSlashes(data._string)~'"';
+				ret = '"'~escapeCharacters(data._string)~'"';
 				break;
 			case JSONType.null_:
 				ret = "null";
@@ -773,7 +790,7 @@ struct JSONValue
 			{
 				if(selfPrintkey)
 				{
-					ret = '"'~escapeBackSlashes(key)~"\": ";
+					ret = '"'~escapeCharacters(key)~"\": ";
 				}
 				ret~= '{';
 				bool isFirst = true;
@@ -782,7 +799,7 @@ struct JSONValue
 					if(!isFirst)
 						ret~= ", ";
 					isFirst = false;
-					ret~= '"'~escapeBackSlashes(k)~"\" : "~v.toString(false);
+					ret~= '"'~escapeCharacters(k)~"\" : "~v.toString(false);
 				}
 				ret~= '}';
 				break;
