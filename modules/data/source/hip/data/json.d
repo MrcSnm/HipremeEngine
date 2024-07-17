@@ -373,7 +373,29 @@ struct JSONValue
 						theString = cast(string)ret;
 						return true;
 					}
-					case '\\': i++; ch = data[i]; break;
+					case '\\':
+						if(i + 1 < data.length)
+						{
+							i++;
+							switch(data[i])
+							{
+								case 'n':
+									ch = '\n';
+									break;
+								case 't':
+									ch = '\t';
+									break;
+								case 'r':
+									ch = '\r';
+									break;
+								default:
+									ch = data[i];
+									break;
+							}
+						}
+						else
+							return false;
+						break;
 					default: break;
 				}
 				if(returnLength >= ret.length)
