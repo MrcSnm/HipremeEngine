@@ -13,13 +13,10 @@ module hip.systems.compilewatcher;
 
 import fswatch;
 import std.concurrency;
-import hip.util.path;
-import std.datetime.stopwatch;
-import core.time:Duration,dur;
-import hip.util.system;
 
 pragma(inline, true) private bool hasExtension(string file, ref immutable(string[]) extensions)
 {
+    import hip.util.path;
     file = extension(file);
     foreach(e;extensions) if(file == e) return true;
     return false;
@@ -27,7 +24,6 @@ pragma(inline, true) private bool hasExtension(string file, ref immutable(string
 
 
 //Don't wait at all
-private __gshared Duration timeout = dur!"msecs"(30);//Saves a lot of CPU Time
 
 enum WatchFSDelay = 250;
 
@@ -35,6 +31,9 @@ void watchFs(Tid tid, string watchDir,
 immutable(string[]) acceptedExtensions, immutable(string[]) ignoreDirs)
 {
     import core.thread.osthread:Thread;
+    import std.datetime.stopwatch;
+    __gshared Duration timeout = dur!"msecs"(30);//Saves a lot of CPU Time
+
     bool shouldWatchFS = true;
     FileWatch watcher = FileWatch(watchDir, true);
     auto stopwatch = StopWatch(AutoStart.yes);
@@ -47,6 +46,7 @@ immutable(string[]) acceptedExtensions, immutable(string[]) ignoreDirs)
         {
             shouldWatchFS = false;
         });
+
 		foreach (event; watcher.getEvents())
 		{
             // if (event.type == FileChangeEventType.create) Although creation is important, it only makes sense
@@ -126,6 +126,8 @@ class CompileWatcher
 
     string update()
     {
+        import core.time:Duration, dur;
+        __gshared Duration timeout = dur!"msecs"(30);//Saves a lot of CPU Time
         if(isRunning)
         {
             receiveTimeout(timeout, &checkFileWatcher);

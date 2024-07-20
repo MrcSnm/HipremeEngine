@@ -1,7 +1,5 @@
 module fswatch;
-import std.file;
 
-import core.thread;
 
 debug (FSWTestRun2) version = FSWForcePoll;
 
@@ -33,16 +31,7 @@ struct FileChangeEvent
 	string newPath = null;
 }
 
-private ulong getUniqueHash(DirEntry entry)
-{
-	version (Windows)
-		return entry.timeCreated.stdTime ^ cast(ulong) entry.attributes;
-	else version (Posix)
-		return entry.statBuf.st_ino | (cast(ulong) entry.statBuf.st_dev << 32UL);
-	else
-		return (entry.timeLastModified.stdTime ^ (
-				cast(ulong) entry.attributes << 32UL) ^ entry.linkAttributes) * entry.size;
-}
+
 
 version (FSWForcePoll)
 	version = FSWUsesPolling;
@@ -143,6 +132,7 @@ struct FileWatch
 		/// Implementation using Win32 API or polling for files
 		FileChangeEvent[] getEvents()
 		{
+			import std.file;
 			const pathExists = _absolutePath.exists; // cached so it is not called twice
 			if (isDir && (!pathExists || _absolutePath.isDir))
 			{
@@ -266,19 +256,11 @@ struct FileWatch
 	}
 	else version (FSWUsesINotify)
 	{
-		import core.sys.linux.sys.inotify : inotify_rm_watch, inotify_init1,
-			inotify_add_watch, inotify_event, IN_CREATE, IN_DELETE,
-			IN_DELETE_SELF, IN_MODIFY, IN_MOVE_SELF, IN_MOVED_FROM, IN_MOVED_TO,
-			IN_NONBLOCK, IN_ATTRIB, IN_EXCL_UNLINK;
-		import core.sys.linux.unistd : close, read;
-		import core.sys.linux.fcntl : fcntl, F_SETFD, FD_CLOEXEC, stat, stat_t, S_ISDIR;
+		
 		import core.sys.linux.errno : errno;
 		import core.sys.posix.poll : pollfd, poll, POLLIN;
+
 		import core.stdc.errno : ENOENT;
-		import std.algorithm : countUntil;
-		import std.string : toStringz, stripRight;
-		import hip.util.conv : to, toHex;
-		import std.path : relativePath, buildPath;
 
 		private int fd;
 		private bool recursive;
@@ -297,6 +279,8 @@ struct FileWatch
 
 		~this()
 		{
+			import core.sys.linux.unistd : close;
+			import core.sys.linux.sys.inotify: inotify_rm_watch;
 			if (fd)
 			{
 				foreach (ref fdinfo; directoryMap)
@@ -308,6 +292,14 @@ struct FileWatch
 
 		private void addWatch(string path)
 		{
+			import hip.util.string : toStringz;
+			import hip.util.conv : to;
+			import core.sys.linux.fcntl : fcntl, F_SETFD, FD_CLOEXEC;
+			import core.sys.linux.sys.inotify: inotify_add_watch, IN_CREATE, IN_DELETE,
+				IN_DELETE_SELF, IN_MODIFY, IN_MOVE_SELF, IN_MOVED_FROM, IN_MOVED_TO,
+				IN_ATTRIB, IN_EXCL_UNLINK;
+			
+
 			auto wd = inotify_add_watch(fd, path.toStringz,
 					IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE_SELF
 					| IN_MOVED_FROM | IN_MOVED_TO | IN_ATTRIB | IN_EXCL_UNLINK);
@@ -322,6 +314,17 @@ struct FileWatch
 		/// Implementation using inotify
 		FileChangeEvent[] getEvents()
 		{
+			import std.algorithm : countUntil;
+			import std.file;
+			import hip.util.string: toStringz;
+			import hip.util.conv : to;
+			import std.string : stripRight;
+			import core.sys.linux.unistd : read;
+			import core.sys.linux.fcntl : stat, stat_t, S_ISDIR;
+			import core.sys.linux.sys.inotify : inotify_init1,
+				inotify_event, IN_NONBLOCK, IN_MOVED_TO, IN_CREATE, IN_DELETE, IN_ATTRIB, IN_MOVED_FROM,
+				IN_MOVE_SELF, IN_MODIFY, IN_DELETE_SELF, inotify_rm_watch;
+
 			FileChangeEvent[] events;
 			if (!fd && path.exists)
 			{
@@ -350,6 +353,7 @@ struct FileWatch
 				return events;
 			else
 			{
+				import hip.util.path:relativePath, joinPath;
 				const receivedBytes = read(fd, eventBuffer.ptr, eventBuffer.length);
 				int i = 0;
 				string fromFilename;
@@ -357,9 +361,10 @@ struct FileWatch
 				while (true)
 				{
 					auto info = cast(inotify_event*)(eventBuffer.ptr + i);
+					// string fileName = info.name.ptr[0..info.len].idup;
 					string fileName = info.name.ptr[0..info.len].stripRight("\0").idup;
 					auto mapIndex = directoryMap.countUntil!(a => a.wd == info.wd);
-					string absoluteFileName = buildPath(directoryMap[mapIndex].path, fileName);
+					string absoluteFileName = joinPath('/', directoryMap[mapIndex].path, fileName);
 					string relativeFilename = relativePath("/" ~ absoluteFileName, "/" ~ path);
 					if (cookie && (info.mask & IN_MOVED_TO) == 0)
 					{
@@ -438,6 +443,16 @@ struct FileWatch
 		import std.datetime : SysTime;
 		import std.algorithm : countUntil, remove;
 		import std.path : relativePath, absolutePath, baseName;
+		private ulong getUniqueHash(DirEntry entry)
+		{
+			version (Windows)
+				return entry.timeCreated.stdTime ^ cast(ulong) entry.attributes;
+			else version (Posix)
+				return entry.statBuf.st_ino | (cast(ulong) entry.statBuf.st_dev << 32UL);
+			else
+				return (entry.timeLastModified.stdTime ^ (
+						cast(ulong) entry.attributes << 32UL) ^ entry.linkAttributes) * entry.size;
+		}
 
 		private struct FileEntryCache
 		{
@@ -486,7 +501,7 @@ struct FileWatch
 				foreach (ref e; cache)
 					e.isDirty = true;
 				DirEntry[] created;
-				foreach (file; dirEntries(path, recursive ? SpanMode.breadth : SpanMode.shallow))
+				foreach (file; dirEntries(path, recursive ? SpanMode.depth : SpanMode.shallow))
 				{
 					auto newCache = FileEntryCache(file.timeLastModified,
 							file.name, false, file.getUniqueHash);
