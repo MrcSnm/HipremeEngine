@@ -78,8 +78,8 @@ static if(HipConcurrency)
             }
             else
             {
-                import std.stdio;
-                writeln("Thread is not alive to get tasks.");
+                import hip.console.log;
+                logln("Thread is not alive to get tasks.");
             }
         }
 
@@ -103,7 +103,6 @@ static if(HipConcurrency)
                 {
                     WorkerJob job = jobsQueue[0];
                     mutex.unlock();
-                    import std.stdio;
                     try
                     {
                         mutex.lock();
@@ -136,7 +135,6 @@ static if(HipConcurrency)
 
         private void onAnyException(bool isError, string message)
         {
-            import std.stdio;
             isAlive = false;
             if(pool)
                 pool.onHipThreadError(this, isError,message);
@@ -172,7 +170,7 @@ static if(HipConcurrency)
         this(size_t poolSize)
         {
             threads = new HipWorkerThread[](poolSize);
-            import std.process:thisThreadID;
+            import hip.concurrency.internal:thisThreadID;
             auto mainId = thisThreadID;
             handlersMutex = new DebugMutex(mainId);
             for(size_t i = 0; i < poolSize; i++)
@@ -195,8 +193,8 @@ static if(HipConcurrency)
                 awaitSemaphore.notify();
             }
             import hip.util.array;
-            import std.stdio;
-            writeln("Worker ", worker.jobsQueue[0].name, " failed with ", isError ? "error" : "exception", ":", message);
+            import hip.console.log;
+            logln("Worker ", worker.jobsQueue[0].name, " failed with ", isError ? "error" : "exception", ":", message);
             threads.remove(worker);
         }
         void await()

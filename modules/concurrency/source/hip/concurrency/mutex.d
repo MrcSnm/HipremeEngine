@@ -2,6 +2,9 @@ module hip.concurrency.mutex;
 import hip.config.opts;
 
 
+
+
+
 static if(HipConcurrency)
 class DebugMutex
 {
@@ -26,7 +29,7 @@ class DebugMutex
     }
     void lock(string file = __FILE__, size_t line = __LINE__)
     {
-        import std.process:thisThreadID;
+        import hip.concurrency.internal;
         if(lastLineLock == 0)
         {
             lastLineUnlock = 0;
@@ -40,15 +43,15 @@ class DebugMutex
         {
             version(Desktop)
             {
-                import std.stdio;
+                import hip.console.log;
                 import hip.util.conv:to;
                 string last = (lastID == mainThreadId ? "Main " : "") ~ "Thread("~to!string(lastID)~")";
                 string curr = (thisThreadID == mainThreadId ? "Main " : "") ~ "Thread("~to!string(thisThreadID)~")";
 
-                writeln("Tried to lock a locked mutex at ", file, ":", line,
+
+                logln("Tried to lock a locked mutex at ", file, ":", line,
                 "\n\tLast locked at ", lastFileLock, ":",lastLineLock, " ", last, 
-                " Current Thread is ",curr
-                );
+                " Current Thread is ",curr);
             }
         }
         mtx.lock();
@@ -57,15 +60,15 @@ class DebugMutex
     {
         version(Desktop)
         {
-            import std.process:thisThreadID;
             if(lastLineLock == 0)
             {
-                import std.stdio;
+                import hip.concurrency.internal;
+                import hip.console.log;
                 import hip.util.conv:to;
                 string last = (lastID == mainThreadId ? "Main " : "") ~ "Thread("~to!string(lastID)~")";
                 string curr = (thisThreadID == mainThreadId ? "Main " : "") ~ "Thread("~to!string(thisThreadID)~")";
                 
-                writeln(
+                logln(
                     "Tried to unlock an unlocked mutex at ", file, ":", line, 
                     "\n\tLast unlocked at ",  lastFileUnlock, ":",lastLineUnlock, " ", last,
                     " Current Thread is ",curr

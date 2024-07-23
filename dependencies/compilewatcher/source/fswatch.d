@@ -103,6 +103,7 @@ struct FileWatch
 		/// Creates an instance using the Win32 API
 		this(string path, bool recursive = false, bool treatDirAsFile = false)
 		{
+			import std.file:getcwd;
 			_path = path;
 			_absolutePath = absolutePath(path, getcwd);
 			this.recursive = recursive;

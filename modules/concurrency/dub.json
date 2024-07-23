@@ -4,7 +4,8 @@
 	],
 	"dependencies": {
 		"util": {"path": "../util"},
-		"config": {"path": "../config"}
+		"config": {"path": "../config"},
+		"console": {"path": "../console"}
 	},
 	"copyright": "Copyright © 2024, Hipreme",
 	"description": "Concurrency utilities for Hipreme Engine",
