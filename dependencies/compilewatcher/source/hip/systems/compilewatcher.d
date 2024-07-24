@@ -12,7 +12,7 @@ Distributed under the CC BY-4.0 License.
 module hip.systems.compilewatcher;
 
 import fswatch;
-import std.concurrency;
+import core.thread;
 
 pragma(inline, true) private bool hasExtension(string file, ref immutable(string[]) extensions)
 {
@@ -22,79 +22,82 @@ pragma(inline, true) private bool hasExtension(string file, ref immutable(string
     return false;
 }
 
-
-//Don't wait at all
-
-enum WatchFSDelay = 250;
-
-void watchFs(Tid tid, string watchDir,
-immutable(string[]) acceptedExtensions, immutable(string[]) ignoreDirs)
+class WatcherThread : Thread
 {
-    import core.thread.osthread:Thread;
-    import std.datetime.stopwatch;
-    __gshared Duration timeout = dur!"msecs"(30);//Saves a lot of CPU Time
-
-    bool shouldWatchFS = true;
-    FileWatch watcher = FileWatch(watchDir, true);
-    auto stopwatch = StopWatch(AutoStart.yes);
-    long lastTime = stopwatch.peek.total!"msecs";
-    string lastEventPath;
-    while (shouldWatchFS)
-	{
-        receiveTimeout(timeout, 
-        (bool exit) //The data is not important at all
-        {
-            shouldWatchFS = false;
-        });
-
-		foreach (event; watcher.getEvents())
-		{
-            // if (event.type == FileChangeEventType.create) Although creation is important, it only makes sense
-            //When it is imported by any module, so, modify only
-            if (event.type == FileChangeEventType.modify)
-            {
-                if(hasExtension(event.path,acceptedExtensions))
-                {
-                    lastTime = stopwatch.peek.total!"msecs";
-                    lastEventPath = event.path;
-                }
-                // send(tid, event.path);
-            }
-            // else if (event.type == FileChangeEventType.remove) Remove should not trigger compilation
-        }
-        if(lastEventPath && stopwatch.peek.total!"msecs" - lastTime > WatchFSDelay)
-        {
-            send(tid, lastEventPath);
-            lastEventPath = null;
-        }
-        // if (event.type == FileChangeEventType.rename) (Rename should not compile, it is not important)
-        // else if (event.type == FileChangeEventType.createSelf) The folder should not be created while watching
-        // else if (event.type == FileChangeEventType.removeSelf) It should not be removed while watching
-
+    string watchDir;
+    immutable(string[]) acceptedExtensions, ignoreDirs;
+    private bool shouldWatchFS = true;
+    CompileWatcher compileWatcher;
+    this(string watchDir, immutable(string[]) acceptedExtensions, immutable(string[]) ignoreDirs, CompileWatcher cmpWatcher)
+    {
+        super(&run);
+        this.watchDir = watchDir;
+        this.acceptedExtensions = acceptedExtensions;
+        this.ignoreDirs = ignoreDirs;
+        this.compileWatcher = cmpWatcher;
     }
-    stopwatch.stop();
-    send(tid, true);
+
+    void stop()
+    {
+        this.shouldWatchFS = false;
+    }
+    void run()
+    {
+        import core.time:dur;
+        FileWatch watcher = FileWatch(watchDir, true);
+        string lastEventPath;
+
+        while (shouldWatchFS)
+        {
+            bool gotNew;
+        	foreach (event; watcher.getEvents())
+        	{
+                // if (event.type == FileChangeEventType.create) Although creation is important, it only makes sense
+                //When it is imported by any module, so, modify only
+                if (event.type == FileChangeEventType.modify)
+                {
+                    if(hasExtension(event.path,acceptedExtensions))
+                    {
+                        if(lastEventPath != event.path)
+                        {
+                            lastEventPath = event.path;
+                            gotNew = true;
+                        }
+                    }
+                    // send(tid, event.path);
+                }
+                // else if (event.type == FileChangeEventType.remove) Remove should not trigger compilation
+            }
+            if(gotNew)
+                compileWatcher.onFileEvent(lastEventPath);
+            Thread.sleep(dur!"msecs"(1));
+            // if (event.type == FileChangeEventType.rename) (Rename should not compile, it is not important)
+            // else if (event.type == FileChangeEventType.createSelf) The folder should not be created while watching
+            // else if (event.type == FileChangeEventType.removeSelf) It should not be removed while watching
+        }
+    }
 }
 
 
 ///Use these property and function for not allocating closures everytime
-private __gshared string compilerWatcherFileUpdate;
-private void checkFileWatcher(string theFile)
-{
-    compilerWatcherFileUpdate = theFile;
-}
-
 class CompileWatcher
 {
+    import core.sync.mutex;
+
     string watchDir;
     string[] acceptedExtensions;
     string[] ignoredDirs;
+
+
     void function(string fileName) handler;
-    Tid worker;
+    WatcherThread watcherThread;
+    string lastFile;
+
+    private Mutex mutex;
 
     bool isRunning = false;
 
-    this(string watchDir, void function(string fileName) handler = null, 
+    this(string watchDir, void function(string fileName) handler = null,
     string[] acceptedExtensions = [], string[] ignoredDirs = [])
     {
         this.watchDir = watchDir;
@@ -114,25 +117,26 @@ class CompileWatcher
         assert(!isRunning,  "CompileWatcher is already running");
         // assert(handler != null, "CompileWatcher must have some handler before running");
         isRunning = true;
-        worker = spawn(&watchFs, thisTid, watchDir, 
-        acceptedExtensions.idup, ignoredDirs.idup);
+        watcherThread = new WatcherThread(watchDir, acceptedExtensions.idup, ignoredDirs.idup, this);
+        this.mutex = new Mutex();
         return this;
+    }
+    private void onFileEvent(string fileName)
+    {
+        mutex.lock();
+        if(fileName != lastFile)
+            this.lastFile = fileName.dup;
+        mutex.unlock();
     }
     void stop()
     {
         if(isRunning)
-            send(worker, true);
+            watcherThread.stop();
     }
 
     string update()
     {
-        import core.time:Duration, dur;
-        __gshared Duration timeout = dur!"msecs"(30);//Saves a lot of CPU Time
-        if(isRunning)
-        {
-            receiveTimeout(timeout, &checkFileWatcher);
-        }
-        return compilerWatcherFileUpdate;
+        return lastFile;
     }
 
     ~this()

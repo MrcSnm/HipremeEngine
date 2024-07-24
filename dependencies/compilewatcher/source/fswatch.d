@@ -60,6 +60,7 @@ struct FileWatch
 
 	version (FSWUsesWin32)
 	{
+
 		/*
 		 * The Windows version works by first creating an asynchronous path handle using CreateFile.
 		 * The name may suggest this creates a new file on disk, but it actually gives
@@ -74,6 +75,7 @@ struct FileWatch
 		 * if it doesn't exist anymore the handle is closed and set to null until it exists again.
 		 */
 		import core.sys.windows.basetsd : HANDLE;
+		import fswatch_helpers;
 
 		import core.sys.windows.winbase: OPEN_EXISTING, FILE_FLAG_OVERLAPPED, OVERLAPPED,
 			CloseHandle, GetOverlappedResult, CreateFile, GetLastError, ReadDirectoryChangesW,
@@ -86,15 +88,13 @@ struct FileWatch
 			FILE_SHARE_DELETE, FILE_NOTIFY_CHANGE_FILE_NAME,
 			FILE_NOTIFY_CHANGE_DIR_NAME, FILE_NOTIFY_CHANGE_LAST_WRITE,
 			ERROR_IO_PENDING, ERROR_IO_INCOMPLETE, DWORD;
-		import std.utf : toUTF8, toUTF16;
-		import std.path : absolutePath;
+		import std.utf : toUTF8, toUTF16, toUTF16z;
 		import hip.util.conv : to, toHex;
-		import std.datetime : SysTime;
 
 		private HANDLE pathHandle; // Windows 'file' handle for ReadDirectoryChangesW
 		private ubyte[1024 * 4] changeBuffer; // 4kb buffer for file changes
 		private bool isDir, exists, recursive;
-		private SysTime timeLastModified;
+		private size_t timeLastModified;
 		private DWORD receivedBytes;
 		private OVERLAPPED overlapObj;
 		private bool queued; // Whether a directory changes watch is issued to Windows
@@ -103,9 +103,10 @@ struct FileWatch
 		/// Creates an instance using the Win32 API
 		this(string path, bool recursive = false, bool treatDirAsFile = false)
 		{
-			import std.file:getcwd;
+			import fswatch_helpers;
+			import hip.util.path;
 			_path = path;
-			_absolutePath = absolutePath(path, getcwd);
+			_absolutePath = joinPath(winGetCwd, path);
 			this.recursive = recursive;
 			isDir = !treatDirAsFile;
 			if (!isDir && recursive)
@@ -133,9 +134,9 @@ struct FileWatch
 		/// Implementation using Win32 API or polling for files
 		FileChangeEvent[] getEvents()
 		{
-			import std.file;
-			const pathExists = _absolutePath.exists; // cached so it is not called twice
-			if (isDir && (!pathExists || _absolutePath.isDir))
+			const(wchar)* wAbsolutePath = toUTF16z(_absolutePath);
+			const pathExists = winExists(wAbsolutePath); // cached so it is not called twice
+			if (isDir && (!pathExists || winIsDir(wAbsolutePath)))
 			{
 				// ReadDirectoryChangesW does not report changes to the specified directory
 				// itself, so 'removeself' is checked manually
@@ -227,11 +228,11 @@ struct FileWatch
 			}
 			else
 			{
-				const nowExists = _absolutePath.exists;
+				const nowExists = winExists(wAbsolutePath);
 				if (nowExists && !exists)
 				{
 					exists = true;
-					timeLastModified = _absolutePath.timeLastModified;
+					timeLastModified = fswatch_helpers.timeLastModified(wAbsolutePath);
 					return [FileChangeEvent(FileChangeEventType.createSelf, _absolutePath)];
 				}
 				else if (!nowExists && exists)
@@ -241,7 +242,7 @@ struct FileWatch
 				}
 				else if (nowExists)
 				{
-					const modTime = _absolutePath.timeLastModified;
+					const modTime = fswatch_helpers.timeLastModified(wAbsolutePath);
 					if (modTime != timeLastModified)
 					{
 						timeLastModified = modTime;
