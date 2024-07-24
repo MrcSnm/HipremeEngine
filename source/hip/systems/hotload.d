@@ -30,8 +30,10 @@ class HotloadableDLL
         ErrorHandler.assertExit(path != null, "DLL path should not be null:
 Call `dub -c script -- path/to/project` dub -c script requires that argument.");
 
-        import std.path;
-        path = absolutePath(path).buildNormalizedPath;
+        import hip.util.path;
+        import hip.util.file;
+
+        path = absolutePath(path, getcwd).normalizePath;
         if(HipFS.absoluteIsDir(path))
             path = joinPath(path, path.filenameNoExt);
         if(!dynamicLibraryIsLibNameValid(path))

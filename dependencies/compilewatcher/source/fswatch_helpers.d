@@ -30,16 +30,8 @@ version(Windows)
 
     string winGetCwd()
     {
-        import core.sys.windows.winnt:MAX_PATH;
-        import core.sys.windows.winbase;
-        char[MAX_PATH] buffer;
-
-        uint length = GetCurrentDirectoryA(MAX_PATH, buffer.ptr);
-
-        char[] ret = new char[](length);
-        ret[] = buffer[0..length];
-
-        return cast(string)ret;
+        import hip.util.file:getcwd;
+        return getcwd;
     }
 
     bool winExists(const(wchar)* filePath)

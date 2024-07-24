@@ -20,7 +20,6 @@ version (Windows)
     import core.stdc.stdlib : free, calloc;
     import core.stdc.stdio : fprintf, stderr;
     import core.stdc.string : memcpy, strncmp, strlen;
-    import std.string;
 
     struct SYMBOL_INFO
     {

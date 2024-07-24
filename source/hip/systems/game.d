@@ -56,7 +56,7 @@ class GameSystem
 
     HipInputListener inputListener;
     HipInputListener scriptInputListener;
-    string projectDir, buildCommand = "dub build --parallel --skip-registry=all";
+    string projectDir, buildCommand = "redub build";
     ///Resets delta time after a reload for not jumping frames.
     protected bool shouldResetDelta;
     protected __gshared AScene externalScene;
@@ -167,7 +167,7 @@ class GameSystem
             }
             int status = wait(dub.pid);
             //2 == up to date
-            if(errors.length) 
+            if(errors.length)
             {
                 loglnError(errors);
                 foreach(err; errors) loglnError(err);
@@ -259,7 +259,6 @@ class GameSystem
     bool update(float deltaTime)
     {
         import hip.assetmanager;
-        import std.stdio;
         frames++;
         fpsAccumulator+= deltaTime;
         if(shouldResetDelta)
