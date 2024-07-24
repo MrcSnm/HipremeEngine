@@ -271,7 +271,7 @@ version(Windows)
 {
     public HipKey getHipKeyFromSystem(uint key)
     {
-        import core.sys.windows.winuser;
+        import hip.windowing.platforms.winlib.keys;
         ushort k = cast(ushort)(key);
         assert(k > 0 && k <= ubyte.max, "Key out of range");
         switch(k)
