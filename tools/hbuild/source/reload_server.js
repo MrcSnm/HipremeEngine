@@ -1,5 +1,5 @@
 ///TODO: Use port from serve.d
-const _reloadSocket = new WebSocket("ws://localhost:9000");
+const _reloadSocket = new WebSocket("$WEBSOCKET_SERVER$");
 
 _reloadSocket.addEventListener("open", (event) =>
 {

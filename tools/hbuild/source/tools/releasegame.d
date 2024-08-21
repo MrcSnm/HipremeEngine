@@ -55,7 +55,7 @@ void releaseGame(ref Terminal t, string gamePath, string outputFolder, bool verb
             foreach(DirEntry e; dirEntries(f, SpanMode.breadth))
             {
                 string relativizedName = relativePath(e.name, gamePath);
-                string outputBasedOnGame = outputFolder~relativizedName;
+                string outputBasedOnGame = buildNormalizedPath(outputFolder, relativizedName);
                 if(isDir(e.name))
                 {
                     if(!exists(outputBasedOnGame))
@@ -82,9 +82,10 @@ void releaseGame(ref Terminal t, string gamePath, string outputFolder, bool verb
         else if(!shouldFileSkip(f))
         {
             string relativizedName = relativePath(f, gamePath);
+            string outputBasedOnGame = buildPath(outputFolder, relativizedName);
             if(verbose)
-                t.writeln("Copying [",f,"] -> ", outputFolder~relativizedName);
-            copy(f, outputFolder~relativizedName);
+                t.writeln("Copying [",f,"] -> ", outputBasedOnGame);
+            copy(f, outputBasedOnGame);
         }
     }
 }

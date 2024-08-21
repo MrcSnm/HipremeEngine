@@ -29,6 +29,7 @@ string extendedContentTypeFromFileExtension(string thing)
 
 import core.thread;
 import core.sync.mutex;
+import core.sync.semaphore;
 void pushWebsocketMessage(string message)
 {
 	synchronized
@@ -94,7 +95,9 @@ void serveGameFiles(Cgi cgi)
 		string indexHTML = buildNormalizedPath(targetPath, "index.html");
 		if(exists(indexHTML))
 		{
-			cgi.write(readText(indexHTML)~"<script> "~import("reload_server.js")~"</script>", true);
+			import std.string;
+			string reloadServer = replace(import("reload_server.js"), "$WEBSOCKET_SERVER$", "ws://localhost:"~server.listeningPort.to!string);
+			cgi.write(readText(indexHTML)~"<script> "~reloadServer~"</script>", true);
 		}
 		else
 		{
@@ -146,7 +149,7 @@ private RequestServer server;
 
 
 void hipengineCgiMain(alias fun, CustomCgi = Cgi, long maxContentLength = defaultMaxContentLength)
-(string[] args, string servePath)  if(is(CustomCgi : Cgi)) 
+(string[] args, string servePath, shared ushort* port, shared Semaphore sem)  if(is(CustomCgi : Cgi))
 {
     startPath = servePath;
 	if(tryAddonServers(args))
@@ -155,24 +158,41 @@ void hipengineCgiMain(alias fun, CustomCgi = Cgi, long maxContentLength = defaul
 		return;
 
 	// you can change the port here if you like
-	server.listeningPort = 9000;
+	*port = 9000;
+	server.listeningPort = *port;
 
 	string host = server.listeningHost;
 	if(host == "") host = "localhost";
-	writeln("HipremeEngine Dev Server listening from ", host,":",server.listeningPort);
+
 
 	// then call this to let the command line args override your default
 	server.configureFromCommandLine(args);
 
 
+
 	// and serve the request(s).
-	server.serve!(fun, CustomCgi, maxContentLength)();
+
+	while(*port != 0)
+	{
+		try{
+			server.listeningPort = *port;
+			writeln("HipremeEngine Dev Server listening from ", host,":",server.listeningPort);
+			(cast()sem).notify;
+			server.serve!(fun, CustomCgi, maxContentLength)();
+			return;
+		}
+		catch(Exception e)
+		{
+			*port = cast(ushort)(*port + 1);
+		}
+	}
+
+	writeln("Hipreme Engine Dev server could not start.");
 }
 
 
 void stopServer()
 {
-
     import core.stdc.stdlib;
 	pushWebsocketMessage("close");
     exit(0);

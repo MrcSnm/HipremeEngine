@@ -6,18 +6,27 @@ bool appleClean;
 
 
 import std.concurrency;
+import core.sync.semaphore;
 import commons;
 private Tid serverTid;
-void startServer()
+
+shared ushort gameServerPort;
+
+void startServer(shared ushort* usingPort)
 {
     if(serverStarted) return;
     import serve;
-    static void startTheServer()
+    static void startTheServer(shared ushort* usingPort, shared Semaphore sem)
     {
-        hipengineCgiMain!(serveGameFiles)([], getHipPath("build", "wasm"));
+        hipengineCgiMain!(serveGameFiles)([], getHipPath("build", "wasm"), usingPort, sem);
     }
     serverStarted = true;
-	serverTid = spawn(&startTheServer);
+
+    Semaphore s = new Semaphore();
+	serverTid = spawn(&startTheServer, usingPort, cast(shared)s);
+    s.wait;
+
+
 }
 
 void exitServer()

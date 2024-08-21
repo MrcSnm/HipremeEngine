@@ -63,7 +63,7 @@ Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choi
 	{
 		selectedChoice = selectChoiceBase(
 			terminal, input, choices, "Select a target platform to build.\n\t"~currentGame~
-			(serverStarted ? "\n\tWebAssembly server running at http://localhost:9000" : ""), 
+			(serverStarted ? "\n\tWebAssembly server running at http://localhost:"~gameServerPort.to!string : ""),
 			selectedChoice);
 	}
 

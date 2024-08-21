@@ -9,6 +9,7 @@ import tools.releasegame;
 
 ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
+	import std.conv:to;
 	if(!hasLdc)
 	{
 		t.writelnError("WASM build requires ldc2 in path. Please install it before building to it.");
@@ -17,8 +18,8 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	if(!serverStarted)
 	{
 		t.writelnHighlighted("Attempt to start WebAssembly development server.");
-		startServer();
-		t.writelnSuccess("Development started at localhost:9000");
+		startServer(&gameServerPort);
+		t.writelnSuccess("Development started at localhost:"~gameServerPort.to!string);
 	}
 
 	inParallel(
@@ -66,9 +67,9 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 			t.writelnError(out_Errors);
 		foreach(file; ["hipreme_engine.wasm", "hipreme_engine.wasm.map"])
 			std.file.rename(file, buildPath("build", "wasm", "build", file));
-		t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:9000");
+		t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:"~gameServerPort.to!string);
 		pushWebsocketMessage("reload");
-		cached(() => cast(void)openDefaultBrowser("http://localhost:9000"));
+		cached(() => cast(void)openDefaultBrowser("http://localhost:"~gameServerPort.to!string));
 	}
 
 	return ChoiceResult.None;
