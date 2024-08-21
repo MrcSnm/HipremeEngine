@@ -62,11 +62,15 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 
 		///In the current status, wasm sourcemap generation invalidates cache, but since the compilation is really fast right now
 		///We can keep that
-		string[] out_Errors;
-		if(!timed(t, "Generating WASM Sourcemaps ", generateSourceMaps(null, getHipPath("hipreme_engine.wasm"), null, shouldEmbed: true, includeSources:true, out_Errors)))
-			t.writelnError(out_Errors);
+		// string[] out_Errors;
+		// if(!timed(t, "Generating WASM Sourcemaps ", generateSourceMaps(null, getHipPath("hipreme_engine.wasm"), "D:", shouldEmbed: false, includeSources:true, out_Errors)))
+		// 	t.writelnError(out_Errors);
+		// if(out_Errors.length) foreach(err; out_Errors)
+		// 	t.writelnError(err);
+
 		foreach(file; ["hipreme_engine.wasm", "hipreme_engine.wasm.map"])
-			std.file.rename(file, buildPath("build", "wasm", "build", file));
+			if(std.file.exists(file))
+				std.file.rename(file, buildPath("build", "wasm", "build", file));
 		t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:"~gameServerPort.to!string);
 		pushWebsocketMessage("reload");
 		cached(() => cast(void)openDefaultBrowser("http://localhost:"~gameServerPort.to!string));

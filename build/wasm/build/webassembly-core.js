@@ -451,6 +451,10 @@ var importObject = {
 		{
 			return func;
 		},
+		jsprint(length, chars)
+		{
+			console.log(WasmUtils.fromDString(length, chars));
+		},
 		JS_Math_random : Math.random,
 		atan2f: Math.atan2,
 		tanf: Math.tan,
