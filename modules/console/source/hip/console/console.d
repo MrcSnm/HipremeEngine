@@ -123,7 +123,8 @@ class Console
                 version(WebAssembly)
                 {
                     import arsd.webassembly;
-                    _log = function(string s){eval(q{console.log.apply(null, arguments)}, s);};
+                    import std.stdio;
+                    _log = function(string s){writeln(s);};
                     _fatal = _err = function(string s){eval(q{console.error.apply(null, arguments)}, s);};
                     _warn = function(string s){eval(q{console.warn.apply(null, arguments)}, s);};
                     _info = function(string s){eval(q{console.info.apply(null, arguments)}, s);};

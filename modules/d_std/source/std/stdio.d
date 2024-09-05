@@ -7,22 +7,25 @@ version(WebAssembly)
     extern(C) void jsprint(uint length, const(char)* str);
     void writeln(Args...)(Args args)
     {
-        import hip.util.conv:to;
-
         static if(args.length == 1 && is(typeof(args[0]) == string))
         {
             jsprint(args[0].length, args[0].ptr);
         }
         else
         {
-            import hip.util.string;
-            String s = String(args);
-            jsprint(s.length, s.chars.ptr);
+            version(Have_util)
+            {
+                import hip.util.string;
+                String s = String(args);
+                jsprint(s.length, s.chars.ptr);
+            }
+            else
+            {
+                eval(q{
+                console.log.apply(null, arguments);
+                }, args);
+            }
         }
-
-        // eval(q{
-        //     console.log.apply(null, arguments);
-        // }, t);
     }
 }
 version(PSVita)

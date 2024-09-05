@@ -151,3 +151,21 @@ class CompileWatcher
         stop();
     }
 }
+
+
+int recompileGame(string projectDir, string buildCommand,
+    bool function (string line)errorCheckFn,
+    void function (string line) loggerFn,
+out string[] errors)
+{
+    import std.process:pipeShell, Redirect, wait;
+    auto dub = pipeShell("cd "~projectDir~" && "~buildCommand, Redirect.stderrToStdout | Redirect.stdout);
+
+    foreach(l; dub.stdout.byLine)
+    {
+        if(errorCheckFn(cast(string)l))
+            errors~= l.idup;
+        else loggerFn(cast(string)l);
+    }
+    return wait(dub.pid);
+}

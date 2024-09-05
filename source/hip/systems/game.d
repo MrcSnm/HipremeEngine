@@ -154,18 +154,15 @@ class GameSystem
     {
         version(Load_DScript)
         {
-            import std.process:pipeShell, Redirect, wait;
-            import hip.console.log;
-            auto dub = pipeShell("cd "~projectDir~" && "~buildCommand, Redirect.stderrToStdout | Redirect.stdout);
-
             scope string[] errors;
-            foreach(l; dub.stdout.byLine)
+            import hip.console.log;
+
+            static void logFun(string line)
             {
-                if(getDubError(cast(string)l))
-                    errors~= l.idup;
-                else logln(cast(string)l);
+                logln(line);
             }
-            int status = wait(dub.pid);
+
+            int status = hip.systems.compilewatcher.recompileGame(projectDir, buildCommand, &getDubError, &logFun,  errors);
             //2 == up to date
             if(errors.length)
             {

@@ -32,7 +32,7 @@ enum HIP_DEBUG_WEBGL = false;
 /**
 *   Used for disabling every engine log function
 */
-enum HE_NO_LOG = true;
+enum HE_NO_LOG = false;
 
 /**
 *	Used to track calls to find where the print call is located.
