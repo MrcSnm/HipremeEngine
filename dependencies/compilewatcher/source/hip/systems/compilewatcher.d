@@ -11,7 +11,6 @@ Distributed under the CC BY-4.0 License.
 
 module hip.systems.compilewatcher;
 
-import fswatch;
 import core.thread;
 
 pragma(inline, true) private bool hasExtension(string file, ref immutable(string[]) extensions)
@@ -44,6 +43,7 @@ class WatcherThread : Thread
     void run()
     {
         import core.time:dur;
+        import fswatch;
         FileWatch watcher = FileWatch(watchDir, true);
         string lastEventPath;
 
@@ -78,11 +78,11 @@ class WatcherThread : Thread
     }
 }
 
+private alias CMutex = void*;
 
 ///Use these property and function for not allocating closures everytime
 class CompileWatcher
 {
-    import core.sync.mutex;
 
     string watchDir;
     string[] acceptedExtensions;
@@ -93,7 +93,7 @@ class CompileWatcher
     WatcherThread watcherThread;
     string lastFile;
 
-    private Mutex mutex;
+    private CMutex _cmutex;
 
     bool isRunning = false;
 
@@ -112,13 +112,20 @@ class CompileWatcher
         this.handler = handler;
     }
 
+    private auto mutex()()
+    {
+        import core.sync.mutex;
+        return cast(Mutex)_cmutex;
+    }
+
     CompileWatcher run()
     {
+        import core.sync.mutex;
         assert(!isRunning,  "CompileWatcher is already running");
         // assert(handler != null, "CompileWatcher must have some handler before running");
         isRunning = true;
         watcherThread = new WatcherThread(watchDir, acceptedExtensions.idup, ignoredDirs.idup, this);
-        this.mutex = new Mutex();
+        this._cmutex = cast(CMutex)(new Mutex());
         return this;
     }
     private void onFileEvent(string fileName)
