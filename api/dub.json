@@ -7,21 +7,9 @@
 	"dflags-dmd": ["-op"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
 	"dependencies": {
-		"util": {"path": "../modules/util", "optional": true}
+		"util": {"path": "../modules/util"}
 	},
 	"sourcePaths" : ["source"],
-	"configurations": 
-	[
-		{
-			"name": "script",
-			"targetType": "library"
-		},
-		
-		{
-			"name": "hipengine",
-			"targetType": "library"
-		}
-	],
 	"subPackages": [
 		{
 			"name": "direct",
@@ -33,10 +21,6 @@
 				"import"
 			]
 		}
-	],
-	"versions" : [
-		"HipMathAPI",
-		"HipremeAudio"
 	],
 	"license": "proprietary",
 	"name": "hipengine_api"

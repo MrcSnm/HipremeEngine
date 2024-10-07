@@ -56,7 +56,7 @@ class GameSystem
 
     HipInputListener inputListener;
     HipInputListener scriptInputListener;
-    string projectDir, buildCommand = "dub build --parallel --skip-registry=all";
+    string projectDir, buildCommand = "redub build";
     ///Resets delta time after a reload for not jumping frames.
     protected bool shouldResetDelta;
     protected __gshared AScene externalScene;
@@ -154,20 +154,17 @@ class GameSystem
     {
         version(Load_DScript)
         {
-            import std.process:pipeShell, Redirect, wait;
-            import hip.console.log;
-            auto dub = pipeShell("cd "~projectDir~" && "~buildCommand, Redirect.stderrToStdout | Redirect.stdout);
-
             scope string[] errors;
-            foreach(l; dub.stdout.byLine)
+            import hip.console.log;
+
+            static void logFun(string line)
             {
-                if(getDubError(cast(string)l))
-                    errors~= l.idup;
-                else logln(cast(string)l);
+                logln(line);
             }
-            int status = wait(dub.pid);
+
+            int status = hip.systems.compilewatcher.recompileGame(projectDir, buildCommand, &getDubError, &logFun,  errors);
             //2 == up to date
-            if(errors.length) 
+            if(errors.length)
             {
                 loglnError(errors);
                 foreach(err; errors) loglnError(err);
@@ -259,7 +256,6 @@ class GameSystem
     bool update(float deltaTime)
     {
         import hip.assetmanager;
-        import std.stdio;
         frames++;
         fpsAccumulator+= deltaTime;
         if(shouldResetDelta)

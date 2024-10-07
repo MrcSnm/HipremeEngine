@@ -1,3 +1,56 @@
+/**
+ * 
+ * @param {string} url The URL to fetch
+ * @param {RequestInit?} init The request init object
+ * @param {(total: number, current: number)} onProgress A function for monitoring the progress
+ * @returns 
+ */
+async function fetchWithProgress(url, init, onProgress) 
+{
+    const response = await fetch(url, init);
+
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    const contentLength = response.headers.get('Content-Length');
+    if (!contentLength) {
+        throw new Error('Content-Length response header unavailable');
+    }
+
+    const total = parseInt(contentLength, 10);
+    let loaded = 0;
+
+    const reader = response.body.getReader();
+    const stream = new ReadableStream({
+        start(controller) {
+            function read() {
+                reader.read().then(({ done, value }) => {
+                    if (done) {
+                        controller.close();
+                        return;
+                    }
+                    loaded += value.byteLength;
+                    onProgress(loaded, total);
+                    controller.enqueue(value);
+                    read();
+                }).catch(error => {
+                    console.error('Stream reading error', error);
+                    controller.error(error);
+                });
+            }
+            read();
+        }
+    });
+
+    const newResponse = new Response(stream, {
+        headers: {
+            'Content-Type': response.headers.get("Content-Type")
+        }
+    });
+    return newResponse;
+}
+
+
 function lookupForFunction(exports, funcName)
 {
     if(!exports[funcName])

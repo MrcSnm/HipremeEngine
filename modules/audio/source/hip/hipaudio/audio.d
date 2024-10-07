@@ -10,36 +10,19 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hipaudio.audio;
 
-public import hip.hipaudio.audioclip;
 public import hip.hipaudio.audiosource;
 public import hip.api.audio;
 import hip.hipaudio.config;
 
 //Backends
 
-static if(HasOpenAL){import hip.hipaudio.backend.openal.player;}
-static if(HasOpenSLES){import hip.hipaudio.backend.opensles.player;}
-static if(HasXAudio2){import hip.hipaudio.backend.xaudio.player;}
-static if(HasAVAudioEngine){import hip.hipaudio.backend.avaudio.player;}
-import hip.hipaudio.backend.nullaudio;
 
 
 import hip.audio_decoding.audio;
 import hip.math.utils:getClosestMultiple;
 import hip.util.reflection;
 import hip.error.handler;
-import hip.hipaudio.backend.webaudio.player;
 
-version(Standalone)
-{
-    alias HipAudioSourceAPI = HipAudioSource;
-    alias HipAudioClipAPI = HipAudioClip;
-}
-else
-{
-    alias HipAudioSourceAPI = AHipAudioSource;
-    alias HipAudioClipAPI = IHipAudioClip;
-}
 
 /** 
  * This is an interface that should be created only once inside the application.
@@ -95,7 +78,7 @@ class HipAudio
     @ExportD static IHipAudioClip loadStreamed(string path, uint chunkSize = ushort.max+1)
     {
         chunkSize = getClosestMultiple(optimalBufferSize, chunkSize);
-        HipAudioClip buf = cast(HipAudioClip)audioInterface.loadStreamed(path, chunkSize);
+        IHipAudioClip buf = audioInterface.loadStreamed(path, chunkSize);
         return buf;
     }
 
@@ -135,8 +118,9 @@ class HipAudio
         {
             case HipAudioImplementation.WebAudio:
             {
-                version(WebAssembly)
+                static if(HasWebAudio)
                 {
+                    import hip.hipaudio.backend.webaudio.player;
                     return new HipWebAudioPlayer(AudioConfig.musicConfig);
                 }
                 else
@@ -148,6 +132,7 @@ class HipAudio
             case HipAudioImplementation.OpenSLES:
                 static if(HasOpenSLES)
                 {
+                    import hip.hipaudio.backend.opensles.player;
                     return new HipOpenSLESAudioPlayer(AudioConfig.androidConfig,
                     hasProAudio,
                     hasLowLatencyAudio,
@@ -158,6 +143,7 @@ class HipAudio
             case HipAudioImplementation.XAudio2:
                 static if(HasXAudio2)
                 {
+                    import hip.hipaudio.backend.xaudio.player;
                     loglnInfo("Initializing XAudio2 with audio config ", AudioConfig.musicConfig);
                     return new HipXAudioPlayer(AudioConfig.musicConfig);
                 }
@@ -169,7 +155,10 @@ class HipAudio
             case HipAudioImplementation.AVAudioEngine:
             {
                 static if(HasAVAudioEngine)
+                {
+                    import hip.hipaudio.backend.avaudio.player;
                     return new HipAVAudioPlayer(AudioConfig.androidConfig);
+                }
                 else
                 {
                     loglnWarn("Tried to use AVAudioEngine implementation, but no AVAudioEngine found. OpenAL will be used instead");
@@ -180,6 +169,7 @@ class HipAudio
             {
                 static if(HasOpenAL)
                 {
+                    import hip.hipaudio.backend.openal.player;
                     //Please note that OpenAL HRTF(spatial sound) only works with Mono Channel
                     return new HipOpenALAudioPlayer(AudioConfig.musicConfig);
                 }
@@ -191,6 +181,7 @@ class HipAudio
             }
             case HipAudioImplementation.Null:
             {
+                import hip.hipaudio.backend.nullaudio;
                 loglnWarn("No AudioInterface was found. Using NullAudio");
                 return new HipNullAudio();
             }

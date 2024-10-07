@@ -37,7 +37,7 @@ version(dll)
 version(dll){}
 else version(AppleOS) { version = ManagesMainDRuntime;}
 else version = HandleArguments;
-
+////
 version(ManagesMainDRuntime)
 {
 	import core.runtime;
@@ -277,7 +277,8 @@ version(dll)
 		import hip.windowing.platforms.browser;
 		int main()
 		{
-			int[2] windowSize = getWindowSize();
+			string[] _;
+			int[2] windowSize = getWindowSize(null, _);
 			return HipremeMain(windowSize[0], windowSize[1]);
 		}
 	}
@@ -381,7 +382,7 @@ export extern(System) void HipremeDestroy()
 		rt_term();
 }
 
-export extern(System) void log(string message)
+export extern(System) void logMessage(string message)
 {
 	import hip.console.log;
 	rawlog(message);

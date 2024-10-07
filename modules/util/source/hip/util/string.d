@@ -36,6 +36,8 @@ struct String
             *countPtr = *countPtr + 1;
     }
 
+    char* ptr(){ return chars.ptr;}
+
     private void initialize(size_t length)
     {
         if(length == 0)

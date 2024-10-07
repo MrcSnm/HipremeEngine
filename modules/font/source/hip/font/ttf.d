@@ -117,7 +117,7 @@ class HipArsd_TTF_Font : HipFont
         import hip.error.handler;
         HipImageImpl img = new HipImageImpl();
         img.loadRaw(rawImage, _textureWidth, _textureHeight, 1);
-        HipTexture t = new HipTexture();
+        HipTexture t = new HipTexture(null);
 
         bool ret = t.load(img);
         ErrorHandler.assertErrorMessage(ret, "Loading TTF", "Could not create texture for TTF");

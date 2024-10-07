@@ -13,10 +13,10 @@
     "stringImportPaths": ["#PROJECT"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
     "preBuildCommands-posix": [
-		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
 	"preBuildCommands-windows": [
-		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/build/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
 	],
 	"configurations": 
 	[

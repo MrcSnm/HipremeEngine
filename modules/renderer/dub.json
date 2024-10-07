@@ -7,6 +7,10 @@
 		"debugInfo",
 		"debugInfoC"
 	],
+	"dflags-ldc": [
+		"-ftime-trace",
+		"-ftime-trace-file=trace.json"
+	],
 	"sourcePaths": [
 		"source"
 	],
@@ -32,6 +36,7 @@
 			},
 			"versions": [
 				"HipGL3",
+				"OpenGL",
 				"GL_45",
 				"GL_ARB",
 				"HipGLUseVertexArray"
@@ -48,6 +53,7 @@
 			},
 			"versions": [
 				"HipGL3",
+				"OpenGL",
 				"GL_45",
 				"GL_ARB",
 				"HipGLUseVertexArray"
@@ -80,7 +86,8 @@
 			"subConfigurations": {
 				"windowing": "wasm",
 				"image": "wasm"
-			}
+			},
+			"versions": ["OpenGL", "GLES20"]
 		},
 		{
 			"name": "psvita",
@@ -88,20 +95,19 @@
 				"windowing": "psvita",
 				"image": "gamut"
 			},
-			"versions": ["GLES20"],
+			"versions": ["OpenGL", "GLES20"],
 			"dependencies": {"gles" : {"path": "../../dependencies/gles"}}
 		},
 		{
 			"name": "android",
 			"dependencies": {
-				"gles" : {"path": "../../dependencies/gles", "version": "*"},
-				"bind" : {"path": "../bind", "version": "*", "optional": true}
+				"gles" : {"path": "../../dependencies/gles", "version": "*"}
 			},
 			"subConfigurations": {
 				"windowing": "android"
 			},
 			"versions": [
-				"HipGLUseVertexArray"
+				"OpenGL", "GLES32", "HipGLUseVertexArray"
 			]
 		}
 	],

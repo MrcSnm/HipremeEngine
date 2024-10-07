@@ -18,7 +18,7 @@
 		{
 			"name": "direct",
 			"dependencies": {
-				"hipengine_api:direct": {"path": "../../api", "version": "*"}
+				"hipengine_api:direct": {"path": "../../api", "version": "*", "visibility": "private"}
 			}
 		}
 	],

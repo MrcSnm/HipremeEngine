@@ -10,6 +10,7 @@ alias HipAndroid = javaGetPackage!("com.hipremeengine.app.HipremeEngine");
 import hip.systems.input;
 import hip.console.log;
 
+
 export extern(C)
 {
     private __gshared bool _hasExecInit = false;

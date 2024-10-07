@@ -17,7 +17,7 @@ version(DirectCall)
 else version(ScriptAPI)
 {
 	alias logFn = extern(System) void function(string);
-    __gshared logFn log = null;
+    extern(D) __gshared logFn log = null;
 	void initConsole()
 	{
 		version(ErrorOnLoadSymbol)
@@ -27,7 +27,7 @@ else version(ScriptAPI)
 		else
 		{
 			import hip.api.internal : _loadSymbol, _dll;
-			log = cast(typeof(log))_loadSymbol(_dll, "log".ptr);
+			log = cast(typeof(log))_loadSymbol(_dll, "logMessage".ptr);
 			log("HipengineAPI: Initialized Console");
 		}
 	}

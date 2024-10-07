@@ -27,14 +27,14 @@ The engine maintains  some global options which you can modify it on source/glob
 - Multi threaded asset loading and decoding (image).
 
 ## Platforms
-> Almost all of those platforms can be built by using the [build_selector](tools/user/build_selector) project.
+> Almost all of those platforms can be built by using the [hbuild](tools/user/hbuild) project.
 >
-> If you have D installed already, the build_selector can be got by running `dub run hipreme_engine:build_selector`
+> If you have D installed already, the hbuild can be got by running `dub run hipreme_engine:hbuild`
 >
 > If not, you may go to the [BuildAssets](https://github.com/MrcSnm/HipremeEngine/releases/tag/BuildAssets.v1.0.0) page and select your system. Both the language and engine will be installed locally by using them.
 
 ## Build System Showcase
-![Example on build selector running and showing the build system](build_selector_showcase.png)
+![Example on build selector running and showing the build system](hbuild_showcase.png)
 
 - Xbox Series (UWP): [build/uwp](build/uwp/HipremeEngine/HipremeEngine)
 - Android: [build/android/](build/android/project/)

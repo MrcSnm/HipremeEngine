@@ -3,9 +3,9 @@ import hip.api.filesystem.hipfs;
 
 version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteraction
 {
-    import std.stdio : File;
     bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err) onError)
     {
+        import std.stdio : File;
         import hip.error.handler;
         if(ErrorHandler.assertLazyErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
             return false;
@@ -17,7 +17,7 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
         onSuccess(output);
         return true;
     }
-    bool write(string path, void[] data)
+    bool write(string path, const void[] data)
     {
         static import std.file; 
         std.file.write(path, data);return true;

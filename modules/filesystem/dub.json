@@ -16,7 +16,10 @@
 	},
 	"configurations": [
 		{
-			"name": "default"
+			"name": "default",
+			"versions": [
+				"HipDStdFile"
+			]
 		},
 		{
 			"name": "wasm",

@@ -21,6 +21,7 @@
 				"bindbc-openal": "~>1.1.0",
 				"directx-d":{"path" : "../../dependencies/directx-d", "optional": true, "default": true}
 			},
+			"versions": ["OpenAL"],
 			"subConfigurations": {
 				"audio_decoding": "audioformats"
 			}
@@ -40,31 +41,16 @@
 			"dependencies": {
 				"bindbc-openal": "~>1.1.0"
 			},
-			"subConfigurations": {
-				"audio_decoding": "audioformats"
-			}
-		},
-		{
-			"name": "uwp",
-			"dependencies": {
-				"directx-d":{"path" : "../../dependencies/directx-d"}
-			},
-			"libs-windows": ["xaudio2_8"],
+			"versions": ["OpenAL"],
 			"subConfigurations": {
 				"audio_decoding": "audioformats"
 			}
 		},
 		{
 			"name": "dxonly",
-			"dependencies": {
-				"directx-d":{"path" : "../../dependencies/directx-d"}
-			},
-			"libs-windows": [
-				"xaudio2_8"
-			],
-			"subConfigurations": {
-				"audio_decoding": "audioformats"
-			}
+			"dependencies": {"directx-d":{"path" : "../../dependencies/directx-d"}},
+			"libs-windows": ["xaudio2_8"],
+			"subConfigurations": {"audio_decoding": "audioformats"}
 		},
 		{
 			"name": "wasm",
@@ -75,6 +61,7 @@
 			"dependencies": {
 				"bindbc-openal": "~>1.1.0"
 			},
+			"versions": ["OpenAL"],
 			"subConfigurations": {
 				"audio_decoding": "audioformats",
 				"bindbc-openal": "static"

@@ -14,6 +14,7 @@ extern(C) void WebAudioSourceSetPlaybackRate(size_t src, float rate);
 import hip.hipaudio.backend.webaudio.player;
 import hip.hipaudio.backend.webaudio.clip;
 import hip.hipaudio.audiosource;
+import hip.hipaudio.backend.audioclipbase;
 import hip.error.handler;
 
 

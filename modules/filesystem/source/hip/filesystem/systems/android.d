@@ -43,7 +43,7 @@ version(Android)
             else
                 return AAsset_seek(asset, cast(int)count, SEEK_CUR);
         }
-        bool write(string path, void[] data)
+        bool write(string path, const(void)[] data)
         {
             return false;
         }
@@ -70,7 +70,7 @@ version(Android)
                 onSuccess(output);
             return ret;
         }
-        bool write(string path, void[] data)
+        bool write(string path, const(void)[] data)
         {
             HipAndroidFile f = new HipAndroidFile(path, FileMode.WRITE);
             bool ret = f.write(path, data);

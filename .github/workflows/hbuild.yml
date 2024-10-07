@@ -1,0 +1,105 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+name: Build Selector
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "tools/hbuild/**"
+      - ".github/workflows/hbuild.yml"
+permissions:
+  contents: read
+
+jobs:
+  build-linux:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dlang-community/setup-dlang@4c99aa991ce7d19dd3064de0a4f2f6b2f152e2d7
+    - name: 'Install libcurl dev'
+      run: |
+        sudo apt-get update
+        # sudo apt-get upgrade
+        sudo apt-get install libcurl4-gnutls-dev -y
+
+    - name: 'Build'
+      run: |
+        # Build the project, with its main file included, without unittests
+        cd tools/hbuild
+        dub build --compiler=$DC -c ci
+        # Build and run tests, as defined by `unittest` configuration
+        # In this mode, `mainSourceFile` is excluded and `version (unittest)` are included
+        # See https://dub.pm/package-format-json.html#configurations
+    - name: 'Upload'
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: linux64-hbuild
+        path: tools/hbuild/linux64-hbuild
+        
+  build-macos:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dlang-community/setup-dlang@4c99aa991ce7d19dd3064de0a4f2f6b2f152e2d7
+    - name: 'Build'
+      run: |
+        # Build the project, with its main file included, without unittests
+        cd tools/hbuild
+        dub build --compiler=$DC -c ci
+    - name: 'Upload'
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: macos64-hbuild
+        path: tools/hbuild/macos64-hbuild
+        
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dlang-community/setup-dlang@4c99aa991ce7d19dd3064de0a4f2f6b2f152e2d7
+    - name: 'Build'
+      run: |
+        # Build the project, with its main file included, without unittests
+        cd tools/hbuild
+        dub build -c ci
+        mkdir win-release
+        copy win64-hbuild.exe win-release/win64-hbuild.exe
+        copy libcurl.dll win-release/libcurl.dll
+    - name: 'Zip EXE with DLL'
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        type: 'zip'
+        filename: 'win64-hbuild.zip'
+        directory: 'tools/hbuild/'
+        path: 'win-release'
+    - name: 'Upload'
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: win64-hbuild.zip
+        path: tools/hbuild/win64-hbuild.zip
+
+  update-release:
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-macos, build-windows]
+    permissions:
+      contents: write
+    steps:
+    - name: "Download build artifacts"
+      uses: actions/download-artifact@v2.1.1
+    - name: "Update BuildAssets"
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "win64-hbuild.zip/win64-hbuild.zip,linux64-hbuild/linux64-hbuild,macos64-hbuild/macos64-hbuild"
+        allowUpdates: "true"
+        tag: "BuildAssets.v1.0.0"
+        
