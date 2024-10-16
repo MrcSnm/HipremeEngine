@@ -38,9 +38,8 @@ int indexOf(T)(in T[] arr, T element, int startIndex = 0) pure nothrow @nogc
     return -1;
 }
 
-import std.typecons: isTuple;
 ///Index of for tuples
-int indexOf(T, V)(in T tuple, V value) pure nothrow @nogc if(isTuple!T)
+int indexOf(T, V)(in T tuple, V value) pure nothrow @nogc
 {
     foreach(i, v; tuple)
     {

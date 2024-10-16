@@ -29,6 +29,12 @@ version(WebAssembly) version = CustomRuntime;
 version(CustomRuntimeTest) version = CustomRuntime;
 version(PSVita) version = CustomRuntime;
 
+version(Standalone)
+{
+    pragma(mangle, "HipremeEngineMainScene")
+    extern(C) AScene HipremeEngineMainScene();
+}
+
 version(Load_DScript)
 {
     import hip.systems.hotload;
@@ -197,7 +203,6 @@ class GameSystem
         }
         else version(Standalone)
         {
-            import gamescript.entry;
             externalScene = HipremeEngineMainScene();
             addScene(externalScene);
         }

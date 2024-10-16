@@ -48,6 +48,14 @@ mixin template DirtyFlagFields(string flagName, T, string[] fields)
     }
 }
 
+struct Tuple(Fields...)
+{
+    Fields fields;
+    alias fields this;
+    pragma(inline, true) size_t length(){ return Fields.length; }
+}
+auto tuple(Args...)(Args a){ return Tuple!(Args)(a); }
+
 struct DirtyFlagsCmp(alias flag, Fields...)
 {
     import std.typecons;

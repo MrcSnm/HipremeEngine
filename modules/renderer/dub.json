@@ -7,10 +7,6 @@
 		"debugInfo",
 		"debugInfoC"
 	],
-	"dflags-ldc": [
-		"-ftime-trace",
-		"-ftime-trace-file=trace.json"
-	],
 	"sourcePaths": [
 		"source"
 	],
@@ -18,7 +14,7 @@
 		"-Llib/win64"
 	],
 	"dependencies": {
-		"hipengine_api": {"path": "../../api"},
+		"hipengine_api:interfaces": {"path": "../../api"},
 		"data" : {"path": "../data"},
 		"image" : {"path": "../image"},
 		"config": {"path": "../config"},

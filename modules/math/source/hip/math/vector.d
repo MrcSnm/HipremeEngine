@@ -122,10 +122,6 @@ struct Vector(uint N, T)
             assert(index >= 0 && index <= N);
             return mixin(op ~ "data[",index,"];");
         }
-        pragma(inline, true) ref T[N] opCast() const
-        {
-            return data;
-        }
         auto opUnary(string op)() inout if(op == "-")
         {
             static if(N == 2) return Vector!(2, T)(-data[0], -data[1]);

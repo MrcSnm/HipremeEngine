@@ -376,7 +376,7 @@ export extern(System) void HipremeRender()
 }
 export extern(System) void HipremeDestroy()
 {
-	logln("Destroying HipremeEngine");
+	logln("Destroying HipremeEnginess");
 	destroyEngine();
 	version(ManagesMainDRuntime)
 		rt_term();

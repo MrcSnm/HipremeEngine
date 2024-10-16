@@ -11,7 +11,7 @@
 		{
 			"dependencies": {
 				"error": {"path": "../error","version": "*"},
-				"hipengine_api": {"path": "../../api", "version": "*"},
+				"hipengine_api:interfaces": {"path": "../../api", "version": "*"},
 				"renderer": {"path": "../renderer", "version": "*"},
 				"image": {"path": "../image", "version": "*"},
 				"util": {"path": "../util","version": "*"}
@@ -26,7 +26,7 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"arsd-official:ttf": ">=11.0.0"
+		"arsd-official:ttf": "~>11.4.0"
 	},
 	"description": "HipremeEngine bind module",
 	"license": "proprietary",

@@ -238,11 +238,11 @@ class HipArsd_TTF_Font : HipFont
             }
 
 
-            characters[fontCh.ch] = HipFontChar(fontCh.ch, cast(int)x, cast(int)y, fontCh.width, fontCh.height, 
+            characters[fontCh.ch] = HipFontChar(fontCh.ch, cast(int)x, cast(int)y, fontCh.width, fontCh.height,
 
                 xOffset, yOffset, round(xAdvance*scale), 0, 0,
                 cast(float)x/imageWidth, cast(float)y/imageHeight,
-                cast(float)fontCh.width/imageWidth, cast(float)fontCh.height/imageHeight, 
+                cast(float)fontCh.width/imageWidth, cast(float)fontCh.height/imageHeight,
                 g
             );
             fontCh.blitToImage(image, cast(int)(x), cast(int)(y), imageWidth, imageHeight);

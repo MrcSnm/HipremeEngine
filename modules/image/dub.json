@@ -54,7 +54,7 @@
 			"path": "../error",
 			"version": ">=0.0.0"
 		},
-		"hipengine_api": {
+		"hipengine_api:interfaces": {
 			"path": "../../api",
 			"version": ">=0.0.0"
 		},

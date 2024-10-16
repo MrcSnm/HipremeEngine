@@ -33,7 +33,7 @@ private pure bool validatePath(string initial, string toAppend)
 
     scope(exit)
     {
-        import core.memory:GC;
+        // import core.memory:GC; ///TODO: Check why this was causing a bug.
         // GC.free(newPath.ptr);
         // GC.free(appends.ptr);
     }

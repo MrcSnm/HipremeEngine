@@ -235,7 +235,7 @@ package struct HipTextStopConfig
             case "rgb":
             {
                 HipColorf c = HipColorf(0, 0, 0, 1.0);
-                range.map!((x) => x.trim.to!float).put(&c.r, &c.g, &c.b);
+                range.map((dstring x) => x.trim.to!float).put(&c.r, &c.g, &c.b);
                 return HipTextStopConfig(cast(int)indexToParse, c);
             }
             default: break;

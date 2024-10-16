@@ -107,7 +107,7 @@ class TileWorld
             Rect bodyRec = dynBody.rect;
             int z = 0;
 
-            foreach(HipTileLayer l; collidibleLayers) 
+            foreach(HipTileLayer l; collidibleLayers)
             for(int j = 0; j < l.rows; j++)
             for(int i = 0; i < l.columns; i++)
             {
@@ -140,14 +140,14 @@ class TileWorld
             Rect bodyRec = dynBody.rect;
             int i = 0;
 
-            foreach(l; collidibleLayers) 
+            foreach(l; collidibleLayers)
             foreach(const ref rect; getRectsOverlapping(l, dynBody.expandedRectVel))
             {
                 DynamicRectCollision col = void;
                 if(isDynamicRectOverlappingRect(bodyRec, dynBody.velocity, rect, dt, col.normal, col.time))
                     colCache[i++] = col;
             }
-            if(i > 0) 
+            if(i > 0)
             foreach(col; sort!((DynamicRectCollision a, DynamicRectCollision b) => a.time < b.time)(colCache[0..i]))
                 resolveDynamicRectOverlappingRect(col.normal, dynBody.velocity, col.time);
             dynBody.position+= dynBody.velocity* dt;

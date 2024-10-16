@@ -4,22 +4,30 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "Hipreme Engine public API.",
-	"dflags-dmd": ["-op"],
-	"dflags-ldc": ["--disable-verify", "--oq"],
 	"dependencies": {
-		"util": {"path": "../modules/util"}
+		"hipengine_api:interfaces": "*",
+		"hipengine_api:bindings": "*"
 	},
-	"sourcePaths" : ["source"],
+	"targetType": "none",
 	"subPackages": [
 		{
-			"name": "direct",
-			"versions": ["DirectCall"],
-			"targetType": "sourceLibrary",
-			"sourcePaths": [],
-			"importPaths": [
-				"source",
-				"import"
-			]
+			"name": "bindings",
+			"dependencies": {
+				"hipengine_api:interfaces": "*"
+			},
+			"configurations": [
+				{"name": "default"},
+				{"name": "direct", "dependencies": {"hipreme_engine": {"path": "../"}}, "versions": ["DirectCall"]}
+			],
+			"sourcePaths": ["binding"],
+			"importPaths": ["binding"]
+		},
+		{
+			"name": "interfaces",
+			"dependencies": {
+				"util": {"path": "../modules/util"}
+			},
+			"sourcePaths": ["source"]
 		}
 	],
 	"license": "proprietary",

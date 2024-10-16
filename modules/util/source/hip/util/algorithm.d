@@ -1,10 +1,6 @@
 module hip.util.algorithm;
-public import std.algorithm.iteration : map;
-import std.algorithm.mutation : copy;
 import std.traits:ReturnType;
 
-///An alias made of std.algorithm.mutation.copy for the intention to be clearer since the `from` is the first argument
-alias copyInto = copy;
 
 ReturnType!(Range.front)[] array(Range)(Range range)
 {
@@ -12,6 +8,47 @@ ReturnType!(Range.front)[] array(Range)(Range range)
     foreach(v; range)
         ret~= v;
     return ret;
+}
+
+
+/**
+Copies the content of `source` into `target` and returns the
+remaining (unfilled) part of `target`.
+
+Preconditions: `target` shall have enough room to accommodate
+the entirety of `source`.
+
+Params:
+    source = an $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
+    target = an output range
+
+Returns:
+    The unfilled part of target
+ */
+T[] copyInto(T)(T[] source, T[] target)
+{
+    assert(target.length >= source.length, "Cannot copy source range into a smaller target range.");
+
+    bool overlaps = source.ptr < target.ptr + target.length && target.ptr < source.ptr + source.length;
+    if(overlaps)
+    {
+        if (source.ptr < target.ptr)
+            {
+                foreach_reverse (idx; 0 .. source.length)
+                    target[idx] = source[idx];
+            }
+            else
+            {
+                foreach (idx; 0 .. source.length)
+                    target[idx] = source[idx];
+            }
+            return target[source.length .. target.length];
+    }
+    else
+    {
+        target[0..source.length] = source[];
+        return target[source.length..$];
+    }
 }
 
 auto map(Range, From, To)(Range range, scope To delegate (From data) func)

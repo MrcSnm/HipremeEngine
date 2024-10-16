@@ -43,7 +43,6 @@ struct HipInputXboxGamepadState
 
 
 //////// External API ////////
-
 extern(System) __gshared
 {
     ubyte* function() HipGamepadCheckConnectedGamepads;

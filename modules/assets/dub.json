@@ -4,11 +4,8 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "HipremeEngine assets module",
-	"dflags-ldc": [
-		"--ftime-trace","--ftime-trace-file=trace.json"
-	],
 	"dependencies": {
-		"hipengine_api": {"path": "../../api", "version": "*"},
+		"hipengine_api:interfaces": {"path": "../../api", "version": "*"},
 		"filesystem": {"path": "../filesystem", "version": "*"},
 		"audio": {"path": "../audio", "version": "*"},
 		"util": {"path": "../util", "version": "*"},
