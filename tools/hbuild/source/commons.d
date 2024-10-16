@@ -182,7 +182,6 @@ struct Config
 
 struct CompilationOptions
 {
-	bool skipRegistry;
 	bool dubVerbose;
 	bool force;
 	bool tempBuild;
@@ -190,7 +189,6 @@ struct CompilationOptions
 	{
 		string ret;
 		if(force) ret~= " --force";
-		if(skipRegistry) ret~= " --skip-registry=all";
 		if(tempBuild) ret~= " --temp-build";
 		if(dubVerbose) ret~= " --verbose";
 		return ret;
@@ -899,9 +897,12 @@ struct DubArguments
 
 	string getCompiler()
 	{
+		if(_compiler == "auto" && _arch)
+			_compiler = "ldc2";
+		if(_compiler == "ldc2")
+			_compiler = buildNormalizedPath(configs["ldcPath"].str, "bin", "ldc2".executableExtension);
 		if(_compiler == "auto")
 		{
-			if(_arch) return "ldc2";
 			string ret = getSelectedCompiler();
 			return ret == "auto" ? "" : ret;
 		}
@@ -913,7 +914,6 @@ struct DubArguments
 		string dub = getDubPath();
 		string a = command; ///Arguments
 		compiler = getCompiler();
-		a~= " --verbose";
 		if(parallel)      a~= " --parallel";
 		if(recipe)        a~= " --recipe="~recipe;
 		if(build)         a~= " --build="~build;
@@ -945,10 +945,12 @@ int waitRedub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = nul
 
 	setLogLevel(dArgs._opts.dubVerbose ? LogLevel.verbose : LogLevel.info);
 	ProjectDetails d = resolveDependencies(
-		dArgs._opts.force, 
+		dArgs._opts.force,
 		os,
 		CompilationDetails(dArgs.getCompiler(), dArgs._arch),
-		ProjectToParse(dArgs._configuration, std.file.getcwd(), null, dArgs._recipe)
+		ProjectToParse(dArgs._configuration, std.file.getcwd(), null, dArgs._recipe),
+		InitialDubVariables.init,
+		BuildType.debug_
 	);
 	if(buildProject(d).error) return 1;
 	if(copyLinkerFilesTo.length)

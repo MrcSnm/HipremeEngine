@@ -125,6 +125,16 @@ string generateDubProject(DubProjectInfo info)
 			"dependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api"}}
 		},
 		{
+			"name": "release-wasm",
+			"targetType": "executable",
+			"dependencies": {
+				"hipreme_engine": {"path": "#HIPREME_ENGINE"}
+			},
+			"subConfigurations": {
+				"hipreme_engine": "wasm"
+			}
+		},
+		{
 			"name": "run",
 			"targetType": "dynamicLibrary",
 			"lflags-windows": [

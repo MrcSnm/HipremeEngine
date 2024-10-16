@@ -16,7 +16,7 @@
 		"assets"
 	],
 	"dflags-dmd": ["-op"],
-	"dflags-ldc": ["--disable-verify", "--oq"],
+	"dflags-ldc": ["--disable-verify"],
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipCheckUnknownKeycode",
@@ -26,7 +26,7 @@
 		"AL_EFX"
 	],
 	"subPackages": [
-		"tools/user/hbuild/"
+		"tools/hbuild/"
 	],
 	"sourcePaths": [
 		"source"
@@ -41,7 +41,7 @@
 		"filesystem": {"path": "./modules/filesystem", "version": "*"},
 		"timer": {"path": "./modules/timer", "version": "*"},
 		"tween": {"path": "./modules/tween", "version": "*"},
-		"hipengine_api": {"path": "./api", "version": "*"},
+		"hipengine_api:interfaces": {"path": "./api", "version": "*"},
 		"math": {"path": "./modules/math", "version": "*"},
 		"renderer": {"path": "./modules/renderer", "version": "*"},
 		"util": {"path": "./modules/util", "version": "*"}
@@ -146,6 +146,31 @@
 				"Direct3D_11",
 				"XAudio2",
 				"DirectX"
+			]
+		},
+		{
+			"name": "wasm",
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
+			},
+			"targetType": "staticLibrary",
+			"stringImportPaths": [
+				"build/wasm/generated",
+				"build/release_game/"
+			],
+			"subConfigurations": {
+				"runtime": "wasm",
+				"assets": "wasm",
+				"audio": "wasm",
+				"filesystem": "wasm",
+				"renderer": "wasm"
+			},
+			"versions": [
+				"Standalone",
+				"HipDStdFile",
+				"CarelessAlocation",
+				"dll"
 			]
 		},
 		{

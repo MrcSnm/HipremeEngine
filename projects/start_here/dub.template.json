@@ -24,16 +24,30 @@
 			"name" : "script",
 			"targetType": "dynamicLibrary",
 			"dflags-ldc": ["-link-defaultlib-shared=true"],
-			"linkedDependencies": {
+			"dependencies": {
 				"hipengine_api": {"path": "#HIPREME_ENGINE/api"}
 			},
+			"lflags-windows-ldc": [
+                "/WHOLEARCHIVE:hipengine_api_bindings",
+                "/WHOLEARCHIVE:hipengine_api_interfaces"
+            ],
 			"versions": ["ScriptAPI"],
 			"lflags-windows": ["/WX"]
 		},
 		{
 			"name": "release",
-			"targetType": "library",
-			"linkedDependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api"}}
+			"targetType": "library"
+		},
+		{
+			"name": "release-wasm",
+			"targetType": "executable",
+			"dependencies": {
+				"hipreme_engine": {"path": "#HIPREME_ENGINE"}
+			},
+			"subConfigurations": {
+				"hipreme_engine": "wasm",
+				"game2d": "direct"
+			}
 		},
 		{
 			"name": "run",

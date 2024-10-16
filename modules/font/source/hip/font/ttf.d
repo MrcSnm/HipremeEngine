@@ -181,7 +181,6 @@ class HipArsd_TTF_Font : HipFont
         //Add as an error (pixel bleeding)
         avgWidth = cast(uint)(avgWidth / charset.length) + 2;
         avgHeight = cast(uint)(avgHeight / charset.length) + 2;
-        import std.algorithm.sorting:sort;
         enum hSpacing = 1;
         enum vSpacing = 1;
         float x = 1;
@@ -211,7 +210,9 @@ class HipArsd_TTF_Font : HipFont
         ubyte[] image = new ubyte[](imageWidth*imageHeight);
 
         int largestHeightInRow = 0;
-        foreach(fontCh; sort!"a.height > b.height"(fontChars))
+        import hip.util.algorithm;
+
+        foreach(fontCh; quicksort(fontChars, (RenderizedChar a, RenderizedChar b) => a.height > b.height))
         {
             int g = stbtt_FindGlyphIndex(&font.font, fontCh.ch);
             int xAdvance, xOffset, yOffset, lsb;

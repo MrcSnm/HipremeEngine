@@ -15,12 +15,6 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		t.writelnError("WASM build requires ldc2 in path. Please install it before building to it.");
 		return ChoiceResult.Error;
 	}
-	if(!serverStarted)
-	{
-		t.writelnHighlighted("Attempt to start WebAssembly development server.");
-		startServer(&gameServerPort);
-		t.writelnSuccess("Development started at localhost:"~gameServerPort.to!string);
-	}
 
 	inParallel(
 		cached(() => timed(t, submoduleLoader.execute(t, input))),
@@ -51,12 +45,16 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		// 		return ChoiceResult.Error;	
 		// 	}
 		// }
-		if(timed(t, waitDubTarget(t, "wasm", DubArguments()
-			.command("build").compiler("ldc2").build("debug")
-			.arch("wasm32-unknown-unknown-wasm").opts(cOpts))) != 0)
+
+		with(WorkingDir(configs["gamePath"].str))
 		{
-			t.writelnError("Could not build for WebAssembly.");
-			return ChoiceResult.Error;
+			if(timed(t, waitDub(t, DubArguments()
+				.command("build").compiler("ldc2").build("debug").configuration("release-wasm")
+				.arch("wasm32-unknown-unknown-wasm").opts(cOpts))) != 0)
+			{
+				t.writelnError("Could not build for WebAssembly.");
+				return ChoiceResult.Error;
+			}
 		}
 		import wasm_sourcemaps.generate;
 
@@ -74,6 +72,13 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:"~gameServerPort.to!string);
 		pushWebsocketMessage("reload");
 		cached(() => cast(void)openDefaultBrowser("http://localhost:"~gameServerPort.to!string));
+	}
+
+	if(!serverStarted)
+	{
+		t.writelnHighlighted("Attempt to start WebAssembly development server.");
+		startServer(&gameServerPort);
+		t.writelnSuccess("Development started at localhost:"~gameServerPort.to!string);
 	}
 
 	return ChoiceResult.None;

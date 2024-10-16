@@ -41,3 +41,4 @@ modules/**/*.lib
 modules/**/dub.selections.json
 ircache_prune_timestamp
 trace.json
+.ldc2_cache

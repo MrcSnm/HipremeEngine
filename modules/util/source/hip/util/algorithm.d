@@ -130,3 +130,54 @@ int findLast(T)(in T[] array, scope bool function(T val) pred)
             return cast(int)index;
     return -1;
 }
+
+
+private static void swapElem(T)(ref T lhs, ref T rhs) @safe nothrow @nogc
+{
+    T tmp = lhs;
+    lhs = rhs;
+    rhs = tmp;
+}
+
+
+T[] quicksort(T)(T[] array, bool function(T a, T b) @nogc nothrow @trusted comparison) nothrow @nogc @trusted
+{
+    if (array.length < 2)
+        return array;
+
+    static int partition(T* arr, int left, int right, typeof(comparison) comparison) nothrow @nogc @trusted
+    {
+        immutable int mid = left + (right - left) / 2;
+        T pivot = arr[mid];
+        // move the mid point value to the front.
+        swapElem(arr[mid],arr[left]);
+        int i = left + 1;
+        int j = right;
+        while (i <= j)
+        {
+            while(i <= j && comparison(arr[i], pivot) <= 0 )
+                i++;
+
+            while(i <= j && comparison(arr[j], pivot) > 0)
+                j--;
+
+            if (i < j)
+                swapElem(arr[i], arr[j]);
+        }
+        swapElem(arr[i - 1], arr[left]);
+        return i - 1;
+    }
+
+    void doQsort(T* array, int left, int right, typeof(comparison) comparison) nothrow @nogc @trusted
+    {
+        if (left >= right)
+            return;
+
+        int part = partition(array, left, right, comparison);
+        doQsort(array, left, part - 1, comparison);
+        doQsort(array, part + 1, right, comparison);
+    }
+
+    doQsort(array.ptr, 0, cast(int)(array.length) - 1, comparison);
+    return array;
+}

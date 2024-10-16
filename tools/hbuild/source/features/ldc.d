@@ -1,7 +1,7 @@
 module features.ldc;
 import commons;
 import feature;
-enum LdcVersion = "1.36.0-beta1";
+enum LdcVersion = "1.39.0";
 
 
 /** 
@@ -64,7 +64,7 @@ void initialize()
         {
             addToPath(ldcPath.buildNormalizedPath("bin"));
         },
-        VersionRange.parse("1.36.0-beta1"),
+        VersionRange.parse(LdcVersion),
     );
 
 }
