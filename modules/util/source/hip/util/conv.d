@@ -1,6 +1,5 @@
 module hip.util.conv;
 import hip.util.string;
-import std.typecons;
 import std.traits:isArray, isCallable;
 public import hip.util.to_string_range;
 public import hip.util.string:toStringz;
@@ -34,19 +33,7 @@ string toString(T)(T[] arr) pure nothrow @safe if(!is(T == char))
 
 string toString(T)(T structOrTupleOrEnum) pure nothrow @safe if(!isArray!T)
 {
-    static if(isTuple!T)
-    {
-        alias tupl = structOrTupleOrEnum;
-        string ret;
-        foreach(i, v; tupl)
-        {
-            if(i > 0)
-                ret~= ", ";
-            ret~= to!string(v);
-        }
-        return T.stringof~"("~ret~")";
-    }
-    else static if(is(T == struct))//For structs declaration
+    static if(is(T == struct))//For structs declaration
     {
         import hip.util.reflection;
         static if(__traits(hasMember, T, "toString") && hasUDA!(__traits(getMember, T, "toString"), "format"))
@@ -75,6 +62,19 @@ string toString(T)(T structOrTupleOrEnum) pure nothrow @safe if(!isArray!T)
         return T.stringof~".|MEMBER_NOT_FOUND|";
     }
     else static assert(0, "Not implemented for "~T.stringof);
+    // static if(isTuple!T)
+    // {
+    //     alias tupl = structOrTupleOrEnum;
+    //     string ret;
+    //     foreach(i, v; tupl)
+    //     {
+    //         if(i > 0)
+    //             ret~= ", ";
+    //         ret~= to!string(v);
+    //     }
+    //     return T.stringof~"("~ret~")";
+    // }
+    // else
 }
 
 

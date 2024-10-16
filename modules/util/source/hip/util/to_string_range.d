@@ -1,8 +1,6 @@
 module hip.util.to_string_range;
-import std.range.interfaces;
 import std.range.primitives;
 import std.traits:isArray;
-import std.typecons:isTuple;
 
 void put(Sink, E)(ref Sink sink, E e)
 {
@@ -84,22 +82,9 @@ if(isOutputRange!(Sink, char) && !is(T[] == string) && !is(T[] == char[])) //The
 
 
 void toStringRange(Sink, T)(auto ref Sink sink, T structOrTupleOrClass) 
-if(!isArray!T && (is(T == struct) || is(T == class) || is(T == interface) || isTuple!T))
+if(!isArray!T && (is(T == struct) || is(T == class) || is(T == interface)))
 {
-    static if(isTuple!T)
-    {
-        alias tupl = structOrTupleOrClass;
-        put(sink, T.stringof);
-        put(sink, '(');
-        foreach(i, v; tupl)
-        {
-            if(i > 0)
-                put(sink, ", ");
-            toStringRange(sink, v);
-        }
-        put(sink, ')');
-    }
-    else static if(is(T == struct))//For structs declaration
+    static if(is(T == struct))//For structs declaration
     {
         import hip.util.reflection;
         alias struct_ = structOrTupleOrClass;
@@ -138,6 +123,19 @@ if(!isArray!T && (is(T == struct) || is(T == class) || is(T == interface) || isT
     {
         put(sink, T.classinfo.name);
     }
+    // else static if(isTuple!T)
+    // {
+    //     alias tupl = structOrTupleOrClass;
+    //     put(sink, T.stringof);
+    //     put(sink, '(');
+    //     foreach(i, v; tupl)
+    //     {
+    //         if(i > 0)
+    //             put(sink, ", ");
+    //         toStringRange(sink, v);
+    //     }
+    //     put(sink, ')');
+    // }
     else static assert(0, "Not implemented for "~T.stringof);
 }
 

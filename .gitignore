@@ -39,3 +39,5 @@ dependencies/**/dub.selections.json
 modules/**/*.a
 modules/**/*.lib
 modules/**/dub.selections.json
+ircache_prune_timestamp
+trace.json

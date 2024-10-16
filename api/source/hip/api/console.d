@@ -6,11 +6,6 @@ version(WebAssembly) version = ErrorOnLoadSymbol;
 version(DirectCall)
 {
 	import hip.console.log;
-	///Only the scripting API will need to have this mixed.
-	version(Have_hipreme_engine){}else
-	{
-		mixin mxGenLogDefs!();
-	}
     alias log = rawlog;
 	alias logg = logln;
 }
