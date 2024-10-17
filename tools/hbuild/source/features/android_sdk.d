@@ -114,9 +114,9 @@ void initialize()
         ExistenceChecker(["androidSdkPath"], null, toDelegate(&androidSdkExists)),
         Installation([Download(
             DownloadURL(
-                windows:"https://dl.google.com/android/repository/commandlinetools-win-9477386_latest.zip",
-                linux: "https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip",
-                osx: "https://dl.google.com/android/repository/commandlinetools-mac-9477386_latest.zip"
+                windows:"https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip",
+                linux: "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip",
+                osx: "https://dl.google.com/android/repository/commandlinetools-mac-11076708_latest.zip"
             )
         )], toDelegate(&installAndroidSDK), extractionPathList: ["$CWD/Android/Sdk/cmdline-tools"]),
         (ref Terminal t, string where){environment["ANDROID_HOME"] = where;},

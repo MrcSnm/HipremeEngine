@@ -63,7 +63,7 @@ class MainScene : AScene, IHipPreloadable
 		
 	}
 
-	void onResize(uint width, uint height){}
+	override void onResize(uint width, uint height){}
 }
 
 mixin HipEngineMain!MainScene;

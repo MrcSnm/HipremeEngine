@@ -40,7 +40,7 @@ void initialize()
         Installation([Download(
             DownloadURL.any("https://github.com/ldc-developers/ldc/releases/download/v$VERSION/ldc2-$VERSION-android-aarch64.tar.xz")
         )], null, ["$CWD/Android/ldcLibs"]),
-        null, VersionRange.parse(LdcVersion), TargetVersion.parse(LdcVersion)
+        null, VersionRange.parse(LdcVersion)
     );
 }
 

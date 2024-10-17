@@ -102,8 +102,15 @@ private bool installAndroidNDK(ref Terminal t, ref RealTimeConsoleInput input, T
 		t.flush;
 		return false;
 	}
+
 	
 	configs["androidNdkPath"] = buildNormalizedPath(configs["androidSdkPath"].str, "ndk", ver.toString);
+	version(linux)
+	{
+		string binPath = buildNormalizedPath(configs["androidNdkPath"].str, "toolchains", "llvm", "prebuilt", "linux-x86_64", "bin");
+		makeFileExecutable(buildNormalizedPath(binPath, "aarch64-linux-android35-clang"));
+		makeFileExecutable(buildNormalizedPath(binPath, "ld.lld"));
+	}
 	updateConfigFile();
 	return true;
 }

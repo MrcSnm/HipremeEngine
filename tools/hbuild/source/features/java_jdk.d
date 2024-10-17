@@ -8,18 +8,19 @@ Feature JavaJDKFeature;
 
 private bool installOpenJDK(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] downloads)
 {
-	string installationOutput = buildNormalizedPath(std.file.getcwd(), "Android", "openjdk_11");
-	if(!extractToFolder(downloads[0].getOutputPath, installationOutput, t, input))
+	string installationOutput = buildNormalizedPath(std.file.getcwd(), "Android", "openjdk_17");
+	if(!extractToFolder(downloads[0].getOutputPath(ver), installationOutput, t, input))
 	{
 		t.writelnError("Could not extract to folder ", installationOutput);
 		return false;
 	}
 
 	string javaHome = installationOutput;// = environment["JAVA_HOME"];
-	version(Windows) javaHome = buildNormalizedPath(javaHome, "jdk-17.0.12+7");
-	else version(linux) javaHome = buildNormalizedPath(javaHome, "jdk-11.0.2");
-	else version(OSX) javaHome = buildNormalizedPath(javaHome, "jdk-11.0.1.jdk", "Contents", "Home");
-	else assert(false, "Your OS is not supported.");
+	version(OSX)
+		javaHome = buildNormalizedPath(javaHome, "jdk-11.0.1.jdk", "Contents", "Home");
+	else
+		javaHome = buildNormalizedPath(javaHome, "jdk-17.0.12+7");
+
 	if(!std.file.exists(javaHome))
 	{
 		t.writelnError("Expected JAVA_HOME at automatic installation does not exists:" ~ javaHome);
@@ -37,12 +38,13 @@ void initialize()
 		ExistenceChecker(["javaHome"], ["JAVA_HOME"]),
 		Installation([Download(
 			DownloadURL(
-				windows:"https://aka.ms/download-jdk/microsoft-jdk-17.0.12-windows-x64.zip",
-				linux: "https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_linux-x64_bin.tar.gz",
+				windows:"https://aka.ms/download-jdk/microsoft-jdk-$VERSION-windows-x64.zip",
+				linux: "https://aka.ms/download-jdk/microsoft-jdk-$VERSION-linux-x64.tar.gz",
 				osx: "https://download.java.net/java/GA/jdk11/13/GPL/openjdk-11.0.1_osx-x64_bin.tar.gz"
 			))
 		], toDelegate(&installOpenJDK)),
 		(ref Terminal t, string where){environment["JAVA_HOME"] = where;},
+		VersionRange.parse(JDKVersion)
 	);
 
 }

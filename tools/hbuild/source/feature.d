@@ -206,6 +206,7 @@ struct Feature
     bool getFeature(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion v = TargetVersion.init)
     {
         if(v == TargetVersion.init) v = supportedVersion.max;
+        currentVersion = v;
         if(!supportedVersion.isInRange(v))
         {
             t.writelnError("Unsupported version '",v.toString,"' for feature ", name, 

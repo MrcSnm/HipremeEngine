@@ -7,6 +7,7 @@ import std.path;
 ///This is the one which will be installed when using the SDK.
 enum TargetAndroidSDK = 35;
 enum TargetAndroidNDK = "28.0.12433566";
+enum TargetJavaJDK = "17.0.12";
 ///Use a random Adb Port 
 enum HipremeEngineAdbPort = "55565";
 
@@ -15,28 +16,29 @@ private string getAndroidFlagsToolchains()
 	enum AndroidSDKLibs = 35;
 
 	version(Windows)
+		string system = "windows-x86_64";
+	else version(linux)
+		string system = "linux-x86_64";
+	else version(OSX)
+		string system = "darwing-x86_64";
+	else static assert(false, "Your OS does not support android NDK installation.");
+
+	string toolsPath = buildNormalizedPath(configs["androidNdkPath"].str, "toolchains", "llvm", "prebuilt", system);
+
+	version(Windows)
 	{
 		import std.string:replace;
-		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/windows-x86_64/bin/aarch64-linux-android35-clang.cmd").replace("\\", "/") ~"\" " ~
-		"-linker=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/windows-x86_64/bin/ld.lld.exe").replace("\\", "/") ~"\" " ~
+		return "-gcc=\""~buildNormalizedPath(toolsPath, "bin/aarch64-linux-android35-clang.cmd").replace("\\", "/") ~"\" " ~
+		"-linker=\""~buildNormalizedPath(toolsPath, "bin/ld.lld.exe").replace("\\", "/") ~"\" " ~
 		///Put the lib path for finding libandroid, liblog, libOpenSLES, libEGL and libGLESv3
-		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/"~AndroidSDKLibs~"/").replace("\\", "/")~"\" "
+		"-L-L\""~buildNormalizedPath(toolsPath, "sysroot/usr/lib/aarch64-linux-android/"~AndroidSDKLibs~"/").replace("\\", "/")~"\" "
 		;
 	}
-	else version(linux)
+	else
 	{
-		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android35-clang") ~"\" " ~
-		"-linker=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ld.bfd") ~"\" " ~
-		///Put the lib path for finding libandroid, liblog, libOpenSLES, libEGL and libGLESv3
-		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/"~AndroidSDKLibs~"/")~"\" "
-		;
-	}
-	else version(OSX)
-	{
-		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android35-clang") ~"\" " ~
-		"-linker=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android-ld.bfd") ~"\" " ~
-		///Put the lib path for finding libandroid, liblog, libOpenSLES, libEGL and libGLESv3
-		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/"~AndroidSDKLibs~"/")~"\" "
+		return "-gcc="~buildNormalizedPath(toolsPath, "bin/aarch64-linux-android35-clang") ~" " ~
+		"-linker="~buildNormalizedPath(toolsPath, "bin/ld.lld") ~" " ~
+		"-L-L"~buildNormalizedPath(toolsPath, "sysroot/usr/lib/aarch64-linux-android/"~AndroidSDKLibs~"/")
 		;
 	}
 }
@@ -53,7 +55,7 @@ private ChoiceResult runAndroidApplication(ref Terminal t)
 		string adb = buildNormalizedPath(configs["androidSdkPath"].str, "platform-tools", "adb");
 		string gradlew = "./gradlew";
 
-		if(!makeFileExecutable(buildNormalizedPath("build", "android", "project", "gradlew")))
+		if(!makeFileExecutable(getHipPath("build", "android", "project", "gradlew")))
 		{
 			t.writelnError("Could not make gradlew executable.");
 			return ChoiceResult.Error;
@@ -94,7 +96,7 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	import features.java_jdk;
 	import features.android_ldc;
 
-	if(!JavaJDKFeature.getFeature(t, input))
+	if(!JavaJDKFeature.getFeature(t, input, TargetVersion.parse(TargetJavaJDK)))
 		return ChoiceResult.Error;
 	if(!AndroidNDKFeature.getFeature(t, input, TargetVersion.parse(TargetAndroidNDK)))
 		return ChoiceResult.Error;
@@ -107,8 +109,8 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 
 	string nextReleaseFlags = "-defaultlib=phobos2-ldc,druntime-ldc " ~
 		"-link-defaultlib-shared=false " ~
-		"-L-L\""~ ldcLibsPath ~"\" " ~
-		"-L-rpath=\""~ ldcLibsPath~"\" ";
+		"-L-L"~ ldcLibsPath ~" " ~
+		"-L-rpath="~ ldcLibsPath~" ";
 
 	environment["DFLAGS"] = nextReleaseFlags ~ getAndroidFlagsToolchains();
 	t.writeln(environment["DFLAGS"]);
