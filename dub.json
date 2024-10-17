@@ -156,8 +156,7 @@
 			},
 			"targetType": "staticLibrary",
 			"stringImportPaths": [
-				"build/wasm/generated",
-				"build/release_game/"
+				"build/wasm/generated"
 			],
 			"subConfigurations": {
 				"runtime": "wasm",
@@ -171,6 +170,31 @@
 				"HipDStdFile",
 				"CarelessAlocation",
 				"dll"
+			]
+		},
+		{
+			"name": "android",
+			"libs": [
+				"log",
+				"android",
+				"OpenSLES",
+				"EGL",
+				"GLESv3"
+			],
+			"dependencies": {
+				"jni": {"path": "./modules/jni", "version": "*"}
+			},
+			"subConfigurations": {
+				"audio": "android",
+				"console": "android",
+				"renderer": "android"
+			},
+			"targetPath": "bin/android/",
+			"targetType": "library",
+			"versions": [
+				"dll",
+				"Standalone",
+				"OpenSLES1_1"
 			]
 		},
 		{

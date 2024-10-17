@@ -221,7 +221,6 @@ void gameInitialize()
 	HipAssetManager.initialize();
 	sys = new GameSystem(FRAME_TIME);
 
-
 	//Initialize 2D context
 	import hip.graphics.g2d;
 	HipRenderer2D.initialize(interpreterEntry, true);

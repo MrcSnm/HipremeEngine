@@ -25,7 +25,6 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		),
 		//The template may not be present
 		outputTemplate(t, configs["gamePath"].str),
-		cached(() => timed(t, outputTemplateForTarget(t)))
 	);
 
 
@@ -34,27 +33,16 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		"-I="~getHipPath("dependencies", "runtime", "druntime", "arsd-webassembly") ~" " ~
 		"-L-allow-undefined -d-version=CarelessAlocation";
 
-	with(WorkingDir(getHipPath))
-	{
-		//In the future, it will be better to make hipreme_engine precompiled and just relink with the game.
-		// with(WorkingDir(configs["gamePath"].str))
-		// {
-		// 	if(timed(t, waitDub(t, DubArguments().command("build").compiler("ldc2").build("debug").arch("wasm32-unknown-unknown-wasm").configuration("release").opts(cOpts)) != 0))
-		// 	{
-		// 		t.writelnError("Could not build for WebAssembly.");
-		// 		return ChoiceResult.Error;	
-		// 	}
-		// }
 
-		with(WorkingDir(configs["gamePath"].str))
+	with(WorkingDir(configs["gamePath"].str))
+	{
+		ProjectDetails project;
+		if(waitRedub(t, DubArguments()
+			.command("build").compiler("ldc2").build("debug").configuration("release-wasm")
+			.arch("wasm32-unknown-unknown-wasm").opts(cOpts), project ) != 0)
 		{
-			if(timed(t, waitDub(t, DubArguments()
-				.command("build").compiler("ldc2").build("debug").configuration("release-wasm")
-				.arch("wasm32-unknown-unknown-wasm").opts(cOpts))) != 0)
-			{
-				t.writelnError("Could not build for WebAssembly.");
-				return ChoiceResult.Error;
-			}
+			t.writelnError("Could not build for WebAssembly.");
+			return ChoiceResult.Error;
 		}
 		import wasm_sourcemaps.generate;
 
@@ -66,13 +54,17 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		// if(out_Errors.length) foreach(err; out_Errors)
 		// 	t.writelnError(err);
 
-		foreach(file; ["hipreme_engine.wasm", "hipreme_engine.wasm.map"])
-			if(std.file.exists(file))
-				std.file.rename(file, buildPath("build", "wasm", "build", file));
-		t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:"~gameServerPort.to!string);
-		pushWebsocketMessage("reload");
-		cached(() => cast(void)openDefaultBrowser("http://localhost:"~gameServerPort.to!string));
+		string file = project.getOutputFile();
+		if(std.file.exists(file))
+		{
+			t.writelnHighlighted("Renaming ", file, " to hipreme_engine.wasm for compatibility");
+			std.file.rename(file, getHipPath("build", "wasm", "build", "hipreme_engine.wasm"));
+		}
 	}
+
+	t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:"~gameServerPort.to!string);
+	pushWebsocketMessage("reload");
+	cached(() => cast(void)openDefaultBrowser("http://localhost:"~gameServerPort.to!string));
 
 	if(!serverStarted)
 	{

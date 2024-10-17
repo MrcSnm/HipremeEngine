@@ -7,6 +7,7 @@ public import std.path;
 public import std.process;
 public static import std.file;
 public import default_handlers;
+public import redub.api;
 
 
 enum hipremeEngineRepo = "https://github.com/MrcSnm/HipremeEngine.git";
@@ -975,14 +976,13 @@ struct DubArguments
 	}
 }
 
-int waitRedub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = null)
+int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, string copyLinkerFilesTo = null)
 {
-	import redub.api;
 	import redub.logging;
 	if(execDubBase(t, dArgs) == -1) return -1;
 
 	setLogLevel(dArgs._opts.dubVerbose ? LogLevel.verbose : LogLevel.info);
-	ProjectDetails d = resolveDependencies(
+	proj = resolveDependencies(
 		dArgs._opts.force,
 		os,
 		CompilationDetails(dArgs.getCompiler(), dArgs._arch),
@@ -990,14 +990,14 @@ int waitRedub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = nul
 		InitialDubVariables.init,
 		BuildType.debug_
 	);
-	if(buildProject(d).error) return 1;
+	if(buildProject(proj).error) return 1;
 	if(copyLinkerFilesTo.length)
 	{
 		import tools.copylinkerfiles;
 		string[] linkerFiles;
 		timed(t, "Copying Linker Files ",
 		{
-			d.getLinkerFiles(linkerFiles);
+			proj.getLinkerFiles(linkerFiles);
 			copyLinkerFiles(linkerFiles, copyLinkerFilesTo);
 		}());
 	}
@@ -1015,7 +1015,8 @@ void inParallel(scope void delegate()[] args...)
 int waitDub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = null)
 {
 	///Detects the presence of a template file before executing.
-	if(dArgs._command.length >= 3 && dArgs._command[0..3] != "run") return waitRedub(t, dArgs, copyLinkerFilesTo);
+	ProjectDetails d;
+	if(dArgs._command.length >= 3 && dArgs._command[0..3] != "run") return waitRedub(t, dArgs, d, copyLinkerFilesTo);
 	if(execDubBase(t, dArgs) == -1) return -1;
 	string toExec = dArgs.getDubRunCommand();
 	t.writeln(toExec);

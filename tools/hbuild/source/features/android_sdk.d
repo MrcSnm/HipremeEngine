@@ -2,6 +2,9 @@ module features.android_sdk;
 
 import feature;
 import commons;
+
+Feature AndroidSDKFeature;
+
 enum TargetAndroidSDK = 31;
 
 
@@ -102,7 +105,6 @@ private bool installAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, T
 	return true;
 }
 
-Feature AndroidSDKFeature;
 void initialize()
 {
     import std.conv:to;
