@@ -1,7 +1,7 @@
 module features.android_ndk;
 public import feature;
 import commons;
-enum TargetAndroidNDK = "21.4.7075529";
+enum TargetAndroidNDK = "28.0.12433566";
 
 Feature AndroidNDKFeature;
 

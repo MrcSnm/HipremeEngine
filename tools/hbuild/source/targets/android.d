@@ -5,36 +5,38 @@ import std.net.curl;
 import std.path;
 
 ///This is the one which will be installed when using the SDK.
-enum TargetAndroidSDK = 31;
-enum TargetAndroidNDK = "21.4.7075529";
+enum TargetAndroidSDK = 35;
+enum TargetAndroidNDK = "28.0.12433566";
 ///Use a random Adb Port 
 enum HipremeEngineAdbPort = "55565";
 
 private string getAndroidFlagsToolchains()
 {
+	enum AndroidSDKLibs = 35;
+
 	version(Windows)
 	{
 		import std.string:replace;
-		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/windows-x86_64/bin/aarch64-linux-android21-clang.cmd").replace("\\", "/") ~"\" " ~
-		"-linker=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/windows-x86_64/bin/aarch64-linux-android-ld.bfd.exe").replace("\\", "/") ~"\" " ~
+		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/windows-x86_64/bin/aarch64-linux-android35-clang.cmd").replace("\\", "/") ~"\" " ~
+		"-linker=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/windows-x86_64/bin/ld.lld.exe").replace("\\", "/") ~"\" " ~
 		///Put the lib path for finding libandroid, liblog, libOpenSLES, libEGL and libGLESv3
-		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/").replace("\\", "/")~"\" "
+		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/"~AndroidSDKLibs~"/").replace("\\", "/")~"\" "
 		;
 	}
 	else version(linux)
 	{
-		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang") ~"\" " ~
+		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android35-clang") ~"\" " ~
 		"-linker=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ld.bfd") ~"\" " ~
 		///Put the lib path for finding libandroid, liblog, libOpenSLES, libEGL and libGLESv3
-		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/30/")~"\" "
+		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/"~AndroidSDKLibs~"/")~"\" "
 		;
 	}
 	else version(OSX)
 	{
-		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android21-clang") ~"\" " ~
+		return "-gcc=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android35-clang") ~"\" " ~
 		"-linker=\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android-ld.bfd") ~"\" " ~
 		///Put the lib path for finding libandroid, liblog, libOpenSLES, libEGL and libGLESv3
-		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/30/")~"\" "
+		"-L-L\""~buildNormalizedPath(configs["androidNdkPath"].str, "toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/"~AndroidSDKLibs~"/")~"\" "
 		;
 	}
 }

@@ -179,7 +179,7 @@ mixin template LoadReferencedAssets(string[] modules)
                             // pragma(msg, assetUDA);
                             static if(assetUDA.path !is null)
                             {{
-                                import std.traits:isArray;
+                                import hip.util.reflection: isArray;
                                 static if(isArray!(typeof(classMember))) alias memberType = typeof(classMember.init[0]);
                                 else alias memberType = typeof(classMember);
 

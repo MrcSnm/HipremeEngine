@@ -5,7 +5,7 @@ import commons;
 
 Feature AndroidSDKFeature;
 
-enum TargetAndroidSDK = 31;
+enum TargetAndroidSDK = 35;
 
 
 version(Windows) enum SearchForSDK = true;

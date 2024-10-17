@@ -17,20 +17,32 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="002a72a2-c94b-4c61-a2b8-f896bf1fb8a8" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../../../api/source/hip/api/data/commons.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../api/source/hip/api/data/commons.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine.sln" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine.sln" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.filters" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.filters" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.user" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine.vcxproj.user" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine_TemporaryKey.pfx" beforeDir="false" afterPath="$PROJECT_DIR$/../../uwp/HipremeEngine/HipremeEngine/HipremeEngine_TemporaryKey.pfx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../renderer.conf" beforeDir="false" afterPath="$PROJECT_DIR$/../../../renderer.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/HipremeEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/HipremeEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../dependencies/runtime/druntime" beforeDir="false" afterPath="$PROJECT_DIR$/../../../dependencies/runtime/druntime" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../projects/profile/dub.template.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../projects/profile/dub.template.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../projects/start_here/dub.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../projects/start_here/dub.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../projects/start_here/source/gamescript/entry.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../projects/start_here/source/gamescript/entry.d" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[f479b6e]" />
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=PhysicalDevice, isTemplate=false, identifier=serial=UGV4HIT8Z5MVYP8H)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -52,39 +64,33 @@
   <component name="PathMacrosImpl">
     <macro name="HIPREME_ENGINE" value="$PROJECT_DIR$/../../../" />
   </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="1weEaUxBuHGOQdvYCBnuHrtvE5x" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="AnalyzeApkAction.lastApkPath" value="$PROJECT_DIR$/app/build/outputs/apk/debug/app-debug.apk" />
-    <property name="ApkExportedModule" value="App.app" />
-    <property name="DEBUGGABLE_DEVICE" value="xiaomi-redmi_7-f479b6e" />
-    <property name="DEBUGGABLE_PROCESS" value="com.hipremeengine.app" />
-    <property name="DEBUGGER_ID" value="Hybrid" />
-    <property name="ExportApk.ApkPath" value="$PROJECT_DIR$/app" />
-    <property name="ExportApk.BuildVariants" value="release" />
-    <property name="ExportApk.SignV2" value="true" />
-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
-    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="SHOW_ALL_PROCESSES" value="false" />
-    <property name="TERMINAL_CUSTOM_COMMANDS_GOT_IT" value="true" />
-    <property name="android-custom-viewC:/Users/Hipreme/AppData/Local/Android/Sdk/sources/android-30/android/view/View.java_SELECTED" value="View" />
-    <property name="android-custom-viewC:/Users/Hipreme/AppData/Local/Android/Sdk/sources/android-33/android/opengl/GLSurfaceView.java_SELECTED" value="GLSurfaceView" />
-    <property name="android-custom-viewC:/Users/Hipreme/AppData/Local/Android/Sdk/sources/android-33/android/view/View.java_SELECTED" value="View" />
-    <property name="android.sdk.path" value="$USER_HOME$/AppData/Local/Android/Sdk" />
-    <property name="cidr.known.project.marker" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../modules" />
-    <property name="multi-representation-previewC:/Users/Hipreme/AppData/Local/Android/Sdk/sources/android-30/android/view/View.java_selected" value="Custom views" />
-    <property name="project.structure.last.edited" value="Project" />
-    <property name="project.structure.proportion" value="0.17" />
-    <property name="project.structure.side.proportion" value="0.39929327" />
-    <property name="settings.editor.selected.configurable" value="Debugger.ObjectiveC" />
-  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Android App.app.executor": "Run",
+    "Gradle.Upgrade Gradle wrapper.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "featureChooser",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Marcelo/Documents/D/HipremeEngine/build/android/project",
+    "project.structure.last.edited": "SDKs",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "AndroidSdkUpdater"
+  }
+}]]></component>
   <component name="PsdUISettings">
     <option name="MODULE_TAB" value="Properties" />
     <option name="BUILD_VARIANTS_TAB" value="Build Types" />
@@ -112,9 +118,10 @@
       <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
       <option name="ACTIVITY_EXTRA_FLAGS" value="" />
       <option name="MODE" value="default_activity" />
+      <option name="RESTORE_ENABLED" value="false" />
+      <option name="RESTORE_FILE" value="" />
       <option name="CLEAR_LOGCAT" value="true" />
       <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
-      <option name="INSPECTION_WITHOUT_ACTIVITY_RESTART" value="false" />
       <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
       <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
       <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
@@ -125,6 +132,8 @@
         <option name="WORKING_DIR" value="" />
         <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
         <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
       </Auto>
       <Hybrid>
         <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
@@ -132,19 +141,26 @@
         <option name="WORKING_DIR" value="" />
         <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
         <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
         <symbol_dirs symbol_path="G:\HipremeEngine" />
         <symbol_dirs symbol_path="G:\HipremeEngine\source" />
         <symbol_dirs symbol_path="G:\HipremeEngine\modules" />
         <post_attach_commands post_attach_commands_attr="process handle SIGUSR2 -n true -p true -s false  " />
         <post_attach_commands post_attach_commands_attr="process handle SIGUSR1 -n true -p true -s false  " />
       </Hybrid>
-      <Java />
+      <Java>
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Java>
       <Native>
         <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
         <option name="SHOW_STATIC_VARS" value="true" />
         <option name="WORKING_DIR" value="" />
         <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
         <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
       </Native>
       <Profilers>
         <option name="ADVANCED_PROFILING_ENABLED" value="false" />
@@ -153,7 +169,6 @@
         <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Sample (legacy)" />
         <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
         <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
-        <option name="PROFILING_MODE" value="NOT_SET" />
       </Profilers>
       <option name="DEEP_LINK" value="" />
       <option name="ACTIVITY_CLASS" value="" />
@@ -192,21 +207,13 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="gdb">
-          <url>file://$PROJECT_DIR$/../../../modules/jni/source/hip/jni/helper/jnicall.d</url>
-          <line>113</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="gdb">
-          <url>file://$PROJECT_DIR$/../../../source/app.d</url>
-          <line>245</line>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="gdb">
-          <url>file://$PROJECT_DIR$/../../../modules/math/source/hip/math/random.d</url>
-          <line>38</line>
-          <option name="timeStamp" value="13" />
-        </line-breakpoint>
+        <breakpoint enabled="true" type="OCSymbolicBreakpointType">
+          <properties>
+            <option name="moduleName" value="libart.so" />
+            <option name="symbolPattern" value="art_sigbus_fault" />
+          </properties>
+          <option name="timeStamp" value="2" />
+        </breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
