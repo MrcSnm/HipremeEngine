@@ -1,4 +1,5 @@
 module targets.android;
+import features.ldc;
 import commons;
 import std.net.curl;
 import std.path;
@@ -6,8 +7,6 @@ import std.path;
 ///This is the one which will be installed when using the SDK.
 enum TargetAndroidSDK = 31;
 enum TargetAndroidNDK = "21.4.7075529";
-enum Ldc2AndroidAarchLibReleaseLink = "https://github.com/MrcSnm/HipremeEngine/releases/download/BuildAssets.v1.0.0/android.zip";
-enum CurrentlySupportedLdc2Version = "ldc2 1.33.0-beta1";
 ///Use a random Adb Port 
 enum HipremeEngineAdbPort = "55565";
 
@@ -137,7 +136,7 @@ private string getAndroidFlagsToolchains()
 private string getPackagesToInstall()
 {
 	import std.conv:to;
-	string packages = `"build-tools;`~to!string(TargetAndroidSDK)~`.0.0" `~ 
+	string packages = `"build-tools;`~to!string(TargetAndroidSDK)~`.0.0" `~
 		`"extras;google;webdriver" ` ~
 		`"platform-tools" ` ~
 		`"ndk;`~TargetAndroidNDK~`" `~
@@ -171,7 +170,7 @@ private bool downloadAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, 
 
 	string androidSdkZip = buildNormalizedPath(tempDir, "android_sdk.zip");
 
-	if(!downloadFileIfNotExists("Android SDK will be installed on your system, do you accept it?", 
+	if(!downloadFileIfNotExists("Android SDK will be installed on your system, do you accept it?",
 		getAndroidSDKDownloadLink(), androidSdkZip, t, input))
 		return false;
 
@@ -187,19 +186,6 @@ private bool downloadAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, 
 		std.file.mkdirRecurse(buildNormalizedPath(outputDirectory, "cmdline-tools"));
 		std.file.rename(buildNormalizedPath(outputDirectory, "latest"), finalOutput);
 	}
-	return true;
-}
-
-private bool downloadAndroidLibraries(ref Terminal t, ref RealTimeConsoleInput input)
-{
-	string androidZipDir = buildNormalizedPath(std.file.tempDir(), "androidLibs.zip");
-	if(!downloadFileIfNotExists("Do you accept downloading android libraries for "~CurrentlySupportedLdc2Version, 
-		Ldc2AndroidAarchLibReleaseLink, androidZipDir, t, input))
-		return false;
-
-	string outputDir = buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs");
-	extractZipToFolder(androidZipDir, outputDir, t);
-
 	return true;
 }
 
@@ -258,7 +244,7 @@ private bool installOpenJDK(ref Terminal t, ref RealTimeConsoleInput input)
 	{
 		if(!("JAVA_HOME" in environment))
 		{
-			t.writelnHighlighted("JAVA_HOME wasn't found in your environment. 
+			t.writelnHighlighted("JAVA_HOME wasn't found in your environment.
 				Build Selector will download a compatible OpenJDK for Android Development.");
 			t.flush;
 			if(!downloadOpenJDK(t, input))
@@ -369,31 +355,6 @@ private ChoiceResult runAndroidApplication(ref Terminal t)
 
 ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-	// if(!installOpenJDK(t, input))
-	// {
-	// 	t.writelnError("Failed installing OpenJDK.");
-	// 	return ChoiceResult.Error;
-	// }
-	// environment["JAVA_HOME"] = configs["javaHome"].str;
-	// if(!installAndroidSDK(t, input))
-	// {
-	// 	t.writelnError("Failed installing Android SDK.");
-	// 	return ChoiceResult.Error;
-	// }
-	
-
-	// if(!std.file.exists(
-	// 	buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "android", "lib", "libdruntime-ldc.a")))
-	// {
-	// 	if(!downloadAndroidLibraries(t, input))
-	// 	{
-	// 		t.writelnError("Failed downloading ldc android libraries.");
-	// 		t.flush;
-	// 		return ChoiceResult.Error;
-	// 	}
-	// }
-	// environment["ANDROID_HOME"] = configs["androidSdkPath"].str;
-
 	import features.android_ndk;
 	import features.java_jdk;
 	import features.android_ldc;
@@ -402,17 +363,13 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 		return ChoiceResult.Error;
 	if(!AndroidNDKFeature.getFeature(t, input, TargetVersion.parse(TargetAndroidNDK)))
 		return ChoiceResult.Error;
-	if(!AndroidLDCLibraries.getFeature(t, input))
-		return ChoiceResult.Error;
-	
 
 	executeGameRelease(t);
 	putResourcesIn(t, getHipPath("build", "android", "project", "app", "src", "main", "assets"));
 	cached(() => timed(t, outputTemplateForTarget(t)));
 	outputTemplate(t, configs["gamePath"].str);
 
-	string ldcLibsPath = buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "android", "lib");
-
+	string ldcLibsPath = getAndroidLDCLibrariesPath.execute(t, input);
 
 	string nextReleaseFlags = "-defaultlib=phobos2-ldc,druntime-ldc " ~
 		"-link-defaultlib-shared=false " ~

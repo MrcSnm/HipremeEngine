@@ -74,7 +74,7 @@ bool installHipremeEngine(ref Terminal t, ref RealTimeConsoleInput input, Target
     }
     configs["hipremeEnginePath"] = hipremeEnginePath;
     updateConfigFile();
-    loadSubmodules(t, input);
+    submoduleLoader.execute(t, input);
     return true;
 }
 

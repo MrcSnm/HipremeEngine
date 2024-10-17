@@ -78,6 +78,12 @@ struct Installation
      */
     string[] extractionPathList;
 
+    string getExtractionPath(size_t index, TargetVersion ver)
+    {
+        import std.string;
+        return extractionPathList[index].replace("$CWD", std.file.getcwd).replace("$VERSION", ver.toString).buildNormalizedPath;
+    }
+
     bool install(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver)
     {
         foreach(i, ref d; downloadsRequired)
@@ -90,10 +96,8 @@ struct Installation
             }
             if(i < extractionPathList.length && extractionPathList[i].length)
             {
-                import std.string;
                 import std.file;
-                string extractionPath = extractionPathList[i];
-                extractionPath = extractionPath.replace("$CWD", std.file.getcwd).replace("$VERSION", ver.toString).buildNormalizedPath;
+                string extractionPath = getExtractionPath(i, ver);
                 
                 if(!extractToFolder(d.getOutputPath(ver), extractionPath, t, input))
                     return false;
@@ -109,13 +113,20 @@ struct Installation
 struct Task(alias Fn)
 {
     import std.traits;
+    import std.meta;
+
     Feature*[] dependencies;
     private static auto fn = &Fn;
+    static assert(is(Parameters!Fn[0] == Feature*[]), "The first argument of a Task function must be Feature*[]");
 
-    auto execute(Parameters!Fn args)
+    auto execute(Parameters!Fn[1..$] args)
     {
-        foreach(dep; dependencies) dep.getFeature(args[0], args[1], dep.supportedVersion.max);
-        return fn(args);
+        foreach(dep; dependencies)
+        {
+            if(!dep.getFeature(args[0], args[1], dep.supportedVersion.max))
+                throw new Exception("Could not get the feature named '"~dep.name~"' for executing the task.");
+        }
+        return fn(dependencies, args);
     }   
 }
 
@@ -144,6 +155,10 @@ struct Feature
      * version whitelisting. 
      */
     VersionRange supportedVersion;
+    /**
+     * The version that was actually chosen
+     */
+    TargetVersion currentVersion;
     /**
     * When empty it means it is required on every OS.
     * This was made because if it is not required in any OS, simply don't
@@ -378,7 +393,6 @@ struct TargetVersion
 struct VersionRange
 {
     TargetVersion min, max;
-
     static VersionRange parse(string min, string max = null)
     {
         if(max == null) max = min;

@@ -6,6 +6,7 @@ Feature FeatureMakeRubyGem(
     string gemName, 
     string purpose, 
     VersionRange supportedVersion = VersionRange.init, 
+    TargetVersion currentVersion = TargetVersion.init,
     OS[] requiredOn = null, 
     Feature*[] dependencies = null
 )
@@ -23,5 +24,5 @@ Feature FeatureMakeRubyGem(
     }), Installation([], (ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content)
     {
         return wait(spawnShell("sudo gem install "~gemName)) == 0;
-    }), null, supportedVersion, requiredOn, dependencies);
+    }), null, supportedVersion, currentVersion, requiredOn, dependencies);
 }

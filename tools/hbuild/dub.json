@@ -6,7 +6,8 @@
 	"dependencies": {
 		"arsd-official:terminal": "~master",
 		"arsd-official:cgi": "~master",
-		"redub": "~>1.6.3",
+		"redub": "~>1.11.8",
+		"archive": "~>0.7.1",
 		"wasm-sourcemaps": {"repository": "git+https://github.com/MrcSnm/wasm-sourcemaps", "version": "69e6c80"}
 	},
 	"subConfigurations": {

@@ -2,9 +2,10 @@ module features.git;
 import commons;
 import feature;
 
+Feature GitFeature;
+Task!loadSubmodules submoduleLoader;
 
-
-void loadSubmodules(ref Terminal t, ref RealTimeConsoleInput input)
+private void loadSubmodules(Feature*[] dependencies, ref Terminal t, ref RealTimeConsoleInput input)
 {
 	import std.process;
 	t.writelnSuccess("Updating Git Submodules");
@@ -35,10 +36,6 @@ Download[] downlloads)
 		return false;
 	}
 }
-
-
-Feature GitFeature;
-Task!loadSubmodules submoduleLoader;
 
 void initialize()
 {

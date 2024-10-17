@@ -20,7 +20,7 @@ bool install7Zip(
 	return true;
 }
 
-private bool extract7ZipToFolderImpl(ref Terminal t, ref RealTimeConsoleInput input, string zPath, string outputDirectory)
+private bool extract7ZipToFolderImpl(Feature*[] dependencies, ref Terminal t, ref RealTimeConsoleInput input, string zPath, string outputDirectory)
 {
 	if(!std.file.exists(zPath)) 
 	{

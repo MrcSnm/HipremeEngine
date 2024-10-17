@@ -521,6 +521,15 @@ bool extractToFolder(string zPath, string outputDirectory, ref Terminal t, ref R
 			{
 				return extractTarGzToFolder(zPath, outputDirectory, t);
 			}
+			else version(Windows)
+			{
+				///Handles .gz, .xz
+				if(!extract7ZipToFolder.execute(t, input, zPath, dirName(zPath)))
+					return false;
+				t.writelnSuccess("Extracted to ", dirName(zPath));
+				//Now handle tar
+				return extractTarToFolder(t, zPath[0..$-".xz".length], outputDirectory);
+			}
 			else assert(false, "No .tar.gz support on non Posix");
 		case ".zip":
 			return extractZipToFolder(zPath, outputDirectory, t);
@@ -550,6 +559,35 @@ bool extractTarGzToFolder(string tarGzPath, string outputDirectory, ref Terminal
 	t.flush;
 	std.file.mkdirRecurse(outputDirectory);
 	return dbgExecuteShell("tar -xf "~tarGzPath~" -C "~outputDirectory, t);
+}
+
+bool extractTarToFolder(ref Terminal t, string tarPath, string outputDirectory)
+{
+	import archive.tar;
+	try
+	{
+		auto tar = new TarArchive(std.file.read(tarPath));
+		t.writeln("Extracting ", tarPath, " to ", outputDirectory);
+		foreach(file; tar.files)
+		{
+			if(file.path == "@LongLink")
+				continue;
+			string outputPath = buildNormalizedPath(outputDirectory, file.path);
+			if(std.file.exists(outputPath))
+				continue;
+			string targetDir = dirName(outputPath);
+			if(!std.file.exists(targetDir))
+				t.writeln("\t->", targetDir);
+			std.file.mkdirRecurse(targetDir);
+			std.file.write(outputPath, file.data);
+		}
+	}
+	catch(Exception e)
+	{
+		t.writelnError("File ", tarPath, " does not exists, ", e.toString);
+		return false;
+	}
+	return true;
 }
 
 bool isRecognizedExtension(string ext)
