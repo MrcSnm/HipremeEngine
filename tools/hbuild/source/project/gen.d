@@ -131,8 +131,17 @@ string generateDubProject(DubProjectInfo info)
 				"hipreme_engine": {"path": "#HIPREME_ENGINE"}
 			},
 			"subConfigurations": {
-				"hipreme_engine": "wasm"
+				"hipreme_engine": "wasm",
+				"game2d": "direct"
 			}
+		},
+		{
+			"name": "android",
+			"targetType": "dynamicLibrary",
+			"dependencies": {
+				"hipreme_engine": {"path": "#HIPREME_ENGINE"}
+			},
+			"subConfigurations": {"game2d": "direct", "hipreme_engine": "android"}
 		},
 		{
 			"name": "run",

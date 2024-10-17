@@ -1,6 +1,6 @@
 module hip.util.to_string_range;
 import std.range.primitives;
-import std.traits:isArray;
+import hip.util.reflection:isArray;
 
 void put(Sink, E)(ref Sink sink, E e)
 {

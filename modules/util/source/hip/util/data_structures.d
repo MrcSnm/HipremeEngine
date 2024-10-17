@@ -109,7 +109,7 @@ struct DirtyFlagsCmp(alias flag, Fields...)
  */
 struct RangeMap(K, V)
 {
-    import std.traits:isNumeric;
+    import hip.util.reflection:isNumeric;
     @nogc:
     static assert(isNumeric!K, "RangeMap key must be a numeric type");
     protected Array!K ranges;
@@ -294,7 +294,7 @@ struct Array(T)
         data[start..end] = value;
         return this;
     }
-    import std.traits:isArray, isNumeric;
+    import hip.util.reflection:isArray;
     auto ref opAssign(Q)(Q value) @nogc
     if(isArray!Q)
     {
@@ -484,7 +484,7 @@ class Array2D_GC(T)
 
 private uint hash_fnv1(T)(T value)
 {
-    import std.traits:isArray, isPointer;
+    import hip.util.reflection:isArray, isPointer;
     enum fnv_offset_basis = 0x811c9dc5;
     enum fnv_prime = 0x01000193;
 

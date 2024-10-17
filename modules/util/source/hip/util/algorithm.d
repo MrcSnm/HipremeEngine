@@ -57,7 +57,7 @@ auto map(Range, From, To)(Range range, scope To delegate (From data) func)
     {
         Range inputRange;
         To delegate(From data) convert;
-        import std.traits :isArray;
+        import hip.util.reflection :isArray;
         static if(isArray!Range)
         {
             size_t counter = 0;

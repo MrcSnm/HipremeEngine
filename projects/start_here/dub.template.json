@@ -39,6 +39,14 @@
 			"targetType": "library"
 		},
 		{
+			"name": "android",
+			"targetType": "dynamicLibrary",
+			"dependencies": {
+				"hipreme_engine": {"path": "#HIPREME_ENGINE"}
+			},
+			"subConfigurations": {"game2d": "direct", "hipreme_engine": "android"}
+		},
+		{
 			"name": "release-wasm",
 			"targetType": "executable",
 			"dependencies": {

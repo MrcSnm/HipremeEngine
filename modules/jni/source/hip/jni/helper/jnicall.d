@@ -2,7 +2,7 @@ module hip.jni.helper.jnicall;
 import hip.util.conv:to;
 import hip.util.format;
 import hip.util.string;
-import std.traits : isArray;
+import hip.util.reflection : isArray;
 import hip.jni.jni;
 
 version(Android):

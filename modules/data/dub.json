@@ -11,6 +11,7 @@
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
 		"console": {"path": "../console"},
+		"config": {"path": "../config"},
 		"error": {"path": "../error"},
 		"hipengine_api:interfaces": {"path": "../../api"},
 		"util": {"path": "../util"}

@@ -285,7 +285,7 @@ struct StringBuilder
     }
     auto ref opOpAssign(string op, T)(T value) if(op == "~")
     {
-        import std.traits:isArray;
+        import hip.util.reflection:isArray;
         static if(isArray!T && !is(T == string))
             foreach(v; value) append(v);
         else

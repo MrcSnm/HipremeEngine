@@ -37,9 +37,10 @@ int indexOf(T)(in T[] arr, T element, int startIndex = 0) pure nothrow @nogc
             return i;
     return -1;
 }
+import hip.util.reflection;
 
 ///Index of for tuples
-int indexOf(T, V)(in T tuple, V value) pure nothrow @nogc
+int indexOf(T, V)(in T tuple, V value) pure nothrow @nogc if(!isArray!T)
 {
     foreach(i, v; tuple)
     {

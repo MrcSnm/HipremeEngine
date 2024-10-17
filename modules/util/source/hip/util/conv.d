@@ -1,6 +1,6 @@
 module hip.util.conv;
 import hip.util.string;
-import std.traits:isArray, isCallable;
+import hip.util.reflection:isArray;
 public import hip.util.to_string_range;
 public import hip.util.string:toStringz;
 

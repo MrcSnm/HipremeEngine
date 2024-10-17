@@ -918,5 +918,14 @@ void pushToStack(JSONValue val, ref JSONValue* current, ref JSONValue lastValue)
 
 private T uninitializedArray(T)(size_t size)
 {
-	return object._d_newarrayU!(typeof(T.init[0]))(size);
+	import hip.config.opts;
+	static if(CustomRuntime)
+	{
+		return object._d_newarrayU!(typeof(T.init[0]))(size);
+	}
+	else
+	{
+		import std.array:uninitializedArray;
+		return uninitializedArray!T(size);
+	}
 }
