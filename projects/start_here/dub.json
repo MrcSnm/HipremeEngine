@@ -3,7 +3,7 @@
         {
             "dependencies": {
                 "hipengine_api": {
-                    "path": "C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine/api"
+                    "path": "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine/api"
                 }
             },
             "dflags-ldc": [
@@ -13,7 +13,8 @@
                 "/WX"
             ],
             "lflags-windows-ldc": [
-                "/WHOLEARCHIVE:hipengine_api"
+                "/WHOLEARCHIVE:hipengine_api_bindings",
+                "/WHOLEARCHIVE:hipengine_api_interfaces"
             ],
             "name": "script",
             "targetType": "dynamicLibrary",
@@ -22,19 +23,37 @@
             ]
         },
         {
-            "dependencies": {
-                "hipengine_api:direct": {
-                    "path": "C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine/api"
-                }
-            },
-            "lflags-windows-ldc": [
-                "/WHOLEARCHIVE:hipengine_api:direct"
-            ],
             "name": "release",
             "subConfigurations": {
                 "game2d": "direct"
             },
             "targetType": "library"
+        },
+        {
+            "dependencies": {
+                "hipreme_engine": {
+                    "path": "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine"
+                }
+            },
+            "name": "android",
+            "subConfigurations": {
+                "game2d": "direct",
+                "hipreme_engine": "android"
+            },
+            "targetType": "dynamicLibrary"
+        },
+        {
+            "dependencies": {
+                "hipreme_engine": {
+                    "path": "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine"
+                }
+            },
+            "name": "release-wasm",
+            "subConfigurations": {
+                "game2d": "direct",
+                "hipreme_engine": "wasm"
+            },
+            "targetType": "executable"
         },
         {
             "lflags-windows": [
@@ -52,13 +71,13 @@
     ],
     "dependencies": {
         "game2d": {
-            "path": "C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\modules\\game2d"
+            "path": "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\modules\\game2d"
         },
         "math": {
-            "path": "C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\modules\\math"
+            "path": "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\modules\\math"
         },
         "util": {
-            "path": "C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\modules\\util"
+            "path": "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\modules\\util"
         }
     },
     "description": "Hipreme Engine test scene",
@@ -74,16 +93,16 @@
     "license": "proprietary",
     "name": "start_here",
     "preBuildCommands-posix": [
-        "export DFLAGS= && rdmd C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine/tools/internal/getmodules.d C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\projects\\start_here/source/ C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\projects\\start_here/scriptmodules.txt"
+        "export DFLAGS= && rdmd C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine/tools/internal/getmodules.d C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\projects\\start_here/source/ C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\projects\\start_here/scriptmodules.txt"
     ],
     "preBuildCommands-windows": [
-        "set DFLAGS= && rdmd C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine/tools/internal/getmodules.d C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\projects\\start_here/source/ C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\projects\\start_here/scriptmodules.txt"
+        "set DFLAGS= && rdmd C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine/tools/internal/getmodules.d C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\projects\\start_here/source/ C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\projects\\start_here/scriptmodules.txt"
     ],
     "sourcePaths": [
         "source"
     ],
     "stringImportPaths": [
-        "C:\\Users\\Marcelo\\Desktop\\tests\\HipremeEngine\\projects\\start_here"
+        "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\projects\\start_here"
     ],
     "targetName": "start_here",
     "versions": [
