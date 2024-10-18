@@ -16,22 +16,4 @@ interface IHipInputMap
     float isActionPressed(string actionName);
     float isActionJustPressed(string actionName);
     float isActionJustReleased(string actionName);
-
-    version(DirectCall)
-    {
-        static alias parseInputMap = HipInputMap.parseInputMap;
-    }
-    else version(ScriptAPI)
-    {
-        static IHipInputMap parseInputMap(ubyte[] file, string fileName, ubyte id = 0){return parseInputMap_Mem(file, fileName,id);}
-    }
-}
-version(DirectCall) { public import hip.event.handlers.inputmap; } 
-
-else
-{
-    extern(System) __gshared
-    {
-        IHipInputMap function(ubyte[] file, string fileName, ubyte id = 0) parseInputMap_Mem;
-    }
 }

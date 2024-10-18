@@ -23,6 +23,8 @@ interface IScene : IHipPreloadable
     void onResize(uint width, uint height);
 }
 
+
+
 abstract class AScene : IScene
 {
     Layer[] layerStack;
@@ -30,6 +32,12 @@ abstract class AScene : IScene
     {
 	    //Intentionally blank for now.
     }
+    abstract void initialize();
+    abstract void update(float dt);
+    abstract void render();
+    abstract void onResize(uint width, uint height);
+    void dispose() {}
+
 
 
     void preload(){assert(false, "use `mixin Preload;` to implement that function");}

@@ -8,7 +8,7 @@
 		"debugInfoC"
 	],
 	"dependencies": {
-		"hipengine_api": {"path": "../../api"}
+		"hipengine_api:interfaces": {"path": "../../api"}
 	},
 	"configurations": [
 		{

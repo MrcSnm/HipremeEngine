@@ -10,11 +10,16 @@
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
 		"error": {"path": "../error","version": "*"},
-		"bindbc-lua": {"version": "~>0.5.0", "optional": true}
 	},
 	"configurations": [
 		{
 			"name": "default"
+		},
+		{
+			"name": "lua",
+			"dependencies": {
+				"bindbc-lua": {"version": "~>0.5.0", "optional": true}
+			}
 		}
 	],
 	"description": "HipremeEngine bind module",

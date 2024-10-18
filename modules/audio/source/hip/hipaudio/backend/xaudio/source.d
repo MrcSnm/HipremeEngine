@@ -5,6 +5,7 @@ version(DirectX):
 
 import hip.hipaudio.backend.xaudio.player;
 import hip.hipaudio.backend.xaudio.clip;
+import hip.hipaudio.backend.audioclipbase;
 import hip.hipaudio.audiosource;
 import directx.xaudio2;
 import directx.win32;

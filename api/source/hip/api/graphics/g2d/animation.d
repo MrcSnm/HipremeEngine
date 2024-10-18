@@ -94,41 +94,6 @@ interface IHipAnimation
         return frame.region;
     }
 
-    version(Have_util) version(DefineCreateFromAtlas)
-    {
-        /**
-        *   Creates an IHipAnimation from a loaded texture atlas.
-        *   Its frames will be checked such as `mySprite${frameNumber}`.
-        *   The animation will be named as the string without the number.
-        */
-        static IHipAnimation createFromAtlas(IHipTextureAtlas atlas, string animationName, uint framesPerSecond = 24)
-        {
-            import hip.util.string:getNumericEnding, lastIndexOf;
-            import hip.util.algorithm;
-            import hip.api.graphics.g2d.renderer2d;
-            import std.algorithm:sort;
-            
-            IHipAnimation anim = newHipAnimation(animationName);
-            foreach(string frameName; sort(atlas.frames.keys))
-            {
-                AtlasFrame* frame = frameName in atlas;
-                string name = frameName;
-                int index = frameName.lastIndexOf(frameName.getNumericEnding);
-                if(index != -1)
-                    name = frameName[0..index];
-                IHipAnimationTrack track = anim.getTrack(name);
-                if(track is null)
-                {
-                    anim.addTrack(track = newHipAnimationTrack(name, framesPerSecond, HipAnimationLoopingMode.reset));
-                }
-                track.addFrames(HipAnimationFrame(frame.region, HipColor.white, [0,0]));
-
-            }
-            return anim;
-        }
-    }
-
-
     final string getCurrentTrackName() {return getCurrentTrack().name;}
     IHipAnimation addTrack(IHipAnimationTrack track);
     void update(float deltaTime);

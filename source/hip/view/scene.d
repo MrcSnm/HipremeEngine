@@ -17,18 +17,18 @@ public import hip.view.layer;
 class Scene : AScene
 {
     final this(){}
-    public void initialize(){}
+    override public void initialize(){}
     override public void pushLayer(Layer l)
     {
         layerStack~= l;
         l.onAttach();
     }
-    public void update(float dt)
+    override public void update(float dt)
     {
         foreach(ref l; layerStack)
             l.onUpdate(dt);
     }
-    public void render()
+    override public void render()
     {
         foreach(ref l; layerStack)
         {
@@ -36,10 +36,10 @@ class Scene : AScene
                 l.onRender();
         }
     }
-    public void dispose(){}
+    override public void dispose(){}
     /**
     *   Managed by the event dispatcher
     */
-    public void onResize(uint width, uint height){}
+    override public void onResize(uint width, uint height){}
  
 }

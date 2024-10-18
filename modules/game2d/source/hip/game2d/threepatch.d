@@ -2,7 +2,6 @@ module hip.game2d.threepatch;
 
 public import hip.api.renderer.texture;
 public import hip.game2d.sprite;
-import hip.api;
 import hip.game2d.renderer_data;
 
 enum ThreePatchOrientation
@@ -24,6 +23,7 @@ class ThreePatch
 
     this(string texturePath, ThreePatchOrientation orientation = ThreePatchOrientation.inferred)
     {
+        import hip.api;
         this(HipAssetManager.loadTexture(texturePath).awaitAs!IHipTexture, width, height, orientation);
     }
     this(IHipTexture texture, int width, int height, ThreePatchOrientation orientation = ThreePatchOrientation.inferred)

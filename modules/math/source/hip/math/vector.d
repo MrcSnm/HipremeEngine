@@ -122,31 +122,28 @@ struct Vector(uint N, T)
             assert(index >= 0 && index <= N);
             return mixin(op ~ "data[",index,"];");
         }
-        pragma(inline, true) ref T[N] opCast() const
-        {
-            return data;
-        }
+        pragma(inline, true) T[N] opCast() const {return data;}
         auto opUnary(string op)() inout if(op == "-")
         {
             static if(N == 2) return Vector!(2, T)(-data[0], -data[1]);
             static if(N == 3) return Vector!(3, T)(-data[0], -data[1], -data[2]);
             static if(N == 4) return Vector!(4, T)(-data[0], -data[1], -data[2], -data[3]);
         }
-        float dot()(auto ref VectorN other) inout
+        float dot()(auto ref VectorN other) const
         {
             float ret = 0;
             for(int i = 0; i < N; i++)
                 ret+= data[i]*other[i];
             return ret;
         }
-        inout float mag()
+        float mag() const
         {
             float ret = 0;
             for(int i = 0; i < N; i++)
                 ret+= data[i]*data[i];
             return sqrt(ret);
         }
-        inout float magSquare()
+        float magSquare() const
         {
             float ret = 0;
             for(int i = 0; i < N; i++)

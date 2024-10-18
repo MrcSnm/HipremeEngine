@@ -57,11 +57,3 @@ HipAudioImplementation getAudioImplementationForOS()
         else return OpenAL;
     }
 }
-
-version(DirectCall) { public import hip.hipaudio; }
-else version(ScriptAPI)
-{
-    public import HipAudio = hip.api.audio.audio_binding;
-    public import hip.api.audio.audioclip:IHipAudioClip;
-    public import hip.api.audio.audiosource:AHipAudioSource;
-}

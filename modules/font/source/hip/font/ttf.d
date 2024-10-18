@@ -117,7 +117,7 @@ class HipArsd_TTF_Font : HipFont
         import hip.error.handler;
         HipImageImpl img = new HipImageImpl();
         img.loadRaw(rawImage, _textureWidth, _textureHeight, 1);
-        HipTexture t = new HipTexture();
+        HipTexture t = new HipTexture(null);
 
         bool ret = t.load(img);
         ErrorHandler.assertErrorMessage(ret, "Loading TTF", "Could not create texture for TTF");
@@ -181,7 +181,6 @@ class HipArsd_TTF_Font : HipFont
         //Add as an error (pixel bleeding)
         avgWidth = cast(uint)(avgWidth / charset.length) + 2;
         avgHeight = cast(uint)(avgHeight / charset.length) + 2;
-        import std.algorithm.sorting:sort;
         enum hSpacing = 1;
         enum vSpacing = 1;
         float x = 1;
@@ -211,7 +210,9 @@ class HipArsd_TTF_Font : HipFont
         ubyte[] image = new ubyte[](imageWidth*imageHeight);
 
         int largestHeightInRow = 0;
-        foreach(fontCh; sort!"a.height > b.height"(fontChars))
+        import hip.util.algorithm;
+
+        foreach(fontCh; quicksort(fontChars, (RenderizedChar a, RenderizedChar b) => a.height > b.height))
         {
             int g = stbtt_FindGlyphIndex(&font.font, fontCh.ch);
             int xAdvance, xOffset, yOffset, lsb;
@@ -238,11 +239,11 @@ class HipArsd_TTF_Font : HipFont
             }
 
 
-            characters[fontCh.ch] = HipFontChar(fontCh.ch, cast(int)x, cast(int)y, fontCh.width, fontCh.height, 
+            characters[fontCh.ch] = HipFontChar(fontCh.ch, cast(int)x, cast(int)y, fontCh.width, fontCh.height,
 
                 xOffset, yOffset, round(xAdvance*scale), 0, 0,
                 cast(float)x/imageWidth, cast(float)y/imageHeight,
-                cast(float)fontCh.width/imageWidth, cast(float)fontCh.height/imageHeight, 
+                cast(float)fontCh.width/imageWidth, cast(float)fontCh.height/imageHeight,
                 g
             );
             fontCh.blitToImage(image, cast(int)(x), cast(int)(y), imageWidth, imageHeight);

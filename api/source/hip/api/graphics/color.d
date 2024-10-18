@@ -39,7 +39,7 @@ struct HipColor
     static enum red     = HipColor(0xff0000ff);
     static enum green   = HipColor(0x00ff00ff);
     static enum blue    = HipColor(0x0000ffff);
-    static enum yellow  = HipColor(0xffff0000);
+    static enum yellow  = HipColor(0xffff00ff);
     static enum purple  = HipColor(0xff00ffff);
     static enum teal    = HipColor(0x00ffffff);
     static enum no      = HipColor(0x00000000);

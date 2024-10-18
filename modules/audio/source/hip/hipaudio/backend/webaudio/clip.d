@@ -1,7 +1,7 @@
 module hip.hipaudio.backend.webaudio.clip;
 
 version(WebAssembly):
-import hip.hipaudio.audioclip;
+import hip.hipaudio.backend.audioclipbase;
 import hip.audio_decoding.audio;
 
 /**

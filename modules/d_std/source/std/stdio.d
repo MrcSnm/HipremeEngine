@@ -4,10 +4,28 @@ import core.stdc.stdio;
 version(WebAssembly)
 {
     import arsd.webassembly;
-    void writeln(T...)(T t) {
-        eval(q{
-            console.log.apply(null, arguments);
-        }, t);
+    extern(C) void jsprint(uint length, const(char)* str);
+    void writeln(Args...)(Args args)
+    {
+        static if(args.length == 1 && is(typeof(args[0]) == string))
+        {
+            jsprint(args[0].length, args[0].ptr);
+        }
+        else
+        {
+            version(Have_util)
+            {
+                import hip.util.string;
+                String s = String(args);
+                jsprint(s.length, s.chars.ptr);
+            }
+            else
+            {
+                eval(q{
+                console.log.apply(null, arguments);
+                }, args);
+            }
+        }
     }
 }
 version(PSVita)
@@ -15,24 +33,18 @@ version(PSVita)
     extern(C) void hipVitaPrint(uint length, const(char)* str);
     void writeln(Args...)(Args args)
     {
-        import hip.util.conv:to;
-        char[] str;
-        static foreach(arg; args){str~= to!string(arg);}
+        import hip.util.string;
+        String str = String(args);
         hipVitaPrint(str.length, cast(const(char)*)str.ptr);
-        import hip.util.memory;
-        freeGCMemory(str);
     }
 }
 version(CustomRuntimeTest)
 {
     void writeln(Args...)(Args args)
     {
-        import hip.util.conv:to;
-        char[] str;
-        static foreach(arg; args){str~= to!string(arg);}
+        import hip.util.string;
+        String str = String(args);
         printf("%.*s", str.length, cast(const(char)*)str.ptr);
-        import hip.util.memory;
-        freeGCMemory(str);
     }
 }
 

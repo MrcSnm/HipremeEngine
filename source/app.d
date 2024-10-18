@@ -37,7 +37,7 @@ version(dll)
 version(dll){}
 else version(AppleOS) { version = ManagesMainDRuntime;}
 else version = HandleArguments;
-
+////
 version(ManagesMainDRuntime)
 {
 	import core.runtime;
@@ -221,7 +221,6 @@ void gameInitialize()
 	HipAssetManager.initialize();
 	sys = new GameSystem(FRAME_TIME);
 
-
 	//Initialize 2D context
 	import hip.graphics.g2d;
 	HipRenderer2D.initialize(interpreterEntry, true);
@@ -277,7 +276,8 @@ version(dll)
 		import hip.windowing.platforms.browser;
 		int main()
 		{
-			int[2] windowSize = getWindowSize();
+			string[] _;
+			int[2] windowSize = getWindowSize(null, _);
 			return HipremeMain(windowSize[0], windowSize[1]);
 		}
 	}
@@ -375,13 +375,13 @@ export extern(System) void HipremeRender()
 }
 export extern(System) void HipremeDestroy()
 {
-	logln("Destroying HipremeEngine");
+	logln("Destroying HipremeEnginess");
 	destroyEngine();
 	version(ManagesMainDRuntime)
 		rt_term();
 }
 
-export extern(System) void log(string message)
+export extern(System) void logMessage(string message)
 {
 	import hip.console.log;
 	rawlog(message);

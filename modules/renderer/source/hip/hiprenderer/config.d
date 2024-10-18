@@ -15,12 +15,20 @@ else version(PSVita) enum UseGLES = true;
 else version(WebAssembly) enum UseGLES = true;
 else enum UseGLES = false;
 
+version(OpenGL)  enum HasOpenGL = true;
+else enum HasOpenGL = false;
+
+version(AppleOS) enum HasMetal = true;
+else enum HasMetal = false;
+
+version(DirectX) enum HasDirect3D = true;
+else enum HasDirect3D = false;
+
+
 version(OpenGL)
 {
-    version(Android){}
-    else version(PSVita){}
-    else version(WebAssembly){}
-    else version(Have_bindbc_opengl){}
+    version(Have_bindbc_opengl){}
+    else version(Have_gles){}
     else static assert(false, "Tried to use OpenGL, but supplied no platform or library containing OpenGL.");
 }
 

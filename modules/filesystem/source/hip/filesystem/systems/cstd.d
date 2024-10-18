@@ -56,7 +56,7 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
         onSuccess(output);
         return true;
     }
-    bool write(string path, void[] data)
+    bool write(string path, const(void)[] data)
     {
         import core.stdc.stdio;
         if(exists(path))
@@ -92,10 +92,14 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
 
         return false;
     }
-    version(Posix)
-        import core.sys.posix.sys.stat;
-    else version(Windows)
-        import core.sys.windows.shlwapi : PathIsDirectoryA;
+
+    version(Windows)
+    {
+        private alias BOOL = int;
+        private alias LPCSTR = const(char)*;
+        extern(Windows) BOOL PathIsDirectoryA(LPCSTR);
+    }
+
     bool isDir(string path)
     {
         version(Windows)
@@ -104,6 +108,7 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
         }
         else version(Posix)
         {
+            import core.sys.posix.sys.stat;
             stat_t st;
             stat(cachedStringz(path), &st);
             return S_ISDIR(st.st_mode);

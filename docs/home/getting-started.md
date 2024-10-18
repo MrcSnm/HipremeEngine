@@ -1,6 +1,6 @@
 # Getting Started
 
-Hipreme Engine is made in the D language. Since building is one of the most complex matters in native programming languages, the engine handles all itself. The way it uses, is by using the program called `build_selector`. You can take a look below into how to get the engine:
+Hipreme Engine is made in the D language. Since building is one of the most complex matters in native programming languages, the engine handles all itself. The way it uses, is by using the program called `hbuild`. You can take a look below into how to get the engine:
 
 ### Getting the Engine
 

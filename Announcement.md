@@ -31,7 +31,7 @@ If you find any kind of issue, don't be afraid to submit the issue, don't try to
 - DMD 2.106
 - LDC 1.36
 ### Warning:
-You won't be able to use your PC's D version. This was made because the existence of the custom runtime I'm supporting right now and to guarantee the best experience of any user. The language understands which version you're using on build_selector, and queries your permission for downloading it. Since this is a one person project, this is the best way I found for guaranteeing more stability.
+You won't be able to use your PC's D version. This was made because the existence of the custom runtime I'm supporting right now and to guarantee the best experience of any user. The language understands which version you're using on hbuild, and queries your permission for downloading it. Since this is a one person project, this is the best way I found for guaranteeing more stability.
 
 ## Supporting APIs:
 ### Rendering
@@ -102,4 +102,4 @@ The features here planned are in order of importance:
 
 
 # Getting Started
-Run `dub run hipreme_engine:build_selector`. The actual recommended 
+Run `dub run hipreme_engine:hbuild`. The actual recommended

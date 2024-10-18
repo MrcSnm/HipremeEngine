@@ -3,7 +3,7 @@ require 'json'
 
 #############################################################################################################
 ########### This script provides a way to inject linker commands to .xcodeproj                              #
-########### this way, you will be able to run xcode without depending on build_selector                     #
+########### this way, you will be able to run xcode without depending on hbuild                     #
 ########### so, it is very important for debugging.                                                         #
 ########### WARNING: Do not attempt to change OTHER_LDFLAGS on XCode, since this                            #
 ########### this script gonna OVERRIDE it. If you have any reason to put a new LDFLAG,                      #

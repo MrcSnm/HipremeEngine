@@ -5,7 +5,7 @@
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "HipremeEngine assets module",
 	"dependencies": {
-		"hipengine_api": {"path": "../../api", "version": "*"},
+		"hipengine_api:interfaces": {"path": "../../api", "version": "*"},
 		"filesystem": {"path": "../filesystem", "version": "*"},
 		"audio": {"path": "../audio", "version": "*"},
 		"util": {"path": "../util", "version": "*"},
@@ -14,7 +14,8 @@
 		"image": {"path": "../image", "version": "*"},
 		"renderer": {"path": "../renderer", "version": "*"},
 		"font": {"path": "../font", "version": "*"},
-		"console": {"path": "../console", "version": "*"}
+		"console": {"path": "../console", "version": "*"},
+		"concurrency": {"path": "../concurrency", "version": "*"}
 	},
 	"configurations": [
 		{"name": "default"},

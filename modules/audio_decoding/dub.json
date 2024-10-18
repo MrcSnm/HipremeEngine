@@ -13,7 +13,7 @@
 	"targetType": "library",
 	"copyright": "Copyright © 2021, Hipreme",
 	"dependencies": {
-		"hipengine_api": {"path": "../../api", "version": "*"}
+		"hipengine_api:interfaces": {"path": "../../api", "version": "*"}
 	},
 	"configurations": [
 		{"name": "null"},

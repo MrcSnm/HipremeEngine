@@ -5,7 +5,7 @@ public import avaudiobuffer;
 public import avaudiotypes;
 import objc.runtime;
 import avaudiosinknode;
-import hip.hipaudio.audioclip;
+import hip.hipaudio.backend.audioclipbase;
 import hip.hipaudio.backend.avaudio.player;
 import hip.api.data.audio;
 import avaudiosourcenode;
