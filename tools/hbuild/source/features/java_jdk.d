@@ -1,10 +1,17 @@
 module features.java_jdk;
 public import feature;
 import commons;
+import hconfigs;
 
 enum JDKVersion = "17.0.12";
 
 Feature JavaJDKFeature;
+
+static if(isARM)
+	string arch = "aarch64";
+else
+	string arch = "x64";
+
 
 private bool installOpenJDK(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] downloads)
 {
@@ -15,11 +22,9 @@ private bool installOpenJDK(ref Terminal t, ref RealTimeConsoleInput input, Targ
 		return false;
 	}
 
-	string javaHome = installationOutput;// = environment["JAVA_HOME"];
+	string javaHome = buildNormalizedPath(installationOutput, std.file.dirEntries(installationOutput, std.file.SpanMode.shallow).front.name);// = environment["JAVA_HOME"];
 	version(OSX)
-		javaHome = buildNormalizedPath(javaHome, "jdk-11.0.1.jdk", "Contents", "Home");
-	else
-		javaHome = buildNormalizedPath(javaHome, "jdk-17.0.12+7");
+		javaHome = buildNormalizedPath(javaHome, "Contents", "Home");
 
 	if(!std.file.exists(javaHome))
 	{
@@ -38,9 +43,9 @@ void initialize()
 		ExistenceChecker(["javaHome"], ["JAVA_HOME"]),
 		Installation([Download(
 			DownloadURL(
-				windows:"https://aka.ms/download-jdk/microsoft-jdk-$VERSION-windows-x64.zip",
-				linux: "https://aka.ms/download-jdk/microsoft-jdk-$VERSION-linux-x64.tar.gz",
-				osx: "https://download.java.net/java/GA/jdk11/13/GPL/openjdk-11.0.1_osx-x64_bin.tar.gz"
+				windows:"https://aka.ms/download-jdk/microsoft-jdk-$VERSION-windows-"~arch~".zip",
+				linux: "https://aka.ms/download-jdk/microsoft-jdk-$VERSION-linux-"~arch~".tar.gz",
+				osx: "https://aka.ms/download-jdk/microsoft-jdk-$VERSION-macos-"~arch~".tar.gz"
 			))
 		], toDelegate(&installOpenJDK)),
 		(ref Terminal t, string where){environment["JAVA_HOME"] = where;},

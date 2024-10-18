@@ -20,7 +20,7 @@ private string getAndroidFlagsToolchains()
 	else version(linux)
 		string system = "linux-x86_64";
 	else version(OSX)
-		string system = "darwing-x86_64";
+		string system = "darwin-x86_64";
 	else static assert(false, "Your OS does not support android NDK installation.");
 
 	string toolsPath = buildNormalizedPath(configs["androidNdkPath"].str, "toolchains", "llvm", "prebuilt", system);
