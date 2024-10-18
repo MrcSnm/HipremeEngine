@@ -47,21 +47,21 @@ class HipMTLVertexShader : VertexShader
 
     override string getFrameBufferVertex()
     {
-        return import("shaders/metal/framebuffer.metal");
+        return import("metal/framebuffer.metal");
     }
 
     override string getGeometryBatchVertex()
     {
-        return import("shaders/metal/geometrybatch.metal");
+        return import("metal/geometrybatch.metal");
     }
 
     override string getSpriteBatchVertex()
     {
-        return import("shaders/metal/spritebatch.metal");
+        return import("metal/spritebatch.metal");
     }
     override string getBitmapTextVertex()
     {
-        return import("shaders/metal/bitmaptext.metal");
+        return import("metal/bitmaptext.metal");
     }
 }
 

@@ -19,7 +19,6 @@ string getExtraCommand(string type)
 
 ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-	string buildTarget = getBuildTarget("ios");
 	string arch = iosArch[TARGET_TYPE];
 	prepareAppleOSBase(c,t,input);
 
@@ -36,26 +35,24 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 	
 	appleClean = configs["firstiOSRun"].boolean;
 
-	cached(() => timed(t, outputTemplateForTarget(t, buildTarget)));
 	string codeSignCommand = getCodeSignCommand(t);
 	string extraCommands = getExtraCommand(TARGET_TYPE);
 
-	with(WorkingDir(getHipPath))
+	with(WorkingDir(configs["gamePath"].str))
 	{
 		cleanAppleOSLibFolder();
-
-		if(timed(t, waitDubTarget(t, __MODULE__, DubArguments().
-			command("build").recipe("ios").deep(true).arch(arch~"-apple-ios12.0").compiler("ldc2").opts(cOpts),
-			getHipPath("build", "appleos", XCodeDFolder, "libs"))) != 0)
+		ProjectDetails d;
+		if(waitRedub(t, DubArguments().
+			command("build").configuration("ios").arch(arch~"-apple-ios12.0").compiler("ldc2").opts(cOpts),
+			d,
+			getHipPath("build", "appleos", XCodeDFolder, "libs")) != 0)
 		{
 			t.writelnError("Could not build for AppleOS.");
 			return ChoiceResult.Error;
 		}
-		string path = getHipPath("build", "appleos");
 		string clean = appleClean ? "clean " : "";
 
-		
-		with(WorkingDir(path))
+		with(WorkingDir(getHipPath("build", "appleos")))
 		{
 			wait(spawnShell(
 				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine iOS' " ~
