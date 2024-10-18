@@ -1000,6 +1000,7 @@ int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, strin
 			proj.getLinkerFiles(linkerFiles);
 			copyLinkerFiles(linkerFiles, copyLinkerFilesTo);
 		}());
+		t.flush;
 	}
 	return 0;
 }

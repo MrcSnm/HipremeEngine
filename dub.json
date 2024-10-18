@@ -15,7 +15,6 @@
 	"stringImportPaths": [
 		"assets"
 	],
-	"dflags-dmd": ["-op"],
 	"dflags-ldc": ["--disable-verify"],
 	"versions": [
 		"HIPREME_DEBUG",
@@ -128,27 +127,6 @@
 			]
 		},
 		{
-			"name": "game",
-			"stringImportPaths": [
-				"build/release_game/"
-			],
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"targetPath": "bin/desktop",
-			"targetType": "executable",
-			"versions": [
-				"GameBuildTest",
-				"Standalone",
-				"Desktop"
-			],
-			"versions-windows": [
-				"Direct3D_11",
-				"XAudio2",
-				"DirectX"
-			]
-		},
-		{
 			"name": "wasm",
 			"dependencies": {
 				"d_std": {"path": "modules/d_std", "version": "*"},
@@ -198,17 +176,23 @@
 			]
 		},
 		{
+			"name": "appleos",
+			"subConfigurations": { "renderer": "appleos", "audio": "nodx"},
+			"versions": ["OpenAL", "Standalone", "AppleOS"],
+			"targetType": "staticLibrary"
+		},
+		{
+			"name": "ios",
+			"subConfigurations": {"renderer": "appleos", "audio": "ios"},
+			"targetType": "staticLibrary",
+			"versions": ["Standalone", "AppleOS"]
+		},
+		{
 			"name": "customrt",
 			"dependencies": {
 				"d_std": {"path": "modules/d_std", "version": "*"},
 				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"stringImportPaths": [
-				"build/release_game/"
-			],
 			"lflags-windows": [
 				"/SUBSYSTEM:CONSOLE"
 			],

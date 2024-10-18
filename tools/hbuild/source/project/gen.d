@@ -99,15 +99,13 @@ string generateDubProject(DubProjectInfo info)
 		"tween",
 		"math"
 	],
-	"stringImportPaths": [
-		"#PROJECT"
-	],
+	"stringImportPaths": ["#PROJECT/ct_assets"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
 	"preBuildCommands-posix": [
-		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/ct_assets/scriptmodules.txt"
 	],
 	"preBuildCommands-windows": [
-		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/ct_assets/scriptmodules.txt"
 	],
 	"configurations":
 	[
@@ -127,20 +125,25 @@ string generateDubProject(DubProjectInfo info)
 		{
 			"name": "release-wasm",
 			"targetType": "executable",
-			"dependencies": {
-				"hipreme_engine": {"path": "#HIPREME_ENGINE"}
-			},
-			"subConfigurations": {
-				"hipreme_engine": "wasm",
-				"game2d": "direct"
-			}
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"} },
+			"subConfigurations": {"game2d": "direct", "hipreme_engine": "wasm"}
+		},
+		{
+			"name": "appleos",
+			"targetType": "staticLibrary",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {"game2d": "direct", "hipreme_engine": "appleos"}
+		},
+		{
+			"name": "ios",
+			"targetType": "staticLibrary",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {"game2d": "direct", "hipreme_engine": "ios"}
 		},
 		{
 			"name": "android",
 			"targetType": "dynamicLibrary",
-			"dependencies": {
-				"hipreme_engine": {"path": "#HIPREME_ENGINE"}
-			},
+			"dependencies": { "hipreme_engine": {"path": "#HIPREME_ENGINE"} },
 			"subConfigurations": {"game2d": "direct", "hipreme_engine": "android"}
 		},
 		{
@@ -217,6 +220,9 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
 		//Assets Folder
 		t.writeln("Creating assets folder");
 		mkdirRecurse(buildNormalizedPath(projectPath, "assets"));
+		//Compilation Time Assets folder
+		t.writeln("Creating Compilation Time Assets folder");
+		mkdirRecurse(buildNormalizedPath(projectPath, "ct_assets"));
 		//VSCode Folder
 		t.writeln("Creating vscode folder");
 		mkdirRecurse(buildNormalizedPath(projectPath, ".vscode"));

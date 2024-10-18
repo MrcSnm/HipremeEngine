@@ -10,13 +10,13 @@
         "math",
 		"game2d"
     ],
-    "stringImportPaths": ["#PROJECT"],
+    "stringImportPaths": ["#PROJECT/ct_assets"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
     "preBuildCommands-posix": [
-		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/ct_assets/scriptmodules.txt"
 	],
 	"preBuildCommands-windows": [
-		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/ct_assets/scriptmodules.txt"
 	],
 	"configurations": 
 	[
@@ -56,6 +56,18 @@
 				"hipreme_engine": "wasm",
 				"game2d": "direct"
 			}
+		},
+		{
+			"name": "appleos",
+			"targetType": "staticLibrary",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {"hipreme_engine": "appleos", "game2d": "direct"}
+		},
+		{
+			"name": "ios",
+			"targetType": "staticLibrary",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {"game2d": "direct", "hipreme_engine": "ios"}
 		},
 		{
 			"name": "run",

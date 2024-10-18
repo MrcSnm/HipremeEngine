@@ -61,50 +61,30 @@
 				"directx-d": {"path": "../../dependencies/directx-d"},
 				"bind" : {"path": "../bind", "version": "*"}
 			},
-			"subConfigurations": {
-				"image": "arsd"
-			}
+			"subConfigurations": { "image": "arsd" }
 		},
 		{
 			"name": "appleos",
-			"stringImportPaths": [
-				"."
-			],
-			"dependencies": {
-				"d-metal-binding": {"path": "../../dependencies/metal"}
-			}
+			"stringImportPaths": ["shaders"],
+			"dependencies": { "d-metal-binding": {"path": "../../dependencies/metal"}}
 		},
 		{
 			"name": "wasm",
-			"dependencies": {
-				"gles" : {"path": "../../dependencies/gles"}
-			},
-			"subConfigurations": {
-				"windowing": "wasm",
-				"image": "wasm"
-			},
+			"dependencies": { "gles" : {"path": "../../dependencies/gles"}},
+			"subConfigurations": { "windowing": "wasm", "image": "wasm" },
 			"versions": ["OpenGL", "GLES20"]
 		},
 		{
 			"name": "psvita",
-			"subConfigurations": {
-				"windowing": "psvita",
-				"image": "gamut"
-			},
+			"subConfigurations": { "windowing": "psvita", "image": "gamut" },
 			"versions": ["OpenGL", "GLES20"],
 			"dependencies": {"gles" : {"path": "../../dependencies/gles"}}
 		},
 		{
 			"name": "android",
-			"dependencies": {
-				"gles" : {"path": "../../dependencies/gles", "version": "*"}
-			},
-			"subConfigurations": {
-				"windowing": "android"
-			},
-			"versions": [
-				"OpenGL", "GLES32", "HipGLUseVertexArray"
-			]
+			"dependencies": { "gles" : {"path": "../../dependencies/gles", "version": "*"} },
+			"subConfigurations": { "windowing": "android" },
+			"versions": ["OpenGL", "GLES32", "HipGLUseVertexArray" ]
 		}
 	],
 	"description": "HipremeEngine renderer module",
