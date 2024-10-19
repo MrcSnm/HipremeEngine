@@ -21,16 +21,9 @@ else enum HasOpenGL = false;
 version(AppleOS) enum HasMetal = true;
 else enum HasMetal = false;
 
-version(DirectX) enum HasDirect3D = true;
+version(Direct3D_11) enum HasDirect3D = true;
 else enum HasDirect3D = false;
 
-
-version(OpenGL)
-{
-    version(Have_bindbc_opengl){}
-    else version(Have_gles){}
-    else static assert(false, "Tried to use OpenGL, but supplied no platform or library containing OpenGL.");
-}
 
 
 struct HipRendererConfig
