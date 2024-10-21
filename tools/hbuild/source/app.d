@@ -242,11 +242,6 @@ void promptForConfigCreation(ref Terminal t)
 
 	saveConfig:
 
-	import std.array:replace;
-	gamePath = gamePath.replace("\\", "\\\\");
-	phobosLibPath = phobosLibPath.replace("\\", "\\\\");
-
-
 	configs["gamePath"] = gamePath;
 	configs["phobosLibPath"] = phobosLibPath;
 	configs["selectedChoice"] = 0;
