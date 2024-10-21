@@ -2,7 +2,7 @@
 # They are provided by a third-party and are governed by
 # separate terms of service, privacy policy, and support
 # documentation.
-name: Build Selector
+name: HBuild
 
 on:
   push:
@@ -32,7 +32,7 @@ jobs:
       run: |
         # Build the project, with its main file included, without unittests
         cd tools/hbuild
-        dub build --compiler=$DC -c ci
+        dub run redub -- build --compiler=$DC -c ci
         # Build and run tests, as defined by `unittest` configuration
         # In this mode, `mainSourceFile` is excluded and `version (unittest)` are included
         # See https://dub.pm/package-format-json.html#configurations
@@ -53,7 +53,7 @@ jobs:
       run: |
         # Build the project, with its main file included, without unittests
         cd tools/hbuild
-        dub build --compiler=$DC -c ci
+        dub run redub -- build --compiler=$DC -c ci
     - name: 'Upload'
       uses: actions/upload-artifact@v3.1.2
       with:
@@ -71,7 +71,7 @@ jobs:
       run: |
         # Build the project, with its main file included, without unittests
         cd tools/hbuild
-        dub build -c ci
+        dub run redub -- build -c ci
         mkdir win-release
         copy win64-hbuild.exe win-release/win64-hbuild.exe
         copy libcurl.dll win-release/libcurl.dll
