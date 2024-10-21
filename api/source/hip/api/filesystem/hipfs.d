@@ -83,7 +83,7 @@ interface IHipFileSystemInteraction
     *       - Async platforms: File does not exists
     */
     bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err = "Corrupted File") onError);
-    bool write(string path, void[] data);
+    bool write(string path, const(void)[] data);
     bool exists(string path);
     bool remove(string path);
 

@@ -6,9 +6,9 @@ import hip.api;
 */
 class MainScene : AScene, IHipPreloadable
 {
-    mixin Preload;
+    // mixin Preload;
 	IHipFont bigFont, smallFont;
-	/** Constructor */
+	// /** Constructor */
 	override void initialize()
 	{
 		Viewport vp = getCurrentViewport();
@@ -18,20 +18,21 @@ class MainScene : AScene, IHipPreloadable
         smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
         bigFont = HipDefaultAssets.getDefaultFontWithSize(64);
 	}
-	/** Called every frame */
+	// /** Called every frame */
 	override void update(float dt)
 	{
+        // logg("Built with redub :)"); aaa
         if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
         {
-            logg("You just clicked me!");
+            logg("Youu aa aomgg just clicked me!");
         }
 
         if(HipInput.isKeyJustPressed(HipKey.ENTER))
         {
-            logg("Don't press ENTER!");
+            logg("Don't press ENTER!!");
         }
 	}
-	/** Renderer only, may not be called every frame */
+	// /** Renderer only, may not be called every frame */
 	override void render()
 	{
         fillRectangle(0, 0, 200, 200, HipColor.red);
@@ -56,13 +57,11 @@ class MainScene : AScene, IHipPreloadable
         drawTexture(null, 300, 500);
 
 	}
-	/** Pre destroy */
-	override void dispose()
-	{
-		
-	}
 
-	void onResize(uint width, uint height){}
+    override void preload(){}
+    override string[] getAssetsForPreload(){ return [] ; }
+	override void onResize(uint width, uint height){}
+    override void dispose(){}
 }
 
 mixin HipEngineMain!MainScene;

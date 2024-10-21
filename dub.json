@@ -12,27 +12,20 @@
 		"debugInfoC",
 		"warnings"
 	],
-	"dflags": [
-		"-mixin=mixed.d",
-		"-Jassets"
+	"stringImportPaths": [
+		"assets"
 	],
-	"dflags-dmd": ["-op"],
-	"dflags-ldc": ["--disable-verify", "--oq"],
+	"dflags-ldc": ["--disable-verify"],
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipCheckUnknownKeycode",
-		"HipMathAPI",
-		"HipDStdFile",
 		"HipScriptingAPI",
 		"GL_45",
 		"GL_ARB",
 		"AL_EFX"
 	],
-	"subConfigurations": {
-		"hipengine_api": "hipengine"
-	},
 	"subPackages": [
-		"tools/user/build_selector/"
+		"tools/hbuild/"
 	],
 	"sourcePaths": [
 		"source"
@@ -47,7 +40,7 @@
 		"filesystem": {"path": "./modules/filesystem", "version": "*"},
 		"timer": {"path": "./modules/timer", "version": "*"},
 		"tween": {"path": "./modules/tween", "version": "*"},
-		"hipengine_api": {"path": "./api", "version": "*"},
+		"hipengine_api:interfaces": {"path": "./api", "version": "*"},
 		"math": {"path": "./modules/math", "version": "*"},
 		"renderer": {"path": "./modules/renderer", "version": "*"},
 		"util": {"path": "./modules/util", "version": "*"}
@@ -57,16 +50,14 @@
 			"name": "desktop",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
+	
 			"lflags-windows-ldc": ["-Lmodules/renderer/lib/win64"],
 			"versions": [
-				"OpenGL",
-				"OpenAL",
 				"Desktop",
 				"Standalone",
 				"Test"
 			],
 			"versions-windows": [
-				"Direct3D_11",
 				"DirectX",
 				"XAudio2"
 			]
@@ -94,7 +85,6 @@
 				"Desktop",
 				"Standalone",
 				"Test",
-				"Direct3D_11",
 				"DirectX",
 				"XAudio2"
 			]
@@ -104,8 +94,6 @@
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
 			"versions": [
-				"OpenGL",
-				"OpenAL",
 				"Desktop",
 				"Standalone",
 				"Test"
@@ -119,49 +107,97 @@
 			"name": "script",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
-			"lflags-windows-ldc": ["-Lmodules/renderer/lib/win64"],
+			"lflags-windows": ["-Lmodules/renderer/lib/win64"],
 			"dependencies": {
-				"fswatch": "~>0.6.1"
+				"compilewatcher": {"path": "dependencies/compilewatcher"}
 			},
 			"versions": [
-				"OpenGL",
-				"OpenAL",
 				"Desktop",
 				"Load_DScript",
 				"Standalone"
 			],
-			"dflags-ldc": [
-				"--ftime-trace",
-				"--ftime-trace-file=./my-trace.json"
-			],
+			
 			"lflags-linux-ldc": ["--export-dynamic"],
 			"versions-windows": [
-				"Direct3D_11",
 				"DirectX",
 				"XAudio2"
 			]
 		},
 		{
-			"name": "game",
+			"name": "wasm",
+			"dependencies": {
+				"d_std": {"path": "modules/d_std", "version": "*"},
+				"runtime": {"path": "dependencies/runtime", "version": "*"}
+			},
+			"targetType": "staticLibrary",
 			"stringImportPaths": [
-				"build/release_game/"
+				"build/wasm/generated"
 			],
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"targetPath": "bin/desktop",
-			"targetType": "executable",
+			"subConfigurations": {
+				"runtime": "wasm",
+				"assets": "wasm",
+				"audio": "wasm",
+				"filesystem": "wasm",
+				"renderer": "wasm"
+			},
 			"versions": [
-				"OpenGL",
-				"GameBuildTest",
-				"OpenAL",
 				"Standalone",
-				"Desktop"
+				"HipDStdFile",
+				"CarelessAlocation",
+				"dll"
+			]
+		},
+		{
+			"name": "android",
+			"libs": [
+				"log",
+				"android",
+				"OpenSLES",
+				"EGL",
+				"GLESv3"
 			],
+			"dependencies": {
+				"jni": {"path": "./modules/jni", "version": "*"}
+			},
+			"subConfigurations": {
+				"audio": "android",
+				"console": "android",
+				"renderer": "android"
+			},
+			"targetPath": "bin/android/",
+			"targetType": "library",
+			"versions": [
+				"dll",
+				"Standalone",
+				"OpenSLES1_1"
+			]
+		},
+		{
+			"name": "appleos",
+			"subConfigurations": { "renderer": "appleos", "audio": "nodx"},
+			"versions": ["OpenAL", "Standalone", "AppleOS"],
+			"targetType": "staticLibrary"
+		},
+		{
+			"name": "ios",
+			"subConfigurations": {"renderer": "appleos", "audio": "ios"},
+			"targetType": "staticLibrary",
+			"versions": ["Standalone", "AppleOS"]
+		},
+		{
+			"name": "uwp",
+			"targetType": "staticLibrary",
+			"subConfigurations": {
+				"audio": "dxonly",
+				"renderer": "uwp"
+			},
+			"dflags-ldc": ["-link-defaultlib-shared=true"],
 			"versions-windows": [
-				"Direct3D_11",
+				"Standalone",
+				"DirectX",
 				"XAudio2",
-				"DirectX"
+				"dll",
+				"UWP"
 			]
 		},
 		{
@@ -170,12 +206,6 @@
 				"d_std": {"path": "modules/d_std", "version": "*"},
 				"runtime": {"path": "dependencies/runtime", "version": "*"}
 			},
-			"sourcePaths": [
-				"build/release_game/source"
-			],
-			"stringImportPaths": [
-				"build/release_game/"
-			],
 			"lflags-windows": [
 				"/SUBSYSTEM:CONSOLE"
 			],
@@ -189,8 +219,6 @@
 				"Standalone",
 				"GameBuildTest",
 				"Desktop",
-				"OpenGL",
-				"OpenAL",
 				"CarelessAlocation"
 			],
 			"targetType": "executable"

@@ -71,7 +71,7 @@ enum SL_ANDROID_SPEAKER_NON_POSITIONAL =       (cast(SLuint32) 0x80000000);
 // would define a stream that contains channels 1 and 3. (The corresponding
 // indexed mask, after setting the SL_ANDROID_NON_POSITIONAL bit,
 // would be 0x8000000A.)
-enum SL_ANDROID_MAKE_INDEXED_CHANNEL_MASK(int bitfield)
+auto SL_ANDROID_MAKE_INDEXED_CHANNEL_MASK(int bitfield)
 {
     return ((bitfield) | SL_ANDROID_SPEAKER_NON_POSITIONAL);
 }

@@ -47,6 +47,45 @@ bool isLiteral(alias variable)(string var = variable.stringof)
     return (isNumeric(var) || (var[0] == '"' && var[$-1] == '"'));
 }
 
+template isDynamicArray(T)
+{
+    static if (is(T == U[], U))
+        enum bool isDynamicArray = true;
+    else static if (is(T U == enum))
+        // BUG: isDynamicArray / isStaticArray considers enums
+        // with appropriate base types as dynamic/static arrays
+        // Retain old behaviour for now, see
+        // https://github.com/dlang/phobos/pull/7574
+        enum bool isDynamicArray = isDynamicArray!U;
+    else
+        enum bool isDynamicArray = false;
+}
+
+enum bool isArray(T) = isDynamicArray!T || __traits(isStaticArray, T);
+
+/**
+ * Detect whether type `T` is a pointer.
+ */
+enum bool isPointer(T) = is(T == U*, U);
+
+/**
+ * Detect whether `T` is a built-in numeric type (integral or floating
+ * point).
+ */
+template isNumeric(T)
+{
+    static if (!__traits(isArithmetic, T))
+        enum isNumeric = false;
+    else static if (__traits(isFloating, T))
+        enum isNumeric = is(T : real); // Not __vector, imaginary, or complex.
+    else static if (is(T U == enum))
+        enum isNumeric = isNumeric!U;
+    else
+        enum isNumeric = __traits(isZeroInit, T) // Not char, wchar, or dchar.
+            && !is(immutable T == immutable bool) && !is(T == __vector);
+}
+
+
 
 ///Copy pasted from std.traits for not importing too many things
 template isFunction(X...)

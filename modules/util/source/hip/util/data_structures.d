@@ -48,6 +48,14 @@ mixin template DirtyFlagFields(string flagName, T, string[] fields)
     }
 }
 
+struct Tuple(Fields...)
+{
+    Fields fields;
+    alias fields this;
+    pragma(inline, true) size_t length(){ return Fields.length; }
+}
+auto tuple(Args...)(Args a){ return Tuple!(Args)(a); }
+
 struct DirtyFlagsCmp(alias flag, Fields...)
 {
     import std.typecons;
@@ -101,7 +109,7 @@ struct DirtyFlagsCmp(alias flag, Fields...)
  */
 struct RangeMap(K, V)
 {
-    import std.traits:isNumeric;
+    import hip.util.reflection:isNumeric;
     @nogc:
     static assert(isNumeric!K, "RangeMap key must be a numeric type");
     protected Array!K ranges;
@@ -286,7 +294,7 @@ struct Array(T)
         data[start..end] = value;
         return this;
     }
-    import std.traits:isArray, isNumeric;
+    import hip.util.reflection:isArray;
     auto ref opAssign(Q)(Q value) @nogc
     if(isArray!Q)
     {
@@ -476,7 +484,7 @@ class Array2D_GC(T)
 
 private uint hash_fnv1(T)(T value)
 {
-    import std.traits:isArray, isPointer;
+    import hip.util.reflection:isArray, isPointer;
     enum fnv_offset_basis = 0x811c9dc5;
     enum fnv_prime = 0x01000193;
 
@@ -653,60 +661,6 @@ struct Map(K, V)
 }
 alias AArray = Map;
 
-struct RingBuffer(T, uint Length)
-{
-    import hip.util.concurrency:Volatile;
-    @nogc:
-
-    T[Length] data;
-    private Volatile!uint writeCursor;
-    private Volatile!uint readCursor;
-
-    this()
-    {
-        this.writeCursor = 0;
-        this.readCursor = 0;
-    }
-
-    void push(T data)
-    {
-        this.data[writeCursor] = data;
-        writeCursor = (writeCursor+1) % Length;
-    }
-    ///It may read less than count if it is out of bounds
-    immutable T[] read(uint count)
-    {
-        uint temp = readCursor;
-        if(temp + count > Length)
-        {
-            readCursor = 0;
-            return data[temp..Length];
-        }
-        readCursor = (temp+count)%Length;
-        return data[temp .. count];
-    }
-
-    immutable T read()
-    {
-        uint temp = readCursor;
-        immutable T ret = data[temp];
-        readCursor = (temp+1)%Length;
-        return ret;
-    }
-
-    void dispose()
-    {
-        data = null;
-        length = 0;
-        writeCursor = 0;
-        readCursor = 0;
-    }
-
-    ~this()
-    {
-        dispose();
-    }
-}
 
 /**
 *   High efficient(at least memory-wise), tightly packed Input queue that supports any kind of data in

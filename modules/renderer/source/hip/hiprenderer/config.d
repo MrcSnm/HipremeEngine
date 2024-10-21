@@ -15,14 +15,15 @@ else version(PSVita) enum UseGLES = true;
 else version(WebAssembly) enum UseGLES = true;
 else enum UseGLES = false;
 
-version(OpenGL)
-{
-    version(Android){}
-    else version(PSVita){}
-    else version(WebAssembly){}
-    else version(Have_bindbc_opengl){}
-    else static assert(false, "Tried to use OpenGL, but supplied no platform or library containing OpenGL.");
-}
+version(OpenGL)  enum HasOpenGL = true;
+else enum HasOpenGL = false;
+
+version(AppleOS) enum HasMetal = true;
+else enum HasMetal = false;
+
+version(Direct3D_11) enum HasDirect3D = true;
+else enum HasDirect3D = false;
+
 
 
 struct HipRendererConfig

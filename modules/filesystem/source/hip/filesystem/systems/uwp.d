@@ -125,7 +125,7 @@ version(UWP)
             onSuccess(output);
             return true;
         }
-        bool write(string path, void[] data)
+        bool write(string path, const(void)[] data)
         {
             HipUWPFile f = new HipUWPFile(path, FileMode.WRITE);
             if(f.fp == null) return false;

@@ -23,7 +23,7 @@ debug version(Windows)
     pragma(lib, "psapi.lib");
     pragma(lib, "dbghelp.lib");
     private struct MODLOAD_DATA {DWORD ssize; DWORD ssig; PVOID data; DWORD size; DWORD flags; }
-    import core.sys.windows.windef;
+    import hip.util.windows;
     extern(Windows) private 
     {
         alias SymUnloadModule = SymUnloadModule64;
@@ -108,6 +108,11 @@ version(Windows)
                 failedFunctions~= a.stringof;
         }
         return failedFunctions;
+    }
+
+    string getLastWindowsErrorMessage()
+    {
+        return getWindowsErrorMessage(GetLastError());
     }
 
     string getWindowsErrorMessage(HRESULT hr)

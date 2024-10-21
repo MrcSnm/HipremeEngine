@@ -132,6 +132,12 @@ bool isAbsolutePath(string fPath) pure nothrow @nogc @safe
     return true;
 }
 
+string absolutePath(string thePath, string currPath)
+{
+    if(isAbsolutePath(thePath)) return thePath;
+    return joinPath(currPath, thePath);
+}
+
 
 
 char determineSeparator (string filePath) pure nothrow @nogc @safe

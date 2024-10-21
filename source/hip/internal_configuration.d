@@ -24,6 +24,7 @@ string getFSInstallPath(string projectToLoad)
 {
     version(WebAssembly) return "assets";
 	else version(PSVita) return "app0:assets";
+    else version(Android) { return null;}
     else version(AppleOS)
     {
         import hip.filesystem.hipfs;
@@ -31,17 +32,17 @@ string getFSInstallPath(string projectToLoad)
     }
     else version(UWP)
     {
-        import std.file:getcwd;
+        import hip.util.file:getcwd;
         return getcwd()~"\\UWPResources\\";
     }
     else version(GameBuildTest)
 	{
-		import std.file:getcwd;
+        import hip.util.file:getcwd;
 		return getcwd()~"/build/release_game/assets";
 	}
     else
     {
-        import std.file:getcwd;
+        import hip.util.file:getcwd;
 		if(projectToLoad)
 			return projectToLoad~"/assets";
         return getcwd()~"/assets";

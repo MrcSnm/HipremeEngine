@@ -6,10 +6,15 @@
 	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
 		body {
-      	background-color: rgb(50, 50, 50);
+      		background-color: rgb(50, 50, 50);
     	}
+		#glcontainer {
+			position: relative;
+		}
 		#glcanvas {
 			display: block;
+			position: absolute;
+			background-color: black;
 			padding-left: 0;
 			width: 100%;
 			max-width: 100vw;
@@ -20,10 +25,29 @@
 			margin-right: auto;
 			image-rendering: crisp-edges;
 		}
+		.loader {
+			display: block;
+			position: absolute;
+			left: 50%;
+			margin-top: 25%;
+			border: 16px solid #f3f3f3; /* Light grey */
+			border-top: 16px solid #3498db; /* Blue */
+			border-radius: 50%;
+			width: 120px;
+			height: 120px;
+			animation: spin 2s linear infinite;
+		}
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
 	</style>
   </head>
   <body>
-    <canvas id="glcanvas" width="800" height="600"></canvas>
+	<div id="glcontainer">
+		<canvas id="glcanvas" width="800" height="600"></canvas>
+		<div id="loader" class="loader"></div>
+	</div>
 	<script src="window.js"></script>
     <script src="fs.js"></script>
     <script src="decoders.js"></script>
@@ -36,7 +60,10 @@
 
 	function __loadGame()
 	{
-		WebAssembly.instantiateStreaming(fetch('hipreme_engine.wasm', {}), importObject)
+		WebAssembly.instantiateStreaming(fetchWithProgress('hipreme_engine.wasm', {}, (total, current) =>
+		{
+			console.log(total/current)
+		}), importObject)
 			.then(function(obj) {
 	
 				const canvas = document.getElementById("glcanvas");
@@ -48,11 +75,16 @@
 				bridge_malloc = obj.instance.exports.bridge_malloc;
 				printBlockDebugInfo = obj.instance.exports.printBlockDebugInfo;
 				exports = obj.instance.exports;
+				
+				document.getElementById("loader").style.display = "none";
+				canvas.style.position = "relative";
 				obj.instance.exports._start();
+
 			});
 	}
 	__loadGame();
 
+	
 
     </script>
   </body>

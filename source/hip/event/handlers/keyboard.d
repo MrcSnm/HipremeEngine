@@ -68,9 +68,7 @@ class KeyboardHandler : IHipKeyboard
         if(press)
         {
             if(pressedKeys.indexOf(Key) == -1)
-            {
                 pressedKeys[pressedKeys.indexOf(0)] = Key; //Assign to null index a key
-            }
         }
         else
         {

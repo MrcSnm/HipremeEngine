@@ -4,16 +4,6 @@
 	],
 	"copyright": "Copyright © 2021, Hipreme",
 	"description": "HipremeEngine config module",
-	"configurations": [
-		{
-			"name": "default"
-		},
-		{
-			"name": "source",
-			"targetType": "sourceLibrary"
-		}
-	],
 	"license": "proprietary",
-	"dflags": ["-g"],
 	"name": "config"
 }

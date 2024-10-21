@@ -17,9 +17,11 @@ enum HipButtonType : ushort
     up
 }
 
-import std.typecons:Flag;
-
-alias AutoRemove = Flag!"AutoRemove";
+enum AutoRemove
+{
+    yes,
+    no
+}
 alias HipInputAction = void delegate(const(AHipButtonMetadata) meta);
 alias HipTouchMoveAction = void delegate(int x, int y);
 alias HipScrollAction = void delegate(float[3]);

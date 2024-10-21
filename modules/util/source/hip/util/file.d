@@ -39,6 +39,31 @@ string getFileContent(string path, bool noCarriageReturn = true)
     return (noCarriageReturn) ? content.replaceAll('\r') : content;
 }
 
+version(Windows)
+{
+    string getcwd()
+    {
+        import core.sys.windows.winnt:MAX_PATH;
+        import core.sys.windows.winbase;
+        char[MAX_PATH] buffer;
+
+        uint length = GetCurrentDirectoryA(MAX_PATH, buffer.ptr);
+
+        char[] ret = new char[](length);
+        ret[] = buffer[0..length];
+
+        return cast(string)ret;
+    }
+}
+else
+{
+    string getcwd()
+    {
+        import std.file;
+        return std.file.getcwd();
+    }
+}
+
 
 
 string stripLineBreaks(string content)
@@ -56,7 +81,7 @@ string stripLineBreaks(string content)
 
 
 
-version(HipDStdFile)
+version(none)
 {
     import std.stdio:File;
 
@@ -89,7 +114,7 @@ version(HipDStdFile)
     }
 }
 
-version(HipDStdFile) class FileProgression
+version(none) class FileProgression
 {
     protected ulong progress;
     protected uint stepSize;

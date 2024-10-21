@@ -155,7 +155,6 @@ IHipAssetLoadTask[] loadAsset(type)(string assetPath, int start, int end)
 mixin template LoadAllAssets(string modules)
 {
     import hip.api.data.commons;
-    import std.file;
     mixin LoadReferencedAssets!(splitLines(modules));
 }
 mixin template LoadReferencedAssets(string[] modules)
@@ -180,7 +179,7 @@ mixin template LoadReferencedAssets(string[] modules)
                             // pragma(msg, assetUDA);
                             static if(assetUDA.path !is null)
                             {{
-                                import std.traits:isArray;
+                                import hip.util.reflection: isArray;
                                 static if(isArray!(typeof(classMember))) alias memberType = typeof(classMember.init[0]);
                                 else alias memberType = typeof(classMember);
 

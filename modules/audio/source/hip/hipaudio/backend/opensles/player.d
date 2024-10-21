@@ -252,11 +252,11 @@ cfg);
         SLIAudioPlayer.play(*source.audioPlayer);
         return true;
     }
-    public HipAudioClipAPI getClip(){return new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true));}
+    public IHipAudioClip getClip(){return new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true));}
 
-    public HipAudioClipAPI loadStreamed(string path, uint chunkSize)
+    public IHipAudioClip loadStreamed(string path, uint chunkSize)
     {
-        HipAudioClipAPI buffer = new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true), chunkSize);
+        IHipAudioClip buffer = new HipOpenSLESAudioClip(new HipAudioDecoder(), HipAudioClipHint(config.channels, config.sampleRate, false, true), chunkSize);
         // buffer.loadStreamed(path, getEncodingFromName(path));
         return buffer;
     }

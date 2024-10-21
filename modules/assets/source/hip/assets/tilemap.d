@@ -288,7 +288,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
         return tileset;
     }
 
-    public static HipTilesetImpl readJSON (string path, uint firstGid, JSONValue t, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError)
+    public static HipTilesetImpl readJSON (string path, uint firstGid, const JSONValue t, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError)
     {
         HipTilesetImpl ret = new HipTilesetImpl(0);
         ret._path = path;
@@ -297,7 +297,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
         return ret;
     }
 
-    private void loadJSON (JSONValue t, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError)
+    private void loadJSON (const JSONValue t, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError)
     {
         if(t.hasErrorOccurred)
         {

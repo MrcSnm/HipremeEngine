@@ -45,6 +45,7 @@ class HipAVAudioSource : HipAudioSource
         
     override bool play()
     {
+        import hip.hipaudio.backend.audioclipbase;
         if(isPlaying)
         {
         }

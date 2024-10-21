@@ -5,20 +5,18 @@
 	"targetType": "staticLibrary",
 	"dependencies": {
 		"util": {"path": "../util", "version": "*"},
-		"math": {"path": "../math", "version": "*"}
+		"math": {"path": "../math", "version": "*"},
+		"hipengine_api": {"path": "../../api", "version": "*"}
 	},
 	"configurations": 
 	[
 		{
-			"name": "dynamic",
-			"dependencies": {
-				"hipengine_api": {"path": "../../api", "version": "*"}
-			}
+			"name": "dynamic"
 		},
 		{
 			"name": "direct",
-			"dependencies": {
-				"hipengine_api:direct": {"path": "../../api", "version": "*"}
+			"subConfigurations": {
+				"hipengine_api:bindings": "direct"
 			}
 		}
 	],

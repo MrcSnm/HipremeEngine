@@ -33,7 +33,7 @@ private pure bool validatePath(string initial, string toAppend)
 
     scope(exit)
     {
-        import core.memory:GC;
+        // import core.memory:GC; ///TODO: Check why this was causing a bug.
         // GC.free(newPath.ptr);
         // GC.free(appends.ptr);
     }
@@ -245,7 +245,7 @@ class HipFileSystem
     @ExportD public static bool isPathValid(string path, bool expectsFile = true, bool shouldVerify = true)
     {
         import hip.error.handler;
-        if(!initialPath) return false;
+        if(!isInstalled) return false;
         if(!validatePath(initialPath, defPath~path))
         {
             ErrorHandler.showErrorMessage("Path failed default validation: can't reference external path.", path);
@@ -292,7 +292,10 @@ class HipFileSystem
         hiplog("Required path ", path);
         path = getPath(path);
         if(!isPathValid(path))
+        {
+            hiplog("Invalid path ",path," received.");
             return null;
+        }
         hiplog("Path validated.");
         filesReadingCount++;
 
@@ -321,26 +324,14 @@ class HipFileSystem
         return ret;
     }
     
-
-    version(HipDStdFile)
-    {
-        import std.stdio:File;
-        public static bool getFile(string path, string opts, out File file)
-        {
-            if(!isPathValid(path))
-                return false;
-            file = File(getPath(path), opts);
-            return true;
-        }
-
-    } 
-
-    @ExportD public static bool write(string path, void[] data)
+    @ExportD public static bool write(string path, const(void)[] data)
     {
         if(!isPathValid(path))
             return false;
         return fs.write(getPath(path), data);
     }
+
+
     @ExportD public static bool exists(string path){return isPathValid(path) && fs.exists(getPath(path));}
     @ExportD public static bool remove(string path)
     {
@@ -358,6 +349,7 @@ class HipFileSystem
     @ExportD public static bool absoluteIsDir(string path){return fs.isDir(path);}
     @ExportD public static bool absoluteIsFile(string path){return fs.isFile(path);}
     @ExportD public static bool absoluteRemove(string path){return fs.remove(path);}
+    @ExportD public static bool absoluteWrite(string path, const(void)[] data){return fs.write(path, data);}
     @ExportD public static bool absoluteRead(string path, out void[] output)
     {
         ///This may need to be refactored in the future.

@@ -2,6 +2,7 @@ module hip.game2d.tileworld;
 public import hip.api.data.tilemap;
 public import hip.component.physics;
 public import hip.math.collision;
+import hip.util.algorithm;
 
 
 
@@ -94,7 +95,7 @@ class TileWorld
 
     void update2(float dt) @nogc
     {
-        import std.algorithm.sorting:sort;
+        import hip.util.algorithm:quicksort;
         struct DynamicRectCollision
         {
             Vector2 normal;
@@ -107,7 +108,7 @@ class TileWorld
             Rect bodyRec = dynBody.rect;
             int z = 0;
 
-            foreach(HipTileLayer l; collidibleLayers) 
+            foreach(HipTileLayer l; collidibleLayers)
             for(int j = 0; j < l.rows; j++)
             for(int i = 0; i < l.columns; i++)
             {
@@ -119,7 +120,7 @@ class TileWorld
                 }
             }
             if(z > 0)
-            foreach(col; sort!((DynamicRectCollision a, DynamicRectCollision b) => a.time < b.time)(colCache[0..z]))
+            foreach(col; quicksort(colCache[0..z], ((DynamicRectCollision a, DynamicRectCollision b) => a.time < b.time)))
                 resolveDynamicRectOverlappingRect(col.normal, dynBody.velocity, col.time);
             dynBody.position+= dynBody.velocity* dt;
         }
@@ -127,7 +128,7 @@ class TileWorld
 
     void update(float dt) @nogc
     {
-        import std.algorithm.sorting:sort;
+        import hip.util.algorithm:quicksort;
         struct DynamicRectCollision
         {
             Vector2 normal;
@@ -140,15 +141,15 @@ class TileWorld
             Rect bodyRec = dynBody.rect;
             int i = 0;
 
-            foreach(l; collidibleLayers) 
+            foreach(l; collidibleLayers)
             foreach(const ref rect; getRectsOverlapping(l, dynBody.expandedRectVel))
             {
                 DynamicRectCollision col = void;
                 if(isDynamicRectOverlappingRect(bodyRec, dynBody.velocity, rect, dt, col.normal, col.time))
                     colCache[i++] = col;
             }
-            if(i > 0) 
-            foreach(col; sort!((DynamicRectCollision a, DynamicRectCollision b) => a.time < b.time)(colCache[0..i]))
+            if(i > 0)
+            foreach(col; quicksort(colCache[0..i], (DynamicRectCollision a, DynamicRectCollision b) => a.time < b.time))
                 resolveDynamicRectOverlappingRect(col.normal, dynBody.velocity, col.time);
             dynBody.position+= dynBody.velocity* dt;
         }

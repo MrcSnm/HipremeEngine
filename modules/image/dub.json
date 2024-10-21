@@ -10,16 +10,6 @@
 	"configurations": [
 		{
 			"dependencies": {
-				"arsd-official:image_files": "~master"
-			},
-			"name": "arsd",
-			"targetType": "library",
-			"versions": [
-				"HipARSDImageDecoder"
-			]
-		},
-		{
-			"dependencies": {
 				"gamut": "~>2.0.9"
 			},
 			"subConfigurations": {
@@ -30,6 +20,16 @@
 			],
 			"name": "gamut",
 			"targetType": "library"
+		},
+		{
+			"dependencies": {
+				"arsd-official:image_files": "~>11.4.1"
+			},
+			"name": "arsd",
+			"targetType": "library",
+			"versions": [
+				"HipARSDImageDecoder"
+			]
 		},
 		{
 			"importPaths": [
@@ -54,7 +54,7 @@
 			"path": "../error",
 			"version": ">=0.0.0"
 		},
-		"hipengine_api": {
+		"hipengine_api:interfaces": {
 			"path": "../../api",
 			"version": ">=0.0.0"
 		},

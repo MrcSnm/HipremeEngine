@@ -1,0 +1,54 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2023, Hipreme",
+	"dependencies": {
+		"arsd-official:terminal": "~master",
+		"arsd-official:cgi": "~master",
+		"redub": "~>1.13.0",
+		"archive": "~>0.7.1",
+		"wasm-sourcemaps": {"repository": "git+https://github.com/MrcSnm/wasm-sourcemaps", "version": "69e6c80"}
+	},
+	"subConfigurations": {
+		"redub": "library",
+		"wasm-sourcemaps": "library"
+	},
+	"lflags-osx": [
+		"-framework", "Foundation",
+		"-framework", "AppKit",
+		"-lObjC", "-all_load"
+	],
+	"versions-windows": ["WindowsVista"],
+	"stringImportPaths": [
+		"../../build/scripts",
+		"source"
+	],
+	"targetType": "executable",
+	"configurations": [
+		{
+			"name": "MacOS",
+			"platforms": ["osx"],
+			"dependencies": {
+				"objc_meta": "~>1.0.12"
+			}
+		},
+		{
+			"name": "default",
+			"dependencies": {
+				"arsd-official:minigui": "~master"
+			}
+		},
+		{
+			"name": "ci",
+			"dflags-ldc": ["-Oz"],
+			"postBuildCommands-windows": ["move hbuild.exe win64-hbuild.exe"],
+			"postBuildCommands-linux": ["mv hbuild linux64-hbuild && chmod +x linux64-hbuild"],
+			"postBuildCommands-osx": ["mv hbuild macos64-hbuild && chmod +x macos64-hbuild"]
+		}
+	],
+	"libs": ["curl"],
+	"description": "The main way to build your game using Hipreme Engine.\nIt can generate projects and select to build to any of the supported platforms",
+	"license": "proprietary",
+	"name": "hbuild"
+}

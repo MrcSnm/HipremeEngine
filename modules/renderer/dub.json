@@ -2,107 +2,104 @@
 	"authors": [
 		"Hipreme"
 	],
-	"buildOptions": [
-		"debugMode",
-		"debugInfo",
-		"debugInfoC"
+	"subPackages": [
+		{
+			"name": "core",
+			"dependencies": {
+				"hipengine_api:interfaces": {"path": "../../api"},
+				"data" : {"path": "../data"},
+				"image" : {"path": "../image"},
+				"config": {"path": "../config"},
+				"error": {"path": "../error"},
+				"math": {"path": "../math"},
+				"windowing" : {"path" : "../windowing"}
+			},
+			"sourcePaths": [ "source" ],
+			"importPaths": [ "source", "backends/initializer"],
+			"lflags-windows": [ "-Llib/win64" ]
+
+		},
+		{
+			"name": "d3d",
+			"sourcePaths": ["backends/d3d"],
+			"importPaths": ["backends/d3d"],
+			"dependencies": {"renderer:core": "*", "directx-d" : {"path": "../../dependencies/directx-d"}},
+			"versions": ["Direct3D_11"],
+			"configurations": [
+				{"name": "default"},
+				{"name": "uwp", "dependencies": {"bind" : {"path": "../bind", "version": "*"}}}
+			]
+		},
+		{
+			"name": "metal",
+			"sourcePaths": ["backends/metal"],
+			"importPaths": ["backends/metal"],
+			"stringImportPaths": ["shaders"],
+			"dependencies": {"renderer:core": "*", "d-metal-binding": {"path": "../../dependencies/metal"}}
+		},
+		{
+			"name": "gl",
+			"sourcePaths": ["backends/gl"],
+			"importPaths": ["backends/gl"],
+			"dependencies": {"renderer:core": "*"},
+			"versions": ["OpenGL"],
+			"configurations": [
+				{
+					"name": "default",
+					"dependencies": {"bindbc-opengl": {"version": "~>1.1.0"}},
+					"versions": [ "HipGL3", "GL_45", "GL_ARB", "HipGLUseVertexArray" ]
+				},
+				{
+					"name": "gles20",
+					"dependencies": { "gles" : {"path": "../../dependencies/gles"}},
+					"versions": ["GLES20"]
+				},
+				{
+					"name": "gles32",
+					"dependencies": { "gles" : {"path": "../../dependencies/gles"}},
+					"versions": ["GLES32", "HipGLUseVertexArray"]
+				}
+			]
+		}
 	],
-	"sourcePaths": [
-		"source"
-	],
-	"lflags-windows": [
-		"-Llib/win64"
-	],
-	"dependencies": {
-		"hipengine_api": {"path": "../../api"},
-		"data" : {"path": "../data"},
-		"image" : {"path": "../image"},
-		"config": {"path": "../config"},
-		"error": {"path": "../error"},
-		"math": {"path": "../math"},
-		"windowing" : {"path" : "../windowing"}
-	},
 	"copyright": "Copyright © 2021, Hipreme",
+	"sourcePaths": ["backends/initializer"],
+	"importPaths": ["backends/initializer"],
+	"dependencies": {
+		":core": "*"
+	},
 	"configurations": [
 		{
 			"name": "default",
-			"dependencies": {
-				"directx-d": {"path": "../../dependencies/directx-d", "optional": true, "default": true},
-				"bindbc-opengl": {"version": "~>1.1.0", "optional": true, "default": true}
-			},
-			"versions": [
-				"HipGL3",
-				"GL_45",
-				"GL_ARB",
-				"HipGLUseVertexArray"
-			]
-		},
-		{
-			"name": "dxonly",
-			"dependencies": {"directx-d": {"path": "../../dependencies/directx-d"}}
+			"dependencies": {":d3d": "*", ":gl": "*" }
 		},
 		{
 			"name": "nodx",
-			"dependencies": {
-				"bindbc-opengl": "~>1.1.0"
-			},
-			"versions": [
-				"HipGL3",
-				"GL_45",
-				"GL_ARB",
-				"HipGLUseVertexArray"
-			]
+			"dependencies": { ":gl": "*"}
 		},
 		{
 			"name": "uwp",
-			"dependencies": {
-				"directx-d": {"path": "../../dependencies/directx-d"},
-				"bind" : {"path": "../bind", "version": "*"}
-			},
-			"subConfigurations": {
-				"image": "arsd"
-			}
+			"dependencies": {":d3d": "*"},
+			"subConfigurations": { ":d3d": "uwp" }
 		},
 		{
 			"name": "appleos",
-			"stringImportPaths": [
-				"."
-			],
-			"dependencies": {
-				"d-metal-binding": {"path": "../../dependencies/metal"}
-			}
+			"dependencies": { ":metal": "*"}
 		},
 		{
 			"name": "wasm",
-			"dependencies": {
-				"gles" : {"path": "../../dependencies/gles"}
-			},
-			"subConfigurations": {
-				"windowing": "wasm",
-				"image": "wasm"
-			}
+			"dependencies": { ":gl" : "*"},
+			"subConfigurations": { "windowing": "wasm", "image": "wasm", ":gl": "gles20"}
 		},
 		{
 			"name": "psvita",
-			"subConfigurations": {
-				"windowing": "psvita",
-				"image": "gamut"
-			},
-			"versions": ["GLES20"],
-			"dependencies": {"gles" : {"path": "../../dependencies/gles"}}
+			"dependencies": {":gl" : "*"},
+			"subConfigurations": { "windowing": "psvita", "image": "gamut", ":gl": "gles20"}
 		},
 		{
 			"name": "android",
-			"dependencies": {
-				"gles" : {"path": "../../dependencies/gles", "version": "*"},
-				"bind" : {"path": "../bind", "version": "*", "optional": true}
-			},
-			"subConfigurations": {
-				"windowing": "android"
-			},
-			"versions": [
-				"HipGLUseVertexArray"
-			]
+			"dependencies": { ":gl": "*"},
+			"subConfigurations": { "windowing": "android", ":gl": "gles32"}
 		}
 	],
 	"description": "HipremeEngine renderer module",

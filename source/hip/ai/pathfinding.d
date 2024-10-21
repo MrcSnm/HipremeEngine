@@ -36,7 +36,7 @@ AStarResult!T AStar2D_4Way(T, Q)(ref T[] map, uint startX, uint startY, int colu
 
     pragma(inline, true) enum append = (AStarNode* prev, T num)
     {
-        import std.traits:isArray;
+        import hip.util.reflection:isArray;
         static if(is(typeof(walls) == typeof(null))){}
         else static if(isArray!Q)
         {

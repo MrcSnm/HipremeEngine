@@ -97,3 +97,27 @@ static if(HIP_OPENSLES_FAST_MIXER)
 	static assert(HIP_OPENSLES_OPTIMAL, "Can't use OpenSL ES fast mixer without using its optimal 
 buffer size and sample rate");
 }
+
+
+version(WebAssembly) 
+	enum CustomRuntime = true;
+else version(CustomRuntimeTest) 
+	enum CustomRuntime = true;
+else version(PSVita) 
+	enum CustomRuntime = true;
+else
+	enum CustomRuntime = false;
+
+
+static if(CustomRuntime)
+	enum HipConcurrency = false;
+else version(Windows) 
+	enum HipConcurrency = true;
+else version(Android)
+	enum HipConcurrency = true;
+else version(UWP)
+	enum HipConcurrency = true;
+else version(AppleOS)
+	enum HipConcurrency = true;
+else version(linux) 
+	enum HipConcurrency = true;

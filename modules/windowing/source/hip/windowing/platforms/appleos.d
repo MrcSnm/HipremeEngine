@@ -9,22 +9,37 @@ extern(C) void   hipSetWindowSize(uint width, uint height);
 extern(C) void   hipSetApplicationFullscreen(bool);
 extern(C) void   hipSetApplicationTitle(const(char)* title);
 
-void openWindow(void** MTKView, ref int width, ref int height)
+void openWindow(ref int width, ref int height, out void* MTKView)
 {
-    hipSetMTKView(MTKView, &width, &height);
+    hipSetMTKView(&MTKView, &width, &height);
 }
 
-void setWindowName(string name)
+void setWindowName(string name, void* WindowHandle, ref string[] errors)
 {
     string nullEndedStr = name ~ '\0';
     hipSetApplicationTitle(nullEndedStr.ptr);
 }
 
-alias getWindowSize = hipGetWindowSize;
-alias setWindowSize = hipSetWindowSize;
-alias setFullscreen = hipSetApplicationFullscreen;
+//Null ops
+import hip.windowing.platforms.null_;
+alias setVsyncActive     = hip.windowing.platforms.null_.setVsyncActive;
+alias show               = hip.windowing.platforms.null_.show;
+alias poll               = hip.windowing.platforms.null_.poll;
+alias swapBuffer         = hip.windowing.platforms.null_.swapBuffer;
+alias destroy_GL_Context = hip.windowing.platforms.null_.destroy_GL_Context;
 
-void show(){}
-void poll(){}
-void swapBuffer(){}
-bool destroy_GL_Context(){return true;}
+
+int[2] getWindowSize(void* WindowHandle, ref string[] errors)
+{
+    return hipGetWindowSize();
+}
+
+void setWindowSize(uint width, uint height, void* WindowHandle, ref string[] errors)
+{
+    hipSetWindowSize(width, height);
+}
+void setFullscreen(bool bFullscreen, void* WindowHandle, ref string[] errors)
+{
+    hipSetApplicationFullscreen(bFullscreen);
+}
+bool initializeOpenGL(int majorVersion, int minorVersion, void* WindowHandle){return false;}
