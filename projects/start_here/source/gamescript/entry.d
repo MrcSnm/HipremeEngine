@@ -24,7 +24,7 @@ class MainScene : AScene, IHipPreloadable
         // logg("Built with redub :)"); aaa
         if(HipInput.isMouseButtonJustPressed(HipMouseButton.left))
         {
-            logg("Youu aa omgg just clicked me!");
+            logg("Youu aa aomgg just clicked me!");
         }
 
         if(HipInput.isKeyJustPressed(HipKey.ENTER))

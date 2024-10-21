@@ -58,7 +58,6 @@
 				"Test"
 			],
 			"versions-windows": [
-				"Direct3D_11",
 				"DirectX",
 				"XAudio2"
 			]
@@ -86,7 +85,6 @@
 				"Desktop",
 				"Standalone",
 				"Test",
-				"Direct3D_11",
 				"DirectX",
 				"XAudio2"
 			]
@@ -121,7 +119,6 @@
 			
 			"lflags-linux-ldc": ["--export-dynamic"],
 			"versions-windows": [
-				"Direct3D_11",
 				"DirectX",
 				"XAudio2"
 			]
@@ -186,6 +183,22 @@
 			"subConfigurations": {"renderer": "appleos", "audio": "ios"},
 			"targetType": "staticLibrary",
 			"versions": ["Standalone", "AppleOS"]
+		},
+		{
+			"name": "uwp",
+			"targetType": "staticLibrary",
+			"subConfigurations": {
+				"audio": "dxonly",
+				"renderer": "uwp"
+			},
+			"dflags-ldc": ["-link-defaultlib-shared=true"],
+			"versions-windows": [
+				"Standalone",
+				"DirectX",
+				"XAudio2",
+				"dll",
+				"UWP"
+			]
 		},
 		{
 			"name": "customrt",

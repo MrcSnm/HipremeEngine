@@ -10,12 +10,13 @@
         "math",
 		"game2d"
     ],
-    "stringImportPaths": ["#PROJECT"],
+    "stringImportPaths": ["#PROJECT/ct_assets"],
+	"dflags-ldc": ["--disable-verify", "--oq"],
     "preBuildCommands-posix": [
-		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+		"export DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/ct_assets/scriptmodules.txt"
 	],
 	"preBuildCommands-windows": [
-		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/scriptmodules.txt"
+		"set DFLAGS= && rdmd #HIPREME_ENGINE/tools/internal/getmodules.d #PROJECT/source/ #PROJECT/ct_assets/scriptmodules.txt"
 	],
 	"configurations": 
 	[
@@ -23,16 +24,57 @@
 			"name" : "script",
 			"targetType": "dynamicLibrary",
 			"dflags-ldc": ["-link-defaultlib-shared=true"],
-			"linkedDependencies": {
+			"dependencies": {
 				"hipengine_api": {"path": "#HIPREME_ENGINE/api"}
 			},
+			"lflags-windows-ldc": [
+                "/WHOLEARCHIVE:hipengine_api_bindings",
+                "/WHOLEARCHIVE:hipengine_api_interfaces"
+            ],
 			"versions": ["ScriptAPI"],
 			"lflags-windows": ["/WX"]
 		},
 		{
 			"name": "release",
-			"targetType": "library",
-			"linkedDependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api"}}
+			"targetType": "library"
+		},
+		{
+			"name": "android",
+			"targetType": "dynamicLibrary",
+			"dependencies": {
+				"hipreme_engine": {"path": "#HIPREME_ENGINE"}
+			},
+			"subConfigurations": {"game2d": "direct", "hipreme_engine": "android"}
+		},
+		{
+			"name": "release-wasm",
+			"targetType": "executable",
+			"dependencies": {
+				"hipreme_engine": {"path": "#HIPREME_ENGINE"}
+			},
+			"subConfigurations": {
+				"hipreme_engine": "wasm",
+				"game2d": "direct"
+			}
+		},
+		{
+			"name": "appleos",
+			"targetType": "staticLibrary",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {"hipreme_engine": "appleos", "game2d": "direct"}
+		},
+		{
+			"name": "ios",
+			"targetType": "staticLibrary",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {"game2d": "direct", "hipreme_engine": "ios"}
+		},
+		{
+			"name": "uwp",
+			"dflags-ldc": ["-link-defaultlib-shared=true"],
+			"targetType": "dynamicLibrary",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {"game2d": "direct", "hipreme_engine": "uwp"}
 		},
 		{
 			"name": "run",
@@ -40,12 +82,9 @@
 			"lflags-windows": [
 				"/WX"
 			],
-			"postGenerateCommands-windows": ["cd ..\\..\\ && dub -c script -- .\\projects\\start_here"],
-			"postGenerateCommands-linux": ["cd ../../ && dub -c script -- ./projects/start_here"]
+			"postGenerateCommands-windows": ["cd ..\\..\\ && dub -c script -- .\\projects\\profile"],
+			"postGenerateCommands-linux": ["cd ../../ && dub -c script -- ./projects/profile"]
 		}
 	],
-	"versions" : [
-		"HipMathAPI",
-		"HipremeAudio"
-	]
+	"versions" : ["HipMathAPI"]
 }

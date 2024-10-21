@@ -147,6 +147,13 @@ string generateDubProject(DubProjectInfo info)
 			"subConfigurations": {"game2d": "direct", "hipreme_engine": "android"}
 		},
 		{
+			"name": "uwp",
+			"dflags-ldc": ["-link-defaultlib-shared=true"],
+			"targetType": "dynamicLibrary",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {"game2d": "direct", "hipreme_engine": "uwp"}
+		},
+		{
 			"name": "run",
 			"targetType": "dynamicLibrary",
 			"lflags-windows": [

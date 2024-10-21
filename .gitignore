@@ -42,3 +42,5 @@ modules/**/dub.selections.json
 ircache_prune_timestamp
 trace.json
 .ldc2_cache
+hipreme_engine.lib
+hipreme_engine.dll

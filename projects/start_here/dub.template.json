@@ -70,6 +70,13 @@
 			"subConfigurations": {"game2d": "direct", "hipreme_engine": "ios"}
 		},
 		{
+			"name": "uwp",
+			"dflags-ldc": ["-link-defaultlib-shared=true"],
+			"targetType": "dynamicLibrary",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {"game2d": "direct", "hipreme_engine": "uwp"}
+		},
+		{
 			"name": "run",
 			"targetType": "dynamicLibrary",
 			"lflags-windows": [
@@ -79,8 +86,5 @@
 			"postGenerateCommands-linux": ["cd ../../ && dub -c script -- ./projects/start_here"]
 		}
 	],
-	"versions" : [
-		"HipMathAPI",
-		"HipremeAudio"
-	]
+	"versions" : ["HipMathAPI"]
 }

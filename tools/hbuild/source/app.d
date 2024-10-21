@@ -4,17 +4,22 @@ import std.conv:to;
 import commons;
 import global_opts;
 import game_selector;
+
 import feature;
 import features.hipreme_engine;
+import features.ldc;
+import features.dmd;
+
 import targets.windows;
 import targets.android;
 import targets.appleos;
 import targets.ios;
+import targets.uwp;
 import targets.linux;
 import targets.wasm;
 import targets.psvita;
-import features.ldc;
-import features.dmd;
+
+
 
 mixin StartFeatures!([
 	"_7zip",
@@ -390,7 +395,11 @@ void main(string[] args)
 	if(!("DUB" in environment))
 		environment["DUB"] = getDubPath();
 	Choice[] choices;
-	version(Windows) choices~= Choice("Windows", &prepareWindows, false, null, scriptOnly);
+	version(Windows)
+	{
+		choices~= Choice("Windows", &prepareWindows, false, null, scriptOnly);
+		choices~= Choice("UWP", &prepareUWP, true);
+	}
 	version(OSX) 
 	{
 		choices~= Choice("AppleOS", &prepareAppleOS, false, null, scriptOnly);
@@ -399,7 +408,6 @@ void main(string[] args)
 	version(linux) choices~= Choice("Linux", &prepareLinux, false, null, scriptOnly);
 
 	choices~=[
-		// Choice("Xbox Series"),
 		Choice("Android", &prepareAndroid, true),
 		Choice("WebAssembly", &prepareWASM, true),
 		Choice("PSVita", &preparePSVita, true),
