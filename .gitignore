@@ -13,6 +13,8 @@
 *.lst
 *.tsx
 *.exe
+build/release_game
+dub.selections.json
 tools/targets/**/dub.json
 bin/.vs
 bin/android/

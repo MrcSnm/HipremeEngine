@@ -1,4 +1,5 @@
 import std.file;
+import std.path;
 import core.stdc.stdlib;
 import std.stdio;
 import std.array:replace;
@@ -43,6 +44,10 @@ int main(string[] args)
 
         output~= file[inputPath.length..$-2].replace('/', '.').replace('\\', '.');
     }
+
+    string outDir = dirName(outputPath);
+    if(!std.file.exists(outDir))
+        std.file.mkdirRecurse(outDir);
 
     std.file.write(outputPath, output);
     return EXIT_SUCCESS;

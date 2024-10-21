@@ -59,7 +59,7 @@ class MainScene : AScene, IHipPreloadable
 	{
 		%s
 	}
-	void onResize(uint width, uint height){}
+	override void onResize(uint width, uint height){}
 }
 
 mixin HipEngineMain!MainScene;
@@ -246,12 +246,15 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
 		t.writeln("Writing .gitignore");
 		std.file.write(buildNormalizedPath(projectPath, ".gitignore"),  q{
 dub.selections.json
+dub.json
 .DS_Store
 .dub
 .history
 .vs
 bin
 *.exe
+*.exp
+*.lnk
 *.dll
 *.dll_hiptempdll
 *.so

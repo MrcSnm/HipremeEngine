@@ -61,7 +61,7 @@ class MainScene : AScene
 		destroy(texture);
 	}
 
-	void onResize(uint width, uint height){}
+	override void onResize(uint width, uint height){}
 }
 
 mixin HipEngineMain!MainScene;

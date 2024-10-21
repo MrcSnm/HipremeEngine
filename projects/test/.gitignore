@@ -1,9 +1,13 @@
-
+dub.selections.json
+dub.json
+.DS_Store
 .dub
 .history
 .vs
 bin
 *.exe
+*.exp
+*.lnk
 *.dll
 *.dll_hiptempdll
 *.so
