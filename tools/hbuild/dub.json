@@ -4,8 +4,8 @@
 	],
 	"copyright": "Copyright © 2023, Hipreme",
 	"dependencies": {
-		"arsd-official:terminal": "~master",
-		"arsd-official:cgi": "~master",
+		"arsd-official:terminal": "~>11.5.0",
+		"arsd-official:cgi": "~>11.5.0",
 		"redub": "~>1.13.0",
 		"archive": "~>0.7.1",
 		"wasm-sourcemaps": {"repository": "git+https://github.com/MrcSnm/wasm-sourcemaps", "version": "69e6c80"}
@@ -36,7 +36,7 @@
 		{
 			"name": "default",
 			"dependencies": {
-				"arsd-official:minigui": "~master"
+				"arsd-official:minigui": "~>11.5.0"
 			}
 		},
 		{

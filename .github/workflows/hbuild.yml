@@ -71,7 +71,7 @@ jobs:
       run: |
         # Build the project, with its main file included, without unittests
         cd tools/hbuild
-        dub run redub -- build -c ci
+        dub run redub -- build -c ci-win
         mkdir win-release
         copy win64-hbuild.exe win-release/win64-hbuild.exe
         copy libcurl.dll win-release/libcurl.dll
