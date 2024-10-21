@@ -37,15 +37,13 @@ jobs:
         # In this mode, `mainSourceFile` is excluded and `version (unittest)` are included
         # See https://dub.pm/package-format-json.html#configurations
     - name: 'Upload'
-      uses: actions/upload-artifact@v3.1.2
+      uses: actions/upload-artifact@v4.4.3
       with:
         name: linux64-hbuild
         path: tools/hbuild/linux64-hbuild
         
   build-macos:
-
-    runs-on: macos-latest
-
+    runs-on: macos-12
     steps:
     - uses: actions/checkout@v3
     - uses: dlang-community/setup-dlang@4c99aa991ce7d19dd3064de0a4f2f6b2f152e2d7
@@ -53,9 +51,9 @@ jobs:
       run: |
         # Build the project, with its main file included, without unittests
         cd tools/hbuild
-        dub run redub -- build --compiler=$DC -c ci
+        dub run redub -- build --compiler=$DC -c ci-macos
     - name: 'Upload'
-      uses: actions/upload-artifact@v3.1.2
+      uses: actions/upload-artifact@v4.4.3
       with:
         name: macos64-hbuild
         path: tools/hbuild/macos64-hbuild
@@ -83,7 +81,7 @@ jobs:
         directory: 'tools/hbuild/'
         path: 'win-release'
     - name: 'Upload'
-      uses: actions/upload-artifact@v3.1.2
+      uses: actions/upload-artifact@v4.4.3
       with:
         name: win64-hbuild.zip
         path: tools/hbuild/win64-hbuild.zip
@@ -95,7 +93,7 @@ jobs:
       contents: write
     steps:
     - name: "Download build artifacts"
-      uses: actions/download-artifact@v2.1.1
+      uses: actions/download-artifact@v4.1.8
     - name: "Update BuildAssets"
       uses: ncipollo/release-action@v1
       with:
