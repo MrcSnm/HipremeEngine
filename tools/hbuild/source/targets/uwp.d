@@ -1,11 +1,7 @@
 module targets.uwp;
+version(Windows):
 import commons;
 import common_windows;
-
-
-
-
-
 
 private bool installUWPBuildTools(ref Terminal t, ref RealTimeConsoleInput input, out string devConsoleDir)
 {
