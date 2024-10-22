@@ -51,32 +51,6 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-<ItemGroup Label="ResourceCopy">
-<Text Include="$(ProjectDir)\UWPResources\data\levels.txt"/>
-<Text Include="$(ProjectDir)\UWPResources\fonts\consolas.fnt"/>
-<Image Include="$(ProjectDir)\UWPResources\fonts\consolas.png"/>
-<Image Include="$(ProjectDir)\UWPResources\images\background.png"/>
-<Image Include="$(ProjectDir)\UWPResources\images\background_blur.png"/>
-<Media Include="$(ProjectDir)\UWPResources\sounds\pop.wav"/>
-<Media Include="$(ProjectDir)\UWPResources\sounds\song17.mp3"/>
-<Media Include="$(ProjectDir)\UWPResources\sounds\song17mono.mp3"/>
-<Media Include="$(ProjectDir)\UWPResources\sounds\song17mono48khz.mp3"/>
-<Image Include="$(ProjectDir)\UWPResources\sprites\assets_candy.png"/>
-<Image Include="$(ProjectDir)\UWPResources\sprites\explotion.png"/>
-
-</ItemGroup>
-  <ItemGroup Label="ResourceCopy">
-    <Text Include="$(ProjectDir)\UWPResources\data\levels.txt" />
-    <Text Include="$(ProjectDir)\UWPResources\fonts\consolas.fnt" />
-    <Image Include="$(ProjectDir)\UWPResources\fonts\consolas.png" />
-    <Image Include="$(ProjectDir)\UWPResources\images\background.png" />
-    <Image Include="$(ProjectDir)\UWPResources\images\background_blur.png" />
-    <Media Include="$(ProjectDir)\UWPResources\sounds\pop.wav" />
-    <Media Include="$(ProjectDir)\UWPResources\sounds\song17.mp3" />
-    <Media Include="$(ProjectDir)\UWPResources\sounds\song17mono.mp3" />
-    <Image Include="$(ProjectDir)\UWPResources\sprites\assets_candy.png" />
-    <Image Include="$(ProjectDir)\UWPResources\sprites\explotion.png" />
-  </ItemGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
