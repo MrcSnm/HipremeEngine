@@ -121,6 +121,8 @@ struct Task(alias Fn)
 
     auto execute(Parameters!Fn[1..$] args)
     {
+        if(dependencies.length == 0)
+            throw new Error("Your task has no dependency. Maybe you forgot to include it in the mixin StartFeatures! list?");
         foreach(dep; dependencies)
         {
             if(!dep.getFeature(args[0], args[1], dep.supportedVersion.max))
@@ -205,8 +207,16 @@ struct Feature
 
     bool getFeature(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion v = TargetVersion.init)
     {
-        if(v == TargetVersion.init) v = supportedVersion.max;
-        currentVersion = v;
+        if(v == TargetVersion.init)
+        {
+            if(currentVersion != TargetVersion.init)
+                v = currentVersion;
+            else
+            {
+                v = supportedVersion.max;
+                currentVersion = v;
+            }
+        }
         if(!supportedVersion.isInRange(v))
         {
             t.writelnError("Unsupported version '",v.toString,"' for feature ", name, 
@@ -307,7 +317,7 @@ struct ExistenceChecker
             if(program.length)
             {
                 status.where = program;
-                status.place = ExistenceStatus.Place.inPath;
+                status. place = ExistenceStatus.Place.inPath;
                 return status;
             }
         }
@@ -413,6 +423,8 @@ struct VersionRange
      */
     bool isInRange(TargetVersion v)
     {
+        if(this == VersionRange.init)
+            return true;
         return v.major >= min.major  && v.major <= max.major &&
         v.minor >= min.minor && v.minor <= max.minor;
     }

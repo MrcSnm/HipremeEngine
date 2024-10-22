@@ -32,6 +32,8 @@ mixin StartFeatures!([
 	"android_ndk",
 	"android_sdk",
 	"msvclinker",
+	"vs_buildtools_installer",
+	"nuget",
 	"vcruntime140"
 ]);
 

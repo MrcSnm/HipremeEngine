@@ -12,6 +12,14 @@
     <AppxShowAllApps>False</AppxShowAllApps>
     <AppxBuildConfigurationSelection>x64</AppxBuildConfigurationSelection>
     <PackageOptionalProjectsInIdeBuilds>False</PackageOptionalProjectsInIdeBuilds>
+    <Source>C:\Users\Marcelo\Documents\D\HipremeEngine\engine_logo_badge.png</Source>
+    <SmallTileSource>C:\Users\Marcelo\Documents\D\HipremeEngine\engine_logo_badge.png</SmallTileSource>
+    <MediumTileSource>C:\Users\Marcelo\Documents\D\HipremeEngine\engine_logo_badge.png</MediumTileSource>
+    <WideTileSource>C:\Users\Marcelo\Documents\D\HipremeEngine\engine_logo_badge.png</WideTileSource>
+    <LargeTileSource>C:\Users\Marcelo\Documents\D\HipremeEngine\engine_logo_badge.png</LargeTileSource>
+    <AppIconSource>C:\Users\Marcelo\Documents\D\HipremeEngine\engine_logo_badge.png</AppIconSource>
+    <SplashScreenSource>C:\Users\Marcelo\Documents\D\HipremeEngine\engine_logo_badge.png</SplashScreenSource>
+    <PackageLogoSource>C:\Users\Marcelo\Documents\D\HipremeEngine\engine_logo_badge.png</PackageLogoSource>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>

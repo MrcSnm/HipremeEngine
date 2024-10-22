@@ -1,7 +1,10 @@
 .vs
+packages
 x64
 ARM
 HipremeEngine/Generated*
+HipremeEngine/Debug
+HipremeEngine/packages
 HipremeEngine/BundleArtifacts
 HipremeEngine/*.pfx
 HipremeEngine/VTune Profiler Results
