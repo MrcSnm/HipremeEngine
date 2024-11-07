@@ -34,7 +34,7 @@ Call `dub -c script -- path/to/project` dub -c script requires that argument.");
         import hip.util.file;
 
         path = absolutePath(path, getcwd).normalizePath;
-        if(HipFS.absoluteIsDir(path))
+        if(HipFS.absoluteExists(path) && HipFS.absoluteIsDir(path))
             path = joinPath(path, path.filenameNoExt);
         if(!dynamicLibraryIsLibNameValid(path))
             path = dynamicLibraryGetLibName(path);
@@ -47,7 +47,7 @@ Call `dub -c script -- path/to/project` dub -c script requires that argument.");
         if(!HipFS.absoluteExists(path))
         {
             import hip.console.log;
-            logln("Does not exists ", path);
+            logln("Path '", path, "' does not exists while trying to find for a HotloadableDLL");
             return false;
         }
         //Create dll_hiptempdll

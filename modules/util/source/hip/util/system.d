@@ -140,6 +140,12 @@ version(Windows)
 }
 
 
+/** 
+ * 
+ * Params:
+ *   libName = Basically a path
+ * Returns: libName appended with the dynamic library extension
+ */
 string dynamicLibraryGetLibName(string libName)
 {
     version(NoSharedLibrarySupport) return "";

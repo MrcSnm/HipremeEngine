@@ -32,5 +32,7 @@ ChoiceResult prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput in
 		}
 	}
 
+	wait(spawnShell((getHipPath("bin", "desktop", "hipreme_engine") ~ " "~ configs["gamePath"].str)));
+
 	return ChoiceResult.Continue;
 }

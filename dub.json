@@ -111,12 +111,15 @@
 			"dependencies": {
 				"compilewatcher": {"path": "dependencies/compilewatcher"}
 			},
+			"subConfigurations-linux": {
+				"renderer": "nodx"
+			},
 			"versions": [
 				"Desktop",
 				"Load_DScript",
 				"Standalone"
 			],
-			
+			"dflags-ldc": ["-link-defaultlib-shared=true"],
 			"lflags-linux-ldc": ["--export-dynamic"],
 			"versions-windows": [
 				"DirectX",

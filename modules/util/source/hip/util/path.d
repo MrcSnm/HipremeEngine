@@ -140,7 +140,7 @@ string absolutePath(string thePath, string currPath)
 
 
 
-char determineSeparator (string filePath) pure nothrow @nogc @safe
+char determineSeparator(const string filePath) pure nothrow @nogc @safe
 {
     size_t i = 0;
     while(i < filePath.length && filePath[i] != '/' && filePath[i] != '\\')
@@ -266,28 +266,31 @@ string extension(string pathOrFilename, string newExt)
     return pathOrFilename;
 }
 
-string joinPath(char separator, in string[] paths ...) @safe pure nothrow
+string joinPath(char separator, scope const string[] paths ...) @safe pure nothrow
 {
     if(paths.length == 1)
         return paths[0];
     string output;
     for(int i = 0; i < paths.length; i++)
     {
-        string filePath = paths[i];
         string next = i+1 < paths.length ? paths[i+1] : "";
-
-        if(filePath == "")
-            continue;
-        
-        output~=paths[i];
-        if(next != "" && next[0] != separator  &&
-        paths[i][$-1] != separator)
-            output~=separator;
+        if(paths[i] != "")
+        {
+            output~=paths[i];
+            if(next != "" && next[0] != separator  &&
+            paths[i][$-1] != separator)
+                output~=separator;
+        }
+        else
+        {
+            if(next != "" && next[0] != separator)
+                output~= separator;
+        }
     }
     return output;
 }
 
-string joinPath(in string[] paths ...) @safe pure nothrow
+string joinPath(scope const string[] paths ...) @safe pure nothrow
 {
     char sep;
     foreach(p; paths)
