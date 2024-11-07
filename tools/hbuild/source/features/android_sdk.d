@@ -77,7 +77,7 @@ private bool installAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, T
     string execSdkManager = "sdkmanager ";
 	version(Posix) execSdkManager = "./sdkmanager";
 
-	if(wait(spawnShell("cd "~sdkManagerPath~" && "~execSdkManager~" --install")) != 0)
+	if(t.wait(spawnShell("cd "~sdkManagerPath~" && "~execSdkManager~" --install")) != 0)
 	{
 		t.writelnError("Failed on installing SDK.");
 		return false;
@@ -87,7 +87,7 @@ private bool installAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, T
     t.writelnHighlighted("Installing packages: ", packagesToInstall, " \n\t", "You may need to accept some permissions, this process may take a little bit of time.");
     t.flush;
 
-    if(wait(spawnShell("cd "~sdkManagerPath~" && "~execSdkManager ~" " ~packagesToInstall)) != 0)
+    if(t.wait(spawnShell("cd "~sdkManagerPath~" && "~execSdkManager ~" " ~packagesToInstall)) != 0)
 	{
 		t.writelnError("Failed on installing SDK packages.");
 		return false;

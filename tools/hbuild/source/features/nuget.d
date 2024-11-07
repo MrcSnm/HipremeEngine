@@ -22,12 +22,12 @@ Task!(installWithNuGetImpl) installWithNuGet;
 private bool installWithNuGetImpl(Feature*[] dependencies, ref Terminal t, ref RealTimeConsoleInput input, string reason, string packageName, string outputPath)
 {
 	t.writeln("Package '", packageName, "' will be downloaded for ", reason);
-    return wait(spawnShell(configs["nuGet"].str ~" install "~ packageName ~" -o "~ outputPath)) == 0;
+    return t.wait(spawnShell(configs["nuGet"].str ~" install "~ packageName ~" -o "~ outputPath)) == 0;
 }
 
 private bool callNuGetCommand(Feature*[] dependencies, ref Terminal t, ref RealTimeConsoleInput input, string cmd)
 {
-    return wait(spawnShell(configs["nuGet"].str ~" "~ cmd)) == 0;
+    return t.wait(spawnShell(configs["nuGet"].str ~" "~ cmd)) == 0;
 }
 
 void initialize()

@@ -23,10 +23,10 @@ private bool setupPsvitaLinux(ref Terminal t, ref RealTimeConsoleInput input)
 {
     std.file.mkdirRecurse("/usr/local/vitasdk");
     std.file.append(buildPath(environment["HOME"], ".bashrc"), vitasdkExports);
-    wait(spawnShell(updateCmd));
-    wait(spawnShell(depsInstallCmd));
-    wait(spawnShell(vdpmInstallCmd));
-    wait(spawnShell("vitasdk-update"));
+    t.wait(spawnShell(updateCmd));
+    t.wait(spawnShell(depsInstallCmd));
+    t.wait(spawnShell(vdpmInstallCmd));
+    t.wait(spawnShell("vitasdk-update"));
     return true;
 }
 private string getWslSource()
@@ -57,6 +57,7 @@ private bool firstBuild(ref Terminal t)
     string cwd = std.file.getcwd();
     std.file.chdir(getHipPath("build", "vita", "hipreme_engine"));
     scope(exit) std.file.chdir(cwd);
+    t.flush;
     auto exec = getExecFunc();
     if(exec("make") != 0)
     {
@@ -133,7 +134,7 @@ private bool setupPsvitaWindows(ref Terminal t, ref RealTimeConsoleInput input)
     {
         import std.array:join;
         t.writelnHighlighted("WSL Execution: "~commands);
-        return wait(spawnShell("wsl source "~fileToSource~" ^&^& "~join(commands, " ")));
+        return t.wait(spawnShell("wsl source "~fileToSource~" ^&^& "~join(commands, " ")));
     };
     
     if(wslExec(updateCmd) != 0)

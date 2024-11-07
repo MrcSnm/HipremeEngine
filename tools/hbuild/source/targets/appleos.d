@@ -30,7 +30,7 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 		string clean = appleClean ? "clean " : "";
 		with(WorkingDir(getHipPath("build", "appleos")))
 		{
-			wait(spawnShell(
+			t.wait(spawnShell(
 				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine macOS' " ~ clean ~ 
 				" build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
 				codeSignCommand ~

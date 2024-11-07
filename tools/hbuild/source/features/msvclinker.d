@@ -135,7 +135,7 @@ private bool installMSLinker(ref Terminal t, ref RealTimeConsoleInput input, Tar
 
 	import std.algorithm:reduce;
 
-	auto ret = wait(spawnShell(content[0].getOutputPath(ver)~" --wait --passive --norestart " ~installList.reduce!((str, last) => "--add "~last~" "~str))) == 0;
+	auto ret = t.wait(spawnShell(content[0].getOutputPath(ver)~" --wait --passive --norestart " ~installList.reduce!((str, last) => "--add "~last~" "~str))) == 0;
 	return ret == 0;
 }
 

@@ -62,7 +62,7 @@ private bool installVCRuntime140(ref Terminal t, ref RealTimeConsoleInput input)
 	}
 	t.writelnHighlighted("Installing Microsoft Visual C++ Redistributable");
 
-	auto ret = wait(spawnShell(vcredist~" /install /quiet /norestart")) == 0;
+	auto ret = t.wait(spawnShell(vcredist~" /install /quiet /norestart")) == 0;
 	if(ret)
 		t.writelnSuccess("Successfully installed Microsoft Visual C++ Redistributable.");
 	else 
@@ -129,7 +129,7 @@ ChoiceResult prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 		// return true;
 	// }]);
 	
-	wait(spawnShell((getHipPath("bin", "desktop", "hipreme_engine.exe") ~ " "~ configs["gamePath"].str)));
+	t.wait(spawnShell((getHipPath("bin", "desktop", "hipreme_engine.exe") ~ " "~ configs["gamePath"].str)));
 
 	return ChoiceResult.Continue;
 }

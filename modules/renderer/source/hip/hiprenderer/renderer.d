@@ -62,13 +62,14 @@ class HipRenderer
 
     public static bool initialize (string confData, string confPath)
     {
+        import hip.config.opts;
         import hip.data.ini;
         import hip.hiprenderer.initializer;
         IniFile ini = IniFile.parse(confData, confPath);
         HipRendererConfig cfg;
         rendererType = getRendererTypeFromVersion();
-        int renderWidth = 128;
-        int renderHeight = 720;
+        int renderWidth = HIP_DEFAULT_WINDOW_SIZE[0];
+        int renderHeight = HIP_DEFAULT_WINDOW_SIZE[1];
         string defaultRenderer = "OpenGL3";
         version(AppleOS) defaultRenderer = "Metal";
         if(!ini.configFound || !ini.noError)
@@ -89,8 +90,8 @@ class HipRenderer
             cfg.fullscreen = ini.tryGet("screen.fullscreen", false);
             cfg.vsync = ini.tryGet("vsync.on", true);
             
-            renderWidth = ini.tryGet("screen.width", 1280);
-            renderHeight = ini.tryGet("screen.height", 720);
+            renderWidth = ini.tryGet("screen.width", renderWidth);
+            renderHeight = ini.tryGet("screen.height", renderHeight);
             string renderer = ini.tryGet("screen.renderer", "GL3");
             rendererType = rendererFromString(renderer);
         }

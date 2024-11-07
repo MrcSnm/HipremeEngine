@@ -89,7 +89,7 @@ void injectLinkerFlagsOnXcode(ref Terminal t, ref RealTimeConsoleInput input, st
 		foreach(ref Feature gem; requiredGems)
 			if(!gem.getFeature(t, input))
 				throw new Error("Gem is required for continuing building");
-		if(wait(spawnShell("ruby injectLib.rb "~extraLinkerFlags)) != 0)
+		if(t.wait(spawnShell("ruby injectLib.rb "~extraLinkerFlags)) != 0)
 			throw new Error("ruby injectLib.rb with flags "~extraLinkerFlags~" failed.");
 	}
 }

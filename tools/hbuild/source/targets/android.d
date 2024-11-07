@@ -64,7 +64,7 @@ private ChoiceResult runAndroidApplication(ref Terminal t)
 
 	with(WorkingDir(getHipPath("build", "android", "project")))
 	{
-		if(wait(spawnShell(gradlew ~ " :app:assembleDebug")) != 0)
+		if(t.wait(spawnShell(gradlew ~ " :app:assembleDebug")) != 0)
 		{
 			t.writelnError("Could not build Java code.");
 			return ChoiceResult.Error;
@@ -76,12 +76,12 @@ private ChoiceResult runAndroidApplication(ref Terminal t)
 		t.writeln("Executing adb install: ", adbInstall);
 		t.flush;
 		environment["ANDROID_ADB_SERVER_PORT"] = HipremeEngineAdbPort;
-		if(wait(spawnShell(adbInstall)) != 0)
+		if(t.wait(spawnShell(adbInstall)) != 0)
 		{
 			t.writelnError("Could not install application to your device.");
 			return ChoiceResult.Error;
 		}
-		if(wait(spawnShell(adb~" shell monkey -p com.hipremeengine.app 1")) != 0)
+		if(t.wait(spawnShell(adb~" shell monkey -p com.hipremeengine.app 1")) != 0)
 		{
 			t.writelnHighlighted("Could not connect to Android's shell");
 		}

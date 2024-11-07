@@ -23,6 +23,6 @@ Feature FeatureMakeRubyGem(
         return true;
     }), Installation([], (ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content)
     {
-        return wait(spawnShell("sudo gem install "~gemName)) == 0;
+        return t.wait(spawnShell("sudo gem install "~gemName)) == 0;
     }), null, supportedVersion, currentVersion, requiredOn, dependencies);
 }

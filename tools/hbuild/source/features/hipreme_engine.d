@@ -57,7 +57,7 @@ bool installHipremeEngine(ref Terminal t, ref RealTimeConsoleInput input, Target
             clone: bool canClone = pollForExecutionPermission(t, input, "HipremeEngine path wasn't found in configs. Do you want to clone the engine?");
             if(canClone)
             {
-                if(wait(spawnShell(getGitExec~" clone "~hipremeEngineRepo)) != 0)
+                if(t.wait(spawnShell(getGitExec~" clone "~hipremeEngineRepo)) != 0)
                 {
                     t.writelnError("Could not clone HipremeEngine on repo ", hipremeEngineRepo);
                     return false;

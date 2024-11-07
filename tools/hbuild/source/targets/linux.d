@@ -8,7 +8,7 @@ ChoiceResult prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput in
 		t.writelnError("/usr/include/GL/gl.h wasn't found in your system. This is required for the OpenGL implementation.");
 		t.writelnHighlighted("\t The following command will be executed to install it: sudo apt-get install libgl1-mesa-dev");
 		t.flush;
-		wait(spawnShell("sudo apt-get install libgl1-mesa-dev"));
+		t.wait(spawnShell("sudo apt-get install libgl1-mesa-dev"));
 	}
 
 	with(WorkingDir(configs["gamePath"].str))
@@ -31,8 +31,7 @@ ChoiceResult prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput in
 			return ChoiceResult.Error;
 		}
 	}
-
-	wait(spawnShell((getHipPath("bin", "desktop", "hipreme_engine") ~ " "~ configs["gamePath"].str)));
+	t.wait(spawnShell((getHipPath("bin", "desktop", "hipreme_engine") ~ " "~ configs["gamePath"].str)));
 
 	return ChoiceResult.Continue;
 }

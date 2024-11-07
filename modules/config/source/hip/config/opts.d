@@ -13,6 +13,7 @@ Distributed under the CC BY-4.0 License.
 */ 
 module hip.config.opts;
 
+
 /**
 *   Use that for mainly mantaining engine related debug things
 */
@@ -46,6 +47,12 @@ enum HE_ERR_ONLY = false;
 
 ///Unused yet?
 enum HIP_OPTIMIZE = false;
+
+/** 
+ * Default size that will be used at opening the engine window.
+ * Currently it is 1280 width, 720 height
+ */
+immutable HIP_DEFAULT_WINDOW_SIZE = [1280, 720];
 
 ///Default time in millis to restart the click count on Mouse and Keyboard
 enum HIP_DEFAULT_TIME_UNTIL_CLICK_COUNT_RESTART = 400;

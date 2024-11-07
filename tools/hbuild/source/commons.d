@@ -50,6 +50,13 @@ struct Terminal
 	{
 		if(arsdTerminal) arsdTerminal.flush();
 	}
+
+	int wait(Pid pid)
+	{
+		this.flush;
+		return std.process.wait(pid);
+	}
+
 	void hideCursor(){ if(arsdTerminal) arsdTerminal.hideCursor();}
 	void showCursor(){ if(arsdTerminal) arsdTerminal.showCursor();}
 	void clearToEndOfLine(){ if(arsdTerminal) arsdTerminal.clearToEndOfLine();}
@@ -1022,7 +1029,7 @@ int waitDub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = null)
 	string toExec = dArgs.getDubRunCommand();
 	t.writeln(toExec);
 	t.flush;
-	return wait(spawnShell(toExec));
+	return t.wait(spawnShell(toExec));
 }
 
 int waitDubTarget(ref Terminal t, string target, DubArguments dArgs, string copyLinkerFilesTo = null)

@@ -34,7 +34,7 @@ private string getVCDownloadLink()
 
 private bool installVCRuntime140(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content)
 {
-	auto ret = wait(spawnShell(content[0].getOutputPath(ver)~" /install /quiet /norestart")) == 0;
+	auto ret = t.wait(spawnShell(content[0].getOutputPath(ver)~" /install /quiet /norestart")) == 0;
 	if(ret)
 		t.writelnSuccess("Successfully installed Microsoft Visual C++ Redistributable.");
 	else 

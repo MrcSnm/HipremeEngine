@@ -18,7 +18,7 @@ private bool installFromVSBuildToolsImpl(Feature*[] dependencies, ref Terminal t
     t.writeln("Installing the following features with Microsoft Visual Studio Build Tools for '", usage, "'");
     foreach(f; features)
         t.writeln("\t", f);
-    return wait(spawnShell(configs["vsBuildTools"].str~ " --passive --wait --norestart "
+    return t.wait(spawnShell(configs["vsBuildTools"].str~ " --passive --wait --norestart "
 		~ features.reduce!((str, last) => "--add "~last~" "~str))
 	) != 0;
 }

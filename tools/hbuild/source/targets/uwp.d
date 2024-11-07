@@ -108,7 +108,7 @@ ChoiceResult prepareUWP(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
             }
         }
 
-        wait(spawnShell(
+        t.wait(spawnShell(
             "\""~vsDevCmd~ "\"" ~" && " ~
             "msbuild HipremeEngine.sln /m /p:Configuration=Debug /p:Platform=x64"
         ));

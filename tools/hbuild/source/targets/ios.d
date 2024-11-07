@@ -54,7 +54,7 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 
 		with(WorkingDir(getHipPath("build", "appleos")))
 		{
-			wait(spawnShell(
+			t.wait(spawnShell(
 				"xcodebuild -jobs 8 -configuration Debug -scheme 'HipremeEngine iOS' " ~
 				clean ~
 				"build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
