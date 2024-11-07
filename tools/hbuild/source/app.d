@@ -423,9 +423,17 @@ void main(string[] args)
 		Choice* selection = selectChoice(terminal, input, choices);
 		if(selection.shouldTime)
 			sw.reset();
-		
-
-		ChoiceResult res = selection.onSelected(selection, terminal, input, cOpts);
+	
+		ChoiceResult res;
+		try
+		{
+			res = selection.onSelected(selection, terminal, input, cOpts);
+		}
+		catch(Exception e)
+		{
+			terminal.flush;
+			terminal.writelnError(e.toString);
+		}
 
 		if(usesDflags) environment["DFLAGS"] = preDflags;
 		else environment.remove("DFLAGS");

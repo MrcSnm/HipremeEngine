@@ -10,16 +10,26 @@ ChoiceResult prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput in
 		t.flush;
 		wait(spawnShell("sudo apt-get install libgl1-mesa-dev"));
 	}
+
 	with(WorkingDir(configs["gamePath"].str))
-		waitDub(t, DubArguments().command("build").configuration("script").opts(cOpts));
+	{
+		ProjectDetails proj;
+		if(waitRedub(t, DubArguments().command("build").configuration("script").opts(cOpts), proj) != 0)
+			return ChoiceResult.Error;
+	}
 
 	if(!c.scriptOnly) with(WorkingDir(getHipPath))
 	{
-		waitDub(t, DubArguments()
+		ProjectDetails proj;
+		if(waitRedub(t, DubArguments()
 			.configuration("script")
 			.runArgs(configs["gamePath"].str)
 			.confirmKey(true)
-		);
+		, proj) != 0)
+		{
+			t.writelnError("Error building hipreme engine.");
+			return ChoiceResult.Error;
+		}
 	}
 
 	return ChoiceResult.Continue;
