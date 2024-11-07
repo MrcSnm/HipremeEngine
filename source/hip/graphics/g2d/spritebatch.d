@@ -88,6 +88,7 @@ class HipSpriteBatch : IHipBatch
 
     this(HipOrthoCamera camera = null, index_t maxQuads = 10_900)
     {
+        import hip.hiprenderer.initializer;
         import hip.util.conv:to;
         ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
         this.maxQuads = maxQuads;
@@ -97,9 +98,9 @@ class HipSpriteBatch : IHipBatch
         currentTextures = new IHipTexture[](HipRenderer.getMaxSupportedShaderTextures());
         usingTexturesCount = 0;
 
-        this.spriteBatchShader = HipRenderer.newShader(HipShaderPresets.SPRITE_BATCH);
-        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!HipSpriteVertexUniform);
-        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!HipSpriteFragmentUniform);
+        this.spriteBatchShader = newShader(HipShaderPresets.SPRITE_BATCH);
+        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!(HipSpriteVertexUniform)(HipRenderer.getInfo));
+        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!(HipSpriteFragmentUniform)(HipRenderer.getInfo));
         spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 
         mesh = new Mesh(HipVertexArrayObject.getVAO!HipSpriteVertex, spriteBatchShader);

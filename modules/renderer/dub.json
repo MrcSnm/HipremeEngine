@@ -71,35 +71,39 @@
 	"configurations": [
 		{
 			"name": "default",
-			"dependencies": {":d3d": "*", ":gl": "*" }
+			"dependencies": {"renderer:d3d": "*", "renderer:gl": "*" }
 		},
 		{
 			"name": "nodx",
-			"dependencies": { ":gl": "*"}
+			"dependencies": { "renderer:gl": "*"}
+		},
+		{
+			"name": "dxonly",
+			"dependencies": { "renderer:d3d": "*"}
 		},
 		{
 			"name": "uwp",
-			"dependencies": {":d3d": "*"},
-			"subConfigurations": { ":d3d": "uwp" }
+			"dependencies": {"renderer:d3d": "*"},
+			"subConfigurations": { "renderer:d3d": "uwp" }
 		},
 		{
 			"name": "appleos",
-			"dependencies": { ":metal": "*"}
+			"dependencies": { "renderer:metal": "*"}
 		},
 		{
 			"name": "wasm",
-			"dependencies": { ":gl" : "*"},
-			"subConfigurations": { "windowing": "wasm", "image": "wasm", ":gl": "gles20"}
+			"dependencies": { "renderer:gl" : "*"},
+			"subConfigurations": { "windowing": "wasm", "image": "wasm", "renderer:gl": "gles20"}
 		},
 		{
 			"name": "psvita",
-			"dependencies": {":gl" : "*"},
-			"subConfigurations": { "windowing": "psvita", "image": "gamut", ":gl": "gles20"}
+			"dependencies": {"renderer:gl" : "*"},
+			"subConfigurations": { "windowing": "psvita", "image": "gamut", "renderer:gl": "gles20"}
 		},
 		{
 			"name": "android",
-			"dependencies": { ":gl": "*"},
-			"subConfigurations": { "windowing": "android", ":gl": "gles32"}
+			"dependencies": { "renderer:gl": "*"},
+			"subConfigurations": { "windowing": "android", "renderer:gl": "gles32"}
 		}
 	],
 	"description": "HipremeEngine renderer module",

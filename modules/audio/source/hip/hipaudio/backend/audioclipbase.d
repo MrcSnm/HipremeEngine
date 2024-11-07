@@ -19,7 +19,7 @@ public import hip.api.audio.audioclip;
 
 union HipAudioBuffer
 {
-    import hip.hipaudio.config;
+    import hip.config.audio;
     static if(HasOpenAL)
     {
         import bindbc.openal;

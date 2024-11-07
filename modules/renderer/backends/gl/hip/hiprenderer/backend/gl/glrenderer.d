@@ -9,15 +9,13 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.backend.gl.glrenderer;
-import hip.hiprenderer.config;
+import hip.config.renderer;
+version(OpenGL):
 
 static if(UseGLES)
     public import gles;
-else version(Have_bindbc_opengl)
-{
+else
     public import bindbc.opengl;
-}
-version(OpenGL):
 
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
@@ -107,30 +105,36 @@ class Hip_GL3Renderer : IHipRendererImpl
     void setErrorCheckingEnabled(bool enable = true){errorCheckEnabled = enable;}
     public final bool isRowMajor(){return true;}
 
-    Shader createShader()
+    IShader createShader()
     {
         version(HipGL3)
-            return new Shader(new Hip_GL3_ShaderImpl());
+            return new Hip_GL3_ShaderImpl();
         else
-            return new Shader(new Hip_GL_ShaderImpl());
+            return new Hip_GL_ShaderImpl();
     }
-    ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length)
+    size_t function (ShaderTypes shaderType, UniformType uniformType) getShaderVarMapper()
     {
-        switch(uniformType) with(UniformType)
+        return (ShaderTypes shaderType, UniformType uniformType)
         {
-            case texture_array:
+            switch(uniformType) with(UniformType)
             {
-                return ShaderVar.createBlackboxed(shaderType, varName, uniformType, GLuint.sizeof*length, GLuint.sizeof);
+                case texture_array:
+                {
+                    return GLuint.sizeof;
+                }
+                default: return 0;
             }
-            default: return null;
-        }
+        };
     }
     version(dll)public bool initExternal(){return init(null);}
-    public bool init(HipWindow window)
+    public bool init(IHipWindow windowInterface)
     {
-        this.window = window;
-        if(window !is null)
+        if(windowInterface !is null)
+        {
+            HipWindow window = cast(HipWindow)windowInterface;
+            this.window = window;
             window.startOpenGLContext();
+        }
         version(Have_bindbc_opengl)
         {
             GLSupport ver = loadOpenGL();
@@ -143,6 +147,7 @@ class Hip_GL3Renderer : IHipRendererImpl
             {
                 ErrorHandler.showErrorMessage("Loading OpenGL", "OpenGL version is different than expected");
             }
+            rawlog("BindBC OpenGL Version: ", ver);
         }
         rawlog("GL Renderer: ",  glGetString(GL_RENDERER));
         rawlog("GL Version: ",  glGetString(GL_VERSION));
@@ -339,7 +344,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     }
 
     bool isBlendingEnabled() const {return isGLBlendEnabled;}
-    
+
     public void dispose()
     {
         if(window !is null)
@@ -347,7 +352,7 @@ class Hip_GL3Renderer : IHipRendererImpl
             window.destroyOpenGLContext();
         }
     }
-    
+
     public void setDepthTestingFunction(HipDepthTestingFunction)
     {
     }

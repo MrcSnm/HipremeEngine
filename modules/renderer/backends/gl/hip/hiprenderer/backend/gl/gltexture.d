@@ -13,7 +13,7 @@ module hip.hiprenderer.backend.gl.gltexture;
 version(OpenGL):
 public import hip.api.renderer.texture;
 public import hip.api.data.commons:IReloadable;
-import hip.hiprenderer.config;
+import hip.config.renderer;
 
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
@@ -203,7 +203,7 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
     
     int getWidth() const {return width;}
     int getHeight() const {return height;}
-    
+
     bool reload()
     {
         if(loadedImage !is null)
@@ -214,5 +214,5 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
         return false;
     }
     
-    
+
 }

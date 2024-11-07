@@ -9,105 +9,19 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.shader.shader;
-public import hip.hiprenderer.shader.shadervar :
-ShaderHint, ShaderVariablesLayout, ShaderVar;
+public import hip.api.renderer.shadervar : ShaderVariablesLayout, ShaderVar;
+public import hip.api.renderer.shadervar;
 
 import hip.api.data.commons:IReloadable;
 import hip.api.renderer.texture;
 import hip.math.matrix;
 import hip.error.handler;
-import hip.hiprenderer.shader.shadervar;
+import hip.api.renderer.shadervar;
 import hip.hiprenderer.shader;
 import hip.hiprenderer.renderer;
 import hip.util.file;
 import hip.util.string:indexOf;
-
-enum ShaderStatus
-{
-    SUCCESS,
-    VERTEX_COMPILATION_ERROR,
-    FRAGMENT_COMPILATION_ERROR,
-    LINK_ERROR,
-    UNKNOWN_ERROR
-}
-
-enum ShaderTypes
-{
-    VERTEX,
-    FRAGMENT,
-    GEOMETRY, //Unsupported yet
-    NONE 
-}
-
-enum HipShaderPresets
-{
-    DEFAULT,
-    FRAME_BUFFER,
-    GEOMETRY_BATCH,
-    SPRITE_BATCH,
-    BITMAP_TEXT,
-    NONE
-}
-
-/** 
- * This interface is currrently a Shader factory.
- */
-interface IShader
-{
-    VertexShader createVertexShader();
-    FragmentShader createFragmentShader();
-    ShaderProgram createShaderProgram();
-
-    bool compileShader(FragmentShader fs, string shaderSource);
-    bool compileShader(VertexShader vs, string shaderSource);
-    bool linkProgram(ref ShaderProgram program, VertexShader vs,  FragmentShader fs);
-
-    void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq);
-    void bind(ShaderProgram program);
-    void unbind(ShaderProgram program);
-    void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
-    int  getId(ref ShaderProgram prog, string name);
-    
-
-    ///Used as intermediary for deleting non program intermediary in opengl
-    void deleteShader(FragmentShader* fs);
-    ///Used as intermediary for deleting non program intermediary in opengl
-    void deleteShader(VertexShader* vs);
-
-    void createVariablesBlock(ref ShaderVariablesLayout layout);
-    bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value);
-    void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts);
-
-    /** 
-     * Each graphics API has its own way to bind array of textures, thus, this version was required.
-     */
-    void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName);
-    void dispose(ref ShaderProgram);
-
-    void onRenderFrameEnd(ShaderProgram program);
-}
-
-abstract class VertexShader
-{
-    abstract string getDefaultVertex();
-    abstract string getFrameBufferVertex();
-    abstract string getGeometryBatchVertex();
-    abstract string getSpriteBatchVertex();
-    abstract string getBitmapTextVertex();
-}
-abstract class FragmentShader
-{
-    abstract string getDefaultFragment();
-    abstract string getFrameBufferFragment();
-    abstract string getGeometryBatchFragment();
-    abstract string getSpriteBatchFragment();
-    abstract string getBitmapTextFragment();
-}
-
-abstract class ShaderProgram
-{
-    string name;
-}
+public import hip.api.renderer.shader;
 
 
 public class Shader : IReloadable
@@ -141,59 +55,6 @@ public class Shader : IReloadable
         {
             import hip.console.log;
             logln("Failed loading shaders");
-        }
-    }
-
-    void setFromPreset(HipShaderPresets preset = HipShaderPresets.DEFAULT)
-    {
-        ShaderStatus status = ShaderStatus.SUCCESS;
-        fragmentShaderPath="hip.hiprenderer.backend.";
-        switch(HipRenderer.getRendererType())
-        {
-            case HipRendererType.D3D11:
-                fragmentShaderPath~= "d3d.shader";
-                break;
-            case HipRendererType.GL3:
-                fragmentShaderPath~= "gl3.shader";
-                break;
-            case HipRendererType.METAL:
-                fragmentShaderPath~= "metal.shader";
-                break;
-            default:break;
-        }
-
-        switch(preset) with(HipShaderPresets)
-        {
-            case SPRITE_BATCH:
-                fragmentShaderPath~= ".SPRITE_BATCH";
-                status = loadShaders(vertexShader.getSpriteBatchVertex(), fragmentShader.getSpriteBatchFragment(), fragmentShaderPath);
-                break;
-            case FRAME_BUFFER:
-                fragmentShaderPath~= ".FRAME_BUFFER";
-                status = loadShaders(vertexShader.getFrameBufferVertex(), fragmentShader.getFrameBufferFragment(), fragmentShaderPath);
-                break;
-            case GEOMETRY_BATCH:
-                fragmentShaderPath~= ".GEOMETRY_BATCH";
-                status = loadShaders(vertexShader.getGeometryBatchVertex(), fragmentShader.getGeometryBatchFragment(), fragmentShaderPath);
-                break;
-            case BITMAP_TEXT:
-                fragmentShaderPath~= ".BITMAP_TEXT";
-                status = loadShaders(vertexShader.getBitmapTextVertex(), fragmentShader.getBitmapTextFragment(), fragmentShaderPath);
-                break;
-            case DEFAULT:
-                fragmentShaderPath~= ".DEFAULT";
-                status = loadShaders(vertexShader.getDefaultVertex(),fragmentShader.getDefaultFragment(), fragmentShaderPath);
-                break;
-            case NONE:
-            default:
-                break;
-        }
-        vertexShaderPath = fragmentShaderPath;
-        
-        if(status != ShaderStatus.SUCCESS)
-        {
-            import hip.console.log;
-            logln("Failed loading shaders with status ", status, " at preset ", preset, " on "~fragmentShaderPath);
         }
     }
 
@@ -231,13 +92,13 @@ public class Shader : IReloadable
     }
 
 
-    /** 
+    /**
      * If validateData is true, it will compare if the data has changed for choosing whether it should or not
      send to the GPU.
      * Params:
-     *   name = 
-     *   val = 
-     *   validateData = 
+     *   name =
+     *   val =
+     *   validateData =
      */
     public void setVertexVar(T)(string name, T val, bool validateData = false)
     {
@@ -271,13 +132,13 @@ public class Shader : IReloadable
         }
         return v;
     }
-    /** 
+    /**
      * If validateData is true, it will compare if the data has changed for choosing whether it should or not
      send to the GPU.
      * Params:
-     *   name = 
-     *   val = 
-     *   validateData = 
+     *   name =
+     *   val =
+     *   validateData =
      */
     public void setFragmentVar(T)(string name, T val, bool validateData = false)
     {
@@ -332,11 +193,11 @@ public class Shader : IReloadable
         if(defaultLayout is null)
             defaultLayout = layout;
         layouts[layout.name] = layout;
-        layout.lock(this);
+        layout.lock(this.shaderImpl);
         shaderImpl.createVariablesBlock(layout);
     }
 
-    /** 
+    /**
      * This creates a state in the current shader to which block will be accessed
      * when using setVertexVar(".property"). If no default block is set ("")
      * .property will always access the first block defined
@@ -382,6 +243,21 @@ public class Shader : IReloadable
 
     void sendVars()
     {
+        foreach(string key, ShaderVariablesLayout value; layouts)
+        {
+            foreach(ref ShaderVarLayout varLayout; value.variables)
+            {
+                if(varLayout.sVar.isDirty)
+                {
+                    if(varLayout.sVar.type == UniformType.floating3x3)
+                        varLayout.sVar.set(HipRenderer.getMatrix(varLayout.sVar.get!Matrix3), true);
+                    else if(varLayout.sVar.type == UniformType.floating4x4)
+                        varLayout.sVar.set(HipRenderer.getMatrix(varLayout.sVar.get!Matrix4), true);
+                }
+                if(varLayout.sVar.usesMaxTextures)
+                    varLayout.sVar.set(HipRenderer.getMaxSupportedShaderTextures(), true);
+            }
+        }
         shaderImpl.sendVars(shaderProgram, layouts);
     }
 
@@ -401,7 +277,7 @@ public class Shader : IReloadable
         shaderImpl.deleteShader(&fragmentShader);
         shaderImpl.deleteShader(&vertexShader);
     }
-    
+
     bool reload()
     {
         vertexShader = shaderImpl.createVertexShader();
@@ -410,7 +286,7 @@ public class Shader : IReloadable
 
         return loadShaders(internalVertexSource, internalFragmentSource) == ShaderStatus.SUCCESS;
     }
-    
+
     void onRenderFrameEnd()
     {
         shaderImpl.onRenderFrameEnd(shaderProgram);

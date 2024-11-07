@@ -1,5 +1,5 @@
 module hip.hiprenderer.backend.d3d.d3dframebuffer;
-import hip.hiprenderer.config;
+import hip.config.renderer;
 static if(HasDirect3D):
 
 import directx.d3d11;

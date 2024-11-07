@@ -1,4 +1,5 @@
 module hip.windowing.window;
+import hip.api.input.window;
 
 version(Android){}
 else version(linux) version = X11;
@@ -22,7 +23,7 @@ enum HipWindowFlags
 *   for making the engine work. Its feature is not to be an implementation as complete as SDL.
 *   thus, reducing the external dependencies, binary size and compilation steps.
 */
-class HipWindow
+class HipWindow : IHipWindow
 {
     int width, height;
     HipWindowFlags flags;

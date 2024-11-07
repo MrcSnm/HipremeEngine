@@ -9,7 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.renderer;
-public import hip.hiprenderer.config;
+public import hip.config.renderer;
 public import hip.hiprenderer.shader;
 public import hip.hiprenderer.vertex;
 public import hip.hiprenderer.framebuffer;
@@ -17,113 +17,13 @@ public import hip.hiprenderer.viewport;
 public import hip.api.renderer.texture;
 public import hip.api.renderer.operations;
 public import hip.api.graphics.color;
-public import hip.hiprenderer.shader.shadervar;
+public import hip.api.renderer.core;
+public import hip.api.renderer.shadervar;
 import hip.windowing.window;
 import hip.math.rect;
 import hip.error.handler;
 import hip.console.log;
 
-///Could later be moved to windowing
-enum HipWindowMode
-{
-    WINDOWED,
-    FULLSCREEN,
-    BORDERLESS_FULLSCREEN
-}
-
-///Which API is being used
-enum HipRendererType
-{
-    GL3,
-    D3D11,
-    METAL,
-    NONE
-}
-
-
-/// Primitive which the renderer will use
-enum HipRendererMode
-{
-    POINT,
-    LINE,
-    LINE_STRIP,
-    TRIANGLES,
-    TRIANGLE_STRIP
-}
-
-
-
-
-//////////////////////////////////////////Metadata//////////////////////////////////////////
-
-//Shaders
-enum HipShaderInputLayout;
-/**
-*   Use this special UDA to say this type is only for accumulating stride and thus should not
-*   be defined on shader
-*/
-enum HipShaderInputPadding;
-/**
-*   Declares that the struct is as VertexUniform block. 
-*/
-struct HipShaderVertexUniform
-{
-    /**
-    *   This name is the base uniform name accessed when dealing with HLSL Api.
-    *   i.e: Constant Buffer block name
-    */
-    string name; 
-}
-/**
-*   Declares that the struct is as FragmentUniform block. 
-*/
-struct HipShaderFragmentUniform
-{
-    /**
-    *   This name is the base uniform name accessed when dealing with HLSL Api.
-    *   i.e: Constant Buffer block name
-    */
-    string name;
-}
-
-/**
-*   Minimal interface for another API implementation
-*/
-interface IHipRendererImpl
-{
-    public bool init(HipWindow window);
-    version(dll){public bool initExternal();}
-    public bool isRowMajor();
-    void setErrorCheckingEnabled(bool enable = true);
-    public Shader createShader();
-    public ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length);
-    public IHipFrameBuffer createFrameBuffer(int width, int height);
-    public IHipVertexArrayImpl  createVertexArray();
-    public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage);
-    public IHipIndexBufferImpl  createIndexBuffer(index_t count, HipBufferUsage usage);
-    public IHipTexture  createTexture();
-    public int queryMaxSupportedPixelShaderTextures();
-    public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
-    public void setViewport(Viewport v);
-    public bool setWindowMode(HipWindowMode mode);
-    public void setDepthTestingEnabled(bool);
-    public void setDepthTestingFunction(HipDepthTestingFunction);
-    public void setStencilTestingEnabled(bool);
-    public void setStencilTestingMask(uint mask);
-    public void setColorMask(ubyte r, ubyte g, ubyte b, ubyte a);
-    ///When pass func evaluates to true, then it is said to be passed
-    public void setStencilTestingFunction(HipStencilTestingFunction passFunc, uint reference, uint mask);
-    public void setStencilOperation(HipStencilOperation stencilFail, HipStencilOperation depthFail, HipStencilOperation stencilAndDephPass);
-    public bool hasErrorOccurred(out string err, string line = __FILE__, size_t line =__LINE__);
-    public void begin();
-    public void setRendererMode(HipRendererMode mode);
-    public void drawIndexed(index_t count, uint offset = 0);
-    public void drawVertices(index_t count, uint offset = 0);
-    public void end();
-    public void clear();
-    public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
-    public void dispose();
-}
 
 private struct HipRendererResources
 {
@@ -264,7 +164,19 @@ class HipRenderer
         HipRenderer.width  = width;
         HipRenderer.height = height;
     }
-    public static HipRendererType getRendererType(){return rendererType;}
+    public static HipRendererType getType(){return rendererType;}
+
+    /**
+     * Info is data that can't be changed from the renderer.
+     */
+    public static HipRendererInfo getInfo()
+    {
+        return HipRendererInfo(
+            getType,
+            rendererImpl.getShaderVarMapper
+        );
+    }
+
     public static HipRendererConfig getCurrentConfig(){return currentConfig;}
     public static int getMaxSupportedShaderTextures(){return rendererImpl.queryMaxSupportedPixelShaderTextures();}
 
@@ -311,36 +223,25 @@ class HipRenderer
     * Fixes the matrix order based on the config and renderer.
     * If the renderer is column and the config is row, it will tranpose
     */
-    public static T getMatrix(T)(ref T mat)
+    public static T getMatrix(T)(auto ref T mat)
     {
         if(currentConfig.isMatrixRowMajor && !rendererImpl.isRowMajor())
             return mat.transpose();
         return mat;
     }
 
-    private static Shader _createShader()
+    static Shader newShader()
     {
-        res.shaders~= rendererImpl.createShader();
+        res.shaders~= new Shader(rendererImpl.createShader());
         return res.shaders[$-1];
     }
-    public static ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length)
+    public static Shader newShader(string vertexShaderPath, string fragmentShaderPath)
     {
-        return rendererImpl.createShaderVar(shaderType, uniformType, varName, length);
-    }
-
-
-    public static Shader newShader(HipShaderPresets shaderPreset = HipShaderPresets.DEFAULT)
-    {
-        Shader ret = _createShader();
-        ret.setFromPreset(shaderPreset);
+        Shader ret = newShader();
+        ret.loadShadersFromFiles(vertexShaderPath, fragmentShaderPath);
         return ret;
     }
-    public static Shader newShader(string vertexShader, string fragmentShader)
-    {
-        Shader ret = _createShader();
-        ret.loadShadersFromFiles(vertexShader, fragmentShader);
-        return ret;
-    }
+
     public static HipFrameBuffer newFrameBuffer(int width, int height, Shader frameBufferShader = null)
     {
         return new HipFrameBuffer(rendererImpl.createFrameBuffer(width, height), width, height, frameBufferShader);
@@ -490,5 +391,18 @@ class HipRenderer
         if(window !is null)
             window.exit();
         window = null;
+    }
+}
+
+void logConfiguration(HipRendererConfig config)
+{
+    import hip.console.log;
+    with(config)
+    {
+        loglnInfo("Starting HipRenderer with configuration: ",
+        "\nMultisamplingLevel: ", multisamplingLevel,
+        "\nBufferingCount: ", bufferingCount,
+        "\nFullscreen: ", fullscreen,
+        "\nVsync: ", vsync? "activated" : "deactivated");
     }
 }

@@ -212,9 +212,9 @@ class HipMTLVertexArray : IHipVertexArrayImpl
         attribute.bufferIndex = 1;
     }
 
-    void createInputLayout(Shader s)
+    void createInputLayout(VertexShader vertexShader, ShaderProgram shaderProgram)
     {
-        HipMTLShaderProgram shader = (cast(HipMTLShaderProgram)s.shaderProgram);
+        HipMTLShaderProgram shader = (cast(HipMTLShaderProgram)shaderProgram);
         shader.createInputLayout(device, descriptor);
     }
 }

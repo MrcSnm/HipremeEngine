@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hiprenderer.backend.d3d.d3dvertex;
 
-import hip.hiprenderer.config;
+import hip.config.renderer;
 static if(HasDirect3D):
 
 import hip.util.string:toStringz;
@@ -70,7 +70,7 @@ class Hip_D3D11_VertexBufferObject : IHipVertexBufferImpl
         //TODO: Check failure
 
         d3dCall(() => _hip_d3d_device.CreateBuffer(&bd, &sd, &buffer));
-        
+
         HipRenderer.exitOnError();
     }
     void setData(const(void)[] data)
@@ -154,7 +154,7 @@ class Hip_D3D11_IndexBufferObject : IHipIndexBufferImpl
     {
         if(data.length*index_t.sizeof + offset >= this.size)
         {
-            ErrorHandler.assertExit(false, 
+            ErrorHandler.assertExit(false,
             "Tried to set data with size "~to!string(data.length*index_t.sizeof)~" and offset "~to!string(offset)~
             "for vertex buffer with size "~to!string(this.size));
         }
@@ -207,13 +207,13 @@ class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
         desc.InstanceDataStepRate = 0;
         descs~= desc;
     }
-    void createInputLayout(Shader s)
+    void createInputLayout(VertexShader vertexShader, ShaderProgram shaderProgram)
     {
-        if(ErrorHandler.assertErrorMessage(s !is null, "D3D11 VAO Error", "Error at creating input layout"))
+        if(ErrorHandler.assertErrorMessage(shaderProgram !is null, "D3D11 VAO Error", "Error at creating input layout"))
             return;
-        Hip_D3D11_VertexShader vs = cast(Hip_D3D11_VertexShader)s.vertexShader;
+        Hip_D3D11_VertexShader vs = cast(Hip_D3D11_VertexShader)vertexShader;
 
-        
+
         _hip_d3d_device.CreateInputLayout(descs.ptr, cast(uint)descs.length,
         vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), &inputLayout);
         HipRenderer.exitOnError();

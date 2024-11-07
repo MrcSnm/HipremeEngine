@@ -147,23 +147,25 @@ class HipMTLRenderer : IHipRendererImpl
 
     public bool isRowMajor(){return true;}
     void setErrorCheckingEnabled(bool enable = true){}
-    public Shader createShader()
+    public IShader createShader()
     {
-        return new Shader(new HipMTLShader(device, this));
+        return new HipMTLShader(device, this);
     }
 
-    ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length)
+    size_t function(ShaderTypes shaderType, UniformType uniformType) getShaderVarMapper()
     {
-        if(argsTier == MTLArgumentBuffersTier.Tier1) return null;
-        
-        switch(uniformType) with(UniformType)
+        return (ShaderTypes shaderType, UniformType uniformType)
         {
-            case texture_array:
+            if(argsTier == MTLArgumentBuffersTier.Tier1) return 0;
+
+            switch(uniformType) with(UniformType)
             {
-                size_t single = (MTLTexture.sizeof + MTLSamplerState.sizeof);
-                return ShaderVar.createBlackboxed(shaderType, varName, uniformType, length*single, single);
+                case texture_array:
+                {
+                    return MTLTexture.sizeof + MTLSamplerState.sizeof;
+                }
+                default: return 0;
             }
-            default: return null;
         }
     }
 

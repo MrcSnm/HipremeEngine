@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hiprenderer.backend.d3d.d3dtexture;
 
-import hip.hiprenderer.config;
+import hip.config.renderer;
 static if(HasDirect3D):
 
 import hip.hiprenderer.backend.d3d.d3drenderer;
@@ -112,7 +112,7 @@ class Hip_D3D11_Texture : IHipTexture
                 break;
             case 2:
             default:
-                ErrorHandler.assertLazyExit(false, 
+                ErrorHandler.assertLazyExit(false,
                 "Unsopported bytes per pixel for D3D11 Texture named '"~image.getName~"'");
         }
         desc.Format = format;
@@ -153,7 +153,7 @@ class Hip_D3D11_Texture : IHipTexture
     
     int getWidth() const {return width;}
     int getHeight() const {return height;}
-    
+
 }
 
 

@@ -21,6 +21,7 @@ import hip.math.utils;
 class TestScene : Scene, IHipPreloadable
 {
     import hip.api;
+    import hip.api.audio.audiosource;
 
     mixin Preload;
 

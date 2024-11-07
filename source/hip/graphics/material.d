@@ -14,7 +14,7 @@ import hip.math.matrix;
 import hip.math.vector;
 import hip.error.handler;
 import hip.hiprenderer.shader;
-import hip.hiprenderer.shader.shadervar;
+import hip.api.renderer.shadervar;
 
 class Material
 {

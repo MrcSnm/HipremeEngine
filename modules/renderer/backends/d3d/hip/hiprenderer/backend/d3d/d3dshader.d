@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hiprenderer.backend.d3d.d3dshader;
 
-import hip.hiprenderer.config;
+import hip.config.renderer;
 static if(HasDirect3D):
 
 import hip.config.opts;
@@ -30,216 +30,12 @@ class Hip_D3D11_FragmentShader : FragmentShader
 {
     ID3DBlob shader;
     ID3D11PixelShader fs;
-    override final string getDefaultFragment()
-    {
-        return q{
-        float4 main() : SV_TARGET
-        {
-            return float4(1.0f, 1.0f, 1.0f, 1.0f);
-        }};
-    }
-    override final string getFrameBufferFragment()
-    {
-        return q{
-            Texture2D uTex1;
-            SamplerState state;
-
-            float4 main(float2 inTexST : inTexST) : SV_TARGET
-            {
-                return uTex1.Sample(state, inTexST);
-            }
-        };
-    }
-    override final string getGeometryBatchFragment()
-    {
-        return q{
-
-            cbuffer FragVars
-            {
-                float4 uGlobalColor : uGlobalColor;
-            };
-
-            float4 main(float4 inVertexColor : inVertexColor) : SV_TARGET
-            {
-                return inVertexColor * uGlobalColor;
-            }
-        };
-    }
-    /**
-    *   Creates a massive switch case for supporting array of textures.
-    *   D3D11 causes an error if trying to access texture with a variable
-    *   instead of a literal.
-    */
-    override final string getSpriteBatchFragment()
-    {
-        int sup = HipRenderer.getMaxSupportedShaderTextures();
-        string textureSlotSwitchCase = "\tswitch(tid)\n\t{\n"; //Switch textureID
-        for(int i = 1; i < sup; i++)
-        {
-            textureSlotSwitchCase~= "\t\tcase "~ to!string(i)~": "~
-            "return uTex["~to!string(i)~"].Sample(state["~to!string(i)~"], texST) * inVertexColor * uBatchColor;\n";
-        }
-        textureSlotSwitchCase~= "\t\tdefault: return uTex[0].Sample(state[0], texST) * inVertexColor * uBatchColor;";
-        textureSlotSwitchCase~= "\n\t}";
-
-        return "Texture2D uTex["~to!string(sup)~"];
-SamplerState state["~to!string(sup)~"];"~q{
-cbuffer input
-{
-    float4 uBatchColor: uBatchColor;
-};
-
-float4 main(float4 inVertexColor : inColor, float2 texST : inTexST, float inTexID : inTexID) : SV_TARGET
-}~"{"~
-q{
-        // return uBatchColor * uTex.Sample(state, inTexST);
-        int tid = int(inTexID);
-
-        //switch(tid)...
-        //case 1:
-            //return uTex[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
-} ~ textureSlotSwitchCase ~ "\n}";
-    }
-    override final string getBitmapTextFragment()
-    {
-        return q{
-
-            cbuffer FragVars
-            {
-                float4 uColor : uColor;
-            };
-
-            Texture2D uSampler1;
-            SamplerState state;
-
-            float4 main(float2 inTexST : inTexST) : SV_TARGET
-            {
-                //The texture is read as monochromatic
-                float r = uSampler1.Sample(state, inTexST)[0];
-
-                return float4(r,r,r,r) * uColor;
-            }
-        };
-    }
 }
+
 class Hip_D3D11_VertexShader : VertexShader
 {
     ID3DBlob shader;
     ID3D11VertexShader vs;
-
-    override final string getDefaultVertex()
-    {
-        return q{
-        float4 main(float2 pos : Position) : SV_POSITION
-        {
-            return float4(pos.x, pos.y, 0.0f, 1.0f);
-        }};
-    }
-    override final string getFrameBufferVertex()
-    {
-        return q{
-            struct VSOut
-            {
-                float2 inTexST : inTexST;
-                float4 outPosition : SV_POSITION;
-            };
-
-            VSOut main(float2 pos : vPosition, float2 vTexST : vTexST)
-            {
-                VSOut ret;
-                ret.outPosition = float4(pos.x, pos.y, 0.0, 1.0);
-                ret.inTexST = vTexST;
-                return ret;
-            }
-        };
-    }
-    override final string getGeometryBatchVertex()
-    {
-        return q{
-
-            cbuffer Geom
-            {
-                float4x4 uModel: uModel;
-                float4x4 uView : uView;
-                float4x4 uProj : uProj;
-            };
-            struct VSOut
-            {
-                float4 inVertexColor : inVertexColor;
-                float4 outPosition : SV_POSITION;
-            };
-
-            VSOut main(float3 vPosition: vPosition, float4 vColor: vColor)
-            {
-                VSOut ret;
-                ret.outPosition = mul(float4(vPosition, 1.0), mul(mul(uModel, uView), uProj));
-                ret.inVertexColor = vColor;
-                return ret;
-            }
-        };
-    }
-    override final string getSpriteBatchVertex()
-    {
-        return q{
-            struct VSOut
-            {
-                float4 inColor : inColor;
-                float2 inTexST : inTexST;
-                float  inTexID : inTexID;
-                float4 vPosition: SV_POSITION;
-            };
-
-            cbuffer Cbuf
-            {
-                float4x4 uProj;
-                float4x4 uModel;
-                float4x4 uView;
-            };
-
-            VSOut main(
-                float3 pos   : vPosition,
-                float4 col   : vColor,
-                float2 texST : vTexST,
-                float  texID : vTexID
-                )
-            {
-                VSOut output;
-                float4 position = float4(pos.x, pos.y, pos.z, 1.0f);
-                output.vPosition = mul(position, mul(mul(uModel, uView), uProj));
-
-                output.inTexST = texST;
-                output.inColor = col;
-                output.inTexID = texID;
-                return output;
-            }
-        };
-    }
-    override final string getBitmapTextVertex()
-    {
-        return q{
-
-            cbuffer Cbuf
-            {
-                float4x4 uModel;
-                float4x4 uView;
-                float4x4 uProj;
-            };
-
-            struct VSOut
-            {
-                float2 inTexST : inTexST;
-                float4 outPosition : SV_POSITION;
-            };
-
-            VSOut main(float2 vPosition : vPosition, float2 vTexST : vTexST)
-            {
-                VSOut ret;
-                ret.outPosition = mul(float4(vPosition, 1.0, 1.0), mul(mul(uModel, uView), uProj));
-                ret.inTexST = vTexST;
-                return ret;
-            }
-        };
-    }
 }
 class Hip_D3D11_ShaderProgram : ShaderProgram
 {
@@ -260,7 +56,7 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
         vs.shader.GetBufferSize(), &IID_ID3D11ShaderReflection, cast(void**)&vReflector);
         if(FAILED(hres))
         {
-            ErrorHandler.showErrorMessage("D3D11 ShaderProgram initialization", 
+            ErrorHandler.showErrorMessage("D3D11 ShaderProgram initialization",
             "Could not get the reflection interface from the vertex shader, error: "~ getWindowsErrorMessage(hres));
             return false;
         }
@@ -268,7 +64,7 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
         fs.shader.GetBufferSize(), &IID_ID3D11ShaderReflection, cast(void**)&pReflector);
         if(FAILED(hres))
         {
-            ErrorHandler.showErrorMessage("D3D11 ShaderProgram initialization", 
+            ErrorHandler.showErrorMessage("D3D11 ShaderProgram initialization",
             "Could not get the reflection interface from the pixel shader, error: "~ getWindowsErrorMessage(hres));
             return false;
         }
@@ -291,16 +87,16 @@ package D3D11_BLEND getD3DBlendFunc(HipBlendFunction func)
 
         case  SRC_COLOR: return D3D11_BLEND_SRC_COLOR;
         case  ONE_MINUS_SRC_COLOR: return D3D11_BLEND_INV_SRC_COLOR;
-    
+
         case  DST_COLOR: return D3D11_BLEND_DEST_COLOR;
         case  ONE_MINUS_DST_COLOR: return D3D11_BLEND_INV_DEST_COLOR;
         
         case  SRC_ALPHA: return D3D11_BLEND_SRC_ALPHA;
         case  ONE_MINUS_SRC_ALPHA: return  D3D11_BLEND_INV_SRC_ALPHA;
-    
+
         case  DST_ALPHA: return  D3D11_BLEND_DEST_ALPHA;
         case  ONE_MINUS_DST_ALPHA: return D3D11_BLEND_INV_DEST_ALPHA;
-    
+
         case  CONSTANT_COLOR: return D3D11_BLEND_SRC1_COLOR;
         case  ONE_MINUS_CONSTANT_COLOR: return D3D11_BLEND_INV_SRC1_COLOR;
         
@@ -349,7 +145,7 @@ class Hip_D3D11_ShaderImpl : IShader
         shaderSource~="\0";
 
         string shaderType = shaderPrefix == "ps" ? "Pixel Shader" : "Vertex Shader";
-        char* source = cast(char*)shaderSource.ptr; 
+        char* source = cast(char*)shaderSource.ptr;
 
         //No #includes
 
@@ -369,7 +165,7 @@ class Hip_D3D11_ShaderImpl : IShader
         else static if(HIP_OPTIMIZE)
             compile_flags|= D3DCOMPILE_OPTIMIZATION_LEVEL3;
 
-        const D3D_SHADER_MACRO[] defines = 
+        const D3D_SHADER_MACRO[] defines =
         [
             cast(D3D_SHADER_MACRO)null, cast(D3D_SHADER_MACRO)null
         ];
@@ -442,7 +238,7 @@ class Hip_D3D11_ShaderImpl : IShader
     *       normalize: If it will normalize
     *       stride: Target value amount in bytes, for instance, vec3 is float.sizeof*3
     *       offset: It will be calculated for each value index
-    *       
+    *
     */
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
     {
@@ -453,7 +249,7 @@ class Hip_D3D11_ShaderImpl : IShader
     void bind(ShaderProgram _program)
     {
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)_program;
-        if(p.blendState !is null && 
+        if(p.blendState !is null &&
             (p.blendDst != currDst ||
             p.blendSrc != currSrc ||
             p.blendEq != currEq))
@@ -478,13 +274,13 @@ class Hip_D3D11_ShaderImpl : IShader
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
         D3D11_SHADER_INPUT_BIND_DESC output;
 
-        
+
         if(!SUCCEEDED(p.vReflector.GetResourceBindingDescByName(name.ptr, &output)))
         {
             ErrorHandler.showErrorMessage("Error finding ID/Uniform for shader ", "For variable named "~name ~ " in shader " ~ prog.name);
         }
 
-        
+
         return output.BindPoint;
     }
 
@@ -501,9 +297,9 @@ class Hip_D3D11_ShaderImpl : IShader
             _hip_d3d_context.Map(data.buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
             memcpy(resource.pData, l.getBlockData(), l.getLayoutSize());
             _hip_d3d_context.Unmap(data.buffer,  0);
-            
+
             ErrorHandler.assertExit(data != null, "D3D11 ShaderVarAdditionalData is null, can't send variables");
-            
+
             final switch(l.shaderType)
             {
                 case ShaderTypes.FRAGMENT:
@@ -579,10 +375,10 @@ class Hip_D3D11_ShaderImpl : IShader
             b.BlendOp = getD3DBlendEquation(HipBlendEquation.ADD);
             b.BlendOpAlpha = getD3DBlendEquation(HipBlendEquation.ADD);
             b.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-        }        
+        }
         _hip_d3d_device.CreateBlendState(&Hip_D3D11_Renderer.blend, &p.blendState);
     }
-    
+
 
     void deleteShader(FragmentShader* _fs){}
     void deleteShader(VertexShader* _vs){}
@@ -612,5 +408,5 @@ class Hip_D3D11_ShaderImpl : IShader
 
     override void onRenderFrameEnd(ShaderProgram){}
 
-    
+
 }

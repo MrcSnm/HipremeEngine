@@ -225,7 +225,7 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
             vaoInfos.length = info.index + 1;
         vaoInfos[info.index] = VAOInfo(info, stride);
     }
-    void createInputLayout(Shader s){}
+    void createInputLayout(VertexShader s, ShaderProgram p){}
 }
 
 version(HipGLUseVertexArray) class Hip_GL3_VertexArrayObject : IHipVertexArrayImpl
@@ -264,6 +264,6 @@ version(HipGLUseVertexArray) class Hip_GL3_VertexArrayObject : IHipVertexArrayIm
         ));
         glCall(() => glEnableVertexAttribArray(info.index));
     }
-    void createInputLayout(Shader s){}
+    void createInputLayout(VertexShader s, ShaderProgram p){}
     ~this(){glCall(() => glDeleteVertexArrays(1, &this.vao));}
 }

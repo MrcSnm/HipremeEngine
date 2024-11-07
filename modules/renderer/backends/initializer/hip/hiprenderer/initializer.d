@@ -93,3 +93,42 @@ public IHipRendererImpl getRendererImplementation(HipRendererType type)
         default: return null;
     }
 }
+
+immutable(DefaultShader[]) getDefaultFromModule(string mod)()
+{
+    static if(__traits(compiles, {mixin("import ",mod,";");}))
+    {
+        mixin("static import ", mod, ";");
+        static if(__traits(getMember, mixin(mod), "DefaultShaders"))
+            return mixin(mod,".DefaultShaders");
+    }
+    return [];
+}
+
+/**
+ * Default Shaders are all accessed with
+ * HipDefaultShaders[HipRendererType][HipShaderPresets]
+ */
+immutable DefaultShader[][] HipDefaultShaders = [
+    HipRendererType.GL3: getDefaultFromModule!"hip.hiprenderer.backend.gl.defaultshaders",
+    HipRendererType.D3D11: getDefaultFromModule!"hip.hiprenderer.backend.d3d.defaultshaders",
+    HipRendererType.METAL: getDefaultFromModule!"hip.hiprenderer.backend.metal.defaultshaders",
+    HipRendererType.NONE: []
+];
+
+
+public Shader newShader(HipShaderPresets shaderPreset, HipRendererType type = HipRendererType.NONE)
+{
+    if(type == HipRendererType.NONE)
+        type = HipRenderer.getType();
+
+    Shader ret = HipRenderer.newShader();
+    DefaultShader shaderInfo = HipDefaultShaders[type][shaderPreset];
+    ShaderStatus status = ret.loadShaders(shaderInfo.vSource(), shaderInfo.fSource(), shaderInfo.path);
+    if(status != ShaderStatus.SUCCESS)
+    {
+        import hip.console.log;
+        logln("Failed loading shaders with status ", status, " at preset ", shaderPreset, " on "~shaderInfo.path);
+    }
+    return ret;
+}

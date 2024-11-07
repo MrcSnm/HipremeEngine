@@ -12,7 +12,7 @@ module hip.hipaudio.audio;
 
 public import hip.hipaudio.audiosource;
 public import hip.api.audio;
-import hip.hipaudio.config;
+import hip.config.audio;
 
 //Backends
 

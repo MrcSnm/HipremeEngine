@@ -2,6 +2,9 @@
 	"authors": [
 		"Hipreme"
 	],
+	"dependencies": {
+		"hipengine_api:interfaces": {"path": "../../api"}
+	},
 	"configurations": [
 		{
 			"name": "default-linux",

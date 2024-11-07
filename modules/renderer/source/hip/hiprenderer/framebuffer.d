@@ -12,32 +12,9 @@ module hip.hiprenderer.framebuffer;
 import hip.hiprenderer.shader;
 import hip.hiprenderer.renderer;
 import hip.api.renderer.texture;
+public import hip.api.renderer.framebuffer;
 
 
-
-interface IHipFrameBuffer
-{
-    ///Creates the framebuffer using the target width and height
-    void create(uint width, uint height);
-
-    ///Resizes the framebuffer, probably this will not be implemented in the backend level
-    void resize(uint width, uint height);
-
-    ///Binds the framebuffer, setting it as a target for every draw call
-    void bind();
-    ///Unbinds the framebuffer, resetting the renderer state and setting the output as the screen
-    void unbind();
-    ///Must draw the framebuffer content
-    void draw();
-
-    ///Clears the current framebuffer content
-    void clear();
-
-    ///Gets the texture containing the framebuffer data
-    IHipTexture getTexture();
-
-    void dispose();
-}
 
 class HipFrameBuffer : IHipFrameBuffer
 {
@@ -46,11 +23,12 @@ class HipFrameBuffer : IHipFrameBuffer
     int width, height;
     this(IHipFrameBuffer fbImpl, int width, int height, Shader framebufferShader = null)
     {
+        import hip.hiprenderer.initializer;
         impl = fbImpl;
         this.width = width;
         this.height = height;
         if(framebufferShader is null)
-            currentShader = HipRenderer.newShader(HipShaderPresets.FRAME_BUFFER);
+            currentShader = newShader(HipShaderPresets.FRAME_BUFFER);
     }
     void create(uint width, uint height){}
     void resize(uint width, uint height){}

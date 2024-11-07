@@ -27,7 +27,7 @@ bool isTypeArrayOf(Type, Array, int Count)()
 {
     static if(is(Array == Type[Count]))
         return true;
-    else static if(is(Array T : T*))
+    else static if(!is(Array == struct))
         return false;
     else
     {

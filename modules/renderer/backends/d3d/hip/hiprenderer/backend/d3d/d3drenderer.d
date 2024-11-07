@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hiprenderer.backend.d3d.d3drenderer;
 
-import hip.hiprenderer.config;
+import hip.config.renderer;
 static if(HasDirect3D):
 
 pragma(lib, "ole32");
@@ -81,7 +81,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         import directx.dxgidebug;
         IDXGIInfoQueue dxgiQueue;
     }
-    
+
 
     static void assertExit(HRESULT hres, string msg,
     string file = __FILE__, size_t line = __LINE__,
@@ -105,7 +105,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
             */
             createDeviceFlags|= D3D11_CREATE_DEVICE_DEBUG;
         }
-        const D3D_FEATURE_LEVEL[] levelArray = 
+        const D3D_FEATURE_LEVEL[] levelArray =
         [
             D3D_FEATURE_LEVEL_12_1,
             D3D_FEATURE_LEVEL_12_0,
@@ -195,7 +195,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         assertExit(
             adapter.GetParent(&IID_IDXGIFactory4, cast(void**)&factory)
         ,"Could not get IDXGIFactory4");
-        
+
         IDXGISwapChain1 swapChain;
         assertExit(factory.CreateSwapChainForCoreWindow (
             cast(IUnknown)_hip_d3d_device,
@@ -207,7 +207,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
         swapChain.QueryInterface(&IID_IDXGISwapChain3, cast(void**)&_hip_d3d_swapChain);
     }
-    
+
     protected void initD3DDebug()
     {
         static if(HIP_DEBUG)
@@ -276,7 +276,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         uint createDeviceFlags = 0;
         static if(HIP_DEBUG)
             createDeviceFlags|= D3D11_CREATE_DEVICE_DEBUG;
-        const D3D_FEATURE_LEVEL[] levelArray = 
+        const D3D_FEATURE_LEVEL[] levelArray =
         [
             D3D_FEATURE_LEVEL_11_1,
             D3D_FEATURE_LEVEL_11_0,
@@ -302,7 +302,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
                                                 &featureLevel,
                                                 &_hip_d3d_context);
 
-        
+
 
         swapChain.QueryInterface(&IID_IDXGISwapChain3, cast(void**)&_hip_d3d_swapChain);
         device.QueryInterface(&IID_ID3D11Device3, cast(void**)&_hip_d3d_device);
@@ -354,7 +354,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
             DXGI_INFO_QUEUE_MESSAGE* msg;
             bool hasError;
             size_t msgSize;
-            for(ulong i = 0, 
+            for(ulong i = 0,
             // len = dxgiQueue.GetNumStoredMessagesAllowedByRetrievalFilters(DXGI_DEBUG_DX);
             len = dxgiQueue.GetNumStoredMessages(DXGI_DEBUG_DX);
             i < len; i++)
@@ -416,9 +416,9 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         return new Hip_D3D11_IndexBufferObject(count, usage);
     }
 
-    public Shader createShader()
+    public IShader createShader()
     {
-        return new Shader(new Hip_D3D11_ShaderImpl());
+        return new Hip_D3D11_ShaderImpl();
     }
 
     bool isBlendingEnabled() const
@@ -427,8 +427,9 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         return false;
     }
 
-    public bool init(HipWindow window)
+    public bool init(IHipWindow windowInterface)
     {
+        HipWindow window = cast(HipWindow)windowInterface;
         version(UWP){assert(false, "Cannot call 'init' on UWP. Use initExternal");}
         else
         {
@@ -529,7 +530,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         _hip_d3d_context.DrawIndexed(indicesSize, offset, 0);
     }
     void clear(){}
-    
+
     void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         float[4] color = [cast(float)r/255, cast(float)g/255, cast(float)b/255, cast(float)a/255];
@@ -540,14 +541,14 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         Hip_D3D11_Dispose();
     }
-    
+
     public void setDepthTestingFunction(HipDepthTestingFunction)
     {
-        
+
     }
     public void setDepthTestingEnabled(bool)
     {
-        
+
     }
     public void setStencilTestingEnabled(bool bEnable)
     {
@@ -559,7 +560,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
     public void setColorMask(ubyte r, ubyte g, ubyte b, ubyte a)
     {
-        
+
     }
 
     public void setStencilTestingFunction(HipStencilTestingFunction passFunc, uint reference, uint mask)
@@ -569,13 +570,13 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     public void setStencilOperation(HipStencilOperation stencilFail, HipStencilOperation depthFail, HipStencilOperation stencilAndDephPass)
     {
     }
-    
-    public ShaderVar* createShaderVar(ShaderTypes shaderType, UniformType uniformType, string varName, size_t length)
+
+    size_t function (ShaderTypes shaderType, UniformType uniformType) getShaderVarMapper()
     {
-        return null;
+        return (ShaderTypes shaderType, UniformType uniformType) { return 0; };
     }
-    
-    
+
+
 }
 
 private void Hip_D3D11_Dispose()
