@@ -375,7 +375,7 @@ class Hip_GL_ShaderImpl : IShader
         if(shouldControlBind)
             unbind(prog);
     }
-    void createVariablesBlock(ref ShaderVariablesLayout layout)
+    void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
     {
         if(layout.hint & ShaderHint.GL_USE_BLOCK)
             ErrorHandler.assertExit(false, "Use HipGL3 for Uniform Block support.");
@@ -414,7 +414,7 @@ version(HipGL3) class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
         return super.getId(prog, name);
     }
 
-    override void createVariablesBlock(ref ShaderVariablesLayout layout)
+    override void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
     {
         if(layout.hint & ShaderHint.GL_USE_BLOCK)
         {

@@ -8,22 +8,11 @@ import metal;
 import metal.metal;
 import hip.hiprenderer.backend.metal.mtlrenderer;
 import hip.hiprenderer.backend.metal.mtltexture;
-import core.int128;
-
 
 class HipMTLFragmentShader : FragmentShader
 {
     this(MTLDevice device){}
     string shaderSource;
-    override string getDefaultFragment()
-    {
-        return string.init; // TODO: implement
-    }
-
-    override string getFrameBufferFragment(){return "";}
-    override string getGeometryBatchFragment(){return "";}
-    override string getSpriteBatchFragment(){return "";}
-    override string getBitmapTextFragment(){return "";}
 }
 
 struct BufferedMTLBuffer
@@ -40,29 +29,6 @@ class HipMTLVertexShader : VertexShader
 {
     this(MTLDevice device){}
     string shaderSource;
-    override string getDefaultVertex()
-    {
-        return string.init; // TODO: implement
-    }
-
-    override string getFrameBufferVertex()
-    {
-        return import("metal/framebuffer.metal");
-    }
-
-    override string getGeometryBatchVertex()
-    {
-        return import("metal/geometrybatch.metal");
-    }
-
-    override string getSpriteBatchVertex()
-    {
-        return import("metal/spritebatch.metal");
-    }
-    override string getBitmapTextVertex()
-    {
-        return import("metal/bitmaptext.metal");
-    }
 }
 
 MTLBlendOperation fromHipBlendEquation(HipBlendEquation eq)
@@ -296,10 +262,10 @@ class HipMTLShader : IShader
     {
         return device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
     }
-    void createVariablesBlock(ref ShaderVariablesLayout layout)
+    void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
     {
         MTLBuffer buffer = getNewMTLBuffer(layout);
-        HipMTLShaderProgram s = cast(HipMTLShaderProgram)(layout.getShader()).shaderProgram;
+        HipMTLShaderProgram s = cast(HipMTLShaderProgram)shaderProgram;
         BufferedMTLBuffer* buffered; 
         layout.setAdditionalData(buffered = new BufferedMTLBuffer([buffer], layout), true);
         final switch(layout.shaderType)

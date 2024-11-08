@@ -323,7 +323,7 @@ class Hip_D3D11_ShaderImpl : IShader
             texture.bind(cast(int)i);
     }
 
-    void createVariablesBlock(ref ShaderVariablesLayout layout)
+    void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
     {
         import core.stdc.stdlib:malloc;
         D3D11_BUFFER_DESC desc;
