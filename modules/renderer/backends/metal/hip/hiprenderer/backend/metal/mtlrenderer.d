@@ -75,14 +75,15 @@ class HipMTLRenderer : IHipRendererImpl
     MTLRenderCommandEncoder cmdEncoder;
     MTLPrimitiveType primitiveType;
 
-    package MTLArgumentBuffersTier argsTier;
+    package __gshared MTLArgumentBuffersTier argsTier;
 
     //Descriptors
         MTLDepthStencilDescriptor depthStencilDescriptor;
     //
 
-    public bool init(HipWindow window)
+    public bool init(IHipWindow windowInterface)
     {
+        HipWindow window = cast(HipWindow)windowInterface;
         view = cast(MTKView)window.MTKView;
         device = view.device();
         cmdQueue = device.newCommandQueue();
@@ -166,7 +167,7 @@ class HipMTLRenderer : IHipRendererImpl
                 }
                 default: return 0;
             }
-        }
+        };
     }
 
 

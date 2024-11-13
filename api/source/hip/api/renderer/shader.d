@@ -55,7 +55,7 @@ interface IShader
     ///Used as intermediary for deleting non program intermediary in opengl
     void deleteShader(VertexShader* vs);
 
-    void createVariablesBlock(ref ShaderVariablesLayout layout);
+    void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram);
     bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value);
     void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts);
 

@@ -194,7 +194,7 @@ public class Shader : IReloadable
             defaultLayout = layout;
         layouts[layout.name] = layout;
         layout.lock(this.shaderImpl);
-        shaderImpl.createVariablesBlock(layout);
+        shaderImpl.createVariablesBlock(layout, shaderProgram);
     }
 
     /**
