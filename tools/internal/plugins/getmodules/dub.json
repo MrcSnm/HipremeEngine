@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"Marcelo"
+	],
+	"copyright": "Copyright © 2024, Marcelo",
+	"description": "A minimal D application.",
+	"license": "proprietary",
+	"name": "getmodules"
+}
