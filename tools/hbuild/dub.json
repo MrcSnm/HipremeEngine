@@ -6,7 +6,7 @@
 	"dependencies": {
 		"arsd-official:terminal": "~>11.5.0",
 		"arsd-official:cgi": "~>11.5.0",
-		"redub": "~>1.14.2",
+		"redub": "~>1.14.8",
 		"archive": "~>0.7.1",
 		"wasm-sourcemaps": {"repository": "git+https://github.com/MrcSnm/wasm-sourcemaps", "version": "69e6c80"}
 	},
