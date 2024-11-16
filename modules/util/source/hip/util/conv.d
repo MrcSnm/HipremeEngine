@@ -61,6 +61,20 @@ string toString(T)(T structOrTupleOrEnum) pure nothrow @safe if(!isArray!T)
                 return T.stringof~"."~mem;
         return T.stringof~".|MEMBER_NOT_FOUND|";
     }
+    else static if(__traits(isAssociativeArray, T))
+    {
+        string s;
+        try
+        {
+            foreach(key, value; structOrTupleOrEnum)
+            {
+                s~= "\n\t"~key.to!string~": "~value.to!string;
+            }
+        }
+        catch(Exception e){}
+        return "["~s~"\n]";
+    }
+    // else static if(isD)
     else static assert(0, "Not implemented for "~T.stringof);
     // static if(isTuple!T)
     // {

@@ -2,28 +2,38 @@
 	"authors": [
 		"Hipreme", "Adam Ruppe"
 	],
-	"importPaths": ["druntime/arsd-webassembly"],
+	"importPaths": ["druntime/source"],
 	"sourceFiles": [
-		"druntime/arsd-webassembly/arsd/webassembly.d",
-		"druntime/arsd-webassembly/rt/hooks.d",
-		"druntime/arsd-webassembly/core/arsd/memory_allocation.d",
-		"druntime/arsd-webassembly/core/array/v2102.d",
-		"druntime/arsd-webassembly/core/array/common.d",
-		"druntime/arsd-webassembly/core/array/v2099.d",
-		"druntime/arsd-webassembly/rt/tls_armeabi.d",
-		"druntime/arsd-webassembly/object.d",
-		"druntime/arsd-webassembly/core/arsd/aa.d",
-		"druntime/arsd-webassembly/core/arsd/objectutils.d",
-		"druntime/arsd-webassembly/core/arsd/utf_decoding.d",
-		"druntime/arsd-webassembly/core/internal/utf.d"
+		"druntime/source/rt/hooks.d",
+		"druntime/source/core/arsd/memory_allocation.d",
+		"druntime/source/core/array/v2102.d",
+		"druntime/source/core/array/common.d",
+		"druntime/source/core/array/v2099.d",
+		"druntime/source/rt/tls_armeabi.d",
+		"druntime/source/object.d",
+		"druntime/source/core/arsd/aa.d",
+		"druntime/source/core/arsd/objectutils.d",
+		"druntime/source/core/arsd/utf_decoding.d",
+		"druntime/source/core/internal/utf.d"
 	],
 	"targetType": "staticLibrary",
 	"versions": ["CarelessAlocation"],
 	"copyright": "Copyright © 2023, Hipreme",
+
+	"subPackages": [
+		{
+			"name": "arsd-webassembly",
+			"sourceFiles": ["druntime/arsd-webassembly/arsd/webassembly.d"],
+			"importPaths": ["druntime/arsd-webassembly/"]
+		}
+	],
 	"description": "A minimal D application.",
 	"configurations": [
 		{
 			"name": "wasm",
+			"dependencies": {
+				"runtime:arsd-webassembly": "*"
+			},
 			"lflags": ["-allow-undefined"]
 		},
 		{

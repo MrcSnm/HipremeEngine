@@ -119,12 +119,13 @@ immutable DefaultShader[][] HipDefaultShaders = [
 
 public Shader newShader(HipShaderPresets shaderPreset, HipRendererType type = HipRendererType.NONE)
 {
+    import hip.util.conv:to;
     if(type == HipRendererType.NONE)
         type = HipRenderer.getType();
 
     Shader ret = HipRenderer.newShader();
     DefaultShader shaderInfo = HipDefaultShaders[type][shaderPreset];
-    ShaderStatus status = ret.loadShaders(shaderInfo.vSource(), shaderInfo.fSource(), shaderInfo.path);
+    ShaderStatus status = ret.loadShaders(shaderInfo.vSource(), shaderInfo.fSource(), shaderInfo.path~"."~shaderPreset.to!string);
     if(status != ShaderStatus.SUCCESS)
     {
         import hip.console.log;

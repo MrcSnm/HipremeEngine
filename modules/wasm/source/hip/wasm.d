@@ -1,5 +1,6 @@
 module hip.wasm;
 version(WebAssembly):
+import std.meta:AliasSeq;
 
 ///WebAssembly.Table replacement for HipremeEngine
 private __gshared ubyte* function(ubyte* args)[] _annonymousFunctionTable;
@@ -34,6 +35,7 @@ struct Arguments(alias Func)
 
 Struct loadMemoryInStruct(Struct)(ubyte* arg)
 {
+	import core.stdc.string:memcpy;
 	Struct ret;
 	size_t last = 0;
 	foreach(ref v; ret.tupleof)

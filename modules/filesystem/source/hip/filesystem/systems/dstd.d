@@ -11,7 +11,7 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
             return false;
         ubyte[] output;
         auto f = File(path);
-        output.length = f.size;
+        output.length = cast(size_t)f.size;
         f.rawRead(output); //TODO: onError should be on try/catch
         f.close();
         onSuccess(output);

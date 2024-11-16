@@ -14,8 +14,12 @@
 		"util" : {"path": "../util"}
 	},
 	"configurations": [
+		{"name": "default"},
 		{
-			"name": "default"
+			"name": "wasm",
+			"dependencies": {
+				"runtime:arsd-webassembly": {"path": "../../dependencies/runtime"}
+			}
 		},
 		{
 			"name": "android",

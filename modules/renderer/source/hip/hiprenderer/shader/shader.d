@@ -63,7 +63,7 @@ public class Shader : IReloadable
         this.internalVertexSource = vertexShaderSource;
         this.internalFragmentSource = fragmentShaderSource;
 
-        shaderProgram.name = shaderPath;
+        vertexShaderPath = fragmentShaderPath = shaderProgram.name = shaderPath;
         if(!shaderImpl.compileShader(vertexShader, vertexShaderSource))
             return ShaderStatus.VERTEX_COMPILATION_ERROR;
         if(!shaderImpl.compileShader(fragmentShader, fragmentShaderSource))
@@ -114,14 +114,22 @@ public class Shader : IReloadable
         import hip.util.conv:to;
         bool isUnused;
         ShaderVar* v = findByName(name, isUnused);
+
         if(v is null)
         {
-            if(!isUnused)
-                ErrorHandler.showWarningMessage("Shader " ~ type.to!string ~ " Var not set on shader loaded from '"~fragmentShaderPath~"'",
-                "Could not find shader var with name "~name~
-                ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
-                " Did you forget to add a layout namespace to the var name?"
-                ));
+            ShaderVariablesLayout sv = layouts["Cbuf"];
+            string s = sv.variables.to!string;
+
+            import hip.console.log;
+            // logln(sv.variables);
+
+            // if(!isUnused)
+            //     ErrorHandler.showWarningMessage("Shader " ~ type.to!string ~ " Var not set on shader loaded from '"~fragmentShaderPath~"'",
+            //     "Could not find shader var with name "~name~
+            //     ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
+            //     " Did you forget to add a layout namespace to the var name?") ~
+            //     sv.variables.keys.to!string
+            //     );
             return null;
         }
         if(v.shaderType != type)

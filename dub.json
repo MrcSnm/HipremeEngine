@@ -129,14 +129,15 @@
 		{
 			"name": "wasm",
 			"dependencies": {
-				"d_std": {"path": "modules/d_std", "version": "*"},
-				"runtime": {"path": "dependencies/runtime", "version": "*"}
+				"d_std": {"path": "modules/d_std", "version": "*"}
 			},
 			"targetType": "staticLibrary",
 			"stringImportPaths": [
 				"build/wasm/generated"
 			],
 			"subConfigurations": {
+				"d_std": "wasm",
+				"console": "wasm",
 				"runtime": "wasm",
 				"assets": "wasm",
 				"audio": "wasm",

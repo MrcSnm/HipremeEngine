@@ -108,6 +108,7 @@ private {
     {
         string getSpriteBatchFragment()
         {
+            import hip.hiprenderer.renderer;
             int sup = HipRenderer.getMaxSupportedShaderTextures();
             string textureSlotSwitchCase;
             if(sup == 1) textureSlotSwitchCase = "gl_FragColor = TEXTURE_2D(uTex[0], inTexST)*inVertexColor*uBatchColor;\n";
