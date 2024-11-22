@@ -1,6 +1,7 @@
 module hip.windowing.platforms.browser;
 
 version(WebAssembly):
+@nogc:
 
 extern(C) void WasmSetWindowSize(int width, int height);
 extern(C) ubyte* WasmGetWindowSize();

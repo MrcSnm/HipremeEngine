@@ -131,6 +131,7 @@ version(WindowsNative)
         }
         return 0;
     }
+    @nogc:
 
     extern(Windows) nothrow @nogc HGLRC wglCreateContextAttribs(HDC, DWORD, HWND);
     alias wglChoosePixelFormatARBProc = extern(Windows) nothrow @nogc BOOL function(
@@ -333,8 +334,7 @@ version(WindowsNative)
             uint size = FormatMessage(
                 FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
                 cast(void*)null,err, 0, cast(LPWSTR)&buffer, 0, null);
-            wstring str = cast(wstring)buffer[0..size];
-            MessageBox(NULL, ("Window Registration Failed with message: "~str).ptr, "Error!", MB_ICONEXCLAMATION | MB_OK);
+            MessageBox(NULL, buffer, "Window Registration Failed with message: ", MB_ICONEXCLAMATION | MB_OK);
             LocalFree(buffer);
             return false;
         }

@@ -1,6 +1,7 @@
 module hip.windowing.platforms.appleos;
 
 version(AppleOS):
+@nogc:
 
 ///Those are defined in Hipreme Engine Shared/Renderer.m
 extern(C) void   hipSetMTKView(void** MTKView, int* outWidth, int* outHeight);

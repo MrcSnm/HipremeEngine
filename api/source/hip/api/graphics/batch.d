@@ -9,7 +9,7 @@ interface IHipBatch
     *   This will bring a lot more performance than drawinig whenever
     *   the switch was needed.
     */
-    void setCurrentDepth(float depth);
+    void setCurrentDepth(float depth) @nogc;
     /**
     *   This draw most of the time is used to avoid accessing the same buffer
     *   it doesn't flush the batch, meaning it will only populate from the current

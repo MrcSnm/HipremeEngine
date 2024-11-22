@@ -117,19 +117,12 @@ public class Shader : IReloadable
 
         if(v is null)
         {
-            ShaderVariablesLayout sv = layouts["Cbuf"];
-            string s = sv.variables.to!string;
-
-            import hip.console.log;
-            // logln(sv.variables);
-
-            // if(!isUnused)
-            //     ErrorHandler.showWarningMessage("Shader " ~ type.to!string ~ " Var not set on shader loaded from '"~fragmentShaderPath~"'",
-            //     "Could not find shader var with name "~name~
-            //     ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
-            //     " Did you forget to add a layout namespace to the var name?") ~
-            //     sv.variables.keys.to!string
-            //     );
+            if(!isUnused)
+                ErrorHandler.showWarningMessage("Shader " ~ type.to!string ~ " Var not set on shader loaded from '"~fragmentShaderPath~"'",
+                "Could not find shader var with name "~name~
+                ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
+                " Did you forget to add a layout namespace to the var name?")
+                );
             return null;
         }
         if(v.shaderType != type)
@@ -264,7 +257,9 @@ public class Shader : IReloadable
                 }
                 if(varLayout.sVar.usesMaxTextures)
                     varLayout.sVar.set(HipRenderer.getMaxSupportedShaderTextures(), true);
+
             }
+
         }
         shaderImpl.sendVars(shaderProgram, layouts);
     }

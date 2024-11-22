@@ -38,8 +38,7 @@ class HipText
     uint[] linesWidths;
 
     protected string _text;
-    protected dstring _dtext;
-    protected dstring processedText;
+    protected string processedText;
     protected HipColor _color = HipColor.black;
 
     //Debugging?
@@ -81,8 +80,7 @@ class HipText
         if(newText != _text)
         {
             import hip.util.string;
-            dstring dtext = newText.toUTF32;
-            _drawableTextCount = countVertices(dtext);
+            _drawableTextCount = countVertices(newText);
             shouldUpdateText = true;
             if(_drawableTextCount > maxDrawableTextCount)
             {
@@ -91,7 +89,6 @@ class HipText
                 maxDrawableTextCount = _drawableTextCount;
             }
             _text = newText;
-            _dtext = dtext;
         }
         return _text;
     }
@@ -127,7 +124,7 @@ class HipText
     public void getSize(out int width, out int height)
     {
         if(processedText == null)
-            HipTextStopConfig.parseText(_dtext, processedText, textConfig);
+            HipTextStopConfig.parseText(_text, processedText, textConfig);
         font.calculateTextBounds(processedText, linesWidths, width, height, boundsWidth);
         this.width = width;
         this.height = height;
@@ -140,7 +137,7 @@ class HipText
 
     package void updateText(IHipFont font)
     {
-        HipTextStopConfig.parseText(_dtext, processedText, textConfig);
+        HipTextStopConfig.parseText(_text, processedText, textConfig);
         int vI = 0; //vertex buffer index
 
         bool isFirstLine = true;
@@ -244,7 +241,7 @@ package struct HipTextStopConfig
     }
 
 
-    static void parseText(in dstring text, out dstring parsedText, ref HipTextStopConfig[] config)
+    static void parseText(string text, out string parsedText, ref HipTextStopConfig[] config)
     {
         parsedText = text;
         // size_t indexConfig = 0;
@@ -276,7 +273,7 @@ package struct HipTextStopConfig
 
 
 
-private size_t countVertices(dstring str)
+private size_t countVertices(string str)
 {
     size_t i = 0;
     foreach(ch; str)

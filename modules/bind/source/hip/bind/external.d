@@ -49,7 +49,8 @@ version(UWP)
     void uwpPrint(string str)
     {
         import std.utf:toUTF16z;
-        OutputUWP(toUTF16z(str~"\n"));
+        OutputUWP(toUTF16z(str));
+        OutputUWP("\n");
     } 
 }
 

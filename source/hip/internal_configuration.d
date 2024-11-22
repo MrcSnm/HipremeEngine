@@ -48,7 +48,9 @@ string getFSInstallPath(string projectToLoad)
         return getcwd()~"/assets";
     }
 }
-void function(string) getPlatformPrintFunction()
+
+alias PrintType = @nogc void function(string);
+PrintType getPlatformPrintFunction()
 {
     version(UWP)
     {

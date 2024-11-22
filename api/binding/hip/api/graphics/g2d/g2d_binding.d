@@ -102,6 +102,9 @@ else version(ScriptAPI)
             IHipAnimation function(string name) newHipAnimation;
 
 
+            void function(int x = 0, int y = -1) drawGCStats;
+
+
             version(ImportSpritesheet)
             {
                 package Array2D_GC!IHipTextureRegion function(

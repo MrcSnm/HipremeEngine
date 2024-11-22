@@ -6,7 +6,7 @@
 	"dependencies": {
 		"arsd-official:terminal": "~>11.5.0",
 		"arsd-official:cgi": "~>11.5.0",
-		"redub": "~>1.14.8",
+		"redub": "~>1.17.17",
 		"archive": "~>0.7.1",
 		"wasm-sourcemaps": {"repository": "git+https://github.com/MrcSnm/wasm-sourcemaps", "version": "69e6c80"}
 	},
@@ -38,11 +38,12 @@
 		},
 		{
 			"name": "ci-macos",
+			"targetName": "macos64-hbuild",
 			"dflags-ldc": ["-Oz"],
 			"dependencies": {
 				"objc_meta": "~>1.1.0"
 			},
-			"postBuildCommands-osx": ["mv hbuild macos64-hbuild && chmod +x macos64-hbuild"]
+			"postBuildCommands-osx": ["chmod +x macos64-hbuild"]
 		},
 		{
 			"name": "ci-win",
@@ -50,12 +51,13 @@
 			"dependencies": {
 				"arsd-official:minigui": "~>11.5.0"
 			},
-			"postBuildCommands-windows": ["move hbuild.exe win64-hbuild.exe"]
+			"targetName": "win64-hbuild"
 		},
 		{
 			"name": "ci",
 			"dflags-ldc": ["-Oz"],
-			"postBuildCommands-linux": ["mv hbuild linux64-hbuild && chmod +x linux64-hbuild"]
+			"targetName": "linux64-hbuild",
+			"postBuildCommands-linux": ["chmod +x linux64-hbuild"]
 		}
 	],
 	"libs": ["curl"],

@@ -49,7 +49,7 @@ struct HipSpriteFragmentUniform
 {
     float[4] uBatchColor = [1,1,1,1];
     
-    @(ShaderHint.Blackbox | ShaderHint.MaxTextures) 
+    @(ShaderHint.Blackbox)
     IHipTexture[] uTex;
 }
 
@@ -68,7 +68,7 @@ class HipSpriteBatch : IHipBatch
     HipSpriteVertex[] vertices;
 
     protected bool hasInitTextureSlots;
-    protected Shader spriteBatchShader;
+    Shader spriteBatchShader;
 
     ///Post Processing Shader
     protected Shader ppShader;
@@ -128,6 +128,9 @@ class HipSpriteBatch : IHipBatch
         mesh.setVertices(vertices);
         mesh.setIndices(indices);
         setTexture(HipTexture.getPixelTexture());
+
+        // import hip.console.log;
+        // logln(spriteBatchShader.layouts["Cbuf"].);
     }
     void setCurrentDepth(float depth){managedDepth = depth;}
 
@@ -394,6 +397,7 @@ class HipSpriteBatch : IHipBatch
 
     void draw()
     {
+
         if(quadsCount - lastDrawQuadsCount != 0)
         {
             for(int i = usingTexturesCount; i < currentTextures.length; i++)

@@ -150,15 +150,17 @@ public static class ErrorHandler
     public static bool assertErrorMessage(bool expression, string errorTitle, string errorMessage, bool isFatal = false,
     string file = __FILE__, size_t line =__LINE__, string mod = __MODULE__, string func = __PRETTY_FUNCTION__)
     {
+        import hip.util.string;
         expression = !expression; //Negate the expression, as it must return wether error ocurred
         if(expression)
         {
+            String where;
             version(HIPREME_DEBUG)
             {
-                string where = "at module '"~mod~"' "~file~":"~to!string(line)~"("~func~")\n\t";
+                where = String("at module '", mod, "' ", file, ":", line, "(", func, ")\n\t");
             }
-            else{string where="";}
-            showErrorMessage(where~errorTitle, errorMessage, isFatal);
+
+            showErrorMessage(String(where, errorTitle).toString, errorMessage, isFatal);
         }
         return expression;
     }

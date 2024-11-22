@@ -31,11 +31,11 @@ static enum androidTag = "HipremeEngine";
 enum GUI_CONSOLE = true;
 
 ///If it is inside thread local storage, then, it won't work being called from another thread
-__gshared void function(string toPrint) _log;
-__gshared void function(string toPrint) _info;
-__gshared void function(string toPrint) _warn;
-__gshared void function(string toPrint) _err;
-__gshared void function(string toPrint) _fatal;
+@nogc __gshared void function(string toPrint) _log;
+@nogc __gshared void function(string toPrint) _info;
+@nogc __gshared void function(string toPrint) _warn;
+@nogc __gshared void function(string toPrint) _err;
+@nogc __gshared void function(string toPrint) _fatal;
 version(PSVita) extern(C) void hipVitaPrint(uint length, const(char)* str);
 
 version(UWP){}
@@ -79,7 +79,8 @@ class Console
     bool isShowing = true;
     
 
-    static void install(Platforms p = Platforms.DEFAULT, void function(string) printFunc = null)
+    alias printFuncT = @nogc void function(string);
+    static void install(Platforms p = Platforms.DEFAULT, printFuncT printFunc = null)
     {
         DEFAULT = new Console("Output", 99);
         version(WindowsNative)
@@ -221,7 +222,7 @@ class Console
     }
     
     
-    void log(Args...)(Args a)
+    void log(Args...)(Args a) @nogc
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {

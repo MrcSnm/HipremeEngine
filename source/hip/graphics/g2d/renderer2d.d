@@ -15,7 +15,7 @@ public import hip.api.renderer.viewport;
 
 public import hip.api.data.font;
 
-private __gshared
+package __gshared
 {
     IHipTexture defaultTexture;
     HipSpriteBatch spBatch;
@@ -299,6 +299,12 @@ void finishRender2D()
     if(geoBatch) geoBatch.setCurrentDepth(0);
     if(spBatch) spBatch.setCurrentDepth(0);
     if(textBatch) textBatch.setCurrentDepth(0);
+}
+
+void drawGCStats(int x = 0, int y = -1)
+{
+    import hip.graphics.g2d.profiling;
+    hip.graphics.g2d.profiling.drawGCStats(x, y);
 }
 
 version(Standalone)

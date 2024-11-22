@@ -157,10 +157,10 @@ class HipRenderer
 
         return ErrorHandler.stopListeningForErrors();
     }
-    public static void setWindowSize(int width, int height)
+    public static void setWindowSize(int width, int height) @nogc
     {
         assert(width > 0 && height > 0, "Window width and height must be greater than 0");
-        logln("Changing window size to ", [width, height]);
+        logln("Changing window size to [", width, ", ",  height, "]");
         window.setSize(cast(uint)width, cast(uint)height);
         HipRenderer.width  = width;
         HipRenderer.height = height;
@@ -193,7 +193,7 @@ class HipRenderer
         rendererImpl.setColor(r,g,b,a);
     }
 
-    public static Viewport getCurrentViewport(){return currentViewport;}
+    public static Viewport getCurrentViewport() @nogc {return currentViewport;}
     public static void setViewport(Viewport v)
     {
         this.currentViewport = v;

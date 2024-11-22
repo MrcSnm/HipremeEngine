@@ -63,7 +63,7 @@ class HipWindow : IHipWindow
     {
         getModule!().setWindowName(name, WindowHandle, errors);
     }
-    void setSize(uint width, uint height)
+    void setSize(uint width, uint height) @nogc
     {
         getModule!().setWindowSize(width, height, WindowHandle, errors);
     }

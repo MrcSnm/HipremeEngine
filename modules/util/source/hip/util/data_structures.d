@@ -202,25 +202,41 @@ struct Array(T)
     T* data;
     private size_t capacity;
     private int* countPtr;
-    import core.stdc.stdlib:malloc;
+    import core.stdc.stdlib:malloc, calloc;
     import core.stdc.string:memcpy, memset;
     import core.stdc.stdlib:realloc;
 
     this(this) @nogc
     {
-        *countPtr = *countPtr + 1;
+        if(countPtr !is null)
+            *countPtr = *countPtr + 1;
     }
-    alias _opApplyFn = int delegate(ref T) @nogc;
-    pragma(inline) int opApply(scope _opApplyFn dg) @nogc
+
+    pragma(inline) int opApply(scope int delegate(size_t idx, ref T) dg)
     {
         int result = 0;
-        for(int i = 0; i < length && result; i++)
+        for(int i = 0; i < length; i++)
+        {
+            result = dg(i, data[i]);
+            if(result)
+                break;
+        }
+        return result;
+    }
+
+    pragma(inline) int opApply(scope int delegate(ref T) dg)
+    {
+        int result = 0;
+        for(int i = 0; i < length; i++)
+        {
             result = dg(data[i]);
+            if(result) break;
+        }
         return result;
     }
     private void initialize(size_t capacity) @nogc
     {
-        this.data = cast(T*)malloc(T.sizeof*capacity);
+        this.data = cast(T*)calloc(capacity, T.sizeof);
         this.capacity = capacity;
         this.countPtr = cast(int*)malloc(int.sizeof);
         *this.countPtr = 1;
@@ -246,9 +262,10 @@ struct Array(T)
     {
         Array!T ret = Array!(T)(arr.length);
         ret.length = arr.length;
-        memcpy(ret.data, arr.ptr, ret.length*T.sizeof);
+        ret.data[0..ret.length] = arr[];
         return ret;
     }
+
     void* getRef()
     {
         *countPtr = *countPtr + 1;
@@ -263,14 +280,8 @@ struct Array(T)
     void dispose() @nogc
     {
         import core.stdc.stdlib:free;
-        if(data != null)
-        {
-            free(data);
-            free(countPtr);
-            data = null;
-            countPtr = null;
-            length = capacity = 0;
-        }
+        free(data);
+        free(countPtr);
     }
     immutable(T*) ptr(){return cast(immutable(T*))data;}
     size_t opDollar() @nogc {return length;}
@@ -358,19 +369,22 @@ struct Array(T)
         return this;
     }
 
-    String toString() @nogc
-    {
-        return String(this[0..$]);
-    }
+    // String asString() @nogc
+    // {
+    //     return String(this[0..$]);
+    // }
     void put(T data) @nogc {this~= data;}
     ~this() @nogc
     {
         if(countPtr != null)
         {
             *countPtr = *countPtr - 1;
-            if(*countPtr <= 0)
+            assert(*countPtr >= 0);
+            if(*countPtr == 0)
                 dispose();
+            data = null;
             countPtr = null;
+            length = 0;
         }
     }
 }

@@ -77,7 +77,12 @@ struct String
             }
             else static if(__traits(hasMember, a, "toString"))
                 s~= a.toString;
-            else static assert(false, "No conversion found");
+            // else static if(is(typeof(a) == String[]))
+            // {
+            //     foreach(str; a)
+            //         s~= str;
+            // }
+            else static assert(false, "No conversion found for type "~typeof(a).stringof);
         }
         return s;
     }
@@ -628,6 +633,31 @@ bool isNumber(TString)(in TString str) pure nothrow @nogc
 
     }
     return true;
+}
+
+/**
+ * Returns the entire string if input is not a number separated by a '.'
+ *
+ *
+ * Params:
+ *   input = A input string in "523.987"
+ *   decimalPlaces = How many decimal places it must contain.
+ * Returns: A slice which removes places after the decimal case if there exists more than it should
+ */
+string limitDecimalPlaces(string input, ubyte decimalPlaces) @nogc nothrow
+{
+    if(!isNumber(input))
+        return input;
+    ptrdiff_t decIndex = indexOf(input, '.');
+    if(decIndex == -1)
+        return input;
+
+    //+1 since there is also the dot
+    size_t end = decIndex+1+decimalPlaces;
+    if(end > input.length)
+        end = input.length;
+    return input[0..end];
+
 }
 
 /**

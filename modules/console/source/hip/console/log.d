@@ -59,7 +59,7 @@ struct Logged(T)
             return mixin(op,"val;");
     }
 }
-private string _formatPrettyFunction(string f)
+private string _formatPrettyFunction(string f) @nogc
 {
     import hip.util.string : lastIndexOf;
 
@@ -86,7 +86,7 @@ ulong line = __LINE__)
 
 void logln(Args...)(Args a, string file = __FILE__,
 string func = __PRETTY_FUNCTION__,
-ulong line = __LINE__)
+ulong line = __LINE__) @nogc
 {
     Console.DEFAULT.log(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction);
 }

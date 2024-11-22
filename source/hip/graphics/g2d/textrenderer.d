@@ -136,12 +136,11 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
      *  The text will be saved, represented as an internal ID to a managed static HipText. Which means the texture will be baked
      *  so it is possible to actually draw it a lot faster as all the preprocessings are done once.
      */
-    void draw(string text, int x, int y, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1, bool wordWrap = false)
+    void draw(string str, int x, int y, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1, bool wordWrap = false)
     {
         import hip.util.string : toUTF32;
         import hip.api.graphics.text;
 
-        dstring str = text.toUTF32;
         int vI = quadsCount*4; //vertex buffer index
         bool isFirstLine = true;
         int yoffset = 0;

@@ -169,6 +169,21 @@ T ceil(T)(in float val) pure nothrow @safe @nogc
     return cast(T)(cast(int)(val + 0.9999999));
 }
 
+/**
+ *
+ * Reduce the precision of a floating point. Useful for displaying on screen
+ * Params:
+ *   value = Some floating input value, e.g: 5.59367
+ *   precision = The precision which must be seen, for example 2
+ * Returns: An approximated floating value, for those inputs, return 5.93
+ */
+T floorDecimal(T)(T value, ubyte precision = 2) @nogc nothrow pure @safe
+if(__traits(isFloating, T))
+{
+    import std.math;
+    size_t multiplier = 10^^precision;
+    return floor(value*multiplier) / multiplier;
+}
 
 T clamp(T)(T value, T min, T max) pure nothrow @safe @nogc
 {

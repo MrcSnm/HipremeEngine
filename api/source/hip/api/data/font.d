@@ -20,7 +20,7 @@ struct HipTextRendererVertexAPI
  */
 struct HipLineInfo
 {
-    dstring line;
+    string line;
     int width;
     const(HipFontChar)*[512] fontCharCache;
     int[512] kerningCache;
@@ -28,26 +28,26 @@ struct HipLineInfo
 
 struct HipWordWrapRange
 {
-    private dstring inputText;
+    private string inputText;
     private IHipFont font;
     private int maxWidth, currIndex;
     private HipLineInfo currLine;
     private bool hasFinished;
 
-    this(dstring inputText, IHipFont font, int maxWidth)
+    this(string inputText, IHipFont font, int maxWidth) @nogc
     {
         this.inputText = inputText;
         this.font = font;
         this.maxWidth = maxWidth <= 0 ? int.max : maxWidth;
     }
 
-    bool empty(){return hasFinished;}
+    bool empty() @nogc {return hasFinished;}
     /** 
      * Every time it pops the front, it will search for words. Words are defined as text delimited
      * by spaces. If a word is bigger than the max width, it will be cutten and the word will spam
      * through multiple lines. 
      */
-    void popFront()
+    void popFront() @nogc
     {
         const(HipFontChar)* ch, next;
         int currWidth = 0, wordWidth = 0, wordStartIndex = currIndex;
@@ -122,7 +122,7 @@ struct HipWordWrapRange
         if(currLine.line.length == 0) hasFinished = true;
     }
 
-    HipLineInfo front()
+    HipLineInfo front() @nogc
     {
         if(currIndex == 0) popFront();
         return currLine;
@@ -140,7 +140,7 @@ struct HipFontChar
     ///Normalized values
     float normalizedX, normalizedY, normalizedWidth, normalizedHeight;
     int glyphIndex;
-    void putCharacterQuad(float x, float y, float depth, HipTextRendererVertexAPI[] quad) const
+    void putCharacterQuad(float x, float y, float depth, HipTextRendererVertexAPI[] quad) const @nogc
     {
         //Gen vertices 
         //Top left
@@ -171,8 +171,8 @@ struct HipFontChar
 
 interface IHipFont
 {
-    int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const;
-    int getKerning(dchar current, dchar next) const;
+    int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const @nogc;
+    int getKerning(dchar current, dchar next) const @nogc;
     /** 
      * 
      * Params:
@@ -182,14 +182,14 @@ interface IHipFont
      *   height = Height of all the lines together
      *   maxWidth = If maxWidth != -1, it will break the text into lines automatically. 
      */
-    void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int biggestWidth, out int height, int maxWidth = -1) const;
-    HipWordWrapRange wordWrapRange(dstring text, int maxWidth) const;
-    ref HipFontChar[dchar] characters();
-    ref IHipTexture texture();
-    uint spaceWidth() const;
-    uint spaceWidth(uint newWidth);
-    uint lineBreakHeight() const;
-    uint lineBreakHeight(uint newHeight);
+    void calculateTextBounds(in string text, ref uint[] linesWidths, out int biggestWidth, out int height, int maxWidth = -1) const;
+    HipWordWrapRange wordWrapRange(string text, int maxWidth) const @nogc;
+    ref HipFontChar[dchar] characters() @nogc;
+    ref IHipTexture texture() @nogc;
+    uint spaceWidth() const @nogc;
+    uint spaceWidth(uint newWidth) @nogc;
+    uint lineBreakHeight() const @nogc;
+    uint lineBreakHeight(uint newHeight) @nogc;
 
 }
 
@@ -216,13 +216,13 @@ abstract class HipFont : IHipFont
     final uint lineBreakHeight() const {return _lineBreakHeight;}
     final uint lineBreakHeight(uint newHeight){return _lineBreakHeight = newHeight;}
 
-    final HipWordWrapRange wordWrapRange(dstring text, int maxWidth) const
+    final HipWordWrapRange wordWrapRange(string text, int maxWidth) const @nogc
     {
         return HipWordWrapRange(text, cast(IHipFont)this, maxWidth);
     }
     
 
-    final void calculateTextBounds(in dstring text, ref uint[] linesWidths, out int biggestWidth, out int height, int maxWidth = -1) const
+    final void calculateTextBounds(string text, ref uint[] linesWidths, out int biggestWidth, out int height, int maxWidth = -1) const
     {
         int i = 0;
         foreach(HipLineInfo lineInfo; wordWrapRange(text, maxWidth))

@@ -1,6 +1,5 @@
 module hip.data.json;
 
-
 JSONValue parseJSON(string jsonData)
 {
     return JSONValue.parse(jsonData);
@@ -35,7 +34,13 @@ struct JSONArray
 		self.length++;
 		return self;
 	}
-
+	auto opOpAssign(string op, T)(T value) if(op == "~")
+	{
+		static if(is(T == JSONValue))
+			return append(&this, value);
+		else
+			return append(&this, JSONValue(value));
+	}
 	private static JSONArray* trim(JSONArray* self)
 	{
 		import core.memory;
@@ -74,7 +79,6 @@ struct JSONArray
 struct JSONObject
 {
 	JSONValue[string] value;
-
 	alias value this;
 }
 private enum JSONState
@@ -182,7 +186,8 @@ struct JSONValue
     ///Returns an array range.
     auto array() const
     {
-        assert(type == JSONType.array, "Tried to iterate a non array object of type "~getTypeName);
+		import hip.util.exception;
+        enforce(type == JSONType.array, "Tried to iterate a non array object of type "~getTypeName);
         struct JSONValueArrayIterator
         {
             private const(JSONArray*) arr;
@@ -196,15 +201,22 @@ struct JSONValue
         return JSONValueArrayIterator(data.array);
     }
 
+	ref JSONArray jsonArray()
+	{
+		return *data.array;
+	}
+
 	JSONValue[] array()
 	{
-		assert(type == JSONType.array, "Tried to iterate a non array object of type "~getTypeName);
+		import hip.util.exception;
+		enforce(type == JSONType.array, "Tried to iterate a non array object of type "~getTypeName);
 		return data.array.getArray();
 	}
 
     JSONValue object() const
     {
-        assert(type == JSONType.object, "Tried to get type object but value is of type "~getTypeName); 
+		import hip.util.exception;
+        enforce(type == JSONType.object, "Tried to get type object but value is of type "~getTypeName);
 		JSONValue ret;
 		ret.data = data;
 		ret.error = error;
@@ -212,6 +224,19 @@ struct JSONValue
 		ret.type = JSONType.object;
         return ret;
     }
+
+	string[] keys()
+	{
+		import hip.util.exception;
+        enforce(type == JSONType.object, "Tried to get type object but value is of type "~getTypeName);
+		return data.object.value.keys;
+	}
+	JSONValue[] values()
+	{
+		import hip.util.exception;
+        enforce(type == JSONType.object, "Tried to get type object but value is of type "~getTypeName);
+		return data.object.value.values;
+	}
 
 	string getTypeName() const
 	{
@@ -230,35 +255,35 @@ struct JSONValue
 	T get(T)() const
 	{
 		import std.traits;
-
+		import hip.util.exception;
 		static if(isIntegral!T)
 		{
-			assert(type == JSONType.int_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
+			enforce(type == JSONType.int_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
 			return cast(Unqual!T)data._int;
 		}
 		else static if(isFloatingPoint!T)
 		{
-			assert(type == JSONType.float_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
+			enforce(type == JSONType.float_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
 			return cast(Unqual!T)data._float;
 		}
 		else static if(is(T == bool))
 		{
-			assert(type == JSONType.bool_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
+			enforce(type == JSONType.bool_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
 			return cast(Unqual!T)data._bool;
 		}
 		else static if(is(T == string))
 		{
-			assert(type == JSONType.string_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
+			enforce(type == JSONType.string_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
 			return data._string;
 		}
 		else static if(is(T == JSONObject))
 		{
-			assert(type == JSONType.object, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
+			enforce(type == JSONType.object, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
 			return *data.object;
 		}
 		else static if(is(T == JSONArray))
 		{
-			assert(type == JSONType.array, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
+			enforce(type == JSONType.array, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
 			return *data.array;
 		}
 	}
@@ -278,6 +303,13 @@ struct JSONValue
 		JSONValue ret;
 		ret.type = JSONType.object;
 		ret.data.object = new JSONObject();
+		return ret;
+	}
+	static JSONValue emptyArray()
+	{
+		JSONValue ret;
+		ret.type = JSONType.array;
+		ret.data.array = new JSONArray();
 		return ret;
 	}
 
@@ -613,11 +645,17 @@ struct JSONValue
 	}
 	JSONValue opIndexAssign(JSONValue v, string key)
 	{
-		assert(type == JSONType.object, "Can't get a member from a non object.");
-		assert(data.object !is null, "Can't access a null object");
+		import hip.util.exception;
+		enforce(type == JSONType.object, "Can't get a member from a non object.");
+		enforce(data.object !is null, "Can't access a null object");
 		(*data.object)[key] = v;
 		v.key = key;
 		return (*data.object)[key];
+	}
+
+	JSONValue opIndexAssign(T)(T value, string key) if(!is(T == JSONValue))
+	{
+		return opIndexAssign(JSONValue(value), key);
 	}
 
 	const(JSONValue)* opBinaryRight(string op)(string key) const
@@ -664,7 +702,7 @@ struct JSONValue
 			size_t length = input.length;
 			foreach(ch; input)
 			{
-				if(ch == '\\' || ch == '\n' || ch == '\t' || ch == '\r') length++;
+				if(ch == '\\' || ch == '\n' || ch == '\t' || ch == '\r' || ch == '"') length++;
 			}
 			if(length == input.length) return input;
 			char[] escaped = new char[](length);
@@ -673,6 +711,10 @@ struct JSONValue
 			{
 				switch(input[i])
 				{
+					case '"':
+						escaped[length] = '\\';
+						escaped[++length] = '"';
+						break;
 					case '\\':
 						escaped[length] = '\\';
 						escaped[++length] = '\\';
@@ -916,16 +958,21 @@ void pushToStack(JSONValue val, ref JSONValue* current, ref JSONValue lastValue)
 	lastValue = val;
 }
 
+
 private T uninitializedArray(T)(size_t size)
 {
 	import hip.config.opts;
-	static if(CustomRuntime)
-	{
-		return object._d_newarrayU!(typeof(T.init[0]))(size);
-	}
+	version(D_ProfileGC) { return new T(size);}
 	else
 	{
-		import std.array:uninitializedArray;
-		return uninitializedArray!T(size);
+		static if(CustomRuntime)
+		{
+			return object._d_newarrayU!(typeof(T.init[0]))(size);
+		}
+		else
+		{
+			import std.array:uninitializedArray;
+			return uninitializedArray!T(size);
+		}
 	}
 }

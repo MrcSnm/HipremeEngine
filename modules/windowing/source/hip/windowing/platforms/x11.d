@@ -37,6 +37,8 @@ int ctxErrorHandler( Display *dpy, XErrorEvent *ev )
     return 0;
 }
 
+@nogc:
+
 nothrow @nogc bool initializeOpenGL(int majorVersion, int minorVersion, void* WindowHandle)
 {
     GLint[23] glxAttribs = [
