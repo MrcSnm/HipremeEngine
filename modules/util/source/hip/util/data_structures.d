@@ -814,3 +814,9 @@ struct Signal(A...)
             l(a);
     }
 }
+
+/**
+* Basically same code from std.array.staticArray but no need to import std.
+* Use static arrays whenever needing to "fire-and-forget" small arrays
+*/
+T[N] staticArray(T, size_t N)(auto ref T[N] arr){return arr;}

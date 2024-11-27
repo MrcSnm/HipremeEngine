@@ -56,14 +56,14 @@ void drawGCStats(int x = 0, int y = -1)
     });
 
 
-    Array!String toPrint = Array!String([
+    scope auto toPrint = [
         String("GC Stats: "),
         String("\tMemory Used: ", formatFromBytes(stats.usedSize).asString),
         String("\tFree Memory: ", formatFromBytes(stats.freeSize).asString),
         String("\tTime Paused on GC: ", timeOnPause),
         String("\tTime Spent on Collection:", timeOnCollection),
         String("\tCollections Count: ", prof.numCollections),
-    ]);
+    ].staticArray;
 
     int lbSize = 40;
     int totalSize = lbSize*cast(int)toPrint.length;

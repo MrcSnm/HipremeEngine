@@ -2,13 +2,25 @@
 	"authors": [
 		"Marcelo"
 	],
+	"sourcePaths": [],
+	"importPaths": [],
 	"configurations": [
 		{
 			"name": "default"
 		},
 		{
+			"name": "wasm",
+			"sourcePaths": ["source"],
+			"importPaths": ["source"],
+			"dependencies": {
+				"runtime:arsd-webassembly": {"path": "../../dependencies/runtime"}
+			}
+		},
+		{
 			"name": "psvita",
+			"sourcePaths": ["source"],
 			"importPaths": [
+				"source",
 				"../util/source"
 			]
 		}

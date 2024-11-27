@@ -6,8 +6,12 @@ import hip.event.dispatcher;
 import hip.event.api;
 import hip.event.handlers.keyboard;
 import hip.event.handlers.mouse;
+import hip.util.string;
 
-
+String str(const(HipButton)* btn)
+{
+    return String("Button ", btn.id, " ",btn.type, "  [autoremove: ", btn.isAutoRemove, "]");
+}
 
 class HipInputListener
 {
@@ -63,6 +67,8 @@ class HipInputListener
     */
     void clearAll()
     {
+        import hip.console.log;
+        hiplog("Clearing all input events.");
         touchListeners.length = 0;
         scrollListeners.length = 0;
         moveListeners.length = 0;
@@ -72,18 +78,26 @@ class HipInputListener
     import hip.util.array:remove;
     bool removeKeyboardListener(const(HipButton)* button)
     {
+        import hip.console.log;
+        hiplog("Removing keyboard listener ", button.str);
         return remove(keyboardListeners, button);
     }
     bool removeTouchListener(const(HipButton)* button)
     {
+        import hip.console.log;
+        hiplog("Removing touch listener f ", button.str);
         return remove(touchListeners, button);
     }
     bool removeScrollListener(const(ScrollListener)* onScroll)
     {
+        import hip.console.log;
+        hiplog("Removing scroll listener ");
         return remove(scrollListeners, onScroll);
     }
     bool removeTouchMoveListener(const(TouchMoveListener)* onTouchMove)
     {
+        import hip.console.log;
+        hiplog("Removing touch move listener ");
         return remove(moveListeners, onTouchMove);
     }
 

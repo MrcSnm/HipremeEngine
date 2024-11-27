@@ -34,6 +34,7 @@
 			"dependencies": {
 				"runtime:arsd-webassembly": "*"
 			},
+			"targetType": "staticLibrary",
 			"lflags": ["-allow-undefined"]
 		},
 		{

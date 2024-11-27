@@ -17,7 +17,9 @@ void openWindow(ref int width, ref int height, out void* MTKView)
 
 void setWindowName(string name, void* WindowHandle, ref string[] errors)
 {
-    string nullEndedStr = name ~ '\0';
+    static char[4096] nullEndedStr;
+    nullEndedStr[0..name.length] = name[];
+    nullEndedStr[name.length] = '\0';
     hipSetApplicationTitle(nullEndedStr.ptr);
 }
 

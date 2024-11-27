@@ -129,6 +129,7 @@
 		{
 			"name": "wasm",
 			"dependencies": {
+				"runtime": {"path": "dependencies/runtime", "version": "*"},
 				"d_std": {"path": "modules/d_std", "version": "*"}
 			},
 			"targetType": "staticLibrary",

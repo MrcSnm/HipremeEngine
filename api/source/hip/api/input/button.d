@@ -19,8 +19,8 @@ enum HipButtonType : ushort
 
 enum AutoRemove
 {
-    yes,
-    no
+    no,
+    yes
 }
 alias HipInputAction = void delegate(const(AHipButtonMetadata) meta);
 alias HipTouchMoveAction = void delegate(int x, int y);
@@ -34,7 +34,7 @@ struct HipButton
     ushort id;
     HipButtonType type;
     HipInputAction action;
-    AutoRemove isAutoRemove;
+    AutoRemove isAutoRemove = AutoRemove.no;
 
     alias id this;
 }
@@ -42,13 +42,13 @@ struct HipButton
 struct TouchMoveListener
 {
     HipTouchMoveAction action;
-    AutoRemove isAutoRemove;
+    AutoRemove isAutoRemove = AutoRemove.no;
 }
 
 struct ScrollListener
 {
     HipScrollAction action;
-    AutoRemove isAutoRemove;
+    AutoRemove isAutoRemove = AutoRemove.no;
 }
 
 abstract class AHipButtonMetadata
