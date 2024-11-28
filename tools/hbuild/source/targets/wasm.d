@@ -31,6 +31,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	environment["DFLAGS"] = 
 		"-I="~getHipPath("modules", "d_std", "source") ~" "~
 		"-I="~getHipPath("dependencies", "runtime", "druntime", "arsd-webassembly") ~" " ~
+		"-I="~getHipPath("dependencies", "runtime", "druntime", "source") ~" " ~
 		"-L-allow-undefined -d-version=CarelessAlocation";
 
 
