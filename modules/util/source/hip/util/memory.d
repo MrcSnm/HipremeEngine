@@ -15,10 +15,6 @@ import hip.util.reflection;
 version(WebAssembly) version = CustomRuntime;
 version(PSVita) version = CustomRuntime;
 version(CustomRuntimeTest) version = CustomRuntime;
-
-version(CustomRuntime)
-    static import rt.hooks;
-
 @nogc:
 void setZeroMemory(T)(ref T variable)
 {
@@ -60,7 +56,11 @@ void[] toHeapSlice(T)(T data) if(!is(T == void[]))
 void freeGCMemory(void* data)
 {
     assert(data !is null, "Tried to free null data.");
-    version(CustomRuntime){rt.hooks.free(cast(ubyte*)data);}
+    version(CustomRuntime)
+    {
+        static import rt.hooks;
+        rt.hooks.free(cast(ubyte*)data);
+    }
     else
     {
         import core.memory;
@@ -72,7 +72,11 @@ void freeGCMemory(void* data)
 void freeGCMemory(ref void* data) //Remove ref.
 {
     assert(data !is null, "Tried to free null data.");
-    version(CustomRuntime){rt.hooks.free(cast(ubyte*)data);}
+    version(CustomRuntime)
+    {
+        static import rt.hooks;
+        rt.hooks.free(cast(ubyte*)data);
+    }
     else
     {
         import core.memory;

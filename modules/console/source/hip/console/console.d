@@ -125,10 +125,11 @@ class Console
                 {
                     import arsd.webassembly;
                     import std.stdio;
-                    _log = function(string s){writeln(s);};
-                    _fatal = _err = function(string s){eval(q{console.error.apply(null, arguments)}, s);};
-                    _warn = function(string s){eval(q{console.warn.apply(null, arguments)}, s);};
-                    _info = function(string s){eval(q{console.info.apply(null, arguments)}, s);};
+                    alias nogcfn = @nogc void function(string s);
+                    _log = cast(nogcfn)function(string s){writeln(s);};
+                    _fatal = _err = cast(nogcfn)function(string s){eval(q{console.error.apply(null, arguments)}, s);};
+                    _warn = cast(nogcfn)function(string s){eval(q{console.warn.apply(null, arguments)}, s);};
+                    _info = cast(nogcfn)function(string s){eval(q{console.info.apply(null, arguments)}, s);};
                 }
                 break;
             case UWP:

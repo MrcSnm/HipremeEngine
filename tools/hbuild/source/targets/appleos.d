@@ -38,5 +38,5 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 			);
 		}
 	}
-	return ChoiceResult.Continue;
+	return ChoiceResult.None;
 }

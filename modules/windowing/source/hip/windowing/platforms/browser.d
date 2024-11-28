@@ -3,8 +3,8 @@ module hip.windowing.platforms.browser;
 version(WebAssembly):
 @nogc:
 
-extern(C) void WasmSetWindowSize(int width, int height);
-extern(C) ubyte* WasmGetWindowSize();
+extern(C) void WasmSetWindowSize(int width, int height) @nogc;
+extern(C) ubyte* WasmGetWindowSize() @nogc;
 
 void openWindow(int width, int height, out void* WindowHandle)
 {
