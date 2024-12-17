@@ -5,35 +5,70 @@ bool serverStarted;
 bool appleClean;
 
 
-import std.concurrency;
+import core.thread;
 import core.sync.semaphore;
 import commons;
-private Tid serverTid;
+private Thread serverThread;
 
 shared ushort gameServerPort;
 
 void startServer(shared ushort* usingPort)
 {
     if(serverStarted) return;
-    import serve;
-    static void startTheServer(shared ushort* usingPort, shared Semaphore sem)
-    {
-        hipengineCgiMain!(serveGameFiles)([], getHipPath("build", "wasm"), usingPort, sem);
-    }
+    import server;
+    import core.stdc.stdlib;
     serverStarted = true;
-
     Semaphore s = new Semaphore();
-	serverTid = spawn(&startTheServer, usingPort, cast(shared)s);
+	serverThread = new Thread(()
+    {
+        hipengineStartServer([], usingPort, getHipPath("build", "wasm"), cast(shared)s);
+    }).start();
+
+
+    version(Windows)
+    {
+        import core.sys.windows.windef; // Windows API bindings
+        import core.sys.windows.wincon; // Windows API bindings
+
+        static extern(Windows) BOOL handleCtrlC(DWORD ctrlType) nothrow
+        {
+            if (ctrlType == CTRL_C_EVENT) // CTRL+C signal
+            {
+                try exitServer();
+                catch(Exception e){}
+                exit(0);
+            }
+            return FALSE;
+        }
+
+        if (!SetConsoleCtrlHandler(&handleCtrlC, TRUE))
+        {
+            throw new Exception("Failed to register CTRL+C handler.");
+        }
+
+    }
+    else version(Posix)
+    {
+        import core.sys.posix.signal;
+        static extern(C) void handleCtrlC(int signum)
+        {
+            exitServer();
+            exit(0);
+        }
+        alias fn = extern(C) void function(int) nothrow @nogc;
+        signal(SIGINT, cast(fn)&handleCtrlC);
+    }
+
     s.wait;
-
-
 }
 
 void exitServer()
 {
     if(!serverStarted) return;
-    import serve;
+    import core.stdc.stdlib;
+    import server;
     serverStarted = false;
-    serverTid = Tid.init;
-    stopServer();   
+    serverThread = null;
+    stopServer();
+    exit(0);
 }

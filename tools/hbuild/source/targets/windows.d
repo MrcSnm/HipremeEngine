@@ -131,5 +131,5 @@ ChoiceResult prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	
 	t.wait(spawnShell((getHipPath("bin", "desktop", "hipreme_engine.exe") ~ " "~ configs["gamePath"].str)));
 
-	return ChoiceResult.Continue;
+	return ChoiceResult.None;
 }

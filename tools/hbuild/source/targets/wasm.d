@@ -2,7 +2,7 @@ module targets.wasm;
 import features.git;
 import commons;
 import global_opts;
-import serve;
+import server;
 import tools.gendir;
 import tools.releasegame;
 
@@ -62,17 +62,20 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 			std.file.rename(file, getHipPath("build", "wasm", "build", "hipreme_engine.wasm"));
 		}
 	}
-
-	t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:"~gameServerPort.to!string);
-	pushWebsocketMessage("reload");
-	cached(() => cast(void)openDefaultBrowser("http://localhost:"~gameServerPort.to!string));
-
 	if(!serverStarted)
 	{
 		t.writelnHighlighted("Attempt to start WebAssembly development server.");
 		startServer(&gameServerPort);
 		t.writelnSuccess("Development started at localhost:"~gameServerPort.to!string);
+		cached(() => cast(void)openDefaultBrowser("http://localhost:"~gameServerPort.to!string));
 	}
+	else
+	{
+		t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:"~gameServerPort.to!string);
+		pushWebsocketMessage("reload");
+	}
+
+
 
 	return ChoiceResult.None;
 }

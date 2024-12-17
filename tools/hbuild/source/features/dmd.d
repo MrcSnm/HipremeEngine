@@ -48,7 +48,10 @@ void initialize()
             ),
             outputPath: "$TEMP/$NAME",
         )], toDelegate(&installDmd), ["$CWD/D"]), 
-        (ref Terminal, string installPath){addToPath(installPath.buildNormalizedPath);},
+        (ref Terminal t, string installPath)
+        {
+            addToPath(installPath.dirName);
+        },
         VersionRange.parse("2.105.0", "2.106.0")
     );
 }

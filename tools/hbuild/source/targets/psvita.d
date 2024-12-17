@@ -209,7 +209,7 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
     putResourcesIn(t, getHipPath("build", "vita", "hipreme_engine", "assets"));
 
     string dflags = "-I="~configs["hipremeEnginePath"].str~"/modules/d_std/source "~
-    "-I="~configs["hipremeEnginePath"].str~"/dependencies/runtime/druntime/arsd-webassembly "~
+    "-I="~configs["hipremeEnginePath"].str~"/dependencies/runtime/druntime/source "~
     "-d-version=PSVita " ~
     "-d-version=PSV " ~
     "-mtriple=armv7a-unknown-unknown " ~

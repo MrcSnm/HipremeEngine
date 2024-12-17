@@ -222,14 +222,12 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	string selectionTitle, size_t selectedChoice = 0)
 {
 	bool exit;
+	enum ESC = 983067;
 	enum ArrowUp = 983078;
 	enum ArrowDown = 983080;
 	enum SelectionHint = "Select an option by using W/S or Arrow Up/Down and choose it by pressing Enter.";
-	terminal.clear();
-	terminal.color(Color.DEFAULT, Color.DEFAULT);
-	terminal.writelnHighlighted(selectionTitle);
-	terminal.writeln(SelectionHint);
 
+	static bool isFirst = true;
 	static void changeChoice(ref Terminal t, Choice[] choices, string title, Choice current, Choice next, int nextCursorOffset)
 	{
 		int currCursor = t.cursorY;
@@ -244,10 +242,11 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 		t.flush;
 	}
 
-	static void changeChoiceClear(ref Terminal t, Choice[] choices, string title, Choice current, Choice next, int nextCursorOffset)
+	static void changeChoiceClear(ref Terminal t, Choice[] choices, string title, Choice current, Choice next, int nextCursorOffset, bool bClear)
 	{
 		t.color(Color.DEFAULT, Color.DEFAULT);
-		t.clear();
+		if(bClear)
+			t.clear();
 		t.writelnHighlighted(title);
 		t.writeln(SelectionHint);
 		foreach(i, c; choices)
@@ -259,11 +258,9 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 		t.flush;
 	}
 
+	if(!isFirst)
+		terminal.clear();
 	int startLine = terminal.cursorY;
-	terminal.color(Color.DEFAULT, Color.DEFAULT);
-
-	foreach(i, choice; choices)
-		terminal.write(choice.name, i == choices.length - 1 ? "" : "\n");
 	terminal.flush();
 
 	terminal.moveTo(0, startLine + cast(int)selectedChoice);
@@ -273,15 +270,22 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	size_t oldChoice = selectedChoice;
 	while(!exit)
 	{
-		changeChoiceClear(terminal, choices, selectionTitle, choices[oldChoice], choices[selectedChoice], cast(int)(cast(long)selectedChoice-oldChoice));
+		changeChoiceClear(terminal, choices, selectionTitle, choices[oldChoice], choices[selectedChoice], cast(int)(cast(long)selectedChoice-oldChoice), !isFirst);
+		isFirst = false;
 		oldChoice = selectedChoice;
-		CheckInput: switch(input.getch)
+
+		size_t choice = input.getch;
+		CheckInput: switch(choice)
 		{
 			case 'w', 'W', ArrowUp:
 				selectedChoice = (selectedChoice + choices.length - 1) % choices.length;
 				break;
 			case 's', 'S', ArrowDown:
 				selectedChoice = (selectedChoice+1) % choices.length;
+				break;
+			case ESC:
+				selectedChoice = choices.length - 1;
+				exit = true;
 				break;
 			case '\n':
 				exit = true;
@@ -290,9 +294,10 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 		}
 	}
 	terminal.moveTo(0, cast(int)startLine);
-	foreach(i; 0..choices.length)
+	//Title + SelectionHint
+	foreach(i; 0..choices.length+3)
 		terminal.moveTo(0, cast(int)(startLine+i)), terminal.clearToEndOfLine();
-	terminal.moveTo(0, cast(int)startLine);
+	terminal.moveTo(0, cast(int)startLine+1); //Jump title
 	terminal.writelnSuccess(">> ", choices[selectedChoice].name);
 
 	terminal.showCursor();
@@ -986,6 +991,8 @@ struct DubArguments
 int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, string copyLinkerFilesTo = null)
 {
 	import redub.logging;
+	import redub.buildapi;
+	import redub.api;
 	if(execDubBase(t, dArgs) == -1) return -1;
 
 	setLogLevel(dArgs._opts.dubVerbose ? LogLevel.verbose : LogLevel.info);
@@ -995,9 +1002,12 @@ int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, strin
 		CompilationDetails(dArgs.getCompiler(), dArgs._arch),
 		ProjectToParse(dArgs._configuration, std.file.getcwd(), null, dArgs._recipe),
 		InitialDubVariables.init,
-		BuildType.debug_
+		BuildType.profile_gc
 	);
-	if(buildProject(proj).error) return 1;
+	try {
+		if(buildProject(proj).error) return 1;
+	}
+	catch(BuildException err) { return 1; }
 	if(copyLinkerFilesTo.length)
 	{
 		import tools.copylinkerfiles;

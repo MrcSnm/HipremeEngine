@@ -8,6 +8,9 @@
 <a href="https://github.com/MrcSnm/HipremeEngine/wiki/Getting-Started">Getting Started</a>
 </h1>
 
+[![HBuild](https://github.com/MrcSnm/HipremeEngine/actions/workflows/hbuild.yml/badge.svg)](https://github.com/MrcSnm/HipremeEngine/actions/workflows/hbuild.yml)
+
+
 
 
 The engine maintains  some global options which you can modify it on source/global/opts.d:
