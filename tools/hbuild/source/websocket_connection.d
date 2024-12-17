@@ -1,17 +1,23 @@
 module websocket_connection;
+import core.sync.mutex;
 import handy_httpd;
 
 class WebSocketReloadServer: WebSocketMessageHandler
 {
     // ctx.server.stop(); // Calling stop will gracefully shutdown the server.
+    Connection* thisConnection;
+    this()
+    {
+        wsMutex = new shared Mutex;
+    }
 
     private size_t wsID;
 
     override void onConnectionEstablished(WebSocketConnection conn)
     {
-        synchronized
+        synchronized(wsMutex)
         {
-            connections~= Connection(id);
+            connections~= thisConnection = new Connection(id);
             wsID = id++;
         }
     }
@@ -21,14 +27,13 @@ class WebSocketReloadServer: WebSocketMessageHandler
         import std.stdio;
         import std.algorithm.searching;
 
-        Connection conn = Connection(wsID);
         string text = msg.payload; //Irrelevant here
 
-        synchronized
+    	synchronized(wsMutex)
         {
-            foreach(socketMsg; conn.messages)
+            foreach(socketMsg; thisConnection.messages)
                 msg.conn.sendTextMessage(socketMsg);
-            conn.messages.length = 0;
+            thisConnection.messages.length = 0;
         }
 
         // infoF!"Got TEXT: %s"(msg.payload);
@@ -40,7 +45,7 @@ class WebSocketReloadServer: WebSocketMessageHandler
         import std.stdio;
         synchronized
         {
-            ptrdiff_t index = countUntil!((Connection c) => c.id == wsID)(connections);
+            ptrdiff_t index = countUntil!((Connection* c) => c.id == wsID)(connections);
             if(index != -1)
             {
                 connections = connections[0..index]~ connections[index+1..$];
@@ -53,7 +58,7 @@ class WebSocketReloadServer: WebSocketMessageHandler
 }
 void pushWebsocketMessage(string message)
 {
-	synchronized
+	synchronized(wsMutex)
 	{
 		foreach(ref conn; connections)
 			conn.messages~= message;
@@ -67,4 +72,5 @@ struct Connection
 	string[] messages;
 }
 private __gshared size_t id;
-private __gshared Connection[] connections;
+private __gshared Connection*[] connections;
+private shared Mutex wsMutex;

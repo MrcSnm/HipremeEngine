@@ -30,7 +30,11 @@ struct Terminal
 	void color(Color main, Color secondary){if(arsdTerminal) arsdTerminal.color(main, secondary);}
 	int cursorY()
 	{
-		if(arsdTerminal) return arsdTerminal.cursorY;
+		if(arsdTerminal)
+		{
+			arsdTerminal.updateCursorPosition();
+			return arsdTerminal.cursorY;
+		}
 		return 0;
 	}
 	string getline(string message)
@@ -59,7 +63,17 @@ struct Terminal
 
 	void hideCursor(){ if(arsdTerminal) arsdTerminal.hideCursor();}
 	void showCursor(){ if(arsdTerminal) arsdTerminal.showCursor();}
-	void clearToEndOfLine(){ if(arsdTerminal) arsdTerminal.clearToEndOfLine();}
+	void clearToEndOfLine()
+	{
+		if(arsdTerminal) arsdTerminal.clearToEndOfLine();
+		flush();
+	}
+	void clearLine()
+	{
+		moveTo(0, cursorY);
+		clearToEndOfLine();
+		flush();
+	}
 
 	void writeln(T...)(T args)
 	{
@@ -228,20 +242,6 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	enum SelectionHint = "Select an option by using W/S or Arrow Up/Down and choose it by pressing Enter.";
 
 	static bool isFirst = true;
-	static void changeChoice(ref Terminal t, Choice[] choices, string title, Choice current, Choice next, int nextCursorOffset)
-	{
-		int currCursor = t.cursorY;
-		t.moveTo(0, currCursor);
-		t.clearToEndOfLine();
-		t.write(current.name);
-
-		t.moveTo(0, currCursor+nextCursorOffset);
-		t.clearToEndOfLine();
-		with(TerminalColors(Color.green, Color.DEFAULT, t))
-			t.write(">> ", next.name);
-		t.flush;
-	}
-
 	static void changeChoiceClear(ref Terminal t, Choice[] choices, string title, Choice current, Choice next, int nextCursorOffset, bool bClear)
 	{
 		t.color(Color.DEFAULT, Color.DEFAULT);
@@ -262,7 +262,6 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 		terminal.clear();
 	int startLine = terminal.cursorY;
 	terminal.flush();
-
 	terminal.moveTo(0, startLine + cast(int)selectedChoice);
 	terminal.hideCursor();
 
@@ -293,9 +292,10 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 			default: goto CheckInput;
 		}
 	}
+	import std.algorithm.searching;
 	terminal.moveTo(0, cast(int)startLine);
 	//Title + SelectionHint
-	foreach(i; 0..choices.length+3)
+	foreach(i; 0..choices.length+ ( count(selectionTitle, "\n")+2))
 		terminal.moveTo(0, cast(int)(startLine+i)), terminal.clearToEndOfLine();
 	terminal.moveTo(0, cast(int)startLine+1); //Jump title
 	terminal.writelnSuccess(">> ", choices[selectedChoice].name);
