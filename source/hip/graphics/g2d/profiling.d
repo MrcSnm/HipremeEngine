@@ -11,41 +11,60 @@ import hip.graphics.g2d.renderer2d;
 void drawGCStats(int x = 0, int y = -1)
 {
     import hip.config.opts;
-    static if(!CustomRuntime)
+    import hip.util.string;
+    import hip.util.data_structures;
+    import hip.math.utils;
+
+    static struct ByteUnit
+    {
+        double data;
+        string unit;
+
+        String asString() @nogc
+        {
+            return String(String(data).toString.limitDecimalPlaces(2), unit);
+        }
+    }
+
+    ByteUnit formatFromBytes(size_t byteCount) @nogc
+    {
+        double actualResult = byteCount;
+
+        if(actualResult <= 1000)
+            return ByteUnit(floorDecimal(actualResult, 2), " B");
+        actualResult/= 1000;
+        if(actualResult <= 1000)
+            return ByteUnit(floorDecimal(actualResult, 2), " KB");
+        actualResult/= 1000;
+            return ByteUnit(floorDecimal(actualResult, 2), " MB");
+        actualResult/= 1000;
+        return ByteUnit(floorDecimal(actualResult, 2), " GB");
+    }
+
+    version(WebAssembly)
+    {
+        import core.arsd.memory_allocation;
+        String s = String("Memory Allocated: ", formatFromBytes(getMemoryAllocated()).asString);
+        int lbSize = 40;
+        int totalSize = lbSize;
+        if(x < 0)
+            x = 0;
+        if(y < 0)
+        {
+            import hip.hiprenderer.renderer;
+            Viewport vp = HipRenderer.getCurrentViewport;
+            y = vp.worldHeight - totalSize;
+        }
+        drawText(s.toString, x, y+lbSize);
+
+    }
+    else static if(!CustomRuntime)
     {
         import core.memory;
-        import hip.util.string;
-        import hip.util.data_structures;
-        import hip.math.utils;
         GC.Stats stats = GC.stats;
         GC.ProfileStats prof = GC.profileStats;
 
-        static struct ByteUnit
-        {
-            double data;
-            string unit;
 
-            String asString() @nogc
-            {
-                return String(String(data).toString.limitDecimalPlaces(2), unit);
-            }
-        }
-
-        ByteUnit formatFromBytes(size_t byteCount) @nogc
-        {
-            double actualResult = byteCount;
-
-            if(actualResult <= 1000)
-                return ByteUnit(floorDecimal(actualResult, 2), " B");
-            actualResult/= 1000;
-            if(actualResult <= 1000)
-                return ByteUnit(floorDecimal(actualResult, 2), " KB");
-            actualResult/= 1000;
-                return ByteUnit(floorDecimal(actualResult, 2), " MB");
-            actualResult/= 1000;
-            return ByteUnit(floorDecimal(actualResult, 2), " GB");
-
-        }
         String timeOnPause;
         String timeOnCollection;
 

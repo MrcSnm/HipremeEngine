@@ -15,6 +15,6 @@ interface IHipJSONC
     auto getJSON()()
     {
         import hip.data.json;
-        return parseJSON!string(getData());
+        return parseJSON(getData());
     }
 }

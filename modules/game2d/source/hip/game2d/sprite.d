@@ -15,6 +15,7 @@ public import hip.api.graphics.color;
 public import hip.api.data.commons;
 import hip.math.vector;
 import hip.game2d.renderer_data;
+import hip.api.data.textureatlas;
 
 /**
 *   Encapsulates bunch of sprites to hold a contiguous list of vertices.
@@ -172,6 +173,7 @@ class HipSprite
     }
 
     final IHipTexture getTexture() { return texture.getTexture();}
+
     final void setRegion(float u1, float v1, float u2, float v2)
     {
         setRegion(TextureCoordinatesQuad(u1,v1,u2,v2));

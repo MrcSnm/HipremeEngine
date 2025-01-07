@@ -11,6 +11,36 @@ struct AtlasRect
 {
     float x, y, width, height;
     alias w = width, h = height;
+
+    /**
+     *
+     * Params:
+     *   size = The entire atlas size.
+     * Returns: A TextureQuad compatible format from this atlas rect. Used for getting its vertices
+     */
+    TextureCoordinatesQuad toQuad(AtlasSize size)
+    {
+        return TextureCoordinatesQuad(
+            x / size.width,
+            y / size.height,
+            (x+width) / size.width,
+            (x+height) / size.height
+        );
+    }
+
+    version(Have_data)
+    {
+        import hip.data.jsonc;
+        static AtlasRect fromJSON()(JSONValue v, bool useShortenedDimensionNames = true)
+        {
+            return AtlasRect(
+                v["x"].get!float,
+                v["y"].get!float,
+                v[useShortenedDimensionNames ? "w" : "width"].get!float,
+                v[useShortenedDimensionNames ? "h" : "height"].get!float
+            );
+        }
+    }
 }
 
 struct AtlasFrame

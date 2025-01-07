@@ -12,19 +12,25 @@ enum NinePatchType
 class NinePatch
 {
     uint width, height;
-    float x, y;
-    float scaleX, scaleY;
+    float x = 0, y = 0;
+    float scaleX = 1, scaleY = 1;
     protected HipSprite[9] sprites;
     protected HipSpriteVertex[9*4] vertices;
     IHipTexture texture;
     NinePatchType stretchStrategy;
 
+    this(IHipTexture tex, NinePatchType t = NinePatchType.SCALED)
+    {
+        texture = tex;
+        foreach(i; 0..9)
+            sprites[i] = new HipSprite(tex);
+        stretchStrategy = t;
+    }
+
     this(uint width, uint height, IHipTexture tex, NinePatchType type = NinePatchType.SCALED)
     {
         this.width = width;
         this.height = height;
-        x = y = 0;
-        scaleX = scaleY = 1;
         texture = tex;
         stretchStrategy = type;
         for(int i = 0; i < 9; i++)
@@ -180,30 +186,29 @@ class NinePatch
         //     sprites[BOT_MID].setScale(0,0);
         // }
 
-        uint i = 0;
-        vertices[i++..i*4] = sprites[TOP_LEFT].getVertices();
-        vertices[i++..i*4] = sprites[TOP_MID].getVertices();
-        vertices[i++..i*4] = sprites[TOP_RIGHT].getVertices();
-        vertices[i++..i*4] = sprites[MID_LEFT].getVertices();
-        vertices[i++..i*4] = sprites[MID_MID].getVertices();
-        vertices[i++..i*4] = sprites[MID_RIGHT].getVertices();
-        vertices[i++..i*4] = sprites[BOT_LEFT].getVertices();
-        vertices[i++..i*4] = sprites[BOT_MID].getVertices();
-        vertices[i++..i*4] = sprites[BOT_RIGHT].getVertices();
+        vertices[0..4] = sprites[TOP_LEFT].getVertices();
+        vertices[4..8] = sprites[TOP_MID].getVertices();
+        vertices[8..12] = sprites[TOP_RIGHT].getVertices();
+        vertices[12..16] = sprites[MID_LEFT].getVertices();
+        vertices[16..20] = sprites[MID_MID].getVertices();
+        vertices[20..24] = sprites[MID_RIGHT].getVertices();
+        vertices[24..28] = sprites[BOT_LEFT].getVertices();
+        vertices[28..32] = sprites[BOT_MID].getVertices();
+        vertices[32..36] = sprites[BOT_RIGHT].getVertices();
     }
 
-    void setTopLeft(uint u1, uint v1, uint u2, uint v2){sprites[TOP_LEFT].setRegion(u1,v1,u2,v2);}
-    void setTopMid(uint u1, uint v1, uint u2, uint v2){sprites[TOP_MID].setRegion(u1,v1,u2,v2);}
-    void setTopRight(uint u1, uint v1, uint u2, uint v2){sprites[TOP_RIGHT].setRegion(u1,v1,u2,v2);}
+    void setTopLeft(TextureCoordinatesQuad q){sprites[TOP_LEFT].setRegion(q);}
+    void setTopMid(TextureCoordinatesQuad q){sprites[TOP_MID].setRegion(q);}
+    void setTopRight(TextureCoordinatesQuad q){sprites[TOP_RIGHT].setRegion(q);}
     
 
-    void setMidLeft (uint u1, uint v1, uint u2, uint v2){sprites[MID_LEFT].setRegion(u1,v1,u2,v2);}
-    void setMidMid  (uint u1, uint v1, uint u2, uint v2){sprites[MID_MID].setRegion(u1,v1,u2,v2);}
-    void setMidRight(uint u1, uint v1, uint u2, uint v2){sprites[MID_RIGHT].setRegion(u1,v1,u2,v2);}
+    void setMidLeft (TextureCoordinatesQuad q){sprites[MID_LEFT].setRegion(q);}
+    void setMidMid  (TextureCoordinatesQuad q){sprites[MID_MID].setRegion(q);}
+    void setMidRight(TextureCoordinatesQuad q){sprites[MID_RIGHT].setRegion(q);}
 
-    void setBotLeft (uint u1, uint v1, uint u2, uint v2){sprites[BOT_LEFT].setRegion(u1,v1,u2,v2);}
-    void setBotMid  (uint u1, uint v1, uint u2, uint v2){sprites[BOT_MID].setRegion(u1,v1,u2,v2);}
-    void setBotRight(uint u1, uint v1, uint u2, uint v2){sprites[BOT_RIGHT].setRegion(u1,v1,u2,v2);}
+    void setBotLeft (TextureCoordinatesQuad q){sprites[BOT_LEFT].setRegion(q);}
+    void setBotMid  (TextureCoordinatesQuad q){sprites[BOT_MID].setRegion(q);}
+    void setBotRight(TextureCoordinatesQuad q){sprites[BOT_RIGHT].setRegion(q);}
 
 
     void setPosition(float x, float y)
@@ -255,6 +260,12 @@ class NinePatch
             vertices[quad+2].vPosition = verts[2].vPosition;
             vertices[quad+3].vPosition = verts[3].vPosition;
         }
+    }
+
+    void draw()
+    {
+        foreach(HipSprite sp; sprites)
+            sp.draw;
     }
 
 

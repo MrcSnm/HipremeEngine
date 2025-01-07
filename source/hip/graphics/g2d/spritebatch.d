@@ -197,8 +197,8 @@ class HipSpriteBatch : IHipBatch
             }
             size_t quadsToDraw = (countOfQuads < remainingQuads) ? countOfQuads : remainingQuads;
 
-            size_t start = quadsCount;
-            size_t end = (start + quadsToDraw)*4;
+            size_t start = quadsCount*4;
+            size_t end = start + quadsToDraw*4;
 
             vertices[start..end] = v;
             for(int i = 0; i < quadsToDraw; i++)

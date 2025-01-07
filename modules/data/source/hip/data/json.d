@@ -19,7 +19,6 @@ struct JSONArray
 
 	static JSONArray* append(JSONArray* self, JSONValue v)
 	{
-		import core.memory;
 		if(v.type == JSONType.array)
 			v.data.array = JSONArray.trim(v.data.array);
 		size_t capacity = self.length;
@@ -43,7 +42,6 @@ struct JSONArray
 	}
 	private static JSONArray* trim(JSONArray* self)
 	{
-		import core.memory;
 		size_t selfLength = self.length;
 		self.value.length = selfLength;
 		// if(self.length != self.capacity)
@@ -55,7 +53,6 @@ struct JSONArray
 
 	static JSONArray* createNew(size_t initialSize = 8)
 	{
-		import core.memory;
 		JSONArray* ret = new JSONArray();
 		ret.value.length = initialSize;
 
@@ -263,6 +260,8 @@ struct JSONValue
 		}
 		else static if(isFloatingPoint!T)
 		{
+			if(type == JSONType.int_)
+				return cast(float)data._int;
 			enforce(type == JSONType.float_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
 			return cast(Unqual!T)data._float;
 		}

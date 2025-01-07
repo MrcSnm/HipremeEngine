@@ -97,6 +97,7 @@ string generateDubProject(DubProjectInfo info)
 		"util",
 		"timer",
 		"tween",
+		"data",
 		"math"
 	],
 	"stringImportPaths": ["#PROJECT/ct_assets"],
