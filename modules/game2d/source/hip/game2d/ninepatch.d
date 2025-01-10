@@ -96,21 +96,21 @@ class NinePatch
 
     void build()
     {
-        float xScalingFactor = cast(float)(width - cast(float)(sprites[TOP_LEFT].width*2));
-        if(sprites[TOP_LEFT].width != 0)
-            xScalingFactor/= cast(float)sprites[TOP_LEFT].width;
-        else  
-            xScalingFactor = 0;
+        static float getXScalingFactor(ubyte index, HipSprite[] sprites, uint width)
+        {
+            float ret = (width - (sprites[index-1].width + sprites[index+1].width));
+            if(sprites[index].width != 0)
+                ret/= cast(float)sprites[index].width;
+            return ret;
+        }
 
-        float yScalingFactor = cast(float)height - cast(float)(sprites[TOP_LEFT].height*2);
-        if(sprites[TOP_LEFT].height != 0)
-            yScalingFactor/= cast(float)sprites[TOP_LEFT].height;
-        else
-            yScalingFactor = 0;
-
-        if(xScalingFactor < 1) xScalingFactor = 1;
-        if(yScalingFactor < 1) yScalingFactor = 1;
-
+        static float getYScalingFactor(ubyte index, HipSprite[] sprites, uint height)
+        {
+            float ret = (height - (sprites[index-3].height + sprites[index+3].height));
+            if(sprites[index].height != 0)
+                ret/= cast(float)sprites[index].height;
+            return ret;
+        }
 
         int spWidth = sprites[TOP_LEFT].width;
         int spHeight = sprites[TOP_LEFT].height;
@@ -138,23 +138,23 @@ class NinePatch
 
         if(stretchStrategy == NinePatchType.SCALED)
         {
-            sprites[TOP_MID].setScale(xScalingFactor, 1);
-            sprites[MID_LEFT].setScale(1, yScalingFactor);
-            sprites[MID_RIGHT].setScale(1, yScalingFactor);
-            sprites[BOT_MID].setScale(xScalingFactor, 1);
+            sprites[TOP_MID].setScale(getXScalingFactor(TOP_MID ,sprites, width), 1);
+            sprites[MID_LEFT].setScale(1, getYScalingFactor(MID_LEFT, sprites, height));
+            sprites[MID_RIGHT].setScale(1, getYScalingFactor(MID_RIGHT, sprites, height));
+            sprites[BOT_MID].setScale(getXScalingFactor(BOT_MID, sprites, width), 1);
 
             //The last one
-            sprites[MID_MID].setScale(xScalingFactor,  yScalingFactor);
+            sprites[MID_MID].setScale(getXScalingFactor(MID_MID, sprites, width),  getYScalingFactor(MID_MID, sprites, height));
         }
         else
         {
-            sprites[TOP_MID].setTiling(xScalingFactor, 1);
-            sprites[MID_LEFT].setTiling(1, yScalingFactor);
-            sprites[MID_RIGHT].setTiling(1, yScalingFactor);
-            sprites[BOT_MID].setTiling(xScalingFactor, 1);
+            sprites[TOP_MID].setTiling(getXScalingFactor(TOP_MID ,sprites, width), 1);
+            sprites[MID_LEFT].setTiling(1, getYScalingFactor(MID_LEFT, sprites, height));
+            sprites[MID_RIGHT].setTiling(1, getYScalingFactor(MID_RIGHT, sprites, height));
+            sprites[BOT_MID].setTiling(getXScalingFactor(BOT_MID, sprites, width), 1);
 
             //The last one
-            sprites[MID_MID].setTiling(xScalingFactor,  yScalingFactor);
+            sprites[MID_MID].setTiling(getXScalingFactor(MID_MID, sprites, width),  getYScalingFactor(MID_MID, sprites, height));
         }
 
         // uint thresholdWidth = spWidth*2;

@@ -154,25 +154,10 @@ class HipSpriteBatch : IHipBatch
             flush();
 
         size_t start = quadsCount*4;
-        version(none) //D way to do it, but it is also slower
-        {
-            size_t end = start + HipSpriteVertex.quadCount;
-            vertices[start..end] = quad;
-            vertices[start+ T1] = slot;
-            vertices[start+ T2] = slot;
-            vertices[start+ T3] = slot;
-            vertices[start+ T4] = slot;
-        }
-        else
-        {
-            import core.stdc.string;
-            HipSpriteVertex* v = cast(HipSpriteVertex*)vertices.ptr + start;
-            memcpy(v, quad.ptr, HipSpriteVertex.sizeof * 4);
-            v[0].vTexID = slot;
-            v[1].vTexID = slot;
-            v[2].vTexID = slot;
-            v[3].vTexID = slot;
-        }
+        import core.stdc.string;
+        HipSpriteVertex* v = cast(HipSpriteVertex*)vertices.ptr + start;
+        memcpy(v, quad.ptr, HipSpriteVertex.sizeof * 4);
+        setTID(v[0..4], slot);
         
         quadsCount++;
     }
@@ -201,20 +186,16 @@ class HipSpriteBatch : IHipBatch
             size_t start = quadsCount*4;
             size_t end = start + quadsToDraw*4;
 
+
             vertices[start..end] = v;
             for(int i = 0; i < quadsToDraw; i++)
-                setTID(vertices[start+i..$], slot);
+                setTID(vertices[start+i*4..$], slot);
 
             v = v[quadsToDraw*4..$];
 
-            if(quadsToDraw + remainingQuads == maxQuads)
-            {
-                flush();
-                this.usingTexturesCount = 1;
-                swapAt(this.currentTextures, 0, slot);//Guarantee the target slot is being used
-            }
-            else
-                this.quadsCount+= quadsToDraw;
+            this.quadsCount+= quadsToDraw;
+
+
             countOfQuads-= quadsToDraw;
         }
     }
@@ -259,10 +240,8 @@ class HipSpriteBatch : IHipBatch
         int slot = setTexture(t);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
 
-        if((cast(HipSpriteVertex[])vertices).length == 4)
-        {
+        if(vertices.length == HipSpriteVertex.sizeof * 4)
             addQuad(vertices, slot);
-        }
         else
             addQuads(vertices, slot);
     }
