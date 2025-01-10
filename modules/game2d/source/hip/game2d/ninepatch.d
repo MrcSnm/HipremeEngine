@@ -2,6 +2,7 @@ module hip.game2d.ninepatch;
 public import hip.api.renderer.texture;
 public import hip.game2d.sprite;
 import hip.game2d.renderer_data;
+import hip.api.data.textureatlas;
 
 enum NinePatchType
 {
@@ -14,7 +15,7 @@ class NinePatch
     uint width, height;
     float x = 0, y = 0;
     float scaleX = 1, scaleY = 1;
-    protected HipSprite[9] sprites;
+     HipSprite[9] sprites;
     protected HipSpriteVertex[9*4] vertices;
     IHipTexture texture;
     NinePatchType stretchStrategy;
@@ -23,7 +24,10 @@ class NinePatch
     {
         texture = tex;
         foreach(i; 0..9)
+        {
             sprites[i] = new HipSprite(tex);
+            sprites[i].setOrigin(0,0);
+        }
         stretchStrategy = t;
     }
 
@@ -34,7 +38,10 @@ class NinePatch
         texture = tex;
         stretchStrategy = type;
         for(int i = 0; i < 9; i++)
+        {
             sprites[i] = new HipSprite(tex);
+            sprites[i].setOrigin(0,0);
+        }
 
         setTextureRegions();
         setSize(width, height);
@@ -266,6 +273,29 @@ class NinePatch
     {
         foreach(HipSprite sp; sprites)
             sp.draw;
+    }
+    /**
+     Creates a NinePatch from the matrix, starting from left to right, top to bottom
+     * Params:
+     *   rects =
+     * Returns:
+     */
+    static NinePatch fromQuads(AtlasRect[9] rects, IHipTexture tex, NinePatchType t = NinePatchType.SCALED)
+    {
+        NinePatch ret = new NinePatch(tex, t);
+
+        AtlasSize sz = AtlasSize(tex.getWidth, tex.getHeight);
+        foreach(i, sp; ret.sprites)
+        {
+            // rects[i].y = sz.height - rects[i].y;
+            sp.width  = cast(uint)rects[i].width;
+            sp.height = cast(uint)rects[i].height;
+            sp.setRegion(rects[i].toQuad(sz));
+        }
+
+
+
+        return ret;
     }
 
 

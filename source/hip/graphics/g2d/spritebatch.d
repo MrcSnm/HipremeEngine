@@ -153,7 +153,7 @@ class HipSpriteBatch : IHipBatch
         if(quadsCount+1 > maxQuads)
             flush();
 
-        size_t start = quadsCount;
+        size_t start = quadsCount*4;
         version(none) //D way to do it, but it is also slower
         {
             size_t end = start + HipSpriteVertex.quadCount;
@@ -166,8 +166,8 @@ class HipSpriteBatch : IHipBatch
         else
         {
             import core.stdc.string;
-            HipSpriteVertex* v = cast(HipSpriteVertex*)vertices.ptr;
-            memcpy(v + start, quad.ptr, HipSpriteVertex.sizeof * 4);
+            HipSpriteVertex* v = cast(HipSpriteVertex*)vertices.ptr + start;
+            memcpy(v, quad.ptr, HipSpriteVertex.sizeof * 4);
             v[0].vTexID = slot;
             v[1].vTexID = slot;
             v[2].vTexID = slot;
@@ -197,18 +197,15 @@ class HipSpriteBatch : IHipBatch
             }
             size_t quadsToDraw = (countOfQuads < remainingQuads) ? countOfQuads : remainingQuads;
 
+
             size_t start = quadsCount*4;
             size_t end = start + quadsToDraw*4;
 
             vertices[start..end] = v;
             for(int i = 0; i < quadsToDraw; i++)
-            {
-                vertices[start + i].vTexID = slot;
-                vertices[start + i+1].vTexID = slot;
-                vertices[start + i+2].vTexID = slot;
-                vertices[start + i+3].vTexID = slot;
-            }
-            v = v[quadsToDraw..$];
+                setTID(vertices[start+i..$], slot);
+
+            v = v[quadsToDraw*4..$];
 
             if(quadsToDraw + remainingQuads == maxQuads)
             {
@@ -262,8 +259,10 @@ class HipSpriteBatch : IHipBatch
         int slot = setTexture(t);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
 
-        if(vertices.length == HipSpriteVertex.quadCount)
+        if((cast(HipSpriteVertex[])vertices).length == 4)
+        {
             addQuad(vertices, slot);
+        }
         else
             addQuads(vertices, slot);
     }

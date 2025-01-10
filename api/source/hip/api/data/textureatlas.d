@@ -24,7 +24,7 @@ struct AtlasRect
             x / size.width,
             y / size.height,
             (x+width) / size.width,
-            (x+height) / size.height
+            (y+height) / size.height
         );
     }
 

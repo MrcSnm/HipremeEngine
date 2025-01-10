@@ -101,6 +101,9 @@ class HipSprite
     float tilingX = 1, tilingY = 1;
     float scaleX = 1, scaleY = 1;
 
+    ///Origin is a point that defines that offsets the rendering origin X and Y based on the sprite size
+    float originX = 0.5, originY = 0.5;
+
     float u1 = 0, v1 = 0, u2 = 0, v2 = 0;
 
     ///Width of the texture region, (u2-u1) * texture.width
@@ -212,31 +215,17 @@ class HipSprite
 
     void setPosition(float x, float y)
     {
+        if(this.x != x || this.y != y)
+            isDirty = true;
         this.x = x;
         this.y = y;
-
-        if(isDirty)return;
-
-        if(rotation != 0 || scaleX != 1 || scaleY != 1)
-        {
+    }
+    void setOrigin(float x, float y)
+    {
+        if(originX != x || originY != y)
             isDirty = true;
-            return;
-        }
-
-        float x2 = x+width;
-        float y2 = y+height;
-
-        //Top left
-        vertices[0].vPosition = Vector3(x, y,0);
-
-        //Top right
-        vertices[1].vPosition = Vector3(x2, y,0);
-
-        //Bot right
-        vertices[2].vPosition = Vector3(x2, y2,0);
-
-        //Bot left
-        vertices[3].vPosition = Vector3(x, y2,0);
+        originX = x;
+        originY = y;
     }
 
     ref HipSpriteVertex[] getVertices()
@@ -244,8 +233,8 @@ class HipSprite
         if(isDirty)
         {
             isDirty = false;
-            float _x = -cast(float)width/2 * scaleX;
-            float _y = -cast(float)height/2 * scaleY;
+            float _x = -cast(float)width*originX * scaleX;
+            float _y = -cast(float)height*originY * scaleY;
             float x2 = _x+(width * scaleX);
             float y2 = _y+(height * scaleY); 
             if(rotation == 0)
