@@ -20,7 +20,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		cached(() => timed(t, submoduleLoader.execute(t, input))),
 		putResourcesIn(t, getHipPath("build", "wasm", "build", "assets")),
 		generateDirectoriesJSON(
-			getHipPath("build", "release_game", "assets"),
+			configs["gamePath"].str,
 			getHipPath("build", "wasm", "generated")
 		),
 		//The template may not be present
