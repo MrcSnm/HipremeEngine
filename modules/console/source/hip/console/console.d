@@ -104,11 +104,12 @@ class Console
                 version(Android)
                 {
                     import hip.jni.helper.androidlog; 
-                    _log   = function(string s){alogi(androidTag, (s~"\0").ptr);};
+                    alias fnType = @nogc void function(string);
+                    _log   = cast(fnType)function(string s){alogi(androidTag, (s~"\0").ptr);};
                     _info = _log;
-                    _warn  = function(string s){alogw(androidTag, (s~"\0").ptr);};
-                    _err   = function(string s){aloge(androidTag, (s~"\0").ptr);};
-                    _fatal = function(string s){alogf(androidTag, (s~"\0").ptr);};
+                    _warn  = cast(fnType)function(string s){alogw(androidTag, (s~"\0").ptr);};
+                    _err   = cast(fnType)function(string s){aloge(androidTag, (s~"\0").ptr);};
+                    _fatal = cast(fnType)function(string s){alogf(androidTag, (s~"\0").ptr);};
                 }
                 break;  
             case PSVITA:

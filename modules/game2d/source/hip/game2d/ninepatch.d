@@ -94,6 +94,7 @@ class NinePatch
         setTextureRegions(0, 0, sprites[0].getTextureWidth, sprites[0].getTextureHeight);
     }
 
+
     void build()
     {
         static float getXScalingFactor(ubyte index, HipSprite[] sprites, uint width)
@@ -111,15 +112,37 @@ class NinePatch
                 ret/= cast(float)sprites[index].height;
             return ret;
         }
+        /**
+         * Receives the _LEFT part to calculate the scale.
+         * This scale is used whenever there is a need of scale being less than 1
+         * Params:
+         *   index =
+         *   sprites =
+         *   width =
+         * Returns:
+         */
+        static float getSingleXScaling(ubyte index, HipSprite[] sprites, uint width)
+        {
+            if(width < sprites[index].width + sprites[index+2].width)
+                return cast(float)width / (sprites[index].width + sprites[index+2].width);
+            return 1;
+        }
+        static float getSingleYScaling(ubyte index, HipSprite[] sprites, uint height)
+        {
+            if(height < sprites[index].height + sprites[index+6].height)
+                return cast(float)height / (sprites[index].height + sprites[index+6].height);
+            return 1;
+        }
+
+        float scaleXTop = getSingleXScaling(TOP_LEFT, sprites, width);
+        float scaleYTop = getSingleYScaling(TOP_LEFT, sprites, height);
+
 
         int spWidth = sprites[TOP_LEFT].width;
         int spHeight = sprites[TOP_LEFT].height;
 
-        int px2 = width-spWidth;
-        if(px2 < spWidth) px2 = spWidth;
-
-        int py2 = height-spHeight;
-        if(py2 < spHeight) py2 = spHeight;
+        int px2 = cast(int)(width-spWidth*scaleXTop);
+        int py2 = cast(int)(height-spHeight*scaleYTop);
 
 
         //First, take care of those which don't scale.
@@ -127,6 +150,12 @@ class NinePatch
         sprites[TOP_RIGHT].setPosition(x + px2, y);
         sprites[BOT_LEFT].setPosition(x, y + py2);
         sprites[BOT_RIGHT].setPosition(x + px2, y + py2);
+
+        ///Those scales may only change whenever they are actually smaller than a scalable size
+        sprites[TOP_LEFT].setScale(scaleXTop, scaleYTop);
+        sprites[TOP_RIGHT].setScale(scaleXTop, scaleYTop);
+        sprites[BOT_LEFT].setScale(scaleXTop, scaleYTop);
+        sprites[BOT_RIGHT].setScale(scaleXTop, scaleYTop);
 
         //Now, those which scales in only one direction
         sprites[TOP_MID].setPosition(x+spWidth, y);
@@ -136,22 +165,23 @@ class NinePatch
         sprites[MID_MID].setPosition(spWidth+x, spHeight+y);
 
 
+
         if(stretchStrategy == NinePatchType.SCALED)
         {
-            sprites[TOP_MID].setScale(getXScalingFactor(TOP_MID ,sprites, width), 1);
-            sprites[MID_LEFT].setScale(1, getYScalingFactor(MID_LEFT, sprites, height));
-            sprites[MID_RIGHT].setScale(1, getYScalingFactor(MID_RIGHT, sprites, height));
-            sprites[BOT_MID].setScale(getXScalingFactor(BOT_MID, sprites, width), 1);
+            sprites[TOP_MID].setScale(getXScalingFactor(TOP_MID ,sprites, width), scaleYTop);
+            sprites[MID_LEFT].setScale(scaleXTop, getYScalingFactor(MID_LEFT, sprites, height));
+            sprites[MID_RIGHT].setScale(scaleXTop, getYScalingFactor(MID_RIGHT, sprites, height));
+            sprites[BOT_MID].setScale(getXScalingFactor(BOT_MID, sprites, width), scaleYTop);
 
             //The last one
             sprites[MID_MID].setScale(getXScalingFactor(MID_MID, sprites, width),  getYScalingFactor(MID_MID, sprites, height));
         }
         else
         {
-            sprites[TOP_MID].setTiling(getXScalingFactor(TOP_MID ,sprites, width), 1);
-            sprites[MID_LEFT].setTiling(1, getYScalingFactor(MID_LEFT, sprites, height));
-            sprites[MID_RIGHT].setTiling(1, getYScalingFactor(MID_RIGHT, sprites, height));
-            sprites[BOT_MID].setTiling(getXScalingFactor(BOT_MID, sprites, width), 1);
+            sprites[TOP_MID].setTiling(getXScalingFactor(TOP_MID ,sprites, width), scaleYTop);
+            sprites[MID_LEFT].setTiling(scaleXTop, getYScalingFactor(MID_LEFT, sprites, height));
+            sprites[MID_RIGHT].setTiling(scaleXTop, getYScalingFactor(MID_RIGHT, sprites, height));
+            sprites[BOT_MID].setTiling(getXScalingFactor(BOT_MID, sprites, width), scaleYTop);
 
             //The last one
             sprites[MID_MID].setTiling(getXScalingFactor(MID_MID, sprites, width),  getYScalingFactor(MID_MID, sprites, height));

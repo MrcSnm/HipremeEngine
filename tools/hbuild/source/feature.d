@@ -125,7 +125,7 @@ struct Task(alias Fn)
             throw new Error("Your task has no dependency. Maybe you forgot to include it in the mixin StartFeatures! list?");
         foreach(dep; dependencies)
         {
-            if(!dep.getFeature(args[0], args[1], dep.supportedVersion.max))
+            if(!dep.getFeature(args[0], args[1]))
                 throw new Exception("Could not get the feature named '"~dep.name~"' for executing the task.");
         }
         return fn(dependencies, args);
