@@ -307,10 +307,14 @@ class NinePatch
     /**
      Creates a NinePatch from the matrix, starting from left to right, top to bottom
      * Params:
-     *   rects =
+     *   rects = The rects that defines the sprite regions
+     *   tex = The texture being used as a reference to the regions
+     *   width = The width of the resulting nine patch
+     *   height = The height of the resulting nine patch
+     *   t = The scaling type
      * Returns:
      */
-    static NinePatch fromQuads(AtlasRect[9] rects, IHipTexture tex, NinePatchType t = NinePatchType.SCALED)
+    static NinePatch fromQuads(AtlasRect[9] rects, IHipTexture tex, int width, int height, NinePatchType t = NinePatchType.SCALED)
     {
         NinePatch ret = new NinePatch(tex, t);
 
@@ -323,8 +327,7 @@ class NinePatch
             sp.setRegion(rects[i].toQuad(sz));
         }
 
-
-
+        ret.setSize(width, height);
         return ret;
     }
 

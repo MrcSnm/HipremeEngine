@@ -3,6 +3,8 @@ module hip.game2d.threepatch;
 public import hip.api.renderer.texture;
 public import hip.game2d.sprite;
 import hip.game2d.renderer_data;
+import hip.api.data.textureatlas;
+import std.concurrency;
 
 enum ThreePatchOrientation
 {
@@ -12,39 +14,32 @@ enum ThreePatchOrientation
 }
 
 
-class ThreePatch
+final class ThreePatch
 {
     int x, y;
     int width, height;
     HipSpriteVertex[4*3] vertices;
     HipSprite[3] sprites;
-    ThreePatchOrientation orientation;
-    ThreePatchOrientation inferredOrientation = ThreePatchOrientation.inferred;
+    protected ThreePatchOrientation orientation = ThreePatchOrientation.inferred;
 
-    this(string texturePath, ThreePatchOrientation orientation = ThreePatchOrientation.inferred)
+    protected this(IHipTexture tex, ThreePatchOrientation o)
     {
-        import hip.api;
-        this(HipAssetManager.loadTexture(texturePath).awaitAs!IHipTexture, width, height, orientation);
+        foreach(i; 0..3)
+        {
+            sprites[i] = new HipSprite(tex);
+            sprites[i].setOrigin(0,0);
+        }
+        this.orientation = o == ThreePatchOrientation.inferred ? infer(tex) : o;
     }
-    this(IHipTexture texture, int width, int height, ThreePatchOrientation orientation = ThreePatchOrientation.inferred)
-    {
-        for(int i = 0; i < 3; i++)
-            sprites[i] = new HipSprite(texture);
 
-        this.orientation = orientation;
-        this.inferredOrientation = infer(width, height);
-        setSize(width, height);
-    }
     pragma(inline) ThreePatchOrientation getOrientation()
     {
-        if(orientation == ThreePatchOrientation.inferred)
-            return inferredOrientation;
         return orientation;
     }
     void setOrientation(ThreePatchOrientation ori = ThreePatchOrientation.horizontal)
     {
-        if(orientation == ThreePatchOrientation.inferred)
-            return setOrientation(inferredOrientation);
+        if(ori == ThreePatchOrientation.inferred)
+            ori = infer(this.sprites[0].getTexture);
         if(ori != orientation)
         {
             orientation = ori;
@@ -52,26 +47,67 @@ class ThreePatch
         }
     }
 
+    /**
+     *
+     * Params:
+     *   rects = The regions that is used as reference for this three patch
+     *   tex = Texture reference for the regions
+     *   width = Width of the resulting threepatch
+     *   height = Height of the resulting threepatch
+     *   o = Orientation of the threepatch, default is inferred.
+     * Returns:
+     */
+    static ThreePatch fromQuads(AtlasRect[3] rects, IHipTexture tex, int width, int height,  ThreePatchOrientation o = ThreePatchOrientation.inferred)
+    {
+        ThreePatch t = new ThreePatch(tex, o);
+        AtlasSize sz = AtlasSize(tex.getWidth, tex.getHeight);
+        foreach(i; 0..3)
+            t.sprites[i].setRegion(rects[i].toQuad(sz));
+        t.setSize(width, height);
+        return t;
+    }
+
+    /**
+     *
+     * Params:
+     *   tex = Takes a texture, divide it into 3 [depending on orientation], and assemble the threepatch
+     *   width = Width of the resulting texture
+     *   height = Height of the resulting texture
+     *   o = Orientation of the threepatch, default is inferred.
+     * Returns:
+     */
+    static ThreePatch fromTexture(IHipTexture tex, int width, int height, ThreePatchOrientation o = ThreePatchOrientation.inferred)
+    {
+        ThreePatch ret = new ThreePatch(tex, o);
+
+        int w = tex.getWidth;
+        int h = tex.getHeight;
+
+        if(o == ThreePatchOrientation.inferred)
+            o = w >= h ? ThreePatchOrientation.horizontal : ThreePatchOrientation.vertical;
+
+        if(o == ThreePatchOrientation.horizontal)
+        {
+            float rw = cast(float)w/3;
+            ret.sprites[0].setRegion(0, 0, rw, 1.0);
+            ret.sprites[1].setRegion(rw, 0, rw*2, 1.0);
+            ret.sprites[2].setRegion(rw*2, 0, rw*3, 1.0);
+        }
+        else
+        {
+            float rh = cast(float)h/3;
+            ret.sprites[0].setRegion(0, 0, rh, 1.0);
+            ret.sprites[1].setRegion(rh, 0, rh*2, 1.0);
+            ret.sprites[2].setRegion(rh*2, 0, rh*3, 1.0);
+        }
+        ret.setSize(width, height);
+        return ret;
+    }
+
     void setSize(int width, int height)
     {
         this.width = width;
         this.height = height;
-
-        
-        if(getOrientation == ThreePatchOrientation.horizontal)
-        {
-            float rw = sprites[0].getTextureWidth/3;
-            sprites[0].setRegion(0, 0, rw, 1.0);
-            sprites[1].setRegion(rw, 0, rw*2, 1.0);
-            sprites[2].setRegion(rw*2, 0, rw*3, 1.0);
-        }
-        else
-        {
-            float rh = sprites[0].getTextureHeight/3;
-            sprites[0].setRegion(0, 0, rh, 1.0);
-            sprites[1].setRegion(rh, 0, rh*2, 1.0);
-            sprites[2].setRegion(rh*2, 0, rh*3, 1.0);
-        }
         build();
     }
 
@@ -79,56 +115,52 @@ class ThreePatch
     {
         if(getOrientation == ThreePatchOrientation.horizontal)
         {
-            int spWidth = sprites[0].width;
             sprites[0].setPosition(x, y);
-            sprites[1].setPosition(x+spWidth, y);
-            sprites[2].setPosition(x+width-(spWidth*2), y);
+            sprites[1].setPosition(x+sprites[0].width, y);
+            sprites[2].setPosition(x+width - (sprites[2].width),  y);
         }
         else
         {
-            int spHeight = sprites[0].height;
             sprites[0].setPosition(x, y);
-            sprites[1].setPosition(x, y+spHeight);
-            sprites[2].setPosition(x, y+height-(spHeight*2));
+            sprites[1].setPosition(x, y + sprites[0].getHeight);
+            sprites[2].setPosition(x, y + height - sprites[2].height);
         }
     }
 
     void build()
     {
+        import hip.api;
+        updatePosition();
         if(getOrientation == ThreePatchOrientation.horizontal)
         {
-            int spWidth = sprites[0].width;
-            float xScalingFactor = width-(spWidth*2);
-            if(spWidth != 0)
-                xScalingFactor/= spWidth;
-            else
-                xScalingFactor = 0;
-
-            sprites[0].setPosition(x, y);
-            sprites[1].setPosition(x+spWidth, y);
+            int spWidth = sprites[0].getWidth+sprites[2].getWidth;
+            float xScalingFactor = cast(float)(width - spWidth) / sprites[1].getWidth;
             sprites[1].setScale(xScalingFactor, 1);
-            sprites[2].setPosition(x+width-(spWidth*2), y);
         }
         else
         {
-            int spHeight = sprites[0].height;
-            float yScalingFactor = height-(spHeight*2);
-            if(spHeight != 0)
-                yScalingFactor/= spHeight;
-            else
-                yScalingFactor = 0;
+            int spHeight = sprites[0].getHeight+sprites[2].getHeight;
+            float yScalingFactor = cast(float)(height - spHeight) / sprites[1].getHeight;
 
-            sprites[0].setPosition(x, y);
-            sprites[1].setPosition(x, y+spHeight);
             sprites[1].setScale(1, yScalingFactor);
-            sprites[2].setPosition(x, y+height-(spHeight*2));
         }
+
+
+    }
+
+    void draw()
+    {
+        import hip.api;
+        foreach(sp; sprites)
+            sp.draw;
     }
 
     
 
     void setPosition(int x, int y)
     {
+        this.x = x;
+        this.y = y;
         updatePosition();
     }
 
@@ -137,6 +169,7 @@ class ThreePatch
 }
 
 private ThreePatchOrientation infer(int width, int height){return width > height ? ThreePatchOrientation.horizontal : ThreePatchOrientation.vertical;}
+private ThreePatchOrientation infer(const IHipTexture tex){return tex.getWidth > tex.getHeight ? ThreePatchOrientation.horizontal : ThreePatchOrientation.vertical;}
 
 
 /**

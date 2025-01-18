@@ -88,7 +88,7 @@ struct ShaderVar
 
     bool isDirty = true;
 
-    private ShaderHint flags;
+    ShaderHint flags;
     public bool isBlackboxed() const { return (flags & ShaderHint.Blackbox) != 0;}
     public bool usesMaxTextures() const { return (flags & ShaderHint.MaxTextures) != 0;}
 
@@ -275,6 +275,8 @@ class ShaderVariablesLayout
     private string[] namesOrder;
     private string[] unusedBlackboxed;
     string name;
+    ///char* representation of name
+    const(char)* nameZeroEnded;
     ShaderTypes shaderType;
     protected IShader owner;
 
@@ -312,6 +314,7 @@ class ShaderVariablesLayout
     {
         import core.stdc.stdlib:malloc;
         this.name = layoutName;
+        this.nameZeroEnded = (layoutName~"\0").ptr;
         this.shaderType = t;
         this.hint = hint;
 
@@ -346,6 +349,11 @@ class ShaderVariablesLayout
         data = malloc(getLayoutSize());
         if(data == null)
             throw new Exception("Out of memory");
+    }
+
+    const(char)* nameStringz() const
+    {
+        return this.nameZeroEnded;
     }
 
     static ShaderVariablesLayout from(T)(HipRendererInfo info)
@@ -427,8 +435,14 @@ class ShaderVariablesLayout
         if(isLocked)
             throw new Exception("Can't append ShaderVariable after it has been locked");
         variables[varName] = ShaderVarLayout(v, 0, 0);
+        assert(varName in variables, "Could not set into variables?");
+        assert(variables[varName].sVar == v, "Could not set into variables?");
         namesOrder~= varName;
         calcAlignment();
+
+        // import std.stdio; //FIXME: PROBLEM ON WASM
+        // writeln("Created var ", varName, " with hints ", cast(int)v.flags);
+
         this.data = realloc(this.data, getLayoutSize());
         if(!this.data)
             throw new Exception("Out of memory");
@@ -455,9 +469,13 @@ class ShaderVariablesLayout
             unusedBlackboxed~= varName;
             return this;
         }
+
         ShaderVar* sV = ShaderVar.createEmpty(this.shaderType, varName, t, uSize*count, uSize);
+        if((extraFlags & ShaderHint.MaxTextures) != 0)
+            sV.isDirty = true;
         sV.flags|= extraFlags;
         sV.flags|= ShaderHint.Blackbox;
+
         return append(varName, sV);
     }
     /**

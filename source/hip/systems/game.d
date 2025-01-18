@@ -73,6 +73,7 @@ class GameSystem
         protected static HotloadableDLL hotload;
     }
     bool hasFinished;
+    bool isInUpdate;
     float fps = 0;
     float targetFPS = 0;
     float fpsAccumulator = 0;
@@ -81,7 +82,7 @@ class GameSystem
     this(float targetFPS)
     {
         this.targetFPS = targetFPS;
-        dispatcher = new EventDispatcher(HipRenderer.window);
+        dispatcher = new EventDispatcher(HipRenderer.window, &this.isInUpdate);
         dispatcher.addOnResizeListener((uint width, uint height)
         {
             HipRenderer.width  = width;
@@ -261,6 +262,7 @@ class GameSystem
     bool update(float deltaTime)
     {
         import hip.assetmanager;
+        isInUpdate = true;
         frames++;
         fpsAccumulator+= deltaTime;
         if(shouldResetDelta)
@@ -344,6 +346,7 @@ class GameSystem
     void postUpdate()
     {
         dispatcher.postUpdate();
+        isInUpdate = false;
     }
     
     void quit()

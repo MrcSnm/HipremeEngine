@@ -303,11 +303,11 @@ class Hip_D3D11_ShaderImpl : IShader
             final switch(l.shaderType)
             {
                 case ShaderTypes.FRAGMENT:
-                    p.pReflector.GetResourceBindingDescByName((l.name~"\0").ptr, &desc);
+                    p.pReflector.GetResourceBindingDescByName(l.nameStringz, &desc);
                     _hip_d3d_context.PSSetConstantBuffers(desc.BindPoint, 1, &data.buffer);
                     break;
                 case ShaderTypes.VERTEX:
-                    p.vReflector.GetResourceBindingDescByName((l.name~"\0").ptr, &desc);
+                    p.vReflector.GetResourceBindingDescByName(l.nameStringz, &desc);
                     _hip_d3d_context.VSSetConstantBuffers(desc.BindPoint, 1, &data.buffer);
                     break;
                 case ShaderTypes.GEOMETRY:

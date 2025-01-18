@@ -41,11 +41,13 @@ class EventDispatcher
     KeyboardHandler keyboard = null;
     HipMouse mouse = null;
     HipWindow window;
+    bool* isInUpdate;
     protected void delegate(uint width, uint height)[] resizeListeners;
 
-    this(HipWindow window)
+    this(HipWindow window, bool* isInUpdate)
     {
         this.window = window;
+        this.isInUpdate = isInUpdate;
         keyboard = new KeyboardHandler();
         mouse = new HipMouse();
         HipEventQueue.newController(); //Creates controller 0
@@ -100,6 +102,17 @@ class EventDispatcher
     }
     
     bool hasQuit = false;
+
+    final void errUpdateOnly(string name)
+    {
+        // debug
+        {
+            import hip.console.log;
+            bool inUpdate = *isInUpdate;
+            if(!inUpdate)
+                loglnError("API ", name, " can only be used inside update()");
+        }
+    }
 
     void handleEvent()
     {
@@ -187,17 +200,53 @@ class EventDispatcher
     ///Public API
     Vector2 getTouchPosition(uint id = 0){return mouse.getPosition(id);}
     Vector2 getTouchDeltaPosition(uint id = 0){return mouse.getDeltaPosition(id);}
-    ubyte getMulticlickCount(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.getMulticlickCount(btn);}
-    bool isDoubleClicked(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.isDoubleClicked(btn);}
-    bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.isPressed(btn);}
-    bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.isJustPressed(btn);}
-    bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.any, uint id = 0){return mouse.isJustReleased(btn);}
+    ubyte getMulticlickCount(HipMouseButton btn = HipMouseButton.any, uint id = 0)
+    {
+        errUpdateOnly("getMulticlickCount");
+        return mouse.getMulticlickCount(btn);
+    }
+    bool isDoubleClicked(HipMouseButton btn = HipMouseButton.any, uint id = 0)
+    {
+        errUpdateOnly("isDoubleClicked");
+        return mouse.isDoubleClicked(btn);
+    }
+    bool isMouseButtonPressed(HipMouseButton btn = HipMouseButton.any, uint id = 0)
+    {
+        errUpdateOnly("isMouseButtonPressed");
+        return mouse.isPressed(btn);
+    }
+    bool isMouseButtonJustPressed(HipMouseButton btn = HipMouseButton.any, uint id = 0)
+    {
+        errUpdateOnly("isMouseButtonJustPressed");
+        return mouse.isJustPressed(btn);
+    }
+    bool isMouseButtonJustReleased(HipMouseButton btn = HipMouseButton.any, uint id = 0)
+    {
+        errUpdateOnly("isMouseButtonJustReleased");
+        return mouse.isJustReleased(btn);
+    }
     Vector3 getScroll(){return mouse.getScroll();}
     bool isKeyPressed(char key, uint id = 0){return keyboard.isKeyPressed(key.toUppercase);}
-    bool isKeyJustPressed(char key, uint id = 0){return keyboard.isKeyJustPressed(key.toUppercase);}
-    bool isKeyJustReleased(char key, uint id = 0){return keyboard.isKeyJustReleased(key.toUppercase);}
-    float getKeyDownTime(char key, uint id = 0){return keyboard.getKeyDownTime(key.toUppercase);}
-    float getKeyUpTime(char key, uint id = 0){return keyboard.getKeyUpTime(key.toUppercase);}
+    bool isKeyJustPressed(char key, uint id = 0)
+    {
+        errUpdateOnly("isKeyJustPressed");
+        return keyboard.isKeyJustPressed(key.toUppercase);
+    }
+    bool isKeyJustReleased(char key, uint id = 0)
+    {
+        errUpdateOnly("isKeyJustReleased");
+        return keyboard.isKeyJustReleased(key.toUppercase);
+    }
+    float getKeyDownTime(char key, uint id = 0)
+    {
+        errUpdateOnly("getKeyDownTime");
+        return keyboard.getKeyDownTime(key.toUppercase);
+    }
+    float getKeyUpTime(char key, uint id = 0)
+    {
+        errUpdateOnly("getKeyUpTime");
+        return keyboard.getKeyUpTime(key.toUppercase);
+    }
     ubyte getGamepadCount(){return cast(ubyte)gamepads.length;}
     AHipGamepad getGamepad(ubyte id)
     {
@@ -217,27 +266,32 @@ class EventDispatcher
     bool isGamepadButtonJustPressed(HipGamepadButton btn, ubyte id = 0)
     {
         if(id >= gamepads.length) return false;
+        errUpdateOnly("isGamepadButtonJustPressed");
         return gamepads[id].isButtonJustPressed(btn);
     }
     bool isGamepadButtonJustReleased(HipGamepadButton btn, ubyte id = 0)
     {
         if(id >= gamepads.length) return false;
+        errUpdateOnly("isGamepadButtonJustReleased");
         return gamepads[id].isButtonJustReleased(btn);
     }
 
     bool areGamepadButtonsPressed(scope HipGamepadButton[] btns, ubyte id = 0)
     {
         if(id >= gamepads.length) return false;
+        errUpdateOnly("areGamepadButtonsPressed");
         return gamepads[id].areButtonsPressed(btns);
     }
     bool areGamepadButtonsJustPressed(scope HipGamepadButton[] btns, ubyte id = 0)
     {
         if(id >= gamepads.length) return false;
+        errUpdateOnly("areGamepadButtonsJustPressed");
         return gamepads[id].areButtonsJustPressed(btns);
     }
     bool areGamepadButtonsJustReleased(scope HipGamepadButton[] btns, ubyte id = 0)
     {
         if(id >= gamepads.length) return false;
+        errUpdateOnly("areGamepadButtonsJustReleased");
         return gamepads[id].areButtonsJustReleased(btns);
     }
     
@@ -740,3 +794,4 @@ else version(PSVita)
     public HipKey getHipKeyFromSystem(uint key){return HipKey._0;}
 }
 else public HipKey getHipKeyFromSystem(uint key){return HipKey._0;}
+

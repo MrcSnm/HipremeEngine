@@ -226,7 +226,7 @@ struct String
         {
             *countPtr = *countPtr - 1;
             assert(*countPtr >= 0);
-            if(*countPtr == 0 && chars != null)
+            if(*countPtr == 0)
             {
                 free(chars.ptr);
                 free(countPtr);

@@ -194,7 +194,10 @@ class HipSprite
         this.u2 = c.u2;
         this.v1 = c.v1;
         this.v2 = c.v2;
+
         texture.setRegion(c.u1, c.v1, c.u2, c.v2);
+        width = texture.getWidth;
+        height = texture.getHeight;
         const float[] v = texture.getVertices();
 
         vertices[0].vTexST = Vector2(v[0], v[1]);
