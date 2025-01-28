@@ -5,7 +5,7 @@
 	"copyright": "Copyright © 2023, Hipreme",
 	"dependencies": {
 		"arsd-official:terminal": "~>11.5.0",
-		"redub": "~>1.20.0",
+		"redub": "~>1.20.1",
 		"handy-httpd": "~>8.4.3",
 		"archive": "~>0.7.1",
 		"wasm-sourcemaps": {"repository": "git+https://github.com/MrcSnm/wasm-sourcemaps", "version": "69e6c80"}

@@ -4,8 +4,8 @@ import core.stdc.stdio;
 version(WebAssembly)
 {
     import arsd.webassembly;
-    extern(C) void jsprint(uint length, const(char)* str);
-    void writeln(Args...)(Args args)
+    extern(C) void jsprint(uint length, const(char)* str) @nogc nothrow;
+    void writeln(Args...)(Args args) nothrow @nogc
     {
         static if(args.length == 1 && is(typeof(args[0]) == string))
         {
@@ -13,18 +13,18 @@ version(WebAssembly)
         }
         else
         {
-            version(Have_util)
-            {
-                import hip.util.string;
-                String s = String(args);
-                jsprint(s.length, s.chars.ptr);
-            }
-            else
-            {
+            // version(Have_util)
+            // {
+            //     import hip.util.string;
+            //     String s = String(args);
+            //     jsprint(s.length, s.chars.ptr);
+            // }
+            // else
+            // {
                 eval(q{
                 console.log.apply(null, arguments);
                 }, args);
-            }
+            // }
         }
     }
 }

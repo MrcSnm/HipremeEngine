@@ -103,11 +103,11 @@ string generateDubProject(DubProjectInfo info)
 	"stringImportPaths": ["#PROJECT/ct_assets"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
 	"plugins": {
-		"getmodules": "#HIPREME_ENGINE/tools/internal/plugin/getmodules"
+		"getmodules": "#HIPREME_ENGINE/tools/internal/plugins/getmodules"
 	},
-	"preBuildPlugins": [
+	"preBuildPlugins": {
 		"getmodules": ["#PROJECT/ct_assets/scriptmodules.txt"]
-	],
+	},
 	"configurations":
 	[
 		{
