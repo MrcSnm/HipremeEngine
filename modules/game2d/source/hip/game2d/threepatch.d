@@ -4,7 +4,6 @@ public import hip.api.renderer.texture;
 public import hip.game2d.sprite;
 import hip.game2d.renderer_data;
 import hip.api.data.textureatlas;
-import std.concurrency;
 
 enum ThreePatchOrientation
 {

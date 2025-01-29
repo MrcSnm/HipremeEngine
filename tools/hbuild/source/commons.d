@@ -873,26 +873,30 @@ string getDubPath()
 	return dub;
 }
 
-private int execDubBase(ref Terminal t, in DubArguments dArgs)
+bool writeTemplate(ref Terminal t, string projectPath, string enginePath)
 {
 	import std.conv:to;
+	import template_processor;
+	string out_DubFile;
+	auto res = processTemplate(projectPath, enginePath, out_DubFile);
+	if(res != TemplateProcessorResult.success)
+	{
+		t.writelnError(res.to!string, ":", out_DubFile);
+		return false;
+	}
+	try std.file.write(buildNormalizedPath(projectPath, "dub.json"), out_DubFile);
+	catch(Exception e){
+		t.writelnError("Could not write dub.json");
+		return false;
+	}
+	return true;
+}
+
+private int execDubBase(ref Terminal t, in DubArguments dArgs)
+{
 	if(absolutePath(configs["hipremeEnginePath"].str) != absolutePath(std.file.getcwd()))
 	if(std.file.exists("dub.template.json"))
-	{
-		import template_processor;
-		string out_DubFile;
-		auto res = processTemplate(std.file.getcwd(), configs["hipremeEnginePath"].str, out_DubFile);
-		if(res != TemplateProcessorResult.success)
-		{
-			t.writelnError(res.to!string, ":", out_DubFile);
-			return -1;
-		}
-		try std.file.write("dub.json", out_DubFile);
-		catch(Exception e){
-			t.writelnError("Could not write dub.json");
-			return -1;
-		}
-	}
+		return writeTemplate(t, std.file.getcwd(), configs["hipremeEnginePath"].str) ? 0 : -1;
 	return 0;
 }
 

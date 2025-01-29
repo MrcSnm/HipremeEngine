@@ -98,7 +98,8 @@ string generateDubProject(DubProjectInfo info)
 		"timer",
 		"tween",
 		"data",
-		"math"
+		"math",
+		"game2d"
 	],
 	"stringImportPaths": ["#PROJECT/ct_assets"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
@@ -114,45 +115,53 @@ string generateDubProject(DubProjectInfo info)
 			"name" : "script",
 			"targetType": "dynamicLibrary",
 			"dflags-ldc": ["-link-defaultlib-shared=true"],
-			"linkedDependencies": {"hipengine_api": {"path": "#HIPREME_ENGINE/api"}},
-			"lflags-windows": ["/WX"],
-			"versions": ["ScriptAPI"]
+			"dependencies": {
+				"hipengine_api": {"path": "#HIPREME_ENGINE/api"}
+			},
+			"lflags-windows-ldc": [
+                "/WHOLEARCHIVE:hipengine_api_bindings",
+                "/WHOLEARCHIVE:hipengine_api_interfaces"
+            ],
+			"versions": ["ScriptAPI"],
+			"lflags-windows": ["/WX"]
 		},
 		{
 			"name": "release",
-			"targetType": "staticLibrary",
-			"dependencies": {"hipengine_api:direct": {"path": "#HIPREME_ENGINE/api"}}
+			"targetType": "staticLibrary"
 		},
 		{
 			"name": "release-wasm",
 			"targetType": "executable",
-			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"} },
-			"subConfigurations": {"game2d": "direct", "hipreme_engine": "wasm"}
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {
+				"hipreme_engine": "wasm",
+				"game2d": "direct"
+			}
 		},
 		{
 			"name": "appleos",
 			"targetType": "staticLibrary",
 			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
-			"subConfigurations": {"game2d": "direct", "hipreme_engine": "appleos"}
+			"subConfigurations": {"hipreme_engine": "appleos", "game2d": "direct"}
 		},
 		{
 			"name": "ios",
 			"targetType": "staticLibrary",
 			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
-			"subConfigurations": {"game2d": "direct", "hipreme_engine": "ios"}
+			"subConfigurations": {"hipreme_engine": "ios", "game2d": "direct"}
 		},
 		{
 			"name": "android",
 			"targetType": "dynamicLibrary",
 			"dependencies": { "hipreme_engine": {"path": "#HIPREME_ENGINE"} },
-			"subConfigurations": {"game2d": "direct", "hipreme_engine": "android"}
+			"subConfigurations": {"hipreme_engine": "android", "game2d": "direct"}
 		},
 		{
 			"name": "uwp",
 			"dflags-ldc": ["-link-defaultlib-shared=true"],
 			"targetType": "dynamicLibrary",
 			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
-			"subConfigurations": {"game2d": "direct", "hipreme_engine": "uwp"}
+			"subConfigurations": {"hipreme_engine": "uwp", "game2d": "direct"}
 		},
 		{
 			"name": "run",
@@ -160,8 +169,8 @@ string generateDubProject(DubProjectInfo info)
 			"lflags-windows": [
 				"/WX"
 			],
-			"postGenerateCommands-windows": ["cd /d #HIPREME_ENGINE && dub -c script -- $PACKAGE_DIR"],
-			"postGenerateCommands-linux": ["cd #HIPREME_ENGINE && dub -c script -- $PACKAGE_DIR"]
+			"postGenerateCommands-windows": ["cd /d #HIPREME_ENGINE && redub -c script -- $PACKAGE_DIR"],
+			"postGenerateCommands-linux": ["cd #HIPREME_ENGINE && redub -c script -- $PACKAGE_DIR"]
 		}
 	]
 }
@@ -269,5 +278,6 @@ bin
 		t.writelnError(e.toString);
 		return false;
 	}
-	return true;
+	import commons;
+	return writeTemplate(t, projectPath, enginePath);
 }
