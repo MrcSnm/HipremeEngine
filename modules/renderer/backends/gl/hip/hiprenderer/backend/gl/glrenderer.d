@@ -118,10 +118,10 @@ class Hip_GL3Renderer : IHipRendererImpl
         {
             switch(uniformType) with(UniformType)
             {
-                case texture_array:
-                {
-                    return GLuint.sizeof;
-                }
+                // case texture_array:
+                // {
+                //     return GLuint.sizeof;
+                // }
                 default: return 0;
             }
         };
@@ -164,7 +164,7 @@ class Hip_GL3Renderer : IHipRendererImpl
     }
     public int queryMaxSupportedPixelShaderTextures()
     {
-        version(PSVita)
+        static if(GLMaxOneBoundTexture)
         {
             return 1;
         }

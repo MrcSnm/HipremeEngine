@@ -24,6 +24,11 @@ else enum HasMetal = false;
 version(Direct3D_11) enum HasDirect3D = true;
 else enum HasDirect3D = false;
 
+version(PSVita) enum GLMaxOneBoundTexture = true;
+else version(WebAssembly) enum GLMaxOneBoundTexture = true;
+else enum GLMaxOneBoundTexture = false;
+
+
 
 
 struct HipRendererConfig

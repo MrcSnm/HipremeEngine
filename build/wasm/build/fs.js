@@ -1,6 +1,7 @@
 function initializeFS()
 {
     const fileCache = {};
+    globalThis.fileCache = fileCache;
 
     return {
         WasmRead(length, ptr, onSuccessHandle, onSuccessFunc, onSuccessCtx, onErrorHandle, onErrorFunc, onErrorCtx) 
