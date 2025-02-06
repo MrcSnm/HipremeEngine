@@ -473,7 +473,8 @@ var importObject = {
 		initializeDecoders,
 		initializeFS,
 		initializeWebaudioContext,
-		initializeWindowing
+		initializeWindowing,
+		initializeWebsocketsContext
 	];
 
 	for(const initializeApi of JSAPI)

@@ -1,6 +1,6 @@
 module hip.util.sumtype;
 
-enum Type
+enum Type : ubyte
 {
     undefined,
     void_,

@@ -1,0 +1,12 @@
+{
+	"authors": [
+		"Marcelo"
+	],
+	"dependencies": {
+		"handy-httpd": "~>8.4.3"
+	},
+	"copyright": "Copyright © 2025, Marcelo",
+	"description": "A minimal D application.",
+	"license": "proprietary",
+	"name": "server"
+}

@@ -193,6 +193,20 @@ ubyte* function(ubyte* args) toFunc(alias dg)()
 	return ret;
 }
 
+/**
+ * The first index of a wasm array (which is a ptr) is a size_t value containing length
+ * Params:
+ *   ptr = The ptr returnt from wasm
+ * Returns: Converted to an array
+ */
+ubyte[] getWasmArray(ubyte* ptr)
+{
+	if(ptr is null)
+		return null;
+	size_t length = *cast(size_t*)ptr;
+	return ptr[size_t.sizeof..length-size_t.sizeof];
+}
+
 
 
 ubyte[] getWasmBinary(ubyte* input)

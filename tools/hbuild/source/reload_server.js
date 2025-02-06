@@ -4,12 +4,6 @@ const _reloadSocket = new WebSocket("$WEBSOCKET_SERVER$");
 _reloadSocket.addEventListener("open", (event) =>
 {
     console.warn("Hipreme Engine auto-reload socket started.");
-    const __updateMsg = 0xff;
-    const updateLoop = setInterval(() => 
-    {
-        _reloadSocket.send(__updateMsg);
-    }, 50);
-
     _reloadSocket.addEventListener("close", (event) =>
     {
         console.warn("Exited reload server connection.");

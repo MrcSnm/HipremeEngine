@@ -190,7 +190,9 @@ T clamp(T)(T value, T min, T max) pure nothrow @safe @nogc
     return value < min ? min : value > max ? max : value;
 }
 
-pragma(inline)T abs(T)(in T value){return value < 0 ? -value : value;}
+pragma(inline, true)T abs(T)(in T value){return value < 0 ? -value : value;}
+pragma(inline, true)int sign(T)(in T value){return value == 0 ? 0 : value < 0 ? -1 : 1; }
+
 
 int greatestCommonDivisor(int a, int b)
 {

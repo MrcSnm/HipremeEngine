@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/net
+net.so
+net.dylib
+net.dll
+net.a
+net.lib
+net-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst

@@ -2,6 +2,14 @@ module websocket_connection;
 import core.sync.mutex;
 import handy_httpd;
 
+enum NetID : size_t
+{
+    server,
+    broadcast,
+    start,
+    end = size_t.max
+}
+
 class WebSocketReloadServer: WebSocketMessageHandler
 {
     // ctx.server.stop(); // Calling stop will gracefully shutdown the server.
@@ -10,33 +18,12 @@ class WebSocketReloadServer: WebSocketMessageHandler
     {
         wsMutex = new shared Mutex;
     }
-
-    private size_t wsID;
-
     override void onConnectionEstablished(WebSocketConnection conn)
     {
         synchronized(wsMutex)
         {
-            connections~= thisConnection = new Connection(id);
-            wsID = id++;
+            connections~= thisConnection = new Connection(conn);
         }
-    }
-
-    override void onTextMessage(WebSocketTextMessage msg)
-    {
-        import std.stdio;
-        import std.algorithm.searching;
-
-        string text = msg.payload; //Irrelevant here
-
-    	synchronized(wsMutex)
-        {
-            foreach(socketMsg; thisConnection.messages)
-                msg.conn.sendTextMessage(socketMsg);
-            thisConnection.messages.length = 0;
-        }
-
-        // infoF!"Got TEXT: %s"(msg.payload);
     }
 
     override void onCloseMessage(WebSocketCloseMessage msg)
@@ -45,13 +32,13 @@ class WebSocketReloadServer: WebSocketMessageHandler
         import std.stdio;
         synchronized
         {
-            ptrdiff_t index = countUntil!((Connection* c) => c.id == wsID)(connections);
+            ptrdiff_t index = countUntil!((Connection* c) => c.socket == msg.conn)(connections);
             if(index != -1)
             {
                 connections = connections[0..index]~ connections[index+1..$];
             }
+            writeln("AutoReloading WebSocket[", index, "] closed.");
         }
-        writeln("AutoReloading WebSocket[", wsID, "] closed.");
 
         // infoF!"Closed: %d, %s"(msg.statusCode, msg.message);
     }
@@ -61,16 +48,16 @@ void pushWebsocketMessage(string message)
 	synchronized(wsMutex)
 	{
 		foreach(ref conn; connections)
-			conn.messages~= message;
+        {
+            conn.socket.sendTextMessage(message);
+        }
 	}
 }
 
 
 struct Connection
 {
-	size_t id;
-	string[] messages;
+    WebSocketConnection socket;
 }
-private __gshared size_t id;
 private __gshared Connection*[] connections;
 private shared Mutex wsMutex;

@@ -1,0 +1,14 @@
+{
+	"dependencies": {
+		"util": {"path": "../util"},
+		"console": {"path": "../console"},
+		"wasm": {"path": "../wasm"}
+	},
+	"authors": [
+		"Marcelo"
+	],
+	"copyright": "Copyright © 2025, Marcelo",
+	"description": "Network Module for Hipreme Engine.",
+	"license": "proprietary",
+	"name": "net"
+}
