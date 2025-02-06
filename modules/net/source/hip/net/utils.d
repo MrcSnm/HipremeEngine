@@ -1,36 +1,73 @@
 module hip.net.utils;
+import std.traits;
 
 T hton(T)(T data) @nogc nothrow pure
 {
-    import std.socket;
-
-	static if(T.sizeof == 2)
-		return htons(data);
-	else static if(T.sizeof == 4)
-		return htonl(data);
+	version(WebAssembly)
+	{
+		return *(cast(T*)toNetworkBytes(data).ptr);
+	}
+	else
+	{
+		import std.socket;
+		static if(T.sizeof == 2)
+			return htons(data);
+		else static if(T.sizeof == 4)
+			return htonl(data);
+	}
 }
 
 size_t sizeofTypes(T...)() @nogc nothrow pure
 {
-	static size_t ret;
-	if(ret == 0)
-	{
-		foreach (t; T)
-			ret+= t.sizeof;
-	}
+	size_t ret;
+	foreach (t; T)
+		ret+= t.sizeof;
 	return ret;
 }
 
-ubyte[sizeofTypes!T] toBytes(T...)(T input) @nogc nothrow pure
+bool hasDynamicArray(T...)()
 {
-    typeof(return) ret;
+	static foreach(t; T)
+	{
+		static if(isDynamicArray!t)
+			return true;
+	}
+	return false;
+}
+
+@nogc nothrow pure
+ubyte[sizeofTypes!T] toBytes(T...)(T input) if(!hasDynamicArray!(T))
+{
+    typeof(return) ret = void;
 	size_t offset;
 	static foreach(i, t; T)
 	{
-		ret[offset..offset+t.sizeof] = toBytes(input[i]);
+		ret[offset..offset+t.sizeof] = toBytes!(t, t.sizeof)(input[i]);
 		offset+= t.sizeof;
 	}
     return ret;
+}
+ubyte[] toBytes(T...)(T input)
+{
+	ubyte[] ret;
+	size_t offset;
+	foreach(i, t; T)
+	{
+		static if(isDynamicArray!t)
+		{
+			size_t sz = input[i].length * t.init[0].sizeof;
+			ret.length+= sz;
+			ret[offset..offset+sz] = (cast(ubyte*)input[i].ptr)[0..sz];
+			offset+= sz;
+		}
+		else
+		{
+			ret.length+= t.sizeof;
+			ret[offset..offset+t.sizeof] = toBytes(input[i]);
+			offset+= t.sizeof;
+		}
+	}
+	return ret;
 }
 
 ubyte[N] toBytes(T, uint N = T.sizeof)(T input) @nogc nothrow pure
@@ -53,6 +90,21 @@ ubyte[N] swapEndian(uint N)(ubyte[N] bytes) @nogc nothrow pure
         swapped[i] = bytes[N - 1 - i];
     return swapped;
 }
+
+ubyte[] swapEndian(ubyte[] bytes)
+{
+    ubyte[] swapped;
+	swapped.length = bytes.length;
+    foreach (i; 0 .. bytes.length)
+        swapped[i] = bytes[bytes.length - 1 - i];
+    return swapped;
+}
+ubyte[] toNetworkBytes(ubyte[] input)
+{
+    return isLittleEndian ? swapEndian(input) : input;
+}
+
+
 
 
 ubyte[N] toNetworkBytes(T, uint N = T.sizeof)(T input) @nogc nothrow pure

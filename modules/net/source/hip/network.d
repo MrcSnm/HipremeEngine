@@ -1,5 +1,6 @@
 module hip.network;
 import hip.console.log;
+import hip.net.utils;
 
 enum NetConnectionStatus
 {
@@ -69,9 +70,14 @@ interface INetwork
 }
 
 
-class HipNetwork : INetwork
+class HipNetwork
 {
 	INetwork netInterface;
+
+	this()
+	{
+		netInterface = getNetworkImplementation();
+	}
 
 
 
@@ -83,6 +89,7 @@ class HipNetwork : INetwork
 
 	T getData(T)()
 	{
+		import std.traits:isArray, isStaticArray;
 		struct DataReceived
 		{
 			NetHeader header;
@@ -97,38 +104,71 @@ class HipNetwork : INetwork
 
 		static if(is(T == string))
 		{
-			if(header.type != NetDataType.text)
+			if(netPkg.header.type != NetDataType.text)
 				throw new Exception("Unmatched data type when trying to get a string.");
-			return netPkg.data.ptr[0..netPkg.header.length];
+			return cast(string)(buffer.ptr+NetHeader.sizeof)[0..netPkg.header.length];
 		}
 		else
 		{
-			if(header.type != NetDataType.binary)
+			if(netPkg.header.type != NetDataType.binary)
 				throw new Exception("Unmatched data type when trying to get a binary.");
-			return netPkg.data;
+
+			static if(isArray!T)
+			{
+				size_t arraySize = netPkg.header.length / T.init[0].sizeof;
+				static if(isStaticArray!T)
+				{
+					if(arraySize != T.init.length)
+						throw new Exception("Received more data than the static array size of "~T.init.length.stringof);
+					return netPkg.data.ptr[0..T.init.length];
+				}
+				else
+				{
+					ubyte[] actualData = (buffer.ptr + NetHeader.sizeof)[0..netPkg.header.length];
+
+					return cast(T)actualData;
+				}
+			}
+			else
+			{
+				return netPkg.data;
+			}
 		}
 
 	}
 
 
-	void sendData(T)(T data, Socket to)
+	void sendData(T)(T data)
 	{
+		import std.traits:isDynamicArray;
 		static if(is(T == string))
 		{
 			NetHeader header = NetHeader(NetDataType.text, cast(uint)data.length);
 		}
 		else
 		{
-			NetHeader header = NetHeader(NetDataType.binary, T.sizeof);
+			static if(isDynamicArray!T)
+			{
+				NetHeader header = NetHeader(NetDataType.binary, cast(uint)(T.init[0].sizeof*data.length));
+			}
+			else
+			{
+				NetHeader header = NetHeader(NetDataType.binary, T.sizeof);
+			}
 		}
-		if(!sendData(toBytes(header, data), to))
+		if(!netInterface.sendData(toNetworkBytes(toBytes(header, data))))
 		{
-			writeln("Could not send data");
+			// writeln("Could not send data");
 			return;
 		}
 	}
-	ubyte[] getData(){return netInterface.getData();}
-	bool sendData(ubyte[] data){return netInterface.sendData(data);}
+	private ubyte[] getData()
+	{
+		ubyte[] data = netInterface.getData();
+		if(data is null)
+			return null;
+		return fromNetworkBytes(data);
+	}
 	NetConnectionStatus status() const { return netInterface.status; }
 
 }
