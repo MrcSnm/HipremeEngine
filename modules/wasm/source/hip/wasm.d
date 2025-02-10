@@ -204,7 +204,7 @@ ubyte[] getWasmArray(ubyte* ptr)
 	if(ptr is null)
 		return null;
 	size_t length = *cast(size_t*)ptr;
-	return ptr[size_t.sizeof..length-size_t.sizeof];
+	return (ptr+size_t.sizeof)[0..length];
 }
 
 

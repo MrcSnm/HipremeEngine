@@ -32,6 +32,8 @@ class WASMWebsocketNetwork : INetwork
     ///Buffer used if programmer tried to send data before assigning to its socket id
     private ubyte[][] scheduledDataSend;
 
+    bool isHost() const { return false; }
+
     NetConnectionStatus connect(NetIPAddress ip, size_t id = NetID.server)
     {
         import hip.util.string;
@@ -80,9 +82,10 @@ class WASMWebsocketNetwork : INetwork
         return true;
     }
 
-    ubyte[] getData()
+    uint getData(ref ubyte[] tempBuffer)
     {
-        return getWasmArray(websocketGetData(socket));
+        tempBuffer = getWasmArray(websocketGetData(socket));
+        return tempBuffer.length;
     }
 
     NetConnectionStatus status() const { return _status; }

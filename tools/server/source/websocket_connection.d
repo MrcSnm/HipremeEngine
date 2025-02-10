@@ -68,7 +68,27 @@ class HipremeEngineWebSocketServer: WebSocketMessageHandler
         uint toSocketID = *cast(uint*)msg.payload[4..8];
         ubyte[] data = msg.payload[8..$];
 
-        writeln("Socket ", fromSocketID, " is sending ", data, " to socket ", toSocketID);
+        switch(toSocketID)
+        {
+            case NetID.server:
+                break;
+            case NetID.broadcast:
+                foreach(c; connections)
+                {
+                    if(c.id != fromSocketID)
+                        c.socket.sendBinaryMessage(data);
+                }
+                break;
+            default:
+                toSocketID-= NetID.start;
+                if(connections.length < toSocketID)
+                    writeln("Socket tried sending data to invalid socket ID ", toSocketID + NetID.start);
+                else
+                    connections[toSocketID].socket.sendBinaryMessage(data);
+                break;
+
+        }
+        // writeln("Socket ", fromSocketID, " is sending ", data.length, " bytes to socket ", toSocketID);
 
     }
 

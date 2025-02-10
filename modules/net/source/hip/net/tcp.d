@@ -12,6 +12,7 @@ class TCPNetwork : INetwork
 	NetConnectionStatus _status;
 	Socket connectSocket;
 	Socket client;
+
 	int connectedSockets;
 
 	Socket getSocketToSendData()
@@ -46,10 +47,15 @@ class TCPNetwork : INetwork
 		// writeln = getData(client).get!string;
 
 	}
-	size_t getConnectionID() const { return 0; }
-	void setConnectedTo(size_t ID) { }
 
-	NetConnectionStatus connect(NetIPAddress ip, size_t id = NetID.server)
+	bool isHost() const
+	{
+		return hostSocket !is null;
+	}
+	uint getConnectionID() const { return 0; }
+	void setConnectedTo(uint ID) { }
+
+	NetConnectionStatus connect(NetIPAddress ip, uint id = NetID.server)
 	{
 		import std.socket;
 
@@ -80,22 +86,13 @@ class TCPNetwork : INetwork
 		return true;
 	}
 
-	ubyte[] getData()
+	size_t getData(ref ubyte[] buffer)
 	{
-		ubyte[4096] buffer;
-		ubyte[] ret;
 		Socket s = getSocketToSendData;
-		ptrdiff_t received = s.receive(buffer, SocketFlags.PEEK);
-		if(received == 0)
-			return null;
-		else if(received == -1)
+		ptrdiff_t received = s.receive(buffer);
+		if(received == -1)
 			throw new Exception("Network Error: "~s.getErrorText);
-		else
-		{
-			ret.length = received;
-			s.receive(ret);
-		}
-		return ret;
+		return received;
 	}
 
 

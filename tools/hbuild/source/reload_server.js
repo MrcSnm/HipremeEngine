@@ -22,7 +22,7 @@ _reloadSocket.addEventListener("message", (event) =>
             __shouldReloadGame = true;
             break;  
         } 
-        case "close": _reloadSocket.close(0); break;
+        case "close": _reloadSocket.close(); break;
         default: console.warn("Unknown message from server received: ", serverMsg); break;
     }
 });
@@ -32,6 +32,16 @@ let __shouldReloadGame = false;
 function __reloadGame()
 {
     __shouldReloadGame = false;
+
+    const sockets = globalThis.ConnectedWebsockets;
+    if(sockets && Array.isArray(sockets))
+    {
+        sockets.forEach((v) =>
+        {
+            if(v instanceof WebSocket)
+                v.close();
+        });
+    }
     druntimeAbortHook();
     WasmUtils.cleanup();
     __loadGame();

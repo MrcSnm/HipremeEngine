@@ -77,7 +77,7 @@ ubyte[N] toBytes(T, uint N = T.sizeof)(T input) @nogc nothrow pure
     return ret;
 }
 
-bool isLittleEndian()
+bool isLittleEndian() @nogc nothrow pure
 {
     uint value = 1;
     return (cast(ubyte*)&value)[0] == 1;
@@ -91,7 +91,7 @@ ubyte[N] swapEndian(uint N)(ubyte[N] bytes) @nogc nothrow pure
     return swapped;
 }
 
-ubyte[] swapEndian(ubyte[] bytes)
+ubyte[] swapEndian(const ubyte[] bytes)
 {
     ubyte[] swapped;
 	swapped.length = bytes.length;
@@ -99,6 +99,22 @@ ubyte[] swapEndian(ubyte[] bytes)
         swapped[i] = bytes[bytes.length - 1 - i];
     return swapped;
 }
+
+void swapEndianInPlace(ref ubyte[] bytes) @nogc nothrow pure
+{
+    foreach (i; 0 .. bytes.length / 2)
+    {
+        auto tmp = bytes[i];
+        bytes[i] = bytes[bytes.length - 1 - i];
+        bytes[bytes.length - 1 - i] = tmp;
+    }
+}
+
+
+
+
+
+
 ubyte[] toNetworkBytes(ubyte[] input)
 {
     return isLittleEndian ? swapEndian(input) : input;
@@ -116,6 +132,14 @@ ubyte[N] toNetworkBytes(T, uint N = T.sizeof)(T input) @nogc nothrow pure
 ///Same implementation, must go back from big to little or kepe it as it is
 alias fromNetworkBytes = toNetworkBytes;
 
+
+void toNetworkBytesInPlace(ref ubyte[] bytes) @nogc nothrow pure
+{
+	if(isLittleEndian)
+		swapEndianInPlace(bytes);
+}
+
+alias fromNetworkBytesInPlace = toNetworkBytesInPlace;
 
 
 
