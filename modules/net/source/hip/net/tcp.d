@@ -3,10 +3,10 @@ import hip.network;
 
 version(WebAssembly){}
 else:
+import std.socket;
 
 class TCPNetwork : INetwork
 {
-	import std.socket;
 
 	Socket hostSocket;
 	NetConnectionStatus _status;
@@ -27,7 +27,7 @@ class TCPNetwork : INetwork
 	{
 		Socket s = new TcpSocket();
 		hostSocket = s;
-		s.blocking = true;
+		s.blocking = false;
 		s.setOption(SocketOptionLevel.SOCKET, SocketOption.LINGER, 1);
 		s.setOption(SocketOptionLevel.SOCKET, SocketOption.DEBUG, 1);
 
@@ -36,17 +36,15 @@ class TCPNetwork : INetwork
 			s.bind(ip.type == IPType.ipv4 ? new InternetAddress(ip.ip, ip.port) : new Internet6Address(ip.ip, ip.port));
 			s.listen(1);
 			client = s.accept();
-			return _status = NetConnectionStatus.connected;
+			return _status = client.isAlive ?  NetConnectionStatus.connected : NetConnectionStatus.waiting;
 		}
 		catch (Exception e)
 		{
 			hostSocket = null;
 			return _status = NetConnectionStatus.disconnected;
 		}
-
-		// writeln = getData(client).get!string;
-
 	}
+
 
 	bool isHost() const
 	{
@@ -58,16 +56,30 @@ class TCPNetwork : INetwork
 	NetConnectionStatus connect(NetIPAddress ip, uint id = NetID.server)
 	{
 		import std.socket;
-
-		if(host(ip) == NetConnectionStatus.disconnected)
+		if(hostSocket is null && connectSocket is null)
 		{
-			Socket s = new TcpSocket();
-			connectSocket = s;
-			s.blocking = true;
-			s.connect(ip.type == IPType.ipv4 ? new InternetAddress(ip.ip, ip.port) : new Internet6Address(ip.ip, ip.port));
+			if(host(ip) == NetConnectionStatus.disconnected)
+			{
+				Socket s = new TcpSocket();
+				connectSocket = s;
+				s.blocking = false;
+				s.connect(ip.type == IPType.ipv4 ? new InternetAddress(ip.ip, ip.port) : new Internet6Address(ip.ip, ip.port));
+				_status = !wouldHaveBlocked() ?  NetConnectionStatus.connected : NetConnectionStatus.waiting;
+			}
 		}
 
-		return _status = NetConnectionStatus.connected;
+		if(isHost && !client.isAlive)
+		{
+			client = hostSocket.accept();
+			return _status = client.isAlive ? NetConnectionStatus.connected : NetConnectionStatus.waiting;
+		}
+		if(connectSocket !is null)
+		{
+			_status = !wouldHaveBlocked() ?  NetConnectionStatus.connected : NetConnectionStatus.waiting;
+		}
+
+
+		return status;
 
 	}
 
@@ -75,24 +87,32 @@ class TCPNetwork : INetwork
 	bool sendData(ubyte[] data)
 	{
 		import std.stdio;
-
-		if(getSocketToSendData == client)
-			writeln("Sending ", data, " to client. ");
-		else if(getSocketToSendData == connectSocket)
-			writeln("Sending data to host ");
-		ptrdiff_t res = getSocketToSendData.send(data, SocketFlags.DONTROUTE);
-		if(res ==  0|| res == SOCKET_ERROR) //Socket closed
-			return false;
-		return true;
+		if(status == NetConnectionStatus.connected)
+		{
+			if(getSocketToSendData == client)
+				writeln("Sending ", data, " to client. ");
+			else if(getSocketToSendData == connectSocket)
+				writeln("Sending data to host ");
+			ptrdiff_t res = getSocketToSendData.send(data, SocketFlags.DONTROUTE);
+			if(res ==  0|| res == SOCKET_ERROR) //Socket closed
+				return false;
+			return true;
+		}
+		return false;
 	}
 
 	size_t getData(ref ubyte[] buffer)
 	{
-		Socket s = getSocketToSendData;
-		ptrdiff_t received = s.receive(buffer);
-		if(received == -1)
-			throw new Exception("Network Error: "~s.getErrorText);
-		return received;
+		if(status == NetConnectionStatus.connected)
+		{
+			Socket s = getSocketToSendData;
+			ptrdiff_t received = s.receive(buffer);
+			if(received == -1)
+				return 0;
+			// 	throw new Exception("Network Error: "~s.getErrorText);
+			return received;
+		}
+		return 0;
 	}
 
 

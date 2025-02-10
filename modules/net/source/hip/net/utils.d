@@ -47,7 +47,8 @@ ubyte[sizeofTypes!T] toBytes(T...)(T input) if(!hasDynamicArray!(T))
 	}
     return ret;
 }
-ubyte[] toBytes(T...)(T input)
+
+ubyte[] toBytes(T...)(T input) if(hasDynamicArray!T)
 {
 	ubyte[] ret;
 	size_t offset;

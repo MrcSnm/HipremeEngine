@@ -16,6 +16,17 @@ enum IPType
 	ipv6
 }
 
+private string enumFromTypes(T...)(string enumName, string enumType)
+{
+	string ret = "enum "~enumName~": "~enumType~"{ invalid = 0, ";
+	static foreach(t; T)
+	{
+		static assert(is(t == struct) || is(t == enum), "MarkNetData only works for enums and structs.");
+		ret~=  t.stringof~",";
+	}
+	return ret~"}";
+}
+
 
 /**
  * Creates a set of types which
@@ -24,26 +35,54 @@ enum IPType
  */
 template MarkNetData(T...)
 {
-    static foreach(i, t; T)
-    {
-		static assert(is(t == struct) || is(t == enum), "MarkNetData only works for enums and structs.");
-        mixin("immutable size_t ", t.stringof, " = ", i, ";");
-    }
+	static if(T.length <= ubyte.max)
+		alias idType = ubyte;
+	else static if(T.length <= ushort.max)
+		alias idType = ushort;
 
-	string getTypeName(size_t v)
+	mixin(enumFromTypes!(T)("Types", "idType"));
+
+	string getTypeName(idType v)
 	{
 		static foreach(t; T)
 		{
-			if(v == mixin(t.stringof))
+			if(v == __traits(getMember, Types, t.stringof))
 				return t.stringof;
 		}
 		return "Unknown";
 	}
 
-    bool isInvalid(size_t v)
+    bool isInvalid(idType v)
     {
-        return v >= T.length;
+        return v == 0 || v >= T.length;
     }
+
+	static foreach(i, t; T)
+	{
+		void sendData(HipNetwork net, t data)
+		{
+			align(1)
+			static struct TypedData
+			{
+				t actualData;
+				idType typeID = i + 1; //Invalid is 0
+			}
+			net.sendData(TypedData(data, i+1));
+		}
+	}
+
+	/**
+	 * To its data removing the type id.
+	 * Params:
+	 *   buffer = The buffer that is used to take the type id and slices it to the actual data
+	 * Returns: The type id from that buffer. Also enforces it is not invalid
+	 */
+	Types getDataFromBuffer(ref ubyte[] buffer)
+	{
+		idType typeID = *cast(idType*)(buffer.ptr + buffer.length - idType.sizeof);
+		buffer = buffer[0..buffer.length - idType.sizeof];
+		return cast(Types)typeID;
+	}
 
 
 
@@ -82,10 +121,10 @@ package enum NetDataType : ubyte
 }
 
 
-struct NetHeader
+align(1) struct NetHeader
 {
-	NetDataType type;
 	uint length;
+	NetDataType type;
 
 	bool invalid() const { return length == 0; }
 }
@@ -166,28 +205,85 @@ struct NetBufferStream
 		currentOffset = 0;
 		header = header.init;
 	}
+}
 
+T convertNetworkData(T)(NetHeader header, ubyte[] data)
+{
+	import std.traits;
+	static if(is(T == string))
+	{
+		if(header.type != NetDataType.text)
+			throw new Exception("Unmatched data type when trying to get a string.");
+		return cast(string)data;
+	}
+	else
+	{
+		if(header.type != NetDataType.binary)
+			throw new Exception("Unmatched data type when trying to get a binary.");
+
+		static if(isArray!T)
+		{
+			size_t arraySize = header.length / T.init[0].sizeof;
+			static if(isStaticArray!T)
+			{
+				if(arraySize != T.init.length)
+					throw new Exception("Received more data than the static array size of "~T.init.length.stringof);
+				return (cast(T)data)[0..T.init.length];
+			}
+			else
+			{
+				return cast(T)data;
+			}
+		}
+		else
+		{
+			return *cast(T*)data.ptr;
+		}
+	}
 }
 
 
 class HipNetwork
 {
 	INetwork netInterface;
-	ubyte[] accumulatedBuffer;
-	size_t dataLoadedSize;
 	NetBufferStream currentStream;
 	NetBufferStream[] completedStreams;
+	NetBufferStream[] streamPool;
 
+	static struct ConnectInformation
+	{
+		NetIPAddress ip;
+		uint id;
+	}
+	private ConnectInformation connInfo;
 	this()
 	{
 		netInterface = getNetworkImplementation();
 	}
 
-	NetConnectionStatus connect(NetIPAddress ip, uint id = NetID.server){return netInterface.connect(ip, id);}
+	NetConnectionStatus connect(NetIPAddress ip, uint id = NetID.server)
+	{
+		connInfo = ConnectInformation(ip, id);
+		return netInterface.connect(ip, id);
+	}
 
 	bool isHost() const { return netInterface.isHost; }
 	uint getConnectionID() const{return netInterface.getConnectionID();}
 	void setConnectedTo(uint id){netInterface.setConnectedTo(id);}
+
+	private NetBufferStream getNetBufferStream(NetHeader header)
+	{
+		NetBufferStream ret;
+		if(streamPool.length > 0)
+		{
+			ret = streamPool[0];
+			streamPool = streamPool[1..$];
+			ret.header = header;
+		}
+		else
+			ret = NetBufferStream(header);
+		return ret;
+	}
 
 	/**
 	 * Only returns true if the buffer has been completely loaded by the size expected by the package.
@@ -200,6 +296,12 @@ class HipNetwork
 	bool getData()
 	{
 		import std.traits:isArray, isStaticArray;
+		if(netInterface.status == NetConnectionStatus.waiting)
+			connect(connInfo.ip, connInfo.id);
+
+
+		if(netInterface.status != NetConnectionStatus.connected)
+			return false;
 		ubyte[4096] tempBufferData = void;
 		ubyte[] tempBuffer = tempBufferData;
 
@@ -209,12 +311,14 @@ class HipNetwork
 		size_t dataLength = getDataBackend(tempBuffer);
 		if(dataLength == 0)
 			return false;
+		if(dataLength < NetHeader.sizeof)
+			throw new Exception("Some bug occurred: Data received is less than a NetHeader size.");
 
 		while(dataLength != 0)
 		{
 			if(currentStream.isInvalid)
 			{
-				currentStream = NetBufferStream(*cast(NetHeader*)(tempBuffer.ptr));
+				currentStream = getNetBufferStream(*cast(NetHeader*)(tempBuffer.ptr));
 				dataLength-= NetHeader.sizeof;
 				tempBuffer = tempBuffer[NetHeader.sizeof..$];
 			}
@@ -234,6 +338,34 @@ class HipNetwork
 	}
 
 	/**
+	 * WARNING: It is important to call freeBuffer at some time since getting the buffer won't remove it from the queue
+	 * Returns: A buffer from the completed list. You should free it at some time so its memory can be reused.
+	 */
+	NetBufferStream* getCompletedBuffer()
+	{
+		if(completedStreams.length == 0)
+			throw new Exception("No data has been received yet. Wait for getData() to return true before calling that function.");
+		return &completedStreams[0];
+	}
+
+	/**
+	 * Make that buffer available inside the buffer pool and saves memory
+	 * Params:
+	 *   buffer = A buffer inside the completed list
+	 */
+	void freeBuffer(NetBufferStream* buffer)
+	{
+		for(int i = 0 ; i < completedStreams.length; i++)
+			if(buffer == &completedStreams[i])
+			{
+				buffer.reset();
+				completedStreams = completedStreams[0..i] ~ completedStreams[i+1..$];
+				streamPool~= *buffer;
+				i--;
+			}
+	}
+
+	/**
 	 * Gets the data that is in front of queue and converts the data to the expected one.
 	 * The correct usage of this function is to use it after `getData()`.
 	 * If it has no data, an exception will be thrown
@@ -243,43 +375,11 @@ class HipNetwork
 	 */
 	T getDataAsType(T)()
 	{
-		if(completedStreams.length == 0)
-			throw new Exception("No data has been received yet. Wait for getData() to return true before calling that function.");
-
-		NetBufferStream stream = completedStreams[0];
+		NetBufferStream* stream = getCompletedBuffer();
 		ubyte[] data = stream.getFinishedBuffer();
-		completedStreams = completedStreams[1..$];
-		static if(is(T == string))
-		{
-			if(stream.header.type != NetDataType.text)
-				throw new Exception("Unmatched data type when trying to get a string.");
-			return cast(string)data;
-		}
-		else
-		{
-			if(stream.header.type != NetDataType.binary)
-				throw new Exception("Unmatched data type when trying to get a binary.");
-
-			static if(isArray!T)
-			{
-				size_t arraySize = stream.header.length / T.init[0].sizeof;
-				static if(isStaticArray!T)
-				{
-					if(arraySize != T.init.length)
-						throw new Exception("Received more data than the static array size of "~T.init.length.stringof);
-					return (cast(T)data)[0..T.init.length];
-				}
-				else
-				{
-					return cast(T)data;
-				}
-			}
-			else
-			{
-				return *cast(T*)data.ptr;
-			}
-		}
-
+		scope(exit)
+			freeBuffer(stream);
+		return convertNetworkData(stream.header, data);
 	}
 
 
@@ -288,19 +388,20 @@ class HipNetwork
 		import std.traits:isDynamicArray;
 		static if(is(T == string))
 		{
-			NetHeader header = NetHeader(NetDataType.text, cast(uint)data.length);
+			NetHeader header = NetHeader(cast(uint)data.length, NetDataType.text);
 		}
 		else
 		{
 			static if(isDynamicArray!T)
 			{
-				NetHeader header = NetHeader(NetDataType.binary, cast(uint)(T.init[0].sizeof*data.length));
+				NetHeader header = NetHeader(cast(uint)(T.init[0].sizeof*data.length), NetDataType.binary);
 			}
 			else
 			{
-				NetHeader header = NetHeader(NetDataType.binary, T.sizeof);
+				NetHeader header = NetHeader(T.sizeof, NetDataType.binary);
 			}
 		}
+
 
 		ubyte[] newData = toNetworkBytes(toBytes(header, data));
 		if(!netInterface.sendData(newData))

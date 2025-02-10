@@ -37,6 +37,8 @@ class WASMWebsocketNetwork : INetwork
     NetConnectionStatus connect(NetIPAddress ip, size_t id = NetID.server)
     {
         import hip.util.string;
+        if(_status == NetConnectionStatus.waiting)
+            return _status;
         connectedTo = id;
         String s;
         if(!ip.ip.startsWith("ws://"))
