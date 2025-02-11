@@ -43,7 +43,8 @@
 		"hipengine_api:interfaces": {"path": "./api", "version": "*"},
 		"math": {"path": "./modules/math", "version": "*"},
 		"renderer": {"path": "./modules/renderer", "version": "*"},
-		"util": {"path": "./modules/util", "version": "*"}
+		"util": {"path": "./modules/util", "version": "*"},
+		"net": {"path": "./modules/net", "version": "*"}
 	},
 	"configurations": [
 		{
@@ -57,10 +58,7 @@
 				"Standalone",
 				"Test"
 			],
-			"versions-windows": [
-				"DirectX",
-				"XAudio2"
-			]
+			"versions-windows": ["DirectX"]
 		},
 		{
 			"name": "4mb",
@@ -85,8 +83,7 @@
 				"Desktop",
 				"Standalone",
 				"Test",
-				"DirectX",
-				"XAudio2"
+				"DirectX"
 			]
 		},
 		{
@@ -122,8 +119,7 @@
 			"dflags-ldc": ["-link-defaultlib-shared=true"],
 			"lflags-linux-ldc": ["--export-dynamic"],
 			"versions-windows": [
-				"DirectX",
-				"XAudio2"
+				"DirectX"
 			]
 		},
 		{
@@ -190,6 +186,17 @@
 			"versions": ["Standalone", "AppleOS"]
 		},
 		{
+			"name": "psvita",
+			"versions": ["Standalone", "dll"],
+			"subConfigurations": {
+				"runtime": "psvita",
+				"d_std": "psvita",
+				"assets": "psvita",
+				"audio": "psvita",
+				"renderer": "psvita"
+			}
+		},
+		{
 			"name": "uwp",
 			"targetType": "staticLibrary",
 			"subConfigurations": {
@@ -200,7 +207,6 @@
 			"versions-windows": [
 				"Standalone",
 				"DirectX",
-				"XAudio2",
 				"dll",
 				"UWP"
 			]

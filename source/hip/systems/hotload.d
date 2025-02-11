@@ -52,6 +52,7 @@ Call `dub -c script -- path/to/project` dub -c script requires that argument.");
         }
         //Create dll_hiptempdll
         tempDll = getTempName(path);
+
         copy(path, tempDll);
 
         // version(Windows)
@@ -118,9 +119,18 @@ Call `dub -c script -- path/to/project` dub -c script requires that argument.");
                 return ErrorHandler.showErrorMessage("Could not unload the dll ", tempDll);
             
             foreach(remFile; [tempDll, tempPdb]) 
-            if(remFile && !HipFS.absoluteRemove(remFile))
             {
-                ErrorHandler.showErrorMessage("Could not remove ", remFile);
+                try
+                {
+                    if(remFile && !HipFS.absoluteRemove(remFile))
+                    {
+                        ErrorHandler.showErrorMessage("Could not remove ", remFile);
+                    }
+                }
+                catch(Exception e)
+                {
+                    ErrorHandler.showErrorMessage("Could not remove file "~ remFile, "");
+                }
             }
         }
     }
@@ -132,7 +142,14 @@ private void copy(string input, string output)
     void[] data;
     if(!HipFS.absoluteRead(input, data))
         throw new Error("Could not read input file "~input);
-    if(!HipFS.absoluteWrite(output, data))
-        throw new Error("Could not copy from "~input~" to "~output);
+
+    try
+    {
+        if(!HipFS.absoluteWrite(output, data))
+            throw new Error("Could not copy from "~input~" to "~output);
+    }
+    catch (Exception e) {
+
+    }
 
 }

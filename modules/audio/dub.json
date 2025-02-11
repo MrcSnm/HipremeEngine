@@ -22,6 +22,7 @@
 				"directx-d":{"path" : "../../dependencies/directx-d", "optional": true, "default": true}
 			},
 			"versions": ["OpenAL"],
+			"versions-windows": ["XAudio2"],
 			"subConfigurations": {
 				"audio_decoding": "audioformats"
 			}
@@ -50,6 +51,7 @@
 			"name": "dxonly",
 			"dependencies": {"directx-d":{"path" : "../../dependencies/directx-d"}},
 			"libs-windows": ["xaudio2_8"],
+			"versions": ["XAudio2"],
 			"subConfigurations": {"audio_decoding": "audioformats"}
 		},
 		{

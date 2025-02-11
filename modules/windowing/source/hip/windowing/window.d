@@ -1,9 +1,6 @@
 module hip.windowing.window;
 import hip.api.input.window;
 
-version(Android){}
-else version(linux) version = X11;
-
 version(UWP){}
 else version(Windows) version = WindowsNative;
 

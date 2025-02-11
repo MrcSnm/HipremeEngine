@@ -11,6 +11,7 @@ struct GC
     static size_t extend(void* ptr, size_t max, size_t desiredExtensionInSize, const TypeInfo ti =  null) pure nothrow
     {
         import core.arsd.memory_allocation;
+        import rt.hooks;
         version(PSVita)
         {
             PSVMem mem = *cast(PSVMem*)getPSVMem(ptr);
@@ -28,6 +29,7 @@ struct GC
     static BlkInfo qalloc(size_t sz, uint ba = 0, const scope TypeInfo ti = null) pure nothrow
     {
         import core.arsd.memory_allocation;
+        import rt.hooks;
         return BlkInfo(pureMalloc(sz).ptr, sz);
     }
 

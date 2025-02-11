@@ -14,6 +14,7 @@
 		"local-history.saveDelay": 1,
 		"files.exclude":
 		{
+			"Android": true,
 			"build/appleos/HipremeEngine.xcodeproj/": true,
 			"build/appleos/HipremeEngine Shared/Assets.xcassets": true,
 			"build/uwp/HipremeEngine/HipremeEngine/Generated Files/**/*":true,
@@ -56,6 +57,7 @@
 			"**/.DS_Store": true
 		},
 		"search.exclude": {
+			"Android": true,
 			"**/*.targets": true,
 			"**/*.wapproj": true,
 			"**/*.exp": true,

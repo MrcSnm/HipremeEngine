@@ -9,7 +9,8 @@
 		{
 			"name": "default-linux",
 			"platforms": ["linux"],
-			"libs-linux" : ["X11", "GL"]
+			"libs-linux" : ["X11", "GL"],
+			"versions": ["X11"]
 		},
 		{
 			"name": "default-windows",

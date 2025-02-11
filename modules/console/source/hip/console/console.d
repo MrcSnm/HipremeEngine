@@ -36,7 +36,7 @@ enum GUI_CONSOLE = true;
 @nogc __gshared void function(string toPrint) _warn;
 @nogc __gshared void function(string toPrint) _err;
 @nogc __gshared void function(string toPrint) _fatal;
-version(PSVita) extern(C) void hipVitaPrint(uint length, const(char)* str);
+version(PSVita) extern(C) void hipVitaPrint(uint length, const(char)* str) @nogc;
 
 version(UWP){}
 else version(Windows)

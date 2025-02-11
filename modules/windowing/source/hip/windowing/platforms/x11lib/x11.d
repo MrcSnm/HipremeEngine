@@ -1,8 +1,5 @@
 module hip.windowing.platforms.x11lib.x11;
 
-version(Android){}
-else version(linux)
-    version = X11;
 version(X11):
 
 import hip.windowing.platforms.x11lib.glx;

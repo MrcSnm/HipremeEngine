@@ -53,8 +53,11 @@ class MainScene : AScene, IHipPreloadable
         drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         fillRectangle(300, 300, 100, 100);
 
-        drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        drawText("Null Textures uses that sprite over here ", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
         drawTexture(null, 300, 500);
+
+
+        drawGCStats();
 
 	}
 
