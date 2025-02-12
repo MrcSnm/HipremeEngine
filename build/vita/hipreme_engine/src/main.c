@@ -116,7 +116,7 @@ int main(int argc, char* argv)
 	EGLInit(&width, &height);
 	initializeVitaInput();
 
-	HipremeMain(800, 600);
+	HipremeMain(width, height);
 	HipInputOnGamepadConnected(0,HipGamepadTypes_psvita);
 	while(1)
 	{

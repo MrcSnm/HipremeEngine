@@ -345,10 +345,13 @@ class ShaderVariablesLayout
             this.variables[v.name] = ShaderVarLayout(v, 0, 0);
             namesOrder~= v.name;
         }
-        calcAlignment();
-        data = malloc(getLayoutSize());
-        if(data == null)
-            throw new Exception("Out of memory");
+        if(variables.length > 0)
+        {
+            calcAlignment();
+            data = malloc(getLayoutSize());
+            if(data == null)
+                throw new Exception("Out of memory");
+        }
     }
 
     const(char)* nameStringz() const

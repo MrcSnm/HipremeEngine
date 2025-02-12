@@ -47,6 +47,9 @@ static void printTouchData(SceTouchData* data)
 
 void psv_abort();
 
+///The raw coordinates looks like it is using 1920x1080.
+#define devicePixelRatio  0.5
+
 void hipVitaPollTouch()
 {
 
@@ -75,7 +78,7 @@ void hipVitaPollTouch()
         int id = getTouchId(oldTouch.report[i].id);
         if(id != -1)
         {
-            HipInputOnTouchReleased(id, (float)oldTouch.report[i].x, (float)oldTouch.report[i].y);
+            HipInputOnTouchReleased(id, (float)oldTouch.report[i].x*devicePixelRatio, (float)oldTouch.report[i].y*devicePixelRatio);
             touches[i].vitaID = 0xff;
         }
     }
@@ -88,12 +91,12 @@ void hipVitaPollTouch()
         if(oldId != -1)  //in old
         {
             if(touch.report[i].x != oldTouch.report[i].x || touch.report[i].x != oldTouch.report[i].y)
-                HipInputOnTouchMoved(id, (float)touch.report[i].x, (float)touch.report[i].y);
+                HipInputOnTouchMoved(id, (float)touch.report[i].x*devicePixelRatio, (float)touch.report[i].y*devicePixelRatio);
             continue;
         }
 
         if(id != -1)
-            HipInputOnTouchPressed(id, (float)touch.report[i].x, (float)touch.report[i].y);
+            HipInputOnTouchPressed(id, (float)touch.report[i].x*devicePixelRatio, (float)touch.report[i].y*devicePixelRatio);
     }
 
     oldTouch = touch;
