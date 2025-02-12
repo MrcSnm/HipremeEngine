@@ -59,7 +59,7 @@ private auto getExecFunc(ref Terminal t)
         }
         else
         {
-            t.writelnHighlighted("Executing: ", toExec);
+            t.writelnHighlighted("Executing: ", arg);
             return wait(spawnShell(arg));
         }
     };
