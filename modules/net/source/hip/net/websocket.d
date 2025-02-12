@@ -90,5 +90,14 @@ class WASMWebsocketNetwork : INetwork
         return tempBuffer.length;
     }
 
+    void disconnect()
+    {
+        if(socket != 0)
+        {
+            closeWebsocket(socket);
+            socket = 0;
+        }
+    }
+
     NetConnectionStatus status() const { return _status; }
 }

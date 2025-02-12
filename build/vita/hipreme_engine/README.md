@@ -6,6 +6,13 @@ Hipreme Engine port for the Vita SDK.
 ### Quick Start
 To get it, call `git submodule update --recursive`. This will clone the custom D runtime.
 
+## Checking Debug
+
+- Install on your PS Vita NetLoggingMgrSettings
+- Start listening with netcat on Linux, or, enter at [NetDbgLogPc](tools/NetDbgLogPc.exe) here on Windows.
+- Open NetLoggingMgrSettings on PS Vita and set the IP and Ports used.
+- Hit Update Config. Then Save Config
+
 ### Notices
 
 1. The D custom runtime was started by Adam D. Ruppe, in arsd-webassembly. HipremeEngine has implemented all of the other

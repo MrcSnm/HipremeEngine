@@ -164,6 +164,11 @@ string generateDubProject(DubProjectInfo info)
 			"subConfigurations": {"hipreme_engine": "uwp", "game2d": "direct"}
 		},
 		{
+			"name": "psvita",
+			"targetType": "staticLibrary",
+			"subConfigurations": {"hipreme_engine": "psvita", "game2d": "direct"}
+		},
+		{
 			"name": "run",
 			"targetType": "dynamicLibrary",
 			"lflags-windows": [

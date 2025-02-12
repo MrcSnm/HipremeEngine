@@ -1006,7 +1006,7 @@ int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, strin
 		CompilationDetails(dArgs.getCompiler(), dArgs._arch),
 		ProjectToParse(dArgs._configuration, std.file.getcwd(), null, dArgs._recipe),
 		InitialDubVariables.init,
-		BuildType.profile_gc
+		BuildType.debug_
 	);
 	try {
 		if(buildProject(proj).error) return 1;
@@ -1198,12 +1198,57 @@ void outputTemplateForTarget(ref Terminal t, string target = __MODULE__)
 	outputTemplate(t, buildTarget);
 }
 
-void requireConfiguration(string cfgRequired, string purpose, ref Terminal t, ref RealTimeConsoleInput input)
+bool isIpAddress(string ip)
 {
-	if(!(cfgRequired in configs))
+	import std.ascii;
+	import std.conv:to;
+	import std.string;
+
+    string[] parts = split(ip, ".");
+    if (parts.length != 4) return false;
+
+    foreach (part; parts) {
+        if (part.length == 0 || part.length > 3)
+			 return false;
+		foreach(v; part)
+			if(!isDigit(v))
+				return false;
+        int value = to!int(part);
+        if (value < 0 || value > 255 || (part[0] == '0' && part.length > 1)) return false;
+    }
+
+    return true;
+}
+
+void requireConfiguration(
+	string cfgRequired,
+	string purpose,
+	ref Terminal t,
+	ref RealTimeConsoleInput input,
+	bool function(ref string inOutData) validation = null,
+	string validationFailMsg = "Validation Failure"
+)
+{
+	import std.string:strip;
+
+	while(true)
 	{
-		configs[cfgRequired] = t.getline("Config '"~cfgRequired~"' is required for "~ purpose~ ". \n\tWrite here: ");
-		updateConfigFile();
+		string res = cfgRequired in configs ? configs[cfgRequired].str : null;
+		if(res.length != 0)
+		{
+			if(validation && validation(res))
+				break;
+			t.writelnError(validationFailMsg);
+		}
+		res = t.getline("Config '"~cfgRequired~"' is required for "~ purpose~ ". \n\tWrite here: ").strip();
+
+		if(validation && validation(res))
+		{
+			configs[cfgRequired] = res;
+			updateConfigFile();
+			break;
+		}
+
 	}
 }
 

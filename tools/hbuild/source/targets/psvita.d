@@ -4,12 +4,17 @@ import features.git;
 import commons;
 
 private enum updateCmd = "sudo apt-get update";
-private enum depsInstallCmd = "sudo apt-get install make git-core cmake python curl wget";
+private enum depsInstallCmd = "sudo apt-get install make git-core cmake python3 curl wget bzip2";
 private enum vdpmRepo = "https://github.com/vitasdk/vdpm";
 private enum bootstrapVsdk = "./bootstrap-vitasdk.sh";
 private enum installAllVsdk = "./install-all.sh";
+
+version(Posix)
+    private string vitaSdkPath="/usr/local/vitasdk";
+else
+    private string vitaSdkPath;
+
 private enum vitasdkExports =
-    "\n"~"export VITASDK=/usr/local/vitasdk" ~
     "\n"~"export PATH=$VITASDK/bin:$PATH #adds vitasdk tool to $PATH";
 
 private enum vdpmInstallCmd =
@@ -21,8 +26,8 @@ private enum vdpmInstallCmd =
 
 private bool setupPsvitaLinux(ref Terminal t, ref RealTimeConsoleInput input)
 {
-    std.file.mkdirRecurse("/usr/local/vitasdk");
-    std.file.append(buildPath(environment["HOME"], ".bashrc"), vitasdkExports);
+    string exports = "\n"~"export VITASDK="~vitaSdkPath ~ vitasdkExports;
+    std.file.append(buildPath(environment["HOME"], ".bashrc"), exports);
     t.wait(spawnShell(updateCmd));
     t.wait(spawnShell(depsInstallCmd));
     t.wait(spawnShell(vdpmInstallCmd));
@@ -34,19 +39,36 @@ private string getWslSource()
     return executeShell("wsl echo -n $(wslpath \"%USERPROFILE%\")/.bashrc").output;
 }
 
-private auto getExecFunc()
+private string getWslPath(string inputPath)
+{
+    import std.path;
+    import std.string:replace, toLower;
+    import std.conv;
+    return "/mnt/"~driveName(inputPath)[0].toLower.to!string~replace(inputPath[2..$], '\\', '/');
+}
+
+private auto getExecFunc(ref Terminal t)
 {
     return (scope string arg)
     {
-        version(Windows){return wait(spawnShell("wsl source "~getWslSource~" ^&^& "~arg));}
-        else return wait(spawnShell(arg));
+        version(Windows)
+        {
+            string toExec = "wsl source "~getWslSource~" ^&^& "~arg;
+            t.writelnHighlighted("Executing: ", toExec);
+            return wait(spawnShell(toExec));
+        }
+        else
+        {
+            t.writelnHighlighted("Executing: ", toExec);
+            return wait(spawnShell(arg));
+        }
     };
 }
 
 /** 
  * The first build will simply generate the VPK, by mapping assets, compiling
  * all the required stuff for PSVita, and also including the main binary (eboot.bin)
- * after the first build is done, one must manually install the vita_sample.vpk 
+ * after the first build is done, one must manually install the hipreme_engine.vpk
  * by using the vitashell utility.
  * Params:
  *   t = 
@@ -54,22 +76,22 @@ private auto getExecFunc()
  */
 private bool firstBuild(ref Terminal t)
 {
-    string cwd = std.file.getcwd();
-    std.file.chdir(getHipPath("build", "vita", "hipreme_engine"));
-    scope(exit) std.file.chdir(cwd);
-    t.flush;
-    auto exec = getExecFunc();
-    if(exec("make") != 0)
+    with(WorkingDir(getHipPath("build", "vita", "hipreme_engine")))
     {
-        t.writelnError("Make failed.");
-        return false;
+        t.flush;
+        auto exec = getExecFunc(t);
+        if(exec("make") != 0)
+        {
+            t.writelnError("Make failed.");
+            return false;
+        }
+        if(exec("curl ftp://"~configs["psvIp"].str~":1337/ux0:/ -T ./hipreme_engine.vpk") != 0)
+        {
+            t.writelnError("Could not send the VPK.");
+            return false;
+        }
+        return true;
     }
-    if(exec("curl ftp://"~configs["psvIp"].str~":1337/ux0:/ -T ./vita_sample.vpk") != 0)
-    {
-        t.writelnError("Could not send the VPK.");
-        return false;
-    }
-    return true;
 }
 
 /** 
@@ -86,29 +108,28 @@ private bool firstBuild(ref Terminal t)
 private bool fastBuild(ref Terminal t)
 {
     enum APP_ID = "VSDK00007";
-    auto exec = getExecFunc();
+    auto exec = getExecFunc(t);
 
-    string cwd = std.file.getcwd();
-    std.file.chdir(getHipPath("build", "vita", "hipreme_engine"));
-
-    version(Windows) enum pipe = "^|";
-    else enum pipe = "|";
-
-    scope(exit) std.file.chdir(cwd);
-    exec("make clean");
-    if(exec("make eboot.bin") != 0)
+    with(WorkingDir(getHipPath("build", "vita", "hipreme_engine")))
     {
-        t.writelnError("Could not rebuild.");
-        return false;
+        version(Windows) enum pipe = "^|";
+        else enum pipe = "|";
+
+        // exec("make clean");
+        if(exec("make eboot.bin") != 0)
+        {
+            t.writelnError("Could not rebuild.");
+            return false;
+        }
+        // exec("echo screen on "~pipe~" nc "~configs["psvIp"].str~" "~configs["psvCmdPort"].str);
+        if(exec("curl ftp://"~configs["psvIp"].str~":1337/ux0:/app/"~APP_ID~"/ -T ./eboot.bin") != 0)
+        {
+            t.writelnError("Could not send eboot.bin");
+            return false;
+        }
+        // exec("echo launch "~APP_ID~" "~pipe~" nc "~configs["psvIp"].str~" "~configs["psvCmdPort"].str);
+        return true;
     }
-    exec("echo screen on "~pipe~" nc "~configs["psvIp"].str~" "~configs["psvCmdPort"].str);
-    if(exec("curl ftp://"~configs["psvIp"].str~":1337/ux0:/app/"~APP_ID~"/ -T ./eboot.bin") != 0)
-    {
-        t.writelnError("Could not send eboot.bin");
-        return false;
-    }
-    exec("echo launch "~APP_ID~" "~pipe~" nc "~configs["psvIp"].str~" "~configs["psvCmdPort"].str);
-    return true;
 }
 
 private bool setupPsvitaWindows(ref Terminal t, ref RealTimeConsoleInput input)
@@ -118,17 +139,23 @@ private bool setupPsvitaWindows(ref Terminal t, ref RealTimeConsoleInput input)
         t.writelnError("Please, run a command prompt with administrator access and run `wsl --install` before developing for PSV on Windows.");
         return false;
     }
-    string cwd = std.file.getcwd();
-    std.file.mkdirRecurse(buildPath(cwd, "PSVita", "vitasdk"));
+    string vitaPath = getHipPath("tools", "hbuild", "PSVita");
+
 
     string bashRc = buildPath(environment["USERPROFILE"], ".bashrc");
     string fileToSource = getWslSource();
+
+    vitaSdkPath = getWslPath(buildPath(vitaPath, "vitasdk"));
+
+    string exports = "\n"~"export VITASDK="~vitaSdkPath~vitasdkExports;
     if(std.file.exists(bashRc))
     {
-        if(executeShell("wsl source"~fileToSource~" ^&^& export -p ^| grep VITASDK").status != 0)
-            std.file.append(bashRc, vitasdkExports);
+        import std.algorithm.searching:countUntil;
+        string data = std.file.readText(bashRc);
+        if(countUntil(data, "VITASDK") == -1)
+            std.file.append(bashRc, exports);
     }
-    else std.file.append(bashRc, vitasdkExports);
+    else std.file.append(bashRc, exports);
 
     auto wslExec = (scope string[] commands...)
     {
@@ -147,28 +174,31 @@ private bool setupPsvitaWindows(ref Terminal t, ref RealTimeConsoleInput input)
         t.writelnError("Could not setup vita dependencies");
         return false;
     }
-    std.file.chdir(buildPath(cwd, "PSVita"));
-    if(!std.file.exists("vdpm"))
+    with(WorkingDir(vitaPath))
     {
-        if(wslExec("git clone "~vdpmRepo) != 0)
+        if(!std.file.exists("vdpm"))
         {
-            t.writelnError("Could not clone vdpm");
+            if(wslExec("git clone "~vdpmRepo) != 0)
+            {
+                t.writelnError("Could not clone vdpm");
+                return false;
+            }
+        }
+    }
+    with(WorkingDir(buildPath(vitaPath, "vdpm")))
+    {
+        if(wslExec("which vitasdk-update") != 0 && wslExec(bootstrapVsdk) != 0)
+        {
+            t.writelnError("Could not execute "~bootstrapVsdk);
+            wslExec("sudo rm -rf "~vitaSdkPath);
+            return false;
+        }
+        if(wslExec(installAllVsdk) != 0)
+        {
+            t.writelnError("Could not execute "~installAllVsdk);
             return false;
         }
     }
-    std.file.chdir(buildPath(cwd, "PSVita", "vdpm"));
-    if(wslExec("which vitasdk-update") != 0 && wslExec(bootstrapVsdk) != 0)
-    {
-        t.writelnError("Could not execute "~bootstrapVsdk);
-        wslExec("sudo rm -rf /usr/local/vitasdk");
-        return false;
-    }
-    if(wslExec(installAllVsdk) != 0)
-    {
-        t.writelnError("Could not execute "~installAllVsdk);
-        return false;
-    }
-    std.file.chdir(cwd);
     if(wslExec("vitasdk-update") != 0)
     {
         t.writelnError("Could not update vitasdk");
@@ -204,7 +234,7 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
             return ChoiceResult.Error;
     }
 	cached(() => timed(t, submoduleLoader.execute(t, input)));    
-	cached(() => timed(t, outputTemplateForTarget(t)));    
+    import std.string;
 	executeGameRelease(t);
     putResourcesIn(t, getHipPath("build", "vita", "hipreme_engine", "assets"));
 
@@ -224,38 +254,49 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 
     environment["DFLAGS"] = dflags;
 
-    
-    requireConfiguration("psvIp", "Set up PSVita IP for installing your application via FTP.", t, input);
-    requireConfiguration("psvCmdPort", "Set up PSVita Command Port for automatic execution after compilation+installation.", t, input);
-
-
-    std.file.chdir(configs["hipremeEnginePath"].str);
-
-    if(waitDubTarget(t, "psvita", DubArguments().command("build").deep(true).arch("armv7a-unknown-unknown").opts(cOpts),
-    getHipPath("build", "vita", "hipreme_engine", "libs")) != 0)
+    requireConfiguration("psvIp", "Set up PSVita IP for installing your application via FTP.", t, input, (ref str)
     {
-        t.writelnError("Could not build for PSVita.");
-        return ChoiceResult.Error;
-    }
+        str = str.strip();
+        return isIpAddress(str);
+    }, "psvIp must be a valid IP address");
 
-    static bool isFirstBuild = true;
-    if(isFirstBuild)
+
+    requireConfiguration("psvCmdPort", "Set up PSVita Command Port for automatic execution after compilation+installation.", t, input, (ref str)
     {
-        if(!firstBuild(t))
+        str = str.strip();
+        return isNumeric(str);
+    });
+
+
+    with(WorkingDir(configs["gamePath"].str))
+    {
+        ProjectDetails d;
+        if(waitRedub(t, DubArguments().command("build").configuration("psvita").arch("armv7a-unknown-unknown").opts(cOpts), d,
+        getHipPath("build", "vita", "hipreme_engine", "libs")) != 0)
         {
-            t.writelnError("Could not build PSVita vita_sample.vpk");
+            t.writelnError("Could not build for PSVita.");
             return ChoiceResult.Error;
         }
-        isFirstBuild = false;
-    }
-    else
-    {
-        if(!fastBuild(t))
+
+        static bool isFirstBuild = true;
+        if(isFirstBuild)
         {
-            t.writelnError("Could not do subsequent builds.");
-            return ChoiceResult.Error;
+            if(!firstBuild(t))
+            {
+                t.writelnError("Could not build PSVita hipreme_engine.vpk");
+                return ChoiceResult.Error;
+            }
+            isFirstBuild = false;
+        }
+        else
+        {
+            if(!fastBuild(t))
+            {
+                t.writelnError("Could not do subsequent builds.");
+                return ChoiceResult.Error;
+            }
         }
     }
-    
+
     return ChoiceResult.None;
 }

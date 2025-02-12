@@ -21,11 +21,11 @@ android {
 
     buildTypes {
         release {
+            debuggable true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            jniDebuggable true
             debuggable true
             renderscriptDebuggable true
         }
@@ -35,7 +35,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     namespace 'com.hipremeengine.app'
-    ndkVersion '25.1.8937393'
+    ndkVersion '28.0.12433566'
 }
 
 dependencies {

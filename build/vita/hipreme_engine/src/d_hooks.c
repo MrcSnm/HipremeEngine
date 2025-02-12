@@ -14,6 +14,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <pthread.h>
 #include "debugScreen.h"
@@ -60,7 +61,7 @@ void psv_init_mem()
 	memoryBoundsStart = (uintptr_t)info.mappedBase;
 	memoryBoundsEnd = memoryBoundsStart + info.mappedSize - 1;
 
-	sceClibPrintf("\n\nStarted PSV Memory at [%u..%u]\n\n", memoryBoundsStart, memoryBoundsEnd);
+	sceClibPrintf("\n\nStarted PSV Memory at [%u..%u] (Max %u )\n\n", memoryBoundsStart, memoryBoundsEnd, memoryBoundsEnd - memoryBoundsStart);
 	free(temp);
 }
 
@@ -73,49 +74,34 @@ void* psv_malloc(size_t sz)
 {
 	void* ret = malloc(sz);
 	if(ret == 0)
-	{
 		psv_out_of_mem();
-		return 0;
-	}
-	return ret;
-}
-
-
-void* psv_realloc_slice(size_t oldLength, void* ptr, size_t newSize)
-{
-	// void* ret = psv_malloc(newSize);
-	void* ret = realloc(ptr, newSize);
-	// if(ptr != 0)
-	// {
-	// 	sceClibMemcpy_safe(ret, ptr, oldLength);
-	// 	if(!psv_isOnHeap(ptr))
-	// 	{
-	// 		sceClibPrintf("%p !!  !!  %.*s\n", ptr, oldLength, ptr);
-	// 	}
-	// 	if(IS_ON_HEAP(ptr))
-	// 		free(ptr);
-	// }
 	return ret;
 }
 
 
 void* psv_realloc(void* ptr, size_t newSize)
 {
-	// if(IS_ON_HEAP(ptr))
-		// return realloc(ptr, newSize);
-	// void* ret = psv_malloc(newSize);
-	void* ret = realloc(ptr, newSize);
-	// if(ptr != 0)
-	// {
-	// 	size_t sz = 0;
-	// 	while(((char*)ptr)[sz] != '\0') sz++;
-	// 	sceClibMemcpy_safe(ret, ptr, sz);
+	ptr = realloc(ptr, newSize);
+	if(ptr == 0)
+		psv_out_of_mem();
+	return ptr;
+}
 
-		// if(IS_ON_HEAP(ptr))
-			// free(ptr);
-	// }
+
+/**
+ * Realloc is not really working for some unknown reason. So it wlll use a less efficient
+ * version (malloc, copy and free)
+ */
+void* psv_realloc_slice(size_t oldLength, void* ptr, size_t newSize)
+{
+	void* ret = psv_malloc(newSize);
+	size_t copySize = oldLength > newSize ? newSize : oldLength;
+	memcpy(ret, ptr, copySize);
+	free(ptr);
+
 	return ret;
 }
+
 
 void* psv_calloc(size_t count, size_t newSize){return calloc(count, newSize);}
 

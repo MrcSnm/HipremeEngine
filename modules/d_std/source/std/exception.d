@@ -6,6 +6,12 @@ void enforce(bool cond, lazy string onThrow, string file = __FILE__, size_t line
     if(cond)
         throw new Exception(onThrow, null, file, line);
 }
+
+void enforce(bool cond, lazy Exception onThrow, string file = __FILE__, size_t line = __LINE__) pure @trusted
+{
+    if(cond)
+        throw onThrow;
+}
 void enforce(T)(bool cond, lazy string onThrow, string file = __FILE__, size_t line = __LINE__) pure @trusted
 {
     if(cond)

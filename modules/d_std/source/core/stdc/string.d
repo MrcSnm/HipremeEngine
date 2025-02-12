@@ -43,4 +43,11 @@ extern(C) extern @nogc nothrow pure
     int strcmp (const char* str1, const char* str2);
     char *strstr(const char *haystack, const char *needle);
     char* strcpy(char* destination, const char* source);
+
+
+
+    version(PSVita)
+    {
+        int strerror_r(int errnum, scope char* buf, size_t buflen);
+    }
 }

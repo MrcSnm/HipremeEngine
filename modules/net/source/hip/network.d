@@ -18,7 +18,7 @@ enum IPType
 
 private string enumFromTypes(T...)(string enumName, string enumType)
 {
-	string ret = "enum "~enumName~": "~enumType~"{ invalid = 0, ";
+	string ret = "enum "~enumName~": "~enumType~"{ invalid = 0, disconnect = 1, ";
 	static foreach(t; T)
 	{
 		static assert(is(t == struct) || is(t == enum), "MarkNetData only works for enums and structs.");
@@ -35,6 +35,8 @@ private string enumFromTypes(T...)(string enumName, string enumType)
  */
 template MarkNetData(T...)
 {
+	enum PredefinedTypesCount = 2; //invalid = 0, disconnect = 1
+
 	static if(T.length <= ubyte.max)
 		alias idType = ubyte;
 	else static if(T.length <= ushort.max)
@@ -65,10 +67,17 @@ template MarkNetData(T...)
 			static struct TypedData
 			{
 				t actualData;
-				idType typeID = i + 1; //Invalid is 0
+				idType typeID = i + PredefinedTypesCount;
 			}
-			net.sendData(TypedData(data, i+1));
+			net.sendData(TypedData(data, i+PredefinedTypesCount));
 		}
+	}
+
+	void sendDisconnect(HipNetwork net)
+	{
+		import std.stdio;
+		writeln("Sending disconnect msg");
+		net.sendData(cast(idType)Types.disconnect);
 	}
 
 	/**
@@ -150,6 +159,8 @@ interface INetwork
 
 	///Sends the data by using a header
 	bool sendData(ubyte[] data);
+
+	void disconnect();
 
 	size_t getData(ref ubyte[] tempBuffer);
 	NetConnectionStatus status() const;
@@ -243,7 +254,9 @@ T convertNetworkData(T)(NetHeader header, ubyte[] data)
 }
 
 
-class HipNetwork
+private extern(C) extern __gshared int onlineSockets;
+
+final class HipNetwork
 {
 	INetwork netInterface;
 	NetBufferStream currentStream;
@@ -256,6 +269,8 @@ class HipNetwork
 		uint id;
 	}
 	private ConnectInformation connInfo;
+	private bool attemptedConnection;
+
 	this()
 	{
 		netInterface = getNetworkImplementation();
@@ -263,6 +278,12 @@ class HipNetwork
 
 	NetConnectionStatus connect(NetIPAddress ip, uint id = NetID.server)
 	{
+		if(!attemptedConnection)
+		{
+			// onlineSockets++;
+			// onlineSockets~= this;
+			attemptedConnection = true;
+		}
 		connInfo = ConnectInformation(ip, id);
 		return netInterface.connect(ip, id);
 	}
@@ -420,6 +441,15 @@ class HipNetwork
 			toNetworkBytesInPlace(data);
 		}
 		return ret;
+	}
+
+	void disconnect()
+	{
+		if(status == NetConnectionStatus.connected)
+		{
+			MarkNetData!().sendDisconnect(this);
+			netInterface.disconnect();
+		}
 	}
 	NetConnectionStatus status() const { return netInterface.status; }
 

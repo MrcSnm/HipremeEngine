@@ -4,6 +4,9 @@
 	],
 	"sourcePaths": [],
 	"importPaths": [],
+	"dependencies": {
+		"util": {"path": "../util"}
+	},
 	"configurations": [
 		{
 			"name": "default"

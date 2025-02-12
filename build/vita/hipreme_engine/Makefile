@@ -15,23 +15,23 @@ VITA_MAKE_FSELF := vita-make-fself
 VITA_MKSFOEX := vita-mksfoex
 
 # Check for WSL
-ifeq ($(shell test -e /proc/sys/fs/binfmt_misc/WSLInterop && echo -n yes), yes)
-	CC := arm-vita-eabi-gcc.exe
-	CXX := arm-vita-eabi-g++.exe
-	DC := ldc2.exe
-	STRIP := arm-vita-eabi-strip.exe
-	VITA_ELF_CREATE := vita-elf-create.exe
-	VITA_MKSFOEX := vita-mksfoex.exe
-	VITA_PACK_VPK := vita-pack-vpk.exe
-	VITA_MAKE_FSELF := vita-make-fself.exe
-endif
+# ifeq ($(shell test -e /proc/sys/fs/binfmt_misc/WSLInterop && echo -n yes), yes)
+# 	CC := arm-vita-eabi-gcc.exe
+# 	CXX := arm-vita-eabi-g++.exe
+# 	DC := ldc2.exe
+# 	STRIP := arm-vita-eabi-strip.exe
+# 	VITA_ELF_CREATE := vita-elf-create.exe
+# 	VITA_MKSFOEX := vita-mksfoex.exe
+# 	VITA_PACK_VPK := vita-pack-vpk.exe
+# 	VITA_MAKE_FSELF := vita-make-fself.exe
+# endif
 
 DFLAGS := -betterC -gcc="/usr/local/vitasdk/bin/$(CC)" -mtriple=armv7a-unknown-unknown --float-abi=hard -mcpu=cortex-a9
 
-PROJECT_TITLE := Hello World
+PROJECT_TITLE := Hipreme Engine
 PROJECT_TITLEID := VSDK00007
 
-PROJECT := vita_sample
+PROJECT := hipreme_engine
 CFLAGS += -Wl,-q -Iinclude -Isrc_extra
 CXXFLAGS += -Wl,-q -std=c++11 
 SRC_C :=$(call rwildcard, src/, *.c)
@@ -43,10 +43,10 @@ OBJS := $(addprefix out/, $(SRC_C:src/%.c=%.o)) $(addprefix out/, $(SRC_CPP:src/
 
 
 # Hipreme Engine
-LIBS += -lhipreme_engine -lassets -laudio -lfilesystem -lfont -larsd-official_ttf -lrenderer  -ld_std
-LIBS += -laudio_decoding -laudio-formats -lBindBC_OpenAL -lbind
+LIBS += -lchess2 -lhipreme_engine -lchess2 -lassets -lconcurrency -laudio -lfilesystem -lfont -larsd-official_ttf -larsd-official_core -lrenderer -lrenderer_core -lrenderer_gl
+LIBS += -laudio_decoding -laudio-formats -lBindBC_OpenAL -lbind -lnet
 LIBS += -ldata -lgles -limage -lerror -lconsole -lconfig -ldebugging -lgamut 
-LIBS += -lintel-intrinsics -lmath -lwindowing -lruntime -ltween -ltimer -lhipengine_api -lutil
+LIBS += -lintel-intrinsics -lmath -lwindowing -lruntime -ltween -ltimer -lhipengine_api_bindings -lhipengine_api_interfaces -ld_std -lutil -ld_std
 
 # In future try to use the libIncludes.
 # LIBS += $(shell cat libIncludes.txt)
@@ -59,7 +59,7 @@ all: package
 
 package: $(PROJECT).vpk
 
-$(PROJECT).vpk: eboot.bin param.sfo
+$(PROJECT).vpk: eboot.bin param.sfo sce_sys/icon0.png sce_sys/livearea/contents/bg.png sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/template.xml
 	$(VITA_PACK_VPK) -s param.sfo -b eboot.bin \
 		--add module/libIMGEGL.suprx=module/libIMGEGL.suprx \
 		--add module/libpvr2d.suprx=module/libpvr2d.suprx \
@@ -83,7 +83,7 @@ $(PROJECT).velf: $(PROJECT).elf
 	$(STRIP) -g $<
 	$(VITA_ELF_CREATE) $< $@
 
-$(PROJECT).elf: $(OBJS)
+$(PROJECT).elf: $(OBJS) $(wildcard libs/*.a)
 	$(CXX) $(CXXFLAGS) $^  -L/usr/local/vitasdk/arm-vita-eabi/lib/ -L. -Llibs -Lthirdparty $(LIBS) -o $@
 
 out/%.o : src/%.cpp | $(OBJ_DIRS)

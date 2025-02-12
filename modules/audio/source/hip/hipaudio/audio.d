@@ -49,6 +49,7 @@ class HipAudio
     int  optimalBufferSize = 4096,
     int optimalSampleRate = 44_100)
     {
+        import hip.console.log;
         ErrorHandler.startListeningForErrors("HipremeAudio initialization");
         _hasInitializedAudio = true;
         HipAudio.is3D = is3D;
@@ -57,6 +58,13 @@ class HipAudio
         HipAudio.hasLowLatencyAudio = hasLowLatencyAudio;
         HipAudio.optimalBufferSize  = optimalBufferSize;
         HipAudio.optimalSampleRate  = optimalSampleRate;
+
+        loglnInfo("Hipreme Audio Started: ", implementation,
+            "\nPro Audio: ", hasProAudio,
+            "\nLow Latency: ", hasLowLatencyAudio,
+            "\nOptimal Buffer Size: ", optimalBufferSize,
+            "\nOptimal Sample Rate: ", optimalSampleRate
+        );
         return ErrorHandler.stopListeningForErrors();
     }
     @ExportD static bool pause(AHipAudioSource src)

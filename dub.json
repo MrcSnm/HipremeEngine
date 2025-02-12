@@ -187,7 +187,12 @@
 		},
 		{
 			"name": "psvita",
+			"targetType": "staticLibrary",
 			"versions": ["Standalone", "dll"],
+			"dependencies": {
+				"d_std": {"path": "modules/d_std"},
+				"runtime": {"path": "dependencies/runtime"}
+			},
 			"subConfigurations": {
 				"runtime": "psvita",
 				"d_std": "psvita",

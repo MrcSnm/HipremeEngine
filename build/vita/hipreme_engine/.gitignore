@@ -19,9 +19,9 @@ out
 eboot.bin
 libDLibrary.a
 param.sfo
-vita_sample.elf
-vita_sample.velf
-vita_sample.vpk
+hipreme_engine.elf
+hipreme_engine.velf
+hipreme_engine.vpk
 dub.selections.json
 include
 libs
