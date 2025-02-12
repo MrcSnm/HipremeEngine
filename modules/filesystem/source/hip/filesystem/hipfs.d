@@ -296,7 +296,6 @@ class HipFileSystem
             hiplog("Invalid path ",path," received.");
             return null;
         }
-        hiplog("Path validated.");
         filesReadingCount++;
 
         HipFSPromise promise = new HipFSPromise(path);

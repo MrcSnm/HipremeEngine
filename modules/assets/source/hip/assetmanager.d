@@ -137,7 +137,6 @@ class HipAssetManager
     static if(HipConcurrency)
     {
         import core.sync.mutex;
-        // import std.compiler;
     }
 
 
@@ -172,6 +171,11 @@ class HipAssetManager
         workerPool.await;
         update();
     }
+    ///Makes the worker pool to actually start loading
+    @ExportD static void startLoading()
+    {
+        workerPool.startWorking();
+    }
 
 
     static void awaitTask(IHipAssetLoadTask task)
@@ -198,15 +202,6 @@ class HipAssetManager
         //TODO: Make it don't use at all worker and threads.
         //? Maybe it is not actually needed, as it can be handled by version(HipConcurrency)
         return workerPool.pushTask(taskName, loadFn, onFinish, onMainThread);
-        // if(isAsync)
-        //     return workerPool.pushTask(taskName, loadFn, onFinish, onMainThread);
-        // else
-        // {
-        //     loadFn();
-        //     if(onFinish !is null)
-        //         onFinish(taskName);
-        // }
-        // return null;
     }
 
     /** 
@@ -362,7 +357,6 @@ class HipAssetManager
             });
         };
         IHipAssetLoadTask task = loadSimple("Load File ", filePath, assetLoadFunc, f, l);
-        workerPool.startWorking();
         return task;
     }
 
@@ -384,7 +378,6 @@ class HipAssetManager
         import hip.asset_manager.load_task;
 
         IHipAssetLoadTask task = loadSimple("Load Image ", imagePath, assetLoadFunc, f, l);
-        workerPool.startWorking();
         return task;
     }
 
@@ -414,7 +407,6 @@ class HipAssetManager
             });
         };
         IHipAssetLoadTask task = loadSimple("Load AudioClip", audioPath, assetLoadFunc, f, l);
-        workerPool.startWorking();
         return task;
     }
 
@@ -450,7 +442,6 @@ class HipAssetManager
             freeGCMemory(gcObjCopy); 
         };
         IHipAssetLoadTask task = loadComplex("Load Texture", texturePath, assetLoadFunc, onPartialDataLoaded, f, l);
-        workerPool.startWorking();
         return task;
     }
 
@@ -470,7 +461,6 @@ class HipAssetManager
                 onError("Error reading file: "~ err);
             });
         }, f, l);
-        workerPool.startWorking();
         return task;
     }
     @ExportD static IHipAssetLoadTask loadINI(string path, string f = __FILE__, size_t l = __LINE__)
@@ -489,7 +479,6 @@ class HipAssetManager
             });
         }, f, l);
 
-        workerPool.startWorking();
         return task;
     }
     @ExportD static IHipAssetLoadTask loadJSONC(string path, string f = __FILE__, size_t l = __LINE__)
@@ -508,7 +497,6 @@ class HipAssetManager
             });
         }, f, l);
 
-        workerPool.startWorking();
         return task;
     }
 
@@ -559,7 +547,6 @@ class HipAssetManager
         };
         IHipAssetLoadTask task = loadComplex("Load TextureAtlas", atlasPath, assetLoadFunc, onPartialDataLoaded, f, l);
 
-        workerPool.startWorking();
         return task;
     }
 
@@ -596,7 +583,6 @@ class HipAssetManager
             }
             onSuccess(map);
         }, f, l);
-        workerPool.startWorking();
         return task;
     }
 
@@ -632,7 +618,6 @@ class HipAssetManager
                 assert(false, "Could not load HipTileset texture " ~ tileset.path);
             onSuccess(tileset);
         }, f, l);
-        workerPool.startWorking();
         return task;
     }
 
@@ -703,7 +688,6 @@ class HipAssetManager
             HipFontAsset fnt = new HipFontAsset(i.font);
             onSuccess(fnt);
         }, f, l);
-        workerPool.startWorking();
         return task;
     }
 
@@ -764,7 +748,6 @@ class HipAssetManager
             freeGCMemory(partialData);
 
         }, f, l);
-        workerPool.startWorking();
         return task;
     }
     

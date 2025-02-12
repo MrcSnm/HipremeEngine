@@ -15,6 +15,7 @@ import hip.config.opts;
 static if(HipConcurrency)
 {
     import core.thread;
+    import core.atomic;
     import core.sync.semaphore:Semaphore;
 
     class HipWorkerThread : Thread
@@ -27,7 +28,9 @@ static if(HipConcurrency)
         }
         private WorkerJob[] jobsQueue;
         private Semaphore semaphore;
-        private bool isAlive;
+        private bool isAlive = false;
+
+        private int jobsCount;
         private DebugMutex mutex;
         private HipWorkerPool pool;
         private ThreadID mainThreadID;
@@ -48,31 +51,23 @@ static if(HipConcurrency)
         */
         void finish()
         {
-            mutex.lock();
-            isAlive = false;
+            isAlive.atomicStore = false;
             semaphore.notify;
-            mutex.unlock();
         }
         bool isIdle()
         {
-            mutex.lock();
-            bool ret = isIdleImpl();
-            mutex.unlock();
-            return ret;
-        }
-        private bool isIdleImpl()
-        {
-            return jobsQueue.length == 0;
+            return atomicLoad(jobsCount) == 0;
         }
         /**
         *   Synchronized push on queue
         */
         void pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null)
         {
-            if(isAlive)
+            if(isAlive.atomicLoad)
             {
                 mutex.lock();
                 jobsQueue~= WorkerJob(name, task, onTaskFinish);
+                jobsCount++;
                 mutex.unlock();
                 semaphore.notify();
             }
@@ -98,20 +93,18 @@ static if(HipConcurrency)
         {
             while(isAlive)
             {
-                mutex.lock();
-                if(!isIdleImpl)
+                if(!isIdle)
                 {
+                    mutex.lock();
                     WorkerJob job = jobsQueue[0];
+                    jobsQueue = jobsQueue[1..$];
                     mutex.unlock();
                     try
                     {
-                        mutex.lock();
                         job.task();
                         if(job.onTaskFinish != null)
-                        {
                             job.onTaskFinish(job.name);
-                        }
-                        mutex.unlock();
+                        atomicFetchSub(jobsCount, 1);
                     }
                     catch(Error e)
                     {
@@ -123,12 +116,7 @@ static if(HipConcurrency)
                         onAnyException(false, e.toString());
                         return;
                     }
-                    mutex.lock();
-                    jobsQueue = jobsQueue[1..$];
-                    mutex.unlock();
                 }
-                else
-                    mutex.unlock();
                 semaphore.wait;
             }
         }
@@ -161,10 +149,17 @@ static if(HipConcurrency)
             string name;
             void delegate() task;
             void delegate(string taskName) onTaskFinish = null;
+
+            void execTask()
+            {
+                task();
+                if(onTaskFinish)
+                    onTaskFinish(name);
+            }
         }
         private Task[] mainThreadTasks;
         private uint awaitCount = 0;
-        private size_t tasksCount;
+        private shared size_t tasksCount;
 
 
         this(size_t poolSize)
@@ -219,18 +214,26 @@ static if(HipConcurrency)
             }
         }
         /**
-        *   If there is no idle thread, null will be returned and the task and onFinish callbacks will be executed on that same thread.
-        *   - Keep in mind that pushin task is not enough. You need to call startWorking() to make it active after pushing tasks
+        *   Adds a task to the pool. If no idle worker is available, the task is executed on the main thread.
+        *   Keep in mind that pushin task is not enough. You need to call `startWorking()` to make it active after pushing tasks
+        * Params:
+        *   name = The name of the task.
+        *   task = The task to execute.
+        *   onTaskFinish = Callback to execute when the task completes.
+        *   isOnFinishOnMainThread = If true, the callback is executed on the main thread.
+        *
+        * Returns:
+        *   The worker thread handling the task or null if the task will be executed on main thread
         */
         HipWorkerThread pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null, bool isOnFinishOnMainThread = false)
         {
-            handlersMutex.lock();
-            tasksCount++;
-            handlersMutex.unlock();
-            foreach(thread; threads)
+            atomicFetchAdd(tasksCount, 1);
+            foreach(i, thread; threads)
             {
                 if(thread.isIdle)
                 {
+                    import hip.console.log;
+                    logln("Thread [", i, "] handling task ", name);
                     if(onTaskFinish !is null && isOnFinishOnMainThread)
                         thread.pushTask(name, task, notifyOnFinishOnMainThread(onTaskFinish));
                     else
@@ -238,27 +241,25 @@ static if(HipConcurrency)
                     return thread;
                 }
             }
-            //Execute a main thread task if it had anything.
             handlersMutex.lock();
+            scope(exit) handlersMutex.unlock();
+            //Execute a main thread task if it had anything.
             mainThreadTasks~= Task(name, task, notifyOnFinish(onTaskFinish));
-            handlersMutex.unlock();
             return null;
         }
 
         protected void executeMainThreadTasks()
         {
             handlersMutex.lock();
+            Task[] tasks;
             if(mainThreadTasks.length != 0)
             {
-                foreach(mainThreadTask; mainThreadTasks)
-                {
-                    mainThreadTask.task();
-                    if(mainThreadTask.onTaskFinish != null)
-                        mainThreadTask.onTaskFinish(mainThreadTask.name);
-                }
+                tasks = mainThreadTasks.dup;
                 mainThreadTasks.length = 0;
             }
             handlersMutex.unlock();
+            foreach(t; tasks)
+                t.execTask();
         }
 
         /**
@@ -276,11 +277,9 @@ static if(HipConcurrency)
         {
             return (name)
             {
-                handlersMutex.lock();
-                    if(onFinish)
-                        onFinish(name);
-                    tasksCount--;
-                handlersMutex.unlock();
+                if(onFinish)
+                    onFinish(name);
+                atomicFetchSub(tasksCount, 1);
             };
         }
 
@@ -293,7 +292,7 @@ static if(HipConcurrency)
                     {
                         onFinish(name);
                         if(finished)
-                            tasksCount--;
+                            atomicFetchSub(tasksCount, 1);
                     };
                 handlersMutex.unlock();
             };
@@ -301,10 +300,7 @@ static if(HipConcurrency)
 
         bool isIdle()
         {
-            foreach(thread; threads)
-                if(!thread.isIdle)
-                    return false;
-            return true;
+            return atomicLoad(tasksCount) == 0;
         }
 
         void pollFinished()
@@ -438,7 +434,7 @@ else
         {
             foreach(task; tasks)           
             {
-                task.task();
+                task.execTask();
                 if(task.onTaskFinish)
                     task.onTaskFinish(task.name);
             }

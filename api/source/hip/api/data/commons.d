@@ -212,6 +212,7 @@ mixin template LoadReferencedAssets(string[] modules)
                 }
             }}
         }}
+        HipAssetManager.startLoading();
     }
 }
 

@@ -25,6 +25,9 @@ version(ScriptAPI)
             ///Stops the code from running and awaits asset manager to finish loading
             void function() awaitLoad;
 
+            ///Makes the worker pool to actually start loading
+            void function() startLoading;
+
 
             
             /** 
