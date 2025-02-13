@@ -21,12 +21,13 @@ version(ScriptAPI)
         extern(System) __gshared
         {
             ///Returns whether asset manager is loading anything
-            bool function() isLoading;
+            bool function(string file = __FILE__, uint line = __LINE__) isLoading;
+
             ///Stops the code from running and awaits asset manager to finish loading
             void function() awaitLoad;
 
-            ///Makes the worker pool to actually start loading
-            void function() startLoading;
+            ///Gets how many assets there is to load.
+            int function() getAssetsToLoadCount;
 
 
             

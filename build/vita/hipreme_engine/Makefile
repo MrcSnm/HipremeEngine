@@ -43,7 +43,7 @@ OBJS := $(addprefix out/, $(SRC_C:src/%.c=%.o)) $(addprefix out/, $(SRC_CPP:src/
 
 
 # Hipreme Engine
-LIBS += -lchess2 -lhipreme_engine -lchess2 -lassets -lconcurrency -laudio -lfilesystem -lfont -larsd-official_ttf -larsd-official_core -lrenderer -lrenderer_core -lrenderer_gl
+LIBS += -lchess2 -lgame2d -lhipreme_engine -lchess2 -lassets -lconcurrency -laudio -lfilesystem -lfont -larsd-official_ttf -larsd-official_core -lrenderer -lrenderer_core -lrenderer_gl
 LIBS += -laudio_decoding -laudio-formats -lBindBC_OpenAL -lbind -lnet
 LIBS += -ldata -lgles -limage -lerror -lconsole -lconfig -ldebugging -lgamut 
 LIBS += -lintel-intrinsics -lmath -lwindowing -lruntime -ltween -ltimer -lhipengine_api_bindings -lhipengine_api_interfaces -ld_std -lutil -ld_std

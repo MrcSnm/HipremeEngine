@@ -52,7 +52,7 @@ abstract class HipAsset : ILoadable, IHipAsset
     void startLoading()
     {
         import hip.util.time;
-        startLoadingTimestamp = HipTime.getCurrentTimeAsMilliseconds();
+        startLoadingTimestamp = HipTime.getCurrentTimeAsMs();
     }
 
     void finishLoading()
@@ -61,7 +61,7 @@ abstract class HipAsset : ILoadable, IHipAsset
         if(isReady())
         {
             onFinishLoading();
-            loadTime = HipTime.getCurrentTimeAsMilliseconds() - startLoadingTimestamp;
+            loadTime = HipTime.getCurrentTimeAsMs() - startLoadingTimestamp;
         }
     }
 

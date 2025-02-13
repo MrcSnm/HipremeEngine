@@ -28,19 +28,19 @@ final class HipButtonMetadata : AHipButtonMetadata
     override float getDownTimeDuration() const
     {
         if(_isPressed)
-            return (HipTime.getCurrentTimeAsMilliseconds() - downTimeStamp) / 1000;
+            return (HipTime.getCurrentTimeAsMs() - downTimeStamp) / 1000;
         return 0;
     }
     override float getUpTimeDuration() const
     {
         if(!_isPressed)
-            return (HipTime.getCurrentTimeAsMilliseconds() - upTimeStamp) / 1000;
+            return (HipTime.getCurrentTimeAsMs() - upTimeStamp) / 1000;
         return 0;
     }
     override void setPressed(bool press)
     {
         _isNewState = false;
-        float currTime = HipTime.getCurrentTimeAsMilliseconds();
+        float currTime = HipTime.getCurrentTimeAsMs();
         if(currTime - timeStartedCheckingRestart > timeUntilRestartMulticlick)
         {
             clickCount = 0;

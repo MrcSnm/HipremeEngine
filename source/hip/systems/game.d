@@ -93,13 +93,15 @@ class GameSystem
         });
         inputListener = new HipInputListener(dispatcher);
         scriptInputListener = new HipInputListener(dispatcher);
+
+        import hip.console.log;
         inputListener.addKeyboardListener(HipKey.ESCAPE, 
             (meta){hasFinished = true;}
         );
-        inputListener.addKeyboardListener(HipKey.F1, 
-            (meta){import hip.bind.interpreters; reloadInterpreter();},
-            HipButtonType.up
-        );
+        // inputListener.addKeyboardListener(HipKey.F1,
+        //     (meta){import hip.bind.interpreters; reloadInterpreter();},
+        //     HipButtonType.up
+        // );
 
         version(Load_DScript)
         {
@@ -183,6 +185,8 @@ class GameSystem
 
     void startGame()
     {
+        import hip.view.load_scene;
+        import hip.assetmanager;
         version(Test)
         {
             // addScene(new SoundTestScene());
@@ -204,9 +208,18 @@ class GameSystem
         }
         else version(Standalone)
         {
+            import hip.console.log;
+            hiplog("Starting Game");
             externalScene = HipremeEngineMainScene();
             addScene(externalScene);
         }
+
+        LoadingScene load = new LoadingScene();
+        addScene(load, false);
+        HipAssetManager.addOnLoadingFinish(()
+        {
+            removeScene(load);
+        });
     }
 
     void recompileReloadExternalScene()
@@ -233,10 +246,11 @@ class GameSystem
     /**
     *   Adding a scene will initialize them, while checking for assets referencing for auto loading them.
     */
-    void addScene(AScene s)
+    void addScene(AScene s, bool isOnLoadFinish = true)
     {
         import hip.assetmanager;
-        HipAssetManager.addOnLoadingFinish(()
+
+        auto onLoadFn = ()
         {
             import hip.console.log;
             version(CustomRuntime)
@@ -256,8 +270,20 @@ class GameSystem
                 }
                 catch (Error e){scriptFatalError(e);}
             }
-        });
+        };
+        if(isOnLoadFinish)
+            HipAssetManager.addOnLoadingFinish(onLoadFn);
+        else
+            onLoadFn();
+        // }
     }
+
+    void removeScene(AScene s)
+    {
+        import hip.util.array:remove;
+        remove(scenes, s);
+    }
+
 
     bool update(float deltaTime)
     {
@@ -277,10 +303,12 @@ class GameSystem
             frames = 0;
             fpsAccumulator = 0;
         }
+        import hip.console.log;
+
         HipAudio.update();
         HipTimerManager.update(deltaTime);
         HipAssetManager.update();
-        
+
         version(Load_DScript)
         {
             if(watcher.update())

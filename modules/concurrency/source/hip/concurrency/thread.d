@@ -248,19 +248,43 @@ static if(HipConcurrency)
             return null;
         }
 
-        protected void executeMainThreadTasks()
+        static if(!HIP_ASSETMANAGER_PARTIAL_LOAD)
         {
-            handlersMutex.lock();
-            Task[] tasks;
-            if(mainThreadTasks.length != 0)
+            protected void executeMainThreadTasks()
             {
-                tasks = mainThreadTasks.dup;
-                mainThreadTasks.length = 0;
+                handlersMutex.lock();
+                Task[] tasks;
+                if(mainThreadTasks.length != 0)
+                {
+                    tasks = mainThreadTasks.dup;
+                    mainThreadTasks.length = 0;
+                }
+                handlersMutex.unlock();
+                foreach(t; tasks)
+                    t.execTask();
             }
-            handlersMutex.unlock();
-            foreach(t; tasks)
-                t.execTask();
         }
+        else
+        {
+            protected void executeMainThreadTasks()
+            {
+                handlersMutex.lock();
+                scope(exit) handlersMutex.unlock();
+                import hip.util.time;
+                long timeNow = HipTime.getCurrentTimeAsMsLong();
+
+                size_t executed;
+                foreach(t; mainThreadTasks)
+                {
+                    t.execTask();
+                    executed++;
+                    if(HipTime.getCurrentTimeAsMsLong() - timeNow > HIP_ASSETMANAGER_MAX_PROCESS_MS)
+                        break;
+                }
+                mainThreadTasks = mainThreadTasks[executed..$];
+            }
+        }
+
 
         /**
         *   This function should be called every time you push a task.
@@ -296,6 +320,10 @@ static if(HipConcurrency)
                     };
                 handlersMutex.unlock();
             };
+        }
+        int getTasksCount()
+        {
+            return cast(int)atomicLoad(tasksCount);
         }
 
         bool isIdle()
@@ -401,6 +429,11 @@ else
                 onAllTasksFinishHandlers.length = 0;
             }
         }
+        int getTasksCount()
+        {
+            return cast(int)tasksCount;
+        }
+
         final HipWorkerThread pushTask(string name, void delegate() task, void delegate(string taskName) onTaskFinish = null, bool isOnFinishOnMainThread = true)
         {
             tasksCount++;
@@ -432,15 +465,27 @@ else
 
         final void startWorking()
         {
-            foreach(task; tasks)           
+            import hip.util.time;
+            long timeNow = HipTime.getCurrentTimeAsMsLong();
+            size_t executed;
+            foreach(task; tasks)
             {
-                task.execTask();
+                task.task();
                 if(task.onTaskFinish)
                     task.onTaskFinish(task.name);
+                executed++;
+                static if(HIP_ASSETMANAGER_PARTIAL_LOAD)
+                {
+                    if(HipTime.getCurrentTimeAsMsLong() - timeNow > HIP_ASSETMANAGER_MAX_PROCESS_MS)
+                        break;
+                }
             }
-            tasks.length = 0;
+            tasks = tasks[executed..$];
         }
 
-        bool isIdle(){return tasks.length == 0;}
+        bool isIdle()
+        {
+            assert(false, "HipWorkerThread is not reliable to use isIdle since on WASM it returns immediately most functions since they are processed on background.");
+        }
     }
 }

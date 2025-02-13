@@ -168,8 +168,10 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	HipTime.initialize();
 	Random.initialize();
 	initEngine(true);
+
 	if(isUsingInterpreter)
 		startInterpreter(interpreterEntry.intepreter);
+
 
 	version(Android)
 	{
@@ -218,6 +220,8 @@ version(WebAssembly) extern(C) void WasmStartGameLoop();
 
 void gameInitialize()
 {
+	import hip.console.log;
+	loglnInfo("Initializing Asset Manager");
 	HipAssetManager.initialize();
 	sys = new GameSystem(FRAME_TIME);
 
@@ -233,12 +237,20 @@ void gameInitialize()
 	version(Desktop){HipremeDesktopGameLoop();}
 	else version(WebAssembly){WasmStartGameLoop();}
 }
+import hip.network;
+
 
 /** 
  * This function will destroy SDL and dispose every resource
  */
 static void destroyEngine()
 {
+	// hiplog("Closing ", onlineSockets.length, " Socket ", " Connections");
+	// foreach(socket; onlineSockets)
+	// {
+	// 	socket.disconnect();
+	// }
+
 	sys.quit();
 	HipRenderer.dispose();
 	HipAudio.onDestroy();
@@ -338,8 +350,8 @@ version(Desktop)
 	void HipremeDesktopGameLoop()
 	{
 		import hip.util.time;
-		// import core.time:dur;
-		// import core.thread.osthread;
+		import core.time:dur;
+		import core.thread : Thread;
 		bool isUpdating = true;
 		while(isUpdating)
 		{
@@ -347,7 +359,7 @@ version(Desktop)
 			long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
 			if(sleepTime > 0)
 			{
-				// Thread.sleep(dur!"msecs"(sleepTime));
+				Thread.sleep(dur!"msecs"(sleepTime));
 			}
 			isUpdating = HipremeUpdateBase();
 			HipremeRender();

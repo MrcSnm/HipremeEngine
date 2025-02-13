@@ -164,19 +164,19 @@ class HipAssetManager
     static pragma(inline, true) T get(T : string)(string name) {return getStringAsset(name);}
 
     ///Returns whether asset manager is loading anything
-    @ExportD static bool isLoading(){return !workerPool.isIdle;}
+    @ExportD static bool isLoading(string file = __FILE__, uint line = __LINE__)
+    {
+        return workerPool.getTasksCount != 0;
+    }
+    ///Returns whether asset manager is loading anything
+    @ExportD static int getAssetsToLoadCount(){return workerPool.getTasksCount;}
+
     ///Stops the code from running and awaits asset manager to finish loading
     @ExportD static void awaitLoad()
     {
         workerPool.await;
         update();
     }
-    ///Makes the worker pool to actually start loading
-    @ExportD static void startLoading()
-    {
-        workerPool.startWorking();
-    }
-
 
     static void awaitTask(IHipAssetLoadTask task)
     {
@@ -793,6 +793,7 @@ class HipAssetManager
     static void update()
     {
         import hip.asset_manager.load_task;
+        workerPool.startWorking();
         completeMutex.lock();
             if(completeQueue.length)
             {

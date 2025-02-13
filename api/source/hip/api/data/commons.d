@@ -96,6 +96,7 @@ string[] getModulesFromRoot(string modules, string root)
 IHipAssetLoadTask loadAsset(type)(string assetPath)
 {
     import hip.api;
+    import hip.api.audio.audioclip;
     static if(is(type == IHipCSV))
         return HipAssetManager.loadCSV(assetPath);
     else static if(is(type == IHipFont))
@@ -212,7 +213,6 @@ mixin template LoadReferencedAssets(string[] modules)
                 }
             }}
         }}
-        HipAssetManager.startLoading();
     }
 }
 
@@ -399,20 +399,6 @@ interface IHipAssetLoadTask
             foreach(v; vars)
                 *v = convertFunction(data);
         });
-    }
-
-
-    /**
-    *   Awaits the asset to be loaded and if the load was possible, cast it to the type, else returns null.
-    *   Unsupported at WebAssembly.
-    */
-    T awaitAs(T)()
-    {
-        await();
-        //Ignore dynamic cast (future only) return cast(T)(cast(void*)asset);
-        if(hasFinishedLoading() && result == HipAssetResult.loaded)
-            return cast(T)asset;
-        return null;
     }
 }
 

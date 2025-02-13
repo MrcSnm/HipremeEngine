@@ -24,7 +24,14 @@ else version(WebAssembly)
 else
 {
     import core.stdc.config:c_long;
-    enum CLOCK_MONOTONIC = 1;
+    version(PSVita)
+    {
+        enum CLOCK_MONOTONIC = 4;
+    }
+    else
+    {
+        enum CLOCK_MONOTONIC = 1;
+    }
     struct timespec
     {
         int tv_sec; //Seconds
@@ -48,7 +55,7 @@ ulong getSystemTime() nothrow
     else
     {
         timespec tm = void;
-        if(clock_gettime(CLOCK_MONOTONIC, &tm))
+        if(clock_gettime(CLOCK_MONOTONIC, &tm) != 0)
             return 0;
         return cast(size_t)(tm.tv_nsec + tm.tv_sec * 1e9);
     }
@@ -92,7 +99,16 @@ class HipTime
         return time;
     }
 
-    static float getCurrentTimeAsMilliseconds() nothrow
+    ///For some reason, float arithmetic is wrong on PSVita, so, use long instead...
+    static long getCurrentTimeAsMsLong() nothrow
+    {
+         version(WebAssembly)
+            return getCurrentTime();
+        else
+            return getCurrentTime() / 1_000_000;
+    }
+
+    static float getCurrentTimeAsMs() nothrow
     {
          version(WebAssembly)
             return cast(float)getCurrentTime();

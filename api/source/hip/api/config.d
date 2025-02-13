@@ -8,5 +8,6 @@ else
     enum InputIsTouch = false;
 
 version(Android) enum isLinuxPC = false;
+else version(PSVita) enum isLinuxPC = false;
 else version(linux) enum isLinuxPC = true;
 else enum isLinuxPC = false;

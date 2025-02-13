@@ -59,6 +59,12 @@ enum HIP_DEFAULT_TIME_UNTIL_CLICK_COUNT_RESTART = 400;
 
 ///////////////////////////////// Default Asset Files /////////////////////////////////
 enum HIP_ASSETMANAGER_WORKER_POOL = 8;
+
+///8 ms makes FPS drop to 30. Useful for updating graphics and showing loading bars
+enum HIP_ASSETMANAGER_MAX_PROCESS_MS = 8;
+///If partial load is true, It will use max process ms for loading files. But since it is task based, it might take more than MAX_PROCESS_MS
+enum HIP_ASSETMANAGER_PARTIAL_LOAD = true;
+
 enum HIP_DEFAULT_FONT = "defaults/fonts/WarsawGothic-BnBV.otf";
 enum HIP_DEFAULT_FONT_SIZE = 32;
 enum HIP_DEFAULT_TEXTURE = "defaults/graphics/sprites/default.png";
