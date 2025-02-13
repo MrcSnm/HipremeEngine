@@ -15,8 +15,12 @@
     -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"></uses-permission>
 
-    <!-- Currently Unused -->
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <!-- Used whenever using HipNetwork -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+
 
 
 
@@ -24,6 +28,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:isGame="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:debuggable="true"
@@ -32,7 +37,6 @@
         <activity
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:name=".HipremeEngine"
-            android:label="@string/app_name"
             android:exported="true"
             >
             <intent-filter>

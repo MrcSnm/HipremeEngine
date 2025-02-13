@@ -5,6 +5,28 @@ version(WebAssembly){}
 else:
 import std.socket;
 
+/**
+ * Abstracts away different behaviors from Windows - Posix.
+ * Posix throws an exception, while Windows return a client which is not alive.
+ * Params:
+ *   host = The socket which will accept
+ * Returns: Accepted socket or null.
+ */
+Socket accept2(Socket host)
+{
+	Socket ret;
+	try
+	{
+		ret = host.accept();
+		if(ret is null || !ret.isAlive)
+			return null;
+		ret.blocking = false;
+	}
+	catch (SocketAcceptException e) ///This error is always thrown by Linux if it is not blocking
+		return null;
+	return ret;
+}
+
 class TCPNetwork : INetwork
 {
 
@@ -28,17 +50,17 @@ class TCPNetwork : INetwork
 		Socket s = new TcpSocket();
 		hostSocket = s;
 		s.blocking = false;
-		s.setOption(SocketOptionLevel.SOCKET, SocketOption.LINGER, 1);
-		s.setOption(SocketOptionLevel.SOCKET, SocketOption.DEBUG, 1);
+		// s.setOption(SocketOptionLevel.SOCKET, SocketOption.LINGER, 1);
+		// s.setOption(SocketOptionLevel.SOCKET, SocketOption.DEBUG, 1);
 
 		try
 		{
 			s.bind(ip.type == IPType.ipv4 ? new InternetAddress(ip.ip, ip.port) : new Internet6Address(ip.ip, ip.port));
 			s.listen(1);
-			client = s.accept();
-			return _status = client.isAlive ?  NetConnectionStatus.connected : NetConnectionStatus.waiting;
+			client = s.accept2();
+			return _status = client !is null ?  NetConnectionStatus.connected : NetConnectionStatus.waiting;
 		}
-		catch (Exception e)
+		catch (SocketOSException e) //Error when multiple bindings. Make it a client
 		{
 			hostSocket = null;
 			return _status = NetConnectionStatus.disconnected;
@@ -68,11 +90,12 @@ class TCPNetwork : INetwork
 			}
 		}
 
-		if(isHost && !client.isAlive)
+		if(isHost && (client is null || !client.isAlive))
 		{
-			client = hostSocket.accept();
-			return _status = client.isAlive ? NetConnectionStatus.connected : NetConnectionStatus.waiting;
+			client = hostSocket.accept2();
+			return _status = client !is null ? NetConnectionStatus.connected : NetConnectionStatus.waiting;
 		}
+
 		if(connectSocket !is null)
 		{
 			_status = !wouldHaveBlocked() ?  NetConnectionStatus.connected : NetConnectionStatus.waiting;
@@ -93,8 +116,8 @@ class TCPNetwork : INetwork
 				writeln("Sending ", data, " to client. ");
 			else if(getSocketToSendData == connectSocket)
 				writeln("Sending data to host ");
-			ptrdiff_t res = getSocketToSendData.send(data, SocketFlags.DONTROUTE);
-			if(res ==  0|| res == SOCKET_ERROR) //Socket closed
+			ptrdiff_t res = getSocketToSendData.send(data);
+			if(res ==  0|| res == -1) //Socket closed
 				return false;
 			return true;
 		}
@@ -103,16 +126,28 @@ class TCPNetwork : INetwork
 
 	size_t getData(ref ubyte[] buffer)
 	{
+
 		if(status == NetConnectionStatus.connected)
 		{
 			Socket s = getSocketToSendData;
 			ptrdiff_t received = s.receive(buffer);
 			if(received == -1)
 				return 0;
-			// 	throw new Exception("Network Error: "~s.getErrorText);
 			return received;
 		}
 		return 0;
+	}
+
+	void disconnect()
+	{
+		Socket s = getSocketToSendData;
+		if(s is null)
+			return;
+		s.shutdown(SocketShutdown.BOTH);
+		s.close();
+		hostSocket = null;
+		client = null;
+		connectSocket = null;
 	}
 
 

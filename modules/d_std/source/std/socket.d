@@ -2425,7 +2425,7 @@ public:
     {
         auto newsock = cast(socket_t).accept(sock, null, null);
         if (socket_t.init == newsock)
-            throw new SocketAcceptException("Unable to accept socket connection");
+            return null;
 
         Socket newSocket;
         try

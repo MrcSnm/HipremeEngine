@@ -32,6 +32,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		"-I="~getHipPath("modules", "d_std", "source") ~" "~
 		"-I="~getHipPath("dependencies", "runtime", "druntime", "arsd-webassembly") ~" " ~
 		"-I="~getHipPath("dependencies", "runtime", "druntime", "source") ~" " ~
+		"-float-abi=hard "~
 		"-L-allow-undefined -d-version=CarelessAlocation";
 
 
