@@ -1,7 +1,7 @@
 module features.ldc;
 import commons;
 import feature;
-enum LdcVersion = "1.39.0";
+enum LdcVersion = "1.40.0";
 
 
 /** 
