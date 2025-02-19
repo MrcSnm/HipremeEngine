@@ -1,5 +1,14 @@
-module hip.net.utils;
+module hip.api.net.utils;
 import std.traits;
+
+
+extern(C) @safe pure @nogc
+{
+    ushort htons(ushort x);
+    uint htonl(uint x);
+    ushort ntohs(ushort x);
+    uint ntohl(uint x);
+}
 
 T hton(T)(T data) @nogc nothrow pure
 {
@@ -9,7 +18,6 @@ T hton(T)(T data) @nogc nothrow pure
 	}
 	else
 	{
-		import std.socket;
 		static if(T.sizeof == 2)
 			return htons(data);
 		else static if(T.sizeof == 4)
@@ -17,7 +25,7 @@ T hton(T)(T data) @nogc nothrow pure
 	}
 }
 
-size_t sizeofTypes(T...)() @nogc nothrow pure
+size_t sizeofTypes(T...)() @nogc nothrow pure if(!hasDynamicArray!T)
 {
 	size_t ret;
 	foreach (t; T)
@@ -25,11 +33,31 @@ size_t sizeofTypes(T...)() @nogc nothrow pure
 	return ret;
 }
 
+bool hasDynamicArray(T)()
+{
+	static if(is(T == struct))
+	{
+		foreach(v; T.init.tupleof)
+		{
+			static if(hasDynamicArray!(typeof(v)))
+				return true;
+		}
+		return false;
+	}
+	else
+		return isDynamicArray!T;
+}
+
+/**
+ * Used for determining if the data can be copied to stack and sent. This is the most efficient way to send data
+ * since it won't allocate on frame.
+ * Returns: If the type sequence has a dynamic array
+ */
 bool hasDynamicArray(T...)()
 {
 	static foreach(t; T)
 	{
-		static if(isDynamicArray!t)
+		static if(hasDynamicArray!t)
 			return true;
 	}
 	return false;
@@ -48,32 +76,101 @@ ubyte[sizeofTypes!T] toBytes(T...)(T input) if(!hasDynamicArray!(T))
     return ret;
 }
 
+void copyIntoMemory(T)(T struc, ubyte[] memory)
+{
+	import std.stdio;
+
+	static if(is(T == struct) && hasDynamicArray!T)
+	{
+		uint sz;
+		writeln("Copying Struct: ", T.stringof);
+		foreach(v; struc.tupleof)
+		{
+			writeln("Copying Member: ", typeof(v).stringof);
+			uint tSize = getSendTypeSize(v);
+			copyIntoMemory(v, memory[sz..sz+tSize]);
+			sz+= tSize;
+		}
+	}
+	else static if(isDynamicArray!T)
+	{
+		size_t sz = struc.length * T.init[0].sizeof;
+		memory[0..uint.sizeof] = toBytes(cast(uint)struc.length);
+		memory[uint.sizeof..uint.sizeof+sz] = (cast(ubyte*)struc.ptr)[0..sz];
+	}
+	else
+	{
+		memory[] = toBytes(struc);
+	}
+}
+
 ubyte[] toBytes(T...)(T input) if(hasDynamicArray!T)
 {
 	ubyte[] ret;
 	size_t offset;
+	import std.stdio;
 	foreach(i, t; T)
 	{
-		static if(isDynamicArray!t)
-		{
-			size_t sz = input[i].length * t.init[0].sizeof;
-			ret.length+= sz;
-			ret[offset..offset+sz] = (cast(ubyte*)input[i].ptr)[0..sz];
-			offset+= sz;
-		}
-		else
-		{
-			ret.length+= t.sizeof;
-			ret[offset..offset+t.sizeof] = toBytes(input[i]);
-			offset+= t.sizeof;
-		}
+		size_t sz = getSendTypeSize(input[i]);
+		ret.length+= sz;
+		writeln("Copying into ret[",offset,"..",offset+sz,"]");
+		copyIntoMemory(input[i], ret[offset..offset+sz]);
+		offset+= sz;
 	}
 	return ret;
 }
 
+uint getSendTypeSize(T...)(const T input) if(T.length > 1)
+{
+	uint sz;
+	foreach(i, t; T)
+	{
+		sz+= getSendTypeSize(input[i]);
+	}
+	return sz;
+}
+
+uint getSendTypeSize(T)(const T input = T.init) if(!is(T == struct) && !isDynamicArray!T)
+{
+	return T.sizeof;
+}
+uint getSendTypeSize(T)(const T input = T.init) if(isDynamicArray!T)
+{
+	uint sz = uint.sizeof;
+	static if(hasDynamicArray!(T))
+	{
+		foreach(v; input)
+		{
+			sz+= getSendTypeSize(v);
+		}
+	}
+	else
+	{
+		sz+= T.init[0].sizeof * input.length;
+	}
+	return sz;
+}
+
+uint getSendTypeSize(T)(const T input = T.init) if(is(T == struct))
+{
+	uint sz;
+	foreach(v; input.tupleof)
+	{
+		static if(hasDynamicArray!(typeof(v)))
+		{
+			sz+= getSendTypeSize(v);
+		}
+		else
+		{
+			sz+= typeof(v).sizeof;
+		}
+	}
+	return sz;
+}
+
 ubyte[N] toBytes(T, uint N = T.sizeof)(T input) @nogc nothrow pure
 {
-    ubyte[N] ret;
+    ubyte[N] ret = void;
     ret[] = (cast(ubyte*)&input)[0..N];
     return ret;
 }
@@ -86,7 +183,7 @@ bool isLittleEndian() @nogc nothrow pure
 
 ubyte[N] swapEndian(uint N)(ubyte[N] bytes) @nogc nothrow pure
 {
-    ubyte[N] swapped;
+    ubyte[N] swapped = void;
     foreach (i; 0 .. N)
         swapped[i] = bytes[N - 1 - i];
     return swapped;
@@ -111,18 +208,10 @@ void swapEndianInPlace(ref ubyte[] bytes) @nogc nothrow pure
     }
 }
 
-
-
-
-
-
 ubyte[] toNetworkBytes(ubyte[] input)
 {
     return isLittleEndian ? swapEndian(input) : input;
 }
-
-
-
 
 ubyte[N] toNetworkBytes(T, uint N = T.sizeof)(T input) @nogc nothrow pure
 {
@@ -165,4 +254,34 @@ ubyte[N] toNetwork(T, uint N = T.sizeof)(T data) @nogc nothrow pure
 			ret[member.offsetof..member.offsetof + member.sizeof] = toNetworkBytes(__traits(child, data, member));
 	}}
 	return ret;
+}
+
+
+unittest
+{
+	struct Ultra
+	{
+		int[] a;
+	}
+
+	struct EvenTester
+	{
+		Ultra[] tester;
+	}
+	assert(hasDynamicArray!Ultra);
+	Ultra b;
+	b.a~= [500, 200];
+
+	EvenTester t;
+	t.tester~= b;
+
+	// assert(getSendTypeSize(b) == 12);
+	// import hip.api.net.hipnet;
+
+	// assert(getSendTypeSize(NetHeader.init, b) == 17);
+	// assert(toBytes(NetHeader.init, b).length == 17);
+
+	import std.stdio;
+
+	writeln = getSendTypeSize(t.tester);
 }

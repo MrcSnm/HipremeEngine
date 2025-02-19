@@ -1,6 +1,6 @@
 
 <p align="center">
-<img src="engine_logo.svg" width="300"/>
+<img src="assets/marketing/svg/engine_logo.svg" width="300"/>
 </p>
 
 

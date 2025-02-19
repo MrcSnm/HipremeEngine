@@ -2,7 +2,8 @@
 	"dependencies": {
 		"util": {"path": "../util"},
 		"console": {"path": "../console"},
-		"wasm": {"path": "../wasm"}
+		"wasm": {"path": "../wasm"},
+		"hipengine_api:interfaces": {"path": "../../api"}
 	},
 	"authors": [
 		"Marcelo"

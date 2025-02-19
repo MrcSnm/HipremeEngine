@@ -1,4 +1,4 @@
-module hip.net.websocket;
+module hip.net.backend.websocket;
 import hip.wasm;
 public import hip.network;
 
@@ -21,7 +21,7 @@ extern(C) ubyte* websocketGetData(WasmWebsocket);
  * Specification:
  *  - The first message received by a Hipreme Engine websocket must always be its own connection ID.
  */
-class WASMWebsocketNetwork : INetwork
+class WASMWebsocketNetwork : INetworkBackend
 {
     WasmWebsocket socket;
     NetConnectionStatus _status;

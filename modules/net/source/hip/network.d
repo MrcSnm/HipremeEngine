@@ -1,188 +1,13 @@
 module hip.network;
 import hip.console.log;
-import hip.net.utils;
-
-enum NetConnectionStatus
-{
-	disconnected,
-	connected,
-	waiting,
-}
-
-
-enum IPType
-{
-	ipv4,
-	ipv6
-}
-
-private string enumFromTypes(T...)(string enumName, string enumType)
-{
-	string ret = "enum "~enumName~": "~enumType~"{ invalid = 0, disconnect = 1, ";
-	static foreach(t; T)
-	{
-		static assert(is(t == struct) || is(t == enum), "MarkNetData only works for enums and structs.");
-		ret~=  t.stringof~",";
-	}
-	return ret~"}";
-}
-
-
-/**
- * Creates a set of types which
- * Params:
- *   T = The types that are valid to send on network.
- */
-template MarkNetData(T...)
-{
-	enum PredefinedTypesCount = 2; //invalid = 0, disconnect = 1
-
-	static if(T.length <= ubyte.max)
-		alias idType = ubyte;
-	else static if(T.length <= ushort.max)
-		alias idType = ushort;
-
-	mixin(enumFromTypes!(T)("Types", "idType"));
-
-	string getTypeName(idType v)
-	{
-		static foreach(t; T)
-		{
-			if(v == __traits(getMember, Types, t.stringof))
-				return t.stringof;
-		}
-		return "Unknown";
-	}
-
-    bool isInvalid(idType v)
-    {
-        return v == 0 || v >= T.length;
-    }
-
-	static foreach(i, t; T)
-	{
-		void sendData(HipNetwork net, t data)
-		{
-			align(1)
-			static struct TypedData
-			{
-				t actualData;
-				idType typeID = i + PredefinedTypesCount;
-			}
-			net.sendData(TypedData(data, i+PredefinedTypesCount));
-		}
-	}
-
-	void sendDisconnect(HipNetwork net)
-	{
-		import std.stdio;
-		writeln("Sending disconnect msg");
-		net.sendData(cast(idType)Types.disconnect);
-	}
-
-	/**
-	 * To its data removing the type id.
-	 * Params:
-	 *   buffer = The buffer that is used to take the type id and slices it to the actual data
-	 * Returns: The type id from that buffer. Also enforces it is not invalid
-	 */
-	Types getDataFromBuffer(ref ubyte[] buffer)
-	{
-		idType typeID = *cast(idType*)(buffer.ptr + buffer.length - idType.sizeof);
-		buffer = buffer[0..buffer.length - idType.sizeof];
-		return cast(Types)typeID;
-	}
-
-
-
-    bool isUnknown(Q)()
-    {
-        static foreach(t; T)
-			static if(is(t == Q))
-            	return false;
-        return true;
-    }
-
-	alias RegisteredTypes = T;
-}
-
-struct NetIPAddress
-{
-	string ip;
-	ushort port;
-	IPType type = IPType.ipv4;
-}
-
-enum NetID : uint
-{
-	server,
-	broadcast,
-	start,
-	end = uint.max
-}
-
-
-package enum NetDataType : ubyte
-{
-	binary,
-	text,
-	custom
-}
-
-
-align(1) struct NetHeader
-{
-	uint length;
-	NetDataType type;
-
-	bool invalid() const { return length == 0; }
-}
-
-
-
-interface INetwork
-{
-	/**
-	 *
-	 * Params:
-	 *   ip = The IP to connect
-	 *   id = ID of the address to connect to. Relevant when you're not using a P2P connection. Enforced when using websockets, since direct connection is unavailable.
-	 * Returns: The connection status
-	 */
-	NetConnectionStatus connect(NetIPAddress ip, uint id = NetID.server);
-	///Gets ID for that network connection. It can't change over its lifetime
-	uint getConnectionID() const;
-	///Sets that network connection connected to the specified ID
-	void setConnectedTo(uint id);
-
-	bool isHost() const;
-
-	///Sends the data by using a header
-	bool sendData(ubyte[] data);
-
-	void disconnect();
-
-	size_t getData(ref ubyte[] tempBuffer);
-	NetConnectionStatus status() const;
-}
+import hip.api.net.utils;
+import hip.api.net.hipnet;
 
 struct NetBufferStream
 {
-	NetHeader header;
-	size_t expectedSize() const {return header.length; }
+	NetBuffer self;
 
 	size_t currentOffset;
-
-	///Buffer may be bigger than expected size as it will be reused
-	ubyte[] buffer;
-
-	///Gets the buffer only if it has already finished, and sliced to its expected size
-	ubyte[] getFinishedBuffer()
-	{
-		if(expectedSize == 0 || !isFinished)
-			return null;
-		return buffer[0..expectedSize];
-	}
 
 	/**
 	 *
@@ -206,7 +31,6 @@ struct NetBufferStream
 		return currentOffset == expectedSize;
 	}
 
-	bool isInvalid() const { return header.invalid; }
 
 	bool isFinished() const { return currentOffset == expectedSize; }
 
@@ -216,76 +40,69 @@ struct NetBufferStream
 		currentOffset = 0;
 		header = header.init;
 	}
-}
 
-T convertNetworkData(T)(NetHeader header, ubyte[] data)
-{
-	import std.traits;
-	static if(is(T == string))
-	{
-		if(header.type != NetDataType.text)
-			throw new Exception("Unmatched data type when trying to get a string.");
-		return cast(string)data;
-	}
-	else
-	{
-		if(header.type != NetDataType.binary)
-			throw new Exception("Unmatched data type when trying to get a binary.");
-
-		static if(isArray!T)
-		{
-			size_t arraySize = header.length / T.init[0].sizeof;
-			static if(isStaticArray!T)
-			{
-				if(arraySize != T.init.length)
-					throw new Exception("Received more data than the static array size of "~T.init.length.stringof);
-				return (cast(T)data)[0..T.init.length];
-			}
-			else
-			{
-				return cast(T)data;
-			}
-		}
-		else
-		{
-			return *cast(T*)data.ptr;
-		}
-	}
+	alias self this;
 }
 
 
-private extern(C) extern __gshared int onlineSockets;
-
-final class HipNetwork
+interface INetworkBackend
 {
-	INetwork netInterface;
+	/**
+	 *
+	 * Params:
+	 *   ip = The IP to connect
+	 *   onConnect = Used for sending messages on the connect. WARNING: If you're using NetController, do not call `connect` from that interface.
+	 *   id = ID of the address to connect to. Relevant when you're not using a P2P connection. Enforced when using websockets, since direct connection is unavailable.
+	 * Returns: The connection status
+	 */
+	NetConnectStatus connect(NetIPAddress ip, void delegate() onConnect, uint id = NetID.server);
+	/**
+	 * Tries to reconnect to the same address on initial connect.
+	 */
+	void attemptReconnection();
+	///Gets ID for that network connection. It can't change over its lifetime
+	uint getConnectionID() const;
+	///Sets that network connection connected to the specified ID
+	void setConnectedTo(uint id);
+
+	bool isHost() const;
+
+	///Sends the data by using a header
+	bool sendData(ubyte[] data);
+
+	void disconnect();
+
+	size_t getData(ref ubyte[] tempBuffer);
+	NetConnectStatus status() const;
+}
+
+final class HipNetwork : INetwork
+{
+	INetworkBackend netInterface;
+	NetInterface itf;
 	NetBufferStream currentStream;
 	NetBufferStream[] completedStreams;
 	NetBufferStream[] streamPool;
 
-	static struct ConnectInformation
-	{
-		NetIPAddress ip;
-		uint id;
-	}
-	private ConnectInformation connInfo;
+	private NetConnectInfo connInfo;
 	private bool attemptedConnection;
+	private void delegate() onConnect;
 
-	this()
+	this(NetInterface itf)
 	{
-		netInterface = getNetworkImplementation();
+		import hip.net.backend.initializer;
+		this.itf = itf;
+		netInterface = getNetworkImplementation(itf);
 	}
 
-	NetConnectionStatus connect(NetIPAddress ip, uint id = NetID.server)
+	NetConnectStatus connect(NetIPAddress ip, void delegate(INetwork) onConnect, uint id = NetID.server)
 	{
 		if(!attemptedConnection)
-		{
-			// onlineSockets++;
-			// onlineSockets~= this;
 			attemptedConnection = true;
-		}
-		connInfo = ConnectInformation(ip, id);
-		return netInterface.connect(ip, id);
+		connInfo = NetConnectInfo(ip, id);
+		this.onConnect = (){onConnect(this);};
+
+		return netInterface.connect(ip, this.onConnect, id);
 	}
 
 	bool isHost() const { return netInterface.isHost; }
@@ -302,7 +119,7 @@ final class HipNetwork
 			ret.header = header;
 		}
 		else
-			ret = NetBufferStream(header);
+			ret = NetBufferStream(NetBuffer(header));
 		return ret;
 	}
 
@@ -316,18 +133,22 @@ final class HipNetwork
 	 */
 	bool getData()
 	{
-		import std.traits:isArray, isStaticArray;
-		if(netInterface.status == NetConnectionStatus.waiting)
-			connect(connInfo.ip, connInfo.id);
+		if(netInterface.status == NetConnectStatus.waiting)
+			netInterface.connect(connInfo.ip, this.onConnect, connInfo.id);
+		if(netInterface.status == NetConnectStatus.attemptingReconnect)
+		{
+			hiplog("Trying to reconnect.");
+			netInterface.attemptReconnection();
+		}
 
-
-		if(netInterface.status != NetConnectionStatus.connected)
+		if(netInterface.status != NetConnectStatus.connected)
 			return false;
+		if(completedStreams.length != 0)
+			return true;
+
 		ubyte[4096] tempBufferData = void;
 		ubyte[] tempBuffer = tempBufferData;
 
-		if(completedStreams.length != 0)
-			return true;
 
 		size_t dataLength = getDataBackend(tempBuffer);
 		if(dataLength == 0)
@@ -362,11 +183,11 @@ final class HipNetwork
 	 * WARNING: It is important to call freeBuffer at some time since getting the buffer won't remove it from the queue
 	 * Returns: A buffer from the completed list. You should free it at some time so its memory can be reused.
 	 */
-	NetBufferStream* getCompletedBuffer()
+	NetBuffer* getCompletedBuffer() const
 	{
 		if(completedStreams.length == 0)
 			throw new Exception("No data has been received yet. Wait for getData() to return true before calling that function.");
-		return &completedStreams[0];
+		return cast(NetBuffer*)&completedStreams[0];
 	}
 
 	/**
@@ -374,8 +195,9 @@ final class HipNetwork
 	 * Params:
 	 *   buffer = A buffer inside the completed list
 	 */
-	void freeBuffer(NetBufferStream* buffer)
+	void freeBuffer(NetBuffer* b)
 	{
+		NetBufferStream* buffer = cast(NetBufferStream*)b;
 		for(int i = 0 ; i < completedStreams.length; i++)
 			if(buffer == &completedStreams[i])
 			{
@@ -400,37 +222,12 @@ final class HipNetwork
 		ubyte[] data = stream.getFinishedBuffer();
 		scope(exit)
 			freeBuffer(stream);
-		return convertNetworkData(stream.header, data);
+		return interpretNetworkData(stream.header, data);
 	}
 
-
-	void sendData(T)(T data)
+	void sendDataRaw(ubyte[] data)
 	{
-		import std.traits:isDynamicArray;
-		static if(is(T == string))
-		{
-			NetHeader header = NetHeader(cast(uint)data.length, NetDataType.text);
-		}
-		else
-		{
-			static if(isDynamicArray!T)
-			{
-				NetHeader header = NetHeader(cast(uint)(T.init[0].sizeof*data.length), NetDataType.binary);
-			}
-			else
-			{
-				NetHeader header = NetHeader(T.sizeof, NetDataType.binary);
-			}
-		}
-
-
-		ubyte[] newData = toNetworkBytes(toBytes(header, data));
-		if(!netInterface.sendData(newData))
-		{
-			// import std.stdio;
-			// throw new Error("Could not send data");
-			return;
-		}
+		netInterface.sendData(data);
 	}
 	private size_t getDataBackend(ref ubyte[] data)
 	{
@@ -445,30 +242,33 @@ final class HipNetwork
 
 	void disconnect()
 	{
-		if(status == NetConnectionStatus.connected)
+		if(status == NetConnectStatus.connected)
 		{
 			MarkNetData!().sendDisconnect(this);
 			netInterface.disconnect();
 		}
 	}
-	NetConnectionStatus status() const { return netInterface.status; }
+	NetConnectStatus status() const { return netInterface.status; }
+	NetInterface getNetInterfaceType() const { return itf; }
+	NetConnectInfo getConnectInfo() const { return connInfo; }
 
 }
 
+private __gshared INetwork[] netConnections;
 
-version(WebAssembly)
+export extern(System) INetwork getNetworkInterface(NetInterface itf = NetInterface.automatic)
 {
-	INetwork getNetworkImplementation()
-	{
-		import hip.net.websocket;
-		return new WASMWebsocketNetwork();
-	}
+	netConnections~= new HipNetwork(itf);
+	return netConnections[$-1];
 }
-else
+
+
+/**
+ * Disconnects every net connection that was loaded at the beginning.
+ */
+void disconnectNetwork()
 {
-	INetwork getNetworkImplementation()
-	{
-		import hip.net.tcp;
-		return new TCPNetwork();
-	}
+	foreach(conn; netConnections)
+		conn.disconnect();
+	netConnections = null;
 }

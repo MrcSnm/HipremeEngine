@@ -75,6 +75,7 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 			HipAssetManager.initAssetManager();
 			initTimerAPI();
 			initGameAPI();
+			initNet();
 
 			mixin LoadAllAssets!(ScriptModules);
 			loadReferenced();
