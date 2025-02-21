@@ -3,23 +3,38 @@ import handy_httpd;
 import websocket_connection;
 public import websocket_connection: pushWebsocketMessage;
 import core.sync.semaphore;
+import commons;
 
 enum DEFAULT_PATH="build";
 private __gshared string startPath;
 private __gshared ushort port = 9000;
 
 
-int hipengineStartServer(string[] args, shared ushort* serverPort, string servePath, shared Semaphore sem)
+int hipengineStartServer(string[] args, shared ushort* serverPort, shared string* serverHost, string servePath, shared Semaphore sem)
 {
     import std.stdio;
+	import myip;
 	import handy_httpd.handlers.path_handler;
 	import core.thread;
+	import std.socket;
 
 	import slf4d.default_provider;
 	import slf4d;
+
 	auto provider = new DefaultProvider(false, Levels.ERROR);
+
+	string privateIp = "127.0.0.1";
+	foreach(addr; privateAddresses)
+	{
+		if(isIpAddress(addr))
+		{
+			privateIp = addr;
+			break;
+		}
+	}
 	configureLoggingProvider(provider);
 	ServerConfig cfg;
+	cfg.hostname = "0.0.0.0";
 	cfg.port = port;
 	cfg.workerPoolSize = 3;
 	cfg.enableWebSockets = true; // Important! Websockets won't work unless `enableWebSockets` is set to true!
@@ -28,9 +43,11 @@ int hipengineStartServer(string[] args, shared ushort* serverPort, string serveP
 		.addMapping(Method.GET, "/ws", ws)
 		.addMapping("/**", &serveGameFiles);
 
+
 	*serverPort = port;
+	*serverHost = privateIp.dup;
 	startPath = servePath;
-	writeln("HipremeEngine Dev Server listening from localhost:", port, " path ", startPath);
+	writeln("HipremeEngine Dev Server listening from ",privateAddresses,":", port, " path ", startPath);
 	(cast()sem).notify;
 
 	new HttpServer(pathHandler, cfg).start();

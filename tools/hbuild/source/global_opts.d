@@ -11,8 +11,9 @@ import commons;
 private Thread serverThread;
 
 shared ushort gameServerPort;
+shared string gameServerHost;
 
-void startServer(shared ushort* usingPort)
+void startServer(shared ushort* usingPort, shared string* usingHost)
 {
     if(serverStarted) return;
     import server;
@@ -21,7 +22,7 @@ void startServer(shared ushort* usingPort)
     Semaphore s = new Semaphore();
 	serverThread = new Thread(()
     {
-        hipengineStartServer([], usingPort, getHipPath("build", "wasm"), cast(shared)s);
+        hipengineStartServer([], usingPort, usingHost, getHipPath("build", "wasm"), cast(shared)s);
     }).start();
 
 

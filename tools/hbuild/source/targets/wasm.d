@@ -66,13 +66,13 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	if(!serverStarted)
 	{
 		t.writelnHighlighted("Attempt to start WebAssembly development server.");
-		startServer(&gameServerPort);
+		startServer(&gameServerPort, &gameServerHost);
 		t.writelnSuccess("Development started at localhost:"~gameServerPort.to!string);
-		cached(() => cast(void)openDefaultBrowser("http://localhost:"~gameServerPort.to!string));
+		cached(() => cast(void)openDefaultBrowser("http://"~gameServerHost~":"~gameServerPort.to!string));
 	}
 	else
 	{
-		t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://localhost:"~gameServerPort.to!string);
+		t.writelnSuccess("Succesfully built for WebAssembly. Listening on http://"~gameServerHost~":"~gameServerPort.to!string);
 		pushWebsocketMessage("reload");
 	}
 

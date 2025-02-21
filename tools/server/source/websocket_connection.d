@@ -70,7 +70,6 @@ class HipremeEngineWebSocketServer: WebSocketMessageHandler
     override void onBinaryMessage(WebSocketBinaryMessage msg)
     {
         import std.stdio;
-        import std.socket;
 
         uint fromSocketID = *cast(uint*)msg.payload[0..4] - NetID.start;
         uint toSocketID = *cast(uint*)msg.payload[4..8];
@@ -82,12 +81,12 @@ class HipremeEngineWebSocketServer: WebSocketMessageHandler
                 ubyte command = *cast(ubyte*)data.ptr;
                 switch(command)
                 {
+                    case MarkedNetReservedTypes.connect:
+                        //Just pong it back to say it has connected.
+                        connections[fromSocketID].socket.sendBinaryMessage(getNetworkFormattedData(MarkedNetReservedTypes.connect));
+                        break;
                     case MarkedNetReservedTypes.get_connected_clients:
-                        auto connClients = getConnectedClients;
-                        writeln("Conn Clients Size: ", getSendTypeSize(connClients));
-
                         auto response = getNetworkFormattedData(getConnectedClients, MarkedNetReservedTypes.get_connected_clients);
-                        writeln("Received get_connected_clients from ", fromSocketID, " responding ", response);
                         connections[fromSocketID].socket.sendBinaryMessage(response);
                         break;
                     default:
@@ -105,7 +104,7 @@ class HipremeEngineWebSocketServer: WebSocketMessageHandler
                 break;
             default:
                 toSocketID-= NetID.start;
-                if(connections.length < toSocketID)
+                if(connections.length <= toSocketID)
                     writeln("Socket tried sending data to invalid socket ID ", toSocketID + NetID.start);
                 else
                     connections[toSocketID].socket.sendBinaryMessage(data);
