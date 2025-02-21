@@ -11,6 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.api.renderer.var_packing;
 import hip.api.renderer.shadervar;
 
+pragma(LDC_no_typeinfo)
 struct VarPosition
 {
     size_t startPos;

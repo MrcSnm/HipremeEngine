@@ -43,6 +43,7 @@ bool isTypeArrayOf(Type, Array, int Count)()
 
 bool isLiteral(alias variable)(string var = variable.stringof)
 {
+    assert(__ctfe);
     import hip.util.string : isNumeric;
     return (isNumeric(var) || (var[0] == '"' && var[$-1] == '"'));
 }
@@ -197,45 +198,6 @@ if(is(T == enum))
     return __traits(allMembers, T).length;
 }
 
-T nullCheck(string expression, T, Q)(T defaultValue, Q target)
-{
-    import std.traits:ReturnType;
-    import hip.util.conv:to;
-    import hip.util.string:split;
-
-    enum exps = expression.split(".");
-    enum firstExp = exps[0]~"."~exps[1];
-
-    mixin("alias ",exps[0]," = target;");
-    
-    if(target is null)
-        return defaultValue;
-    
-    static if(mixin("isFunction!("~firstExp~")"))
-    {
-        mixin("ReturnType!("~firstExp~") _v0 = "~firstExp~";");
-        if(_v0 is null) return defaultValue;
-    }
-    else
-        mixin("typeof("~firstExp~") _v0 = " ~ firstExp~";");
-    
-    static foreach(i, e; exps[2..$])
-    {
-        static if(mixin("isFunction!(_v"~to!string(i)~"."~e~")"))
-        {
-            mixin("ReturnType!(_v"~to!string(i)~"."~e~") _v"~to!string(i+1) ~"= _v"~to!string(i)~"."~e~";");
-        }
-        else
-        {
-            mixin("typeof(_v"~to!string(i)~"."~e~") _v"~to!string(i+1)~"= _v"~to!string(i)~"."~e~";");
-        }
-        static if(i != exps[2..$].length - 1)
-        	mixin("if (_v"~to!string(i+1)~" is null) return defaultValue;");
-    }
-
-    mixin("return _v",to!string(exps.length-2),";");
-}
-
 
 /**
 * Used on: 
@@ -269,6 +231,9 @@ template generateExportName(string className, alias funcSymbol)
 */
 private string getExportedFuncImpl(bool isRef, string funcCallCode)
 {
+    if(!__ctfe)
+        return null;
+
     string ret;
     if(isRef)
     {
@@ -313,6 +278,9 @@ template generateExportFunc(string className, alias funcSymbol)
     import std.traits:ReturnType;
     enum impl = ()
     {
+        if(!__ctfe)
+            return null;
+
         alias RetType = ReturnType!funcSymbol;
         string ret = "export extern(System) "~RetType.stringof~" "~generateExportName!(className, funcSymbol);
         ret~= "(getParams!(sym)){";
@@ -460,6 +428,9 @@ mixin template HipExportDFunctions(alias mod)
 
 string attributes(alias member)() 
 {
+    if(!__ctfe)
+        return null;
+
 	string ret;
 	foreach(attr; __traits(getFunctionAttributes, member))
 		ret~= attr ~ " ";
@@ -473,6 +444,8 @@ template hasOverload(T,string member, OverloadType)
 {
     bool impl()
     {
+        if(!__ctfe)
+            return false;
         bool ret = false;
         static foreach(ov; __traits(getVirtualMethods, T, member))
             static if(is(typeof(ov) == OverloadType))
@@ -486,6 +459,8 @@ template hasOverload(T,string member, OverloadType)
 
 bool isMethodImplemented(T, string member, FuncType)()
 {
+    if(!__ctfe)
+        return false;
     bool ret;
     static foreach(overload; __traits(getVirtualMethods, T, member))
         if(is(typeof(overload) == FuncType) && !__traits(isAbstractFunction, overload))
@@ -499,6 +474,8 @@ bool isMethodImplemented(T, string member, FuncType)()
  */
 string ForwardFunc(alias func, string funcName, string member)()
 {
+    if(!__ctfe) return null;
+
     return attributes!func~ " ReturnType!(ov) " ~ funcName ~ "(getParams!(ov))"~
          "{ return " ~ member ~ "." ~funcName ~ "(__traits(parameters));}";
 }
@@ -514,6 +491,7 @@ string ForwardFunc(alias func, string funcName, string member)()
 string ForwardInterface(string member, I)() if(is(I == interface))
 {
     import hip.util.string:replaceAll;
+    if(!__ctfe) return null;
 
     return q{
         import std.traits:ReturnType;
@@ -559,6 +537,8 @@ mixin template MultiInherit(I) if(is(I == interface))
 
 void GenerateGetterSettersInterfaceImpl(interface_)()
 {
+    if(!__ctfe) return;
+
     import hip.util.array;
     foreach(mem; __traits(allMembers, interface_))
     {

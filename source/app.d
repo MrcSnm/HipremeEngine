@@ -241,16 +241,16 @@ import hip.network;
 
 
 /** 
- * This function will destroy SDL and dispose every resource
+ * Some Resources must be freed safely.
+ * One example is the Network. It won't be able to recognize disconnection if it is not done manually.
+ *
+ * In the future, it also may restore some state pre-engine run. For example, Android sound/screen state
  */
 static void destroyEngine()
 {
-	// hiplog("Closing ", onlineSockets.length, " Socket ", " Connections");
-	// foreach(socket; onlineSockets)
-	// {
-	// 	socket.disconnect();
-	// }
 
+	// hiplog("Closing ", onlineSockets.length, " Socket ", " Connections");
+	disconnectNetwork();
 	sys.quit();
 	HipRenderer.dispose();
 	HipAudio.onDestroy();
@@ -387,7 +387,7 @@ export extern(System) void HipremeRender()
 }
 export extern(System) void HipremeDestroy()
 {
-	logln("Destroying HipremeEnginess");
+	logln("Destroying HipremeEngine");
 	destroyEngine();
 	version(ManagesMainDRuntime)
 		rt_term();

@@ -2,12 +2,12 @@ module hip.internal_configuration;
 import hip.console.console;
 
 
-version(Android) enum ActivePlatform = Platforms.ANDROID;
-else version(WebAssembly) enum ActivePlatform = Platforms.WASM;
-else version(PSVita) enum ActivePlatform = Platforms.PSVITA;
-else version(UWP) enum ActivePlatform = Platforms.UWP;
-else version(AppleOS) enum ActivePlatform = Platforms.APPLEOS;
-else enum ActivePlatform = Platforms.DEFAULT;
+version(Android) enum ActivePlatform = Platforms.android;
+else version(WebAssembly) enum ActivePlatform = Platforms.wasm;
+else version(PSVita) enum ActivePlatform = Platforms.psvita;
+else version(UWP) enum ActivePlatform = Platforms.uwp;
+else version(AppleOS) enum ActivePlatform = Platforms.appleos;
+else enum ActivePlatform = Platforms.default_;
 
 
 version(dll)

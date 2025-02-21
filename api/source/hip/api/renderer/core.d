@@ -21,6 +21,7 @@ enum HipWindowMode
 /**
  * Maybe should not be used in user facing api.
  */
+pragma(LDC_no_typeinfo)
 struct DefaultShader
 {
     ///Path on where the shaders are stored.
@@ -31,6 +32,7 @@ struct DefaultShader
     string function() fSource;
 }
 
+pragma(LDC_no_typeinfo)
 struct HipRendererInfo
 {
     HipRendererType type;
@@ -72,6 +74,7 @@ enum HipShaderInputPadding;
 /**
 *   Declares that the struct is as VertexUniform block.
 */
+pragma(LDC_no_typeinfo)
 struct HipShaderVertexUniform
 {
     /**
@@ -83,6 +86,7 @@ struct HipShaderVertexUniform
 /**
 *   Declares that the struct is as FragmentUniform block.
 */
+pragma(LDC_no_typeinfo)
 struct HipShaderFragmentUniform
 {
     /**

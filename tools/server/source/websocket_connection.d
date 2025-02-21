@@ -1,8 +1,17 @@
 module websocket_connection;
+import hip.api.net.server;
+import hip.api.net.utils;
 import std.stdio;
-import network;
 import core.sync.mutex;
 import handy_httpd;
+import hipengine_commands;
+
+struct Connection
+{
+	uint id;
+    WebSocketConnection socket;
+}
+public __gshared Connection*[] connections;
 
 class HipremeEngineWebSocketServer: WebSocketMessageHandler
 {
@@ -18,7 +27,6 @@ class HipremeEngineWebSocketServer: WebSocketMessageHandler
     {
         // synchronized(wsMutex)
         {
-            import std.socket:htonl;
             Connection* c;
             if(freeIdsList.length)
             {
@@ -64,15 +72,31 @@ class HipremeEngineWebSocketServer: WebSocketMessageHandler
         import std.stdio;
         import std.socket;
 
-        uint fromSocketID = *cast(uint*)msg.payload[0..4];
+        uint fromSocketID = *cast(uint*)msg.payload[0..4] - NetID.start;
         uint toSocketID = *cast(uint*)msg.payload[4..8];
         ubyte[] data = msg.payload[8..$];
 
         switch(toSocketID)
         {
             case NetID.server:
+                ubyte command = *cast(ubyte*)data.ptr;
+                switch(command)
+                {
+                    case MarkedNetReservedTypes.get_connected_clients:
+                        auto connClients = getConnectedClients;
+                        writeln("Conn Clients Size: ", getSendTypeSize(connClients));
+
+                        auto response = getNetworkFormattedData(getConnectedClients, MarkedNetReservedTypes.get_connected_clients);
+                        writeln("Received get_connected_clients from ", fromSocketID, " responding ", response);
+                        connections[fromSocketID].socket.sendBinaryMessage(response);
+                        break;
+                    default:
+                        writeln("Received invalid command ID [", command, "] from connection ", fromSocketID);
+                        break;
+                }
                 break;
             case NetID.broadcast:
+                writeln(fromSocketID, " is broadcasting!");
                 foreach(c; connections)
                 {
                     if(c.id != fromSocketID)
@@ -109,14 +133,7 @@ class HipremeEngineWebSocketServer: WebSocketMessageHandler
     }
 }
 
-
-struct Connection
-{
-	uint id;
-    WebSocketConnection socket;
-}
 private __gshared uint id;
-private __gshared Connection*[] connections;
 
 private __gshared uint[] freeIdsList;
 private shared Mutex wsMutex;

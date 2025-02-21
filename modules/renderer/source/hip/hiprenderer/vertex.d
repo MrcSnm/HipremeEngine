@@ -105,13 +105,16 @@ class HipVertexArrayObject
         bool isPadding = false,
     )
     {
-        HipVertexAttributeInfo info;
-        info.name = infoName;
-        info.count = count;
-        info.valueType = valueType;
-        info.typeSize = typeSize;
-        info.index = cast(uint)infos.length;
-        //It actually is the `last stride`, which is the same as the offset is the total current stride
+        HipVertexAttributeInfo info = HipVertexAttributeInfo(
+            name: infoName,
+            count: count,
+            valueType: valueType,
+            typeSize: typeSize,
+            index: cast(uint)infos.length,
+            //It actually is the `last stride`, which is the same as the offset is the total current stride
+            offset: stride
+        );
+
         info.offset = stride;
         // if(!isPadding)
         {

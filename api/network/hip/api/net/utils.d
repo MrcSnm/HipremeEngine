@@ -78,15 +78,11 @@ ubyte[sizeofTypes!T] toBytes(T...)(T input) if(!hasDynamicArray!(T))
 
 void copyIntoMemory(T)(T struc, ubyte[] memory)
 {
-	import std.stdio;
-
 	static if(is(T == struct) && hasDynamicArray!T)
 	{
 		uint sz;
-		writeln("Copying Struct: ", T.stringof);
 		foreach(v; struc.tupleof)
 		{
-			writeln("Copying Member: ", typeof(v).stringof);
 			uint tSize = getSendTypeSize(v);
 			copyIntoMemory(v, memory[sz..sz+tSize]);
 			sz+= tSize;
@@ -94,9 +90,23 @@ void copyIntoMemory(T)(T struc, ubyte[] memory)
 	}
 	else static if(isDynamicArray!T)
 	{
-		size_t sz = struc.length * T.init[0].sizeof;
 		memory[0..uint.sizeof] = toBytes(cast(uint)struc.length);
-		memory[uint.sizeof..uint.sizeof+sz] = (cast(ubyte*)struc.ptr)[0..sz];
+
+		static if(hasDynamicArray!(typeof(T.init[0])))
+		{
+			size_t offset = uint.sizeof;
+			foreach(i; 0..struc.length)
+			{
+				size_t sz = getSendTypeSize(struc[i]);
+				copyIntoMemory(struc[i], memory[offset..offset+sz]);
+				offset+= sz;
+			}
+		}
+		else
+		{
+			size_t sz = struc.length * T.init[0].sizeof;
+			memory[uint.sizeof..uint.sizeof+sz] = (cast(ubyte*)struc.ptr)[0..sz];
+		}
 	}
 	else
 	{
@@ -106,14 +116,14 @@ void copyIntoMemory(T)(T struc, ubyte[] memory)
 
 ubyte[] toBytes(T...)(T input) if(hasDynamicArray!T)
 {
+	import std.stdio;
+
 	ubyte[] ret;
 	size_t offset;
-	import std.stdio;
 	foreach(i, t; T)
 	{
 		size_t sz = getSendTypeSize(input[i]);
 		ret.length+= sz;
-		writeln("Copying into ret[",offset,"..",offset+sz,"]");
 		copyIntoMemory(input[i], ret[offset..offset+sz]);
 		offset+= sz;
 	}
@@ -283,5 +293,31 @@ unittest
 
 	import std.stdio;
 
-	writeln = getSendTypeSize(t.tester);
+	// writeln = getSendTypeSize(t.tester);
+}
+
+unittest
+{
+	import hip.api.net.server;
+	import hip.api.net.controller;
+	import hip.api.net.hipnet;
+
+	ConnectedClientsResponse resp;
+
+	ConnectedClient c = ConnectedClient(NetConnectInfo(NetIPAddress(null, 0, IPType.ipv4), 0));
+	resp.clients~= [c];
+
+	ubyte[] sendData = getNetworkFormattedData(resp, MarkedNetReservedTypes.get_connected_clients);
+	ubyte[] respData = fromNetworkBytes(sendData);
+
+	assert(getSendTypeSize(c) == 11);
+
+
+	respData = respData[NetHeader.sizeof..$-1];
+	assert(respData.length == 15);
+
+	auto interpreted =  getNetworkStruct!(ConnectedClientsResponse)(respData);
+
+	// writeln = interpreted.type;
+	assert(interpreted == resp);
 }

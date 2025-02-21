@@ -53,6 +53,7 @@ T[] copyInto(T)(T[] source, T[] target)
 
 auto map(Range, From, To)(Range range, scope To delegate (From data) func)
 {
+    pragma(LDC_no_typeinfo)
     struct Return
     {
         Range inputRange;

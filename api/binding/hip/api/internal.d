@@ -114,6 +114,8 @@ void loadModuleFunctionPointers(alias targetModule, string exportedClass = "")()
 
 string generateFunctionDefinitionFromFunctionPointer(alias funcPointerSymbol, string name)()
 {
+	assert(__ctfe);
+
 	import std.traits;
 	string params;
 	string identifiers;
@@ -221,6 +223,8 @@ template loadSymbolsFromExportD(string exportedClass, Ts...)
 	{
 		enum impl = ()
 		{
+			assert(__ctfe);
+
 			enum e = '"'~exportedClass~"_\"";
 			string ret;
 			static foreach(i, s; Ts)

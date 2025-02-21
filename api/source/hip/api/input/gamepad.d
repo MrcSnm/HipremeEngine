@@ -83,6 +83,7 @@ enum HipGamepadBatteryState : ubyte
     charging,
 }
 ///Struct based on winrt::Windows::Devices::Power::BatteryReport
+pragma(LDC_no_typeinfo)
 struct HipGamepadBatteryStatus
 {
     int chargeRateInMilliwatts;

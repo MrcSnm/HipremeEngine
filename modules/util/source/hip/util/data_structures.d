@@ -56,6 +56,7 @@ struct Tuple(Fields...)
 }
 auto tuple(Args...)(Args a){ return Tuple!(Args)(a); }
 
+pragma(LDC_no_typeinfo)
 struct DirtyFlagsCmp(alias flag, Fields...)
 {
     import std.typecons;
@@ -196,6 +197,7 @@ struct RangeMap(K, V)
 *   int[], Array!int should be equivalent, any different behaviour should be contacted. 
 *   It may use more memory than requested for not making reallocation a big bottleneck
 */
+pragma(LDC_no_typeinfo)
 struct Array(T) 
 {
     size_t length;
@@ -439,6 +441,7 @@ private mixin template Array2DMixin(T)
 *   
 *   Its main usage is for avoiding a[i][j] static array, and not needing to deal with array of arrays.
 */
+pragma(LDC_no_typeinfo)
 struct Array2D(T)
 {
 

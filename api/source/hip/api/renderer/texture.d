@@ -57,6 +57,7 @@ interface IHipTexture
 }
 
 
+pragma(LDC_no_typeinfo)
 struct TextureCoordinatesQuad
 {
     float u1, v1, u2, v2;

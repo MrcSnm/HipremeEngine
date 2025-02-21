@@ -26,7 +26,7 @@ enum NetConnectStatus
 }
 
 
-enum IPType
+enum IPType : ubyte
 {
 	ipv4,
 	ipv6
@@ -93,6 +93,7 @@ struct NetConnectInfo
     uint id;
 }
 
+
 struct NetBuffer
 {
 	///The header may change after some time since it will be reused.
@@ -112,6 +113,54 @@ struct NetBuffer
 	}
 }
 
+/**
+ * Those are the reserved type IDs that are found in every MarkNetData instance.
+ * For identifying them, they are all snake cased. While the instance of marked net data
+ * will follow exactly the type name.
+ */
+enum MarkedNetReservedTypes : ubyte
+{
+	invalid,
+	connect,
+	disconnect,
+	///Receives a hip.api.net.server.ConnectedClientsResponse
+	get_connected_clients,
+}
+
+
+/**
+* Send that message so NetController can identify that a network interface was disconnected
+* Params:
+*   net = The network interface
+*/
+void sendDisconnect(INetwork net)
+{
+	net.sendData(MarkedNetReservedTypes.disconnect);
+}
+/**
+* Send that message so NetController can identify that a network connection was established.
+* Params:
+*   net = The network interface
+*/
+void sendConnect(INetwork net)
+{
+	net.sendData(MarkedNetReservedTypes.connect);
+}
+/**
+* Sends a message to the server requesting for the available connection IDs
+* Params:
+*   net = The network interface
+*/
+void requestConnectedClients(INetwork net)
+{
+	uint currId = net.getConnectionID;
+	scope(exit) net.setConnectedTo(currId);
+	net.setConnectedTo(NetID.server);
+	net.sendData(MarkedNetReservedTypes.get_connected_clients);
+}
+
+
+
 
 /**
  * This function is only used inside MarkNetData, this allows to create automatically an enum which is used
@@ -124,7 +173,9 @@ struct NetBuffer
  */
 private string enumFromTypes(T...)(string enumName, string enumType)
 {
-	string ret = "enum "~enumName~": "~enumType~"{ invalid = 0, connect = 1, disconnect = 2, ";
+	string ret = "enum "~enumName~": "~enumType~"{";
+	foreach(mem; __traits(allMembers, MarkedNetReservedTypes))
+		ret~= mem ~ ", ";
 	static foreach(t; T)
 	{
 		static assert(is(t == struct) || is(t == enum), "MarkNetData only works for enums and structs.");
@@ -141,7 +192,7 @@ private string enumFromTypes(T...)(string enumName, string enumType)
  */
 template MarkNetData(T...)
 {
-	enum PredefinedTypesCount = 3; //invalid = 0, connect = 1, disconnect = 2
+	enum PredefinedTypesCount = __traits(allMembers, MarkedNetReservedTypes).length;
 
 	static if(T.length <= ubyte.max)
 		alias idType = ubyte;
@@ -178,27 +229,6 @@ template MarkNetData(T...)
 			net.sendData(TypedData(data, i+PredefinedTypesCount));
 		}
 	}
-
-	/**
-	 * Send that message so NetController can identify that a network interface was disconnected
-	 * Params:
-	 *   net = The network interface
-	 */
-	void sendDisconnect(INetwork net)
-	{
-		net.sendData(cast(idType)Types.disconnect);
-	}
-
-	/**
-	 * Send that message so NetController can identify that a network connection was established.
-	 * Params:
-	 *   net = The network interface
-	 */
-	void sendConnect(INetwork net)
-	{
-		net.sendData(cast(idType)Types.connect);
-	}
-
 
 	/**
 	 * To its data removing the type id.

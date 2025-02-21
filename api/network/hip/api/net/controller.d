@@ -57,6 +57,7 @@ with(c.poll)
 class NetController(alias NetData)
 {
     import std.traits:isInstanceOf;
+    import hip.api.net.server;
     static assert(isInstanceOf!(MarkNetData, NetData), "NetController only accepts NetData as an input.");
 
     struct NetControllerResult
@@ -90,8 +91,9 @@ class NetController(alias NetData)
     }
 
     INetwork network;
-    protected void delegate() connectHandler;
-    protected void delegate() disconnectHandler;
+    protected void delegate() connectFn;
+    protected void delegate() disconnectFn;
+    protected void delegate(ConnectedClientsResponse) getConnectedClientsFn;
 
     static foreach(t; NetData.RegisteredTypes)
     {
@@ -118,14 +120,22 @@ class NetController(alias NetData)
     {
         return network.connect(ip, (INetwork net)
         {
-            NetData.sendConnect(net);
+            net.sendConnect();
+            getConnectedClients();
         }, id);
     }
 
 
+    void getConnectedClients()
+    {
+        network.requestConnectedClients();
+    }
 
-    void registerConnect(void delegate() fn){ connectHandler = fn; }
-    void registerDisconnect(void delegate() fn){ disconnectHandler = fn; }
+
+
+    void onConnect(void delegate() fn){ connectFn = fn; }
+    void onDisconnect(void delegate() fn){ disconnectFn = fn; }
+    void onGetConnectedClients(void delegate(ConnectedClientsResponse) fn){ getConnectedClientsFn = fn; }
 
     pragma(inline, true)
     final uint getConnectionID() const{return network.getConnectionID();}
@@ -156,11 +166,6 @@ class NetController(alias NetData)
             ubyte[] data = buffer.getFinishedBuffer();
             NetData.idType typeID = NetData.getDataFromBuffer(data);
 
-
-            import hip.api;
-            logg("Received data of type ", typeID);
-
-
             switch(typeID) with(NetControllerResult.Types)
             {
                 static foreach(i, t; NetData.RegisteredTypes)
@@ -170,10 +175,13 @@ class NetController(alias NetData)
                         goto default;
                 }
                 case connect:
-                    if(connectHandler !is null) connectHandler();
+                    if(connectFn !is null) connectFn();
                     break;
                 case disconnect:
-                    if(disconnectHandler !is null) disconnectHandler();
+                    if(disconnectFn !is null) disconnectFn();
+                    break;
+                case get_connected_clients:
+                    if(getConnectedClientsFn !is null) getConnectedClientsFn(interpretNetworkData!(ConnectedClientsResponse)(buffer.header, data));
                     break;
                 default:
                     break;
@@ -187,14 +195,30 @@ class NetController(alias NetData)
 
 T getNetworkArray(T, E = typeof(T.init[0]))(ubyte[] data)
 {
+    import hip.api.net.utils;
     assert(data.length >= 4, "Data received is not an actual array since it is smaller than a length element.");
     uint length = *(cast(uint*)data.ptr);
-    assert(data.length >= 4 + length * E.sizeof, "Data received is not valid.Not enough space available for type "~E.stringof);
-    return (cast(E*)(data.ptr + uint.sizeof))[0..length].dup;
+    static if(hasDynamicArray!E) //Dynamic arrays for type of dynamic size
+    {
+        T temp;
+        temp.length = length;
+        size_t offset = uint.sizeof;
+        foreach(i; 0..length)
+        {
+            temp[i] = getNetworkStruct!(E)(data[offset..$]);
+            offset+= getSendTypeSize(temp[i]);
+        }
+        return temp;
+    }
+    else //Static size
+    {
+        assert(data.length >= 4 + length * E.sizeof, "Data received is not valid.Not enough space available for type "~E.stringof);
+        return (cast(E*)(data.ptr + uint.sizeof))[0..length].dup;
+    }
 }
 
 
-T getNetworkStruct(T)(NetHeader header, ubyte[] data)
+T getNetworkStruct(T)(ubyte[] data)
 {
     import hip.api.net.utils;
     import std.traits:isDynamicArray;
@@ -206,28 +230,18 @@ T getNetworkStruct(T)(NetHeader header, ubyte[] data)
         foreach(ref v; ret.tupleof)
         {
             static if(isDynamicArray!(typeof(v)))
-            {
-                static if(hasDynamicArray!((typeof(v.init[0]))))
-                {
-                    v = getNetworkStruct(header, data[offset..$]);
-                    offset+= getSendTypeSize(v);
-                }
-                else ///Dynamic arrays for types of constant size.
-                {
-                    v = getNetworkArray!(typeof(v))(data[offset..$]);
-                    offset+= typeof(v).sizeof+v.length;
-                }
-            }
+                v = getNetworkArray!(typeof(v))(data[offset..$]);
             else
-            {
-                v = *cast(typeof(v)*)(data.ptr + offset);
-                offset+= typeof(v).sizeof;
-            }
+                v = getNetworkStruct!(typeof(v))(data[offset..$]);
+            offset+= getSendTypeSize(v);
         }
         return ret;
     }
     else
+    {
+        assert(data.length >= T.sizeof, "Data length is not enough to be interpreted as "~T.stringof);
         return *cast(T*)data.ptr;
+    }
 }
 
 T interpretNetworkData(T)(NetHeader header, ubyte[] data)
@@ -241,7 +255,7 @@ T interpretNetworkData(T)(NetHeader header, ubyte[] data)
 	}
     else static if(is(T == struct))
     {
-        return getNetworkStruct!T(header, data);
+        return getNetworkStruct!T(data);
     }
 	else
 	{

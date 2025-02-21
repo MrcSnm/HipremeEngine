@@ -1,5 +1,6 @@
 module hip.net.backend.websocket;
 import hip.wasm;
+import hip.api.net.hipnet;
 public import hip.network;
 
 version(WebAssembly):
@@ -24,9 +25,10 @@ extern(C) ubyte* websocketGetData(WasmWebsocket);
 class WASMWebsocketNetwork : INetworkBackend
 {
     WasmWebsocket socket;
-    NetConnectionStatus _status;
+    NetConnectStatus _status;
     uint socketID = NetID.server; //That is same as invalid since a socket can't be the server.
     uint connectedTo;
+    void delegate() onConnect;
 
 
     ///Buffer used if programmer tried to send data before assigning to its socket id
@@ -34,11 +36,12 @@ class WASMWebsocketNetwork : INetworkBackend
 
     bool isHost() const { return false; }
 
-    NetConnectionStatus connect(NetIPAddress ip, size_t id = NetID.server)
+    NetConnectStatus connect(NetIPAddress ip, void delegate() onConnect, size_t id = NetID.server)
     {
         import hip.util.string;
-        if(_status == NetConnectionStatus.waiting)
+        if(_status == NetConnectStatus.waiting)
             return _status;
+        this.onConnect = onConnect;
         connectedTo = id;
         String s;
         if(!ip.ip.startsWith("ws://"))
@@ -53,23 +56,25 @@ class WASMWebsocketNetwork : INetworkBackend
             JSString(s.toString).tupleof,
             sendJSDelegate!(()
             {
-                this._status = NetConnectionStatus.connected;
-
+                this._status = NetConnectStatus.connected;
             }).tupleof,
             sendJSDelegate!(()
             {
-                this._status = NetConnectionStatus.disconnected;
+                this._status = NetConnectStatus.disconnected;
             }).tupleof,
             sendJSDelegate!((size_t id)
             {
+                import hip.console.log;
                 socketID = id;
+                this.onConnect();
+                logln("Connection Established. Socket ID: ", id, " connected to ", connectedTo);
                 foreach(data; scheduledDataSend)
                     websocketSendData(socket, socketID, connectedTo, data.length, data.ptr);
                 scheduledDataSend = null;
             }).tupleof
         );
 
-        return _status = NetConnectionStatus.waiting;
+        return _status = NetConnectStatus.waiting;
     }
 
     void setConnectedTo(size_t id){ connectedTo = id; }
@@ -99,5 +104,10 @@ class WASMWebsocketNetwork : INetworkBackend
         }
     }
 
-    NetConnectionStatus status() const { return _status; }
+    void attemptReconnection()
+    {
+
+    }
+
+    NetConnectStatus status() const { return _status; }
 }

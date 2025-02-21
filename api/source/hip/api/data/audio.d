@@ -127,6 +127,7 @@ enum AudioFormat : ushort
 enum audioConfigDefaultBufferSize = 4096;
 
 
+pragma(LDC_no_typeinfo)
 struct AudioConfig
 {
     int sampleRate;

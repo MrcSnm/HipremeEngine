@@ -32,6 +32,7 @@ else enum GLMaxOneBoundTexture = false;
 
 
 
+pragma(LDC_no_typeinfo)
 struct HipRendererConfig
 {
     ///Use level 0 for pixel art games

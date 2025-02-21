@@ -113,6 +113,8 @@ else version (LinuxLike)
 
         extern(C) int     gethostname(char*, size_t);
         protoent* getprotobyname(T)(T str){return null; }
+
+        extern(C) @nogc @trusted nothrow int select(int, fd_set*, fd_set*, fd_set*, timeval*);
     }
 
 
@@ -1802,28 +1804,36 @@ enum SocketFlags: int
     DONTROUTE =  MSG_DONTROUTE,     /// data should not be subject to routing; this flag may be ignored. Only for sending
 }
 
+import core.stdc.time:time_t;
+
+struct timeval
+{
+    time_t  tv_sec;
+    long    tv_usec;
+}
+
 
 // /// Duration timeout value.
-// struct TimeVal
-// {
-//     _ctimeval ctimeval;
-//     alias tv_sec_t = typeof(ctimeval.tv_sec);
-//     alias tv_usec_t = typeof(ctimeval.tv_usec);
+struct TimeVal
+{
+    timeval ctimeval;
+    alias tv_sec_t = typeof(ctimeval.tv_sec);
+    alias tv_usec_t = typeof(ctimeval.tv_usec);
 
-//     /// Number of _seconds.
-//     pure nothrow @nogc @property
-//     ref inout(tv_sec_t) seconds() inout return
-//     {
-//         return ctimeval.tv_sec;
-//     }
+    /// Number of _seconds.
+    pure nothrow @nogc @property
+    ref inout(tv_sec_t) seconds() inout return
+    {
+        return ctimeval.tv_sec;
+    }
 
-//     /// Number of additional _microseconds.
-//     pure nothrow @nogc @property
-//     ref inout(tv_usec_t) microseconds() inout return
-//     {
-//         return ctimeval.tv_usec;
-//     }
-// }
+    /// Number of additional _microseconds.
+    pure nothrow @nogc @property
+    ref inout(tv_usec_t) microseconds() inout return
+    {
+        return ctimeval.tv_usec;
+    }
+}
 
 
 /**
@@ -2804,105 +2814,105 @@ public:
 
     // /// ditto
     // //maximum timeout
-    // static int select(SocketSet checkRead, SocketSet checkWrite, SocketSet checkError)
-    // {
-    //     return select(checkRead, checkWrite, checkError, null);
-    // }
+    static int select(SocketSet checkRead, SocketSet checkWrite, SocketSet checkError)
+    {
+        return select(checkRead, checkWrite, checkError, null);
+    }
 
     /// Ditto
-    // static int select(SocketSet checkRead, SocketSet checkWrite, SocketSet checkError, TimeVal* timeout) @trusted
-    // in
-    // {
-    //     //make sure none of the SocketSet's are the same object
-    //     if (checkRead)
-    //     {
-    //         assert(checkRead !is checkWrite);
-    //         assert(checkRead !is checkError);
-    //     }
-    //     if (checkWrite)
-    //     {
-    //         assert(checkWrite !is checkError);
-    //     }
-    // }
-    // do
-    // {
-    //     fd_set* fr, fw, fe;
-    //     int n = 0;
+    static int select(SocketSet checkRead, SocketSet checkWrite, SocketSet checkError, TimeVal* timeout) @trusted
+    in
+    {
+        //make sure none of the SocketSet's are the same object
+        if (checkRead)
+        {
+            assert(checkRead !is checkWrite);
+            assert(checkRead !is checkError);
+        }
+        if (checkWrite)
+        {
+            assert(checkWrite !is checkError);
+        }
+    }
+    do
+    {
+        fd_set* fr, fw, fe;
+        int n = 0;
 
-    //     version (Windows)
-    //     {
-    //         // Windows has a problem with empty fd_set`s that aren't null.
-    //         fr = checkRead  && checkRead.count  ? checkRead.toFd_set()  : null;
-    //         fw = checkWrite && checkWrite.count ? checkWrite.toFd_set() : null;
-    //         fe = checkError && checkError.count ? checkError.toFd_set() : null;
-    //     }
-    //     else
-    //     {
-    //         if (checkRead)
-    //         {
-    //             fr = checkRead.toFd_set();
-    //             n = checkRead.selectn();
-    //         }
-    //         else
-    //         {
-    //             fr = null;
-    //         }
+        version (Windows)
+        {
+            // Windows has a problem with empty fd_set`s that aren't null.
+            fr = checkRead  && checkRead.count  ? checkRead.toFd_set()  : null;
+            fw = checkWrite && checkWrite.count ? checkWrite.toFd_set() : null;
+            fe = checkError && checkError.count ? checkError.toFd_set() : null;
+        }
+        else
+        {
+            if (checkRead)
+            {
+                fr = checkRead.toFd_set();
+                n = checkRead.selectn();
+            }
+            else
+            {
+                fr = null;
+            }
 
-    //         if (checkWrite)
-    //         {
-    //             fw = checkWrite.toFd_set();
-    //             int _n;
-    //             _n = checkWrite.selectn();
-    //             if (_n > n)
-    //                 n = _n;
-    //         }
-    //         else
-    //         {
-    //             fw = null;
-    //         }
+            if (checkWrite)
+            {
+                fw = checkWrite.toFd_set();
+                int _n;
+                _n = checkWrite.selectn();
+                if (_n > n)
+                    n = _n;
+            }
+            else
+            {
+                fw = null;
+            }
 
-    //         if (checkError)
-    //         {
-    //             fe = checkError.toFd_set();
-    //             int _n;
-    //             _n = checkError.selectn();
-    //             if (_n > n)
-    //                 n = _n;
-    //         }
-    //         else
-    //         {
-    //             fe = null;
-    //         }
+            if (checkError)
+            {
+                fe = checkError.toFd_set();
+                int _n;
+                _n = checkError.selectn();
+                if (_n > n)
+                    n = _n;
+            }
+            else
+            {
+                fe = null;
+            }
 
-    //         // Make sure the sets' capacity matches, to avoid select reading
-    //         // out of bounds just because one set was bigger than another
-    //         if (checkRead ) checkRead .setMinCapacity(n);
-    //         if (checkWrite) checkWrite.setMinCapacity(n);
-    //         if (checkError) checkError.setMinCapacity(n);
-    //     }
+            // Make sure the sets' capacity matches, to avoid select reading
+            // out of bounds just because one set was bigger than another
+            if (checkRead ) checkRead .setMinCapacity(n);
+            if (checkWrite) checkWrite.setMinCapacity(n);
+            if (checkError) checkError.setMinCapacity(n);
+        }
 
-    //     int result = .select(n, fr, fw, fe, &timeout.ctimeval);
+        int result = .select(n, fr, fw, fe, &timeout.ctimeval);
 
-    //     version (Windows)
-    //     {
-    //         if (_SOCKET_ERROR == result && WSAGetLastError() == WSAEINTR)
-    //             return -1;
-    //     }
-    //     else version (LinuxLike)
-    //     {
-    //         if (_SOCKET_ERROR == result && errno == EINTR)
-    //             return -1;
-    //     }
-    //     else
-    //     {
-    //         static assert(0);
-    //     }
+        version (Windows)
+        {
+            if (_SOCKET_ERROR == result && WSAGetLastError() == WSAEINTR)
+                return -1;
+        }
+        else version (LinuxLike)
+        {
+            if (_SOCKET_ERROR == result && errno == EINTR)
+                return -1;
+        }
+        else
+        {
+            static assert(0);
+        }
 
-    //     if (_SOCKET_ERROR == result)
-    //         throw new SocketOSException("Socket select error");
+        if (_SOCKET_ERROR == result)
+            throw new SocketOSException("Socket select error");
 
-    //     return result;
-    // }
+        return result;
+    }
 
 
     /**

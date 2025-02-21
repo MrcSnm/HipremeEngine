@@ -4,6 +4,7 @@ public import hip.api.audio;
 public import hip.api.data.audio;
 
 
+pragma(LDC_no_typeinfo)
 struct HipAudioBufferAPI;
 
 interface IHipAudioClip
@@ -32,6 +33,7 @@ interface IHipAudioClip
     immutable(HipAudioClipHint)* getHint();
 }
 
+pragma(LDC_no_typeinfo)
 struct HipAudioClipHint
 {
     ///Information may be needed by the audio API

@@ -3,7 +3,6 @@ import hip.config.renderer;
 static if(HasDirect3D):
 
 import directx.d3d11;
-
 import hip.error.handler;
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;

@@ -18,6 +18,7 @@ struct HipTextRendererVertexAPI
  *  lookup. This can make a big difference by having a single lookup instead of
  *  2. The lookup is the slowest part of text rendering, which makes this a lot faster.
  */
+pragma(LDC_no_typeinfo)
 struct HipLineInfo
 {
     string line;
@@ -26,6 +27,7 @@ struct HipLineInfo
     int[512] kerningCache;
 }
 
+pragma(LDC_no_typeinfo)
 struct HipWordWrapRange
 {
     private string inputText;

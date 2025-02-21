@@ -3,7 +3,8 @@
 		"Marcelo"
 	],
 	"dependencies": {
-		"handy-httpd": "~>8.4.3"
+		"handy-httpd": "~>8.4.3",
+		"hipengine_api:network": {"path": "../../api"}
 	},
 	"copyright": "Copyright © 2025, Marcelo",
 	"description": "A minimal D application.",

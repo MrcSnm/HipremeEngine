@@ -8,8 +8,13 @@
 		"hipengine_api:interfaces": "*",
 		"hipengine_api:bindings": "*"
 	},
-	"targetType": "none",
+	"configurations": [ {  "name": "default", "targetType": "none"}],
 	"subPackages": [
+		{
+			"name": "network",
+			"sourcePaths": ["network"],
+			"importPaths": ["network"]
+		},
 		{
 			"name": "bindings",
 			"dependencies": {
@@ -25,7 +30,8 @@
 		{
 			"name": "interfaces",
 			"dependencies": {
-				"util": {"path": "../modules/util"}
+				"util": {"path": "../modules/util"},
+				"hipengine_api:network": "*"
 			},
 			"sourcePaths": ["source"]
 		}

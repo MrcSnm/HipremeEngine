@@ -2,6 +2,7 @@ module hip.api.data.commons;
 
 
 ///Use @Asset instead of HipAsset.
+pragma(LDC_no_typeinfo)
 struct HipAssetUDA(T)
 {
     string path;

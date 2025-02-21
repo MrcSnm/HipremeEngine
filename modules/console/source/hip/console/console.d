@@ -18,14 +18,14 @@ import hip.util.format;
 
 enum Platforms
 {
-    DEFAULT,
-    DESKTOP,
-    ANDROID,
-    UWP,
-    WASM,
-    PSVITA,
-    APPLEOS,
-    NULL
+    default_,
+    desktop,
+    android,
+    uwp,
+    wasm,
+    psvita,
+    appleos,
+    null_
 }
 static enum androidTag = "HipremeEngine";
 enum GUI_CONSOLE = true;
@@ -80,7 +80,7 @@ class Console
     
 
     alias printFuncT = @nogc void function(string);
-    static void install(Platforms p = Platforms.DEFAULT, printFuncT printFunc = null)
+    static void install(Platforms p = Platforms.default_, printFuncT printFunc = null)
     {
         DEFAULT = new Console("Output", 99);
         version(WindowsNative)
@@ -93,14 +93,14 @@ class Console
         }
         switch(p) with(Platforms)
         {
-            case NULL:
+            case null_:
                 _log = function(string s){};
                 _info = _log;
                 _warn = _log;
                 _err = _log;
                 _fatal = _err;
                 break;
-            case ANDROID:
+            case android:
                 version(Android)
                 {
                     import hip.jni.helper.androidlog; 
@@ -112,7 +112,7 @@ class Console
                     _fatal = cast(fnType)function(string s){alogf(androidTag, (s~"\0").ptr);};
                 }
                 break;  
-            case PSVITA:
+            case psvita:
             {
                 version(PSVita)
                 {
@@ -121,7 +121,7 @@ class Console
                 }
                 break;
             }
-            case WASM:
+            case wasm:
                 version(WebAssembly)
                 {
                     import arsd.webassembly;
@@ -133,16 +133,16 @@ class Console
                     _info = cast(nogcfn)function(string s){eval(q{console.info.apply(null, arguments)}, s);};
                 }
                 break;
-            case UWP:
+            case uwp:
                 _log = printFunc;
                 _info = _log;
                 _warn = _log;
                 _err = _log;
                 _fatal = _err;
                 break;
-            case DEFAULT:
-            case APPLEOS:
-            case DESKTOP:
+            case default_:
+            case appleos:
+            case desktop:
             default:
             {
                 _log = function(string s)
