@@ -1,6 +1,6 @@
 module std.math;
 public import core.stdc.math;
-import std.traits:Unqual;
+import std.traits:Unqual, isFloatingPoint;
 
 
 Unqual!F pow(F, G)(F x, G n) @nogc @trusted pure nothrow
@@ -11,4 +11,18 @@ Unqual!F pow(F, G)(F x, G n) @nogc @trusted pure nothrow
 
 
 pragma(inline, true)
-Number abs(Number)(Number n){ return n < 0 ? -n : n;}
+Number abs(Number)(Number n)
+{
+    static if(isFloatingPoint!Number)
+        return (n != n) ? n : (n < 0 ? -n : n);
+    else
+        return n < 0 ? -n : n;
+}
+
+
+
+N exp(N)(N input)
+{
+    static if(is(N == float)) return expf(input);
+    else return core.stdc.math.exp(input);
+}

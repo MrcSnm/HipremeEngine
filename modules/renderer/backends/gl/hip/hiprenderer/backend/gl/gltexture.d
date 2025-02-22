@@ -20,6 +20,7 @@ import hip.error.handler;
 import hip.image;
 import hip.math.utils;
 
+
 class Hip_GL3_Texture : IHipTexture, IReloadable
 {
     GLuint textureID = 0;
@@ -92,11 +93,19 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
             glCall(() => glActiveTexture(GL_TEXTURE0+slot));
             globalActiveSlot = slot;
         }
-        if(boundTexture[globalActiveSlot] is this)
+        static if(UseDelayedUnbinding)
         {
-            glCall(() => glBindTexture(GL_TEXTURE_2D, 0));
-            boundTexture[globalActiveSlot] = null;
+
         }
+        else
+        {
+            if(boundTexture[globalActiveSlot] is this)
+            {
+                glCall(() => glBindTexture(GL_TEXTURE_2D, 0));
+                boundTexture[globalActiveSlot] = null;
+            }
+        }
+
         currentSlot = slot;
     }
 

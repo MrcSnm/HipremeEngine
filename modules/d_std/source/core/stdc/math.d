@@ -19,7 +19,7 @@ version(WebAssembly)
 
 
 
-        double fabs(double x){ return x > 0 ? x : -x;}
+        double fabs(double x){ return (x != x) ? x :  (x > 0 ? x : -x);}
         double pow(double x, double y)
         {
             long n = cast(long)y;
@@ -53,7 +53,7 @@ version(WebAssembly)
         float sinf(float x);
         float tanf(float x);
 
-        float fabsf(float x){return x > 0 ? x : -x;}
+        float fabsf(float x){return (x != x) ? x :  (x > 0 ? x : -x);}
         float floorf(float x){return cast(float)(cast(int)x);}
         float ceilf(float x){return cast(float)(cast(int)(x+0.999999999));}
         float fmodf(float x, float denom)
@@ -91,9 +91,23 @@ else
         float tanf(float x);
         float fabsf(float x);
         float powf(float x, float y);
+        real powl(real x, real y);
         float floorf(float x);
         float ceilf(float x);
         float fmodf(float x, float denom);
+
+
+        double exp(double x);
+        float expf(float x);
+
+        double log(double x);
+        float logf(float x);
+        pure double  round(double x);
+        pure float   roundf(float x);
+
+        float ldexpf(float n, int exp);   /* intrinsic */
+        double ldexp(double n, int exp); /* intrinsic */ /// ditto
+        real ldexpl(real n, int exp);     /* intrinsic */ /// ditto
     }
 }
 
