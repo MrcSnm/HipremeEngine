@@ -98,6 +98,7 @@ class HipSpriteBatch : IHipBatch
         currentTextures = new IHipTexture[](HipRenderer.getMaxSupportedShaderTextures());
         usingTexturesCount = 0;
 
+
         this.spriteBatchShader = newShader(HipShaderPresets.SPRITE_BATCH);
         spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!(HipSpriteVertexUniform)(HipRenderer.getInfo));
         spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!(HipSpriteFragmentUniform)(HipRenderer.getInfo));
@@ -113,7 +114,6 @@ class HipSpriteBatch : IHipBatch
         spriteBatchShader.useLayout.Cbuf;
         // spriteBatchShader.bind();
         // spriteBatchShader.sendVars();
-
         mesh.sendAttributes();
         
 
@@ -382,9 +382,9 @@ class HipSpriteBatch : IHipBatch
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
 
-            mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj, false);
-            mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity(), false);
-            mesh.shader.setVertexVar("Cbuf1.uView", camera.view, false);
+            mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj, true);
+            mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity(), true);
+            mesh.shader.setVertexVar("Cbuf1.uView", camera.view, true);
             mesh.shader.setFragmentVar("Cbuf.uTex", currentTextures);
             mesh.shader.bindArrayOfTextures(currentTextures, "uTex");
             mesh.shader.sendVars();

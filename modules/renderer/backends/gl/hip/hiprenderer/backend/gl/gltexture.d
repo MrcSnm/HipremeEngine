@@ -67,8 +67,8 @@ class Hip_GL3_Texture : IHipTexture, IReloadable
     }
 
     private __gshared int globalActiveSlot = 0;
-    ///256 textures should be enough
-    private __gshared Hip_GL3_Texture[256] boundTexture;
+    ///128 textures should be enough
+    private __gshared Hip_GL3_Texture[128] boundTexture;
 
     void bind(int slot = 0)
     {

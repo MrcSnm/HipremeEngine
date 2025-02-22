@@ -24,6 +24,11 @@ import hip.util.string:indexOf;
 public import hip.api.renderer.shader;
 
 
+
+
+
+private __gshared ShaderProgram lastBoundShader;
+
 public class Shader : IReloadable
 {
     VertexShader vertexShader;
@@ -207,8 +212,24 @@ public class Shader : IReloadable
      */
     public void setDefaultBlock(string blockName){defaultLayout = layouts[blockName];}
 
-    void bind(){shaderImpl.bind(shaderProgram);}
-    void unbind(){shaderImpl.unbind(shaderProgram);}
+    void bind()
+    {
+        static if(UseDelayedUnbinding)
+        {
+            if(lastBoundShader is shaderProgram)
+                return;
+            if(lastBoundShader !is null)
+                shaderImpl.unbind(lastBoundShader);
+            lastBoundShader = shaderProgram;
+        }
+        shaderImpl.bind(shaderProgram);
+    }
+    void unbind()
+    {
+        static if(UseDelayedUnbinding)
+            return;
+        shaderImpl.unbind(shaderProgram);
+    }
     void setBlending(HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
     {
         shaderImpl.setBlending(shaderProgram, src, dest, eq);

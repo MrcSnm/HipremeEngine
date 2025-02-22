@@ -22,9 +22,11 @@ version(WebAssembly)
         double fabs(double x){ return x > 0 ? x : -x;}
         double pow(double x, double y)
         {
-            if(y == 0) return 1;
+            long n = cast(long)y;
+            if(n == 0) return 1;
             double ret = x;
-            if(y > 0) foreach(i; 1..y)
+
+            if(n > 0) foreach(i; 1..n)
                 ret*=x;
             else if(x == 0)
                 return double.infinity;
@@ -32,7 +34,9 @@ version(WebAssembly)
                 ret/= x;
             return ret;
         }
-        double floor(double x){return cast(double)(cast(long)x);}
+        float powf(float x, float y){return cast(float)core.stdc.math.pow(cast(double)x, cast(double)y);}
+
+        double floor(double x){return cast(long)(x-0.99999999);}
         double ceil(double x){return cast(double)(cast(long)(x+0.999999999));}
         double fmod(double f, double w) 
         {
@@ -50,14 +54,6 @@ version(WebAssembly)
         float tanf(float x);
 
         float fabsf(float x){return x > 0 ? x : -x;}
-        float powf(float x, float y)
-        {
-            if(y == 0) return 1;
-            float ret = x;
-            foreach(i; 1..y)
-                ret*=x;
-            return ret;
-        }
         float floorf(float x){return cast(float)(cast(int)x);}
         float ceilf(float x){return cast(float)(cast(int)(x+0.999999999));}
         float fmodf(float x, float denom)
@@ -106,118 +102,118 @@ extern(C) @nogc nothrow @trusted pure:
 enum int FP_ILOGB0        = int.min;
 ///
 enum int FP_ILOGBNAN      = int.min;
-extern(D) real fmodl()(real x, real y) { return fmod(cast(double) x, cast(double) y); }
+// extern(D) real fmodl()(real x, real y) { return fmod(cast(double) x, cast(double) y); }
 
-float remainderf( float x, float y ){assert(0);}
-double remainder( double x, double y ){assert(0);}
-real remainderl( real x, real y ){assert(0);}
-double  remquo(double x, double y, int* quo){assert(0);}
-float   remquof(float x, float y, int* quo){assert(0);}
-extern(D) real remquol()(real x, real y, int* quo) { return remquo(cast(double) x, cast(double) y, quo); }
-extern(D) pure real cbrtl()(real x)   { return cbrt(cast(double) x); }
-extern(D) pure real modfl()(real value, real* iptr)
-{
-    double i;
-    double r = modf(cast(double) value, &i);
-    *iptr = i;
-    return r;
-}
+// float remainderf( float x, float y ){assert(0);}
+// double remainder( double x, double y ){assert(0);}
+// real remainderl( real x, real y ){assert(0);}
+// double  remquo(double x, double y, int* quo){assert(0);}
+// float   remquof(float x, float y, int* quo){assert(0);}
+// extern(D) real remquol()(real x, real y, int* quo) { return remquo(cast(double) x, cast(double) y, quo); }
+// extern(D) pure real cbrtl()(real x)   { return cbrt(cast(double) x); }
+// extern(D) pure real modfl()(real value, real* iptr)
+// {
+//     double i;
+//     double r = modf(cast(double) value, &i);
+//     *iptr = i;
+//     return r;
+// }
 
-pure double  modf(double value, double* iptr){assert(0);}
-pure float   modff(float value, float* iptr){assert(0);}
-pure double  nearbyint(double x){assert(0);}
-pure float   nearbyintf(float x){assert(0);}
-extern(D) pure real nearbyintl()(real x) { return nearbyint(cast(double) x); }
+// pure double  modf(double value, double* iptr){assert(0);}
+// pure float   modff(float value, float* iptr){assert(0);}
+// extern(C) pure double  nearbyint(double x){assert(0);}
+// // pure float   nearbyintf(float x){assert(0);}
+// // extern(D) pure real nearbyintl()(real x) { return nearbyint(cast(double) x); }
 
-pure float   roundf(float x)
-{ 
-    return ((x - cast(int)x) >= 0.5) ? cast(int)x+1 : cast(int)x;
-}
-pure double  round(double x){ return cast(double)roundf(x);}
-extern(D) pure real roundl()(real x)  { return round(cast(double) x); }
+// pure float   roundf(float x)
+// {
+//     return ((x - cast(int)x) >= 0.5) ? cast(int)x+1 : cast(int)x;
+// }
+// pure double  round(double x){ return cast(double)roundf(x);}
+// extern(D) pure real roundl()(real x)  { return round(cast(double) x); }
 
-long llround(double x)
-{
-    return ((x - cast(long)x) >= 0.5) ? cast(long)x+1 : cast(long)x;
-}
-    ///
-long llroundf(float x){return llroundf(cast(double)x);}
-///
-extern(C) long llroundl(double x) { return llround(cast(double) x); }
-extern(D) long llroundl()(real x) { return llround(cast(double) x); }
-
-
-pure double  trunc(double x) {return cast(double)(cast(long)x);}
-///
-pure float   truncf(float x) {return cast(float)(cast(int)x);}
-///
-extern(D) pure real truncl()(real x)  { return trunc(cast(double) x); }
+// long llround(double x)
+// {
+//     return ((x - cast(long)x) >= 0.5) ? cast(long)x+1 : cast(long)x;
+// }
+//     ///
+// long llroundf(float x){return llroundf(cast(double)x);}
+// ///
+// extern(C) long llroundl(double x) { return llround(cast(double) x); }
+// extern(D) long llroundl()(real x) { return llround(cast(double) x); }
 
 
-
-
-///////////////////////////////////////Comparisons///////////////////////////////////////
-
-///real1 > real2
-extern(C) bool __gttf2(real a  , real b){assert(false);}
-///real1 < real2
-extern(C) bool __lttf2(real a, real b){assert(false);}
-///real <= real2
-extern(C) bool __letf2(real a, real b){assert(false);}
-///real != real
-extern(C) real __netf2(real a, real b){assert(false);}
-/// real == real
-extern(C) real __eqtf2(real a, real b){assert(false);}
-///isNaN(real)
-extern(C) bool __unordtf2(real a){assert(false);}
-///comp float a and b
-extern(C) bool __getf2(float a, float b){assert(false);}
-
-
-///////////////////////////////////////Basic Operations///////////////////////////////////////
-
-///real + real
-extern(C) real __addtf3(real a, real b){assert(false);}
-///real - real
-extern(C) real __subtf3(real a, real b){assert(false);}
-///real / real
-extern(C) real __divtf3(real a, real b){assert(false);}
-///real * real
-extern(C) real __multf3(real a, real b){assert(false);}
+// pure double  trunc(double x) {return cast(double)(cast(long)x);}
+// ///
+// pure float   truncf(float x) {return cast(float)(cast(int)x);}
+// ///
+// extern(D) pure real truncl()(real x)  { return trunc(cast(double) x); }
 
 
 
 
-///////////////////////////////////////Special Operations///////////////////////////////////////
+// ///////////////////////////////////////Comparisons///////////////////////////////////////
 
-/// round(real)
-extern(C) real rintl(real a){assert(false);}
-///cos(real)
-extern(C) real cosl(real a){assert(false);}
-///sqrt(real)
-extern(C) real sqrtl(real a){assert(false);}
-///sin(real)
-extern(C) real sinl(real a){assert(false);}
+// ///real1 > real2
+// extern(C) bool __gttf2(real a  , real b){assert(false);}
+// ///real1 < real2
+// extern(C) bool __lttf2(real a, real b){assert(false);}
+// ///real <= real2
+// extern(C) bool __letf2(real a, real b){assert(false);}
+// ///real != real
+// extern(C) real __netf2(real a, real b){assert(false);}
+// /// real == real
+// extern(C) real __eqtf2(real a, real b){assert(false);}
+// ///isNaN(real)
+// extern(C) bool __unordtf2(real a){assert(false);}
+// ///comp float a and b
+// extern(C) bool __getf2(float a, float b){assert(false);}
 
-///////////////////////////////////////Castings///////////////////////////////////////
 
-// ///cast(double)realValue
-extern(C) double __trunctfdf2(real x){assert(false);}
-///cast(float)real
-extern(C) float __trunctfsf2(real a){assert(false);}
-///cast(real)uint
-extern(C) real __floatunsitf (uint a){assert(false);}
-///cast(real)long
-extern(C) real __floatditf(long a){assert(false);}
-///cast(real)ulong
-extern(C) real __floatunditf(long a){assert(false);}
-///cast(real) double
-extern(C) real __extenddftf2(double a){assert(false);}
-///cast(real) float
-extern(C) real __extendsftf2(float a){assert(false);}
-///cast(real)long
-extern(C) real __fixtfdi(long a){assert(false);}
-///cast(real)int
-extern(C) real __floatsitf(int a){assert(false);}
-///Don't know
-extern(C) int __fixtfsi(float a){assert(false);}
+// ///////////////////////////////////////Basic Operations///////////////////////////////////////
+
+// ///real + real
+// extern(C) real __addtf3(real a, real b){assert(false);}
+// ///real - real
+// extern(C) real __subtf3(real a, real b){assert(false);}
+// ///real / real
+// extern(C) real __divtf3(real a, real b){assert(false);}
+// ///real * real
+// extern(C) real __multf3(real a, real b){assert(false);}
+
+
+
+
+// ///////////////////////////////////////Special Operations///////////////////////////////////////
+
+// /// round(real)
+// extern(C) real rintl(real a){assert(false);}
+// ///cos(real)
+// extern(C) real cosl(real a){assert(false);}
+// ///sqrt(real)
+// extern(C) real sqrtl(real a){assert(false);}
+// ///sin(real)
+// extern(C) real sinl(real a){assert(false);}
+
+// ///////////////////////////////////////Castings///////////////////////////////////////
+
+// // ///cast(double)realValue
+// extern(C) double __trunctfdf2(real x){assert(false);}
+// ///cast(float)real
+// extern(C) float __trunctfsf2(real a){assert(false);}
+// ///cast(real)uint
+// extern(C) real __floatunsitf (uint a){assert(false);}
+// ///cast(real)long
+// extern(C) real __floatditf(long a){assert(false);}
+// ///cast(real)ulong
+// extern(C) real __floatunditf(long a){assert(false);}
+// ///cast(real) double
+// extern(C) real __extenddftf2(double a){assert(false);}
+// ///cast(real) float
+// extern(C) real __extendsftf2(float a){assert(false);}
+// ///cast(real)long
+// extern(C) real __fixtfdi(long a){assert(false);}
+// ///cast(real)int
+// extern(C) real __floatsitf(int a){assert(false);}
+// ///Don't know
+// extern(C) int __fixtfsi(float a){assert(false);}

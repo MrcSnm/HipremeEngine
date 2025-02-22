@@ -21,6 +21,14 @@ struct ConnectedClientsResponse
 	ConnectedClient[] clients;
 }
 
+ubyte[] getNetworkFormattedData(MarkedNetReservedTypes code)
+{
+	import hip.api.net.utils;
+	NetHeader header = NetHeader(MarkedNetReservedTypes.sizeof, NetDataType.binary);
+	return toNetworkBytes(toBytes(header, code));
+}
+
+
 ubyte[] getNetworkFormattedData(T)(T data, MarkedNetReservedTypes code)
 {
 	import hip.api.net.utils;

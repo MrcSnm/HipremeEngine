@@ -121,7 +121,7 @@ class NetController(alias NetData)
         return network.connect(ip, (INetwork net)
         {
             net.sendConnect();
-            getConnectedClients();
+            // getConnectedClients();
         }, id);
     }
 

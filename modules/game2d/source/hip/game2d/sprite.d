@@ -135,15 +135,6 @@ class HipSprite
         setTexture(task);
     }
 
-    /**
-    *   Synchronous texture loading based on a string.
-    */
-    this(string texturePath)
-    {
-        import hip.api;
-        this(HipAssetManager.createTextureRegion(HipAssetManager.loadTexture(texturePath).awaitAs!IHipTexture));
-    }
-
     this(IHipTexture texture)
     {
         vertices = new HipSpriteVertex[4];

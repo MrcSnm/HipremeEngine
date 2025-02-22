@@ -30,6 +30,13 @@ else version(Android) enum GLMaxOneBoundTexture = true;
 else enum GLMaxOneBoundTexture = false;
 
 
+/**
+ * HipRenderer implements a delayed unbinding. That means it will only unbind a resource when trying to bind
+ * another resource
+ */
+enum UseDelayedUnbinding = true;
+
+
 
 
 pragma(LDC_no_typeinfo)

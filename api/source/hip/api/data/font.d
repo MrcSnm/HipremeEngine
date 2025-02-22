@@ -23,8 +23,8 @@ struct HipLineInfo
 {
     string line;
     int width;
-    const(HipFontChar)*[512] fontCharCache;
-    int[512] kerningCache;
+    const(HipFontChar)*[512] fontCharCache = void;
+    int[512] kerningCache = void;
 }
 
 pragma(LDC_no_typeinfo)
@@ -33,14 +33,16 @@ struct HipWordWrapRange
     private string inputText;
     private IHipFont font;
     private int maxWidth, currIndex;
-    private HipLineInfo currLine;
+    private HipLineInfo currLine = void;
     private bool hasFinished;
 
-    this(string inputText, IHipFont font, int maxWidth) @nogc
+    void initialize(string inputText, IHipFont font, int maxWidth) @nogc
     {
         this.inputText = inputText;
         this.font = font;
         this.maxWidth = maxWidth <= 0 ? int.max : maxWidth;
+        currIndex = 0;
+        hasFinished = false;
     }
 
     bool empty() @nogc {return hasFinished;}
@@ -144,30 +146,34 @@ struct HipFontChar
     int glyphIndex;
     void putCharacterQuad(float x, float y, float depth, HipTextRendererVertexAPI[] quad) const @nogc
     {
+        import hip.util.data_structures;
         //Gen vertices 
-        //Top left
-        quad[0] = HipTextRendererVertexAPI(
-            [x, y, depth],
-            [normalizedX, normalizedY] //ST
-        );
-        //Top Right
-        quad[1] = HipTextRendererVertexAPI(
-            [x+width, y,depth],
-            [normalizedX + normalizedWidth, normalizedY] //S + Wnorm, T
-        );
-        //Bot right
-        quad[2] = HipTextRendererVertexAPI(
-            [x+ width, y +height, depth],
-            [
-                normalizedX + normalizedWidth, //S+Wnorm
-                normalizedY + normalizedHeight //T+Hnorm
-            ]
-        );
-        //Bot left
-        quad[3] = HipTextRendererVertexAPI(
-            [x, y + height, depth],
-            [normalizedX, normalizedY + normalizedHeight] // S, T+Hnorm
-        );
+        quad[0..4] = [
+            //Top left
+            HipTextRendererVertexAPI(
+                [x, y, depth],
+                [normalizedX, normalizedY] //ST
+            ),
+            //Top Right
+            HipTextRendererVertexAPI(
+                [x+width, y,depth],
+                [normalizedX + normalizedWidth, normalizedY] //S + Wnorm, T
+            ),
+            //Bot right
+            HipTextRendererVertexAPI(
+                [x+ width, y +height, depth],
+                [
+                    normalizedX + normalizedWidth, //S+Wnorm
+                    normalizedY + normalizedHeight //T+Hnorm
+                ]
+            ),
+            //Bot left
+            HipTextRendererVertexAPI(
+                [x, y + height, depth],
+                [normalizedX, normalizedY + normalizedHeight] // S, T+Hnorm
+            )
+        ].staticArray;
+
     }
 }
 
@@ -220,7 +226,10 @@ abstract class HipFont : IHipFont
 
     final HipWordWrapRange wordWrapRange(string text, int maxWidth) const @nogc
     {
-        return HipWordWrapRange(text, cast(IHipFont)this, maxWidth);
+        ///Needs to be returned like that or else, it will memset everytime
+        HipWordWrapRange ret = void;
+        ret.initialize(text, cast(IHipFont)this, maxWidth);
+        return ret;
     }
     
 

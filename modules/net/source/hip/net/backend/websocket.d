@@ -27,7 +27,7 @@ class WASMWebsocketNetwork : INetworkBackend
     WasmWebsocket socket;
     NetConnectStatus _status;
     uint socketID = NetID.server; //That is same as invalid since a socket can't be the server.
-    uint connectedTo;
+    uint connectedTo = NetID.server;
     void delegate() onConnect;
 
 
@@ -77,7 +77,15 @@ class WASMWebsocketNetwork : INetworkBackend
         return _status = NetConnectStatus.waiting;
     }
 
-    void setConnectedTo(size_t id){ connectedTo = id; }
+    void setConnectedTo(size_t id)
+    {
+        connectedTo = id;
+        if(connectedTo == socketID)
+        {
+            import hip.util.string;
+            throw new Exception(String("Tried to connect socket ", connectedTo, " to its same ID.").toString);
+        }
+    }
     size_t getConnectionID() const { return socketID; }
 
     bool sendData(ubyte[] data)

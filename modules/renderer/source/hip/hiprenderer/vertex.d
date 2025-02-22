@@ -21,6 +21,11 @@ import hip.error.handler;
 import hip.console.log;
 public import hip.api.renderer.vertex;
 
+
+
+
+private __gshared HipVertexArrayObject lastBoundVertex;
+
 /**
 *   For using this class, you must first define the vertex layout for after that, create the vertex
 *   buffer and/or the index buffer.
@@ -172,6 +177,17 @@ class HipVertexArrayObject
 
     void bind()
     {
+        static if(UseDelayedUnbinding)
+        {
+            if(lastBoundVertex is this)
+                return;
+            if(lastBoundVertex !is null)
+            {
+                lastBoundVertex.isBonded = false;
+                lastBoundVertex.VAO.unbind(lastBoundVertex.VBO, lastBoundVertex.EBO);
+            }
+            lastBoundVertex = this;
+        }
         // if(!this.isBonded)
         // {
             isBonded = true;
@@ -180,6 +196,8 @@ class HipVertexArrayObject
     }
     void unbind()
     {
+        static if(UseDelayedUnbinding)
+            return;
         // if(this.isBonded)
         // {
             isBonded = false;
