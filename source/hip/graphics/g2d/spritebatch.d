@@ -18,40 +18,8 @@ import hip.error.handler;
 import hip.hiprenderer.shader;
 public import hip.api.graphics.batch;
 public import hip.api.graphics.color;
-public import hip.math.vector;
-public import hip.math.matrix;
+public import hip.api.renderer.shaders.spritebatch;
 
-/**
-*   This is what to expect in each vertex sent to the sprite batch
-*/
-@HipShaderInputLayout struct HipSpriteVertex
-{
-    Vector3 vPosition = Vector3.zero;
-    HipColor vColor = HipColor.white;
-    Vector2 vTexST = Vector2.zero;
-    float vTexID = 0;
-
-    static enum floatCount = cast(size_t)(HipSpriteVertex.sizeof/float.sizeof);
-    static enum quadCount = floatCount*4;
-    // static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
-}
-
-@HipShaderVertexUniform("Cbuf1")
-struct HipSpriteVertexUniform
-{
-    Matrix4 uModel = Matrix4.identity;
-    Matrix4 uView = Matrix4.identity;
-    Matrix4 uProj = Matrix4.identity;
-}
-
-@HipShaderFragmentUniform("Cbuf")
-struct HipSpriteFragmentUniform
-{
-    float[4] uBatchColor = [1,1,1,1];
-    
-    @(ShaderHint.Blackbox)
-    IHipTexture[] uTex;
-}
 
 /**
 *   The spritebatch contains 2 shaders.
@@ -305,10 +273,13 @@ class HipSpriteBatch : IHipBatch
     }
     private static void setTID(HipSpriteVertex[] vertices, int tid)
     {
-        vertices[0].vTexID = tid;
-        vertices[1].vTexID = tid;
-        vertices[2].vTexID = tid;
-        vertices[3].vTexID = tid;
+        static if(!GLMaxOneBoundTexture)
+        {
+            vertices[0].vTexID = tid;
+            vertices[1].vTexID = tid;
+            vertices[2].vTexID = tid;
+            vertices[3].vTexID = tid;
+        }
     }
     private static void setBounds(HipSpriteVertex[] vertices, float x, float y, float width, float height, float scaleX = 1, float scaleY = 1)
     {
@@ -345,8 +316,7 @@ class HipSpriteBatch : IHipBatch
         int width = texture.getWidth();
         int height = texture.getHeight();
 
-        const float[8] v = HipTextureRegion.defaultVertices;
-        setUV(output, v);
+        setUV(output, HipTextureRegion.defaultVertices);
         setZ(output, z);
         setTID(output, slot);
         setColor(output, color);

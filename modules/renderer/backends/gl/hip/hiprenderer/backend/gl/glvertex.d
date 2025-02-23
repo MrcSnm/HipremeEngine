@@ -103,7 +103,9 @@ class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
         "for vertex buffer with size "~to!string(this.size));
         }
         this.bind();
-        glCall(() => glBufferSubData(GL_ARRAY_BUFFER, offset, data.length, data.ptr));
+        {
+            glCall(() => glBufferSubData(GL_ARRAY_BUFFER, offset, data.length, data.ptr));
+        }
     }
     ~this(){glCall(() => glDeleteBuffers(1, &this.vbo));}
 }
@@ -225,7 +227,19 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
             vaoInfos.length = info.index + 1;
         vaoInfos[info.index] = VAOInfo(info, stride);
     }
-    void createInputLayout(VertexShader s, ShaderProgram p){}
+    void createInputLayout(VertexShader s, ShaderProgram p)
+    {
+        import hip.hiprenderer.backend.gl.glshader;
+        Hip_GL3_ShaderProgram glProg = cast(Hip_GL3_ShaderProgram)p;
+        foreach(ref vao; vaoInfos)
+        {
+            int attloc = glCall(() => glGetAttribLocation(glProg.program, vao.info.name.ptr));
+            if(attloc == -1)
+                throw new Exception("Could not find attribute "~vao.info.name~" at shader.");
+            vao.info.index = attloc;
+            // glCall(() => glBindAttribLocation(glProg.program, i, vao.info.name.ptr)); That strategy does not work since the shader is already linked at that stage...
+        }
+    }
 }
 
 version(HipGLUseVertexArray) class Hip_GL3_VertexArrayObject : IHipVertexArrayImpl

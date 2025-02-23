@@ -514,6 +514,18 @@ alias PFNGLVERTEXATTRIBPOINTERPROC = void function (GLuint index, GLint size, GL
 alias PFNGLVIEWPORTPROC = void function (GLint x, GLint y, GLsizei width, GLsizei height);
 void glActiveTexture (GLenum texture);
 void glAttachShader (GLuint program, GLuint shader);
+version(WebAssembly)
+{
+    void wglBindAttribLocation(GLuint program, GLuint index, size_t nameLen, const GLchar* namePtr);
+    void glBindAttribLocation(GLuint program ,GLuint index, const GLchar* name)
+    {
+        size_t length = 0;
+        while(name[length++] != '\0'){}
+        assert(length != 0, "Can't send a 0 length string to wglBindAttribLocation");
+        wglBindAttribLocation(program, index, length-1, name);
+    }
+}
+else
 void glBindAttribLocation (GLuint program, GLuint index, GLchar* name);
 void glBindBuffer (GLenum target, GLuint buffer);
 void glBindFramebuffer (GLenum target, GLuint framebuffer);
@@ -672,7 +684,19 @@ else
 void glGetActiveAttrib (GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, GLenum* type, GLchar* name);
 void glGetActiveUniform (GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, GLenum* type, GLchar* name);
 void glGetAttachedShaders (GLuint program, GLsizei maxCount, GLsizei* count, GLuint* shaders);
-GLint glGetAttribLocation (GLuint program, GLchar* name);
+
+version(WebAssembly)
+{
+    GLint wglGetAttribLocation (GLuint program, size_t length, const GLchar* name);
+    GLint glGetAttribLocation (GLuint program, const GLchar* name)
+    {
+        size_t length;
+        while(name[length] != 0) length++;
+        return wglGetAttribLocation(program, length, name);
+    }
+}
+else
+    GLint glGetAttribLocation (GLuint program, GLchar* name);
 void glGetBooleanv (GLenum pname, GLboolean* data);
 void glGetBufferParameteriv (GLenum target, GLenum pname, GLint* params);
 GLenum glGetError ();

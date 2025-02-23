@@ -31,6 +31,8 @@
 			"name": "interfaces",
 			"dependencies": {
 				"util": {"path": "../modules/util"},
+				"math": {"path": "../modules/math"},
+				"config": {"path": "../modules/config"},
 				"hipengine_api:network": "*"
 			},
 			"sourcePaths": ["source"]

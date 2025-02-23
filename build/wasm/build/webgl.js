@@ -5,6 +5,8 @@ function initializeWebglContext()
     const gl = canvas.getContext("webgl");
     if(gl === null)
         return alert("Unable to initialize WebGL. Your browser or machine may not support it.");
+
+    globalThis.gl = gl;
     gl.viewport(0, 0, 800, 600);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -13,6 +15,8 @@ function initializeWebglContext()
     const addObject = WasmUtils.addObject;
     const removeObject = WasmUtils.removeObject;
     const _objects = WasmUtils._objects;
+
+
 
     /**
      * Format: 
@@ -25,8 +29,12 @@ function initializeWebglContext()
         glAttachShader(program, shader) {
             gl.attachShader(_objects[program], _objects[shader]);
         },
-        glBindBuffer ( target, buffer ) {
+        glBindBuffer ( target, buffer) {
             gl.bindBuffer(target, _objects[buffer]);
+        },
+        wglBindAttribLocation(program, index, nameLen, namePtr)
+        {
+            gl.bindAttribLocation(_objects[program], index, WasmUtils.fromDString(nameLen, namePtr));
         },
         glBindTexture ( target, texture ) {
             gl.bindTexture(target, _objects[texture]);
@@ -155,8 +163,8 @@ function initializeWebglContext()
         glCreateTexture() {
             return addObject(gl.createTexture());
         },
-        glGetAttribLocation ( program, len, offset) {
-            return gl.getAttribLocation(_objects[program],decoders.string(len,offset));
+        wglGetAttribLocation ( program, len, offset) {
+            return gl.getAttribLocation(_objects[program], WasmUtils.fromDString(len,offset));
         },
         glGetError () {
             return gl.getError();

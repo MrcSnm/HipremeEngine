@@ -14,7 +14,7 @@ public import hip.api.renderer.texture;
 public import hip.api.graphics.color;
 public import hip.api.data.commons;
 import hip.math.vector;
-import hip.game2d.renderer_data;
+import hip.api.renderer.shaders.spritebatch;
 import hip.api.data.textureatlas;
 
 /**
