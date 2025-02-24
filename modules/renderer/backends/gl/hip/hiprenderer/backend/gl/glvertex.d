@@ -233,7 +233,7 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
         Hip_GL3_ShaderProgram glProg = cast(Hip_GL3_ShaderProgram)p;
         foreach(ref vao; vaoInfos)
         {
-            int attloc = glCall(() => glGetAttribLocation(glProg.program, vao.info.name.ptr));
+            int attloc = glCall(() => glGetAttribLocation(glProg.program, cast(char*)vao.info.name.ptr));
             if(attloc == -1)
                 throw new Exception("Could not find attribute "~vao.info.name~" at shader.");
             vao.info.index = attloc;

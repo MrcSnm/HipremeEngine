@@ -278,6 +278,9 @@ class Hip_GL_ShaderImpl : IShader
     {
         foreach(ShaderVariablesLayout l; layouts)
         {
+            if(!l.isDirty)
+                continue;
+            l.isDirty = false;
             foreach (ref ShaderVarLayout v; l.variables)
             {
                 if(!v.sVar.isDirty)

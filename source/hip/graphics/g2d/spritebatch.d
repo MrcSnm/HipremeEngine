@@ -54,6 +54,9 @@ class HipSpriteBatch : IHipBatch
     uint quadsCount;
 
 
+    ShaderVar* uProj, uModel, uView, uTex;
+
+
     this(HipOrthoCamera camera = null, index_t maxQuads = 10_900)
     {
         import hip.hiprenderer.initializer;
@@ -89,6 +92,11 @@ class HipSpriteBatch : IHipBatch
         spriteBatchShader.bind();
         spriteBatchShader.sendVars();
 
+        uProj = mesh.shader.get("Cbuf1.uProj", ShaderTypes.VERTEX);
+        uModel = mesh.shader.get("Cbuf1.uModel", ShaderTypes.VERTEX);
+        uView = mesh.shader.get("Cbuf1.uView", ShaderTypes.VERTEX);
+        uTex = mesh.shader.get("Cbuf.uTex", ShaderTypes.FRAGMENT);
+
         if(camera is null)
             camera = new HipOrthoCamera();
         this.camera = camera;
@@ -97,8 +105,6 @@ class HipSpriteBatch : IHipBatch
         mesh.setIndices(indices);
         setTexture(HipTexture.getPixelTexture());
 
-        // import hip.console.log;
-        // logln(spriteBatchShader.layouts["Cbuf"].);
     }
     void setCurrentDepth(float depth){managedDepth = depth;}
 
@@ -352,10 +358,11 @@ class HipSpriteBatch : IHipBatch
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
 
-            mesh.shader.setVertexVar("Cbuf1.uProj", camera.proj, true);
-            mesh.shader.setVertexVar("Cbuf1.uModel",Matrix4.identity(), true);
-            mesh.shader.setVertexVar("Cbuf1.uView", camera.view, true);
-            mesh.shader.setFragmentVar("Cbuf.uTex", currentTextures);
+            uProj.set(camera.proj, true);
+            uModel.set(Matrix4.identity(), true);
+            uView.set(camera.view, true);
+
+            mesh.shader.setFragmentVar(uTex, currentTextures);
             mesh.shader.bindArrayOfTextures(currentTextures, "uTex");
             mesh.shader.sendVars();
 

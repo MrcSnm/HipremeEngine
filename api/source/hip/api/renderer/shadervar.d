@@ -85,10 +85,10 @@ struct ShaderVar
     UniformType type;
     size_t singleSize;
     bool isDynamicArrayReference;
-
     bool isDirty = true;
 
     ShaderHint flags;
+    ShaderVariablesLayout layout;
     public bool isBlackboxed() const { return (flags & ShaderHint.Blackbox) != 0;}
     public bool usesMaxTextures() const { return (flags & ShaderHint.MaxTextures) != 0;}
 
@@ -104,11 +104,18 @@ struct ShaderVar
             return *(cast(T*)this.data.ptr);
     }
 
+
+    private void setDirty()
+    {
+        this.isDirty = true;
+        this.layout.isDirty = true;
+    }
+
     bool setBlackboxed(T)(T value)
     {
         import core.stdc.string;
         if(value.sizeof != varSize || !isBlackboxed) return false;
-        isDirty = true;
+        setDirty();
         memcpy(data.ptr, &value, varSize);
         return true;
     }
@@ -129,7 +136,7 @@ struct ShaderVar
                 return true;
             memcpy(data.ptr, &value, varSize);
         }
-        isDirty = true;
+        setDirty();
         return true;
     }
 
@@ -179,26 +186,26 @@ struct ShaderVar
         }
     }
 
-    static ShaderVar* create(ShaderTypes t, string varName, bool data){return ShaderVar.create(t, varName, &data, UniformType.boolean, data.sizeof, data.sizeof);}
-    static ShaderVar* create(ShaderTypes t, string varName, int data){return ShaderVar.create(t, varName, &data, UniformType.integer, data.sizeof, data.sizeof);}
-    static ShaderVar* create(ShaderTypes t, string varName, uint data){return ShaderVar.create(t, varName, &data, UniformType.uinteger, data.sizeof, data.sizeof);}
-    static ShaderVar* create(ShaderTypes t, string varName, float data){return ShaderVar.create(t, varName, &data, UniformType.floating, data.sizeof, data.sizeof);}
-    static ShaderVar* create(ShaderTypes t, string varName, float[2] data){return ShaderVar.create(t, varName, &data, UniformType.floating2, data.sizeof, data[0].sizeof);}
-    static ShaderVar* create(ShaderTypes t, string varName, float[3] data){return ShaderVar.create(t, varName, &data, UniformType.floating3, data.sizeof, data[0].sizeof);}
-    static ShaderVar* create(ShaderTypes t, string varName, float[4] data){return ShaderVar.create(t, varName, &data, UniformType.floating4, data.sizeof, data[0].sizeof);}
-    static ShaderVar* create(ShaderTypes t, string varName, float[9] data){return ShaderVar.create(t, varName, &data, UniformType.floating3x3, data.sizeof, data[0].sizeof);}
-    static ShaderVar* create(ShaderTypes t, string varName, float[16] data){return ShaderVar.create(t, varName, &data, UniformType.floating4x4, data.sizeof, data[0].sizeof);}
-    static ShaderVar* create(ShaderTypes t, string varName, int[] data)
+    static ShaderVar* create(ShaderTypes t, string varName, bool data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.boolean, data.sizeof, data.sizeof, layout);}
+    static ShaderVar* create(ShaderTypes t, string varName, int data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.integer, data.sizeof, data.sizeof, layout);}
+    static ShaderVar* create(ShaderTypes t, string varName, uint data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.uinteger, data.sizeof, data.sizeof, layout);}
+    static ShaderVar* create(ShaderTypes t, string varName, float data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating, data.sizeof, data.sizeof, layout);}
+    static ShaderVar* create(ShaderTypes t, string varName, float[2] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating2, data.sizeof, data[0].sizeof, layout);}
+    static ShaderVar* create(ShaderTypes t, string varName, float[3] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating3, data.sizeof, data[0].sizeof, layout);}
+    static ShaderVar* create(ShaderTypes t, string varName, float[4] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating4, data.sizeof, data[0].sizeof, layout);}
+    static ShaderVar* create(ShaderTypes t, string varName, float[9] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating3x3, data.sizeof, data[0].sizeof, layout);}
+    static ShaderVar* create(ShaderTypes t, string varName, float[16] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating4x4, data.sizeof, data[0].sizeof, layout);}
+    static ShaderVar* create(ShaderTypes t, string varName, int[] data, ShaderVariablesLayout layout)
     {
-        return ShaderVar.create(t, varName, data.ptr, UniformType.floating_array, int.sizeof*data.length, int.sizeof, true);
+        return ShaderVar.create(t, varName, data.ptr, UniformType.floating_array, int.sizeof*data.length, int.sizeof, layout, true);
     }
-    static ShaderVar* create(ShaderTypes t, string varName, uint[] data)
+    static ShaderVar* create(ShaderTypes t, string varName, uint[] data, ShaderVariablesLayout layout)
     {
-        return ShaderVar.create(t, varName, data.ptr, UniformType.floating_array, uint.sizeof*data.length, uint.sizeof, true);
+        return ShaderVar.create(t, varName, data.ptr, UniformType.floating_array, uint.sizeof*data.length, uint.sizeof, layout, true);
     }
-    static ShaderVar* create(ShaderTypes t, string varName, float[] data)
+    static ShaderVar* create(ShaderTypes t, string varName, float[] data, ShaderVariablesLayout layout)
     {
-        return ShaderVar.create(t, varName, data.ptr, UniformType.floating_array, float.sizeof*data.length, float.sizeof, true);
+        return ShaderVar.create(t, varName, data.ptr, UniformType.floating_array, float.sizeof*data.length, float.sizeof, layout, true);
     }
 
     protected static ShaderVar* create(
@@ -208,10 +215,11 @@ struct ShaderVar
         UniformType type,
         size_t varSize,
         size_t singleSize,
+        ShaderVariablesLayout layout,
         bool isDynamicArrayReference=false
     )
     {
-        ShaderVar* s = createEmpty(t, varName, type, varSize, singleSize);
+        ShaderVar* s = createEmpty(t, varName, type, varSize, singleSize, layout);
         s.data[0..varSize] = varData[0..varSize];
         s.isDynamicArrayReference = isDynamicArrayReference;
         return s;
@@ -221,7 +229,9 @@ struct ShaderVar
         string varName,
         UniformType type,
         size_t varSize,
-        size_t singleSize)
+        size_t singleSize,
+        ShaderVariablesLayout layout
+    )
     {
         if(!isShaderVarNameValid(varName))
             throw new Exception("Variable '"~varName~"' is invalid.");
@@ -232,6 +242,7 @@ struct ShaderVar
         s.singleSize = singleSize;
         s.shaderType = t;
         s.type = type;
+        s.layout = layout;
         return s;
     }
 
@@ -298,6 +309,8 @@ class ShaderVariablesLayout
         bool isLast
     ) packFunc;
 
+
+    bool isDirty = true;
 
     /**
     *   Use the layout name for mentioning the uniform/cbuffer block name.
@@ -458,7 +471,7 @@ class ShaderVariablesLayout
     */
     ShaderVariablesLayout append(T)(string varName, T data)
     {
-        return append(varName, ShaderVar.create(this.shaderType, varName, data));
+        return append(varName, ShaderVar.create(this.shaderType, varName, data, this));
     }
     /**
     *   Appends a new variable to this layout.
@@ -473,9 +486,9 @@ class ShaderVariablesLayout
             return this;
         }
 
-        ShaderVar* sV = ShaderVar.createEmpty(this.shaderType, varName, t, uSize*count, uSize);
+        ShaderVar* sV = ShaderVar.createEmpty(this.shaderType, varName, t, uSize*count, uSize, this);
         if((extraFlags & ShaderHint.MaxTextures) != 0)
-            sV.isDirty = true;
+            sV.setDirty();
         sV.flags|= extraFlags;
         sV.flags|= ShaderHint.Blackbox;
 

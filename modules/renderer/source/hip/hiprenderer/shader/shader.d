@@ -161,6 +161,17 @@ public class Shader : IReloadable
         }
     }
 
+    public void setFragmentVar(T)(ShaderVar* v, T val, bool validateData = false)
+    {
+        if(v.isBlackboxed)
+        {
+            if(shaderImpl.setShaderVar(v,shaderProgram, cast(void*)&val))
+                v.isDirty = true;
+        }
+        else
+            v.set(val, validateData);
+    }
+
     protected ShaderVar* findByName(string name, out bool isUnused) @nogc
     {
         int accessorSeparatorIndex = name.indexOf(".");
@@ -186,10 +197,16 @@ public class Shader : IReloadable
         }
         return null;
     }
-    public ShaderVar* get(string name)
+
+    /**
+     * Use that instead of setVertexVar or setFragmentVar if you wish more performance.
+     * Params:
+     *   name = The name of the variable
+     * Returns: The Shader Variable reference
+     */
+    public ShaderVar* get(string name, ShaderTypes type)
     {
-        bool ignored;
-        return findByName(name, ignored);
+        return tryGetShaderVar(name, type);
     }
 
 
@@ -267,6 +284,8 @@ public class Shader : IReloadable
     {
         foreach(string key, ShaderVariablesLayout value; layouts)
         {
+            if(!value.isDirty)
+                continue;
             foreach(ref ShaderVarLayout varLayout; value.variables)
             {
                 if(varLayout.sVar.isDirty)
