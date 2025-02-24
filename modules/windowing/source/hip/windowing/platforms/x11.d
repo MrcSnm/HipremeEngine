@@ -35,7 +35,6 @@ int ctxErrorHandler( Display *dpy, XErrorEvent *ev )
     return 0;
 }
 
-@nogc:
 
 nothrow @nogc bool initializeOpenGL(int majorVersion, int minorVersion, void* WindowHandle)
 {
@@ -337,14 +336,14 @@ void poll()
 }
 
 ///Returns [width, height]
-int[2] getWindowSize(void* WindowHandle, ref string[] errors)
+int[2] getWindowSize(void* WindowHandle, ref string[] errors) @nogc
 {
     XWindowAttributes att;
     XGetWindowAttributes(x11win.display, x11win.window, &att);
     return [att.width, att.height];
 }
 
-void setWindowSize(int width, int height, void* WindowHandle, ref string[] errors)
+void setWindowSize(int width, int height, void* WindowHandle, ref string[] errors) @nogc
 {
     uint change_values = CWWidth | CWHeight;
     XWindowChanges values;
@@ -355,7 +354,7 @@ void setWindowSize(int width, int height, void* WindowHandle, ref string[] error
 import hip.windowing.platforms.null_;
 alias setFullscreen = hip.windowing.platforms.null_.setFullscreen;
 
-bool destroy_GL_Context()
+bool destroy_GL_Context() @nogc
 {
     XDestroyWindow(x11win.display, x11win.window);
     XCloseDisplay(x11win.display);
@@ -365,7 +364,7 @@ bool destroy_GL_Context()
     return true;
 }
 
-int openWindow(int width, int height, out void* WindowHandle)
+int openWindow(int width, int height, out void* WindowHandle) @nogc
 {
     x11win.width = width;
     x11win.height = height;

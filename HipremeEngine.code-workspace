@@ -78,5 +78,17 @@
 			"**/*.code-search": true
 		},
 		"git.ignoreLimitWarning": true
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Debug Hipreme Engine",
+				"type": "gdb",
+				"request": "launch",
+				"target": "./bin/desktop/hipreme_engine",
+				"cwd": "${workspaceRoot}"
+			}
+		]
 	}
 }

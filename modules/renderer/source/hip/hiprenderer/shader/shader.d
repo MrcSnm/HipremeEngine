@@ -198,6 +198,23 @@ public class Shader : IReloadable
         return null;
     }
 
+    /** 
+     * This function is mostly used for debug information
+     * Returns: The Variable names.
+     */
+    private string[] getExistingVariableNames(ShaderTypes type) const
+    {
+        string[] ret;
+        foreach(k, v; layouts)
+        {
+            if(v.shaderType == type)
+            {
+                ret~= v.variables.keys;
+            }
+        }
+        return ret;
+    }
+
     /**
      * Use that instead of setVertexVar or setFragmentVar if you wish more performance.
      * Params:
@@ -206,7 +223,18 @@ public class Shader : IReloadable
      */
     public ShaderVar* get(string name, ShaderTypes type)
     {
-        return tryGetShaderVar(name, type);
+        ShaderVar* ret = tryGetShaderVar(name, type);
+        if(!ret)
+        {
+            import hip.util.string:join;
+            import hip.util.conv:to;
+            throw new Exception(
+                "Could not find variable named '"~name~"'.\n\tDefault Layout: ["~this.defaultLayout.name~
+                "].\n\tShader Path: "~ (type == ShaderTypes.FRAGMENT ? fragmentShaderPath : vertexShaderPath) ~
+                "\\tnExisting Variables in shader type "~type.to!string~":\n\t  "~getExistingVariableNames(type).join("\n\t  ")
+            );
+        }
+        return ret;
     }
 
 

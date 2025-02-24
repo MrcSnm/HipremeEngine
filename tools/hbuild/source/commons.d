@@ -817,6 +817,11 @@ void updateEngineFile()
 }
 void updateConfigFile()
 {
+	if(!("defaultProject" in engineConfig))
+	{
+		engineConfig["defaultProject"] = configs["gamePath"].str;
+		updateEngineFile();
+	}
 	std.file.write(getConfigPath, configs.toString());
 }
 string getSourceCodeEditor(string projectPath)

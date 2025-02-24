@@ -33,6 +33,7 @@ private ChoiceResult typeGamePath(Choice* self, ref Terminal t, ref RealTimeCons
 void changeGamePath(ref Terminal t, string newGamePath)
 {
     configs["gamePath"] = newGamePath;
+    engineConfig["defaultProject"] = newGamePath;
     t.writelnHighlighted("Opening project at ", newGamePath);
     openSourceCodeEditor(newGamePath);
     clearCache();
@@ -62,7 +63,6 @@ ChoiceResult selectGameFolder(Choice* c, ref Terminal t, ref RealTimeConsoleInpu
     if(hasTypedGamepath || selectedChoice.onSelected == null)
     {
         configs["selectedChoice"] = 0;
-        engineConfig["defaultProject"] = configs["gamePath"].str;
         updateEngineFile();
         updateConfigFile();
     }
