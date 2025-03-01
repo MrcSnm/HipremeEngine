@@ -179,7 +179,7 @@ enum int FP_ILOGBNAN      = int.min;
 // /// real == real
 // extern(C) real __eqtf2(real a, real b){assert(false);}
 // ///isNaN(real)
-// extern(C) bool __unordtf2(real a){assert(false);}
+// extern(C) bool __unordtf2(real a, real b){assert(false);}
 // ///comp float a and b
 // extern(C) bool __getf2(float a, float b){assert(false);}
 

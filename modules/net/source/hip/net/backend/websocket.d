@@ -77,7 +77,7 @@ class WASMWebsocketNetwork : INetworkBackend
         return _status = NetConnectStatus.waiting;
     }
 
-    void setConnectedTo(size_t id)
+    void targetConnectionID(size_t id)
     {
         connectedTo = id;
         if(connectedTo == socketID)
@@ -86,7 +86,8 @@ class WASMWebsocketNetwork : INetworkBackend
             throw new Exception(String("Tried to connect socket ", connectedTo, " to its same ID.").toString);
         }
     }
-    size_t getConnectionID() const { return socketID; }
+    size_t getConnectionSelfID() const { return socketID; }
+    size_t targetConnectionID() const { return connectedTo; }
 
     bool sendData(ubyte[] data)
     {

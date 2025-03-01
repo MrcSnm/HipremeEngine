@@ -31,15 +31,13 @@ bool cacheExists(string workingDir, string from, string toWhere)
 
 string getCacheName(string fileName)
 {
-    string ret;
-    for(int i= 0; i < fileName.length;i++)
+    char[] ret = fileName.dup;
+    for(int i= 0; i < ret.length;i++)
     {
-        if(fileName[i] == '\\' || fileName[i] == '/')
-            ret~= "$_$";
-        else
-            ret~=fileName[i];
+        if(fileName[i] == '\\')
+            ret[i] = '/';
     }
-    return ret;
+    return cast(string)ret;
 }
 
 bool isCacheValid = true;
@@ -113,7 +111,7 @@ void copyResources(ref Terminal t, string inputPath, string outputPath, bool cle
 
         bool willCopy = false;
 
-        auto cacheName = getCacheName(c.entry.name);
+        auto cacheName = getCacheName(relative);
         AssetCache* temp = (cacheName in cache);
         if(temp is null)
         {

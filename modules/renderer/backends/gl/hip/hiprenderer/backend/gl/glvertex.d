@@ -187,13 +187,30 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
         else
             this.ebo = ebo;
         isWaitingCreation = false;
+
+        static if(!GLShouldDisableVertexAttrib)
+        {
+            __gshared bool[GLMaxVertexAttributes] enabledAttributes;
+        }
+
         if(boundVAO !is this)
         {
             vbo.bind();
             ebo.bind();
             foreach(vao; vaoInfos)
             {
-                glCall(() => glEnableVertexAttribArray(vao.info.index));
+                static if(!GLShouldDisableVertexAttrib)
+                {
+                    if(!enabledAttributes[vao.info.index])
+                    {
+                        glCall(() => glEnableVertexAttribArray(vao.info.index));
+                        enabledAttributes[vao.info.index] = true;
+                    }
+                }
+                else
+                {
+                    glCall(() => glEnableVertexAttribArray(vao.info.index));
+                }
                 glCall(() => glVertexAttribPointer(
                     vao.info.index,
                     vao.info.count,
@@ -209,15 +226,22 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
         
     void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
     {
-        if(boundVAO is this)
+        static if(UseDelayedUnbinding)
         {
-            foreach(vao; vaoInfos)
+
+        }
+        else
+        {
+            if(boundVAO is this)
             {
-                glCall(() => glDisableVertexAttribArray(vao.info.index));
+                foreach(vao; vaoInfos)
+                {
+                    glCall(() => glDisableVertexAttribArray(vao.info.index));
+                }
+                vbo.unbind();
+                ebo.unbind();
+                boundVAO = null;
             }
-            vbo.unbind();
-            ebo.unbind();
-            boundVAO = null;
         }
     }
 

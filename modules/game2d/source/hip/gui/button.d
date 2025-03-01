@@ -74,13 +74,15 @@ class Button : Widget
         height = h;
         renderer = IButtonRenderer.DebugButtonRenderer;
     }
-    void setOnHover(void delegate() onHover)
+    Button setOnHover(void delegate() onHover)
     {
         this.onHover = onHover;
+        return this;
     }
-    void setOnClick(void delegate() onClick)
+    Button setOnClick(void delegate() onClick)
     {
         this.onClick = onClick;
+        return this;
     }
 
     private bool isMouseInsideButton()
@@ -110,6 +112,7 @@ class Button : Widget
     {
         if(state != State.pressed)
             state = State.idle;
+
     }
 
     void setButtonRenderer(IButtonRenderer renderer)
@@ -120,5 +123,6 @@ class Button : Widget
     {
         import hip.api;
         renderer.render(Bounds(worldTransform.x, worldTransform.y, width, height), state);
+        super.onRender();
     }
 }

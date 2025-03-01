@@ -231,9 +231,7 @@ template generateExportName(string className, alias funcSymbol)
 */
 private string getExportedFuncImpl(bool isRef, string funcCallCode)
 {
-    if(!__ctfe)
-        return null;
-
+    assert(__ctfe);
     string ret;
     if(isRef)
     {
@@ -278,8 +276,7 @@ template generateExportFunc(string className, alias funcSymbol)
     import std.traits:ReturnType;
     enum impl = ()
     {
-        if(!__ctfe)
-            return null;
+        assert(__ctfe);
 
         alias RetType = ReturnType!funcSymbol;
         string ret = "export extern(System) "~RetType.stringof~" "~generateExportName!(className, funcSymbol);

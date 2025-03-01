@@ -109,8 +109,9 @@ class TCPNetwork : INetworkBackend
 	{
 		return hostSocket !is null;
 	}
-	uint getConnectionID() const { return 0; }
-	void setConnectedTo(uint ID) { }
+	uint getConnectionSelfID() const { return 0; }
+	void targetConnectionID(uint ID) { }
+	uint targetConnectionID() const { return 0;}
 
 	NetConnectStatus connect(NetIPAddress ip, void delegate() onConnect, uint id = NetID.server)
 	{

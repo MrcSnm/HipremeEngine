@@ -38,6 +38,8 @@ debug version(Windows)
             MODLOAD_DATA* Data,
             DWORD         Flags
         );
+        BOOL SymRefreshModuleList(HANDLE hProcess);
+
     }
 }
 enum debugger = "asm {int 3;}";
@@ -172,15 +174,18 @@ bool dynamicLibraryIsLibNameValid(string libName)
     }
 }
 
+version(NoSharedLibrarySupport)
+{
+    void* dynamicLibraryLoad(string libName) { return null; }
+}
+else
 ///It will open the current executable if libName == null
 void* dynamicLibraryLoad(string libName)
 {
     void* ret;
     if(libName == null)
     {
-        version(NoSharedLibrarySupport)
-            ret = null;
-        else version(Windows)
+        version(Windows)
         {
             ret = GetModuleHandle(null);
         }
@@ -192,34 +197,27 @@ void* dynamicLibraryLoad(string libName)
     }
     else
     {
-        version(NoSharedLibrarySupport)
-            ret = null;
-        else version(Android)
+        import core.runtime;
+        ret = Runtime.loadLibrary(libName);
+        debug version(Windows)
         {
-            import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
-            ret = dlopen(libName.toStringz, RTLD_LAZY);
-        }
-        else version(Windows)
-        {
-            import core.runtime;
-            ret = Runtime.loadLibrary(libName);
-            debug
+            import core.sys.windows.psapi;
+            import core.sys.windows.winbase;
+            MODULEINFO moduleInfo;
+
+            winEnforce(() => GetModuleInformation(GetCurrentProcess(), ret, &moduleInfo, MODULEINFO.sizeof), "Could not get module information");
+            if(!SymLoadModuleEx(GetCurrentProcess(), null, libName.toStringz, null, cast(ulong)moduleInfo.lpBaseOfDll, moduleInfo.SizeOfImage, null, 0))
             {
-                import core.sys.windows.psapi;
-                import core.sys.windows.winbase;
-                MODULEINFO moduleInfo;
-	            winEnforce(() => GetModuleInformation(GetCurrentProcess(), ret, &moduleInfo, MODULEINFO.sizeof), "Could not get module information");
-                if (!SymLoadModuleEx(GetCurrentProcess(), null, (libName~'\0').ptr, null, cast(ulong)moduleInfo.lpBaseOfDll, moduleInfo.SizeOfImage, null, 0))
+                import core.sys.windows.winerror;
+
+                HRESULT lastErr = GetLastError();
+                if(lastErr != ERROR_SUCCESS)
                 {
-                    throw new Error("Failed to load the DLL named "~libName~" pdb symbols");
+                    import core.sys.windows.winuser;
+                    MessageBoxA(null, toStringz("Failed to load the DLL named "~libName~" pdb symbols "~getWindowsErrorMessage(lastErr) ~ " " ~ lastErr.to!string), "PDB Loading Failure", MB_ICONERROR | MB_OK);
                 }
-                
             }
-        }
-        else version(Posix)
-        {
-            import core.sys.posix.dlfcn : dlopen, RTLD_LAZY;
-            ret = dlopen(libName.toStringz, RTLD_LAZY);
+
         }
     }
     return ret;

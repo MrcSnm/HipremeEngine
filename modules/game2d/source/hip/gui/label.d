@@ -9,13 +9,17 @@ class Label : Widget
     protected HipText txtDraw;
     protected IWidgetRenderer bkgRenderer;
 
-    this(string text, HipColor bkgColor = HipColor(127,127,127,127))
+    this(string text)
     {
         this.txtDraw = new HipText();
         this.txtDraw.wordWrap = true;
         this.text = text;
-        this.bkgRenderer = new DebugWidgetRenderer(bkgColor);
         setAlign(HipTextAlign.LEFT, HipTextAlign.CENTER);
+    }
+
+    public void setBackgroundRenderer(HipColor bkgColor )
+    {
+        this.bkgRenderer = new DebugWidgetRenderer(bkgColor);
     }
 
     public void setBackgroundRenderer(IWidgetRenderer bkgRenderer)

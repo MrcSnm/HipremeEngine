@@ -207,6 +207,16 @@ void loadClassFunctionPointers(alias targetClass,
 				{
 					import core.stdc.stdio;
 					printf(f.stringof ~ " wasn't able to load (tried with %s)\n", importedFunctionName.ptr);
+
+					f = cast(typeof(f))()
+					{
+						printf("Symbol '"~member~"' wasn't able to load.\n"~
+						"If on that is working on LDC, please check for exportd."~
+						"referenceExported to see if that function referenced. Check https://github.com/dlang/dmd/issues/17582 for more information. \n\n\t"~
+						"Hipreme Engine will exit.\n"
+						);
+						assert(false);
+					};
 				}
 			}
 		}}

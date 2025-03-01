@@ -59,8 +59,6 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
     {
         import hip.util.path:pathSplitterRange, normalizePath;
         output = dirsJson;
-        import hip.console.log;
-        hiplog("Testing ", path.normalizePath);
         foreach(p; pathSplitterRange(path.normalizePath))
         {
             JSONValue* currAddr = p in output;

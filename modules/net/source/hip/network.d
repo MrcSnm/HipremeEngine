@@ -61,9 +61,12 @@ interface INetworkBackend
 	 */
 	void attemptReconnection();
 	///Gets ID for that network connection. It can't change over its lifetime
-	uint getConnectionID() const;
+	uint getConnectionSelfID() const;
+
+	///Gets ID for the currently target network connection. Changed with the setter
+	uint targetConnectionID() const;
 	///Sets that network connection connected to the specified ID
-	void setConnectedTo(uint id);
+	void targetConnectionID(uint id);
 
 	bool isHost() const;
 
@@ -106,8 +109,9 @@ final class HipNetwork : INetwork
 	}
 
 	bool isHost() const { return netInterface.isHost; }
-	uint getConnectionID() const{return netInterface.getConnectionID();}
-	void setConnectedTo(uint id){netInterface.setConnectedTo(id);}
+	uint getConnectionSelfID() const{return netInterface.getConnectionSelfID();}
+	uint targetConnectionID() const {return netInterface.targetConnectionID();}
+	void targetConnectionID(uint id){netInterface.targetConnectionID(id);}
 
 	private NetBufferStream getNetBufferStream(NetHeader header)
 	{

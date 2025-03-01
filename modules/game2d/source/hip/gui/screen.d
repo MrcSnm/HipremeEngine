@@ -63,7 +63,6 @@ class Screen : Widget
     private void handleMouseDown()
     {
         import hip.api;
-
         Widget w = findWidgetAt(HipInput.getWorldTouchPosition());
         widgetHolded = w;
         setFocusOn(w);

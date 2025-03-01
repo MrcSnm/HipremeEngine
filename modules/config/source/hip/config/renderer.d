@@ -37,6 +37,15 @@ else enum GLMaxOneBoundTexture = false;
 enum UseDelayedUnbinding = true;
 
 
+/**
+ * On WebGL, there's not much point in disabling them.
+ */
+version(WebAssembly) enum GLShouldDisableVertexAttrib = false;
+else enum GLShouldDisableVertexAttrib = true;
+
+enum GLMaxVertexAttributes = 64;
+
+
 
 
 pragma(LDC_no_typeinfo)

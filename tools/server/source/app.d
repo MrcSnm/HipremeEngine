@@ -13,6 +13,7 @@ int hipengineStartServer(string[] args, ushort port)
 	auto provider = new DefaultProvider(false, Levels.ERROR);
 	configureLoggingProvider(provider);
 	ServerConfig cfg;
+	cfg.hostname = "0.0.0.0";
 	cfg.port = port;
 	cfg.workerPoolSize = 3;
 	cfg.enableWebSockets = true; // Important! Websockets won't work unless `enableWebSockets` is set to true!

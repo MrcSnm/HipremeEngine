@@ -11,6 +11,8 @@ else version(ScriptAPI)
     void initNet()
     {
         import hip.api.internal;
+        import hip.api.console;
+        log("HipengineAPI: Initialized Network");
         loadClassFunctionPointers!HipNetworkBinding;
     }
 
