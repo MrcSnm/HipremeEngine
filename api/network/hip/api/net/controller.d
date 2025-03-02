@@ -138,10 +138,13 @@ class NetController(alias NetData)
     void onGetConnectedClients(void delegate(ConnectedClientsResponse) fn){ getConnectedClientsFn = fn; }
 
     pragma(inline, true)
-    final uint getConnectionID() const{return network.getConnectionID();}
+    final uint getConnectionSelfID() const{return network.getConnectionSelfID();}
 
     pragma(inline, true)
-	final void setConnectedTo(uint id){network.setConnectedTo(id);}
+	final void targetConnectionID(uint id){network.targetConnectionID(id);}
+
+    pragma(inline, true)
+	final uint targetConnectionID() const {return network.targetConnectionID();}
 
     pragma(inline, true)
 	final bool isHost() const { return network.isHost; }

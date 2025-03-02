@@ -153,9 +153,9 @@ void sendConnect(INetwork net)
 */
 void requestConnectedClients(INetwork net)
 {
-	uint currId = net.getConnectionID;
-	scope(exit) net.setConnectedTo(currId);
-	net.setConnectedTo(NetID.server);
+	uint currId = net.targetConnectionID;
+	scope(exit) net.targetConnectionID = currId;
+	net.targetConnectionID = NetID.server;
 	net.sendData(MarkedNetReservedTypes.get_connected_clients);
 }
 
@@ -271,9 +271,10 @@ interface INetwork
 	 */
 	NetConnectStatus connect(NetIPAddress ip, void delegate(INetwork) onConnect, uint id = NetID.server);
 	///Gets ID for that network connection. It can't change over its lifetime
-	uint getConnectionID() const;
+	uint getConnectionSelfID() const;
 	///Sets that network connection connected to the specified ID
-	void setConnectedTo(uint id);
+	void targetConnectionID(uint id);
+	uint targetConnectionID() const;
 	bool isHost() const;
     ///Returns whether it has got any data
 	NetConnectStatus status() const;
