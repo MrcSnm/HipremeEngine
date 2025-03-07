@@ -213,7 +213,7 @@ package struct HipTextStopConfig
         blue = "blue",
     }
 
-    private static HipTextStopConfig parseToken(in dstring text, size_t indexToParse, out size_t continueIndex)
+    private static HipTextStopConfig parseToken(in string text, size_t indexToParse, out size_t continueIndex)
     {
         import hip.util.conv;
         import hip.util.string;
@@ -224,7 +224,7 @@ package struct HipTextStopConfig
 
 
         auto range = splitRange(text[indexToParse..endIndex], ",");
-        dstring token = range.front;
+        string token = range.front;
         range.popFront();
 
         switch(token)
@@ -232,7 +232,7 @@ package struct HipTextStopConfig
             case "rgb":
             {
                 HipColorf c = HipColorf(0, 0, 0, 1.0);
-                range.map((dstring x) => x.trim.to!float).put(&c.r, &c.g, &c.b);
+                range.map((string x) => x.trim.to!float).put(&c.r, &c.g, &c.b);
                 return HipTextStopConfig(cast(int)indexToParse, c);
             }
             default: break;
@@ -246,7 +246,7 @@ package struct HipTextStopConfig
         parsedText = text;
         // size_t indexConfig = 0;
         // size_t lastParseIndex = 0;
-        // dstring parsingText;
+        // string parsingText;
         // for(size_t i = 0; i < text.length; i++)
         // {
         //     if(i+1 < text.length && text[i] == '$' && text[i+1] == '(') //Found something to parse

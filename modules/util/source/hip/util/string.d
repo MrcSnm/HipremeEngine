@@ -11,10 +11,12 @@ Distributed under the CC BY-4.0 License.
 module hip.util.string;
 public import hip.util.conv:to;
 public import hip.util.to_string_range;
+import core.stdc.string;
 
 version(WebAssembly) version = UseDRuntimeDecoder;
 version(CustomRuntimeTest) version = UseDRuntimeDecoder;
 version(PSVita) version = UseDRuntimeDecoder;
+version(WebAssembly) version = AvoidStringFragmentation;
 
 /** 
  *  RefCounted, @nogc string, OutputRange compatible, 
@@ -22,15 +24,14 @@ version(PSVita) version = UseDRuntimeDecoder;
 struct String
 {
     @nogc:
-    import core.stdc.string;
     import core.stdc.stdlib;
     import core.int128;
     char[] chars;
     private size_t _capacity;
     private int* countPtr;
-    size_t length() const {return chars.length;}
+    size_t length() @safe pure const nothrow  {return chars.length;}
 
-    this(this)
+    this(this) nothrow @safe pure
     {
         if(countPtr !is null)
             *countPtr = *countPtr + 1;
@@ -42,8 +43,8 @@ struct String
     {
         if(length == 0)
             length = 128;
-        this.chars = (cast(char*)malloc(length))[0..0];
         this.countPtr = cast(int*)malloc(int.sizeof);
+        this.chars = (cast(char*)malloc(length))[0..0];
         this._capacity = length;
         this.chars.ptr[0.._capacity] = '\0';
         *countPtr = 1;
@@ -60,32 +61,124 @@ struct String
     static auto opCall(const(char)* str){return opCall(str[0..strlen(str)]);}
     static auto opCall(String str){return str;}
 
-    private enum isAppendable(T) = is(T == String) || is(T == string) || is(T == immutable(char)*) || is(T == char);
-    
-    static auto opCall(Args...)(Args args)
+    private enum isAppendable(T) = is(T == string) || is(T == immutable(char)*) || is(T == char);
+
+    version(AvoidStringFragmentation)
     {
-        import hip.util.conv:toStringRange;
-        String s;
-        s.initialize(128);
-        static foreach(a; args)
+        static auto opCall(Args...)(Args args)
         {
-            static if(isAppendable!(typeof(a)) )
-                s~= a;
-            else static if(is(typeof(a) == struct) || __traits(compiles, toStringRange(s, a)))
+            import hip.util.conv:toStringRange;
+            rcStringBuffer.clear();
+            static foreach(a; args)
             {
-                toStringRange(s, a);
+                static if(isAppendable!(typeof(a)) )
+                    rcStringBuffer~= a;
+                else static if(__traits(hasMember, a, "toString"))
+                    rcStringBuffer~= a.toString;
+                else static if(is(typeof(a) == struct) || __traits(compiles, toStringRange(rcStringBuffer, a)))
+                {
+                    toStringRange(rcStringBuffer, a);
+                }
+                // else static if(is(typeof(a) == String[]))
+                // {
+                //     foreach(str; a)
+                //         s~= str;
+                // }
+                else
+                    static assert(false, "No conversion found for type "~typeof(a).stringof);
             }
-            else static if(__traits(hasMember, a, "toString"))
-                s~= a.toString;
-            // else static if(is(typeof(a) == String[]))
-            // {
-            //     foreach(str; a)
-            //         s~= str;
-            // }
-            else static assert(false, "No conversion found for type "~typeof(a).stringof);
+            static foreach_reverse(a; args)
+            {
+                static if(is(typeof(a) == String))
+                    destroy(a);
+            }
+            return String(rcStringBuffer.toString());
         }
-        return s;
+        auto ref opOpAssign(string op, T)(T value)
+        if(op == "~")
+        {
+            rcStringBuffer.clear();
+            char[] chs;
+            static if(is(T == String))
+                chs = value.chars;
+            else static if (is(T == string) || is(T == char[]))
+                chs = cast(char[])value;
+            else static if(is(T == immutable(char)*))
+                chs = value[0..strlen(value)];
+            else static if(is(T == char))
+            {
+                char[1] _chContainer;
+                _chContainer[0] = value;
+                chs = _chContainer;
+            }
+            else
+            {
+                toStringRange(rcStringBuffer, value);
+                chs = rcStringBuffer.toString();
+            }
+            if(!updateBorrowed(chs.length) && chs.length + this.length >= this._capacity) //New size is greater than capacity
+                resize(cast(uint)((chs.length + this.length)*1.5));
+            memcpy(chars.ptr+length, chs.ptr, chs.length);
+            chars = chars.ptr[0..chars.length+chs.length];
+            return this;
+        }
     }
+    else
+    {
+        static auto opCall(Args...)(Args args)
+        {
+            import hip.util.conv:toStringRange;
+            String s;
+            s.initialize(128);
+            static foreach(a; args)
+            {
+                static if(isAppendable!(typeof(a)) )
+                    s~= a;
+                else static if(__traits(hasMember, a, "toString"))
+                    s~= a.toString;
+                else static if(is(typeof(a) == struct) || __traits(compiles, toStringRange(s, a)))
+                {
+                    toStringRange(s, a);
+                }
+                // else static if(is(typeof(a) == String[]))
+                // {
+                //     foreach(str; a)
+                //         s~= str;
+                // }
+                else static assert(false, "No conversion found for type "~typeof(a).stringof);
+            }
+            return s;
+        }
+        auto ref opOpAssign(string op, T)(T value)
+        if(op == "~")
+        {
+            String temp;
+            char[] chs;
+            static if(is(T == String))
+                chs = value.chars;
+            else static if (is(T == string) || is(T == char[]))
+                chs = cast(char[])value;
+            else static if(is(T == immutable(char)*))
+                chs = value[0..strlen(value)];
+            else static if(is(T == char))
+            {
+                char[1] _chContainer;
+                _chContainer[0] = value;
+                chs = _chContainer;
+            }
+            else
+            {
+                temp = String(value);
+                chs = temp.chars;
+            }
+            if(!updateBorrowed(chs.length) && chs.length + this.length >= this._capacity) //New size is greater than capacity
+                resize(cast(uint)((chs.length + this.length)*1.5));
+            memcpy(chars.ptr+length, chs.ptr, chs.length);
+            chars = chars.ptr[0..chars.length+chs.length];
+            return this;
+        }
+    }
+
 
     alias _opApplyFn = int delegate(char c) @nogc;
     int opApply(scope _opApplyFn dg)
@@ -119,34 +212,6 @@ struct String
         return false;
     }
 
-    auto ref opOpAssign(string op, T)(T value)
-    if(op == "~")
-    {
-        String temp;
-        char[] chs;
-        static if(is(T == String))
-            chs = value.chars;
-        else static if (is(T == string) || is(T == char[]))
-            chs = cast(char[])value;
-        else static if(is(T == immutable(char)*))
-            chs = value[0..strlen(value)];
-        else static if(is(T == char))
-        {
-            char[1] _chContainer;
-            _chContainer[0] = value;
-            chs = _chContainer;
-        }
-        else
-        {
-            temp = String(value);
-            chs = temp.chars;
-        }
-        if(!updateBorrowed(chs.length) && chs.length + this.length >= this._capacity) //New size is greater than capacity
-            resize(cast(uint)((chs.length + this.length)*1.5));
-        memcpy(chars.ptr+length, chs.ptr, chs.length);
-        chars = chars.ptr[0..chars.length+chs.length];
-        return this;
-    }
 
     auto ref opAssign(string value)
     {
@@ -173,11 +238,39 @@ struct String
         return this;
     }
 
-    string opCast() const
+
+    bool opCast(T: bool)() const nothrow { return chars.ptr != null; }
+
+    string opCast(T: string)() const
     {
         return cast(string)chars[0..length];
     }
-    string toString() const {return cast(string)chars;}
+
+    String opSlice(size_t start, size_t end) nothrow
+    {
+        assert(countPtr != null, "Can't slice a null pointer.");
+        String ret;
+        ret.countPtr = countPtr;
+        ret.chars = chars.ptr[start..end];
+        ret._capacity = _capacity;
+        *countPtr = *countPtr+1;
+        return ret;
+    }
+
+    /**
+     * BEWARE: If you're creating a String from a String.toString call, that String will
+     * cause memory fragmentation, which will make WebAssembly not reuse that memory block.
+     ```d
+     String s = String(String("Hello").toString);
+     ```
+     * Since s won't recognize that "Hello" as a
+     *
+     * Returns:
+     */
+    string toString() const pure nothrow @trusted
+    {
+        return cast(string)chars;
+    }
 
     pragma(inline, true) private void resize(size_t newSize)
     {
@@ -214,28 +307,82 @@ struct String
     }
     void preAllocate(ulong howMuch){preAllocate(cast(uint)howMuch);}
 
-    ref auto opIndex(size_t index)
+    ref auto opIndex(size_t index) const
     {
         assert(index < length, "Index out of bounds");
         return chars[index];
     }
 
-    ~this()
+    ~this() nothrow @trusted pure
     {
+        import core.memory;
         if(countPtr != null)
         {
             *countPtr = *countPtr - 1;
             assert(*countPtr >= 0);
             if(*countPtr == 0)
             {
-                free(chars.ptr);
-                free(countPtr);
+                pureFree(chars.ptr);
+                pureFree(countPtr);
             }
             countPtr = null;
             chars = null;
         }
     }
 
+}
+
+/**
+ * Creates a stack string. This does not use any heap allocation.
+ */
+struct StringBuffer(size_t capacity)
+{
+    @nogc:
+    private char[capacity] chars;
+    private size_t _length;
+
+
+    size_t length() @safe pure const nothrow { return _length; }
+
+    static StringBuffer!(capacity) get()
+    {
+        StringBuffer!(capacity) ret = void;
+        ret._length = 0;
+        return ret;
+    }
+
+    void preAllocate(size_t howMuch)
+    {
+        if(length + howMuch > capacity)
+        {
+            assert(false, "Can't preallocate more to string buffer.");
+        }
+    }
+    void put(char c){chars[_length++] = c;}
+    void put(const(char)[] s){chars[_length.._length+s.length] = s[]; _length+= s.length;}
+    void put(immutable(char)* s){put(s[0..strlen(s)]);}
+    void put(String s){put(s.toString());}
+
+    auto opOpAssign(string op, T)(T value)
+    if(op == "~")
+    {
+        static if(is(T == char) || is(T == const(char)[]) || is(T == immutable(char*)) || is(T == String))
+            put(value);
+        else
+            toStringRange(this, value);
+        return this;
+    }
+    void clear(){_length = 0;}
+    bool opCast(T : bool)() const{return _length != 0;}
+    bool opEquals(const string other) const{return chars[0.._length] == other;}
+    string toString() const {return cast(string)chars[0.._length];}
+}
+
+
+version(AvoidStringFragmentation)
+{
+    ///On WebAssembly, it is required to have a refcounted string buffer for avoiding memory fragmentation, which causes refcounted strings to leak memory when appended
+    private StringBuffer!(8192) rcStringBuffer;
 }
 
 struct StringBuilder
@@ -363,7 +510,12 @@ pure TString replaceAll(TString)(TString str, TString what, TString replaceWith 
     return cast(TString)ret;
 }
 
-pure int indexOf (TString)(inout TString str,inout TString toFind, int startIndex = 0) nothrow @nogc @safe
+pure int indexOf(String str, const char[] toFind, int startIndex = 0) nothrow @nogc @safe
+{
+    return indexOf(str.toString, toFind, startIndex);
+}
+
+pure int indexOf(const char[] str, const char[] toFind, int startIndex = 0) nothrow @nogc @safe
 {
     if(!toFind.length)
         return -1;
@@ -429,10 +581,12 @@ pure inout(TString) between(TString)(inout TString str, inout TString left, inou
     return str[leftIndex+1..rightIndex];
 }
 
-pure int indexOf(TChar)(inout TChar[] str, inout TChar ch, int startIndex = 0) nothrow @nogc @trusted
+pure int indexOf(StrInput)(const StrInput str, char ch, int startIndex = 0) nothrow @nogc @trusted
 {
-    char[1] temp = [ch];
-    return indexOf(str, cast(TChar[])temp, startIndex);
+    for(; startIndex < str.length; startIndex++)
+        if(str[startIndex] == ch)
+            return startIndex;
+    return -1;
 }
 
 
@@ -444,7 +598,7 @@ TString repeat(TString)(TString str, size_t repeatQuant)
     return ret;
 }
 
-pure int count(TString)(inout TString str, inout TString countWhat) nothrow @nogc @safe
+pure int count(TString)(const TString str, const TString countWhat) nothrow @nogc @safe
 {
     int ret = 0;
     int index = 0;
@@ -587,7 +741,7 @@ auto splitRange(TString, TStrSep)(TString str, TStrSep separator) pure nothrow @
                 frontStr = null;
                 return;
             }
-            index = indexOf(cast(TString)strToSplit, cast(TString)sep, index);
+            index = indexOf(cast(TString)strToSplit, cast(TStrSep)sep, index);
             //When finding, take the string[lastFound..index]
             if(index != -1)
             {
@@ -610,14 +764,15 @@ auto splitRange(TString, TStrSep)(TString str, TStrSep separator) pure nothrow @
 }
 
 
-bool isNumber(TString)(in TString str) pure nothrow @nogc
+bool isNumber(TString)(const TString str) nothrow @nogc
 {
     if(!str)
         return false;
     bool isFirst = true;
     bool hasDecimalSeparator = false;
-    foreach(c; str)
+    for(int i = 0; i < str.length; i++)
     {
+        char c = str[i];
         //Check for negative
         if(isFirst)
         {
@@ -644,11 +799,12 @@ bool isNumber(TString)(in TString str) pure nothrow @nogc
  *   decimalPlaces = How many decimal places it must contain.
  * Returns: A slice which removes places after the decimal case if there exists more than it should
  */
-string limitDecimalPlaces(string input, ubyte decimalPlaces) @nogc nothrow
+TString limitDecimalPlaces(TString)(TString input, ubyte decimalPlaces) @nogc nothrow
 {
-    if(!isNumber(input))
+    string str = input.toString;
+    if(!isNumber(str))
         return input;
-    ptrdiff_t decIndex = indexOf(input, '.');
+    ptrdiff_t decIndex = indexOf(str, ".");
     if(decIndex == -1)
         return input;
 

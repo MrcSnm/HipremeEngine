@@ -23,7 +23,7 @@ extern(C) extern @nogc nothrow pure
 
     version(CustomDefinitions)
     {
-        size_t strlen(immutable(char)* str) pure @nogc nothrow @trusted
+        size_t strlen(const(char)* str) pure @nogc nothrow @trusted
         {
             enum ulong mask = 0x8080808080808080; // Mask to check the highest bit of each byte
             enum ulong magic = 0x0101010101010101; // Magic number to propagate carry

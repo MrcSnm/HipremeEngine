@@ -22,7 +22,7 @@ void drawGCStats(int x = 0, int y = -1)
 
         String asString() @nogc
         {
-            return String(String(data).toString.limitDecimalPlaces(2), unit);
+            return String(String(data).limitDecimalPlaces(2), unit);
         }
     }
 
