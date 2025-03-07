@@ -1,36 +1,89 @@
 module hip.data.json;
 
+
 JSONValue parseJSON(string jsonData)
 {
     return JSONValue.parse(jsonData);
 }
 
+alias JSONObject = JSONValue[string];
+
 struct JSONArray
 {
-	size_t length;
-	// size_t capacity;
-	private JSONValue[] value;
+	size_t length() const { return value.length; }
+	private CacheArray!(JSONValue, 4) value;
+
+	/**
+	 * Small array that holds up to N members in static memory. Whenever bigger than N,
+	 * uses default D dynamic array.
+	 */
+	private static struct CacheArray(T, size_t N)
+	{
+		private T[N] staticData = void;
+		private T[] dynData = void;
+		private size_t actualLength = void;
+
+		this(T[] value)
+		{
+			this.set(value);
+		}
+
+		private void set(T[] values)
+		{
+			if(values.length <= N)
+				staticData.ptr[0..values.length] = values[];
+			else
+				dynData = values.dup;
+			actualLength = values.length;
+		}
+		private void append(T value)
+		{
+			append((&value)[0..1]);
+		}
+		private void append(T[] values)
+		{
+			import core.stdc.string;
+			if(actualLength + values.length <= N)
+				memcpy(staticData.ptr + actualLength, values.ptr, values.length * T.sizeof);
+			else
+			{
+				if(dynData is null)
+				{
+					dynData = uninitializedArray!(T[])(actualLength+values.length);
+					memcpy(dynData.ptr, staticData.ptr, actualLength * T.sizeof);
+				}
+				else if (dynData.length < actualLength + values.length)
+				{
+					size_t newSize = actualLength+values.length > actualLength*2 ? actualLength+values.length : actualLength*2;
+					dynData.length = newSize;
+				}
+				memcpy(dynData.ptr + actualLength, values.ptr, values.length * T.sizeof);
+			}
+			actualLength+= values.length;
+		}
+
+		void trim()
+		{
+			if(dynData !is null)
+				dynData.length = actualLength;
+		}
+		size_t length() const { return actualLength; }
+		inout(T)[] getArray() inout
+		{
+			if(actualLength <= N)
+				return staticData[0..actualLength];
+			return dynData[0..actualLength];
+		}
+	}
 
 	this(JSONValue[] v)
 	{
-		this.value = v;
-		this.length = v.length;
+		this.value = CacheArray!(JSONValue, 4)(v);
 	}
 
 	static JSONArray* append(JSONArray* self, JSONValue v)
 	{
-		if(v.type == JSONType.array)
-			v.data.array = JSONArray.trim(v.data.array);
-		size_t capacity = self.length;
-
-		if(self.length >= capacity)
-		{
-			// self.capacity = cast(size_t)((self.length+1)*1.5);
-			self.value.length++;
-			// self = cast(JSONArray*)GC.realloc(self, JSONArray.sizeof + JSONValue.sizeof*(self.capacity));
-		}
-		self.value.ptr[self.length] = v;
-		self.length++;
+		self.value.append(v);
 		return self;
 	}
 	auto opOpAssign(string op, T)(T value) if(op == "~")
@@ -42,42 +95,26 @@ struct JSONArray
 	}
 	private static JSONArray* trim(JSONArray* self)
 	{
-		size_t selfLength = self.length;
-		self.value.length = selfLength;
-		// if(self.length != self.capacity)
-		// 	self = cast(JSONArray*)GC.realloc(self, JSONArray.sizeof + JSONValue.sizeof*selfLength);
-		// self.capacity = selfLength;
-		// self.length = selfLength;
+		self.value.trim();
 		return self;
 	}
 
-	static JSONArray* createNew(size_t initialSize = 8)
+	static JSONArray* createNew()
 	{
-		JSONArray* ret = new JSONArray();
-		ret.value.length = initialSize;
-
-		// JSONArray* ret = cast(JSONArray*)GC.malloc(JSONArray.sizeof + JSONValue.sizeof*initialSize, GC.BlkAttr.APPENDABLE);
-		// ret.length = 0;
-		// ret.capacity = initialSize;
-		return ret;
+		return new JSONArray([]);
 	}
+
 	static JSONArray* createNew(JSONValue[] data)
 	{
-		JSONArray* ret = createNew(data.length);
-		ret.value.ptr[0..data.length] = data[];
-		ret.length = data.length;
+		JSONArray* ret = new JSONArray(data);
 		return ret;
 	}
 
 
-	JSONValue[] getArray(){return value.ptr[0..length];}
-	const(JSONValue)[] getArray() const {return value.ptr[0..length];}
+	JSONValue[] getArray(){return value.getArray;}
+	const(JSONValue)[] getArray() const {return value.getArray;}
 }
-struct JSONObject
-{
-	JSONValue[string] value;
-	alias value this;
-}
+
 private enum JSONState
 {
 	key,
@@ -86,15 +123,16 @@ private enum JSONState
 	value
 }
 
-enum JSONType
+enum JSONType : ubyte
 {
-	bool_,
-	float_,
-	int_, integer = int_, uinteger = int_,
-	string_, string = string_,
-	array,
-	object,
-	null_
+	bool_ = 0,
+	float_ = 1,
+	int_ = 2, integer = int_, uinteger = int_,
+	string_ = 3, string = string_,
+	array = 4,
+	object = 5,
+	error = 6,
+	null_ = 7 //0b111
 }
 
 pragma(inline, true)
@@ -107,24 +145,78 @@ bool isWhitespace(char ch)
 	}
 }
 
-pragma(inline, true) bool isNumber(char ch){return ch >= '0' && ch <= '9';}
-pragma(inline, true) bool isNumeric(char ch){return (ch >= '0' && ch <= '9') || ch == '-' || ch == '.';}
+pragma(inline, true) bool isNumber(char ch){return '0' <= ch && ch <= '9';}
+pragma(inline, true) bool isNumeric(char ch){return ('0' <= ch  && ch <= '9') || ch == '-' || ch == '.';}
+
+private union JSONData
+{
+	double _float;
+	long _int;
+	bool _bool;
+	immutable(char)* _string;
+	JSONObject object;
+	JSONArray* array;
+}
+
 
 struct JSONValue
 {
-	union JSONData{
-
-		double _float;
-		long _int;
-		bool _bool;
-		string _string;
-		JSONObject* object;
-		JSONArray* array;
-	}
 	JSONData data;
-	string key;
-	string error;
-	JSONType type = JSONType.object;
+	static if(size_t.sizeof == uint.sizeof)
+	{
+		///Used only for the string.
+		uint _length;
+
+		pragma(inline, true) JSONType type(JSONType t)
+		{
+			_length = (_length & 0x1FFFFFFF) | (cast(uint)t << 29);
+			return t;
+		}
+		pragma(inline, true) JSONType type() const
+		{
+			return cast(JSONType)(_length >> 29);
+		}
+
+		pragma(inline, true)  private void setString(string s)
+		{
+			import core.stdc.string;
+			data._string = s.ptr;
+			_length = (s.length & 0x1FFFFFFF) | (cast(uint)type << 29);
+		}
+
+		pragma(inline, true) private uint length() const
+		{
+			return _length & 0x1FFFFFFF;
+		}
+	}
+	else
+	{
+		///Used only for the string.
+		ulong _length;
+
+		pragma(inline, true) JSONType type(JSONType t)
+		{
+			_length = (_length & 0x1FFFFFFFFFFFFFFF) | (cast(size_t)t << 61);
+			return t;
+		}
+		pragma(inline, true) JSONType type() const
+		{
+			return cast(JSONType)(_length >> 61);
+		}
+
+		pragma(inline, true)  private void setString(string s)
+		{
+			import core.stdc.string;
+			data._string = s.ptr;
+			_length = (s.length & 0x1FFFFFFFFFFFFFFF) | (cast(size_t)type << 61);
+		}
+
+		pragma(inline, true) private size_t length() const
+		{
+			return _length & 0x1FFFFFFFFFFFFFFF;
+		}
+	}
+
 
 	this(T)(T value)
 	{
@@ -147,9 +239,9 @@ struct JSONValue
 		else static if(is(T == string))
 		{
 			type = JSONType.string_;
-			data._string = value;
+			setString(value);
 		}
-		else static if(is(T == JSONObject*))
+		else static if(is(T == JSONObject))
 		{
 			type = JSONType.object;
 			data.object = value;
@@ -161,7 +253,7 @@ struct JSONValue
 		}
 		else static if(is(T == JSONValue[]))
 		{
-			data.array = new JSONArray(value);
+			data.array = JSONArray.createNew(value);
 			type = JSONType.array;
 		}
 		else static if(is(T == JSONValue))
@@ -180,6 +272,7 @@ struct JSONValue
     int integer() const {return get!int;}
     bool boolean() const {return get!bool;}
     string str() const {return get!string;}
+    string error() const{return get!string;}
     ///Returns an array range.
     auto array() const
     {
@@ -216,8 +309,6 @@ struct JSONValue
         enforce(type == JSONType.object, "Tried to get type object but value is of type "~getTypeName);
 		JSONValue ret;
 		ret.data = data;
-		ret.error = error;
-		ret.key = key;
 		ret.type = JSONType.object;
         return ret;
     }
@@ -226,13 +317,13 @@ struct JSONValue
 	{
 		import hip.util.exception;
         enforce(type == JSONType.object, "Tried to get type object but value is of type "~getTypeName);
-		return data.object.value.keys;
+		return data.object.keys;
 	}
 	JSONValue[] values()
 	{
 		import hip.util.exception;
         enforce(type == JSONType.object, "Tried to get type object but value is of type "~getTypeName);
-		return data.object.value.values;
+		return data.object.values;
 	}
 
 	string getTypeName() const
@@ -245,6 +336,7 @@ struct JSONValue
 			case string_: return "string";
 			case object: return "object";
 			case array: return "array";
+			case error: return "error";
 			case null_: return "null";
 		}
 	}
@@ -260,8 +352,6 @@ struct JSONValue
 		}
 		else static if(isFloatingPoint!T)
 		{
-			if(type == JSONType.int_)
-				return cast(float)data._int;
 			enforce(type == JSONType.float_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
 			return cast(Unqual!T)data._float;
 		}
@@ -272,13 +362,13 @@ struct JSONValue
 		}
 		else static if(is(T == string))
 		{
-			enforce(type == JSONType.string_, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
-			return data._string;
+			enforce(type == JSONType.string_ || type == JSONType.error, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
+			return data._string[0..length];
 		}
 		else static if(is(T == JSONObject))
 		{
 			enforce(type == JSONType.object, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
-			return *data.object;
+			return data.object;
 		}
 		else static if(is(T == JSONArray))
 		{
@@ -308,20 +398,20 @@ struct JSONValue
 	{
 		JSONValue ret;
 		ret.type = JSONType.array;
-		ret.data.array = new JSONArray();
+		ret.data.array = JSONArray.createNew();
 		return ret;
 	}
 
-	private static JSONValue create(T)(T data, string key)
+	private static JSONValue create(T)(T data)
 	{
 		JSONValue ret = JSONValue(data);
-		ret.key = key;
 		return ret;
 	}
 	private static JSONValue errorObj(string message)
 	{
 		JSONValue ret;
-		ret.error = message;
+		ret.setString(message);
+		ret.type = JSONType.error;
 		return ret;
 	}
 
@@ -338,52 +428,6 @@ struct JSONValue
 		ptrdiff_t index = 0;
 		StringPool pool = StringPool(cast(size_t)(data.length*0.75));
 
-		// bool getNextString(string data, ptrdiff_t currentIndex, out ptrdiff_t newIndex, out string theString)
-		// {
-		// 	import std.array;
-		// 	assert(data[currentIndex] == '"');
-		// 	ptrdiff_t i = currentIndex + 1;
-		// 	size_t returnLength = 0;
-		// 	// char[] ret = uninitializedArray!(char[])(128);
-		// 	char[] ret = pool.getNewString(64);
-		// 	char ch;
-
-		// 	ubyte[4] chars;
-		// 	bool escaped;
-		// 	LOOP: while(i < data.length)
-		// 	{
-		// 		ubyte count = nextByte32(chars, data, i);
-		// 		for(size_t byteIndex = 0; byteIndex < count; byteIndex++)
-		// 		{
-		// 			ch = cast(char)chars[byteIndex];
-		// 			if(!escaped)
-		// 			{
-		// 				if(ch == '"')
-		// 				{
-		// 					i+= byteIndex;
-		// 					break LOOP;
-		// 				}
-		// 				else if(ch == '\\')
-		// 				{
-		// 					escaped = true;
-		// 					continue;
-		// 				}
-		// 			}
-		// 			if(returnLength >= ret.length)
-		// 				ret = pool.resizeString(ret, ret.length*2);
-		// 			ret[returnLength++] = cast(char)chars[byteIndex];
-		// 			escaped = false;
-		// 		}
-		// 		i+= count;
-		// 	}
-		// 	ret = pool.resizeString(ret, returnLength);
-		// 	newIndex = i;
-		// 	if(newIndex == data.length) //Not found
-		// 		return false;
-		// 	theString = cast(string)ret;
-		// 	return true;
-		// }
-
 		bool getNextString(string data, ptrdiff_t currentIndex, out ptrdiff_t newIndex, out string theString)
 		{
 			assert(data[currentIndex] == '"', "getNextString must start with a quotation mark");
@@ -397,41 +441,22 @@ struct JSONValue
 				ch = data[i];
 				switch(ch)
 				{
-					case '"': 
-					{
+					case '"':
 						ret = pool.resizeString(ret, returnLength);
 						newIndex = i;
 						theString = cast(string)ret;
 						return true;
-					}
 					case '\\':
-						if(i + 1 < data.length)
-						{
-							i++;
-							switch(data[i])
-							{
-								case 'n':
-									ch = '\n';
-									break;
-								case 't':
-									ch = '\t';
-									break;
-								case 'r':
-									ch = '\r';
-									break;
-								default:
-									ch = data[i];
-									break;
-							}
-						}
-						else
+						if(i + 1 >= data.length)
 							return false;
+						ch = escapedCharacter(data[++i]);
 						break;
 					default: break;
+
 				}
 				if(returnLength >= ret.length)
 					ret = pool.resizeString(ret, ret.length*2);
-				
+
 				ret[returnLength++] = ch;
 				i++;
 			}
@@ -446,23 +471,17 @@ struct JSONValue
 			newIndex = currentIndex;
 			if(data[currentIndex] == '-')
 				newIndex++;
-			if(data[newIndex] == '.')
-			{
-				hasDecimal = true;
-				newIndex++;
-			}
 
 			while(newIndex < data.length)
 			{
 				if(!hasDecimal && data[newIndex] == '.')
 				{
-					if(!hasDecimal) hasDecimal = true;
+					hasDecimal = true;
 					if(newIndex+1 < data.length) newIndex++;
 				}
-				if(isNumber(data[newIndex]))
-					newIndex++;
-				else 
+				if(!isNumber(data[newIndex]))
 					break;
+				newIndex++;
 			}
 			if(hasDecimal)
 			{
@@ -484,7 +503,7 @@ struct JSONValue
 		JSONState state = JSONState.value;
 		JSONValue lastValue = ret;
 
-		scope JSONValue[] stack = uninitializedArray!(JSONValue[])(128);
+		scope JSONValue[] stack = uninitializedArray!(JSONValue[])(32);
 		scope ptrdiff_t stackLength = 0;
 
 		size_t line = 0;
@@ -499,15 +518,15 @@ struct JSONValue
 			char ch = data[index];
 			switch(ch)
 			{
-				case '\n': 
+				case '\n':
 					line++;
 					break;
 				case '{':
 				{
 					if(state != JSONState.value)
 						return JSONValue.errorObj(getErr());
-					JSONValue obj = JSONValue.create(new JSONObject(), lastKey);
-					if(!pushNewScope(obj, current, stackLength, stack))
+					JSONValue obj = JSONValue.create(new JSONObject);
+					if(!pushNewScope(obj, current, stackLength, stack, lastKey))
 						return JSONValue.errorObj(getErr("Could not push new scope in JSON. Only array, object or null are valid"));
 
 					state = JSONState.key;
@@ -538,9 +557,6 @@ struct JSONValue
 							assert(current.type == JSONType.object, getErr("only object can receive a key."));
 							if(!getNextString(data, index, index, lastKey))
 								return JSONValue.errorObj(getErr("unclosed quotes."));
-							JSONValue keyJson;
-							keyJson.key = lastKey;
-							pushToStack(keyJson, current, lastValue);
 							state = JSONState.lookingAssignment;
 							break;
 						}
@@ -549,12 +565,12 @@ struct JSONValue
 							string val;
 							if(!getNextString(data, index, index, val))
 								return JSONValue.errorObj(getErr("unclosed quotes."));
-							pushToStack(JSONValue.create!string(val, lastKey), current, lastValue);
+							pushToStack(JSONValue(val), current, lastValue, lastKey);
 							state = JSONState.lookingForNext;
 							break;
 						}
 						default:
-							return JSONValue.errorObj(getErr("comma expected before key "~lastValue.key));
+							return JSONValue.errorObj(getErr("comma expected before key "~lastKey));
 					}
 					break;
 				}
@@ -562,7 +578,7 @@ struct JSONValue
 				{
 					if(state != JSONState.lookingForNext && state != JSONState.value)
 						return JSONValue.errorObj(getErr(" expected to be a value. "));
-					if(!pushNewScope(JSONValue.create(JSONArray.createNew(), lastKey), current, stackLength, stack))
+					if(!pushNewScope(JSONValue(JSONArray.createNew()), current, stackLength, stack, lastKey))
 						return JSONValue.errorObj(getErr("Could not push new scope in JSON. Only array, object or null are valid"));
 					state = JSONState.value;
 					break;
@@ -595,30 +611,32 @@ struct JSONValue
 							{
 								if(state == JSONState.lookingForNext && current.type != JSONType.array)
 									return JSONValue.errorObj(getErr("unexpected number."));
-								if(!getNextNumber(data, index, index, lastValue.data, lastValue.type))
+								JSONType out_type;
+								if(!getNextNumber(data, index, index, lastValue.data, out_type))
 									return JSONValue.errorObj(getErr("unexpected end of file."));
-								pushToStack(lastValue, current, lastValue);
+								lastValue.type = out_type;
+								pushToStack(lastValue, current, lastValue, lastKey);
 								state = JSONState.lookingForNext;
 							}
 							else if(index + "true".length < data.length && data[index.."true".length + index] == "true")
 							{
 								if(state == JSONState.lookingForNext && current.type != JSONType.array)
 									return JSONValue.errorObj(getErr("unexpected number."));
-								pushToStack(JSONValue.create!bool(true, lastKey), current, lastValue);
+								pushToStack(JSONValue(true), current, lastValue, lastKey);
 								state = JSONState.lookingForNext;
 							}
 							else if(index + "false".length < data.length && data[index.."false".length + index] == "false")
 							{
 								if(state == JSONState.lookingForNext && current.type != JSONType.array)
 									return JSONValue.errorObj(getErr("unexpected number."));
-								pushToStack(JSONValue.create!bool(false, lastKey), current, lastValue);
+								pushToStack(JSONValue(false), current, lastValue, lastKey);
 								state = JSONState.lookingForNext;
 							}
 							else if(index + "null".length < data.length && data[index.."null".length + index] == "null")
 							{
 								if(state == JSONState.lookingForNext && current.type != JSONType.array)
 									return JSONValue.errorObj(getErr("unexpected number."));
-								pushToStack(JSONValue.create(null, lastKey), current, lastValue);
+								pushToStack(JSONValue(null), current, lastValue, lastKey);
 								state = JSONState.lookingForNext;
 							}
 							break;
@@ -635,21 +653,20 @@ struct JSONValue
 	const(JSONValue) opIndex(string key) const
 	{
 		assert(type == JSONType.object, "Can't get a member from a non object.");
-		return (*data.object)[key];
+		return data.object[key];
 	}
 	JSONValue opIndex(string key)
 	{
 		assert(type == JSONType.object, "Can't get a member from a non object.");
-		return (*data.object)[key];
+		return data.object[key];
 	}
 	JSONValue opIndexAssign(JSONValue v, string key)
 	{
 		import hip.util.exception;
 		enforce(type == JSONType.object, "Can't get a member from a non object.");
 		enforce(data.object !is null, "Can't access a null object");
-		(*data.object)[key] = v;
-		v.key = key;
-		return (*data.object)[key];
+		data.object[key] = v;
+		return data.object[key];
 	}
 
 	JSONValue opIndexAssign(T)(T value, string key) if(!is(T == JSONValue))
@@ -661,13 +678,13 @@ struct JSONValue
 	if(op == "in")
 	{
 		if(type != JSONType.object)	return null;
-		return key in (*data.object).value;
+		return key in data.object;
 	}
     JSONValue* opBinaryRight(string op)(string key)
 	if(op == "in")
 	{
 		if(type != JSONType.object)	return null;
-		return key in (*data.object).value;
+		return key in data.object;
 	}
 
     int opApply(scope int delegate(string key, JSONValue v) dg)
@@ -677,7 +694,7 @@ struct JSONValue
             assert(false, "Can't iterate with key[string] and value[JSONValue] an object of type "~getTypeName);
         }
         int result = 0;
-        foreach (k, v ; data.object.value)
+        foreach (k, v ; data.object)
         {
             result = dg(k, v);
             if (result)
@@ -686,13 +703,20 @@ struct JSONValue
     
         return result;
     }
-	bool hasErrorOccurred() const { return error.length != 0; }
+	bool hasErrorOccurred() const { return type == JSONType.error; }
 
-	//selfPrintKey is only used for object.
-	string toString(bool selfPrintkey = false) const
+	/**
+	 *
+	 * Params:
+	 *   compressed = Won't include any space in the file. Also, won't escape backslash. Since the parsing works with a single backslash.
+	 * this may reduce the json size, and increase the parsing speed.
+	 *   selfPrintkey = Only used for objects.
+	 * Returns:
+	 */
+	string toString(bool compressed = false)() const
 	{
-		if(hasErrorOccurred)
-			return error;
+		if(type == JSONType.error)
+			return error();
 		import hip.util.conv:to;
 		string ret;
 
@@ -701,7 +725,7 @@ struct JSONValue
 			size_t length = input.length;
 			foreach(ch; input)
 			{
-				if(ch == '\\' || ch == '\n' || ch == '\t' || ch == '\r' || ch == '"') length++;
+				if(ch == '\n' || ch == '\t' || ch == '\r' || ch == '"' || ch == '\\') length++;
 			}
 			if(length == input.length) return input;
 			char[] escaped = new char[](length);
@@ -750,8 +774,11 @@ struct JSONValue
 			case JSONType.bool_:
 				ret = data._bool ? "true" : "false";
 				break;
+			case JSONType.error:
+				ret = error();
+				break;
 			case JSONType.string_:
-				ret = '"'~escapeCharacters(data._string)~'"';
+				ret = '"'~escapeCharacters(get!string)~'"';
 				break;
 			case JSONType.null_:
 				ret = "null";
@@ -762,28 +789,45 @@ struct JSONValue
 				bool isFirst = true;
 				foreach(v; data.array.getArray)
 				{
-					if(!isFirst)
-						ret~=", ";
+					static if(compressed)
+					{
+						if(!isFirst)
+							ret~= ',';
+					}
+					else
+					{
+						if(!isFirst)
+							ret~= ", ";
+					}
 					isFirst = false;
-					ret~= v.toString(false);
+					ret~= v.toString!compressed();
 				}
 				ret~= "]";
 				break;
 			}
 			case JSONType.object:
 			{
-				if(selfPrintkey)
-				{
-					ret = '"'~escapeCharacters(key)~"\": ";
-				}
+
 				ret~= '{';
 				bool isFirst = true;
-				foreach(k, v; data.object.value)
+				foreach(k, v; data.object)
 				{
-					if(!isFirst)
-						ret~= ", ";
+					static if(compressed)
+					{
+						if(!isFirst)
+							ret~= ',';
+					}
+
+					else
+					{
+						if(!isFirst)
+							ret~=  ", ";
+					}
 					isFirst = false;
-					ret~= '"'~escapeCharacters(k)~"\" : "~v.toString(false);
+					static if(compressed)
+						ret~= '"'~escapeCharacters(k)~"\":"~v.toString!compressed;
+					else
+						ret~= '"'~escapeCharacters(k)~"\" : "~v.toString!compressed;
 				}
 				ret~= '}';
 				break;
@@ -797,12 +841,12 @@ struct JSONValue
     {
         if(type == JSONType.object)
         {
-            foreach(v; data.object.value)
+            foreach(v; data.object)
                 v.dispose();
         }
         else if(type == JSONType.array)
         {
-            foreach(v; data.array.value)
+            foreach(v; data.array.value.getArray)
                 v.dispose();
         }
         
@@ -848,7 +892,7 @@ private struct StringPool
 				else
 				{
 					ptrdiff_t offset = str.ptr - pool.ptr;
-					assert(offset > 0, " Out of bounds?");
+					assert(offset >= 0, " Out of bounds?");
 					used+= newSize - str.length;
 					return pool[cast(size_t)offset..offset+newSize];
 				}
@@ -877,7 +921,7 @@ private struct StringPool
 }
 
 pragma(inline, true)
-bool pushNewScope(JSONValue val, ref JSONValue* current, ref ptrdiff_t stackLength, ref JSONValue[] stack)
+bool pushNewScope(JSONValue val, ref JSONValue* current, ref ptrdiff_t stackLength, ref JSONValue[] stack, string key)
 {
 	assert(val.type == JSONType.object || val.type == JSONType.array || val.type == JSONType.null_, "Unexpected push.");
 	JSONValue* currTemp = current;
@@ -894,7 +938,7 @@ bool pushNewScope(JSONValue val, ref JSONValue* current, ref ptrdiff_t stackLeng
 	switch(currTemp.type)
 	{
 		case JSONType.object:
-			currTemp.data.object.value[val.key] = *current;
+			currTemp.data.object[key] = *current;
 			break;
 		case JSONType.array:
 			currTemp.data.array = JSONArray.append(currTemp.data.array, *current);
@@ -919,19 +963,7 @@ void popScope(ref ptrdiff_t stackLength, ref JSONValue[] stack, ref JSONValue* c
 	{
 		JSONValue* next = &stack[stackLength-1];
 		if(current.type == JSONType.array)
-		{
 			current.data.array = JSONArray.trim(current.data.array);
-			if(next.type == JSONType.array)
-			{
-				next.data.array.getArray[$-1] = *current;
-			}
-		// 	else if(next.type == JSONType.object)
-		// 	{
-		// 		JSONValue* v = current.key in next.data.object.value;
-		// 		current.data.array = JSONArray.trim(current.data.array);
-		// 		*v = *current;
-		// 	}
-		}
 		current = next;
 		import hip.util.conv;
 		assert(current.type == JSONType.object || current.type == JSONType.array, "Unexpected value in stack. (Typed "~(cast(size_t)(current.type)).to!string);
@@ -939,12 +971,12 @@ void popScope(ref ptrdiff_t stackLength, ref JSONValue[] stack, ref JSONValue* c
 }
 
 pragma(inline, true)
-void pushToStack(JSONValue val, ref JSONValue* current, ref JSONValue lastValue)
+void pushToStack(JSONValue val, ref JSONValue* current, ref JSONValue lastValue, string lastKey)
 {
 	switch(current.type) with(JSONType)
 	{
 		case object:
-			current.data.object.value[val.key] = val;
+			current.data.object[lastKey] = val;
 			break;
 		case array:
 			current.data.array = JSONArray.append(current.data.array, val);
@@ -955,6 +987,74 @@ void pushToStack(JSONValue val, ref JSONValue* current, ref JSONValue lastValue)
 		default: assert(false, "Unexpected stack type: "~current.getTypeName);
 	}
 	lastValue = val;
+}
+
+
+unittest
+{
+	assert(parseJSON(`
+	{
+    "name": "redub",
+    "description": "Dub Based Build System, with parallelization per packages and easier to contribute",
+    "authors": ["Hipreme"],
+    "targetPath": "build",
+    "buildOptions": [
+        "debugInfo",
+        "debugInfoC",
+        "debugMode"
+    ],
+    "configurations": [
+        {
+            "name": "cli",
+            "targetType": "executable"
+        },
+        {
+            "name": "library",
+            "targetType": "staticLibrary",
+            "excludedSourceFiles": ["source/app.d"]
+        }
+    ],
+    "license": "MIT",
+    "dependencies": {
+        "semver": {"path": "semver"},
+        "colorize": {"path": "colorize"},
+        "adv_diff": {"path": "adv_diff"},
+        "hipjson": {"path": "hipjson"},
+        "xxhash3": "~>0.0.5"
+    }
+
+}`).object["configurations"].array.length == 2);
+
+}
+
+unittest
+{
+	enum json = `
+{
+    "D5F04185E96CC720": [
+        [
+			"First Value"
+        ],
+        [
+			"Second Value"
+        ]
+    ]
+}`;
+	assert(parseJSON(json)["D5F04185E96CC720"].array[1].array[0].toString == `"Second Value"`);
+}
+
+
+pragma(inline, true)
+private char escapedCharacter(char a)
+{
+	switch(a)
+	{
+		case 'n': return '\n';
+		case 't': return '\t';
+		case 'b': return '\b';
+		case 'r': return '\r';
+		default: return a;
+	}
 }
 
 

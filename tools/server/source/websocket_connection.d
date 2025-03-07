@@ -88,6 +88,7 @@ class HipremeEngineWebSocketServer: WebSocketMessageHandler
                     case MarkedNetReservedTypes.get_connected_clients:
                         auto response = getNetworkFormattedData(getConnectedClients, MarkedNetReservedTypes.get_connected_clients);
                         connections[fromSocketID].socket.sendBinaryMessage(response);
+                        writeln(fromSocketID, " requested connected clients.");
                         break;
                     default:
                         writeln("Received invalid command ID [", command, "] from connection ", fromSocketID);
