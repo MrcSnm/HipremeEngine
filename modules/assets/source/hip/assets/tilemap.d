@@ -281,6 +281,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
         HipFS.readText(path).addOnSuccess((in void[] data)
         {
             tileset.loadJSON(parseJSON(cast(string)data), onSuccess, onError);
+            return FileReadResult.free;
         }).addOnError((err)
         {
             loglnWarn("Could not read file at path ", path," ", err);
@@ -409,6 +410,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
             HipFS.read(imagePath).addOnSuccess((in ubyte[] imgData)
             {
                 textureImage = new Image(imagePath, cast(ubyte[])imgData, onSuccess, onFailure);
+                return FileReadResult.free;
             }).addOnError((string err)
             {
                 ErrorHandler.showErrorMessage("Error loading image required by Tileset", imagePath);
@@ -649,6 +651,7 @@ class HipTilemap : HipAsset, IHipTilemap
         HipFS.read(tiledPath).addOnSuccess((in ubyte[] data)
         {
             HipTilemap.readTiledJSON(tiledPath, cast(ubyte[])data, onSuccess, onError);
+            return FileReadResult.free;
         }).addOnError((err)
         {
             import hip.error.handler;

@@ -1,7 +1,6 @@
 /**
 *   Public imports free, malloc, realloc, memcpy, memcmp, memset.
 *   - toHeap!T executes malloc + memcpy
-*   - safeFree executes free and sets the reference to null
 *   - alloc!T is a malloc with the type size
 *   - allocSlice!T will return a heap allocated slice 
 *
@@ -53,13 +52,13 @@ void[] toHeapSlice(T)(T data) if(!is(T == void[]))
 }
 
 
-void freeGCMemory(void* data)
+void freeGCMemory(void* data, string f = __FILE__, size_t l = __LINE__)
 {
     assert(data !is null, "Tried to free null data.");
     version(CustomRuntime)
     {
         static import rt.hooks;
-        rt.hooks.free(cast(ubyte*)data);
+        rt.hooks.free(cast(ubyte*)data, f, l);
     }
     else
     {
@@ -69,13 +68,13 @@ void freeGCMemory(void* data)
     }
 }
 
-void freeGCMemory(ref void* data) //Remove ref.
+void freeGCMemory(ref void* data, string f = __FILE__, size_t l = __LINE__) //Remove ref.
 {
     assert(data !is null, "Tried to free null data.");
     version(CustomRuntime)
     {
         static import rt.hooks;
-        rt.hooks.free(cast(ubyte*)data);
+        rt.hooks.free(cast(ubyte*)data, f, l);
     }
     else
     {
@@ -86,46 +85,19 @@ void freeGCMemory(ref void* data) //Remove ref.
     data = null;
 }
 
-void freeGCMemory(ref void[] data)
+void freeGCMemory(ref void[] data, string f = __FILE__, size_t l = __LINE__)
 {
     assert(data.length, "Tried to free null data.");
-    freeGCMemory(data.ptr);
+    freeGCMemory(data.ptr, f, l);
     data = null;
 }
 
-void freeGCMemory(T)(ref T[] data)
+void freeGCMemory(T)(ref T[] data, string f = __FILE__, size_t l = __LINE__)
 {
-    freeGCMemory(cast(void*)data.ptr);
+    freeGCMemory(cast(void*)data.ptr, f, l);
     data = null;
 }
 
-void safeFree(T)(ref T data) if(isReference!T)
-{
-    version(CustomRuntime)
-    {
-        free(cast(ubyte*)data);
-    }
-    else
-    {
-        import core.memory;
-        GC.removeRoot(cast(void*)data);
-        GC.free(cast(void*)data);
-    }
-    data = null;
-}
-
-void safeFree(ref void* data)
-{
-    if(data != null)
-        free(data);
-    data = null;
-}
-void safeFree(ref void[] data)
-{
-    if(data.ptr !is null)
-        free(data.ptr);
-    data = [];
-}
 
 class Pool(T) if(is(T == class) || is(T == interface))
 {

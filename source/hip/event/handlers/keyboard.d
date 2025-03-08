@@ -38,7 +38,7 @@ char toUppercase(char a)
  */
 class KeyboardHandler : IHipKeyboard
 {
-    private __gshared int[256] pressedKeys;
+    private __gshared ubyte[256] pressedKeys;
     private __gshared HipButtonMetadata[256] metadatas;
     private __gshared string frameText;
 

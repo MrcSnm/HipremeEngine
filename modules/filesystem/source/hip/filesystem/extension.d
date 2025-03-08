@@ -1,10 +1,11 @@
 module hip.filesystem.extension;
+import hip.api.filesystem.hipfs;
 
 /** 
  * Mixes `bool loadFromFile(T, string)`
  * If pathProperty not default, mixes `bool load(T)`
  */
-mixin template HipFSExtend(T, string pathProperty = "", Args...)
+mixin template HipFSExtend(T, FileReadResult keepResult, string pathProperty = "", Args...)
 {
     static assert(__traits(hasMember, T, "loadFromMemory"), "For being file system extended, it required loadFromMemory");
     bool loadFromFile(T instance, string path, Args args)
@@ -16,6 +17,7 @@ mixin template HipFSExtend(T, string pathProperty = "", Args...)
         }).addOnSuccess((in ubyte[] data)
         {
             instance.loadFromMemory(cast(ubyte[])data, args);
+            return keepResult;
         });
         return true;
         

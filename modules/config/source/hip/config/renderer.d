@@ -36,6 +36,14 @@ else enum GLMaxOneBoundTexture = false;
  */
 enum UseDelayedUnbinding = true;
 
+/**
+ * This can provide a reduced memory usage for sprites which can also be a big win for other platforms. You may increase that amount but can't surpass index_t.max / 4
+ */
+enum DefaultMaxSpritesPerBatch = 1024;
+enum DefaultMaxGeometryBatchVertices = 16_384;
+
+
+
 
 /**
  * On WebGL, there's not much point in disabling them.

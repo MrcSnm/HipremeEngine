@@ -56,7 +56,7 @@ version(Android)
 
     class HipAndroidFileSystemInteraction : IHipFileSystemInteraction
     {
-        bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err) onError)
+        bool read(string path, FileReadResult delegate(ubyte[] data) onSuccess, void delegate(string err) onError)
         {
             ubyte[] output;
             HipAndroidFile f = new HipAndroidFile(path, FileMode.READ);
@@ -66,8 +66,11 @@ version(Android)
             destroy(f);
             if(!ret)
                 onError("Could not read file.");
-            else
-                onSuccess(output);
+            else if(onSuccess(output) == FileReadResult.free)
+            {
+                import core.memory;
+                GC.free(output.ptr);
+            }
             return ret;
         }
         bool write(string path, const(void)[] data)

@@ -351,6 +351,7 @@ class HipAssetManager
                 HipFileAsset asset = new HipFileAsset(pathOrLocation);
                 asset.load(data);
                 onSuccess(asset);
+                return FileReadResult.keep;
             }).addOnError((string err)
             {
                 onFailure("Could not read file with err: " ~ err);
@@ -370,6 +371,7 @@ class HipAssetManager
             HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
             {
                 new Image(pathOrLocation, cast(ubyte[])data, (IImage img){onSuccess(cast(HipAsset)img);}, (){onFailure();});
+                return FileReadResult.free;
             }).addOnError((string err)
             {
                 onFailure("Could not read file with err: " ~ err);
@@ -400,6 +402,7 @@ class HipAssetManager
                     hiplog("AssetManager: Audio: Loaded ", audioPath);
                     onSuccess(clip);
                 }, (){onFailure("Could not load HipAudioClip.");});
+                return FileReadResult.free;
 
             }).addOnError((string err)
             {
@@ -425,6 +428,7 @@ class HipAssetManager
                 {
                     onFirstStepComplete(toHeapSlice(img));
                 }, (){onFailure();});
+                return FileReadResult.free;
             }).addOnError((string err)
             {
                 ErrorHandler.showErrorMessage("Could not read file ", err);
@@ -456,6 +460,7 @@ class HipAssetManager
                 auto ret = new HipCSV();
                 ret.loadFromMemory(cast(string)data);
                 onSuccess(ret);
+                return FileReadResult.free;
             }).addOnError((string err)
             {
                 onError("Error reading file: "~ err);
@@ -473,6 +478,7 @@ class HipAssetManager
                 auto ret = new HipINI();
                 ret.loadFromMemory(cast(string)data, pathOrLocation);
                 onSuccess(ret);
+                return FileReadResult.keep;
             }).addOnError((string err)
             {
                 onError("Error reading file: "~ err);
@@ -491,6 +497,7 @@ class HipAssetManager
                 auto ret = new HipJSONC();
                 ret.loadFromMemory(cast(string)data);
                 onSuccess(ret);
+                return FileReadResult.free;
             }).addOnError((string err)
             {
                 onError("Error reading file: "~ err);
@@ -525,8 +532,12 @@ class HipAssetManager
                     (IImage _)
                     {
                         onFirstStepComplete (toHeapSlice(inter));
+
                     }, (){onFailure("Failure trying to read image");});
+                    return FileReadResult.free;
                 }).addOnError((err){onFailure("Failure trying to read atlas");});
+
+                return FileReadResult.free;
             }).addOnError((string err)
             {
                 ErrorHandler.showErrorMessage("Could not read file: ", err);
@@ -569,6 +580,7 @@ class HipAssetManager
                         onSuccess(toHeapSlice(map));
                     }, (){onFailure();});
                 }, (){onFailure();});
+                return FileReadResult.free;
             }).addOnError((string err)
             {
                 onFailure("Failed loading tilemap data."~err);
@@ -606,6 +618,7 @@ class HipAssetManager
                 };
                 auto onTilesetJsonFailure = delegate(){onFailure("Failed loading tileset json");};
                 HipTilesetImpl.readFromMemory(pathOrLocation, cast(string)data, onTilesetJsonLoaded, onTilesetJsonFailure);
+                return FileReadResult.free;
             }).addOnError((string err)
             {
                 onFailure("Failed reading file for tileset");
@@ -673,6 +686,7 @@ class HipAssetManager
                 if(!font.partialLoad(cast(ubyte[])data, rawImage))
                     onFailure("Could not load font data");
                 onSuccess(toHeapSlice(new IntermediaryData(font, rawImage)));
+                return FileReadResult.free;
             }).addOnError((string err)
             {
                 onFailure("Could not read file "~err);
@@ -715,7 +729,10 @@ class HipAssetManager
             {
                 HipBitmapFont font = new HipBitmapFont();
                 if(!font.loadAtlas(cast(string)fontData, pathOrLocation))
-                    return onFailure("Could not load font atlas.");
+                {
+                    onFailure("Could not load font atlas.");
+                    return FileReadResult.free;
+                }
                 HipImageImpl img = new HipImageImpl(font.getTexturePath);
 
                 HipFS.read(font.getTexturePath).addOnSuccess((in ubyte[] imgData)
@@ -728,11 +745,12 @@ class HipAssetManager
                     {
                         onFailure("Could not decode image.");
                     });
+                    return FileReadResult.free;
                 }).addOnError((string err)
                 {
                     onFailure("Could not load font image "~err);
                 });
-                
+                return FileReadResult.free;
             }).addOnError((string err)
             {
                 onFailure("Could read file atlas");

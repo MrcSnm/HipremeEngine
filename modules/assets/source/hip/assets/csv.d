@@ -27,6 +27,7 @@ class HipCSV : HipAsset, IHipCSV
         }).addOnSuccess((in ubyte[] data)
         {
             loadFromMemory(cast(string)data, fieldDelimiter, textDelimiter, file);
+            return FileReadResult.free;
         });
 
         return true;

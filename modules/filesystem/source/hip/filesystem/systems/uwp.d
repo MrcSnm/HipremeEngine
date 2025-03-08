@@ -122,7 +122,11 @@ version(UWP)
             f.read(output.ptr, f.size);
             f.close();
             destroy(f);
-            onSuccess(output);
+            if(onSuccess(output) == FileReadResult.free)
+            {
+                import core.memory;
+                GC.free(output.ptr);
+            }
             return true;
         }
         bool write(string path, const(void)[] data)

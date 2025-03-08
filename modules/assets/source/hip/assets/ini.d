@@ -28,6 +28,7 @@ class HipINI : HipAsset, IHipIniFile
         }).addOnSuccess((in ubyte[] data)
         {
             loadFromMemory(cast(string)data, path);
+            return FileReadResult.keep;
         });
         return true;
     }

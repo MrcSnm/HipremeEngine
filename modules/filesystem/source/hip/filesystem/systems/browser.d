@@ -35,7 +35,7 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
         }
     }
     
-    bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err = "Corrupted File") onError)
+    bool read(string path, FileReadResult delegate(ubyte[] data) onSuccess, void delegate(string err = "Corrupted File") onError)
     {
         JSONValue dummy = void;
         import hip.console.log;
@@ -46,9 +46,14 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
         }
         hiplog("Browser read start on ", path);
 
-        WasmRead(JSString(path).tupleof, sendJSDelegate!((ubyte[] wasmBin)
+        WasmRead(JSString(path).tupleof, sendJSDelegate!((ubyte[] wasmBin, WasmParametersMemory memory)
         {
-            onSuccess(wasmBin);
+            if(onSuccess(wasmBin) == FileReadResult.free)
+            {
+                import core.memory;
+                GC.free(memory.ptr);
+            }
+
         }).tupleof, sendJSDelegate!(onError).tupleof);
         
         return true;

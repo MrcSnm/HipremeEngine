@@ -10,7 +10,7 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
 {
     version(Windows)
         pragma(lib, "Shlwapi.lib"); //PathIsDirectory
-    bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err) onError)
+    bool read(string path, FileReadResult delegate(ubyte[] data) onSuccess, void delegate(string err) onError)
     {
         import core.stdc.stdio;
         import hip.error.handler;
@@ -53,7 +53,11 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
             return false;
         }
         fclose(f);
-        onSuccess(output);
+        if(onSuccess(output) == FileReadResult.free)
+        {
+            import core.memory;
+            GC.free(output.ptr);
+        }
         return true;
     }
     bool write(string path, const(void)[] data)

@@ -334,6 +334,7 @@ struct String
 
 /**
  * Creates a stack string. This does not use any heap allocation.
+ * Prefer using that one inside game loop
  */
 struct StringBuffer(size_t capacity)
 {
@@ -341,13 +342,23 @@ struct StringBuffer(size_t capacity)
     private char[capacity] chars;
     private size_t _length;
 
-
     size_t length() @safe pure const nothrow { return _length; }
 
+    /**
+     * Returns: An empty StringBuffer which avoids initialization on its buffer
+     */
     static StringBuffer!(capacity) get()
     {
         StringBuffer!(capacity) ret = void;
         ret._length = 0;
+        return ret;
+    }
+
+    static auto opCall(Args...)(Args args)
+    {
+        auto ret = typeof(this).get();
+        static foreach(a; args)
+            ret~= a;
         return ret;
     }
 
@@ -377,6 +388,9 @@ struct StringBuffer(size_t capacity)
     bool opEquals(const string other) const{return chars[0.._length] == other;}
     string toString() const {return cast(string)chars[0.._length];}
 }
+
+alias BigString = StringBuffer!(8192);
+alias SmallString = StringBuffer!(256);
 
 
 version(AvoidStringFragmentation)
@@ -789,6 +803,8 @@ bool isNumber(TString)(const TString str) nothrow @nogc
     }
     return true;
 }
+
+string toString(string s) nothrow @nogc pure @safe { return s; }
 
 /**
  * Returns the entire string if input is not a number separated by a '.'

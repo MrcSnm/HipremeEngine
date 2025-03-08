@@ -3,9 +3,9 @@ module core.memory;
 struct GC
 {
     static void* addrOf(void* addr)@trusted pure nothrow @nogc {return addr;}
-    static void free(void* addr) @trusted nothrow @nogc pure
+    static void free(void* addr, string f = __FILE__, size_t l = __LINE__ ) @trusted nothrow @nogc pure
     {
-        pureFree(addr);
+        pureFree(addr, f, l);
     }
 
     static size_t extend(void* ptr, size_t max, size_t desiredExtensionInSize, const TypeInfo ti =  null) pure nothrow
@@ -55,12 +55,12 @@ struct BlkInfo
     uint   attr;
 }
 
-void pureFree(void* addr) pure nothrow @trusted @nogc
+void pureFree(void* addr, string f = __FILE__, size_t l = __LINE__) pure nothrow @trusted @nogc
 {
     import rt.hooks;
-    alias pureFreeT = extern(C) void function(void* addr) pure nothrow @trusted @nogc;
+    alias pureFreeT = extern(C) void function(void* addr, string f, size_t l) pure nothrow @trusted @nogc;
     auto freeAddr = cast(pureFreeT)&free;
-    freeAddr(addr);
+    freeAddr(addr, f, l);
 }
 
 enum pageSize = 516;

@@ -13,18 +13,18 @@ version(PSVita) version = CustomRuntime;
 
 version(CustomRuntime)
 {
-    private alias nogc_free_t = @nogc nothrow void function(ubyte* ptr);
+    private alias nogc_free_t = @nogc nothrow void function(ubyte* ptr, string f = __FILE__, size_t l = __LINE__);
     private alias nogc_malloc_t = @nogc nothrow ubyte[] function(size_t size, string file, size_t line);
     private alias nogc_calloc_t = @nogc nothrow ubyte[] function(size_t size, size_t count, string file, size_t line);
     private alias nogc_realloc_t = @nogc nothrow ubyte[] function(ubyte* ptr, size_t size, string file, size_t line);
 
     @nogc nothrow
     {
-        void free(void* ptr)
+        void free(void* ptr, string f = __FILE__, size_t l = __LINE__)
         {
             static import rt.hooks;
             auto nogc_free = cast(nogc_free_t)&rt.hooks.free;
-            nogc_free(cast(ubyte*)ptr);
+            nogc_free(cast(ubyte*)ptr, f, l);
         }
         void* malloc(size_t size, string file = __FILE__, size_t line = __LINE__)
         {

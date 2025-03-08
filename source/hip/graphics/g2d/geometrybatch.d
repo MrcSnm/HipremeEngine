@@ -67,7 +67,7 @@ class GeometryBatch : IHipBatch
     index_t[] indices;
 
     
-    this(HipOrthoCamera camera = null, index_t verticesCount=64_000, index_t indicesCount=64_000)
+    this(HipOrthoCamera camera = null, index_t verticesCount=DefaultMaxGeometryBatchVertices, index_t indicesCount=DefaultMaxGeometryBatchVertices)
     {
         import hip.hiprenderer.initializer;
         Shader s = newShader(HipShaderPresets.GEOMETRY_BATCH);

@@ -20,9 +20,12 @@ void drawGCStats(int x = 0, int y = -1)
         double data;
         string unit;
 
-        String asString() @nogc
+        SmallString asSmallString() @nogc
         {
-            return String(String(data).limitDecimalPlaces(2), unit);
+            return SmallString(
+                SmallString(data).toString.limitDecimalPlaces(2),
+                unit
+            );
         }
     }
 
@@ -44,7 +47,7 @@ void drawGCStats(int x = 0, int y = -1)
     version(WebAssembly)
     {
         import core.arsd.memory_allocation;
-        String s = String("Memory Allocated: ", formatFromBytes(getMemoryAllocated()).asString);
+        SmallString str = SmallString("Memory Allocated ", formatFromBytes(getMemoryAllocated()).asSmallString().toString);
         int lbSize = 40;
         int totalSize = lbSize;
         if(x < 0)
@@ -55,7 +58,7 @@ void drawGCStats(int x = 0, int y = -1)
             Viewport vp = HipRenderer.getCurrentViewport;
             y = vp.worldHeight - totalSize;
         }
-        drawText(s.toString, x, y+lbSize);
+        drawText(str.toString, x, y+lbSize);
 
     }
     else static if(!CustomRuntime)
@@ -65,8 +68,10 @@ void drawGCStats(int x = 0, int y = -1)
         GC.ProfileStats prof = GC.profileStats;
 
 
-        String timeOnPause;
-        String timeOnCollection;
+
+
+        SmallString timeOnPause = SmallString.get();
+        SmallString timeOnCollection = SmallString.get();
 
         prof.totalPauseTime.toString((string data)
         {
@@ -79,12 +84,12 @@ void drawGCStats(int x = 0, int y = -1)
 
 
         scope auto toPrint = [
-            String("GC Stats: "),
-            String("\tMemory Used: ", formatFromBytes(stats.usedSize).asString),
-            String("\tFree Memory: ", formatFromBytes(stats.freeSize).asString),
-            String("\tTime Paused on GC: ", timeOnPause),
-            String("\tTime Spent on Collection:", timeOnCollection),
-            String("\tCollections Count: ", prof.numCollections),
+            SmallString("GC Stats: "),
+            SmallString("\tMemory Used: ", formatFromBytes(stats.usedSize).asSmallString.toString),
+            SmallString("\tFree Memory: ", formatFromBytes(stats.freeSize).asSmallString.toString),
+            SmallString("\tTime Paused on GC: ", timeOnPause.toString),
+            SmallString("\tTime Spent on Collection:", timeOnCollection.toString),
+            SmallString("\tCollections Count: ", prof.numCollections),
         ].staticArray;
 
         int lbSize = 40;
@@ -98,7 +103,7 @@ void drawGCStats(int x = 0, int y = -1)
             y = vp.worldHeight - totalSize;
         }
 
-        foreach(i, ref String str; toPrint)
-            drawText(str.toString, x, y+lbSize*cast(int)i);
+        foreach(i, str; toPrint)
+            drawText(str.toString, x, y+lbSize*cast(int)i, HipColor(0, 50, 0));
     }
 }

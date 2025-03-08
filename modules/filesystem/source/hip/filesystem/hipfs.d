@@ -108,10 +108,10 @@ private class HipFSPromise : IHipFSPromise
     string filename;
     bool finished = false;
     ubyte[] data;
-    void delegate(in ubyte[] data)[] onSuccessList;
+    FileReadResult delegate(in ubyte[] data)[] onSuccessList;
     void delegate(string err)[] onErrorList;
     this(string filename){this.filename = filename;}
-    IHipFSPromise addOnSuccess(void delegate(in ubyte[] data) onSuccess)
+    IHipFSPromise addOnSuccess(FileReadResult delegate(in ubyte[] data) onSuccess)
     {
         if(finished)
             onSuccess(data);
@@ -127,15 +127,18 @@ private class HipFSPromise : IHipFSPromise
             onErrorList~= onError;
         return this;
     }
-    void setFinished(ubyte[] data)
+    FileReadResult setFinished(ubyte[] data)
     {
-        import std.stdio;
+        if(finished)
+            assert(false, "HipFSPromise was already resolved.");
         this.data = data;
         this.finished = true;
+        FileReadResult r = FileReadResult.free;
         if(data) foreach(success; onSuccessList)
-            success(data);
+            r&= success(data);
         else foreach(err; onErrorList)
             err("Could not read file");
+        return r;
 
     }
     bool resolved() const{return finished;}
@@ -302,7 +305,7 @@ class HipFileSystem
         fs.read(path, (ubyte[] data)
         {
             filesReadingCount--;
-            promise.setFinished(data);
+            return promise.setFinished(data);
         }, (string err)
         {
             promise.setFinished(null);
@@ -353,7 +356,7 @@ class HipFileSystem
     {
         ///This may need to be refactored in the future.
         // import std.functional:toDelegate;
-        return fs.read(path, (void[] data){output = data;}, (err) => defaultErrorHandler(err));
+        return fs.read(path, (void[] data){output = data; return FileReadResult.keep;}, (err) => defaultErrorHandler(err));
     }
     @ExportD("ubyte") public static bool absoluteRead(string path, out ubyte[] output)
     {

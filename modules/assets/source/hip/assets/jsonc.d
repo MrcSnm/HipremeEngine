@@ -33,6 +33,7 @@ class HipJSONC : HipAsset, IHipJSONC
         }).addOnSuccess((in ubyte[] data)
         {
             loadFromMemory(cast(string)data, filePath);
+            return FileReadResult.free;
         });
         return true;
     }

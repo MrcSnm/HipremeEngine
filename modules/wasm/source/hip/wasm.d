@@ -33,29 +33,31 @@ struct Arguments(alias Func)
 	Parameters!Func params;
 }
 
-Struct loadMemoryInStruct(Struct)(ubyte* arg)
+/**
+ * This is a special struct, loaded with the source pointer from bridge_malloc.
+ */
+struct WasmParametersMemory
+{
+	ubyte* ptr;
+}
+
+Struct loadMemoryInStruct(Struct)(ubyte* arg, ubyte* rootArg)
 {
 	import core.stdc.string:memcpy;
 	Struct ret;
 	size_t last = 0;
 	foreach(ref v; ret.tupleof)
 	{
-		static if(is(typeof(v) : string))
+		static if(is(typeof(v) == string) || is(typeof(v) == ubyte[]))
 		{
 			{
 				ubyte* data = arg+last;
 				size_t length = *cast(size_t*)data;
-				v = cast(string)data[size_t.sizeof..length+size_t.sizeof];
+				v = cast(typeof(v))data[size_t.sizeof..length+size_t.sizeof];
 			}
 		}
-		else static if(is(typeof(v) : ubyte[]))
-		{
-			{
-				ubyte* data = arg+last;
-				size_t length = *cast(size_t*)data;
-				v = cast(ubyte[])data[size_t.sizeof..length+size_t.sizeof];
-			}
-		}
+		else static if(is(typeof(v) == WasmParametersMemory))
+			v.ptr = rootArg;
 		else
 			memcpy(&v, arg+last, v.sizeof);
 		last+= v.sizeof;
@@ -65,7 +67,7 @@ Struct loadMemoryInStruct(Struct)(ubyte* arg)
 
 Arguments!fn wasmParametersFromUbyte(alias fn)(ubyte* arg)
 {
-	return loadMemoryInStruct!(Arguments!fn)(arg);
+	return loadMemoryInStruct!(Arguments!fn)(arg, arg);
 }
 
 /**
@@ -153,7 +155,7 @@ ubyte* function(ubyte* args) toFunc(alias dg)()
 
 		static DgArgs delegateArguments;
 		static if(Length > 0)
-			delegateArguments = loadMemoryInStruct!DgArgs(arg + size_t.sizeof*3);
+			delegateArguments = loadMemoryInStruct!DgArgs(arg + size_t.sizeof*3, arg);
 		
 		static if(Length > 0) 
 		{

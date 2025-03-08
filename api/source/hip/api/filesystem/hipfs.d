@@ -20,6 +20,18 @@ enum FileMode
     READ_APPEND
 }
 
+/**
+ * Result used for memory management after delegate is executed.
+ * The result is free if and only if every delegates returns that it should free the result.
+ */
+enum FileReadResult : bool
+{
+    ///Don't do anything.
+    keep = false,
+    ///Frees the file data
+    free = true,
+}
+
 ///Unused yet, but planned
 interface IHipDirectoryItf
 {
@@ -41,7 +53,13 @@ interface IHipFileItf
 }
 interface IHipFSPromise
 {
-    IHipFSPromise addOnSuccess(void delegate(in ubyte[] data) onSuccess);
+    /**
+     *
+     * Params:
+     *   onSuccess = A delegate containing the file data as an input
+     * Returns:The promise itself
+     */
+    IHipFSPromise addOnSuccess(FileReadResult delegate(in ubyte[] data) onSuccess);
     IHipFSPromise addOnError(void delegate(string error) onError);
     bool resolved() const;
   
@@ -82,7 +100,7 @@ interface IHipFileSystemInteraction
     *       - Sync Platforms: File does not exists, can't read.
     *       - Async platforms: File does not exists
     */
-    bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err = "Corrupted File") onError);
+    bool read(string path, FileReadResult delegate(ubyte[] data) onSuccess, void delegate(string err = "Corrupted File") onError);
     bool write(string path, const(void)[] data);
     bool exists(string path);
     bool remove(string path);

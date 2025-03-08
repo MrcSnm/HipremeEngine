@@ -16,6 +16,7 @@ import hip.assets.texture;
 import hip.hiprenderer.framebuffer;
 import hip.error.handler;
 import hip.hiprenderer.shader;
+import hip.config.renderer;
 public import hip.api.graphics.batch;
 public import hip.api.graphics.color;
 public import hip.api.renderer.shaders.spritebatch;
@@ -57,7 +58,7 @@ class HipSpriteBatch : IHipBatch
     ShaderVar* uProj, uModel, uView, uTex;
 
 
-    this(HipOrthoCamera camera = null, index_t maxQuads = 10_900)
+    this(HipOrthoCamera camera = null, index_t maxQuads = DefaultMaxSpritesPerBatch)
     {
         import hip.hiprenderer.initializer;
         import hip.util.conv:to;
@@ -95,7 +96,7 @@ class HipSpriteBatch : IHipBatch
         uProj = mesh.shader.get("Cbuf1.uProj", ShaderTypes.VERTEX);
         uModel = mesh.shader.get("Cbuf1.uModel", ShaderTypes.VERTEX);
         uView = mesh.shader.get("Cbuf1.uView", ShaderTypes.VERTEX);
-        uTex = mesh.shader.get("Cbuf.uTex", ShaderTypes.FRAGMENT);
+        // uTex = mesh.shader.get("Cbuf.uTex", ShaderTypes.FRAGMENT);
 
         if(camera is null)
             camera = new HipOrthoCamera();
@@ -362,7 +363,7 @@ class HipSpriteBatch : IHipBatch
             uModel.set(Matrix4.identity(), true);
             uView.set(camera.view, true);
 
-            mesh.shader.setFragmentVar(uTex, currentTextures);
+            // mesh.shader.setFragmentVar(uTex, currentTextures);
             mesh.shader.bindArrayOfTextures(currentTextures, "uTex");
             mesh.shader.sendVars();
 

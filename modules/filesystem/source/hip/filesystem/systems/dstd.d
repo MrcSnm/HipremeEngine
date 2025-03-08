@@ -3,7 +3,7 @@ import hip.api.filesystem.hipfs;
 
 version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteraction
 {
-    bool read(string path, void delegate(ubyte[] data) onSuccess, void delegate(string err) onError)
+    bool read(string path, FileReadResult delegate(ubyte[] data) onSuccess, void delegate(string err) onError)
     {
         import std.stdio : File;
         import hip.error.handler;
@@ -14,7 +14,12 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
         output.length = cast(size_t)f.size;
         f.rawRead(output); //TODO: onError should be on try/catch
         f.close();
-        onSuccess(output);
+        if(onSuccess(output) == FileReadResult.free)
+        {
+            import core.memory;
+            GC.free(output.ptr);
+        }
+
         return true;
     }
     bool write(string path, const void[] data)
