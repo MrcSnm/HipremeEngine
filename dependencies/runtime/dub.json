@@ -23,7 +23,7 @@
 	"subPackages": [
 		{
 			"name": "arsd-webassembly",
-			"sourceFiles": ["druntime/arsd-webassembly/arsd/webassembly.d"],
+			"sourceFiles": ["druntime/arsd-webassembly/arsd/webassembly.d", "druntime/source/core/walloc.d"],
 			"importPaths": ["druntime/arsd-webassembly/"]
 		}
 	],

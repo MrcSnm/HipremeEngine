@@ -48,7 +48,10 @@ version(CustomRuntime)
                 free(ptr);
                 return ret;
             }
-            else return cast(void*)nogc_realloc(cast(ubyte*)ptr, size, file, line).ptr;
+            else
+            {
+                return cast(void*)nogc_realloc(cast(ubyte*)ptr, size, file, line).ptr;
+            }
         }
     }
     void abort(){assert(false, "Aborted");}
