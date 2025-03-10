@@ -96,7 +96,7 @@ class HipTexture : HipAsset, IHipTexture
 
 class HipTextureRegion : HipAsset, IHipTextureRegion
 {
-    public static const float[8] defaultVertices = [0,0, 1,0, 1,1, 0,1];
+    static immutable float[8] defaultVertices = [0,0, 1,0, 1,1, 0,1];
     IHipTexture texture;
     public float u1, v1, u2, v2;
     protected float[8] vertices;

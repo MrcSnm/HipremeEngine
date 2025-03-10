@@ -256,28 +256,7 @@ class HipSpriteBatch : IHipBatch
         quadsCount++;
     }
 
-    private static void setColor(HipSpriteVertex[] ret, in HipColor color)
-    {
-        ret[0].vColor = color;
-        ret[1].vColor = color;
-        ret[2].vColor = color;
-        ret[3].vColor = color;
-    }
 
-    private static void setZ(HipSpriteVertex[] vertices, float z)
-    {
-        vertices[0].vPosition.z = z;
-        vertices[1].vPosition.z = z;
-        vertices[2].vPosition.z = z;
-        vertices[3].vPosition.z = z;
-    }
-    private static void setUV(HipSpriteVertex[] vertices, const scope ref float[8] uv)
-    {
-        vertices[0].vTexST = Vector2(uv[0], uv[1]);
-        vertices[1].vTexST = Vector2(uv[2], uv[3]);
-        vertices[2].vTexST = Vector2(uv[4], uv[5]);
-        vertices[3].vTexST = Vector2(uv[6], uv[7]);
-    }
     private static void setTID(HipSpriteVertex[] vertices, int tid)
     {
         static if(!GLMaxOneBoundTexture)
@@ -288,17 +267,22 @@ class HipSpriteBatch : IHipBatch
             vertices[3].vTexID = tid;
         }
     }
-    private static void setBounds(HipSpriteVertex[] vertices, float x, float y, float width, float height, float scaleX = 1, float scaleY = 1)
+
+    pragma(inline, true)
+    private static Vector3[4] getBounds(float x, float y, float z, float width, float height, float scaleX = 1, float scaleY = 1)
     {
         width*= scaleX;
         height*= scaleY;
-        vertices[0].vPosition.xy = Vector2(x, y);
-        vertices[1].vPosition.xy = Vector2(x+width, y);
-        vertices[2].vPosition.xy = Vector2(x+width, y+height);
-        vertices[3].vPosition.xy = Vector2(x, y+height);
+        return [
+            Vector3(x, y, z),
+            Vector3(x+width, y, z),
+            Vector3(x+width, y+height, z),
+            Vector3(x, y+height, z),
+        ];
     }
 
-    private static void setBoundsFromRotation(HipSpriteVertex[] vertices, float x, float y, float width, float height, float rotation, float scaleX = 1, float scaleY = 1)
+    pragma(inline, true)
+    private static Vector3[4] getBoundsFromRotation(float x, float y, float z, float width, float height, float rotation, float scaleX = 1, float scaleY = 1)
     {
         import hip.math.utils:cos,sin;
         width*= scaleX;
@@ -310,27 +294,29 @@ class HipSpriteBatch : IHipBatch
         float c = cos(rotation);
         float s = sin(rotation);
 
-        vertices[0].vPosition.xy = Vector2(c*centerX - s*centerY + x, c*centerY + s*centerX + y);
-        vertices[1].vPosition.xy = Vector2(c*x2 - s*centerY + x, c*centerY + s*x2 + y);
-        vertices[2].vPosition.xy = Vector2(c*x2 - s*y2 + x, c*y2 + s*x2 + y);
-        vertices[3].vPosition.xy = Vector2(c*centerX - s*y2 + x, c*y2 + s*centerX + y);
+        return [
+            Vector3(c*centerX - s*centerY + x, c*centerY + s*centerX + y, z),
+            Vector3(c*x2 - s*centerY + x, c*centerY + s*x2 + y, z),
+            Vector3(c*x2 - s*y2 + x, c*y2 + s*x2 + y, z),
+            Vector3(c*centerX - s*y2 + x, c*y2 + s*centerX + y, z),
+        ];
     }
-
 
     static void getTextureVertices(HipSpriteVertex[] output, int slot, IHipTexture texture,
     int x, int y, float z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         int width = texture.getWidth();
         int height = texture.getHeight();
+        Vector3[4] spritePos = rotation == 0 ? getBounds(x,y,z,width,height,scaleX,scaleY) :getBoundsFromRotation(x,y,z,width,height,rotation,scaleX,scaleY);
 
-        setUV(output, HipTextureRegion.defaultVertices);
-        setZ(output, z);
-        setTID(output, slot);
-        setColor(output, color);
-        if(rotation == 0)
-            setBounds(output, x, y, width, height, scaleX, scaleY);
-        else
-            setBoundsFromRotation(output, x, y, width, height, rotation, scaleX, scaleY);
+        foreach(size_t i, ref HipSpriteVertex v; output)
+        {
+            v.vTexST = Vector2(HipTextureRegion.defaultVertices[i*2], HipTextureRegion.defaultVertices[i*2+1]);
+            v.vColor = color;
+            v.vPosition = spritePos[i];
+            static if(!GLMaxOneBoundTexture)
+                v.vTexID = slot;
+        }
     }
 
     static void getTextureRegionVertices(HipSpriteVertex[] output, int slot, IHipTextureRegion reg,
@@ -338,14 +324,18 @@ class HipSpriteBatch : IHipBatch
     {
         int width = reg.getWidth();
         int height = reg.getHeight();
-        setZ(output, z);
-        setColor(output, color);
-        setTID(output, slot);
-        setUV(output, reg.getVertices());
-        if(rotation == 0)
-            setBounds(output, x, y, width, height, scaleX, scaleY);
-        else
-            setBoundsFromRotation(output, x, y, width, height, rotation, scaleX, scaleY);
+        float[8] uvVertices = reg.getVertices();
+
+        Vector3[4] spritePos = rotation == 0 ? getBounds(x,y,z,width,height,scaleX,scaleY) :getBoundsFromRotation(x,y,z,width,height,rotation,scaleX,scaleY);
+
+        foreach(size_t i, ref HipSpriteVertex v; output)
+        {
+            v.vTexST = Vector2(uvVertices[i*2], uvVertices[i*2+1]);
+            v.vColor = color;
+            v.vPosition = spritePos[i];
+            static if(!GLMaxOneBoundTexture)
+                v.vTexID = slot;
+        }
     }
 
     

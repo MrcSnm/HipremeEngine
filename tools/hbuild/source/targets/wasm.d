@@ -43,7 +43,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	{
 		ProjectDetails project;
 		if(waitRedub(t, DubArguments()
-			.command("build").compiler("ldc2").build("release").configuration("release-wasm")
+			.command("build").compiler("ldc2").build("debug").configuration("release-wasm")
 			.arch("wasm32-unknown-unknown-wasm").opts(cOpts), project ) != 0)
 		{
 			t.writelnError("Could not build for WebAssembly.");
