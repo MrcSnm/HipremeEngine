@@ -2,13 +2,14 @@ module hip.gui.screen;
 public import hip.gui.widget;
 import hip.api.input.button;
 import std.internal.digest.sha_SSSE3;
+import hip.gui.group;
 
 /** 
  * Screen is where all widgets should be contained.
  * This way, the event methods are forwarded correctly, there can exist a drag and drop.
  * Render order by stack is also possible
  */
-class Screen : Widget
+class Screen : Group
 {
     protected Widget focusedWidget;
     protected Widget draggedWidget;

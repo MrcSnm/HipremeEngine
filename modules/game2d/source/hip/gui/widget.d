@@ -185,8 +185,10 @@ class Widget
     {
         preRender();
         onRender();
+        foreach(ch; children)
+            if(ch.visible) ch.render();
     }
-    void onRender(){foreach(ch; children) if(ch.visible) ch.render();}
+    abstract void onRender();
 }
 
 interface IWidgetRenderer

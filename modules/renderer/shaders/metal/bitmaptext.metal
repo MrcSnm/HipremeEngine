@@ -10,9 +10,7 @@ struct VertexInput
 };
 struct VertexUniforms
 {
-    float4x4 uModel;
-    float4x4 uView;
-    float4x4 uProj;
+    float4x4 uMVP;
 };
 struct FragmentInput
 {
@@ -25,7 +23,7 @@ vertex FragmentInput vertex_main(
 )
 {
     FragmentInput out;
-    out.position = u.uProj * u.uView * u.uModel * float4(input.vPosition, 1.0);
+    out.position = u.uMVP * float4(input.vPosition, 1.0);
     out.inTexST = input.vTexST;
     return out;
 }

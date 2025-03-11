@@ -73,6 +73,7 @@ class ScrollArea : Widget, IRawScrollable
 }
 
 import hip.gui.linear_layout;
+import hip.gui.group;
 class ScrollBar : LinearLayout
 {
     private
@@ -130,7 +131,7 @@ class ScrollBar : LinearLayout
     this(LinearLayout.Direction direction)
     {
         setDirection(direction);
-        thumbFixer = new Widget();
+        thumbFixer = new Group();
         thumbFixer.addChild(thumb = new Button(0,0, 50, 50));
         backward = new Button(0,0, 50, 50);
         forward = new Button(0,0, 50, 50);

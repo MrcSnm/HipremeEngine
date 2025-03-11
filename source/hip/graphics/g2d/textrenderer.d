@@ -40,9 +40,7 @@ public import hip.api.graphics.text : HipTextAlign;
 @HipShaderVertexUniform("Cbuf")
 struct HipTextRendererVertexUniforms
 {
-    Matrix4 uModel = Matrix4.identity;
-    Matrix4 uView = Matrix4.identity;
-    Matrix4 uProj = Matrix4.identity;
+    Matrix4 uMVP = Matrix4.identity;
 }
 
 @HipShaderFragmentUniform("FragVars")
@@ -85,7 +83,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             bmTextShader.addVarLayout(ShaderVariablesLayout.from!(HipTextRendererFragmentUniforms)(HipRenderer.getInfo));
             bmTextShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
             const Viewport v = HipRenderer.getCurrentViewport();
-            bmTextShader.uProj = Matrix4.orthoLH(0, v.width, v.height, 0, 0.01, 100);
+            bmTextShader.uMVP = Matrix4.orthoLH(0, v.width, v.height, 0, 0.01, 100);
             bmTextShader.setDefaultBlock("FragVars");
             bmTextShader.bind();
             bmTextShader.sendVars();
@@ -139,52 +137,8 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
     void draw(string str, int x, int y, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1, bool wordWrap = false)
     {
         import hip.api.graphics.text;
-
         int vI = quadsCount*4; //vertex buffer index
-        bool isFirstLine = true;
-        int yoffset = 0;
-
-
-        int height = font.getTextHeight(str);
-        foreach(HipLineInfo lineInfo; font.wordWrapRange(str, wordWrap ? boundsWidth : -1))
-        {
-            if(!isFirstLine)
-            {
-                yoffset+= font.lineBreakHeight;
-            }
-            isFirstLine = false;
-            int xoffset = 0;
-            int displayX = void, displayY = void;
-            int lineYOffset = yoffset;
-            if(alignv == HipTextAlign.TOP) lineYOffset-= lineInfo.minYOffset;
-
-            getPositionFromAlignment(x, y, lineInfo.width, lineInfo.height ? height : lineInfo.height, alignh, alignv, displayX, displayY, boundsWidth, boundsHeight);
-            for(int i = 0; i < lineInfo.line.length; i++)
-            {
-                int kerning = lineInfo.kerningCache[i];
-                const(HipFontChar)* ch = lineInfo.fontCharCache[i];
-
-                switch(lineInfo.line[i])
-                {
-                    case ' ':
-                        if(!shouldRenderSpace)
-                        {
-                            xoffset+= font.spaceWidth;
-                            break;
-                        }
-                        goto default;
-                    default:
-                        if(ch is null) continue;
-                        ch.putCharacterQuad(
-                            cast(float)(xoffset+displayX+ch.xoffset+kerning),
-                            cast(float)(yoffset+displayY+lineYOffset + ch.yoffset), managedDepth,
-                            cast(HipTextRendererVertexAPI[])vertices[vI..vI+4]
-                        );
-                        vI+= 4;
-                        xoffset+= ch.xadvance;
-                }
-            }
-        }
+        vI+= putTextVertices(font, (cast(HipTextRendererVertexAPI[])vertices)[vI..$], str, x, y, managedDepth, alignh, alignv, boundsWidth, boundsHeight, wordWrap, shouldRenderSpace);
         quadsCount = vI/4;
     }
 
@@ -214,9 +168,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         {
             mesh.bind();
             this.font.texture.bind();
-            mesh.shader.setVertexVar("Cbuf.uProj", camera.proj, true);
-            mesh.shader.setVertexVar("Cbuf.uModel", Matrix4.identity, true);
-            mesh.shader.setVertexVar("Cbuf.uView", camera.view, true);
+            mesh.shader.setVertexVar("Cbuf.uMVP", camera.getMVP(), true);
             mesh.shader.sendVars();
             
             size_t start = lastDrawQuadsCount*4;

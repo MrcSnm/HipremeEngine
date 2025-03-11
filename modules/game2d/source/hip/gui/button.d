@@ -123,6 +123,5 @@ class Button : Widget
     {
         import hip.api;
         renderer.render(Bounds(worldTransform.x, worldTransform.y, width, height), state);
-        super.onRender();
     }
 }

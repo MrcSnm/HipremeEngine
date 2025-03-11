@@ -27,9 +27,7 @@ public import hip.math.matrix;
 @HipShaderVertexUniform("Cbuf1")
 struct HipSpriteVertexUniform
 {
-    Matrix4 uModel = Matrix4.identity;
-    Matrix4 uView = Matrix4.identity;
-    Matrix4 uProj = Matrix4.identity;
+    Matrix4 uMVP = Matrix4.identity;
 }
 
 @HipShaderFragmentUniform("Cbuf")

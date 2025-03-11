@@ -31,6 +31,8 @@ class HipOrthoCamera
     float znear = 0.001f;
     float zfar  = 100.0f;
 
+    bool dirty = false;
+
     this()
     {
         view = Matrix4.identity;
@@ -42,27 +44,39 @@ class HipOrthoCamera
     {
         Viewport v = HipRenderer.getCurrentViewport();
         proj = Matrix4.orthoLH(v.x, v.width, v.height, v.y, znear, zfar);
+        dirty = true;
     }
     void setSize(uint width, uint height)
     {
         proj = Matrix4.orthoLH(0, width, height, 0, znear, zfar);
+        dirty = true;
     }
     void translate(float x, float y, float z)
     {
         view = view.translate(x, y, z);
+        dirty = true;
     }
     void setScale(float x, float y, float z = 1)
     {
         view = view.scale((1/view[0])*x, (1/view[5])*y, (1/view[10])*z);
+        dirty = true;
     }
     void scale(float x, float y, float z = 0)
     {
         view = view.scale(x,y,z);
+        dirty = true;
+    }
+
+    Matrix4 getMVP()
+    {
+        if(dirty)update();
+        return viewProj;
     }
 
     void setPosition(float x, float y, float z = 0)
     {
         view = view.translate(-view[12]+x, -view[13]+y, -view[14]+z);
+        dirty = true;
     }
     pragma(inline, true)
     @property float x(){return view[12];}
@@ -74,5 +88,6 @@ class HipOrthoCamera
     void update()
     {
         viewProj = view*proj;
+        dirty = false;
     }
 }

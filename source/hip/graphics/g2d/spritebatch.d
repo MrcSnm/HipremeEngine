@@ -55,7 +55,7 @@ class HipSpriteBatch : IHipBatch
     uint quadsCount;
 
 
-    ShaderVar* uProj, uModel, uView, uTex;
+    ShaderVar* uMVP, uTex;
 
 
     this(HipOrthoCamera camera = null, index_t maxQuads = DefaultMaxSpritesPerBatch)
@@ -93,9 +93,7 @@ class HipSpriteBatch : IHipBatch
         spriteBatchShader.bind();
         spriteBatchShader.sendVars();
 
-        uProj = mesh.shader.get("Cbuf1.uProj", ShaderTypes.VERTEX);
-        uModel = mesh.shader.get("Cbuf1.uModel", ShaderTypes.VERTEX);
-        uView = mesh.shader.get("Cbuf1.uView", ShaderTypes.VERTEX);
+        uMVP = mesh.shader.get("Cbuf1.uMVP", ShaderTypes.VERTEX);
         // uTex = mesh.shader.get("Cbuf.uTex", ShaderTypes.FRAGMENT);
 
         if(camera is null)
@@ -349,9 +347,7 @@ class HipSpriteBatch : IHipBatch
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
 
-            uProj.set(camera.proj, true);
-            uModel.set(Matrix4.identity(), true);
-            uView.set(camera.view, true);
+            uMVP.set(camera.getMVP(), true);
 
             // mesh.shader.setFragmentVar(uTex, currentTextures);
             mesh.shader.bindArrayOfTextures(currentTextures, "uTex");

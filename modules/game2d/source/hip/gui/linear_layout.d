@@ -1,8 +1,9 @@
 module hip.gui.linear_layout;
 public import hip.gui.widget;
+import hip.gui.group;
 
 
-class LinearLayout : Widget
+class LinearLayout : Group
 {
     enum Direction
     {

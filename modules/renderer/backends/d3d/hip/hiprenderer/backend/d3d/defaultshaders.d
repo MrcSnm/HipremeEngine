@@ -146,9 +146,7 @@ private {
 
             cbuffer Geom
             {
-                float4x4 uModel: uModel;
-                float4x4 uView : uView;
-                float4x4 uProj : uProj;
+                float4x4 uMVP: uMVP;
             };
             struct VSOut
             {
@@ -159,7 +157,7 @@ private {
             VSOut main(float3 vPosition: vPosition, float4 vColor: vColor)
             {
                 VSOut ret;
-                ret.outPosition = mul(float4(vPosition, 1.0), mul(mul(uModel, uView), uProj));
+                ret.outPosition = mul(float4(vPosition, 1.0), uMVP);
                 ret.inVertexColor = vColor;
                 return ret;
             }
@@ -178,9 +176,7 @@ private {
 
             cbuffer Cbuf
             {
-                float4x4 uProj;
-                float4x4 uModel;
-                float4x4 uView;
+                float4x4 uMVP: uMVP;
             };
 
             VSOut main(
@@ -192,7 +188,7 @@ private {
             {
                 VSOut output;
                 float4 position = float4(pos.x, pos.y, pos.z, 1.0f);
-                output.vPosition = mul(position, mul(mul(uModel, uView), uProj));
+                output.vPosition = mul(position, uMVP);
 
                 output.inTexST = texST;
                 output.inColor = col;
@@ -207,9 +203,7 @@ private {
 
             cbuffer Cbuf
             {
-                float4x4 uModel;
-                float4x4 uView;
-                float4x4 uProj;
+                float4x4 uMVP;
             };
 
             struct VSOut
@@ -221,7 +215,7 @@ private {
             VSOut main(float2 vPosition : vPosition, float2 vTexST : vTexST)
             {
                 VSOut ret;
-                ret.outPosition = mul(float4(vPosition, 1.0, 1.0), mul(mul(uModel, uView), uProj));
+                ret.outPosition = mul(float4(vPosition, 1.0, 1.0), uMVP);
                 ret.inTexST = vTexST;
                 return ret;
             }

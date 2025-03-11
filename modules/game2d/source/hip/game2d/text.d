@@ -137,48 +137,12 @@ class HipText
 
     package void updateText(IHipFont font)
     {
+        import hip.api.graphics.text;
         HipTextStopConfig.parseText(_text, processedText, textConfig);
         int vI = 0; //vertex buffer index
 
-        bool isFirstLine = true;
-        int yoffset = 0;
-        foreach(HipLineInfo lineInfo; font.wordWrapRange(processedText, wordWrap ? boundsWidth : -1))
-        {
-            if(!isFirstLine)
-            {
-                yoffset+= font.lineBreakHeight;
-            }
-            isFirstLine = false;
-            int xoffset = 0;
-            int displayX = void, displayY = void;
-            getPositionFromAlignment(x, y, lineInfo.width, height, alignh, alignv, displayX, displayY, boundsWidth, boundsHeight);
-            for(int i = 0; i < lineInfo.line.length; i++)
-            {
-                int kerning = lineInfo.kerningCache[i];
-                const(HipFontChar)* ch = lineInfo.fontCharCache[i];
-
-                switch(lineInfo.line[i])
-                {
-                    case ' ':
-                        if(!shouldRenderSpace)
-                        {
-                            xoffset+= font.spaceWidth;
-                            break;
-                        }
-                        goto default;
-                    default:
-                        if(ch is null) continue;
-                        ch.putCharacterQuad(
-                            cast(float)(xoffset+displayX+ch.xoffset+kerning),
-                            cast(float)(yoffset+displayY+ch.yoffset), depth,
-                            vertices[vI..vI+4]
-                        );
-                        vI+= 4;
-                        xoffset+= ch.xadvance;
-                }
-            }
-        }
-        shouldUpdateText = false;
+        vI = putTextVertices(font, vertices[vI..$], processedText, x, y, depth, alignh, alignv, boundsWidth, boundsHeight, wordWrap, shouldRenderSpace);
+        shouldUpdateText = true;
     }
 
     void draw()

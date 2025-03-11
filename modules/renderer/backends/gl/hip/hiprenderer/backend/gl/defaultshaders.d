@@ -307,9 +307,7 @@ private {
             %s vec2 vTexST;
             %s float vTexID;
 
-            uniform mat4 uProj;
-            uniform mat4 uModel;
-            uniform mat4 uView;
+            uniform mat4 uMVP;
 
             %s vec4 inVertexColor;
             %s vec2 inTexST;
@@ -317,7 +315,7 @@ private {
 
             void main()
             {
-                gl_Position = uProj*uView*uModel*vec4(vPosition, 1.0);
+                gl_Position = uMVP*vec4(vPosition, 1.0);
                 inVertexColor = vColor;
                 inTexST = vTexST;
                 inTexID = vTexID;
@@ -345,15 +343,13 @@ private {
         %s vec3 vPosition;
         %s vec4 vColor;
 
-            uniform mat4 uProj;
-            uniform mat4 uModel;
-            uniform mat4 uView;
+            uniform mat4 uMVP;
 
             %s vec4 inVertexColor;
 
             void main()
             {
-                gl_Position = uProj*uView*uModel*vec4(vPosition, 1.0);
+                gl_Position = uMVP*vec4(vPosition, 1.0);
                 inVertexColor = vColor;
             }
         }.fastUnsafeCTFEFormat(attr1, attr2, out1);
@@ -379,15 +375,13 @@ private {
             %s vec2 vPosition;
             %s vec2 vTexST;
 
-            uniform mat4 uModel;
-            uniform mat4 uView;
-            uniform mat4 uProj;
+            uniform mat4 uMVP;
 
             %s vec2 inTexST;
 
             void main()
             {
-                gl_Position = uProj * uView * uModel * vec4(vPosition, 1.0, 1.0);
+                gl_Position = uMVP * vec4(vPosition, 1.0, 1.0);
                 inTexST = vTexST;
             }
         }.fastUnsafeCTFEFormat(attr1, attr2, out1);

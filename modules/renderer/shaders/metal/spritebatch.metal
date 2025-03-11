@@ -11,9 +11,7 @@ struct VertexInput
 };
 struct VertexUniforms
 {
-    float4x4 uProj;
-    float4x4 uModel;
-    float4x4 uView;
+    float4x4 uMVP;
 };
 struct FragmentInput
 {
@@ -29,7 +27,7 @@ vertex FragmentInput vertex_main(
 )
 {
     FragmentInput out;
-    out.position = u.uProj*u.uView*u.uModel*float4(v.vPosition, 1.0);
+    out.position = u.uMVP*float4(v.vPosition, 1.0);
     out.inVertexColor = v.vColor;
     out.inTexST = v.vTexST;
     out.inTexID = v.vTexID;

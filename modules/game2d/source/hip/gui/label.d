@@ -16,6 +16,10 @@ class Label : Widget
         this.text = text;
         setAlign(HipTextAlign.LEFT, HipTextAlign.CENTER);
     }
+    public void setColor(HipColor color)
+    {
+        this.txtDraw.color = color;
+    }
 
     public void setBackgroundRenderer(HipColor bkgColor )
     {

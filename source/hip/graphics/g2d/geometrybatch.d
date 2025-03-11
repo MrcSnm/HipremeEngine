@@ -36,9 +36,7 @@ enum defaultColor = HipColor.white;
 @HipShaderVertexUniform("Geom")
 struct HipGeometryBatchVertexUniforms
 {
-    Matrix4 uModel = Matrix4.identity;
-    Matrix4 uView = Matrix4.identity;
-    Matrix4 uProj = Matrix4.identity;
+    Matrix4 uMVP = Matrix4.identity;
 }
 
 @HipShaderFragmentUniform("FragVars")
@@ -432,9 +430,7 @@ class GeometryBatch : IHipBatch
             mesh.updateIndices(indices[lastIndexDrawn..currentIndex], lastIndexDrawn);
 
             mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1], true);
-            mesh.shader.setVertexVar("Geom.uProj",  camera.proj, true);
-            mesh.shader.setVertexVar("Geom.uModel", Matrix4.identity(), true);
-            mesh.shader.setVertexVar("Geom.uView",  camera.view, true);
+            mesh.shader.setVertexVar("Geom.uMVP",  camera.getMVP, true);
 
             mesh.shader.sendVars();
             //Vertices to render = indices.length
