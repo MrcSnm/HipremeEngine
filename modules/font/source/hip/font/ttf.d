@@ -35,9 +35,9 @@ class HipNullFont : HipFont
 {
     string path;
     this(){}
-    this(string path, uint fontSize = 32)
-    {
-    }
+    this(string path, uint fontSize = 32){}
+    override uint getHeight() const { return 0; }
+
     /**
     *   This will cause a full load of the .ttf file, image generation and GPU upload. Should only be used
     *   If you don't care about async
@@ -77,6 +77,7 @@ class HipArsd_TTF_Font : HipFont
         this.path = path;
         this.fontSize = fontSize;
     }
+    override uint getHeight() const { return fontSize; }
     /**
     *   This will cause a full load of the .ttf file, image generation and GPU upload. Should only be used
     *   If you don't care about async
@@ -193,6 +194,7 @@ class HipArsd_TTF_Font : HipFont
         
         int ascent, descent, lineGap;
         stbtt_GetFontVMetrics(&font.font, &ascent, &descent, &lineGap);
+
 
         lineBreakHeight = cast(uint)(int(ascent - descent + lineGap) * scale);
 

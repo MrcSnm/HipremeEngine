@@ -32,15 +32,17 @@ class Label : Widget
         txtDraw.getSize(this.width, this.height);
         return text;
     }
+
     public string text(){return txtDraw.text;}
 
     public bool wordWrap(){return txtDraw.wordWrap;}
     public bool wordWrap(bool bWordWrap){return txtDraw.wordWrap = bWordWrap;}
 
-    public void setAlign(HipTextAlign horizontal, HipTextAlign vertical)
+    public Label setAlign(HipTextAlign horizontal, HipTextAlign vertical)
     {
         txtDraw.setAlign(horizontal,vertical);
         txtDraw.getSize(this.width, this.height);
+        return this;
     }
 
     public void setSize(int width, int height)

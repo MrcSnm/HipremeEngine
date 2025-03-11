@@ -307,6 +307,12 @@ void drawGCStats(int x = 0, int y = -1)
     hip.graphics.g2d.profiling.drawGCStats(x, y);
 }
 
+void drawTimings(int x = -1, int y = 0, bool clearTimings = false)
+{
+    import hip.graphics.g2d.profiling;
+    hip.graphics.g2d.profiling.drawTimings(x, y, clearTimings);
+}
+
 version(Standalone)
 {
     public import exportd;

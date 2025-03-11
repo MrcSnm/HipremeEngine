@@ -101,7 +101,7 @@ class TileWorld
             Vector2 normal;
             float time;
         }
-        static DynamicRectCollision[128] colCache;
+        __gshared DynamicRectCollision[128] colCache;
         foreach(dynBody; dynamicBodies)
         {
             dynBody.velocity.y += gravity;
@@ -134,7 +134,7 @@ class TileWorld
             Vector2 normal;
             float time;
         }
-        static DynamicRectCollision[128] colCache;
+        __gshared DynamicRectCollision[128] colCache;
         foreach(dynBody; dynamicBodies)
         {
             dynBody.velocity.y += gravity;

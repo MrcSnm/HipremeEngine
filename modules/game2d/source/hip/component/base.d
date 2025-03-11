@@ -53,7 +53,7 @@ interface IComponentizable
 private __gshared int compID = 0;
 private int getComponentID(T)()
 {
-    static int _compId = 0;
+    __gshared int _compId = 0;
     if(_compId == 0)
         _compId = ++compID;
     return _compId;

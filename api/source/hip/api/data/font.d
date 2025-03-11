@@ -22,7 +22,9 @@ pragma(LDC_no_typeinfo)
 struct HipLineInfo
 {
     string line;
+    int height;
     int width;
+    int minYOffset;
     const(HipFontChar)*[512] fontCharCache = void;
     int[512] kerningCache = void;
 }
@@ -39,6 +41,9 @@ struct HipWordWrapRange
     void initialize(string inputText, IHipFont font, int maxWidth) @nogc
     {
         this.inputText = inputText;
+        currLine.height = 0;
+        currLine.width = 0;
+        currLine.minYOffset = 0;
         this.font = font;
         this.maxWidth = maxWidth <= 0 ? int.max : maxWidth;
         currIndex = 0;
@@ -67,6 +72,8 @@ struct HipWordWrapRange
                     continue;
                 }
             }
+            currLine.height = ch.height > currLine.height ?  ch.height : currLine.height;
+            currLine.minYOffset = ch.yoffset < currLine.minYOffset ? ch.yoffset : currLine.minYOffset;
             int kern = 0;
             if(i + 1 < inputText.length)
             {
@@ -181,6 +188,7 @@ interface IHipFont
 {
     int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const @nogc;
     int getKerning(dchar current, dchar next) const @nogc;
+    uint getHeight() const @nogc;
     /** 
      * 
      * Params:
@@ -191,11 +199,26 @@ interface IHipFont
      *   maxWidth = If maxWidth != -1, it will break the text into lines automatically. 
      */
     void calculateTextBounds(in string text, ref uint[] linesWidths, out int biggestWidth, out int height, int maxWidth = -1) const;
+    /**
+     *
+     * Params:
+     *   text = Input text
+     * Returns: 0 if there is no line break is being done
+     */
+    final uint getTextHeight(in string text)
+    {
+        uint lbHeight = lineBreakHeight;
+        uint ret = 0;
+        foreach(ch; text) if(ch == '\n') ret+= lbHeight;
+        return ret;
+    }
     HipWordWrapRange wordWrapRange(string text, int maxWidth) const @nogc;
     ref HipFontChar[dchar] characters() @nogc;
     ref IHipTexture texture() @nogc;
     uint spaceWidth() const @nogc;
     uint spaceWidth(uint newWidth) @nogc;
+
+    ///Used for reference as height for text
     uint lineBreakHeight() const @nogc;
     uint lineBreakHeight(uint newHeight) @nogc;
 
@@ -223,6 +246,9 @@ abstract class HipFont : IHipFont
     final uint spaceWidth(uint newWidth){return _spaceWidth = newWidth;}
     final uint lineBreakHeight() const {return _lineBreakHeight;}
     final uint lineBreakHeight(uint newHeight){return _lineBreakHeight = newHeight;}
+
+
+    abstract uint getHeight() const;
 
     final HipWordWrapRange wordWrapRange(string text, int maxWidth) const @nogc
     {

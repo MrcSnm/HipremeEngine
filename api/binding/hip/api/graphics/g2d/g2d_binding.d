@@ -103,6 +103,8 @@ else version(ScriptAPI)
 
 
             void function(int x = 0, int y = -1) drawGCStats;
+            void function(int x = -1, int y = 0, bool clearTiming = false) drawTimings;
+
 
 
             version(ImportSpritesheet)

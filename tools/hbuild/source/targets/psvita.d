@@ -246,6 +246,7 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
     "--revert=dtorfields "~
     "-mcpu=cortex-a9 "~
     "-O0 " ~
+    "-fvisibility=hidden "~
     "-g "~
     "-float-abi=hard "~
     "--relocation-model=static "~

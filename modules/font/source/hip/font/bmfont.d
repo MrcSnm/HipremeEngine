@@ -14,6 +14,8 @@ class HipBitmapFont : HipFont
     ///Use that property to know how many characters was read inside the atlas
     uint charactersCount;
 
+    uint height;
+
     private string error;
 
 
@@ -130,6 +132,7 @@ class HipBitmapFont : HipFont
                             break;
                         case "size":
                             size = getNextInt(data, index);
+                            height = size;
                             break;
                         case "bold":
                             bold = getNextInt(data, index);
@@ -351,6 +354,8 @@ class HipBitmapFont : HipFont
         }
         return true;
     }
+
+    override uint getHeight() const { return height; }
 
     string getTexturePath()
     {

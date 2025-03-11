@@ -7,8 +7,6 @@ private __gshared ubyte* function(ubyte* args)[] _annonymousFunctionTable;
 ///JSFunctions are represented opaquely right now.
 alias JSFunction(T) = ubyte*;
 
-///Gets a unique function index for usage in the table
-extern(C) size_t _getFuncAddress(ubyte* fn);
 
 ///Javascript function to call a D callback.
 export extern(C) ubyte* __callDFunction(size_t addr, ubyte* args)
@@ -88,7 +86,8 @@ ubyte* sendJSFunction(alias fn)()
 			return null;
 		}
 	};
-	size_t addr = _getFuncAddress(cast(ubyte*)fn);
+	///Gets a unique function index for usage in the table. Since function addresses aren't too big, we can use a simple array.
+	size_t addr = cast(size_t)(cast(ubyte*)fn);
 	if(addr >= _annonymousFunctionTable.length) _annonymousFunctionTable.length = addr+1;
 	_annonymousFunctionTable[addr] = convertedFunc;
 
@@ -122,7 +121,7 @@ JSDelegate sendJSDelegate(alias dg)()
 {
 	import std.traits;
 	auto convertedFunc = toFunc!dg;
-	size_t addr = _getFuncAddress(cast(ubyte*)convertedFunc);
+	size_t addr = cast(size_t)cast(ubyte*)convertedFunc;
 	if(addr >= _annonymousFunctionTable.length) _annonymousFunctionTable.length = addr+1;
 	_annonymousFunctionTable[addr] = convertedFunc;
 

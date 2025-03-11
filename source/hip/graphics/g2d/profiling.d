@@ -1,6 +1,4 @@
 module hip.graphics.g2d.profiling;
-import hip.graphics.g2d.renderer2d;
-
 
 /**
  * Draw GC stats on screen for instant feedback.
@@ -14,6 +12,14 @@ void drawGCStats(int x = 0, int y = -1)
     import hip.util.string;
     import hip.util.data_structures;
     import hip.math.utils;
+    import hip.graphics.g2d.renderer2d;
+     if(x < 0)
+        x = 0;
+    if(y < 0)
+    {
+        import hip.hiprenderer.renderer;
+        y = HipRenderer.getCurrentViewport.worldHeight;
+    }
 
     static struct ByteUnit
     {
@@ -48,17 +54,7 @@ void drawGCStats(int x = 0, int y = -1)
     {
         import core.arsd.memory_allocation;
         SmallString str = SmallString("Memory Allocated ", formatFromBytes(getMemoryAllocated()).asSmallString().toString);
-        int lbSize = 40;
-        int totalSize = lbSize;
-        if(x < 0)
-            x = 0;
-        if(y < 0)
-        {
-            import hip.hiprenderer.renderer;
-            Viewport vp = HipRenderer.getCurrentViewport;
-            y = vp.worldHeight - totalSize;
-        }
-        drawText(str.toString, x, y+lbSize);
+        drawText(str.toString, x, y, HipColor(0,50,0), HipTextAlign.LEFT, HipTextAlign.BOTTOM);
 
     }
     else static if(!CustomRuntime)
@@ -66,7 +62,8 @@ void drawGCStats(int x = 0, int y = -1)
         import core.memory;
         GC.Stats stats = GC.stats;
         GC.ProfileStats prof = GC.profileStats;
-
+        // SmallString str = SmallString("Memory Allocated ", formatFromBytes(stats.usedSize).asSmallString().toString);
+        // drawText(str.toString, x, y, HipColor(0,50,0), HipTextAlign.LEFT, HipTextAlign.TOP);
 
 
 
@@ -83,27 +80,55 @@ void drawGCStats(int x = 0, int y = -1)
         });
 
 
-        scope auto toPrint = [
-            SmallString("GC Stats: "),
-            SmallString("\tMemory Used: ", formatFromBytes(stats.usedSize).asSmallString.toString),
-            SmallString("\tFree Memory: ", formatFromBytes(stats.freeSize).asSmallString.toString),
-            SmallString("\tTime Paused on GC: ", timeOnPause.toString),
-            SmallString("\tTime Spent on Collection:", timeOnCollection.toString),
-            SmallString("\tCollections Count: ", prof.numCollections),
-        ].staticArray;
+        scope BigString str = BigString(
+            "GC Stats: ",
+            "\n\tMemory Used: ", formatFromBytes(stats.usedSize).asSmallString.toString,
+            "\n\tFree Memory: ", formatFromBytes(stats.freeSize).asSmallString.toString,
+            "\n\tTime Paused on GC: ", timeOnPause.toString,
+            "\n\tTime Spent on Collection:", timeOnCollection.toString,
+            "\n\tCollections Count: ", prof.numCollections,
+        );
 
-        int lbSize = 40;
-        int totalSize = lbSize*cast(int)toPrint.length;
-        if(x < 0)
-            x = 0;
-        if(y < 0)
-        {
-            import hip.hiprenderer.renderer;
-            Viewport vp = HipRenderer.getCurrentViewport;
-            y = vp.worldHeight - totalSize;
-        }
-
-        foreach(i, str; toPrint)
-            drawText(str.toString, x, y+lbSize*cast(int)i, HipColor(0, 50, 0));
+        drawText(str.toString, x, y, HipColor(0, 50, 0), HipTextAlign.LEFT, HipTextAlign.TOP);
     }
+}
+
+
+private __gshared float lastTiming;
+private __gshared float lastTime;
+private __gshared int count;
+private __gshared immutable countReset = 30;
+
+void setFrameInitTime()
+{
+    import hip.util.time;
+    if(++count == countReset)
+    {
+        lastTime = HipTime.getCurrentTimeAsMs();
+        count = 0;
+    }
+}
+
+void drawTimings(int x = -1, int y = 0, bool clearTiming = false)
+{
+    import hip.util.time;
+    import hip.util.string;
+    import hip.graphics.g2d.renderer2d;
+
+    if(count == 0)
+    {
+        lastTiming = HipTime.getCurrentTimeAsMs() - lastTime;
+    }
+    SmallString timeProcessing = SmallString("CPU Time: ", SmallString(lastTiming).toString.limitDecimalPlaces(3), "ms");
+
+    if(x == -1)
+        x = getCurrentViewport().worldWidth;
+
+
+
+
+    drawText(timeProcessing.toString, x, 0, HipColor.white, HipTextAlign.RIGHT, HipTextAlign.TOP);
+
+    // if(clearTiming)
+    //     lastTime = currTime;
 }

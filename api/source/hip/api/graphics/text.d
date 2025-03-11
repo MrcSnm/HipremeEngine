@@ -39,12 +39,12 @@ void getPositionFromAlignment(
         {
             case CENTER:
                 if(boundsHeight != -1)
-                    newY = newY + (boundsHeight/2) - height/4;
+                    newY = newY + (boundsHeight/2) - height/2;
                 else
-                    newY-= height/4;
+                    newY+= height/2;
                 break;
             case BOTTOM:
-                newY-= height/2;
+                newY-= height;
                 break;
             case TOP:
             default:

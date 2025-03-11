@@ -445,11 +445,7 @@ var importObject = {
 		},
 
 		monotimeNow: function() {
-			return performance.now()|0;
-		},
-		_getFuncAddress(func)
-		{
-			return func;
+			return performance.now();
 		},
 		jsprint(length, chars)
 		{

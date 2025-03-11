@@ -19,7 +19,7 @@ version(Windows)
 }
 else version(WebAssembly)
 {
-    extern(C) size_t monotimeNow() @nogc nothrow;
+    extern(C) float monotimeNow() @nogc nothrow;
 }
 else
 {
@@ -50,7 +50,7 @@ ulong getSystemTime() nothrow
     }
     else version(WebAssembly)
     {
-        return monotimeNow();
+        return cast(ulong)(monotimeNow() * 1_000_000); //ms to nano
     }
     else
     {
@@ -102,25 +102,16 @@ class HipTime
     ///For some reason, float arithmetic is wrong on PSVita, so, use long instead...
     static long getCurrentTimeAsMsLong() nothrow
     {
-         version(WebAssembly)
-            return getCurrentTime();
-        else
-            return getCurrentTime() / 1_000_000;
+        return getCurrentTime() / 1_000_000;
     }
 
     static float getCurrentTimeAsMs() nothrow
     {
-         version(WebAssembly)
-            return cast(float)getCurrentTime();
-        else
-            return cast(float)getCurrentTime() / 1_000_000;
+        return cast(float)getCurrentTime() / 1_000_000;
     }
     static float getCurrentTimeAsSeconds() nothrow
     {
-         version(WebAssembly)
-            return getCurrentTime() / 1_000;
-        else
-            return cast(float)getCurrentTime() / 1_000_000_000;
+        return cast(float)getCurrentTime() / 1_000_000_000;
     }
 
     static void initPerformanceMeasurement(string name)

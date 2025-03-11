@@ -308,6 +308,8 @@ else
 ///Steps an engine frame
 bool HipremeUpdateBase()
 {
+	import hip.graphics.g2d.profiling;
+	setFrameInitTime();
 	if(!sys.update(g_deltaTime))
 		return false;
 	if(isUsingInterpreter)
@@ -318,10 +320,32 @@ bool HipremeUpdateBase()
 
 version(ExternallyManagedDeltaTime)
 {
-	export extern(System) bool HipremeUpdate(float dt)
+	version(WebAssembly)
 	{
-		g_deltaTime = dt;
-		return HipremeUpdateBase();
+		/**
+		 * The main difference is that on WebAssembly, Hipreme Engine loop is not separated between
+		 * update and render. That happens because the wasm bridge makes things slower. So it is better
+		 * to simply merge all wasm calls together.
+		 * Params:
+		 *   dt = Delta Time
+		 * Returns: Whether the engine should continue looping
+		 */
+		export extern(System) bool HipremeEngineLoop(float dt)
+		{
+			g_deltaTime = dt;
+			if(!HipremeUpdateBase())
+				return false;
+			HipremeRender();
+			return true;
+		}
+	}
+	else
+	{
+		export extern(System) bool HipremeUpdate(float dt)
+		{
+			g_deltaTime = dt;
+			return HipremeUpdateBase();
+		}
 	}
 }
 else version(dll) export extern(System) bool HipremeUpdate()

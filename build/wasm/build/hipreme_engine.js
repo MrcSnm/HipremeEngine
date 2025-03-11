@@ -58,7 +58,7 @@ function lookupForFunction(exports, funcName)
 }
 function initializeHipremeEngine(exports)
 {
-    lookupForFunction(exports, "HipremeUpdate"); //(float dt)
+    lookupForFunction(exports, "HipremeEngineLoop"); //(float dt)
     lookupForFunction(exports, "HipremeRender"); 
     lookupForFunction(exports, "HipInputOnTouchPressed");       //(uint id, float x, float y)
     lookupForFunction(exports, "HipInputOnTouchMoved");         //(uint id, float x, float y)
@@ -73,6 +73,7 @@ function initializeHipremeEngine(exports)
 
     const canvas = document.getElementById("glcanvas");
     
+
     const HipInputOnKeyDown = (ev) =>
     {
         exports.HipInputOnKeyDown(ev.keyCode); //Use that for now. WILL be updated later.
@@ -175,7 +176,7 @@ function initializeHipremeEngine(exports)
 
 
     let lastTime = performance.now();
-    function nextFrame(step)
+    const nextFrame = (step) =>
     {
         if(__shouldReloadGame)
         {
@@ -185,17 +186,16 @@ function initializeHipremeEngine(exports)
         try
         {
             //To seconds. Javascript gives in MS.
-            if(!exports.HipremeUpdate((performance.now() - lastTime)/1000))
+            if(!exports.HipremeEngineLoop((performance.now() - lastTime)/1000))
             {
                 finished = true;
                 destroyEngine();
             }
             else
             {
-                exports.HipremeRender();
-                gameLoop();
+                lastTime = performance.now();
+                requestAnimationFrame(nextFrame);
             }
-            lastTime = performance.now();
         }
         catch(err)
         {
@@ -204,11 +204,5 @@ function initializeHipremeEngine(exports)
             throw err;
         }
     }
-
-    const gameLoop = () =>
-    {
-        requestAnimationFrame(nextFrame);
-    }
-
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(nextFrame);
 }

@@ -138,12 +138,14 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
      */
     void draw(string str, int x, int y, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1, bool wordWrap = false)
     {
-        import hip.util.string : toUTF32;
         import hip.api.graphics.text;
 
         int vI = quadsCount*4; //vertex buffer index
         bool isFirstLine = true;
         int yoffset = 0;
+
+
+        int height = font.getTextHeight(str);
         foreach(HipLineInfo lineInfo; font.wordWrapRange(str, wordWrap ? boundsWidth : -1))
         {
             if(!isFirstLine)
@@ -153,7 +155,10 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             isFirstLine = false;
             int xoffset = 0;
             int displayX = void, displayY = void;
-            getPositionFromAlignment(x, y, lineInfo.width, 0, alignh, alignv, displayX, displayY, boundsWidth, boundsHeight);
+            int lineYOffset = yoffset;
+            if(alignv == HipTextAlign.TOP) lineYOffset-= lineInfo.minYOffset;
+
+            getPositionFromAlignment(x, y, lineInfo.width, lineInfo.height ? height : lineInfo.height, alignh, alignv, displayX, displayY, boundsWidth, boundsHeight);
             for(int i = 0; i < lineInfo.line.length; i++)
             {
                 int kerning = lineInfo.kerningCache[i];
@@ -172,7 +177,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
                         if(ch is null) continue;
                         ch.putCharacterQuad(
                             cast(float)(xoffset+displayX+ch.xoffset+kerning),
-                            cast(float)(yoffset+displayY+ch.yoffset), managedDepth,
+                            cast(float)(yoffset+displayY+lineYOffset + ch.yoffset), managedDepth,
                             cast(HipTextRendererVertexAPI[])vertices[vI..vI+4]
                         );
                         vI+= 4;
@@ -210,6 +215,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             mesh.bind();
             this.font.texture.bind();
             mesh.shader.setVertexVar("Cbuf.uProj", camera.proj, true);
+            mesh.shader.setVertexVar("Cbuf.uModel", Matrix4.identity, true);
             mesh.shader.setVertexVar("Cbuf.uView", camera.view, true);
             mesh.shader.sendVars();
             
