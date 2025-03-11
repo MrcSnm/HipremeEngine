@@ -10,12 +10,10 @@ final class HipButtonMetadata : AHipButtonMetadata
 
     float lastDownTime, downTimeStamp;
     float lastUpTime, upTimeStamp;
-
-    bool _isPressed = false;
-    bool _isNewState = false;
     float timeStartedCheckingRestart = 0;
     float timeUntilRestartMulticlick = HIP_DEFAULT_TIME_UNTIL_CLICK_COUNT_RESTART;
-
+    bool _isPressed = false;
+    bool _isNewState = false;
     ubyte clickCount = 0;
 
     override bool isNewState() const {return _isNewState;}

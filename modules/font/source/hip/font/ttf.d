@@ -123,6 +123,8 @@ class HipArsd_TTF_Font : HipFont
         bool ret = t.load(img);
         ErrorHandler.assertErrorMessage(ret, "Loading TTF", "Could not create texture for TTF");
         texture = t;
+        import core.memory;
+        GC.free(rawImage.ptr);
         return ret;
     }
 

@@ -50,7 +50,6 @@ struct HipTextRendererFragmentUniforms
 }
 
 
-enum TextRendererPoolSize = 40_000;
 private __gshared Shader bmTextShader = null;
 
 /**
@@ -73,8 +72,10 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
     bool shouldRenderLineBreak, shouldRenderSpace;
     private __gshared uint[] linesWidths;
 
-    this(HipOrthoCamera camera, index_t maxIndices = index_t_maxQuadIndices)
+    this(HipOrthoCamera camera, index_t maxQuads = DefaultMaxSpritesPerBatch)
     {
+        import hip.error.handler;
+        import hip.util.conv:to;
         if(bmTextShader is null)
         {
             import hip.hiprenderer.initializer;
@@ -88,14 +89,15 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             bmTextShader.bind();
             bmTextShader.sendVars();
         }
+        ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
         mesh = new Mesh(HipVertexArrayObject.getVAO!HipTextRendererVertex, bmTextShader);
         //6 indices per quad
-        indices = new index_t[](maxIndices);
-        vertices = new HipTextRendererVertex[](TextRendererPoolSize);
-        mesh.createIndexBuffer(maxIndices, HipBufferUsage.STATIC);
+        indices = new index_t[](maxQuads*6);
+        vertices = new HipTextRendererVertex[](maxQuads*4);
+        mesh.createIndexBuffer(cast(index_t)(maxQuads*6), HipBufferUsage.STATIC);
         mesh.createVertexBuffer(cast(index_t)vertices.length, HipBufferUsage.DYNAMIC);
         mesh.sendAttributes();
-        HipVertexArrayObject.putQuadBatchIndices(indices, maxIndices / 6);
+        HipVertexArrayObject.putQuadBatchIndices(indices, maxQuads);
         mesh.setVertices(vertices);
         mesh.setIndices(indices);
         if(camera is null)

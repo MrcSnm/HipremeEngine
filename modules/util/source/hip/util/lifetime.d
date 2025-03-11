@@ -74,12 +74,16 @@ version(HipScriptingAPI)
         {
             if(i >= _hipExportedSharedUserData[target].length)
                 break;
+            else if (_hipExportedSharedUserData[target][i] is reference)
+                return reference;
             if(_hipExportedSharedUserData[target][i] is null)
             {
                 _hipExportedSharedUserData[target][i] = reference;
                 return reference;
             }
         }
+        import std.stdio;
+        writeln("Saving ", reference.toString);
         _hipExportedSharedUserData[target] ~= reference;
         return reference;
     }

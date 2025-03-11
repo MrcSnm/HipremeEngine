@@ -144,8 +144,7 @@ void setStencilOperation(HipStencilOperation stencilFail, HipStencilOperation de
 }
 Viewport getCurrentViewport()
 {
-    import hip.util.lifetime;
-    return cast(typeof(return))hipSaveRef(HipRenderer.getCurrentViewport());
+    return HipRenderer.getCurrentViewport();
 }
 
 void setRendererErrorCheckingEnabled(bool enable)
