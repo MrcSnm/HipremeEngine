@@ -151,9 +151,10 @@ struct HipFontChar
     ///Normalized values
     float normalizedX, normalizedY, normalizedWidth, normalizedHeight;
     int glyphIndex;
-    void putCharacterQuad(float x, float y, float depth, HipTextRendererVertexAPI[] quad) const @nogc
+    void putCharacterQuad(float x, float y, float depth, HipTextRendererVertexAPI[] quad, float scale = 1) const @nogc
     {
         import hip.util.data_structures;
+        float w = width*scale, h = height*scale;
         //Gen vertices 
         quad[0..4] = [
             //Top left
@@ -163,12 +164,12 @@ struct HipFontChar
             ),
             //Top Right
             HipTextRendererVertexAPI(
-                [x+width, y,depth],
+                [x+w, y,depth],
                 [normalizedX + normalizedWidth, normalizedY] //S + Wnorm, T
             ),
             //Bot right
             HipTextRendererVertexAPI(
-                [x+ width, y +height, depth],
+                [x+ w, y +h, depth],
                 [
                     normalizedX + normalizedWidth, //S+Wnorm
                     normalizedY + normalizedHeight //T+Hnorm
@@ -176,7 +177,7 @@ struct HipFontChar
             ),
             //Bot left
             HipTextRendererVertexAPI(
-                [x, y + height, depth],
+                [x, y + h, depth],
                 [normalizedX, normalizedY + normalizedHeight] // S, T+Hnorm
             )
         ].staticArray;

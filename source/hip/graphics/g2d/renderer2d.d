@@ -267,12 +267,12 @@ void setTextColor(HipColor color)
     manageBatchChange(textBatch);
     textBatch.setColor(color);
 }
-void drawText(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign alignH = HipTextAlign.LEFT, HipTextAlign alignV = HipTextAlign.CENTER, 
-int boundsWidth = -1, int boundsHeight = -1, bool wordWrap = false)
+void drawText(string text, int x, int y, float scale = 1.0f, HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.centerLeft,
+Size bounds = Size.init, bool wordWrap = false)
 {
     manageBatchChange(textBatch);
     textBatch.setColor(color);
-    textBatch.draw(text, x, y, alignH, alignV, boundsWidth, boundsHeight, wordWrap);
+    textBatch.draw(text, x, y, scale, align_, bounds, wordWrap);
 }
 
 void drawTextVertices(void[] vertices, IHipFont font)
@@ -285,7 +285,7 @@ Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint r
 {
     uint frameWidth = t.getWidth() / columns;
     uint frameHeight = t.getHeight() / rows;
-    return cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
+        return cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
 }
 
 void finishRender2D()

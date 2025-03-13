@@ -14,7 +14,7 @@ class Label : Widget
         this.txtDraw = new HipText();
         this.txtDraw.wordWrap = true;
         this.text = text;
-        setAlign(HipTextAlign.LEFT, HipTextAlign.CENTER);
+        setAlign(HipTextAlign.centerLeft);
     }
     public void setColor(HipColor color)
     {
@@ -42,17 +42,16 @@ class Label : Widget
     public bool wordWrap(){return txtDraw.wordWrap;}
     public bool wordWrap(bool bWordWrap){return txtDraw.wordWrap = bWordWrap;}
 
-    public Label setAlign(HipTextAlign horizontal, HipTextAlign vertical)
+    public Label setAlign(HipTextAlign align_)
     {
-        txtDraw.setAlign(horizontal,vertical);
+        txtDraw.setAlign(align_);
         txtDraw.getSize(this.width, this.height);
         return this;
     }
 
     public void setSize(int width, int height)
     {
-        txtDraw.boundsWidth = width;
-        txtDraw.boundsHeight = height;
+        txtDraw.bounds = Size(width, height);
         txtDraw.getSize(this.width, this.height);
     }
     private void getTextPosition(out int x, out int y)
@@ -60,9 +59,9 @@ class Label : Widget
         getPositionFromAlignment(
             worldTransform.x, worldTransform.y, 
             txtDraw.width,  txtDraw.height, 
-            txtDraw.alignh, txtDraw.alignv, 
+            txtDraw.align_,
             x, y, 
-            txtDraw.boundsWidth, txtDraw.boundsHeight
+            txtDraw.bounds
         );
     }
 

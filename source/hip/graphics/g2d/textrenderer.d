@@ -16,7 +16,7 @@ import hip.hiprenderer;
 import hip.assetmanager;
 public import hip.graphics.orthocamera;
 public import hip.api.graphics.batch;
-public import hip.api.graphics.text : HipTextAlign;
+public import hip.api.graphics.text : HipTextAlign, Size;
 
 /**
 *   Don't change those names. If the variable names are changed, the shaders should stop working
@@ -136,11 +136,11 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
      *  The text will be saved, represented as an internal ID to a managed static HipText. Which means the texture will be baked
      *  so it is possible to actually draw it a lot faster as all the preprocessings are done once.
      */
-    void draw(string str, int x, int y, HipTextAlign alignh = HipTextAlign.CENTER, HipTextAlign alignv = HipTextAlign.CENTER, int boundsWidth = -1, int boundsHeight = -1, bool wordWrap = false)
+    void draw(string str, int x, int y, float scale = 1, HipTextAlign align_ = HipTextAlign.centerLeft, Size bounds = Size.init, bool wordWrap = false)
     {
         import hip.api.graphics.text;
         int vI = quadsCount*4; //vertex buffer index
-        vI+= putTextVertices(font, (cast(HipTextRendererVertexAPI[])vertices)[vI..$], str, x, y, managedDepth, alignh, alignv, boundsWidth, boundsHeight, wordWrap, shouldRenderSpace);
+        vI+= putTextVertices(font, (cast(HipTextRendererVertexAPI[])vertices)[vI..$], str, x, y, managedDepth, scale, align_, bounds, wordWrap, shouldRenderSpace);
         quadsCount = vI/4;
     }
 

@@ -57,7 +57,7 @@ class LoadingScene: AScene
         drawRectangle(x+halfB, y+halfB, (width-borderSize), (height - borderSize), fgColor);
 
         String s = String("Loaded: ", assetsToLoad - HipAssetManager.getAssetsToLoadCount(), "/", assetsToLoad);
-        drawText(s.toString, x, y, HipColor.yellow, HipTextAlign.CENTER, HipTextAlign.TOP, width, height);
+        drawText(s.toString, x, y, 1, HipColor.yellow, HipTextAlign.topCenter, Size(width, height));
 
 
     }

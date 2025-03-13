@@ -54,7 +54,7 @@ void drawGCStats(int x = 0, int y = -1)
     {
         import core.arsd.memory_allocation;
         SmallString str = SmallString("Memory Allocated ", formatFromBytes(getMemoryAllocated()).asSmallString().toString);
-        drawText(str.toString, x, y, HipColor(0,50,0), HipTextAlign.LEFT, HipTextAlign.BOTTOM);
+        drawText(str.toString, x, y, 1.0,  HipColor(0,50,0), HipTextAlign.botLeft);
 
     }
     else static if(!CustomRuntime)
@@ -62,34 +62,34 @@ void drawGCStats(int x = 0, int y = -1)
         import core.memory;
         GC.Stats stats = GC.stats;
         GC.ProfileStats prof = GC.profileStats;
-        // SmallString str = SmallString("Memory Allocated ", formatFromBytes(stats.usedSize).asSmallString().toString);
-        // drawText(str.toString, x, y, HipColor(0,50,0), HipTextAlign.LEFT, HipTextAlign.TOP);
+        SmallString str = SmallString("Memory Allocated ", formatFromBytes(stats.usedSize).asSmallString().toString);
+        drawText(str.toString, x, y, 1.0, HipColor(0,50,0), HipTextAlign.botLeft);
 
 
 
-        SmallString timeOnPause = SmallString.get();
-        SmallString timeOnCollection = SmallString.get();
+        // SmallString timeOnPause = SmallString.get();
+        // SmallString timeOnCollection = SmallString.get();
 
-        prof.totalPauseTime.toString((string data)
-        {
-            timeOnPause~= data;
-        });
-        prof.totalCollectionTime.toString((string data)
-        {
-            timeOnCollection~= data;
-        });
+        // prof.totalPauseTime.toString((string data)
+        // {
+        //     timeOnPause~= data;
+        // });
+        // prof.totalCollectionTime.toString((string data)
+        // {
+        //     timeOnCollection~= data;
+        // });
 
 
-        scope BigString str = BigString(
-            "GC Stats: ",
-            "\n\tMemory Used: ", formatFromBytes(stats.usedSize).asSmallString.toString,
-            "\n\tFree Memory: ", formatFromBytes(stats.freeSize).asSmallString.toString,
-            "\n\tTime Paused on GC: ", timeOnPause.toString,
-            "\n\tTime Spent on Collection:", timeOnCollection.toString,
-            "\n\tCollections Count: ", prof.numCollections,
-        );
+        // scope BigString str = BigString(
+        //     "GC Stats: ",
+        //     "\n\tMemory Used: ", formatFromBytes(stats.usedSize).asSmallString.toString,
+        //     "\n\tFree Memory: ", formatFromBytes(stats.freeSize).asSmallString.toString,
+        //     "\n\tTime Paused on GC: ", timeOnPause.toString,
+        //     "\n\tTime Spent on Collection:", timeOnCollection.toString,
+        //     "\n\tCollections Count: ", prof.numCollections,
+        // );
 
-        drawText(str.toString, x, y, HipColor(0, 50, 0), HipTextAlign.LEFT, HipTextAlign.TOP);
+        // drawText(str.toString, x, y, HipColor(0, 50, 0), HipTextAlign.LEFT, HipTextAlign.TOP);
     }
 }
 
@@ -127,7 +127,7 @@ void drawTimings(int x = -1, int y = 0, bool clearTiming = false)
 
 
 
-    drawText(timeProcessing.toString, x, 0, HipColor.white, HipTextAlign.RIGHT, HipTextAlign.TOP);
+    drawText(timeProcessing.toString, x, 0, 1.0f, HipColor.white, HipTextAlign.topRight);
 
     // if(clearTiming)
     //     lastTime = currTime;

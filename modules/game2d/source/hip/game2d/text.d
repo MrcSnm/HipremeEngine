@@ -14,17 +14,16 @@ import hip.util.data_structures;
 */
 class HipText
 {
-    HipTextAlign alignh = HipTextAlign.LEFT;
-    HipTextAlign alignv = HipTextAlign.TOP;
-
+    HipTextAlign align_ = HipTextAlign.topLeft;
     HipFont font;
     int x, y;
     bool wordWrap;
+    float scale = 1;
 
     DirtyFlagsCmp!(
         shouldUpdateText, x, y, 
         wordWrap, font,
-        alignh, alignv
+        align_,
     ) checkDirty;
 
 
@@ -32,7 +31,7 @@ class HipText
     ///Update dynamically based on the font, the text scale and the text content
     int width, height;
 
-    int boundsWidth = -1, boundsHeight = -1;
+    Size bounds;
 
     //Line widths, containing width for each line for correctly aplying text align
     uint[] linesWidths;
@@ -54,19 +53,18 @@ class HipText
     protected size_t maxDrawableTextCount = 0;
     public bool shouldUpdateText = true;
 
-    this(int boundsWidth = -1, int boundsHeight = -1, bool bWordWrap = false)
+    this(Size bounds = Size.init, bool bWordWrap = false)
     {
         import hip.api;
         checkDirty.start(this);
         this.font = cast()HipDefaultAssets.getDefaultFont();
         linesWidths.length = 1;
         wordWrap = bWordWrap;
-        this.boundsWidth = boundsWidth;
-        this.boundsHeight = boundsHeight;
+        this.bounds = bounds;
     }
-    this(string text, int x, int y, HipFont fnt = null, int boundsWidth = -1, int boundsHeight = -1, bool bWordWrap = false)
+    this(string text, int x, int y, HipFont fnt = null, Size bounds = Size.init, bool bWordWrap = false)
     {
-        this(boundsWidth, boundsHeight, bWordWrap);
+        this(bounds, bWordWrap);
         this.setPosition(x,y);
         this.text = text;
         if(fnt) font = fnt;
@@ -114,10 +112,10 @@ class HipText
         return cast(void[])vertices[0..drawableTextCount * 4];
     }
     
-    protected void updateAlign(int lineNumber, out int displayX, out int displayY, int boundsWidth, int boundsHeight)
+    protected void updateAlign(int lineNumber, out int displayX, out int displayY, Size bounds)
     {
         import hip.api.graphics.text;
-        getPositionFromAlignment(x, y, linesWidths[lineNumber], height, alignh, alignv, displayX, displayY, boundsWidth, boundsHeight);
+        getPositionFromAlignment(x, y, linesWidths[lineNumber], height, align_, displayX, displayY, bounds);
     }
     
 
@@ -125,14 +123,13 @@ class HipText
     {
         if(processedText == null)
             HipTextStopConfig.parseText(_text, processedText, textConfig);
-        font.calculateTextBounds(processedText, linesWidths, width, height, boundsWidth);
+        font.calculateTextBounds(processedText, linesWidths, width, height, bounds.width);
         this.width = width;
         this.height = height;
     }
-    public void setAlign(HipTextAlign alignh, HipTextAlign alignv)
+    public void setAlign(HipTextAlign align_)
     {
-        this.alignh = alignh;
-        this.alignv = alignv;
+        this.align_ = align_;
     }
 
     package void updateText(IHipFont font)
@@ -141,7 +138,7 @@ class HipText
         HipTextStopConfig.parseText(_text, processedText, textConfig);
         int vI = 0; //vertex buffer index
 
-        vI = putTextVertices(font, vertices[vI..$], processedText, x, y, depth, alignh, alignv, boundsWidth, boundsHeight, wordWrap, shouldRenderSpace);
+        vI = putTextVertices(font, vertices[vI..$], processedText, x, y, depth, scale, align_, bounds, wordWrap, shouldRenderSpace);
         shouldUpdateText = true;
     }
 
