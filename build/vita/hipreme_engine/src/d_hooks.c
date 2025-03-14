@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <malloc.h>
 #include <pthread.h>
 #include "debugScreen.h"
 #include <psp2/kernel/sysmem.h>
@@ -31,6 +32,7 @@ void rtosbackend_heapfreealloc(void* ptr){free(ptr);}
 void rtosbackend_assert(char* file, uint line){assert(0);}
 void rtosbackend_assertmsg(char* msg, char* file, uint line){assert(0);}
 void rtosbackend_arrayBoundFailure(char* file, uint line){assert(0);}
+size_t allocated = 0;
 
 
 void psv_abort()
@@ -65,14 +67,23 @@ void psv_init_mem()
 	free(temp);
 }
 
+size_t psv_get_allocated_memory()
+{
+	struct mallinfo info = mallinfo();
+
+	return info.uordblks - info.fordblks;
+}
+
 void psv_free(void* ptr)
 {
 	// if(IS_ON_HEAP(ptr))
 		free(ptr);
 }
+
 void* psv_malloc(size_t sz)
 {
 	void* ret = malloc(sz);
+	allocated+= sz;
 	if(ret == 0)
 		psv_out_of_mem();
 	return ret;
@@ -86,22 +97,6 @@ void* psv_realloc(void* ptr, size_t newSize)
 		psv_out_of_mem();
 	return ptr;
 }
-
-
-/**
- * Realloc is not really working for some unknown reason. So it wlll use a less efficient
- * version (malloc, copy and free)
- */
-void* psv_realloc_slice(size_t oldLength, void* ptr, size_t newSize)
-{
-	void* ret = psv_malloc(newSize);
-	size_t copySize = oldLength > newSize ? newSize : oldLength;
-	memcpy(ret, ptr, copySize);
-	free(ptr);
-
-	return ret;
-}
-
 
 void* psv_calloc(size_t count, size_t newSize){return calloc(count, newSize);}
 

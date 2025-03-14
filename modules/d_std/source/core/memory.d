@@ -12,17 +12,7 @@ struct GC
     {
         import core.arsd.memory_allocation;
         import rt.hooks;
-        version(PSVita)
-        {
-            PSVMem mem = *cast(PSVMem*)getPSVMem(ptr);
-            pureRealloc(cast(ubyte[])ptr[0..0], desiredExtensionInSize+mem.size);
-        }
-        else
-        {
-            import rt.hooks;
-            auto block = getAllocatedBlock(ptr);
-            pureRealloc(cast(ubyte[])ptr[0..0], block.blockSize+desiredExtensionInSize);
-        }
+        pureRealloc(cast(ubyte[])ptr[0..0], desiredExtensionInSize);
         return desiredExtensionInSize;
     }
 

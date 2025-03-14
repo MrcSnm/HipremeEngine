@@ -42,16 +42,7 @@ version(CustomRuntime)
         {
             static import rt.hooks;
             auto nogc_realloc = cast(nogc_realloc_t)&rt.hooks.realloc;
-            version(PSVita)
-            {
-                void* ret = cast(void*)nogc_realloc(cast(ubyte*)ptr, size, file, line).ptr;
-                free(ptr);
-                return ret;
-            }
-            else
-            {
-                return cast(void*)nogc_realloc(cast(ubyte*)ptr, size, file, line).ptr;
-            }
+            return cast(void*)nogc_realloc(cast(ubyte*)ptr, size, file, line).ptr;
         }
     }
     void abort(){assert(false, "Aborted");}

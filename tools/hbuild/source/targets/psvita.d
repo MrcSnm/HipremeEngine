@@ -247,7 +247,6 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
     "-mcpu=cortex-a9 "~
     "-O0 " ~
     "-fvisibility=hidden "~
-    "-g "~
     "-float-abi=hard "~
     "--relocation-model=static "~
     "-d-version=CarelessAlocation "~

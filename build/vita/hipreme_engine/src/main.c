@@ -27,14 +27,7 @@ int _newlib_heap_size_user   = 64 * 1024 * 1024;
 
 void hipVitaPrint(size_t sz, const char* str)
 {
-	if(sz >= 4096) //\n\0
-		sceClibPrintf("Error: hipVitaPrint buffer overflow.");
-	else if(sz > 1)
-	{
-		static char toPrint[4096];
-		memcpy(toPrint, str, sz);
-		sceClibPrintf("%.*s\n", sz, toPrint);
-	}
+	sceClibPrintf("%.*s\n", sz, str);
 }
 
 void initializeVitaGL();

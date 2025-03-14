@@ -50,14 +50,14 @@ void drawGCStats(int x = 0, int y = -1)
         return ByteUnit(floorDecimal(actualResult, 2), " GB");
     }
 
-    version(WebAssembly)
+    static if(CustomRuntime)
     {
         import core.arsd.memory_allocation;
         SmallString str = SmallString("Memory Allocated ", formatFromBytes(getMemoryAllocated()).asSmallString().toString);
         drawText(str.toString, x, y, 1.0,  HipColor(0,50,0), HipTextAlign.botLeft);
 
     }
-    else static if(!CustomRuntime)
+    else
     {
         import core.memory;
         GC.Stats stats = GC.stats;

@@ -26,14 +26,14 @@ VITA_MKSFOEX := vita-mksfoex
 # 	VITA_MAKE_FSELF := vita-make-fself.exe
 # endif
 
-DFLAGS := -betterC -gcc="/usr/local/vitasdk/bin/$(CC)" -mtriple=armv7a-unknown-unknown --float-abi=hard -mcpu=cortex-a9
+DFLAGS := -gcc="/usr/local/vitasdk/bin/$(CC)" -mtriple=armv7a-unknown-unknown --float-abi=hard -mcpu=cortex-a9
 
 PROJECT_TITLE := Hipreme Engine
 PROJECT_TITLEID := VSDK00007
 
 PROJECT := hipreme_engine
-CFLAGS += -Wl,-q -Iinclude -Isrc_extra
-CXXFLAGS += -Wl,-q -std=c++11 
+CFLAGS += -Wl,-q -Iinclude -Isrc_extra -fvisibility=hidden
+CXXFLAGS += -Wl,-q -std=c++11
 SRC_C :=$(call rwildcard, src/, *.c)
 SRC_CPP :=$(call rwildcard, src/, *.cpp)
 SRC_D := $(call rwildcard, src/, *.d)
@@ -53,7 +53,7 @@ LIBS += -lintel-intrinsics -lmath -lwindowing -lruntime -ltween -ltimer -lhipeng
 
 # Needed by psvDebugScreenPrintf
 # Third party
-LIBS += -lopenal -lpthread -llibGLESv2_stub -lSceDisplay_stub -lSceTouch_stub -lSceCtrl_stub -lSceAudio_stub -lSceAudioIn_stub -llibIMGEGL_stub -llibgpu_es4_ext_stub
+LIBS += -lopenal -lpthread -llibGLESv2_stub -lSceDisplay_stub -lSceTouch_stub -lSceCtrl_stub -lSceAudio_stub -lSceAudioIn_stub -llibIMGEGL_stub -llibgpu_es4_ext_stub -lm
 
 all: package
 
@@ -84,7 +84,7 @@ $(PROJECT).velf: $(PROJECT).elf
 	$(VITA_ELF_CREATE) $< $@
 
 $(PROJECT).elf: $(OBJS) $(wildcard libs/*.a)
-	$(CXX) $(CXXFLAGS) $^  -L/usr/local/vitasdk/arm-vita-eabi/lib/ -L. -Llibs -Lthirdparty $(LIBS) -o $@
+	$(CC) $(CFLAGS) $^  -L/usr/local/vitasdk/arm-vita-eabi/lib/ -L. -Llibs -Lthirdparty $(LIBS) -o $@
 
 out/%.o : src/%.cpp | $(OBJ_DIRS)
 	$(CXX) -c $(CXXFLAGS) -o $@ $<
