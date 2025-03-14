@@ -48,11 +48,13 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
 
         WasmRead(JSString(path).tupleof, sendJSDelegate!((ubyte[] wasmBin, WasmParametersMemory memory)
         {
-            if(onSuccess(wasmBin) == FileReadResult.free)
-            {
-                import core.memory;
-                GC.free(memory.ptr);
-            }
+            onSuccess(wasmBin);
+            ///TODO: Fix to free WasmParametersMemory
+            // if(onSuccess(wasmBin) == FileReadResult.free)
+            // {
+            //     import core.memory;
+            //     GC.free(memory.ptr);
+            // }
 
         }).tupleof, sendJSDelegate!(onError).tupleof);
         

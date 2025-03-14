@@ -66,11 +66,8 @@ version(Android)
             destroy(f);
             if(!ret)
                 onError("Could not read file.");
-            else if(onSuccess(output) == FileReadResult.free)
-            {
-                import core.memory;
-                GC.free(output.ptr);
-            }
+            else
+                onSuccess(output);
             return ret;
         }
         bool write(string path, const(void)[] data)

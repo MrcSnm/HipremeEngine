@@ -12,6 +12,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <pthread.h>
 
 #include "debugScreen.h"
@@ -29,6 +30,21 @@ void hipVitaPrint(size_t sz, const char* str)
 {
 	sceClibPrintf("%.*s\n", sz, str);
 }
+
+uint64_t get_psv_time()
+{
+	SceKernelSysClock clock;
+	if(sceKernelGetProcessTime(&clock) == 0)
+		return clock;
+	return 0;
+}
+
+float longToFloat(int64_t v ){ return (float) v;}
+float ulongToFloat(uint64_t v){ return (float) v;}
+
+double longToDouble(int64_t v) { return (double) v; }
+double ulongToDouble(uint64_t v) { return (double) v; }
+
 
 void initializeVitaGL();
 void EGLInit(int* width, int* height);
@@ -81,13 +97,6 @@ void hipVitaPollGamepad(HipInputPSVGamepadState* state)
 }
 
 
-typedef struct PSVMemC
-{
-	size_t size;
-	unsigned short magicNumber;
-	char data[0];
-} PSVMemC;
-
 
 ///Function required to check if memory is in heap to being able to reallocate.
 void psv_init_mem();
@@ -95,13 +104,13 @@ void psv_init_mem();
 void HipremeInit();
 int HipremeMain(int width, int height);
 void HipremeRender();
+
 unsigned char HipremeUpdate(float dt);
 
 //This function is called from D's main
 void hipVitaPollTouch();
 int main(int argc, char* argv)
 {
-	sceClibPrintf("%d\n\n", sizeof(PSVMemC));
 	psv_init_mem();
 	psvDebugScreenInit();
 	initializeVitaGL();

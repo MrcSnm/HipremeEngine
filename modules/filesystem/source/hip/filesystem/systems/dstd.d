@@ -14,12 +14,7 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
         output.length = cast(size_t)f.size;
         f.rawRead(output); //TODO: onError should be on try/catch
         f.close();
-        if(onSuccess(output) == FileReadResult.free)
-        {
-            import core.memory;
-            GC.free(output.ptr);
-        }
-
+        onSuccess(output);
         return true;
     }
     bool write(string path, const void[] data)

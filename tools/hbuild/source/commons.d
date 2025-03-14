@@ -1011,7 +1011,7 @@ int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, strin
 		CompilationDetails(dArgs.getCompiler(), dArgs._arch),
 		ProjectToParse(dArgs._configuration, std.file.getcwd(), null, dArgs._recipe),
 		InitialDubVariables.init,
-		BuildType.debug_
+		BuildType.profile_gc
 	);
 	try {
 		if(buildProject(proj).error) return 1;

@@ -17,6 +17,10 @@ version(Windows)
     extern(Windows) BOOL QueryPerformanceFrequency(LARGE_INTEGER* lpPerformanceCount) nothrow;
     extern(Windows) BOOL QueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount) nothrow;
 }
+else version(PSVita)
+{
+    extern(C) ulong get_psv_time() @nogc nothrow;
+}
 else version(WebAssembly)
 {
     extern(C) float monotimeNow() @nogc nothrow;
@@ -51,6 +55,10 @@ ulong getSystemTime() nothrow
     else version(WebAssembly)
     {
         return cast(ulong)(monotimeNow() * 1_000_000); //ms to nano
+    }
+    else version(PSVita)
+    {
+        return get_psv_time();
     }
     else
     {
@@ -98,6 +106,13 @@ class HipTime
             time = getSystemTime() - startTime;
         return time;
     }
+    static double getCurrentTimeDouble() nothrow
+    {
+        version(PSVita)
+            return Double(getCurrentTime());
+        else
+            return cast(double)getCurrentTime();
+    }
 
     ///For some reason, float arithmetic is wrong on PSVita, so, use long instead...
     static long getCurrentTimeAsMsLong() nothrow
@@ -105,13 +120,13 @@ class HipTime
         return getCurrentTime() / 1_000_000;
     }
 
-    static float getCurrentTimeAsMs() nothrow
+    static double getCurrentTimeAsMs() nothrow
     {
-        return cast(float)getCurrentTime() / 1_000_000;
+        return getCurrentTimeDouble() / 1_000_000.0f;
     }
-    static float getCurrentTimeAsSeconds() nothrow
+    static double getCurrentTimeAsSeconds() nothrow
     {
-        return cast(float)getCurrentTime() / 1_000_000_000;
+        return getCurrentTimeDouble() / 1_000_000_000;
     }
 
     static void initPerformanceMeasurement(string name)

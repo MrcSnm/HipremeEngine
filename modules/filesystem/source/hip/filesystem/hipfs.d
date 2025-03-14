@@ -110,11 +110,26 @@ private class HipFSPromise : IHipFSPromise
     void delegate(string err)[] onErrorList;
     ubyte[] data;
     bool finished = false;
+    FileReadResult result = FileReadResult.keep;
     this(string filename){this.filename = filename;}
     IHipFSPromise addOnSuccess(FileReadResult delegate(in ubyte[] data) onSuccess)
     {
+        if(result != FileReadResult.keep)
+            throw new Exception("HipFSPromise Error: "~filename~" data was already freed, but addOnSuccess is being called.");
         if(finished)
-            onSuccess(data);
+        {
+            if(onSuccess(data) == FileReadResult.free)
+            {
+                result = FileReadResult.free;
+                version(WebAssembly) {}
+                else
+                {
+                    import core.memory;
+                    GC.free(data.ptr);
+                }
+            }
+
+        }
         else
             onSuccessList~=onSuccess;
         return this;
@@ -133,13 +148,22 @@ private class HipFSPromise : IHipFSPromise
             assert(false, "HipFSPromise was already resolved.");
         this.data = data;
         this.finished = true;
-        FileReadResult r = FileReadResult.free;
+        FileReadResult r = FileReadResult.keep;
         if(data) foreach(success; onSuccessList)
-            r&= success(data);
+            r|= success(data);
         else foreach(err; onErrorList)
             err("Could not read file");
-        return r;
 
+        version(WebAssembly) {}
+        else
+        {
+            if(r == FileReadResult.free)
+            {
+                import core.memory;
+                GC.free(data.ptr);
+            }
+        }
+        return result = r;
     }
     bool resolved() const{return finished;}
 }
@@ -288,7 +312,9 @@ class HipFileSystem
         filesReadingCount--;
         ErrorHandler.assertExit(false, "HipFS Error: "~err);
     }
-    
+
+    ///TODO: Fix API. It currently does not work with sync and async at the same way.
+    /// It needs to specify both onSuccess and onError before being able to establish if it is possible to keep or not the memory.
     @ExportD public static IHipFSPromise read(string path)
     {
         import hip.console.log;
@@ -302,6 +328,7 @@ class HipFileSystem
         filesReadingCount++;
 
         HipFSPromise promise = new HipFSPromise(path);
+
         fs.read(path, (ubyte[] data)
         {
             filesReadingCount--;

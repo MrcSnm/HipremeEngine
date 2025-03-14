@@ -53,11 +53,7 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
             return false;
         }
         fclose(f);
-        if(onSuccess(output) == FileReadResult.free)
-        {
-            import core.memory;
-            GC.free(output.ptr);
-        }
+        onSuccess(output);
         return true;
     }
     bool write(string path, const(void)[] data)

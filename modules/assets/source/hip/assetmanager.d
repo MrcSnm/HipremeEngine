@@ -67,7 +67,6 @@ import hip.api.data.font;
 mixin template HipDeferredLoadImpl()
 {
     import hip.util.reflection;
-    
     private void deferredLoad(T, string funcName)(IHipAssetLoadTask task)
     {
         alias func = __traits(getMember, typeof(this), funcName);
@@ -105,7 +104,7 @@ string HipDeferredLoad()
     {
         mixin("alias ",func," = __dload__.", func,";");
     }};
-} 
+}
 
 
 
@@ -123,7 +122,6 @@ class HipAssetManager
     protected __gshared IHipAssetLoadTask[] completeQueue;
     protected __gshared DebugMutex completeMutex;
     protected __gshared void delegate(IHipAsset)[][IHipAssetLoadTask] completeHandlers;
-    
 
 
     public static void initialize()
@@ -185,7 +183,6 @@ class HipAssetManager
             import hip.asset_manager.load_task;
             import core.sync.semaphore;
             HipAssetLoadTask lTask = cast(HipAssetLoadTask)task;
-            
             auto semaphore = new Semaphore(0);
             lTask.worker.pushTask("Await Single", ()
             {
@@ -204,7 +201,7 @@ class HipAssetManager
         return workerPool.pushTask(taskName, loadFn, onFinish, onMainThread);
     }
 
-    /** 
+    /**
      * Checks whether the file has been loaded already or not:
      *  if: returns its previous task
      *  else: Put a new one on load cache and retunr
@@ -228,8 +225,8 @@ class HipAssetManager
     /**
     *   loadSimple must be used when the asset can be totally constructed on the worker thread and then returned to the main thread
     */
-    private static IHipAssetLoadTask loadSimple(string taskName, string path, void delegate(string pathOrLocation, 
-    void delegate(HipAsset) onSuccess, void delegate(string err = "") onFailure) loadAsset, 
+    private static IHipAssetLoadTask loadSimple(string taskName, string path, void delegate(string pathOrLocation,
+    void delegate(HipAsset) onSuccess, void delegate(string err = "") onFailure) loadAsset,
     string f = __FILE__, size_t l = __LINE__)
     {
         import hip.asset_manager.load_task;
@@ -244,8 +241,8 @@ class HipAssetManager
 
     version(WebAssembly)
     {
-        
-        private static void delegate(void[] partialData) onSuccessLoadFirstStep(IHipAssetLoadTask task, 
+
+        private static void delegate(void[] partialData) onSuccessLoadFirstStep(IHipAssetLoadTask task,
         void delegate(string taskName) nextStep)
         {
             return (void[] partialData)
@@ -267,10 +264,10 @@ class HipAssetManager
             string taskName,
             string path,
             void delegate(
-                string pathOrLocation, 
-                void delegate(void[] partialData) onFirstStepComplete, 
+                string pathOrLocation,
+                void delegate(void[] partialData) onFirstStepComplete,
                 void delegate(string err = "") onFailure
-            ) loadAsset, 
+            ) loadAsset,
 
             void delegate (
                 void[] partialData,
@@ -307,10 +304,10 @@ class HipAssetManager
             string taskName,
             string path,
             void delegate(
-                string pathOrLocation, 
-                void delegate(void[] partialData) onFirstStepComplete, 
+                string pathOrLocation,
+                void delegate(void[] partialData) onFirstStepComplete,
                 void delegate(string err = "") onFailure
-            ) loadAsset, 
+            ) loadAsset,
 
             void delegate (
                 void[] partialData,
@@ -342,7 +339,7 @@ class HipAssetManager
     @ExportD static IHipAssetLoadTask loadFile(string filePath, string f = __FILE__, size_t l = __LINE__)
     {
         import hip.asset_manager.load_task;
-        void delegate(string,void delegate(HipAsset), void delegate(string err = "")) assetLoadFunc = 
+        void delegate(string,void delegate(HipAsset), void delegate(string err = "")) assetLoadFunc =
         (pathOrLocation,onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
@@ -364,7 +361,7 @@ class HipAssetManager
 
     @ExportD static IHipAssetLoadTask loadImage(string imagePath, string f = __FILE__, size_t l = __LINE__)
     {
-        void delegate(string,void delegate(HipAsset), void delegate(string err = "")) assetLoadFunc = 
+        void delegate(string,void delegate(HipAsset), void delegate(string err = "")) assetLoadFunc =
         (pathOrLocation,onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
@@ -383,7 +380,7 @@ class HipAssetManager
         return task;
     }
 
-    /** 
+    /**
      * This can be totally loaded on the other thread. loadSimple is enough
      */
     @ExportD static IHipAssetLoadTask loadAudio(string audioPath, string f = __FILE__, size_t l = __LINE__)
@@ -417,13 +414,13 @@ class HipAssetManager
     {
         import hip.util.memory;
         hiplog("AssetManager: Loading Texture: ", texturePath);
-        void delegate(string, void delegate(void[]), void delegate(string err = "")) assetLoadFunc = 
+        void delegate(string, void delegate(void[]), void delegate(string err = "")) assetLoadFunc =
         (pathOrLocation, onFirstStepComplete, onFailure)
         {
             import hip.filesystem.hipfs;
             HipFS.read(pathOrLocation).addOnSuccess((in ubyte[] data)
             {
-                new Image(pathOrLocation, cast(ubyte[])data, 
+                new Image(pathOrLocation, cast(ubyte[])data,
                 (IImage img)
                 {
                     onFirstStepComplete(toHeapSlice(img));
@@ -435,7 +432,7 @@ class HipAssetManager
             });
         };
 
-        void delegate(void[], void delegate(HipAsset)) onPartialDataLoaded = 
+        void delegate(void[], void delegate(HipAsset)) onPartialDataLoaded =
         (partialData, onSuccess)
         {
             Image img = cast(Image)(cast(IImage)partialData.ptr);
@@ -443,13 +440,12 @@ class HipAssetManager
             hiplog("AssetManager: Texture: Loaded ", texturePath, " ", ret.toHipString);
             onSuccess(ret);
             void* gcObjCopy = cast(void*)img;
-            freeGCMemory(gcObjCopy); 
+            freeGCMemory(gcObjCopy);
         };
         IHipAssetLoadTask task = loadComplex("Load Texture", texturePath, assetLoadFunc, onPartialDataLoaded, f, l);
         return task;
     }
 
-   
     @ExportD static IHipAssetLoadTask loadCSV(string path, string f = __FILE__, size_t l = __LINE__)
     {
         IHipAssetLoadTask task = loadSimple("Load CSV", path, (pathOrLocation, onSuccess, onError)
@@ -507,7 +503,7 @@ class HipAssetManager
         return task;
     }
 
-    @ExportD static IHipAssetLoadTask loadTextureAtlas(string atlasPath, string texturePath = ":IGNORE", 
+    @ExportD static IHipAssetLoadTask loadTextureAtlas(string atlasPath, string texturePath = ":IGNORE",
     string f = __FILE__, size_t l = __LINE__)
     {
         import hip.util.memory;
@@ -517,7 +513,7 @@ class HipAssetManager
             Image image;
             HipTextureAtlas atlas;
         }
-        void delegate(string, void delegate(void[]), void delegate(string err = "")) assetLoadFunc = 
+        void delegate(string, void delegate(void[]), void delegate(string err = "")) assetLoadFunc =
         (pathOrLocation, onFirstStepComplete, onFailure)
         {
             import hip.filesystem.hipfs;
@@ -525,10 +521,10 @@ class HipAssetManager
             {
                 TextureAtlasIntermediaryData inter = new TextureAtlasIntermediaryData();
                 inter.atlas = HipTextureAtlas.readFromMemory(cast(ubyte[])data, atlasPath, texturePath);
-                
+
                 HipFS.read(inter.atlas.getTexturePath()).addOnSuccess((in ubyte[] imgData)
                 {
-                    inter.image = new Image(pathOrLocation, imgData, 
+                    inter.image = new Image(pathOrLocation, imgData,
                     (IImage _)
                     {
                         onFirstStepComplete (toHeapSlice(inter));
@@ -544,7 +540,7 @@ class HipAssetManager
             });
         };
 
-        void delegate(void[], void delegate(HipAsset)) onPartialDataLoaded = 
+        void delegate(void[], void delegate(HipAsset)) onPartialDataLoaded =
         (partialData, onSuccess)
         {
             scope(exit) freeGCMemory(partialData);
@@ -614,7 +610,7 @@ class HipAssetManager
                     tileset.loadImage((IImage _)
                     {
                         onSuccess(toHeapSlice(tileset));
-                    }, (){onFailure("Failed loading image for tileset");}); 
+                    }, (){onFailure("Failed loading image for tileset");});
                 };
                 auto onTilesetJsonFailure = delegate(){onFailure("Failed loading tileset json");};
                 HipTilesetImpl.readFromMemory(pathOrLocation, cast(string)data, onTilesetJsonLoaded, onTilesetJsonFailure);
@@ -721,7 +717,7 @@ class HipAssetManager
         }
         hiplog("Loading bmfont");
 
-        IHipAssetLoadTask task = loadComplex("Load BMFont", fontPath, 
+        IHipAssetLoadTask task = loadComplex("Load BMFont", fontPath,
         (pathOrLocation, onSuccess, onFailure)
         {
             import hip.filesystem.hipfs;
@@ -740,7 +736,7 @@ class HipAssetManager
                     img.loadFromMemory(cast(ubyte[])imgData, (IImage _)
                     {
                         onSuccess(toHeapSlice(new IntermediaryData(font, img)));
-                    }, 
+                    },
                     ()
                     {
                         onFailure("Could not decode image.");
@@ -768,10 +764,10 @@ class HipAssetManager
         }, f, l);
         return task;
     }
-    
 
-   
-    /** 
+
+
+    /**
      * Synchronized function for putting it into the completed queue for preparing the finish handlers
      */
     package static void putComplete(IHipAssetLoadTask task)
@@ -784,7 +780,7 @@ class HipAssetManager
                 assets[(cast(HipAssetLoadTask)task).path] = cast(HipAsset)task.asset;
             }
             completeQueue~= task;
-        completeMutex.unlock();       
+        completeMutex.unlock();
     }
 
     static void addOnCompleteHandler(IHipAssetLoadTask task, void delegate(IHipAsset) onComplete)

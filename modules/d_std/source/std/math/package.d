@@ -5,8 +5,8 @@ import std.traits:Unqual, isFloatingPoint;
 
 Unqual!F pow(F, G)(F x, G n) @nogc @trusted pure nothrow
 {
-    static if(is(F == float)) return powf(cast(float)x, cast(int)n);
-    else return cast(F)core.stdc.math.pow(cast(double)x, cast(int)n);
+    static if(is(F == float)) return powf(Float(x), cast(int)n);
+    else return cast(F)core.stdc.math.pow(Double(x), cast(int)n);
 }
 
 

@@ -108,7 +108,6 @@ void setFrameInitTime()
         count = 0;
     }
 }
-
 void drawTimings(int x = -1, int y = 0, bool clearTiming = false)
 {
     import hip.util.time;
@@ -116,16 +115,11 @@ void drawTimings(int x = -1, int y = 0, bool clearTiming = false)
     import hip.graphics.g2d.renderer2d;
 
     if(count == 0)
-    {
         lastTiming = HipTime.getCurrentTimeAsMs() - lastTime;
-    }
     SmallString timeProcessing = SmallString("CPU Time: ", SmallString(lastTiming).toString.limitDecimalPlaces(3), "ms");
 
     if(x == -1)
         x = getCurrentViewport().worldWidth;
-
-
-
 
     drawText(timeProcessing.toString, x, 0, 1.0f, HipColor.white, HipTextAlign.topRight);
 

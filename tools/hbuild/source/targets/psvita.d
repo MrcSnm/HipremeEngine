@@ -2,6 +2,7 @@ module targets.psvita;
 import std.exception;
 import features.git;
 import commons;
+import std.path;
 
 private enum updateCmd = "sudo apt-get update";
 private enum depsInstallCmd = "sudo apt-get install make git-core cmake python3 curl wget bzip2";
@@ -147,6 +148,8 @@ private bool setupPsvitaWindows(ref Terminal t, ref RealTimeConsoleInput input)
 
     vitaSdkPath = getWslPath(buildPath(vitaPath, "vitasdk"));
 
+
+
     string exports = "\n"~"export VITASDK="~vitaSdkPath~vitasdkExports;
     if(std.file.exists(bashRc))
     {
@@ -204,8 +207,6 @@ private bool setupPsvitaWindows(ref Terminal t, ref RealTimeConsoleInput input)
         t.writelnError("Could not update vitasdk");
         return false;
     }
-    configs["firstPsvConfig"] = true;
-    updateConfigFile();
     return true;
 }
 
@@ -221,9 +222,20 @@ bool setupPsvita(ref Terminal t, ref RealTimeConsoleInput input)
         return false;
     }
     //https://vitasdk.org/
-    version(Windows) return setupPsvitaWindows(t, input);
-    else version(linux) return setupPsvitaLinux(t, input);
+
+    bool ret;
+    version(Windows) ret = setupPsvitaWindows(t, input);
+    else version(linux) ret = setupPsvitaLinux(t, input);
     else assert(false, "Not supported");
+
+    if(ret)
+    {
+        configs["vitaSdkPath"] = buildPath(vitaSdkPath, "vitasdk");
+        configs["firstPsvConfig"] = true;
+        updateConfigFile();
+    }
+    return ret;
+
 }
 
 ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
@@ -248,6 +260,7 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
     "-O0 " ~
     "-fvisibility=hidden "~
     "-float-abi=hard "~
+    "-gcc="~buildNormalizedPath(configs["vitaSdkPath"].str, "bin", "arm-vita-eabi-gcc")~" "~
     "--relocation-model=static "~
     "-d-version=CarelessAlocation "~
     "-d-version=ArsdUseCustomRuntime ";
