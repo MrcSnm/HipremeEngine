@@ -234,8 +234,6 @@ public abstract class HipAudioClip : IHipAudioClip
     public final float getDecodedDuration()
     {
         AudioConfig cfg = decoder.getAudioConfig();
-        import hip.console.log;
-        rawlog(cfg.getBitDepth, cfg.channels, cfg.sampleRate);
         return getClipSize() / (cast(float) cfg.sampleRate);
     }
   

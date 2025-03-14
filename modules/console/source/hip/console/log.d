@@ -10,11 +10,8 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.console.log;
 import hip.console.console;
-import hip.util.conv:to;
+import hip.util.string;
 import hip.util.format;
-
-private string[] logHistory = [];
-
 
 ///Creates a variable which is always logged whenever modified.
 struct Logged(T)
@@ -73,14 +70,13 @@ private string _formatPrettyFunction(string f) @nogc
 *   Think of that as a verbose of what the engine is currently doing.
 */
 void hiplog(Args...)(Args a, string file = __FILE__,
-string func = __PRETTY_FUNCTION__,
 ulong line = __LINE__)
 {
     import hip.config.opts;
     static if(HIP_TRACK_HIPLOG)
-        Console.DEFAULT.hipLog("HIP: ", a, " [[", file, ":", line, "]]");
+        Console.DEFAULT.hipLog(BigString("HIP: ", a, " [[", file, ":", line, "]]").toString);
     else
-        Console.DEFAULT.hipLog("HIP: ", a);
+        Console.DEFAULT.hipLog(BigString("HIP: ", a).toString);
 }
 
 
@@ -88,25 +84,16 @@ void logln(Args...)(Args a, string file = __FILE__,
 string func = __PRETTY_FUNCTION__,
 ulong line = __LINE__) @nogc
 {
-    Console.DEFAULT.log(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction);
+
+    Console.DEFAULT.log(BigString(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction).toString);
 }
 
-
-mixin template loglnVars(Args...)
-{
-    enum log = ()
-    {
-        import hip.console.console;
-        static foreach(i; 0..Args.length)
-            Console.DEFAULT.log(__traits(identifier, Args[i]),": ", Args[i]);
-    };
-}
 
 void loglnInfo(Args...)(Args a, string file = __FILE__,
 string func = __PRETTY_FUNCTION__,
 ulong line = __LINE__)
 {
-    Console.DEFAULT.info(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction);
+    Console.DEFAULT.info(BigString(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction).toString);
 }
 
 
@@ -114,7 +101,7 @@ void loglnWarn(Args...)(Args a, string file = __FILE__,
 string func = __PRETTY_FUNCTION__,
 ulong line = __LINE__)
 {
-    Console.DEFAULT.warn(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction);
+    Console.DEFAULT.warn(BigString(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction).toString);
 }
 
 
@@ -122,22 +109,11 @@ void loglnError(Args...)(Args a, string file = __FILE__,
 string func = __PRETTY_FUNCTION__,
 ulong line = __LINE__)
 {
-    Console.DEFAULT.error(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction);
+    Console.DEFAULT.error(BigString(a, "\n\t\t", file, ":", line, " at ", func._formatPrettyFunction).toString);
 }
 
-
-void loglnImpl(string s, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__){logln(s,f,fn,l);}
-void loglnInfoImpl(string s, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__){loglnInfo(s,f,fn,l);}
-void loglnWarnImpl(string s, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__){loglnWarn(s,f,fn,l);}
-void loglnErrorImpl(string s, string f = __FILE__, string fn = __PRETTY_FUNCTION__, ulong l = __LINE__){loglnError(s,f,fn,l);}
-void rawlogImpl(string str){Console.DEFAULT.log(str);}
-void rawwarnImpl(string str){Console.DEFAULT.warn(str);}
-void rawinfoImpl(string str){Console.DEFAULT.info(str);}
-void rawerrorImpl(string str){Console.DEFAULT.error(str);}
-void rawfatalImpl(string str){Console.DEFAULT.fatal(str);}
-
-void rawlog(Args... )(Args a){Console.DEFAULT.log(a);}
-void rawwarn(Args... )(Args a){Console.DEFAULT.warn(a);}
-void rawinfo(Args... )(Args a){Console.DEFAULT.info(a);}
-void rawerror(Args... )(Args a){Console.DEFAULT.error(a);}
-void rawfatal(Args... )(Args a){Console.DEFAULT.fatal(a);}
+void rawlog(string msg){Console.DEFAULT.log(msg);}
+void rawwarn(string msg){Console.DEFAULT.warn(msg);}
+void rawinfo(string msg){Console.DEFAULT.info(msg);}
+void rawerror(string msg){Console.DEFAULT.error(msg);}
+void rawfatal(string msg){Console.DEFAULT.fatal(msg);}

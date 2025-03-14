@@ -9,16 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.util.reflection;
-int asInt(alias enumMember)()
-{
-    alias T = typeof(enumMember);
-    foreach(i, mem; __traits(allMembers, T))
-    {
-        if(mem == enumMember.stringof)
-            return i;
-    }
-    ErrorHandler.assertLazyExit(0, "Member "~enumMember.stringof~" from type " ~ T.stringof~ " does not exist");
-}
 
 /**
 *   Used when wanting to represent any struct compatible with a static array.
@@ -39,13 +29,6 @@ bool isTypeArrayOf(Type, Array, int Count)()
             	count+= v.length;
   		return count == Count;
     }
-}
-
-bool isLiteral(alias variable)(string var = variable.stringof)
-{
-    assert(__ctfe);
-    import hip.util.string : isNumeric;
-    return (isNumeric(var) || (var[0] == '"' && var[$-1] == '"'));
 }
 
 template isDynamicArray(T)
@@ -159,37 +142,6 @@ template hasMethod(T, string method, Params...)
     enum hasMethod = __traits(hasMember, T, method) && is(getParams!(__traits(getMember, T, method)) == Params);
 }
 
-auto inverseLookup(alias lookupTable)()
-{
-    alias O = typeof(lookupTable.keys[0]);
-    alias I = typeof(lookupTable.values[0]);
-    O[I] output;
-    static foreach(k, v; lookupTable)
-        output[v] = k;
-    return output;
-}
-
-/** 
-*   Generates a function that executes a switch case from the associative array.
-*
-*   Pass true as the second parameter if reverse is desired.
-*/
-template aaToSwitch(alias aa, bool reverse = false)
-{
-    auto aaToSwitch(T)(T value)
-    {
-        switch(value)
-        {
-            static foreach(k, v; aa)
-                static if(reverse)
-                    case v: return k;
-                else
-                    case k: return v;                
-            default:
-                return typeof(return).init;
-        }
-    }
-}
 
 
 size_t enumLength(T)()

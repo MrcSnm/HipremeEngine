@@ -8,6 +8,7 @@ import hip.event.dispatcher;
 import hip.systems.game;
 import hip.math.vector;
 
+//TODO: Find a way to remove export from release
 export extern(System)
 {
     

@@ -65,17 +65,17 @@ struct TileProperty
 */
 struct TileLayerObject
 {
-    ushort gid;
-    uint height;
-    ushort id;
-    string name;
-    int rotation;
-    string type;
-    bool visible;
-    uint width;
     int x;
     int y;
+    uint width;
+    uint height;
+    ushort id;
+    ushort gid;
+    int rotation;
+    string name;
+    string type;
     TileProperty[string] properties;
+    bool visible;
 }
 
 /**

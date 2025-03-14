@@ -161,6 +161,7 @@ mixin template LoadAllAssets(string modules)
 }
 mixin template LoadReferencedAssets(string[] modules)
 {
+    //TODO: Improve that loadReferenced to a better
     void loadReferenced()
     {
         static foreach(modStr; modules)
@@ -170,47 +171,43 @@ mixin template LoadReferencedAssets(string[] modules)
             static foreach(moduleMemberStr; __traits(allMembers, theModule))
             {{
                 alias moduleMember = __traits(getMember, theModule, moduleMemberStr);
-                static if(!is(moduleMember == module) && is(moduleMember type))
+                static if(is(moduleMember type) && (is(type == class) || is(type == struct)))
                 {
-                    static if(is(type == class) || is(type == struct))
-                    {
-                        static foreach(classMemberStr; __traits(derivedMembers, type))
+                    static foreach(classMemberStr; __traits(derivedMembers, type))
+                    {{
+                        alias classMember = __traits(getMember, type, classMemberStr);
+                        alias assetUDA = GetAssetUDA!(__traits(getAttributes, classMember));
+                        // pragma(msg, assetUDA);
+                        static if(assetUDA.path !is null)
                         {{
-                            alias classMember = __traits(getMember, type, classMemberStr);
-                            alias assetUDA = GetAssetUDA!(__traits(getAttributes, classMember));
-                            // pragma(msg, assetUDA);
-                            static if(assetUDA.path !is null)
-                            {{
-                                import hip.util.reflection: isArray;
-                                static if(isArray!(typeof(classMember))) alias memberType = typeof(classMember.init[0]);
-                                else alias memberType = typeof(classMember);
+                            import hip.util.reflection: isArray;
+                            static if(isArray!(typeof(classMember))) alias memberType = typeof(classMember.init[0]);
+                            else alias memberType = typeof(classMember);
 
-                                IHipAssetLoadTask[] tasks = hip.api.data.commons.loadAsset!(memberType)(assetUDA.path, assetUDA.start, assetUDA.end);
-                                static if(!__traits(compiles, classMember.offsetof)) //Static 
+                            IHipAssetLoadTask[] tasks = hip.api.data.commons.loadAsset!(memberType)(assetUDA.path, assetUDA.start, assetUDA.end);
+                            memberType* members;
+                            static if(!__traits(compiles, classMember.offsetof)) //Static
+                            {
+                                static if(isArray!(typeof(classMember)))
                                 {
-                                    
-                                    void loadTaskInto(IHipAssetLoadTask task, ref memberType member)
-                                    {
-                                        static if(__traits(hasMember, assetUDA, "conversionFunction"))
-                                            task.into(assetUDA.conversionFunction, &member);
-                                        else static if(is(memberType == string))
-                                            task.into(&member);
-                                        else
-                                            task.into!(memberType)(&member);
-                                    }
-                                    static if(isArray!(typeof(classMember)))
-                                    {
-                                        size_t start = classMember.length;
-                                        classMember.length+= tasks.length;
-                                        foreach(i, task; tasks)
-                                            loadTaskInto(task, classMember[start+i]);
-                                    }
-                                    else
-                                        loadTaskInto(tasks[0], classMember);
+                                    size_t start = classMember.length;
+                                    classMember.length+= tasks.length;
+                                    members = &classMember[start];
                                 }
-                            }}
+                                else
+                                    members = &classMember;
+                                foreach(i, task; tasks)
+                                {
+                                    static if(__traits(hasMember, assetUDA, "conversionFunction"))
+                                        task.into(assetUDA.conversionFunction, &members[i]);
+                                    else static if(is(T == string))
+                                        task.into(&members[i]);
+                                    else
+                                        task.into!(memberType)(&members[i]);
+                                }
+                            }
                         }}
-                    }
+                    }}
                 }
             }}
         }}

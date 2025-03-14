@@ -165,6 +165,8 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	import hip.data.ini;
 	import hip.math.random;
 	import hip.util.time;
+	import backtraced;
+	backtraced_Register();
 	HipTime.initialize();
 	Random.initialize();
 	initEngine(true);

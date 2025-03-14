@@ -6,12 +6,15 @@ import hip.error.handler;
 import hip.util.data_structures;
 import hip.util.reflection;
 
+private enum HipMouseButtonCount = HipMouseButton.button2;
+static assert(HipMouseButton.invalid - HipMouseButtonCount ==  2); //any + invalid
+
 class HipMouse
 {
     Vector2[] positions;
     Vector2[] lastPositions;
     Vector3 scroll;
-    HipButtonMetadata[enumLength!HipMouseButton] metadatas;
+    HipButtonMetadata[HipMouseButtonCount] metadatas;
 
     this()
     {
@@ -19,7 +22,7 @@ class HipMouse
         lastPositions = new Vector2[](1); //Start it with at least 1
         positions[0] = Vector2(0,0);
         lastPositions[0] = Vector2(0,0);
-        foreach(i; 0..enumLength!HipMouseButton)
+        foreach(i; 0..HipMouseButtonCount)
             metadatas[i] = new HipButtonMetadata(cast(int)i);
     }
 
@@ -32,12 +35,9 @@ class HipMouse
     {
         if(btn == HipMouseButton.any)
         {
-            foreach(b; __traits(allMembers, HipMouseButton))
+            foreach(b; 0..metadatas.length)
             {
-                HipMouseButton mem = __traits(getMember, HipMouseButton, b);
-                if(mem >= HipMouseButton.any)
-                    return false;
-                if(metadatas[mem].isPressed)
+                if(metadatas[b].isPressed)
                     return true;
             }
             return false;
@@ -49,12 +49,9 @@ class HipMouse
     {
         if(btn == HipMouseButton.any)
         {
-            foreach(b; __traits(allMembers, HipMouseButton))
+            foreach(b; 0..metadatas.length)
             {
-                HipMouseButton mem = __traits(getMember, HipMouseButton, b);
-                if(mem >= HipMouseButton.any)
-                    return false;
-                if(metadatas[mem].isJustPressed)
+                if(metadatas[b].isJustPressed)
                     return true;
             }
             return false;
@@ -65,12 +62,9 @@ class HipMouse
     {
         if(btn == HipMouseButton.any)
         {
-            foreach(b; __traits(allMembers, HipMouseButton))
+            foreach(b; 0..metadatas.length)
             {
-                HipMouseButton mem = __traits(getMember, HipMouseButton, b);
-                if(mem >= HipMouseButton.any)
-                    return false;
-                if(metadatas[mem].isJustReleased)
+                if(metadatas[b].isJustReleased)
                     return true;
             }
             return false;
@@ -130,12 +124,9 @@ class HipMouse
     {
         if(btn == HipMouseButton.any)
         {
-            foreach(b; __traits(allMembers, HipMouseButton))
+            foreach(b; 0..metadatas.length)
             {
-                HipMouseButton mem = __traits(getMember, HipMouseButton, b);
-                if(mem >= HipMouseButton.any)
-                    return false;
-                if(metadatas[mem].clickCount == 2 && metadatas[mem]._isNewState)
+                if(metadatas[b].clickCount == 2 && metadatas[b]._isNewState)
                     return true;
             }
             return false;

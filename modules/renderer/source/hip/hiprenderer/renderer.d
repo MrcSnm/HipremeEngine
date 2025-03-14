@@ -74,12 +74,13 @@ class HipRenderer
         version(AppleOS) defaultRenderer = "Metal";
         if(!ini.configFound || !ini.noError)
         {
+            import hip.util.string;
             if(!ini.configFound)
                 logln("No renderer.conf found");
             if(!ini.noError)
             {
                 logln("Renderer.conf parsing error");
-                rawerror(ini.errors);
+                rawerror(BigString(ini.errors).toString);
             }
             hiplog("Defaulting renderer to "~defaultRenderer);
         }

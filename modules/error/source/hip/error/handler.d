@@ -122,13 +122,14 @@ public static class ErrorHandler
      */
     public static void showErrorMessage(string errorTitle, string errorMessage, bool isFatal = false)
     {
+        import hip.util.string;
         if(isFatal)
         {
-            rawfatal(errorTitle, "\t[[", errorMessage, "]]");
+            rawfatal(BigString(errorTitle, "\t[[", errorMessage, "]]").toString);
         }
         else
         {
-            rawerror(errorTitle, "\t[[", errorMessage, "]]");
+            rawerror(BigString(errorTitle, "\t[[", errorMessage, "]]").toString);
         }
         getError(errorTitle, errorMessage);
     }

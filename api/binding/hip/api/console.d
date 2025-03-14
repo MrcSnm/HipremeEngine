@@ -28,31 +28,7 @@ else version(ScriptAPI)
 	}
     void logg(Args...)(Args a, string file = __FILE__, size_t line = __LINE__)
 	{
-		import hip.util.conv;
-		string toLog;
-		foreach(arg; a)
-			toLog~= arg.to!string;
-		log(toLog ~ "\n\t at "~file~":"~to!string(line));
+		import hip.util.string;
+		log(BigString(a, "\n\t at ", file, ":", line).toString);
 	}
-}
-
-void logVars(Args...)(string file = __FILE__, size_t line = __LINE__)
-{
-	import hip.util.conv;
-	string toPrint;
-	bool isFirst = true;
-	static foreach(i; 0..Args.length)
-	{
-		if(!isFirst)
-			toPrint~=", ";
-		toPrint~= __traits(identifier, Args[i])~": "~Args[i].to!string;
-		isFirst = false;
-	}
-	version(DirectCall)
-	{
-		import hip.console.log:rawlog;
-		rawlog(toPrint ~ "\n\t at "~file~":"~to!string(line));
-	}
-	else version(ScriptAPI)
-		log(toPrint ~ "\n\t at "~file~":"~to!string(line));
 }

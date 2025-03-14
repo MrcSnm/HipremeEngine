@@ -1,8 +1,11 @@
 module backtraced;
 
 version(Windows) version = UseBacktraced;
-else version(Android) {}
 else version(linux) version = UseBacktraced;
+else version = UseNullBacktraced;
+
+
+void backtraced_Register() { }
 
 version(UseBacktraced):
 debug:

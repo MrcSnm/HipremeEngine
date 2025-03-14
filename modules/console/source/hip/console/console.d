@@ -10,9 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.console.console;
 import hip.config.opts;
-import hip.util.reflection : isLiteral;
-import hip.util.conv:to;
-import hip.util.string : toStringz, String;
+import hip.util.string : BigString, String;
 import hip.util.format;
 
 
@@ -63,7 +61,7 @@ enum WindowsConsoleColors
 class Console
 {
     string name;
-    String[] lines;
+    string[] lines;
 
     __gshared ushort idCount = 0;
     ushort id;
@@ -187,14 +185,14 @@ class Console
     }
     private this(string consoleName, ushort id)
     {
-        lines = new String[maxLines];
+        lines = new string[maxLines];
         name = consoleName;
         this.id = id;
     }
 
     this(string consoleName)
     {
-        lines = new String[maxLines];
+        lines = new string[maxLines];
         name = consoleName;
         id = idCount;
         idCount++;
@@ -210,26 +208,19 @@ class Console
             logCounter--;
         }
     }
-    private String formatArguments(Args...)(Args a)
+    void hipLog(string msg)
     {
-        String toLog = String(a);
-        // _formatLog(toLog);
-        return toLog;
-    }
-    
-    void hipLog(Args...)(Args a)
-    {
-        lines~= formatArguments(a);
-        _log(lines[$-1].toString);
+        lines~= msg;
+        _log(lines[$-1]);
     }
     
     
-    void log(Args...)(Args a) @nogc
+    void log(string msg) @nogc
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             //mtx.lock();
-            _log(formatArguments(a).toString);
+            _log(msg);
             //mtx.unlock();
         }
     }
@@ -238,42 +229,42 @@ class Console
     {
         _info(str);
     }
-    void info(Args...)(Args a)
+    void info(string msg)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             //mtx.lock();
-            _info("INFO: " ~ formatArguments(a).toString);
+            _info(BigString("INFO: ",  msg).toString);
             //mtx.unlock();
         }
     }
 
-    void warn(Args...)(Args a)
+    void warn(string msg)
     {
         static if(!HE_NO_LOG && !HE_ERR_ONLY)
         {
             //mtx.lock();
-            _warn("WARNING: " ~ formatArguments(a).toString);
+            _warn(BigString("WARNING: ",  msg).toString);
             //mtx.unlock();
         }
     }
     
-    void error(Args...)(Args a)
+    void error(string msg)
     {
         static if(!HE_NO_LOG)
         {
             //mtx.lock();
-            _err("ERROR: " ~ formatArguments(a).toString);
+            _err(BigString("ERROR: ",  msg).toString);
             //mtx.unlock();
         }
     }
   
-    void fatal(Args...)(Args a)
+    void fatal(string msg)
     {
         static if(!HE_NO_LOG)
         {
             //mtx.lock();
-            _fatal("FATAL ERROR: " ~formatArguments(a).toString);
+            _fatal(BigString("FATAL ERROR: ", msg).toString);
             //mtx.unlock();
         }
     }
@@ -299,23 +290,5 @@ class Console
             indentation = indentation[indentationSize..$];
         indentationCount--;
         //mtx.unlock();
-    }
-}
-
-void varPrint(A...)()
-{
-    foreach(i, arg; A)
-    {
-        static if(isLiteral!(A[i]))
-        {
-        	writeln(A[i]);
-        }
-        else
-        {
-            static if(is(typeof(A[i]) == string))
-                writeln(typeof(A[i]).stringof ~ " ", A[i].stringof, " = ", "\"", A[i], "\"");
-            else
-    		    writeln(typeof(A[i]).stringof ~ " ", A[i].stringof, " = ", A[i]);
-        }
     }
 }
