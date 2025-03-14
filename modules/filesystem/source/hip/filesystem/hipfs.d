@@ -106,10 +106,10 @@ abstract class HipFile : IHipFileItf
 private class HipFSPromise : IHipFSPromise
 {
     string filename;
-    bool finished = false;
-    ubyte[] data;
     FileReadResult delegate(in ubyte[] data)[] onSuccessList;
     void delegate(string err)[] onErrorList;
+    ubyte[] data;
+    bool finished = false;
     this(string filename){this.filename = filename;}
     IHipFSPromise addOnSuccess(FileReadResult delegate(in ubyte[] data) onSuccess)
     {

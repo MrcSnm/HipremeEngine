@@ -25,10 +25,10 @@ class Material
         this.shader = s;
     }
 
-    void setVertexVar(T)(string varName, T data){setVar(ShaderTypes.VERTEX, varName, data);}
-    void setFragmentVar(T)(string varName, T data){setVar(ShaderTypes.FRAGMENT, varName, data);}
+    void setVertexVar(T)(string varName, T data){setVar(ShaderTypes.vertex, varName, data);}
+    void setFragmentVar(T)(string varName, T data){setVar(ShaderTypes.fragment, varName, data);}
     alias setPixelVar = setFragmentVar;
-    void setGeometryVar(T)(string varName, T data){setVar(ShaderTypes.GEOMETRY, varName, data);}
+    void setGeometryVar(T)(string varName, T data){setVar(ShaderTypes.geometry, varName, data);}
 
 
 
@@ -69,13 +69,13 @@ class Material
     {
         switch(v.shaderType) with(ShaderTypes)
         {
-            case FRAGMENT:
+            case fragment:
                 mixin(getSetShaderVarCall("Fragment"));
                 break;
-            case VERTEX:
+            case vertex:
                 mixin(getSetShaderVarCall("Vertex"));
                 break;
-            case GEOMETRY:
+            case geometry:
             default:
                 break;
         }

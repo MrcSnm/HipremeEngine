@@ -241,6 +241,43 @@ private {
     }
 
 
+    // //getSDFFragment
+    // string getBitmapTextFragment()
+    // {
+    //     version(GLES20)
+    //     {
+    //         enum attr1 = q{varying};
+    //         enum outputPixelVar = q{};
+    //         enum outputAssignment = q{gl_FragColor};
+    //     }
+    //     else
+    //     {
+    //         enum attr1 = q{in};
+    //         enum outputPixelVar = q{out vec4 outPixelColor;};
+    //         enum outputAssignment = q{outPixelColor};
+    //     }
+
+    //     enum shaderSource = q{
+    //     %s vec2 inTexST;
+    //     %s
+
+    //     uniform sampler2D uTex;
+    //     // uniform vec4 bgColor;
+    //     uniform vec4 uColor;
+
+    //     float screenPxRange = 4.5;
+
+    //     void main() {
+    //         float sd = texture(uTex, inTexST).r;
+    //         float screenPxDistance = screenPxRange*(sd - 0.5);
+    //         float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
+    //         // color = mix(bgColor, fgColor, opacity);
+    //         %s = uColor * opacity;
+    //     }}.fastUnsafeCTFEFormat(attr1, outputPixelVar, outputAssignment);
+
+    //     return getBaseFragment~shaderSource;
+    // }
+
 
     string getDefaultVertex()
     {

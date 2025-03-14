@@ -36,7 +36,7 @@ class HipInputListener
         AutoRemove remove = AutoRemove.no
         )
     {
-        keyboardListeners~= HipButton(cast(ushort)key, type, action, remove);
+        keyboardListeners~= HipButton(cast(ushort)key, type, remove, action);
         
         return &keyboardListeners[$-1];
     }
@@ -47,7 +47,7 @@ class HipInputListener
         AutoRemove remove = AutoRemove.no
         )
     {
-        touchListeners~= HipButton(cast(ushort)btn, type, action, remove);
+        touchListeners~= HipButton(cast(ushort)btn, type, remove, action);
         return &touchListeners[$-1];
     }
 

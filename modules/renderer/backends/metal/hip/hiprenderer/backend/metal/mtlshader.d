@@ -88,7 +88,7 @@ class HipMTLShaderProgram : ShaderProgram
     {
         if(pipelineState !is null)
         {
-           pipelineState.release(); 
+           pipelineState.release();
         }
         NSError err;
         pipelineDescriptor.vertexDescriptor = descriptor;
@@ -149,7 +149,7 @@ class HipMTLShader : IShader
         MTLCompileOptions opts = MTLCompileOptions.alloc.initialize;
         ///Macros
         opts.preprocessorMacros = cast(NSDictionary)(["ARGS_TIER2": 0].ns);
-        
+
         p.library = device.newLibraryWithSource(shaderSource.ns, opts, &err);
 
         if(p.library is null || err !is null)
@@ -177,7 +177,7 @@ class HipMTLShader : IShader
         p.pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.BGRA8Unorm_sRGB;
         p.pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
         p.pipelineDescriptor.stencilAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
-        
+
         return true;
     }
 
@@ -247,7 +247,7 @@ class HipMTLShader : IShader
 
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
     {
-        
+
     }
 
     int getId(ref ShaderProgram prog, string name)
@@ -266,18 +266,18 @@ class HipMTLShader : IShader
     {
         MTLBuffer buffer = getNewMTLBuffer(layout);
         HipMTLShaderProgram s = cast(HipMTLShaderProgram)shaderProgram;
-        BufferedMTLBuffer* buffered; 
+        BufferedMTLBuffer* buffered;
         layout.setAdditionalData(buffered = new BufferedMTLBuffer([buffer], layout), true);
         final switch(layout.shaderType)
         {
-            case ShaderTypes.VERTEX:
+            case ShaderTypes.vertex:
                 s.uniformBufferVertex = buffered;
                 break;
-            case ShaderTypes.FRAGMENT:
+            case ShaderTypes.fragment:
                 s.uniformBufferFragment = buffered;
                 break;
-            case ShaderTypes.GEOMETRY:
-            case ShaderTypes.NONE:
+            case ShaderTypes.geometry:
+            case ShaderTypes.none:
                 break;
         }
     }
@@ -307,7 +307,7 @@ class HipMTLShader : IShader
             if(mtlTextures !is null)
             {
                 free(mtlTextures.ptr);
-                free(mtlSamplers.ptr);   
+                free(mtlSamplers.ptr);
             }
             mtlTextures = allocSlice!MTLTexture(textures.length);
             mtlSamplers = allocSlice!MTLSamplerState(textures.length);

@@ -11,16 +11,16 @@ Distributed under the CC BY-4.0 License.
 
 module hip.api.input.button;
 
-enum HipButtonType : ushort
+enum HipButtonType : ubyte
 {
-    down,
-    up
+    down = 0,
+    up = 1
 }
 
-enum AutoRemove
+enum AutoRemove : bool
 {
-    no,
-    yes
+    no = false,
+    yes = true
 }
 alias HipInputAction = void delegate(const(AHipButtonMetadata) meta);
 alias HipTouchMoveAction = void delegate(int x, int y);
@@ -33,8 +33,8 @@ struct HipButton
 {
     ushort id;
     HipButtonType type;
-    HipInputAction action;
     AutoRemove isAutoRemove = AutoRemove.no;
+    HipInputAction action;
 
     alias id this;
 }

@@ -27,7 +27,7 @@ public import hip.api.renderer.shaders.spritebatch;
 *   One shader is entirely internal, which you don't have any control, this is for actually being able
 *   to draw stuff on the screen.
 *
-*   The another one is a post processing shader, which the spritebatch doesn't uses by default. If 
+*   The another one is a post processing shader, which the spritebatch doesn't uses by default. If
 *   setPostProcessingShader()
 */
 class HipSpriteBatch : IHipBatch
@@ -81,20 +81,20 @@ class HipSpriteBatch : IHipBatch
         mesh.createVertexBuffer(cast(index_t)(maxQuads*HipSpriteVertex.quadCount), HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(cast(index_t)(maxQuads*6), HipBufferUsage.STATIC);
 
-        
+
 
         spriteBatchShader.useLayout.Cbuf;
         // spriteBatchShader.bind();
         // spriteBatchShader.sendVars();
         mesh.sendAttributes();
-        
+
 
         spriteBatchShader.useLayout.Cbuf;
         spriteBatchShader.bind();
         spriteBatchShader.sendVars();
 
-        uMVP = mesh.shader.get("Cbuf1.uMVP", ShaderTypes.VERTEX);
-        // uTex = mesh.shader.get("Cbuf.uTex", ShaderTypes.FRAGMENT);
+        uMVP = mesh.shader.get("Cbuf1.uMVP", ShaderTypes.vertex);
+        // uTex = mesh.shader.get("Cbuf.uTex", ShaderTypes.fragment);
 
         if(camera is null)
             camera = new HipOrthoCamera();
@@ -131,7 +131,7 @@ class HipSpriteBatch : IHipBatch
         HipSpriteVertex* v = cast(HipSpriteVertex*)vertices.ptr + start;
         memcpy(v, quad.ptr, HipSpriteVertex.sizeof * 4);
         setTID(v[0..4], slot);
-        
+
         quadsCount++;
     }
 
@@ -172,7 +172,7 @@ class HipSpriteBatch : IHipBatch
             countOfQuads-= quadsToDraw;
         }
     }
-    
+
     private int getNextTextureID(IHipTexture t)
     {
         for(int i = 0; i < usingTexturesCount; i++)
@@ -181,7 +181,7 @@ class HipSpriteBatch : IHipBatch
         if(usingTexturesCount < currentTextures.length)
         {
             currentTextures[usingTexturesCount] = t;
-            return usingTexturesCount++;            
+            return usingTexturesCount++;
         }
         return -1;
     }
@@ -336,7 +336,7 @@ class HipSpriteBatch : IHipBatch
         }
     }
 
-    
+
 
     void draw()
     {

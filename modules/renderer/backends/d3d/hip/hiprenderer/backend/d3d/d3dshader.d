@@ -90,7 +90,7 @@ package D3D11_BLEND getD3DBlendFunc(HipBlendFunction func)
 
         case  DST_COLOR: return D3D11_BLEND_DEST_COLOR;
         case  ONE_MINUS_DST_COLOR: return D3D11_BLEND_INV_DEST_COLOR;
-        
+
         case  SRC_ALPHA: return D3D11_BLEND_SRC_ALPHA;
         case  ONE_MINUS_SRC_ALPHA: return  D3D11_BLEND_INV_SRC_ALPHA;
 
@@ -99,7 +99,7 @@ package D3D11_BLEND getD3DBlendFunc(HipBlendFunction func)
 
         case  CONSTANT_COLOR: return D3D11_BLEND_SRC1_COLOR;
         case  ONE_MINUS_CONSTANT_COLOR: return D3D11_BLEND_INV_SRC1_COLOR;
-        
+
         case  CONSTANT_ALPHA: return D3D11_BLEND_SRC1_ALPHA;
         case  ONE_MINUS_CONSTANT_ALPHA: return D3D11_BLEND_INV_SRC1_ALPHA;
     }
@@ -148,6 +148,7 @@ class Hip_D3D11_ShaderImpl : IShader
         char* source = cast(char*)shaderSource.ptr;
 
         //No #includes
+        import hip.util.data_structures:staticArray;
 
         uint compile_flags = D3DCOMPILE_ENABLE_STRICTNESS;
         uint effects_flags = 0;
@@ -168,7 +169,7 @@ class Hip_D3D11_ShaderImpl : IShader
         const D3D_SHADER_MACRO[] defines =
         [
             cast(D3D_SHADER_MACRO)null, cast(D3D_SHADER_MACRO)null
-        ];
+        ].staticArray;
 
         HRESULT hr = D3DCompile(source, shaderSource.length+1, null,
         defines.ptr, null, "main",  shaderPrefix.ptr, compile_flags, effects_flags, &shader, &error);
@@ -302,16 +303,16 @@ class Hip_D3D11_ShaderImpl : IShader
 
             final switch(l.shaderType)
             {
-                case ShaderTypes.FRAGMENT:
+                case ShaderTypes.fragment:
                     p.pReflector.GetResourceBindingDescByName(l.nameStringz, &desc);
                     _hip_d3d_context.PSSetConstantBuffers(desc.BindPoint, 1, &data.buffer);
                     break;
-                case ShaderTypes.VERTEX:
+                case ShaderTypes.vertex:
                     p.vReflector.GetResourceBindingDescByName(l.nameStringz, &desc);
                     _hip_d3d_context.VSSetConstantBuffers(desc.BindPoint, 1, &data.buffer);
                     break;
-                case ShaderTypes.GEOMETRY:
-                case ShaderTypes.NONE:
+                case ShaderTypes.geometry:
+                case ShaderTypes.none:
                     break;
             }
         }
@@ -400,7 +401,7 @@ class Hip_D3D11_ShaderImpl : IShader
             vs.vs.Release();
         vs.vs = null;
     }
-    
+
     bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
     {
         return false;

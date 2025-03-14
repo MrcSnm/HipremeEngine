@@ -13,12 +13,12 @@ enum ShaderHint : uint
     GL_USE_BLOCK = 1<<0,
     GL_USE_STD_140 = 1<<1,
     D3D_USE_HLSL_4 = 1<<2,
-    /** 
+    /**
      * Meant for usage in uniform variables.
      * That means one Shader Variable may not be sent to the backend depending on its requirements.
      * An example for that is Array of Textures. In D3D11, it depends only on the resource being bound,
      * while on Metal and GL3, they are required to be inside a MTLBuffer or being sent as an Uniform.
-     */ 
+     */
     Blackbox = 1 << 3,
     MaxTextures = 1 << 4
 }
@@ -249,7 +249,7 @@ struct ShaderVar
     void dispose()
     {
         type = UniformType.none;
-        shaderType = ShaderTypes.NONE;
+        shaderType = ShaderTypes.none;
         singleSize = 0;
         if(isDynamicArrayReference)
         {
@@ -288,15 +288,11 @@ class ShaderVariablesLayout
     string name;
     ///char* representation of name
     const(char)* nameZeroEnded;
-    ShaderTypes shaderType;
     protected IShader owner;
 
     //Single block representation of variables content
     protected void* data;
     protected void* additionalData;
-    protected bool isAdditionalAllocated;
-    ///Can't unlock Layout
-    private bool isLocked;
 
     ///The hint are used for the Shader backend as a notifier
     public immutable int hint;
@@ -309,8 +305,11 @@ class ShaderVariablesLayout
         bool isLast
     ) packFunc;
 
-
+    ShaderTypes shaderType;
     bool isDirty = true;
+    protected bool isAdditionalAllocated;
+    ///Can't unlock Layout
+    private bool isLocked;
 
     /**
     *   Use the layout name for mentioning the uniform/cbuffer block name.
@@ -376,9 +375,9 @@ class ShaderVariablesLayout
     {
         enum attr = __traits(getAttributes, T);
         static if(is(typeof(attr[0]) == HipShaderVertexUniform))
-            enum shaderType = ShaderTypes.VERTEX;
+            enum shaderType = ShaderTypes.vertex;
         else static if(is(typeof(attr[0]) == HipShaderFragmentUniform))
-            enum shaderType = ShaderTypes.FRAGMENT;
+            enum shaderType = ShaderTypes.fragment;
         else static assert(false,
             "Type "~T.stringof~" doesn't have a HipShaderVertexUniform nor " ~
             "HipShaderFragmentUniform attached to it."

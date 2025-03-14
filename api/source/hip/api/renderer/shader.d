@@ -12,12 +12,12 @@ enum ShaderStatus
     UNKNOWN_ERROR
 }
 
-enum ShaderTypes
+enum ShaderTypes : ubyte
 {
-    VERTEX,
-    FRAGMENT,
-    GEOMETRY, //Unsupported yet
-    NONE 
+    vertex,
+    fragment,
+    geometry, //Unsupported yet
+    none
 }
 
 enum HipShaderPresets

@@ -107,7 +107,7 @@ public class Shader : IReloadable
      */
     public void setVertexVar(T)(string name, T val, bool validateData = false)
     {
-        ShaderVar* v = tryGetShaderVar(name, ShaderTypes.VERTEX);
+        ShaderVar* v = tryGetShaderVar(name, ShaderTypes.vertex);
         if(v != null)
         {
             v.set(val, validateData);
@@ -148,7 +148,7 @@ public class Shader : IReloadable
      */
     public void setFragmentVar(T)(string name, T val, bool validateData = false)
     {
-        ShaderVar* v = tryGetShaderVar(name, ShaderTypes.FRAGMENT);
+        ShaderVar* v = tryGetShaderVar(name, ShaderTypes.fragment);
         if(v != null)
         {
             if(v.isBlackboxed)
@@ -230,7 +230,7 @@ public class Shader : IReloadable
             import hip.util.conv:to;
             throw new Exception(
                 "Could not find variable named '"~name~"'.\n\tDefault Layout: ["~this.defaultLayout.name~
-                "].\n\tShader Path: "~ (type == ShaderTypes.FRAGMENT ? fragmentShaderPath : vertexShaderPath) ~
+                "].\n\tShader Path: "~ (type == ShaderTypes.fragment ? fragmentShaderPath : vertexShaderPath) ~
                 "\\tnExisting Variables in shader type "~type.to!string~":\n\t  "~getExistingVariableNames(type).join("\n\t  ")
             );
         }
