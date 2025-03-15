@@ -257,9 +257,11 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
     "-mtriple=armv7a-unknown-unknown " ~
     "--revert=dtorfields "~
     "-mcpu=cortex-a9 "~
-    "-O0 " ~
+    "-mattr=+neon,+neonfp,+thumb-mode "~
+    "-Os " ~
     "-fvisibility=hidden "~
     "-float-abi=hard "~
+    "--llvm-float-abi=hard "~
     "-gcc="~buildNormalizedPath(configs["vitaSdkPath"].str, "bin", "arm-vita-eabi-gcc")~" "~
     "--relocation-model=static "~
     "-d-version=CarelessAlocation "~
