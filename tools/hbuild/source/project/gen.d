@@ -8,12 +8,11 @@ import std.array:join,split,array;
 struct TemplateInfo
 {
 	string initMethod=q{
-		setFont(HipDefaultAssets.getDefaultFontWithSize(62));
 	},
 	update="",
 	render=q{
-		drawText("You can start using the D Scripting API Here!", 400, 300, HipColor.white,
-			HipTextAlign.CENTER,  HipTextAlign.CENTER
+		drawText("You can start using the D Scripting API Here!", 400, 300, HipColor.white, 2.0
+			HipTextAlign.center
 		);
 	},
 	dispose="";

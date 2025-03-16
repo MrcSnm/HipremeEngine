@@ -1,0 +1,93 @@
+{
+	"$schema": "https://raw.githubusercontent.com/Pure-D/code-d/master/json-validation/dub.schema.json",
+	"authors": ["HipremeEngine"],
+	"description" : "Hipreme Engine test scene",
+	"license": "proprietary",
+	"targetName" : "alignment",
+	"name" : "alignment",
+	"engineModules": [
+		"util",
+		"timer",
+		"tween",
+		"data",
+		"math",
+		"game2d"
+	],
+	"stringImportPaths": ["#PROJECT/ct_assets"],
+	"dflags-ldc": ["--disable-verify", "--oq"],
+	"plugins": {
+		"getmodules": "#HIPREME_ENGINE/tools/internal/plugins/getmodules"
+	},
+	"preBuildPlugins": {
+		"getmodules": ["#PROJECT/ct_assets/scriptmodules.txt"]
+	},
+	"configurations":
+	[
+		{
+			"name" : "script",
+			"targetType": "dynamicLibrary",
+			"dflags-ldc": ["-link-defaultlib-shared=true"],
+			"dependencies": {
+				"hipengine_api": {"path": "#HIPREME_ENGINE/api"}
+			},
+			"lflags-windows-ldc": [
+                "/WHOLEARCHIVE:hipengine_api_bindings",
+                "/WHOLEARCHIVE:hipengine_api_interfaces"
+            ],
+			"versions": ["ScriptAPI"],
+			"lflags-windows": ["/WX"]
+		},
+		{
+			"name": "release",
+			"targetType": "staticLibrary"
+		},
+		{
+			"name": "release-wasm",
+			"targetType": "executable",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {
+				"hipreme_engine": "wasm",
+				"game2d": "direct"
+			}
+		},
+		{
+			"name": "appleos",
+			"targetType": "staticLibrary",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {"hipreme_engine": "appleos", "game2d": "direct"}
+		},
+		{
+			"name": "ios",
+			"targetType": "staticLibrary",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {"hipreme_engine": "ios", "game2d": "direct"}
+		},
+		{
+			"name": "android",
+			"targetType": "dynamicLibrary",
+			"dependencies": { "hipreme_engine": {"path": "#HIPREME_ENGINE"} },
+			"subConfigurations": {"hipreme_engine": "android", "game2d": "direct"}
+		},
+		{
+			"name": "uwp",
+			"dflags-ldc": ["-link-defaultlib-shared=true"],
+			"targetType": "dynamicLibrary",
+			"dependencies": {"hipreme_engine": {"path": "#HIPREME_ENGINE"}},
+			"subConfigurations": {"hipreme_engine": "uwp", "game2d": "direct"}
+		},
+		{
+			"name": "psvita",
+			"targetType": "staticLibrary",
+			"subConfigurations": {"hipreme_engine": "psvita", "game2d": "direct"}
+		},
+		{
+			"name": "run",
+			"targetType": "dynamicLibrary",
+			"lflags-windows": [
+				"/WX"
+			],
+			"postGenerateCommands-windows": ["cd /d #HIPREME_ENGINE && redub -c script -- $PACKAGE_DIR"],
+			"postGenerateCommands-linux": ["cd #HIPREME_ENGINE && redub -c script -- $PACKAGE_DIR"]
+		}
+	]
+}

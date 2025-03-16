@@ -88,7 +88,7 @@ void getPositionFromAlignment(
                 if(bounds.height != 0)
                     newY = newY + (bounds.height/2) - height/2;
                 else
-                    newY+= height/2;
+                    newY-= height/2;
                 break;
             case bottom:
                 newY-= height;
@@ -129,22 +129,24 @@ int putTextVertices(
     int yoffset = 0;
     bool isFirstLine = true;
     int vI = 0;
-    int height = font.getTextHeight(text);
+    int height = cast(int)(font.getTextHeight(text) * scale);
+
     foreach(HipLineInfo lineInfo; font.wordWrapRange(text, wordWrap ? bounds.width : -1))
     {
         if(!isFirstLine)
         {
-            yoffset+= font.lineBreakHeight;
+            yoffset+= font.lineBreakHeight * scale;
         }
         isFirstLine = false;
         int xoffset = 0;
         int displayX = void, displayY = void;
-        int lineYOffset = yoffset;
-        if(align_ & HipTextAlign.top) lineYOffset-= lineInfo.minYOffset;
+        int lineYOffset = 0;
+        // if(align_ & HipTextAlign.top) lineYOffset = yoffset - cast(int)(lineInfo.minYOffset * scale);
+        lineYOffset =  -cast(int)(lineInfo.minYOffset * scale);
 
         getPositionFromAlignment(
             x, y,
-            lineInfo.width, lineInfo.height ? height : lineInfo.height,
+            cast(int)(lineInfo.width * scale), cast(int)(height ? height : lineInfo.height * scale),
             align_,
             displayX, displayY,
             bounds
@@ -159,15 +161,15 @@ int putTextVertices(
                 case ' ':
                     if(!shouldRenderSpace)
                     {
-                        xoffset+= font.spaceWidth;
+                        xoffset+= font.spaceWidth * scale;
                         break;
                     }
                     goto default;
                 default:
                     if(ch is null) continue;
                     ch.putCharacterQuad(
-                        cast(float)(xoffset+displayX+ch.xoffset*scale+kerning),
-                        cast(float)(yoffset*scale+displayY+lineYOffset + ch.yoffset*scale), depth,
+                        cast(float)(xoffset+displayX+(ch.xoffset+kerning) *scale),
+                        cast(float)(yoffset+displayY+lineYOffset + ch.yoffset*scale), depth,
                         vertices[vI..vI+4], scale
                     );
                     vI+= 4;

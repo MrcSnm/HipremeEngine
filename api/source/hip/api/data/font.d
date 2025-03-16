@@ -60,6 +60,8 @@ struct HipWordWrapRange
     {
         const(HipFontChar)* ch, next;
         int currWidth = 0, wordWidth = 0, wordStartIndex = currIndex;
+        uint spaceWidth = font.spaceWidth;
+
         for(int i = currIndex, it = 0; i < inputText.length; i++, it++)
         {
             if(ch is null)
@@ -86,11 +88,13 @@ struct HipWordWrapRange
             {
                 case '\n':
                     currLine.line = inputText[currIndex..i];
-                    currLine.width = currWidth;
+                    currLine.width = currWidth + wordWidth;
+                    wordWidth = 0;
+                    wordStartIndex = i+1;
                     currIndex = i+1;
                     return;
                 case ' ':
-                    if(font.spaceWidth + wordWidth + currWidth > maxWidth)
+                    if(spaceWidth + wordWidth + currWidth > maxWidth)
                     {
                         currLine.line = inputText[currIndex..i];
                         currLine.width = currWidth+wordWidth;
@@ -99,7 +103,7 @@ struct HipWordWrapRange
                     }
                     else
                     {
-                        currWidth+= wordWidth + font.spaceWidth;
+                        currWidth+= wordWidth + spaceWidth;
                         wordStartIndex = i;
                         wordWidth = 0;
                     }
@@ -208,10 +212,8 @@ interface IHipFont
      */
     final uint getTextHeight(in string text)
     {
-        uint lbHeight = lineBreakHeight;
-        uint ret = 0;
-        foreach(ch; text) if(ch == '\n') ret+= lbHeight;
-        return ret;
+        import hip.util.string;
+        return count(text, "\n") * lineBreakHeight;
     }
     HipWordWrapRange wordWrapRange(string text, int maxWidth) const @nogc;
     ref HipFontChar[dchar] characters() @nogc;

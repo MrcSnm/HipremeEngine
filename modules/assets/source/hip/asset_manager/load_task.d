@@ -14,11 +14,11 @@ final class HipAssetLoadTask : IHipAssetLoadTask
     HipAssetResult _result = HipAssetResult.cantLoad;
     HipAsset _asset = null;
     HipWorkerThread worker;
-    protected void[] partialData;
-
-
     private string fileRequesting;
     private size_t lineRequesting;
+
+    protected void[] partialData;
+
 
     this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
     {
