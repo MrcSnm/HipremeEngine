@@ -109,8 +109,7 @@ interface IHipRendererImpl
     size_t function(ShaderTypes shaderType, UniformType uniformType) getShaderVarMapper();
     public IHipFrameBuffer createFrameBuffer(int width, int height);
     public IHipVertexArrayImpl  createVertexArray();
-    public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage);
-    public IHipIndexBufferImpl  createIndexBuffer(index_t count, HipBufferUsage usage);
+    public IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type);
     public IHipTexture  createTexture();
     public int queryMaxSupportedPixelShaderTextures();
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);

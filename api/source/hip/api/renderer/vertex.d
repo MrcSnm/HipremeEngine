@@ -58,30 +58,36 @@ struct HipVertexAttributeInfo
     string name;
 }
 
-
-interface IHipVertexBufferImpl
+enum HipRendererBufferType : ubyte
 {
+    index,
+    vertex
+}
+
+interface IHipRendererBuffer
+{
+    HipRendererBufferType type() const;
     void bind();
     void unbind();
     void setData(const void[] data);
     void updateData(int offset, const void[] data);
 }
-interface IHipIndexBufferImpl
-{
-    void bind();
-    void unbind();
-    void setData(const index_t[] data);
-    void updateData(int offset, const index_t[] data);
-}
+
+
 interface IHipVertexArrayImpl
 {
-    void bind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo);
-    void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo);
-    void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride);
+    void bind(IHipRendererBuffer vbo, IHipRendererBuffer ebo);
+    void unbind(IHipRendererBuffer vbo, IHipRendererBuffer ebo);
     /**
+    * GL also needs to bind both the vertex and index buffer before creatting the input layout
     * Direct3D 11 needs vertex shader information for creating a VAO
     * Metal needs a ShaderProgram for cerating a pipelinestate
     */
-    void createInputLayout(VertexShader vertexShader, ShaderProgram shaderProgram);
+    void createInputLayout(
+        IHipRendererBuffer vbo, IHipRendererBuffer ebo,
+        HipVertexAttributeInfo[] info, uint stride,
+        VertexShader vertexShader,
+        ShaderProgram shaderProgram
+    );
 }
 
