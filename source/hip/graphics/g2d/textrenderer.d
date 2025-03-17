@@ -86,7 +86,6 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             const Viewport v = HipRenderer.getCurrentViewport();
             bmTextShader.uMVP = Matrix4.orthoLH(0, v.width, v.height, 0, 0.01, 100);
             bmTextShader.setDefaultBlock("FragVars");
-            bmTextShader.bind();
             bmTextShader.sendVars();
         }
         ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));

@@ -83,7 +83,7 @@ class HipVertexArrayObject
     */
     void createIndexBuffer(index_t count, HipBufferUsage usage)
     {
-        this.EBO = HipRenderer.createBuffer(count, usage, HipRendererBufferType.index);
+        this.EBO = HipRenderer.createBuffer(count*index_t.sizeof, usage, HipRendererBufferType.index);
     }
     /**
     * Creates and binds a vertex buffer.

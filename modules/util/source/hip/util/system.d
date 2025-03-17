@@ -195,7 +195,7 @@ void* dynamicLibraryLoad(string libName)
             ret = dlopen(null, RTLD_NOW);
         }
     }
-    else
+    else version(linux) //OSX gives an error with rt_loadLibrary not found.
     {
         import core.runtime;
         ret = Runtime.loadLibrary(libName);

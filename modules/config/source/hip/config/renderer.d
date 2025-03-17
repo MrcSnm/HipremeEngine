@@ -33,8 +33,10 @@ else enum GLMaxOneBoundTexture = false;
 /**
  * HipRenderer implements a delayed unbinding. That means it will only unbind a resource when trying to bind
  * another resource
+ * This works for both OpenGL and Direct3D 11.
+ * But does not work for metal, since the render pipeline state can't be reused between frames.
  */
-enum UseDelayedUnbinding = true;
+enum UseDelayedUnbinding = !HasMetal;
 
 /**
  * This can provide a reduced memory usage for sprites which can also be a big win for other platforms. You may increase that amount but can't surpass index_t.max / 4

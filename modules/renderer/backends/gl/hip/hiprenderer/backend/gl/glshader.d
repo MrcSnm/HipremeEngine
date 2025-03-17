@@ -276,6 +276,7 @@ class Hip_GL_ShaderImpl : IShader
 
     void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
     {
+        bind(prog);
         foreach(ShaderVariablesLayout l; layouts)
         {
             if(!l.isDirty)

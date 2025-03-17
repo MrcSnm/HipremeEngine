@@ -223,6 +223,7 @@ class HipMTLShader : IShader
     void bind(ShaderProgram program)
     {
         HipMTLShaderProgram mtlShader = cast(HipMTLShaderProgram)program;
+        assert(mtlShader.pipelineState !is null);
         if(mtlShader.pipelineState !is null)
         {
             mtlRenderer.getEncoder.setRenderPipelineState(mtlShader.pipelineState);
