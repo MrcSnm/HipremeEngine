@@ -52,7 +52,11 @@ struct Terminal
 	}
 	void flush()
 	{
-		if(arsdTerminal) arsdTerminal.flush();
+		if(arsdTerminal)
+		{
+			arsdTerminal.flush();
+			arsdTerminal.updateCursorPosition();
+		}
 	}
 
 	int wait(Pid pid)
@@ -112,6 +116,7 @@ struct TerminalColors
 	~this()
 	{
 		_t.color(Color.DEFAULT, Color.DEFAULT);
+		_t.flush();
 	}
 }
 
@@ -1029,6 +1034,7 @@ int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, strin
 	{
 		import tools.copylinkerfiles;
 		string[] linkerFiles;
+		t.flush;
 		timed(t, "Copying Linker Files ",
 		{
 			proj.getLinkerFiles(linkerFiles);
