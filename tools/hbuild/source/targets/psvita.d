@@ -254,14 +254,12 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
     "-I="~configs["hipremeEnginePath"].str~"/dependencies/runtime/druntime/source "~
     "-d-version=PSVita " ~
     "-d-version=PSV " ~
-    "-mtriple=armv7a-unknown-unknown " ~
     "--revert=dtorfields "~
     "-mcpu=cortex-a9 "~
     "-mattr=+neon,+neonfp,+thumb-mode "~
-    "-Os " ~
+    // "-Os " ~
     "-fvisibility=hidden "~
     "-float-abi=hard "~
-    "--llvm-float-abi=hard "~
     "-gcc="~buildNormalizedPath(configs["vitaSdkPath"].str, "bin", "arm-vita-eabi-gcc")~" "~
     "--relocation-model=static "~
     "-d-version=CarelessAlocation "~
@@ -286,7 +284,7 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
     with(WorkingDir(configs["gamePath"].str))
     {
         ProjectDetails d;
-        if(waitRedub(t, DubArguments().command("build").configuration("psvita").arch("armv7a-unknown-unknown").opts(cOpts), d,
+        if(waitRedub(t, DubArguments().command("build").configuration("psvita").arch("armv7a-unknown-unknown-eabi").opts(cOpts), d,
         getHipPath("build", "vita", "hipreme_engine", "libs")) != 0)
         {
             t.writelnError("Could not build for PSVita.");

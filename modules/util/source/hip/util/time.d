@@ -58,7 +58,7 @@ ulong getSystemTime() nothrow
     }
     else version(PSVita)
     {
-        return get_psv_time();
+        return get_psv_time() * 1_000; //MicroSeconds to Nano
     }
     else
     {
