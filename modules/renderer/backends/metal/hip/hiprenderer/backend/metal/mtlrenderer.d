@@ -187,9 +187,9 @@ class HipMTLRenderer : IHipRendererImpl
         return new HipMTLTexture(device,cmdQueue, this);
     }
 
-    public IHipVertexBufferImpl createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type)
+    public IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type)
     {
-        return new HipMTLVertexBuffer(device, cmdQueue, size, usage, type);
+        return new HipMTLBuffer(device, cmdQueue, size, usage, type);
     }
 
     package pragma(inline, true) MTLRenderCommandEncoder getEncoder() { return cmdEncoder; }

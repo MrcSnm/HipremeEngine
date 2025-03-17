@@ -852,7 +852,8 @@ bool openSourceCodeEditor(string projectPath)
 	if(!sourceEditor.length)
 		return false;
 
-	return executeShell(sourceEditor.escapeShellCommand~" "~projectPath.escapeShellCommand).status == 0;
+	spawnShell(sourceEditor.escapeShellCommand~" "~projectPath.escapeShellCommand);
+	return true;
 }
 
 
@@ -1089,7 +1090,10 @@ bool waitOperations(immutable bool delegate()[] operations)
 void putResourcesIn(ref Terminal t, string where)
 {
 	import tools.copyresources;
-	copyResources(t, buildNormalizedPath(configs["gamePath"].str, "assets"), where, false);
+	string resources = buildNormalizedPath(configs["gamePath"].str, "assets");
+	if(!std.file.exists(resources))
+		std.file.mkdirRecurse(resources);
+	copyResources(t, resources, where, false);
 }
 
 void executeGameRelease(ref Terminal t)

@@ -133,6 +133,7 @@
 		EBD5D7F02AFA152500494F59 /* libmetal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmetal.a; path = HipremeEngine_D/libs/libmetal.a; sourceTree = "<group>"; };
 		EBD5D8112AFA503F00494F59 /* InputView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InputView.m; sourceTree = "<group>"; };
 		EBD5D8122AFA503F00494F59 /* InputView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InputView.h; sourceTree = "<group>"; };
+		EBDD42822D887728002D59A8 /* HipremeEngine-macOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "HipremeEngine-macOS-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -178,6 +179,7 @@
 		3156441729A1546600559889 = {
 			isa = PBXGroup;
 			children = (
+				EBDD42822D887728002D59A8 /* HipremeEngine-macOS-Info.plist */,
 				EB8B15322B03D0CF001329EC /* modules */,
 				3130368729D670A400895DD5 /* assets */,
 				315C6FC529B55CF8007F19C0 /* D */,
@@ -671,20 +673,15 @@
 					"$(inherited)",
 					"-lBindBC_Loader",
 					"-lBindBC_OpenAL",
-					"-larsd-official_bmp",
-					"-larsd-official_color_base",
+					"-lalignment",
 					"-larsd-official_core",
-					"-larsd-official_image_files",
-					"-larsd-official_imageresize",
-					"-larsd-official_jpeg",
-					"-larsd-official_png",
-					"-larsd-official_svg",
 					"-larsd-official_ttf",
 					"-lassets",
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
 					"-lbind",
+					"-lconcurrency",
 					"-lconfig",
 					"-lconsole",
 					"-ldata",
@@ -693,18 +690,25 @@
 					"-lfilesystem",
 					"-lfont",
 					"-lgame2d",
-					"-lhipengine_api",
+					"-lgamut",
+					"-lhipengine_api_bindings",
+					"-lhipengine_api_interfaces",
+					"-lhipengine_api_network",
+					"-lhipreme_engine",
 					"-limage",
-					"-lmatch3",
+					"-lintel-intrinsics",
 					"-lmath",
 					"-lmetal",
+					"-lnet",
 					"-lobjc_meta",
 					"-lrenderer",
+					"-lrenderer_core",
+					"-lrenderer_metal",
 					"-ltimer",
 					"-ltween",
 					"-lutil",
+					"-lwasm",
 					"-lwindowing",
-					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -742,20 +746,15 @@
 					"$(inherited)",
 					"-lBindBC_Loader",
 					"-lBindBC_OpenAL",
-					"-larsd-official_bmp",
-					"-larsd-official_color_base",
+					"-lalignment",
 					"-larsd-official_core",
-					"-larsd-official_image_files",
-					"-larsd-official_imageresize",
-					"-larsd-official_jpeg",
-					"-larsd-official_png",
-					"-larsd-official_svg",
 					"-larsd-official_ttf",
 					"-lassets",
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
 					"-lbind",
+					"-lconcurrency",
 					"-lconfig",
 					"-lconsole",
 					"-ldata",
@@ -764,18 +763,25 @@
 					"-lfilesystem",
 					"-lfont",
 					"-lgame2d",
-					"-lhipengine_api",
+					"-lgamut",
+					"-lhipengine_api_bindings",
+					"-lhipengine_api_interfaces",
+					"-lhipengine_api_network",
+					"-lhipreme_engine",
 					"-limage",
-					"-lmatch3",
+					"-lintel-intrinsics",
 					"-lmath",
 					"-lmetal",
+					"-lnet",
 					"-lobjc_meta",
 					"-lrenderer",
+					"-lrenderer_core",
+					"-lrenderer_metal",
 					"-ltimer",
 					"-ltween",
 					"-lutil",
+					"-lwasm",
 					"-lwindowing",
-					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -808,20 +814,15 @@
 					"$(inherited)",
 					"-lBindBC_Loader",
 					"-lBindBC_OpenAL",
-					"-larsd-official_bmp",
-					"-larsd-official_color_base",
+					"-lalignment",
 					"-larsd-official_core",
-					"-larsd-official_image_files",
-					"-larsd-official_imageresize",
-					"-larsd-official_jpeg",
-					"-larsd-official_png",
-					"-larsd-official_svg",
 					"-larsd-official_ttf",
 					"-lassets",
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
 					"-lbind",
+					"-lconcurrency",
 					"-lconfig",
 					"-lconsole",
 					"-ldata",
@@ -830,18 +831,25 @@
 					"-lfilesystem",
 					"-lfont",
 					"-lgame2d",
-					"-lhipengine_api",
+					"-lgamut",
+					"-lhipengine_api_bindings",
+					"-lhipengine_api_interfaces",
+					"-lhipengine_api_network",
+					"-lhipreme_engine",
 					"-limage",
-					"-lmatch3",
+					"-lintel-intrinsics",
 					"-lmath",
 					"-lmetal",
+					"-lnet",
 					"-lobjc_meta",
 					"-lrenderer",
+					"-lrenderer_core",
+					"-lrenderer_metal",
 					"-ltimer",
 					"-ltween",
 					"-lutil",
+					"-lwasm",
 					"-lwindowing",
-					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -873,20 +881,15 @@
 					"$(inherited)",
 					"-lBindBC_Loader",
 					"-lBindBC_OpenAL",
-					"-larsd-official_bmp",
-					"-larsd-official_color_base",
+					"-lalignment",
 					"-larsd-official_core",
-					"-larsd-official_image_files",
-					"-larsd-official_imageresize",
-					"-larsd-official_jpeg",
-					"-larsd-official_png",
-					"-larsd-official_svg",
 					"-larsd-official_ttf",
 					"-lassets",
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
 					"-lbind",
+					"-lconcurrency",
 					"-lconfig",
 					"-lconsole",
 					"-ldata",
@@ -895,18 +898,25 @@
 					"-lfilesystem",
 					"-lfont",
 					"-lgame2d",
-					"-lhipengine_api",
+					"-lgamut",
+					"-lhipengine_api_bindings",
+					"-lhipengine_api_interfaces",
+					"-lhipengine_api_network",
+					"-lhipreme_engine",
 					"-limage",
-					"-lmatch3",
+					"-lintel-intrinsics",
 					"-lmath",
 					"-lmetal",
+					"-lnet",
 					"-lobjc_meta",
 					"-lrenderer",
+					"-lrenderer_core",
+					"-lrenderer_metal",
 					"-ltimer",
 					"-ltween",
 					"-lutil",
+					"-lwasm",
 					"-lwindowing",
-					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -923,12 +933,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "HipremeEngine macOS/HipremeEngine_macOS.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "HipremeEngine-macOS-Info.plist";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -943,20 +955,15 @@
 					"$(inherited)",
 					"-lBindBC_Loader",
 					"-lBindBC_OpenAL",
-					"-larsd-official_bmp",
-					"-larsd-official_color_base",
+					"-lalignment",
 					"-larsd-official_core",
-					"-larsd-official_image_files",
-					"-larsd-official_imageresize",
-					"-larsd-official_jpeg",
-					"-larsd-official_png",
-					"-larsd-official_svg",
 					"-larsd-official_ttf",
 					"-lassets",
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
 					"-lbind",
+					"-lconcurrency",
 					"-lconfig",
 					"-lconsole",
 					"-ldata",
@@ -965,21 +972,29 @@
 					"-lfilesystem",
 					"-lfont",
 					"-lgame2d",
-					"-lhipengine_api",
+					"-lgamut",
+					"-lhipengine_api_bindings",
+					"-lhipengine_api_interfaces",
+					"-lhipengine_api_network",
+					"-lhipreme_engine",
 					"-limage",
-					"-lmatch3",
+					"-lintel-intrinsics",
 					"-lmath",
 					"-lmetal",
+					"-lnet",
 					"-lobjc_meta",
 					"-lrenderer",
+					"-lrenderer_core",
+					"-lrenderer_metal",
 					"-ltimer",
 					"-ltween",
 					"-lutil",
+					"-lwasm",
 					"-lwindowing",
-					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
@@ -990,12 +1005,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "HipremeEngine macOS/HipremeEngine_macOS.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "HipremeEngine-macOS-Info.plist";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -1010,20 +1027,15 @@
 					"$(inherited)",
 					"-lBindBC_Loader",
 					"-lBindBC_OpenAL",
-					"-larsd-official_bmp",
-					"-larsd-official_color_base",
+					"-lalignment",
 					"-larsd-official_core",
-					"-larsd-official_image_files",
-					"-larsd-official_imageresize",
-					"-larsd-official_jpeg",
-					"-larsd-official_png",
-					"-larsd-official_svg",
 					"-larsd-official_ttf",
 					"-lassets",
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
 					"-lbind",
+					"-lconcurrency",
 					"-lconfig",
 					"-lconsole",
 					"-ldata",
@@ -1032,21 +1044,29 @@
 					"-lfilesystem",
 					"-lfont",
 					"-lgame2d",
-					"-lhipengine_api",
+					"-lgamut",
+					"-lhipengine_api_bindings",
+					"-lhipengine_api_interfaces",
+					"-lhipengine_api_network",
+					"-lhipreme_engine",
 					"-limage",
-					"-lmatch3",
+					"-lintel-intrinsics",
 					"-lmath",
 					"-lmetal",
+					"-lnet",
 					"-lobjc_meta",
 					"-lrenderer",
+					"-lrenderer_core",
+					"-lrenderer_metal",
 					"-ltimer",
 					"-ltween",
 					"-lutil",
+					"-lwasm",
 					"-lwindowing",
-					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};

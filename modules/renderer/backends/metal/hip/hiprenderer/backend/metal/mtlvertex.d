@@ -43,7 +43,7 @@ final class HipMTLBuffer : IHipRendererBuffer
     HipRendererBufferType type() const { return _type; }
     void bind()
     {
-        if(type == HipRendererType.index)
+        if(type == HipRendererBufferType.index)
             boundIndexBuffer = buffer;
     }
     void unbind()
@@ -137,7 +137,7 @@ final class HipMTLVertexArray : IHipVertexArrayImpl
         descriptor.layouts[1].stepRate = 1;
     }
 
-    void bind(HipMTLBuffer vbo, HipMTLBuffer ebo)
+    void bind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
     {
         if(vbo is null || ebo is null)
             return;
@@ -148,7 +148,7 @@ final class HipMTLVertexArray : IHipVertexArrayImpl
         mtlRenderer.getEncoder.setVertexBuffer(vBuffer.buffer, 0, 1);
     }
 
-    void unbind(HipMTLBuffer vbo, HipMTLBuffer ebo)
+    void unbind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
     {
         mtlRenderer.getEncoder.setVertexBuffer(null, 0, 1);
         vbo.unbind();
@@ -163,7 +163,7 @@ final class HipMTLVertexArray : IHipVertexArrayImpl
      *  Buffer 1 is for vertex attributes
      */
     void createInputLayout(
-        HipMTLBuffer, HipMTLBuffer,
+        IHipRendererBuffer, IHipRendererBuffer,
         HipVertexAttributeInfo[] attInfos, uint stride,
         VertexShader vertexShader, ShaderProgram shaderProgram
     )

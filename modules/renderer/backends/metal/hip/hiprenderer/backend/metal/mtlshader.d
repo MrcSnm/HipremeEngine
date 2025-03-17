@@ -86,10 +86,7 @@ class HipMTLShaderProgram : ShaderProgram
 
     void createInputLayout(MTLDevice device, MTLVertexDescriptor descriptor)
     {
-        if(pipelineState !is null)
-        {
-           pipelineState.release();
-        }
+        assert(pipelineState is null, "Pipeline State was already created.");
         NSError err;
         pipelineDescriptor.vertexDescriptor = descriptor;
         pipelineState = device.newRenderPipelineStateWithDescriptor(pipelineDescriptor, &err);
