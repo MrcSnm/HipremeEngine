@@ -198,15 +198,10 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         return new Hip_GL3_Texture();
     }
-    public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage)
+    public IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type)
     {
-        return new Hip_GL3_VertexBufferObject(size, usage);
+        return new Hip_GL3_Buffer(size, usage, type);
     }
-    public IHipIndexBufferImpl createIndexBuffer(index_t count, HipBufferUsage usage)
-    {
-        return new Hip_GL3_IndexBufferObject(count, usage);
-    }
-
 
     public void setViewport(Viewport v)
     {

@@ -23,74 +23,33 @@ MTLResourceOptions mtlOptions(HipBufferUsage usage)
 
 
 __gshared MTLBuffer boundIndexBuffer;
-class HipMTLIndexBuffer : IHipIndexBufferImpl
-{
-    MTLBuffer buffer;
-    MTLResourceOptions options;
-    MTLCommandQueue cmdQueue;
-    MTLDevice device;
-
-    this(MTLDevice device, MTLCommandQueue cmdQueue, size_t length, HipBufferUsage usage)
-    {
-        this.device = device;
-        this.cmdQueue = cmdQueue;
-        options = usage.mtlOptions;
-        buffer = device.newBuffer(length*index_t.sizeof, options);
-        buffer.retain();
-    }
-    void bind()
-    {
-        boundIndexBuffer = buffer;
-    }
-
-    void unbind()
-    {
-        if(boundIndexBuffer is buffer) boundIndexBuffer = null;
-    }
-
-    void setData(const index_t[] data)
-    {
-        if(options == MTLResourceOptions.StorageModePrivate)
-        {
-            MTLBuffer temp = device.newBuffer(data.ptr, data.length*index_t.sizeof, MTLResourceOptions.StorageModeShared);
-            MTLCommandBuffer cmdBuffer = cmdQueue.defaultCommandBuffer();
-            MTLBlitCommandEncoder cmdEncoder = cmdBuffer.blitCommandEncoder;
-            cmdEncoder.copyFromBuffer(temp, 0, buffer, 0, data.length*index_t.sizeof);
-            cmdEncoder.endEncoding();
-            cmdBuffer.commit();
-            cmdBuffer.waitUntilCompleted();
-        }
-        else
-        {
-            if(buffer) buffer.release();
-            buffer = device.newBuffer(data.ptr, data.length*index_t.sizeof, options);
-            buffer.retain();
-        }
-    }
-
-    void updateData(int offset, const index_t[] data)
-    {
-        buffer.contents[offset..offset+data.length*index_t.sizeof] = cast(void[])(data[]);
-    }
-}
-
-class HipMTLVertexBuffer : IHipVertexBufferImpl
+final class HipMTLBuffer : IHipRendererBuffer
 {
     MTLBuffer buffer;
     MTLCommandQueue cmdQueue;
     MTLResourceOptions options;
     MTLDevice device;
+    HipRendererBufferType _type;
 
-    this(MTLDevice device, MTLCommandQueue cmdQueue, size_t size, HipBufferUsage usage)
+    this(MTLDevice device, MTLCommandQueue cmdQueue, size_t size, HipBufferUsage usage, HipRendererBufferType type)
     {
         this.device = device;
         this.cmdQueue = cmdQueue;
         options = usage.mtlOptions;
         buffer = device.newBuffer(size, options);
         buffer.retain();
+        _type = type;
     }
-    void bind(){}
-    void unbind(){}
+    HipRendererBufferType type() const { return _type; }
+    void bind()
+    {
+        if(type == HipRendererType.index)
+            boundIndexBuffer = buffer;
+    }
+    void unbind()
+    {
+        if(type == HipRendererBufferType.index && boundIndexBuffer is buffer) boundIndexBuffer = null;
+    }
     void setData(const void[] data)
     {
         if(options == MTLResourceOptions.StorageModePrivate)
@@ -160,11 +119,11 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeInfo i)
     assert(false, "Unknown format");
 }
 
-class HipMTLVertexArray : IHipVertexArrayImpl
+final class HipMTLVertexArray : IHipVertexArrayImpl
 {
     MTLVertexDescriptor descriptor;
-    HipMTLVertexBuffer vBuffer;
-    HipMTLIndexBuffer iBuffer;
+    HipMTLBuffer vBuffer;
+    HipMTLBuffer iBuffer;
 
     HipMTLRenderer mtlRenderer;
     MTLDevice device;
@@ -178,18 +137,18 @@ class HipMTLVertexArray : IHipVertexArrayImpl
         descriptor.layouts[1].stepRate = 1;
     }
 
-    void bind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
+    void bind(HipMTLBuffer vbo, HipMTLBuffer ebo)
     {
         if(vbo is null || ebo is null)
             return;
-        vBuffer = cast(HipMTLVertexBuffer)vbo;
-        iBuffer = cast(HipMTLIndexBuffer)ebo;
+        vBuffer = cast(HipMTLBuffer)vbo;
+        iBuffer = cast(HipMTLBuffer)ebo;
         vbo.bind();
         ebo.bind();
         mtlRenderer.getEncoder.setVertexBuffer(vBuffer.buffer, 0, 1);
     }
 
-    void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
+    void unbind(HipMTLBuffer vbo, HipMTLBuffer ebo)
     {
         mtlRenderer.getEncoder.setVertexBuffer(null, 0, 1);
         vbo.unbind();
@@ -203,17 +162,21 @@ class HipMTLVertexArray : IHipVertexArrayImpl
      *  Buffer 0 is for uniforms
      *  Buffer 1 is for vertex attributes
      */
-    void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride)
+    void createInputLayout(
+        HipMTLBuffer, HipMTLBuffer,
+        HipVertexAttributeInfo[] attInfos, uint stride,
+        VertexShader vertexShader, ShaderProgram shaderProgram
+    )
     {
         descriptor.layouts[1].stride = stride;
-        MTLVertexAttributeDescriptor attribute = descriptor.attributes[info.index];
-        attribute.format = mtlVertexFormatFromAttributeInfo(info);
-        attribute.offset = info.offset;
-        attribute.bufferIndex = 1;
-    }
+        foreach(info; attInfos)
+        {
+            MTLVertexAttributeDescriptor attribute = descriptor.attributes[info.index];
+            attribute.format = mtlVertexFormatFromAttributeInfo(info);
+            attribute.offset = info.offset;
+            attribute.bufferIndex = 1;
+        }
 
-    void createInputLayout(VertexShader vertexShader, ShaderProgram shaderProgram)
-    {
         HipMTLShaderProgram shader = (cast(HipMTLShaderProgram)shaderProgram);
         shader.createInputLayout(device, descriptor);
     }

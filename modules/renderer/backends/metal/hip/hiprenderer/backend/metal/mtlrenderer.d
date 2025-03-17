@@ -187,17 +187,12 @@ class HipMTLRenderer : IHipRendererImpl
         return new HipMTLTexture(device,cmdQueue, this);
     }
 
-    public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage)
+    public IHipVertexBufferImpl createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type)
     {
-        return new HipMTLVertexBuffer(device, cmdQueue, size, usage);
+        return new HipMTLVertexBuffer(device, cmdQueue, size, usage, type);
     }
 
     package pragma(inline, true) MTLRenderCommandEncoder getEncoder() { return cmdEncoder; }
-
-    public IHipIndexBufferImpl createIndexBuffer(index_t count, HipBufferUsage usage)
-    {
-        return new HipMTLIndexBuffer(device, cmdQueue, count, usage);
-    }
 
     public int queryMaxSupportedPixelShaderTextures()
     {

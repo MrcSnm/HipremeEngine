@@ -310,7 +310,14 @@ string[] getProjectsAvailable()
 	import std.algorithm;
 	if(!("projectsAvailable" in configs))
 		return [];
-	return (configs["projectsAvailable"].array.map!((JSONValue v) => v.str)).array;
+
+	string[] existing = array(configs["projectsAvailable"].array.map!(v => v.str).filter!(v => std.file.exists(v)));
+	if(existing.length != configs["projectsAvailable"].array.length)
+	{
+		configs["projectsAvailable"] = JSONValue(existing);
+		updateConfigFile();
+	}
+	return existing;
 }
 
 string getValidPath(ref Terminal t, string pathRequired)

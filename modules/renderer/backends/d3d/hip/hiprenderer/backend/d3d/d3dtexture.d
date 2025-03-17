@@ -24,7 +24,7 @@ import hip.error.handler;
 private __gshared ID3D11ShaderResourceView nullSRV = null;
 private __gshared ID3D11SamplerState nullSamplerState = null;
 
-class Hip_D3D11_Texture : IHipTexture
+final class Hip_D3D11_Texture : IHipTexture
 {
     ID3D11Texture2D texture;
     ID3D11ShaderResourceView resource;

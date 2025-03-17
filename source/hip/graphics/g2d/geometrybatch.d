@@ -81,7 +81,6 @@ class GeometryBatch : IHipBatch
         //Initialize the mesh with 0
         mesh.createVertexBuffer(verticesCount, HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(indicesCount, HipBufferUsage.DYNAMIC);
-        mesh.vao.bind();
         mesh.setIndices(indices);
         mesh.setVertices(vertices);
         mesh.sendAttributes();

@@ -39,7 +39,7 @@ MTLSamplerAddressMode fromHipTextureWrapMode(TextureWrapMode m)
     }
 }
 
-class HipMTLTexture : IHipTexture
+final class HipMTLTexture : IHipTexture
 {
     MTLTextureDescriptor desc;
     MTLTexture texture;

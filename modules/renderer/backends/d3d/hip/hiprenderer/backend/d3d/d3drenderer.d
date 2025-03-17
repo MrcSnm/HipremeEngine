@@ -56,14 +56,10 @@ ID3D11RenderTargetView _hip_d3d_mainRenderTarget = null;
 private __gshared bool errorCheckEnabled = true;
 
 
-void d3dCall(HRESULT delegate() dg, string file = __FILE__, size_t line = __LINE__)
+void d3dCall(T)(scope lazy T dg, string file = __FILE__, size_t line = __LINE__)
 {
-    auto res = dg();
-    if(FAILED(res))
-    {
-        // getWindowsErrorMessage(hr);
-        HipRenderer.exitOnError(file, line);
-    }
+    dg;
+    HipRenderer.exitOnError(file, line);
 }
 
 class Hip_D3D11_Renderer : IHipRendererImpl
@@ -336,10 +332,8 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         desc.CullMode = D3D11_CULL_NONE;
         ID3D11RasterizerState state;
 
-        if(FAILED(_hip_d3d_device.CreateRasterizerState(&desc, &state)))
-            HipRenderer.exitOnError();
-
-        _hip_d3d_context.RSSetState(state);
+        d3dCall(_hip_d3d_device.CreateRasterizerState(&desc, &state));
+        d3dCall(_hip_d3d_context.RSSetState(state));
     }
     public final bool isRowMajor(){return false;}
     void setErrorCheckingEnabled(bool enable = true)
@@ -407,15 +401,10 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         return new Hip_D3D11_Texture();
     }
-    public IHipVertexBufferImpl createVertexBuffer(size_t size, HipBufferUsage usage)
+    public IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type)
     {
-        return new Hip_D3D11_VertexBufferObject(size, usage);
+        return new Hip_D3D11_Buffer(size, usage, type);
     }
-    public IHipIndexBufferImpl  createIndexBuffer(index_t count, HipBufferUsage usage)
-    {
-        return new Hip_D3D11_IndexBufferObject(count, usage);
-    }
-
     public IShader createShader()
     {
         return new Hip_D3D11_ShaderImpl();
@@ -514,27 +503,28 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         // if(HipRenderer.currentShader != currentShader)
         //     HipRenderer.setShader(currentShader);
-        _hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_mainRenderTarget, null);
+        d3dCall(_hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_mainRenderTarget, null));
     }
     void end()
     {
-        _hip_d3d_swapChain.Present(0,0);
+        d3dCall(_hip_d3d_swapChain.Present(0,0));
+
     }
 
     public void drawVertices(index_t count, uint offset = 0)
     {
-        _hip_d3d_context.Draw(count, offset);
+        d3dCall(_hip_d3d_context.Draw(count, offset));
     }
     public void drawIndexed(index_t indicesSize, uint offset=0)
     {
-        _hip_d3d_context.DrawIndexed(indicesSize, offset, 0);
+        d3dCall(_hip_d3d_context.DrawIndexed(indicesSize, offset, 0));
     }
     void clear(){}
 
     void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)
     {
         float[4] color = [cast(float)r/255, cast(float)g/255, cast(float)b/255, cast(float)a/255];
-        _hip_d3d_context.ClearRenderTargetView(_hip_d3d_mainRenderTarget, color.ptr);
+        d3dCall(_hip_d3d_context.ClearRenderTargetView(_hip_d3d_mainRenderTarget, color.ptr));
     }
 
     public void dispose()

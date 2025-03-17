@@ -30,8 +30,7 @@ private struct HipRendererResources
     IHipTexture[] textures;
     Shader[] shaders;
     IHipVertexArrayImpl[]  vertexArrays;
-    IHipVertexBufferImpl[]  vertexBuffers;
-    IHipIndexBufferImpl[]  indexBuffers;
+    IHipRendererBuffer[] buffers;
 }
 
 class HipRenderer
@@ -253,15 +252,10 @@ class HipRenderer
         res.vertexArrays~= rendererImpl.createVertexArray();
         return res.vertexArrays[$-1];
     }
-    public static IHipVertexBufferImpl  createVertexBuffer(size_t size, HipBufferUsage usage)
+    public static IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type)
     {
-        res.vertexBuffers~= rendererImpl.createVertexBuffer(size, usage);
-        return res.vertexBuffers[$-1];
-    }
-    public static IHipIndexBufferImpl createIndexBuffer(index_t count, HipBufferUsage usage)
-    {
-        res.indexBuffers~= rendererImpl.createIndexBuffer(count, usage);
-        return res.indexBuffers[$-1];
+        res.buffers~= rendererImpl.createBuffer(size, usage, type);
+        return res.buffers[$-1];
     }
     public static void setShader(Shader s)
     {
@@ -275,12 +269,16 @@ class HipRenderer
 
     public static void exitOnError(string file = __FILE__, size_t line = __LINE__)
     {
+        import hip.config.opts;
         import core.stdc.stdlib:exit;
         string err;
         if(hasErrorOccurred(err, file, line))
         {
             loglnError(err, file,":",line);
-            exit(-1);
+            static if(CustomRuntime)
+                exit(-1);
+            else
+                throw new Error(err);
         }
     }
 

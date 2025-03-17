@@ -66,7 +66,6 @@ class HipSpriteBatch : IHipBatch
         this.maxQuads = maxQuads;
         indices = new index_t[maxQuads*6];
         vertices = new HipSpriteVertex[maxQuads]; //XYZ -> 3, RGBA -> 4, ST -> 2, TexID 3+4+2+1=10
-        vertices[] = HipSpriteVertex.init;
         currentTextures = new IHipTexture[](HipRenderer.getMaxSupportedShaderTextures());
         usingTexturesCount = 0;
 
@@ -77,7 +76,6 @@ class HipSpriteBatch : IHipBatch
         spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 
         mesh = new Mesh(HipVertexArrayObject.getVAO!HipSpriteVertex, spriteBatchShader);
-        mesh.vao.bind();
         mesh.createVertexBuffer(cast(index_t)(maxQuads*HipSpriteVertex.quadCount), HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(cast(index_t)(maxQuads*6), HipBufferUsage.STATIC);
 

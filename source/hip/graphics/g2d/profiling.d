@@ -62,34 +62,27 @@ void drawGCStats(int x = 0, int y = -1)
         import core.memory;
         GC.Stats stats = GC.stats;
         GC.ProfileStats prof = GC.profileStats;
-        SmallString str = SmallString("Memory Allocated ", formatFromBytes(stats.usedSize).asSmallString().toString);
-        drawText(str.toString, x, y, 1.0, HipColor(0,50,0), HipTextAlign.botLeft);
+        SmallString timeOnPause = SmallString.get();
+        SmallString timeOnCollection = SmallString.get();
+
+        prof.totalPauseTime.toString((string data)
+        {
+            timeOnPause~= data;
+        });
+        prof.totalCollectionTime.toString((string data)
+        {
+            timeOnCollection~= data;
+        });
 
 
-
-        // SmallString timeOnPause = SmallString.get();
-        // SmallString timeOnCollection = SmallString.get();
-
-        // prof.totalPauseTime.toString((string data)
-        // {
-        //     timeOnPause~= data;
-        // });
-        // prof.totalCollectionTime.toString((string data)
-        // {
-        //     timeOnCollection~= data;
-        // });
-
-
-        // scope BigString str = BigString(
-        //     "GC Stats: ",
-        //     "\n\tMemory Used: ", formatFromBytes(stats.usedSize).asSmallString.toString,
-        //     "\n\tFree Memory: ", formatFromBytes(stats.freeSize).asSmallString.toString,
-        //     "\n\tTime Paused on GC: ", timeOnPause.toString,
-        //     "\n\tTime Spent on Collection:", timeOnCollection.toString,
-        //     "\n\tCollections Count: ", prof.numCollections,
-        // );
-
-        // drawText(str.toString, x, y, HipColor(0, 50, 0), HipTextAlign.LEFT, HipTextAlign.TOP);
+        scope BigString str = BigString(
+            "Memory Used: ", formatFromBytes(stats.usedSize).asSmallString.toString,
+            "\nFree Memory: ", formatFromBytes(stats.freeSize).asSmallString.toString,
+            "\nPaused Time: ", timeOnPause.toString,
+            "\nCollection Time:", timeOnCollection.toString,
+            "\nCollections Count: ", prof.numCollections,
+        );
+        drawText(str.toString, x, y, 1.0,  HipColor(0, 50, 0), HipTextAlign.botLeft);
     }
 }
 

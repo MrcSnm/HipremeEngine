@@ -32,16 +32,16 @@ private __gshared HipVertexArrayObject lastBoundVertex;
 */
 class HipVertexArrayObject
 {
-    IHipVertexArrayImpl  VAO;
-    IHipVertexBufferImpl VBO;
-    IHipIndexBufferImpl  EBO;
+    IHipVertexArrayImpl VAO;
+    IHipRendererBuffer  VBO;
+    IHipRendererBuffer  EBO;
     ///Accumulated size of the vertex data
     uint stride;
     ///How many data slots it uses, for instance, vec3 will count +3
     uint dataCount;
     HipVertexAttributeInfo[] infos;
 
-    protected bool isBonded;
+    bool isBonded;
     protected bool hasVertexInitialized;
     protected bool hasIndexInitialized;
     
@@ -83,9 +83,7 @@ class HipVertexArrayObject
     */
     void createIndexBuffer(index_t count, HipBufferUsage usage)
     {
-        this.EBO = HipRenderer.createIndexBuffer(count, usage);
-        this.bind();
-        this.EBO.bind();
+        this.EBO = HipRenderer.createBuffer(count, usage, HipRendererBufferType.index);
     }
     /**
     * Creates and binds a vertex buffer.
@@ -94,9 +92,7 @@ class HipVertexArrayObject
     */
     void createVertexBuffer(uint count, HipBufferUsage usage)
     {
-        this.VBO = HipRenderer.createVertexBuffer(count*this.stride, usage);
-        this.bind();
-        this.VBO.bind();
+        this.VBO = HipRenderer.createBuffer(count*this.stride, usage, HipRendererBufferType.vertex);
     }
     /**
     *   This function creates an attribute information,
@@ -165,14 +161,12 @@ class HipVertexArrayObject
     */
     void sendAttributes(Shader s)
     {
-        if(!isBonded)
-        {
-            ErrorHandler.showErrorMessage("VertexArrayObject error", "VAO wasn't bound when trying to send its attributes");
-            return;
-        }
-        foreach(info; infos)
-            this.VAO.setAttributeInfo(info, stride);
-        this.VAO.createInputLayout(s.vertexShader, s.shaderProgram);
+        // if(!isBonded)
+        // {
+        //     ErrorHandler.showErrorMessage("VertexArrayObject error", "VAO wasn't bound when trying to send its attributes");
+        //     return;
+        // }
+        this.VAO.createInputLayout(VBO, EBO, infos, stride, s.vertexShader, s.shaderProgram);
     }
 
     void bind()
@@ -188,21 +182,23 @@ class HipVertexArrayObject
             }
             lastBoundVertex = this;
         }
-        // if(!this.isBonded)
-        // {
+        if(!this.isBonded)
+        {
             isBonded = true;
             this.VAO.bind(this.VBO, this.EBO);
-        // }
+        }
+        else assert(false, "Erroneous bind.");
     }
     void unbind()
     {
         static if(UseDelayedUnbinding)
             return;
-        // if(this.isBonded)
-        // {
+        if(this.isBonded)
+        {
             isBonded = false;
             this.VAO.unbind(this.VBO, this.EBO);
-        // }
+        }
+        else assert(false, "Erroneous unbind.");
     }
 
     /**
@@ -217,7 +213,6 @@ class HipVertexArrayObject
         else
         {
             hasVertexInitialized = true;
-            this.bind(); 
             this.VBO.setData(data);
         }
     }
@@ -233,7 +228,6 @@ class HipVertexArrayObject
         if(VBO is null)
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
         ErrorHandler.assertExit(hasVertexInitialized, "Vertex must setData before updating its contents.");
-        this.bind();
         this.VBO.updateData(offset*this.stride, data);
     }
     /**
@@ -249,7 +243,6 @@ class HipVertexArrayObject
         else
         {
             hasIndexInitialized = true;
-            this.bind();
             this.EBO.setData(data);
         }
     }
@@ -263,7 +256,6 @@ class HipVertexArrayObject
         else
         {
             ErrorHandler.assertExit(hasIndexInitialized, "Index must setData before updating its contents.");
-            this.bind();
             this.EBO.updateData(cast(int)(offset*index_t.sizeof), data);
         }
     }

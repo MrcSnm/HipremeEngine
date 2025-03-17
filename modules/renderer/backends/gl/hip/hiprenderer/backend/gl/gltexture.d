@@ -21,7 +21,7 @@ import hip.image;
 import hip.math.utils;
 
 
-class Hip_GL3_Texture : IHipTexture, IReloadable
+final class Hip_GL3_Texture : IHipTexture, IReloadable
 {
     GLuint textureID = 0;
     int width, height;

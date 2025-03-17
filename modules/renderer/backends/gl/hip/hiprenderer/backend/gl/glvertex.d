@@ -9,8 +9,9 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.backend.gl.glvertex;
-version(OpenGL):
 
+version(OpenGL):
+import hip.api.renderer.vertex;
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
 import hip.util.conv;
@@ -55,44 +56,76 @@ private ubyte isGLAttributeNormalized(HipAttributeType _t)
     }
 }
 
-
-
-
-class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
+GLenum getBufferType(HipRendererBufferType type)
 {
-    immutable int  usage;
+    final switch ( type )
+    {
+        case HipRendererBufferType.vertex:
+            return GL_ARRAY_BUFFER;
+        case HipRendererBufferType.index:
+            return GL_ELEMENT_ARRAY_BUFFER;
+    }
+}
+
+final class Hip_GL3_Buffer : IHipRendererBuffer
+{
     size_t size;
-    uint vbo;
+    uint handle;
+    immutable int usage;
+    int glType;
+    immutable HipRendererBufferType _type;
 
-    private __gshared Hip_GL3_VertexBufferObject boundVbo;
+    HipRendererBufferType type() const { return _type; }
 
-    this(size_t size, HipBufferUsage usage)
+
+    private __gshared Hip_GL3_Buffer boundVbo;
+    private __gshared Hip_GL3_Buffer boundEbo;
+
+    this(size_t size, HipBufferUsage usage, HipRendererBufferType type)
     {
         this.size = size;
         this.usage = getGLUsage(usage);
-        glCall(() => glGenBuffers(1, &this.vbo));
+        this._type = type;
+        this.glType = getBufferType(type);
+        glCall(() => glGenBuffers(1, &handle));
     }
     void bind()
     {
-        if(boundVbo !is this)
+        if(type == HipRendererBufferType.vertex)
         {
-            glCall(()=>glBindBuffer(GL_ARRAY_BUFFER, this.vbo));
-            boundVbo = this;
+            if(boundVbo !is this)
+            {
+                glCall(()=>glBindBuffer(glType, handle));
+                boundVbo = this;
+            }
+        }
+        else if(boundEbo !is this)
+        {
+            glCall(()=>glBindBuffer(glType, handle));
+            boundEbo = this;
         }
     }
     void unbind()
     {
-        if(boundVbo is this)
+        if(type == HipRendererBufferType.vertex)
         {
-            glCall(()=>glBindBuffer(GL_ARRAY_BUFFER, 0));
-            boundVbo = null;
+            if(boundVbo is this)
+            {
+                glCall(()=>glBindBuffer(glType, 0));
+                boundVbo = null;
+            }
+        }
+        else if(boundEbo is this)
+        {
+            glCall(()=>glBindBuffer(glType, 0));
+            boundEbo = null;
         }
     }
     void setData(const(void)[] data)
     {
         this.size = data.length;
         this.bind();
-        glCall(() => glBufferData(GL_ARRAY_BUFFER, data.length, cast(void*)data.ptr, this.usage));
+        glCall(() => glBufferData(glType, data.length, cast(void*)data.ptr, this.usage));
     }
     void updateData(int offset, const(void)[] data)
     {
@@ -100,77 +133,30 @@ class Hip_GL3_VertexBufferObject : IHipVertexBufferImpl
         {
             ErrorHandler.assertExit(
                 false, "Tried to set data with size "~to!string(size)~"and offset "~to!string(offset)~
-        "for vertex buffer with size "~to!string(this.size));
+        "for buffer with size "~to!string(this.size));
         }
         this.bind();
         {
-            glCall(() => glBufferSubData(GL_ARRAY_BUFFER, offset, data.length, data.ptr));
+            glCall(() => glBufferSubData(glType, offset, data.length, data.ptr));
         }
     }
-    ~this(){glCall(() => glDeleteBuffers(1, &this.vbo));}
-}
-class Hip_GL3_IndexBufferObject : IHipIndexBufferImpl
-{
-    immutable int  usage;
-    size_t size;
-    index_t count;
-    uint ebo;
-
-    private __gshared Hip_GL3_IndexBufferObject boundEbo;
-
-    this(index_t count, HipBufferUsage usage)
-    {
-        this.size = index_t.sizeof*count;
-        this.count = count;
-        this.usage = getGLUsage(usage);
-        glCall(() => glGenBuffers(1, &this.ebo));
-    }
-    void bind()
-    {
-        if(boundEbo !is this)
-        {
-            glCall(() => glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.ebo));
-            boundEbo = this;
-        }
-    }
-    void unbind()
-    {
-        if(boundEbo is this)
-        {
-            glCall(() => glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-            boundEbo = null;
-        }
-    }
-    void setData(const index_t[] data)
-    {
-        this.count = cast(index_t)data.length;
-        this.size = index_t.sizeof*data.length;
-        this.bind();
-        glCall(() => glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_t.sizeof*data.length, cast(void*)data.ptr, this.usage));
-    }
-    void updateData(int offset, const index_t[] data)
-    {
-        ErrorHandler.assertExit((offset+data.length)*index_t.sizeof <= this.size);
-        this.bind();
-        glCall(() => glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, data.length*index_t.sizeof, cast(void*)data.ptr));
-    }
-    ~this(){glCall(() => glDeleteBuffers(1, &this.ebo));}
+    ~this(){glCall(() => glDeleteBuffers(1, &handle));}
 }
 
 //Used as a wrapper 
-class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
+final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
 {
     import hip.util.data_structures;
-    IHipVertexBufferImpl vbo;
-    IHipIndexBufferImpl ebo;
-    private alias VAOInfo = Pair!(HipVertexAttributeInfo, uint, "info", "stride");
-    VAOInfo[] vaoInfos;
+    IHipRendererBuffer vbo;
+    IHipRendererBuffer ebo;
+    HipVertexAttributeInfo[] vaoInfos;
+    uint stride;
 
     bool isWaitingCreation = false;
 
     private __gshared Hip_GL_VertexArrayObject boundVAO;
 
-    void bind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
+    void bind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
     {
         if(vbo is null)
         {
@@ -197,34 +183,34 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
         {
             vbo.bind();
             ebo.bind();
-            foreach(vao; vaoInfos)
+            foreach(info; vaoInfos)
             {
                 static if(!GLShouldDisableVertexAttrib)
                 {
-                    if(!enabledAttributes[vao.info.index])
+                    if(!enabledAttributes[info.index])
                     {
-                        glCall(() => glEnableVertexAttribArray(vao.info.index));
-                        enabledAttributes[vao.info.index] = true;
+                        glCall(() => glEnableVertexAttribArray(info.index));
+                        enabledAttributes[info.index] = true;
                     }
                 }
                 else
                 {
-                    glCall(() => glEnableVertexAttribArray(vao.info.index));
+                    glCall(() => glEnableVertexAttribArray(info.index));
                 }
                 glCall(() => glVertexAttribPointer(
-                    vao.info.index,
-                    vao.info.count,
-                    getGLAttributeType(vao.info.valueType),
-                    isGLAttributeNormalized(vao.info.valueType),
-                    vao.stride,
-                    cast(void*)vao.info.offset
+                    info.index,
+                    info.count,
+                    getGLAttributeType(info.valueType),
+                    isGLAttributeNormalized(info.valueType),
+                    stride,
+                    cast(void*)info.offset
                 ));
             }
             boundVAO = this;
         }
     }
         
-    void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
+    void unbind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
     {
         static if(UseDelayedUnbinding)
         {
@@ -244,29 +230,27 @@ class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
             }
         }
     }
-
-    void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride)
-    {
-        if(info.index + 1 > vaoInfos.length)
-            vaoInfos.length = info.index + 1;
-        vaoInfos[info.index] = VAOInfo(info, stride);
-    }
-    void createInputLayout(VertexShader s, ShaderProgram p)
+    void createInputLayout(
+        IHipRendererBuffer, IHipRendererBuffer,
+        HipVertexAttributeInfo[] attInfos, uint stride,
+        VertexShader s, ShaderProgram p)
     {
         import hip.hiprenderer.backend.gl.glshader;
         Hip_GL3_ShaderProgram glProg = cast(Hip_GL3_ShaderProgram)p;
-        foreach(ref vao; vaoInfos)
+        vaoInfos = attInfos;
+        this.stride = stride;
+        foreach(ref info; attInfos)
         {
-            int attloc = glCall(() => glGetAttribLocation(glProg.program, cast(char*)vao.info.name.ptr));
+            int attloc = glCall(() => glGetAttribLocation(glProg.program, cast(char*)info.name.ptr));
             if(attloc == -1)
-                throw new Exception("Could not find attribute "~vao.info.name~" at shader.");
-            vao.info.index = attloc;
+                throw new Exception("Could not find attribute "~info.name~" at shader.");
+            info.index = attloc;
             // glCall(() => glBindAttribLocation(glProg.program, i, vao.info.name.ptr)); That strategy does not work since the shader is already linked at that stage...
         }
     }
 }
 
-version(HipGLUseVertexArray) class Hip_GL3_VertexArrayObject : IHipVertexArrayImpl
+version(HipGLUseVertexArray) final class Hip_GL3_VertexArrayObject : IHipVertexArrayImpl
 {
     uint vao;
     private __gshared Hip_GL3_VertexArrayObject boundVao;
@@ -274,7 +258,7 @@ version(HipGLUseVertexArray) class Hip_GL3_VertexArrayObject : IHipVertexArrayIm
     {
         glCall(() => glGenVertexArrays(1, &this.vao));
     }
-    void bind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
+    void bind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
     {
         if(boundVao !is this)
         {
@@ -282,7 +266,7 @@ version(HipGLUseVertexArray) class Hip_GL3_VertexArrayObject : IHipVertexArrayIm
             boundVao = this;
         }
     }
-    void unbind(IHipVertexBufferImpl vbo, IHipIndexBufferImpl ebo)
+    void unbind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
     {
         if(boundVao is this)
         {
@@ -290,18 +274,24 @@ version(HipGLUseVertexArray) class Hip_GL3_VertexArrayObject : IHipVertexArrayIm
             boundVao = null;
         }
     }
-    void setAttributeInfo(ref HipVertexAttributeInfo info, uint stride)
+
+    void createInputLayout(IHipRendererBuffer vbo, IHipRendererBuffer ebo, HipVertexAttributeInfo[] attInfos, uint stride, VertexShader s, ShaderProgram p)
     {
-        glCall(() => glVertexAttribPointer(
-            info.index,
-            info.count, 
-            getGLAttributeType(info.valueType),
-            isGLAttributeNormalized(info.valueType),
-            stride,
-            cast(void*)info.offset
-        ));
-        glCall(() => glEnableVertexAttribArray(info.index));
+        bind(vbo, ebo);
+        vbo.bind();
+        ebo.bind();
+        foreach(info; attInfos)
+        {
+            glCall(() => glVertexAttribPointer(
+                info.index,
+                info.count,
+                getGLAttributeType(info.valueType),
+                isGLAttributeNormalized(info.valueType),
+                stride,
+                cast(void*)info.offset
+            ));
+            glCall(() => glEnableVertexAttribArray(info.index));
+        }
     }
-    void createInputLayout(VertexShader s, ShaderProgram p){}
     ~this(){glCall(() => glDeleteVertexArrays(1, &this.vao));}
 }
