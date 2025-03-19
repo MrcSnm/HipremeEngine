@@ -69,7 +69,7 @@ class Label : Widget
     {
         int bkgX = void, bkgY = void;
         getTextPosition(bkgX, bkgY);
-        txtDraw.setPosition(worldTransform.x, worldTransform.y+txtDraw.height/4);
+        txtDraw.setPosition(worldTransform.x, worldTransform.y);
         if(bkgRenderer !is null) bkgRenderer.render(bkgX, bkgY, txtDraw.width, txtDraw.height);
         txtDraw.draw();
     }

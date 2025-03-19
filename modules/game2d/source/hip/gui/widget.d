@@ -1,5 +1,9 @@
 module hip.gui.widget;
 
+/**
+ * Whenever implementing layouts, only modify worldTransform.
+ * Never modify local transform from other places. Only world transform is valid.
+ */
 class Widget
 {
     struct Bounds
@@ -9,7 +13,7 @@ class Widget
     struct Transform
     {
         int x, y;
-        float rotation = 0, scaleX = 0, scaleY = 0;
+        float rotation = 0, scaleX = 1, scaleY = 1;
     }
     int width, height;
 
@@ -18,7 +22,9 @@ class Widget
     protected Transform worldTransform;
     protected Transform localTransform;
     protected bool visible = true;
+    protected bool propagates = true;
     protected bool isDirty = true;
+
 
     Bounds getWorldBounds()
     {
@@ -45,7 +51,11 @@ class Widget
         {
             Bounds wb = w.getWorldBounds();
             if(w.visible && isPointInRect(x, y, wb.x, wb.y, wb.width, wb.height))
-                return w.findWidgetAt(x, y);
+            {
+                if(w.propagates)
+                    return w.findWidgetAt(x, y);
+                return w;
+            }
         }
 
         Bounds wb = getWorldBounds();

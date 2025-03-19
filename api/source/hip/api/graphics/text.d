@@ -18,17 +18,17 @@ enum HipTextAlign : ubyte
     bottom  = 0b100000,
 
 
-    topCenter = centerH | top,
-    topLeft = top | left,
-    topRight = top | right,
+    topCenter  = top | centerH,
+    topLeft    = top | left,
+    topRight   = top | right,
 
-    center = centerH | centerV,
+    center     = centerV | centerH,
     centerLeft = centerV | left,
-    centerRight = centerV | bottom,
+    centerRight= centerV | right,
 
-    botLeft = bottom | left,
-    botRight = bottom | right,
-    botCenter = centerH | bottom,
+    botCenter  = bottom | centerH,
+    botLeft    = bottom | left,
+    botRight   = bottom | right,
 
     horizontalMask = centerH | left | right,
     verticalMask = centerV | top | bottom,
@@ -61,41 +61,45 @@ void getPositionFromAlignment(
     out int newX, out int newY, Size bounds
 )
 {
-    newX = x;
-    newY = y;
     with(HipTextAlign)
     {
         switch(getAlignH(alignment))
         {
             case centerH:
                 if(bounds.width != 0)
-                {
                     newX = (x + (bounds.width)/2) - (width / 2);
-                }
                 else
-                    newX-= width/2;
+                    newX = x - width/2;
                 break;
             case right:
-                newX-= width;
+                if(bounds.width != 0)
+                    newX = x + bounds.width - width;
+                else
+                    newX = x - width;
                 break;
             case left:
-            default:
+                newX = x;
                 break;
+            default: assert(false, "Some invalid horizontal alignment was received.");
         }
         switch(getAlignV(alignment))
         {
             case centerV:
                 if(bounds.height != 0)
-                    newY = newY + (bounds.height/2) - height/2;
+                    newY = y + (bounds.height/2) - height/2;
                 else
-                    newY-= height/2;
+                    newY = y- height/2;
                 break;
             case bottom:
-                newY-= height;
+                if(bounds.height != 0)
+                    newY = y + bounds.height - height;
+                else
+                    newY = y - height;
                 break;
             case top:
-            default:
+                newY = y;
                 break;
+            default: assert(false, "Some invalid vertical alignment was received.");
         }
     }
 }

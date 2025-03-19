@@ -46,7 +46,8 @@ class LinearLayout : Group
         {
             import hip.api;
             if(!ch.visible) continue;
-            ch.setPosition(x,y);
+            ch.worldTransform.x = ch.localTransform.x + x;
+            ch.worldTransform.y = ch.localTransform.y + y;
             if(dir == Direction.horizontal)
                 x+= spacing + ch.width;
             else 

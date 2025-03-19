@@ -52,6 +52,12 @@ class SpriteButtonRenderer : IButtonRenderer
     }
 }
 
+
+/**
+ * Button does not propagates findWidgetAt after it.
+ * This happens mostly because when using buttons, it is common to not find its childrens after it since it handles most pointer events.
+ * If that is not desired, simply change `propagates` to true.
+ */
 class Button : Widget
 {
     enum State
@@ -73,6 +79,7 @@ class Button : Widget
         width = w;
         height = h;
         renderer = IButtonRenderer.DebugButtonRenderer;
+        propagates = false;
     }
     Button setOnHover(void delegate() onHover)
     {
@@ -83,15 +90,6 @@ class Button : Widget
     {
         this.onClick = onClick;
         return this;
-    }
-
-    private bool isMouseInsideButton()
-    {
-        import hip.api;
-        import hip.math.collision;
-        Bounds b = getWorldBounds();
-        float[2] pos = HipInput.getMousePosition();
-        return isPointInRect(pos[0], pos[1], b.x, b.y, b.width, b.height);
     }
 
     override void onMouseEnter()
@@ -121,7 +119,6 @@ class Button : Widget
     }
     override void onRender()
     {
-        import hip.api;
         renderer.render(Bounds(worldTransform.x, worldTransform.y, width, height), state);
     }
 }
