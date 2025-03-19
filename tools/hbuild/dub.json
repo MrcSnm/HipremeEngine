@@ -5,7 +5,7 @@
 	"copyright": "Copyright © 2023, Hipreme",
 	"dependencies": {
 		"arsd-official:terminal": "~>11.5.0",
-		"redub": "~>1.21.11",
+		"redub": "~>1.21.12",
 		"handy-httpd": "~>8.4.3",
 		"archive": "~>0.7.1",
 		"my-ip": "~>0.2.0",
