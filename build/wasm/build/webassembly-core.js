@@ -452,12 +452,6 @@ var importObject = {
 			console.log(WasmUtils.fromDString(length, chars));
 		},
 		JS_Math_random : Math.random,
-		atan2f: Math.atan2,
-		tanf: Math.tan,
-		log2: Math.log2,
-		cosf: Math.cos,
-		acosf: Math.acos,
-		sinf: Math.sin,
 		sqrtf: Math.sqrt,
 		cbrt: Math.cbrt
 }};
