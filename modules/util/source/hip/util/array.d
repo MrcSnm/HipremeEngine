@@ -10,6 +10,8 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.util.array;
 private import hip.util.conv : to;
+version(WebAssembly) version = UseCustomRT;
+version(PSVita) version = UseCustomRT;
 
 /**
 * Uses accessor on the array to find an element
@@ -224,6 +226,24 @@ string join(T)(T[] arr, char separator)
 {
     char[1] temp = separator;
     return join(arr, cast(string)temp);
+}
+
+pragma(inline, true)
+T uninitializedArray(T)(size_t size)
+{
+	version(D_ProfileGC) { return new T(size);}
+	else
+	{
+		version(UseCustomRT)
+		{
+			return object._d_newarrayU!(typeof(T.init[0]))(size);
+		}
+		else
+		{
+			static import std.array;
+			return std.array.uninitializedArray!T(size);
+		}
+	}
 }
 
 

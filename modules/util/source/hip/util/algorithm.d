@@ -4,9 +4,20 @@ import std.traits:ReturnType;
 
 ReturnType!(Range.front)[] array(Range)(Range range)
 {
-    typeof(return) ret;
-    foreach(v; range)
-        ret~= v;
+    static if(__traits(hasMember, Range, "length"))
+    {
+        import hip.util.array;
+        size_t l = range.length;
+        typeof(return) ret = uninitializedArray!(typeof(return))(l);
+        foreach(i; 0..l)
+            ret[i] = range[i];
+    }
+    else
+    {
+        typeof(return) ret;
+        foreach(v; range)
+            ret~= v;
+    }
     return ret;
 }
 
@@ -141,7 +152,7 @@ private static void swapElem(T)(ref T lhs, ref T rhs) @safe nothrow @nogc
 }
 
 
-T[] quicksort(T)(T[] array, bool function(T a, T b) @nogc nothrow @trusted comparison) nothrow @nogc @trusted
+T[] quicksort(T)(T[] array, scope bool delegate(T a, T b) @nogc nothrow @trusted comparison) nothrow @nogc @trusted
 {
     if (array.length < 2)
         return array;

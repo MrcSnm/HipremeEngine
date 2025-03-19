@@ -1,4 +1,5 @@
 module hip.data.json;
+import hip.util.array;
 
 
 JSONValue parseJSON(string jsonData)
@@ -1054,24 +1055,5 @@ private char escapedCharacter(char a)
 		case 'b': return '\b';
 		case 'r': return '\r';
 		default: return a;
-	}
-}
-
-
-private T uninitializedArray(T)(size_t size)
-{
-	import hip.config.opts;
-	version(D_ProfileGC) { return new T(size);}
-	else
-	{
-		static if(CustomRuntime)
-		{
-			return object._d_newarrayU!(typeof(T.init[0]))(size);
-		}
-		else
-		{
-			import std.array:uninitializedArray;
-			return uninitializedArray!T(size);
-		}
 	}
 }

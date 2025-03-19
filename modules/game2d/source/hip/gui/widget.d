@@ -191,7 +191,7 @@ class Widget
     }
 
     protected void preRender(){recalculateWorld();}
-    final void render()
+    protected void render()
     {
         preRender();
         onRender();
