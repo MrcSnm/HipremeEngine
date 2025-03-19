@@ -72,7 +72,7 @@ class Widget
         setChildrenDirty();
     }
 
-    private void setChildrenDirty()
+    protected void setChildrenDirty()
     {
         foreach(ch; children)
         {

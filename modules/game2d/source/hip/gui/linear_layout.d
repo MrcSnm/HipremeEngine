@@ -42,17 +42,31 @@ class LinearLayout : Group
     void updateLayout()
     {
         int x, y;
+        int maxWidth, maxHeight;
         foreach(ch; children)
         {
             import hip.api;
             if(!ch.visible) continue;
-            ch.worldTransform.x = ch.localTransform.x + x;
-            ch.worldTransform.y = ch.localTransform.y + y;
             if(dir == Direction.horizontal)
+            {
+                ch.localTransform.x = x;
+                if(ch.height > maxHeight)
+                    maxHeight = ch.height;
                 x+= spacing + ch.width;
-            else 
+                maxWidth = x;
+            }
+            else
+            {
+                ch.localTransform.y = y;
+                if(ch.width > maxWidth)
+                    maxWidth = ch.width;
                 y+= spacing + ch.height;
+                maxHeight = y;
+            }
         }
+        width = maxWidth;
+        height = maxHeight;
+        setChildrenDirty();
     }
     override void preRender()
     {

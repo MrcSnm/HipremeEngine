@@ -11,7 +11,7 @@ struct TemplateInfo
 	},
 	update="",
 	render=q{
-		drawText("You can start using the D Scripting API Here!", 400, 300, HipColor.white, 2.0
+		drawText("You can start using the D Scripting API Here!", 400, 300, 2.0, HipColor.white,
 			HipTextAlign.center
 		);
 	},
