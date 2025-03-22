@@ -166,7 +166,7 @@ class Hip_D3D11_ShaderImpl : IShader
         else static if(HIP_OPTIMIZE)
             compile_flags|= D3DCOMPILE_OPTIMIZATION_LEVEL3;
 
-        const D3D_SHADER_MACRO[] defines =
+        const defines =
         [
             cast(D3D_SHADER_MACRO)null, cast(D3D_SHADER_MACRO)null
         ].staticArray;

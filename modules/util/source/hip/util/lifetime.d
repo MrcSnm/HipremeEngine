@@ -82,8 +82,6 @@ version(HipScriptingAPI)
                 return reference;
             }
         }
-        import std.stdio;
-        writeln("Saving ", reference.toString);
         _hipExportedSharedUserData[target] ~= reference;
         return reference;
     }

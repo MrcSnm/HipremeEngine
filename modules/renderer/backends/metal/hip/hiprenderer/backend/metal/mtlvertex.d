@@ -30,12 +30,14 @@ final class HipMTLBuffer : IHipRendererBuffer
     MTLResourceOptions options;
     MTLDevice device;
     HipRendererBufferType _type;
+    size_t size;
 
     this(MTLDevice device, MTLCommandQueue cmdQueue, size_t size, HipBufferUsage usage, HipRendererBufferType type)
     {
         this.device = device;
         this.cmdQueue = cmdQueue;
         options = usage.mtlOptions;
+        this.size = size;
         buffer = device.newBuffer(size, options);
         buffer.retain();
         _type = type;
@@ -69,8 +71,12 @@ final class HipMTLBuffer : IHipRendererBuffer
             if(buffer) buffer.release();
             buffer = device.newBuffer(data.ptr, data.length, options);
             buffer.retain();
+            size = data.length;
         }
     }
+
+    ubyte[] getBuffer(){return buffer.contents[0..size];}
+    void unmapBuffer(){}
 
     void updateData(int offset, const void[] data)
     {

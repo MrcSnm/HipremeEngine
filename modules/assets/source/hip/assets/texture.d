@@ -87,8 +87,8 @@ class HipTexture : HipAsset, IHipTexture
     override void onDispose(){}
     
     bool isReady(){return textureImpl !is null;}
-    int getWidth(){return width;}
-    int getHeight(){return height;}
+    final int getWidth(){return width;}
+    final int getHeight(){return height;}
     
 }
 
@@ -97,6 +97,7 @@ class HipTexture : HipAsset, IHipTexture
 class HipTextureRegion : HipAsset, IHipTextureRegion
 {
     static immutable float[8] defaultVertices = [0,0, 1,0, 1,1, 0,1];
+    static immutable Vector2[4] defaultVerticesV = [Vector2(0,0), Vector2(1,0), Vector2(1,1), Vector2(0,1)];
     IHipTexture texture;
     public float u1, v1, u2, v2;
     protected float[8] vertices;

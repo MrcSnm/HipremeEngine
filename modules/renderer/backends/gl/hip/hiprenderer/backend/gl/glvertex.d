@@ -127,6 +127,9 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
         this.bind();
         glCall(() => glBufferData(glType, data.length, cast(void*)data.ptr, this.usage));
     }
+
+    ubyte[] getBuffer(){return null;}
+    void unmapBuffer(){}
     void updateData(int offset, const(void)[] data)
     {
         if(data.length + offset > this.size)

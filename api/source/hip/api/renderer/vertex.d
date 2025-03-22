@@ -70,6 +70,15 @@ interface IHipRendererBuffer
     void bind();
     void unbind();
     void setData(const void[] data);
+    /**
+     * This API is not available on OpenGL. Use set/update data instead.
+     * Returns: The mapped GPU buffer
+     */
+    ubyte[] getBuffer();
+    /**
+     * This API is only necessary when dealing with D3D. The buffer is automatically mapped when getBuffer is called.
+     */
+    void unmapBuffer();
     void updateData(int offset, const void[] data);
 }
 

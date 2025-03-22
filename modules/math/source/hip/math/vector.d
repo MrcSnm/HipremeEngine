@@ -22,7 +22,7 @@ struct Vector(uint N, T)
     }
     static assert(N >= 2 && N <= 4, "Vector is only implemented for 2, 3 and 4 dimensions");
     private alias VectorN = Vector!(N, T);
-    @nogc @safe nothrow
+    @nogc @safe nothrow pragma(inline, true)
     {
         static if(N == 2)
         {
@@ -288,14 +288,6 @@ struct Vector(uint N, T)
                 }
                 return this;
             }
-
-            ref VectorN opAssign(in VectorN other) return
-            {
-                for(size_t i = 0; i < N; i++)
-                    data[i] = other[i];
-                return this;
-            }
-
             ref VectorN opAssign(in T[N] other) return
             {
                 for(size_t i = 0; i < N; i++)
@@ -303,11 +295,7 @@ struct Vector(uint N, T)
                 return this;
             }
 
-            static VectorN zero()
-            {
-                return VectorN.init;
-            }
-
+            static enum VectorN zero = VectorN.init;
         }
 
         private enum isSIMD = false;
@@ -325,14 +313,14 @@ struct Vector(uint N, T)
 
         pragma(inline, true)
         {
-            @trusted inout auto ref x() return 
+            @trusted inout auto ref x() return
             {
                 static if(isSIMD)
                     return (cast(T*)&data)[0];
                 else
                     return data[0];
             }
-            @trusted inout auto ref y() return 
+            @trusted inout auto ref y() return
             {
                 static if(isSIMD)
                     return (cast(T*)&data)[1];
@@ -341,7 +329,7 @@ struct Vector(uint N, T)
             }
             static if(N >= 3)
             {
-                @trusted inout auto ref z() return 
+                @trusted inout auto ref z() return
                 {
                     static if(isSIMD)
                         return (cast(T*)&data)[2];
@@ -351,7 +339,7 @@ struct Vector(uint N, T)
             }
             static if(N == 4)
             {
-                @trusted inout auto ref w() return 
+                @trusted inout auto ref w() return
                 {
                     static if(isSIMD)
                         return (cast(T*)&data)[3];

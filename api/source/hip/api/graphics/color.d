@@ -26,11 +26,7 @@ struct HipColor
     this(float r, float g, float b, float a){values = [cast(ubyte)(r*255),cast(ubyte)(g*255),cast(ubyte)(b*255),cast(ubyte)(a*255)];}
     this(ubyte[4] rgba){values = rgba;}
     this(uint rgba){values = unpackRGBA(rgba);}
-    auto opAssign(in HipColor color)
-    {
-        values[] = color.values[];  
-        return this;
-    }
+
 
     static HipColor alpha(ubyte alpha){return HipColor(255, 255, 255, alpha);}
     static HipColor alpha(float alpha){return HipColor(255, 255, 255, cast(ubyte)(alpha*255));}

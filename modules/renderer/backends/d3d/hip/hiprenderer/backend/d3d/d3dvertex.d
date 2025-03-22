@@ -107,6 +107,18 @@ final class Hip_D3D11_Buffer : IHipRendererBuffer
             return;
         createBuffer(data);
     }
+
+    ubyte[] getBuffer()
+    {
+        D3D11_MAPPED_SUBRESOURCE resource;
+        d3dCall(_hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &resource));
+        return cast(ubyte[])resource.pData[0..size];
+    }
+    void unmapBuffer()
+    {
+        d3dCall(_hip_d3d_context.Unmap(this.buffer, 0));
+    }
+
     void updateData(int offset, const (void)[] data)
     {
         if(data.length + offset > this.size)
