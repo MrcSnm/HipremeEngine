@@ -227,23 +227,24 @@ class HipSprite
         if(isDirty)
         {
             isDirty = false;
-            float _x = -cast(float)width*originX * scaleX;
-            float _y = -cast(float)height*originY * scaleY;
+            float _x = -cast(float)width*originX * scaleX + x;
+            float _y = -cast(float)height*originY * scaleY + y;
             float x2 = _x+(width * scaleX);
             float y2 = _y+(height * scaleY); 
+
             if(rotation == 0)
             {
                 //Top left
-                vertices[0].vPosition = Vector3(_x+x, _y+y,0);
+                vertices[0].vPosition = Vector3(_x, _y,0);
 
                 //Top right
-                vertices[1].vPosition = Vector3(x2+x, _y+y,0);
+                vertices[1].vPosition = Vector3(x2, _y,0);
 
                 //Bot right
-                vertices[2].vPosition = Vector3(x2+x, y2+y,0);
+                vertices[2].vPosition = Vector3(x2, y2,0);
 
                 //Bot left
-                vertices[3].vPosition = Vector3(_x+x, y2+y,0);
+                vertices[3].vPosition = Vector3(_x, y2,0);
             }
             else
             {
