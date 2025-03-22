@@ -64,8 +64,7 @@ class HipSpriteBatch : IHipBatch
         import hip.util.conv:to;
         ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
         this.maxQuads = maxQuads;
-        indices = new index_t[maxQuads*6];
-        vertices = new HipSpriteVertex[maxQuads]; //XYZ -> 3, RGBA -> 4, ST -> 2, TexID 3+4+2+1=10
+        vertices = new HipSpriteVertex[maxQuads*4]; //XYZ -> 3, RGBA -> 4, ST -> 2, TexID 3+4+2+1=10
         currentTextures = new IHipTexture[](HipRenderer.getMaxSupportedShaderTextures());
         usingTexturesCount = 0;
 
@@ -77,9 +76,7 @@ class HipSpriteBatch : IHipBatch
 
         mesh = new Mesh(HipVertexArrayObject.getVAO!HipSpriteVertex, spriteBatchShader);
         mesh.createVertexBuffer(cast(index_t)(maxQuads*HipSpriteVertex.quadCount), HipBufferUsage.DYNAMIC);
-        mesh.createIndexBuffer(cast(index_t)(maxQuads*6), HipBufferUsage.STATIC);
-
-
+        mesh.setIndices(HipRenderer.getQuadIndexBuffer(maxQuads));
 
         spriteBatchShader.useLayout.Cbuf;
         // spriteBatchShader.bind();
@@ -97,9 +94,7 @@ class HipSpriteBatch : IHipBatch
         if(camera is null)
             camera = new HipOrthoCamera();
         this.camera = camera;
-        HipVertexArrayObject.putQuadBatchIndices(indices, maxQuads);
         mesh.setVertices(vertices);
-        mesh.setIndices(indices);
         setTexture(HipTexture.getPixelTexture());
 
     }

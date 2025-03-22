@@ -55,36 +55,21 @@ class HipVertexArrayObject
     }
 
     /**
-    *   Populates a buffer with indices forming quads
-    *   Returns if the output can contain the size
-    */
-    static bool putQuadBatchIndices(ref index_t[] output, size_t countQuads)
-    {
-        assert(output.length >= countQuads*6, "Out of bounds");
-        if(output.length < countQuads*6)
-            return false;
-        index_t index = 0;
-        for(index_t i = 0; i < countQuads; i++)
-        {
-            output[index+0] = cast(index_t)(i*4+0);
-            output[index+1] = cast(index_t)(i*4+1);
-            output[index+2] = cast(index_t)(i*4+2);
-
-            output[index+3] = cast(index_t)(i*4+2);
-            output[index+4] = cast(index_t)(i*4+3);
-            output[index+5] = cast(index_t)(i*4+0);
-            index+=6;
-        }
-        return true;
-    }
-
-    /**
     *   Creates and binds an index buffer.
     */
     void createIndexBuffer(index_t count, HipBufferUsage usage)
     {
+        assert(EBO is null, "Can't create buffer if it is already assigned.");
         this.EBO = HipRenderer.createBuffer(count*index_t.sizeof, usage, HipRendererBufferType.index);
     }
+    /**
+    *   Sets the index buffer. Mainly useful for sharing multiple index buffer (quads and etc)
+    */
+    void setIndexBuffer(IHipRendererBuffer buffer)
+    {
+        this.EBO = buffer;
+    }
+
     /**
     * Creates and binds a vertex buffer.
     *

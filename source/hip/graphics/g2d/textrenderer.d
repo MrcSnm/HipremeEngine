@@ -91,14 +91,11 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
         mesh = new Mesh(HipVertexArrayObject.getVAO!HipTextRendererVertex, bmTextShader);
         //6 indices per quad
-        indices = new index_t[](maxQuads*6);
         vertices = new HipTextRendererVertex[](maxQuads*4);
-        mesh.createIndexBuffer(cast(index_t)(maxQuads*6), HipBufferUsage.STATIC);
+        mesh.setIndices(HipRenderer.getQuadIndexBuffer(maxQuads));
         mesh.createVertexBuffer(cast(index_t)vertices.length, HipBufferUsage.DYNAMIC);
         mesh.sendAttributes();
-        HipVertexArrayObject.putQuadBatchIndices(indices, maxQuads);
         mesh.setVertices(vertices);
-        mesh.setIndices(indices);
         if(camera is null)
             camera = new HipOrthoCamera();
         this.camera = camera;

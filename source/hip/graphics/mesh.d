@@ -65,6 +65,17 @@ class Mesh
     }
 
     /**
+     * Use that function when the mesh doesn't hold ownership over the indices
+     * Params:
+     *   indexBuffer = The index buffer to be shared
+     */
+    public void setIndices(IHipRendererBuffer indexBuffer)
+    {
+        this.indices = null;
+        this.vao.setIndexBuffer(indexBuffer);
+    }
+
+    /**
     *   Will choose between resizing buffer as needed or only updating it.
     */
     public void setIndices(index_t[] indices)

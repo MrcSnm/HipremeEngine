@@ -57,6 +57,8 @@ class HipRenderer
         protected HipRendererResources res;
         protected bool depthTestingEnabled;
         protected HipDepthTestingFunction currentDepthTestFunction;
+
+        protected IHipRendererBuffer quadIndexBuffer;
     }
 
     public static bool initialize (string confData, string confPath)
@@ -116,6 +118,38 @@ class HipRenderer
         version(Android){}
         else wnd.start();
         return wnd;
+    }
+
+    /**
+    *   Populates a buffer with indices forming quads
+    *   If the quadsCount is bigger than the existing one, throws since
+    *   it probably can be set at compile time and it is easier to control like that
+    */
+    public static IHipRendererBuffer getQuadIndexBuffer(size_t quadsCount)
+    {
+        if(!quadIndexBuffer)
+        {
+            import hip.util.array;
+            quadIndexBuffer = createBuffer(quadsCount*index_t.sizeof*6, HipBufferUsage.STATIC, HipRendererBufferType.index);
+            index_t[] output = uninitializedArray!(index_t[])(quadsCount*6);
+            index_t index = 0;
+            for(index_t i = 0; i < quadsCount; i++)
+            {
+                output[index+0] = cast(index_t)(i*4+0);
+                output[index+1] = cast(index_t)(i*4+1);
+                output[index+2] = cast(index_t)(i*4+2);
+
+                output[index+3] = cast(index_t)(i*4+2);
+                output[index+4] = cast(index_t)(i*4+3);
+                output[index+5] = cast(index_t)(i*4+0);
+                index+=6;
+            }
+            quadIndexBuffer.setData(output);
+            import core.memory;
+            GC.free(output.ptr);
+        }
+
+        return quadIndexBuffer;
     }
 
     public static bool initialize (IHipRendererImpl impl, HipRendererConfig* config, uint width, uint height, bool isExternal = false)

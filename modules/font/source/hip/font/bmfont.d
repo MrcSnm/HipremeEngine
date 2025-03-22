@@ -380,7 +380,7 @@ class HipBitmapFont : HipFont
         HipBitmapFont ret = new HipBitmapFont();
         ret.atlasPath = this.atlasPath;
         ret.atlasTexturePath = this.atlasTexturePath;
-        ret.kerning = cast(HipFontKerning)this.kerning.dup;
+        ret.kerning = cast(HipFontKerning)this.kerning;
         ret.charactersCount = this.charactersCount;
         ret._texture = cast(IHipTexture)this._texture;
         return cast(HipFont)ret;

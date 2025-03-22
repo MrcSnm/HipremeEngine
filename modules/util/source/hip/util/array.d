@@ -231,19 +231,21 @@ string join(T)(T[] arr, char separator)
 pragma(inline, true)
 T uninitializedArray(T)(size_t size)
 {
-	version(D_ProfileGC) { return new T(size);}
-	else
-	{
-		version(UseCustomRT)
-		{
-			return object._d_newarrayU!(typeof(T.init[0]))(size);
-		}
-		else
-		{
-			static import std.array;
-			return std.array.uninitializedArray!T(size);
-		}
-	}
+    version(UseCustomRT)
+    {
+        return object._d_newarrayU!(typeof(T.init[0]))(size);
+    }
+	else version(D_ProfileGC)
+    {
+        T ret;
+        ret.length = size;
+        return ret;
+    }
+    else
+    {
+        static import std.array;
+        return std.array.uninitializedArray!T(size);
+    }
 }
 
 

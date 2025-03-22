@@ -77,8 +77,6 @@ class GeometryBatch : IHipBatch
         mesh = new Mesh(HipVertexArrayObject.getVAO!HipGeometryBatchVertex, s);
         vertices = new HipGeometryBatchVertex[verticesCount];
         indices = new index_t[indicesCount];
-        indices[] = 0;
-        //Initialize the mesh with 0
         mesh.createVertexBuffer(verticesCount, HipBufferUsage.DYNAMIC);
         mesh.createIndexBuffer(indicesCount, HipBufferUsage.DYNAMIC);
         mesh.setIndices(indices);
