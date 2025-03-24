@@ -345,7 +345,6 @@ class HipRenderer
         if(mode != currMode) HipRenderer.setRendererMode(mode);
         HipRenderer.drawIndexed(count, offset);
         stats.drawCalls++;
-        if(mode != currMode) HipRenderer.setRendererMode(currMode);
     }
     public static void drawVertices(index_t count, uint offset = 0)
     {

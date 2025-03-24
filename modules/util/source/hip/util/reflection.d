@@ -440,7 +440,7 @@ string ForwardFunc(alias func, string funcName, string member)()
 string ForwardInterface(string member, I)() if(is(I == interface))
 {
     import hip.util.string:replaceAll;
-    if(!__ctfe) return null;
+    assert(__ctfe);
 
     return q{
         import std.traits:ReturnType;

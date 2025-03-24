@@ -87,8 +87,8 @@ class HipTexture : HipAsset, IHipTexture
     override void onDispose(){}
     
     bool isReady(){return textureImpl !is null;}
-    final int getWidth(){return width;}
-    final int getHeight(){return height;}
+    final int getWidth() const {return width;}
+    final int getHeight() const {return height;}
     
 }
 

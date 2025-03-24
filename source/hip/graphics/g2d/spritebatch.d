@@ -95,6 +95,7 @@ class HipSpriteBatch : IHipBatch
             camera = new HipOrthoCamera();
         this.camera = camera;
         mesh.setVertices(vertices);
+        // vertices = cast(HipSpriteVertex[])mesh.vao.VBO.getBuffer();
         setTexture(HipTexture.getPixelTexture());
 
     }
@@ -154,8 +155,12 @@ class HipSpriteBatch : IHipBatch
 
 
             vertices[start..end] = v;
-            for(int i = 0; i < quadsToDraw; i++)
-                setTID(vertices[start+i*4..$], slot);
+            static if(!GLMaxOneBoundTexture)
+            {
+                for(int i = 0; i < quadsToDraw; i++)
+                    setTID(vertices[start+i*4..$], slot);
+
+            }
 
             v = v[quadsToDraw*4..$];
 
@@ -220,14 +225,16 @@ class HipSpriteBatch : IHipBatch
             flush();
         if(texture is null)
             texture = cast()getDefaultTexture();
-        ErrorHandler.assertExit(texture.getWidth() != 0 && texture.getHeight() != 0, "Tried to draw 0 bounds texture");
+
+        int width = texture.getWidth(), height = texture.getHeight();
+        ErrorHandler.assertExit(width != 0 && height != 0, "Tried to draw 0 bounds texture");
         int slot = setTexture(texture);
         ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
 
         size_t startVertex = quadsCount *4;
         size_t endVertex = startVertex + 4;
 
-        getTextureVertices(vertices[startVertex..endVertex], slot, texture,x,y,managedDepth,color, scaleX, scaleY, rotation);
+        getTextureVertices(vertices[startVertex..endVertex], slot, width, height, x,y,managedDepth,color, scaleX, scaleY, rotation);
         quadsCount++;
     }
 
@@ -293,16 +300,18 @@ class HipSpriteBatch : IHipBatch
         ];
     }
 
-    static void getTextureVertices(HipSpriteVertex[] output, int slot, IHipTexture texture,
+    static void getTextureVertices(HipSpriteVertex[] output, int slot, int width, int height,
     int x, int y, float z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
-        int width = texture.getWidth();
-        int height = texture.getHeight();
-        Vector3[4] spritePos = rotation == 0 ? getBounds(x,y,z,width,height,scaleX,scaleY) :getBoundsFromRotation(x,y,z,width,height,rotation,scaleX,scaleY);
+        Vector3[4] spritePos = void;
+        if(rotation == 0)
+            spritePos = getBounds(x,y,z,width,height,scaleX,scaleY);
+        else
+            spritePos = getBoundsFromRotation(x,y,z,width,height,rotation,scaleX,scaleY);
 
         foreach(size_t i, ref HipSpriteVertex v; output)
         {
-            v.vTexST = Vector2(HipTextureRegion.defaultVertices[i*2], HipTextureRegion.defaultVertices[i*2+1]);
+            v.vTexST = HipTextureRegion.defaultVerticesV[i];
             v.vColor = color;
             v.vPosition = spritePos[i];
             static if(!GLMaxOneBoundTexture)
@@ -349,12 +358,16 @@ class HipSpriteBatch : IHipBatch
             size_t start = lastDrawQuadsCount*4;
             size_t end = quadsCount*4;
             mesh.updateVertices(cast(void[])vertices[start..end],cast(int)start);
+
+            // mesh.vao.VBO.unmapBuffer();
             mesh.draw((quadsCount-lastDrawQuadsCount)*6, HipRendererMode.TRIANGLES, lastDrawQuadsCount*6);
 
             ///Some operations may require texture unbinding(D3D11 Framebuffer)
             foreach(i; 0..usingTexturesCount)
                 currentTextures[i].unbind(i);
             mesh.unbind();
+        // mesh.vao.VBO.getBuffer();
+
         }
         lastDrawQuadsCount = quadsCount;
     }

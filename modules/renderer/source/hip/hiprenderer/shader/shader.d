@@ -319,15 +319,14 @@ public class Shader : IReloadable
                 if(varLayout.sVar.isDirty)
                 {
                     if(varLayout.sVar.type == UniformType.floating3x3)
-                        varLayout.sVar.set(HipRenderer.getMatrix(varLayout.sVar.get!Matrix3), true);
+                        varLayout.sVar.set(HipRenderer.getMatrix(varLayout.sVar.get!Matrix3), false);
                     else if(varLayout.sVar.type == UniformType.floating4x4)
-                        varLayout.sVar.set(HipRenderer.getMatrix(varLayout.sVar.get!Matrix4), true);
+                        varLayout.sVar.set(HipRenderer.getMatrix(varLayout.sVar.get!Matrix4), false);
+                    if(varLayout.sVar.usesMaxTextures)
+                        varLayout.sVar.set(HipRenderer.getMaxSupportedShaderTextures(), true);
+                    varLayout.sVar.isDirty = false;
                 }
-                if(varLayout.sVar.usesMaxTextures)
-                    varLayout.sVar.set(HipRenderer.getMaxSupportedShaderTextures(), true);
-
             }
-
         }
         shaderImpl.sendVars(shaderProgram, layouts);
     }

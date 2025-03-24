@@ -131,9 +131,21 @@ struct ShaderVar
         {
             if(value.sizeof != varSize)
                 return false;
-
-            if(!isBlackboxed && validateData && value == get!T)
-                return true;
+            if(!isBlackboxed && validateData)
+            {
+                import hip.math.matrix;
+                auto current = get!T;
+                static if(is(T == Matrix3) || is(T == Matrix4))
+                {
+                    if(value == current || value == current.transpose)
+                        return true;
+                }
+                else
+                {
+                    if(value == current)
+                        return true;
+                }
+            }
             memcpy(data.ptr, &value, varSize);
         }
         setDirty();

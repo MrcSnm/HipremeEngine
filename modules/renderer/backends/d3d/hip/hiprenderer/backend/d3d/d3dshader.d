@@ -289,15 +289,20 @@ class Hip_D3D11_ShaderImpl : IShader
     {
         D3D11_SHADER_INPUT_BIND_DESC desc;
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
-        foreach(k, _; layouts)
+        foreach(k, l; layouts)
         {
             import core.stdc.string:memcpy;
-            ShaderVariablesLayout l = cast(ShaderVariablesLayout)layouts[k];
             Hip_D3D11_ShaderVarAdditionalData* data = cast(Hip_D3D11_ShaderVarAdditionalData*)l.getAdditionalData();
-            D3D11_MAPPED_SUBRESOURCE resource;
-            _hip_d3d_context.Map(data.buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-            memcpy(resource.pData, l.getBlockData(), l.getLayoutSize());
-            _hip_d3d_context.Unmap(data.buffer,  0);
+
+            if(l.isDirty)
+            {
+                D3D11_MAPPED_SUBRESOURCE resource;
+                _hip_d3d_context.Map(data.buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+                memcpy(resource.pData, l.getBlockData(), l.getLayoutSize());
+                _hip_d3d_context.Unmap(data.buffer,  0);
+                l.isDirty = false;
+            }
+
 
             ErrorHandler.assertExit(data != null, "D3D11 ShaderVarAdditionalData is null, can't send variables");
 
