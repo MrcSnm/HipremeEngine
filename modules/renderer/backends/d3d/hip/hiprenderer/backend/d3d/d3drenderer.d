@@ -59,7 +59,8 @@ private __gshared bool errorCheckEnabled = true;
 void d3dCall(T)(scope lazy T dg, string file = __FILE__, size_t line = __LINE__)
 {
     dg;
-    HipRenderer.exitOnError(file, line);
+    if(errorCheckEnabled)
+        HipRenderer.exitOnError(file, line);
 }
 
 class Hip_D3D11_Renderer : IHipRendererImpl

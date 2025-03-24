@@ -309,13 +309,13 @@ class HipSpriteBatch : IHipBatch
         else
             spritePos = getBoundsFromRotation(x,y,z,width,height,rotation,scaleX,scaleY);
 
-        foreach(size_t i, ref HipSpriteVertex v; output)
+        for(size_t i = 0; i < 4; i++)
         {
-            v.vTexST = HipTextureRegion.defaultVerticesV[i];
-            v.vColor = color;
-            v.vPosition = spritePos[i];
+            output[i].vTexST = HipTextureRegion.defaultVerticesV[i];
+            output[i].vColor = color;
+            output[i].vPosition = spritePos[i];
             static if(!GLMaxOneBoundTexture)
-                v.vTexID = slot;
+                output[i].vTexID = slot;
         }
     }
 
@@ -328,13 +328,13 @@ class HipSpriteBatch : IHipBatch
 
         Vector3[4] spritePos = rotation == 0 ? getBounds(x,y,z,width,height,scaleX,scaleY) :getBoundsFromRotation(x,y,z,width,height,rotation,scaleX,scaleY);
 
-        foreach(size_t i, ref HipSpriteVertex v; output)
+        for(size_t i = 0; i < 4; i++)
         {
-            v.vTexST = Vector2(uvVertices[i*2], uvVertices[i*2+1]);
-            v.vColor = color;
-            v.vPosition = spritePos[i];
+            output[i].vTexST = Vector2(uvVertices[i*2], uvVertices[i*2+1]);
+            output[i].vColor = color;
+            output[i].vPosition = spritePos[i];
             static if(!GLMaxOneBoundTexture)
-                v.vTexID = slot;
+                output[i].vTexID = slot;
         }
     }
 

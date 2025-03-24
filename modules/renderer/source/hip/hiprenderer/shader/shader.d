@@ -324,7 +324,6 @@ public class Shader : IReloadable
                         varLayout.sVar.set(HipRenderer.getMatrix(varLayout.sVar.get!Matrix4), false);
                     if(varLayout.sVar.usesMaxTextures)
                         varLayout.sVar.set(HipRenderer.getMaxSupportedShaderTextures(), true);
-                    varLayout.sVar.isDirty = false;
                 }
             }
         }
