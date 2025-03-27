@@ -18,7 +18,7 @@ version(PSVita) version = NoSharedLibrarySupport;
 version(WebAssembly) version = NoSharedLibrarySupport;
 version(CustomRuntimeTest) version = NoSharedLibrarySupport;
 
-debug version(Windows)
+ version(Windows)
 {
     pragma(lib, "psapi.lib");
     pragma(lib, "dbghelp.lib");
@@ -200,7 +200,7 @@ void* dynamicLibraryLoad(string libName)
     {
         import core.runtime;
         ret = Runtime.loadLibrary(libName);
-        debug version(Windows)
+        version(Windows)
         {
             import core.sys.windows.psapi;
             import core.sys.windows.winbase;

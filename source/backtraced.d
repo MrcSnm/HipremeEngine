@@ -1,16 +1,15 @@
 module backtraced;
-
 version(Windows) version = UseBacktraced;
 else version(linux) version = UseBacktraced;
 else version = UseNullBacktraced;
 
 
+
+version(UseNullBacktraced)
 void backtraced_Register() { }
 
 version(UseBacktraced):
-debug:
 import core.demangle;
-import std.algorithm.searching;
 
 version (Windows)
 {
@@ -47,70 +46,87 @@ version (Windows)
     extern (Windows) BOOL SymFromAddr(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, SYMBOL_INFO* Symbol);
     extern (Windows) BOOL SymGetLineFromAddr64(HANDLE hProcess, DWORD64 dwAddr, PDWORD pdwDisplacement, IMAGEHLP_LINEA64* line);
 
-
-    debug void printStackTrace()
+    version(DigitalMars)
+    void printStackTrace()
     {
-        // enum MAX_DEPTH = 256;
-        // void*[MAX_DEPTH] stack;
+        import hip.util.string;
+        enum MAX_DEPTH = 256;
+        void*[MAX_DEPTH] stack;
 
-        // HANDLE process = GetCurrentProcess();
-        // ushort frames = RtlCaptureStackBackTrace(0, MAX_DEPTH, stack.ptr, null);
-        // SYMBOL_INFO* symbol = cast(SYMBOL_INFO*) calloc((SYMBOL_INFO.sizeof) + 256 * char.sizeof, 1);
-        // symbol.MaxNameLen = 255;
-        // symbol.SizeOfStruct = SYMBOL_INFO.sizeof;
+        HANDLE process = GetCurrentProcess();
+        ushort frames = RtlCaptureStackBackTrace(0, MAX_DEPTH, stack.ptr, null);
+        SYMBOL_INFO* symbol = cast(SYMBOL_INFO*) calloc((SYMBOL_INFO.sizeof) + 256, 1);
+        symbol.MaxNameLen = 255;
+        symbol.SizeOfStruct = SYMBOL_INFO.sizeof;
 
-        // IMAGEHLP_LINEA64 line = void;
-        // line.SizeOfStruct = SYMBOL_INFO.sizeof;
+        IMAGEHLP_LINEA64 line = void;
+        line.SizeOfStruct = SYMBOL_INFO.sizeof;
 
-        // DWORD dwDisplacement;
-        // 
-        // static int ends_with(const(char)* str, const(char)* suffix)
-        // {
-        //     if (!str || !suffix)
-        //         return 0;
-        //     size_t lenstr = strlen(str);
-        //     size_t lensuffix = strlen(suffix);
-        //     if (lensuffix > lenstr)
-        //         return 0;
-        //     return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
-        // }
+        DWORD dwDisplacement;
 
-        // for (uint i = 0; i < frames; i++)
-        // {
-        //     SymFromAddr(process, cast(DWORD64)(stack[i]), null, symbol);
-        //     SymGetLineFromAddr64(process, cast(DWORD64)(stack[i]), &dwDisplacement, &line);
+        static int ends_with(const(char)* str, const(char)* suffix)
+        {
+            if (!str || !suffix)
+                return 0;
+            size_t lenstr = strlen(str);
+            size_t lensuffix = strlen(suffix);
+            if (lensuffix > lenstr)
+                return 0;
+            return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+        }
 
-        //     // auto f = frames - i - 1;
-        //     char[] funcName = demangle(symbol.Name.ptr[0..symbol.NameLen]);
-        //     auto fname = line.FileName;
-        //     auto lnum = line.LineNumber;
+        for (uint i = 0; i < frames; i++)
+        {
+            SymFromAddr(process, cast(DWORD64)(stack[i]), null, symbol);
+            SymGetLineFromAddr64(process, cast(DWORD64)(stack[i]), &dwDisplacement, &line);
 
-        //     if (ends_with(fname, __FILE__) || funcName.canFind("rt.dmain2._d_run_main2"))
-        //         continue; // skip trace from this module
+            // auto f = frames - i - 1;
+            char[] funcName = demangle(symbol.Name.ptr[0..symbol.NameLen]);
+            auto fname = line.FileName;
+            auto lnum = line.LineNumber;
 
-        //     fprintf(stderr, "%s:%i - %.*s\n", fname, lnum, cast(int)funcName.length, funcName.ptr);
-        // }
-        
-        // free(symbol);
+                if (ends_with(fname, __FILE__))
+                    continue; // skip trace from this module
+                if(funcName.indexOf("_d_run_main2") != -1)
+                    break;
+
+            fprintf(stderr, "%s:%i - %.*s\n", fname, lnum, cast(int)funcName.length, funcName.ptr);
+        }
+
+        free(symbol);
     }
     extern (Windows) LONG TopLevelExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
     {
-        debug
+        import hip.util.system;
+        enum NullPointerMessage = 0xC0000005;
+        import hip.util.conv;
+
+        string msg;
+        switch(pExceptionInfo.ExceptionRecord.ExceptionCode)
         {
-            import hip.util.conv;
-            throw new Exception("Caught Exception (0x"~toHex(pExceptionInfo.ExceptionRecord.ExceptionCode)~")");
+            case NullPointerMessage:
+                msg = "Caught NullPointerException (0xC0000005)";
+                break;
+            default:
+                msg = "Caught Exception (0x"~toHex(pExceptionInfo.ExceptionRecord.ExceptionCode)~")";
+                break;
         }
+
+        version(DigitalMars) ///DMD can't print the stack trace.
+        {
+            fprintf(stderr, "%.*s\n", cast(int)msg.length, msg.ptr);
+            printStackTrace();
+        }
+        else
+            throw new Exception(msg);
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
-    extern (C) export void backtraced_Register()
+    void backtraced_Register()
     {
-        debug
-        {
-            SymInitialize(GetCurrentProcess(), null, true);
-            SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_DEBUG);
-            SetUnhandledExceptionFilter(&TopLevelExceptionHandler);
-        }
+        SymInitialize(GetCurrentProcess(), null, true);
+        SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_DEBUG);
+        SetUnhandledExceptionFilter(&TopLevelExceptionHandler);
     }
 }
 
@@ -128,7 +144,7 @@ version (linux)
     import core.sys.linux.link : link_map;
     import core.demangle : demangle;
 
-    extern (C) export void backtraced_Register()
+    void backtraced_Register()
     {
         signal(SIGSEGV, &handler);
         signal(SIGUSR1, &handler);

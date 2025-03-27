@@ -11,6 +11,7 @@ Distributed under the CC BY-4.0 License.
 
 module hip.api.internal;
 import hip.api;
+import hip.util.lifetime;
 
 ///Used for creating a function which will generate an overload to call a function pointer
 struct Overload
