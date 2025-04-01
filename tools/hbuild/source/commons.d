@@ -1021,7 +1021,7 @@ int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, strin
 	proj = resolveDependencies(
 		dArgs._opts.force,
 		os,
-		CompilationDetails(dArgs.getCompiler(), dArgs._arch),
+		CompilationDetails(dArgs.getCompiler(), null, dArgs._arch),
 		ProjectToParse(dArgs._configuration, std.file.getcwd(), null, dArgs._recipe),
 		InitialDubVariables.init,
 		BuildType.profile_gc
