@@ -300,7 +300,7 @@ else version(AppleOS){}
 else
 {
 	private string[] arguments;
-	int main(string[] args)
+	export int main(string[] args)
 	{
 		arguments = args;
 		return HipremeMain();

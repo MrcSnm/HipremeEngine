@@ -57,8 +57,7 @@
 				"Desktop",
 				"Standalone",
 				"Test"
-			],
-			"versions-windows": ["DirectX"]
+			]
 		},
 		{
 			"name": "desktop-release",
@@ -71,33 +70,11 @@
 				"Desktop",
 				"Standalone"
 			],
-			"versions-windows": ["DirectX"]
-		},
-		{
-			"name": "4mb",
-			"targetPath": "bin/desktop",
-			"targetType": "executable",
-			"subConfigurations": {
+			"subConfigurations-windows": {
 				"renderer": "dxonly",
 				"audio": "dxonly",
 				"assets": "gamut"
-			},
-			"dependencies": {
-				"d_std": {"path": "modules/d_std", "version": "*"},
-				"runtime": {"path": "dependencies/runtime", "version": "*"}
-			},
-			"lflags-windows": [
-				"/SUBSYSTEM:CONSOLE"
-			],
-			"dflags": [
-				"-Oz"
-			],
-			"versions-windows": [
-				"Desktop",
-				"Standalone",
-				"Test",
-				"DirectX"
-			]
+			}
 		},
 		{
 			"name": "nodx",
@@ -130,10 +107,7 @@
 				"Standalone"
 			],
 			"dflags-ldc": ["-link-defaultlib-shared=true"],
-			"lflags-linux-ldc": ["--export-dynamic"],
-			"versions-windows": [
-				"DirectX"
-			]
+			"lflags-linux-ldc": ["--export-dynamic"]
 		},
 		{
 			"name": "wasm",
@@ -224,7 +198,6 @@
 			"dflags-ldc": ["-link-defaultlib-shared=true"],
 			"versions-windows": [
 				"Standalone",
-				"DirectX",
 				"dll",
 				"UWP"
 			]

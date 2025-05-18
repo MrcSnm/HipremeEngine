@@ -1,7 +1,7 @@
 module hip.hipaudio.backend.xaudio.player;
 
 version(Windows):
-version(DirectX):
+version(XAudio2):
 import hip.util.system:getWindowsErrorMessage;
 import hip.hipaudio.backend.xaudio.source;
 import hip.hipaudio.backend.xaudio.clip;
