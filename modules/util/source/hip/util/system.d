@@ -284,7 +284,7 @@ bool dynamicLibraryRelease(void* dll)
     else
     {
         import core.runtime;
-        debug version(Windows)
+        version(Windows)
         {
             import core.sys.windows.winbase;
             import core.sys.windows.psapi;

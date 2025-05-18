@@ -134,6 +134,15 @@ class Widget
         w.setChildrenDirty();
     }
 
+    void removeChild(Widget child)
+    {
+        import hip.util.array;
+        if(!remove(children, child))
+            throw new Exception("Doesn't contain child.");
+        child.parent = null;
+        setChildrenDirty();
+    }
+
     void setParent(Widget w)
     {
         w.addChild(this);

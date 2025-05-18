@@ -248,7 +248,7 @@ final class HipNetwork : INetwork
 	{
 		if(status == NetConnectStatus.connected)
 		{
-			sendDisconnect(this);
+			send_disconnect(this);
 			netInterface.disconnect();
 		}
 	}

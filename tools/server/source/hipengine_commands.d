@@ -2,16 +2,23 @@ module hipengine_commands;
 import hip.api.net.server;
 
 
-ConnectedClientsResponse getConnectedClients()
+
+/**
+ * Reusable buffer to be returned by getConnectedClients
+ */
+private ConnectedClientsResponse respBuffer;
+
+ConnectedClientsResponse getConnectedClients(uint fromSocketID)
 {
     import websocket_connection;
-    ConnectedClientsResponse resp;
-    resp.clients.length = connections.length;
+    respBuffer.clients.length = connections.length > 0 ? connections.length - 1 : connections.length;
+    uint index = 0;
 
     foreach(i; 0..connections.length)
     {
-        resp.clients[i].connInfo = NetConnectInfo(NetIPAddress(null, 0, IPType.ipv4), connections[i].id);
+        if(connections[i].id != fromSocketID)
+            respBuffer.clients[index++].connInfo = NetConnectInfo(NetIPAddress(null, 0, IPType.ipv4), connections[i].id + NetID.start);
     }
 
-    return resp;
+    return respBuffer;
 }

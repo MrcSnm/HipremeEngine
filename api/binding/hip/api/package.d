@@ -97,6 +97,12 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 		pragma(mangle, "HipremeEngineMainScene")
 		export extern(C) AScene HipremeEngineMainScene()
 		{
+			version(DesktopRelease)
+			{
+				import app;
+				auto reference = &main; ///TODO: Find some other way to make main to being stripped.
+			}
+
 			mixin LoadAllAssets!(ScriptModules);
 			loadReferenced();
 			return new StartScene();

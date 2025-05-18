@@ -21,6 +21,25 @@ struct ConnectedClientsResponse
 	ConnectedClient[] clients;
 }
 
+enum AcceptResponse
+{
+	///Used when the usage is not valid. Currently, when on a request
+	request,
+	no,
+	yes
+}
+
+/**
+ * This is a common struct to return whenever someone is asking to connect
+ */
+align(1)
+struct ConnectToClientResponse
+{
+	uint connectionRequester;
+	///When it is a request, this response is invalid. It then should return a yes/no response
+	AcceptResponse response;
+}
+
 ubyte[] getNetworkFormattedData(MarkedNetReservedTypes code)
 {
 	import hip.api.net.utils;
@@ -33,7 +52,6 @@ ubyte[] getNetworkFormattedData(T)(T data, MarkedNetReservedTypes code)
 {
 	import hip.api.net.utils;
 	import std.traits:isDynamicArray;
-	import std.stdio;
 
 	uint size = getSendTypeSize(data) + cast(uint)ubyte.sizeof;
 

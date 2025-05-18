@@ -42,8 +42,8 @@ class HipremeEngineWebSocketServer: WebSocketMessageHandler
                 wsID = id++;
             }
             uint data = NetID.start + c.id;
+            writeln("Socket ID ", data, " connected. Returning its ID.");
             conn.sendBinaryMessage(toBytes(data));
-            writeln("Socket ID ", data, " connected");
         }
     }
 
@@ -55,6 +55,18 @@ class HipremeEngineWebSocketServer: WebSocketMessageHandler
         string text = msg.payload; //Irrelevant here
 
         // infoF!"Got TEXT: %s"(msg.payload);
+    }
+
+    static bool sendBinaryToSocket(uint toSocketID, ubyte[] data)
+    {
+        if(toSocketID >= connections.length)
+        {
+            writeln("toSocketID [", toSocketID, "] is out of range");
+            return false;
+        }
+
+        connections[toSocketID].socket.sendBinaryMessage(data);
+        return true;
     }
 
     /**
@@ -73,25 +85,32 @@ class HipremeEngineWebSocketServer: WebSocketMessageHandler
 
         uint fromSocketID = *cast(uint*)msg.payload[0..4] - NetID.start;
         uint toSocketID = *cast(uint*)msg.payload[4..8];
-        ubyte[] data = msg.payload[8..$];
+
+        ubyte[] data = fromNetworkBytes(msg.payload[8..$])[NetHeader.sizeof..$];
 
         switch(toSocketID)
         {
             case NetID.server:
+
                 ubyte command = *cast(ubyte*)data.ptr;
+                writeln("Received command ID [", command, "] from connection ", fromSocketID, " Buffer is ", data);
                 switch(command)
                 {
                     case MarkedNetReservedTypes.connect:
                         //Just pong it back to say it has connected.
-                        connections[fromSocketID].socket.sendBinaryMessage(getNetworkFormattedData(MarkedNetReservedTypes.connect));
+                        sendBinaryToSocket(fromSocketID, getNetworkFormattedData(MarkedNetReservedTypes.connect));
                         break;
                     case MarkedNetReservedTypes.get_connected_clients:
-                        auto response = getNetworkFormattedData(getConnectedClients, MarkedNetReservedTypes.get_connected_clients);
-                        connections[fromSocketID].socket.sendBinaryMessage(response);
-                        writeln(fromSocketID, " requested connected clients.");
+                        auto response = getNetworkFormattedData(getConnectedClients(fromSocketID), MarkedNetReservedTypes.get_connected_clients);
+                        sendBinaryToSocket(fromSocketID, response);
+                        break;
+                    case MarkedNetReservedTypes.client_connect:
+                        uint targetID = *cast(uint*)(data.ptr+ubyte.sizeof); //After the command, the targetID
+                        sendBinaryToSocket(targetID - NetID.start, getNetworkFormattedData(ConnectToClientResponse(fromSocketID), MarkedNetReservedTypes.client_connect));
                         break;
                     default:
-                        writeln("Received invalid command ID [", command, "] from connection ", fromSocketID);
+
+                        writeln("Invalid Command Received. Buffer: ", data);
                         break;
                 }
                 break;

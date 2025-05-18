@@ -58,6 +58,7 @@ class NetController(alias NetData)
 {
     import std.traits:isInstanceOf;
     import hip.api.net.server;
+    import hip.util.reflection;
     static assert(isInstanceOf!(MarkNetData, NetData), "NetController only accepts NetData as an input.");
 
     struct NetControllerResult
@@ -93,7 +94,25 @@ class NetController(alias NetData)
     INetwork network;
     protected void delegate() connectFn;
     protected void delegate() disconnectFn;
-    protected void delegate(ConnectedClientsResponse) getConnectedClientsFn;
+
+    static foreach(m; __traits(allMembers, MarkedNetReservedTypes))
+    {
+        static if(Attributes!(MarkedNetReservedTypes, m).length)
+        {
+            static if(is(Attributes!(MarkedNetReservedTypes, m)[0].Response == void))
+            {
+                mixin("protected void delegate() on_",m,"_fn;\n",
+                      "void on_",m,"(void delegate() v){ on_",m,"_fn = v;}"
+                );
+            }
+            else
+            {
+                mixin("protected void delegate(Attributes!(MarkedNetReservedTypes, m)[0].Response) on_",m,"_fn;\n",
+                      "void on_",m,"(void delegate(Attributes!(MarkedNetReservedTypes, m)[0].Response) v){ on_",m,"_fn = v;}"
+                );
+            }
+        }
+    }
 
     static foreach(t; NetData.RegisteredTypes)
     {
@@ -116,11 +135,19 @@ class NetController(alias NetData)
         }
     }
 
+    /**
+     * Use `targetConnectionID` if you wish to change the ID after connection.
+     *
+     * Params:
+     *   ip = The IPAddress to connect
+     *   id = The ID within the IP
+     * Returns: Status. Almost always will be pending
+     */
     NetConnectStatus connect(NetIPAddress ip, uint id = NetID.server)
     {
         return network.connect(ip, (INetwork net)
         {
-            net.sendConnect();
+            net.send_connect();
             // getConnectedClients();
         }, id);
     }
@@ -128,14 +155,8 @@ class NetController(alias NetData)
 
     void getConnectedClients()
     {
-        network.requestConnectedClients();
+        network.send_get_connected_clients();
     }
-
-
-
-    void onConnect(void delegate() fn){ connectFn = fn; }
-    void onDisconnect(void delegate() fn){ disconnectFn = fn; }
-    void onGetConnectedClients(void delegate(ConnectedClientsResponse) fn){ getConnectedClientsFn = fn; }
 
     pragma(inline, true)
     final uint getConnectionSelfID() const{return network.getConnectionSelfID();}
@@ -177,15 +198,23 @@ class NetController(alias NetData)
                         mixin("if(",t,"Handler !is null) ", t,"Handler(interpretNetworkData!(t)(buffer.header, data));");
                         goto default;
                 }
-                case connect:
-                    if(connectFn !is null) connectFn();
-                    break;
-                case disconnect:
-                    if(disconnectFn !is null) disconnectFn();
-                    break;
-                case get_connected_clients:
-                    if(getConnectedClientsFn !is null) getConnectedClientsFn(interpretNetworkData!(ConnectedClientsResponse)(buffer.header, data));
-                    break;
+                static foreach(m; __traits(allMembers, MarkedNetReservedTypes))
+                {
+                    static if(Attributes!(MarkedNetReservedTypes, m).length)
+                    {
+                        case mixin(m):
+                            alias fn = mixin("on_",m,"_fn");
+                            static if(is(Attributes!(MarkedNetReservedTypes, m)[0].Response == void))
+                            {
+                                if(fn) fn();
+                            }
+                            else
+                            {
+                                if(fn) fn(interpretNetworkData!(Parameters!(fn)[0])(buffer.header, data));
+                            }
+                            goto default;
+                    }
+                }
                 default:
                     break;
             }

@@ -61,6 +61,19 @@
 			"versions-windows": ["DirectX"]
 		},
 		{
+			"name": "desktop-release",
+			"targetType": "staticLibrary",
+			"dflags-ldc": [
+				"--fvisibility=hidden"
+			],
+			"lflags-windows-ldc": ["-Lmodules/renderer/lib/win64"],
+			"versions": [
+				"Desktop",
+				"Standalone"
+			],
+			"versions-windows": ["DirectX"]
+		},
+		{
 			"name": "4mb",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",

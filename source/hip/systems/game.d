@@ -168,7 +168,7 @@ class GameSystem
 
             static void logFun(string line)
             {
-                logln(line);
+                rawlog(line);
             }
 
             int status = hip.systems.compilewatcher.recompileGame(projectDir, buildCommand, &getDubError, &logFun,  errors);

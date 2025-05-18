@@ -80,10 +80,10 @@ class WASMWebsocketNetwork : INetworkBackend
     void targetConnectionID(size_t id)
     {
         connectedTo = id;
-        if(connectedTo == socketID)
+        if(socketID != NetID.server && connectedTo == socketID)
         {
             import hip.util.string;
-            throw new Exception(String("Tried to connect socket ", connectedTo, " to its same ID.").toString);
+            throw new Exception(SmallString("Tried to connect socket ", connectedTo, " to its same ID.").toString);
         }
     }
     size_t getConnectionSelfID() const { return socketID; }

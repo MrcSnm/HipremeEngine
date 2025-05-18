@@ -1,4 +1,5 @@
 module hip.api.net.hipnet;
+public import hip.api.net.server;
 
 
 /**
@@ -79,8 +80,9 @@ package enum NetDataType : ubyte
  * It also should use a fixed size type since there will be no surprises when running
  * the code via another platform or something like that.
  */
-align(1) struct NetHeader
+struct NetHeader
 {
+	align(1):
 	uint length;
 	NetDataType type;
 
@@ -91,6 +93,12 @@ struct NetConnectInfo
 {
     NetIPAddress ip;
     uint id;
+}
+
+template NetBinding(Req, Resp)
+{
+	alias Request = Req;
+	alias Response = Resp;
 }
 
 
@@ -115,51 +123,50 @@ struct NetBuffer
 
 /**
  * Those are the reserved type IDs that are found in every MarkNetData instance.
- * For identifying them, they are all snake cased. While the instance of marked net data
- * will follow exactly the type name.
+ * Since a new instance of this enum is created, the reserved types are written
+ * snake-cased.
+ * Custom type members will have the exact same name as the type they intend to use.
+ *
+ *	connect: void send_connect(INetwork)
+ *	disconnect: void send_disconnect(INetwork)
+ *	get_connected_clients: send_get_connected_clients(INetwork)
+ *  client_connect: send_client_connect(INetwork, uint targetID)
  */
 enum MarkedNetReservedTypes : ubyte
 {
 	invalid,
-	connect,
-	disconnect,
-	///Receives a hip.api.net.server.ConnectedClientsResponse
-	get_connected_clients,
+	///Send that message so NetController can identify that a network connection was established.
+	@NetBinding!(void, void) connect,
+	///Send that message so NetController can identify that a network interface was disconnected
+	@NetBinding!(void, void) disconnect,
+	///Sends a message to the server requesting for the available connection IDs
+	@NetBinding!(void, ConnectedClientsResponse) get_connected_clients,
+	///The ID to connect to. Must be a valid ID received from get_connected_clients
+	@NetBinding!(uint, ConnectToClientResponse) client_connect
 }
 
-
-/**
-* Send that message so NetController can identify that a network interface was disconnected
-* Params:
-*   net = The network interface
-*/
-void sendDisconnect(INetwork net)
+template Attributes(T, string mem)
 {
-	net.sendData(MarkedNetReservedTypes.disconnect);
-}
-/**
-* Send that message so NetController can identify that a network connection was established.
-* Params:
-*   net = The network interface
-*/
-void sendConnect(INetwork net)
-{
-	net.sendData(MarkedNetReservedTypes.connect);
-}
-/**
-* Sends a message to the server requesting for the available connection IDs
-* Params:
-*   net = The network interface
-*/
-void requestConnectedClients(INetwork net)
-{
-	uint currId = net.targetConnectionID;
-	scope(exit) net.targetConnectionID = currId;
-	net.targetConnectionID = NetID.server;
-	net.sendData(MarkedNetReservedTypes.get_connected_clients);
+	alias Attributes = __traits(getAttributes, __traits(getMember, T, mem));
 }
 
-
+static foreach(m; __traits(allMembers, MarkedNetReservedTypes))
+{
+	static if(Attributes!(MarkedNetReservedTypes, m).length)
+	{
+		static if(is(Attributes!(MarkedNetReservedTypes, m)[0].Request == void))
+		{
+			mixin("void send_",m,"(INetwork net){",
+			"net.sendDataToServer(__traits(getMember, MarkedNetReservedTypes, m));}");
+		}
+		else
+		{
+			mixin("void send_",m,"(INetwork net, Attributes!(MarkedNetReservedTypes, m)[0].Request d){",
+			"pragma(LDC_no_typeinfo) static struct Data { align(1): MarkedNetReservedTypes t; Attributes!(MarkedNetReservedTypes, m)[0].Request data;} ",
+			"net.sendDataToServer(Data(__traits(getMember, MarkedNetReservedTypes, m), d));}");
+		}
+	}
+}
 
 
 /**
@@ -266,6 +273,7 @@ interface INetwork
 	 *
 	 * Params:
 	 *   ip = The IP to connect
+	 *   onConnect = Delegate to execute when connecting
 	 *   id = ID of the address to connect to. Relevant when you're not using a P2P connection. Enforced when using websockets, since direct connection is unavailable.
 	 * Returns: The connection status
 	 */
@@ -327,6 +335,21 @@ interface INetwork
 			}
 		}
 		sendDataRaw(toNetworkBytes(toBytes(header, data)));
+	}
+
+	final void withServerTarget(scope void delegate() dg)
+	{
+		uint currID = targetConnectionID;
+		targetConnectionID = NetID.server;
+		scope(exit)
+			targetConnectionID = currID;
+		dg();
+	}
+
+
+	void sendDataToServer(T)(T data)
+	{
+		withServerTarget((){sendData(data);});
 	}
 
 	void disconnect();
