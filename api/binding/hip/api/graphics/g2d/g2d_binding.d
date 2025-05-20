@@ -68,8 +68,6 @@ else version(ScriptAPI)
             void function(IHipTilemap reg) drawMap;
             ///Sets the font for the next drawText commands
             void function (IHipFont font) setFont;
-            ///Sets the font using HipAssetManager.loadFont
-            package void function (IHipAssetLoadTask font) setFontDeferred;
             ///Changes textBatch state to use this color
             void function(HipColor) setTextColor;
             ///Draws a text using the last font set
@@ -175,8 +173,6 @@ version(none)
         void function(HipColor) setTextColor;
         ///Sets the font for the next drawText commands
         package void function (IHipFont font) setFont;
-        ///Sets the font using HipAssetManager.loadFont
-        package void function (IHipAssetLoadTask font) setFontDeferred;
         ///Draws a text using the last font set
         void function(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.centerLeft, Size bounds = Size.init, bool wordWrap = false) drawText;
         ///Draw text using those vertices. Low level API

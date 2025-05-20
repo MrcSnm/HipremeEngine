@@ -26,7 +26,7 @@ class HipAssetLoadTask : IHipAssetLoadTask
         this.fileRequesting = fileRequesting;
         this.lineRequesting = lineRequesting;
         if(asset is null)
-            _result = HipAssetResult.cantLoad;
+            _result = HipAssetResult.waiting;
         else
             _result = HipAssetResult.loaded;
     }
@@ -55,12 +55,7 @@ class HipAssetLoadTask : IHipAssetLoadTask
         import hip.error.handler;
         final switch(_result) with(HipAssetResult)
         {
-            case waiting, mainThreadLoading: break;
-            case loaded:
-                foreach(v; variables)
-                    *v = (cast(HipFileAsset)(asset)).getText;
-                break;
-            case loading:
+            case waiting, mainThreadLoading, loading:
                 //variables are implicitly `scope`, need to duplicate.
                 string*[] vars = variables.dup;
                 addOnCompleteHandler((string data)
@@ -68,6 +63,10 @@ class HipAssetLoadTask : IHipAssetLoadTask
                     foreach(v; vars)
                         *v = data;
                 });
+                break;
+            case loaded:
+                foreach(v; variables)
+                    *v = (cast(HipFileAsset)(asset)).getText;
                 break;
             case cantLoad:
                 ErrorHandler.showWarningMessage("Can't load a null asset into a variable address", name);
@@ -81,12 +80,7 @@ class HipAssetLoadTask : IHipAssetLoadTask
         import hip.error.handler;
         final switch(_result) with(HipAssetResult)
         {
-            case waiting, mainThreadLoading: break;
-            case loaded:
-                foreach(v; variables)
-                    *v = cast(HipAsset)castFunc(asset);
-                break;
-            case loading:
+            case waiting, mainThreadLoading, loading:
                 //variables are implicitly `scope`, need to duplicate.
                 HipAsset*[] vars = variables.dup;
                 addOnCompleteHandler((HipAsset completeAsset)
@@ -96,6 +90,10 @@ class HipAssetLoadTask : IHipAssetLoadTask
                     foreach(v; vars)
                         *v = theAsset;
                 });
+                break;
+            case loaded:
+                foreach(v; variables)
+                    *v = cast(HipAsset)castFunc(asset);
                 break;
             case cantLoad:
                 ErrorHandler.showWarningMessage("Can't load a null asset into a variable address", name);

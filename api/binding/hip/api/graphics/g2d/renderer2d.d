@@ -33,8 +33,6 @@ version(DefineOverloadings)
 	///Sets the font for the next drawText commands
 	void setFont(IHipFont font){G2D.setFont(font);}
 	void setFont(typeof(null)){G2D.setFont(cast(IHipFont)null);}
-	///Sets the font using HipAssetManager.loadFont
-	void setFont(IHipAssetLoadTask task){G2D.setFontDeferred(task);}
 
 	//Float overloading for drawLine
 	void drawLine(float x1, float y1, float x2, float y2, HipColor color = HipColor.no)

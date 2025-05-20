@@ -300,14 +300,18 @@ class HipTilesetImpl : HipAsset, IHipTileset
 
     private void loadJSON (const JSONValue t, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError)
     {
+        import hip.util.path;
         if(t.hasErrorOccurred)
         {
             import hip.error.handler;
             ErrorHandler.showErrorMessage("JSON Parsing Error on Tilemap", t.toString);
             return onError();
         }
+
         _tiles = new Tile[cast(uint)t["tilecount"].integer];
         _texturePath   =             t["image"].str;
+        if(!isAbsolutePath(_texturePath) && _path.length)
+            _texturePath = joinPath(_path, _texturePath).normalizePath;
         _textureHeight =   cast(uint)t["imageheight"].integer;
         _textureWidth  =   cast(uint)t["imagewidth"].integer;
         _columns       = cast(ushort)t["columns"].integer;
@@ -407,14 +411,16 @@ class HipTilesetImpl : HipAsset, IHipTileset
         {
             ErrorHandler.assertExit(texturePath != "", "No texture path for loading tilemap texture");
             string imagePath = replaceFileName(path, texturePath);
-            HipFS.read(imagePath).addOnSuccess((in ubyte[] imgData)
+            HipFS.read(imagePath)
+            .addOnError((string err)
+            {
+                ErrorHandler.showErrorMessage("Error loading image required by Tileset: "~imagePath, err);
+                onFailure();
+            })
+            .addOnSuccess((in ubyte[] imgData)
             {
                 textureImage = new Image(imagePath, cast(ubyte[])imgData, onSuccess, onFailure);
                 return FileReadResult.free;
-            }).addOnError((string err)
-            {
-                ErrorHandler.showErrorMessage("Error loading image required by Tileset", imagePath);
-                onFailure();
             });
         }
         return textureImage;
@@ -617,28 +623,27 @@ class HipTilemap : HipAsset, IHipTilemap
         }
 
         size_t maxTilesets = json["tilesets"].array.length;
-        uint loadedCount = 0;
         auto onTilesetLoad = delegate(HipTilesetImpl tileset)
         {
-            if(++loadedCount == maxTilesets)
+            ret.tilesets~= tileset;
+            if(ret.tilesets.length == maxTilesets)
                 onSuccess(ret);
         };
         foreach(t; json["tilesets"].array)
         {
+            import hip.util.path;
             const(JSONValue)* source = ("source" in t);
             uint firstGid = cast(ushort)t["firstgid"].integer;
-            HipTilesetImpl tileset;
 
+            ///Returns are being ignored since it is being handled on the onTilesetLoad
             if(source !is null)
             {
-                import hip.util.path;
                 import hip.console.log;
                 loglnWarn("Reading from source ");
-                tileset = HipTilesetImpl.read(joinPath(dirName(mapPath), source.str), onTilesetLoad, onError, firstGid);
+                HipTilesetImpl.read(joinPath(dirName(mapPath), source.str), onTilesetLoad, onError, firstGid);
             }
             else
-                tileset = HipTilesetImpl.readJSON("null", firstGid, t, onTilesetLoad, onError);
-            ret.tilesets~= tileset;
+                HipTilesetImpl.readJSON(dirName(mapPath), firstGid, t, onTilesetLoad, onError);
         }
 
 

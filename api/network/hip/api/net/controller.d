@@ -27,11 +27,11 @@ alias ChessNetController = NetController!(MarkNetData!(
 
 ChessNetController c = new ChessNetController(getNetworkInterface);
 c.connect(NetIPAddress("127.0.0.1", 10_000));
-c.registerConnect(()
+c.on_connect(()
 {
     c.sendData([BoardState()]);
 });
-c.registerDisconnect(()
+c.on_disconnect(()
 {
     logg("Waiting for other player to connect...");
 });

@@ -126,6 +126,7 @@ class HipAssetManager
     //Thread Communication
     protected __gshared IHipAssetLoadTask[] loadQueue;
     protected __gshared void delegate(HipAsset)[][IHipAssetLoadTask] completeHandlers;
+    protected __gshared void delegate()[] onEveryLoadFinished;
 
 
     public static void initialize()
@@ -207,7 +208,10 @@ class HipAssetManager
         return loadQueue.length != 0;
     }
     ///Returns whether asset manager is loading anything
-    @ExportD static int getAssetsToLoadCount(){return cast(int)loadQueue.length;}
+    @ExportD static int getAssetsToLoadCount()
+    {
+        return cast(int)loadQueue.length;
+    }
 
     ///Stops the code from running and awaits asset manager to finish loading
     @ExportD static void awaitLoad()
@@ -257,24 +261,27 @@ class HipAssetManager
 
     @ExportD static IHipAssetLoadTask loadAsset(TypeInfo tID, string path, string file = __FILE__, size_t line = __LINE__)
     {
+        IHipAssetLoadTask* cached = path in loadCache;
+        if(cached)
+            return *cached;
         auto assetFactory = tID.toString in typedAssetFactory;
         if(!assetFactory)
         {
             import hip.util.string;
             String s = String();
+            ErrorHandler.showErrorMessage("Asset type was not registered in AssetManager:", tID.toString);
 
             foreach(type, factory; typedAssetFactory)
                 s~= "\n\t- "~type.toString;
 
-            ErrorHandler.showErrorMessage("Asset type was not registered in AssetManager:", tID.toString);
             ErrorHandler.showErrorMessage("Registered Types: ", s.toString);
 
             throw new Exception("Please register the type first.");
         }
 
-
-
-        return (*assetFactory)(path, file, line);
+        IHipAssetLoadTask task = (*assetFactory)(path, file, line);
+        loadQueue~= task;
+        return task;
     }
 
     @ExportD static IHipTilemap createTilemap(uint width, uint height, uint tileWidth, uint tileHeight)
@@ -298,7 +305,7 @@ class HipAssetManager
 
     static void addOnLoadingFinish(void delegate() onFinish)
     {
-        workerPool.addOnAllTasksFinished(onFinish);
+        onEveryLoadFinished~= onFinish;
     }
 
     /**
@@ -315,13 +322,17 @@ class HipAssetManager
             IHipAssetLoadTask task = loadQueue[i];
             HipAssetLoadTask lTask = cast(HipAssetLoadTask)task;
             task.update();
-
             final switch(task.result) with(HipAssetResult)
             {
-                case loading, waiting, mainThreadLoading: break;
                 case cantLoad:
                     ErrorHandler.showWarningMessage("Could not load task: "~lTask.name, " Error: "~ lTask.error);
                     loadQueue.remove(task);
+                    break;
+                case loading, waiting:
+                    break;
+                case mainThreadLoading:
+                    import std.stdio;
+                    writeln(task, " is still loading ", lTask.name);
                     break;
                 case loaded:
                     if(auto handlers = task in completeHandlers)
@@ -334,12 +345,19 @@ class HipAssetManager
                         }
                         handlers.length = 0;
                         completeHandlers.remove(task);
-                        loadQueue.remove(task);
                     }
+                    loadQueue.remove(task);
+                    // loadCache[task.]
+                    i--;
                     break;
             }
         }
-
+        if(loadQueue.length == 0 && onEveryLoadFinished.length)
+        {
+            foreach(handler; onEveryLoadFinished)
+                handler();
+            onEveryLoadFinished.length = 0;
+        }
         workerPool.pollFinished();
     }
 

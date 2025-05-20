@@ -218,7 +218,7 @@ interface IHipFont
     }
     HipWordWrapRange wordWrapRange(string text, int maxWidth) const @nogc;
     ref HipFontChar[dchar] characters() @nogc;
-    ref IHipTexture texture() inout @nogc;
+    ref inout(IHipTexture) texture() inout @nogc;
     uint spaceWidth() const @nogc;
     uint spaceWidth(uint newWidth) @nogc;
 
@@ -250,7 +250,7 @@ abstract class HipFont : HipAsset, IHipFont
     ///////Properties///////
     final ref HipFontChar[dchar] characters(){return _characters;}
     final ref const(HipFontChar[dchar]) characters() const {return _characters;}
-    final ref IHipTexture texture(){return _texture;}
+    final ref inout(IHipTexture) texture() inout {return _texture;}
     final uint spaceWidth() const {return _spaceWidth;}
     final uint spaceWidth(uint newWidth){return _spaceWidth = newWidth;}
     final uint lineBreakHeight() const {return _lineBreakHeight;}

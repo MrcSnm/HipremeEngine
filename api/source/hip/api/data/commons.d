@@ -156,14 +156,16 @@ mixin template LoadReferencedAssets(string[] modules)
                         static if(assetUDA.path !is null)
                         {{
                             import hip.util.reflection: isArray;
-                            static if(isArray!(typeof(classMember))) alias memberType = typeof(classMember.init[0]);
+
+                            static if(!is(typeof(classMember) == string) && isArray!(typeof(classMember))) alias memberType = typeof(classMember.init[0]);
                             else alias memberType = typeof(classMember);
 
                             IHipAssetLoadTask[] tasks = loadAssets(typeid(memberType), assetUDA.path, assetUDA.start, assetUDA.end);
                             memberType* members;
+
                             static if(!__traits(compiles, classMember.offsetof)) //Static
                             {
-                                static if(isArray!(typeof(classMember)))
+                                static if(!is(memberType == string) && isArray!(memberType))
                                 {
                                     size_t start = classMember.length;
                                     classMember.length+= tasks.length;
@@ -171,11 +173,12 @@ mixin template LoadReferencedAssets(string[] modules)
                                 }
                                 else
                                     members = &classMember;
+
                                 foreach(i, task; tasks)
                                 {
                                     static if(__traits(hasMember, assetUDA, "conversionFunction"))
                                         task.into(assetUDA.conversionFunction, &members[i]);
-                                    else static if(is(T == string))
+                                    else static if(is(memberType == string))
                                         task.into(&members[i]);
                                     else
                                         task.into!(memberType)(&members[i]);
@@ -346,7 +349,10 @@ interface IHipAssetLoadTask
     void await();
     ///When the variables finish loading, it will also assign the asset to the variables 
     void into(void* function(HipAsset asset) castFunc, HipAsset*[] variables...);
-    final void into(T)(T*[] variables...){into((HipAsset asset) => (cast(void*)cast(T)asset), cast(HipAsset*[])variables);}
+    final void into(T)(T*[] variables...)
+    {
+        into((HipAsset asset) => (cast(void*)cast(T)asset), cast(HipAsset*[])variables);
+    }
     void into(string*[] variables...);
 
     ///May be executed instantly if the asset is already loaded.
@@ -370,10 +376,6 @@ interface IHipAssetLoadTask
 interface IHipDeferrableTexture
 {
     void setTexture(IHipAssetLoadTask task);
-}
-interface IHipDeferrableText
-{
-    void setFont(IHipAssetLoadTask task);
 }
 
 interface IHipDeserializable

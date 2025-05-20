@@ -56,9 +56,8 @@ private __gshared Shader bmTextShader = null;
 *   This class oculd be refactored in the future to actually
 * use a spritebatch for its drawing.
 */
-class HipTextRenderer : IHipDeferrableText, IHipBatch
+class HipTextRenderer : IHipBatch
 {
-    mixin(HipDeferredLoad);
     IHipFont font;
     Mesh mesh;
     index_t[] indices;
@@ -103,6 +102,10 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
         import hip.global.gamedef;
         //Promise it won't modify
         setFont(cast(IHipFont)HipDefaultAssets.font);
+
+        import std.stdio;
+        writeln = font;
+        writeln = font.texture;
     }
 
     void setCurrentDepth(float depth){managedDepth = depth;}
@@ -162,6 +165,7 @@ class HipTextRenderer : IHipDeferrableText, IHipBatch
             ErrorHandler.showWarningMessage("Font Missing", "No font attached on HipTextRenderer");
             return;
         }
+
         if(quadsCount - lastDrawQuadsCount != 0)
         {
             mesh.bind();
