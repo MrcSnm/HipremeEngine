@@ -16,10 +16,10 @@ import hip.hipaudio.audio;
 import hip.hipaudio.audiosource;
 import hip.hipaudio.backend.openal.player;
 import hip.hipaudio.backend.openal.al_err;
-import hip.hipaudio.backend.audioclipbase;
+import hip.hipaudio.clip;
 import bindbc.openal;
 
-/** 
+/**
  * OpenAL Buffer works in the following way:
  * If the buffer is streamed, it won't be owned by any source, so it will have total control
  * over itself. That way, it can be reused by any source.
@@ -31,7 +31,7 @@ public class HipOpenALClip : HipAudioClip
 {
     this(IHipAudioDecoder decoder, HipAudioClipHint hint){super(decoder, hint);}
     this(IHipAudioDecoder decoder, HipAudioClipHint hint, uint chunkSize){super(decoder, hint, chunkSize);}
-    
+
     override void onUpdateStream(ubyte[] data, uint decodedSize){}
 
     /** Allocates ALuint in the bufferwrapper */

@@ -5,7 +5,7 @@ version(XAudio2):
 
 import hip.hipaudio.backend.xaudio.player;
 import hip.hipaudio.backend.xaudio.clip;
-import hip.hipaudio.backend.audioclipbase;
+import hip.hipaudio.clip;
 import hip.hipaudio.audiosource;
 import directx.xaudio2;
 import directx.win32;
@@ -49,7 +49,7 @@ class HipXAudioSource : HipAudioSource
         HRESULT hr = player.xAudio.CreateSourceVoice(&sourceVoice, &fmt);
 
         ErrorHandler.assertLazyExit(SUCCEEDED(hr), "Could not create source voice: \n\t"~HipXAudioPlayer.getError(hr));
-        
+
     }
     alias clip = HipAudioSource.clip;
 
@@ -87,8 +87,8 @@ class HipXAudioSource : HipAudioSource
         return ret;
     }
 
-    
-        
+
+
     override bool play()
     {
         if(isPlaying)
@@ -97,10 +97,10 @@ class HipXAudioSource : HipAudioSource
             sourceVoice.FlushSourceBuffers();
         }
         submitClip();
-        
+
         HRESULT hr = sourceVoice.Start(0);
         ErrorHandler.assertLazyExit(SUCCEEDED(hr), "XAudio2 Failed to play: \n\t"~HipXAudioPlayer.getError(hr));
-        isPlaying = true;        
+        isPlaying = true;
         return SUCCEEDED(hr);
     }
     override bool stop()
@@ -122,7 +122,7 @@ class HipXAudioSource : HipAudioSource
         return SUCCEEDED(sourceVoice.Stop(XAUDIO2_PLAY_TAILS));
     }
     override bool play_streamed() => false;
-    
+
 
     ~this()
     {

@@ -1,4 +1,5 @@
 module hip.api.data.font;
+import hip.api.data.asset;
 public import hip.api.renderer.texture;
 
 
@@ -217,7 +218,7 @@ interface IHipFont
     }
     HipWordWrapRange wordWrapRange(string text, int maxWidth) const @nogc;
     ref HipFontChar[dchar] characters() @nogc;
-    ref IHipTexture texture() @nogc;
+    ref IHipTexture texture() inout @nogc;
     uint spaceWidth() const @nogc;
     uint spaceWidth(uint newWidth) @nogc;
 
@@ -227,11 +228,16 @@ interface IHipFont
 
 }
 
-abstract class HipFont : IHipFont
+abstract class HipFont : HipAsset, IHipFont
 {
     
     abstract int getKerning(dchar current, dchar next) const;
     abstract int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const;
+
+    this()
+    {
+        super("Font");
+    }
 
     ///Underlying GPU texture
     IHipTexture _texture;
@@ -275,5 +281,9 @@ abstract class HipFont : IHipFont
         height = lineBreakHeight*i;
     }
     HipFont getFontWithSize(uint size);
+
+    override void onFinishLoading(){}
+    override void onDispose(){}
+    override bool isReady() const {return _texture !is null;}
 
 }

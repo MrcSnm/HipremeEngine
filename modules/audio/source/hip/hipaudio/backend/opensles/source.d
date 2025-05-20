@@ -1,7 +1,7 @@
 module hip.hipaudio.backend.opensles.source;
 version(Android):
 import hip.error.handler;
-import hip.hipaudio.backend.audioclipbase;
+import hip.hipaudio.clip;
 import hip.hipaudio.backend.sles;
 import hip.util.time;
 import hip.hipaudio.audiosource;
@@ -37,7 +37,7 @@ class HipOpenSLESAudioSource : HipAudioSource
         logln("SampleRate: ", clip.getSampleRate);
         logln("Output: ", clip.getHint().outputSamplerate);
         float rate = cast(float)clip.getSampleRate() / cast(float)clip.getHint().outputSamplerate;
-        
+
         SLIAudioPlayer.setRate(*audioPlayer, rate);
 
         SLIAudioPlayer.play(*audioPlayer);
@@ -66,7 +66,7 @@ class HipOpenSLESAudioSource : HipAudioSource
     bool resume()
     {
         SLIAudioPlayer.resume(*audioPlayer);
-        return false;   
+        return false;
     }
 
 
@@ -79,7 +79,7 @@ class HipOpenSLESAudioSource : HipAudioSource
         uint decoded = clip.updateStream();
         import hip.console.log;
         HipAudioBufferWrapper* freeBuf = getFreeBuffer();
-        
+
         if(freeBuf != null)
         {
             audioPlayer.removeFreeBuffer(freeBuf.buffer.sles);
@@ -100,5 +100,5 @@ class HipOpenSLESAudioSource : HipAudioSource
         buffer.sles = b;
         return (cast(HipAudioClip)clip).findBuffer(buffer);
     }
-    
+
 }

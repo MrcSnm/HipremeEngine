@@ -1,8 +1,9 @@
 module hip.assets.tilemap;
 public import hip.api.data.tilemap;
+public import hip.api.data.asset;
+import hip.hiprenderer.texture;
 import hip.config.opts;
-import hip.assets.image;
-import hip.asset;
+import hip.image;
 
 class HipTilesetImpl : HipAsset, IHipTileset
 {
@@ -443,7 +444,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
     
     override void onFinishLoading(){}
     override void onDispose(){}
-    bool isReady(){return _texture !is null;}
+    override bool isReady() const {return _texture !is null;}
 }
 
 
@@ -683,7 +684,7 @@ class HipTilemap : HipAsset, IHipTilemap
     
     override void onFinishLoading(){}
     override void onDispose(){}
-    bool isReady(){return true;}
+    override bool isReady() const {return true;}
     
     
 }

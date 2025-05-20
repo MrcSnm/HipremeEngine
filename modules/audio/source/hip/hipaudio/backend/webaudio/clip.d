@@ -1,7 +1,7 @@
 module hip.hipaudio.backend.webaudio.clip;
 
 version(WebAssembly):
-import hip.hipaudio.backend.audioclipbase;
+import hip.hipaudio.clip;
 import hip.audio_decoding.audio;
 
 /**
@@ -21,11 +21,11 @@ class HipWebAudioClip : HipAudioClip
     {
         buffer.webaudio = *cast(size_t*)data.ptr; //Only a handle to the real data.
     }
-    
+
     ///Nothing to do
     override protected void onUpdateStream(ubyte[] data, uint decodedSize){}
 
-    ///Wraps an XAudio buffer    
+    ///Wraps an XAudio buffer
     override protected HipAudioBufferWrapper createBuffer(ubyte[] data)
     {
         HipAudioBufferWrapper ret; // TODO: implement
@@ -37,7 +37,7 @@ class HipWebAudioClip : HipAudioClip
     ///Calls XAudio2.9 specific buffer destroy
     override protected void destroyBuffer(HipAudioBuffer* buffer)
     {
-        
+
     }
-    
+
 }

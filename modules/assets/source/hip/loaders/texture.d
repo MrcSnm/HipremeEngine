@@ -3,8 +3,8 @@ import hip.filesystem.hipfs;
 import hip.asset_manager.load_task;
 import hip.assetmanager;
 import hip.api.data.commons;
-import hip.asset;
 import hip.console.log;
+import hip.hiprenderer.texture;
 
 final class HipTextureLoadTask : HipAssetLoadTask
 {

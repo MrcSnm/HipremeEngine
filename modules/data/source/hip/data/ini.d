@@ -10,10 +10,11 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.data.ini;
 public import hip.api.data.ini;
+import hip.api.data.asset;
 import hip.util.conv:to;
 
 
-class IniFile : IHipIniFile
+class HipINI : HipAsset, IHipIniFile
 {
     IniBlock[string] _blocks;
     string path;
@@ -25,22 +26,24 @@ class IniFile : IHipIniFile
     ref IniBlock[string] blocks(){return _blocks;}
     const(string[]) getErrors() const{return cast(const)errors;}
 
-    /**
-    *   Simple parser for the .conf or .ini files commonly found.
-    */
-    static IniFile parse(string content, string path = "")
+    this()
     {
-        IniFile ret = new IniFile();
-        ret.path = path;
-        if(content != "")
-            ret.configFound = true;
+        super("HipINI");
+        _typeID = assetTypeID!HipINI;
+    }
 
-        for(int i = 0; i < content.length; i++)
+    bool loadFromMemory(string data, string path)
+    {
+        this.path = path;
+        if(data != "")
+            configFound = true;
+
+        for(int i = 0; i < data.length; i++)
         {
-            char c = content[i];
+            char c = data[i];
             if(c == ';' || c == '#')
             {
-                while(i < content.length && content[++i] != '\n'){}
+                while(i < data.length && data[++i] != '\n'){}
                 continue;
             }
             else if(c == '[')
@@ -48,22 +51,22 @@ class IniFile : IHipIniFile
                 import hip.util.string : replaceAll, trim, splitRange;
                 import hip.util.algorithm:put;
                 string capture = "";
-                while(i < content.length)
+                while(i < data.length)
                 {
                     i++;
-                    if(i >= content.length)
-                        return ret;
-                    else if(content[i] == ']')
+                    if(i >= data.length)
+                        return true;
+                    else if(data[i] == ']')
                         break;
                     else
-                        capture~=content[i];
+                        capture~=data[i];
                 }
 
                 IniBlock block;
                 block.name = capture;
                 capture = "";
                 //Read until finding a key.
-                while(++i < content.length && (c = content[i]) != '['){capture~=c;}
+                while(++i < data.length && (c = data[i]) != '['){capture~=c;}
 
                 
                 foreach(l; capture.splitRange("\n"))
@@ -75,18 +78,29 @@ class IniFile : IHipIniFile
                     l.splitRange("=").put(&k, &v);
                     if(v == "")
                     {
-                        ret.errors~= "No value for key '"~k~"'";
-                        ret._noError = false;
+                        errors~= "No value for key '"~k~"'";
+                        _noError = false;
                         break;
                     }
                     string name = k.replaceAll(' ', "");
                     block.vars[name] =  IniVar(name, formatValue(v));
                 }
-                ret.blocks[block.name] = block;
+                blocks[block.name] = block;
                 i--;
             }
         }
-        return ret;
+        return true;
+    }
+
+    /**
+    *   Simple parser for the .conf or .ini files commonly found.
+    */
+    static HipINI parse(string content, string path = "")
+    {
+        HipINI f = new HipINI();
+        if(!f.loadFromMemory(content, path))
+            return null;
+        return f;
     }
 
     IniVar* getIniVar(string varPath)
@@ -102,6 +116,11 @@ class IniFile : IHipIniFile
             return null;
         return (accessorB in *b);
     }
+
+    override void onFinishLoading(){}
+    override void onDispose(){}
+    override bool isReady() const {return errors.length == 0;}
+
 }
 
 /**

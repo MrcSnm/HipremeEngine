@@ -9,19 +9,20 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.assets.textureatlas;
-import hip.asset;
 public import hip.api.data.textureatlas;
+import hip.hiprenderer.texture;
+import hip.api.data.asset;
 
 
 class HipTextureAtlas : HipAsset, IHipTextureAtlas
 {
-    import hip.assets.image;
+    import hip.image;
     string atlasPath;
     string[] texturePaths;
     IHipTexture texture;
     AtlasFrame[string] _frames;
 
-    ref AtlasFrame[string] frames(){return _frames;}
+    ref inout(AtlasFrame[string]) frames() inout {return _frames;}
 
     this()
     {
@@ -330,7 +331,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     
     override void onFinishLoading(){}
     override void onDispose(){}
-    bool isReady(){return texture !is null && frames.length > 0;}
+    override bool isReady() const {return texture !is null && frames.length > 0;}
     
 
     alias frames this;

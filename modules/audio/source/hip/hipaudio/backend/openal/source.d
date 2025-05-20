@@ -7,7 +7,7 @@ import hip.hipaudio.audio;
 import hip.hipaudio.audiosource;
 import hip.util.memory;
 import hip.hipaudio.backend.openal.al_err;
-import hip.hipaudio.backend.audioclipbase;
+import hip.hipaudio.clip;
 import bindbc.openal;
 
 
@@ -17,7 +17,7 @@ import bindbc.openal;
 enum ALfloat PANNING_CONSTANT = 1000;
 
 public class HipOpenALAudioSource : HipAudioSource
-{   
+{
     import hip.console.log;
     //id is created from OpenAL player
     uint id;
@@ -134,12 +134,12 @@ public class HipOpenALAudioSource : HipAudioSource
         alSourcef(id, AL_ROLLOFF_FACTOR, factor);
         alCheckError("Error setting OpenAL source rolloff factor");
     }
-    
+
     public void setVelocity(in float[3] vel)
     {
         alSource3f(id, AL_VELOCITY, vel[0], vel[1], vel[2]);
         alCheckError("Error setting OpenAL source velocity");
-        
+
     }
     void setDoppler(in float[3] vel)
     {
@@ -239,7 +239,7 @@ public class HipOpenALAudioSource : HipAudioSource
         HipOpenALClip c = cast(HipOpenALClip)clip;
         buffer = c.getBuffer(c.getClipData(), c.chunkSize);
         alSourceQueueBuffers(id, 1, &buffer.al);
-        
+
     }
 
 
@@ -261,7 +261,7 @@ public class HipOpenALAudioSource : HipAudioSource
         return (cast(HipAudioClip)clip).findBuffer(buffer);
     }
 
-    
+
 
     ~this()
     {

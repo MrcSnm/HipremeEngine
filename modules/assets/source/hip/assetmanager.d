@@ -46,21 +46,20 @@ mixin template HipAssetsGenerateEnum(string filePath)
 import hip.util.system;
 import hip.concurrency.thread;
 import hip.concurrency.mutex;
-public import hip.asset;
-public import hip.assets.image;
-public import hip.assets.audioclip;
+public import hip.image;
+public import hip.hiprenderer.texture;
+public import hip.hipaudio.clip;
 public import hip.assets.texture;
 public import hip.assets.tilemap;
-public import hip.assets.font;
+public import hip.font.bmfont;
+public import hip.font.ttf;
 public import hip.assets.csv;
 public import hip.assets.jsonc;
-public import hip.assets.ini;
+public import hip.data.ini;
 public import hip.api.data.commons;
 public import hip.assets.textureatlas;
 public import hip.util.data_structures;
-
-
-import hip.api.data.font;
+public import hip.api.data.font;
 
 
 
@@ -87,11 +86,11 @@ mixin template HipDeferredLoadImpl()
             deferredLoad!(HipTexture, "setTexture")(task);
         }
     }
-    static if(hasType!"hip.api.data.font.IHipFont" && hasMethod!(typeof(this), "setFont", IHipFont))
+    static if(hasType!"hip.api.data.font.HipFont" && hasMethod!(typeof(this), "setFont", IHipFont))
     {
         final void setFont(IHipAssetLoadTask task)
         {
-            deferredLoad!(HipFontAsset, "setFont")(task);
+            deferredLoad!(HipFont, "setFont")(task);
         }
     }
 }
@@ -126,7 +125,7 @@ class HipAssetManager
 
     //Thread Communication
     protected __gshared IHipAssetLoadTask[] loadQueue;
-    protected __gshared void delegate(IHipAsset)[][IHipAssetLoadTask] completeHandlers;
+    protected __gshared void delegate(HipAsset)[][IHipAssetLoadTask] completeHandlers;
 
 
     public static void initialize()
@@ -179,7 +178,7 @@ class HipAssetManager
     }
 
 
-    @ExportD static IHipAsset getAsset(string name)
+    @ExportD static HipAsset getAsset(string name)
     {
         if(HipAsset* asset = name in assets)
             return *asset;
@@ -188,7 +187,7 @@ class HipAssetManager
 
     @ExportD static string getStringAsset(string name)
     {
-        IHipAsset asset = getAsset(name);
+        HipAsset asset = getAsset(name);
         if(asset !is null)
         {
             HipFileAsset fA = cast(HipFileAsset)asset;
@@ -285,7 +284,7 @@ class HipAssetManager
     @ExportD static IHipTileset tilesetFromAtlas(IHipTextureAtlas atlas){return HipTilesetImpl.fromAtlas(cast(HipTextureAtlas)atlas);}
     @ExportD static IHipTileset tilesetFromSpritesheet(Array2D_GC!IHipTextureRegion sp){return HipTilesetImpl.fromSpritesheet(sp);}
 
-    static void addOnCompleteHandler(IHipAssetLoadTask task, void delegate(IHipAsset) onComplete)
+    static void addOnCompleteHandler(IHipAssetLoadTask task, void delegate(HipAsset) onComplete)
     {
         import hip.asset_manager.load_task;
         if(task.asset !is null)

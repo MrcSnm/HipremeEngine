@@ -429,37 +429,6 @@ string ForwardFunc(alias func, string funcName, string member)()
          "{ return " ~ member ~ "." ~funcName ~ "(__traits(parameters));}";
 }
 
-/**
-*   This function receives a string containing the member name which implements the interface I.   
-*   
-*   So, whenever something calls the interface.memberFunction, it will forward the call to that member by doing
-*   `void memberFunction(){member.memberFunction();}`, if the function is already defined, it will be ignored.
-*
-*   [Dev: Futurely, it should be changed to use `alias member` instead of getting its string.]
-*/
-string ForwardInterface(string member, I)() if(is(I == interface))
-{
-    import hip.util.string:replaceAll;
-    assert(__ctfe);
-
-    return q{
-        import std.traits:ReturnType;
-        import hip.util.reflection:isMethodImplemented, ForwardFunc, getParams;
-
-        static assert(is(typeof($member) : $I),
-            "For forwarding the interface, the member $member should be or implement $I"
-        );
-
-        static foreach(m; __traits(allMembers, $I)) 
-        static foreach(ov; __traits(getVirtualMethods, $I, m))
-        {
-            //Check for overloads here
-            static if(!isMethodImplemented!(typeof(this), m, typeof(ov)))
-                mixin(ForwardFunc!(ov, m, "$member"));
-        }
-    }.replaceAll("$I", I.stringof).replaceAll("$member", member);
-}
-
 mixin template ForwardInterface2(string member, I) if(is(I == interface))
 {
     import hip.util.reflection:isMethodImplemented, ForwardFunc;
@@ -477,11 +446,6 @@ mixin template ForwardInterface2(string member, I) if(is(I == interface))
     }
 }
 
-mixin template MultiInherit(I) if(is(I == interface))
-{
-    mixin("private I ",I.stringof,"_impl");
-    mixin(ForwardInterface!(I.stringof~"_impl", I));
-}
 
 
 void GenerateGetterSettersInterfaceImpl(interface_)()

@@ -49,7 +49,7 @@ public:
 bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) onFailure)
 {
    import hip.font.ttf;
-   import hip.assets.image;
+   import hip.image;
    __gshared int succeededSteps = 0;
    enum ASSETS_TO_LOAD = 2;
 

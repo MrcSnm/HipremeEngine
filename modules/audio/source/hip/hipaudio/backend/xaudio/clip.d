@@ -2,7 +2,7 @@ module hip.hipaudio.backend.xaudio.clip;
 
 version(Windows):
 version(XAudio2):
-import hip.hipaudio.backend.audioclipbase;
+import hip.hipaudio.clip;
 import directx.xaudio2;
 
 class HipXAudioClip : HipAudioClip
@@ -26,11 +26,11 @@ class HipXAudioClip : HipAudioClip
         this.buffer.AudioBytes = size == 0 ? cast(uint)data.length : size;
         this.buffer.pAudioData = cast(ubyte*)data.ptr;
     }
-    
+
     ///Nothing to do
     override protected void onUpdateStream(ubyte[] data, uint decodedSize){}
 
-    ///Wraps an XAudio buffer    
+    ///Wraps an XAudio buffer
     override protected HipAudioBufferWrapper createBuffer(ubyte[] data)
     {
         HipAudioBufferWrapper ret; // TODO: implement
@@ -42,6 +42,6 @@ class HipXAudioClip : HipAudioClip
     ///Calls XAudio2.9 specific buffer destroy
     override protected void destroyBuffer(HipAudioBuffer* buffer)
     {
-        
+
     }
 }

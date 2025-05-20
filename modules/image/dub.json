@@ -2,29 +2,16 @@
 	"authors": [
 		"Hipreme"
 	],
-	"buildOptions": [
-		"debugMode",
-		"debugInfo",
-		"debugInfoC"
-	],
 	"configurations": [
 		{
-			"dependencies": {
-				"gamut": "~>2.0.9"
-			},
-			"subConfigurations": {
-				"gamut": "just-decode"
-			},
-			"versions": [
-				"HipGamutImageDecoder"
-			],
+			"dependencies": { "gamut": "~>2.0.9" },
+			"subConfigurations": { "gamut": "just-decode" },
+			"versions": [ "HipGamutImageDecoder" ],
 			"name": "gamut",
 			"targetType": "library"
 		},
 		{
-			"dependencies": {
-				"arsd-official:image_files": "~>11.4.1"
-			},
+			"dependencies": { "arsd-official:image_files": "~>11.4.1" },
 			"name": "arsd",
 			"targetType": "library",
 			"versions": [
@@ -32,19 +19,8 @@
 			]
 		},
 		{
-			"importPaths": [
-				"../wasm/source"
-			],
+			"importPaths": [ "../wasm/source" ],
 			"name": "wasm",
-			"targetType": "library"
-		},
-		{
-			"dflags": [
-				"-H",
-				"-Hdimport",
-				"-op"
-			],
-			"name": "header",
 			"targetType": "library"
 		}
 	],

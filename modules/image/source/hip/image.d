@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.image;
+public import hip.api.data.asset;
 public import hip.api.data.image;
 
 
@@ -18,7 +19,12 @@ IHipPNGDecoder png;
 IHipWebPDecoder webP;
 
 
-public class HipImageImpl : IImage
+/**
+*   This class represents pixel data on RAM (CPU Powered)
+*   this is useful for loading images on another thread and then
+*   sending it to the GPU
+*/
+public class Image : HipAsset, IImage
 {
     IHipImageDecoder decoder;
     string imagePath;
@@ -29,18 +35,26 @@ public class HipImageImpl : IImage
     ubyte[] pixels;
     this(string path = "")
     {
+        import hip.util.system : sanitizePath;
         import hip.image_backend.impl;
+        path = sanitizePath(path);
+        super("Image_"~path);
         imagePath = path;
         decoder = getDecoder(path);
+    }
+    this(in string path, in ubyte[] buffer, void delegate(IImage self) onSuccess, void delegate() onFailure)
+    {
+        this(path);
+        loadFromMemory(cast(ubyte[])buffer, onSuccess, onFailure);
     }
 
     static immutable(IImage) getPixelImage()
     {
-        __gshared HipImageImpl img; 
+        __gshared Image img;
         __gshared ubyte[4] pixel = IHipImageDecoder.getPixel();
         if(img is null)
         {
-            img = new HipImageImpl("Pixel");
+            img = new Image("Pixel");
             img.pixels = pixel;
             img.width = 1;
             img.height = 1;
@@ -87,6 +101,8 @@ public class HipImageImpl : IImage
 
     bool hasLoadedData() const {return pixels !is null && width != 0 && height != 0;}
 
+    override bool isReady() const { return hasLoadedData(); }
+
     ubyte[] monochromeToRGBA() const
     {
         import hip.error.handler;
@@ -132,10 +148,8 @@ public class HipImageImpl : IImage
         return pix;
     }
 
-    void dispose()
-    {
-        decoder.dispose();
-    }
+    override void onDispose() {decoder.dispose(); }
+    override void onFinishLoading() { }
     alias w = width;
     alias h = height;
 }

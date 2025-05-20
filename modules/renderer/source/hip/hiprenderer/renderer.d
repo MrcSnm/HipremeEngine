@@ -66,7 +66,7 @@ class HipRenderer
         import hip.config.opts;
         import hip.data.ini;
         import hip.hiprenderer.initializer;
-        IniFile ini = IniFile.parse(confData, confPath);
+        HipINI ini = HipINI.parse(confData, confPath);
         HipRendererConfig cfg;
         rendererType = getRendererTypeFromVersion();
         int renderWidth = HIP_DEFAULT_WINDOW_SIZE[0];

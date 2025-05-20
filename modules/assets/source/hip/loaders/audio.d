@@ -3,7 +3,6 @@ import hip.filesystem.hipfs;
 import hip.asset_manager.load_task;
 import hip.assetmanager;
 import hip.api.data.commons;
-import hip.asset;
 
 final class HipAudioLoadTask : HipAssetLoadTask
 {
@@ -26,8 +25,9 @@ final class HipAudioLoadTask : HipAssetLoadTask
                     .addOnError((string error){result = cantLoad; this.error = error;})
                     .addOnSuccess((in ubyte[] data)
                     {
-                        auto clip = new hip.assets.audioclip.HipAudioClip();
-                        asset = clip;
+                        import hip.hipaudio.audio;
+                        auto clip = HipAudio.getClip();
+                        asset = cast(HipAsset)clip; //TODO: Refactor HipAudioClip to not use inheritance
                         clip.loadFromMemory(data, getEncodingFromName(path), HipAudioType.SFX,
                         (in ubyte[] newData)
                         {

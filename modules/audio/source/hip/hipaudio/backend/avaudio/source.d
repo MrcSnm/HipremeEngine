@@ -41,11 +41,11 @@ class HipAVAudioSource : HipAudioSource
         return ret;
     }
 
-    
-        
+
+
     override bool play()
     {
-        import hip.hipaudio.backend.audioclipbase;
+        import hip.hipaudio.clip;
         if(isPlaying)
         {
         }
@@ -67,10 +67,10 @@ class HipAVAudioSource : HipAudioSource
         return false;
     }
     override bool play_streamed() => false;
-    
+
 
     ~this()
     {
-        
+
     }
 }

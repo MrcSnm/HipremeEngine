@@ -1,6 +1,5 @@
 module hip.asset_manager.load_task;
 import hip.concurrency.thread;
-public import hip.asset;
 import hip.config.opts;
 import hip.api.data.commons;
 import hip.error.handler;
@@ -36,7 +35,7 @@ class HipAssetLoadTask : IHipAssetLoadTask
     bool opCast(T : bool)() const{return hasFinishedLoading;}
 
 
-    void addOnCompleteHandler(void delegate(IHipAsset) onComplete)
+    void addOnCompleteHandler(void delegate(HipAsset) onComplete)
     {
         HipAssetManager.addOnCompleteHandler(this, onComplete);
     }
@@ -77,7 +76,7 @@ class HipAssetLoadTask : IHipAssetLoadTask
     }
 
 
-    void into(void* function(IHipAsset asset) castFunc, IHipAsset*[] variables...)
+    void into(void* function(HipAsset asset) castFunc, HipAsset*[] variables...)
     {
         import hip.error.handler;
         final switch(_result) with(HipAssetResult)
@@ -85,14 +84,14 @@ class HipAssetLoadTask : IHipAssetLoadTask
             case waiting, mainThreadLoading: break;
             case loaded:
                 foreach(v; variables)
-                    *v = cast(IHipAsset)castFunc(asset);
+                    *v = cast(HipAsset)castFunc(asset);
                 break;
             case loading:
                 //variables are implicitly `scope`, need to duplicate.
-                IHipAsset*[] vars = variables.dup;
-                addOnCompleteHandler((IHipAsset completeAsset)
+                HipAsset*[] vars = variables.dup;
+                addOnCompleteHandler((HipAsset completeAsset)
                 {
-                    IHipAsset theAsset = cast(IHipAsset)castFunc(completeAsset);
+                    HipAsset theAsset = cast(HipAsset)castFunc(completeAsset);
                     assert(theAsset !is null, "Null asset received in complete handler?");
                     foreach(v; vars)
                         *v = theAsset;
@@ -112,7 +111,7 @@ class HipAssetLoadTask : IHipAssetLoadTask
     void update(){}
 
     HipAssetResult result() const {return _result;}
-    IHipAsset asset(){return _asset;}
+    HipAsset asset(){return _asset;}
     HipAssetResult result(HipAssetResult newResult){return _result = newResult;}
-    IHipAsset asset(IHipAsset newAsset){return _asset = cast(HipAsset)newAsset;}
+    HipAsset asset(HipAsset newAsset){return _asset = cast(HipAsset)newAsset;}
 }

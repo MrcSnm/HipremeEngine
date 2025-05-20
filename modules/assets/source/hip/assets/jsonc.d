@@ -1,7 +1,7 @@
 module hip.assets.jsonc;
-import hip.asset;
 public import hip.data.jsonc;
 public import hip.api.data.jsonc;
+import hip.api.data.asset;
 
 
 class HipJSONC : HipAsset, IHipJSONC
@@ -39,6 +39,6 @@ class HipJSONC : HipAsset, IHipJSONC
     }
     override void onFinishLoading(){}
     override void onDispose(){}
-    bool isReady(){return data.length > 0;}
+    override bool isReady() const {return data.length > 0;}
     string getData(){return data;}
 }

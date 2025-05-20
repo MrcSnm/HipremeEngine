@@ -3,10 +3,10 @@ import hip.filesystem.hipfs;
 import hip.asset_manager.load_task;
 import hip.assetmanager;
 import hip.api.data.commons;
-import hip.asset;
 import hip.font.bmfont;
 import hip.font.ttf;
-import hip.assets.font;
+import hip.hiprenderer.texture;
+
 
 
 final class HipTTFFontLoadTask : HipAssetLoadTask
@@ -55,7 +55,7 @@ final class HipTTFFontLoadTask : HipAssetLoadTask
                     result = cantLoad; error = "Failed loading texture for TTF Font";
                     return;
                 }
-                asset = new HipFontAsset(ttFont);
+                asset = ttFont;
                 result = loaded;
                 break;
             case cantLoad: goto case loaded;
@@ -122,7 +122,7 @@ final class HipBMFontLoadTask : HipAssetLoadTask
                     result = cantLoad; error = "Failed loading texture for TTF Font";
                     return;
                 }
-                asset = new HipFontAsset(font);
+                asset = font;
                 result = loaded;
                 break;
             case cantLoad: goto case loaded;

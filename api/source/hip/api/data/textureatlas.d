@@ -59,7 +59,7 @@ struct AtlasFrame
 
 interface IHipTextureAtlas
 {
-    ref AtlasFrame[string] frames();
+    ref inout(AtlasFrame[string]) frames() inout ;
 
     alias frames this;
 }

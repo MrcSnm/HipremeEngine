@@ -13,85 +13,13 @@ Distributed under the CC BY-4.0 License.
 *   Asset representation of a texture
 */
 module hip.assets.texture;
-import hip.asset;
 import hip.error.handler;
-import hip.hiprenderer.renderer;
+import hip.hiprenderer.texture;
 import hip.math.rect;
-import hip.assets.image;
+import hip.image;
 public import hip.util.data_structures:Array2D;
 public import hip.api.renderer.texture;
-
-
-import renderer = hip.hiprenderer.texture;
-import hip.util.reflection;
-
-class HipTexture : HipAsset, IHipTexture
-{
-    mixin(ForwardInterface!("textureImpl", IHipTexture));
-    
-    IImage img;
-    int width,height;
-    public IHipTexture textureImpl;
-    private bool successfullyLoaded;
-    public bool hasSuccessfullyLoaded(){return successfullyLoaded;}
-    
-    public static HipTexture getPixelTexture()
-    {
-        __gshared HipTexture pixelTexture;
-        if(pixelTexture is null)
-        {
-            pixelTexture = new HipTexture();
-            pixelTexture.img = cast(IImage)Image.getPixelImage; //Cast the immutable away, promise it is immutable
-            pixelTexture.textureImpl.load(pixelTexture.img);
-        }
-        return pixelTexture;
-    }
-
-    IHipTexture getBackendHandle(){return textureImpl.getBackendHandle();}
-    /**
-    *   Initializes with the current renderer type
-    */
-    protected this()
-    {
-        super("Texture");
-        _typeID = assetTypeID!HipTexture;
-        textureImpl = HipRenderer.getTextureImplementation();
-    }
-
-
-    this(in IImage image)
-    {
-        this();
-        if(image !is null)
-            load(image);
-    }
-
-    import hip.util.string;
-    SmallString toHipString()
-    {
-        return SmallString("TEX[", width, "x",height,"] ", img.getSizeBytes, " bytes");
-    }
-    alias load = IHipTexture.load;
-
-
-    protected bool loadImpl(in IImage img)
-    {
-        this.img = cast(IImage)img;
-        successfullyLoaded = textureImpl.load(img);
-        width = textureImpl.getWidth;
-        height = textureImpl.getHeight;
-        return successfullyLoaded;
-    }
-    
-    override void onFinishLoading(){}
-    override void onDispose(){}
-    
-    bool isReady(){return textureImpl !is null;}
-    final int getWidth() const {return width;}
-    final int getHeight() const {return height;}
-    
-}
-
+public import hip.hiprenderer.texture;
 
 
 class HipTextureRegion : HipAsset, IHipTextureRegion
@@ -252,6 +180,6 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
     }
     override void onFinishLoading(){}
     override void onDispose(){}
-    bool isReady(){return texture !is null;}
+    override bool isReady() const {return texture !is null;}
     
 }

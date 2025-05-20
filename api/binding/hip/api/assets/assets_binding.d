@@ -1,5 +1,6 @@
 module hip.api.assets.assets_binding;
 public import hip.api.data.commons;
+public import hip.api.data.asset;
 public import hip.api.data.font;
 public import hip.api.data.textureatlas;
 public import hip.api.data.tilemap;
@@ -72,9 +73,9 @@ version(ScriptAPI)
             *   Reserved for deferred loading.
             *   Use it on your own risk.
             */
-            void function (IHipAssetLoadTask task, void delegate(IHipAsset) onComplete) addOnCompleteHandler;
+            void function (IHipAssetLoadTask task, void delegate(HipAsset) onComplete) addOnCompleteHandler;
 
-            IHipAsset function(string name) getAsset;
+            HipAsset function(string name) getAsset;
             string function(string name) getStringAsset;
 
             version(Have_util)

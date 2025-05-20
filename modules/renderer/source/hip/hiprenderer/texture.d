@@ -16,7 +16,7 @@ import hip.image;
 public import hip.util.data_structures:Array2D;
 public import hip.api.renderer.texture;
 
-class HipTexture : IHipTexture
+class HipTexture : HipAsset, IHipTexture
 {
     IImage img;
     int width,height;
@@ -24,15 +24,15 @@ class HipTexture : IHipTexture
     private __gshared HipTexture pixelTexture;
 
     bool hasSuccessfullyLoaded(){return img.getWidth > 0;}
-    public static immutable(HipTexture) getPixelTexture()
+    public static HipTexture getPixelTexture()
     {
         if(pixelTexture is null)
         {
             pixelTexture = new HipTexture();
-            pixelTexture.img = cast(IImage)HipImageImpl.getPixelImage();
+            pixelTexture.img = cast(IImage)Image.getPixelImage();
             pixelTexture.textureImpl.load(pixelTexture.img);
         }
-        return cast(immutable)pixelTexture;
+        return pixelTexture;
     }
 
     /**
@@ -42,9 +42,14 @@ class HipTexture : IHipTexture
     /**
     *   Initializes with the current renderer type
     */
-    protected this(){textureImpl = HipRenderer.getTextureImplementation();}
+    protected this()
+    {
+        super("HipTexture");
+        _typeID = assetTypeID!HipTexture;
+        textureImpl = HipRenderer.getTextureImplementation();
+    }
 
-    this(IImage image)
+    this(const IImage image)
     {
         this();
         if(image !is null)
@@ -86,6 +91,17 @@ class HipTexture : IHipTexture
         setTextureFilter(TextureFilter.NEAREST, TextureFilter.NEAREST);
         return width != 0;
     }
+    import hip.util.string;
+    SmallString toHipString()
+    {
+        return SmallString("TEX[", width, "x",height,"] ", img.getSizeBytes, " bytes");
+    }
+
     int getWidth() const {return width;}
     int getHeight() const {return height;}
+
+    override void onFinishLoading(){}
+    override void onDispose(){}
+
+    override bool isReady() const {return textureImpl !is null;}
 }

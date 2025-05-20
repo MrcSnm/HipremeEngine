@@ -5,7 +5,7 @@ public import avaudiobuffer;
 public import avaudiotypes;
 import objc.runtime;
 import avaudiosinknode;
-import hip.hipaudio.backend.audioclipbase;
+import hip.hipaudio.clip;
 import hip.hipaudio.backend.avaudio.player;
 import hip.api.data.audio;
 import avaudiosourcenode;
@@ -54,14 +54,14 @@ class HipAVAudioClip : HipAudioClip
                 import hip.console.log;
                 logln("frameLength: ", b.frameLength, " , frameCapacity: ", b.frameCapacity, " stride: ", b.stride);
             }
-            
+
             AVAudioFormat rawFormat = HipAVAudioPlayer.fromConfig(decoder.getAudioConfig);
             converter = AVAudioConverter.alloc.initFromFormat(
                 rawFormat,
                 HipAVAudioPlayer.fromConfig(HipAVAudioPlayer.getAudioConfig)
             );
 
-            AudioBufferList* list = getAudioBufferList(AudioBuffer(decoder.getClipChannels, 
+            AudioBufferList* list = getAudioBufferList(AudioBuffer(decoder.getClipChannels,
                 cast(uint)getClipSize, getClipData.ptr)
             );
 
@@ -96,20 +96,20 @@ class HipAVAudioClip : HipAudioClip
         else
         {
             AVAudioFormat rawFormat = HipAVAudioPlayer.fromConfig(decoder.getAudioConfig);
-            AudioBufferList list = AudioBufferList(1, AudioBuffer(decoder.getClipChannels, 
+            AudioBufferList list = AudioBufferList(1, AudioBuffer(decoder.getClipChannels,
                 cast(uint)getClipSize, getClipData.ptr)
             );
             this.buffer = AVAudioPCMBuffer.alloc.initWithPCMFormat(
                 rawFormat, &list, &tempDeallocator
             );
         }
-        
+
     }
-    
+
     ///Nothing to do
     override protected void onUpdateStream(ubyte[] data, uint decodedSize){}
 
-    ///Wraps an AVAudioBuffer buffer    
+    ///Wraps an AVAudioBuffer buffer
     override protected HipAudioBufferWrapper createBuffer(ubyte[] data)
     {
         this.buffer = AVAudioPCMBuffer.alloc.initWithPCMFormat(HipAVAudioPlayer.fromConfig(HipAVAudioPlayer.getAudioConfig), cast(uint)data.length);
@@ -122,6 +122,6 @@ class HipAVAudioClip : HipAudioClip
     ///Calls XAudio2.9 specific buffer destroy
     override protected void destroyBuffer(HipAudioBuffer* buffer)
     {
-        
+
     }
 }

@@ -1,7 +1,7 @@
 module hip.assets.csv;
-import hip.asset;
 public import hip.api.data.csv;
 public import hip.data.csv;
+import hip.api.data.asset;
 
 class HipCSV : HipAsset, IHipCSV
 {
@@ -37,7 +37,7 @@ class HipCSV : HipAsset, IHipCSV
     
     override void onFinishLoading(){}
     override void onDispose(){}
-    bool isReady(){return csv.data.length > 0;}
+    override bool isReady() const {return csv.data.length > 0;}
     size_t rows() const {return csv.data.length;}
     size_t columns() const {return csv.data[0].length;}
     string path() const {return csv.path;}

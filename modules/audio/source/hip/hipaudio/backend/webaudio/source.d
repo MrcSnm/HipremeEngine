@@ -14,7 +14,7 @@ extern(C) void WebAudioSourceSetPlaybackRate(size_t src, float rate);
 import hip.hipaudio.backend.webaudio.player;
 import hip.hipaudio.backend.webaudio.clip;
 import hip.hipaudio.audiosource;
-import hip.hipaudio.backend.audioclipbase;
+import hip.hipaudio.clip;
 import hip.error.handler;
 
 
@@ -45,7 +45,7 @@ class HipWebAudioSource : HipAudioSource
         return ret;
     }
 
-        
+
     override bool play()
     {
         WebAudioSourceSetPlaying(webSrc, true);
@@ -62,7 +62,7 @@ class HipWebAudioSource : HipAudioSource
         return true;
     }
     override bool play_streamed() => false;
-    
+
 
     ~this(){webSrc = 0;}
 }

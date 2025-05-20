@@ -8,12 +8,13 @@ Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
 */
-module hip.hipaudio.backend.audioclipbase;
+module hip.hipaudio.clip;
 import hip.util.path : baseName;
 import hip.error.handler;
 import hip.audio_decoding.audio;
 import hip.hipaudio.audio;
 import hip.hipaudio.audiosource;
+import hip.api.data.asset;
 public import hip.api.audio.audioclip;
 
 
@@ -66,7 +67,7 @@ struct HipAudioBufferWrapper
 *   3. HipAudioSource calls `.setClip`, which should call `clip.getBuffer`, which gets the buffer
 *   wrapped by the current implementation `createBuffer`, and then the buffer is enqueued.
 */
-public abstract class HipAudioClip : IHipAudioClip
+public abstract class HipAudioClip : HipAsset, IHipAudioClip
 {
     IHipAudioDecoder decoder;
     ///Unused for non streamed. It is the binary loaded from a file which will be decoded
@@ -96,6 +97,7 @@ public abstract class HipAudioClip : IHipAudioClip
     bool isStreamed = false;
     string fileName;
 
+
     
     ///Event method called when the stream is updated
     protected abstract void  onUpdateStream(ubyte[] data, uint decodedSize);
@@ -117,7 +119,13 @@ public abstract class HipAudioClip : IHipAudioClip
 
     final immutable(HipAudioClipHint)* getHint(){return cast(immutable)&hint;}
 
-    this(IHipAudioDecoder decoder, HipAudioClipHint hint){this.decoder = decoder; this.hint = hint;}
+    this()
+    {
+        super("HipAudioClip");
+        _typeID = assetTypeID!HipAudioClip();
+    }
+
+    this(IHipAudioDecoder decoder, HipAudioClipHint hint){this(); this.decoder = decoder; this.hint = hint;}
     this(IHipAudioDecoder decoder, HipAudioClipHint hint, uint chunkSize)
     in(chunkSize > 0, "Chunk must be greater than 0")
     {
@@ -236,9 +244,11 @@ public abstract class HipAudioClip : IHipAudioClip
         AudioConfig cfg = decoder.getAudioConfig();
         return getClipSize() / (cast(float) cfg.sampleRate);
     }
-  
 
-    public void unload()
+    override void onFinishLoading(){}
+    override bool isReady() const { return true; }
+
+    override void onDispose()
     {
         decoder.dispose();
         foreach (ref b; buffersCreated)

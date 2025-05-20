@@ -1,4 +1,5 @@
 module hip.api.data.commons;
+public import hip.api.data.asset;
 
 
 ///Use @Asset instead of HipAsset.
@@ -303,13 +304,6 @@ interface IHipPreloadable
     }
 }
 
-
-interface ILoadable
-{
-    /** Should return if the asset is ready for use*/
-    bool isReady();
-}
-
 /**
 *   OpenGL Renderer must implement IReloadable for when changing device orientation.
 */
@@ -318,14 +312,6 @@ interface IReloadable
     bool reload();
 }
 
-interface IHipAsset
-{
-    string name() const;
-    string name(string newName);
-
-    uint assetID() const;
-    uint typeID() const;
-}
 
 
 enum HipAssetResult
@@ -351,20 +337,20 @@ interface IHipAssetLoadTask
     ///Sets the result. Should not exist in user code.
     HipAssetResult result(HipAssetResult result);
 
-    IHipAsset asset();
+    HipAsset asset();
     ///Sets the asset. Should not exist in user code.
-    IHipAsset asset(IHipAsset asset);
+    HipAsset asset(HipAsset asset);
 
     bool hasFinishedLoading() const;
     ///Awaits the asset load process. Can't be used on WebAssembly export
     void await();
     ///When the variables finish loading, it will also assign the asset to the variables 
-    void into(void* function(IHipAsset asset) castFunc, IHipAsset*[] variables...);
-    final void into(T)(T*[] variables...){into((IHipAsset asset) => (cast(void*)cast(T)asset), cast(IHipAsset*[])variables);}
+    void into(void* function(HipAsset asset) castFunc, HipAsset*[] variables...);
+    final void into(T)(T*[] variables...){into((HipAsset asset) => (cast(void*)cast(T)asset), cast(HipAsset*[])variables);}
     void into(string*[] variables...);
 
     ///May be executed instantly if the asset is already loaded.
-    void addOnCompleteHandler(void delegate(IHipAsset) onComplete);
+    void addOnCompleteHandler(void delegate(HipAsset) onComplete);
     void addOnCompleteHandler(void delegate(string) onComplete);
     ///Executs a step on the loading task. Call `asset` when state is loaded
     void update();

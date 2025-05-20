@@ -116,7 +116,7 @@ class HipArsd_TTF_Font : HipFont
         import hip.image;
         import hip.hiprenderer.texture;
         import hip.error.handler;
-        HipImageImpl img = new HipImageImpl();
+        Image img = new Image();
         img.loadRaw(rawImage, _textureWidth, _textureHeight, 1);
         HipTexture t = new HipTexture(null);
 

@@ -19,7 +19,7 @@ mixin HipExportDFunctions!(hip.systems.timer_manager);
 
 
 ///ExportD doesn't work on function/delegate
-alias AssetDelegate = void delegate(IHipAsset);
+alias AssetDelegate = void delegate(HipAsset);
 export extern(System) static void HipAssetManager_addOnCompleteHandler(IHipAssetLoadTask task, AssetDelegate onComplete)
 {
     HipAssetManager.addOnCompleteHandler(task, onComplete);
