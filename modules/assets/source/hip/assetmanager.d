@@ -287,8 +287,6 @@ class HipAssetManager
                 case loading, waiting:
                     break;
                 case mainThreadLoading:
-                    import std.stdio;
-                    writeln(task, " is still loading ", lTask.name);
                     break;
                 case loaded:
                     if(auto handlers = task in completeHandlers)

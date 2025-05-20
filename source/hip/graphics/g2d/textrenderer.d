@@ -102,10 +102,6 @@ class HipTextRenderer : IHipBatch
         import hip.global.gamedef;
         //Promise it won't modify
         setFont(cast(IHipFont)HipDefaultAssets.font);
-
-        import std.stdio;
-        writeln = font;
-        writeln = font.texture;
     }
 
     void setCurrentDepth(float depth){managedDepth = depth;}
