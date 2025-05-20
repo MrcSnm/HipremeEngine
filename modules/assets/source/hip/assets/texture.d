@@ -67,9 +67,9 @@ class HipTexture : HipAsset, IHipTexture
     }
 
     import hip.util.string;
-    String toHipString()
+    SmallString toHipString()
     {
-        return String("TEX[", width, "x",height,"] ", img.getSizeBytes, " bytes");
+        return SmallString("TEX[", width, "x",height,"] ", img.getSizeBytes, " bytes");
     }
     alias load = IHipTexture.load;
 

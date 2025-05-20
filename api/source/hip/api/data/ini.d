@@ -48,7 +48,15 @@ struct IniBlock
     alias vars this;
 }
 
-
+/**
+*   Usage:
+```d
+//If not found, use 2 as default
+ini.tryGet!ubyte("buffering.count", 2);
+//Alternative usage
+ini.buffering.count.get!ubyte
+```
+*/
 interface IHipIniFile
 {
     ref IniBlock[string] blocks();

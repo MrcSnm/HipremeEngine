@@ -94,39 +94,13 @@ string[] getModulesFromRoot(string modules, string root)
     return ret[rootStart..$];
 }
 
-IHipAssetLoadTask loadAsset(type)(string assetPath)
+IHipAssetLoadTask[] loadAssets()(TypeInfo type, string assetPath, int start, int end)
 {
     import hip.api;
-    import hip.api.audio.audioclip;
-    static if(is(type == IHipCSV))
-        return HipAssetManager.loadCSV(assetPath);
-    else static if(is(type == IHipFont))
-        return HipAssetManager.loadFont(assetPath);
-    else static if(is(type == IImage))
-        return HipAssetManager.loadImage(assetPath);
-    else static if(is(type == IHipIniFile))
-        return HipAssetManager.loadINI(assetPath);
-    else static if(is(type == IHipJSONC))
-        return HipAssetManager.loadJSONC(assetPath);
-    else static if(is(type == IHipTexture))
-        return HipAssetManager.loadTexture(assetPath);
-    else static if(is(type == IHipTextureAtlas))
-        return HipAssetManager.loadTextureAtlas(assetPath);
-    else static if(is(type == IHipTilemap))
-        return HipAssetManager.loadTilemap(assetPath);
-    else static if(is(type == IHipTileset))
-        return HipAssetManager.loadTileset(assetPath);
-    else static if(is(type == IHipAudioClip))
-        return HipAssetManager.loadAudio(assetPath);
-    else
-        return HipAssetManager.loadFile(assetPath);
-}
-IHipAssetLoadTask[] loadAsset(type)(string assetPath, int start, int end)
-{
     int sign = end - start >= 0 ? 1 : -1;
     ///Include 1 for the upper bounds 
     int count = ((end - start) * sign) + 1;
-    if(count == 1) return [loadAsset!type(assetPath)];
+    if(count == 1) return [HipAssetManager.loadAsset(type, assetPath)];
     IHipAssetLoadTask[] ret = new IHipAssetLoadTask[count];
 
     static string formatStr(string str, int number)
@@ -150,7 +124,7 @@ IHipAssetLoadTask[] loadAsset(type)(string assetPath, int start, int end)
     }
 
     foreach(i; 0..count) 
-        ret[i] = loadAsset!type(formatStr(assetPath, start+i*sign));
+        ret[i] = HipAssetManager.loadAsset(type, formatStr(assetPath, start+i*sign));
     return ret;
 }
 
@@ -184,7 +158,7 @@ mixin template LoadReferencedAssets(string[] modules)
                             static if(isArray!(typeof(classMember))) alias memberType = typeof(classMember.init[0]);
                             else alias memberType = typeof(classMember);
 
-                            IHipAssetLoadTask[] tasks = hip.api.data.commons.loadAsset!(memberType)(assetUDA.path, assetUDA.start, assetUDA.end);
+                            IHipAssetLoadTask[] tasks = loadAssets(typeid(memberType), assetUDA.path, assetUDA.start, assetUDA.end);
                             memberType* members;
                             static if(!__traits(compiles, classMember.offsetof)) //Static
                             {
@@ -237,9 +211,10 @@ mixin template ForeachAssetInClass(T, alias foreachAsset)
 
 mixin template PreloadAssets()
 {
-    private void _load(type, alias theMember)(string assetPath)
+    private void _load(alias theMember)(TypeInfo t, string assetPath)
     {
-        loadAsset!type(assetPath).into(&theMember);
+        import hip.api;
+        HipAssetManager.loadAsset(t, assetPath).into(&theMember);
     }
     alias preload = ForeachAssetInClass!(typeof(this), _load);
 }
@@ -355,8 +330,10 @@ interface IHipAsset
 
 enum HipAssetResult
 {
+    waiting,
     cantLoad,
     loading,
+    mainThreadLoading,
     loaded
 }
 
@@ -389,6 +366,8 @@ interface IHipAssetLoadTask
     ///May be executed instantly if the asset is already loaded.
     void addOnCompleteHandler(void delegate(IHipAsset) onComplete);
     void addOnCompleteHandler(void delegate(string) onComplete);
+    ///Executs a step on the loading task. Call `asset` when state is loaded
+    void update();
     final void into(T)(T function(string) convertFunction, T*[] variables...)
     {
         T*[] vars = variables.dup;

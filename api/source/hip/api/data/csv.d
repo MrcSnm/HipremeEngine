@@ -20,6 +20,19 @@ struct HipCSVColumnRange
     }
 }
 
+/**
+*   Usage:
+```d
+//Iterate every value
+foreach(v; csv) //or
+//Iterate columns
+foreach(v; csv.getColumnRange(0)) //or
+//Iterate rows
+foreach(v; csv.getRow(0))
+//Get the csv cell
+csv[x, y]
+```
+*/
 interface IHipCSV
 {
     size_t rows() const;

@@ -1,9 +1,13 @@
 module hip.api.data.jsonc;
 /**
-*   As the JSON is a lot more heavyweight than everything that can be found in API, it will be a bit worse to use.
-*   One must call 
+*   Usage:
+```d
+//Must import hip.data.json for actually using it.
+import hip.data.json;
+JSONValue json = hipJSON.getJSON!JSONValue;
+json["myProperty"].str//or other types
+```
 */
-
 interface IHipJSONC
 {
     string getData();

@@ -47,6 +47,26 @@ version(ScriptAPI)
             */
             IHipTilemap function(uint width, uint height, uint tileWidth, uint tileHeight, bool isInfinite = false) createTilemap;
 
+            /**
+             * Loads any type previously registered.
+             * Can be used for:
+             * - IImage
+             * - string
+             * - IHipINI
+             * - IHipTextureAtlas
+             * - IHipTexture
+             * - IHipTilemap
+             * - IHipTileset
+             * - IHipFont
+             */
+            IHipAssetLoadTask function (TypeInfo tID, string path, string file = __FILE__, size_t line = __LINE__) loadAsset;
+
+            /**
+             * Usage Example:
+             * registerAsset(typeid(Image), (string path, string f, size_t l) => new HipImageLoadTask(path,path,null,f,l));
+             */
+            void function(TypeInfo tID, IHipAssetLoadTask delegate(string path) assetFactory) registerAsset;
+
             
             /**
             *   Reserved for deferred loading.
@@ -56,78 +76,6 @@ version(ScriptAPI)
 
             IHipAsset function(string name) getAsset;
             string function(string name) getStringAsset;
-
-            ///File reading wrapped in asset manager.
-            IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadFile;
-
-            ///Loads an in memory audio clip
-            IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadAudio;
-
-            ///Returns a load task for texture
-            IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadTexture;
-            ///Returns a load task for image
-            IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadImage;
-            ///Returns a load task for tilemap
-            IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadTilemap;
-
-            /**
-            *   This function is used in conjunction usually with `createTilemap`.
-            *   `loadTileset` is a way of loading an externally defined tileset for your procedural map.
-            *   Use `loadTilemap` when you have a complete map which you wish to load.
-            */
-            IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadTileset;
-
-
-            /**
-            *   Usage:
-            ```d
-            //Iterate every value
-            foreach(v; csv) //or
-            //Iterate columns
-            foreach(v; csv.getColumnRange(0)) //or
-            //Iterate rows
-            foreach(v; csv.getRow(0))
-            //Get the csv cell
-            csv[x, y]
-            ```
-            * Returns: IHipCSV
-            */
-            IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadCSV;
-            /**
-            *   Usage:
-            ```d
-            //If not found, use 2 as default
-            ini.tryGet!ubyte("buffering.count", 2);
-            //Alternative usage
-            ini.buffering.count.get!ubyte 
-            ```
-            * Returns: IHipINI
-            */
-            IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadINI;
-            /**
-            *   Usage:
-            ```d
-            //Must import hip.data.json for actually using it.
-            import hip.data.json;
-            JSONValue json = hipJSON.getJSON!JSONValue;
-            json["myProperty"].str//or other types
-            ```
-            * Returns: IHipJSONC
-            */
-            IHipAssetLoadTask function(string path, string f = __FILE__, size_t l = __LINE__) loadJSONC;
-
-            
-            /** 
-            *   Returns a load task for a texture atlas
-            *   If ":IGNORE" is provided for texturePath, the following behavior will occur:
-            *   - .json: Will try to load a file with same name but with extension .png
-            *   - .atlas: texturePath is always ignored
-            *   - .txt(or any): Load a file with same name but extension .png
-            *   - .xml: Ignore internal texture path to try file with same name but .png extension
-            */
-            IHipAssetLoadTask function(string atlasPath, string texturePath = ":IGNORE", string f = __FILE__, size_t l = __LINE__) loadTextureAtlas;
-            // /Returns a load task for font, when used, 
-            IHipAssetLoadTask function(string path, int fontSize = 48, string f = __FILE__, size_t l = __LINE__) loadFont;
 
             version(Have_util)
             {

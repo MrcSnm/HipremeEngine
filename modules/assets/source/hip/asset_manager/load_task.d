@@ -7,18 +7,16 @@ import hip.error.handler;
 import hip.assetmanager;
 
 
-final class HipAssetLoadTask : IHipAssetLoadTask
+class HipAssetLoadTask : IHipAssetLoadTask
 {
     string name;
     string path;
     HipAssetResult _result = HipAssetResult.cantLoad;
     HipAsset _asset = null;
     HipWorkerThread worker;
+    string error;
     private string fileRequesting;
     private size_t lineRequesting;
-
-    protected void[] partialData;
-
 
     this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
     {
@@ -58,6 +56,7 @@ final class HipAssetLoadTask : IHipAssetLoadTask
         import hip.error.handler;
         final switch(_result) with(HipAssetResult)
         {
+            case waiting, mainThreadLoading: break;
             case loaded:
                 foreach(v; variables)
                     *v = (cast(HipFileAsset)(asset)).getText;
@@ -83,6 +82,7 @@ final class HipAssetLoadTask : IHipAssetLoadTask
         import hip.error.handler;
         final switch(_result) with(HipAssetResult)
         {
+            case waiting, mainThreadLoading: break;
             case loaded:
                 foreach(v; variables)
                     *v = cast(IHipAsset)castFunc(asset);
@@ -109,63 +109,10 @@ final class HipAssetLoadTask : IHipAssetLoadTask
         if(_result == HipAssetResult.loading)
             HipAssetManager.awaitTask(this);
     }
+    void update(){}
 
-    void givePartialData(void[] data)
-    {
-        import hip.util.conv:to;
-        if(partialData !is null)
-        {
-            static if(CustomRuntime)
-                assert(false, "AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
-            else
-                throw new Error("AssetLoadTask already has partial data for task "~name~" (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
-        }
-        partialData = data;
-    }
-
-    void[] takePartialData()
-    {
-        import hip.util.conv:to;
-        if(partialData is null)
-        {
-            static if(CustomRuntime)
-                assert(false, "No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
-            else
-                throw new Error("No partial data was set before taking it for task "~name~ " (requested at "~fileRequesting~":"~lineRequesting.to!string~")");
-        }
-        void[] ret = partialData;
-        partialData = null;
-        return ret;
-    }
-    
     HipAssetResult result() const {return _result;}
     IHipAsset asset(){return _asset;}
     HipAssetResult result(HipAssetResult newResult){return _result = newResult;}
     IHipAsset asset(IHipAsset newAsset){return _asset = cast(HipAsset)newAsset;}
-}
-
-void delegate(string err = "") onFailureLoad(IHipAssetLoadTask task)
-{
-    return (err)
-    {
-        HipAssetLoadTask lTask = cast(HipAssetLoadTask)task;
-        ErrorHandler.showWarningMessage("Could not load task: "~ lTask.name, err);
-        lTask.result = HipAssetResult.cantLoad;
-        HipAssetManager.putComplete(task);
-    };
-}
-void delegate(HipAsset) onSuccessLoad(IHipAssetLoadTask task)
-{
-    return (HipAsset asset)
-    {
-        HipAssetLoadTask lTask = cast(HipAssetLoadTask)task;
-        ///Will need specific code. Web works differently
-        version(WebAssembly)
-        {
-            HipAssetManager.workerPool.signalTaskFinish();
-        }
-        lTask.asset = asset;
-        lTask.result = HipAssetResult.loaded;
-        HipAssetManager.putComplete(task);
-    };
 }

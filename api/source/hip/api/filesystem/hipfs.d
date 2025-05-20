@@ -62,6 +62,7 @@ interface IHipFSPromise
     IHipFSPromise addOnSuccess(FileReadResult delegate(in ubyte[] data) onSuccess);
     IHipFSPromise addOnError(void delegate(string error) onError);
     bool resolved() const;
+    void dispose();
   
 }
 

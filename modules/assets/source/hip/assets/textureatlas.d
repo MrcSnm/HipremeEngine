@@ -52,7 +52,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         return true;
     }
 
-    static HipTextureAtlas readJSON (ubyte[] data, string atlasPath, string texturePath)
+    static HipTextureAtlas readJSON (const ubyte[] data, string atlasPath, string texturePath)
     {
         import hip.data.json;
         import hip.assets.texture;
@@ -148,7 +148,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         return readSpritesheet(cast(ubyte[])data, spritesheetPath, texturePath);
     }
 
-    static HipTextureAtlas readSpritesheet (ubyte[] data, string spritesheetPath, string texturePath)
+    static HipTextureAtlas readSpritesheet (const ubyte[] data, string spritesheetPath, string texturePath)
     {
         import hip.util.string:splitRange, trim, isNumber;
         import hip.assets.texture;
@@ -189,7 +189,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     }
 
 
-    static HipTextureAtlas readFromMemory (ubyte[] data, string atlasPath, string texturePath = ":IGNORE")
+    static HipTextureAtlas readFromMemory (const ubyte[] data, string atlasPath, string texturePath = ":IGNORE")
     {
         import hip.util.path;
         switch(atlasPath.extension)
@@ -213,7 +213,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
        </TextureAtlas>
     ```
     */
-    static HipTextureAtlas readXML (ubyte[] data, string atlasPath, string texturePath = ":IGNORE")
+    static HipTextureAtlas readXML (const ubyte[] data, string atlasPath, string texturePath = ":IGNORE")
     {
         import hip.assets.texture;
         import hip.util.string;
@@ -255,7 +255,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     }
     
 
-    static HipTextureAtlas readAtlas (ubyte[] data, string atlasPath)
+    static HipTextureAtlas readAtlas (const ubyte[] data, string atlasPath)
     {
         import hip.util.string : split, countUntil;
         import hip.util.conv : to;

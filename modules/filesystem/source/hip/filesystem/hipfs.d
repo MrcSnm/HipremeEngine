@@ -103,7 +103,7 @@ abstract class HipFile : IHipFileItf
 }
 
 
-private class HipFSPromise : IHipFSPromise
+class HipFSPromise : IHipFSPromise
 {
     string filename;
     FileReadResult delegate(in ubyte[] data)[] onSuccessList;
@@ -121,14 +121,8 @@ private class HipFSPromise : IHipFSPromise
             if(onSuccess(data) == FileReadResult.free)
             {
                 result = FileReadResult.free;
-                version(WebAssembly) {}
-                else
-                {
-                    import core.memory;
-                    GC.free(data.ptr);
-                }
+                dispose();
             }
-
         }
         else
             onSuccessList~=onSuccess;
@@ -154,18 +148,22 @@ private class HipFSPromise : IHipFSPromise
         else foreach(err; onErrorList)
             err("Could not read file");
 
-        version(WebAssembly) {}
-        else
-        {
-            if(r == FileReadResult.free)
-            {
-                import core.memory;
-                GC.free(data.ptr);
-            }
-        }
+        if(r == FileReadResult.free)
+            dispose();
         return result = r;
     }
     bool resolved() const{return finished;}
+
+    void dispose()
+    {
+        version(WebAssembly) {}
+        else
+        {
+            import core.memory;
+            GC.free(data.ptr);
+            data = null;
+        }
+    }
 }
 
 /**

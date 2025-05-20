@@ -239,7 +239,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
         {
             case "xml":
             case "tmx":
-                assert(false, `Please call dub add arsd-official:dom for using TSX parser`);
+                throw new Exception("TMX/TSX parser was removed for making the engine smaller.");
             case "tsj":
             case "json":
                 return HipTilesetImpl.readJSON(path, firstGid, onSuccess, onError);
@@ -256,7 +256,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
         {
             case "xml":
             case "tmx":
-                assert(false, `Please call dub add arsd-official:dom for using TSX parser`);
+                throw new Exception("TMX/TSX parser was removed for making the engine smaller.");
             case "tsj":
             case "json":
                 HipTilesetImpl ret = new HipTilesetImpl(0);
@@ -273,7 +273,6 @@ class HipTilesetImpl : HipAsset, IHipTileset
     {
         import hip.filesystem.hipfs;
         import hip.console.log;
-
         HipTilesetImpl tileset = new HipTilesetImpl(0);
         tileset._path = path;
         tileset._firstGid = firstGid;
@@ -531,7 +530,7 @@ class HipTilemap : HipAsset, IHipTilemap
         return replaceFileName(path, tsxName);
     }
 
-    static HipTilemap readTiledJSON (string mapPath, ubyte[] tiledData, void delegate(HipTilemap) onSuccess, void delegate() onError)
+    static HipTilemap readTiledJSON (string mapPath, const ubyte[] tiledData, void delegate(HipTilemap) onSuccess, void delegate() onError)
     {
         import hip.data.json;
         HipTilemap ret = new HipTilemap();
@@ -623,8 +622,6 @@ class HipTilemap : HipAsset, IHipTilemap
             if(++loadedCount == maxTilesets)
                 onSuccess(ret);
         };
-
-
         foreach(t; json["tilesets"].array)
         {
             const(JSONValue)* source = ("source" in t);
@@ -642,6 +639,8 @@ class HipTilemap : HipAsset, IHipTilemap
                 tileset = HipTilesetImpl.readJSON("null", firstGid, t, onTilesetLoad, onError);
             ret.tilesets~= tileset;
         }
+
+
 
         return ret;
     }
