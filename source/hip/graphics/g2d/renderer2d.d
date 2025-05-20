@@ -9,7 +9,6 @@ import hip.graphics.orthocamera;
 import hip.hiprenderer;
 import hip.bind.interpreters;
 public import hip.api.graphics.color;
-public import hip.api.data.commons:IHipAssetLoadTask;
 public import hip.graphics.g2d.textrenderer;
 public import hip.api.renderer.viewport;
 
@@ -56,13 +55,13 @@ void initialize(HipInterpreterEntry entry = HipInterpreterEntry.init, bool shoul
     camera = new HipOrthoCamera();
     camera.setSize(viewport.worldWidth, viewport.worldHeight);
 
-    hiplog("2D Renderer: Initializing spritebatch");
-    spBatch = new HipSpriteBatch(camera);
-    hiplog("2D Renderer: Initializing geometrybatch");
-    geoBatch = new GeometryBatch(camera);
     hiplog("2D Renderer: Initializing text renderer");
     textBatch = new HipTextRenderer(camera);
-    setGeometryColor(HipColor.white);
+    hiplog("2D Renderer: Initializing geometrybatch");
+    geoBatch = new GeometryBatch(camera);
+    hiplog("2D Renderer: Initializing spritebatch");
+    spBatch = new HipSpriteBatch(camera);
+    // setGeometryColor(HipColor.white);
 
 
     version(HipremeEngineLua)
@@ -253,14 +252,6 @@ void setFont(IHipFont font)
         textBatch.setFont(cast(IHipFont)HipDefaultAssets.font);
     else
         textBatch.setFont(font);
-}
-void setFontDeferred(IHipAssetLoadTask task)
-{
-    import hip.global.gamedef;
-    if(task is null)
-        textBatch.setFont(cast(IHipFont)HipDefaultAssets.font);
-    else
-        textBatch.setFont(task);
 }
 
 void setTextColor(HipColor color)

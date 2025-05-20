@@ -63,50 +63,6 @@ public import hip.api.data.font;
 
 
 
-mixin template HipDeferredLoadImpl()
-{
-    import hip.util.reflection;
-    private void deferredLoad(T, string funcName)(IHipAssetLoadTask task)
-    {
-        alias func = __traits(getMember, typeof(this), funcName);
-        if(task.asset !is null)
-            func( cast(T)task.asset);
-        else
-            HipAssetManager.addOnCompleteHandler(task, (asset)
-            {
-                func(cast(T)asset);
-            });
-    }
-
-    pragma(msg, typeof(this).stringof, hasType!"hip.assets.texture.HipTexture",  hasMethod!(typeof(this), "setTexture", IHipTexture));
-    static if(hasType!"hip.assets.texture.HipTexture" && hasMethod!(typeof(this), "setTexture", IHipTexture))
-    {
-        final void setTexture(IHipAssetLoadTask task)
-        {
-            deferredLoad!(HipTexture, "setTexture")(task);
-        }
-    }
-    static if(hasType!"hip.api.data.font.HipFont" && hasMethod!(typeof(this), "setFont", IHipFont))
-    {
-        final void setFont(IHipAssetLoadTask task)
-        {
-            deferredLoad!(HipFont, "setFont")(task);
-        }
-    }
-}
-
-string HipDeferredLoad()
-{
-    return q{
-    mixin HipDeferredLoadImpl __dload__;
-    static foreach(func;  __traits(allMembers, __dload__))
-    {
-        mixin("alias ",func," = __dload__.", func,";");
-    }};
-}
-
-
-
 class HipAssetManager
 {
     import hip.config.opts;
