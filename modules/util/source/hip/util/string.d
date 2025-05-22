@@ -374,6 +374,20 @@ struct StringBuffer(size_t capacity)
     void put(immutable(char)* s){put(s[0..strlen(s)]);}
     void put(String s){put(s.toString());}
 
+    StringBuffer opSlice(size_t start, size_t end)
+    {
+        assert(end >= start, "Slice end must be greater or equal than start.");
+        StringBuffer ret = void;
+        ret.chars[0..end-start] = chars[start..end];
+        ret._length = end - start;
+        return ret;
+    }
+
+    ref char opIndex(size_t index)
+    {
+        return chars[index];
+    }
+
     auto opOpAssign(string op, T)(T value)
     if(op == "~")
     {
@@ -386,10 +400,11 @@ struct StringBuffer(size_t capacity)
     void clear(){_length = 0;}
     bool opCast(T : bool)() const{return _length != 0;}
     bool opEquals(const string other) const{return chars[0.._length] == other;}
-    string toString() const {return cast(string)chars[0.._length];}
+    string toString() const @trusted {return cast(string)chars[0.._length];}
 }
 
 alias BigString = StringBuffer!(8192);
+alias PathString = StringBuffer!(2048);
 alias SmallString = StringBuffer!(256);
 
 

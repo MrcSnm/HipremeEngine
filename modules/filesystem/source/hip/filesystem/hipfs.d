@@ -23,20 +23,14 @@ import hip.util.reflection;
 private pure bool validatePath(string initial, string toAppend)
 {
     import hip.util.array:lastIndexOf;
-    import hip.util.string:splitRange;
+    import hip.util.string:splitRange, PathString;
     import hip.util.system : sanitizePath;
 
     if(initial.length != 0 && initial[$-1] == '/')
         initial = initial[0..$-1];
-    scope char[] newPath = initial.sanitizePath;
-    scope char[] appends = toAppend.sanitizePath;
+    scope string appends = toAppend.sanitizePath;
 
-    scope(exit)
-    {
-        import core.memory:GC; ///TODO: Check why this was causing a bug.
-        GC.free(newPath.ptr);
-        GC.free(appends.ptr);
-    }
+    PathString newPath = PathString(initial.sanitizePath);
 
     foreach(a; splitRange(appends, "/"))
     {
@@ -44,13 +38,16 @@ private pure bool validatePath(string initial, string toAppend)
             continue;
         if(a == "..")
         {
-            long lastInd = newPath.lastIndexOf('/');
+            long lastInd = newPath.toString.lastIndexOf('/');
             if(lastInd == -1)
                 continue;
             newPath = newPath[0..cast(uint)lastInd];
         }
         else
-            newPath~= "/"~a;
+        {
+            newPath~= "/";
+            newPath~= a;
+        }
     }
     for(int i = 0; i < initial.length; i++)
         if(initial[i] != newPath[i])
@@ -270,8 +267,10 @@ class HipFileSystem
     @ExportD public static bool isPathValid(string path, bool expectsFile = true, bool shouldVerify = true)
     {
         import hip.error.handler;
+        import hip.util.string;
         if(!isInstalled) return false;
-        if(!validatePath(initialPath, defPath~path))
+        PathString s = PathString(defPath, path);
+        if(!validatePath(initialPath, s.toString))
         {
             ErrorHandler.showErrorMessage("Path failed default validation: can't reference external path.", path);
             return false;

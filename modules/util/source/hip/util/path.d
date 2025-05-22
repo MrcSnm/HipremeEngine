@@ -200,23 +200,24 @@ string replaceFileName(string filePath, string newFileName) @safe pure nothrow
 
 string normalizePath(string path)
 {
-    string[] normalized;
+    string[16] normalized;
+    size_t pathsLength;
     foreach(p; pathSplitterRange(path))
     {
         if(p == ".")
             continue;
         else if(p == "..")
         {
-            if(normalized.length > 0)
-                normalized = normalized[0..$-1];
+            if(pathsLength > 0)
+                pathsLength--;
             else
-                normalized~= p;
+                normalized[pathsLength++]= p;
         }
         else
-            normalized~= p;
+            normalized[pathsLength++]= p;
 
     }
-    return normalized.joinPath;
+    return normalized[0..pathsLength].joinPath;
 }
 
 
@@ -270,7 +271,8 @@ string joinPath(char separator, scope const string[] paths ...) @safe pure nothr
 {
     if(paths.length == 1)
         return paths[0];
-    string output;
+
+    PathString output;
     for(int i = 0; i < paths.length; i++)
     {
         string next = i+1 < paths.length ? paths[i+1] : "";
@@ -287,7 +289,7 @@ string joinPath(char separator, scope const string[] paths ...) @safe pure nothr
                 output~= separator;
         }
     }
-    return output;
+    return output.toString.dup;
 }
 
 string joinPath(scope const string[] paths ...) @safe pure nothrow

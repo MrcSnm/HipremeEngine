@@ -44,28 +44,17 @@ version(CustomRuntimeTest) version = NoSharedLibrarySupport;
 }
 enum debugger = "asm {int 3;}";
 
-char[] sanitizePath(string path) @safe pure nothrow
+string sanitizePath(string path) @safe pure nothrow
 {
-    char[] ret = new char[](path.length);
-
-    foreach(i, c; path)
+    version(Windows)
+        return path;
+    else
     {
-        version(Windows)
-        {
-            if(c == '/')
-                ret[i] = '\\';
-            else
-                ret[i] = c;
-        }
-        else
-        {
-            if(c == '\\')
-                ret[i] = '/';
-            else
-                ret[i] = c;
-        }
+        import hip.util.string;
+        if(indexOf(path, '\\') == -1)
+            return path;
+        return replaceAll(path, '\\', '/');
     }
-    return ret;
 }
 bool isPathUnixStyle(string path) @safe pure nothrow 
 {

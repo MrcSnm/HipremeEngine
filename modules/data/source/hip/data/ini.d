@@ -50,7 +50,7 @@ class HipINI : HipAsset, IHipIniFile
             {
                 import hip.util.string : replaceAll, trim, splitRange;
                 import hip.util.algorithm:put;
-                string capture = "";
+                int captureStart = i+1;
                 while(i < data.length)
                 {
                     i++;
@@ -58,15 +58,15 @@ class HipINI : HipAsset, IHipIniFile
                         return true;
                     else if(data[i] == ']')
                         break;
-                    else
-                        capture~=data[i];
                 }
 
                 IniBlock block;
-                block.name = capture;
-                capture = "";
+                block.name = data[captureStart..i];
+                string capture = "";
+                captureStart = i+1;
                 //Read until finding a key.
-                while(++i < data.length && (c = data[i]) != '['){capture~=c;}
+                while(++i < data.length && data[i] != '['){}
+                capture = data[captureStart..i];
 
                 
                 foreach(l; capture.splitRange("\n"))
