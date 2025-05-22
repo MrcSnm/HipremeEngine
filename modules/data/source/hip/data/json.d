@@ -7,6 +7,19 @@ JSONValue parseJSON(string jsonData)
     return JSONValue.parse(jsonData);
 }
 
+pragma(inline, true)
+T tryGetValue(T)(JSONValue v, string prop, T defaultValue = T.init)
+{
+	JSONValue* ret = prop in v;
+	if(ret)
+	{
+		static if(is(T == float)) return ret.floating;
+		else static if(is(T == int)) return ret.integer;
+		else return ret.get!T;
+	}
+	return defaultValue;
+}
+
 alias JSONObject = JSONValue[string];
 
 struct JSONArray
@@ -270,7 +283,20 @@ struct JSONValue
 		else static assert(false, "Unsupported type ", T.stringof);
 	}
 
-    int integer() const {return get!int;}
+    int integer() const
+	{
+		if(type == JSONType.integer)
+			return get!int;
+		else
+			return cast(int)(get!float);
+	}
+	float floating() const
+	{
+		if(type == JSONType.float_)
+			return get!float;
+		else
+			return cast(float)(get!int);
+	}
     bool boolean() const {return get!bool;}
     string str() const {return get!string;}
     string error() const{return get!string;}

@@ -108,12 +108,12 @@ static if(HipConcurrency)
                     }
                     catch(Error e)
                     {
-                        onAnyException(true, e.toString());
+                        onAnyException(true, job.name, e.toString());
                         return;
                     }
                     catch(Exception e)
                     {
-                        onAnyException(false, e.toString());
+                        onAnyException(false, job.name, e.toString());
                         return;
                     }
                 }
@@ -121,11 +121,11 @@ static if(HipConcurrency)
             }
         }
 
-        private void onAnyException(bool isError, string message)
+        private void onAnyException(bool isError, string jobName, string message)
         {
             isAlive = false;
             if(pool)
-                pool.onHipThreadError(this, isError,message);
+                pool.onHipThreadError(this, jobName, isError,message);
         }
         void dispose()
         {
@@ -181,7 +181,7 @@ static if(HipConcurrency)
                 onAllTasksFinishHandlers~= onAllFinished;
         }
 
-        protected void onHipThreadError(HipWorkerThread worker, bool isError, string message)
+        protected void onHipThreadError(HipWorkerThread worker, string jobName, bool isError, string message)
         {
             if(awaitCount > 0)
             {
@@ -189,7 +189,9 @@ static if(HipConcurrency)
             }
             import hip.util.array;
             import hip.console.log;
-            logln("Worker ", worker.jobsQueue[0].name, " failed with ", isError ? "error" : "exception", ":", message);
+
+
+            logln("Worker ", jobName, " failed with ", isError ? "error" : "exception", ":", message);
             threads.remove(worker);
         }
         void await()

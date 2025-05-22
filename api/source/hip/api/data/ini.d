@@ -11,8 +11,8 @@ struct IniVar
 
     version(Have_util)
     {
-        import hip.util.sumtype;
-        private Sumtype data;
+        import hip.util.variant;
+        private Variant data;
         IniVar opAssign(IniVar var){this.name = var.name; this.value = var.value; this.data = var.data; return this;}
 
         T get(T)()
@@ -22,7 +22,7 @@ struct IniVar
             else
             {
                 if(data.type == Type.undefined)
-                    data = Sumtype.make!T(value);
+                    data = Variant.make!T(value);
                 return data.get!T;
             }
         }

@@ -1,4 +1,4 @@
-module hip.util.sumtype;
+module hip.util.variant;
 
 enum Type : ubyte
 {
@@ -46,6 +46,8 @@ private union TypeUnion
     ///Untested
     real real_;
 }
+
+pragma(inline, true)
 pure Type getType(T)()  nothrow @nogc @safe
 {
     with(Type)
@@ -86,10 +88,10 @@ pure Type getType(T)()  nothrow @nogc @safe
 
 /**
 *   Use that when you want to hold arbitrary defined type (which usually must be converted)
-*   By using sumtype, your data will be converted only once and after that, it will be runtime
+*   By using variant, your data will be converted only once and after that, it will be runtime
 *   type strict.
 */
-struct Sumtype
+struct Variant
 {
     Type type = Type.undefined;
     TypeUnion data = void;
@@ -111,7 +113,11 @@ struct Sumtype
     T get(T)() const
     {
         if(getType!T != type)
-            throw new Exception("Tried to get a mismatching type: "~T.stringof~" (expected "~getTypeName~")");
+        {
+            import hip.util.string;
+            SmallString s = SmallString("Tried to get a mismatching type: ", T.stringof, "(expected ", getTypeName, ")");
+            throw new Exception(s.toString);
+        }
         return *cast(T*)(cast(void*)&data);
     }
     T set(T)(T value)
@@ -134,20 +140,20 @@ struct Sumtype
     }
     alias opBinaryRight = opBinary;
 
-    static Sumtype make(string data)
+    static Variant make(string data)
     {
-        return Sumtype(Type.string_, cast(TypeUnion)data);
+        return Variant(Type.string_, cast(TypeUnion)data);
     }
     
-    static Sumtype make(T)(T data) if(!is(T == string))
+    static Variant make(T)(T data) if(!is(T == string))
     {
-        Sumtype s = void;
-        s.type = getType!T;
-        s.data = *cast(TypeUnion*)(cast(void*)&data);
-        return s;
+        Variant v = void;
+        v.type = getType!T;
+        v.data = *cast(TypeUnion*)(cast(void*)&data);
+        return v;
     }
 
-    static Sumtype make(T)(string data)
+    static Variant make(T)(string data)
     {
         import hip.util.conv:to;
         return make!T(to!T(data));

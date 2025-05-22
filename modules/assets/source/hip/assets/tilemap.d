@@ -4,6 +4,7 @@ public import hip.api.data.asset;
 import hip.hiprenderer.texture;
 import hip.config.opts;
 import hip.image;
+import hip.data.json;
 
 class HipTilesetImpl : HipAsset, IHipTileset
 {
@@ -249,7 +250,6 @@ class HipTilesetImpl : HipAsset, IHipTileset
         }
     }
 
-    import hip.data.json;
     static HipTilesetImpl readFromMemory (string path, string data, void delegate(HipTilesetImpl) onSuccess, void delegate() onError, uint firstGid = 1)
     {
         import hip.util.path;
@@ -311,7 +311,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
         _tiles = new Tile[cast(uint)t["tilecount"].integer];
         _texturePath   =             t["image"].str;
         if(!isAbsolutePath(_texturePath) && _path.length)
-            _texturePath = joinPath(_path, _texturePath).normalizePath;
+            _texturePath = joinPath(dirName(_path), _texturePath).normalizePath;
         _textureHeight =   cast(uint)t["imageheight"].integer;
         _textureWidth  =   cast(uint)t["imagewidth"].integer;
         _columns       = cast(ushort)t["columns"].integer;
@@ -330,12 +330,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
                 
                 foreach(prop; currentTile["properties"].array)
                 {
-                    TileProperty _p;
-
-                    _p.name  = prop["name"].str;
-                    _p.type  = prop["type"].str;
-                    _p.value = prop["value"].toString;
-                    tile.properties[_p.name] = _p;
+                    tile.properties[prop["name"].str] = propFromJSON(prop);
                 }
                 tiles[tile.id] = tile;
             }
@@ -410,16 +405,15 @@ class HipTilesetImpl : HipAsset, IHipTileset
         if(textureImage is null)
         {
             ErrorHandler.assertExit(texturePath != "", "No texture path for loading tilemap texture");
-            string imagePath = replaceFileName(path, texturePath);
-            HipFS.read(imagePath)
+            HipFS.read(texturePath)
             .addOnError((string err)
             {
-                ErrorHandler.showErrorMessage("Error loading image required by Tileset: "~imagePath, err);
+                ErrorHandler.showErrorMessage("Error loading image required by Tileset: "~texturePath, err);
                 onFailure();
             })
             .addOnSuccess((in ubyte[] imgData)
             {
-                textureImage = new Image(imagePath, cast(ubyte[])imgData, onSuccess, onFailure);
+                textureImage = new Image(texturePath, cast(ubyte[])imgData, onSuccess, onFailure);
                 return FileReadResult.free;
             });
         }
@@ -556,43 +550,98 @@ class HipTilemap : HipAsset, IHipTilemap
             HipTileLayer layer = new HipTileLayer(ret);
 
             //Check first the layer type.
+            layer.name    =             l["name"].str;
             layer.type    =             l["type"].str;
             layer.id      = cast(ushort)l["id"].integer;
-            layer.name    =             l["name"].str;
             layer.opacity =             l["opacity"].integer;
             layer.visible =             l["visible"].boolean;
             layer.x       = cast(int)   l["x"].integer;
             layer.y       = cast(int)   l["y"].integer;
-            layer.columns = cast(int)   l["width"].integer;
-            layer.rows    = cast(int)   l["height"].integer;
             if(layer.type == TileLayerType.OBJECT_LAYER)
             {
-                foreach(o; l["objects"].array)
+                foreach(JSONValue o; l["objects"].array)
                 {
-                    TileLayerObject obj;
-                    obj.gid     = cast(ushort)o["gid"].integer;
-                    obj.height  = cast(uint)  o["height"].integer;
+                    TiledObject obj;
+
                     obj.id      = cast(ushort)o["id"].integer;
                     obj.name    =             o["name"].str;
-                    obj.rotation= cast(int)   o["rotation"].integer;
                     obj.type    =             o["type"].str;
                     obj.visible =             o["visible"].boolean;
-                    obj.width   = cast(uint)  o["width"].integer;
-                    obj.x       = cast(int)   o["x"].integer;
-                    obj.y       = cast(int)   o["y"].integer;
+
+
+                    obj.data.rect.x       = cast(int)   o["x"].floating;
+                    obj.data.rect.rotation= cast(ushort)(o["rotation"].integer % 360);
+                    obj.data.rect.y       = cast(int)   o["y"].floating;
+                    obj.data.rect.height  = cast(uint)  o["height"].floating;
+                    obj.data.rect.width   = cast(uint)  o["width"].floating;
+
+
+                    if("text" in o)
+                    {
+                        import hip.util.data_structures:staticArray;
+                        obj.dataType = TiledObjectTypes.text;
+                        JSONValue txtObj = o["text"];
+                        obj.properties["__text"] = TileProperty(null, Variant.make(tryGetValue!string(txtObj, "text")));
+                        obj.properties["__fontfamily"] = TileProperty(null, Variant.make(tryGetValue!string(txtObj, "fontfamily")));
+                        obj.properties["__wrap"] = TileProperty(null,  Variant.make(tryGetValue!bool(txtObj, "wrap")));
+                    }
+                    else if("polyline" in o)
+                    {
+                        JSONValue[] line = o["polyline"].array;
+                        obj.dataType = TiledObjectTypes.line;
+                        obj.data.rect.getLine() = [
+                            tryGetValue(line[0], "x", 0),
+                            tryGetValue(line[0], "y", 0),
+
+                            tryGetValue(line[1], "x", 0),
+                            tryGetValue(line[1], "y", 0),
+                        ];
+                    }
+                    else if("polygon" in o)
+                    {
+                        JSONValue[] poly = o["polygon"].array;
+                        obj.dataType = poly.length == 3 ? TiledObjectTypes.triangle : TiledObjectTypes.polygon;
+
+                        if(poly.length == 3)
+                        {
+                            obj.data.triangle = [
+                                tryGetValue(poly[0], "x", 0),
+                                tryGetValue(poly[0], "y", 0),
+
+                                tryGetValue(poly[1], "x", 0),
+                                tryGetValue(poly[1], "y", 0),
+
+                                tryGetValue(poly[2], "x", 0),
+                                tryGetValue(poly[2], "y", 0),
+                            ];
+                        }
+                        else
+                        {
+                            obj.data.polygon = new int[2][poly.length];
+                            foreach(i, v; poly)
+                                obj.data.polygon[i] = [
+                                    tryGetValue(poly[i], "x", 0),
+                                    tryGetValue(poly[i], "y", 0)
+                                ];
+                        }
+                    }
+                    else if("gid" in o)
+                    {
+                        obj.dataType = TiledObjectTypes.tile;
+                        obj.tile.gid = cast(ushort)o["gid"].integer;
+                    }
+                    else if("ellipse" in o)
+                        obj.dataType = TiledObjectTypes.ellipse;
+                    else if("point" in o)
+                        obj.dataType = TiledObjectTypes.point;
+                    else
+                        obj.dataType = TiledObjectTypes.rect;
 
                     const(JSONValue)* v = ("properties" in o);
                     if(v != null)
                     {
                         foreach(p; v.array) //Properties
-                        {
-                            TileProperty tp;
-                            tp.name  = p["name"].str;
-                            tp.type  = p["type"].str;
-                            tp.value = p["value"].toString;
-
-                            obj.properties[tp.name] = tp;
-                        }
+                            obj.properties[p["name"].str] = propFromJSON(p);
                     }
                 }
             }
@@ -610,13 +659,7 @@ class HipTilemap : HipAsset, IHipTilemap
             if(layerProp != null)
             {
                 foreach(p; layerProp.array)
-                {
-                    TileProperty tp;
-                    tp.name  = p["name"].str;
-                    tp.type  = p["type"].str;
-                    tp.value = p["value"].toString;
-                    layer.properties[tp.name] = tp;
-                }
+                    layer.properties[p["name"].str] = propFromJSON(p);
             }
             ret.layersArray~=layer;
             ret._layers[layer.name] = layer;
@@ -639,8 +682,8 @@ class HipTilemap : HipAsset, IHipTilemap
             if(source !is null)
             {
                 import hip.console.log;
-                loglnWarn("Reading from source ");
-                HipTilesetImpl.read(joinPath(dirName(mapPath), source.str), onTilesetLoad, onError, firstGid);
+                loglnWarn("Reading from source: ", joinPath(dirName(mapPath), source.str).normalizePath);
+                HipTilesetImpl.read(joinPath(dirName(mapPath), source.str).normalizePath, onTilesetLoad, onError, firstGid);
             }
             else
                 HipTilesetImpl.readJSON(dirName(mapPath), firstGid, t, onTilesetLoad, onError);
@@ -692,4 +735,31 @@ class HipTilemap : HipAsset, IHipTilemap
     override bool isReady() const {return true;}
     
     
+}
+
+private TileProperty propFromJSON(JSONValue v)
+{
+    import hip.util.exception;
+    JSONValue* t = "type" in v;
+    TileProperty ret = void;
+    enforce(t !is null, "propFromJSON must have a 'type'");
+    ret.type = t.str;
+    switch(ret.type)
+    {
+        case "object", "int":
+            ret.val = Variant.make(v["value"].integer);
+            break;
+        case "bool":
+            ret.val = Variant.make(v["value"].boolean);
+            break;
+        case "float":
+            ret.val = Variant.make(v["value"].floating);
+            break;
+        case "color", "string", "file":
+            ret.val = Variant.make(v["value"].str);
+            break;
+        default:
+            throw new Exception("Unknown property for TiledProperty of type "~ret.type);
+    }
+    return ret;
 }

@@ -4,7 +4,6 @@ import hip.api.net.hipnet;
 public import hip.network;
 
 version(WebAssembly):
-import hip.util.sumtype;
 
 alias WasmWebsocket = size_t;
 extern(C) WasmWebsocket connectWebsocket(

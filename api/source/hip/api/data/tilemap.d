@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.api.data.tilemap;
 public import hip.api.renderer.texture;
-
+public import hip.util.variant;
 /**
 *   TileLayers representations which can be found from Tiled.
 */
@@ -35,26 +35,33 @@ enum TileDrawOrder
 */
 struct TileProperty
 {
-    string name;
     string type;
-    string value;
-    string set(string v){return value = v;}
-    string toString() const => value;
-
-
-    version(Have_util)
+    Variant val;
+    pragma(inline, true) T get(T)()
     {
-        import hip.util.sumtype;
-        Sumtype val;
-        pragma(inline, true) T get(T)()
+        static if(is(T == string)) return val.get!string;
+        else
         {
-            if(val.type == Type.undefined)
-                val = Sumtype.make!T(value);
+            if(val.type == Type.string_)
+                val = Variant.make!T(val.get!string);
             return val.get!T;
         }
-        pragma(inline, true) T set(T)(T v) => val.set(v);
     }
+    pragma(inline, true) T set(T)(T v) => val.set(v);
 }
+
+enum TiledObjectTypes : ubyte
+{
+    rect,
+    ellipse,
+    tile,
+    point,
+    text,
+    line,
+    triangle,
+    polygon
+}
+
 
 /**
 *   A simple object which can mean absolutely anything inside a TileLayer.
@@ -63,20 +70,60 @@ struct TileProperty
 -   Event Systems
 -   Trigger Areas
 */
-struct TileLayerObject
+struct TiledObject
 {
-    int x;
-    int y;
-    uint width;
-    uint height;
     ushort id;
-    ushort gid;
-    int rotation;
+    bool visible;
+    TiledObjectTypes dataType;
     string name;
     string type;
+
+    TiledObjectUnion data;
     TileProperty[string] properties;
-    bool visible;
+
+    ref TiledRectangle rect() @trusted @nogc { assert(dataType == TiledObjectTypes.rect); return data.rect;}
+    ref TiledRectangle ellipse() @trusted @nogc { assert(dataType == TiledObjectTypes.ellipse); return data.rect;}
+    ref TiledRectangle tile() @trusted @nogc { assert(dataType == TiledObjectTypes.tile); return data.rect;}
+    ref int[2] point() @trusted @nogc { assert(dataType == TiledObjectTypes.point); return data.rect.getPoint();}
+    ref int[4] line() @trusted @nogc { assert(dataType == TiledObjectTypes.line); return data.rect.getLine();}
+    ref int[6] triangle() @trusted @nogc { assert(dataType == TiledObjectTypes.triangle); return data.triangle;}
+    ref int[2][] polygon() @trusted @nogc { assert(dataType == TiledObjectTypes.polygon); return data.polygon;}
+
+    const(TiledText) text() @trusted
+    {
+        assert(dataType == TiledObjectTypes.text);
+        TileProperty* ff = "__fontFamily" in properties;
+        TileProperty* msg = "__text" in properties;
+        TileProperty* ww = "__wordWrap" in properties;
+
+        return TiledText(data.rect, msg? msg.get!string : null, ff ? ff.get!string : null, ww ? ww.get!bool : false);
+    }
 }
+
+struct TiledText
+{
+    TiledRectangle rect;
+    string text;
+    string fontFamily;
+    bool wordWrap;
+
+    alias rect this;
+}
+struct TiledRectangle
+{
+    int x, y, width, height;
+    ushort rotation, gid;
+    ref int[2] getPoint() @trusted @nogc { return (cast(int*)&this)[0..2]; }
+    ref int[4] getLine() @trusted @nogc { return (cast(int*)&this)[0..4]; }
+}
+
+union TiledObjectUnion
+{
+    TiledRectangle rect;
+    int[6] triangle;
+    int[2][] polygon;
+}
+
 
 /**
 *   The TileAnimationFrame holds what is the ID of the current frame in a TileAnimation and how much duration.
@@ -163,11 +210,11 @@ final class HipTileLayer
     }
 
     ///Expects I and J in column/row
-    final ushort getTile(uint i, uint j) @nogc @safe
+    ushort getTile(uint i, uint j) @nogc @safe
     {
        return tiles[j*columns+i];
     }
-    final ushort checkedGetTile(uint i, uint j) @nogc @trusted
+    ushort checkedGetTile(uint i, uint j) @nogc @trusted
     {
         int target = j*columns+i;
         if(i >= columns || j >= rows || target < 0 || target >= tiles.length)
@@ -176,13 +223,13 @@ final class HipTileLayer
     }
 
     ///Gets tile from relative X and Y. Does not take into account the layer x, y
-    final ushort getTileXY(uint x, uint y) @nogc @safe
+    ushort getTileXY(uint x, uint y) @nogc @safe
     {
         return getTile(cast(uint)(x / tileWidth), cast(uint)(y / tileHeight));
     }
 
     ///Gets tile from absolute X and Y. Takes into account the layer x, y
-    final ushort checkedGetTileXY(int x, int y) @nogc @trusted
+    ushort checkedGetTileXY(int x, int y) @nogc @trusted
     {
         if(x < this.x || y < this.y || x > this.x+this.width || y > this.y+this.height)
             return 0;
