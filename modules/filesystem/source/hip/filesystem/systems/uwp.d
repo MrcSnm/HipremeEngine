@@ -117,8 +117,8 @@ version(UWP)
                 onError("Could not acquire file pointer or file has 0 size.");
                 return false;
             }
-            ubyte[] output;
-            output.length = f.size;
+            import hip.util.array;
+            ubyte[] output = uninitializedArray!(ubyte[])(f.size);
             f.read(output.ptr, f.size);
             f.close();
             destroy(f);

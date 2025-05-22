@@ -9,9 +9,9 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
         import hip.error.handler;
         if(ErrorHandler.assertLazyErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
             return false;
-        ubyte[] output;
         auto f = File(path);
-        output.length = cast(size_t)f.size;
+        import hip.util.array;
+        ubyte[] output = uninitializedArray!(ubyte[])(f.size);
         f.rawRead(output); //TODO: onError should be on try/catch
         f.close();
         onSuccess(output);

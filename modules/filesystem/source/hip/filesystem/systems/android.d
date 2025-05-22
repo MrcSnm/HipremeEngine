@@ -58,9 +58,9 @@ version(Android)
     {
         bool read(string path, FileReadResult delegate(ubyte[] data) onSuccess, void delegate(string err) onError)
         {
-            ubyte[] output;
+            import hip.util.array;
             HipAndroidFile f = new HipAndroidFile(path, FileMode.READ);
-            output.length = f.size;
+            ubyte[] output = uninitializedArray!(ubyte[])(f.size);
             bool ret = f.read(output.ptr, f.size) >= 0;
             f.close();
             destroy(f);

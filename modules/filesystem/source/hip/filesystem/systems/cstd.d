@@ -44,7 +44,8 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
             onError("Could not seek to file beginning");
             return false;
         }
-        ubyte[] output = new ubyte[size];
+        import hip.util.array;
+        ubyte[] output = uninitializedArray!(ubyte[])(size);
 
         if(size_t readed = fread(cast(void*)output.ptr, 1, cast(size_t)size, f) != size)
         {
