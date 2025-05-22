@@ -497,15 +497,31 @@ pure dstring toUTF32(string encoded)
     return decoded;
 }
 
-pure TString replaceAll(TChar, TString = TChar[])(TString str, TChar what, TString replaceWith = "")
+pure TString replaceAll(TChar, TString = TChar[])(TString str, TChar what, TString replaceWith = "") @trusted
 {
-    string ret;
-    for(int i = 0; i < str.length; i++)
+    if(replaceWith.length == 1)
     {
-        if(str[i] != what) ret~= str[i];
-        else if(replaceWith != "") ret~=replaceWith;
+        import hip.util.array;
+        char[] ret = uninitializedArray!(char[])(str.length);
+        foreach(i, ch; str)
+        {
+            if(ch == what)
+                ret[i] = replaceWith[0];
+            else
+                ret[i] = ch;
+        }
+        return cast(string)ret;
     }
-    return ret;
+    else
+    {
+        string ret;
+        for(int i = 0; i < str.length; i++)
+        {
+            if(str[i] != what) ret~= str[i];
+            else if(replaceWith != "") ret~=replaceWith;
+        }
+        return ret;
+    }
 }
 
 pure TString replaceAll(TString)(TString str, TString what, TString replaceWith = "")

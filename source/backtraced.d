@@ -1,5 +1,6 @@
 module backtraced;
 version(Windows) version = UseBacktraced;
+else version(Android) version = UseNullBacktraced;
 else version(linux) version = UseBacktraced;
 else version = UseNullBacktraced;
 

@@ -17,6 +17,7 @@ import hip.util.path:pathSeparator;
 version(PSVita) version = NoSharedLibrarySupport;
 version(WebAssembly) version = NoSharedLibrarySupport;
 version(CustomRuntimeTest) version = NoSharedLibrarySupport;
+version(Android) version = NoSharedLibrarySupport;
 
  version(Windows)
 {
@@ -53,7 +54,7 @@ string sanitizePath(string path) @safe pure nothrow
         import hip.util.string;
         if(indexOf(path, '\\') == -1)
             return path;
-        return replaceAll(path, '\\', '/');
+        return replaceAll(path, '\\', "/");
     }
 }
 bool isPathUnixStyle(string path) @safe pure nothrow 
@@ -259,11 +260,6 @@ bool dynamicLibraryRelease(void* dll)
     else version(UWP)
     {
         return cast(bool)FreeLibrary(dll);
-    }
-    else version(Android)
-    {
-        import core.sys.posix.dlfcn:dlclose;
-        return cast(bool)dlclose(dll);
     }
     else version(Posix)
     {
