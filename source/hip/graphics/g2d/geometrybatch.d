@@ -93,13 +93,7 @@ class GeometryBatch : IHipBatch
     protected pragma(inline) void checkVerticesCount(int howMuch)
     {
         if(verticesCount+howMuch >= this.vertices.length/HipGeometryBatchVertex.floatCount)
-        {
-            import hip.util.string;
-            String s = String("Too many vertices ", verticesCount+howMuch, " for a buffer of size ", 
-                this.vertices.length/HipGeometryBatchVertex.floatCount
-            );
-            ErrorHandler.assertExit(false, s.toString);
-        }
+            flush();
     }
 
     void setCurrentDepth(float depth){managedDepth = depth;}
