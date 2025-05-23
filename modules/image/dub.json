@@ -11,14 +11,6 @@
 			"targetType": "library"
 		},
 		{
-			"dependencies": { "arsd-official:image_files": "~>11.4.1" },
-			"name": "arsd",
-			"targetType": "library",
-			"versions": [
-				"HipARSDImageDecoder"
-			]
-		},
-		{
 			"importPaths": [ "../wasm/source" ],
 			"name": "wasm",
 			"targetType": "library"

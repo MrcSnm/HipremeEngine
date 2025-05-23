@@ -10,7 +10,6 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.global.gamedef;
 import hip.systems.game;
-import hip.event.handlers.inputmap;
 import hip.config.opts;
 import hip.api.data.font;
 import hip.api.data.image;
@@ -38,7 +37,6 @@ public:
    enum int SCREEN_HEIGHT = 600;
    ///Globally shared for accessing it on Android Game Thread
    __gshared GameSystem sys;
-   __gshared HipInputMap map;
 
    __gshared float g_deltaTime = 0;
 

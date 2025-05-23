@@ -60,6 +60,7 @@ public import hip.api.data.commons;
 public import hip.assets.textureatlas;
 public import hip.util.data_structures;
 public import hip.api.data.font;
+public import hip.api.input.inputmap;
 
 
 
@@ -123,6 +124,7 @@ class HipAssetManager
             typeid(IHipTexture).toString :  (string path, string f, size_t l) => new HipTextureLoadTask(path,path,null,f,l),
             typeid(IHipTilemap).toString :  (string path, string f, size_t l) => new HipTilemapLoadTask(path,path,null,f,l),
             typeid(IHipTileset).toString :  (string path, string f, size_t l) => new HipTilesetLoadTask(path,path,null,f,l),
+            typeid(IHipInputMap).toString :  (string path, string f, size_t l) => new HipInputMapLoadTask(path,path,null,f,l),
         ];
 
     }

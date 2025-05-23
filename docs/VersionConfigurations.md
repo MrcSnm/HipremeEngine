@@ -12,7 +12,6 @@
 |**FunctionArrayAvailable**| Activates function arrays on some classes, HipFS contains extra validations that depends on that feature | Function Array implementation | None |
 |**HipCheckUnknownKeycode**| Will assert(false) when receving a key code that is not registered withing HpKey | None | [How to use Keyboard]() |
 |**HipSDLImage**| HipSDLImage decoder, removal planned | bindbc-sdl | None |
-|**HipARSDImage**| Use arsd.image as the implementation for the image decoder | arsd-official:image_files dependency | None |
 |**HipGL3**| Uses the OpenGL3 implementation, making uniform buffer objects available | bindbc-opengl or gles dependency | None |
 | | **API** | | 
 |**HipGraphicsAPI**| Activates higher level implementations such as Sprite and Ninepatch | | [2D graphics api scripting reference]() |

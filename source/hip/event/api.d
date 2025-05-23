@@ -1,6 +1,5 @@
 module hip.event.api;
 public import hip.global.gamedef;
-public import hip.event.handlers.inputmap;
 public import hip.api.input.button:HipButton;
 public import hip.api.renderer.viewport:Viewport;
 import hip.hiprenderer;

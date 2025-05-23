@@ -3,9 +3,6 @@ module hip.api.input.binding;
 version(DirectCall)
 {
     public import hip.event.api;
-    public import hip.event.handlers.inputmap;
-
-    alias parseInputMap = HipInputMap.parseInputMap;
 }
 else version(ScriptAPI)
 {
@@ -91,8 +88,6 @@ else version(ScriptAPI)
             bool function(const(TouchMoveListener)*) removeTouchMoveListener;
 
 
-            //Input map
-            IHipInputMap function(ubyte[] file, string fileName, ubyte id = 0) parseInputMap_Mem;
         }
     }
 
@@ -101,7 +96,6 @@ else version(ScriptAPI)
     alias isTouchPressed = isMouseButtonPressed;
     alias isTouchJustPressed = isMouseButtonJustPressed;
     alias isTouchJustReleased = isMouseButtonJustReleased;
-    IHipInputMap parseInputMap(ubyte[] file, string fileName, ubyte id = 0){return parseInputMap_Mem(file, fileName,id);}
 }
 
 version(none) //Code suggestion

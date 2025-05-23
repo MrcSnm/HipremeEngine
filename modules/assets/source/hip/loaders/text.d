@@ -99,3 +99,17 @@ final class HipJSONCLoadTask : HipTextLoadTask
         return ret;
     }
 }
+
+final class HipInputMapLoadTask : HipTextLoadTask
+{
+    this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
+    {
+        super(path,name,asset,fileRequesting,lineRequesting);
+    }
+    override string getWorkerName() const{ return "Load InputMap"; }
+    override protected HipAsset loadAsset(in ubyte[] data)
+    {
+        import hip.assets.inputmap;
+        return cast(HipAsset)HipInputMap.parseInputMap(data, path);
+    }
+}

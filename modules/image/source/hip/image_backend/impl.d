@@ -21,12 +21,7 @@ final class HipNullImageDecoder : IHipAnyImageDecoder
 IHipAnyImageDecoder getDecoder(string path)
 {
     ///Use that alias for supporting more platforms
-    version(HipARSDImageDecoder)
-    {
-        import hip.image_backend.arsd;
-        return new HipARSDImageDecoder(path);
-    } 
-    else version(HipGamutImageDecoder)
+   version(HipGamutImageDecoder)
     {
         import hip.image_backend.gamut;
         return new HipGamutImageDecoder(path);

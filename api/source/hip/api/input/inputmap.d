@@ -1,6 +1,32 @@
 module hip.api.input.inputmap;
 public import hip.api.input.gamepad;
 
+/**
+ * Example of an inputmap data format:
+
+```json
+{
+    "actions": {
+        "left": {
+            "keyboard": ["a"],
+            "gamepad": ["dPadLeft"]
+        },
+        "right": {
+            "keyboard": ["d"],
+            "gamepad": ["dPadRight"]
+        },
+        "up": {
+            "keyboard": ["w"],
+            "gamepad": ["dPadUp"]
+        },
+        "down": {
+            "keyboard": ["s"],
+            "gamepad": ["dPadDown"]
+        }
+    }
+}
+```
+ */
 interface IHipInputMap
 {
     struct Context
