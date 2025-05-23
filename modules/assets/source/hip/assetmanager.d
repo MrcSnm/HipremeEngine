@@ -244,8 +244,8 @@ class HipAssetManager
     {
         return new HipTilemap(width, height, tileWidth, tileHeight);
     }
-    @ExportD static IHipTileset tilesetFromAtlas(IHipTextureAtlas atlas){return HipTilesetImpl.fromAtlas(cast(HipTextureAtlas)atlas);}
-    @ExportD static IHipTileset tilesetFromSpritesheet(Array2D_GC!IHipTextureRegion sp){return HipTilesetImpl.fromSpritesheet(sp);}
+    @ExportD static IHipTileset tilesetFromAtlas(IHipTextureAtlas atlas){return HipTileset.fromAtlas(cast(HipTextureAtlas)atlas);}
+    @ExportD static IHipTileset tilesetFromSpritesheet(Array2D_GC!IHipTextureRegion sp){return HipTileset.fromSpritesheet(sp);}
 
     static void addOnCompleteHandler(IHipAssetLoadTask task, void delegate(HipAsset) onComplete)
     {

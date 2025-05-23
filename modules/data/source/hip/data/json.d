@@ -4,7 +4,10 @@ import hip.util.array;
 
 JSONValue parseJSON(string jsonData)
 {
-    return JSONValue.parse(jsonData);
+    JSONValue ret = JSONValue.parse(jsonData);
+	if(ret.hasErrorOccurred)
+		throw new Exception(ret.error);
+	return ret;
 }
 
 pragma(inline, true)
@@ -33,9 +36,9 @@ struct JSONArray
 	 */
 	private static struct CacheArray(T, size_t N)
 	{
-		private T[N] staticData = void;
-		private T[] dynData = void;
-		private size_t actualLength = void;
+		private T[N] staticData;
+		private T[] dynData;
+		private size_t actualLength;
 
 		this(T[] value)
 		{
@@ -47,18 +50,31 @@ struct JSONArray
 			if(values.length <= N)
 				staticData.ptr[0..values.length] = values[];
 			else
-				dynData = values.dup;
+			{
+				if(dynData is null)
+					dynData = values.dup;
+				else
+				{
+					if(dynData.length < values.length)
+						dynData.length = values.length;
+					dynData[0..values.length] = values[];
+				}
+			}
 			actualLength = values.length;
 		}
 		private void append(T value)
 		{
-			append((&value)[0..1]);
+			T[] temp = (&value)[0..1];
+			append(temp);
 		}
+
 		private void append(T[] values)
 		{
 			import core.stdc.string;
 			if(actualLength + values.length <= N)
+			{
 				memcpy(staticData.ptr + actualLength, values.ptr, values.length * T.sizeof);
+			}
 			else
 			{
 				if(dynData is null)
@@ -68,8 +84,17 @@ struct JSONArray
 				}
 				else if (dynData.length < actualLength + values.length)
 				{
-					size_t newSize = actualLength+values.length > actualLength*2 ? actualLength+values.length : actualLength*2;
-					dynData.length = newSize;
+					size_t newSize = actualLength + values.length;
+
+					version(WebAssembly)
+					{
+						//TODO: Needs to fix somewhere in the walloc allocator. Realloc is buggy currently
+						T[] newDyn = new T[newSize];
+						newDyn[0..actualLength] = dynData[0..actualLength];
+						dynData = newDyn;
+					}
+					else
+						dynData.length = newSize;
 				}
 				memcpy(dynData.ptr + actualLength, values.ptr, values.length * T.sizeof);
 			}
@@ -84,9 +109,9 @@ struct JSONArray
 		size_t length() const { return actualLength; }
 		inout(T)[] getArray() inout
 		{
-			if(actualLength <= N)
-				return staticData[0..actualLength];
-			return dynData[0..actualLength];
+			if(dynData !is null)
+				return dynData[0..actualLength];
+			return staticData[0..actualLength];
 		}
 	}
 
@@ -103,9 +128,10 @@ struct JSONArray
 	auto opOpAssign(string op, T)(T value) if(op == "~")
 	{
 		static if(is(T == JSONValue))
-			return append(&this, value);
+			append(&this, value);
 		else
-			return append(&this, JSONValue(value));
+			append(&this, JSONValue(value));
+		return this;
 	}
 	private static JSONArray* trim(JSONArray* self)
 	{
@@ -123,7 +149,6 @@ struct JSONArray
 		JSONArray* ret = new JSONArray(data);
 		return ret;
 	}
-
 
 	JSONValue[] getArray(){return value.getArray;}
 	const(JSONValue)[] getArray() const {return value.getArray;}
@@ -210,7 +235,7 @@ struct JSONValue
 
 		pragma(inline, true) JSONType type(JSONType t)
 		{
-			_length = (_length & 0x1FFFFFFFFFFFFFFF) | (cast(size_t)t << 61);
+			_length = (_length & 0x1FFFFFFFFFFFFFFF) | (cast(ulong)t << 61);
 			return t;
 		}
 		pragma(inline, true) JSONType type() const
@@ -222,10 +247,10 @@ struct JSONValue
 		{
 			import core.stdc.string;
 			data._string = s.ptr;
-			_length = (s.length & 0x1FFFFFFFFFFFFFFF) | (cast(size_t)type << 61);
+			_length = (s.length & 0x1FFFFFFFFFFFFFFF) | (cast(ulong)type << 61);
 		}
 
-		pragma(inline, true) private size_t length() const
+		pragma(inline, true) private ulong length() const
 		{
 			return _length & 0x1FFFFFFFFFFFFFFF;
 		}
@@ -390,7 +415,7 @@ struct JSONValue
 		else static if(is(T == string))
 		{
 			enforce(type == JSONType.string_ || type == JSONType.error, "Tried to get type "~T.stringof~" but value is of type "~getTypeName);
-			return data._string[0..length];
+			return data._string[0..cast(size_t)length];
 		}
 		else static if(is(T == JSONObject))
 		{
@@ -873,7 +898,7 @@ struct JSONValue
         }
         else if(type == JSONType.array)
         {
-            foreach(v; data.array.value.getArray)
+            foreach(v; data.array.getArray)
                 v.dispose();
         }
         

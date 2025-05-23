@@ -43,6 +43,7 @@ enum UseDelayedUnbinding = !HasMetal;
  */
 enum DefaultMaxSpritesPerBatch = 1024;
 // enum DefaultMaxSpritesPerBatch = 10922;
+// enum DefaultMaxGeometryBatchVertices = ushort.max;
 enum DefaultMaxGeometryBatchVertices = 8_192;
 
 

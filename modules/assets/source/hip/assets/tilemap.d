@@ -6,7 +6,7 @@ import hip.config.opts;
 import hip.image;
 import hip.data.json;
 
-class HipTilesetImpl : HipAsset, IHipTileset
+class HipTileset : HipAsset, IHipTileset
 {
     uint _columns; uint columns() const =>_columns;
 
@@ -234,7 +234,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
     //     static assert(false, `Please call dub add arsd-official:dom for using TSX parser`);
     // }
 
-    static HipTilesetImpl read (string path, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError, uint firstGid = 1)
+    static HipTileset read (string path, void delegate(HipTileset self) onSuccess, void delegate() onError, uint firstGid = 1)
     {
         import hip.util.path;
         switch(path.extension)
@@ -244,13 +244,13 @@ class HipTilesetImpl : HipAsset, IHipTileset
                 throw new Exception("TMX/TSX parser was removed for making the engine smaller.");
             case "tsj":
             case "json":
-                return HipTilesetImpl.readJSON(path, firstGid, onSuccess, onError);
+                return HipTileset.readJSON(path, firstGid, onSuccess, onError);
             default:
                 assert(false, "Unrecognized extension for file "~path);
         }
     }
 
-    static HipTilesetImpl readFromMemory (string path, string data, void delegate(HipTilesetImpl) onSuccess, void delegate() onError, uint firstGid = 1)
+    static HipTileset readFromMemory (string path, string data, void delegate(HipTileset) onSuccess, void delegate() onError, uint firstGid = 1)
     {
         import hip.util.path;
         switch(path.extension)
@@ -260,7 +260,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
                 throw new Exception("TMX/TSX parser was removed for making the engine smaller.");
             case "tsj":
             case "json":
-                HipTilesetImpl ret = new HipTilesetImpl(0);
+                HipTileset ret = new HipTileset(0);
                 ret._path = path;
                 ret._firstGid = firstGid;
                 ret.loadJSON(parseJSON(data), onSuccess, onError);
@@ -270,11 +270,11 @@ class HipTilesetImpl : HipAsset, IHipTileset
         }
     }
 
-    static HipTilesetImpl readJSON (string path, uint firstGid, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError)
+    static HipTileset readJSON (string path, uint firstGid, void delegate(HipTileset self) onSuccess, void delegate() onError)
     {
         import hip.filesystem.hipfs;
         import hip.console.log;
-        HipTilesetImpl tileset = new HipTilesetImpl(0);
+        HipTileset tileset = new HipTileset(0);
         tileset._path = path;
         tileset._firstGid = firstGid;
 
@@ -289,16 +289,16 @@ class HipTilesetImpl : HipAsset, IHipTileset
         return tileset;
     }
 
-    public static HipTilesetImpl readJSON (string path, uint firstGid, const JSONValue t, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError)
+    public static HipTileset readJSON (string path, uint firstGid, const JSONValue t, void delegate(HipTileset self) onSuccess, void delegate() onError)
     {
-        HipTilesetImpl ret = new HipTilesetImpl(0);
+        HipTileset ret = new HipTileset(0);
         ret._path = path;
         ret._firstGid = firstGid;
         ret.loadJSON(t, onSuccess, onError);
         return ret;
     }
 
-    private void loadJSON (const JSONValue t, void delegate(HipTilesetImpl self) onSuccess, void delegate() onError)
+    private void loadJSON (const JSONValue t, void delegate(HipTileset self) onSuccess, void delegate() onError)
     {
         import hip.util.path;
         if(t.hasErrorOccurred)
@@ -345,7 +345,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
         import hip.error.handler;
         import hip.assets.texture;
         ErrorHandler.assertExit(regions.getWidth > 0 && regions.getHeight > 0, "Invalid spritesheet");
-        HipTilesetImpl t = new HipTilesetImpl(regions.getWidth * regions.getHeight);
+        HipTileset t = new HipTileset(regions.getWidth * regions.getHeight);
         t._name = "Created from Spritesheet";
         t._firstGid = 1;
         t.setTexture(regions[0,0].getTexture);
@@ -369,7 +369,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
     */
     static IHipTileset fromAtlas(HipTextureAtlas atlas)
     {
-        HipTilesetImpl t = new HipTilesetImpl(cast(uint)atlas.frames.length);
+        HipTileset t = new HipTileset(cast(uint)atlas.frames.length);
         t._firstGid = 1;
         t._name = "Tileset from Atlas: "~atlas.name;
         t.setTexture(atlas.texture);
@@ -393,7 +393,7 @@ class HipTilesetImpl : HipAsset, IHipTileset
     {
         super("HipTileset");
         _tiles = new Tile[tileCount];
-        _typeID = assetTypeID!HipTilesetImpl;
+        _typeID = assetTypeID!HipTileset;
     }
     IImage textureImage;
 
@@ -502,10 +502,10 @@ class HipTilemap : HipAsset, IHipTilemap
         _tileHeight = tileHeight;
     }
 
-    void addTileset(IHipTileset tileset){tilesets~= cast(HipTilesetImpl)tileset;}
+    void addTileset(IHipTileset tileset){tilesets~= cast(HipTileset)tileset;}
 
     protected HipTileLayer[] layersArray;
-    HipTilesetImpl[] tilesets;
+    HipTileset[] tilesets;
     this()
     {
         super("HipTilemap");
@@ -666,7 +666,7 @@ class HipTilemap : HipAsset, IHipTilemap
         }
 
         size_t maxTilesets = json["tilesets"].array.length;
-        auto onTilesetLoad = delegate(HipTilesetImpl tileset)
+        auto onTilesetLoad = delegate(HipTileset tileset)
         {
             ret.tilesets~= tileset;
             if(ret.tilesets.length == maxTilesets)
@@ -683,10 +683,10 @@ class HipTilemap : HipAsset, IHipTilemap
             {
                 import hip.console.log;
                 loglnWarn("Reading from source: ", joinPath(dirName(mapPath), source.str).normalizePath);
-                HipTilesetImpl.read(joinPath(dirName(mapPath), source.str).normalizePath, onTilesetLoad, onError, firstGid);
+                HipTileset.read(joinPath(dirName(mapPath), source.str).normalizePath, onTilesetLoad, onError, firstGid);
             }
             else
-                HipTilesetImpl.readJSON(dirName(mapPath), firstGid, t, onTilesetLoad, onError);
+                HipTileset.readJSON(dirName(mapPath), firstGid, t, onTilesetLoad, onError);
         }
 
 
@@ -718,13 +718,13 @@ class HipTilemap : HipAsset, IHipTilemap
             if(++counter == tilesets.length)
                 onSuccess();
         };
-        foreach(HipTilesetImpl tileset; tilesets)
+        foreach(HipTileset tileset; tilesets)
             tileset.loadImage(onSuccessInternal, onFailure);
     }
 
     bool loadTextures()
     {
-        foreach(HipTilesetImpl tileset; tilesets)
+        foreach(HipTileset tileset; tilesets)
             if(!tileset.loadTexture())
                 return false;
         return true;

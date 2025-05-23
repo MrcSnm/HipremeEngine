@@ -24,7 +24,7 @@ final class HipTilesetLoadTask : HipAssetLoadTask
                     .addOnError((string err){error = err; result = cantLoad;})
                     .addOnSuccess((in ubyte[] data)
                     {
-                        HipTilesetImpl.readFromMemory(path, cast(string)data, (HipTilesetImpl set)
+                        HipTileset.readFromMemory(path, cast(string)data, (HipTileset set)
                         {
                             asset = set;
                             set.loadImage((IImage img){result = mainThreadLoading;}, (){result = cantLoad; error = "Failed at loading Tileset image.";});
@@ -36,7 +36,7 @@ final class HipTilesetLoadTask : HipAssetLoadTask
             case loading:
                 break;
             case mainThreadLoading:
-                HipTilesetImpl set = cast(HipTilesetImpl)asset;
+                HipTileset set = cast(HipTileset)asset;
                 if(!set.loadTexture())
                 {
                     error = "Could not load Texture from Tileset";
