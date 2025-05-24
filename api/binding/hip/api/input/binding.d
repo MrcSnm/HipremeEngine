@@ -11,10 +11,6 @@ else version(ScriptAPI)
         import hip.api.internal;
         import hip.api.console;
         loadClassFunctionPointers!HipInputBinding;
-        enum InputMapClass = "HipInputMap";
-        mixin(loadSymbolsFromExportD!(InputMapClass,
-            parseInputMap_Mem
-        ));
         log("HipengineAPI: Initialized Input");
     }
 
