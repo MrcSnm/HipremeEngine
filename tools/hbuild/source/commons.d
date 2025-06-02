@@ -1096,7 +1096,10 @@ bool waitOperations(immutable bool delegate()[] operations)
 void putResourcesIn(ref Terminal t, string where)
 {
 	import tools.copyresources;
-	string resources = buildNormalizedPath(configs["gamePath"].str, "assets");
+	string gPath = configs["gamePath"].str;
+	if(!isAbsolute(gPath))
+		gPath = absolutePath(gPath);
+	string resources = buildNormalizedPath(gPath, "assets");
 	if(!std.file.exists(resources))
 		std.file.mkdirRecurse(resources);
 	copyResources(t, resources, where, false);

@@ -31,6 +31,11 @@ public import hip.math.vector;
                 {"keyboard": "a", "gamepad": "dPadLeft", "value": -1},
                 {"keyboard": "d", "gamepad": "dPadRight","value": 1},
                 {"analog": "left", "axis": "x"}
+            ],
+            "y": [
+                {"keyboard": "w", "gamepad": "dPadUp", "value": -1},
+                {"keyboard": "s", "gamepad": "dPadDown", "value": 1},
+                {"analog": "left", "axis": "y"}
             ]
         }
     }

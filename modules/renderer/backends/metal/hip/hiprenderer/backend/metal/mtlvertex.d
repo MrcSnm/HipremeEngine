@@ -75,7 +75,7 @@ final class HipMTLBuffer : IHipRendererBuffer
         }
     }
 
-    ubyte[] getBuffer(){return buffer.contents[0..size];}
+    ubyte[] getBuffer(){return cast(ubyte[])buffer.contents[0..size];}
     void unmapBuffer(){}
 
     void updateData(int offset, const void[] data)
