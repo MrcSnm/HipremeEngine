@@ -136,7 +136,6 @@ class HipSpriteBatch : IHipBatch
         HipSpriteVertex[] v = cast(HipSpriteVertex[])quadsVertices;
         uint countOfQuads = cast(uint)(v.length / 4);
 
-
         while(countOfQuads > 0)
         {
             size_t remainingQuads = this.maxQuads - this.quadsCount;
@@ -154,7 +153,7 @@ class HipSpriteBatch : IHipBatch
             size_t end = start + quadsToDraw*4;
 
 
-            vertices[start..end] = v;
+            vertices[start..end] = v[0..quadsToDraw*4];
             static if(!GLMaxOneBoundTexture)
             {
                 for(int i = 0; i < quadsToDraw; i++)

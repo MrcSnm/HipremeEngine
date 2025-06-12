@@ -46,8 +46,8 @@ class TileWorld
 
         float i = x/tileW;
         float j = y/tileH;
-        float i2 = ceil(min(i + inputTilesWidth, layer.columns));
-        float j2 = ceil(min(j + inputTilesHeight, layer.rows - 1));
+        float i2 = ceil(min(i + inputTilesWidth, layer.width));
+        float j2 = ceil(min(j + inputTilesHeight, layer.height - 1));
 
 
         float plusI = min(inputTilesWidth, 1);
@@ -82,7 +82,7 @@ class TileWorld
     void addDynamic(IComponentizable component)
     {
         auto comp = component.getComponent!BodyRectComponent;
-        assert(comp !is null, "No BodyRectComponent found");
+        assert(comp !is null, "No BodyRectComponent found. Ensure that you have done mixin IncludeComponents!(BodyRectComponent) and you had called initializeComponents() somewhere");
         assert(comp.size.w != 0, "Can't have 0 width component");
         assert(comp.size.h != 0, "Can't have 0 height component");
         dynamicBodies~= comp;
@@ -91,39 +91,6 @@ class TileWorld
     void addCollidibleLayer(HipTileLayer layer)
     {
         collidibleLayers~= layer;
-    }
-
-    void update2(float dt) @nogc
-    {
-        import hip.util.algorithm:quicksort;
-        struct DynamicRectCollision
-        {
-            Vector2 normal;
-            float time;
-        }
-        __gshared DynamicRectCollision[128] colCache;
-        foreach(dynBody; dynamicBodies)
-        {
-            dynBody.velocity.y += gravity;
-            Rect bodyRec = dynBody.rect;
-            int z = 0;
-
-            foreach(HipTileLayer l; collidibleLayers)
-            for(int j = 0; j < l.rows; j++)
-            for(int i = 0; i < l.columns; i++)
-            {
-                if(l.getTile(i, j) != 0)
-                {
-                    DynamicRectCollision col = void;
-                    if(isDynamicRectOverlappingRect(bodyRec, dynBody.velocity, Rect(l.x + i*l.tileWidth, l.y+j*l.tileHeight, l.tileWidth, l.tileHeight), dt, col.normal, col.time))
-                        colCache[z++] = col;
-                }
-            }
-            if(z > 0)
-            foreach(col; quicksort(colCache[0..z], ((DynamicRectCollision a, DynamicRectCollision b) => a.time < b.time)))
-                resolveDynamicRectOverlappingRect(col.normal, dynBody.velocity, col.time);
-            dynBody.position+= dynBody.velocity* dt;
-        }
     }
 
     void update(float dt) @nogc
@@ -139,17 +106,21 @@ class TileWorld
         {
             dynBody.velocity.y += gravity;
             Rect bodyRec = dynBody.rect;
-            int i = 0;
+            int z = 0;
 
-            foreach(l; collidibleLayers)
-            foreach(const ref rect; getRectsOverlapping(l, dynBody.expandedRectVel))
+            foreach(HipTileLayer l; collidibleLayers)
+            for(int j = 0; j < l.height; j++)
+            for(int i = 0; i < l.width; i++)
             {
-                DynamicRectCollision col = void;
-                if(isDynamicRectOverlappingRect(bodyRec, dynBody.velocity, rect, dt, col.normal, col.time))
-                    colCache[i++] = col;
+                if(l.getTile(i, j) != 0)
+                {
+                    DynamicRectCollision col = void;
+                    if(isDynamicRectOverlappingRect(bodyRec, dynBody.velocity, Rect(l.x + i*l.tileWidth, l.y+j*l.tileHeight, l.tileWidth, l.tileHeight), dt, col.normal, col.time))
+                        colCache[z++] = col;
+                }
             }
-            if(i > 0)
-            foreach(col; quicksort(colCache[0..i], (DynamicRectCollision a, DynamicRectCollision b) => a.time < b.time))
+            if(z > 0)
+            foreach(col; quicksort(colCache[0..z], ((DynamicRectCollision a, DynamicRectCollision b) => a.time < b.time)))
                 resolveDynamicRectOverlappingRect(col.normal, dynBody.velocity, col.time);
             dynBody.position+= dynBody.velocity* dt;
         }

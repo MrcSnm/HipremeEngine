@@ -8,21 +8,8 @@ public import hip.math.vector;
 ```json
 {
     "actions": {
-        "left": {
-            "keyboard": ["a"],
-            "gamepad": ["dPadLeft"]
-        },
-        "right": {
-            "keyboard": ["d"],
-            "gamepad": ["dPadRight"]
-        },
-        "up": {
-            "keyboard": ["w"],
-            "gamepad": ["dPadUp"]
-        },
-        "down": {
-            "keyboard": ["s"],
-            "gamepad": ["dPadDown"]
+        "run": {
+            "gamepad": ["psCross"]
         }
     },
     "directionals": {

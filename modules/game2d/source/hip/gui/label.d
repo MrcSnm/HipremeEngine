@@ -6,7 +6,7 @@ import hip.game2d.text;
 
 class Label : Widget
 {
-    protected HipText txtDraw;
+    public HipText txtDraw;
     protected IWidgetRenderer bkgRenderer;
 
     this(string text)
@@ -16,9 +16,10 @@ class Label : Widget
         this.text = text;
         setAlign(HipTextAlign.centerLeft);
     }
-    public void setColor(HipColor color)
+    public Label setColor(HipColor color)
     {
         this.txtDraw.color = color;
+        return this;
     }
 
     public void setBackgroundRenderer(HipColor bkgColor )
@@ -49,10 +50,11 @@ class Label : Widget
         return this;
     }
 
-    public void setSize(int width, int height)
+    public Label setSize(int width, int height)
     {
         txtDraw.bounds = Size(width, height);
         txtDraw.getSize(this.width, this.height);
+        return this;
     }
     private void getTextPosition(out int x, out int y)
     {

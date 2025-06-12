@@ -31,24 +31,6 @@ struct Rect
 
     void move(in float[2] vec){this.x+= vec[0];this.y+= vec[1];}
     void move(in Vector2 vec){this.x+= vec[0];this.y+= vec[1];}
-
-    this(float x, float y, float w, float h){this.x=x;this.y=y;this.w=w;this.h=h;}
-    this(float[2] position, float w, float h){this(position[0], position[1], w, h);}
-    this(float[2] position, float[2] size){this(position[0], position[1], size[0], size[1]);}
-    this(float[2] position, Size size){this(position[0], position[1], size.w, size.h);}
-    this(float[4] rec){this(rec[0], rec[1], rec[2], rec[3]);}
-
-    this(int x, int y, int w, int h){this.x=x;this.y=y;this.w=w;this.h=h;}
-    this(int[2] position, int, int w, int h){this(position[0], position[1], w, h);}
-    this(int[2] position, int[2] size){this(position[0], position[1], size[0], size[1]);}
-    this(int[2] position, Size size){this(position[0], position[1], size.w, size.h);}
-    this(int[4] rec){this(rec[0], rec[1], rec[2], rec[3]);}
-
-    this(float[2] position, int w, int h){this(position[0], position[1], w, h);}
-    this(float[2] position, int[2] size){this(position[0], position[1], size[0], size[1]);}
-
-    this(int[2] position, float w, float h){this(position[0], position[1], w, h);}
-    this(int[2] position, float[2] size){this(position[0], position[1], size[0], size[1]);}
 }
 
 struct DynamicRect

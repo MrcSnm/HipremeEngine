@@ -174,7 +174,7 @@ version(none)
         ///Sets the font for the next drawText commands
         package void function (IHipFont font) setFont;
         ///Draws a text using the last font set
-        void function(string text, int x, int y, HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.centerLeft, Size bounds = Size.init, bool wordWrap = false) drawText;
+        void function(string text, int x, int y, float scale, HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.topCenter, Size bounds = Size.init, bool wordWrap = false) drawText;
         ///Draw text using those vertices. Low level API
         void function(void[] vertices, IHipFont font)  drawTextVertices;
         

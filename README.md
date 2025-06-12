@@ -94,7 +94,7 @@ The engine maintains  some global options which you can modify it on source/glob
 
 ## Decoding
 
-- Images: PNG, JPG, BMP, TIFF and maybe others via arsd-official:image_files
+- Images: PNG, JPG, BMP, TIFF and maybe others via gamut
 - Audio: MP3, OGG, WAV, FLAC via audioformats
 - Tiled: TSX and TSJ parser
 - TextureAtlas: JSON, ATLAS, XML and TXT(Spritesheet) parser

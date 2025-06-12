@@ -159,6 +159,7 @@ static void initEngine(bool audio3D = false)
 
 
 enum float FRAME_TIME = 1000/60; //60 frames per second
+// enum float FRAME_TIME = 1000/144; //144 frames per second
 
 export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 {

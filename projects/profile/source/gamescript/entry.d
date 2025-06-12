@@ -4,12 +4,11 @@ import hip.api.graphics.g2d.renderer2d;
 import HRandom = hip.math.random:Random;
 import hip.api;
 
-enum SPRITES_COUNT = 100;
+enum SPRITES_COUNT = 10_000;
 enum MIN_SPEED = 50;
 enum MAX_SPEED = 150;
 enum SCREEN_W = 800;
 enum SCREEN_H = 600;
-
 /**
 *	Call `dub` to generate the DLL, after that, just execute `dub -c run` for starting your project
 */
@@ -27,6 +26,8 @@ class MainScene : AScene
 	/** Constructor */
 	override void initialize()
 	{
+		// int* a;
+		// *a = 50;
 		// logg(getAssetsForPreload);
 		sprites = new HipMultiSprite(SPRITES_COUNT);
 		speeds = new float[SPRITES_COUNT];
@@ -36,6 +37,7 @@ class MainScene : AScene
 			sprites[i].y = HRandom.Random.range(0, SCREEN_H);
 			speeds[i] = HRandom.Random.range(MIN_SPEED, MAX_SPEED);
 		}
+
 
 	}
 	/** Called every frame */
@@ -51,7 +53,11 @@ class MainScene : AScene
 	override void render()
 	{
 		setRendererErrorCheckingEnabled(false);
-		sprites.draw();
+		// sprites.draw();
+		foreach(sp; 0..SPRITES_COUNT)
+		{
+			drawTexture(sprites.texture, cast(int)sprites[sp].x, cast(int)sprites[sp].y);
+		}
 		setRendererErrorCheckingEnabled(true);
 	}
 	/** Pre destroy */

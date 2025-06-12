@@ -14,19 +14,18 @@ public import hip.graphics.g2d.spritebatch;
 public import hip.assets.texture;
 public import hip.api.data.tilemap;
 
-import hip.util.reflection;
-enum hasTSXSupport = Version.HipTSX && hasModule!"arsd.dom";
-
-
 void render(HipTileLayer layer, IHipTilemap map, HipSpriteBatch batch, bool shouldRenderBatch = false)
 {
-    uint w = layer.columns, h = layer.rows;
+    if(layer.width == 0 || layer.height == 0)
+        return;
+    uint w = layer.width, h = layer.height;
 
     uint th = cast(uint)(map.tileHeight*map.scaleY),
          tw = cast(uint)(map.tileWidth*map.scaleX);
 
     ushort lastId;
     IHipTextureRegion lastTexture;
+
 
 
     for(int i = 0, y = layer.y; i < h; i++, y+= th)
@@ -58,7 +57,9 @@ void render(HipTileLayer layer, IHipTilemap map, HipSpriteBatch batch, bool shou
 void render(IHipTilemap map, HipSpriteBatch batch, bool shouldRenderBatch)
 {
     foreach(l; map.layers)
-        l.render(map, batch, false);
+    {
+        render(l, map, batch, false);
+    }
     if(shouldRenderBatch)
         batch.draw();
 }

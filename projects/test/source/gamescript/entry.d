@@ -25,8 +25,8 @@ class MainScene : AScene, IHipPreloadable
 	override void render()
 	{
 		
-		drawText("You can start using the D Scripting API Here!", 400, 300, HipColor.white, 
-			HipTextAlign.CENTER,  HipTextAlign.CENTER
+		drawText("You can start using the D Scripting API Here!", 400, 300, 2.0, HipColor.white,
+			HipTextAlign.center
 		);
 	}
 	/** Pre destroy */
@@ -34,7 +34,7 @@ class MainScene : AScene, IHipPreloadable
 	{
 		
 	}
-	void onResize(uint width, uint height){}
+	override void onResize(uint width, uint height){}
 }
 
 mixin HipEngineMain!MainScene;

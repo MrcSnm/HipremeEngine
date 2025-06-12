@@ -69,6 +69,9 @@ enum TiledObjectTypes : ubyte
 -   Camera Dead Zones
 -   Event Systems
 -   Trigger Areas
+
+    When wanting to get its following type, call either `rect`, `ellipse`, `tile`, `point`, `line`, `triangle`, `polygon` or `text`. Try to avoid calling
+    `text` multiple times since it involves 3 associative array accesses.
 */
 struct TiledObject
 {
@@ -167,12 +170,13 @@ final class HipTileLayer
     ///Data
     ushort[] tiles;
     bool visible = true;
-    int x, y, columns, rows, width, height;
+    int x, y, width, height;
     uint tileWidth, tileHeight;
     ushort id;
     string type;
     string drawOrder;
     TileProperty[string] properties;
+    TiledObject[] objects;
     float opacity = 1.0;
 
     this(IHipTilemap map)
@@ -184,16 +188,14 @@ final class HipTileLayer
     /**
     *
     */
-    this(string name, uint columns, uint rows, ushort id, IHipTilemap map)
+    this(string name, uint width, uint height, ushort id, IHipTilemap map)
     {
         this(map);
         this.name = name;
         this.id = id;
-        this.columns = columns;
-        this.rows = rows;
-        tiles = new ushort[columns*rows];
-        width = columns*tileWidth;
-        height = rows*tileHeight;
+        this.width = width;
+        this.height = height;
+        tiles = new ushort[width*height];
     }
 
     bool isInLayerBoundaries(int x, int y, int w, int h) const @nogc
@@ -210,14 +212,15 @@ final class HipTileLayer
     }
 
     ///Expects I and J in column/row
+    pragma(inline, true)
     ushort getTile(uint i, uint j) @nogc @safe
     {
-       return tiles[j*columns+i];
+       return tiles[j*width+i];
     }
     ushort checkedGetTile(uint i, uint j) @nogc @trusted
     {
-        int target = j*columns+i;
-        if(i >= columns || j >= rows || target < 0 || target >= tiles.length)
+        int target = j*width+i;
+        if(i >= width || j >= height || target < 0 || target >= tiles.length)
             return 0;
         return tiles.ptr[target];
     }

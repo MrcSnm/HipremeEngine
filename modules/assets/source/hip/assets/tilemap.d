@@ -559,6 +559,9 @@ class HipTilemap : HipAsset, IHipTilemap
             layer.y       = cast(int)   l["y"].integer;
             if(layer.type == TileLayerType.OBJECT_LAYER)
             {
+                import hip.util.array:uninitializedArray;
+                int objIndex = 0;
+                layer.objects = uninitializedArray!(TiledObject[])(l["objects"].array.length);
                 foreach(JSONValue o; l["objects"].array)
                 {
                     TiledObject obj;
@@ -588,13 +591,15 @@ class HipTilemap : HipAsset, IHipTilemap
                     else if("polyline" in o)
                     {
                         JSONValue[] line = o["polyline"].array;
+                        int x = obj.data.rect.x;
+                        int y = obj.data.rect.y;
                         obj.dataType = TiledObjectTypes.line;
                         obj.data.rect.getLine() = [
-                            tryGetValue(line[0], "x", 0),
-                            tryGetValue(line[0], "y", 0),
+                            tryGetValue(line[0], "x", 0) + x,
+                            tryGetValue(line[0], "y", 0) + y,
 
-                            tryGetValue(line[1], "x", 0),
-                            tryGetValue(line[1], "y", 0),
+                            tryGetValue(line[1], "x", 0) + x,
+                            tryGetValue(line[1], "y", 0) + y,
                         ];
                     }
                     else if("polygon" in o)
@@ -643,7 +648,9 @@ class HipTilemap : HipAsset, IHipTilemap
                         foreach(p; v.array) //Properties
                             obj.properties[p["name"].str] = propFromJSON(p);
                     }
+                    layer.objects[objIndex++] = obj;
                 }
+
             }
             else if(layer.type == TileLayerType.TILE_LAYER)
             {

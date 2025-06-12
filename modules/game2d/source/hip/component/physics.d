@@ -9,6 +9,18 @@ class BodyRectComponent : IBaseComponent!BodyRectComponent
     Size size;
     Vector2 velocity;
 
+    mixin template ExpandFields()
+    {
+        pragma(inline, true)
+        {
+            final ref float x(){ return _BodyRectComponent.position.x; }
+            final ref float y(){ return _BodyRectComponent.position.y; }
+            final ref Vector2 velocity(){ return _BodyRectComponent.velocity; }
+            final ref Vector2 position(){ return _BodyRectComponent.position; }
+            final ref Size size(){ return _BodyRectComponent.size; }
+        }
+    }
+
     @nogc @safe
     {
         Rect rect(){return Rect(position.x, position.y, cast(float)size.w, cast(float)size.h);}

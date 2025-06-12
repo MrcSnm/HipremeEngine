@@ -17,7 +17,7 @@ import hip.util.path;
 import hip.console.log;
 import hip.error.handler;
 
-class HotloadableDLL
+final class HotloadableDLL
 {
     void* lib;
 
@@ -129,7 +129,7 @@ Call `dub -c script -- path/to/project` dub -c script requires that argument.");
                 }
                 catch(Exception e)
                 {
-                    ErrorHandler.showErrorMessage("Could not remove file "~ remFile, "");
+                    ErrorHandler.showErrorMessage("Could not remove file ", remFile);
                 }
             }
         }
