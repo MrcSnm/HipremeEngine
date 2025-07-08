@@ -155,7 +155,7 @@ if(is(T == enum))
 * Used on: 
 *   - Static Methods
 *   - Class Names
-*   Used in conjunction to ExportDFunctions.
+*   Used in conjunction to HipExportDFunctions.
 *   You may specify a suffix, if you so, `_suffix` is added
 *   ExportD will do nothing to static methods when building release. However, it will still produce
 *   a function for returning a new class.
@@ -257,61 +257,6 @@ struct Version
 
 
 
-///Intermediary step for getting an alias to the Class type
-mixin template ExportDFunctionsImpl(string className, Class)
-{
-    //If the class has ExportD, it will export a function called new(ClassName)
-    //It can't contain more than one constructor.
-    static if(hasUDA!(Class, ExportD))
-    {
-        static assert(
-            __traits(getOverloads, Class, "__ctor").length == 1, 
-            "Can't export class with more than one constructor ("~className~")"
-        );
-        mixin(
-            generateExportConstructor!(Class, className)
-        );
-        pragma(msg, "Exported Class "~className);
-    }
-    //Get all static methods that has ExportD
-    static foreach(sym; getSymbolsByUDA!(Class, ExportD))
-    {
-        static if(!is(sym == Class))
-        {
-            //Assert that the symbol to generate does not exists yet
-            static assert(__traits(compiles, mixin(generateExportName!(className, sym))),
-            "ExportD '" ~ generateExportName!(className, sym) ~
-            "' is not unique, use ExportD(\"SomeName\") for overloading with a suffix");
-
-            pragma(msg, "Exported "~(generateExportName!(className, sym)));
-            //Func signature
-            //Check if it is a non value type
-            mixin(generateExportFunc!(className, sym));
-        }
-    }
-}
-
-
-/**
-*   Iterates through a module and generates `export` function declaration for each
-*   @ExportD function found on it.
-*   If the class itself is @ExportD, it will create a method new(ClassName) to be exported too
-*/
-mixin template ExportDFunctions(alias mod)
-{
-	import std.traits:getSymbolsByUDA, ParameterIdentifierTuple;
-    pragma(msg, "Exporting ", mod.stringof);
-	static foreach(mem; __traits(allMembers, mod))
-	{
-        //Currently only supported on classes and structs
-		static if( (is(__traits(getMember, mod, member) == class) || is(__traits(getMember, mod, member) == struct) ))
-		{
-            mixin ExportDFunctionsImpl!(mem, __traits(getMember, mod, member));
-		}
-	}
-}
-
-
 /**
 *   Intermediary step for getting an alias to the Class type
 *   The difference with HipExportDFunctionsImpl is that it does not generate
@@ -377,8 +322,7 @@ mixin template HipExportDFunctions(alias mod)
 
 string attributes(alias member)() 
 {
-    if(!__ctfe)
-        return null;
+    assert(!__ctfe);
 
 	string ret;
 	foreach(attr; __traits(getFunctionAttributes, member))

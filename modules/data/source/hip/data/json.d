@@ -10,7 +10,6 @@ JSONValue parseJSON(string jsonData)
 	return ret;
 }
 
-pragma(inline, true)
 T tryGetValue(T)(JSONValue v, string prop, T defaultValue = T.init)
 {
 	JSONValue* ret = prop in v;
@@ -307,24 +306,25 @@ struct JSONValue
 		}
 		else static assert(false, "Unsupported type ", T.stringof);
 	}
+	pragma(inline, false)
+	{
+		int integer() const
+		{
+			return type == JSONType.integer ? get!int : cast(int)get!float;
+		}
+		float floating() const
+		{
+			return type == JSONType.float_ ? get!float : cast(float)get!int;
+		}
+	}
 
-    int integer() const
+	pragma(inline, true)
 	{
-		if(type == JSONType.integer)
-			return get!int;
-		else
-			return cast(int)(get!float);
+		bool boolean() const {return get!bool;}
+		string str() const {return get!string;}
+		string error() const{return get!string;}
 	}
-	float floating() const
-	{
-		if(type == JSONType.float_)
-			return get!float;
-		else
-			return cast(float)(get!int);
-	}
-    bool boolean() const {return get!bool;}
-    string str() const {return get!string;}
-    string error() const{return get!string;}
+
     ///Returns an array range.
     auto array() const
     {

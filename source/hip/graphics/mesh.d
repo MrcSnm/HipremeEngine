@@ -45,22 +45,22 @@ class Mesh
 
     void bind()
     {
-        // if(!this.isBound)
-        // {
+        if(!this.isBound)
+        {
             this.isBound = true;
             this.shader.bind();
             this.vao.bind();
-        // }
+        }
         // else assert(false, "Erroneous call to bind.");
     }
     void unbind()
     {
-        // if(this.isBound)
-        // {
+        if(this.isBound)
+        {
             this.isBound = false;
             this.shader.unbind();
             this.vao.unbind();
-        // }
+        }
         // else assert(false, "Erroneous call to unbind.");
     }
 

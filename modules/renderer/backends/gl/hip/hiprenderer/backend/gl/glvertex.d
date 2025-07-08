@@ -78,8 +78,6 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
     HipRendererBufferType type() const { return _type; }
 
 
-    private __gshared Hip_GL3_Buffer boundVbo;
-    private __gshared Hip_GL3_Buffer boundEbo;
 
     this(size_t size, HipBufferUsage usage, HipRendererBufferType type)
     {
@@ -91,35 +89,11 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
     }
     void bind()
     {
-        if(type == HipRendererBufferType.vertex)
-        {
-            if(boundVbo !is this)
-            {
-                glCall(()=>glBindBuffer(glType, handle));
-                boundVbo = this;
-            }
-        }
-        else if(boundEbo !is this)
-        {
-            glCall(()=>glBindBuffer(glType, handle));
-            boundEbo = this;
-        }
+        glCall(()=>glBindBuffer(glType, handle));
     }
     void unbind()
     {
-        if(type == HipRendererBufferType.vertex)
-        {
-            if(boundVbo is this)
-            {
-                glCall(()=>glBindBuffer(glType, 0));
-                boundVbo = null;
-            }
-        }
-        else if(boundEbo is this)
-        {
-            glCall(()=>glBindBuffer(glType, 0));
-            boundEbo = null;
-        }
+        glCall(()=>glBindBuffer(glType, 0));
     }
     void setData(const(void)[] data)
     {
@@ -295,6 +269,7 @@ version(HipGLUseVertexArray) final class Hip_GL3_VertexArrayObject : IHipVertexA
             ));
             glCall(() => glEnableVertexAttribArray(info.index));
         }
+        unbind(vbo ,ebo);
     }
     ~this(){glCall(() => glDeleteVertexArrays(1, &this.vao));}
 }

@@ -409,7 +409,7 @@ private {
         }
         enum shaderSource = q{
 
-            %s vec2 vPosition;
+            %s vec3 vPosition;
             %s vec2 vTexST;
 
             uniform mat4 uMVP;
@@ -418,7 +418,7 @@ private {
 
             void main()
             {
-                gl_Position = uMVP * vec4(vPosition, 1.0, 1.0);
+                gl_Position = uMVP * vec4(vPosition, 1.0);
                 inTexST = vTexST;
             }
         }.fastUnsafeCTFEFormat(attr1, attr2, out1);

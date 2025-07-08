@@ -172,7 +172,8 @@ class HipTextRenderer : IHipBatch
             size_t start = lastDrawQuadsCount*4;
             size_t end = quadsCount*4;
 
-            mesh.updateVertices(cast(float[])vertices[start..end], cast(int)start);
+            mesh.updateVertices(vertices[start..end], cast(int)start);
+
             mesh.draw((quadsCount - lastDrawQuadsCount)*6, HipRendererMode.TRIANGLES, lastDrawQuadsCount*6);
             font.texture.unbind();
             mesh.unbind();
