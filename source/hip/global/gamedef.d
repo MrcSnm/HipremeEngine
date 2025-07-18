@@ -48,13 +48,15 @@ bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) on
 {
    import hip.font.ttf;
    import hip.image;
+   import hip.image_backend.impl;
+   import hip.console.log;
+   setImageDecoderProvider(&getDecoder);
    __gshared int succeededSteps = 0;
    enum ASSETS_TO_LOAD = 2;
 
    if(succeededSteps > 0)
       return false;
    
-   import hip.console.log;
 
    hiplog("Loading default assets");
    

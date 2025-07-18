@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/image_decoding
+image_decoding.so
+image_decoding.dylib
+image_decoding.dll
+image_decoding.a
+image_decoding.lib
+image_decoding-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst

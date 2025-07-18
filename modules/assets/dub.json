@@ -23,7 +23,7 @@
 			"name": "gamut",
 			"subConfigurations": {
 
-				"image": "gamut"
+				"image_decoding": "gamut"
 			}
 		},
 		{
@@ -36,7 +36,7 @@
 		{
 			"name": "psvita",
 			"subConfigurations": {
-				"image": "gamut",
+				"image_decoding": "gamut",
 				"audio": "psvita",
 				"renderer": "psvita"
 			}

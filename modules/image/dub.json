@@ -2,34 +2,9 @@
 	"authors": [
 		"Hipreme"
 	],
-	"configurations": [
-		{
-			"dependencies": { "gamut": "~>2.0.9" },
-			"subConfigurations": { "gamut": "just-decode" },
-			"versions": [ "HipGamutImageDecoder" ],
-			"name": "gamut",
-			"targetType": "library"
-		},
-		{
-			"importPaths": [ "../wasm/source" ],
-			"name": "wasm",
-			"targetType": "library"
-		}
-	],
-	"copyright": "Copyright © 2021, Hipreme",
+	"copyright": "Copyright © 2018-2025, Hipreme",
 	"dependencies": {
-		"error": {
-			"path": "../error",
-			"version": ">=0.0.0"
-		},
-		"hipengine_api:interfaces": {
-			"path": "../../api",
-			"version": ">=0.0.0"
-		},
-		"util": {
-			"path": "../util",
-			"version": ">=0.0.0"
-		}
+		"hipengine_api:interfaces": {"path": "../../api"}
 	},
 	"description": "HipremeEngine data module",
 	"license": "proprietary",

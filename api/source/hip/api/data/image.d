@@ -33,12 +33,6 @@ public interface IHipImageDecoder : IImageBase
     void dispose();
 }
 
-//In progress?
-public interface IHipPNGDecoder  : IHipImageDecoder{}
-public interface IHipJPEGDecoder : IHipImageDecoder{}
-public interface IHipWebPDecoder : IHipImageDecoder{}
-public interface IHipBMPDecoder  : IHipImageDecoder{}
-public interface IHipAnyImageDecoder : IHipPNGDecoder, IHipJPEGDecoder, IHipWebPDecoder, IHipBMPDecoder{}
 
 
 public interface IImage : IImageBase

@@ -1,0 +1,31 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"configurations": [
+		{
+			"dependencies": { "gamut": "~>2.0.9" },
+			"subConfigurations": { "gamut": "just-decode" },
+			"versions": [ "HipGamutImageDecoder" ],
+			"name": "gamut",
+			"targetType": "library"
+		},
+		{
+			"importPaths": [ "../wasm/source" ],
+			"name": "wasm",
+			"dependencies": {
+				"console": {"path": "../console"}
+			},
+			"targetType": "library"
+		}
+	],
+	"copyright": "Copyright © 2018-2025, Hipreme",
+	"dependencies": {
+		"hipengine_api:interfaces": {"path": "../../api"},
+		"util": {"path": "../util"}
+	},
+	"description": "HipremeEngine Gamut/Wasm image decoder",
+	"license": "proprietary",
+	"name": "image_decoding",
+	"targetType": "library"
+}

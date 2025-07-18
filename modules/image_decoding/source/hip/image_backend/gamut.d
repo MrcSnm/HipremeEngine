@@ -2,7 +2,7 @@ module hip.image_backend.gamut;
 import hip.api.data.image;
 
 version(HipGamutImageDecoder):
-final class HipGamutImageDecoder : IHipAnyImageDecoder
+final class HipGamutImageDecoder : IHipImageDecoder
 {
     import gamut;
     Image img;

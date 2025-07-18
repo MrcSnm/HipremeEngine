@@ -2,7 +2,7 @@ module hip.image_backend.impl;
 public import hip.api.data.image;
 
 
-final class HipNullImageDecoder : IHipAnyImageDecoder
+final class HipNullImageDecoder : IHipImageDecoder
 {
     this(string path){}
     bool startDecoding(void[] data, void delegate() onSuccess, void delegate() onFailure)
@@ -18,7 +18,7 @@ final class HipNullImageDecoder : IHipAnyImageDecoder
     void dispose(){}
 }
 
-IHipAnyImageDecoder getDecoder(string path)
+export extern(System) IHipImageDecoder getDecoder(string path)
 {
     ///Use that alias for supporting more platforms
    version(HipGamutImageDecoder)

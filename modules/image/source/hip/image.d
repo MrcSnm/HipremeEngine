@@ -1,9 +1,9 @@
 /*
-Copyright: Marcelo S. N. Mancini (Hipreme|MrcSnm), 2018 - 2021
+Copyright: Marcelo S. N. Mancini (Hipreme|MrcSnm), 2018 - 2025
 License:   [https://creativecommons.org/licenses/by/4.0/|CC BY-4.0 License].
 Authors: Marcelo S. N. Mancini
 
-	Copyright Marcelo S. N. Mancini 2018 - 2021.
+	Copyright Marcelo S. N. Mancini 2018 - 2025.
 Distributed under the CC BY-4.0 License.
    (See accompanying file LICENSE.txt or copy at
 	https://creativecommons.org/licenses/by/4.0/
@@ -12,12 +12,11 @@ module hip.image;
 public import hip.api.data.asset;
 public import hip.api.data.image;
 
-
-IHipBMPDecoder bmp;
-IHipJPEGDecoder jpeg;
-IHipPNGDecoder png;
-IHipWebPDecoder webP;
-
+private extern(System) IHipImageDecoder function(string path) getDecoderFn;
+void setImageDecoderProvider(typeof(getDecoderFn) provider)
+{
+    getDecoderFn = provider;
+}
 
 /**
 *   This class represents pixel data on RAM (CPU Powered)
@@ -36,11 +35,10 @@ public class Image : HipAsset, IImage
     this(string path = "")
     {
         import hip.util.system : sanitizePath;
-        import hip.image_backend.impl;
         path = sanitizePath(path);
         super("Image_"~path);
         imagePath = path;
-        decoder = getDecoder(path);
+        decoder = getDecoderFn(path);
     }
     this(in string path, in ubyte[] buffer, void delegate(IImage self) onSuccess, void delegate() onFailure)
     {
@@ -81,10 +79,10 @@ public class Image : HipAsset, IImage
 
     bool loadFromMemory(ubyte[] data, void delegate(IImage self) onSuccess, void delegate() onFailure)
     {
-        import hip.error.handler;
-        if(ErrorHandler.assertErrorMessage(data.length != 0, "No data was passed to load Image.", "Could not load image"))
-            return false;
-        if(ErrorHandler.assertLazyErrorMessage(decoder.startDecoding(data, ()
+        if(data.length == 0)
+            throw new Exception("No data was passed to load Image. Could not load image at path "~imagePath);
+
+        if(!(decoder.startDecoding(data, ()
         {
             width         = decoder.getWidth();
             height        = decoder.getHeight();
@@ -92,10 +90,8 @@ public class Image : HipAsset, IImage
             bytesPerPixel = decoder.getBytesPerPixel();
             pixels        = cast(ubyte[])decoder.getPixels();
             onSuccess(this);
-        }, onFailure),
-        "Decoding Image: ", "Could not load image " ~ imagePath))
-            return false;
-        
+        }, onFailure)))
+            throw new Exception("Decoding Image Error: Could not load image "~imagePath);
         return true;
     }
 
@@ -105,9 +101,7 @@ public class Image : HipAsset, IImage
 
     ubyte[] monochromeToRGBA() const
     {
-        import hip.error.handler;
         ubyte[] pix = new ubyte[](4*width*height); //RGBA for each pixel
-        ErrorHandler.assertExit(pix != null, "Out of memory when converting monochrome to RGBA");
         uint pixelsLength = width*height;
         ubyte color;
         uint z;
@@ -126,10 +120,7 @@ public class Image : HipAsset, IImage
 
     ubyte[] convertPalettizedToRGBA() const
     {
-        import hip.error.handler;
         ubyte[] pix = new ubyte[](4*width*height); //RGBA for each pixel
-        ErrorHandler.assertExit(pix != null, "Out of memory when converting palette pixels to RGBA");
-
         uint pixelsLength = width*height;
         const(ubyte[]) palette = decoder.getPalette();
 

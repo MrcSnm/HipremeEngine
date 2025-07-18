@@ -9,6 +9,7 @@
 				"hipengine_api:interfaces": {"path": "../../api"},
 				"data" : {"path": "../data"},
 				"image" : {"path": "../image"},
+				"image_decoding": {"path": "../image_decoding"},
 				"config": {"path": "../config"},
 				"error": {"path": "../error"},
 				"math": {"path": "../math"},
@@ -93,12 +94,12 @@
 		{
 			"name": "wasm",
 			"dependencies": { "renderer:gl" : "*"},
-			"subConfigurations": { "windowing": "wasm", "image": "wasm", "renderer:gl": "gles20"}
+			"subConfigurations": { "windowing": "wasm", "image_decoding": "wasm", "renderer:gl": "gles20"}
 		},
 		{
 			"name": "psvita",
 			"dependencies": {"renderer:gl" : "*"},
-			"subConfigurations": { "windowing": "psvita", "image": "gamut", "renderer:gl": "gles20"}
+			"subConfigurations": { "windowing": "psvita", "image_decoding": "gamut", "renderer:gl": "gles20"}
 		},
 		{
 			"name": "android",

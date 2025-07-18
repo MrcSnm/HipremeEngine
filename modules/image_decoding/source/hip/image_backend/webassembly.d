@@ -22,7 +22,7 @@ version(WebAssembly)
     extern(C) ubyte* WasmImageGetPixels(size_t);
     extern(C) void WasmImageDispose(size_t);
 
-    final class HipWasmImageDecoder : IHipAnyImageDecoder
+    final class HipWasmImageDecoder : IHipImageDecoder
     {
         //Everything here needs to be cached for not calling the Wasm bridge.
         private uint width, height;
@@ -57,7 +57,7 @@ version(WebAssembly)
                 }
             }).tupleof);
 
-            return img.valid && width != 0 && height != 0;
+            return true;
         }
         uint getWidth() const {return width;}
         uint getHeight() const {return height;}
