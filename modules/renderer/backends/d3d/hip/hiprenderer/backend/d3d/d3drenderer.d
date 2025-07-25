@@ -379,11 +379,11 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         final switch(mode) with(HipWindowMode)
         {
-            case BORDERLESS_FULLSCREEN:
+            case borderlessFullscreen:
                 break;
-            case FULLSCREEN:
+            case fullscreen:
                 break;
-            case WINDOWED:
+            case windowed:
 
                 break;
         }
@@ -452,15 +452,15 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         final switch(mode) with (HipRendererMode)
         {
-            case TRIANGLES:
+            case triangles:
                 return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-            case TRIANGLE_STRIP:
+            case triangleStrip:
                 return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-            case LINE:
+            case line:
                 return D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-            case LINE_STRIP:
+            case lineStrip:
                 return D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP;
-            case POINT:
+            case point:
                 return D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
         }
     }
@@ -491,7 +491,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         currentViewport = v;
         _hip_d3d_context.RSSetViewports(1u, &vp);
     }
-    
+
 
 
     void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255){}

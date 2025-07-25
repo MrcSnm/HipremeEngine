@@ -42,11 +42,11 @@ When the application does not own the Window, that is, built with the version(dl
 
 |  Hipreme Engine |        OpenGL       |                  Direct3D                 |              Metal             |
 | :-------------: | :-----------------: | :---------------------------------------: | :----------------------------: |
-|      POINT      |      GL\_POINTS     |   D3D11\_PRIMITIVE\_TOPOLOGY\_POINTLIST   |     MTLPrimitiveType.Point     |
-|       LINE      |      GL\_LINES      |    D3D11\_PRIMITIVE\_TOPOLOGY\_LINELIST   |      MTLPrimitiveType.Line     |
-|   LINE\_STRIP   |   GL\_LINE\_STRIP   |   D3D11\_PRIMITIVE\_TOPOLOGY\_LINESTRIP   |   MTLPrimitiveType.LineStrip   |
-|    TRIANGLES    |    GL\_TRIANGLES    |  D3D11\_PRIMITIVE\_TOPOLOGY\_TRIANGLELIST |    MTLPrimitiveType.Triangle   |
-| TRIANGLE\_STRIP | GL\_TRIANGLE\_STRIP | D3D11\_PRIMITIVE\_TOPOLOGY\_TRIANGLESTRIP | MTLPrimitiveType.TriangleStrip |
+|      point      |      GL\_POINTS     |   D3D11\_PRIMITIVE\_TOPOLOGY\_POINTLIST   |     MTLPrimitiveType.Point     |
+|       line      |      GL\_LINES      |    D3D11\_PRIMITIVE\_TOPOLOGY\_LINELIST   |      MTLPrimitiveType.Line     |
+|   lineStrip   |   GL\_LINE\_STRIP   |   D3D11\_PRIMITIVE\_TOPOLOGY\_LINESTRIP   |   MTLPrimitiveType.LineStrip   |
+|    triangles    |    GL\_TRIANGLES    |  D3D11\_PRIMITIVE\_TOPOLOGY\_TRIANGLELIST |    MTLPrimitiveType.Triangle   |
+| trinagleStrip | GL\_TRIANGLE\_STRIP | D3D11\_PRIMITIVE\_TOPOLOGY\_TRIANGLESTRIP | MTLPrimitiveType.TriangleStrip |
 
 ## TextureWrapMode mapping table
 
@@ -89,8 +89,8 @@ struct HipSpriteVertexUniform
 struct HipSpriteFragmentUniform
 {
     float[4] uBatchColor = [1,1,1,1];
-    
-    @(ShaderHint.Blackbox | ShaderHint.MaxTextures) 
+
+    @(ShaderHint.Blackbox | ShaderHint.MaxTextures)
     IHipTexture[] uTex;
 }
 
@@ -185,7 +185,7 @@ else
 {
     shader.bind();
     vao.bind();
-    HipRenderer.drawIndexed(indices.length, HipRendererMode.TRIANGLES);
+    HipRenderer.drawIndexed(indices.length, HipRendererMode.triangles);
 }
 HipRenderer.end();
 ```

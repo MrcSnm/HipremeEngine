@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 
 module hip.systems.game;
 import hip.global.gamedef;
-import hip.hipaudio.audio;
+import hip.audio;
 import hip.view;
 import hip.error.handler;
 import hip.api.view.scene;
@@ -54,7 +54,7 @@ version(Load_DScript)
 
 class GameSystem
 {
-    /** 
+    /**
      * Holds the member that generates the events as inputs
      */
     EventDispatcher dispatcher;
@@ -95,7 +95,7 @@ class GameSystem
         scriptInputListener = new HipInputListener(dispatcher);
 
         import hip.console.log;
-        inputListener.addKeyboardListener(HipKey.ESCAPE, 
+        inputListener.addKeyboardListener(HipKey.ESCAPE,
             (meta){hasFinished = true;}
         );
         // inputListener.addKeyboardListener(HipKey.F1,
@@ -113,7 +113,7 @@ class GameSystem
                 }, HipButtonType.up
             );
         }
-        
+
     }
 
     void loadGame(string gameDll, string buildCommand)
@@ -145,12 +145,12 @@ class GameSystem
             hotload = new HotloadableDLL(gameDll, (void* lib)
             {
                 ErrorHandler.assertLazyExit(lib != null, "No library " ~ gameDll ~ " was found");
-                HipremeEngineGameInit = 
+                HipremeEngineGameInit =
                     cast(typeof(HipremeEngineGameInit))
                     dynamicLibrarySymbolLink(lib, "HipremeEngineGameInit");
                 ErrorHandler.assertLazyExit(HipremeEngineGameInit != null,
                 "HipremeEngineGameInit wasn't found when looking into "~gameDll);
-                HipremeEngineGameDestroy = 
+                HipremeEngineGameDestroy =
                     cast(typeof(HipremeEngineGameDestroy))
                     dynamicLibrarySymbolLink(lib, "HipremeEngineGameDestroy");
                 ErrorHandler.assertLazyExit(HipremeEngineGameDestroy != null,
@@ -376,7 +376,7 @@ class GameSystem
         dispatcher.postUpdate();
         isInUpdate = false;
     }
-    
+
     void quit()
     {
         version(Load_DScript)
@@ -393,6 +393,6 @@ class GameSystem
         }
         import hip.assetmanager;
         HipAssetManager.dispose();
- 
+
     }
 }

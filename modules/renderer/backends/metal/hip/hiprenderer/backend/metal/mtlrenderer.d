@@ -55,7 +55,7 @@ private string getGPUFamily(MTLDevice device)
     return ret;
 }
 
-/** 
+/**
  * Used to be sent as a way to interface with ShaderVar uniforms.
  * Whenever needing to bind more than one texture.
  */
@@ -118,11 +118,11 @@ class HipMTLRenderer : IHipRendererImpl
         return cmdQueue !is null;
     }
 
-    /** 
+    /**
      * Util for creating MTLResourceOptions.StorageModePrivate buffer with initial data.
      */
     package static MTLBuffer createPrivateBufferWithData(MTLCommandQueue cQueue, const(void)* data, size_t size)
-    { 
+    {
         MTLDevice d = cQueue.device;
         MTLBuffer temp = d.newBuffer(data, size, MTLResourceOptions.StorageModeShared);
         MTLBuffer ret = d.newBuffer(size, MTLResourceOptions.StorageModePrivate);
@@ -245,7 +245,7 @@ class HipMTLRenderer : IHipRendererImpl
     }
     public void setColorMask(ubyte r, ubyte g, ubyte b, ubyte a)
     {
-        
+
     }
 
     public void setStencilTestingFunction(HipStencilTestingFunction passFunc, uint reference, uint mask)
@@ -273,15 +273,15 @@ class HipMTLRenderer : IHipRendererImpl
     {
         final switch(mode)
         {
-            case HipRendererMode.LINE: 
+            case HipRendererMode.line:
                 primitiveType = MTLPrimitiveType.Line; break;
-            case HipRendererMode.LINE_STRIP: 
+            case HipRendererMode.lineStrip:
                 primitiveType = MTLPrimitiveType.LineStrip; break;
-            case HipRendererMode.POINT: 
+            case HipRendererMode.point:
                 primitiveType = MTLPrimitiveType.Point; break;
-            case HipRendererMode.TRIANGLES:
+            case HipRendererMode.triangles:
                 primitiveType = MTLPrimitiveType.Triangle; break;
-            case HipRendererMode.TRIANGLE_STRIP:
+            case HipRendererMode.triangleStrip:
                 primitiveType = MTLPrimitiveType.TriangleStrip; break;
         }
     }
@@ -325,6 +325,6 @@ class HipMTLRenderer : IHipRendererImpl
 
     public void dispose()
     {
-        
+
     }
 }

@@ -1,4 +1,6 @@
 module hip.api.audio;
+public import hip.api.audio.audiosource;
+public import hip.api.audio.audioclip;
 
 //Low weight shared data
 enum HipAudioType
@@ -56,4 +58,32 @@ HipAudioImplementation getAudioImplementationForOS()
         else version(iOS) return AVAudioEngine;
         else return OpenAL;
     }
+}
+
+/**
+ * This is an interface that should be created only once inside the application.
+ *  Every audio function is global, meaning that every AudioSource will refer to the player
+ */
+public interface IHipAudioPlayer
+{
+    //LOAD RELATED
+    public bool play_streamed(AHipAudioSource src);
+    public IHipAudioClip getClip();
+    public IHipAudioClip loadStreamed(string path, uint chunkSize);
+    public void updateStream(AHipAudioSource source);
+    public AHipAudioSource getSource(bool isStreamed = false, IHipAudioClip clip = null);
+
+    public void onDestroy();
+    public void update();
+}
+
+private __gshared IHipAudioPlayer audioPlayer;
+void setIHipAudioPlayer(IHipAudioPlayer player)
+{
+    audioPlayer = player;
+}
+
+IHipAudioPlayer HipAudio()
+{
+    return audioPlayer;
 }

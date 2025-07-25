@@ -75,7 +75,7 @@ public class Image : HipAsset, IImage
     uint getWidth() const {return width;}
     uint getHeight() const {return height;}
     ubyte getBytesPerPixel() const {return bytesPerPixel;}
-    const(ubyte[]) getPalette() const {return decoder.getPalette;}
+    const(ubyte[]) getPalette() const {return decoder ? decoder.getPalette : null;}
     const(ubyte[]) getPixels() const {return pixels;}
 
     void loadRaw(in ubyte[] pixels, int width, int height, ubyte bytesPerPixel)

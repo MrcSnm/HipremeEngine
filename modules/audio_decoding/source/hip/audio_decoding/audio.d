@@ -1,5 +1,5 @@
 module hip.audio_decoding.audio;
-public import hip.api.audio;
+public import hip.api.audio : HipAudioType;
 public import hip.api.data.audio;
 
 

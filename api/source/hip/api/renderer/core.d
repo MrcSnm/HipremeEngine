@@ -10,11 +10,11 @@ public import hip.api.renderer.shadervar;
 
 
 ///Could later be moved to windowing
-enum HipWindowMode
+enum HipWindowMode : ubyte
 {
-    WINDOWED,
-    FULLSCREEN,
-    BORDERLESS_FULLSCREEN
+    windowed,
+    fullscreen,
+    borderlessFullscreen
 }
 
 
@@ -40,23 +40,23 @@ struct HipRendererInfo
 }
 
 ///Which API is being used
-enum HipRendererType
+enum HipRendererType : ubyte
 {
     GL3,
     D3D11,
-    METAL,
-    NONE
+    Metal,
+    None
 }
 
 
 /// Primitive which the renderer will use
-enum HipRendererMode
+enum HipRendererMode : ubyte
 {
-    POINT,
-    LINE,
-    LINE_STRIP,
-    TRIANGLES,
-    TRIANGLE_STRIP
+    point,
+    line,
+    lineStrip,
+    triangles,
+    triangleStrip
 }
 
 

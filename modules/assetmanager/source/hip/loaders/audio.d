@@ -25,7 +25,7 @@ final class HipAudioLoadTask : HipAssetLoadTask
                     .addOnError((string error){result = cantLoad; this.error = error;})
                     .addOnSuccess((in ubyte[] data)
                     {
-                        import hip.hipaudio.audio;
+                        import hip.audio;
                         auto clip = HipAudio.getClip();
                         asset = cast(HipAsset)clip; //TODO: Refactor HipAudioClip to not use inheritance
                         clip.loadFromMemory(data, getEncodingFromName(path), HipAudioType.SFX,

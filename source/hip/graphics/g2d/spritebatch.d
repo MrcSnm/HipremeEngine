@@ -359,7 +359,7 @@ class HipSpriteBatch : IHipBatch
             mesh.updateVertices(cast(void[])vertices[start..end],cast(int)start);
 
             // mesh.vao.VBO.unmapBuffer();
-            mesh.draw((quadsCount-lastDrawQuadsCount)*6, HipRendererMode.TRIANGLES, lastDrawQuadsCount*6);
+            mesh.draw((quadsCount-lastDrawQuadsCount)*6, HipRendererMode.triangles, lastDrawQuadsCount*6);
 
             ///Some operations may require texture unbinding(D3D11 Framebuffer)
             foreach(i; 0..usingTexturesCount)

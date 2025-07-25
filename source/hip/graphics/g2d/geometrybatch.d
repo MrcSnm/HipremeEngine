@@ -64,7 +64,7 @@ class GeometryBatch : IHipBatch
     HipGeometryBatchVertex[] vertices;
     index_t[] indices;
 
-    
+
     this(HipOrthoCamera camera = null, index_t verticesCount=DefaultMaxGeometryBatchVertices, index_t indicesCount=DefaultMaxGeometryBatchVertices)
     {
         import hip.hiprenderer.initializer;
@@ -111,7 +111,7 @@ class GeometryBatch : IHipBatch
         );
         return verticesCount++;
     }
-    
+
     void addIndex(index_t[] newIndices ...)
     {
         if(currentColor.a == 0) return;
@@ -159,7 +159,7 @@ class GeometryBatch : IHipBatch
         //The first vertex
         index_t lastVert = addVertex(x + radiusW*cos(startAngle), y + radiusH*sin(startAngle), managedDepth);
         index_t firstVert = lastVert;
-        
+
         checkVerticesCount(precision);
         for(int i = 0; i < precision; i++)
         {
@@ -169,7 +169,7 @@ class GeometryBatch : IHipBatch
             //Use a temporary variable to hold the new lastVert for more performance
             //on addIndex calls
             index_t tempNewLastVert = addVertex(x+radiusW*cos(nextAngle), y + radiusH*sin(nextAngle), managedDepth);
-            
+
             addIndex(
                 centerIndex, //Puts the center first
                 lastVert, //Appends the vertex from the last iteration
@@ -191,10 +191,10 @@ class GeometryBatch : IHipBatch
     void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, HipColor color = HipColor.no, int precision = 24)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
-        if(HipRenderer.getMode != HipRendererMode.LINE)
+        if(HipRenderer.getMode != HipRendererMode.line)
         {
             flush();
-            HipRenderer.setRendererMode(HipRendererMode.LINE);
+            HipRenderer.setRendererMode(HipRendererMode.line);
         }
         float angle_mult = (1.0/precision) * degrees * (PI/180.0);
         checkVerticesCount(1);
@@ -229,10 +229,10 @@ class GeometryBatch : IHipBatch
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(radiusH == -1)
             radiusH = radiusW;
-        if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
+        if(HipRenderer.getMode != HipRendererMode.triangles)
         {
             flush();
-            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+            HipRenderer.setRendererMode(HipRendererMode.triangles);
         }
         fillEllipseVertices(x, y, radiusW, radiusH, degrees, 0, precision);
         setColor(oldColor);
@@ -241,10 +241,10 @@ class GeometryBatch : IHipBatch
     void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
-        if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
+        if(HipRenderer.getMode != HipRendererMode.triangles)
         {
             flush();
-            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+            HipRenderer.setRendererMode(HipRendererMode.triangles);
         }
         triangleVertices(x1,y1,x2,y2,x3,y3);
         setColor(oldColor);
@@ -252,22 +252,22 @@ class GeometryBatch : IHipBatch
     void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
-        if(HipRenderer.getMode != HipRendererMode.LINE_STRIP)
+        if(HipRenderer.getMode != HipRendererMode.lineStrip)
         {
             flush();
-            HipRenderer.setRendererMode(HipRendererMode.LINE_STRIP);
+            HipRenderer.setRendererMode(HipRendererMode.lineStrip);
         }
         triangleVertices(x1, y1, x2, y2, x3, y3);
         setColor(oldColor);
     }
-    
+
     void drawLine(int x1, int y1, int x2, int y2, HipColor color = HipColor.no)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
-        if(HipRenderer.getMode != HipRendererMode.LINE)
+        if(HipRenderer.getMode != HipRendererMode.line)
         {
             flush();
-            HipRenderer.setRendererMode(HipRendererMode.LINE);
+            HipRenderer.setRendererMode(HipRendererMode.line);
         }
         checkVerticesCount(2);
         addVertex(x1, y1, managedDepth);
@@ -314,10 +314,10 @@ class GeometryBatch : IHipBatch
     void drawPixel(int x, int y, HipColor color = HipColor.no)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
-        if(HipRenderer.getMode != HipRendererMode.POINT)
+        if(HipRenderer.getMode != HipRendererMode.point)
         {
             flush();
-            HipRenderer.setRendererMode(HipRendererMode.POINT);
+            HipRenderer.setRendererMode(HipRendererMode.point);
         }
         checkVerticesCount(1);
         addVertex(x, y, managedDepth);
@@ -343,7 +343,7 @@ class GeometryBatch : IHipBatch
         index_t botLeft = addVertex(x, y+h, managedDepth);
         index_t botRight= addVertex(x+w, y+h, managedDepth);
         index_t topRight= addVertex(x+w, y, managedDepth);
- 
+
         addIndex(
             topLeft, botLeft, botRight,
             botRight, topRight, topLeft
@@ -354,10 +354,10 @@ class GeometryBatch : IHipBatch
     void drawRectangle(int x, int y, int w, int h, HipColor color = HipColor.no)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
-        if(HipRenderer.getMode != HipRendererMode.LINE_STRIP)
+        if(HipRenderer.getMode != HipRendererMode.lineStrip)
         {
             flush();
-            HipRenderer.setRendererMode(HipRendererMode.LINE_STRIP);
+            HipRenderer.setRendererMode(HipRendererMode.lineStrip);
         }
         rectangleVertices(x,y,w,h);
         setColor(oldColor);
@@ -367,10 +367,10 @@ class GeometryBatch : IHipBatch
     {
         if(radius == 0)
             return fillRectangle(x,y,w,h,color);
-        if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
+        if(HipRenderer.getMode != HipRendererMode.triangles)
         {
             flush();
-            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+            HipRenderer.setRendererMode(HipRendererMode.triangles);
         }
         int vPerEdge = vertices/4;
         int r2 = radius*2;
@@ -395,15 +395,15 @@ class GeometryBatch : IHipBatch
 
         setColor(old);
     }
-  
+
 
     void fillRectangle(int x, int y, int w, int h, HipColor color = HipColor.no)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
-        if(HipRenderer.getMode != HipRendererMode.TRIANGLES)
+        if(HipRenderer.getMode != HipRendererMode.triangles)
         {
             flush();
-            HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+            HipRenderer.setRendererMode(HipRendererMode.triangles);
         }
         rectangleVertices(x,y,w,h);
         setColor(oldColor);

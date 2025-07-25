@@ -1,6 +1,6 @@
 module hip.api.audio.audioclip;
 
-public import hip.api.audio;
+import hip.api.audio;
 public import hip.api.data.audio;
 
 

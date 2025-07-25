@@ -47,7 +47,7 @@ import hip.util.system;
 import hip.concurrency.thread;
 import hip.concurrency.mutex;
 public import hip.image;
-public import hip.hipaudio.clip;
+public import hip.audio.clip;
 public import hip.assets.texture;
 public import hip.assets.tilemap;
 public import hip.font.bmfont;

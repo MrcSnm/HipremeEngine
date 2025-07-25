@@ -126,7 +126,7 @@ class HipTextRenderer : IHipBatch
         this.color = color;
     }
 
-    /** 
+    /**
      * Implementation for unchanging text.
      *  The text will be saved, represented as an internal ID to a managed static HipText. Which means the texture will be baked
      *  so it is possible to actually draw it a lot faster as all the preprocessings are done once.
@@ -168,13 +168,13 @@ class HipTextRenderer : IHipBatch
             this.font.texture.bind();
             mesh.shader.setVertexVar("Cbuf.uMVP", camera.getMVP(), true);
             mesh.shader.sendVars();
-            
+
             size_t start = lastDrawQuadsCount*4;
             size_t end = quadsCount*4;
 
             mesh.updateVertices(vertices[start..end], cast(int)start);
 
-            mesh.draw((quadsCount - lastDrawQuadsCount)*6, HipRendererMode.TRIANGLES, lastDrawQuadsCount*6);
+            mesh.draw((quadsCount - lastDrawQuadsCount)*6, HipRendererMode.triangles, lastDrawQuadsCount*6);
             font.texture.unbind();
             mesh.unbind();
         }

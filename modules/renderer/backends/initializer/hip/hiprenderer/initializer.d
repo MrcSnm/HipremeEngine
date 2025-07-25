@@ -8,7 +8,7 @@ public HipRendererType rendererFromString(string str)
     {
         case "GL3": return GL3;
         case "D3D11": return D3D11;
-        case "METAL": return METAL;
+        case "Metal": return Metal;
         default:
         {
             ErrorHandler.showErrorMessage("Invalid renderer '"~str~"'",
@@ -16,7 +16,7 @@ public HipRendererType rendererFromString(string str)
                 Available renderers:
                     GL3
                     D3D11
-                    METAL
+                    Metal
 
                 Fallback to GL3
             `);
@@ -31,16 +31,16 @@ public IHipRendererImpl getRendererWithFallback(HipRendererType type)
     {
         switch(type) with(HipRendererType)
         {
-            case GL3: return [GL3, D3D11, METAL];
-            case D3D11: return [D3D11, GL3, NONE];
-            case METAL: return [METAL, GL3, NONE];
-            default: return [NONE, NONE, NONE];
+            case GL3: return [GL3, D3D11, Metal];
+            case D3D11: return [D3D11, GL3, None];
+            case Metal: return [Metal, GL3, None];
+            default: return [None, None, None];
         }
     }
     foreach(fallback; getRendererFallback(type))
     {
         IHipRendererImpl impl = getRendererImplementation(fallback);
-        if(fallback == HipRendererType.NONE)
+        if(fallback == HipRendererType.None)
             break;
         if(impl !is null)
             return impl;
@@ -53,7 +53,7 @@ public IHipRendererImpl getRendererWithFallback(HipRendererType type)
 public HipRendererType getRendererTypeFromVersion()
 {
     with(HipRendererType)
-    return HasDirect3D ? D3D11 : HasMetal ? METAL : HasOpenGL ? GL3 : NONE;
+    return HasDirect3D ? D3D11 : HasMetal ? Metal : HasOpenGL ? GL3 : None;
 }
 
 public IHipRendererImpl getRendererImplementation(HipRendererType type)
@@ -89,7 +89,7 @@ public IHipRendererImpl getRendererImplementation(HipRendererType type)
     {
         case HipRendererType.GL3: return getOpenGLRenderer;
         case HipRendererType.D3D11: return getDirect3DRenderer;
-        case HipRendererType.METAL: return getMetalRenderer;
+        case HipRendererType.Metal: return getMetalRenderer;
         default: return null;
     }
 }
@@ -112,16 +112,16 @@ immutable(DefaultShader[]) getDefaultFromModule(string mod)()
 immutable DefaultShader[][] HipDefaultShaders = [
     HipRendererType.GL3: getDefaultFromModule!"hip.hiprenderer.backend.gl.defaultshaders",
     HipRendererType.D3D11: getDefaultFromModule!"hip.hiprenderer.backend.d3d.defaultshaders",
-    HipRendererType.METAL: getDefaultFromModule!"hip.hiprenderer.backend.metal.defaultshaders",
-    HipRendererType.NONE: []
+    HipRendererType.Metal: getDefaultFromModule!"hip.hiprenderer.backend.metal.defaultshaders",
+    HipRendererType.None: []
 ];
 
 
-public Shader newShader(HipShaderPresets shaderPreset, HipRendererType type = HipRendererType.NONE)
+public Shader newShader(HipShaderPresets shaderPreset, HipRendererType type = HipRendererType.None)
 {
     import hip.util.conv:to;
     import hip.console.log;
-    if(type == HipRendererType.NONE)
+    if(type == HipRendererType.None)
         type = HipRenderer.getType();
 
     Shader ret = HipRenderer.newShader();

@@ -22,11 +22,10 @@ public import hip.api.renderer.texture;
 public import hip.api.data.image;
 public import hip.api.graphics.color;
 
-class HipTexture : HipAsset, IHipTexture
+class HipTexture : HipAsset
 {
     IImage img;
-    int width,height;
-    TextureFilter min, mag;
+    // int width,height;
     private __gshared HipTexture pixelTexture;
 
     bool hasSuccessfullyLoaded(){return img.getWidth > 0;}
@@ -44,7 +43,7 @@ class HipTexture : HipAsset, IHipTexture
     /**
     *   Make it available for implementors
     */
-    package IHipTexture textureImpl;
+    IHipTexture textureImpl;
     /**
     *   Initializes with the current renderer type
     */
@@ -60,57 +59,22 @@ class HipTexture : HipAsset, IHipTexture
     {
         this();
         if(image !is null)
-            load(image);
+            textureImpl.load(image);
     }
 
-    public IHipTexture getBackendHandle(){return textureImpl;}
+    Rect getBounds(){return Rect(0,0,getWidth,getHeight);}
 
-    ///Binds texture to the specific slot
-    public void bind(int slot = 0)
-    {
-        textureImpl.bind(slot);
-    }
-    public void unbind(int slot = 0)
-    {
-        textureImpl.unbind(slot);
-    }
-    public void setWrapMode(TextureWrapMode mode){textureImpl.setWrapMode(mode);}
-    public void setTextureFilter(TextureFilter min, TextureFilter mag)
-    {
-        this.min = min;
-        this.mag = mag;
-        textureImpl.setTextureFilter(min, mag);
-    }
-    
-    Rect getBounds(){return Rect(0,0,width,height);}
-
-    /**
-    *   Returns whether the load was successful
-    */
-    protected bool loadImpl(in IImage img)
-    {
-        import hip.console.log;
-        this.img = cast(IImage)img; //Promise it won't modify
-        this.width = img.getWidth;
-        this.height = img.getHeight;
-        hiplog("Uploading Texture[",img.getName,"]", img.getWidth, "x", img.getHeight);
-        this.textureImpl.load(img);
-        setTextureFilter(TextureFilter.NEAREST, TextureFilter.NEAREST);
-        return width != 0;
-    }
     import hip.util.string;
     SmallString toHipString()
     {
-        return SmallString("TEX[", width, "x",height,"] ", img.getSizeBytes, " bytes");
+        return SmallString("TEX[", getWidth, "x",getHeight,"] ", img.getSizeBytes, " bytes");
     }
-
-    int getWidth() const {return width;}
-    int getHeight() const {return height;}
-
     override void onFinishLoading(){}
     override void onDispose(){}
 
     override bool isReady() const {return textureImpl !is null;}
+
+    alias textureImpl this;
 }
 
 

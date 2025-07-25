@@ -14,7 +14,7 @@ import hip.bind.external;
 import hip.filesystem.hipfs;
 import hip.error.handler;
 import hip.global.gamedef;
-import hip.hipaudio.audio;
+import hip.audio;
 import hip.assetmanager;
 import hip.systems.timer_manager;
 
@@ -67,7 +67,7 @@ version(PSVita)      version = ExternallyManagedDeltaTime;
 
 
 __gshared string projectToLoad;
-///Came from bin/desktop/engine_opts.json 
+///Came from bin/desktop/engine_opts.json
 __gshared string buildCommand;
 __gshared bool isUsingInterpreter = false;
 __gshared HipInterpreterEntry interpreterEntry;
@@ -75,7 +75,7 @@ __gshared HipInterpreterEntry interpreterEntry;
 __gshared string[] rt_options = ["gcopt=profile:1"];
 
 
-/** 
+/**
  * What this function does is basically parse the arguments for the
  * engine entry point:
  *
@@ -186,7 +186,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 		int getOptimalAudioBufferSize = HipAndroid.javaCall!(int, "getOptimalAudioBufferSize");
 		int getOptimalSampleRate = HipAndroid.javaCall!(int, "getOptimalSampleRate");
 
-		HipAudio.initialize(getAudioImplementationForOS, 
+		HipAudio.initialize(getAudioImplementationForOS,
 			hasProFeature,
 			hasLowLatencyFeature,
 			getOptimalAudioBufferSize,
@@ -195,6 +195,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	}
 	else
 		HipAudio.initialize(getAudioImplementationForOS);
+	setIHipAudioPlayer(HipAudio);
 	version(dll)
 	{
 		import hip.console.log;
@@ -235,7 +236,7 @@ void gameInitialize()
 	//Initialize 2D context
 	import hip.graphics.g2d;
 	HipRenderer2D.initialize(interpreterEntry, true);
-	
+
 	if(isUsingInterpreter)
 		loadInterpreterEntry(interpreterEntry.intepreter, interpreterEntry.sourceEntry);
 	//After initializing engine, every dependency has been load
@@ -247,7 +248,7 @@ void gameInitialize()
 import hip.network;
 
 
-/** 
+/**
  * Some Resources must be freed safely.
  * One example is the Network. It won't be able to recognize disconnection if it is not done manually.
  *
@@ -400,7 +401,7 @@ version(Desktop)
 	}
 }
 /**
-* This function was created for making it rendering optional. On Android, 
+* This function was created for making it rendering optional. On Android,
 * the game is only rendered when the renderer is dirty, it is absolutely
 * not recommended to do game logic on the render
 */

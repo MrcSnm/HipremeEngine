@@ -35,7 +35,7 @@ private struct HipRendererResources
 
 class HipRendererImplementation : IHipRenderer
 {
-    static struct Statistics 
+    static struct Statistics
     {
         ulong drawCalls;
         ulong renderFrames;
@@ -47,7 +47,7 @@ class HipRendererImplementation : IHipRenderer
     protected Statistics stats;
     public  HipWindow window = null;
     public  Shader currentShader;
-    package HipRendererType rendererType = HipRendererType.NONE;
+    package HipRendererType rendererType = HipRendererType.None;
 
     public uint width, height;
     protected HipRendererConfig currentConfig;
@@ -88,7 +88,7 @@ class HipRendererImplementation : IHipRenderer
             cfg.multisamplingLevel = ini.tryGet!ubyte("multisampling.level", 0);
             cfg.fullscreen = ini.tryGet("screen.fullscreen", false);
             cfg.vsync = ini.tryGet("vsync.on", true);
-            
+
             renderWidth = ini.tryGet("screen.width", renderWidth);
             renderHeight = ini.tryGet("screen.height", renderHeight);
             string renderer = ini.tryGet("screen.renderer", "GL3");
@@ -176,15 +176,15 @@ class HipRendererImplementation : IHipRenderer
         window.show();
         foreach(err; window.errors)
             loglnError(err);
-        
+
         setWindowSize(width, height);
-        
+
         //After init
         import hip.config.opts;
         mainViewport = new Viewport(0,0, window.width, window.height);
         setViewport(mainViewport);
         setColor();
-        HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+        HipRenderer.setRendererMode(HipRendererMode.triangles);
 
         return ErrorHandler.stopListeningForErrors();
     }
@@ -249,7 +249,7 @@ class HipRendererImplementation : IHipRenderer
 
     public void setCamera()
     {
-        
+
     }
     /**
     * Fixes the matrix order based on the config and renderer.
@@ -283,7 +283,7 @@ class HipRendererImplementation : IHipRenderer
         res.vertexArrays~= rendererImpl.createVertexArray();
         return res.vertexArrays[$-1];
     }
-    
+
     public IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type)
     {
         res.buffers~= rendererImpl.createBuffer(size, usage, type);
@@ -319,7 +319,7 @@ class HipRendererImplementation : IHipRenderer
 
         rendererImpl.begin();
     }
-    
+
     public void setErrorCheckingEnabled(bool enable = true)
     {
         rendererImpl.setErrorCheckingEnabled(enable);
@@ -417,7 +417,7 @@ class HipRendererImplementation : IHipRenderer
     {
         rendererImpl.setStencilOperation(stencilFail, depthFail, stencilAndDephPass);
     }
-    
+
     public void dispose()
     {
         rendererImpl.dispose();

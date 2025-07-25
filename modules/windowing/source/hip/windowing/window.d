@@ -7,12 +7,12 @@ else version(Windows) version = WindowsNative;
 
 enum HipWindowFlags
 {
-    RESIZABLE   = 1,
-    FULLSCREEN  = 1<<1,
-    MAXIMIZABLE = 1<<2,
-    MINIMIZABLE = 1<<4,
+    resizable   = 1,
+    fullscreen  = 1<<1,
+    maximizable = 1<<2,
+    minimizable = 1<<4,
 
-    DEFAULT = RESIZABLE | MAXIMIZABLE | MINIMIZABLE
+    DEFAULT = resizable | maximizable | minimizable
 }
 
 /**

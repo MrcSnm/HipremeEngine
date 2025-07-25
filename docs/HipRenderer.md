@@ -47,11 +47,11 @@ When the application does not own the Window, that is, built with the version(dl
 
 | Hipreme Engine | OpenGL | Direct3D |
 |:--------------:|:------:|:--------:|
-|POINT | GL_POINTS | D3D11_PRIMITIVE_TOPOLOGY_POINTLIST |
-|LINE | GL_LINES | D3D11_PRIMITIVE_TOPOLOGY_LINELIST |
-|LINE_STRIP | GL_LINE_STRIP | D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP |
-|TRIANGLES | GL_TRIANGLES | D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST |
-|TRIANGLE_STRIP | GL_TRIANGLE_STRIP | D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP |
+|point | GL_POINTS | D3D11_PRIMITIVE_TOPOLOGY_POINTLIST |
+|line | GL_LINES | D3D11_PRIMITIVE_TOPOLOGY_LINELIST |
+|lineStrip | GL_LINE_STRIP | D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP |
+|triangles | GL_TRIANGLES | D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST |
+|triangleStrip | GL_TRIANGLE_STRIP | D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP |
 
 ## TextureWrapMode mapping table
 | Hipreme Engine | OpenGL | Direct3D | Additional info |
@@ -177,7 +177,7 @@ else
 {
     shader.bind();
     vao.bind();
-    HipRenderer.setRendererMode(HipRendererMode.TRIANGLES);
+    HipRenderer.setRendererMode(HipRendererMode.triangles);
     HipRenderer.drawIndexed(indices.length);
 }
 HipRenderer.end();
