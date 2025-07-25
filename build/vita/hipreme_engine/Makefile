@@ -26,14 +26,14 @@ VITA_MKSFOEX := vita-mksfoex
 # 	VITA_MAKE_FSELF := vita-make-fself.exe
 # endif
 
-DFLAGS := -gcc="/usr/local/vitasdk/bin/$(CC)" -mtriple=armv7a-unknown-unknown --float-abi=hard -mcpu=cortex-a9
+DFLAGS := -gcc="/usr/local/vitasdk/bin/$(CC)" -mtriple=armv7a-unknown-unknown-eabi --float-abi=hard -mcpu=cortex-a9
 
 PROJECT_TITLE := Hipreme Engine
 PROJECT_TITLEID := VSDK00007
 
 PROJECT := hipreme_engine
-CFLAGS += -Wl,-q -Iinclude -Isrc_extra -fvisibility=hidden
-CXXFLAGS += -Wl,-q -std=c++11
+CFLAGS += -Wl,-q -Iinclude -Isrc_extra -fvisibility=hidden -mfloat-abi=hard -mfpu=neon
+CXXFLAGS += -Wl,-q -std=c++11 -mfloat-abi=hard
 SRC_C :=$(call rwildcard, src/, *.c)
 SRC_CPP :=$(call rwildcard, src/, *.cpp)
 SRC_D := $(call rwildcard, src/, *.d)
@@ -43,7 +43,7 @@ OBJS := $(addprefix out/, $(SRC_C:src/%.c=%.o)) $(addprefix out/, $(SRC_CPP:src/
 
 
 # Hipreme Engine
-LIBS += -lchess2 -lgame2d -lhipreme_engine -lchess2 -lassets -lconcurrency -laudio -lfilesystem -lfont -larsd-official_ttf -larsd-official_core -lrenderer -lrenderer_core -lrenderer_gl
+LIBS += -lwormaze -lgame2d -lfast_noise -lhipreme_engine -lchess2 -lassets -lconcurrency -laudio -lfilesystem -lfont -larsd-official_ttf -larsd-official_core -lrenderer -lrenderer_core -lrenderer_gl
 LIBS += -laudio_decoding -laudio-formats -lBindBC_OpenAL -lbind -lnet
 LIBS += -ldata -lgles -limage -lerror -lconsole -lconfig -ldebugging -lgamut 
 LIBS += -lintel-intrinsics -lmath -lwindowing -lruntime -ltween -ltimer -lhipengine_api_network -lhipengine_api_bindings -lhipengine_api_interfaces -ld_std -lutil -ld_std
@@ -53,7 +53,7 @@ LIBS += -lintel-intrinsics -lmath -lwindowing -lruntime -ltween -ltimer -lhipeng
 
 # Needed by psvDebugScreenPrintf
 # Third party
-LIBS += -lopenal -lpthread -llibGLESv2_stub -lSceDisplay_stub -lSceTouch_stub -lSceCtrl_stub -lSceAudio_stub -lSceAudioIn_stub -llibIMGEGL_stub -llibgpu_es4_ext_stub -lm
+LIBS += -lopenal -lpthread -llibGLESv2_stub -lSceSysmodule_stub -lSceCommonDialog_stub -lSceAppUtil_stub -lSceGxm_stub -lSceDisplay_stub  -lSceTouch_stub -lSceCtrl_stub -lSceAudio_stub -lSceAudioIn_stub -llibIMGEGL_stub -llibgpu_es4_ext_stub -lm
 
 all: package
 

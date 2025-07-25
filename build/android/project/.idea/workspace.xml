@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AndroidGradleBuildConfiguration">
-    <option name="COMMAND_LINE_OPTIONS" value="--stacktrace --debug" />
-  </component>
   <component name="AndroidLayouts">
     <shared>
       <config />
     </shared>
   </component>
-  <component name="AndroidLogFilters">
-    <option name="TOOL_WINDOW_LOG_LEVEL" value="verbose" />
-    <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Show only selected application" />
-  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="002a72a2-c94b-4c61-a2b8-f896bf1fb8a8" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../../../api/source/hip/api/data/commons.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../api/source/hip/api/data/commons.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+    <list default="true" id="0f11157d-e98d-41fc-b338-335fca3a3cb9" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/render.experimental.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/HipremeEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/hipremeengine/app/HipremeEngine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/engine_text.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/engine_text.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../vita/hipreme_engine/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/../../vita/hipreme_engine/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../vita/hipreme_engine/src/d_hooks.c" beforeDir="false" afterPath="$PROJECT_DIR$/../../vita/hipreme_engine/src/d_hooks.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../vita/hipreme_engine/src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/../../vita/hipreme_engine/src/main.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../wasm/build/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../wasm/build/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../dependencies/runtime/druntime" beforeDir="false" afterPath="$PROJECT_DIR$/../../../dependencies/runtime/druntime" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../projects/profile/dub.template.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../projects/profile/dub.template.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../projects/start_here/dub.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../projects/start_here/dub.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/config/source/hip/config/renderer.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/config/source/hip/config/renderer.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/game2d/source/hip/gui/label.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/game2d/source/hip/gui/label.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/util/source/hip/util/string.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/util/source/hip/util/string.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../modules/util/source/hip/util/system.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/util/source/hip/util/system.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../projects/profile/source/gamescript/entry.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../projects/profile/source/gamescript/entry.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../projects/start_here/source/gamescript/entry.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../projects/start_here/source/gamescript/entry.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../projects/test/source/gamescript/entry.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../projects/test/source/gamescript/entry.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../renderer.conf" beforeDir="false" afterPath="$PROJECT_DIR$/../../../renderer.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/backtraced.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/backtraced.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../source/hip/graphics/mesh.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/graphics/mesh.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/dub.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/dub.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,63 +48,33 @@
       <ProjectState />
     </projectState>
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Class" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
   </component>
-  <component name="MarkdownSettingsMigration">
-    <option name="stateVersion" value="1" />
-  </component>
-  <component name="PathMacrosImpl">
-    <macro name="HIPREME_ENGINE" value="$PROJECT_DIR$/../../../" />
-  </component>
   <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 7
 }</component>
-  <component name="ProjectId" id="1weEaUxBuHGOQdvYCBnuHrtvE5x" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectId" id="2ssdTA92oiFEKxdQVgW920iYlUr" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Android App.app.executor": "Run",
-    "Gradle.Upgrade Gradle wrapper.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "featureChooser",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Marcelo/Documents/D/HipremeEngine/build/android/project",
-    "project.structure.last.edited": "SDKs",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "AndroidSdkUpdater"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Android App.app.executor&quot;: &quot;Run&quot;,
+    &quot;ResourceManagerPrefKey.ResourceType&quot;: &quot;DRAWABLE&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;
   }
-}]]></component>
-  <component name="PsdUISettings">
-    <option name="MODULE_TAB" value="Properties" />
-    <option name="BUILD_VARIANTS_TAB" value="Build Types" />
-    <option name="LAST_EDITED_SIGNING_CONFIG" value="debug" />
-    <option name="LAST_EDITED_BUILD_TYPE" value="debug" />
-  </component>
+}</component>
   <component name="RunManager">
-    <configuration default="true" type="AndroidJUnit" factoryName="Android JUnit">
-      <option name="TEST_OBJECT" value="class" />
-      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
-      <method v="2">
-        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
       <module name="App.app.main" />
       <option name="DEPLOY" value="true" />
@@ -120,12 +90,12 @@
       <option name="MODE" value="default_activity" />
       <option name="RESTORE_ENABLED" value="false" />
       <option name="RESTORE_FILE" value="" />
-      <option name="CLEAR_LOGCAT" value="true" />
-      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
       <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
       <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
       <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
-      <option name="DEBUGGER_TYPE" value="Hybrid" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
       <Auto>
         <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
         <option name="SHOW_STATIC_VARS" value="true" />
@@ -143,11 +113,6 @@
         <option name="SHOW_OPTIMIZED_WARNING" value="true" />
         <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
         <option name="DEBUG_SANDBOX_SDK" value="false" />
-        <symbol_dirs symbol_path="G:\HipremeEngine" />
-        <symbol_dirs symbol_path="G:\HipremeEngine\source" />
-        <symbol_dirs symbol_path="G:\HipremeEngine\modules" />
-        <post_attach_commands post_attach_commands_attr="process handle SIGUSR2 -n true -p true -s false  " />
-        <post_attach_commands post_attach_commands_attr="process handle SIGUSR1 -n true -p true -s false  " />
       </Hybrid>
       <Java>
         <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
@@ -180,46 +145,14 @@
     </configuration>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
-  <component name="SvnConfiguration">
-    <configuration />
-  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="002a72a2-c94b-4c61-a2b8-f896bf1fb8a8" name="Default Changelist" comment="" />
-      <created>1628810717599</created>
+      <changelist id="0f11157d-e98d-41fc-b338-335fca3a3cb9" name="Changes" comment="" />
+      <created>1739248223296</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1628810717599</updated>
+      <updated>1739248223296</updated>
     </task>
     <servers />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <breakpoint enabled="true" type="OCSymbolicBreakpointType">
-          <properties>
-            <option name="moduleName" value="libart.so" />
-            <option name="symbolPattern" value="art_sigbus_fault" />
-          </properties>
-          <option name="timeStamp" value="2" />
-        </breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
-    <watches-manager>
-      <configuration name="AndroidRunConfigurationType">
-        <watch expression="program" />
-      </configuration>
-    </watches-manager>
   </component>
 </project>

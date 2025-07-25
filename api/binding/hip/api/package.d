@@ -67,6 +67,7 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 		{
 			import hip.api;
 			import hip.api.systems.system_binding;
+			import hip.api.filesystem.fs_binding;
 			import hip.api.game.game_binding;
 			import core.runtime;
 			import hip.api.internal:initializeHip;
@@ -74,7 +75,7 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 			rt_init();
 			initializeHip();
 			initConsole();
-			HipFS.initFS();
+			initFS();
 			initG2D();
 			// HipAudio.initAudio();
 			HipInput.initInput();

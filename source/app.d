@@ -72,6 +72,8 @@ __gshared string buildCommand;
 __gshared bool isUsingInterpreter = false;
 __gshared HipInterpreterEntry interpreterEntry;
 
+__gshared string[] rt_options = ["gcopt=profile:1"];
+
 
 /** 
  * What this function does is basically parse the arguments for the

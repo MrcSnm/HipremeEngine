@@ -34,10 +34,12 @@ void rtosbackend_assertmsg(char* msg, char* file, uint line){assert(0);}
 void rtosbackend_arrayBoundFailure(char* file, uint line){assert(0);}
 size_t allocated = 0;
 
+int VITA_ShowMessageBoxStr(const char* title, const char* msg);
 
 void psv_abort()
 {
 	sceClibPrintf("DRuntime Aborted PSVita Application.\n");
+	VITA_ShowMessageBoxStr("DRuntime Aborted PSVita Application.", "User Message: OMG");
 	sceKernelDelayThread(1000000 / 2);
 	assert(0);
 }

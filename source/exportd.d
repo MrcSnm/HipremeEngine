@@ -30,4 +30,5 @@ export extern(System) static void HipAssetManager_addOnCompleteHandler(IHipAsset
 void referenceExported()
 {
     auto a = &getNetworkInterface;
+    auto b = &HipFileSystemAPI;
 }

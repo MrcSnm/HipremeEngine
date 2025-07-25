@@ -970,16 +970,21 @@ struct DubArguments
 
 	string getCompiler()
 	{
-		if(_compiler == "auto" && _arch)
-			_compiler = "ldc2";
-		if(_compiler == "ldc2")
-			_compiler = buildNormalizedPath(configs["ldcPath"].str, "bin", "ldc2".executableExtension);
+		string c = _compiler;
 		if(_compiler == "auto")
 		{
-			string ret = getSelectedCompiler();
-			return ret == "auto" ? "" : ret;
+			c = getSelectedCompiler();
 		}
-		return _compiler;
+		if(c == "auto")
+		{
+			if(_arch)
+				c = "ldc2";
+			else
+				return "";
+		}
+		if(c == "ldc2")
+			c = buildNormalizedPath(configs["ldcPath"].str, "bin", "ldc2".executableExtension);
+		return c;
 	}
 	
 	string getDubRunCommand()

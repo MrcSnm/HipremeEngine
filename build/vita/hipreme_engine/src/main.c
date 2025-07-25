@@ -106,6 +106,7 @@ int HipremeMain(int width, int height);
 void HipremeRender();
 
 unsigned char HipremeUpdate(float dt);
+int VITA_ShowMessageBoxStr(const char* title, const char* msg);
 
 //This function is called from D's main
 void hipVitaPollTouch();
@@ -115,7 +116,9 @@ int main(int argc, char* argv)
 	psvDebugScreenInit();
 	initializeVitaGL();
 	int width, height;
+
 	EGLInit(&width, &height);
+
 	initializeVitaInput();
 
 	HipremeMain(width, height);

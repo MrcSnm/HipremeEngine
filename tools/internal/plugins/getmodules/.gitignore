@@ -3,11 +3,7 @@ docs.json
 __dummy.html
 docs/
 /getmodules
-getmodules.so
-getmodules.dylib
-getmodules.dll
-getmodules.a
-getmodules.lib
+getmodules_*
 getmodules-test-*
 *.exe
 *.pdb

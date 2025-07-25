@@ -25,9 +25,6 @@
 		}
 	],
 	"copyright": "Copyright © 2021, Hipreme",
-	"dependencies": {
-		"arsd-official:ttf": "~>11.4.0"
-	},
 	"description": "HipremeEngine bind module",
 	"license": "proprietary",
 	"name": "font",

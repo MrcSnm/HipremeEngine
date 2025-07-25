@@ -4,7 +4,7 @@ import hip.api.graphics.g2d.renderer2d;
 import HRandom = hip.math.random:Random;
 import hip.api;
 
-enum SPRITES_COUNT = 10_000;
+enum SPRITES_COUNT = 400_000;
 enum MIN_SPEED = 50;
 enum MAX_SPEED = 150;
 enum SCREEN_W = 800;
@@ -19,18 +19,18 @@ class MainScene : AScene
 
 
 	@Asset("graphics/ball.png")
-	IHipTexture texture;
+	__gshared IHipTexture texture;
 
 	mixin Preload;
 	
 	/** Constructor */
 	override void initialize()
 	{
-		// int* a;
-		// *a = 50;
 		// logg(getAssetsForPreload);
 		sprites = new HipMultiSprite(SPRITES_COUNT);
 		speeds = new float[SPRITES_COUNT];
+
+		// logg(texture.getWidth);
 		sprites.setTexture(texture);
 		foreach(i; 0..SPRITES_COUNT)
 		{
@@ -52,13 +52,13 @@ class MainScene : AScene
 	/** Renderer only, may not be called every frame */
 	override void render()
 	{
-		setRendererErrorCheckingEnabled(false);
-		// sprites.draw();
-		foreach(sp; 0..SPRITES_COUNT)
-		{
-			drawTexture(sprites.texture, cast(int)sprites[sp].x, cast(int)sprites[sp].y);
-		}
-		setRendererErrorCheckingEnabled(true);
+		// setRendererErrorCheckingEnabled(false);
+		sprites.draw();
+		// foreach(sp; 0..SPRITES_COUNT)
+		// {
+		// 	drawTexture(sprites.texture, cast(int)sprites[sp].x, cast(int)sprites[sp].y);
+		// }
+		// setRendererErrorCheckingEnabled(true);
 	}
 	/** Pre destroy */
 	override void dispose()

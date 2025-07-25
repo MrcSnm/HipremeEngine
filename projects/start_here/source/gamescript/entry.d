@@ -8,6 +8,11 @@ class MainScene : AScene, IHipPreloadable
 {
     // mixin Preload;
 	IHipFont bigFont, smallFont;
+
+
+    // @Asset("arial_sdf.fnt")
+    // IHipFont sdfFont;
+
 	// /** Constructor */
 	override void initialize()
 	{
@@ -17,6 +22,10 @@ class MainScene : AScene, IHipPreloadable
 
         smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
         bigFont = HipDefaultAssets.getDefaultFontWithSize(64);
+
+        // setFont(sdfFont);
+        setFont(bigFont);
+
 	}
 	// /** Called every frame */
 	override void update(float dt)
@@ -38,22 +47,22 @@ class MainScene : AScene, IHipPreloadable
         fillRectangle(0, 0, 200, 200, HipColor.red);
         fillRectangle(0, 0, 100, 100, HipColor.green);
 
-        //Use a non GC allocating string on render (String) for drawing the mousePosition
+        // //Use a non GC allocating string on render (String) for drawing the mousePosition
         import hip.util.string;
         float[2] mousePos = HipInput.getWorldMousePosition();
         setFont(smallFont);
-        String s = String(mousePos);
+        SmallString s = SmallString(mousePos);
         drawText(s.toString, cast(int)mousePos[0], cast(int)mousePos[1]);
 
         
 
         ////////////////////////Higher Level////////////////////////
-        setGeometryColor(HipColor.white);
+        // setGeometryColor(HipColor.white);
         setFont(null);
-        drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        drawText("Hello World Test Scene (Default Font)", 300, 280, 1, HipColor.white, HipTextAlign.topLeft);
         fillRectangle(300, 300, 100, 100);
 
-        drawText("Null Textures uses that sprite over here ", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        drawText("Null Textures uses that sprite over here ", 300, 480, 1.0, HipColor.white, HipTextAlign.topLeft);
         drawTexture(null, 300, 500);
 
 

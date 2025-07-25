@@ -61,7 +61,6 @@
 			"postBuildCommands-linux": ["chmod +x linux64-hbuild"]
 		}
 	],
-	"libs": ["curl"],
 	"description": "The main way to build your game using Hipreme Engine.\nIt can generate projects and select to build to any of the supported platforms",
 	"license": "proprietary",
 	"name": "hbuild"
