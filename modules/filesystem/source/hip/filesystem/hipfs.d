@@ -166,16 +166,16 @@ class HipFSPromise : IHipFSPromise
 /**
 * FileSystem access for specific platforms.
 */
-class HipFileSystem
+class HipFileSystemImplementation : IHipFS
 {
-    protected __gshared string defPath;
-    protected __gshared string initialPath = "";
-    protected __gshared string combinedPath;
-    protected __gshared bool isInstalled;
-    protected __gshared IHipFileSystemInteraction fs;
-    protected __gshared size_t filesReadingCount = 0;
+    protected string defPath;
+    protected string initialPath = "";
+    protected string combinedPath;
+    protected bool isInstalled;
+    protected IHipFileSystemInteraction fs;
+    protected size_t filesReadingCount = 0;
 
-    protected __gshared bool function(string path, out string errMessage)[] extraValidations;
+    protected bool function(string path, out string errMessage)[] extraValidations;
 
     version(Android){import hip.filesystem.systems.android;}
     else version(UWP){import hip.filesystem.systems.uwp;}
@@ -185,7 +185,7 @@ class HipFileSystem
     else version(HipDStdFile){import hip.filesystem.systems.dstd;}
     else {import hip.filesystem.systems.cstd;}
 
-    public static void initializeAbsolute()
+    public void initializeAbsolute()
     {
         if(fs is null)
         {
@@ -203,7 +203,7 @@ class HipFileSystem
     }
  
     
-    public static void install(string path)
+    public void install(string path)
     {
         import hip.util.system : sanitizePath;
         if(!isInstalled)
@@ -218,7 +218,7 @@ class HipFileSystem
     *   directories to resources to writeable paths is becoming more common
     */
     version(AppleOS)
-    public static string getResourcesPath()
+    public string getResourcesPath()
     {
         import core.stdc.string;
         auto str = hipGetResourcesPath;
@@ -226,7 +226,7 @@ class HipFileSystem
     }
 
     
-    public static void install(string path,
+    public void install(string path,
     bool function(string path, out string errMessage)[] validations ...)
     {
         import hip.util.system : sanitizePath;
@@ -236,7 +236,7 @@ class HipFileSystem
             foreach (v; validations){extraValidations~=v;}
         }
     }
-    @ExportD public static string getPath(string path)
+    public string getPath(string path)
     {
         import hip.util.path:joinPath;
         import hip.util.system : sanitizePath;
@@ -246,7 +246,7 @@ class HipFileSystem
             return joinPath(combinedPath, path.sanitizePath);
         return path.sanitizePath;
     }
-    @ExportD public static bool isPathValidExtra(string path)
+    public bool isPathValidExtra(string path)
     {
         import hip.error.handler;
         import hip.util.system : sanitizePath;
@@ -264,7 +264,7 @@ class HipFileSystem
         return true;
     }
     
-    @ExportD public static bool isPathValid(string path, bool expectsFile = true, bool shouldVerify = true)
+    public bool isPathValid(string path, bool expectsFile = true, bool shouldVerify = true)
     {
         import hip.error.handler;
         import hip.util.string;
@@ -288,7 +288,7 @@ class HipFileSystem
         return isPathValidExtra(path);
     }
 
-    @ExportD public static bool setPath(string path)
+    public bool setPath(string path)
     {
         import hip.util.path:joinPath;
         import hip.util.system : sanitizePath;
@@ -303,7 +303,7 @@ class HipFileSystem
         return validatePath(initialPath, combinedPath);
     }
 
-    private static void defaultErrorHandler(string err = "")
+    private void defaultErrorHandler(string err = "")
     {
         import hip.error.handler;
         filesReadingCount--;
@@ -312,7 +312,7 @@ class HipFileSystem
 
     ///TODO: Fix API. It currently does not work with sync and async at the same way.
     /// It needs to specify both onSuccess and onError before being able to establish if it is possible to keep or not the memory.
-    @ExportD public static IHipFSPromise read(string path)
+    public IHipFSPromise read(string path)
     {
         import hip.console.log;
         hiplog("Required path ", path);
@@ -339,7 +339,7 @@ class HipFileSystem
         return promise;
     }
 
-    @ExportD public static IHipFSPromise readText(string path)
+    public IHipFSPromise readText(string path)
     {
         IHipFSPromise ret = read(path);
         // if(ret)
@@ -350,7 +350,7 @@ class HipFileSystem
         return ret;
     }
     
-    @ExportD public static bool write(string path, const(void)[] data)
+    public bool write(string path, const(void)[] data)
     {
         if(!isPathValid(path))
             return false;
@@ -358,31 +358,31 @@ class HipFileSystem
     }
 
 
-    @ExportD public static bool exists(string path){return isPathValid(path) && fs.exists(getPath(path));}
-    @ExportD public static bool remove(string path)
+    public bool exists(string path){return isPathValid(path) && fs.exists(getPath(path));}
+    public bool remove(string path)
     {
         if(!isPathValid(path))
             return false;
         return fs.remove(getPath(path));
     }
 
-    @ExportD public static string getcwd()
+    public string getcwd()
     {
         return getPath("");
     }
 
-    @ExportD public static bool absoluteExists(string path){return fs.exists(path);}
-    @ExportD public static bool absoluteIsDir(string path){return fs.isDir(path);}
-    @ExportD public static bool absoluteIsFile(string path){return fs.isFile(path);}
-    @ExportD public static bool absoluteRemove(string path){return fs.remove(path);}
-    @ExportD public static bool absoluteWrite(string path, const(void)[] data){return fs.write(path, data);}
-    @ExportD public static bool absoluteRead(string path, out void[] output)
+    public bool absoluteExists(string path){return fs.exists(path);}
+    public bool absoluteIsDir(string path){return fs.isDir(path);}
+    public bool absoluteIsFile(string path){return fs.isFile(path);}
+    public bool absoluteRemove(string path){return fs.remove(path);}
+    public bool absoluteWrite(string path, const(void)[] data){return fs.write(path, data);}
+    public bool absoluteRead(string path, out void[] output)
     {
         ///This may need to be refactored in the future.
         // import std.functional:toDelegate;
         return fs.read(path, (void[] data){output = data; return FileReadResult.keep;}, (err) => defaultErrorHandler(err));
     }
-    @ExportD("ubyte") public static bool absoluteRead(string path, out ubyte[] output)
+    @ExportD("ubyte") public bool absoluteRead(string path, out ubyte[] output)
     {
         void[] data;
         bool ret = absoluteRead(path, data);
@@ -390,7 +390,7 @@ class HipFileSystem
         return ret;
     }
 
-    @ExportD public static bool absoluteReadText(string path, out string output)
+    public bool absoluteReadText(string path, out string output)
     {
         void[] data;
         bool ret = absoluteRead(path, data);
@@ -400,16 +400,29 @@ class HipFileSystem
     }
 
 
-    @ExportD public static bool isDir(string path){return isPathValid(path, false, false) && fs.isDir(getPath(path));}
-    @ExportD public static bool isFile(string path){return isPathValid(path, true, false) && fs.isFile(getPath(path));}
+    public bool isDir(string path){return isPathValid(path, false, false) && fs.isDir(getPath(path));}
+    public bool isFile(string path){return isPathValid(path, true, false) && fs.isFile(getPath(path));}
 
-    @ExportD public static string writeCache(string cacheName, void[] data)
+    public string writeCache(string cacheName, void[] data)
     {
         import hip.util.path:joinPath;
         string p = joinPath(initialPath, ".cache", cacheName);
         write(p, data);
         return p;
     }
+}
+
+HipFileSystemImplementation HipFileSystem()
+{
+    __gshared HipFileSystemImplementation fs;
+    if(!fs)
+        fs = new HipFileSystemImplementation();
+    return fs;
+}
+
+export extern(C) IHipFS HipFileSystemAPI()
+{
+    return HipFileSystem();
 }
 
 alias HipFS = HipFileSystem;

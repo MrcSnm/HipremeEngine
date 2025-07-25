@@ -4,7 +4,7 @@ import hip.asset_manager.load_task;
 import hip.assetmanager;
 import hip.api.data.commons;
 import hip.console.log;
-import hip.hiprenderer.texture;
+import hip.assets.texture;
 
 final class HipTextureLoadTask : HipAssetLoadTask
 {

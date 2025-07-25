@@ -31,7 +31,7 @@
 		"source"
 	],
 	"dependencies": {
-		"assets": {"path": "./modules/assets", "version": "*"},
+		"assetmanager": {"path": "./modules/assetmanager"},
 		"audio": {"path": "./modules/audio", "version": "*"},
 		"bind": {"path": "./modules/bind", "version": "*"},
 		"config": {"path": "./modules/config", "version": "*"},

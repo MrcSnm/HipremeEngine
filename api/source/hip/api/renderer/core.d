@@ -133,3 +133,48 @@ interface IHipRendererImpl
     public void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void dispose();
 }
+
+interface IHipRenderer
+{
+    ///Gets which renderer type it is
+    HipRendererType getType();
+    HipRendererInfo getInfo();
+
+    int getMaxSupportedShaderTextures();
+    IHipTexture getTextureImplementation();
+    Viewport getCurrentViewport() @nogc;
+    void setViewport(Viewport v);
+    IHipVertexArrayImpl createVertexArray();
+    IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type);
+
+    void setRendererMode(HipRendererMode);
+    HipRendererMode getMode();
+    void drawIndexed(index_t count, uint offset = 0);
+    void drawIndexed(HipRendererMode mode, index_t count, uint offset = 0);
+    void drawVertices(index_t count, uint offset = 0);
+    void drawVertices(HipRendererMode mode, index_t count, uint offset = 0);
+    void end();
+    void clear(HipColorf color);
+    HipDepthTestingFunction getDepthTestingFunction() const;
+    bool isDepthTestingEnabled() const;
+    void setDepthTestingEnabled(bool bEnable);
+    void setDepthTestingFunction(HipDepthTestingFunction);
+    void setStencilTestingEnabled(bool bEnable);
+    void setStencilTestingMask(uint mask);
+    void setColorMask(ubyte r, ubyte g, ubyte b, ubyte a);
+    void setStencilTestingFunction(HipStencilTestingFunction passFunc, uint reference, uint mask);
+    void dispose();
+
+}
+
+
+private __gshared IHipRenderer _renderer;
+void setHipRenderer(IHipRenderer r)
+{
+    _renderer = r;
+}
+
+IHipRenderer HipRenderer()
+{
+    return _renderer;
+}

@@ -1,0 +1,48 @@
+{
+	"authors": [
+		"Hipreme"
+	],
+	"copyright": "Copyright © 2021, Hipreme",
+	"description": "HipremeEngine asset manager module. Provides loaders and global cache system",
+	"dependencies": {
+		"hipengine_api:interfaces": {"path": "../../api", "version": "*"},
+		"assets": {"path": "../assets"},
+		"filesystem": {"path": "../filesystem", "version": "*"},
+		"audio": {"path": "../audio", "version": "*"},
+		"util": {"path": "../util", "version": "*"},
+		"error": {"path": "../error", "version": "*"},
+		"data": {"path": "../data", "version": "*"},
+		"image": {"path": "../image", "version": "*"},
+		"renderer": {"path": "../renderer", "version": "*"},
+		"font": {"path": "../font", "version": "*"},
+		"console": {"path": "../console", "version": "*"},
+		"concurrency": {"path": "../concurrency", "version": "*"}
+	},
+	"configurations": [
+		{"name": "default"},
+		{
+			"name": "gamut",
+			"subConfigurations": {
+
+				"image_decoding": "gamut"
+			}
+		},
+		{
+			"name": "wasm",
+			"subConfigurations": {
+				"audio": "wasm",
+				"renderer": "wasm"
+			}
+		},
+		{
+			"name": "psvita",
+			"subConfigurations": {
+				"image_decoding": "gamut",
+				"audio": "psvita",
+				"renderer": "psvita"
+			}
+		}
+	],
+	"license": "proprietary",
+	"name": "assetmanager"
+}

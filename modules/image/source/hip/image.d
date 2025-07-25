@@ -32,6 +32,16 @@ public class Image : HipAsset, IImage
     ushort bitsPerPixel;
     
     ubyte[] pixels;
+
+    this(uint width, uint height, ubyte bytesPerPixel)
+    {
+        super("Image");
+        pixels = new ubyte[width*height*bytesPerPixel];
+        this.bytesPerPixel = bytesPerPixel;
+        this.height = height;
+        this.width = width;
+    }
+
     this(string path = "")
     {
         import hip.util.system : sanitizePath;
@@ -40,6 +50,7 @@ public class Image : HipAsset, IImage
         imagePath = path;
         decoder = getDecoderFn(path);
     }
+    ///Loads an arbitrary buffer which will be decoded by the decoder.
     this(in string path, in ubyte[] buffer, void delegate(IImage self) onSuccess, void delegate() onFailure)
     {
         this(path);

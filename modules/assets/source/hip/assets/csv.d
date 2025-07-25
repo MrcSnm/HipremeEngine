@@ -20,7 +20,7 @@ class HipCSV : HipAsset, IHipCSV
     bool loadFromFile(string file, const char fieldDelimiter = ',', const char textDelimiter = '"')
     {
         import hip.error.handler;
-        import hip.filesystem.hipfs;
+        import hip.api.filesystem.hipfs;
         HipFS.readText(file).addOnError((string err)
         {
             ErrorHandler.showErrorMessage("Could not load CSV File", file);

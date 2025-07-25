@@ -151,6 +151,7 @@ static void initEngine(bool audio3D = false)
 
 	string fsInstallPath = getFSInstallPath(projectToLoad);
 	HipFS.install(fsInstallPath, getFilesystemValidations());
+	setIHipFS(HipFS);
 	loglnInfo("HipFS installed at path ", fsInstallPath);
 
 	import hip.bind.dependencies;
@@ -212,6 +213,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 		HipFS.absoluteReadText("renderer.conf", confFile); //Ignore return, renderer can handle no conf.
 		HipRenderer.initialize(confFile, "renderer.conf");
 	}
+	setHipRenderer(HipRenderer);
 	loadDefaultAssets((){gameInitialize();}, (err)
 	{
 		loglnError("Could not load default assets! ", err);

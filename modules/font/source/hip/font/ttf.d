@@ -114,7 +114,7 @@ class HipArsd_TTF_Font : HipFont
     {
         assert(rawImage !is null, "Must first generate a texture before uploading to GPU");
         import hip.image;
-        import hip.hiprenderer.texture;
+        import hip.assets.texture;
         import hip.error.handler;
         Image img = new Image();
         img.loadRaw(rawImage, _textureWidth, _textureHeight, 1);

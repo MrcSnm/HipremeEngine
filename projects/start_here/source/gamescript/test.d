@@ -1,0 +1,2 @@
+module gamescript.test;
+

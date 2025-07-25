@@ -23,7 +23,7 @@ class HipJSONC : HipAsset, IHipJSONC
 
     bool loadFromFile(string filePath)
     {
-        import hip.filesystem.hipfs;
+        import hip.api.filesystem.hipfs;
         import hip.error.handler;
 
         HipFS.readText(filePath).addOnError((err)

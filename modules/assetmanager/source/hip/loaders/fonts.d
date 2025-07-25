@@ -5,7 +5,7 @@ import hip.assetmanager;
 import hip.api.data.commons;
 import hip.font.bmfont;
 import hip.font.ttf;
-import hip.hiprenderer.texture;
+import hip.assets.texture;
 
 
 

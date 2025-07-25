@@ -10,7 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.assets.textureatlas;
 public import hip.api.data.textureatlas;
-import hip.hiprenderer.texture;
+import hip.assets.texture;
 import hip.api.data.asset;
 
 
@@ -130,24 +130,25 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     *
 `spriteName = x y width height`
     */
-    static HipTextureAtlas readSpritesheet (string spritesheetPath, string texturePath = "")
-    {
-        import hip.filesystem.hipfs;
-        string data;
-        if(!HipFS.readText(spritesheetPath))
-        {
-            import hip.error.handler;
-            ErrorHandler.showWarningMessage("Could not find spritesheet from path ", spritesheetPath);
-            return null;
-        }
-        import hip.util.path;
-        if(texturePath == "")
-        {
-            texturePath = spritesheetPath.dup.extension(".png");
-        }
+    // static HipTextureAtlas readSpritesheet (string spritesheetPath, string texturePath = "")
+    // {
+    //TODO: FIX HIPFS
+    //     import hip.filesystem.hipfs;
+    //     string data;
+    //     if(!HipFS.readText(spritesheetPath))
+    //     {
+    //         import hip.error.handler;
+    //         ErrorHandler.showWarningMessage("Could not find spritesheet from path ", spritesheetPath);
+    //         return null;
+    //     }
+    //     import hip.util.path;
+    //     if(texturePath == "")
+    //     {
+    //         texturePath = spritesheetPath.dup.extension(".png");
+    //     }
 
-        return readSpritesheet(cast(ubyte[])data, spritesheetPath, texturePath);
-    }
+    //     return readSpritesheet(cast(ubyte[])data, spritesheetPath, texturePath);
+    // }
 
     static HipTextureAtlas readSpritesheet (const ubyte[] data, string spritesheetPath, string texturePath)
     {

@@ -1,7 +1,7 @@
 module hip.assets.tilemap;
 public import hip.api.data.tilemap;
 public import hip.api.data.asset;
-import hip.hiprenderer.texture;
+import hip.assets.texture;
 import hip.config.opts;
 import hip.image;
 import hip.data.json;
@@ -272,7 +272,7 @@ class HipTileset : HipAsset, IHipTileset
 
     static HipTileset readJSON (string path, uint firstGid, void delegate(HipTileset self) onSuccess, void delegate() onError)
     {
-        import hip.filesystem.hipfs;
+        import hip.api.filesystem.hipfs;
         import hip.console.log;
         HipTileset tileset = new HipTileset(0);
         tileset._path = path;
@@ -400,7 +400,7 @@ class HipTileset : HipAsset, IHipTileset
     IImage loadImage(void delegate(IImage self) onSuccess, void delegate() onFailure)
     {
         import hip.error.handler;
-        import hip.filesystem.hipfs;
+        import hip.api.filesystem.hipfs;
         import hip.util.path;
         if(textureImage is null)
         {
@@ -702,7 +702,7 @@ class HipTilemap : HipAsset, IHipTilemap
     }
     static void readTiledJSON (string tiledPath, void delegate(HipTilemap) onSuccess, void delegate() onError)
     {
-        import hip.filesystem.hipfs;
+        import hip.api.filesystem.hipfs;
         HipFS.read(tiledPath).addOnSuccess((in ubyte[] data)
         {
             HipTilemap.readTiledJSON(tiledPath, cast(ubyte[])data, onSuccess, onError);

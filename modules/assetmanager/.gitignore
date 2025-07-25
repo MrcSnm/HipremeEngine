@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/assets
+assets.so
+assets.dylib
+assets.dll
+assets.a
+assets.lib
+assets-test-*
+*.exe
+*.o
+*.obj
+*.lst

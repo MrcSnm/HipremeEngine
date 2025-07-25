@@ -10,6 +10,7 @@ assets.a
 assets.lib
 assets-test-*
 *.exe
+*.pdb
 *.o
 *.obj
 *.lst

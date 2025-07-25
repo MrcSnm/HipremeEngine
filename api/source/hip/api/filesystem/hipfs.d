@@ -63,7 +63,6 @@ interface IHipFSPromise
     IHipFSPromise addOnError(void delegate(string error) onError);
     bool resolved() const;
     void dispose();
-  
 }
 
 interface IHipFileSystemInteraction
@@ -109,3 +108,134 @@ interface IHipFileSystemInteraction
     bool isDir(string path);
     final bool isFile(string path){return !isDir(path);}
 }
+
+/** 
+ * Provides the interface for the filesystem singleton
+ */
+interface IHipFS
+{
+    ///Gets a path from the installed path
+    string getPath(string path);
+
+    ///Uses the only extra verifications to check if the path is valid
+    bool isPathValidExtra(string path);
+
+    /** 
+     * Does some default validations in the path then it executes the extra ones.
+     * Params:
+     *   path = The path to validate
+     *   expectsFile = Checks whether that path is a file or a directory.
+     *   shouldVerify = Flags for executing extra validations
+     * Returns: Whether the path is valid
+     */
+    bool isPathValid(string path, bool expectsFile = true, bool shouldVerify = true);
+
+    /** 
+     * Sets the initial path. It can't be a path with higher access than install path.
+     * You may reset it to the install path by using `setPath("")`
+     * Params:
+     *   path = The path to set as base
+     * Returns: If it is a valid path
+     */
+    bool setPath(string path);
+
+    /** 
+     * Encapsulates both the sync and async in the same API for reading a file
+     * Params:
+     *   path = The path to read
+     * Returns: A task/promise which will output the file data. It returns null if the path is invalid
+     */
+    IHipFSPromise read(string path);
+
+    /** 
+     * Same as .read
+     * Params:
+     *   path = The path to read
+     * Returns: A task/promise which will output the text data
+     */
+    IHipFSPromise readText(string path);
+    
+    /** 
+     * Currently there is no way to know if the writing has finished. Uses the sync API.
+     * Params:
+     *   path = The path to write
+     *   data = The data to write
+     * Returns: If it was possible to write. May return false if path is invalid.
+     */
+    bool write(string path, const(void)[] data);
+
+    /** 
+     * Currently it is a sync operation.
+     * Params:
+     *   path = Path to check
+     * Returns: If it exists
+     */
+    bool exists(string path);
+
+    /** 
+     * Removes from the current path
+     * Params:
+     *   path = The path to remove
+     * Returns: Whether the operation has succeeded
+     */
+    bool remove(string path);
+
+    /** 
+     * Returns: The current working directory, form the last setPath() call.
+     */
+    string getcwd();
+
+    /** 
+     * Same as exists. But doesn't use install path. Limited and sync.
+     */
+    bool absoluteExists(string path);
+    /** 
+     * Same as isDir. But doesn't use install path. Limited and sync.
+     */
+    bool absoluteIsDir(string path);
+    /** 
+     * Same as isFile. But doesn't use install path. Limited and sync.
+     */
+    bool absoluteIsFile(string path);
+    /** 
+     * Same as remove. But doesn't use install path. Limited and sync.
+     */
+    bool absoluteRemove(string path);
+    /** 
+     * Same as write. But doesn't use install path. Limited and sync.
+     */
+    bool absoluteWrite(string path, const(void)[] data);
+    /** 
+     * Same as read. But doesn't use install path. Limited and sync.
+     */
+    bool absoluteRead(string path, out void[] output);
+    bool absoluteRead(string path, out ubyte[] output);
+    /** 
+     * Same as readText. But doesn't use install path. Limited and sync.
+     */
+    bool absoluteReadText(string path, out string output);
+    /** 
+     * Checks whether the path is a file
+     */
+    bool isFile(string path);
+    /** 
+     * Checks whether the path is a directory
+     */
+    bool isDir(string path);
+    /** 
+     * Uses a key/value pair for writing cache values. 
+     */
+    string writeCache(string cacheName, void[] data);
+}
+
+///Dependency injection interface for HipFS
+private __gshared IHipFS _fs;
+void setIHipFS(IHipFS fsInstance)
+{
+    _fs = fsInstance;
+}
+IHipFS HipFileSystem()
+{
+    return _fs;
+}
+alias HipFS = .HipFileSystem;
