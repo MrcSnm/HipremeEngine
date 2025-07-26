@@ -143,56 +143,8 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
         }
         int mode;
         int internalFormat;
-        const(void)[] pixels = image.getPixels;
-        switch(image.getBytesPerPixel)
-        {
-            case 1:
-                if(image.hasPalette)
-                {
-                    pixels = image.convertPalettizedToRGBA();
-                    version(GLES20)
-                    {
-                        internalFormat = mode = GL_RGBA;
-                    }
-                    else
-                    {
-                        mode = GL_RGBA;
-                        internalFormat = GL_RGBA8;
-                    }
-                }
-                else
-                {
-                    version(GLES20)
-                    {
-                        internalFormat = mode = GL_LUMINANCE;
-                    }
-                    else
-                    {
-                        mode = GL_RED;
-                        internalFormat = GL_R8;
-                    }
-                }
-                break;
-            case 3:
-                version(GLES20)
-                {
-                    internalFormat = mode = GL_RGB;
-                }
-                else
-                {
-                    mode = GL_RGB;
-                    internalFormat = GL_RGB8;
-                }
-                break;
-            case 4:
-                mode = GL_RGBA;
-                internalFormat = GL_RGBA;
-                break;
-            case 2:
-            default:
-                import hip.util.conv;
-                ErrorHandler.assertExit(false, "GL Pixel format unsupported on image "~image.getName~", bytesPerPixel: "~to!string(image.getBytesPerPixel));
-        }
+        const(ubyte)[] pixels;
+        formatsFromImage(image, internalFormat, mode, pixels);
         width = image.getWidth;
         height = image.getHeight;
         bind(currentSlot);
@@ -209,6 +161,13 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
         }
         return true;
     }
+
+    void updatePixels(int x, int y, int width, int height, const(ubyte)[] pixels)
+    {
+        int internalFormat, mode;
+        formatsFromImage(loadedImage, internalFormat, mode, pixels);
+        glCall(() => glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, mode, GL_UNSIGNED_BYTE, cast(void*)pixels.ptr));
+    }
     
     int getWidth() const {return width;}
     int getHeight() const {return height;}
@@ -222,6 +181,59 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
         }
         return false;
     }
-    
+}
 
+private void formatsFromImage(const IImage image, out int internalFormat, out int mode, ref const(ubyte)[] pixels)
+{
+    if(pixels is null)
+        pixels = image.getPixels();
+    switch(image.getBytesPerPixel)
+    {
+        case 1:
+            if(image.hasPalette)
+            {
+                pixels = image.convertPalettizedToRGBA();
+                version(GLES20)
+                {
+                    internalFormat = mode = GL_RGBA;
+                }
+                else
+                {
+                    mode = GL_RGBA;
+                    internalFormat = GL_RGBA8;
+                }
+            }
+            else
+            {
+                version(GLES20)
+                {
+                    internalFormat = mode = GL_LUMINANCE;
+                }
+                else
+                {
+                    mode = GL_RED;
+                    internalFormat = GL_R8;
+                }
+            }
+            break;
+        case 3:
+            version(GLES20)
+            {
+                internalFormat = mode = GL_RGB;
+            }
+            else
+            {
+                mode = GL_RGB;
+                internalFormat = GL_RGB8;
+            }
+            break;
+        case 4:
+            mode = GL_RGBA;
+            internalFormat = GL_RGBA;
+            break;
+        case 2:
+        default:
+            import hip.util.conv;
+            ErrorHandler.assertExit(false, "GL Pixel format unsupported on image "~image.getName~", bytesPerPixel: "~to!string(image.getBytesPerPixel));
+    }
 }

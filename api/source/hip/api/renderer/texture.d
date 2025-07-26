@@ -51,6 +51,7 @@ interface IHipTexture
     void unbind(int slot = 0);
 
     bool hasSuccessfullyLoaded();
+    void updatePixels(int x, int y, int width ,int height, const(ubyte)[] pixels);
 
     int getWidth() const;
     int getHeight() const;

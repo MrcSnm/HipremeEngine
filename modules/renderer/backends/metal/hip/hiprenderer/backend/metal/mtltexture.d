@@ -51,6 +51,7 @@ final class HipMTLTexture : IHipTexture
     MTLCommandQueue cmdQueue;
 
     uint width, height;
+    NSUInteger bytesPerRow;
 
     IHipTexture getBackendHandle(){return this;}
 
@@ -168,7 +169,6 @@ final class HipMTLTexture : IHipTexture
         MTLCommandBuffer b = cmdQueue.defaultCommandBuffer();
         MTLBlitCommandEncoder blit = b.blitCommandEncoder();
         MTLBuffer imageBuffer;
-        NSUInteger bytesPerRow;
         NSUInteger bytesPerImage;
 
         texture = device.newTextureWithDescriptor(desc);
@@ -205,6 +205,10 @@ final class HipMTLTexture : IHipTexture
         }
 
         return texture !is null;
+    }
+    void updatePixels(int x, int y, int width, int height, const(ubyte)[] pixels)
+    {
+        texture.replaceRegion(MTLRegion(MTLOrigin(x, y, 0), MTLSize(width, height, 1)), 0, pixels.ptr, bytesPerRow);
     }
 
     void bind(int slot = 0)

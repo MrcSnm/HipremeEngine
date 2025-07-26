@@ -212,6 +212,18 @@ function initializeWebglContext()
             const buffer = new Uint8Array(memory.buffer, image, width*height*multiplier);
             gl.texImage2D(target, level, internalformat,width, height, border, format, type, buffer);
         },
+        glTexSubImage2D ( target, level, xoffset, yoffset, width, height, format, type, pixels) {
+            let multiplier;
+            switch(format)
+            {
+                case gl.RGBA: multiplier = 4; break;
+                case gl.RGB: multiplier = 3; break;
+                case gl.LUMINANCE: multiplier = 1; break;
+                default: throw new Error("Unexpected format received: ", format);
+            }
+            const buffer = new Uint8Array(memory.buffer,pixels,width*height*multiplier);
+            gl.texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, buffer);
+        },
         glActiveTexture(texture) {
             gl.activeTexture(texture)
         },
