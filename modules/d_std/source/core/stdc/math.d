@@ -118,11 +118,25 @@ version(WebAssembly)
             return fastSin(radians + PI_2);
         }
         float fastTan(float radians){return fastSin(radians) / fastCos(radians);}
-        float fastAtan(float x)
+        double fastAtan(float x)
         {
-            // Use the Taylor series approximation for atan(x)
-            float x2 = x * x;
-            return x - (x2 * x) / 3 + (x2 * x2 * x) / 5 - (x2 * x2 * x2 * x) / 7 + (x2 * x2 * x2 * x2 * x) / 9;
+            // Efficient aproximation for arctan
+            enum double B = 0.28125; // ~9/32
+
+            bool neg = false;
+            if (x < 0) {
+                x = -x;
+                neg = true;
+            }
+
+            double result;
+            if (x < 1.0) {
+                result = x / (1 + B * x * x);
+            } else {
+                result = PI / 2 - (1 / x) / (1 + B / (x * x));
+            }
+
+            return neg ? -result : result;
         }
 
         float fastAsin(float x)
@@ -151,15 +165,17 @@ version(WebAssembly)
 
 
         float fastAtan2(float y, float x) {
-            // Handle quadrants using fastAtan and range reduction
-            if (x == 0) return (y > 0) ? PI / 2 : -PI / 2; // Handle special cases
+            if (x == 0)
+                return (y > 0) ? PI / 2 : 3 * PI / 2; // 90|270
+
             float atanVal = fastAtan(y / x);
-            if (x < 0) {
-                if (y >= 0) atanVal += PI;  // Second quadrant
-                else atanVal -= PI;         // Third quadrant
-            } else if (y < 0) {
-                atanVal += 2 * PI;  // Fourth quadrant
-            }
+
+            if (x < 0)
+                atanVal += (y >= 0) ? PI : -PI;
+
+            if (atanVal < 0)
+                atanVal += 2 * PI;
+
             return atanVal;
         }
     }
