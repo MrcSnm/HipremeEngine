@@ -89,7 +89,7 @@ struct TiledObject
     ref TiledRectangle tile() @trusted @nogc { assert(dataType == TiledObjectTypes.tile); return data.rect;}
     ref int[2] point() @trusted @nogc { assert(dataType == TiledObjectTypes.point); return data.rect.getPoint();}
     ref int[4] line() @trusted @nogc { assert(dataType == TiledObjectTypes.line); return data.rect.getLine();}
-    ref int[6] triangle() @trusted @nogc { assert(dataType == TiledObjectTypes.triangle); return data.triangle;}
+    ref int[2][3] triangle() @trusted @nogc { assert(dataType == TiledObjectTypes.triangle); return data.triangle;}
     ref int[2][] polygon() @trusted @nogc { assert(dataType == TiledObjectTypes.polygon); return data.polygon;}
 
     const(TiledText) text() @trusted
@@ -123,7 +123,7 @@ struct TiledRectangle
 union TiledObjectUnion
 {
     TiledRectangle rect;
-    int[6] triangle;
+    int[2][3] triangle;
     int[2][] polygon;
 }
 

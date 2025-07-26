@@ -531,6 +531,94 @@ class HipTilemap : HipAsset, IHipTilemap
         return replaceFileName(path, tsxName);
     }
 
+    private static TiledObjectTypes typeInObject(JSONValue o)
+    {
+        with ( TiledObjectTypes )
+        {
+            if("ellipse" in o) return ellipse;
+            if("gid" in o) return tile;
+            if("point" in o) return point;
+            if("text" in o) return text;
+            if("polyline" in o) return line;
+            if("polygon" in o) return polygon;
+            return rect;
+        }
+    }
+
+    private static void parseObjectLayer(ref HipTileLayer layer, JSONValue[] objects)
+    {
+        import hip.util.array:uninitializedArray;
+        int objIndex = 0;
+        layer.objects = uninitializedArray!(TiledObject[])(objects.length);
+        foreach(JSONValue o; objects)
+        {
+            TiledObject obj;
+
+            obj.id      = cast(ushort)o["id"].integer;
+            obj.name    =             o["name"].str;
+            obj.type    =             o["type"].str;
+            obj.visible =             o["visible"].boolean;
+
+
+            obj.data.rect.x       = cast(int)   o["x"].floating;
+            obj.data.rect.rotation= cast(ushort)(o["rotation"].integer % 360);
+            obj.data.rect.y       = cast(int)   o["y"].floating;
+            obj.data.rect.height  = cast(uint)  o["height"].floating;
+            obj.data.rect.width   = cast(uint)  o["width"].floating;
+            obj.dataType = typeInObject(o);
+
+            switch(obj.dataType) with(TiledObjectTypes)
+            {
+                case text:
+                {
+                    JSONValue txtObj = o["text"];
+                    obj.properties["__text"] = TileProperty(null, Variant.make(tryGetValue!string(txtObj, "text")));
+                    obj.properties["__fontfamily"] = TileProperty(null, Variant.make(tryGetValue!string(txtObj, "fontfamily")));
+                    obj.properties["__wrap"] = TileProperty(null,  Variant.make(tryGetValue!bool(txtObj, "wrap")));
+                }
+                break;
+                case line:
+                {
+                    JSONValue[] line = o["polyline"].array;
+                    int x = obj.data.rect.x;
+                    int y = obj.data.rect.y;
+                    foreach(i; 0..4)
+                        obj.data.rect.getLine[i] = tryGetValue(line[i/2], i % 2 == 0 ? "x" : "y", 0) + (i % 2 == 0 ? x : y);
+                    break;
+                }
+                case polygon:
+                {
+                    JSONValue[] poly = o["polygon"].array;
+                    obj.dataType = poly.length == 3 ? TiledObjectTypes.triangle : TiledObjectTypes.polygon;
+                    int[2][] targetPoly = obj.data.triangle;
+                    if(poly.length > 3)
+                        targetPoly = new int[2][poly.length];
+                    foreach(i, v; poly)
+                    {
+                        targetPoly[i] = [
+                            tryGetValue(poly[i], "x", 0),
+                            tryGetValue(poly[i], "y", 0)
+                        ];
+                    }
+                    if(poly.length > 3)
+                        obj.data.polygon = targetPoly;
+                    break;
+                }
+                case tile:
+                    obj.tile.gid = cast(ushort)o["gid"].integer;
+                    break;
+                default:break;
+            }
+            const(JSONValue)* v = ("properties" in o);
+            if(v != null)
+            {
+                foreach(p; v.array) //Properties
+                    obj.properties[p["name"].str] = propFromJSON(p);
+            }
+            layer.objects[objIndex++] = obj;
+        }
+    }
+
     static HipTilemap readTiledJSON (string mapPath, const ubyte[] tiledData, void delegate(HipTilemap) onSuccess, void delegate() onError)
     {
         import hip.data.json;
@@ -559,98 +647,7 @@ class HipTilemap : HipAsset, IHipTilemap
             layer.y       = cast(int)   l["y"].integer;
             if(layer.type == TileLayerType.OBJECT_LAYER)
             {
-                import hip.util.array:uninitializedArray;
-                int objIndex = 0;
-                layer.objects = uninitializedArray!(TiledObject[])(l["objects"].array.length);
-                foreach(JSONValue o; l["objects"].array)
-                {
-                    TiledObject obj;
-
-                    obj.id      = cast(ushort)o["id"].integer;
-                    obj.name    =             o["name"].str;
-                    obj.type    =             o["type"].str;
-                    obj.visible =             o["visible"].boolean;
-
-
-                    obj.data.rect.x       = cast(int)   o["x"].floating;
-                    obj.data.rect.rotation= cast(ushort)(o["rotation"].integer % 360);
-                    obj.data.rect.y       = cast(int)   o["y"].floating;
-                    obj.data.rect.height  = cast(uint)  o["height"].floating;
-                    obj.data.rect.width   = cast(uint)  o["width"].floating;
-
-
-                    if("text" in o)
-                    {
-                        import hip.util.data_structures:staticArray;
-                        obj.dataType = TiledObjectTypes.text;
-                        JSONValue txtObj = o["text"];
-                        obj.properties["__text"] = TileProperty(null, Variant.make(tryGetValue!string(txtObj, "text")));
-                        obj.properties["__fontfamily"] = TileProperty(null, Variant.make(tryGetValue!string(txtObj, "fontfamily")));
-                        obj.properties["__wrap"] = TileProperty(null,  Variant.make(tryGetValue!bool(txtObj, "wrap")));
-                    }
-                    else if("polyline" in o)
-                    {
-                        JSONValue[] line = o["polyline"].array;
-                        int x = obj.data.rect.x;
-                        int y = obj.data.rect.y;
-                        obj.dataType = TiledObjectTypes.line;
-                        obj.data.rect.getLine() = [
-                            tryGetValue(line[0], "x", 0) + x,
-                            tryGetValue(line[0], "y", 0) + y,
-
-                            tryGetValue(line[1], "x", 0) + x,
-                            tryGetValue(line[1], "y", 0) + y,
-                        ];
-                    }
-                    else if("polygon" in o)
-                    {
-                        JSONValue[] poly = o["polygon"].array;
-                        obj.dataType = poly.length == 3 ? TiledObjectTypes.triangle : TiledObjectTypes.polygon;
-
-                        if(poly.length == 3)
-                        {
-                            obj.data.triangle = [
-                                tryGetValue(poly[0], "x", 0),
-                                tryGetValue(poly[0], "y", 0),
-
-                                tryGetValue(poly[1], "x", 0),
-                                tryGetValue(poly[1], "y", 0),
-
-                                tryGetValue(poly[2], "x", 0),
-                                tryGetValue(poly[2], "y", 0),
-                            ];
-                        }
-                        else
-                        {
-                            obj.data.polygon = new int[2][poly.length];
-                            foreach(i, v; poly)
-                                obj.data.polygon[i] = [
-                                    tryGetValue(poly[i], "x", 0),
-                                    tryGetValue(poly[i], "y", 0)
-                                ];
-                        }
-                    }
-                    else if("gid" in o)
-                    {
-                        obj.dataType = TiledObjectTypes.tile;
-                        obj.tile.gid = cast(ushort)o["gid"].integer;
-                    }
-                    else if("ellipse" in o)
-                        obj.dataType = TiledObjectTypes.ellipse;
-                    else if("point" in o)
-                        obj.dataType = TiledObjectTypes.point;
-                    else
-                        obj.dataType = TiledObjectTypes.rect;
-
-                    const(JSONValue)* v = ("properties" in o);
-                    if(v != null)
-                    {
-                        foreach(p; v.array) //Properties
-                            obj.properties[p["name"].str] = propFromJSON(p);
-                    }
-                    layer.objects[objIndex++] = obj;
-                }
-
+                parseObjectLayer(layer, l["objects"].array);
             }
             else if(layer.type == TileLayerType.TILE_LAYER)
             {

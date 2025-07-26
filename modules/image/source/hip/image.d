@@ -12,7 +12,7 @@ module hip.image;
 public import hip.api.data.asset;
 public import hip.api.data.image;
 
-private extern(System) IHipImageDecoder function(string path) getDecoderFn;
+private __gshared extern(System) IHipImageDecoder function(string path) getDecoderFn;
 void setImageDecoderProvider(typeof(getDecoderFn) provider)
 {
     getDecoderFn = provider;
