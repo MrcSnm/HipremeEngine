@@ -59,6 +59,7 @@ class HipTexture : HipAsset
     this(const IImage image, HipResourceUsage usage = HipResourceUsage.Immutable)
     {
         this(usage);
+        this.img = cast()image;
         if(image !is null)
             textureImpl.load(image);
     }
@@ -66,7 +67,7 @@ class HipTexture : HipAsset
     Rect getBounds(){return Rect(0,0,getWidth,getHeight);}
 
     import hip.util.string;
-    SmallString toHipString()
+        SmallString toHipString()
     {
         return SmallString("TEX[", getWidth, "x",getHeight,"] ", img.getSizeBytes, " bytes");
     }

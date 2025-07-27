@@ -174,6 +174,7 @@ mixin template LoadReferencedAssets(string[] modules)
     //TODO: Improve that loadReferenced to a better
     void loadReferenced()
     {
+        import std.stdio;
         static foreach(modStr; modules)
         {{
             mixin("import ",modStr,";");
@@ -196,9 +197,13 @@ mixin template LoadReferencedAssets(string[] modules)
                             else alias memberType = typeof(classMember);
 
 
-                            const(ubyte[]) extra;
+                            const(ubyte)[] extra;
                             static if(__traits(hasMember, assetUDA, "extra"))
-                                extra = assetUDA.extra;
+                            {
+                                auto v = assetUDA.extra;
+                                extra = (cast(ubyte*)&v)[0..typeof(v).sizeof];
+
+                            }
                             IHipAssetLoadTask[] tasks = loadAssets(typeid(memberType), assetUDA.path, extra, assetUDA.start, assetUDA.end);
                             memberType* members;
 
@@ -247,9 +252,10 @@ mixin template ForeachAssetInClass(T, alias foreachAsset)
                 enum assetUDA = GetAssetUDA!(__traits(getAttributes, theMember));
                 static if(assetUDA.path != null)
                 {
-                    const(ubyte[]) extra;
+                    const(ubyte)[] extra;
+                    const v = assetUDA.extra;
                     static if(__traits(hasMember, assetUDA, "extra"))
-                        extra = (cast(ubyte*)&assetUDA.extra)[0..assetUDA.extra.sizeof];
+                        extra = (cast(const(ubyte*))&v)[0..typeof(v).sizeof];
                     static if(__traits(isTemplate, foreachAsset))
                         foreachAsset!(type, theMember)(assetUDA.path, extra);
                     else
