@@ -9,9 +9,15 @@ import hip.assets.texture;
 final class HipTextureLoadTask : HipAssetLoadTask
 {
     private IHipFSPromise fs;
-    this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
+    private HipResourceUsage usage = HipResourceUsage.Immutable;
+    this(string path, string name, HipAsset asset, const(ubyte)[] extraData, string fileRequesting, size_t lineRequesting)
     {
-        super(path,name,asset,fileRequesting,lineRequesting);
+        super(path,name,asset,extraData, fileRequesting,lineRequesting);
+        if(extraData.length)
+        {
+            assert(extraData.length == HipResourceUsage.sizeof);
+            usage = *cast(HipResourceUsage*)extraData.ptr;
+        }
     }
 
     override void update()
@@ -37,7 +43,7 @@ final class HipTextureLoadTask : HipAssetLoadTask
             case loading:
                 break;
             case mainThreadLoading:
-                HipTexture t = new HipTexture(cast(Image)asset);
+                HipTexture t = new HipTexture(cast(Image)asset, usage);
                 asset = t;
                 hiplog("AssetManager: Texture: Loaded ", path, " ", t.toHipString.toString);
                 result = loaded;

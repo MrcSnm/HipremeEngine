@@ -8,9 +8,9 @@ abstract class HipTextLoadTask : HipAssetLoadTask
 {
     abstract string getWorkerName() const;
     protected abstract HipAsset loadAsset(in ubyte[] data);
-    this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
+    this(string path, string name, HipAsset asset, const(ubyte)[] extraData, string fileRequesting, size_t lineRequesting)
     {
-        super(path,name,asset,fileRequesting,lineRequesting);
+        super(path,name,asset,extraData,fileRequesting,lineRequesting);
     }
 
     override void update()
@@ -42,9 +42,9 @@ abstract class HipTextLoadTask : HipAssetLoadTask
 
 final class HipFileLoadTask : HipTextLoadTask
 {
-    this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
+    this(string path, string name, HipAsset asset, const(ubyte)[] extraData, string fileRequesting, size_t lineRequesting)
     {
-        super(path,name,asset,fileRequesting,lineRequesting);
+        super(path,name,asset,extraData,fileRequesting,lineRequesting);
     }
     override string getWorkerName() const{ return "Load File"; }
     override protected HipAsset loadAsset(in ubyte[] data)
@@ -57,9 +57,9 @@ final class HipFileLoadTask : HipTextLoadTask
 
 final class HipINILoadTask : HipTextLoadTask
 {
-    this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
+    this(string path, string name, HipAsset asset, const(ubyte)[] extraData, string fileRequesting, size_t lineRequesting)
     {
-        super(path,name,asset,fileRequesting,lineRequesting);
+        super(path,name,asset,extraData,fileRequesting,lineRequesting);
     }
     override string getWorkerName() const{ return "Load INI"; }
     override protected HipAsset loadAsset(in ubyte[] data)
@@ -72,9 +72,9 @@ final class HipINILoadTask : HipTextLoadTask
 
 final class HipCSVLoadTask : HipTextLoadTask
 {
-    this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
+    this(string path, string name, HipAsset asset, const(ubyte)[] extraData, string fileRequesting, size_t lineRequesting)
     {
-        super(path,name,asset,fileRequesting,lineRequesting);
+        super(path,name,asset,extraData,fileRequesting,lineRequesting);
     }
     override string getWorkerName() const{ return "Load CSV"; }
     override protected HipAsset loadAsset(in ubyte[] data)
@@ -87,9 +87,9 @@ final class HipCSVLoadTask : HipTextLoadTask
 
 final class HipJSONCLoadTask : HipTextLoadTask
 {
-    this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
+    this(string path, string name, HipAsset asset, const(ubyte)[] extraData, string fileRequesting, size_t lineRequesting)
     {
-        super(path,name,asset,fileRequesting,lineRequesting);
+        super(path,name,asset,extraData,fileRequesting,lineRequesting);
     }
     override string getWorkerName() const{ return "Load JSONC"; }
     override protected HipAsset loadAsset(in ubyte[] data)
@@ -102,9 +102,9 @@ final class HipJSONCLoadTask : HipTextLoadTask
 
 final class HipInputMapLoadTask : HipTextLoadTask
 {
-    this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
+    this(string path, string name, HipAsset asset, const(ubyte)[] extraData, string fileRequesting, size_t lineRequesting)
     {
-        super(path,name,asset,fileRequesting,lineRequesting);
+        super(path,name,asset,extraData,fileRequesting,lineRequesting);
     }
     override string getWorkerName() const{ return "Load InputMap"; }
     override protected HipAsset loadAsset(in ubyte[] data)

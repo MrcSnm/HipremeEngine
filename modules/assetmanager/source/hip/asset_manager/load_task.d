@@ -17,7 +17,7 @@ class HipAssetLoadTask : IHipAssetLoadTask
     private string fileRequesting;
     private size_t lineRequesting;
 
-    this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
+    this(string path, string name, HipAsset asset, const(ubyte)[] extraData, string fileRequesting, size_t lineRequesting)
     {
         assert(name != null, "Asset load task can't receive null name");
         this.path = path;

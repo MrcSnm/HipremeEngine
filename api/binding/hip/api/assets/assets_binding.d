@@ -30,8 +30,6 @@ version(ScriptAPI)
             ///Gets how many assets there is to load.
             int function() getAssetsToLoadCount;
 
-
-            
             /** 
             * Used for manually creating texture regions. This is used by the game code abstraction.
             */
@@ -60,13 +58,13 @@ version(ScriptAPI)
              * - IHipTileset
              * - IHipFont
              */
-            IHipAssetLoadTask function (TypeInfo tID, string path, string file = __FILE__, size_t line = __LINE__) loadAsset;
+            IHipAssetLoadTask function (TypeInfo tID, string path, const(ubyte)[] extraData = null, string file = __FILE__, size_t line = __LINE__) loadAsset;
 
             /**
              * Usage Example:
              * registerAsset(typeid(Image), (string path, string f, size_t l) => new HipImageLoadTask(path,path,null,f,l));
              */
-            void function(TypeInfo tID, IHipAssetLoadTask delegate(string path) assetFactory) registerAsset;
+            void function(TypeInfo tID, IHipAssetLoadTask delegate(string path, const(ubyte)[] extraData, string file, size_t line) assetFactory) registerAsset;
 
             
             /**

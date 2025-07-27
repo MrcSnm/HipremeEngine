@@ -7,9 +7,9 @@ import hip.api.data.commons;
 final class HipTilesetLoadTask : HipAssetLoadTask
 {
     private HipFSPromise fs;
-    this(string path, string name, HipAsset asset, string fileRequesting, size_t lineRequesting)
+    this(string path, string name, HipAsset asset, const(ubyte)[] extraData, string fileRequesting, size_t lineRequesting)
     {
-        super(path,name,asset,fileRequesting,lineRequesting);
+        super(path,name,asset,extraData, fileRequesting,lineRequesting);
     }
 
     override void update()

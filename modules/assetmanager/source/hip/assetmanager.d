@@ -74,7 +74,7 @@ class HipAssetManager
      * Due to a bug in the D Runtime, I can't use TypeInfo over the dll boundaries.
      * `is` is being used instead of opEquals
      */
-    protected __gshared IHipAssetLoadTask delegate(string path, string file = __FILE__, size_t line = __LINE__)[string] typedAssetFactory;
+    protected __gshared IHipAssetLoadTask delegate(string path, const(ubyte)[] extraData, string file = __FILE__, size_t line = __LINE__)[string] typedAssetFactory;
     //Caching
     protected __gshared HipAsset[string] assets;
     protected __gshared IHipAssetLoadTask[string] loadCache;
@@ -98,8 +98,8 @@ class HipAssetManager
 
         workerPool = new HipWorkerPool(HIP_ASSETMANAGER_WORKER_POOL);
         typedAssetFactory = [
-            typeid(hip.api.audio.audioclip.IHipAudioClip).toString : (string path, string f, size_t l)=> new HipAudioLoadTask(path,path, null, f, l),
-            typeid(IHipFont).toString : (string path, string f, size_t l)
+            typeid(hip.api.audio.audioclip.IHipAudioClip).toString : (string path, const(ubyte)[] extraData, string f, size_t l)=> new HipAudioLoadTask(path,path, null, extraData, f, l),
+            typeid(IHipFont).toString : (string path, const(ubyte)[] extraData, string f, size_t l)
             {
                 import hip.util.path;
                 hiplog("Trying to load the font ", path, "EXT: ", path.extension);
@@ -107,23 +107,23 @@ class HipAssetManager
                 {
                     case "bmfont":
                     case "fnt":
-                        return new HipBMFontLoadTask(path, path, null, 48, f, l);
+                        return new HipBMFontLoadTask(path, path, null, 48, extraData, f, l);
                     case "ttf":
                     case "otf":
-                        return new HipTTFFontLoadTask(path, path, null, 48, f, l);
+                        return new HipTTFFontLoadTask(path, path, null, 48, extraData, f, l);
                     default: return null;
                 }
             },
-            typeid(IImage).toString :  (string path, string f, size_t l) => new HipImageLoadTask(path,path,null,f,l),
-            typeid(string).toString :  (string path, string f, size_t l) => new HipFileLoadTask(path,path,null,f,l),
-            typeid(IHipIniFile).toString :  (string path, string f, size_t l) => new HipINILoadTask(path,path,null,f,l),
-            typeid(IHipCSV).toString :  (string path, string f, size_t l) => new HipCSVLoadTask(path,path,null,f,l),
-            typeid(IHipJSONC).toString :  (string path, string f, size_t l) => new HipJSONCLoadTask(path,path,null,f,l),
-            typeid(IHipTextureAtlas).toString :  (string path, string f, size_t l) => new HipTextureAtlasLoadTask(path,path,null, ":IGNORE",f,l),
-            typeid(IHipTexture).toString :  (string path, string f, size_t l) => new HipTextureLoadTask(path,path,null,f,l),
-            typeid(IHipTilemap).toString :  (string path, string f, size_t l) => new HipTilemapLoadTask(path,path,null,f,l),
-            typeid(IHipTileset).toString :  (string path, string f, size_t l) => new HipTilesetLoadTask(path,path,null,f,l),
-            typeid(IHipInputMap).toString :  (string path, string f, size_t l) => new HipInputMapLoadTask(path,path,null,f,l),
+            typeid(IImage).toString :  (string path, const(ubyte)[] extraData, string f, size_t l) => new HipImageLoadTask(path,path,null, extraData, f,l),
+            typeid(string).toString :  (string path, const(ubyte)[] extraData, string f, size_t l) => new HipFileLoadTask(path,path,null, extraData, f,l),
+            typeid(IHipIniFile).toString :  (string path, const(ubyte)[] extraData, string f, size_t l) => new HipINILoadTask(path,path,null,extraData,f,l),
+            typeid(IHipCSV).toString :  (string path, const(ubyte)[] extraData, string f, size_t l) => new HipCSVLoadTask(path,path,null, extraData, f,l),
+            typeid(IHipJSONC).toString :  (string path, const(ubyte)[] extraData, string f, size_t l) => new HipJSONCLoadTask(path,path,null, extraData, f,l),
+            typeid(IHipTextureAtlas).toString :  (string path, const(ubyte)[] extraData, string f, size_t l) => new HipTextureAtlasLoadTask(path,path,null, ":IGNORE", extraData, f,l),
+            typeid(IHipTexture).toString :  (string path, const(ubyte)[] extraData, string f, size_t l) => new HipTextureLoadTask(path,path,null, extraData, f,l),
+            typeid(IHipTilemap).toString :  (string path, const(ubyte)[] extraData, string f, size_t l) => new HipTilemapLoadTask(path,path,null, extraData, f,l),
+            typeid(IHipTileset).toString :  (string path, const(ubyte)[] extraData, string f, size_t l) => new HipTilesetLoadTask(path,path,null, extraData, f,l),
+            typeid(IHipInputMap).toString :  (string path, const(ubyte)[] extraData, string f, size_t l) => new HipInputMapLoadTask(path,path,null, extraData, f,l),
         ];
 
     }
@@ -206,7 +206,7 @@ class HipAssetManager
     {
         return new HipTextureRegion(texture, u1, v1, u2, v2);
     }
-    @ExportD static void registerAsset(TypeInfo tID, IHipAssetLoadTask delegate(string path,string file, size_t line) assetFactory)
+    @ExportD static void registerAsset(TypeInfo tID, IHipAssetLoadTask delegate(string path, const(ubyte)[] extraData, string file, size_t line) assetFactory)
     {
         if(tID.toString in typedAssetFactory)
         {
@@ -216,7 +216,7 @@ class HipAssetManager
         typedAssetFactory[tID.toString] = assetFactory;
     }
 
-    @ExportD static IHipAssetLoadTask loadAsset(TypeInfo tID, string path, string file = __FILE__, size_t line = __LINE__)
+    @ExportD static IHipAssetLoadTask loadAsset(TypeInfo tID, string path, const(ubyte)[] extraData = null, string file = __FILE__, size_t line = __LINE__)
     {
         IHipAssetLoadTask* cached = path in loadCache;
         if(cached)
@@ -236,7 +236,7 @@ class HipAssetManager
             throw new Exception("Please register the type first.");
         }
 
-        IHipAssetLoadTask task = (*assetFactory)(path, file, line);
+        IHipAssetLoadTask task = (*assetFactory)(path, extraData,file, line);
         loadQueue~= task;
         return task;
     }

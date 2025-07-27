@@ -19,9 +19,9 @@ final class HipTextureAtlasLoadTask : HipAssetLoadTask
     protected Image img;
     string texturePath = ":IGNORE";
 
-    this(string path, string name, HipAsset asset, string texturePath, string fileRequesting, size_t lineRequesting)
+    this(string path, string name, HipAsset asset, string texturePath, const(ubyte)[] extraData, string fileRequesting, size_t lineRequesting)
     {
-        super(path, name, asset, fileRequesting, lineRequesting);
+        super(path, name, asset, extraData, fileRequesting, lineRequesting);
         this.texturePath = texturePath;
     }
 

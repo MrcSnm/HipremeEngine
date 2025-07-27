@@ -16,9 +16,9 @@ final class HipTTFFontLoadTask : HipAssetLoadTask
     HipFont font;
     private ubyte[] rawImage;
 
-    this(string path, string name, HipAsset asset, int fontSize, string fileRequesting, size_t lineRequesting)
+    this(string path, string name, HipAsset asset, int fontSize, const(ubyte)[] extraData ,string fileRequesting, size_t lineRequesting)
     {
-        super(path, name, asset, fileRequesting, lineRequesting);
+        super(path, name, asset, extraData, fileRequesting, lineRequesting);
         this.fontSize = fontSize;
     }
 
@@ -74,9 +74,9 @@ final class HipBMFontLoadTask : HipAssetLoadTask
     HipBitmapFont font;
     IImage loadedImage;
 
-    this(string path, string name, HipAsset asset, int fontSize, string fileRequesting, size_t lineRequesting)
+    this(string path, string name, HipAsset asset, int fontSize, const(ubyte)[] extraData, string fileRequesting, size_t lineRequesting)
     {
-        super(path, name, asset, fileRequesting, lineRequesting);
+        super(path, name, asset, extraData, fileRequesting, lineRequesting);
         this.fontSize = fontSize;
     }
 

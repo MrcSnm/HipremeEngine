@@ -1,14 +1,17 @@
 module hip.api.data.commons;
 public import hip.api.data.asset;
+import hip.util.reflection;
 
 
 ///Use @Asset instead of HipAsset.
 pragma(LDC_no_typeinfo)
-struct HipAssetUDA(T)
+struct HipAssetUDA(T, Extra)
 {
     string path;
     static if(!(is(T == void)))
         T function(string data) conversionFunction;
+    static if(!(is(Extra == void)))
+        Extra extra;
     int start, end;
 }
 
@@ -21,16 +24,48 @@ struct HipAssetUDA(T)
  *   end = For Arrays. Inclusive.
  * Returns: 
  */
-HipAssetUDA!T Asset(T)(string path, T function(string) conversionFunc, int start = 0, int end = 0){return HipAssetUDA!T(path, conversionFunc, start, end);}
+HipAssetUDA!(T, void) Asset(T)(string path, T function(string) conversionFunc, int start = 0, int end = 0){return HipAssetUDA!(T, void)(path, conversionFunc, start, end);}
+
 /** 
  * Params:
  *   path = Path where the asset is located. 
         It may receive an $ for path formatting with numbers(only valid when array is used.)
+ *   conversionFunc = A function with input the data located at "path", and return any data.
+ *   extra = Extra data for instantiating the asset. Usually associated with the constructor
  *   start = For Arrays. Inclusive. May be greater than end for reverse counting.
  *   end = For Arrays. Inclusive.
  * Returns: 
  */
-HipAssetUDA!void Asset(string path, int start = 0, int end = 0){return HipAssetUDA!void(path, start, end);}
+HipAssetUDA!(T, Extra) Asset(T, Extra)(string path, T function(string) conversionFunc, Extra extra, int start = 0, int end = 0){return HipAssetUDA!(T, Extra)(path, conversionFunc, extra, start, end);}
+
+/**
+ * Params:
+ *   path = Path where the asset is located.
+        It may receive an $ for path formatting with numbers(only valid when array is used.)
+ * Returns:
+ */
+HipAssetUDA!(void, void) Asset(string path){return HipAssetUDA!(void, void)(path, 0, 0);}
+/**
+ * Params:
+ *   path = Path where the asset is located.
+        It may receive an $ for path formatting with numbers(only valid when array is used.)
+ *   start = For Arrays. Inclusive. May be greater than end for reverse counting.
+ *   end = For Arrays. Inclusive.
+ * Returns:
+ */
+HipAssetUDA!(void, void) Asset(string path, int start, int end){return HipAssetUDA!(void, void)(path, start, end);}
+
+/**
+ * Params:
+ *   path = Path where the asset is located.
+        It may receive an $ for path formatting with numbers(only valid when array is used.)
+ *   extra = Extra data for instantiating with the asset. Usually used with its constructor
+ *   start = For Arrays. Inclusive. May be greater than end for reverse counting.
+ *   end = For Arrays. Inclusive.
+ * Returns:
+ */
+HipAssetUDA!(void, T) Asset(T)(string path, T extra, int start = 0, int end = 0) if(!isFunction!T) {return HipAssetUDA!(void, T)(path, extra, start, end);}
+
 
 template FilterAsset(Attributes...)
 {
@@ -47,7 +82,7 @@ template GetAssetUDA(Attributes...)
     static if(!is(typeof(asset) == void)) //Means it is a real struct.
         enum GetAssetUDA = asset;
     else
-        enum GetAssetUDA = HipAssetUDA!void();
+        enum GetAssetUDA = HipAssetUDA!(void, void)();
 }
 
 
@@ -95,13 +130,13 @@ string[] getModulesFromRoot(string modules, string root)
     return ret[rootStart..$];
 }
 
-IHipAssetLoadTask[] loadAssets()(TypeInfo type, string assetPath, int start, int end)
+IHipAssetLoadTask[] loadAssets()(TypeInfo type, string assetPath, const(ubyte)[] extraData, int start, int end)
 {
     import hip.api;
     int sign = end - start >= 0 ? 1 : -1;
     ///Include 1 for the upper bounds 
     int count = ((end - start) * sign) + 1;
-    if(count == 1) return [HipAssetManager.loadAsset(type, assetPath)];
+    if(count == 1) return [HipAssetManager.loadAsset(type, assetPath, extraData)];
     IHipAssetLoadTask[] ret = new IHipAssetLoadTask[count];
 
     static string formatStr(string str, int number)
@@ -125,7 +160,7 @@ IHipAssetLoadTask[] loadAssets()(TypeInfo type, string assetPath, int start, int
     }
 
     foreach(i; 0..count) 
-        ret[i] = HipAssetManager.loadAsset(type, formatStr(assetPath, start+i*sign));
+        ret[i] = HipAssetManager.loadAsset(type, formatStr(assetPath, start+i*sign), extraData);
     return ret;
 }
 
@@ -160,7 +195,11 @@ mixin template LoadReferencedAssets(string[] modules)
                             static if(!is(typeof(classMember) == string) && isArray!(typeof(classMember))) alias memberType = typeof(classMember.init[0]);
                             else alias memberType = typeof(classMember);
 
-                            IHipAssetLoadTask[] tasks = loadAssets(typeid(memberType), assetUDA.path, assetUDA.start, assetUDA.end);
+
+                            const(ubyte[]) extra;
+                            static if(__traits(hasMember, assetUDA, "extra"))
+                                extra = assetUDA.extra;
+                            IHipAssetLoadTask[] tasks = loadAssets(typeid(memberType), assetUDA.path, extra, assetUDA.start, assetUDA.end);
                             memberType* members;
 
                             static if(!__traits(compiles, classMember.offsetof)) //Static
@@ -207,7 +246,15 @@ mixin template ForeachAssetInClass(T, alias foreachAsset)
                 alias type = typeof(theMember);
                 enum assetUDA = GetAssetUDA!(__traits(getAttributes, theMember));
                 static if(assetUDA.path != null)
-                    foreachAsset!(type, theMember)(assetUDA.path);
+                {
+                    const(ubyte[]) extra;
+                    static if(__traits(hasMember, assetUDA, "extra"))
+                        extra = (cast(ubyte*)&assetUDA.extra)[0..assetUDA.extra.sizeof];
+                    static if(__traits(isTemplate, foreachAsset))
+                        foreachAsset!(type, theMember)(assetUDA.path, extra);
+                    else
+                        foreachAsset(assetUDA.path, extra);
+                }
             }
         }}
     }
@@ -215,10 +262,10 @@ mixin template ForeachAssetInClass(T, alias foreachAsset)
 
 mixin template PreloadAssets()
 {
-    private void _load(alias theMember)(TypeInfo t, string assetPath)
+    private void _load(alias theMember)(TypeInfo t, string assetPath, const(ubyte)[] extraData)
     {
         import hip.api;
-        HipAssetManager.loadAsset(t, assetPath).into(&theMember);
+        HipAssetManager.loadAsset(t, assetPath, extraData).into(&theMember);
     }
     alias preload = ForeachAssetInClass!(typeof(this), _load);
 }
@@ -261,8 +308,8 @@ interface IHipPreloadable
         mixin template finalImpl()
         {
             private __gshared string[] _assetsForPreload;
-            private __gshared void getAsset(string asset){_assetsForPreload~= asset;}
-            private final void loadAsset(T, alias member)(string asset)
+            private __gshared void getAsset(string asset, const(ubyte)[] extraData){_assetsForPreload~= asset;}
+            private final void loadAsset(T, alias member)(string asset, const(ubyte)[] extraData)
             {
                 alias mem = member;
                 ///Take members that aren't static and populate them after loading.
