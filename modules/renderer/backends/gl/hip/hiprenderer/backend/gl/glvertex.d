@@ -21,14 +21,14 @@ import hip.hiprenderer.shader;
 import hip.hiprenderer.vertex;
 
 
-private int getGLUsage(HipBufferUsage usage)
+private int getGLUsage(HipResourceUsage usage)
 {
-    final switch(usage) with(HipBufferUsage)
+    final switch(usage) with(HipResourceUsage)
     {
-        case STATIC:
+        case Immutable:
             return GL_STATIC_DRAW;
-        case DEFAULT:
-        case DYNAMIC:
+        case Default:
+        case Dynamic:
             return GL_DYNAMIC_DRAW;
     }
 }
@@ -79,7 +79,7 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
 
 
 
-    this(size_t size, HipBufferUsage usage, HipRendererBufferType type)
+    this(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {
         this.size = size;
         this.usage = getGLUsage(usage);

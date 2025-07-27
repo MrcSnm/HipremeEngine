@@ -1,7 +1,7 @@
 module hip.api.renderer.viewport;
 
 
-enum ViewportType
+enum ViewportType : ubyte
 {
     default_,
     fit

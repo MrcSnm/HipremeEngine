@@ -109,8 +109,8 @@ interface IHipRendererImpl
     size_t function(ShaderTypes shaderType, UniformType uniformType) getShaderVarMapper();
     public IHipFrameBuffer createFrameBuffer(int width, int height);
     public IHipVertexArrayImpl  createVertexArray();
-    public IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type);
-    public IHipTexture  createTexture();
+    public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type);
+    public IHipTexture  createTexture(HipResourceUsage usage);
     public int queryMaxSupportedPixelShaderTextures();
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void setViewport(Viewport v);
@@ -141,11 +141,11 @@ interface IHipRenderer
     HipRendererInfo getInfo();
 
     int getMaxSupportedShaderTextures();
-    IHipTexture getTextureImplementation();
+    IHipTexture getTextureImplementation(HipResourceUsage usage = HipResourceUsage.Immutable);
     Viewport getCurrentViewport() @nogc;
     void setViewport(Viewport v);
     IHipVertexArrayImpl createVertexArray();
-    IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type);
+    IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type);
 
     void setRendererMode(HipRendererMode);
     HipRendererMode getMode();

@@ -84,7 +84,7 @@ An example can be found on `HipSpriteBatch`.
 ```d
 Shader shader = HipRenderer.newShader(q{vertexShaderSource}, q{fragmentShaderSource});
 
-///Create a variable layout for the vertex shader 
+///Create a variable layout for the vertex shader
 //"Cbuf1" means that if there is a struct/cbuffer, it'll be accessed from that name
 shader.addVarLayout(new ShaderVariablesLayout("Cbuf1"), ShaderTypes.VERTEX, ShaderHint.NONE)
 .append("uModel", Matrix4.identity) //Append a variable with name "uModel" and value Matrix4.identity
@@ -130,8 +130,8 @@ obj.bind();
 obj.sendAttributes(shader);
 
 //Create the data input
-vao.createIndexBuffer(6, HipBufferUsage.STATIC);
-vao.createVertexBuffer(4, HipBufferUsage.DYNAMIC);
+vao.createIndexBuffer(6, HipResourceUsage.Static);
+vao.createVertexBuffer(4, HipResourceUsage.Dynamic);
 
 //Now you can call both setVertices/updateVertices, setIndices/updateIndices for setting your data
 
@@ -156,8 +156,8 @@ A mesh is basically a shader + vao wrapper, which can make things easier in the 
 
 mesh = new Mesh(HipVertexArrayObject.getXYZ_RGBA_ST_TID_VAO(), spriteBatchShader);
 mesh.vao.bind();
-mesh.createVertexBuffer(4, HipBufferUsage.DYNAMIC);
-mesh.createIndexBuffer(6, HipBufferUsage.STATIC);
+mesh.createVertexBuffer(4, HipResourceUsage.Dynamic);
+mesh.createIndexBuffer(6, HipResourceUsage.Static);
 mesh.sendAttributes();
 //setIndices and setVertices almost the same
 ```

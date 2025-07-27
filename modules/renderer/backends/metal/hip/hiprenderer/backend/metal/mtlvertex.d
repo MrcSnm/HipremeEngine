@@ -8,15 +8,15 @@ import hip.hiprenderer.backend.metal.mtlrenderer;
 import hip.hiprenderer.backend.metal.mtlshader;
 
 
-MTLResourceOptions mtlOptions(HipBufferUsage usage)
+MTLResourceOptions mtlOptions(HipResourceUsage usage)
 {
     final switch(usage)
     {
-        case HipBufferUsage.DYNAMIC:
+        case HipResourceUsage.Dynamic:
             return MTLResourceOptions.StorageModeShared;
-        case HipBufferUsage.STATIC:
+        case HipResourceUsage.Immutable:
             return MTLResourceOptions.StorageModePrivate;
-        case HipBufferUsage.DEFAULT:
+        case HipResourceUsage.Default:
             return MTLResourceOptions.DefaultCache;
     }
 }
@@ -32,7 +32,7 @@ final class HipMTLBuffer : IHipRendererBuffer
     HipRendererBufferType _type;
     size_t size;
 
-    this(MTLDevice device, MTLCommandQueue cmdQueue, size_t size, HipBufferUsage usage, HipRendererBufferType type)
+    this(MTLDevice device, MTLCommandQueue cmdQueue, size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {
         this.device = device;
         this.cmdQueue = cmdQueue;
@@ -163,7 +163,7 @@ final class HipMTLVertexArray : IHipVertexArrayImpl
         iBuffer = null;
     }
 
-    /** 
+    /**
      * HipMTLRenderer will ALWAYS assume that:
      *  Buffer 0 is for uniforms
      *  Buffer 1 is for vertex attributes

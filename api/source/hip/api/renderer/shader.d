@@ -3,7 +3,7 @@ public import hip.api.renderer.operations;
 public import hip.api.renderer.texture;
 public import hip.api.renderer.shadervar;
 
-enum ShaderStatus
+enum ShaderStatus : ubyte
 {
     SUCCESS,
     VERTEX_COMPILATION_ERROR,
@@ -20,7 +20,7 @@ enum ShaderTypes : ubyte
     none
 }
 
-enum HipShaderPresets
+enum HipShaderPresets : ubyte
 {
     DEFAULT,
     FRAME_BUFFER,

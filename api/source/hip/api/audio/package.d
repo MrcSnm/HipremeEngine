@@ -3,7 +3,7 @@ public import hip.api.audio.audiosource;
 public import hip.api.audio.audioclip;
 
 //Low weight shared data
-enum HipAudioType
+enum HipAudioType : ubyte
 {
     SFX,
     MUSIC
@@ -37,7 +37,7 @@ enum DistanceModel
     EXPONENT_CLAMPED
 }
 
-enum HipAudioImplementation
+enum HipAudioImplementation : ubyte
 {
     Null,
     OpenAL,

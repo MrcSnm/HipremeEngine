@@ -27,7 +27,7 @@ enum ShaderHint : uint
 *   Should not be used directly. The D type inference can already set that for you.
 *   This is stored by the variable to know how to access itself and comunicate the shader.
 */
-enum UniformType
+enum UniformType : ubyte
 {
     boolean,
     integer,

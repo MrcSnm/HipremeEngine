@@ -24,7 +24,7 @@ enum TileLayerType
     OBJECT_LAYER = "objectgroup"
 }
 
-enum TileDrawOrder
+enum TileDrawOrder : ubyte
 {
     TOP_DOWN,
     DOWN_TOP

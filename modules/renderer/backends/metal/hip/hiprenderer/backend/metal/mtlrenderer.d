@@ -182,12 +182,12 @@ class HipMTLRenderer : IHipRendererImpl
         return new HipMTLVertexArray(device, this);
     }
 
-    public IHipTexture createTexture()
+    public IHipTexture createTexture(HipResourceUsage usage)
     {
-        return new HipMTLTexture(device,cmdQueue, this);
+        return new HipMTLTexture(device,cmdQueue, this, usage);
     }
 
-    public IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type)
+    public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {
         return new HipMTLBuffer(device, cmdQueue, size, usage, type);
     }

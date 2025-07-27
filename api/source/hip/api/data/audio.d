@@ -3,7 +3,7 @@ module hip.api.data.audio;
 import hip.api.audio;
 public import hip.api.audio.audioclip;
 
-enum HipAudioEncoding
+enum HipAudioEncoding : ubyte
 {
     WAV,
     MP3,

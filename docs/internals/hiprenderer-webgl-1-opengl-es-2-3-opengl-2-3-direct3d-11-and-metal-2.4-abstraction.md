@@ -96,7 +96,7 @@ struct HipSpriteFragmentUniform
 
 Shader shader = HipRenderer.newShader(q{vertexShaderSource}, q{fragmentShaderSource});
 
-///Create a variable layout for the vertex shader 
+///Create a variable layout for the vertex shader
 shader.addVarLayout(ShaderVariablesLayout.from!HipSpriteVertexUniform);
 
 //Now it is possible to set those values
@@ -139,8 +139,8 @@ obj.bind();
 obj.sendAttributes(shader);
 
 //Create the data input
-vao.createIndexBuffer(6, HipBufferUsage.STATIC);
-vao.createVertexBuffer(4, HipBufferUsage.DYNAMIC);
+vao.createIndexBuffer(6, HipResourceUsage.Static);
+vao.createVertexBuffer(4, HipResourceUsage.Dynamic);
 
 //Now you can call both setVertices/updateVertices, setIndices/updateIndices for setting your data
 
@@ -165,8 +165,8 @@ A mesh is basically a shader + vao wrapper, which can make things easier in the 
 
 mesh = new Mesh(HipVertexArrayObject.getVAO!HipSpriteVertex(), spriteBatchShader);
 mesh.vao.bind();
-mesh.createVertexBuffer(4, HipBufferUsage.DYNAMIC);
-mesh.createIndexBuffer(6, HipBufferUsage.STATIC);
+mesh.createVertexBuffer(4, HipResourceUsage.Dynamic);
+mesh.createIndexBuffer(6, HipResourceUsage.Static);
 mesh.sendAttributes();
 //setIndices and setVertices almost the same
 ```

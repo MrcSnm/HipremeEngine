@@ -2,7 +2,7 @@ module hip.api.renderer.operations;
 
 
 /// Those are fairly known functions in the graphics programming world
-enum HipBlendFunction
+enum HipBlendFunction : ubyte
 {
     ZERO,
     ONE,
@@ -24,7 +24,7 @@ enum HipBlendFunction
  * The equation is made by:
  * HipBlendEquation(HipBlendFunction, HipBlendFunction)
  */
-enum HipBlendEquation
+enum HipBlendEquation : ubyte
 {
     DISABLED,
     ADD,
@@ -35,7 +35,7 @@ enum HipBlendEquation
 }
 
 ///Which function should be employed whene testing the Depth/Z-Buffer
-enum HipDepthTestingFunction
+enum HipDepthTestingFunction : ubyte
 {
     ///Means that nothing will be drawed
     Never,
@@ -55,7 +55,7 @@ enum HipDepthTestingFunction
     NotEqual,
 }
 
-enum HipStencilOperation
+enum HipStencilOperation : ubyte
 {
     ///	The currently stored stencil value is kept.
     Keep,

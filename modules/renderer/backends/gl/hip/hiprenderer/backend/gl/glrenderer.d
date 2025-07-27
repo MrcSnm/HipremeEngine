@@ -194,11 +194,11 @@ class Hip_GL3Renderer : IHipRendererImpl
         else
             return new Hip_GL_VertexArrayObject();
     }
-    public IHipTexture createTexture()
+    public IHipTexture createTexture(HipResourceUsage usage)
     {
-        return new Hip_GL3_Texture();
+        return new Hip_GL3_Texture(usage);
     }
-    public IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type)
+    public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {
         return new Hip_GL3_Buffer(size, usage, type);
     }

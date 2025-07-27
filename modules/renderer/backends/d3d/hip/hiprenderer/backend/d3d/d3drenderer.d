@@ -398,11 +398,11 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         return new Hip_D3D11_VertexArrayObject();
     }
-    public IHipTexture createTexture()
+    public IHipTexture createTexture(HipResourceUsage usage)
     {
-        return new Hip_D3D11_Texture();
+        return new Hip_D3D11_Texture(usage);
     }
-    public IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type)
+    public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {
         return new Hip_D3D11_Buffer(size, usage, type);
     }
@@ -595,3 +595,30 @@ private void Hip_D3D11_Dispose()
     }
 }
 
+package int getD3D11Usage(HipResourceUsage usage)
+{
+    switch(usage) with(HipResourceUsage)
+    {
+        default:
+        case Default:
+            return D3D11_USAGE_DEFAULT;
+        case Dynamic:
+            return D3D11_USAGE_DYNAMIC;
+        case Immutable:
+            return D3D11_USAGE_IMMUTABLE;
+    }
+}
+
+package int getD3D11_CPUUsage(D3D11_USAGE usage)
+{
+    switch(usage)
+    {
+        default:
+        case D3D11_USAGE_DEFAULT:
+            return D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+        case D3D11_USAGE_DYNAMIC:
+            return D3D11_CPU_ACCESS_WRITE;
+        case D3D11_USAGE_IMMUTABLE:
+            return 0;
+    }
+}

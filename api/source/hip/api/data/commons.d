@@ -261,7 +261,7 @@ interface IHipPreloadable
         mixin template finalImpl()
         {
             private __gshared string[] _assetsForPreload;
-            private __gshared void getAsset(T, alias member)(string asset){_assetsForPreload~= asset;}
+            private __gshared void getAsset(string asset){_assetsForPreload~= asset;}
             private final void loadAsset(T, alias member)(string asset)
             {
                 alias mem = member;
@@ -317,7 +317,7 @@ interface IReloadable
 
 
 
-enum HipAssetResult
+enum HipAssetResult : ubyte
 {
     waiting,
     cantLoad,
@@ -369,13 +369,6 @@ interface IHipAssetLoadTask
                 *v = convertFunction(data);
         });
     }
-}
-
-
-///Maybe will be deprecated in future. This is common in web, but it is a pain to work with.
-interface IHipDeferrableTexture
-{
-    void setTexture(IHipAssetLoadTask task);
 }
 
 interface IHipDeserializable

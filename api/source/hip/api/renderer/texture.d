@@ -14,7 +14,7 @@ module hip.api.renderer.texture;
 public import hip.api.data.image;
 public import hip.api.graphics.color;
 
-enum TextureWrapMode
+enum TextureWrapMode : ubyte
 {
     CLAMP_TO_EDGE,
     CLAMP_TO_BORDER,
@@ -24,7 +24,7 @@ enum TextureWrapMode
     UNKNOWN
 }
 
-enum TextureFilter
+enum TextureFilter : ubyte
 {
     LINEAR,
     NEAREST,
@@ -38,7 +38,6 @@ interface IHipTexture
 {
     void setWrapMode(TextureWrapMode mode);
     void setTextureFilter(TextureFilter min, TextureFilter mag);
-    IHipTexture getBackendHandle();
 
     protected bool loadImpl(in IImage img);
     final bool load(in IImage img)
@@ -62,11 +61,6 @@ pragma(LDC_no_typeinfo)
 struct TextureCoordinatesQuad
 {
     float u1, v1, u2, v2;
-}
-
-interface IHipTexturizable
-{
-    void setTexture(IHipTexture texture);
 }
 
 interface IHipTextureRegion

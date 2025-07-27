@@ -38,7 +38,7 @@ struct HipAnimationFrame
     }
 }
 
-enum HipAnimationLoopingMode
+enum HipAnimationLoopingMode : ubyte
 {
     none,
     reset,

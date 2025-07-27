@@ -92,7 +92,7 @@ class HipTextRenderer : IHipBatch
         //6 indices per quad
         vertices = new HipTextRendererVertex[](maxQuads*4);
         mesh.setIndices(HipRenderer.getQuadIndexBuffer(maxQuads));
-        mesh.createVertexBuffer(cast(index_t)vertices.length, HipBufferUsage.DYNAMIC);
+        mesh.createVertexBuffer(cast(index_t)vertices.length, HipResourceUsage.Dynamic);
         mesh.sendAttributes();
         mesh.setVertices(vertices);
         if(camera is null)

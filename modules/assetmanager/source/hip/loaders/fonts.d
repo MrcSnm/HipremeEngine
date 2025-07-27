@@ -117,7 +117,7 @@ final class HipBMFontLoadTask : HipAssetLoadTask
                 break;
             case mainThreadLoading:
 
-                if(!font.loadTexture(new HipTexture(loadedImage)))
+                if(!font.loadTexture(new HipTexture(loadedImage, HipResourceUsage.Immutable)))
                 {
                     result = cantLoad; error = "Failed loading texture for TTF Font";
                     return;

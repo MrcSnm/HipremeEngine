@@ -11,6 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.hiprenderer.backend.d3d.d3dtexture;
 
 import hip.config.renderer;
+import hip.api.renderer.core:HipResourceUsage;
 static if(HasDirect3D):
 
 import hip.hiprenderer.backend.d3d.d3drenderer;
@@ -29,16 +30,18 @@ final class Hip_D3D11_Texture : IHipTexture
     ID3D11Texture2D texture;
     ID3D11ShaderResourceView resource;
     ID3D11SamplerState sampler;
+    bool[] slotsBound;
+    HipColor borderColor = HipColor(255, 255, 255, 255);
     int width, height;
-    float[4] borderColor;
     int filter = Hip_D3D11_getTextureFilter(TextureFilter.NEAREST, TextureFilter.NEAREST);
     int wrap = Hip_D3D11_getWrapMode(TextureWrapMode.REPEAT);
-    bool[] slotsBound;
+    uint stride;
+    HipResourceUsage usage;
 
-    IHipTexture getBackendHandle(){return this;}
-    this()
+    this(HipResourceUsage usage)
     {
         import hip.hiprenderer:HipRenderer;
+        this.usage = usage;
         slotsBound = new bool[HipRenderer.getMaxSupportedShaderTextures()];
     }
 
@@ -57,7 +60,7 @@ final class Hip_D3D11_Texture : IHipTexture
         desc.AddressU = wrap;
         desc.AddressV = wrap;
         desc.AddressW = wrap;
-        desc.BorderColor = [1, 1, 1, 1];
+        desc.BorderColor = HipColorf(borderColor).values;
         desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
         desc.MinLOD = 0;
         desc.MaxLOD = D3D11_FLOAT32_MAX;
@@ -75,7 +78,7 @@ final class Hip_D3D11_Texture : IHipTexture
     {
         D3D11_TEXTURE2D_DESC desc;
         // desc.Format = getFromFromSurface(surface);
-        desc.Usage = D3D11_USAGE_IMMUTABLE;
+        desc.Usage = getD3D11Usage(this.usage);
         desc.CPUAccessFlags = 0;
         desc.MipLevels = 1;
         desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -117,13 +120,40 @@ final class Hip_D3D11_Texture : IHipTexture
         }
         desc.Format = format;
         data.pSysMem = cast(void*)pixels.ptr;
-        data.SysMemPitch = image.getWidth*Bpp;
+        stride = data.SysMemPitch = image.getWidth*Bpp;
 
         _hip_d3d_device.CreateTexture2D(&desc, &data, &texture);
         _hip_d3d_device.CreateShaderResourceView(texture, cast(D3D11_SHADER_RESOURCE_VIEW_DESC*)null, &resource);
         updateSamplerState();
         bind();
         return false;
+    }
+
+    void updatePixels(int x, int y, int width, int height, const(ubyte)[] pixels)
+    {
+        switch(usage)
+        {
+            case HipResourceUsage.Default:
+                D3D11_BOX dstBox;
+                dstBox.left = x;
+                dstBox.right = x + width;
+                dstBox.top = y;
+                dstBox.bottom = y + height;
+                dstBox.front = dstBox.back = 1;
+                _hip_d3d_context.UpdateSubresource(texture, 0, &dstBox, pixels.ptr, stride, 1);
+                break;
+            case HipResourceUsage.Dynamic:
+                D3D11_MAPPED_SUBRESOURCE res;
+                _hip_d3d_context.Map(texture, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &res);
+                size_t imgWidth = getWidth;
+                size_t startIdx = x + y*imgWidth;
+                size_t copySize = width*height* (stride / imgWidth);
+                res.pData[startIdx..startIdx+copySize] = pixels[0..copySize];
+                _hip_d3d_context.Unmap(texture, 0);
+                break;
+            case HipResourceUsage.Immutable:
+                assert(false, "Can't update the pixels of an immutable texture.");
+        }
     }
 
 

@@ -30,11 +30,11 @@ class Mesh
         this.vao = vao;
         this.shader = shader;
     }
-    void createVertexBuffer(index_t count, HipBufferUsage usage)
+    void createVertexBuffer(index_t count, HipResourceUsage usage)
     {
         this.vao.createVertexBuffer(count, usage);
     }
-    void createIndexBuffer(index_t count, HipBufferUsage usage)
+    void createIndexBuffer(index_t count, HipResourceUsage usage)
     {
         this.vao.createIndexBuffer(count, usage);
     }

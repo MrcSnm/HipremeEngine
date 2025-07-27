@@ -42,7 +42,7 @@ final class Hip_D3D11_Buffer : IHipRendererBuffer
 
     HipRendererBufferType type() const { return _type; }
 
-    this(ulong size, HipBufferUsage usage, HipRendererBufferType type)
+    this(ulong size, HipResourceUsage usage, HipRendererBufferType type)
     {
         this.size = size;
         this.usage = getD3D11Usage(usage);
@@ -185,34 +185,6 @@ final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
 
         import core.memory;
         GC.free(descs.ptr);
-    }
-}
-
-private int getD3D11Usage(HipBufferUsage usage)
-{
-    switch(usage) with(HipBufferUsage)
-    {
-        default:
-        case DEFAULT:
-            return D3D11_USAGE_DEFAULT;
-        case DYNAMIC:
-            return D3D11_USAGE_DYNAMIC;
-        case STATIC:
-            return D3D11_USAGE_IMMUTABLE;
-    }
-}
-
-private int getD3D11_CPUUsage(D3D11_USAGE usage)
-{
-    switch(usage)
-    {
-        default:
-        case D3D11_USAGE_DEFAULT:
-            return D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
-        case D3D11_USAGE_DYNAMIC:
-            return D3D11_CPU_ACCESS_WRITE;
-        case D3D11_USAGE_IMMUTABLE:
-            return 0;
     }
 }
 

@@ -14,7 +14,7 @@ version(OpenGL):
 public import hip.api.renderer.texture;
 public import hip.api.data.commons:IReloadable;
 import hip.config.renderer;
-
+import hip.api.renderer.core;
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
 import hip.image;
@@ -28,7 +28,7 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
     uint currentSlot;
 
     private IImage loadedImage;
-    IHipTexture getBackendHandle(){return this;}
+    this(HipResourceUsage usage){}
     bool hasSuccessfullyLoaded(){return width > 0;}
     protected int getGLWrapMode(TextureWrapMode mode)
     {

@@ -21,6 +21,7 @@ public import hip.util.data_structures:Array2D;
 public import hip.api.renderer.texture;
 public import hip.api.data.image;
 public import hip.api.graphics.color;
+public import hip.api.renderer.core: HipResourceUsage;
 
 class HipTexture : HipAsset
 {
@@ -33,7 +34,7 @@ class HipTexture : HipAsset
     {
         if(pixelTexture is null)
         {
-            pixelTexture = new HipTexture();
+            pixelTexture = new HipTexture(HipResourceUsage.Immutable);
             pixelTexture.img = cast(IImage)Image.getPixelImage();
             pixelTexture.textureImpl.load(pixelTexture.img);
         }
@@ -47,17 +48,17 @@ class HipTexture : HipAsset
     /**
     *   Initializes with the current renderer type
     */
-    protected this()
+    protected this(HipResourceUsage usage)
     {
         import hip.api.renderer.core;
         super("HipTexture");
         _typeID = assetTypeID!HipTexture;
-        textureImpl = HipRenderer.getTextureImplementation();
+        textureImpl = HipRenderer.getTextureImplementation(usage);
     }
 
-    this(const IImage image)
+    this(const IImage image, HipResourceUsage usage = HipResourceUsage.Immutable)
     {
-        this();
+        this(usage);
         if(image !is null)
             textureImpl.load(image);
     }

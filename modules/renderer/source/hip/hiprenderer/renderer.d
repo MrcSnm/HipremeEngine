@@ -127,7 +127,7 @@ class HipRendererImplementation : IHipRenderer
         if(!quadIndexBuffer)
         {
             import hip.util.array;
-            quadIndexBuffer = createBuffer(quadsCount*index_t.sizeof*6, HipBufferUsage.STATIC, HipRendererBufferType.index);
+            quadIndexBuffer = createBuffer(quadsCount*index_t.sizeof*6, HipResourceUsage.Immutable, HipRendererBufferType.index);
             index_t[] output = uninitializedArray!(index_t[])(quadsCount*6);
             index_t index = 0;
             for(index_t i = 0; i < quadsCount; i++)
@@ -213,9 +213,9 @@ class HipRendererImplementation : IHipRenderer
     public int getMaxSupportedShaderTextures(){return rendererImpl.queryMaxSupportedPixelShaderTextures();}
 
 
-    public IHipTexture getTextureImplementation()
+    public IHipTexture getTextureImplementation(HipResourceUsage usage = HipResourceUsage.Immutable)
     {
-        res.textures~= rendererImpl.createTexture();
+        res.textures~= rendererImpl.createTexture(usage);
         return res.textures[$-1];
     }
 
@@ -284,7 +284,7 @@ class HipRendererImplementation : IHipRenderer
         return res.vertexArrays[$-1];
     }
 
-    public IHipRendererBuffer createBuffer(size_t size, HipBufferUsage usage, HipRendererBufferType type)
+    public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {
         res.buffers~= rendererImpl.createBuffer(size, usage, type);
         return res.buffers[$-1];

@@ -1,7 +1,7 @@
 module hip.api.filesystem.hipfs;
 
 ///Less dependencies
-enum
+enum : ubyte
 {
     /// Offset is relative to the beginning
     SEEK_SET,
@@ -11,7 +11,7 @@ enum
     SEEK_END
 }
 
-enum FileMode
+enum FileMode : ubyte
 {
     READ,
     WRITE,

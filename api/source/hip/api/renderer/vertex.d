@@ -15,29 +15,20 @@ index_t index_t_maxQuadIndices()
     return cast(index_t)(index_t_maxQuads * 6);
 }
 
-
-
-enum InternalVertexAttribute
+/**
+ * Information about how the resource is used.
+ */
+enum HipResourceUsage : ubyte
 {
-    POSITION = 0,
-    TEXTURE_COORDS,
-    COLOR
+    ///Usually means the resource is able to change, but with subpar speed
+    Default,
+    ///Means that the resource is optimized to be changed from the CPU
+    Dynamic,
+    ///The resource is immutable and can't be changed
+    Immutable,
 }
 
-enum InternalVertexAttributeFlags
-{
-    POSITION = 1 << InternalVertexAttribute.POSITION,
-    TEXTURE_COORDS = 1 << InternalVertexAttribute.TEXTURE_COORDS,
-    COLOR = 1 << InternalVertexAttribute.COLOR,
-}
-enum HipBufferUsage
-{
-    DYNAMIC,
-    STATIC,
-    DEFAULT
-}
-
-enum HipAttributeType
+enum HipAttributeType : ubyte
 {
     ///Used as a unsigned r8g8b8a8 normalized type.
     Rgba32,

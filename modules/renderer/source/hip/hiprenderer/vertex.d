@@ -44,7 +44,7 @@ class HipVertexArrayObject
     bool isBonded;
     protected bool hasVertexInitialized;
     protected bool hasIndexInitialized;
-    
+
     /**
     *   Remember calling sendAttributes
     */
@@ -57,7 +57,7 @@ class HipVertexArrayObject
     /**
     *   Creates and binds an index buffer.
     */
-    void createIndexBuffer(index_t count, HipBufferUsage usage)
+    void createIndexBuffer(index_t count, HipResourceUsage usage)
     {
         assert(EBO is null, "Can't create buffer if it is already assigned.");
         this.EBO = HipRenderer.createBuffer(count*index_t.sizeof, usage, HipRendererBufferType.index);
@@ -75,7 +75,7 @@ class HipVertexArrayObject
     *
     * The vertex buffer size is dependant on the attributes that were appended to this vertex array.
     */
-    void createVertexBuffer(uint count, HipBufferUsage usage)
+    void createVertexBuffer(uint count, HipResourceUsage usage)
     {
         this.VBO = HipRenderer.createBuffer(count*this.stride, usage, HipRendererBufferType.vertex);
     }
@@ -84,10 +84,10 @@ class HipVertexArrayObject
     * for later sending it(it is necessary as the stride needs to be recalculated)
     */
     HipVertexArrayObject appendAttribute(
-        uint count, 
-        HipAttributeType valueType, 
-        uint typeSize, 
-        string infoName, 
+        uint count,
+        HipAttributeType valueType,
+        uint typeSize,
+        string infoName,
         bool isPadding = false,
     )
     {
@@ -201,7 +201,7 @@ class HipVertexArrayObject
             this.VBO.setData(data);
         }
     }
-    /** 
+    /**
      * Update the VBO. Won't cause memory allocation.
      * Params:
      *   count = How many vertices to update
@@ -217,7 +217,7 @@ class HipVertexArrayObject
     }
     /**
     *   Will set the indices data. Beware that this function may allocate memory.
-    *   
+    *
     *   If you need to only change its data value instead of allocating memory for a greater index buffer
     *   call updateIndices
     */

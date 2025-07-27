@@ -53,8 +53,6 @@ final class HipMTLTexture : IHipTexture
     uint width, height;
     NSUInteger bytesPerRow;
 
-    IHipTexture getBackendHandle(){return this;}
-
     this(MTLDevice device, MTLCommandQueue cmdQueue, HipMTLRenderer mtlRenderer)
     {
         this.device = device;
