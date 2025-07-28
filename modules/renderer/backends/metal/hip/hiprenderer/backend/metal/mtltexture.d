@@ -1,4 +1,6 @@
 module hip.hiprenderer.backend.metal.mtltexture;
+
+import hip.api.renderer.vertex;
 version(AppleOS):
 import metal;
 import hip.hiprenderer;
@@ -17,6 +19,19 @@ MTLPixelFormat getPixelFormat(in IImage img)
         case 3:
     }
     assert(0);
+}
+
+MTLStorageMode getStorageMode(HipResourceUsage usage)
+{
+    final switch(usage) with(HipResourceUsage)
+    {
+        case Immutable:
+            return MTLStorageMode.Private;
+        case Dynamic:
+            return MTLStorageMode.Shared;
+        case Default:
+            return MTLStorageMode.Managed;
+    }
 }
 
 
@@ -52,12 +67,14 @@ final class HipMTLTexture : IHipTexture
 
     uint width, height;
     NSUInteger bytesPerRow;
+    HipResourceUsage usage;
 
-    this(MTLDevice device, MTLCommandQueue cmdQueue, HipMTLRenderer mtlRenderer)
+    this(MTLDevice device, MTLCommandQueue cmdQueue, HipMTLRenderer mtlRenderer, HipResourceUsage usage)
     {
         this.device = device;
         this.cmdQueue = cmdQueue;
         this.mtlRenderer = mtlRenderer;
+        this.usage = usage;
         samplerDesc = MTLSamplerDescriptor.alloc.initialize;
 
         setWrapMode(TextureWrapMode.REPEAT);
@@ -153,7 +170,7 @@ final class HipMTLTexture : IHipTexture
         desc.width = img.getWidth();
         desc.height = img.getHeight();
         desc.textureType = MTLTextureType._2D;
-        desc.storageMode = MTLStorageMode.Private;
+        desc.storageMode = getStorageMode(usage);
 
         if(desc is null)
             return false;
@@ -206,6 +223,7 @@ final class HipMTLTexture : IHipTexture
     }
     void updatePixels(int x, int y, int width, int height, const(ubyte)[] pixels)
     {
+        assert(usage != HipResourceUsage.Immutable, "Can't modify an immutable resource.");
         texture.replaceRegion(MTLRegion(MTLOrigin(x, y, 0), MTLSize(width, height, 1)), 0, pixels.ptr, bytesPerRow);
     }
 

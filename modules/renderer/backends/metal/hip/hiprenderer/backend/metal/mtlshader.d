@@ -187,7 +187,7 @@ class HipMTLShader : IShader
                 import hip.util.algorithm;
                 IHipTexture[] textures = *cast(IHipTexture[]*)value;
                 HipMTLShaderVarTexture tempTex;
-                foreach(size_t i, HipMTLTexture tex; textures.map((IHipTexture itex) => cast(HipMTLTexture)itex.getBackendHandle()))
+                foreach(size_t i, HipMTLTexture tex; textures.map((IHipTexture itex) => cast(HipMTLTexture)itex))
                 {
                     tempTex.textures[i] = tex.texture;
                     tempTex.samplers[i] = tex.sampler;
@@ -313,7 +313,7 @@ class HipMTLShader : IShader
 
         foreach(i; 0..textures.length)
         {
-            HipMTLTexture hMtl = cast(HipMTLTexture)textures[i].getBackendHandle();
+            HipMTLTexture hMtl = cast(HipMTLTexture)textures[i];
             mtlTextures[i] = hMtl.texture;
             mtlSamplers[i] = hMtl.sampler;
         }
