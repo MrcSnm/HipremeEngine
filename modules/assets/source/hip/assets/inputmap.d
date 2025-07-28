@@ -141,7 +141,7 @@ class HipInputMap : HipAsset, IHipInputMap
     override bool isReady() const { return inputMapping !is null; }
     override void onDispose() {}
 
-    @ExportD("Mem") static IHipInputMap parseInputMap(const ubyte[] file, string fileName, ubyte id = 0)
+    static HipInputMap parseInputMap(const ubyte[] file, string fileName, ubyte id = 0)
     {
         import hip.util.exception;
         HipInputMap ret = new HipInputMap();

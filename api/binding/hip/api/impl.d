@@ -23,7 +23,7 @@ public import hip.api.view.scene;
 public import hip.api.filesystem.hipfs;
 
 //Audio
-public import hip.api.audio;
+public import hip.api.audio.audio_binding;
 
 
 //Game

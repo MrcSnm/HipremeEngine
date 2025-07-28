@@ -125,7 +125,6 @@ class HipInputListener : IHipInputListener
 
         if(mouse.getDeltaPosition().magSquare != 0)
         {
-            import hip.api.input.inputmap;
             import hip.api.input.core;
             import hip.console.log;
             float[2] pos = HipInput.getWorldTouchPosition();
