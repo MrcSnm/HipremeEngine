@@ -17,7 +17,7 @@ import hip.config.renderer;
 import hip.api.renderer.core;
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
-import hip.image;
+import hip.assets.image;
 import hip.math.utils;
 
 
@@ -168,7 +168,7 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
         formatsFromImage(loadedImage, internalFormat, mode, pixels);
         glCall(() => glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, mode, GL_UNSIGNED_BYTE, cast(void*)pixels.ptr));
     }
-    
+
     int getWidth() const {return width;}
     int getHeight() const {return height;}
 

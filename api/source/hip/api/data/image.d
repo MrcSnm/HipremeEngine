@@ -51,3 +51,12 @@ public interface IImage : IImageBase
     ubyte[] convertPalettizedToRGBA() const;
     ubyte[] monochromeToRGBA() const;
 }
+
+
+
+private __gshared extern(System) IHipImageDecoder function(string path) getDecoderFn;
+void setImageDecoderProvider(typeof(getDecoderFn) provider)
+{
+    getDecoderFn = provider;
+}
+IHipImageDecoder getDecoder(string path){return getDecoderFn(path);}

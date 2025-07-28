@@ -16,7 +16,7 @@ module hip.assets.texture;
 import hip.error.handler;
 import hip.assets.texture;
 import hip.math.rect;
-import hip.image;
+import hip.assets.image;
 public import hip.util.data_structures:Array2D;
 public import hip.api.renderer.texture;
 public import hip.api.data.image;
@@ -153,7 +153,7 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         uint frameHeight = t.getHeight() / rows;
         return cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
     }
-    
+
 
     alias setRegion = IHipTextureRegion.setRegion;
     /**
@@ -182,7 +182,7 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         //Top right
         vertices[2] = u2;
         vertices[3] = v1;
-        
+
         //Bot right
         vertices[4] = u2;
         vertices[5] = v2;
@@ -239,5 +239,5 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
     override void onFinishLoading(){}
     override void onDispose(){}
     override bool isReady() const {return texture !is null;}
-    
+
 }

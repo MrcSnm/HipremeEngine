@@ -2,6 +2,7 @@
 module gamescript.entry;
 import hip.api;
 import hip.assets.texture;
+import hip.assets.image;
 
 /**
 *	Call `dub` to generate the DLL, after that, just execute `dub -c run` for starting your project
@@ -34,31 +35,30 @@ class MainScene : AScene, IHipPreloadable
 			}
 		}
 		tex.updatePixels(0, 50, 256, 50, img.pixels[50*256..$]);
-	
+
 	}
 	/** Called every frame */
 	override void update(float dt)
 	{
-		
+
 	}
 	/** Renderer only, may not be called every frame */
 	override void render()
 	{
-		
+
 		drawText("You can start using the D Scripting API Here!", 400, 300, 2.0, HipColor.white,
 			HipTextAlign.center
 		);
 
 		drawTexture(tex, 200, 200);
-	
+
 	}
 	/** Pre destroy */
 	override void dispose()
 	{
-		
+
 	}
 	override void onResize(uint width, uint height){}
 }
 
 mixin HipEngineMain!MainScene;
-	

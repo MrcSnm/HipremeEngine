@@ -47,7 +47,7 @@ public:
 bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) onFailure)
 {
    import hip.font.ttf;
-   import hip.image;
+   import hip.assets.image;
    import hip.image_backend.impl;
    import hip.console.log;
    setImageDecoderProvider(&getDecoder);
@@ -56,10 +56,10 @@ bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) on
 
    if(succeededSteps > 0)
       return false;
-   
+
 
    hiplog("Loading default assets");
-   
+
    auto image = new Image(HIP_DEFAULT_TEXTURE);
    image.loadFromMemory(cast(ubyte[])HipDefaultAssets.textureData, (_)
    {
@@ -67,7 +67,7 @@ bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) on
       HipDefaultAssets._texture = image;
       if(++succeededSteps == ASSETS_TO_LOAD)
          onSuccess();
-   }, 
+   },
    ()
    {
       onFailure("Failed loading default image.");

@@ -17,7 +17,7 @@ static if(HasDirect3D):
 import hip.hiprenderer.backend.d3d.d3drenderer;
 public import hip.api.renderer.texture;
 
-import hip.image;
+import hip.assets.image;
 import directx.d3d11;
 import hip.error.handler;
 
@@ -180,7 +180,7 @@ final class Hip_D3D11_Texture : IHipTexture
             boundTextures[slot] = null;
         }
     }
-    
+
     int getWidth() const {return width;}
     int getHeight() const {return height;}
 

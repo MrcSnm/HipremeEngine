@@ -13,7 +13,6 @@
 				"error": {"path": "../error","version": "*"},
 				"hipengine_api:interfaces": {"path": "../../api", "version": "*"},
 				"assets": {"path": "../assets"},
-				"image": {"path": "../image", "version": "*"},
 				"util": {"path": "../util","version": "*"}
 			},
 			"name": "default",

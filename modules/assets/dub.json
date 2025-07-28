@@ -4,7 +4,6 @@
 	],
 	"dependencies": {
 		"util": {"path": "../util"},
-		"image": {"path": "../image"},
 		"error": {"path": "../error"},
 		"data": {"path": "../data"},
 		"hipengine_api:interfaces": {"path": "../../api/"}

@@ -18,8 +18,7 @@
 		{
 			"name": "bindings",
 			"dependencies": {
-				"hipengine_api:interfaces": "*",
-				"image": {"path": "../modules/image"}
+				"hipengine_api:interfaces": "*"
 			},
 			"configurations": [
 				{"name": "default"},

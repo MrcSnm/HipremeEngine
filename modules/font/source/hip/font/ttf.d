@@ -55,10 +55,10 @@ version(HipArsdFont)
 /**
 *   Check the unicode table: https://unicode-table.com/en/blocks/
 *   There is a lot of character ranges that defines a set of characters in a language, such as:
-*   0000—007F Basic Latin 
-*   0080—00FF Latin-1 Supplement 
-*   0100—017F Latin Extended-A 
-*   0180—024F Latin Extended-B 
+*   0000—007F Basic Latin
+*   0080—00FF Latin-1 Supplement
+*   0100—017F Latin Extended-A
+*   0180—024F Latin Extended-B
 *   Maybe it will prove more useful than having a default charset
 */
 class HipArsd_TTF_Font : HipFont
@@ -113,7 +113,7 @@ class HipArsd_TTF_Font : HipFont
     bool loadTexture(ubyte[] rawImage)
     {
         assert(rawImage !is null, "Must first generate a texture before uploading to GPU");
-        import hip.image;
+        import hip.assets.image;
         import hip.assets.texture;
         import hip.error.handler;
         Image img = new Image();
@@ -130,7 +130,7 @@ class HipArsd_TTF_Font : HipFont
 
     /**
     * This function returns a new font using the same data file, with a new size.
-    * The font data will reference to this same one 
+    * The font data will reference to this same one
     */
     override HipFont getFontWithSize(uint size)
     {
@@ -141,7 +141,7 @@ class HipArsd_TTF_Font : HipFont
             mainInstance.clones~= ret;
         else
             clones~= ret;
-        
+
         if(!ret.loadTexture(ret.generateImage(size, ret._textureWidth, ret._textureHeight)))
             return null;
 
@@ -193,7 +193,7 @@ class HipArsd_TTF_Font : HipFont
 
         //Setting details
         fontScale = scale;
-        
+
         int ascent, descent, lineGap;
         stbtt_GetFontVMetrics(&font.font, &ascent, &descent, &lineGap);
 

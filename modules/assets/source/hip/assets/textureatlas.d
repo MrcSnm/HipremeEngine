@@ -16,7 +16,7 @@ import hip.api.data.asset;
 
 class HipTextureAtlas : HipAsset, IHipTextureAtlas
 {
-    import hip.image;
+    import hip.assets.image;
     string atlasPath;
     string[] texturePaths;
     IHipTexture texture;
@@ -44,8 +44,8 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
             return false;
         foreach(k, ref v; frames)
         {
-            v.region = new HipTextureRegion(texture, 
-                cast(uint)v.frame.x, cast(uint)v.frame.y, 
+            v.region = new HipTextureRegion(texture,
+                cast(uint)v.frame.x, cast(uint)v.frame.y,
                 cast(uint)(v.frame.x + v.frame.width),
                 cast(uint)(v.frame.y + v.frame.height)
             );
@@ -91,7 +91,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
                 ret.frames[a.filename] = a;
             }
         }
-        else 
+        else
         {
             JSONValue frames = json["frames"].object;
             JSONValue meta = json["meta"].object;
@@ -117,7 +117,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
                 );
                 frameRect = f["sourceSize"].object;
                 a.sourceSize = AtlasSize(cast(uint)frameRect["w"].integer, cast(uint)frameRect["h"].integer);
-                ret.frames[frameName] = a;   
+                ret.frames[frameName] = a;
             }
         }
 
@@ -154,7 +154,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     {
         import hip.util.string:splitRange, trim, isNumber;
         import hip.assets.texture;
-        
+
         string toParse = cast(string)data;
 
         HipTextureAtlas atlas = new HipTextureAtlas();
@@ -255,7 +255,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         }
         return atlas;
     }
-    
+
 
     static HipTextureAtlas readAtlas (const ubyte[] data, string atlasPath)
     {
@@ -276,7 +276,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         string format = lines[i++];
         string filter = lines[i++];
         string repeat = lines[i++];
-    
+
         const int offset = i;
 
         for(; i < lines.length-offset; i+= 7)
@@ -296,7 +296,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
             int x = to!int(xy[0..commaIndex]);
             //To account space must increate 2
             int y = to!int(xy[commaIndex+2..$]);
-            
+
             string size = lines[i+3];
                 size = size[size.countUntil(":")+2 .. $];
 
@@ -329,11 +329,11 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         return ret;
     }
 
-    
+
     override void onFinishLoading(){}
     override void onDispose(){}
     override bool isReady() const {return texture !is null && frames.length > 0;}
-    
+
 
     alias frames this;
 }

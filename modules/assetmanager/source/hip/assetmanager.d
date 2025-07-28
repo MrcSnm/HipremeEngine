@@ -46,7 +46,7 @@ mixin template HipAssetsGenerateEnum(string filePath)
 import hip.util.system;
 import hip.concurrency.thread;
 import hip.concurrency.mutex;
-public import hip.image;
+public import hip.assets.image;
 public import hip.audio.clip;
 public import hip.assets.texture;
 public import hip.assets.tilemap;
@@ -60,6 +60,7 @@ public import hip.assets.textureatlas;
 public import hip.util.data_structures;
 public import hip.api.data.font;
 public import hip.api.input.inputmap;
+public import hip.assets.inputmap;
 
 
 
@@ -98,7 +99,7 @@ class HipAssetManager
 
         workerPool = new HipWorkerPool(HIP_ASSETMANAGER_WORKER_POOL);
         typedAssetFactory = [
-            typeid(hip.api.audio.audioclip.IHipAudioClip).toString : (string path, const(ubyte)[] extraData, string f, size_t l)=> new HipAudioLoadTask(path,path, null, extraData, f, l),
+            typeid(IHipAudioClip).toString : (string path, const(ubyte)[] extraData, string f, size_t l)=> new HipAudioLoadTask(path,path, null, extraData, f, l),
             typeid(IHipFont).toString : (string path, const(ubyte)[] extraData, string f, size_t l)
             {
                 import hip.util.path;
@@ -125,6 +126,17 @@ class HipAssetManager
             typeid(IHipTileset).toString :  (string path, const(ubyte)[] extraData, string f, size_t l) => new HipTilesetLoadTask(path,path,null, extraData, f,l),
             typeid(IHipInputMap).toString :  (string path, const(ubyte)[] extraData, string f, size_t l) => new HipInputMapLoadTask(path,path,null, extraData, f,l),
         ];
+
+        typedAssetFactory[typeid(HipAudioClip).toString] = typedAssetFactory[typeid(IHipAudioClip).toString];
+        typedAssetFactory[typeid(HipFont).toString] = typedAssetFactory[typeid(IHipFont).toString];
+        typedAssetFactory[typeid(Image).toString] = typedAssetFactory[typeid(IImage).toString];
+        typedAssetFactory[typeid(HipINI).toString] = typedAssetFactory[typeid(IHipIniFile).toString];
+        typedAssetFactory[typeid(HipJSONC).toString] = typedAssetFactory[typeid(IHipJSONC).toString];
+        typedAssetFactory[typeid(HipTextureAtlas).toString] = typedAssetFactory[typeid(IHipTextureAtlas).toString];
+        typedAssetFactory[typeid(HipTexture).toString] = typedAssetFactory[typeid(IHipTexture).toString];
+        typedAssetFactory[typeid(HipTileset).toString] = typedAssetFactory[typeid(IHipTileset).toString];
+        typedAssetFactory[typeid(HipInputMap).toString] = typedAssetFactory[typeid(IHipInputMap).toString];
+
 
     }
 

@@ -6,7 +6,7 @@ version(ScriptAPI)
 {
     void initGlobalAssets()
     {
-        import hip.image;
+        import hip.api.data.image;
         import hip.api.internal;
         loadClassFunctionPointers!HipGlobalAssetsBinding;
         import hip.api.console;

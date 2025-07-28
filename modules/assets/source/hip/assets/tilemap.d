@@ -3,7 +3,7 @@ public import hip.api.data.tilemap;
 public import hip.api.data.asset;
 import hip.assets.texture;
 import hip.config.opts;
-import hip.image;
+import hip.assets.image;
 import hip.data.json;
 
 class HipTileset : HipAsset, IHipTileset
@@ -19,7 +19,7 @@ class HipTileset : HipAsset, IHipTileset
     string _texturePath; string texturePath() const => _texturePath;
     ///"imageheight" in tiled
     uint  _textureHeight; uint  textureHeight() const => _textureHeight;
-    ///"imagewidth" in tiled 
+    ///"imagewidth" in tiled
     uint  _textureWidth; uint  textureWidth() const => _textureWidth;
     IHipTexture _texture; IHipTexture texture()     => _texture;
     int _margin; int margin() const => _margin;
@@ -52,7 +52,7 @@ class HipTileset : HipAsset, IHipTileset
     //         return Tileset.fromXMLElement(tileset, tsxPath, autoLoadTexture);
     //     }
 
-        
+
     //     static Tileset fromXMLElement(Element tileset, string tsxPath="", bool autoLoadTexture=true)
     //     {
     //         auto image   = tileset.querySelector("image");
@@ -74,7 +74,7 @@ class HipTileset : HipAsset, IHipTileset
 
     //         if(autoLoadTexture)
     //             ret.loadTexture();
-            
+
     //         Element[] tiles = tileset.querySelectorAll("tile");
 
     //         foreach(t; tiles)
@@ -126,7 +126,7 @@ class HipTileset : HipAsset, IHipTileset
     //         layer.tiles.reserve(data.length);
     //         for(int i = 0; i < data.length;i++)
     //             layer.tiles~=to!ushort(data[i]);
-            
+
     //         return layer;
     //     }
 
@@ -202,7 +202,7 @@ class HipTileset : HipAsset, IHipTileset
     //             else
     //             {
     //                 set = Tileset.fromXMLElement(t, ret.getTSXPath("null"));
-    //                 //Using getTSXPath with any string, as it will be replaced later 
+    //                 //Using getTSXPath with any string, as it will be replaced later
     //                 //For the texture path
     //             }
     //             set.firstGid = to!uint(t.getAttribute("firstgid"));
@@ -327,7 +327,7 @@ class HipTileset : HipAsset, IHipTileset
             {
                 Tile tile;
                 tile.id = cast(ushort)currentTile["id"].integer;
-                
+
                 foreach(prop; currentTile["properties"].array)
                 {
                     tile.properties[prop["name"].str] = propFromJSON(prop);
@@ -441,7 +441,7 @@ class HipTileset : HipAsset, IHipTileset
 
         return texture !is null && texture.hasSuccessfullyLoaded();
     }
-    
+
     override void onFinishLoading(){}
     override void onDispose(){}
     override bool isReady() const {return _texture !is null;}
@@ -733,12 +733,12 @@ class HipTilemap : HipAsset, IHipTilemap
                 return false;
         return true;
     }
-    
+
     override void onFinishLoading(){}
     override void onDispose(){}
     override bool isReady() const {return true;}
-    
-    
+
+
 }
 
 private TileProperty propFromJSON(JSONValue v)

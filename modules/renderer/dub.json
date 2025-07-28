@@ -8,7 +8,7 @@
 			"dependencies": {
 				"hipengine_api:interfaces": {"path": "../../api"},
 				"data" : {"path": "../data"},
-				"image" : {"path": "../image"},
+				"assets" : {"path": "../assets"},
 				"image_decoding": {"path": "../image_decoding"},
 				"config": {"path": "../config"},
 				"error": {"path": "../error"},
