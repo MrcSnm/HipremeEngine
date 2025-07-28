@@ -190,15 +190,18 @@ class HipAudioImpl : IHipAudioPlayer
     public bool hasInitializedAudio() => _hasInitializedAudio;
 }
 
-HipAudioImpl HipAudio()
+
+private __gshared HipAudioImpl player;
+void PreInitializeHipAudio()
 {
-    __gshared HipAudioImpl player;
-    if(!player)
-        player = new HipAudioImpl();
-    return player;
+    player = new HipAudioImpl();
+    setIHipAudioPlayer(player);
 }
+
+pragma(inline, true)
+HipAudioImpl HipAudio(){return player;}
 
 export extern(C) IHipAudioPlayer HipAudioPlayerAPI()
 {
-    return HipAudio;
+    return player;
 }

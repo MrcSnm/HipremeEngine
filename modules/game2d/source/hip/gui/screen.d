@@ -27,7 +27,7 @@ class Screen : Group
 
     final void setupEvents()
     {
-        import hip.api:HipInput, HipInputListener, HipMouseButton;
+        import hip.api.input.core:HipInput, HipInputListener, HipMouseButton;
         mouseDownEv = HipInputListener.addTouchListener(HipMouseButton.left, 
         (const AHipButtonMetadata meta)
         {

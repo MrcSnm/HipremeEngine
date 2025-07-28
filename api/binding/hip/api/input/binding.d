@@ -6,6 +6,7 @@ version(DirectCall)
 }
 else version(ScriptAPI)
 {
+    public import hip.api.input.core: HipInput, HipInputListener;
     void initInput()
     {
         import hip.api.internal;

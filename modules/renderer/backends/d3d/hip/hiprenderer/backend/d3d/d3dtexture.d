@@ -131,7 +131,7 @@ final class Hip_D3D11_Texture : IHipTexture
 
     void updatePixels(int x, int y, int width, int height, const(ubyte)[] pixels)
     {
-        switch(usage)
+        final switch(usage)
         {
             case HipResourceUsage.Default:
                 D3D11_BOX dstBox;
@@ -148,7 +148,7 @@ final class Hip_D3D11_Texture : IHipTexture
                 size_t imgWidth = getWidth;
                 size_t startIdx = x + y*imgWidth;
                 size_t copySize = width*height* (stride / imgWidth);
-                res.pData[startIdx..startIdx+copySize] = pixels[0..copySize];
+                res.pData[startIdx..startIdx+copySize] = cast(void[])pixels[0..copySize];
                 _hip_d3d_context.Unmap(texture, 0);
                 break;
             case HipResourceUsage.Immutable:

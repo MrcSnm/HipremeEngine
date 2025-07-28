@@ -106,15 +106,8 @@ pragma(inline, true)
 export extern(System)
 {
    import hip.api.input.core: IHipInput, IHipInputListener;
-   IHipInput HipInputAPI()
-   {
-      return sys.dispatcher;
-   }
-   IHipInputListener HipInputListenerAPI()
-   {
-      return sys.scriptInputListener;
-   }
-
+   IHipInput HipInputAPI(){ return HipInput; }
+   IHipInputListener HipInputListenerAPI(){return HipInputListener;}
    HipFont getDefaultFont()
    {
       return HipDefaultAssets.font;

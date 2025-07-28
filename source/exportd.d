@@ -30,4 +30,5 @@ void referenceExported()
     auto a = &getNetworkInterface;
     auto b = &HipFileSystemAPI;
     auto c = &HipAudioPlayerAPI;
+    auto d = &HipRendererAPI;
 }

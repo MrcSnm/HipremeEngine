@@ -427,12 +427,20 @@ class HipRendererImplementation : IHipRenderer
     }
 }
 
-HipRendererImplementation HipRenderer()
+
+private __gshared HipRendererImplementation impl;
+void PreInitializeHipRenderer()
 {
-    __gshared HipRendererImplementation impl;
-    if(!impl)
-        impl = new HipRendererImplementation();
-    return impl;
+    impl = new HipRendererImplementation();
+    setHipRenderer(impl);
+}
+
+
+pragma(inline, true) HipRendererImplementation HipRenderer(){return impl;}
+
+export extern(System) IHipRenderer HipRendererAPI()
+{
+    return HipRenderer;
 }
 
 void logConfiguration(HipRendererConfig config)

@@ -177,7 +177,8 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 
 	if(isUsingInterpreter)
 		startInterpreter(interpreterEntry.intepreter);
-
+	PreInitializeHipRenderer();
+	PreInitializeHipAudio();
 
 	version(Android)
 	{
@@ -195,7 +196,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	}
 	else
 		HipAudio.initialize(getAudioImplementationForOS);
-	setIHipAudioPlayer(HipAudio);
+
 	version(dll)
 	{
 		import hip.console.log;
@@ -216,7 +217,6 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 		HipFS.absoluteReadText("renderer.conf", confFile); //Ignore return, renderer can handle no conf.
 		HipRenderer.initialize(confFile, "renderer.conf");
 	}
-	setHipRenderer(HipRenderer);
 	loadDefaultAssets((){gameInitialize();}, (err)
 	{
 		loglnError("Could not load default assets! ", err);

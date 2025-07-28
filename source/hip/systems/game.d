@@ -112,6 +112,9 @@ class GameSystem
                 }, HipButtonType.up
             );
         }
+        import hip.api.input.core;
+        setHipInput(dispatcher);
+        setHipInputListener(scriptInputListener);
 
     }
 
