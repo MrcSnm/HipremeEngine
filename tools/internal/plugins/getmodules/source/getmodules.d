@@ -36,16 +36,21 @@ class GetModulePlugin : RedubPlugin
 		string getModulesFile;
 
 		foreach(string inputPath; input.sourcePaths)
-		foreach(DirEntry e; dirEntries(inputPath, "*.d", SpanMode.depth))
 		{
-			string file = e.name;
-			if(getModulesFile != "")
-				getModulesFile~="\n";
-			//Remove .d, change / or \ to .
+			import std.algorithm.searching;
+			if(countUntil(inputPath, "source/gamescript") == -1)
+				continue;
+			foreach(DirEntry e; dirEntries(inputPath, "*.d", SpanMode.depth))
+			{
+				string file = e.name;
+				if(getModulesFile != "")
+					getModulesFile~="\n";
+				//Remove .d, change / or \ to .
 
-			file = relativePath(file, inputPath)[0..$-2];
+				file = relativePath(file, inputPath)[0..$-2];
 
-			getModulesFile~= file.replace('/', '.').replace('\\', '.');
+				getModulesFile~= file.replace('/', '.').replace('\\', '.');
+			}
 		}
 
 		string outDir = dirName(outputPath);

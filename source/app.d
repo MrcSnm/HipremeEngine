@@ -231,7 +231,7 @@ void gameInitialize()
 	import hip.console.log;
 	loglnInfo("Initializing Asset Manager");
 	HipAssetManager.initialize();
-	sys = new GameSystem(FRAME_TIME);
+	hip.global.gamedef.sys = new GameSystem(FRAME_TIME);
 
 	//Initialize 2D context
 	import hip.graphics.g2d;

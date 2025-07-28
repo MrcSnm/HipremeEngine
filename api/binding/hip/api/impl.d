@@ -30,12 +30,11 @@ public import hip.api.audio;
 public import hip.api.systems.timer;
 
 //Input
-public import HipInput = hip.api.input;
+public import hip.api.input.binding;
 public import hip.api.input.button:AutoRemove, HipButtonType;
 public import hip.api.input.keyboard : HipKey;
 public import hip.api.input.gamepad;
 public import hip.api.input.mouse : HipMouseButton;
-alias IHipInputMap = HipInput.IHipInputMap;
 
 //Network
 public import hip.api.net;

@@ -23,6 +23,8 @@ public:
     import hip.api.input.button;
     import hip.api.input.mouse;
     import hip.api.input.gamepad;
+    import hip.api.renderer.viewport;
+    import hip.api.input.core : IHipInput;
 
 
 
@@ -35,7 +37,7 @@ package __gshared HipGamepad[] gamepads;
  *  In the entire engine, there must be only one dispatcher. But it is possible
  *  to create more mouses and keyboards, but it is not being used yet.
  */
-class EventDispatcher
+class EventDispatcher : IHipInput
 {
     ulong frameCount;
     KeyboardHandler keyboard = null;
@@ -198,8 +200,32 @@ class EventDispatcher
     }
 
     ///Public API
-    Vector2 getTouchPosition(uint id = 0){return mouse.getPosition(id);}
-    Vector2 getTouchDeltaPosition(uint id = 0){return mouse.getDeltaPosition(id);}
+    float[2] getTouchPosition(uint id = 0){return cast(float[2])mouse.getPosition(id);}
+    float[2] getTouchDeltaPosition(uint id = 0){return cast(float[2])mouse.getDeltaPosition(id);}
+
+    float[2] getNormallizedTouchPosition(uint id=0) 
+    {
+        import hip.hiprenderer;
+        float[2] ret = cast(float[2])getTouchPosition(id);
+        ret[0]/= HipRenderer.width;
+        ret[1]/= HipRenderer.height;
+        return ret;
+    }
+
+    float[2] getWorldTouchPosition(uint id=0, Viewport vp = null) 
+    {
+        import hip.math.utils:clamp;
+        import hip.api.renderer.core;
+        float[2] ret = cast(float[2])getTouchPosition(id);
+        if(vp is null)
+            vp = HipRenderer.getCurrentViewport();
+
+        ret[0] = clamp(((ret[0] - vp.x) / vp.width) * vp.worldWidth, 0, vp.worldWidth);
+        ret[1] = clamp(((ret[1] - vp.y) / vp.height) * vp.worldHeight, 0, vp.worldHeight);
+        
+
+        return ret;
+    }
     ubyte getMulticlickCount(HipMouseButton btn = HipMouseButton.any, uint id = 0)
     {
         errUpdateOnly("getMulticlickCount");
@@ -225,7 +251,7 @@ class EventDispatcher
         errUpdateOnly("isMouseButtonJustReleased");
         return mouse.isJustReleased(btn);
     }
-    Vector3 getScroll(){return mouse.getScroll();}
+    float[3] getScroll(uint id = 0){return cast(float[3])mouse.getScroll();}
     bool isKeyPressed(char key, uint id = 0){return keyboard.isKeyPressed(key.toUppercase);}
     bool isKeyJustPressed(char key, uint id = 0)
     {
@@ -253,10 +279,10 @@ class EventDispatcher
         if(id >= gamepads.length)return null;
         return gamepads[id];
     }
-    Vector3 getAnalog(HipGamepadAnalogs analog, ubyte id = 0)
+    float[3] getAnalog(HipGamepadAnalogs analog, ubyte id = 0)
     {
-        if(id >= gamepads.length) return Vector3.zero;
-        return gamepads[id].getAnalogState(analog);
+        if(id >= gamepads.length) return cast(float[3])Vector3.zero;
+        return cast(float[3])gamepads[id].getAnalogState(analog);
     }
     bool isGamepadButtonPressed(HipGamepadButton btn, ubyte id = 0)
     {

@@ -27,27 +27,27 @@ class Screen : Group
 
     final void setupEvents()
     {
-        import hip.api:HipInput, HipMouseButton;
-        mouseDownEv = HipInput.addTouchListener(HipMouseButton.left, 
+        import hip.api:HipInput, HipInputListener, HipMouseButton;
+        mouseDownEv = HipInputListener.addTouchListener(HipMouseButton.left, 
         (const AHipButtonMetadata meta)
         {
             handleMouseDown();
         });
 
-        mouseUpEv = HipInput.addTouchListener(HipMouseButton.left,
+        mouseUpEv = HipInputListener.addTouchListener(HipMouseButton.left,
         (const(AHipButtonMetadata) meta)
         {
             stopDragging();
             handleMouseUp();
         }, HipButtonType.up);
 
-        moveEv = HipInput.addTouchMoveListener((int x, int y)
+        moveEv = HipInputListener.addTouchMoveListener((int x, int y)
         {
             handleMouseEnter(x, y);
             startDragging(x, y);
         });
         
-        scrollEv = HipInput.addScrollListener((float[3] scroll)
+        scrollEv = HipInputListener.addScrollListener((float[3] scroll)
         {
             handleScroll(scroll);
         });

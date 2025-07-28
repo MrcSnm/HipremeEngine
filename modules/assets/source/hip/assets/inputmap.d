@@ -4,19 +4,7 @@ import hip.data.jsonc;
 import hip.error.handler;
 import hip.api.input.inputmap;
 import hip.api.data.asset;
-
-//Defined at hip.event.api
-private extern(System)
-{
-    bool isKeyPressed(char key, uint id = 0);
-    bool isKeyJustPressed(char key, uint id = 0);
-    bool isKeyJustReleased(char key, uint id = 0);
-
-    bool isGamepadButtonPressed(HipGamepadButton btn, ubyte id = 0);
-    bool isGamepadButtonJustPressed(HipGamepadButton btn, ubyte id = 0);
-    bool isGamepadButtonJustReleased(HipGamepadButton btn, ubyte id = 0);
-    float[3] getAnalog(HipGamepadAnalogs analog, ubyte id = 0);
-}
+import hip.api.input.core;
 
 private enum Axes : ubyte
 {
@@ -88,9 +76,9 @@ class HipInputMap : HipAsset, IHipInputMap
         Context* c = getAction(actionName);
         if(!c) return 0.0f;
         float greatest = 0;
-        foreach(g; c.btns) if(isGamepadButtonPressed(g, id))
+        foreach(g; c.btns) if(HipInput.isGamepadButtonPressed(g, id))
             greatest = 1.0f;
-        foreach(k; c.keys) if(isKeyPressed(k, id))
+        foreach(k; c.keys) if(HipInput.isKeyPressed(k, id))
             greatest = 1.0f;
         return greatest;
     }
@@ -99,9 +87,9 @@ class HipInputMap : HipAsset, IHipInputMap
         Context* c = getAction(actionName);
         if(!c) return 0.0f;
         float greatest = 0;
-        foreach(g; c.btns) if(isGamepadButtonJustPressed(g, id))
+        foreach(g; c.btns) if(HipInput.isGamepadButtonJustPressed(g, id))
             greatest = 1.0f;
-        foreach(k; c.keys) if(isKeyJustPressed(k, id))
+        foreach(k; c.keys) if(HipInput.isKeyJustPressed(k, id))
             greatest = 1.0f;
         return greatest;
     }
@@ -110,9 +98,9 @@ class HipInputMap : HipAsset, IHipInputMap
         Context* c = getAction(actionName);
         if(!c) return 0.0f;
         float greatest = 0;
-        foreach(g; c.btns) if(isGamepadButtonJustReleased(g, id))
+        foreach(g; c.btns) if(HipInput.isGamepadButtonJustReleased(g, id))
             greatest = 1.0f;
-        foreach(k; c.keys) if(isKeyJustReleased(k, id))
+        foreach(k; c.keys) if(HipInput.isKeyJustReleased(k, id))
             greatest = 1.0f;
         return greatest;
     }
@@ -135,10 +123,10 @@ class HipInputMap : HipAsset, IHipInputMap
             }
             if(ax.axis & Axes.leftStick || ax.axis & Axes.rightStick)
             {
-                ret[i]+= getAnalog((ax.axis & Axes.leftStick) != 0 ? HipGamepadAnalogs.leftStick : HipGamepadAnalogs.rightStick, id)[i];
+                ret[i]+= HipInput.getAnalog((ax.axis & Axes.leftStick) != 0 ? HipGamepadAnalogs.leftStick : HipGamepadAnalogs.rightStick, id)[i];
                 continue;
             }
-            if(isGamepadButtonPressed(ax.btn, id) || isKeyPressed(ax.key, id))
+            if(HipInput.isGamepadButtonPressed(ax.btn, id) || HipInput.isKeyPressed(ax.key, id))
                 ret[i]+= (cast(float)ax.value / 127.0);
         }
         return ret;

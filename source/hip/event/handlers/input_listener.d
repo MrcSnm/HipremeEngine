@@ -2,8 +2,8 @@ module hip.event.handlers.input_listener;
 public import hip.api.input.button;
 public import hip.api.input.keyboard;
 public import hip.api.input.mouse;
+import hip.api.input.core : IHipInputListener;
 import hip.event.dispatcher;
-import hip.event.api;
 import hip.event.handlers.keyboard;
 import hip.event.handlers.mouse;
 import hip.util.string;
@@ -13,7 +13,7 @@ String str(const(HipButton)* btn)
     return String("Button ", btn.id, " ",btn.type, "  [autoremove: ", btn.isAutoRemove, "]");
 }
 
-class HipInputListener
+class HipInputListener : IHipInputListener
 {
     protected HipButton[] touchListeners;
     protected HipButton[] keyboardListeners;
@@ -126,8 +126,9 @@ class HipInputListener
         if(mouse.getDeltaPosition().magSquare != 0)
         {
             import hip.api.input.inputmap;
+            import hip.api.input.core;
             import hip.console.log;
-            float[2] pos = getWorldTouchPosition();
+            float[2] pos = HipInput.getWorldTouchPosition();
             int x = cast(int)pos[0], y = cast(int)pos[1];
             foreach(ref move; moveListeners)
             {

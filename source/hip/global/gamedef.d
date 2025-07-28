@@ -89,8 +89,32 @@ bool loadDefaultAssets(void delegate() onSuccess, void delegate(string cause) on
    return true;
 }
 
+pragma(inline, true)
+{
+   import hip.event.dispatcher;
+   import hip.event.handlers.input_listener;
+   EventDispatcher HipInput()
+   {
+      return sys.dispatcher;
+   }
+   hip.event.handlers.input_listener.HipInputListener HipInputListener()
+   {
+      return sys.scriptInputListener;
+   }
+}
+
 export extern(System)
 {
+   import hip.api.input.core: IHipInput, IHipInputListener;
+   IHipInput HipInputAPI()
+   {
+      return sys.dispatcher;
+   }
+   IHipInputListener HipInputListenerAPI()
+   {
+      return sys.scriptInputListener;
+   }
+
    HipFont getDefaultFont()
    {
       return HipDefaultAssets.font;
@@ -115,4 +139,6 @@ export extern(System)
       // return cast(const)texture;
       return texture;
    }
+
+
 }

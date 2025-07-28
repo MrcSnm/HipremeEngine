@@ -10,7 +10,6 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.systems.game;
-import hip.global.gamedef;
 import hip.audio;
 import hip.view;
 import hip.error.handler;
