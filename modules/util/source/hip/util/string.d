@@ -342,6 +342,7 @@ struct StringBuffer(size_t capacity)
     private char[capacity] chars;
     private size_t _length;
 
+    pragma(inline, true)
     size_t length() @safe pure const nothrow { return _length; }
 
     /**
@@ -364,10 +365,7 @@ struct StringBuffer(size_t capacity)
 
     void preAllocate(size_t howMuch)
     {
-        if(length + howMuch > capacity)
-        {
-            assert(false, "Can't preallocate more to string buffer.");
-        }
+        assert(length + howMuch < capacity, "Can't preallocate more to string buffer.");
     }
     void put(char c){chars[_length++] = c;}
     void put(const(char)[] s){chars[_length.._length+s.length] = s[]; _length+= s.length;}
@@ -383,19 +381,19 @@ struct StringBuffer(size_t capacity)
         return ret;
     }
 
+    pragma(inline, true)
     ref char opIndex(size_t index)
     {
         return chars[index];
     }
 
-    auto opOpAssign(string op, T)(T value)
+    void opOpAssign(string op, T)(T value)
     if(op == "~")
     {
         static if(is(T == char) || is(T == const(char)[]) || is(T == immutable(char*)) || is(T == String))
             put(value);
         else
             toStringRange(this, value);
-        return this;
     }
     void clear(){_length = 0;}
     bool opCast(T : bool)() const{return _length != 0;}
@@ -497,7 +495,7 @@ pure dstring toUTF32(string encoded)
     return decoded;
 }
 
-pure TString replaceAll(TChar, TString = TChar[])(TString str, TChar what, TString replaceWith = "") @trusted
+pure string replaceAll(string str, char what, string replaceWith = "") @trusted nothrow
 {
     if(replaceWith.length == 1)
     {
@@ -524,7 +522,7 @@ pure TString replaceAll(TChar, TString = TChar[])(TString str, TChar what, TStri
     }
 }
 
-pure TString replaceAll(TString)(TString str, TString what, TString replaceWith = "")
+pure string replaceAll(string str, string what, string replaceWith = "")
 {
     char[] ret;
     int last;
@@ -552,7 +550,7 @@ pure TString replaceAll(TString)(TString str, TString what, TString replaceWith 
     ret.length+= copyLength;
     ret[currLength..$] = str[last..$];
 
-    return cast(TString)ret;
+    return cast(string)ret;
 }
 
 pure int indexOf(String str, const char[] toFind, int startIndex = 0) nothrow @nogc @safe
@@ -580,28 +578,23 @@ pure int indexOf(const char[] str, const char[] toFind, int startIndex = 0) noth
     return -1;
 }
 
-pure bool startsWith(TString)(inout TString str, inout TString withWhat) nothrow @nogc @safe
+pure bool startsWith(inout string str, inout string withWhat) nothrow @nogc @safe
 {
     if(withWhat.length > str.length)
         return false;
-    int index = 0;
-    while(index < withWhat.length && str[index] == withWhat[index])
-        index++;
-    return index == withWhat.length;
+    return str[0..withWhat.length] == withWhat;
 }
 
 /**
 *   Same thing as startsWith, but returns the part after the afterWhat
 */
-pure string after(TString)(TString str, immutable TString afterWhat) nothrow @nogc @safe
+pure string after(string str, const string afterWhat) nothrow @nogc @safe
 {
-    bool has = str.startsWith(afterWhat);
-    if(!has)
-        return null;
+    if(afterWhat.length > str.length || str[0..afterWhat.length] != afterWhat) return null;
     return str[afterWhat.length..$];
 }
 
-pure inout(TString) findAfter(TString)(inout TString str, inout TString afterWhat, int startIndex = 0) nothrow @nogc @safe
+pure inout(string) findAfter(inout string str, inout string afterWhat, int startIndex = 0) nothrow @nogc @safe
 {
     int afterWhatIndex = str.indexOf(afterWhat, startIndex);
     if(afterWhatIndex == -1)
@@ -616,7 +609,7 @@ string test = `string containing a "thing"`;
 writeln(test.between(`"`, `"`)); //thing
 ```
 */
-pure inout(TString) between(TString)(inout TString str, inout TString left, inout TString right, int start = 0) nothrow @nogc @safe
+pure inout(string) between(inout string str, inout string left, inout string right, int start = 0) nothrow @nogc @safe
 {
     int leftIndex = str.indexOf(left, start);
     if(leftIndex == -1) return null;
@@ -626,7 +619,7 @@ pure inout(TString) between(TString)(inout TString str, inout TString left, inou
     return str[leftIndex+1..rightIndex];
 }
 
-pure int indexOf(StrInput)(const StrInput str, char ch, int startIndex = 0) nothrow @nogc @trusted
+pure int indexOf(const string str, char ch, int startIndex = 0) nothrow @nogc @trusted
 {
     for(; startIndex < str.length; startIndex++)
         if(str[startIndex] == ch)
@@ -635,15 +628,15 @@ pure int indexOf(StrInput)(const StrInput str, char ch, int startIndex = 0) noth
 }
 
 
-TString repeat(TString)(TString str, size_t repeatQuant)
+string repeat(string str, size_t repeatQuant)
 {
-    TString ret;
+    string ret;
     for(int i = 0; i < repeatQuant; i++)
         ret~= str;
     return ret;
 }
 
-pure int count(TString)(const TString str, const TString countWhat) nothrow @nogc @safe
+pure int count(const string str, const string countWhat) nothrow @nogc @safe
 {
     int ret = 0;
     int index = 0;
@@ -659,7 +652,7 @@ pure int count(TString)(const TString str, const TString countWhat) nothrow @nog
 
 alias countUntil = indexOf;
 
-int lastIndexOf(TString)(inout TString str,inout TString toFind, int startIndex = -1) pure nothrow @nogc @safe
+int lastIndexOf(const string str, const string toFind, int startIndex = -1) pure nothrow @nogc @safe
 {
     if(startIndex == -1) startIndex = cast(int)(str.length)-1;
 
@@ -681,10 +674,9 @@ int lastIndexOf(TString)(inout TString str,inout TString toFind, int startIndex 
     }
     return -1;
 }
-int lastIndexOf(TChar)(TChar[] str, TChar ch, int startIndex = -1) pure nothrow @nogc @trusted
+int lastIndexOf(string str, char ch, int startIndex = -1) pure nothrow @nogc @trusted
 {
-    TChar[1] temp = [ch];
-    return lastIndexOf(str, cast(TChar[])temp, startIndex);
+    return lastIndexOf(str, cast(string)(&ch)[0..1], startIndex);
 }
 
 T toDefault(T)(string s, T defaultValue = T.init)
@@ -710,9 +702,7 @@ const(char)* toStringz(string str) pure nothrow
 }
 pragma(inline, true) char toLowerCase(char c) pure nothrow @safe @nogc 
 {
-    if(c < 'A' || c > 'Z')
-        return c;
-    return cast(char)(c + ('a' - 'A'));
+    return (c < 'A' || c > 'Z') ? c : cast(char)(c + ('a' - 'A'));
 }
 
 string toLowerCase(string str)
@@ -738,15 +728,14 @@ string toUpper(string str) pure nothrow @safe
     return ret;
 }
 
-TChar[][] split(TChar)(TChar[] str, TChar separator) pure nothrow
+string[] split(string str, char separator) pure nothrow
 {
-    TChar[1] sep = [separator];
-    return split(str, cast(TChar[])sep);
+    return split(str, cast(string)(&separator)[0..1]);
 }
 
-TString[] split(TString)(TString str, TString separator) pure nothrow @safe
+string[] split(string str, string separator) pure nothrow @safe
 {
-    TString[] ret;
+    string[] ret;
     int last = 0;
     int index = 0;
     do
@@ -809,7 +798,7 @@ auto splitRange(TString, TStrSep)(TString str, TStrSep separator) pure nothrow @
 }
 
 
-bool isNumber(TString)(const TString str) nothrow @nogc
+bool isNumber(const string str) nothrow @nogc
 {
     if(!str)
         return false;
@@ -835,6 +824,7 @@ bool isNumber(TString)(const TString str) nothrow @nogc
     return true;
 }
 
+pragma(inline, true)
 string toString(string s) nothrow @nogc pure @safe { return s; }
 
 /**
@@ -846,7 +836,7 @@ string toString(string s) nothrow @nogc pure @safe { return s; }
  *   decimalPlaces = How many decimal places it must contain.
  * Returns: A slice which removes places after the decimal case if there exists more than it should
  */
-TString limitDecimalPlaces(TString)(TString input, ubyte decimalPlaces) @nogc nothrow
+string limitDecimalPlaces(string input, ubyte decimalPlaces) @nogc nothrow
 {
     string str = input.toString;
     if(!isNumber(str))
@@ -915,46 +905,22 @@ pragma(inline, true) bool isWhitespace(TChar)(TChar c) @nogc nothrow pure @safe
     return (c == ' ' || c == '\t' || c.isEndOfLine);
 }
 
-TString[] pathSplliter(TString)(TString str)
+string trim(string str) pure nothrow @safe @nogc
 {
-    TString[] ret;
-
-    TString curr;
-    for(uint i = 0; i < str.length; i++)
-        if(str[i] == '/' || str[i] == '\\')
-        {
-            ret~= curr;
-            curr = null;
-        }
-        else
-            curr~= str[i];
-    ret~= curr;
-    return ret;
-}
-
-
-TString trim(TString)(TString str) pure nothrow @safe @nogc
-{
-    if(str.length == 0)
-        return str;
-    
     size_t start = 0;
-    size_t end = str.length - 1;
-    while(start < str.length && str[start].isWhitespace)
+    size_t end = str.length;
+    while(start < end && str[start].isWhitespace)
         start++;
-   
-    while(end > 0 && str[end].isWhitespace)
+    while(end > start && str[end-1].isWhitespace)
         end--;
-    
-    return str[start..end+1];
+    return str[start..end];
 }
 
-TString join(TString)(TString[] args, TString separator = "")
+string join(string[] args, string separator = "")
 {
-	if(args.length == 0) return "";
-	TString ret = args[0];
+	string ret = args.length > 0 ? args[0] : null;
 	for(int i = 1; i < args.length; i++)
-		ret~=separator~args[i];
+		ret~= separator~args[i];
 	return ret;
 }
 

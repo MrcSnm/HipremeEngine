@@ -193,11 +193,9 @@ class HipEventQueue : EventQueue
     /** External API used for getting the input events inside an internal queue. This way the API can remains the same*/
     static void post(T)(uint id, EventType type, T ev)
     {
-        import hip.util.format;
+        import hip.util.conv:to;
         if(id >= controllers.length)
-        {
-            ErrorHandler.assertExit(false, format!("Input controller out of range!(ID: %s, Type: %s)")(id, type));
-        }
+            ErrorHandler.assertExit(false, "Input controller out of range!(ID: "~id.to!string~", Type: "~ type.to!string ~ ")");
         controllers[id].post(cast(ubyte)type, ev);
     }
 
@@ -209,30 +207,26 @@ class HipEventQueue : EventQueue
             while(controllers.length < id+1)
                 newController();
         }
-        import hip.util.format;
+        import hip.util.conv:to;
         if(id >= controllers.length)
-        {
-            ErrorHandler.assertExit(false, format!("Input controller out of range!(ID: %s, Type: %s)")(id, type));
-        }
+            ErrorHandler.assertExit(false, "Input controller out of range!(ID: "~id.to!string~", Type: "~ type.to!string ~ ")");
         controllers[id].post(cast(ubyte)type, ev);
     }
 
     /** Polls an input event for a specified controller */
     static InputEvent* poll(uint id)
     {
-        import hip.util.format;
+        import hip.util.conv:to;
         if(id >= controllers.length)
-        {
-            ErrorHandler.assertExit(false, format!("Input controller out of range!(ID: %s)")(id));
-        }
+            ErrorHandler.assertExit(false, "Input controller out of range!(ID: "~id.to!string~")");
         return controllers[id].poll();
     }
     static void clear(uint id)
     {
-        import hip.util.format;
+        import hip.util.conv:to;
         if(id >= controllers.length)
         {
-            ErrorHandler.assertExit(false, format!("Input controller out of range!(ID: %s)")(id));
+            ErrorHandler.assertExit(false, "Input controller out of range!(ID: "~id.to!string~")");
         }
         controllers[id].clear();
     }

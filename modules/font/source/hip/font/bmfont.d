@@ -26,13 +26,13 @@ class HipBitmapFont : HipFont
         import hip.util.string;
         this.atlasPath = atlasPath;
 
-        scope int advanceSpace(string data, int i)
+        static int advanceSpace(string data, int i)
         {
             while(i < data.length && (data[i].isWhitespace || data[i] == '='))
                 i++;
             return i;
         }
-        scope int nextToken(string data, int i)
+        static int nextToken(string data, int i)
         {
             i = advanceSpace(data, i);
             if(i >= data.length)
@@ -62,7 +62,7 @@ class HipBitmapFont : HipFont
             return i;
         }
 
-        scope int getNextInt(string data, ref int i)
+        static int getNextInt(string data, ref int i)
         {
             import hip.util.conv;
             int start = advanceSpace(data, i);
@@ -73,7 +73,8 @@ class HipBitmapFont : HipFont
             }
             return i;
         }
-        scope string getNextString(string data, ref int i)
+
+        static string getNextString(string data, ref int i)
         {
             int start = advanceSpace(data, i);
             i = nextToken(data, start);
@@ -181,39 +182,42 @@ class HipBitmapFont : HipFont
                 }
                 case Context.common:
                 {
+                    int tempIndex = index;
+                    int next = getNextInt(data, index);
                     switch(key)
                     {
                         case "lineHeight":
-                            lineHeight = getNextInt(data, index);
+                            lineHeight = next;
                             break;
                         case "base":
-                            base = getNextInt(data, index);
+                            base = next;
                             break;
                         case "scaleW":
-                            scaleW = getNextInt(data, index);
+                            scaleW = next;
                             break;
                         case "scaleH":
-                            scaleH = getNextInt(data, index);
+                            scaleH = next;
                             break;
                         case "pages":
-                            pages = getNextInt(data, index);
+                            pages = next;
                             break;
                         case "packed":
-                            packed = getNextInt(data, index);
+                            packed = next;
                             break;
                         case "alphaChnl":
-                            alpha = getNextInt(data, index);
+                            alpha = next;
                             break;
                         case "redChnl":
-                            red = getNextInt(data, index);
+                            red = next;
                             break;
                         case "greenChnl":
-                            green = getNextInt(data, index);
+                            green = next;
                             break;
                         case"blueChnl":
-                            blue = getNextInt(data, index);
+                            blue = next;
                             break;
                         default:
+                            index = tempIndex;
                             goto checkUnknown;
                     }
                     break;
@@ -238,44 +242,21 @@ class HipBitmapFont : HipFont
                     //Advance "count"
                     charactersCount = count = getNextInt(data, index);
                     uint maxWidth = 0;
+
+
                     for(int i = 0; i < count; i++)
                     {
                         HipFontChar ch;
+                        int*[10] fields = [cast(int*)&ch.id, &ch.x, &ch.y, &ch.width, &ch.height, &ch.xoffset, &ch.yoffset, &ch.xadvance, &ch.page, &ch.chnl];
                         //Advance "char"
                         index = nextToken(data, index);
-                        //id
-                        index = nextToken(data, index);
-                        ch.id = getNextInt(data, index);
-                        // x
-                        index = nextToken(data, index);
-                        ch.x = getNextInt(data, index);
-                        // y
-                        index = nextToken(data, index);
-                        ch.y = getNextInt(data, index);
-                        // width
-                        index = nextToken(data, index);
-                        ch.width = getNextInt(data, index);
+                        for(int fIndex = 0; fIndex < fields.length; fIndex++)
+                        {
+                            index = nextToken(data, index);
+                            *fields[fIndex] = getNextInt(data, index);
+                        }
                         if(ch.width > maxWidth)
                             maxWidth = ch.width;
-                        // height
-                        index = nextToken(data, index);
-                        ch.height = getNextInt(data, index);
-                        // xoffset
-                        index = nextToken(data, index);
-                        ch.xoffset = getNextInt(data, index);
-                        // yoffset
-                        index = nextToken(data, index);
-                        ch.yoffset = getNextInt(data, index);
-                        // xadvance
-                        index = nextToken(data, index);
-                        ch.xadvance = getNextInt(data, index);
-                        // page
-                        index = nextToken(data, index);
-                        ch.page = getNextInt(data, index);
-                        // chnl
-                        index = nextToken(data, index);
-                        ch.chnl = getNextInt(data, index);
-                        
                         characters[ch.id] = ch;
                     }
                     auto space = ' ' in characters;
@@ -296,20 +277,15 @@ class HipBitmapFont : HipFont
                     {
                         //Advance "kerning "
                         index = nextToken(data, index);
-
-                        //first
-                        index = nextToken(data, index);
-                        int first = getNextInt(data, index);
-                        //second
-                        index = nextToken(data, index);
-                        int second = getNextInt(data, index);
-                        //amount
-                        index = nextToken(data, index);
-                        int amount = getNextInt(data, index);
-
-                        if((first in kerning) is null)
-                            kerning[first] = HipCharKerning.init;
-                        kerning[first][second] = amount;
+                        int[3] values = void; //first, second, amount
+                        for(int fIndex = 0; fIndex < 3; fIndex++)
+                        {
+                            index = nextToken(data, index);
+                            values[fIndex] = getNextInt(data, index);
+                        }
+                        if((values[0] in kerning) is null)
+                            kerning[values[0]] = HipCharKerning.init;
+                        kerning[values[0]][values[1]] = values[2];
                     }
                     break;
                 }

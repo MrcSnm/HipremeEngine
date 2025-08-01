@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.util.array;
 private import hip.util.conv : to;
+import std.traits : hasElaborateCopyConstructor;
 version(WebAssembly) version = UseCustomRT;
 version(PSVita) version = UseCustomRT;
 
@@ -138,8 +139,18 @@ bool remove(T)(ref T[] arr, T val)
     {
         if(arr[i] == val)
         {
-            for(size_t z = 0; z+i < cast(int)arr.length-1; z++)
-                arr[z+i] = arr[z+i+1];
+            static if(hasElaborateCopyConstructor!T)
+            {
+                for(size_t z = 0; z+i < cast(int)arr.length-1; z++)
+                    arr[z+i] = arr[z+i+1];
+            }
+            else
+            {
+                import core.stdc.string;
+                size_t moveElements = arr.length - i - 1;
+                if(moveElements)
+                    memmove(&arr[i], &arr[i+1], moveElements * T.sizeof);
+            }
             arr.length--;
             return true;
         }
@@ -153,8 +164,18 @@ bool remove(T)(ref T[] arr, const(T)* val)
     {
         if(&arr[i] == val)
         {
-            for(size_t z = 0; z+i < cast(int)arr.length-1; z++)
-                arr[z+i] = arr[z+i+1];
+            static if(hasElaborateCopyConstructor!T)
+            {
+                for(size_t z = 0; z+i < cast(int)arr.length-1; z++)
+                    arr[z+i] = arr[z+i+1];
+            }
+            else
+            {
+                import core.stdc.string;
+                size_t moveElements = arr.length - i - 1;
+                if(moveElements)
+                    memmove(&arr[i], &arr[i+1], moveElements * T.sizeof);
+            }
             arr.length--;
             return true;
         }
