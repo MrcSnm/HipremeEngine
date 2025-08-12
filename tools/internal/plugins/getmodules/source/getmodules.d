@@ -27,7 +27,6 @@ class GetModulePlugin : RedubPlugin
 		if(args.length != 1)
 			return status = RedubPluginStatus(RedubPluginExitCode.error, "Usage: \"gemodules\": [\"outputFileName\"]");
 		string outputPath = args[0];
-
 		if(exists(outputPath) && isDir(outputPath))
 			return status = RedubPluginStatus(RedubPluginExitCode.error, "Invalid output path '"~outputPath~"', the output path is a directory");
 		if(outputPath.length == 0)
@@ -38,18 +37,17 @@ class GetModulePlugin : RedubPlugin
 		foreach(string inputPath; input.sourcePaths)
 		{
 			import std.algorithm.searching;
-			if(countUntil(inputPath, "source/gamescript") == -1)
-				continue;
 			foreach(DirEntry e; dirEntries(inputPath, "*.d", SpanMode.depth))
 			{
+				if(countUntil(e.name, "gamescript") == -1)
+					continue;
 				string file = e.name;
 				if(getModulesFile != "")
 					getModulesFile~="\n";
 				//Remove .d, change / or \ to .
 
 				file = relativePath(file, inputPath)[0..$-2];
-
-				getModulesFile~= file.replace('/', '.').replace('\\', '.');
+				getModulesFile~= file.replace(dirSeparator[0], '.');
 			}
 		}
 

@@ -4,9 +4,10 @@
 	],
 	"targetType": "staticLibrary",
 	"dependencies": {
-		"util": {"path": "../util", "version": "*"},
-		"math": {"path": "../math", "version": "*"},
-		"hipengine_api": {"path": "../../api", "version": "*"}
+		"util": {"path": "../util"},
+		"math": {"path": "../math"},
+		"assets": {"path": "../assets"},
+		"hipengine_api": {"path": "../../api"}
 	},
 	"configurations": 
 	[

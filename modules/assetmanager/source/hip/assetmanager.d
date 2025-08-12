@@ -213,11 +213,6 @@ class HipAssetManager
         //? Maybe it is not actually needed, as it can be handled by version(HipConcurrency)
         return workerPool.pushTask(taskName, loadFn, onFinish, onMainThread);
     }
-
-    @ExportD static IHipTextureRegion createTextureRegion(IHipTexture texture, float u1 = 0.0, float v1 = 0.0, float u2 = 1.0, float v2 = 1.0)
-    {
-        return new HipTextureRegion(texture, u1, v1, u2, v2);
-    }
     @ExportD static void registerAsset(TypeInfo tID, IHipAssetLoadTask delegate(string path, const(ubyte)[] extraData, string file, size_t line) assetFactory)
     {
         if(tID.toString in typedAssetFactory)

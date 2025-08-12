@@ -29,12 +29,6 @@ version(ScriptAPI)
 
             ///Gets how many assets there is to load.
             int function() getAssetsToLoadCount;
-
-            /** 
-            * Used for manually creating texture regions. This is used by the game code abstraction.
-            */
-            IHipTextureRegion function(IHipTexture texture, float u1 = 0, float v1 = 0, float u2 = 1, float v2 = 1) createTextureRegion;
-            
             /** 
             * Used for creating procedurally generated Tilemap:
             ```d

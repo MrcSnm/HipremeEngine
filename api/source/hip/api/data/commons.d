@@ -253,9 +253,11 @@ mixin template ForeachAssetInClass(T, alias foreachAsset)
                 static if(assetUDA.path != null)
                 {
                     const(ubyte)[] extra;
-                    const v = assetUDA.extra;
                     static if(__traits(hasMember, assetUDA, "extra"))
+                    {
+                        const v = assetUDA.extra;
                         extra = (cast(const(ubyte*))&v)[0..typeof(v).sizeof];
+                    }
                     static if(__traits(isTemplate, foreachAsset))
                         foreachAsset!(type, theMember)(assetUDA.path, extra);
                     else

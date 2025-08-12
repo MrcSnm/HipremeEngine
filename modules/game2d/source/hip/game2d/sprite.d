@@ -16,6 +16,7 @@ public import hip.api.data.commons;
 import hip.math.vector;
 import hip.api.renderer.shaders.spritebatch;
 import hip.api.data.textureatlas;
+import hip.assets.texture;
 
 /**
 *   Encapsulates bunch of sprites to hold a contiguous list of vertices.
@@ -152,7 +153,7 @@ class HipSprite
     void setTexture(IHipTexture texture)
     {
         import hip.api;
-        this.texture = HipAssetManager.createTextureRegion(texture);
+        this.texture = new HipTextureRegion(texture);
         width  = texture.getWidth;
         height = texture.getHeight;
         setRegion(this.texture.getRegion());

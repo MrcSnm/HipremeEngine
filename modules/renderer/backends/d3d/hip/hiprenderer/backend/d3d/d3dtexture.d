@@ -126,7 +126,7 @@ final class Hip_D3D11_Texture : IHipTexture
         _hip_d3d_device.CreateShaderResourceView(texture, cast(D3D11_SHADER_RESOURCE_VIEW_DESC*)null, &resource);
         updateSamplerState();
         bind();
-        return false;
+        return texture !is null;
     }
 
     void updatePixels(int x, int y, int width, int height, const(ubyte)[] pixels)
