@@ -114,7 +114,7 @@ struct String
             else
             {
                 toStringRange(rcStringBuffer, value);
-                chs = rcStringBuffer.toString();
+                chs = cast(char[])rcStringBuffer.toString();
             }
             if(!updateBorrowed(chs.length) && chs.length + this.length >= this._capacity) //New size is greater than capacity
                 resize(cast(uint)((chs.length + this.length)*1.5));
@@ -357,7 +357,7 @@ struct StringBuffer(size_t capacity)
 
     static auto opCall(Args...)(Args args)
     {
-        auto ret = typeof(this).get();
+        auto ret = StringBuffer!(capacity).get();
         static foreach(a; args)
             ret~= a;
         return ret;
@@ -390,7 +390,7 @@ struct StringBuffer(size_t capacity)
     void opOpAssign(string op, T)(T value)
     if(op == "~")
     {
-        static if(is(T == char) || is(T == const(char)[]) || is(T == immutable(char*)) || is(T == String))
+        static if(is(T == char) || is(T : const(char)[]) || is(T == immutable(char*)) || is(T == String))
             put(value);
         else
             toStringRange(this, value);

@@ -82,7 +82,7 @@ void drawGCStats(int x = 0, int y = -1)
             "\nCollection Time:", timeOnCollection.toString,
             "\nCollections Count: ", prof.numCollections,
         );
-        drawText(str.toString, x, y, 1.0,  HipColor(0, 50, 0), HipTextAlign.botLeft);
+        drawText(str.toString, x, y, 1.0,  HipColor(0, 0, 0, 150), HipTextAlign.botLeft);
     }
 }
 

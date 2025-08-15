@@ -135,6 +135,12 @@ class HipTextRenderer : IHipBatch
     {
         import hip.api.graphics.text;
         int vI = quadsCount*4; //vertex buffer index
+        if(vI + str.length * 4 > vertices.length)
+        {
+            flush;
+            vI = 0;
+        }
+
         vI+= putTextVertices(font, (cast(HipTextRendererVertexAPI[])vertices)[vI..$], str, x, y, managedDepth, scale, align_, bounds, wordWrap, shouldRenderSpace);
         quadsCount = vI/4;
     }

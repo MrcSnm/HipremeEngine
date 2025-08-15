@@ -309,10 +309,14 @@ class HipSpriteBatch : IHipBatch
             spritePos = getBoundsFromRotation(x,y,z,width,height,rotation,scaleX,scaleY);
 
 
-        output[0] = HipSpriteVertex(spritePos[0], color, HipTextureRegion.defaultVerticesV[0], slot);
-        output[1] = HipSpriteVertex(spritePos[1], color, HipTextureRegion.defaultVerticesV[1], slot);
-        output[2] = HipSpriteVertex(spritePos[2], color, HipTextureRegion.defaultVerticesV[2], slot);
-        output[3] = HipSpriteVertex(spritePos[3], color, HipTextureRegion.defaultVerticesV[3], slot);
+        for(size_t i = 0; i < 4; i++)
+        {
+            output[i].vTexST = HipTextureRegion.defaultVerticesV[i];
+            output[i].vColor = color;
+            output[i].vPosition = spritePos[i];
+            static if(!GLMaxOneBoundTexture)
+                output[i].vTexID = slot;
+        }
     }
 
     static void getTextureRegionVertices(HipSpriteVertex[] output, int slot, IHipTextureRegion reg,

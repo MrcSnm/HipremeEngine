@@ -1,23 +1,18 @@
 module getmodules;
 import redub.plugin.api;
-
-
 class GetModulePlugin : RedubPlugin
 {
-
-    void preGenerate()
-    {
-
-    }
-
-    void postGenerate()
-    {
-
-    }
+    void preGenerate(){}
+    void postGenerate(){}
 	/**
-	* Simple utility file to get the source files used for a game project in Hipreme Engine.
-	* This utility may be replaced in the future to prefer dub describe --data=source-files
-	*/
+	 * Utility to generate a list of the modules found in all sourcePaths from the current dependency.
+	 * Use it with:
+	 ```json
+	 "preBuildPlugins": {
+	 	"getmodules": "ct_assets/game_modules.txt"
+	 }
+	 ```
+	 */
     extern(C) ref RedubPluginStatus preBuild(RedubPluginData input, out RedubPluginData output, const ref string[] args, ref return RedubPluginStatus status)
     {
 		import std.file;
@@ -25,7 +20,7 @@ class GetModulePlugin : RedubPlugin
 		import std.array:replace;
 
 		if(args.length != 1)
-			return status = RedubPluginStatus(RedubPluginExitCode.error, "Usage: \"gemodules\": [\"outputFileName\"]");
+			return status = RedubPluginStatus(RedubPluginExitCode.error, "Usage: \"getmodules\": [\"outputFileName\"]");
 		string outputPath = args[0];
 		if(exists(outputPath) && isDir(outputPath))
 			return status = RedubPluginStatus(RedubPluginExitCode.error, "Invalid output path '"~outputPath~"', the output path is a directory");
@@ -50,7 +45,6 @@ class GetModulePlugin : RedubPlugin
 				getModulesFile~= file.replace(dirSeparator[0], '.');
 			}
 		}
-
 		string outDir = dirName(outputPath);
 		if(!std.file.exists(outDir))
 			std.file.mkdirRecurse(outDir);
@@ -58,11 +52,6 @@ class GetModulePlugin : RedubPlugin
 		std.file.write(outputPath, getModulesFile);
 		return status = RedubPluginStatus(RedubPluginExitCode.success, "getModule plugin generated file "~outputPath);
     }
-
-    void postBuild()
-    {
-
-    }
+    void postBuild(){}
 }
-
 mixin PluginEntrypoint!(GetModulePlugin);
