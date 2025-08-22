@@ -829,7 +829,7 @@ void updateEngineFile()
 }
 void updateConfigFile()
 {
-	if(!("defaultProject" in engineConfig))
+	if(!("defaultProject" in engineConfig) && "gamePath" in configs)
 	{
 		engineConfig["defaultProject"] = configs["gamePath"].str;
 		updateEngineFile();

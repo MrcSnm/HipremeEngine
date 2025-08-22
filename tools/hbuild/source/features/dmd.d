@@ -11,6 +11,7 @@ bool installDmd(
 )
 {
     import std.system;
+    import std.path;
 
     string sys;
     string bin = "bin";
@@ -27,7 +28,7 @@ bool installDmd(
     makeFileExecutable(buildNormalizedPath(binPath, "rdmd"));
 
     configs["dmdVersion"] = ver.toString;
-    configs["dmdPath"] = binPath;
+    configs["dmdPath"] = buildNormalizedPath(std.file.getcwd, "D", "dmd2", sys, bin);
     updateConfigFile();
     return true;
 }
@@ -39,7 +40,7 @@ void initialize()
     DMDFeature = Feature(
         "DMD",
         "Digital Mars D Compiler. Used for fast iteration development", 
-        ExistenceChecker(["dmdPath"], ["dmd"]),
+        ExistenceChecker(["dmdPath"]),
         Installation([Download(
             DownloadURL(
                 windows: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.windows.7z",
