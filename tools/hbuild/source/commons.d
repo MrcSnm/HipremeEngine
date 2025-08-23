@@ -1053,7 +1053,7 @@ int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, strin
 void inParallel(scope void delegate()[] args...)
 {
 	import std.parallelism;
-	foreach(action; parallel(args, 1))
+	foreach(action; parallel(args))
 		action();
 
 }
