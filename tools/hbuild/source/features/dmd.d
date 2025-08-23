@@ -53,7 +53,7 @@ void initialize()
         {
             addToPath(installPath.dirName);
         },
-        VersionRange.parse("2.105.0", "2.106.0")
+        VersionRange.parse("2.105.0", "2.110.0")
     );
 }
 void start()
