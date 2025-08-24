@@ -278,8 +278,9 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 		isFirst = false;
 		oldChoice = selectedChoice;
 
+		CheckInput:
 		size_t choice = input.getch;
-		CheckInput: switch(choice)
+		switch(choice)
 		{
 			case 'w', 'W', ArrowUp:
 				selectedChoice = (selectedChoice + choices.length - 1) % choices.length;
@@ -294,7 +295,8 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 			case '\n':
 				exit = true;
 				break;
-			default: goto CheckInput;
+			default:
+				goto CheckInput;
 		}
 	}
 	import std.algorithm.searching;

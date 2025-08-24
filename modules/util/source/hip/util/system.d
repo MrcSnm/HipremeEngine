@@ -18,6 +18,7 @@ version(PSVita) version = NoSharedLibrarySupport;
 version(WebAssembly) version = NoSharedLibrarySupport;
 version(CustomRuntimeTest) version = NoSharedLibrarySupport;
 version(Android) version = NoSharedLibrarySupport;
+version(iOS) version = NoSharedLibrarySupport;
 
  version(Windows)
 {
@@ -179,36 +180,39 @@ void* dynamicLibraryLoad(string libName)
         {
             ret = GetModuleHandle(null);
         }
-        else version(Posix)
+        else version(linux)
         {
             import core.sys.posix.dlfcn : dlopen, RTLD_NOW;
             ret = dlopen(null, RTLD_NOW);
         }
     }
-    else version (OSX) {}  //OSX gives an error with rt_loadLibrary not found.
-    else
+    else 
     {
-        import core.runtime;
-        ret = Runtime.loadLibrary(libName);
-        version(Windows)
+        version (OSX) {}  //OSX gives an error with rt_loadLibrary not found.
+        else
         {
-            import core.sys.windows.psapi;
-            import core.sys.windows.winbase;
-            MODULEINFO moduleInfo;
-
-            winEnforce(() => GetModuleInformation(GetCurrentProcess(), ret, &moduleInfo, MODULEINFO.sizeof), "Could not get module information");
-            if(!SymLoadModuleEx(GetCurrentProcess(), null, libName.toStringz, null, cast(ulong)moduleInfo.lpBaseOfDll, moduleInfo.SizeOfImage, null, 0))
+            import core.runtime;
+            ret = Runtime.loadLibrary(libName);
+            version(Windows)
             {
-                import core.sys.windows.winerror;
+                import core.sys.windows.psapi;
+                import core.sys.windows.winbase;
+                MODULEINFO moduleInfo;
 
-                HRESULT lastErr = GetLastError();
-                if(lastErr != ERROR_SUCCESS)
+                winEnforce(() => GetModuleInformation(GetCurrentProcess(), ret, &moduleInfo, MODULEINFO.sizeof), "Could not get module information");
+                if(!SymLoadModuleEx(GetCurrentProcess(), null, libName.toStringz, null, cast(ulong)moduleInfo.lpBaseOfDll, moduleInfo.SizeOfImage, null, 0))
                 {
-                    import core.sys.windows.winuser;
-                    MessageBoxA(null, toStringz("Failed to load the DLL named "~libName~" pdb symbols "~getWindowsErrorMessage(lastErr) ~ " " ~ lastErr.to!string), "PDB Loading Failure", MB_ICONERROR | MB_OK);
-                }
-            }
+                    import core.sys.windows.winerror;
 
+                    HRESULT lastErr = GetLastError();
+                    if(lastErr != ERROR_SUCCESS)
+                    {
+                        import core.sys.windows.winuser;
+                        MessageBoxA(null, toStringz("Failed to load the DLL named "~libName~" pdb symbols "~getWindowsErrorMessage(lastErr) ~ " " ~ lastErr.to!string), "PDB Loading Failure", MB_ICONERROR | MB_OK);
+                    }
+                }
+
+            }
         }
     }
     return ret;
