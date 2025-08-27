@@ -13,6 +13,7 @@
 @interface InputView : UIView
 
 - (instancetype) initWithFrameAndView:(CGRect)frame view:(MTKView*)view;
+- (void) foreachTouch:(NSSet<UITouch*>*)touches fn:(void(*)(unsigned int id, float x, float y)) fn;
 @end
 
 #endif /* InputView_h */
