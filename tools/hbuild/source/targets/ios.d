@@ -230,8 +230,10 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 				getDestination()
 			));
 
+			string device = `"`~configs["iosDevice"].str~`"`;
 			t.wait(spawnShell(
-				"open -a Simulator && "~
+				"xcrun simctl bootstatus " ~ device~ " -b || xcrun simctl boot " ~ device ~
+				"&& open -a Simulator && "~
 				"xcrun simctl install booted " ~ getHipPath("build", "appleos", "bin", "HipremeEngine.app") ~ " && " ~
 				"xcrun simctl launch --console booted hipreme.HipremeEngine"
 			));
