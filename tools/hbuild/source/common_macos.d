@@ -13,6 +13,7 @@ void setupPerCompiler(ref Terminal t, string compiler, string arch, out string e
 		{
 			string outputDruntime = getHipPath("build", "appleos", XCodeDFolder, "static", "libdruntime-ldc.a");
 			string ldcLibPath = buildNormalizedPath(configs["ldcPath"].str, "lib-"~arch);
+			
 			string druntimeLib = ldcLibPath.getFirstExisting("libdruntime-ldc.a");
 			if(druntimeLib == null) 
 				throw new Error("DRuntime Library not found on path "~configs["ldcPath"].str);
@@ -25,6 +26,7 @@ void setupPerCompiler(ref Terminal t, string compiler, string arch, out string e
 			string outputPhobos = getHipPath("build", "appleos", XCodeDFolder,"static");
 			std.file.mkdirRecurse(outputPhobos);
 			outputPhobos = buildNormalizedPath(outputPhobos, "libphobos2.a");
+
 			t.writelnSuccess("Copying phobos to XCode ", phobosLib, "->", outputPhobos);
 			t.flush;
 			std.file.copy(phobosLib, outputPhobos);

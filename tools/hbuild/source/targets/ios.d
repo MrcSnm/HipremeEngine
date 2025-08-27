@@ -22,7 +22,7 @@ string getTargetArchitecture(bool isSimulator)
 string getExtraCommand(string type)
 {
 	if(type == "simulator") return " -sdk iphonesimulator ";
-	return "";
+	return " -sdk iphoneos";
 }
 
 
@@ -100,6 +100,7 @@ unittest
 
 private string getDestination()
 {
+	// return "-destination 'generic/platform=iOS' ";
 	return "-destination 'platform=iOS Simulator,name="~
 	configs["iosDevice"].str ~
 	",OS=" ~configs["iosVersions"].array[0].integer.versionFromInt ~ "' ";
@@ -113,7 +114,21 @@ private string getIosTriple(string arch, bool isSimulator)
 			return "arm64-apple-ios14.0-simulator";
 	}
 	return arch~"-apple-ios14.0";
-	
+}
+
+string getIosLibFolder(bool isSimulator)
+{
+	version(X86_64)
+	{
+		if(isSimulator)
+			return "ios-x86_64";
+	}
+	else
+	{
+		if(isSimulator)
+			return "ios-arm64-simulator";
+	}
+	return "ios-arm64";
 }
 ChoiceResult putInstalledDeviceInformation(ref Terminal t)
 {
@@ -163,17 +178,16 @@ ChoiceResult putInstalledDeviceInformation(ref Terminal t)
 	updateConfigFile();
 
 	return ChoiceResult.Continue;
-
-	
 }
 
 ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-	string arch = getTargetArchitecture(TARGET_TYPE == "simulator");
+	bool isSimulator = TARGET_TYPE == "simulator";
+	string arch = getTargetArchitecture(isSimulator);
 	prepareAppleOSBase(c,t,input);
 
 	string out_extraLinkerFlags;
-	setupPerCompiler(t, "ldc2", "ios-"~arch, out_extraLinkerFlags);
+	setupPerCompiler(t, "ldc2", getIosLibFolder(isSimulator), out_extraLinkerFlags);
 	injectLinkerFlagsOnXcode(t, input, out_extraLinkerFlags);
 	if(!("lastUser" in configs))
 	{
@@ -197,7 +211,7 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 		cleanAppleOSLibFolder();
 		ProjectDetails d;
 		if(waitRedub(t, DubArguments().
-			command("build").configuration("ios").arch(getIosTriple(arch, TARGET_TYPE == "simulator")).compiler("ldc2").opts(cOpts),
+			command("build").configuration("ios").arch(getIosTriple(arch, isSimulator)).compiler("ldc2").opts(cOpts),
 			d,
 			getHipPath("build", "appleos", XCodeDFolder, "libs")) != 0)
 		{
@@ -213,9 +227,14 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 				clean ~
 				"build CONFIGURATION_BUILD_DIR=\"bin\" "~ 
 				codeSignCommand ~ extraCommands ~
-				getDestination() ~
-				" && cd bin && HipremeEngine.app/Contents/iOS/HipremeEngine")
-			);
+				getDestination()
+			));
+
+			t.wait(spawnShell(
+				"open -a Simulator && "~
+				"xcrun simctl install booted " ~ getHipPath("build", "appleos", "bin", "HipremeEngine.app") ~ " && " ~
+				"xcrun simctl launch --console booted hipreme.HipremeEngine"
+			));
 		}
 	}
 	if(configs["firstiOSRun"].boolean)
@@ -223,5 +242,5 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 		configs["firstiOSRun"] = false;
 		updateConfigFile();
 	}
-	return ChoiceResult.Continue;
+	return ChoiceResult.None;
 }
