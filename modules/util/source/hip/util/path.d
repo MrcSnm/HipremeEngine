@@ -153,10 +153,10 @@ string dirName(string filePath) pure nothrow @nogc @safe
 {
     char sep = determineSeparator(filePath);
     if(sep == '\0')
-        return filePath;
+        return ".";
     int last = filePath.lastIndexOf(sep);
     if(last == -1)
-        return filePath;
+        return ".";
     return filePath[0..last];
 }
 

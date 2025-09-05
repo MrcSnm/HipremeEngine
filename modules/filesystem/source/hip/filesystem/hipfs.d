@@ -127,8 +127,11 @@ class HipFSPromise : IHipFSPromise
     }
     IHipFSPromise addOnError(void delegate(string error) onError)
     {
-        if(finished && !data.length)
-            onError("No data");
+        if(finished)
+        {
+            if(data.length == 0 && result != FileReadResult.free)
+                onError("No data");
+        }
         else
             onErrorList~= onError;
         return this;
@@ -315,7 +318,7 @@ class HipFileSystemImplementation : IHipFS
     public IHipFSPromise read(string path)
     {
         import hip.console.log;
-        hiplog("Required path ", path);
+        hiplog("Required path ", getPath(path));
         path = getPath(path);
         if(!isPathValid(path))
         {
