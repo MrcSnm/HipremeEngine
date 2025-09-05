@@ -166,6 +166,8 @@ string contentTypeFromFileExtension(string filename)
 
 void stopServer()
 {
+	if(context is null)
+		return;
 	pushWebsocketMessage("close");
 	context.server.stop();
 }

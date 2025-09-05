@@ -49,7 +49,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 			t.writelnError("Could not build for WebAssembly.");
 			return ChoiceResult.Error;
 		}
-		import wasm_sourcemaps.generate;
+		// import wasm_sourcemaps.generate;
 
 		///In the current status, wasm sourcemap generation invalidates cache, but since the compilation is really fast right now
 		///We can keep that
@@ -69,7 +69,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	if(!serverStarted)
 	{
 		t.writelnHighlighted("Attempt to start WebAssembly development server.");
-		startServer(&gameServerPort, &gameServerHost);
+		startServer(&gameServerPort, &gameServerHost, t);
 		t.writelnSuccess("Development started at localhost:"~gameServerPort.to!string);
 		cached(() => cast(void)openDefaultBrowser("http://"~gameServerHost~":"~gameServerPort.to!string));
 	}

@@ -74,9 +74,11 @@ Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choi
 			selectedChoice);
 	}
 
-
-	configs["selectedChoice"] = cast(long)selectedChoice;
-	updateConfigFile();
+	if(!choices[selectedChoice].disableSelectedConfigCache)
+	{
+		configs["selectedChoice"] = cast(long)selectedChoice;
+		updateConfigFile();
+	}
 	return &choices[selectedChoice];
 }
 
@@ -307,9 +309,6 @@ string updateSelectedCompiler()
 
 ChoiceResult exitFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-	t.showCursor();
-	configs["selectedChoice"] = 0;
-	updateConfigFile();
 	return ChoiceResult.Continue;
 }
 
@@ -412,7 +411,7 @@ void main(string[] args)
 		Choice("Select Game", &selectGameFolder),
 		Choice("Release Game", &releaseGame),
 		Choice("Selected Compiler: ", &changeCompiler, false, &updateSelectedCompiler),
-		Choice("Exit", &exitFn)
+		Choice("Exit", &exitFn, false, null, false, true)
 	];
 
 	bool usesDflags = "DFLAGS" in environment;
@@ -458,5 +457,8 @@ void main(string[] args)
 		}
 		else break;
 	}
-	exitServer();
+	exitServer(terminal);
+	destroy(terminal);
+	import core.stdc.stdlib;
+	exit(0);
 }

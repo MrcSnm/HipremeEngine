@@ -13,12 +13,16 @@ private Thread serverThread;
 shared ushort gameServerPort;
 shared string gameServerHost;
 
-void startServer(shared ushort* usingPort, shared string* usingHost)
+
+private Terminal* term;
+
+void startServer(shared ushort* usingPort, shared string* usingHost, ref Terminal t)
 {
     if(serverStarted) return;
     import server;
     import core.stdc.stdlib;
     serverStarted = true;
+    term = &t;
     Semaphore s = new Semaphore();
 	serverThread = new Thread(()
     {
@@ -35,7 +39,11 @@ void startServer(shared ushort* usingPort, shared string* usingHost)
         {
             if (ctrlType == CTRL_C_EVENT) // CTRL+C signal
             {
-                try exitServer();
+                try 
+                {
+                    exitServer(*term);
+                    destroy(*term);
+                }
                 catch(Exception e){}
                 exit(0);
             }
@@ -53,7 +61,8 @@ void startServer(shared ushort* usingPort, shared string* usingHost)
         import core.sys.posix.signal;
         static extern(C) void handleCtrlC(int signum)
         {
-            exitServer();
+            exitServer(*term);
+            destroy(*term);
             exit(0);
         }
         alias fn = extern(C) void function(int) nothrow @nogc;
@@ -63,13 +72,14 @@ void startServer(shared ushort* usingPort, shared string* usingHost)
     s.wait;
 }
 
-void exitServer()
+void exitServer(ref Terminal t)
 {
-    if(!serverStarted) return;
-    import core.stdc.stdlib;
+    if(!serverStarted) 
+        return;
+    import std.conv: to;
     import server;
-    serverStarted = false;
+    t.writelnHighlighted("Shutting down the server at ", cast()gameServerHost, ":", cast()gameServerPort.to!string);
     serverThread = null;
+    serverStarted = false;
     stopServer();
-    exit(0);
 }

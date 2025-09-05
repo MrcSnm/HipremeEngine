@@ -21,16 +21,24 @@ string pathBeforeNewLdc;
 struct Terminal
 {
 	import std.stdio;
+	import core.sync.mutex;
+
 	arsd.terminal.Terminal* arsdTerminal;
+	Mutex mtx;
 	this(arsd.terminal.Terminal* arsdTerminal)
 	{
 		this.arsdTerminal = arsdTerminal;
+		mtx = new Mutex();
 	}
 
-	void color(Color main, Color secondary){if(arsdTerminal) arsdTerminal.color(main, secondary);}
+	void color(Color main, Color secondary)
+	{
+		if(arsdTerminal) synchronized(mtx)
+			arsdTerminal.color(main, secondary);
+	}
 	int cursorY()
 	{
-		if(arsdTerminal)
+		if(arsdTerminal) synchronized(mtx)
 		{
 			arsdTerminal.updateCursorPosition();
 			return arsdTerminal.cursorY;
@@ -39,20 +47,20 @@ struct Terminal
 	}
 	string getline(string message)
 	{
-		if(arsdTerminal) return arsdTerminal.getline(message); 
+		if(arsdTerminal) synchronized(mtx) return arsdTerminal.getline(message); 
 		std.stdio.writeln("Can't get line with message [", message, "]");
 		return "";
 	}
-	void moveTo(int x, int y){if(arsdTerminal) arsdTerminal.moveTo(x, y);}
-	void clear(){if(arsdTerminal) arsdTerminal.clear();}
+	void moveTo(int x, int y){if(arsdTerminal) synchronized(mtx) arsdTerminal.moveTo(x, y);}
+	void clear(){if(arsdTerminal) synchronized(mtx) arsdTerminal.clear();}
 	void write(T...)(T args)
 	{
-		if(arsdTerminal) arsdTerminal.write(args);
+		if(arsdTerminal) synchronized(mtx) arsdTerminal.write(args);
 		else std.stdio.write(args);
 	}
 	void flush()
 	{
-		if(arsdTerminal)
+		if(arsdTerminal) synchronized(mtx)
 		{
 			arsdTerminal.flush();
 			arsdTerminal.updateCursorPosition();
@@ -65,11 +73,11 @@ struct Terminal
 		return std.process.wait(pid);
 	}
 
-	void hideCursor(){ if(arsdTerminal) arsdTerminal.hideCursor();}
-	void showCursor(){ if(arsdTerminal) arsdTerminal.showCursor();}
+	void hideCursor(){ if(arsdTerminal) synchronized(mtx) arsdTerminal.hideCursor();}
+	void showCursor(){ if(arsdTerminal) synchronized(mtx) arsdTerminal.showCursor();}
 	void clearToEndOfLine()
 	{
-		if(arsdTerminal) arsdTerminal.clearToEndOfLine();
+		if(arsdTerminal) synchronized(mtx) arsdTerminal.clearToEndOfLine();
 		flush();
 	}
 	void clearLine()
@@ -81,12 +89,14 @@ struct Terminal
 
 	void writeln(T...)(T args)
 	{
-		if (arsdTerminal) arsdTerminal.writeln(args);
+		if (arsdTerminal) synchronized(mtx) arsdTerminal.writeln(args);
 		else std.stdio.writeln(args);
 	}
 	~this()
 	{
-		if(arsdTerminal) destroy(*arsdTerminal);
+		showCursor();
+		if(arsdTerminal) synchronized(mtx) destroy(*arsdTerminal);
+		mtx = null;
 	}
 }
 
@@ -146,17 +156,24 @@ struct Choice
 	bool shouldTime;
 	string function() updateChoice;
 	bool scriptOnly;
+	bool disableSelectedConfigCache;
+
+
+
+
+
 
 	this(string name,
 	ChoiceResult function(Choice* self, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions opts) onSelected,
 	bool shouldTime = false,
-	string function() updateChoice = null, bool scriptOnly = false)
+	string function() updateChoice = null, bool scriptOnly = false, bool disableSelectedConfigCache = false)
 	{
 		this.name = updateChoice ? updateChoice() : name;
 		this.onSelected = onSelected;
 		this.shouldTime = shouldTime;
 		this.updateChoice = updateChoice;
 		this.scriptOnly = scriptOnly;
+		this.disableSelectedConfigCache = disableSelectedConfigCache;
 	}
 
 	bool opEquals(ref const Choice other) const 
@@ -882,7 +899,7 @@ private ChoiceResult _backFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput
 }
 Choice getBackChoice()
 {
-	return Choice("Back", &_backFn);
+	return Choice("Back", &_backFn, false, null, false, true);
 }
 
 
@@ -1055,9 +1072,17 @@ int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, strin
 void inParallel(scope void delegate()[] args...)
 {
 	import std.parallelism;
-	foreach(action; parallel(args))
-		action();
 
+	// version(AArch64)
+	// {
+	// 	foreach(action; args)
+	// 		action();
+	// }
+	// else
+	// {
+		foreach(action; parallel(args))
+			action();
+	// }
 }
 
 int waitDub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = null)
