@@ -10,7 +10,9 @@ private void loadSubmodules(Feature*[] dependencies, ref Terminal t, ref RealTim
 	import std.process;
 	t.writelnSuccess("Updating Git Submodules");
 	t.flush;
-	executeShell("cd "~ configs["hipremeEnginePath"].str ~ " && " ~ getGitExec~" submodule update --init --recursive");
+	auto ret = executeShell("cd "~ configs["hipremeEnginePath"].str ~ " && " ~ getGitExec~" submodule update --init --recursive");
+	if(ret.status)
+		throw new Exception("Execution of git submodule update --init --recursive failed: \n"~ret.output);
 }
 
 bool installGit(ref Terminal t, ref RealTimeConsoleInput input, 

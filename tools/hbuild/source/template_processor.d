@@ -61,6 +61,7 @@ Also checked in configurations.
 
 Those in unnamed dependencies will automatically be added to the "dependencies" section.
 If the path does not exists, it will be ignored and simply do nothing. Also checked in configurations.
+
 ```json
 "unnamedDependencies": [
 	"some/path/to/dep"
