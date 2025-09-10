@@ -1003,6 +1003,8 @@ struct DubArguments
 		}
 		if(c == "ldc2")
 			c = buildNormalizedPath(configs["ldcPath"].str, "bin", "ldc2".executableExtension);
+		else if(c == "dmd")
+			c = buildNormalizedPath(configs["dmdPath"].str, "dmd".executableExtension);
 		return c;
 	}
 	

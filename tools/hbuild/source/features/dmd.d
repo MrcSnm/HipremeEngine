@@ -14,12 +14,15 @@ bool installDmd(
     import std.path;
 
     string sys;
-    string bin = "bin";
+    version(X86_64)
+        string bin = "bin64";
+    else
+        string bin = "bin";
     switch(os) with(OS)
     {
         case osx: sys = "osx"; break;
         case win32, win64: sys = "windows"; break;
-        case linux: sys = "linux"; bin = "bin64"; break;
+        case linux: sys = "linux"; break;
         default: assert(false, "System not supported.");
     }
     string binPath = buildNormalizedPath(downloads[0].getOutputPath, "dmd2", sys, bin);
