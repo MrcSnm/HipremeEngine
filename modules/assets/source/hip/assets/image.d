@@ -43,7 +43,6 @@ public class Image : HipAsset, IImage
         path = sanitizePath(path);
         super("Image_"~path);
         imagePath = path;
-        decoder = getDecoder(path);
     }
     ///Loads an arbitrary buffer which will be decoded by the decoder.
     this(in string path, in ubyte[] buffer, void delegate(IImage self) onSuccess, void delegate() onFailure)
@@ -87,6 +86,8 @@ public class Image : HipAsset, IImage
     {
         if(data.length == 0)
             throw new Exception("No data was passed to load Image. Could not load image at path "~imagePath);
+        if(decoder is null)
+            decoder = getDecoder(imagePath);
 
         if(!(decoder.startDecoding(data, ()
         {

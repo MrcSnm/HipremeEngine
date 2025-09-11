@@ -12,13 +12,15 @@ extern(C) extern @nogc nothrow pure
 
     version(CustomRuntime)
     {
-        public import object: memcpy, memset, memcmp; 
+        public import object: memcpy, memset, memcmp, memmove;
     }
     else
     {
         void* memcpy(void* dest, const(void*) src, size_t n);
         void* memset(void* str, int c, size_t n);
         int memcmp(const(void*) str1, const(void*) str2, size_t n) pure;
+        void* memmove(return scope void* s1, scope const void* s2, size_t n) pure;
+        const(char)* strchr(const(char)* str, char c) pure @nogc nothrow @trustred;
     }
 
     version(CustomDefinitions)
@@ -43,7 +45,42 @@ extern(C) extern @nogc nothrow pure
             while(str[len++] != '\0'){}
 
             return len;
+        }
 
+        const(char)* strchr(const(char)* str, char c) pure @nogc nothrow @trusted
+        {
+            enum ulong mask  = 0x8080808080808080;
+            enum ulong magic = 0x0101010101010101;
+            ulong cc = cast(ubyte)c;
+            cc |= cc << 8;
+            cc |= cc << 16;
+            cc |= cc << 32;
+
+            auto ptr = cast(const(ulong)*)str;
+            size_t offset = 0;
+
+            for(;; ptr++, offset += 8)
+            {
+                ulong value = *ptr;
+
+                // detect match with c
+                ulong diff = value ^ cc;
+                if(((diff - magic) & ~diff & mask) != 0)
+                    break;
+
+                // detect null terminator
+                if(((value - magic) & ~value & mask) != 0)
+                    break;
+            }
+
+            // refine, byte by byte
+            for(;; offset++)
+            {
+                if(str[offset] == c)
+                    return str + offset;
+                if(str[offset] == '\0')
+                    return null;
+            }
         }
 
 
