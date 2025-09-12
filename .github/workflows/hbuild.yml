@@ -24,17 +24,11 @@ jobs:
     - uses: MrcSnm/setup-dlang@v2
       with:
         redub: latest
-    - name: 'Install libcurl dev'
-      run: |
-        sudo apt-get update
-        # sudo apt-get upgrade
-        sudo apt-get install libcurl4-gnutls-dev -y
-
     - name: 'Build'
       run: |
         # Build the project, with its main file included, without unittests
         cd tools/hbuild
-        redub build -c ci
+        redub build -c ci --prefetch
         # Build and run tests, as defined by `unittest` configuration
         # In this mode, `mainSourceFile` is excluded and `version (unittest)` are included
         # See https://dub.pm/package-format-json.html#configurations
@@ -56,7 +50,7 @@ jobs:
       run: |
         # Build the project, with its main file included, without unittests
         cd tools/hbuild
-        redub build -c ci-macos
+        redub build -c ci-macos --prefetch
     - name: 'Upload'
       uses: actions/upload-artifact@v4.4.3
       with:
@@ -76,7 +70,7 @@ jobs:
       run: |
         # Build the project, with its main file included, without unittests
         cd tools/hbuild
-        redub build -c ci-win
+        redub build -c ci-win --prefetch
         mkdir win-release
         copy win64-hbuild.exe win-release/win64-hbuild.exe
         copy libcurl.dll win-release/libcurl.dll

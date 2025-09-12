@@ -8,8 +8,7 @@
 		"redub": "~>1.24.13",
 		"handy-httpd": "~>8.4.3",
 		"archive": "~>0.7.1",
-		"my-ip": "~>0.2.0",
-		"wasm-sourcemaps": {"repository": "git+https://github.com/MrcSnm/wasm-sourcemaps", "version": "69e6c80"}
+		"my-ip": "~>0.2.0"
 	},
 	"subConfigurations": {
 		"redub": "library",

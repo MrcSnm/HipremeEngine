@@ -1,0 +1,32 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"archive": "0.7.1",
+		"arsd-official:minigui": "11.5.3",
+		"arsd-official:simpledisplay": "11.5.3",
+		"arsd-official:color_base": "11.5.3",
+		"arsd-official:core": "11.5.3",
+		"arsd-official:textlayouter": "11.5.3",
+		"arsd-official:terminal": "11.5.3",
+		"handy-httpd": "8.4.5",
+		"httparsed": "1.2.2",
+		"path-matcher": "1.2.0",
+		"slf4d": "3.0.1",
+		"streams": "3.6.0",
+		"my-ip": "0.2.0",
+		"redub": "1.24.14",
+		"adv_diff":  {"path": "..\\..\\..\\..\\..\\AppData\\Local\\dub\\packages\\redub\\1.24.14\\redub\\adv_diff"},
+		"hipjson":  {"path": "..\\..\\..\\..\\..\\AppData\\Local\\dub\\packages\\redub\\1.24.14\\redub\\hipjson"},
+		"d-segmented-hashmap": "1.0.5",
+		"colorize":  {"path": "..\\..\\..\\..\\..\\AppData\\Local\\dub\\packages\\redub\\1.24.14\\redub\\colorize"},
+		"d_dependencies":  {"path": "..\\..\\..\\..\\..\\AppData\\Local\\dub\\packages\\redub\\1.24.14\\redub\\d_dependencies"},
+		"dub_sdl_to_json":  {"path": "..\\..\\..\\..\\..\\AppData\\Local\\dub\\packages\\redub\\1.24.14\\redub\\dub_sdl_to_json"},
+		"sdlite": "1.3.3",
+		"taggedalgebraic": "1.0.1",
+		"package_suppliers":  {"path": "..\\..\\..\\..\\..\\AppData\\Local\\dub\\packages\\redub\\1.24.14\\redub\\package_suppliers"},
+		"semver":  {"path": "..\\..\\..\\..\\..\\AppData\\Local\\dub\\packages\\redub\\1.24.14\\redub\\semver"},
+		"xxhash3": "0.0.5",
+		"wasm-sourcemaps": "69e6c80",
+		"wasm-reader": "0.0.6"
+	}
+}
