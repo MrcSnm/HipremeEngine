@@ -15,6 +15,18 @@ void put(Sink, E)(ref Sink sink, E e)
         sink.put(e);
 }
 
+void put(ref char[] sink, char ch)
+{
+    sink[0] = ch;
+    sink = sink[1..$];
+}
+
+void put(ref char[] sink, string str)
+{
+    sink[0..str.length] = str;
+    sink = sink[str.length..$];
+}
+
 
 void toStringRange(Sink, Enum)(ref Sink sink, Enum enumMember) if(is(Enum == enum))
 {
@@ -58,7 +70,7 @@ if(isOutputRange!(Sink, char))
 }
 
 
-void toStringRange(Sink, T)(auto ref Sink sink, T[] arr)
+void toStringRange(Sink, T)(ref Sink sink, T[] arr)
 if(isOutputRange!(Sink, char) && !is(T[] == string) && !is(T[] == char[])) //There is a better match for char/string
 {
     static if(__traits(compiles, sink.preAllocate))
@@ -81,7 +93,7 @@ if(isOutputRange!(Sink, char) && !is(T[] == string) && !is(T[] == char[])) //The
 }
 
 
-void toStringRange(Sink, T)(auto ref Sink sink, T structOrTupleOrClass) 
+void toStringRange(Sink, T)(ref Sink sink, T structOrTupleOrClass)
 if(!isArray!T && (is(T == struct) || is(T == class) || is(T == interface)))
 {
     static if(is(T == struct))//For structs declaration
@@ -147,7 +159,7 @@ if(!isArray!T && (is(T == struct) || is(T == class) || is(T == interface)))
 //         put(sink, ch);
 // }
 
-void   toStringRange(Sink)(auto ref Sink sink, string str) if(isOutputRange!(Sink, char))
+void   toStringRange(Sink)(ref Sink sink, string str) if(isOutputRange!(Sink, char))
 {
     static if(__traits(compiles, sink.preAllocate))
         sink.preAllocate(str.length);
@@ -155,7 +167,7 @@ void   toStringRange(Sink)(auto ref Sink sink, string str) if(isOutputRange!(Sin
         put(sink, character);
 }
 
-void   toStringRange(Sink)(auto ref Sink sink, const(char)* str) if(isOutputRange!(Sink, char))
+void   toStringRange(Sink)(ref Sink sink, const(char)* str) if(isOutputRange!(Sink, char))
 {
     import core.stdc.string:strlen;
     size_t length = strlen(str);
@@ -165,12 +177,12 @@ void   toStringRange(Sink)(auto ref Sink sink, const(char)* str) if(isOutputRang
         put(sink, str[i]);
 }
 
-void   toStringRange(Sink)(auto ref Sink sink, const(ubyte)* str) if(isOutputRange!(Sink, char))
+void   toStringRange(Sink)(ref Sink sink, const(ubyte)* str) if(isOutputRange!(Sink, char))
 {
     toStringRange(sink, cast(const(char)*)str);
 }
 
-void toStringRange(Sink)(auto ref Sink sink, void* ptr) if(isOutputRange!(Sink, char))
+void toStringRange(Sink)(ref Sink sink, void* ptr) if(isOutputRange!(Sink, char))
 {
     if(ptr is null)
         put(sink, "null");
@@ -178,12 +190,12 @@ void toStringRange(Sink)(auto ref Sink sink, void* ptr) if(isOutputRange!(Sink, 
         toHex(sink, cast(size_t)ptr);
 }
 
-void toStringRange(Sink)(auto ref Sink sink, bool b) if(isOutputRange!(Sink, char))
+void toStringRange(Sink)(ref Sink sink, bool b) if(isOutputRange!(Sink, char))
 {
     put(sink, b ? "true" :"false");
 }
 
-void toStringRange(Sink)(auto ref Sink sink, long x) 
+void toStringRange(Sink)(ref Sink sink, long x)
 if(isOutputRange!(Sink, char))
 {
     enum numbers = "0123456789";
@@ -214,7 +226,7 @@ if(isOutputRange!(Sink, char))
 }
 
 
-void toHex(Sink)(auto ref Sink sink, size_t n)
+void toHex(Sink)(ref Sink sink, size_t n)
 if(isOutputRange!(Sink, char))
 {
     enum numbers = "0123456789ABCDEF";

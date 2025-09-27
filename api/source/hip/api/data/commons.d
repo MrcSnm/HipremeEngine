@@ -143,7 +143,8 @@ IHipAssetLoadTask[] loadAssets()(TypeInfo type, string assetPath, const(ubyte)[]
     {
         import hip.util.to_string_range;
         char[32] numSink = 0xff;
-        toStringRange(numSink[], number);
+        char[] data = numSink;
+        toStringRange(data, number);
         int charCount = 0;
         while(numSink[charCount++] != 0xff){} charCount--;
         //-1 for the $
@@ -156,7 +157,7 @@ IHipAssetLoadTask[] loadAssets()(TypeInfo type, string assetPath, const(ubyte)[]
             else
                 formattedStr[i++] = ch;
         }
-        return formattedStr;
+        return cast(string)formattedStr;
     }
 
     foreach(i; 0..count) 
@@ -209,7 +210,7 @@ mixin template LoadReferencedAssets(string[] modules)
 
                             static if(!__traits(compiles, classMember.offsetof)) //Static
                             {
-                                static if(!is(memberType == string) && isArray!(memberType))
+                                static if(!is(memberType == string) && isArray!(typeof(classMember)))
                                 {
                                     size_t start = classMember.length;
                                     classMember.length+= tasks.length;
