@@ -147,6 +147,12 @@ function initializeWebglContext()
         glEnable ( cap ) {
             gl.enable(cap);
         },
+        glFrontFace( face ) {
+            gl.frontFace(face);
+        },
+        glCullFace( cull ) {
+            gl.cullFace(cull);
+        },
         glDisable ( cap )
         {
             gl.disable(cap);

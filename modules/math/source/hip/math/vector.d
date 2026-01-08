@@ -227,7 +227,18 @@ struct Vector(uint N, T)
                 static if(N == 3)
                     return VectorN(x*c - y*s, y*c + s*x, z);
                 else
-                    return Vector!(N, T)(x*c - y*s, y*c + s*x, z, w);
+                    return VectorN(x*c - y*s, y*c + s*x, z, w);
+            }
+
+            VectorN rotateXZ(float radians)
+            {
+                const float c = cos(radians);
+                const float s = sin(radians);
+
+                static if(N == 3)
+                    return VectorN(x*c - z*s, y, z*c + s*x);
+                else
+                    return VectorN(x*c - z*s, y, z*c + s*x, w);
             }
         }
 

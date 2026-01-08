@@ -452,7 +452,8 @@ void main(string[] args)
 			if(selection.onSelected != &changeCompiler && !autoSelect)
 			{
 				terminal.writeln("Press Enter to continue");
-				while(input.getch != '\n'){}
+				auto ch = input.getch;
+				while(ch != '\n' && ch != '\0'){}
 			}
 		}
 		else break;

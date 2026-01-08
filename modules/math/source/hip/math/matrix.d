@@ -296,6 +296,21 @@ struct Matrix4
             (left+right)/(left-right), (top+bottom)/(bottom-top), -znear/(znear-zfar), 1
         ]);
     }
+    static Matrix4 perspective(float fovInRadians, uint width, uint height, float znear, float zfar)
+    {
+        import hip.math.utils;
+        float aspect = cast(float)width / cast(float)height;
+        float fovRatio = 1.0 / tan(fovInRadians/2);
+        float rangeInv = 1.0 / cast(float)(zfar - znear);
+
+        return Matrix4([
+            aspect * fovRatio, 0, 0, 0,
+            0, fovRatio, 0, 0,
+            0, 0, (znear + zfar) * rangeInv, 1,
+            0, 0, -znear*zfar*rangeInv, 0
+        ]);
+
+    }
 
     static Matrix4 alternateHandedness(Matrix4 mat)
     {

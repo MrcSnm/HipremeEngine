@@ -3,6 +3,7 @@ import hip.math.vector;
 
 ///There are some errors occurring when compiling with LDC
 public import core.math: sqrt, cos, sin;
+public import core.stdc.math:tan;
 
 pure @safe nothrow @nogc:
 
