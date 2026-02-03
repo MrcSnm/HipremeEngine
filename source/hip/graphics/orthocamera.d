@@ -12,6 +12,14 @@ module hip.graphics.orthocamera;
 import hip.hiprenderer.viewport;
 import hip.hiprenderer;
 import hip.math.matrix;
+import hip.math.utils;
+import hip.math.vector;
+
+enum CameraType : ubyte
+{
+    orthographic,
+    perspective
+}
 
 /**
 *   Orthographic Projection camera. 
@@ -30,6 +38,9 @@ class HipOrthoCamera
     Matrix4 viewProj;
     float znear = 0.001f;
     float zfar  = 100.0f;
+    float fov = PI_2;
+
+    CameraType type = CameraType.orthographic;
 
     bool dirty = false;
 
@@ -40,15 +51,28 @@ class HipOrthoCamera
         viewProj = Matrix4.identity;
         updateFromViewport();
     }
+
+    void setType(CameraType type)
+    {
+        this.type = type;
+        updateFromViewport();
+    }
+    private void updateProjection(uint x, uint y, uint width, uint height)
+    {
+        if(type == CameraType.orthographic)
+            proj = Matrix4.orthoLH(x, width, height, y, znear, zfar);
+        else
+            proj = Matrix4.perspective(fov, width, height, znear, zfar);
+    }
     void updateFromViewport()
     {
         Viewport v = HipRenderer.getCurrentViewport();
-        proj = Matrix4.orthoLH(v.x, v.width, v.height, v.y, znear, zfar);
+        updateProjection(v.x, v.y, v.width, v.height);
         dirty = true;
     }
     void setSize(uint width, uint height)
     {
-        proj = Matrix4.orthoLH(0, width, height, 0, znear, zfar);
+        updateProjection(cast(uint)x, cast(uint)y, width, height);
         dirty = true;
     }
     void translate(float x, float y, float z)
@@ -65,6 +89,22 @@ class HipOrthoCamera
     {
         view = view.scale(x,y,z);
         dirty = true;
+    }
+
+    void lookAt(Vector3 origin, Vector3 lookPoint, Vector3 up = Vector3(0, 1, 0))
+    {
+        Vector3 cameraDir = (lookPoint - origin).normalize;
+        Vector3 cameraRight = up.cross(cameraDir).normalize;
+        Vector3 cameraUp = cameraDir.cross(cameraRight);
+
+        view = Matrix4([
+            cameraRight.x, cameraUp.x, cameraDir.x, 0,
+            cameraRight.y, cameraUp.y, cameraDir.y, 0,
+            cameraRight.z, cameraUp.z, cameraDir.z, 0,
+            -Vector3.Dot(cameraRight, origin), -Vector3.Dot(cameraUp, origin), -Vector3.Dot(cameraDir, origin), 1
+        ]);
+        dirty = true;
+
     }
 
     Matrix4 getMVP()

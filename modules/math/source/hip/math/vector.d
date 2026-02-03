@@ -150,11 +150,12 @@ struct Vector(uint N, T)
                 ret+= data[i]*data[i];
             return ret;
         }
-        void normalize()
+        ref VectorN normalize()
         {
             const float m = mag();
             if(m != 0)
                 data[]/=m;
+            return this;
         }
 
         float distance(VectorN other)
@@ -207,15 +208,17 @@ struct Vector(uint N, T)
             }
 
 
-            VectorN cross()(auto ref VectorN other) inout
+            VectorN cross(VectorN b) const
             {
-                return VectorN(data[1]*other[2] - data[2]-other[1],
-                            -(data[0]*other[2]- data[2]*other[0]),
-                            data[0]*other[1] - data[1]*other[0]);
+                return VectorN(
+                    y * b.z - z * b.y,
+                    z * b.x - x * b.z,
+                    x * b.y - y * b.x
+                );
             }
         }
 
-        static float Dot()(auto ref Vector!N first, auto ref Vector!N second){return first.dot(second);}
+        static float Dot(VectorN first, VectorN second){return first.dot(second);}
 
         static if(N >= 3)
         {
