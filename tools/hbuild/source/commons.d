@@ -903,12 +903,6 @@ Choice getBackChoice()
 }
 
 
-string getDubPath()
-{
-	string dub = buildNormalizedPath(configs["dubPath"].str, "dub");
-	version(Windows) dub = dub.setExtension("exe");
-	return dub;
-}
 
 bool writeTemplate(ref Terminal t, string projectPath, string enginePath)
 {
@@ -1007,33 +1001,6 @@ struct DubArguments
 			c = buildNormalizedPath(configs["dmdPath"].str, "dmd".executableExtension);
 		return c;
 	}
-	
-	string getDubRunCommand()
-	{
-		string dub = getDubPath();
-		string a = command; ///Arguments
-		compiler = getCompiler();
-		if(parallel)      a~= " --parallel";
-		if(recipe)        a~= " --recipe="~recipe;
-		if(build)         a~= " --build="~build;
-		if(arch)          a~= " --arch="~arch;
-		if(compiler != "")a~= " --compiler="~compiler;
-		if(deep)		  a~= " --deep";
-		if(configuration) a~= " -c "~configuration;
-		if(opts != CompilationOptions.init) a~= opts.getDubOptions();
-		if(runArgs)       a~= " -- "~runArgs;
-
-
-		version(Windows)
-		{
-			if(confirmKey) a~= " && pause";
-		}
-		else version(Posix)
-		{
-			if(confirmKey) a~= " && read -p \"Press any key to continue... \" -n1 -s";
-		}
-		return preCommands~dub~" "~a;
-	}
 }
 
 int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, string copyLinkerFilesTo = null)
@@ -1087,21 +1054,10 @@ void inParallel(scope void delegate()[] args...)
 	// }
 }
 
-int waitDub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = null)
+int waitRedub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = null)
 {
-	///Detects the presence of a template file before executing.
 	ProjectDetails d;
-	if(dArgs._command.length >= 3 && dArgs._command[0..3] != "run") return waitRedub(t, dArgs, d, copyLinkerFilesTo);
-	if(execDubBase(t, dArgs) == -1) return -1;
-	string toExec = dArgs.getDubRunCommand();
-	t.writeln(toExec);
-	t.flush;
-	return t.wait(spawnShell(toExec));
-}
-
-int waitDubTarget(ref Terminal t, string target, DubArguments dArgs, string copyLinkerFilesTo = null)
-{
-	return waitDub(t, dArgs.recipe(buildPath(getBuildTarget(target), "dub.json")), copyLinkerFilesTo);
+	return waitRedub(t, dArgs, d, copyLinkerFilesTo);
 }
 
 int waitAndPrint(ref Terminal t, Pid pid)

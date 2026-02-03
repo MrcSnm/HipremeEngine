@@ -33,7 +33,6 @@ bool installLdc(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ve
     version(Windows) rdmd = rdmd.setExtension("exe");
     configs["ldcVersion"] = ver.toString;
     configs["ldcPath"] = ldcPath;
-    configs["dubPath"] = binPath;
     updateConfigFile();
     
 

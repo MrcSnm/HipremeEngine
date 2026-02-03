@@ -5,7 +5,7 @@
 	"copyright": "Copyright © 2023, Hipreme",
 	"dependencies": {
 		"arsd-official:terminal": "~>11.5.0",
-		"redub": "~>1.24.13",
+		"redub": "~>1.26.7",
 		"handy-httpd": "~>8.4.3",
 		"archive": "~>0.7.1",
 		"my-ip": "~>0.2.0"
@@ -14,9 +14,11 @@
 		"redub": "library",
 		"wasm-sourcemaps": "library"
 	},
+	"frameworks": [
+		"Foundation",
+		"AppKit"
+	],
 	"lflags-osx": [
-		"-framework", "Foundation",
-		"-framework", "AppKit",
 		"-lObjC", "-all_load"
 	],
 	"versions-windows": ["WindowsVista"],

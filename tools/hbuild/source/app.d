@@ -106,9 +106,6 @@ struct EngineVariables
 			string dmdPath;
 			@("The current DMD path is treated as version")
 			string dmdVersion;
-
-			@("Which dub will be used to compile. Useful for dub development test. Automatically inferred from LDC")
-			string dubPath;
 		}
 		@Section("LDC")
 		{
@@ -388,8 +385,6 @@ void main(string[] args)
 			return;
 		}
 	}
-	if(!("DUB" in environment))
-		environment["DUB"] = getDubPath();
 	Choice[] choices;
 	version(Windows)
 	{
