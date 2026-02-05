@@ -67,7 +67,7 @@ alias GLintptr = ptrdiff_t;
 alias GLbitfield = uint;
 alias GLint = int;
 alias GLboolean = ubyte;
-alias GLsizei = int;
+alias GLsizei = size_t;
 alias GLubyte = ubyte;
 enum GL_DEPTH_BUFFER_BIT = 0x00000100;
 enum GL_STENCIL_BUFFER_BIT = 0x00000400;
@@ -726,7 +726,24 @@ else
 {
     void glGetProgramiv (GLuint program, GLenum pname, GLint* params);
 }
-void glGetProgramInfoLog (GLuint program, GLsizei bufSize, GLsizei* length, GLchar* infoLog);
+
+version(WebAssembly)
+{
+    ubyte* wglGetProgramInfoLog(GLuint program);
+    void glGetProgramInfoLog (GLuint program, GLsizei bufSize, GLsizei* length, GLchar* infoLog)
+    {
+        ubyte* _temp = wglGetProgramInfoLog(program);
+        size_t _tempLen = *cast(size_t*)_temp;
+        string temp = cast(string)_temp[size_t.sizeof.._tempLen+size_t.sizeof];
+        if(length) *length = temp.length;
+        if(temp.length < bufSize)
+            infoLog[0..temp.length] = temp[];
+        else
+            infoLog[0..bufSize] = temp[0..bufSize];
+    }
+}
+else
+    void glGetProgramInfoLog (GLuint program, GLsizei bufSize, GLsizei* length, GLchar* infoLog);
 void glGetRenderbufferParameteriv (GLenum target, GLenum pname, GLint* params);
 version(WebAssembly)
 {
@@ -754,8 +771,7 @@ version(WebAssembly)
         string temp = cast(string)_temp[size_t.sizeof.._tempLen+size_t.sizeof];
 
 
-        if(length !is null)
-            *length = temp.length;
+        if(length) *length = temp.length;
         if(temp.length < bufSize)
             infoLog[0..temp.length] = temp[];
         else

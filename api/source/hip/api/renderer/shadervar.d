@@ -2,6 +2,7 @@ module hip.api.renderer.shadervar;
 import hip.api.renderer.core;
 import hip.api.renderer.shader;
 import hip.api.graphics.color;
+import hip.math.vector;
 public import hip.api.renderer.shadervar;
 
 /**
@@ -60,8 +61,8 @@ UniformType uniformTypeFrom(T)()
         else static if(is(T == uint[])) return uinteger_array;
         else static if(is(T == float)) return floating;
         else static if(is(T == float[2])) return floating2;
-        else static if(is(T == float[3])) return floating3;
-        else static if(is(T == float[4]) || is(T == HipColorf)) return floating4;
+        else static if(is(T == float[3]) || is(T == Vector3)) return floating3;
+        else static if(is(T == float[4]) || is(T == HipColorf) || is(T == Vector4)) return floating4;
         else static if(isTypeArrayOf!(float, T, 9)) return floating3x3;
         else static if(isTypeArrayOf!(float, T, 16)) return floating4x4;
         else static if(is(T == float[])) return floating_array;
@@ -204,6 +205,7 @@ struct ShaderVar
     static ShaderVar* create(ShaderTypes t, string varName, float data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating, data.sizeof, data.sizeof, layout);}
     static ShaderVar* create(ShaderTypes t, string varName, float[2] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating2, data.sizeof, data[0].sizeof, layout);}
     static ShaderVar* create(ShaderTypes t, string varName, float[3] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating3, data.sizeof, data[0].sizeof, layout);}
+    static ShaderVar* create(ShaderTypes t, string varName, Vector3 data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating3, data.sizeof, data[0].sizeof, layout);}
     static ShaderVar* create(ShaderTypes t, string varName, float[4] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating4, data.sizeof, data[0].sizeof, layout);}
     static ShaderVar* create(ShaderTypes t, string varName, float[9] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating3x3, data.sizeof, data[0].sizeof, layout);}
     static ShaderVar* create(ShaderTypes t, string varName, float[16] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating4x4, data.sizeof, data[0].sizeof, layout);}

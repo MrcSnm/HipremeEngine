@@ -176,14 +176,15 @@ class Hip_GL_ShaderImpl : IShader
         glCall(() =>glLinkProgram(prog));
         
         int success;
-        char[512] infoLog;
+        size_t length;
+        char[4096] infoLog;
 
         glCall(() =>glGetProgramiv(prog, GL_LINK_STATUS, &success));
 
         if(ErrorHandler.assertErrorMessage(success==true, "Shader linking error", "Linking failed"))
         {
-            glCall(() => glGetProgramInfoLog(prog, 512, null, infoLog.ptr));
-            ErrorHandler.showErrorMessage("Linking error: ", cast(string)(infoLog));
+            glCall(() => glGetProgramInfoLog(prog, 4096, &length, infoLog.ptr));
+            ErrorHandler.showErrorMessage("Linking error: ", cast(string)(infoLog[0..length]));
         }
         
         return success==true;

@@ -187,7 +187,7 @@ function initializeWebglContext()
         wglGetShaderInfoLog ( shader ) {
             return WasmUtils.toDString(gl.getShaderInfoLog(_objects[shader]))
         },
-        glGetProgramInfoLog ( program ) {
+        wglGetProgramInfoLog ( program ) {
             return WasmUtils.toDString(gl.getProgramInfoLog(_objects[program]))
         },
         wglGetUniformLocation ( program, length, ptr) 
