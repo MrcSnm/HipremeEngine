@@ -16,13 +16,14 @@ import hip.hiprenderer.vertex;
 import hip.error.handler;
 import std.traits;
 
+
+private __gshared Mesh boundMesh = null;
 class Mesh
 {
     protected index_t[] indices;
     protected void[] vertices;
     ///Not yet supported
     bool isInstanced;
-    private bool isBound;
     protected HipVertexArrayObject vao;
     Shader shader;
     this(HipVertexArrayObject vao, Shader shader)
@@ -45,9 +46,9 @@ class Mesh
 
     void bind()
     {
-        if(!this.isBound)
+        if(boundMesh !is this)
         {
-            this.isBound = true;
+            boundMesh = this;
             this.shader.bind();
             this.vao.bind();
         }
@@ -55,12 +56,9 @@ class Mesh
     }
     void unbind()
     {
-        if(this.isBound)
-        {
-            this.isBound = false;
-            this.shader.unbind();
-            this.vao.unbind();
-        }
+        boundMesh = null;
+        this.shader.unbind();
+        this.vao.unbind();
         // else assert(false, "Erroneous call to unbind.");
     }
 
@@ -130,7 +128,12 @@ class Mesh
             HipRenderer.drawInstanced()
         }
         */
-        if(!isBound) bind();
+        if(boundMesh !is this)
+        {
+            if(boundMesh !is null)
+                boundMesh.unbind();
+            bind();
+        }
         HipRenderer.drawIndexed(mode, cast(index_t)count, offset);
     }
 
