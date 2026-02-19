@@ -181,7 +181,7 @@ public class Shader : IReloadable
         {
             ShaderVarLayout* sL = name in defaultLayout.variables;
             if(sL !is null)
-                return sL.sVar;
+                return &sL.sVar;
             isUnused = defaultLayout.isUnused(name);
         }
         else
@@ -191,7 +191,7 @@ public class Shader : IReloadable
             {
                 ShaderVarLayout* sL = name[accessorSeparatorIndex+1..$] in l.variables;
                 if(sL !is null)
-                    return sL.sVar;
+                    return &sL.sVar;
                 isUnused = l.isUnused(name[accessorSeparatorIndex+1..$]);
             }
         }
@@ -296,7 +296,7 @@ public class Shader : IReloadable
                 ShaderVar s;
                 return s;
             }
-            return *defaultLayout.variables[member].sVar;
+            return defaultLayout.variables[member].sVar;
         }
     }
     auto opDispatch(string member, T)(T value)

@@ -37,13 +37,13 @@ public import hip.api.graphics.text : HipTextAlign, Size;
     static enum size_t quadsCount = floatsCount*4;
 }
 
-@HipShaderVertexUniform("Cbuf")
+@HipShaderUniform(ShaderTypes.vertex, "Cbuf")
 struct HipTextRendererVertexUniforms
 {
     Matrix4 uMVP = Matrix4.identity;
 }
 
-@HipShaderFragmentUniform("FragVars")
+@HipShaderUniform(ShaderTypes.fragment, "FragVars")
 struct HipTextRendererFragmentUniforms
 {
     float[4] uColor = [1,1,1,1];

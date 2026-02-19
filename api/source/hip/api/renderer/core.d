@@ -72,23 +72,12 @@ enum HipShaderInputLayout;
 */
 enum HipShaderInputPadding;
 /**
-*   Declares that the struct is as VertexUniform block.
+*   Declares that the struct is a collection of uniform variables.
 */
 pragma(LDC_no_typeinfo)
-struct HipShaderVertexUniform
+struct HipShaderUniform
 {
-    /**
-    *   This name is the base uniform name accessed when dealing with HLSL Api.
-    *   i.e: Constant Buffer block name
-    */
-    string name;
-}
-/**
-*   Declares that the struct is as FragmentUniform block.
-*/
-pragma(LDC_no_typeinfo)
-struct HipShaderFragmentUniform
-{
+    ShaderTypes type;
     /**
     *   This name is the base uniform name accessed when dealing with HLSL Api.
     *   i.e: Constant Buffer block name

@@ -135,6 +135,10 @@ private string getSetShaderVarCall(string shaderT)
             break;
         case texture_array:
             break;
+        case custom:
+            throw new Exception("Must still fix custom struct types.");
+            //TODO: FIXME
+            break;
         case none:
             ErrorHandler.assertExit(false, "Can't set ShaderVar of type 'none'");
     }}.replaceAll('$', shaderT);

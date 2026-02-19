@@ -33,13 +33,13 @@ enum defaultColor = HipColor.white;
     static enum floatCount = HipGeometryBatchVertex.sizeof / float.sizeof;
 }
 
-@HipShaderVertexUniform("Geom")
+@HipShaderUniform(ShaderTypes.vertex, "Geom")
 struct HipGeometryBatchVertexUniforms
 {
     Matrix4 uMVP = Matrix4.identity;
 }
 
-@HipShaderFragmentUniform("FragVars")
+@HipShaderUniform(ShaderTypes.fragment, "FragVars")
 struct HipGeometryBatchFragmentUniforms
 {
     float[4] uGlobalColor = [1,1,1,1];

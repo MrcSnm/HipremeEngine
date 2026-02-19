@@ -55,6 +55,16 @@ class Hip_GL3_ShaderProgram : ShaderProgram
 {
     bool isUsingUbo;
     uint program;
+    int[string] uniformIds;
+    int getId(string name)
+    {
+        int* ret = name in uniformIds;
+        if(ret)
+            return *ret;
+        int v = glCall(() =>glGetUniformLocation(program, cast(char*)name.ptr)); //Immutable anyway
+        uniformIds[name] = v;
+        return v;
+    }
     protected HipBlendFunction blendSrc = HipBlendFunction.CONSTANT_COLOR, blendDst = HipBlendFunction.CONSTANT_COLOR;
     protected HipBlendEquation blendEq = HipBlendEquation.DISABLED;
 }
@@ -191,8 +201,8 @@ class Hip_GL_ShaderImpl : IShader
     }
     int getId(ref ShaderProgram prog, string name)
     {
-        int varID = glCall(() =>glGetUniformLocation((cast(Hip_GL3_ShaderProgram)prog).program, cast(char*)name.ptr)); //Immutable anyway
-        if(varID < 0)
+        int varID = (cast(Hip_GL3_ShaderProgram)prog).getId(name);
+        if(varID <= 0)
         {
             ErrorHandler.showErrorMessage("Uniform not found",
             "Variable named '"~name~"' does not exists in shader "~prog.name);
@@ -274,6 +284,69 @@ class Hip_GL_ShaderImpl : IShader
             boundShader = null;
         }
     }
+    private void sendVar(const ref ShaderVar sVar, ref ShaderProgram prog)
+    {
+        int id = 0;
+        if(sVar.type != UniformType.custom) 
+            id = getId(prog, sVar.name);
+        final switch(sVar.type) with(UniformType)
+        {
+            case boolean:
+                glCall(() => glUniform1i(id, sVar.get!bool));
+                break;
+            case integer:
+                glCall(() => glUniform1i(id, sVar.get!int));
+                break;
+            case integer_array:
+                int[] temp = sVar.get!(int[]);
+                glCall(() =>glUniform1iv(id, cast(int)temp.length, temp.ptr));
+                break;
+            case uinteger:
+                glCall(() =>glUniform1ui(id, sVar.get!uint));
+                break;
+            case uinteger_array:
+                uint[] temp = sVar.get!(uint[]);
+                glCall(() =>glUniform1uiv(id, cast(int)temp.length, temp.ptr));
+                break;
+            case floating:
+                glCall(() =>glUniform1f(id, sVar.get!float));
+                break;
+            case floating2:
+                float[2] temp = sVar.get!(float[2]);
+                glCall(() =>glUniform2f(id, temp[0], temp[1]));
+                break;
+            case floating3:
+                float[3] temp = sVar.get!(float[3]);
+                glCall(() =>glUniform3f(id, temp[0], temp[1], temp[2]));
+                break;
+            case floating4:
+                float[4] temp = sVar.get!(float[4]);
+                glCall(() =>glUniform4f(id, temp[0], temp[1], temp[2], temp[3]));
+                break;
+            case floating2x2:
+                glCall(() => glUniformMatrix2fv(id, 1, GL_FALSE, cast(float*)sVar.get!(float[4]).ptr));
+                break;
+            case floating3x3:
+                glCall(() =>glUniformMatrix3fv(id, 1, GL_FALSE, cast(float*)sVar.get!(float[9]).ptr));
+                break;
+            case floating4x4:
+                glCall(() => glUniformMatrix4fv(id, 1, GL_FALSE, cast(float*)sVar.get!(float[16]).ptr));
+                break;
+            case floating_array:
+                float[] temp = sVar.get!(float[]);
+                glCall(() => glUniform1fv(id, cast(int)temp.length, temp.ptr));
+                break;
+            case texture_array:
+                GLint[] temp = sVar.get!(GLint[]);
+                glCall(() => glUniform1iv(id, cast(int)temp.length, cast(int*)temp.ptr));
+                break;
+            case custom:
+                foreach(v; sVar.variables)
+                    sendVar(v, prog);
+                break;
+            case none:break;
+        }
+    }
 
     void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
     {
@@ -287,64 +360,10 @@ class Hip_GL_ShaderImpl : IShader
             {
                 if(!v.sVar.isDirty)
                     continue;
-                int id = getId(prog, v.sVar.name);
-                final switch(v.sVar.type) with(UniformType)
-                {
-                    case boolean:
-                        glCall(() => glUniform1i(id, v.sVar.get!bool));
-                        break;
-                    case integer:
-                        glCall(() => glUniform1i(id, v.sVar.get!int));
-                        break;
-                    case integer_array:
-                        int[] temp = v.sVar.get!(int[]);
-                        glCall(() =>glUniform1iv(id, cast(int)temp.length, temp.ptr));
-                        break;
-                    case uinteger:
-                        glCall(() =>glUniform1ui(id, v.sVar.get!uint));
-                        break;
-                    case uinteger_array:
-                        uint[] temp = v.sVar.get!(uint[]);
-                        glCall(() =>glUniform1uiv(id, cast(int)temp.length, temp.ptr));
-                        break;
-                    case floating:
-                        glCall(() =>glUniform1f(id, v.sVar.get!float));
-                        break;
-                    case floating2:
-                        float[2] temp = v.sVar.get!(float[2]);
-                        glCall(() =>glUniform2f(id, temp[0], temp[1]));
-                        break;
-                    case floating3:
-                        float[3] temp = v.sVar.get!(float[3]);
-                        glCall(() =>glUniform3f(id, temp[0], temp[1], temp[2]));
-                        break;
-                    case floating4:
-                        float[4] temp = v.sVar.get!(float[4]);
-                        glCall(() =>glUniform4f(id, temp[0], temp[1], temp[2], temp[3]));
-                        break;
-                    case floating2x2:
-                        glCall(() => glUniformMatrix2fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[4]).ptr));
-                        break;
-                    case floating3x3:
-                        glCall(() =>glUniformMatrix3fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[9]).ptr));
-                        break;
-                    case floating4x4:
-                        glCall(() => glUniformMatrix4fv(id, 1, GL_FALSE, cast(float*)v.sVar.get!(float[16]).ptr));
-                        break;
-                    case floating_array:
-                        float[] temp = v.sVar.get!(float[]);
-                        glCall(() => glUniform1fv(id, cast(int)temp.length, temp.ptr));
-                        break;
-                    case texture_array:
-                        GLint[] temp = v.sVar.get!(GLint[]);
-                        glCall(() => glUniform1iv(id, cast(int)temp.length, cast(int*)temp.ptr));
-                        break;
-                    case none:break;
-                }
+                sendVar(v.sVar, prog);
                 v.sVar.isDirty = false;
             }
         }
-                
     }
 
     bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)

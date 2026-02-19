@@ -9,7 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.api.renderer.var_packing;
-import hip.api.renderer.shadervar;
 
 pragma(LDC_no_typeinfo)
 struct VarPosition
@@ -23,9 +22,9 @@ struct VarPosition
 *   Uses the OpenGL's GLSL Std 140 for getting the variable position.
 *   This function must return what is the end position given the last variable size.
 */
-VarPosition glSTD140(ref ShaderVar* v, size_t lastAlignment = 0, bool isLast = false)
+VarPosition glSTD140(size_t varSize, size_t lastAlignment = 0, bool isLast = false)
 {
-    size_t size = v.varSize;
+    size_t size = varSize;
 
     if(lastAlignment == 0)
         return VarPosition(0,size,size);
@@ -50,9 +49,9 @@ VarPosition glSTD140(ref ShaderVar* v, size_t lastAlignment = 0, bool isLast = f
 *   Uses the OpenGL's GLSL Std 140 for getting the variable position.
 *   This function must return what is the end position given the last variable size.
 */
-VarPosition dxHLSL4(ref ShaderVar* v, size_t lastAlignment = 0, bool isLast = false)
+VarPosition dxHLSL4(size_t varSize, size_t lastAlignment = 0, bool isLast = false)
 {
-    size_t newN = v.varSize;
+    size_t newN = varSize;
     if(isLast)
     {
         size_t startPos = lastAlignment;
@@ -79,7 +78,7 @@ VarPosition dxHLSL4(ref ShaderVar* v, size_t lastAlignment = 0, bool isLast = fa
     return VarPosition(lastAlignment, lastAlignment + newN, newN);
 }
 
-VarPosition nonePack(ref ShaderVar* v, size_t lastAlignment = 0, bool isLast = false)
+VarPosition nonePack(size_t varSize, size_t lastAlignment = 0, bool isLast = false)
 {
     return VarPosition(0,0,0);
 }

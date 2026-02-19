@@ -43,6 +43,7 @@ enum UniformType : ubyte
     floating3x3,
     floating4x4,
     floating_array,
+    custom,
     ///Special type that is implemented by renderers backend
     texture_array,
     none
@@ -67,8 +68,22 @@ UniformType uniformTypeFrom(T)()
         else static if(isTypeArrayOf!(float, T, 16)) return floating4x4;
         else static if(is(T == float[])) return floating_array;
         else static if(is(T == IHipTexture[])) return texture_array;
+        else static if(is(T == struct)) return custom;
         else return none;
     }
+}
+private size_t sizeFromType(T)()
+{
+    static assert(!is(T == int[]) && !is(T == float[]) && !is(T == uint[]), "Unsupported yet.");
+    return T.sizeof;
+}
+private size_t singleSizeFromType(T)()
+{
+    import std.traits:isArray;
+    static if(isArray!T)
+        return T.init[0].sizeof;
+    else
+        return T.sizeof;
 }
 
 /**
@@ -90,6 +105,8 @@ struct ShaderVar
 
     ShaderHint flags;
     ShaderVariablesLayout layout;
+    ///Used only for UniformType.custom
+    ShaderVar[] variables;
     public bool isBlackboxed() const { return (flags & ShaderHint.Blackbox) != 0;}
     public bool usesMaxTextures() const { return (flags & ShaderHint.MaxTextures) != 0;}
 
@@ -108,8 +125,8 @@ struct ShaderVar
 
     private void setDirty()
     {
-        this.isDirty = true;
         this.layout.isDirty = true;
+        isDirty = true;
     }
 
     bool setBlackboxed(T)(T value)
@@ -198,60 +215,20 @@ struct ShaderVar
             default: return 0;
         }
     }
-
-    static ShaderVar* create(ShaderTypes t, string varName, bool data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.boolean, data.sizeof, data.sizeof, layout);}
-    static ShaderVar* create(ShaderTypes t, string varName, int data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.integer, data.sizeof, data.sizeof, layout);}
-    static ShaderVar* create(ShaderTypes t, string varName, uint data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.uinteger, data.sizeof, data.sizeof, layout);}
-    static ShaderVar* create(ShaderTypes t, string varName, float data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating, data.sizeof, data.sizeof, layout);}
-    static ShaderVar* create(ShaderTypes t, string varName, float[2] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating2, data.sizeof, data[0].sizeof, layout);}
-    static ShaderVar* create(ShaderTypes t, string varName, float[3] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating3, data.sizeof, data[0].sizeof, layout);}
-    static ShaderVar* create(ShaderTypes t, string varName, Vector3 data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating3, data.sizeof, data[0].sizeof, layout);}
-    static ShaderVar* create(ShaderTypes t, string varName, float[4] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating4, data.sizeof, data[0].sizeof, layout);}
-    static ShaderVar* create(ShaderTypes t, string varName, float[9] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating3x3, data.sizeof, data[0].sizeof, layout);}
-    static ShaderVar* create(ShaderTypes t, string varName, float[16] data, ShaderVariablesLayout layout){return ShaderVar.create(t, varName, &data, UniformType.floating4x4, data.sizeof, data[0].sizeof, layout);}
-    static ShaderVar* create(ShaderTypes t, string varName, int[] data, ShaderVariablesLayout layout)
-    {
-        return ShaderVar.create(t, varName, data.ptr, UniformType.floating_array, int.sizeof*data.length, int.sizeof, layout, true);
-    }
-    static ShaderVar* create(ShaderTypes t, string varName, uint[] data, ShaderVariablesLayout layout)
-    {
-        return ShaderVar.create(t, varName, data.ptr, UniformType.floating_array, uint.sizeof*data.length, uint.sizeof, layout, true);
-    }
-    static ShaderVar* create(ShaderTypes t, string varName, float[] data, ShaderVariablesLayout layout)
-    {
-        return ShaderVar.create(t, varName, data.ptr, UniformType.floating_array, float.sizeof*data.length, float.sizeof, layout, true);
-    }
-
-    protected static ShaderVar* create(
+    private static ShaderVar createBase(
         ShaderTypes t,
         string varName,
-        void* varData,
         UniformType type,
         size_t varSize,
         size_t singleSize,
         ShaderVariablesLayout layout,
-        bool isDynamicArrayReference=false
-    )
-    {
-        ShaderVar* s = createEmpty(t, varName, type, varSize, singleSize, layout);
-        s.data[0..varSize] = varData[0..varSize];
-        s.isDynamicArrayReference = isDynamicArrayReference;
-        return s;
-    }
-    public static ShaderVar* createEmpty(
-        ShaderTypes t,
-        string varName,
-        UniformType type,
-        size_t varSize,
-        size_t singleSize,
-        ShaderVariablesLayout layout
+        ubyte[] buffer
     )
     {
         if(!isShaderVarNameValid(varName))
             throw new Exception("Variable '"~varName~"' is invalid.");
-        ShaderVar* s = new ShaderVar();
-        if(varSize != 0)
-            s.data = new void[varSize];
+        ShaderVar s;
+        s.data = buffer[0..varSize];
         s.name = varName;
         s.singleSize = singleSize;
         s.shaderType = t;
@@ -280,7 +257,7 @@ struct ShaderVar
 
 struct ShaderVarLayout
 {
-    ShaderVar* sVar;
+    ShaderVar sVar;
     size_t alignment;
     size_t size;
 }
@@ -305,7 +282,7 @@ class ShaderVariablesLayout
     protected IShader owner;
 
     //Single block representation of variables content
-    protected void* data;
+    protected ubyte[] data;
     protected void* additionalData;
 
     ///The hint are used for the Shader backend as a notifier
@@ -314,7 +291,7 @@ class ShaderVariablesLayout
 
     ///A function that must return a variable size when position = 0
     private VarPosition function(
-        ref ShaderVar* v,
+        size_t varSize,
         size_t lastAlignment,
         bool isLast
     ) packFunc;
@@ -322,8 +299,6 @@ class ShaderVariablesLayout
     ShaderTypes shaderType;
     bool isDirty = true;
     protected bool isAdditionalAllocated;
-    ///Can't unlock Layout
-    private bool isLocked;
 
     /**
     *   Use the layout name for mentioning the uniform/cbuffer block name.
@@ -334,9 +309,8 @@ class ShaderVariablesLayout
     *       layoutName = From which block it will be accessed on the shader
     *       t = What is the shader type that holds those variables
     *       hint = Use ShaderHint for additional information, multiple hints may be passed
-    *       variables = Usually you won't pass any and use .append for writing less
     */
-    this(HipRendererType type, string layoutName, ShaderTypes t, uint hint, ShaderVar*[] variables ...)
+    private this(HipRendererType type, string layoutName, ShaderTypes t, uint hint)
     {
         import core.stdc.stdlib:malloc;
         this.name = layoutName;
@@ -361,152 +335,115 @@ class ShaderVariablesLayout
             default:break;
         }
         if(packFunc is null) packFunc = &nonePack;
-
-        foreach(ShaderVar* v; variables)
-        {
-            if(v.shaderType != t)
-                throw new Exception("ShaderVariableLayout must contain only one shader type");
-            if(v.name in this.variables)
-                throw new Exception("Variable named "~v.name~" is already in the layout "~name);
-            this.variables[v.name] = ShaderVarLayout(v, 0, 0);
-            namesOrder~= v.name;
-        }
-        if(variables.length > 0)
-        {
-            calcAlignment();
-            data = malloc(getLayoutSize());
-            if(data == null)
-                throw new Exception("Out of memory");
-        }
     }
+
 
     const(char)* nameStringz() const
     {
         return this.nameZeroEnded;
     }
+    
+    private static ShaderVar[] getVars(T)(ref ShaderVariablesLayout layout, ref ShaderVar base, size_t lastAlign)
+    {
+        ShaderVar[] vars = [];
+        foreach(mem; __traits(allMembers, T))
+        {
+            alias member = __traits(getMember, T, mem);
+            alias Tmem = typeof(member);
+            alias a = __traits(getAttributes, member);
+            VarPosition pos = layout.packFunc(sizeFromType!(Tmem), lastAlign, false);
+            
+            string actualName;
+            if(uniformTypeFrom!Tmem == UniformType.custom)
+                actualName = base.name~"."~mem;
+            else
+                actualName = base.name~"."~mem~"\0";
+            ShaderVar v = ShaderVar.createBase(layout.shaderType, actualName, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem, layout, layout.data[lastAlign..pos.endPos]);
+
+            static if(uniformTypeFrom!Tmem == UniformType.custom)
+                v.variables = getVars!(Tmem)(layout, v, lastAlign);
+            vars~= v;
+            lastAlign = pos.endPos;
+        }
+        return vars;
+    }
 
     static ShaderVariablesLayout from(T)(HipRendererInfo info)
     {
         enum attr = __traits(getAttributes, T);
-        static if(is(typeof(attr[0]) == HipShaderVertexUniform))
-            enum shaderType = ShaderTypes.vertex;
-        else static if(is(typeof(attr[0]) == HipShaderFragmentUniform))
-            enum shaderType = ShaderTypes.fragment;
-        else static assert(false,
-            "Type "~T.stringof~" doesn't have a HipShaderVertexUniform nor " ~
-            "HipShaderFragmentUniform attached to it."
+        static assert(is(typeof(attr[0]) == HipShaderUniform),
+            "Type "~T.stringof~" doesn't have a HipShaderUniform attached to it."
         );
+        enum shaderType = attr[0].type;
         static assert(
             attr[0].name !is null,
             "HipShaderUniform "~T.stringof~" must contain a name as it is required to work in Direct3D 11"
         );
         ShaderVariablesLayout ret = new ShaderVariablesLayout(info.type, attr[0].name, shaderType, 0);
-        static foreach(mem; __traits(allMembers, T))
-        {{
-            alias member = __traits(getMember, T.init, mem);
+        ret.data = new ubyte[ret.calcLayoutSize!T(ret.packFunc)];
+
+        size_t lastAlign = 0;
+        foreach(i, mem; __traits(allMembers, T))
+        {
+            alias member = __traits(getMember, T, mem);
+            alias Tmem = typeof(member);
             alias a = __traits(getAttributes, member);
+
+            /**
+            *   Calculates the shader variables alignment based on the packFunc passed at startup.
+            *   Those functions are based on the shader vendor and version. Align should be called
+            *   always when there is a change on the layout.
+            */
+            VarPosition pos = ret.packFunc(sizeFromType!(Tmem), lastAlign, i == cast(int)__traits(allMembers, T).length-1);
+            ShaderVarLayout v = ShaderVarLayout(
+                ShaderVar.createBase(shaderType, mem, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem, ret, ret.data[lastAlign..pos.endPos]),
+                pos.startPos,
+                pos.size
+            );
+
+            static if(uniformTypeFrom!Tmem == UniformType.custom)
+            {
+                v.sVar.variables = ShaderVariablesLayout.getVars!(Tmem)(ret, v.sVar, lastAlign);
+            }
+            lastAlign = pos.endPos;
+
             static if(is(typeof(a[0]) == ShaderHint) && a[0] & ShaderHint.Blackbox)
             {
-                size_t length = 1;
-                ret.appendBlackboxed(mem, uniformTypeFrom!(typeof(member)), info, length, a[0]);
-            }
-            else
-            {
-                ret.append(mem, __traits(getMember, T.init, mem));
+                size_t uSize = info.uniformMapper(shaderType, uniformTypeFrom!Tmem);
+                if(uSize == 0)
+                    throw new Exception("Unused blackboxed: "~mem);//unusedBlackboxed~= mem;
+                v.sVar.flags|= a[0];
             }
 
-        }}
-
+            ret.variables[mem] = v;
+        }
         return ret;
     }
 
     IShader getShader(){return owner;}
     void lock(IShader owner)
     {
-        calcAlignment();
         this.owner = owner;
-        this.isLocked = true;
     }
 
-    /**
-    *   Calculates the shader variables alignment based on the packFunc passed at startup.
-    *   Those functions are based on the shader vendor and version. Align should be called
-    *   always when there is a change on the layout.
-    */
-    final void calcAlignment()
+    private size_t calcLayoutSize(T)(VarPosition function(
+        size_t varSize,
+        size_t lastAlignment,
+        bool isLast
+    ) packFunc
+    )
     {
         size_t lastAlign = 0;
-        for(int i = 0; i < namesOrder.length; i++)
-        {
-            ShaderVarLayout* l = &variables[namesOrder[i]];
-            VarPosition pos = packFunc(l.sVar, lastAlign, i == cast(int)namesOrder.length-1);
-            l.size = pos.size;
-            l.alignment = pos.startPos;
+        static foreach(i, mem; __traits(allMembers, T))
+        {{
+            VarPosition pos = packFunc(sizeFromType!(typeof(__traits(getMember, T, mem))), lastAlign, i == cast(int)__traits(allMembers, T).length-1);
             lastAlign = pos.endPos;
-        }
-        lastPosition = lastAlign;
+        }}
+        return lastAlign;
     }
 
+    void* getBlockData(){return data.ptr;}
 
-    void* getBlockData()
-    {
-        import core.stdc.string:memcpy;
-        foreach(v; variables)
-            memcpy(data+v.alignment, v.sVar.data.ptr, v.size);
-        return data;
-    }
-
-    protected ShaderVariablesLayout append(string varName, ShaderVar* v)
-    {
-        import core.stdc.stdlib:realloc;
-        if(varName in variables)
-            throw new Exception("Variable named "~varName~" is already in the layout "~name);
-        if(isLocked)
-            throw new Exception("Can't append ShaderVariable after it has been locked");
-        variables[varName] = ShaderVarLayout(v, 0, 0);
-        assert(varName in variables, "Could not set into variables?");
-        assert(variables[varName].sVar == v, "Could not set into variables?");
-        namesOrder~= varName;
-        calcAlignment();
-
-        // import std.stdio; //FIXME: PROBLEM ON WASM
-        // writeln("Created var ", varName, " with hints ", cast(int)v.flags);
-
-        this.data = realloc(this.data, getLayoutSize());
-        if(!this.data)
-            throw new Exception("Out of memory");
-        return this;
-    }
-
-    /**
-    *   Appends a new variable to this layout.
-    *   Type is inferred.
-    */
-    ShaderVariablesLayout append(T)(string varName, T data)
-    {
-        return append(varName, ShaderVar.create(this.shaderType, varName, data, this));
-    }
-    /**
-    *   Appends a new variable to this layout.
-    *   Type is inferred.
-    */
-    ShaderVariablesLayout appendBlackboxed(string varName, UniformType t, HipRendererInfo info, size_t count, ShaderHint extraFlags)
-    {
-        size_t uSize = info.uniformMapper(shaderType, t);
-        if(uSize == 0)
-        {
-            unusedBlackboxed~= varName;
-            return this;
-        }
-
-        ShaderVar* sV = ShaderVar.createEmpty(this.shaderType, varName, t, uSize*count, uSize, this);
-        if((extraFlags & ShaderHint.MaxTextures) != 0)
-            sV.setDirty();
-        sV.flags|= extraFlags;
-        sV.flags|= ShaderHint.Blackbox;
-
-        return append(varName, sV);
-    }
     /**
     *   For speed sake, it doesn't check whether it is valid.
     *   That means both a valid and invalid variable would return false (meaning used.)
@@ -532,16 +469,16 @@ class ShaderVariablesLayout
 
     void dispose()
     {
-        import core.stdc.stdlib:free;
+        import core.memory;
+        import core.stdc.stdlib;
         foreach (ref v; variables)
         {
             v.sVar.dispose();
             v.alignment = 0;
             v.size = 0;
-            v.sVar = null;
         }
-        if(data != null)
-            free(data);
+        if(data !is null)
+            GC.free(data.ptr);
         if(isAdditionalAllocated && additionalData != null)
             free(additionalData);
         additionalData = null;
