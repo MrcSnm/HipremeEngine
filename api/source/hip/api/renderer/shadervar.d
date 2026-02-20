@@ -403,6 +403,7 @@ class ShaderVariablesLayout
 
             static if(uniformTypeFrom!Tmem == UniformType.custom)
             {
+                ///This is only needed for old OpenGL!!!
                 v.sVar.variables = ShaderVariablesLayout.getVars!(Tmem)(ret, v.sVar, lastAlign);
             }
             lastAlign = pos.endPos;

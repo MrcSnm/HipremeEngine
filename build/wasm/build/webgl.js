@@ -2,10 +2,13 @@ function initializeWebglContext()
 {
     const canvas = document.querySelector("#glcanvas");
     /** @type {WebGL2RenderingContext} */
-    const gl = canvas.getContext("webgl");
+    let gl = canvas.getContext("webgl2");
     if(gl === null)
-        return alert("Unable to initialize WebGL. Your browser or machine may not support it.");
-
+    {
+        gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        if(!gl)
+            return alert("Unable to initialize WebGL. Your browser or machine may not support it.");
+    }
     globalThis.gl = gl;
     gl.viewport(0, 0, 800, 600);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -26,6 +29,10 @@ function initializeWebglContext()
    
     
     return {
+        wglIsWebgl2()
+        {
+            return gl instanceof WebGL2RenderingContext;
+        },
         glAttachShader(program, shader) {
             gl.attachShader(_objects[program], _objects[shader]);
         },

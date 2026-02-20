@@ -29,6 +29,8 @@ else version(WebAssembly) enum GLMaxOneBoundTexture = true;
 else version(Android) enum GLMaxOneBoundTexture = true;
 else enum GLMaxOneBoundTexture = false;
 
+enum OpenGLHasBufferMapSupport = HasOpenGL && !UseGLES;
+
 
 /**
  * HipRenderer implements a delayed unbinding. That means it will only unbind a resource when trying to bind

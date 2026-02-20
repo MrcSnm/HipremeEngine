@@ -1,6 +1,12 @@
 module gles;
 
-version(GLES20)
+version(GLES32)
+    public import gles.gl32;
+else version(GLES31)
+    public import gles.gl31;
+else version(GLES30)
+    public import gles.gl30;
+else version(GLES20)
 {
     public import gles.gl2;
     public import gles.gl2ext;
@@ -10,12 +16,6 @@ version(GLES20)
     pragma(inline) void glUniform1uiv(int location, int count, uint* value){glUniform1iv(location, count, cast(int*)value);}
     
 }
-else version(GLES30)
-    public import gles.gl30;
-else version(GLES31)
-    public import gles.gl31;
-else version(GLES32)
-    public import gles.gl32;
 else version(NO_GLES){}
 else
     static assert(false, "No GLES version is present: Available versions:
@@ -23,4 +23,4 @@ else
     GLES30
     GLES31
     GLES32"
-    );
+);

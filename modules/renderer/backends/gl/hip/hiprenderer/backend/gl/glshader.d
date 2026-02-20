@@ -14,23 +14,6 @@ module hip.hiprenderer.backend.gl.glshader;
 version(GLES32) version = GLES3;
 version(GLES30) version = GLES3;
 
-version(GLES3)
-{
-    enum shaderVersion = "#version 300 es";
-    enum floatPrecision = "precision mediump float;";
-    // enum floatPrecision = "";
-}
-else version(GLES20)
-{
-    enum shaderVersion = "#version 100";
-    enum floatPrecision = "precision mediump float;";
-}
-else
-{
-    enum shaderVersion = "#version 330 core";
-    enum floatPrecision = "";
-}
-
 version(OpenGL):
 import hip.api.renderer.texture;
 import hip.hiprenderer.backend.gl.glrenderer;
@@ -56,6 +39,7 @@ class Hip_GL3_ShaderProgram : ShaderProgram
     bool isUsingUbo;
     uint program;
     int[string] uniformIds;
+
     int getId(string name)
     {
         int* ret = name in uniformIds;
@@ -284,7 +268,7 @@ class Hip_GL_ShaderImpl : IShader
             boundShader = null;
         }
     }
-    private void sendVar(const ref ShaderVar sVar, ref ShaderProgram prog)
+    private void sendVar(ref ShaderVar sVar, ref ShaderProgram prog)
     {
         int id = 0;
         if(sVar.type != UniformType.custom) 
@@ -342,10 +326,14 @@ class Hip_GL_ShaderImpl : IShader
                 break;
             case custom:
                 foreach(v; sVar.variables)
-                    sendVar(v, prog);
+                {
+                    if(v.isDirty)
+                        sendVar(v, prog);
+                }
                 break;
             case none:break;
         }
+        sVar.isDirty = false;
     }
 
     void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
@@ -361,7 +349,6 @@ class Hip_GL_ShaderImpl : IShader
                 if(!v.sVar.isDirty)
                     continue;
                 sendVar(v.sVar, prog);
-                v.sVar.isDirty = false;
             }
         }
     }

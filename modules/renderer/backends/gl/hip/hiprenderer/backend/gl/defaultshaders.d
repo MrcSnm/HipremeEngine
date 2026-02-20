@@ -47,15 +47,18 @@ private {
 
     string getBaseVertex()
     {
+    
         return shaderVersion~"\n"~floatPrecision~"\n"~`
 #if __VERSION__ == 100
     #define ATTRIBUTE(LOC) attribute
     #define IN varying
     #define OUT varying
+    #define UNIFORM_BUFFER_OBJECT(bindingN, varName, structType, structDecl ) struct structType structDecl ; uniform structType varName
 #else
     #define ATTRIBUTE(LOC) layout (location = LOC) in
     #define IN in
     #define OUT out
+    #define UNIFORM_BUFFER_OBJECT(bindingN, varName, structName, structDecl) layout(std140) uniform structName structDecl varName
 #endif
         `;
     }
@@ -78,10 +81,12 @@ private {
     #define IN varying
     #define OUT varying
     #define OUT_COLOR gl_FragColor
+    #define UNIFORM_BUFFER_OBJECT(bindingN, varName, structType, structDecl ) struct structType structDecl ; uniform structType varName
 #else
     #define IN in
     #define OUT out
     #define OUT_COLOR outPixelColor
+    #define UNIFORM_BUFFER_OBJECT(bindingN, varName, structName, structDecl) layout(std140) uniform structName structDecl varName
     out vec4 outPixelColor;
 #endif
     `;

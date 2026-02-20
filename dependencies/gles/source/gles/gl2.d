@@ -787,16 +787,27 @@ void glGetShaderPrecisionFormat (GLenum shadertype, GLenum precisiontype, GLint*
 void glGetShaderSource (GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* source);
 version(WebAssembly)
 {
+    private bool wglIsWebgl2();
+
+    private bool _isWebGL2 = false;
+    bool isWebGL2() { return _isWebGL2; }
     GLubyte* glGetString (GLenum name)
     {
+        _isWebGL2 = wglIsWebgl2();
         switch(name)
         {
             case GL_RENDERER:
-                return cast(GLubyte*)"OpenGLES 2.0 emulated by WebGL 1.0(Hipreme Engine)".ptr;
+                return isWebGL2 ?
+                    cast(GLubyte*)"OpenGLES 3.0 emulated by WebGL 2.0(Hipreme Engine)".ptr :
+                    cast(GLubyte*)"OpenGLES 2.0 emulated by WebGL 1.0(Hipreme Engine)".ptr;
             case GL_VERSION:
-                return cast(GLubyte*)"WebGL 1.0".ptr;
+                return isWebGL2 ? 
+                    cast(GLubyte*)"WebGL 2.0".ptr :
+                    cast(GLubyte*)"WebGL 1.0".ptr;
             case GL_SHADING_LANGUAGE_VERSION:
-                return cast(GLubyte*)"WebGL GLSL 1.0.0".ptr;
+                return isWebGL2 ?
+                    cast(GLubyte*)"GLSL ES 3.0".ptr:
+                    cast(GLubyte*)"GLSL ES 1.0".ptr;
             default:
             return null;
         }
