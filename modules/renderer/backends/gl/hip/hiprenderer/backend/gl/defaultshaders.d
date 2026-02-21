@@ -11,7 +11,6 @@ static if(!HasOpenGL)
 else:
 
 immutable DefaultShader[] DefaultShaders = [
-    HipShaderPresets.DEFAULT: DefaultShader(GLDefaultShadersPath, &getDefaultVertex, &getDefaultVertex),
     HipShaderPresets.FRAME_BUFFER: DefaultShader(GLDefaultShadersPath, &getFrameBufferVertex, &getFrameBufferFragment),
     HipShaderPresets.GEOMETRY_BATCH: DefaultShader(GLDefaultShadersPath, &getGeometryBatchVertex, &getGeometryBatchFragment),
     HipShaderPresets.SPRITE_BATCH: DefaultShader(GLDefaultShadersPath, &getSpriteBatchVertex, &getSpriteBatchFragment),
@@ -22,25 +21,32 @@ immutable DefaultShader[] DefaultShaders = [
 
 private {
 
+    static if(UseGLES)
+        enum floatPrecision = "precision mediump float;";
+    else
+        enum floatPrecision = "";
+
     version(GLES32) version = GLES3;
     version(GLES30) version = GLES3;
 
     version(GLES3)
     {
         enum shaderVersion = "#version 300 es";
-        enum floatPrecision = "precision mediump float;";
         // enum floatPrecision = "";
     }
     else version(GLES20)
     {
-        enum shaderVersion = "#version 100";
-        enum floatPrecision = "precision mediump float;";
+        static if(UseWebGL)
+        {
+            string shaderVersion() {
+                import gles;
+                return isWebGL2 ? "#version 300 es" : "#version 100";
+            }
+        }
+        else enum shaderVersion = "#version 100";
     }
     else
-    {
         enum shaderVersion = "#version 330 core";
-        enum floatPrecision = "";
-    }
 
     import hip.util.conv;
     import hip.util.format: format;
@@ -53,12 +59,12 @@ private {
     #define ATTRIBUTE(LOC) attribute
     #define IN varying
     #define OUT varying
-    #define UNIFORM_BUFFER_OBJECT(bindingN, varName, structType, structDecl ) struct structType structDecl ; uniform structType varName
+    #define UNIFORM_BUFFER_OBJECT(bindingN, structType, varName, structDecl ) struct structType structDecl ; uniform structType varName
 #else
     #define ATTRIBUTE(LOC) layout (location = LOC) in
     #define IN in
     #define OUT out
-    #define UNIFORM_BUFFER_OBJECT(bindingN, varName, structName, structDecl) layout(std140) uniform structName structDecl varName
+    #define UNIFORM_BUFFER_OBJECT(bindingN, structType, varName, structDecl) layout(std140) uniform structType structDecl varName
 #endif
         `;
     }
@@ -69,24 +75,20 @@ private {
         if(baseShader is null)
         {
             string defs;
-            version(WebAssembly) defs~= "#define WASM\n";
             version(PSVita) defs~= "#define PSVITA\n";
             baseShader = shaderVersion~"\n"~floatPrecision~"\n"~defs ~
-`#if defined(WASM) || defined(PSVITA)
-    #define TEXTURE_2D texture2D
-#else
-    #define TEXTURE_2D texture
-#endif
-#if __VERSION__ == 100
+`#if __VERSION__ == 100
     #define IN varying
     #define OUT varying
     #define OUT_COLOR gl_FragColor
-    #define UNIFORM_BUFFER_OBJECT(bindingN, varName, structType, structDecl ) struct structType structDecl ; uniform structType varName
+    #define UNIFORM_BUFFER_OBJECT(bindingN, structType, varName, structDecl ) struct structType structDecl ; uniform structType varName
+    #define TEXTURE_2D texture2D
 #else
     #define IN in
     #define OUT out
     #define OUT_COLOR outPixelColor
-    #define UNIFORM_BUFFER_OBJECT(bindingN, varName, structName, structDecl) layout(std140) uniform structName structDecl varName
+    #define UNIFORM_BUFFER_OBJECT(bindingN, structType, varName, structDecl) layout(std140) uniform structType structDecl varName
+    #define TEXTURE_2D texture
     out vec4 outPixelColor;
 #endif
     `;
@@ -97,21 +99,6 @@ private {
 
 
 
-    string getDefaultFragment()
-    {
-        return getBaseFragment~q{
-
-            uniform vec4 globalColor;
-            IN vec4 vertexColor;
-            IN vec2 tex_uv;
-            uniform sampler2D tex1;
-
-            void main()
-            {
-                OUT_COLOR = vertexColor*globalColor*TEXTURE_2D(tex1, tex_uv);
-            }
-        };
-    }
     string getFrameBufferFragment()
     {
         return getBaseFragment~q{
@@ -129,92 +116,70 @@ private {
         };
     }
 
-    version(GLES20) //They are very different, so, better to keep them separate
+    string getSpriteBatchFragment()
     {
-        string getSpriteBatchFragment()
+        import hip.hiprenderer.renderer;
+        int sup = HipRenderer.getMaxSupportedShaderTextures();
+        string textureSlotSwitchCase = (GLESVersion == 3 || !UseGLES) ? "switch(texId)\n{\n" : "";
+        if(sup == 1) textureSlotSwitchCase = "OUT_COLOR = TEXTURE_2D(uTex[0], inTexST)*inVertexColor;\n";
+        else
         {
-            import hip.hiprenderer.renderer;
-            int sup = HipRenderer.getMaxSupportedShaderTextures();
-            string textureSlotSwitchCase;
-            if(sup == 1) textureSlotSwitchCase = "OUT_COLOR = TEXTURE_2D(uTex[0], inTexST)*inVertexColor*uBatchColor;\n";
-            else
-            {
-                for(int i = 0; i < sup; i++)
-                {
-                    string strI = to!string(i);
-                    if(i != 0)
-                        textureSlotSwitchCase~="\t\t\t\telse ";
-                    textureSlotSwitchCase~="if(texId == "~strI~")"~
-                    "{OUT_COLOR = TEXTURE_2D(uTex["~strI~"], inTexST)*inVertexColor*uBatchColor;}\n";
-                }
-            }
-            textureSlotSwitchCase~="}\n";
-            enum shaderSource = q{
-                uniform vec4 uBatchColor;
-
-                IN vec4 inVertexColor;
-                IN vec2 inTexST;
-                IN float inTexID;
-
-                void main()
-            };
-
-
-            return getBaseFragment~format!q{
-                    uniform sampler2D uTex[%s];}(sup)~
-                shaderSource~
-            "{"~q{
-                    int texId = int(inTexID);
-            }~ textureSlotSwitchCase;
-        }
-    }
-    else
-    {
-        string getSpriteBatchFragment()
-        {
-            import hip.hiprenderer.renderer;
-            int sup = HipRenderer.getMaxSupportedShaderTextures();
-            //Push the line breaks for easier debugging on gpu debugger
-            string textureSlotSwitchCase = "switch(texId)\n{\n";
             for(int i = 0; i < sup; i++)
             {
                 string strI = to!string(i);
-                textureSlotSwitchCase~="case "~strI~": "~
-                "\t\tOUT_COLOR = TEXTURE_2D(uTex["~strI~"], inTexST)*inVertexColor*uBatchColor;break;\n";
+                static if(GLESVersion == 2)
+                {
+                    if(i != 0)
+                        textureSlotSwitchCase~="\t\t\t\telse ";
+                    textureSlotSwitchCase~="if(texId == "~strI~")"~
+                    "{OUT_COLOR = TEXTURE_2D(uTex["~strI~"], inTexST)*inVertexColor*cbuf.uBatchColor;}\n";
+                }
+                else
+                {
+                    textureSlotSwitchCase~="case "~strI~": "~
+                    "\t\tOUT_COLOR = TEXTURE_2D(uTex["~strI~"], inTexST)*inVertexColor*cbuf.uBatchColor;break;\n";
+                }
             }
-            textureSlotSwitchCase~="}\n";
-
-                enum shaderSource = q{
-
-                    uniform vec4 uBatchColor;
-
-                    IN vec4 inVertexColor;
-                    IN vec2 inTexST;
-                    IN float inTexID;
-
-                    void main()
-                };
-            return getBaseFragment~format!q{
-                    uniform sampler2D uTex[%s];}(sup)~
-                shaderSource~
-            "{"~q{
-                    int texId = int(inTexID);
-            } ~textureSlotSwitchCase~
-            "}";
-            // outPixelColor = texture(uTex[texId], inTexST)* inVertexColor * uBatchColor;
-            // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor * uBatchColor;
+            if(GLESVersion != 2)
+                textureSlotSwitchCase~= "}";
         }
+        enum shaderSource = q{
+            IN vec4 inVertexColor;
+            IN vec2 inTexST;
+            IN float inTexID;
+
+            UNIFORM_BUFFER_OBJECT(0, Cbuf, cbuf, 
+            {
+                vec4 uBatchColor;
+            });
+
+            void main()
+        };
+
+
+        return getBaseFragment~format!q{
+                uniform sampler2D uTex[%s];}(sup)~
+            shaderSource~
+        "{"~q{
+                int texId = int(inTexID);
+        }~ textureSlotSwitchCase ~ "}\n";
+        // outPixelColor = texture(uTex[texId], inTexST)* inVertexColor;
+        // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor;
 
     }
+    
     string getGeometryBatchFragment()
     {
         return getBaseFragment ~ q{
-            uniform vec4 uGlobalColor;
+            UNIFORM_BUFFER_OBJECT(0, FragVars, frag, 
+            {
+                vec4 uGlobalColor;
+            });
             IN vec4 inVertexColor;
 
             void main()
             {
-                OUT_COLOR = inVertexColor * uGlobalColor;
+                OUT_COLOR = inVertexColor * frag.uGlobalColor;
             }
         };
     }
@@ -222,14 +187,17 @@ private {
     string getBitmapTextFragment()
     {
         return getBaseFragment ~  q{
-            uniform vec4 uColor;
+            UNIFORM_BUFFER_OBJECT(0, FragVars, frag, 
+            {
+                vec4 uColor;
+            });
             uniform sampler2D uTex;
             IN vec2 inTexST;
 
             void main()
             {
                 float r = TEXTURE_2D(uTex, inTexST).r;
-                OUT_COLOR = vec4(r,r,r,r)*uColor;
+                OUT_COLOR = vec4(r,r,r,r)*frag.uColor;
             }
         };
     }
@@ -273,27 +241,6 @@ private {
     // }
 
 
-    string getDefaultVertex()
-    {
-        return getBaseVertex ~ q{
-
-            ATTRIBUTE(0) vec3 position;
-            ATTRIBUTE(1) vec4 color;
-            ATTRIBUTE(2) vec2 texCoord;
-            uniform mat4 proj;
-
-
-            OUT vec4 vertexColor;
-            OUT vec2 tex_uv;
-
-            void main()
-            {
-                gl_Position = proj*vec4(position, 1.0);
-                vertexColor = color;
-                tex_uv = texCoord;
-            }
-        };
-    }
     string getFrameBufferVertex()
     {
         return getBaseVertex ~ q{
@@ -318,7 +265,11 @@ private {
             ATTRIBUTE(2) vec2 vTexST;
             ATTRIBUTE(3) float vTexID;
 
-            uniform mat4 uMVP;
+            UNIFORM_BUFFER_OBJECT(0, Cbuf1, cbuf, 
+            {
+                mat4 uMVP;
+            });
+
 
             OUT vec4 inVertexColor;
             OUT vec2 inTexST;
@@ -326,7 +277,7 @@ private {
 
             void main()
             {
-                gl_Position = uMVP*vec4(vPosition, 1.0);
+                gl_Position = cbuf.uMVP*vec4(vPosition, 1.0);
                 inVertexColor = vColor;
                 inTexST = vTexST;
                 inTexID = vTexID;
@@ -340,13 +291,17 @@ private {
         ATTRIBUTE(0) vec3 vPosition;
         ATTRIBUTE(1) vec4 vColor;
 
-        uniform mat4 uMVP;
+        UNIFORM_BUFFER_OBJECT(0, Geom, geom, 
+        {
+            mat4 uMVP;
+        });
+
 
         OUT vec4 inVertexColor;
 
             void main()
             {
-                gl_Position = uMVP*vec4(vPosition, 1.0);
+                gl_Position = geom.uMVP*vec4(vPosition, 1.0);
                 inVertexColor = vColor;
             }
         };
@@ -359,13 +314,17 @@ private {
             ATTRIBUTE(0) vec3 vPosition;
             ATTRIBUTE(1) vec2 vTexST;
 
-            uniform mat4 uMVP;
+            UNIFORM_BUFFER_OBJECT(0, Cbuf, cbuf, 
+            {
+                mat4 uMVP;
+            });
+
 
             OUT vec2 inTexST;
 
             void main()
             {
-                gl_Position = uMVP * vec4(vPosition, 1.0);
+                gl_Position = cbuf.uMVP * vec4(vPosition, 1.0);
                 inTexST = vTexST;
             }
         };

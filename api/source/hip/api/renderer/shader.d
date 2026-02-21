@@ -22,7 +22,6 @@ enum ShaderTypes : ubyte
 
 enum HipShaderPresets : ubyte
 {
-    DEFAULT,
     FRAME_BUFFER,
     GEOMETRY_BATCH,
     SPRITE_BATCH,

@@ -83,6 +83,8 @@ struct HipShaderUniform
     *   i.e: Constant Buffer block name
     */
     string name;
+
+    ubyte glBindPoint = 0;
 }
 
 /**

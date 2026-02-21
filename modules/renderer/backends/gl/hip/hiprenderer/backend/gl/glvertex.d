@@ -11,6 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.hiprenderer.backend.gl.glvertex;
 
 version(OpenGL):
+public import hip.hiprenderer.backend.gl.glbuffer;
 import hip.api.renderer.vertex;
 import hip.hiprenderer.backend.gl.glrenderer;
 import hip.error.handler;
@@ -21,17 +22,7 @@ import hip.hiprenderer.shader;
 import hip.hiprenderer.vertex;
 
 
-private int getGLUsage(HipResourceUsage usage)
-{
-    final switch(usage) with(HipResourceUsage)
-    {
-        case Immutable:
-            return GL_STATIC_DRAW;
-        case Default:
-        case Dynamic:
-            return GL_DYNAMIC_DRAW;
-    }
-}
+
 private int getGLAttributeType(HipAttributeType _t)
 {
     final switch(_t) with(HipAttributeType)
@@ -56,69 +47,8 @@ private ubyte isGLAttributeNormalized(HipAttributeType _t)
     }
 }
 
-GLenum getBufferType(HipRendererBufferType type)
-{
-    final switch ( type )
-    {
-        case HipRendererBufferType.vertex:
-            return GL_ARRAY_BUFFER;
-        case HipRendererBufferType.index:
-            return GL_ELEMENT_ARRAY_BUFFER;
-    }
-}
-
-final class Hip_GL3_Buffer : IHipRendererBuffer
-{
-    size_t size;
-    uint handle;
-    immutable int usage;
-    int glType;
-    immutable HipRendererBufferType _type;
-
-    HipRendererBufferType type() const { return _type; }
 
 
-
-    this(size_t size, HipResourceUsage usage, HipRendererBufferType type)
-    {
-        this.size = size;
-        this.usage = getGLUsage(usage);
-        this._type = type;
-        this.glType = getBufferType(type);
-        glCall(() => glGenBuffers(1, &handle));
-    }
-    void bind()
-    {
-        glCall(()=>glBindBuffer(glType, handle));
-    }
-    void unbind()
-    {
-        glCall(()=>glBindBuffer(glType, 0));
-    }
-    void setData(const(void)[] data)
-    {
-        this.size = data.length;
-        this.bind();
-        glCall(() => glBufferData(glType, data.length, cast(void*)data.ptr, this.usage));
-    }
-
-    ubyte[] getBuffer(){return null;}
-    void unmapBuffer(){}
-    void updateData(int offset, const(void)[] data)
-    {
-        if(data.length + offset > this.size)
-        {
-            ErrorHandler.assertExit(
-                false, "Tried to set data with size "~to!string(size)~"and offset "~to!string(offset)~
-        "for buffer with size "~to!string(this.size));
-        }
-        this.bind();
-        {
-            glCall(() => glBufferSubData(glType, offset, data.length, data.ptr));
-        }
-    }
-    ~this(){glCall(() => glDeleteBuffers(1, &handle));}
-}
 
 //Used as a wrapper 
 final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl

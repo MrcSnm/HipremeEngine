@@ -8,7 +8,7 @@ public import hip.api.renderer.shadervar;
 /**
 *   Changes how the Shader behaves based on the backend
 */
-enum ShaderHint : uint
+enum ShaderHint : ubyte
 {
     NONE = 0,
     GL_USE_BLOCK = 1<<0,
@@ -99,9 +99,9 @@ struct ShaderVar
     string name;
     ShaderTypes shaderType;
     UniformType type;
-    size_t singleSize;
     bool isDynamicArrayReference;
     bool isDirty = true;
+    size_t singleSize;
 
     ShaderHint flags;
     ShaderVariablesLayout layout;
@@ -114,7 +114,7 @@ struct ShaderVar
     size_t varSize() const{return data.length;}
     size_t length() const {return varSize / singleSize;}
 
-    const T get(T)()
+    T get(T)() const
     {
         static if(isDynamicArray!T)
             return cast(T)data;
@@ -125,6 +125,8 @@ struct ShaderVar
 
     private void setDirty()
     {
+        foreach(v; variables)
+            v.setDirty();
         this.layout.isDirty = true;
         isDirty = true;
     }
@@ -297,6 +299,7 @@ class ShaderVariablesLayout
     ) packFunc;
 
     ShaderTypes shaderType;
+    private TypeInfo fromType;
     bool isDirty = true;
     protected bool isAdditionalAllocated;
 
@@ -310,13 +313,14 @@ class ShaderVariablesLayout
     *       t = What is the shader type that holds those variables
     *       hint = Use ShaderHint for additional information, multiple hints may be passed
     */
-    private this(HipRendererType type, string layoutName, ShaderTypes t, uint hint)
+    private this(HipRendererType type, string layoutName, ShaderTypes t, ShaderHint hint, TypeInfo from)
     {
         import core.stdc.stdlib:malloc;
         this.name = layoutName;
         this.nameZeroEnded = (layoutName~"\0").ptr;
         this.shaderType = t;
         this.hint = hint;
+        this.fromType = from;
 
         switch(type)
         {
@@ -335,6 +339,26 @@ class ShaderVariablesLayout
             default:break;
         }
         if(packFunc is null) packFunc = &nonePack;
+    }
+
+    private void doCopy(TypeInfo t, void* data, size_t dataSize)
+    {
+        import core.stdc.string;
+        if(t !is fromType)
+            throw new Exception("ShaderVariableLayout usage Error: "~
+            "\n\tType Expected: "~fromType.toString~
+            "\n\tType Received: "~t.toString
+            );
+        if(memcmp(this.data.ptr, data, dataSize) != 0)
+        {
+            this.isDirty = true;
+            memcpy(this.data.ptr, data, dataSize);
+        }
+    }
+
+    void set(T)(const T data)
+    {
+        doCopy(typeid(T), cast(void*)&data, T.sizeof);
     }
 
 
@@ -379,7 +403,7 @@ class ShaderVariablesLayout
             attr[0].name !is null,
             "HipShaderUniform "~T.stringof~" must contain a name as it is required to work in Direct3D 11"
         );
-        ShaderVariablesLayout ret = new ShaderVariablesLayout(info.type, attr[0].name, shaderType, 0);
+        ShaderVariablesLayout ret = new ShaderVariablesLayout(info.type, attr[0].name, shaderType, ShaderHint.NONE, typeid(T));
         ret.data = new ubyte[ret.calcLayoutSize!T(ret.packFunc)];
 
         size_t lastAlign = 0;
@@ -418,13 +442,15 @@ class ShaderVariablesLayout
 
             ret.variables[mem] = v;
         }
+        ret.lastPosition = lastAlign;
         return ret;
     }
 
     IShader getShader(){return owner;}
     void lock(IShader owner)
     {
-        this.owner = owner;
+        if(this.owner is null)
+            this.owner = owner;
     }
 
     private size_t calcLayoutSize(T)(VarPosition function(
@@ -471,7 +497,6 @@ class ShaderVariablesLayout
     void dispose()
     {
         import core.memory;
-        import core.stdc.stdlib;
         foreach (ref v; variables)
         {
             v.sVar.dispose();
@@ -481,7 +506,7 @@ class ShaderVariablesLayout
         if(data !is null)
             GC.free(data.ptr);
         if(isAdditionalAllocated && additionalData != null)
-            free(additionalData);
+            GC.free(additionalData);
         additionalData = null;
         data = null;
     }

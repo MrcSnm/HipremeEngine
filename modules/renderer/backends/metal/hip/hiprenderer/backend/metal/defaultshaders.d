@@ -12,7 +12,6 @@ static if(!HasMetal)
 else:
 
 immutable DefaultShader[] DefaultShaders = [
-    HipShaderPresets.DEFAULT: DefaultShader(MetalDefaultShadersPath, &getDefaultVertex, &getDefaultVertex),
     HipShaderPresets.FRAME_BUFFER: DefaultShader(MetalDefaultShadersPath, &getFrameBufferVertex, &getFrameBufferFragment),
     HipShaderPresets.GEOMETRY_BATCH: DefaultShader(MetalDefaultShadersPath, &getGeometryBatchVertex, &getGeometryBatchFragment),
     HipShaderPresets.SPRITE_BATCH: DefaultShader(MetalDefaultShadersPath, &getSpriteBatchVertex, &getSpriteBatchFragment),
@@ -21,12 +20,10 @@ immutable DefaultShader[] DefaultShaders = [
 ];
 
 private {
-    string getDefaultFragment(){return "";}
     string getFrameBufferFragment(){return "";}
     string getGeometryBatchFragment(){return "";}
     string getSpriteBatchFragment(){return "";}
     string getBitmapTextFragment(){return "";}
-    string getDefaultVertex(){return string.init;}
     string getFrameBufferVertex(){return import("metal/framebuffer.metal");}
     string getGeometryBatchVertex(){return import("metal/geometrybatch.metal");}
     string getSpriteBatchVertex(){return import("metal/spritebatch.metal");}

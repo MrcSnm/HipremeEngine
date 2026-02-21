@@ -107,7 +107,7 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     IShader createShader()
     {
-        version(HipGL3)
+        static if(OpenGLHasUniformBufferSupport) 
             return new Hip_GL3_ShaderImpl();
         else
             return new Hip_GL_ShaderImpl();

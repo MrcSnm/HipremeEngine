@@ -237,6 +237,13 @@ public class Shader : IReloadable
         return ret;
     }
 
+    public ShaderVariablesLayout getBuffer(string name)
+    {
+        ShaderVariablesLayout* ret = name in layouts;
+        if(ret) return *ret;
+        return null;
+    }
+
 
     public void addVarLayout(ShaderVariablesLayout layout)
     {
@@ -316,15 +323,12 @@ public class Shader : IReloadable
                 continue;
             foreach(ref ShaderVarLayout varLayout; value.variables)
             {
-                if(varLayout.sVar.isDirty)
-                {
-                    if(varLayout.sVar.type == UniformType.floating3x3)
-                        varLayout.sVar.set(HipRenderer.getMatrix(varLayout.sVar.get!Matrix3), false);
-                    else if(varLayout.sVar.type == UniformType.floating4x4)
-                        varLayout.sVar.set(HipRenderer.getMatrix(varLayout.sVar.get!Matrix4), false);
-                    if(varLayout.sVar.usesMaxTextures)
-                        varLayout.sVar.set(HipRenderer.getMaxSupportedShaderTextures(), true);
-                }
+                if(varLayout.sVar.type == UniformType.floating3x3)
+                    varLayout.sVar.set(HipRenderer.getMatrix(varLayout.sVar.get!Matrix3), false);
+                else if(varLayout.sVar.type == UniformType.floating4x4)
+                    varLayout.sVar.set(HipRenderer.getMatrix(varLayout.sVar.get!Matrix4), false);
+                if(varLayout.sVar.usesMaxTextures)
+                    varLayout.sVar.set(HipRenderer.getMaxSupportedShaderTextures(), true);
             }
         }
         shaderImpl.sendVars(shaderProgram, layouts);

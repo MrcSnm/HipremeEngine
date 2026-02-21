@@ -370,6 +370,40 @@ enum GL_FRAMEBUFFER_BINDING = 0x8CA6;
 enum GL_RENDERBUFFER_BINDING = 0x8CA7;
 enum GL_MAX_RENDERBUFFER_SIZE = 0x84E8;
 enum GL_INVALID_FRAMEBUFFER_OPERATION = 0x0506;
+
+
+//WebGL Extension
+version(WebAssembly)
+{
+    enum GL_UNIFORM_BUFFER = 0x8A11;
+    enum GL_UNIFORM_BUFFER_BINDING = 0x8A28;
+    enum GL_UNIFORM_BUFFER_START = 0x8A29;
+    enum GL_UNIFORM_BUFFER_SIZE = 0x8A2A;
+    enum GL_READ_ONLY                          = 0x88B8;
+	enum GL_WRITE_ONLY                         = 0x88B9;
+	enum GL_READ_WRITE                         = 0x88BA;
+    enum GL_INVALID_INDEX = 0xFFFFFFFFu;
+
+
+    extern(System) nothrow @nogc{
+        void glBindBufferRange (GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size);
+        void glBindBufferBase (GLenum target, GLuint index, GLuint buffer);
+        void glUniformBlockBinding (GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
+
+        GLint wglGetUniformBlockIndex(GLuint program, GLuint length, GLchar* name);
+    }
+    GLint glGetUniformBlockIndex (GLuint program, GLchar* name)
+    {
+        size_t length = 0;
+        while(name[length++] != '\0'){}
+        assert(length != 0, "Can't send a 0 length string to wglGetUniformBlockIndex");
+        return wglGetUniformBlockIndex(program, length-1, name);
+    }
+
+
+}
+
+
 alias PFNGLACTIVETEXTUREPROC = void function (GLenum texture);
 alias PFNGLATTACHSHADERPROC = void function (GLuint program, GLuint shader);
 alias PFNGLBINDATTRIBLOCATIONPROC = void function (GLuint program, GLuint index, GLchar* name);
@@ -730,7 +764,7 @@ else
 version(WebAssembly)
 {
     ubyte* wglGetProgramInfoLog(GLuint program);
-    void glGetProgramInfoLog (GLuint program, GLsizei bufSize, GLsizei* length, GLchar* infoLog)
+    void glGetProgramInfoLog (GLuint program, GLsizei bufSize, GLint* length, GLchar* infoLog)
     {
         ubyte* _temp = wglGetProgramInfoLog(program);
         size_t _tempLen = *cast(size_t*)_temp;

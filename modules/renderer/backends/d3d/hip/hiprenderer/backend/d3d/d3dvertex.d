@@ -61,6 +61,8 @@ final class Hip_D3D11_Buffer : IHipRendererBuffer
                 else
                     _hip_d3d_context.IASetIndexBuffer(buffer, DXGI_FORMAT_R16_UINT, 0);
                 break;
+            case HipRendererBufferType.uniform:
+                assert(false, "Unsupported on d3d");
         }
     }
     void unbind()
@@ -76,6 +78,8 @@ final class Hip_D3D11_Buffer : IHipRendererBuffer
                 else
                     _hip_d3d_context.IASetIndexBuffer(null, DXGI_FORMAT_R16_UINT, 0);
                 break;
+            case HipRendererBufferType.uniform:
+                assert(false, "Unsupported on D3D");
         }
     }
 

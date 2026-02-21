@@ -28,6 +28,16 @@ enum HipResourceUsage : ubyte
     Immutable,
 }
 
+enum HipResourceAccess : ubyte
+{
+    ///Can only write from that resource
+    write,
+    ///Can only read from that resource
+    read,
+    ///Read and write from that resource
+    readWrite
+}
+
 enum HipAttributeType : ubyte
 {
     ///Used as a unsigned r8g8b8a8 normalized type.
@@ -52,7 +62,8 @@ struct HipVertexAttributeInfo
 enum HipRendererBufferType : ubyte
 {
     index,
-    vertex
+    vertex,
+    uniform
 }
 
 interface IHipRendererBuffer

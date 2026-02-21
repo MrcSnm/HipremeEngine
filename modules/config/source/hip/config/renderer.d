@@ -15,6 +15,14 @@ else version(PSVita) enum UseGLES = true;
 else version(WebAssembly) enum UseGLES = true;
 else enum UseGLES = false;
 
+version(PSVita) enum GLESVersion = 2;
+else version(WebAssembly) enum GLESVersion = 2;
+else enum GLESVersion = UseGLES ? 3 : 0;
+
+
+version(WebAssembly) enum UseWebGL = true;
+else enum UseWebGL = false;
+
 version(OpenGL)  enum HasOpenGL = true;
 else enum HasOpenGL = false;
 
@@ -28,6 +36,8 @@ version(PSVita) enum GLMaxOneBoundTexture = true;
 else version(WebAssembly) enum GLMaxOneBoundTexture = true;
 else version(Android) enum GLMaxOneBoundTexture = true;
 else enum GLMaxOneBoundTexture = false;
+
+enum OpenGLHasUniformBufferSupport = !UseGLES || (GLESVersion == 3) || UseWebGL;
 
 enum OpenGLHasBufferMapSupport = HasOpenGL && !UseGLES;
 

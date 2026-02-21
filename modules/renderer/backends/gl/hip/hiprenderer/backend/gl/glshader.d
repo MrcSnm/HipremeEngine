@@ -170,7 +170,7 @@ class Hip_GL_ShaderImpl : IShader
         glCall(() =>glLinkProgram(prog));
         
         int success;
-        size_t length;
+        int length;
         char[4096] infoLog;
 
         glCall(() =>glGetProgramiv(prog, GL_LINK_STATUS, &success));
@@ -411,67 +411,81 @@ class Hip_GL_ShaderImpl : IShader
 }
 
 
-version(HipGL3) class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
-{
-    import hip.util.data_structures:Pair;
-    protected Pair!(ShaderVariablesLayout, uint)[] ubos;
 
-    override int getId(ref ShaderProgram prog, string name)
+static if(OpenGLHasUniformBufferSupport) 
+class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
+{
+    struct UBO
     {
-        // auto glProg = cast(Hip_GL3_ShaderProgram)prog;
-        //if(glProg.isUsingUbo)
-          //  return getUboId()
-        //else
-        return super.getId(prog, name);
+        Hip_GL3_Buffer buffer;
+        uint bindPoint;
     }
+    import hip.hiprenderer.backend.gl.glbuffer;
+    protected ShaderVariablesLayout[] ubos;
+    uint id = 0;
 
     override void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
     {
-        if(layout.hint & ShaderHint.GL_USE_BLOCK)
-        {
-            uint ubo;
-            glCall(() => glGenBuffers(1, &ubo));
-            glCall(() => glBindBuffer(GL_UNIFORM_BUFFER, ubo));
-            glCall(() => glBufferData(GL_UNIFORM_BUFFER, layout.getLayoutSize(), null, GL_DYNAMIC_DRAW));
-            glCall(() => glBindBuffer(GL_UNIFORM_BUFFER, 0));
-            ubos~= Pair!(ShaderVariablesLayout, uint)(layout, ubo);
-        }
-    }
-    protected uint getUboId(ref Pair!(ShaderVariablesLayout, int) ubo, string name)
-    {
-        return glCall(() =>glGetUniformBlockIndex(ubo.b, cast(char*)name.ptr));
-    }
-    protected void bindUbo(ref Pair!(ShaderVariablesLayout, int) ubo, int index = 0)
-    {
-        glCall(() =>glBindBufferBase(GL_UNIFORM_BUFFER, index, ubo.second));
-    }
-    protected void updateUbo(ref Pair!(ShaderVariablesLayout, int) ubo)
-    {
-        import core.stdc.string;
-        glCall(() =>glBindBuffer(GL_UNIFORM_BUFFER, ubo.b));
-        GLvoid* ptr = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-        memcpy(ptr, ubo.a.getBlockData(), ubo.a.getLayoutSize());
-        glCall(() => glUnmapBuffer(GL_UNIFORM_BUFFER));
-        glCall(() => glBindBuffer(GL_UNIFORM_BUFFER, 0));
+        UBO* b = new UBO(
+            new Hip_GL3_Buffer(layout.getLayoutSize(), HipResourceUsage.Dynamic, HipRendererBufferType.uniform),            
+        );
+
+        layout.setAdditionalData(cast(void*)b, true);
+        setUboBindPoint(shaderProgram, layout.name, *b);
+        ubos~= layout;
     }
     
-
-
+    protected void setUboBindPoint(const ref ShaderProgram prog, string name, ref UBO ubo)
+    {
+        int program = (cast(Hip_GL3_ShaderProgram)prog).program;
+        int blockIndex = glCall(() =>glGetUniformBlockIndex(program, cast(char*)name.ptr));
+        if(blockIndex == GL_INVALID_INDEX)
+        {
+            throw new Exception(
+                "OpenGL GLSL Usage Error: setUboBindPoint"~
+                "\nProgram: " ~prog.name~
+                "\nUniform Buffer Object block with expected name '"~name~"' not found." ~
+                "\nPlease check hip.hiprenderer.backend.gl.defaultshaders #define examples for using "~
+                "UNIFORM_BUFFER_OBJECT in your shader." ~
+                "\nExample Usage:\n"~
+                "UNIFORM_BUFFER_OBJECT(0, Camera, camera, 
+                {
+                    mat4 uMVP;
+                });
+                ATTRIBUTE(0) vec3 vPosition;
+                void main()
+                {
+                    gl_Position = camera.uMVP * vec4(vPosition, 1.0);
+                }"
+            );
+        }
+        ubo.bindPoint = id++;
+        glCall(() => glUniformBlockBinding(program, blockIndex, ubo.bindPoint));
+    }
     override void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
     {
         Hip_GL3_ShaderProgram glProg = cast(Hip_GL3_ShaderProgram)prog;
-        if(!glProg.isUsingUbo)
+        foreach(k, ShaderVariablesLayout l; layouts)
         {
-            super.sendVars(prog, layouts);
-            return;
-        }
-        assert(false, "UBO binding is still not in use.");
+            import core.stdc.string;
+            UBO* ubo = cast(UBO*)l.getAdditionalData();
+            if(l.isDirty)
+            {
+                ubo.buffer.updateData(0, l.getBlockData()[0..l.getLayoutSize()]);
+                // writeln("Bind ", l.name, " to ", ubo.blockIndex);
+                l.isDirty = false;
+            }
+            glCall(() =>glBindBufferBase(GL_UNIFORM_BUFFER, ubo.bindPoint, ubo.buffer.handle));
+        }   
     }
 
     override void dispose(ref ShaderProgram prog)
     {
         foreach (ub; ubos)
-            glCall(() => glDeleteBuffers(1, &ub.b));
+        {
+            UBO* ubo = cast(UBO*)ub.getAdditionalData();
+            glCall(() => glDeleteBuffers(1, &ubo.buffer.handle));
+        }
         ubos.length = 0;
         super.dispose(prog);
     }

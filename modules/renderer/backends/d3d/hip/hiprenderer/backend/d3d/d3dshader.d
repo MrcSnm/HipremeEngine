@@ -342,8 +342,7 @@ class Hip_D3D11_ShaderImpl : IShader
         D3D11_SUBRESOURCE_DATA data;
         data.pSysMem = layout.getBlockData();
 
-        Hip_D3D11_ShaderVarAdditionalData* d = cast(Hip_D3D11_ShaderVarAdditionalData*)
-            malloc(Hip_D3D11_ShaderVarAdditionalData.sizeof);
+        Hip_D3D11_ShaderVarAdditionalData* d = new Hip_D3D11_ShaderVarAdditionalData;
         HRESULT res = _hip_d3d_device.CreateBuffer(&desc, &data, &d.buffer);
         layout.setAdditionalData(cast(void*)d, true);
 

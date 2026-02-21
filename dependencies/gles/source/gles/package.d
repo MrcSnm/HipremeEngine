@@ -13,8 +13,7 @@ else version(GLES20)
 
     //Additional functions for working on hipreme engine
     pragma(inline) void glUniform1ui(int location, uint value){glUniform1i(location, cast(int)value);}
-    pragma(inline) void glUniform1uiv(int location, int count, uint* value){glUniform1iv(location, count, cast(int*)value);}
-    
+    pragma(inline) void glUniform1uiv(int location, int count, uint* value){glUniform1iv(location, count, cast(int*)value);}    
 }
 else version(NO_GLES){}
 else

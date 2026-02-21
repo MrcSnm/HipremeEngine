@@ -9,7 +9,6 @@ static if(!HasDirect3D)
 else:
 
 immutable DefaultShader[] DefaultShaders = [
-    HipShaderPresets.DEFAULT: DefaultShader(D3DDefaultShadersPath, &getDefaultVertex, &getDefaultVertex),
     HipShaderPresets.FRAME_BUFFER: DefaultShader(D3DDefaultShadersPath, &getFrameBufferVertex, &getFrameBufferFragment),
     HipShaderPresets.GEOMETRY_BATCH: DefaultShader(D3DDefaultShadersPath, &getGeometryBatchVertex, &getGeometryBatchFragment),
     HipShaderPresets.SPRITE_BATCH: DefaultShader(D3DDefaultShadersPath, &getSpriteBatchVertex, &getSpriteBatchFragment),
@@ -19,14 +18,6 @@ immutable DefaultShader[] DefaultShaders = [
 
 private {
 
-    string getDefaultFragment()
-    {
-        return q{
-        float4 main() : SV_TARGET
-        {
-            return float4(1.0f, 1.0f, 1.0f, 1.0f);
-        }};
-    }
     string getFrameBufferFragment()
     {
         return q{
@@ -114,14 +105,6 @@ private {
         };
     }
 
-    string getDefaultVertex()
-    {
-        return q{
-        float4 main(float2 pos : Position) : SV_POSITION
-        {
-            return float4(pos.x, pos.y, 0.0f, 1.0f);
-        }};
-    }
     string getFrameBufferVertex()
     {
         return q{

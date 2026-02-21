@@ -287,6 +287,20 @@ function initializeWebglContext()
         },
         glViewport ( x, y, width, height ) {
             gl.viewport(x,y,width,height);
-        }
+        },
+
+        ////WebGL 2 extension
+        wglGetUniformBlockIndex(programHandle, len, offset)
+        {
+            return gl.getUniformBlockIndex(_objects[programHandle], WasmUtils.fromDString(len, offset));
+        },
+        glBindBufferBase(target, bindPoint, buffer) {
+            gl.bindBufferBase(target, bindPoint, _objects[buffer])
+        },
+
+        glUniformBlockBinding(programHandle, blockIndex, bindPoint) {
+            gl.uniformBlockBinding(_objects[programHandle], blockIndex, bindPoint)
+        },
+
     }
 }
