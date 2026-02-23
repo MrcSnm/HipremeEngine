@@ -84,6 +84,11 @@ struct HipShaderUniform
     */
     string name;
 
+    /** 
+     * This name is the varName of UNIFORM_BUFFER_OBJECT() for the OpenGL shaders. Unused on other places
+     */
+    string instanceName;
+
     ubyte glBindPoint = 0;
 }
 

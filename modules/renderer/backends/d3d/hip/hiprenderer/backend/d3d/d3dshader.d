@@ -269,7 +269,7 @@ class Hip_D3D11_ShaderImpl : IShader
         _hip_d3d_context.PSSetShader(null, cast(ID3D11ClassInstance*)0, 0u);
     }
 
-    int getId(ref ShaderProgram prog, string name)
+    int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
     {
         import hip.error.handler;
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;

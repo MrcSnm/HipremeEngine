@@ -183,13 +183,17 @@ class Hip_GL_ShaderImpl : IShader
         
         return success==true;
     }
-    int getId(ref ShaderProgram prog, string name)
+    int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
     {
         int varID = (cast(Hip_GL3_ShaderProgram)prog).getId(name);
         if(varID <= 0)
         {
+            string existingVariables;
+            foreach(k, v; layout.variables)
+                existingVariables~= "\t"~k~"\n";
             ErrorHandler.showErrorMessage("Uniform not found",
-            "Variable named '"~name~"' does not exists in shader "~prog.name);
+            "Variable named '"~name~"' does not exists in shader "~prog.name~
+            "Existing variables: "~existingVariables);
         }
         return varID;
     }
@@ -268,11 +272,11 @@ class Hip_GL_ShaderImpl : IShader
             boundShader = null;
         }
     }
-    private void sendVar(ref ShaderVar sVar, ref ShaderProgram prog)
+    private void sendVar(ref ShaderVar sVar, ref ShaderProgram prog, ShaderVariablesLayout layout)
     {
         int id = 0;
         if(sVar.type != UniformType.custom) 
-            id = getId(prog, sVar.name);
+            id = getId(prog, sVar.name, layout);
         final switch(sVar.type) with(UniformType)
         {
             case boolean:
@@ -328,7 +332,7 @@ class Hip_GL_ShaderImpl : IShader
                 foreach(v; sVar.variables)
                 {
                     if(v.isDirty)
-                        sendVar(v, prog);
+                        sendVar(v, prog, layout);
                 }
                 break;
             case none:break;
@@ -348,7 +352,7 @@ class Hip_GL_ShaderImpl : IShader
             {
                 if(!v.sVar.isDirty)
                     continue;
-                sendVar(v.sVar, prog);
+                sendVar(v.sVar, prog, l);
             }
         }
     }

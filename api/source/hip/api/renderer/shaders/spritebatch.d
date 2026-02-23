@@ -24,13 +24,13 @@ public import hip.math.matrix;
 }
 
 
-@HipShaderUniform(ShaderTypes.vertex, "Cbuf1")
+@HipShaderUniform(ShaderTypes.vertex, "Cbuf1", "cbuf1")
 struct HipSpriteVertexUniform
 {
     Matrix4 uMVP = Matrix4.identity;
 }
 
-@HipShaderUniform(ShaderTypes.fragment, "Cbuf")
+@HipShaderUniform(ShaderTypes.fragment, "Cbuf", "cbuf")
 struct HipSpriteFragmentUniform
 {
     float[4] uBatchColor = [1,1,1,1];

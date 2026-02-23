@@ -121,7 +121,7 @@ private {
         import hip.hiprenderer.renderer;
         int sup = HipRenderer.getMaxSupportedShaderTextures();
         string textureSlotSwitchCase = (GLESVersion == 3 || !UseGLES) ? "switch(texId)\n{\n" : "";
-        if(sup == 1) textureSlotSwitchCase = "OUT_COLOR = TEXTURE_2D(uTex[0], inTexST)*inVertexColor;\n";
+        if(sup == 1) textureSlotSwitchCase = "OUT_COLOR = TEXTURE_2D(uTex[0], inTexST)*inVertexColor*cbuf.uBatchColor;\n";
         else
         {
             for(int i = 0; i < sup; i++)
@@ -265,7 +265,7 @@ private {
             ATTRIBUTE(2) vec2 vTexST;
             ATTRIBUTE(3) float vTexID;
 
-            UNIFORM_BUFFER_OBJECT(0, Cbuf1, cbuf, 
+            UNIFORM_BUFFER_OBJECT(0, Cbuf1, cbuf1, 
             {
                 mat4 uMVP;
             });
@@ -277,7 +277,7 @@ private {
 
             void main()
             {
-                gl_Position = cbuf.uMVP*vec4(vPosition, 1.0);
+                gl_Position = cbuf1.uMVP*vec4(vPosition, 1.0);
                 inVertexColor = vColor;
                 inTexST = vTexST;
                 inTexID = vTexID;

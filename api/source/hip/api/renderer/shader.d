@@ -46,7 +46,7 @@ interface IShader
     void bind(ShaderProgram program);
     void unbind(ShaderProgram program);
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
-    int  getId(ref ShaderProgram prog, string name);
+    int  getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout);
     
 
     ///Used as intermediary for deleting non program intermediary in opengl

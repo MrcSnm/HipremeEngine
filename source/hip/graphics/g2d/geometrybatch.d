@@ -33,13 +33,13 @@ enum defaultColor = HipColor.white;
     static enum floatCount = HipGeometryBatchVertex.sizeof / float.sizeof;
 }
 
-@HipShaderUniform(ShaderTypes.vertex, "Geom")
+@HipShaderUniform(ShaderTypes.vertex, "Geom", "geom")
 struct HipGeometryBatchVertexUniforms
 {
     Matrix4 uMVP = Matrix4.identity;
 }
 
-@HipShaderUniform(ShaderTypes.fragment, "FragVars")
+@HipShaderUniform(ShaderTypes.fragment, "FragVars", "frag")
 struct HipGeometryBatchFragmentUniforms
 {
     float[4] uGlobalColor = [1,1,1,1];
@@ -420,8 +420,8 @@ class GeometryBatch : IHipBatch
             mesh.updateVertices(cast(float[])vertices[lastVertexDrawn..verticesCount], lastVertexDrawn);
             mesh.updateIndices(indices[lastIndexDrawn..currentIndex], lastIndexDrawn);
 
-            mesh.shader.setFragmentVar("FragVars.uGlobalColor", cast(float[4])[1,1,1,1], true);
-            mesh.shader.setVertexVar("Geom.uMVP",  camera.getMVP, true);
+            mesh.shader.getBuffer("FragVars").set(HipGeometryBatchFragmentUniforms(cast(float[4])[1,1,1,1]));
+            mesh.shader.getBuffer("Geom").set(HipGeometryBatchVertexUniforms(camera.getMVP));
 
             mesh.shader.sendVars();
             //Vertices to render = indices.length

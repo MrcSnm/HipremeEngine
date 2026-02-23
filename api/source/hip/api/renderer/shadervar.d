@@ -365,8 +365,7 @@ class ShaderVariablesLayout
         {
             // if(memcmp(getBlockData + varOrder[i].alignment, &__traits(getMember, data, mem), varOrder[i].size) != 0)
             {
-                memcpy(getBlockData + varOrder[i].alignment, &__traits(getMember, data, mem), varOrder[i].size);
-                // varOrder[i].sVar.set(__traits(getMember, data, mem), false);
+                varOrder[i].sVar.set(__traits(getMember, data, mem), false);
                 // varOrder[i].sVar.isDirty = true;
                 this.isDirty = true;
             }
@@ -411,6 +410,7 @@ class ShaderVariablesLayout
         static assert(is(typeof(attr[0]) == HipShaderUniform),
             "Type "~T.stringof~" doesn't have a HipShaderUniform attached to it."
         );
+        static assert(attr[0].instanceName.length, "instanceName should be specified if you're using OpenGL.");
         enum shaderType = attr[0].type;
         static assert(
             attr[0].name !is null,
@@ -425,6 +425,7 @@ class ShaderVariablesLayout
             alias member = __traits(getMember, T, mem);
             alias Tmem = typeof(member);
             alias a = __traits(getAttributes, member);
+            string actualName = attr[0].instanceName~"."~mem;
 
             /**
             *   Calculates the shader variables alignment based on the packFunc passed at startup.
@@ -438,7 +439,7 @@ class ShaderVariablesLayout
                 uniformTypeFrom!Tmem
             );
             ShaderVarLayout v = ShaderVarLayout(
-                ShaderVar.createBase(shaderType, mem, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem, ret, ret.data[pos.startPos..pos.endPos]),
+                ShaderVar.createBase(shaderType, actualName, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem, ret, ret.data[pos.startPos..pos.endPos]),
                 pos.startPos,
                 pos.size
             );
@@ -458,8 +459,8 @@ class ShaderVariablesLayout
                 v.sVar.flags|= a[0];
             }
 
-            ret.variables[mem] = v;
-            ret.varOrder~= mem in ret.variables;
+            ret.variables[actualName] = v;
+            ret.varOrder~= actualName in ret.variables;
         }
         ret.lastPosition = lastAlign;
         return ret;

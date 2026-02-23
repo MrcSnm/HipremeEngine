@@ -248,7 +248,7 @@ class HipMTLShader : IShader
 
     }
 
-    int getId(ref ShaderProgram prog, string name)
+    int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
     {
         return int.init; // TODO: implement
     }

@@ -37,13 +37,13 @@ public import hip.api.graphics.text : HipTextAlign, Size;
     static enum size_t quadsCount = floatsCount*4;
 }
 
-@HipShaderUniform(ShaderTypes.vertex, "Cbuf")
+@HipShaderUniform(ShaderTypes.vertex, "Cbuf", "cbuf")
 struct HipTextRendererVertexUniforms
 {
     Matrix4 uMVP = Matrix4.identity;
 }
 
-@HipShaderUniform(ShaderTypes.fragment, "FragVars")
+@HipShaderUniform(ShaderTypes.fragment, "FragVars", "frag")
 struct HipTextRendererFragmentUniforms
 {
     float[4] uColor = [1,1,1,1];
@@ -83,8 +83,8 @@ class HipTextRenderer : IHipBatch
             bmTextShader.addVarLayout(ShaderVariablesLayout.from!(HipTextRendererFragmentUniforms)(HipRenderer.getInfo));
             bmTextShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
             const Viewport v = HipRenderer.getCurrentViewport();
-            bmTextShader.uMVP = Matrix4.orthoLH(0, v.width, v.height, 0, 0.01, 100);
-            bmTextShader.setDefaultBlock("FragVars");
+            bmTextShader.getBuffer("Cbuf").set(HipTextRendererVertexUniforms(Matrix4.orthoLH(0, v.width, v.height, 0, 0.01, 100)));
+            // bmTextShader.setDefaultBlock("FragVars");
             bmTextShader.sendVars();
         }
         ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
@@ -121,7 +121,7 @@ class HipTextRenderer : IHipBatch
         {
             if(this.color != HipColor.no)
                 draw();
-            bmTextShader.uColor = HipColorf(color);
+            bmTextShader.getBuffer("FragVars").set(HipTextRendererFragmentUniforms(HipColorf(color)));
         }
         this.color = color;
     }
@@ -172,7 +172,7 @@ class HipTextRenderer : IHipBatch
         {
             mesh.bind();
             this.font.texture.bind();
-            mesh.shader.setVertexVar("Cbuf.uMVP", camera.getMVP(), true);
+            mesh.shader.getBuffer("Cbuf").set(HipTextRendererVertexUniforms(camera.getMVP()));
             mesh.shader.sendVars();
 
             size_t start = lastDrawQuadsCount*4;
