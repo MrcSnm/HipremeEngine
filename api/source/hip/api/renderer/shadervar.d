@@ -139,7 +139,7 @@ struct ShaderVar
         memcpy(data.ptr, &value, varSize);
         return true;
     }
-    bool set(T)(T value, bool validateData)
+    bool set(T)(const T value, bool validateData)
     {
         import core.stdc.string;
         static assert(uniformTypeFrom!T != UniformType.none, "Invalid type "~T.stringof);
@@ -276,7 +276,7 @@ class ShaderVariablesLayout
     import hip.api.renderer.var_packing;
 
     ShaderVarLayout[string] variables;
-    private string[] namesOrder;
+    private ShaderVarLayout*[] varOrder;
     private string[] unusedBlackboxed;
     string name;
     ///char* representation of name
@@ -295,7 +295,8 @@ class ShaderVariablesLayout
     private VarPosition function(
         size_t varSize,
         size_t lastAlignment,
-        bool isLast
+        bool isLast,
+        UniformType type
     ) packFunc;
 
     ShaderTypes shaderType;
@@ -349,16 +350,28 @@ class ShaderVariablesLayout
             "\n\tType Expected: "~fromType.toString~
             "\n\tType Received: "~t.toString
             );
-        if(memcmp(this.data.ptr, data, dataSize) != 0)
-        {
-            this.isDirty = true;
-            memcpy(this.data.ptr, data, dataSize);
-        }
+        // if(memcmp(this.data.ptr, data, dataSize) != 0)
+        // {
+        //     this.isDirty = true;
+        //     memcpy(this.data.ptr, data, dataSize);
+        // }
     }
 
     void set(T)(const T data)
     {
+        import core.stdc.string;
         doCopy(typeid(T), cast(void*)&data, T.sizeof);
+        static foreach(i, mem; __traits(allMembers, T))
+        {
+            // if(memcmp(getBlockData + varOrder[i].alignment, &__traits(getMember, data, mem), varOrder[i].size) != 0)
+            {
+                memcpy(getBlockData + varOrder[i].alignment, &__traits(getMember, data, mem), varOrder[i].size);
+                // varOrder[i].sVar.set(__traits(getMember, data, mem), false);
+                // varOrder[i].sVar.isDirty = true;
+                this.isDirty = true;
+            }
+
+        }
     }
 
 
@@ -375,7 +388,7 @@ class ShaderVariablesLayout
             alias member = __traits(getMember, T, mem);
             alias Tmem = typeof(member);
             alias a = __traits(getAttributes, member);
-            VarPosition pos = layout.packFunc(sizeFromType!(Tmem), lastAlign, false);
+            VarPosition pos = layout.packFunc(sizeFromType!(Tmem), lastAlign, false, uniformTypeFrom!Tmem);
             
             string actualName;
             if(uniformTypeFrom!Tmem == UniformType.custom)
@@ -418,9 +431,14 @@ class ShaderVariablesLayout
             *   Those functions are based on the shader vendor and version. Align should be called
             *   always when there is a change on the layout.
             */
-            VarPosition pos = ret.packFunc(sizeFromType!(Tmem), lastAlign, i == cast(int)__traits(allMembers, T).length-1);
+            VarPosition pos = ret.packFunc(
+                sizeFromType!(Tmem), 
+                lastAlign, 
+                i == cast(int)__traits(allMembers, T).length-1,
+                uniformTypeFrom!Tmem
+            );
             ShaderVarLayout v = ShaderVarLayout(
-                ShaderVar.createBase(shaderType, mem, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem, ret, ret.data[lastAlign..pos.endPos]),
+                ShaderVar.createBase(shaderType, mem, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem, ret, ret.data[pos.startPos..pos.endPos]),
                 pos.startPos,
                 pos.size
             );
@@ -441,6 +459,7 @@ class ShaderVariablesLayout
             }
 
             ret.variables[mem] = v;
+            ret.varOrder~= mem in ret.variables;
         }
         ret.lastPosition = lastAlign;
         return ret;
@@ -456,14 +475,20 @@ class ShaderVariablesLayout
     private size_t calcLayoutSize(T)(VarPosition function(
         size_t varSize,
         size_t lastAlignment,
-        bool isLast
+        bool isLast,
+        UniformType type
     ) packFunc
     )
     {
         size_t lastAlign = 0;
         static foreach(i, mem; __traits(allMembers, T))
         {{
-            VarPosition pos = packFunc(sizeFromType!(typeof(__traits(getMember, T, mem))), lastAlign, i == cast(int)__traits(allMembers, T).length-1);
+            VarPosition pos = packFunc(
+                sizeFromType!(typeof(__traits(getMember, T, mem))),
+                lastAlign, 
+                i == cast(int)__traits(allMembers, T).length-1, 
+                uniformTypeFrom!(typeof(__traits(getMember, T, mem)))
+            );
             lastAlign = pos.endPos;
         }}
         return lastAlign;
