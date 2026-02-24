@@ -267,10 +267,10 @@ class HipRendererImplementation : IHipRenderer
         res.shaders~= new Shader(rendererImpl.createShader());
         return res.shaders[$-1];
     }
-    public Shader newShader(string vertexShaderPath, string fragmentShaderPath)
+    public Shader newShader(string shaderPath)
     {
         Shader ret = newShader();
-        ret.loadShadersFromFiles(vertexShaderPath, fragmentShaderPath);
+        ret.loadShaderFromFile(shaderPath);
         return ret;
     }
 

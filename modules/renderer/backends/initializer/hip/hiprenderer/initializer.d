@@ -127,7 +127,7 @@ public Shader newShader(HipShaderPresets shaderPreset, HipRendererType type = Hi
     Shader ret = HipRenderer.newShader();
     DefaultShader shaderInfo = HipDefaultShaders[type][shaderPreset];
 
-    ShaderStatus status = ret.loadShaders(shaderInfo.vSource(), shaderInfo.fSource(), shaderInfo.path~"."~shaderPreset.to!string);
+    ShaderStatus status = ret.loadShader(shaderInfo.shaderSource(), shaderInfo.path~"."~shaderPreset.to!string);
 
     if(status != ShaderStatus.SUCCESS)
         logln("Failed loading shaders with status ", status, " at preset ", shaderPreset, " on "~shaderInfo.path);

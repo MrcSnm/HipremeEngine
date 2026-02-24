@@ -904,9 +904,10 @@ version(WebAssembly)
         else
         {
             while(str[sourceSize++] != '\0'){}
+            sourceSize--;
         }
         //Null character ending is not accepted on firefox.
-        wglShaderSource(shader, str, sourceSize - 1);
+        wglShaderSource(shader, str, sourceSize);
     }
 }
 else

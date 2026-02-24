@@ -38,11 +38,9 @@ public class Shader : IReloadable
     protected ShaderVariablesLayout defaultLayout;
     //Optional
     IShader shaderImpl;
-    string fragmentShaderPath;
-    string vertexShaderPath;
+    string shaderPath;
 
-    protected string internalVertexSource;
-    protected string internalFragmentSource;
+    protected string internalShaderSource;
     private bool isUseCall = false;
 
     this(IShader shaderImpl)
@@ -52,10 +50,10 @@ public class Shader : IReloadable
         fragmentShader = shaderImpl.createFragmentShader();
         shaderProgram = shaderImpl.createShaderProgram();
     }
-    this(IShader shaderImpl, string vertexSource, string fragmentSource)
+    this(IShader shaderImpl, string shaderSource)
     {
         this(shaderImpl);
-        ShaderStatus status = loadShaders(vertexSource, fragmentSource);
+        ShaderStatus status = loadShader(shaderSource);
         if(status != ShaderStatus.SUCCESS)
         {
             import hip.console.log;
@@ -63,15 +61,13 @@ public class Shader : IReloadable
         }
     }
 
-    ShaderStatus loadShaders(string vertexShaderSource, string fragmentShaderSource, string shaderPath = "")
+    ShaderStatus loadShader(string shaderSource, string shaderPath = "")
     {
-        this.internalVertexSource = vertexShaderSource;
-        this.internalFragmentSource = fragmentShaderSource;
-
-        vertexShaderPath = fragmentShaderPath = shaderProgram.name = shaderPath;
-        if(!shaderImpl.compileShader(vertexShader, vertexShaderSource))
+        this.internalShaderSource = shaderSource;
+        this.shaderPath = shaderProgram.name = shaderPath;
+        if(!shaderImpl.compileShader(vertexShader, shaderSource))
             return ShaderStatus.VERTEX_COMPILATION_ERROR;
-        if(!shaderImpl.compileShader(fragmentShader, fragmentShaderSource))
+        if(!shaderImpl.compileShader(fragmentShader, shaderSource))
             return ShaderStatus.FRAGMENT_COMPILATION_ERROR;
         if(!shaderImpl.linkProgram(shaderProgram, vertexShader, fragmentShader))
             return ShaderStatus.LINK_ERROR;
@@ -79,16 +75,15 @@ public class Shader : IReloadable
         return ShaderStatus.SUCCESS;
     }
 
-    ShaderStatus loadShadersFromFiles(string vertexShaderPath, string fragmentShaderPath)
+    ShaderStatus loadShaderFromFile(string shaderPath)
     {
-        this.vertexShaderPath = vertexShaderPath;
-        this.fragmentShaderPath = fragmentShaderPath;
-        return loadShaders(getFileContent(vertexShaderPath), getFileContent(fragmentShaderPath));
+        this.shaderPath = shaderPath;
+        return loadShader(getFileContent(shaderPath), shaderPath);
     }
 
     ShaderStatus reloadShaders()
     {
-        return loadShadersFromFiles(this.vertexShaderPath, this.fragmentShaderPath);
+        return loadShaderFromFile(this.shaderPath);
     }
 
     void setVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
@@ -123,7 +118,7 @@ public class Shader : IReloadable
         if(v is null)
         {
             if(!isUnused)
-                ErrorHandler.showWarningMessage("Shader " ~ type.to!string ~ " Var not set on shader loaded from '"~fragmentShaderPath~"'",
+                ErrorHandler.showWarningMessage("Shader " ~ type.to!string ~ " Var not set on shader loaded from '"~shaderPath~"'",
                 "Could not find shader var with name "~name~
                 ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
                 " Did you forget to add a layout namespace to the var name?")
@@ -230,8 +225,8 @@ public class Shader : IReloadable
             import hip.util.conv:to;
             throw new Exception(
                 "Could not find variable named '"~name~"'.\n\tDefault Layout: ["~this.defaultLayout.name~
-                "].\n\tShader Path: "~ (type == ShaderTypes.fragment ? fragmentShaderPath : vertexShaderPath) ~
-                "\\tnExisting Variables in shader type "~type.to!string~":\n\t  "~getExistingVariableNames(type).join("\n\t  ")
+                "].\n\tShader Path: "~ shaderPath ~
+                "\n\tExisting Variables in shader type "~type.to!string~":\n\t  "~getExistingVariableNames(type).join("\n\t  ")
             );
         }
         return ret;
@@ -357,7 +352,7 @@ public class Shader : IReloadable
         fragmentShader = shaderImpl.createFragmentShader();
         shaderProgram = shaderImpl.createShaderProgram();
 
-        return loadShaders(internalVertexSource, internalFragmentSource) == ShaderStatus.SUCCESS;
+        return loadShader(internalShaderSource) == ShaderStatus.SUCCESS;
     }
 
     void onRenderFrameEnd()

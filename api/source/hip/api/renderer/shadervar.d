@@ -450,15 +450,14 @@ class ShaderVariablesLayout
                 v.sVar.variables = ShaderVariablesLayout.getVars!(Tmem)(ret, v.sVar, lastAlign);
             }
             lastAlign = pos.endPos;
+            size_t uSize = info.uniformMapper(shaderType, uniformTypeFrom!Tmem);
 
             static if(is(typeof(a[0]) == ShaderHint) && a[0] & ShaderHint.Blackbox)
             {
-                size_t uSize = info.uniformMapper(shaderType, uniformTypeFrom!Tmem);
-                if(uSize == 0)
-                    throw new Exception("Unused blackboxed: "~mem);//unusedBlackboxed~= mem;
+                // if(uSize == 0)
+                //     throw new Exception("Unused blackboxed: "~mem);//unusedBlackboxed~= mem;
                 v.sVar.flags|= a[0];
             }
-
             ret.variables[actualName] = v;
             ret.varOrder~= actualName in ret.variables;
         }

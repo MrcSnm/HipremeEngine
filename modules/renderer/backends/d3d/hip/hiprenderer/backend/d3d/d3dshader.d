@@ -145,6 +145,7 @@ class Hip_D3D11_ShaderImpl : IShader
         shaderSource~="\0";
 
         string shaderType = shaderPrefix == "ps" ? "Pixel Shader" : "Vertex Shader";
+        const(char)* func = shaderPrefix == "ps" ? "fragmentMain" : "vertexMain";
         char* source = cast(char*)shaderSource.ptr;
 
         //No #includes
@@ -172,7 +173,7 @@ class Hip_D3D11_ShaderImpl : IShader
         ].staticArray;
 
         HRESULT hr = D3DCompile(source, shaderSource.length+1, null,
-        defines.ptr, null, "main",  shaderPrefix.ptr, compile_flags, effects_flags, &shader, &error);
+        defines.ptr, null, func,  shaderPrefix.ptr, compile_flags, effects_flags, &shader, &error);
         shaderPtr = shader;
 
         if(ErrorHandler.assertLazyErrorMessage(SUCCEEDED(hr), shaderType~" compilation error", "Compilation failed"))

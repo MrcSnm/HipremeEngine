@@ -26,10 +26,8 @@ struct DefaultShader
 {
     ///Path on where the shaders are stored.
     string path;
-    ///Vertex Source
-    string function() vSource;
-    ///Fragment Source
-    string function() fSource;
+    ///Complete shader source
+    string function() shaderSource;
 }
 
 pragma(LDC_no_typeinfo)

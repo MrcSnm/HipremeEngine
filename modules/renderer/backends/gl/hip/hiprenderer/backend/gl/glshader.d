@@ -112,11 +112,84 @@ class Hip_GL_ShaderImpl : IShader
         HipRenderer.exitOnError();
         return prog;
     }
+
+    static string getShaderVersion(string str)
+    {
+        import hip.util.string;
+        return between(str, "#version ", "\n");
+    }
+    static string getShaderPrecision(string str)
+    {
+        import hip.util.string;
+        return between(str, "precision ", "\n");
+    }
+
+    static string preprocess(string shader, ShaderTypes type)
+    {
+        string ver = getShaderVersion(shader);
+        string prefix;
+        
+        string precision = getShaderPrecision(shader);
+        if(!ver.length)
+            prefix = shaderVersion;
+        if(!precision.length)
+            prefix~= floatPrecision;
+        
+        final switch(type)
+        {
+            case ShaderTypes.fragment:
+                prefix~= "#define FRAGMENT\n";
+                break;
+            case ShaderTypes.vertex:
+                prefix~= "#define VERTEX\n";
+                break;
+            case ShaderTypes.geometry:assert(false, "Unuspported geometry.");
+            case ShaderTypes.none:assert(false, "Unuspported none.");
+        }
+        prefix~= 
+`#if __VERSION__ == 100
+    #define INOUT varying
+    #define IN varying
+    #define OUT varying
+    #define OUT_COLOR gl_FragColor
+    #define UNIFORM_BUFFER_OBJECT(bindingN, structType, varName, structDecl ) struct structType structDecl ; uniform structType varName
+    #ifdef FRAGMENT
+        #define SAMPLE2D texture2D
+    #elif defined(VERTEX)
+        #define ATTRIBUTE(LOC) attribute
+    #endif
+#else
+    #define IN in
+    #define OUT out
+    #define OUT_COLOR outPixelColor
+    #define UNIFORM_BUFFER_OBJECT(bindingN, structType, varName, structDecl) layout(std140) uniform structType structDecl varName
+
+    #ifdef FRAGMENT
+        #define INOUT IN
+        #define SAMPLE2D texture
+        out vec4 outPixelColor;
+    #else
+        #define INOUT OUT
+        #define ATTRIBUTE(LOC) layout (location = LOC) in
+    #endif
+#endif
+
+#ifdef FRAGMENT
+#define ENTRY_POINT fragmentMain()
+#elif defined(VERTEX)
+#define ENTRY_POINT vertexMain()
+#endif
+#line 1 0
+`;
+        return prefix ~ shader ~ "\nvoid main(){ENTRY_POINT;}";
+    }
+
+
     bool compileShader(GLuint shaderID, string shaderSource)
     {
-        shaderSource~="\0";
         char* source = cast(char*)shaderSource.ptr; 
-        glCall(() =>glShaderSource(shaderID, 1, &source,  cast(GLint*)null));
+        GLint[1] lengths = [cast(GLint)shaderSource.length];
+        glCall(() =>glShaderSource(shaderID, 1, &source, lengths.ptr));
         glCall(() =>glCompileShader(shaderID));
         int success;
         
@@ -154,10 +227,12 @@ class Hip_GL_ShaderImpl : IShader
     }
     bool compileShader(VertexShader vs, string shaderSource)
     {
+        shaderSource = preprocess(shaderSource, ShaderTypes.vertex);
         return compileShader((cast(Hip_GL3_VertexShader)vs).shader, shaderSource);
     }
     bool compileShader(FragmentShader fs, string shaderSource)
     {
+        shaderSource = preprocess(shaderSource, ShaderTypes.fragment);
         return compileShader((cast(Hip_GL3_FragmentShader)fs).shader, shaderSource);
     }
 
@@ -494,3 +569,30 @@ class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
         super.dispose(prog);
     }
 }
+
+static if(UseGLES)
+    enum floatPrecision = "precision mediump float;\n";
+else
+    enum floatPrecision = "";
+
+version(GLES32) version = GLES3;
+version(GLES30) version = GLES3;
+
+version(GLES3)
+{
+    enum shaderVersion = "#version 300 es\n";
+    // enum floatPrecision = "";
+}
+else version(GLES20)
+{
+    static if(UseWebGL)
+    {
+        string shaderVersion() {
+            import gles;
+            return isWebGL2 ? "#version 300 es\n" : "#version 100\n";
+        }
+    }
+    else enum shaderVersion = "#version 100\n";
+}
+else
+    enum shaderVersion = "#version 330 core\n";
