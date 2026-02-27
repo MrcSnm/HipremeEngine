@@ -14,7 +14,6 @@ import hip.hiprenderer.renderer;
 import hip.hiprenderer.shader;
 import hip.hiprenderer.vertex;
 import hip.error.handler;
-import std.traits;
 
 
 private __gshared Mesh boundMesh = null;
@@ -116,6 +115,7 @@ class Mesh
     */
     public void draw(T)(T count, HipRendererMode mode, uint offset = 0)
     {
+        import std.traits:isUnsigned;
         static assert(isUnsigned!T, "Mesh must receive an integral type in its draw");
         ErrorHandler.assertExit(count < T.max, "Can't draw more than T.max");
         // if(isVertexArray)

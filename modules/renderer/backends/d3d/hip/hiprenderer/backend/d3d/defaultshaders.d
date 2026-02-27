@@ -18,64 +18,9 @@ immutable DefaultShader[] DefaultShaders = [
 
 private {
 
-    string getFrameBufferShader()
-    {
-        return q{
-            struct VSOut
-            {
-                float2 inTexST : inTexST;
-                float4 outPosition : SV_POSITION;
-            };
-
-            VSOut main(float2 pos : vPosition, float2 vTexST : vTexST)
-            {
-                VSOut ret;
-                ret.outPosition = float4(pos.x, pos.y, 0.0, 1.0);
-                ret.inTexST = vTexST;
-                return ret;
-            }
-
-            Texture2D uTex1;
-            SamplerState state;
-
-            float4 main(float2 inTexST : inTexST) : SV_TARGET
-            {
-                return uTex1.Sample(state, inTexST);
-            }
-        };
-    }
-    string getGeometryBatchShader()
-    {
-        return q{
-            cbuffer Geom
-            {
-                float4x4 uMVP: uMVP;
-            };
-            struct VSOut
-            {
-                float4 inVertexColor : inVertexColor;
-                float4 outPosition : SV_POSITION;
-            };
-
-            VSOut vertexMain(float3 vPosition: vPosition, float4 vColor: vColor)
-            {
-                VSOut ret;
-                ret.outPosition = mul(float4(vPosition, 1.0), uMVP);
-                ret.inVertexColor = vColor;
-                return ret;
-            }
-
-            cbuffer FragVars
-            {
-                float4 uGlobalColor : uGlobalColor;
-            };
-
-            float4 fragmentMain(float4 inVertexColor : inVertexColor) : SV_TARGET
-            {
-                return inVertexColor * uGlobalColor;
-            }
-        };
-    }
+    string getFrameBufferShader(){return import("d3d11/framebuffer.hlsl");}
+    string getGeometryBatchShader(){return import("d3d11/geometrybatch.hlsl");}
+    string getBitmapTextShader(){return import("d3d11/bitmaptext.hlsl");}
     /**
     *   Creates a massive switch case for supporting array of textures.
     *   D3D11 causes an error if trying to access texture with a variable
@@ -142,47 +87,5 @@ private {
             //case 1:
                 //return uTex[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
     } ~ textureSlotSwitchCase ~ "\n}";
-    }
-
-
-    string getBitmapTextShader()
-    {
-        return q{
-
-            cbuffer Cbuf
-            {
-                float4x4 uMVP;
-            };
-
-            struct VSOut
-            {
-                float2 inTexST : inTexST;
-                float4 outPosition : SV_POSITION;
-            };
-
-            VSOut vertexMain(float2 vPosition : vPosition, float2 vTexST : vTexST)
-            {
-                VSOut ret;
-                ret.outPosition = mul(float4(vPosition, 1.0, 1.0), uMVP);
-                ret.inTexST = vTexST;
-                return ret;
-            }
-
-            cbuffer FragVars
-            {
-                float4 uColor : uColor;
-            };
-
-            Texture2D uSampler1;
-            SamplerState state;
-
-            float4 fragmentMain(float2 inTexST : inTexST) : SV_TARGET
-            {
-                //The texture is read as monochromatic
-                float r = uSampler1.Sample(state, inTexST)[0];
-
-                return float4(r,r,r,r) * uColor;
-            }
-        };
     }
 }

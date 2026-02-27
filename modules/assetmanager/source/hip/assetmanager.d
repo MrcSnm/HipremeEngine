@@ -308,6 +308,7 @@ class HipAssetManager
                         handlers.length = 0;
                         completeHandlers.remove(task);
                     }
+                    assets[lTask.path] = lTask._asset;
                     loadQueue.remove(task);
                     // loadCache[task.]
                     i--;

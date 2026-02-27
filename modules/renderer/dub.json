@@ -24,6 +24,7 @@
 			"name": "d3d",
 			"sourcePaths": ["backends/d3d"],
 			"importPaths": ["backends/d3d"],
+			"stringImportPaths": ["shaders"],
 			"dependencies": {"renderer:core": "*", "directx-d" : {"path": "../../dependencies/directx-d"}},
 			"versions": ["Direct3D_11"],
 			"configurations": [
@@ -42,6 +43,7 @@
 			"name": "gl",
 			"sourcePaths": ["backends/gl"],
 			"importPaths": ["backends/gl"],
+			"stringImportPaths": ["shaders"],
 			"dependencies": {"renderer:core": "*"},
 			"versions": ["OpenGL"],
 			"configurations": [

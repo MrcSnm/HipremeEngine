@@ -34,7 +34,4 @@ struct HipSpriteVertexUniform
 struct HipSpriteFragmentUniform
 {
     float[4] uBatchColor = [1,1,1,1];
-
-    @(ShaderHint.Blackbox)
-    IHipTexture[] uTex;
 }

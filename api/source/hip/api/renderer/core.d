@@ -66,7 +66,7 @@ enum HipRendererMode : ubyte
 enum HipShaderInputLayout;
 /**
 *   Use this special UDA to say this type is only for accumulating stride and thus should not
-*   be defined on shader
+*   be defined on shader UNUSUED
 */
 enum HipShaderInputPadding;
 /**
@@ -88,6 +88,13 @@ struct HipShaderUniform
     string instanceName;
 
     ubyte glBindPoint = 0;
+}
+
+struct HipShaderTexture
+{
+    string name;
+    IHipTexture texture;
+    int bindPoint = -1;
 }
 
 /**

@@ -41,7 +41,7 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
         import hip.console.log;
         if(!getFromPath(path, dummy))
         {
-            hiplog("Browser could not read ", path);
+            loglnError("File at path '", path, "' not found. Please check build/wasm/generated/directories.json");
             return false;
         }
         hiplog("Browser read start on ", path);

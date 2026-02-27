@@ -24,9 +24,6 @@ import hip.util.string:indexOf;
 public import hip.api.renderer.shader;
 
 
-
-
-
 private __gshared ShaderProgram lastBoundShader;
 
 public class Shader : IReloadable
@@ -35,6 +32,7 @@ public class Shader : IReloadable
     FragmentShader fragmentShader;
     ShaderProgram shaderProgram;
     ShaderVariablesLayout[string] layouts;
+    protected HipShaderTexture[] textures;
     protected ShaderVariablesLayout defaultLayout;
     //Optional
     IShader shaderImpl;
@@ -91,108 +89,7 @@ public class Shader : IReloadable
         shaderImpl.sendVertexAttribute(layoutIndex, valueAmount, dataType, normalize, stride, offset);
     }
 
-
-    /**
-     * If validateData is true, it will compare if the data has changed for choosing whether it should or not
-     send to the GPU.
-     * Params:
-     *   name =
-     *   val =
-     *   validateData =
-     */
-    public void setVertexVar(T)(string name, T val, bool validateData = false)
-    {
-        ShaderVar* v = tryGetShaderVar(name, ShaderTypes.vertex);
-        if(v != null)
-        {
-            v.set(val, validateData);
-        }
-    }
-
-    private ShaderVar* tryGetShaderVar(string name, ShaderTypes type)
-    {
-        import hip.util.conv:to;
-        bool isUnused;
-        ShaderVar* v = findByName(name, isUnused);
-
-        if(v is null)
-        {
-            if(!isUnused)
-                ErrorHandler.showWarningMessage("Shader " ~ type.to!string ~ " Var not set on shader loaded from '"~shaderPath~"'",
-                "Could not find shader var with name "~name~
-                ((layouts.length == 0) ?". Did you forget to addVarLayout on the shader?" :
-                " Did you forget to add a layout namespace to the var name?")
-                );
-            return null;
-        }
-        if(v.shaderType != type)
-        {
-            import hip.console.log;
-            logln = v.shaderType;
-            ErrorHandler.assertExit(false, "Variable named "~name~" must be from " ~ type.to!string ~ " Shader");
-        }
-        return v;
-    }
-    /**
-     * If validateData is true, it will compare if the data has changed for choosing whether it should or not
-     send to the GPU.
-     * Params:
-     *   name =
-     *   val =
-     *   validateData =
-     */
-    public void setFragmentVar(T)(string name, T val, bool validateData = false)
-    {
-        ShaderVar* v = tryGetShaderVar(name, ShaderTypes.fragment);
-        if(v != null)
-        {
-            if(v.isBlackboxed)
-            {
-                if(shaderImpl.setShaderVar(v,shaderProgram, cast(void*)&val))
-                    v.isDirty = true;
-            }
-            else
-                v.set(val, validateData);
-        }
-    }
-
-    public void setFragmentVar(T)(ShaderVar* v, T val, bool validateData = false)
-    {
-        if(v.isBlackboxed)
-        {
-            if(shaderImpl.setShaderVar(v,shaderProgram, cast(void*)&val))
-                v.isDirty = true;
-        }
-        else
-            v.set(val, validateData);
-    }
-
-    protected ShaderVar* findByName(string name, out bool isUnused) @nogc
-    {
-        int accessorSeparatorIndex = name.indexOf(".");
-
-        bool isDefault = accessorSeparatorIndex == -1;
-        if(isDefault)
-        {
-            ShaderVarLayout* sL = name in defaultLayout.variables;
-            if(sL !is null)
-                return &sL.sVar;
-            isUnused = defaultLayout.isUnused(name);
-        }
-        else
-        {
-            ShaderVariablesLayout* l = (name[0..accessorSeparatorIndex] in layouts);
-            if(l !is null)
-            {
-                ShaderVarLayout* sL = name[accessorSeparatorIndex+1..$] in l.variables;
-                if(sL !is null)
-                    return &sL.sVar;
-                isUnused = l.isUnused(name[accessorSeparatorIndex+1..$]);
-            }
-        }
-        return null;
-    }
-
+   
     /** 
      * This function is mostly used for debug information
      * Returns: The Variable names.
@@ -206,28 +103,6 @@ public class Shader : IReloadable
             {
                 ret~= v.variables.keys;
             }
-        }
-        return ret;
-    }
-
-    /**
-     * Use that instead of setVertexVar or setFragmentVar if you wish more performance.
-     * Params:
-     *   name = The name of the variable
-     * Returns: The Shader Variable reference
-     */
-    public ShaderVar* get(string name, ShaderTypes type)
-    {
-        ShaderVar* ret = tryGetShaderVar(name, type);
-        if(!ret)
-        {
-            import hip.util.string:join;
-            import hip.util.conv:to;
-            throw new Exception(
-                "Could not find variable named '"~name~"'.\n\tDefault Layout: ["~this.defaultLayout.name~
-                "].\n\tShader Path: "~ shaderPath ~
-                "\n\tExisting Variables in shader type "~type.to!string~":\n\t  "~getExistingVariableNames(type).join("\n\t  ")
-            );
         }
         return ret;
     }
@@ -248,6 +123,15 @@ public class Shader : IReloadable
         layouts[layout.name] = layout;
         layout.lock(this.shaderImpl);
         shaderImpl.createVariablesBlock(layout, shaderProgram);
+    }
+    public void addUsedTextures(scope HipShaderTexture[] textures...)
+    {
+        this.textures~= textures;
+        foreach (t; textures)
+        {
+            import std.stdio;
+            writeln = t.texture is null;
+        }
     }
 
     /**
@@ -325,6 +209,10 @@ public class Shader : IReloadable
                 if(varLayout.sVar.usesMaxTextures)
                     varLayout.sVar.set(HipRenderer.getMaxSupportedShaderTextures(), true);
             }
+        }
+        foreach(i, HipShaderTexture tex; textures)
+        {
+            tex.texture.bind(tex.bindPoint == -1 ? i : tex.bindPoint);
         }
         shaderImpl.sendVars(shaderProgram, layouts);
     }

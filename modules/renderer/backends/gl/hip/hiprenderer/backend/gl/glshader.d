@@ -268,7 +268,7 @@ class Hip_GL_ShaderImpl : IShader
                 existingVariables~= "\t"~k~"\n";
             ErrorHandler.showErrorMessage("Uniform not found",
             "Variable named '"~name~"' does not exists in shader "~prog.name~
-            "Existing variables: "~existingVariables);
+            " Existing variables: "~existingVariables);
         }
         return varID;
     }
