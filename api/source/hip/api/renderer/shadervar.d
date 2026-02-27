@@ -462,6 +462,7 @@ class ShaderVariablesLayout
             ret.varOrder~= actualName in ret.variables;
         }
         ret.lastPosition = lastAlign;
+        ret.set(T.init);
         return ret;
     }
 

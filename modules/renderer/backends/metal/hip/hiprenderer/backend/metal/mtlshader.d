@@ -86,6 +86,15 @@ class HipMTLShaderProgram : ShaderProgram
             err.print();
         }
     }
+    override void dispose()
+    {
+        import hip.util.data_structures;
+        foreach(BufferedMTLBuffer* buff; [uniformBufferFragment, uniformBufferVertex].staticArray)
+        {
+            foreach(MTLBuffer mtlbuffer; buff.buffer)
+                mtlbuffer.release();
+        }
+    }
 }
 
 
@@ -105,18 +114,10 @@ class HipMTLShader : IShader
 
     ShaderProgram createShaderProgram(){return new HipMTLShaderProgram();}
    
-    ShaderProgram compileShader(ref ShaderProgram program, string shaderSource)
+    ShaderProgram buildShader(string shaderSource, string shaderPath)
     {
-        HipMTLShaderProgram p = cast(HipMTLShaderProgram)program;
-        HipMTLVertexShader v = cast(HipMTLVertexShader)vs;
-        HipMTLFragmentShader f = cast(HipMTLFragmentShader)fs;
-
-        string shaderSource = v.shaderSource~f.shaderSource;
-        scope(exit)
-        {
-            import core.memory;
-            GC.free(cast(void*)shaderSource.ptr);
-        }
+        HipMTLShaderProgram p =  new HipMTLShaderProgram();
+        p.name = shaderPath;
 
         NSError err;
         MTLCompileOptions opts = MTLCompileOptions.alloc.initialize;
@@ -129,29 +130,29 @@ class HipMTLShader : IShader
         {
             loglnError("Could not compile shader.");
             err.print();
-            return false;
+            return null;
         }
         p.fragmentShaderFunction = p.library.newFunctionWithName("fragmentMain".ns);
         if(p.fragmentShaderFunction is null)
         {
             loglnError("fragmentMain() not found.");
-            return false;
+            return null;
         }
         p.vertexShaderFunction = p.library.newFunctionWithName("vertexMain".ns);
         if(p.vertexShaderFunction is null)
         {
             loglnError("vertexMain() not found.");
-            return false;
+            return null;
         }
 
-        p.pipelineDescriptor.label = "HipremeShader".ns;
+        p.pipelineDescriptor.label = shaderPath.ns;
         p.pipelineDescriptor.vertexFunction = p.vertexShaderFunction;
         p.pipelineDescriptor.fragmentFunction = p.fragmentShaderFunction;
         p.pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.BGRA8Unorm_sRGB;
         p.pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
         p.pipelineDescriptor.stencilAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
 
-        return true;
+        return p;
     }
 
     bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
@@ -229,9 +230,6 @@ class HipMTLShader : IShader
         return int.init; // TODO: implement
     }
 
-    void deleteShader(FragmentShader* fs){}
-    void deleteShader(VertexShader* vs){}
-
     private MTLBuffer getNewMTLBuffer(ShaderVariablesLayout layout)
     {
         return device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
@@ -297,16 +295,6 @@ class HipMTLShader : IShader
         mtlRenderer.getEncoder.setFragmentSamplerStates(mtlSamplers.ptr, NSRange(0, textures.length));
         mtlRenderer.getEncoder.setFragmentTextures(mtlTextures.ptr, NSRange(0, textures.length));
 
-    }
-
-    void dispose(ref ShaderProgram p)
-    {
-        HipMTLShaderProgram shader = cast(HipMTLShaderProgram)p;
-        foreach(BufferedMTLBuffer* buff; [shader.uniformBufferFragment, shader.uniformBufferVertex])
-        {
-            foreach(MTLBuffer mtlbuffer; buff.buffer)
-                mtlbuffer.release();
-        }
     }
     override void onRenderFrameEnd(ShaderProgram p)
     {

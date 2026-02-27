@@ -170,8 +170,7 @@ final class HipMTLVertexArray : IHipVertexArrayImpl
      */
     void createInputLayout(
         IHipRendererBuffer, IHipRendererBuffer,
-        HipVertexAttributeInfo[] attInfos, uint stride,
-        VertexShader vertexShader, ShaderProgram shaderProgram
+        HipVertexAttributeInfo[] attInfos, uint stride, ShaderProgram shaderProgram
     )
     {
         descriptor.layouts[1].stride = stride;

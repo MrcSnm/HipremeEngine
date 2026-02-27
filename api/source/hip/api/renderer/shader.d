@@ -57,5 +57,5 @@ interface IShader
 abstract class ShaderProgram
 {
     string name;
-    void dispose();
+    abstract void dispose();
 }
