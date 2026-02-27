@@ -553,12 +553,12 @@ pure string replaceAll(string str, string what, string replaceWith = "")
     return cast(string)ret;
 }
 
-pure int indexOf(String str, const char[] toFind, int startIndex = 0) nothrow @nogc @safe
+pure int indexOf(String str, const(char)[] toFind, int startIndex = 0) nothrow @nogc @safe
 {
     return indexOf(str.toString, toFind, startIndex);
 }
 
-pure int indexOf(const char[] str, const char[] toFind, int startIndex = 0) nothrow @nogc @safe
+pure int indexOf(const(char)[] str, const(char)[] toFind, int startIndex = 0) nothrow @nogc @safe
 {
     if(!toFind.length)
         return -1;
@@ -613,10 +613,20 @@ pure inout(string) between(inout string str, inout string left, inout string rig
 {
     int leftIndex = str.indexOf(left, start);
     if(leftIndex == -1) return null;
-    int rightIndex = str.indexOf(right, leftIndex+1);
+    int rightIndex = str.indexOf(right, cast(int)(leftIndex+left.length));
     if(rightIndex == -1) return null;
 
-    return str[leftIndex+1..rightIndex];
+    return str[leftIndex+left.length..rightIndex];
+}
+
+pure string betweenInclusive(const string str, const string left, const string right, int start = 0) nothrow @nogc @trusted
+{
+    int leftIndex = str.indexOf(left, start);
+    if(leftIndex == -1) return null;
+    int rightIndex = str.indexOf(right, cast(int)(leftIndex+left.length));
+    if(rightIndex == -1) return null;
+
+    return str[leftIndex..rightIndex+right.length];
 }
 
 pure int indexOf(const string str, char ch, int startIndex = 0) nothrow @nogc @trusted
@@ -935,6 +945,8 @@ unittest
 
     assert(trim(" \n  \thello there  \n \t") == "hello there");
     assert(between(`string containing a "thing"`, `"`, `"`) == "thing");
+    assert(between("precision mediump float;\n", "precision ", "\n") == "mediump float;");
+    assert(betweenInclusive("precision mediump float;\n", "precision ", "\n") == "precision mediump float;\n");
 
     assert("test123".getNumericEnding == "123");
     assert("123abc".getNumericEnding == "");

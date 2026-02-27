@@ -116,12 +116,12 @@ class Hip_GL_ShaderImpl : IShader
     static string getShaderVersion(string str)
     {
         import hip.util.string;
-        return between(str, "#version ", "\n");
+        return betweenInclusive(str, "#version ", "\n");
     }
     static string getShaderPrecision(string str)
     {
         import hip.util.string;
-        return between(str, "precision ", "\n");
+        return betweenInclusive(str, "precision ", ";\n");
     }
 
     static string preprocess(string shader, ShaderTypes type)
