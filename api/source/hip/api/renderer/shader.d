@@ -34,13 +34,7 @@ enum HipShaderPresets : ubyte
  */
 interface IShader
 {
-    VertexShader createVertexShader();
-    FragmentShader createFragmentShader();
-    ShaderProgram createShaderProgram();
-
-    bool compileShader(FragmentShader fs, string shaderSource);
-    bool compileShader(VertexShader vs, string shaderSource);
-    bool linkProgram(ref ShaderProgram program, VertexShader vs,  FragmentShader fs);
+    ShaderProgram buildShader(string shaderSource, string shaderPath);
 
     void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq);
     void bind(ShaderProgram program);
@@ -48,11 +42,6 @@ interface IShader
     void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
     int  getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout);
     
-
-    ///Used as intermediary for deleting non program intermediary in opengl
-    void deleteShader(FragmentShader* fs);
-    ///Used as intermediary for deleting non program intermediary in opengl
-    void deleteShader(VertexShader* vs);
 
     void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram);
     bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value);
@@ -62,19 +51,11 @@ interface IShader
      * Each graphics API has its own way to bind array of textures, thus, this version was required.
      */
     void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName);
-    void dispose(ref ShaderProgram);
-
     void onRenderFrameEnd(ShaderProgram program);
-}
-
-abstract class VertexShader
-{
-}
-abstract class FragmentShader
-{
 }
 
 abstract class ShaderProgram
 {
     string name;
+    void dispose();
 }

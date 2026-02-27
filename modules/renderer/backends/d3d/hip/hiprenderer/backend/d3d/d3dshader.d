@@ -25,22 +25,22 @@ import directx.d3d11shader;
 import hip.util.conv:to;
 import hip.error.handler;
 
-
-class Hip_D3D11_FragmentShader : FragmentShader
+struct HipD3D11PixelShader
 {
-    ID3DBlob shader;
-    ID3D11PixelShader fs;
+    ID3DBlob blob;
+    ID3D11PixelShader shader;
 }
 
-class Hip_D3D11_VertexShader : VertexShader
+struct HipD3D11VertexShader
 {
-    ID3DBlob shader;
-    ID3D11VertexShader vs;
+    ID3DBlob blob;
+    ID3D11VertexShader shader;
 }
+
 class Hip_D3D11_ShaderProgram : ShaderProgram
 {
-    Hip_D3D11_VertexShader vs;
-    Hip_D3D11_FragmentShader fs;
+    HipD3D11VertexShader vertex;
+    HipD3D11PixelShader pixel;
 
     protected HipBlendFunction blendSrc, blendDst;
     protected HipBlendEquation blendEq;
@@ -52,16 +52,16 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
     bool initialize()
     {
         import hip.hiprenderer;
-        auto hres = D3DReflect(vs.shader.GetBufferPointer(),
-        vs.shader.GetBufferSize(), &IID_ID3D11ShaderReflection, cast(void**)&vReflector);
+        auto hres = D3DReflect(vertex.blob.GetBufferPointer(),
+        vertex.blob.GetBufferSize(), &IID_ID3D11ShaderReflection, cast(void**)&vReflector);
         if(FAILED(hres))
         {
             ErrorHandler.showErrorMessage("D3D11 ShaderProgram initialization",
             "Could not get the reflection interface from the vertex shader, error: "~ getWindowsErrorMessage(hres));
             return false;
         }
-        hres = D3DReflect(fs.shader.GetBufferPointer(),
-        fs.shader.GetBufferSize(), &IID_ID3D11ShaderReflection, cast(void**)&pReflector);
+        hres = D3DReflect(pixel.blob.GetBufferPointer(),
+        pixel.blob.GetBufferSize(), &IID_ID3D11ShaderReflection, cast(void**)&pReflector);
         if(FAILED(hres))
         {
             ErrorHandler.showErrorMessage("D3D11 ShaderProgram initialization",
@@ -69,6 +69,17 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
             return false;
         }
         return true;
+    }
+
+    override void dispose()
+    {
+        if(vertex.blob !is null)    vertex.blob.Release();
+        if(pixel.blob !is null)     pixel.blob.Release();
+        if(vertex.shader !is null)  vertex.shader.Release();
+        if(pixel.shader !is null)   pixel.shader.Release();
+        pixel.blob = vertex.blob = null;
+        vertex.shader = null;
+        pixel.shader = null;
     }
 }
 
@@ -120,33 +131,11 @@ package D3D11_BLEND_OP getD3DBlendEquation(HipBlendEquation eq)
 class Hip_D3D11_ShaderImpl : IShader
 {
     import hip.util.data_structures:Pair;
-    FragmentShader createFragmentShader()
-    {
-        Hip_D3D11_FragmentShader fs = new Hip_D3D11_FragmentShader();
-        fs.shader = null;
-        fs.fs = null;
-        return cast(FragmentShader)fs;
-    }
-    VertexShader createVertexShader()
-    {
-        Hip_D3D11_VertexShader vs = new Hip_D3D11_VertexShader();
-        vs.shader = null;
-        vs.vs = null;
-        return cast(VertexShader)vs;
-    }
-    ShaderProgram createShaderProgram()
-    {
-        Hip_D3D11_ShaderProgram prog = new Hip_D3D11_ShaderProgram();
-        return prog;
-    }
 
-    bool compileShader(ref ID3DBlob shaderPtr, string shaderPrefix, string shaderSource)
+    private bool compileShader(ref ID3DBlob shaderPtr, string shaderPrefix, string shaderSource)
     {
-        shaderSource~="\0";
-
         string shaderType = shaderPrefix == "ps" ? "Pixel Shader" : "Vertex Shader";
         const(char)* func = shaderPrefix == "ps" ? "fragmentMain" : "vertexMain";
-        char* source = cast(char*)shaderSource.ptr;
 
         //No #includes
         import hip.util.data_structures:staticArray;
@@ -172,7 +161,7 @@ class Hip_D3D11_ShaderImpl : IShader
             cast(D3D_SHADER_MACRO)null, cast(D3D_SHADER_MACRO)null
         ].staticArray;
 
-        HRESULT hr = D3DCompile(source, shaderSource.length+1, null,
+        HRESULT hr = D3DCompile(shaderSource.ptr, shaderSource.length, null,
         defines.ptr, null, func,  shaderPrefix.ptr, compile_flags, effects_flags, &shader, &error);
         shaderPtr = shader;
 
@@ -191,46 +180,45 @@ class Hip_D3D11_ShaderImpl : IShader
         }
         return true;
     }
-    bool compileShader(VertexShader _vs, string shaderSource)
+    private bool compileShaderType(ref Hip_D3D11_ShaderProgram program, string shaderSource, ShaderTypes type)
     {
-        Hip_D3D11_VertexShader vs = cast(Hip_D3D11_VertexShader)_vs;
-        bool compiledCorrectly = compileShader(vs.shader, "vs", shaderSource);
-        if(compiledCorrectly)
+        assert(type == ShaderTypes.fragment || type == ShaderTypes.vertex, "Unsupported shader type.");
+        HRESULT res = 0;
+        ID3DBlob blob;
+        switch(type)
         {
-            auto res = _hip_d3d_device.CreateVertexShader(vs.shader.GetBufferPointer(),
-            vs.shader.GetBufferSize(), null, &vs.vs);
-            if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Vertex shader creation error", "Creation failed"))
-            {
-                ErrorHandler.showErrorMessage("Vertex Shader Error:", getWindowsErrorMessage(res));
-                compiledCorrectly = false;
-            }
+            case ShaderTypes.vertex:
+                if(!compileShader(program.vertex.blob, "vs", shaderSource))
+                    return false;
+                blob = program.vertex.blob;
+                res = _hip_d3d_device.CreateVertexShader(blob.GetBufferPointer(), blob.GetBufferSize(), null, &program.vertex.shader);
+                break;
+            case ShaderTypes.fragment:
+                if(!compileShader(program.pixel.blob, "ps", shaderSource))
+                    return false;
+                blob = program.pixel.blob;
+                res = _hip_d3d_device.CreatePixelShader(blob.GetBufferPointer(), blob.GetBufferSize(), null, &program.pixel.shader);
+                break;
+            default: throw new Exception("Unsupported shader type.");
         }
-        return compiledCorrectly;
-    }
-    bool compileShader(FragmentShader _fs, string shaderSource)
-    {
-        auto fs = cast(Hip_D3D11_FragmentShader)_fs;
-        bool compiledCorrectly = compileShader(fs.shader, "ps", shaderSource);
-        if(compiledCorrectly)
+
+        if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Shader creation error", "Creation failed"))
         {
-            auto res = _hip_d3d_device.CreatePixelShader(fs.shader.GetBufferPointer(), fs.shader.GetBufferSize(), null, &fs.fs);
-            if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Fragment/Pixel shader creation error", "Creation failed"))
-            {
-                ErrorHandler.showErrorMessage("Fragment Shader Error:", getWindowsErrorMessage(res));
-                compiledCorrectly = false;
-            }
+            ErrorHandler.showErrorMessage("Shader Error:", getWindowsErrorMessage(res));
+            return false;
         }
-        return compiledCorrectly;
+        return true;
     }
 
-    bool linkProgram(ref ShaderProgram _program, VertexShader vs,  FragmentShader fs)
+    ShaderProgram buildShader(string shaderSource, string shaderPath)
     {
-        auto program = cast(Hip_D3D11_ShaderProgram)_program;
-        program.vs = cast(Hip_D3D11_VertexShader)vs;
-        program.fs = cast(Hip_D3D11_FragmentShader)fs;
-        return program.initialize();
+        Hip_D3D11_ShaderProgram prog = new Hip_D3D11_ShaderProgram();
+        prog.name = shaderPath;
+        compileShaderType(prog, shaderSource, ShaderTypes.vertex);
+        compileShaderType(prog, shaderSource, ShaderTypes.fragment);
+        prog.initialize();
+        return prog;
     }
-
 
     /**
     *   params:
@@ -261,8 +249,8 @@ class Hip_D3D11_ShaderImpl : IShader
             currDst = p.blendDst;
             _hip_d3d_context.OMSetBlendState(p.blendState, null, 0xFF_FF_FF_FF);
         }
-        _hip_d3d_context.VSSetShader(p.vs.vs, cast(ID3D11ClassInstance*)0, 0u);
-        _hip_d3d_context.PSSetShader(p.fs.fs, cast(ID3D11ClassInstance*)0, 0u);
+        _hip_d3d_context.VSSetShader(p.vertex.shader, cast(ID3D11ClassInstance*)0, 0u);
+        _hip_d3d_context.PSSetShader(p.pixel.shader, cast(ID3D11ClassInstance*)0, 0u);
     }
     void unbind(ShaderProgram _program)
     {
@@ -384,29 +372,6 @@ class Hip_D3D11_ShaderImpl : IShader
         }
         _hip_d3d_device.CreateBlendState(&Hip_D3D11_Renderer.blend, &p.blendState);
     }
-
-
-    void deleteShader(FragmentShader* _fs){}
-    void deleteShader(VertexShader* _vs){}
-    void dispose(ref ShaderProgram prog)
-    {
-        Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
-        auto fs = p.fs;
-        if(fs.shader !is null)
-            fs.shader.Release();
-        fs.shader = null;
-        if(fs.fs !is null)
-            fs.fs.Release();
-        fs.fs = null;
-        auto vs = p.vs;
-        if(vs.shader !is null)
-            vs.shader.Release();
-        vs.shader = null;
-        if(vs.vs !is null)
-            vs.vs.Release();
-        vs.vs = null;
-    }
-
     bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
     {
         return false;

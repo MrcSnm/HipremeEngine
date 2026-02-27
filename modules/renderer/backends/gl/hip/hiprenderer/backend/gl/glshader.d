@@ -24,20 +24,69 @@ import hip.util.conv;
 import hip.util.format: fastUnsafeCTFEFormat, format;
 import hip.error.handler;
 
-
-
-class Hip_GL3_FragmentShader : FragmentShader
-{
-    uint shader;
-}
-class Hip_GL3_VertexShader : VertexShader
-{
-    uint shader;
-}
 class Hip_GL3_ShaderProgram : ShaderProgram
 {
-    bool isUsingUbo;
+    uint fragmentShader;
+    uint vertexShader;
     uint program;
+
+    this()
+    {
+        vertexShader = glCall(() => glCreateShader(GL_VERTEX_SHADER));
+        fragmentShader = glCall(() => glCreateShader(GL_FRAGMENT_SHADER));
+        program = glCall(() => glCreateProgram());
+    }
+
+    static bool compileShader(GLuint shaderID, string shaderSource)
+    {
+        char* source = cast(char*)shaderSource.ptr; 
+        GLint[1] lengths = [cast(GLint)shaderSource.length];
+        glCall(() =>glShaderSource(shaderID, 1, &source, lengths.ptr));
+        glCall(() =>glCompileShader(shaderID));
+        int success;
+        
+        glCall(() => glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success));
+        if(ErrorHandler.assertErrorMessage(success==true, "Shader compilation error", "Compilation failed"))
+        {
+            import core.stdc.stdlib;
+            char[] infoLog;
+            version(WebAssembly)
+            {
+                {
+                    GLint length = 0;
+                    ubyte* temp = glCall(() => wglGetShaderInfoLog(shaderID));
+                    length = *cast(GLint*)temp;
+                    infoLog = cast(char[])temp[size_t.sizeof..+size_t.sizeof + length];
+                }
+            }
+            else
+            {
+                {
+                    GLint length = 0;
+                    glCall(() => glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length));
+                    infoLog = cast(char[])malloc(length)[0..length];
+                    glCall(() =>glGetShaderInfoLog(shaderID, length, &length, infoLog.ptr));
+                }
+            }
+            ErrorHandler.showErrorMessage("Error on shader source: ", shaderSource);
+            ErrorHandler.showErrorMessage("Compilation error:", cast(string)(infoLog));
+            version(WebAssembly)
+                free(infoLog.ptr - GLint.sizeof); //Remember that the pointer started in length.
+            else
+                free(infoLog.ptr);
+        }
+        return success==true;
+    }
+
+    override void dispose()
+    {
+        glCall(() => glDeleteShader(vertexShader));
+        glCall(() => glDeleteShader(fragmentShader));
+        glCall(() => glDeleteProgram(program));
+        vertexShader = fragmentShader = program = 0;
+    }
+
+    bool isUsingUbo;
     int[string] uniformIds;
 
     int getId(string name)
@@ -90,29 +139,7 @@ class Hip_GL_ShaderImpl : IShader
 {
     import hip.util.data_structures:Pair;
     protected ShaderVariablesLayout[] layouts;
-    FragmentShader createFragmentShader()
-    {
-        Hip_GL3_FragmentShader fs = new Hip_GL3_FragmentShader();
-        fs.shader = glCreateShader(GL_FRAGMENT_SHADER);
-        HipRenderer.exitOnError();
-        return fs;
-    }
-
-    VertexShader createVertexShader()
-    {
-        Hip_GL3_VertexShader vs = new Hip_GL3_VertexShader();
-        vs.shader = glCreateShader(GL_VERTEX_SHADER);
-        HipRenderer.exitOnError();
-        return vs;
-    }
-    ShaderProgram createShaderProgram()
-    {
-        Hip_GL3_ShaderProgram prog = new Hip_GL3_ShaderProgram();
-        prog.program = glCreateProgram();
-        HipRenderer.exitOnError();
-        return prog;
-    }
-
+   
     static string getShaderVersion(string str)
     {
         import hip.util.string;
@@ -184,79 +211,32 @@ class Hip_GL_ShaderImpl : IShader
         return prefix ~ shader ~ "\nvoid main(){ENTRY_POINT;}";
     }
 
+    ShaderProgram buildShader(string shaderSource, string shaderPath)
+    {
+        Hip_GL3_ShaderProgram prog = new Hip_GL3_ShaderProgram();
+        prog.name = shaderPath;
+        if(!Hip_GL3_ShaderProgram.compileShader(prog.vertexShader, preprocess(shaderSource, ShaderTypes.vertex)))
+            return null;
+        if(!Hip_GL3_ShaderProgram.compileShader(prog.fragmentShader, preprocess(shaderSource, ShaderTypes.fragment)))
+            return null;
 
-    bool compileShader(GLuint shaderID, string shaderSource)
-    {
-        char* source = cast(char*)shaderSource.ptr; 
-        GLint[1] lengths = [cast(GLint)shaderSource.length];
-        glCall(() =>glShaderSource(shaderID, 1, &source, lengths.ptr));
-        glCall(() =>glCompileShader(shaderID));
-        int success;
-        
-        glCall(() => glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success));
-        if(ErrorHandler.assertErrorMessage(success==true, "Shader compilation error", "Compilation failed"))
-        {
-            import core.stdc.stdlib;
-            char[] infoLog;
-            version(WebAssembly)
-            {
-                {
-                    GLint length = 0;
-                    ubyte* temp = glCall(() => wglGetShaderInfoLog(shaderID));
-                    length = *cast(GLint*)temp;
-                    infoLog = cast(char[])temp[size_t.sizeof..+size_t.sizeof + length];
-                }
-            }
-            else
-            {
-                {
-                    GLint length = 0;
-                    glCall(() => glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length));
-                    infoLog = cast(char[])malloc(length)[0..length];
-                    glCall(() =>glGetShaderInfoLog(shaderID, length, &length, infoLog.ptr));
-                }
-            }
-            ErrorHandler.showErrorMessage("Error on shader source: ", shaderSource);
-            ErrorHandler.showErrorMessage("Compilation error:", cast(string)(infoLog));
-            version(WebAssembly)
-                free(infoLog.ptr - GLint.sizeof); //Remember that the pointer started in length.
-            else
-                free(infoLog.ptr);
-        }
-        return success==true;
-    }
-    bool compileShader(VertexShader vs, string shaderSource)
-    {
-        shaderSource = preprocess(shaderSource, ShaderTypes.vertex);
-        return compileShader((cast(Hip_GL3_VertexShader)vs).shader, shaderSource);
-    }
-    bool compileShader(FragmentShader fs, string shaderSource)
-    {
-        shaderSource = preprocess(shaderSource, ShaderTypes.fragment);
-        return compileShader((cast(Hip_GL3_FragmentShader)fs).shader, shaderSource);
-    }
-
-    bool linkProgram(ref ShaderProgram program, VertexShader vs,  FragmentShader fs)
-    {
-        uint prog = (cast(Hip_GL3_ShaderProgram)program).program;
-
-        glCall(() =>glAttachShader(prog, (cast(Hip_GL3_VertexShader)vs).shader));
-        glCall(() =>glAttachShader(prog, (cast(Hip_GL3_FragmentShader)fs).shader));
-        glCall(() =>glLinkProgram(prog));
+        glCall(() =>glAttachShader(prog.program, prog.vertexShader));
+        glCall(() =>glAttachShader(prog.program, prog.fragmentShader));
+        glCall(() =>glLinkProgram(prog.program));
         
         int success;
         int length;
         char[4096] infoLog;
 
-        glCall(() =>glGetProgramiv(prog, GL_LINK_STATUS, &success));
+        glCall(() =>glGetProgramiv(prog.program, GL_LINK_STATUS, &success));
 
         if(ErrorHandler.assertErrorMessage(success==true, "Shader linking error", "Linking failed"))
         {
-            glCall(() => glGetProgramInfoLog(prog, 4096, &length, infoLog.ptr));
+            glCall(() => glGetProgramInfoLog(prog.program, 4096, &length, infoLog.ptr));
             ErrorHandler.showErrorMessage("Linking error: ", cast(string)(infoLog[0..length]));
         }
         
-        return success==true;
+        return prog;
     }
     int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
     {
@@ -470,22 +450,6 @@ class Hip_GL_ShaderImpl : IShader
         if(layout.hint & ShaderHint.GL_USE_BLOCK)
             ErrorHandler.assertExit(false, "Use HipGL3 for Uniform Block support.");
     }
-
-    void deleteShader(FragmentShader* _fs)
-    {
-        auto fs = cast(Hip_GL3_FragmentShader)*_fs;
-        glCall(() => glDeleteShader(fs.shader)); fs.shader = 0;
-    }
-    void deleteShader(VertexShader* _vs)
-    {
-        auto vs = cast(Hip_GL3_VertexShader)*_vs;
-        glCall(() => glDeleteShader(vs.shader)); vs.shader = 0;
-    }
-    void dispose(ref ShaderProgram prog)
-    {
-        Hip_GL3_ShaderProgram p = cast(Hip_GL3_ShaderProgram)prog;
-        glCall(() => glDeleteProgram(p.program));
-    }
     void onRenderFrameEnd(ShaderProgram program){}
 }
 
@@ -558,7 +522,7 @@ class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
         }   
     }
 
-    override void dispose(ref ShaderProgram prog)
+    void dispose(ref ShaderProgram prog)
     {
         foreach (ub; ubos)
         {
@@ -566,7 +530,6 @@ class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
             glCall(() => glDeleteBuffers(1, &ubo.buffer.handle));
         }
         ubos.length = 0;
-        super.dispose(prog);
     }
 }
 

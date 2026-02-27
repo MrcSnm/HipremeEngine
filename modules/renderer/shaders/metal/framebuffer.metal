@@ -15,7 +15,7 @@ struct FragmentInput
     float2 inTexST;
 }; 
 
-vertex FragmentInput vertex_main(
+vertex FragmentInput vertexMain(
     uint vertexID [[vertex_id]],
     VertexInput* input [[buffer(1)]]
 )
@@ -26,7 +26,7 @@ vertex FragmentInput vertex_main(
     return out;
 }
 
-fragment float4 fragment_main(
+fragment float4 fragmentMain(
     FragmentInput in [[stage_in]],
     FragmentUniforms& u
     texture2d<float> uBufferTexture [[texture(0)]],

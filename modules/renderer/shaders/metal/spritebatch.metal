@@ -21,7 +21,7 @@ struct FragmentInput
     float inTexID;
 };
 
-vertex FragmentInput vertex_main(
+vertex FragmentInput vertexMain(
     VertexInput v [[stage_in]],
     constant VertexUniforms& u [[buffer(0)]]
 )
@@ -46,7 +46,7 @@ struct FragmentUniforms
 };
 
 #if ARGS_TIER2
-    fragment float4 fragment_main(
+    fragment float4 fragmentMain(
         FragmentInput in [[stage_in]],
         constant FragmentUniforms& u [[buffer(0)]]
     )
@@ -55,7 +55,7 @@ struct FragmentUniforms
         return u.uTex[texID].sample(u.uSampler[texID], in.inTexST)* in.inVertexColor * u.uBatchColor;
     }
 #else
-    fragment float4 fragment_main(
+    fragment float4 fragmentMain(
         FragmentInput in [[stage_in]],
         constant FragmentUniforms& u [[buffer(0)]],
         texture2d<float> uTex0 [[texture(0)]],

@@ -18,7 +18,7 @@ struct FragmentInput
     float4 inVertexColor;
 }; 
 
-vertex FragmentInput vertex_main(
+vertex FragmentInput vertexMain(
     VertexInput v [[stage_in]],
     constant VertexUniforms& u [[buffer(0)]]
 )
@@ -35,7 +35,7 @@ struct FragmentUniforms
     float4 uGlobalColor;
 };
 
-fragment float4 fragment_main(
+fragment float4 fragmentMain(
     FragmentInput in [[stage_in]],
     constant FragmentUniforms& uniforms [[buffer(0)]]
 )

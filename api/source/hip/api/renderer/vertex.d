@@ -97,7 +97,6 @@ interface IHipVertexArrayImpl
     void createInputLayout(
         IHipRendererBuffer vbo, IHipRendererBuffer ebo,
         HipVertexAttributeInfo[] info, uint stride,
-        VertexShader vertexShader,
         ShaderProgram shaderProgram
     );
 }

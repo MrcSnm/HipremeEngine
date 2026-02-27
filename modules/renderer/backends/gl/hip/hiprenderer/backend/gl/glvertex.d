@@ -139,8 +139,7 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
     }
     void createInputLayout(
         IHipRendererBuffer, IHipRendererBuffer,
-        HipVertexAttributeInfo[] attInfos, uint stride,
-        VertexShader s, ShaderProgram p)
+        HipVertexAttributeInfo[] attInfos, uint stride, ShaderProgram p)
     {
         import hip.hiprenderer.backend.gl.glshader;
         Hip_GL3_ShaderProgram glProg = cast(Hip_GL3_ShaderProgram)p;
@@ -182,7 +181,7 @@ version(HipGLUseVertexArray) final class Hip_GL3_VertexArrayObject : IHipVertexA
         }
     }
 
-    void createInputLayout(IHipRendererBuffer vbo, IHipRendererBuffer ebo, HipVertexAttributeInfo[] attInfos, uint stride, VertexShader s, ShaderProgram p)
+    void createInputLayout(IHipRendererBuffer vbo, IHipRendererBuffer ebo, HipVertexAttributeInfo[] attInfos, uint stride, ShaderProgram p)
     {
         bind(vbo, ebo);
         vbo.bind();

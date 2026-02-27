@@ -17,7 +17,7 @@ struct FragmentInput
     float4 position [[position]];
     float2 inTexST;
 };
-vertex FragmentInput vertex_main(
+vertex FragmentInput vertexMain(
     VertexInput input [[stage_in]],
     constant VertexUniforms& u [[buffer(0)]]
 )
@@ -32,7 +32,7 @@ struct FragmentUniforms
 {
     float4 uColor;
 };
-fragment float4 fragment_main(
+fragment float4 fragmentMain(
     FragmentInput in [[stage_in]],
     constant FragmentUniforms& u [[buffer(0)]],
     texture2d<float> uTex [[texture(0)]],

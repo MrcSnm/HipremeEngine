@@ -151,7 +151,7 @@ class HipVertexArrayObject
         //     ErrorHandler.showErrorMessage("VertexArrayObject error", "VAO wasn't bound when trying to send its attributes");
         //     return;
         // }
-        this.VAO.createInputLayout(VBO, EBO, infos, stride, s.vertexShader, s.shaderProgram);
+        this.VAO.createInputLayout(VBO, EBO, infos, stride, s.shaderProgram);
     }
 
     void bind()

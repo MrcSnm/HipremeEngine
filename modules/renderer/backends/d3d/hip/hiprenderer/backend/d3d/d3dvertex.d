@@ -162,13 +162,12 @@ final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
     }
     void createInputLayout(
         IHipRendererBuffer, IHipRendererBuffer,
-        HipVertexAttributeInfo[] attInfos, uint stride,
-        VertexShader vertexShader, ShaderProgram shaderProgram
+        HipVertexAttributeInfo[] attInfos, uint stride, ShaderProgram shaderProgram
     )
     {
         if(ErrorHandler.assertErrorMessage(shaderProgram !is null, "D3D11 VAO Error", "Error at creating input layout"))
             return;
-        Hip_D3D11_VertexShader vs = cast(Hip_D3D11_VertexShader)vertexShader;
+        HipD3D11VertexShader vs = (cast(Hip_D3D11_ShaderProgram)shaderProgram).vertex;
         this.stride = stride;
 
         D3D11_INPUT_ELEMENT_DESC[] descs = new D3D11_INPUT_ELEMENT_DESC[attInfos.length];
@@ -184,8 +183,9 @@ final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
             desc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
             desc.InstanceDataStepRate = 0;
         }
+
         d3dCall(_hip_d3d_device.CreateInputLayout(descs.ptr, cast(uint)descs.length,
-        vs.shader.GetBufferPointer(), vs.shader.GetBufferSize(), &inputLayout));
+        vs.blob.GetBufferPointer(), vs.blob.GetBufferSize(), &inputLayout));
 
         import core.memory;
         GC.free(descs.ptr);

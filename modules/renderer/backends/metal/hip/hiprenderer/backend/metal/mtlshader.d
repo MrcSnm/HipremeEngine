@@ -9,12 +9,6 @@ import metal.metal;
 import hip.hiprenderer.backend.metal.mtlrenderer;
 import hip.hiprenderer.backend.metal.mtltexture;
 
-class HipMTLFragmentShader : FragmentShader
-{
-    this(MTLDevice device){}
-    string shaderSource;
-}
-
 struct BufferedMTLBuffer
 {
     MTLBuffer[] buffer;
@@ -25,11 +19,6 @@ struct BufferedMTLBuffer
     void reset(){currentBuffer = 0;}
 }
 
-class HipMTLVertexShader : VertexShader
-{
-    this(MTLDevice device){}
-    string shaderSource;
-}
 
 MTLBlendOperation fromHipBlendEquation(HipBlendEquation eq)
 {
@@ -114,22 +103,9 @@ class HipMTLShader : IShader
         this.mtlRenderer = mtlRenderer;
     }
 
-    VertexShader createVertexShader(){return new HipMTLVertexShader(device);}
-    FragmentShader createFragmentShader(){return new HipMTLFragmentShader(device);}
     ShaderProgram createShaderProgram(){return new HipMTLShaderProgram();}
-    bool compileShader(FragmentShader fs, string shaderSource)
-    {
-        (cast(HipMTLFragmentShader)fs).shaderSource = shaderSource;
-        return true;
-    }
-
-    bool compileShader(VertexShader vs, string shaderSource)
-    {
-        (cast(HipMTLVertexShader)vs).shaderSource = shaderSource;
-        return true;
-    }
-
-    bool linkProgram(ref ShaderProgram program, VertexShader vs, FragmentShader fs)
+   
+    ShaderProgram compileShader(ref ShaderProgram program, string shaderSource)
     {
         HipMTLShaderProgram p = cast(HipMTLShaderProgram)program;
         HipMTLVertexShader v = cast(HipMTLVertexShader)vs;
@@ -155,16 +131,16 @@ class HipMTLShader : IShader
             err.print();
             return false;
         }
-        p.fragmentShaderFunction = p.library.newFunctionWithName("fragment_main".ns);
+        p.fragmentShaderFunction = p.library.newFunctionWithName("fragmentMain".ns);
         if(p.fragmentShaderFunction is null)
         {
-            loglnError("fragment_main() not found.");
+            loglnError("fragmentMain() not found.");
             return false;
         }
-        p.vertexShaderFunction = p.library.newFunctionWithName("vertex_main".ns);
+        p.vertexShaderFunction = p.library.newFunctionWithName("vertexMain".ns);
         if(p.vertexShaderFunction is null)
         {
-            loglnError("vertex_main() not found.");
+            loglnError("vertexMain() not found.");
             return false;
         }
 

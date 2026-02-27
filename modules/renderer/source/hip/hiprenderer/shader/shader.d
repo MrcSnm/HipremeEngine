@@ -28,8 +28,6 @@ private __gshared ShaderProgram lastBoundShader;
 
 public class Shader : IReloadable
 {
-    VertexShader vertexShader;
-    FragmentShader fragmentShader;
     ShaderProgram shaderProgram;
     ShaderVariablesLayout[string] layouts;
     protected HipShaderTexture[] textures;
@@ -44,9 +42,6 @@ public class Shader : IReloadable
     this(IShader shaderImpl)
     {
         this.shaderImpl = shaderImpl;
-        vertexShader = shaderImpl.createVertexShader();
-        fragmentShader = shaderImpl.createFragmentShader();
-        shaderProgram = shaderImpl.createShaderProgram();
     }
     this(IShader shaderImpl, string shaderSource)
     {
@@ -62,14 +57,10 @@ public class Shader : IReloadable
     ShaderStatus loadShader(string shaderSource, string shaderPath = "")
     {
         this.internalShaderSource = shaderSource;
-        this.shaderPath = shaderProgram.name = shaderPath;
-        if(!shaderImpl.compileShader(vertexShader, shaderSource))
-            return ShaderStatus.VERTEX_COMPILATION_ERROR;
-        if(!shaderImpl.compileShader(fragmentShader, shaderSource))
-            return ShaderStatus.FRAGMENT_COMPILATION_ERROR;
-        if(!shaderImpl.linkProgram(shaderProgram, vertexShader, fragmentShader))
+        this.shaderPath = shaderPath;
+        shaderProgram = shaderImpl.buildShader(shaderSource, shaderPath);
+        if(shaderProgram is null)
             return ShaderStatus.LINK_ERROR;
-        // deleteShaders();
         return ShaderStatus.SUCCESS;
     }
 
@@ -112,6 +103,13 @@ public class Shader : IReloadable
         ShaderVariablesLayout* ret = name in layouts;
         if(ret) return *ret;
         return null;
+    }
+
+    public void setup(Uniforms...)(HipRendererInfo info, scope HipShaderTexture[] textures...)
+    {
+        static foreach(u; Uniforms)
+            addVarLayout(ShaderVariablesLayout.from!(u)(info));
+        addUsedTextures(textures);
     }
 
 
@@ -212,7 +210,7 @@ public class Shader : IReloadable
         }
         foreach(i, HipShaderTexture tex; textures)
         {
-            tex.texture.bind(tex.bindPoint == -1 ? i : tex.bindPoint);
+            tex.texture.bind(tex.bindPoint == -1 ? cast(int)i : tex.bindPoint);
         }
         shaderImpl.sendVars(shaderProgram, layouts);
     }
@@ -228,18 +226,9 @@ public class Shader : IReloadable
     }
 
 
-    protected void deleteShaders()
-    {
-        shaderImpl.deleteShader(&fragmentShader);
-        shaderImpl.deleteShader(&vertexShader);
-    }
 
     bool reload()
     {
-        vertexShader = shaderImpl.createVertexShader();
-        fragmentShader = shaderImpl.createFragmentShader();
-        shaderProgram = shaderImpl.createShaderProgram();
-
         return loadShader(internalShaderSource) == ShaderStatus.SUCCESS;
     }
 
