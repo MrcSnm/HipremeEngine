@@ -141,34 +141,40 @@ final class Hip_D3D11_Buffer : IHipRendererBuffer
 final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
 {
     ID3D11InputLayout inputLayout;
-    uint stride;
+    IHipRendererBuffer ebo;
+    HipVertexAttributeInfo[] attInfos;
     this(){}
-    void bind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
+    void bind()
     {
-        static uint offset = 0;
+        uint offset = 0;
         assert(inputLayout !is null, "D3D11 Input Layout wasn't created yet. Don't bind before calling createInputLayout");
-        Hip_D3D11_Buffer v = cast(Hip_D3D11_Buffer)vbo;
         d3dCall(_hip_d3d_context.IASetInputLayout(inputLayout));
-        d3dCall(_hip_d3d_context.IASetVertexBuffers(0u, 1u, &v.buffer, &stride, &offset));
-        ebo.bind();
+        assert(attInfos.length == 1, "Still need to adapt.");
+        foreach(info; attInfos)
+        {
+            Hip_D3D11_Buffer v = cast(Hip_D3D11_Buffer)info.vbo;
+            d3dCall(_hip_d3d_context.IASetVertexBuffers(0u, 1u, &v.buffer, &info.vboStride, &offset));
+        }
+        this.ebo.bind();
     }
-    void unbind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
+    void unbind()
     {
         if(vbo is null)
             return;
-        vbo.unbind();
-        ebo.unbind();
         d3dCall(_hip_d3d_context.IASetInputLayout(null));
+        foreach(info; attInfos)
+            info.vbo.unbind();
+        ebo.unbind();
     }
     void createInputLayout(
-        IHipRendererBuffer, IHipRendererBuffer,
-        HipVertexAttributeInfo[] attInfos, uint stride, ShaderProgram shaderProgram
+        HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, ShaderProgram shaderProgram
     )
     {
         if(ErrorHandler.assertErrorMessage(shaderProgram !is null, "D3D11 VAO Error", "Error at creating input layout"))
             return;
+        this.ebo = ebo;
+        this.attInfos = attInfos;
         HipD3D11VertexShader vs = (cast(Hip_D3D11_ShaderProgram)shaderProgram).vertex;
-        this.stride = stride;
 
         D3D11_INPUT_ELEMENT_DESC[] descs = new D3D11_INPUT_ELEMENT_DESC[attInfos.length];
         foreach(i, ref desc; descs)

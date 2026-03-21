@@ -63,7 +63,11 @@ enum HipRendererMode : ubyte
 //////////////////////////////////////////Metadata//////////////////////////////////////////
 
 //Shaders
-enum HipShaderInputLayout;
+struct HipShaderInputLayout
+{
+    ///Input rate for that input layout. 
+    ShaderInputRate inputRate = ShaderInputRate.perVertex;
+}
 /**
 *   Use this special UDA to say this type is only for accumulating stride and thus should not
 *   be defined on shader UNUSUED

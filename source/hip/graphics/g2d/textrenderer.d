@@ -88,11 +88,12 @@ class HipTextRenderer : IHipBatch
             bmTextShader.sendVars();
         }
         ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
-        mesh = new Mesh(HipVertexArrayObject.getVAO!HipTextRendererVertex, bmTextShader);
-        //6 indices per quad
         vertices = new HipTextRendererVertex[](maxQuads*4);
+        mesh = new Mesh(HipVertexArrayObject.getVAO!(HipTextRendererVertex)(
+            [HipVertexAttributeCreateInfo(vertices.length, HipResourceUsage.Dynamic)]
+        ), bmTextShader);
+        //6 indices per quad
         mesh.setIndices(HipRenderer.getQuadIndexBuffer(maxQuads));
-        mesh.createVertexBuffer(cast(index_t)vertices.length, HipResourceUsage.Dynamic);
         mesh.sendAttributes();
         mesh.setVertices(vertices);
         if(camera is null)

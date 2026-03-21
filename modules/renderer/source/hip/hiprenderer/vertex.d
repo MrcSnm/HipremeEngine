@@ -33,12 +33,7 @@ private __gshared HipVertexArrayObject lastBoundVertex;
 class HipVertexArrayObject
 {
     IHipVertexArrayImpl VAO;
-    IHipRendererBuffer  VBO;
     IHipRendererBuffer  EBO;
-    ///Accumulated size of the vertex data
-    uint stride;
-    ///How many data slots it uses, for instance, vec3 will count +3
-    uint dataCount;
     HipVertexAttributeInfo[] infos;
 
     bool isBonded;
@@ -71,76 +66,6 @@ class HipVertexArrayObject
     }
 
     /**
-    * Creates and binds a vertex buffer.
-    *
-    * The vertex buffer size is dependant on the attributes that were appended to this vertex array.
-    */
-    void createVertexBuffer(uint count, HipResourceUsage usage)
-    {
-        this.VBO = HipRenderer.createBuffer(count*this.stride, usage, HipRendererBufferType.vertex);
-    }
-    /**
-    *   This function creates an attribute information,
-    * for later sending it(it is necessary as the stride needs to be recalculated)
-    */
-    HipVertexArrayObject appendAttribute(
-        uint count,
-        HipAttributeType valueType,
-        uint typeSize,
-        string infoName,
-        bool isPadding = false,
-    )
-    {
-        HipVertexAttributeInfo info = HipVertexAttributeInfo(
-            name: infoName,
-            count: count,
-            valueType: valueType,
-            typeSize: typeSize,
-            index: cast(uint)infos.length,
-            //It actually is the `last stride`, which is the same as the offset is the total current stride
-            offset: stride
-        );
-
-        info.offset = stride;
-        // if(!isPadding)
-        {
-            infos~= info;
-            dataCount+= count;
-        }
-        stride+= count*typeSize;
-        return this;
-    }
-
-    HipVertexArrayObject appendAttribute(T)(string infoName, bool isPadding = false)
-    {
-        uint count = 1;
-        HipAttributeType type = HipAttributeType.Float;
-        uint typeSize = float.sizeof;
-        import hip.math.vector;
-
-        static if(is(T == Vector2)) count = 2;
-        else static if(is(T == Vector3)) count = 3;
-        else static if(is(T == Vector4) || is(T == HipColorf)) count = 4;
-        else static if(is(T == HipColor))
-        {
-            type = HipAttributeType.Rgba32;
-            count = 4;
-            typeSize = ubyte.sizeof;
-        }
-        else
-        {
-            static if(is(T == int)) type = HipAttributeType.Int;
-            else static if(is(T == uint)) type = HipAttributeType.Uint;
-            else static if(is(T == bool)) type = HipAttributeType.Bool;
-            else
-                static assert(is(T == float), "Unrecognized type for attribute: "~T.stringof);
-
-            typeSize = T.sizeof;
-        }
-        return appendAttribute(count, type, typeSize ,infoName, isPadding);
-    }
-
-    /**
     *   Sets the attribute infos that were appended to this object. This function must only be called
     *   after binding/creating a VBO, or it will fail
     */
@@ -151,7 +76,8 @@ class HipVertexArrayObject
         //     ErrorHandler.showErrorMessage("VertexArrayObject error", "VAO wasn't bound when trying to send its attributes");
         //     return;
         // }
-        this.VAO.createInputLayout(VBO, EBO, infos, stride, s.shaderProgram);
+        assert(infos.length && EBO !is null, "Create the VBO and EBO before sending attributes.");
+        this.VAO.createInputLayout(infos, EBO, s.shaderProgram);
     }
 
     void bind()
@@ -163,14 +89,14 @@ class HipVertexArrayObject
             if(lastBoundVertex !is null)
             {
                 lastBoundVertex.isBonded = false;
-                lastBoundVertex.VAO.unbind(lastBoundVertex.VBO, lastBoundVertex.EBO);
+                lastBoundVertex.VAO.unbind();
             }
             lastBoundVertex = this;
         }
         if(!this.isBonded)
         {
             isBonded = true;
-            this.VAO.bind(this.VBO, this.EBO);
+            this.VAO.bind();
         }
         else assert(false, "Erroneous bind.");
     }
@@ -181,39 +107,41 @@ class HipVertexArrayObject
         if(this.isBonded)
         {
             isBonded = false;
-            this.VAO.unbind(this.VBO, this.EBO);
+            this.VAO.unbind();
         }
         else assert(false, "Erroneous unbind.");
     }
 
     /**
     *   Sets the VBO data. Use this function only for initialization as it allocates memory.
-    *
     *   If you wish to only update its data, call updateVertices instead.
+    *   Params:
+    *       data = The data to set the vertices.
+    *       vbo = Target vbo to set the data
     */
-    void setVertices(const void[] data)
+    void setVertices(const void[] data, ubyte vbo = 0)
     {
-        if(VBO is null)
+        if(infos.length == 0)
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
         else
         {
             hasVertexInitialized = true;
-            this.VBO.setData(data);
+            this.infos[vbo].vbo.setData(data);
         }
     }
     /**
      * Update the VBO. Won't cause memory allocation.
      * Params:
-     *   count = How many vertices to update
      *   data = The data containing a type which is conforming to the VAO.
      *   offset = The offset is always multiplied by this vertex array object stride.
+     *   vbo = The target vbo to update.
      */
-    void updateVertices(const void[] data, int offset = 0)
+    void updateVertices(const void[] data, int offset = 0, ubyte vbo = 0)
     {
-        if(VBO is null)
+        if(infos.length == 0)
             ErrorHandler.showErrorMessage("Null VertexBuffer", "No vertex buffer was created before setting its vertices");
         ErrorHandler.assertExit(hasVertexInitialized, "Vertex must setData before updating its contents.");
-        this.VBO.updateData(offset*this.stride, data);
+        this.infos[vbo].vbo.updateData(offset*this.infos[vbo].vboStride, data);
     }
     /**
     *   Will set the indices data. Beware that this function may allocate memory.
@@ -248,25 +176,100 @@ class HipVertexArrayObject
     /**
     * Receives a struct and creates a VAO based on its member types and names.
     */
-    static HipVertexArrayObject getVAO(T)() if(is(T == struct))
+    static HipVertexArrayObject getVAO(BufferTypes...)(HipVertexAttributeCreateInfo[BufferTypes.length] creationInfo)
     {
-        import std.traits:isFunction;
-        import hip.util.reflection:hasUDA;
-
         HipVertexArrayObject obj = new HipVertexArrayObject();
-        static foreach(member; __traits(allMembers, T))
-        {{
-            alias mem = __traits(getMember, T, member);
-            static if(!isFunction!(mem) && __traits(compiles, mem.offsetof))
-            {
-                obj.appendAttribute!((typeof(mem)))
-                (
-                    member,
-                    hasUDA!(mem, HipShaderInputPadding)
-                );
-            }
-        }}
+        static foreach(i, T; BufferTypes)
+        {
+            static assert(is(T == struct), T.stringof~" must be a struct to create a HipVertexAttributeInfo based on it.");
+            obj.infos~= getAttributeInfo!(T)();
+            obj.infos[i].vbo = HipRenderer.createBuffer(creationInfo[i].count * obj.infos[i].vboStride, creationInfo[i].usage, HipRendererBufferType.vertex);
+        }
         return obj;
     }
+}
 
+/**
+*   This function creates an attribute information,
+* for later sending it(it is necessary as the stride needs to be recalculated)
+*/
+private ref HipVertexAttributeInfo appendAttributeField(return ref HipVertexAttributeInfo info, 
+    uint count,
+    HipAttributeType valueType,
+    uint typeSize,
+    string fieldName,
+    bool isPadding = false
+)
+{
+     
+    HipVertexAttributeFieldInfo field = HipVertexAttributeFieldInfo(
+        name: fieldName,
+        count: count,
+        valueType: valueType,
+        typeSize: typeSize,
+        index: cast(uint)info.fields.length,
+        //It actually is the `last stride`, which is the same as the offset is the total current stride
+        offset: info.vboStride
+    );
+
+    // if(!isPadding)
+    {
+        info.fields~= field;
+        info.dataCount+= count;
+    }
+    info.vboStride += count*typeSize;
+    return info;
+}
+
+private ref HipVertexAttributeInfo appendAttributeField(T)(return ref HipVertexAttributeInfo info, string infoName, bool isPadding = false)
+{
+    uint count = 1;
+    HipAttributeType type = HipAttributeType.Float;
+    uint typeSize = float.sizeof;
+    import hip.math.vector;
+
+    static if(is(T == Vector2)) count = 2;
+    else static if(is(T == Vector3)) count = 3;
+    else static if(is(T == Vector4) || is(T == HipColorf)) count = 4;
+    else static if(is(T == HipColor))
+    {
+        type = HipAttributeType.Rgba32;
+        count = 4;
+        typeSize = ubyte.sizeof;
+    }
+    else
+    {
+        static if(is(T == int)) type = HipAttributeType.Int;
+        else static if(is(T == uint)) type = HipAttributeType.Uint;
+        else static if(is(T == bool)) type = HipAttributeType.Bool;
+        else
+            static assert(is(T == float), "Unrecognized type for attribute: "~T.stringof);
+
+        typeSize = T.sizeof;
+    }
+    return appendAttributeField(info, count, type, typeSize ,infoName, isPadding);
+}
+
+
+private HipVertexAttributeInfo getAttributeInfo(T)() if(is(T == struct))
+{
+    import std.traits:isFunction;
+    import hip.util.reflection:hasUDA;
+
+    HipVertexAttributeInfo info;
+
+    static foreach(member; __traits(allMembers, T))
+    {{
+        alias mem = __traits(getMember, T, member);
+        static if(!isFunction!(mem) && __traits(compiles, mem.offsetof))
+        {
+            appendAttributeField!((typeof(mem)))
+            (
+                info,
+                member,
+                hasUDA!(mem, HipShaderInputPadding)
+            );
+        }
+    }}
+    return info;
 }

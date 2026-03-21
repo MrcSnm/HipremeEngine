@@ -31,7 +31,8 @@ function initializeWebglContext()
     return {
         wglIsWebgl2()
         {
-            return gl instanceof WebGL2RenderingContext;
+            return false;
+            // return gl instanceof WebGL2RenderingContext;
         },
         glAttachShader(program, shader) {
             gl.attachShader(_objects[program], _objects[shader]);
@@ -150,6 +151,9 @@ function initializeWebglContext()
         },
         glDrawElements ( mode, count, type, indices ) {
             gl.drawElements(mode,count,type, indices);
+        },
+        glDrawElementsInstanced(mode, indicesCount, type, offset, instanceCount) {
+            gl.drawElementsInstanced(mode, indicesCount, type, offset, instanceCount);
         },
         glEnable ( cap ) {
             gl.enable(cap);

@@ -660,6 +660,8 @@ void glDisable (GLenum cap);
 void glDisableVertexAttribArray (GLuint index);
 void glDrawArrays (GLenum mode, GLint first, GLsizei count);
 void glDrawElements (GLenum mode, GLsizei count, GLenum type, void* indices);
+version(WebAssembly)
+    void glDrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, GLintptr offset, GLsizei instanceCount);
 void glEnable (GLenum cap);
 void glEnableVertexAttribArray (GLuint index);
 void glFinish ();

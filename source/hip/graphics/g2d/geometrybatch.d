@@ -73,11 +73,13 @@ class GeometryBatch : IHipBatch
         s.addVarLayout(ShaderVariablesLayout.from!(HipGeometryBatchFragmentUniforms)(HipRenderer.getInfo));
         s.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 
-
-        mesh = new Mesh(HipVertexArrayObject.getVAO!HipGeometryBatchVertex, s);
         vertices = new HipGeometryBatchVertex[verticesCount];
         indices = new index_t[indicesCount];
-        mesh.createVertexBuffer(verticesCount, HipResourceUsage.Dynamic);
+
+        mesh = new Mesh(
+            HipVertexArrayObject.getVAO!(HipGeometryBatchVertex)
+                ([HipVertexAttributeCreateInfo(verticesCount, HipResourceUsage.Dynamic)]), s
+        );
         mesh.createIndexBuffer(indicesCount, HipResourceUsage.Dynamic);
         mesh.setIndices(indices);
         mesh.setVertices(vertices);

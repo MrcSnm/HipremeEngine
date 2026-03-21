@@ -54,33 +54,13 @@ private ubyte isGLAttributeNormalized(HipAttributeType _t)
 final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
 {
     import hip.util.data_structures;
-    IHipRendererBuffer vbo;
     IHipRendererBuffer ebo;
     HipVertexAttributeInfo[] vaoInfos;
-    uint stride;
-
-    bool isWaitingCreation = false;
 
     private __gshared Hip_GL_VertexArrayObject boundVAO;
 
-    void bind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
+    void bind()
     {
-        if(vbo is null)
-        {
-            isWaitingCreation = true;
-            return;
-        }
-        else
-            this.vbo = vbo;
-        if(ebo is null)
-        {
-            isWaitingCreation = true;
-            return;
-        }
-        else
-            this.ebo = ebo;
-        isWaitingCreation = false;
-
         static if(!GLShouldDisableVertexAttrib)
         {
             __gshared bool[GLMaxVertexAttributes] enabledAttributes;
@@ -88,36 +68,39 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
 
         if(boundVAO !is this)
         {
-            vbo.bind();
             ebo.bind();
             foreach(info; vaoInfos)
             {
-                static if(!GLShouldDisableVertexAttrib)
+                info.vbo.bind();
+                foreach(field; info.fields)
                 {
-                    if(!enabledAttributes[info.index])
+                    static if(!GLShouldDisableVertexAttrib)
                     {
-                        glCall(() => glEnableVertexAttribArray(info.index));
-                        enabledAttributes[info.index] = true;
+                        if(!enabledAttributes[field.index])
+                        {
+                            glCall(() => glEnableVertexAttribArray(field.index));
+                            enabledAttributes[field.index] = true;
+                        }
                     }
+                    else
+                    {
+                        glCall(() => glEnableVertexAttribArray(field.index));
+                    }
+                    glCall(() => glVertexAttribPointer(
+                        field.index,
+                        field.count,
+                        getGLAttributeType(field.valueType),
+                        isGLAttributeNormalized(field.valueType),
+                        info.vboStride,
+                        cast(void*)field.offset
+                    ));
                 }
-                else
-                {
-                    glCall(() => glEnableVertexAttribArray(info.index));
-                }
-                glCall(() => glVertexAttribPointer(
-                    info.index,
-                    info.count,
-                    getGLAttributeType(info.valueType),
-                    isGLAttributeNormalized(info.valueType),
-                    stride,
-                    cast(void*)info.offset
-                ));
             }
             boundVAO = this;
         }
     }
         
-    void unbind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
+    void unbind()
     {
         static if(UseDelayedUnbinding)
         {
@@ -130,27 +113,28 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
                 foreach(vao; vaoInfos)
                 {
                     glCall(() => glDisableVertexAttribArray(vao.info.index));
+                    vao.vbo.unbind();
                 }
-                vbo.unbind();
                 ebo.unbind();
                 boundVAO = null;
             }
         }
     }
-    void createInputLayout(
-        IHipRendererBuffer, IHipRendererBuffer,
-        HipVertexAttributeInfo[] attInfos, uint stride, ShaderProgram p)
+    void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, ShaderProgram p)
     {
         import hip.hiprenderer.backend.gl.glshader;
         Hip_GL3_ShaderProgram glProg = cast(Hip_GL3_ShaderProgram)p;
+        this.ebo = ebo;
         vaoInfos = attInfos;
-        this.stride = stride;
         foreach(ref info; attInfos)
         {
-            int attloc = glCall(() => glGetAttribLocation(glProg.program, cast(char*)info.name.ptr));
-            if(attloc == -1)
-                throw new Exception("Could not find attribute "~info.name~" at shader.");
-            info.index = attloc;
+            foreach(ref field; info.fields)
+            {
+                int attloc = glCall(() => glGetAttribLocation(glProg.program, cast(char*)field.name.ptr));
+                if(attloc == -1)
+                    throw new Exception("Could not find attribute "~field.name~" at shader.");
+                field.index = attloc;
+            }
             // glCall(() => glBindAttribLocation(glProg.program, i, vao.info.name.ptr)); That strategy does not work since the shader is already linked at that stage...
         }
     }
@@ -164,7 +148,7 @@ version(HipGLUseVertexArray) final class Hip_GL3_VertexArrayObject : IHipVertexA
     {
         glCall(() => glGenVertexArrays(1, &this.vao));
     }
-    void bind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
+    void bind()
     {
         if(boundVao !is this)
         {
@@ -172,7 +156,7 @@ version(HipGLUseVertexArray) final class Hip_GL3_VertexArrayObject : IHipVertexA
             boundVao = this;
         }
     }
-    void unbind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
+    void unbind()
     {
         if(boundVao is this)
         {
@@ -181,24 +165,27 @@ version(HipGLUseVertexArray) final class Hip_GL3_VertexArrayObject : IHipVertexA
         }
     }
 
-    void createInputLayout(IHipRendererBuffer vbo, IHipRendererBuffer ebo, HipVertexAttributeInfo[] attInfos, uint stride, ShaderProgram p)
+    void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, uint stride, ShaderProgram p)
     {
-        bind(vbo, ebo);
-        vbo.bind();
+        glCall(() => glBindVertexArray(this.vao));
         ebo.bind();
         foreach(info; attInfos)
         {
-            glCall(() => glVertexAttribPointer(
-                info.index,
-                info.count,
-                getGLAttributeType(info.valueType),
-                isGLAttributeNormalized(info.valueType),
-                stride,
-                cast(void*)info.offset
-            ));
-            glCall(() => glEnableVertexAttribArray(info.index));
+            info.vbo.bind();
+            foreach(field; info.fields)
+            {
+                glCall(() => glVertexAttribPointer(
+                    field.index,
+                    field.count,
+                    getGLAttributeType(field.valueType),
+                    isGLAttributeNormalized(field.valueType),
+                    stride,
+                    cast(void*)field.offset
+                ));
+                glCall(() => glEnableVertexAttribArray(field.index));
+            }
         }
-        unbind(vbo ,ebo);
+        unbind();
     }
     ~this(){glCall(() => glDeleteVertexArrays(1, &this.vao));}
 }

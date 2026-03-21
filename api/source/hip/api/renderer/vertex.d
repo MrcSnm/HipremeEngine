@@ -28,6 +28,13 @@ enum HipResourceUsage : ubyte
     Immutable,
 }
 
+struct HipVertexAttributeCreateInfo
+{
+    ///Defines the count of buffer strides will fit in the size. So, size is count * info.vboStride
+    uint count;
+    HipResourceUsage usage;
+}
+
 enum HipResourceAccess : ubyte
 {
     ///Can only write from that resource
@@ -49,7 +56,7 @@ enum HipAttributeType : ubyte
 }
 
 
-struct HipVertexAttributeInfo
+struct HipVertexAttributeFieldInfo
 {
     uint index;
     uint count;
@@ -57,6 +64,18 @@ struct HipVertexAttributeInfo
     uint typeSize;
     HipAttributeType valueType;
     string name;
+}
+
+struct HipVertexAttributeInfo
+{
+    ///Buffer associated with this vertex info
+    IHipRendererBuffer vbo;
+    ///Accumulated size of the vertex data
+    uint vboStride;
+    ///How many data slots it uses, for instance, vec3 will count +3. Unused?
+    uint dataCount;
+    ///The fields describing the vertex
+    HipVertexAttributeFieldInfo[] fields;
 }
 
 enum HipRendererBufferType : ubyte
@@ -87,17 +106,15 @@ interface IHipRendererBuffer
 
 interface IHipVertexArrayImpl
 {
-    void bind(IHipRendererBuffer vbo, IHipRendererBuffer ebo);
-    void unbind(IHipRendererBuffer vbo, IHipRendererBuffer ebo);
+    void bind();
+    void unbind();
     /**
     * GL also needs to bind both the vertex and index buffer before creatting the input layout
     * Direct3D 11 needs vertex shader information for creating a VAO
     * Metal needs a ShaderProgram for cerating a pipelinestate
     */
     void createInputLayout(
-        IHipRendererBuffer vbo, IHipRendererBuffer ebo,
-        HipVertexAttributeInfo[] info, uint stride,
-        ShaderProgram shaderProgram
+        HipVertexAttributeInfo[] info, IHipRendererBuffer ebo, ShaderProgram shaderProgram
     );
 }
 

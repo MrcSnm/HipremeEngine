@@ -12,6 +12,15 @@ enum ShaderStatus : ubyte
     UNKNOWN_ERROR
 }
 
+/** 
+ * Used to define what is the input rate for shader buffer data
+ */
+enum ShaderInputRate : ubyte
+{
+    perVertex,
+    perInstance
+}
+
 enum ShaderTypes : ubyte
 {
     vertex,

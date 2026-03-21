@@ -33,6 +33,15 @@ import hip.hiprenderer.backend.gl.glshader;
 
 private __gshared bool errorCheckEnabled = true;
 
+
+GLenum getOpenGLIndexType(T)()
+{
+    static if(is(T == ushort))
+        return GL_UNSIGNED_SHORT;
+    else 
+        return GL_UNSIGNED_INT;
+}
+
 auto glCall(T)(scope T delegate() dg, string file = __FILE__, size_t line = __LINE__)
 {
     import hip.config.opts;
@@ -341,10 +350,12 @@ class Hip_GL3Renderer : IHipRendererImpl
     */
     public void drawIndexed(index_t indicesCount, uint offset = 0)
     {
-        static if(is(index_t == uint))
-            glCall(() => glDrawElements(this.mode, indicesCount, GL_UNSIGNED_INT, cast(void*)(offset*index_t.sizeof)));
-        else
-            glCall(() => glDrawElements(this.mode, indicesCount, GL_UNSIGNED_SHORT, cast(void*)(offset*index_t.sizeof)));
+        glCall(() => glDrawElements(this.mode, indicesCount, getOpenGLIndexType!index_t, cast(void*)(offset*index_t.sizeof)));
+    }
+
+    public void drawIndexedInstanced(index_t indicesCount, uint instanceCount, uint offset)
+    {
+        glCall(() => glDrawElementsInstanced(this.mode, indicesCount, getOpenGLIndexType!index_t, cast(void*)(offset + index_t.sizeof), instanceCount));
     }
 
     bool isBlendingEnabled() const {return isGLBlendEnabled;}

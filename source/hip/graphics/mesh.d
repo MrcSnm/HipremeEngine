@@ -30,10 +30,6 @@ class Mesh
         this.vao = vao;
         this.shader = shader;
     }
-    void createVertexBuffer(index_t count, HipResourceUsage usage)
-    {
-        this.vao.createVertexBuffer(count, usage);
-    }
     void createIndexBuffer(index_t count, HipResourceUsage usage)
     {
         this.vao.createIndexBuffer(count, usage);
@@ -86,23 +82,23 @@ class Mesh
         this.vao.setIndices(indices);
     }
 
-    public void setVertices(const void[] vertices)
+    public void setVertices(const void[] vertices, ubyte vbo = 0)
     {
         if(vertices.length <= this.vertices.length)
         {
-            updateVertices(vertices);
+            updateVertices(vertices, 0, vbo);
             return;
         }
         this.vertices = cast(void[])vertices;
-        this.vao.setVertices(vertices);
+        this.vao.setVertices(vertices, vbo);
     }
     /**
     *   Updates the GPU internal buffer by using the buffer sent.
     *   The offset is always multiplied by the target vertex buffer stride.
     */
-    public void updateVertices(const void[] vertices, int offset = 0)
+    public void updateVertices(const void[] vertices, int offset = 0, ubyte vbo = 0)
     {
-        this.vao.updateVertices(vertices, offset);
+        this.vao.updateVertices(vertices, offset, vbo);
     }
     public void updateIndices(const index_t[] indices, int offset = 0)
     {
