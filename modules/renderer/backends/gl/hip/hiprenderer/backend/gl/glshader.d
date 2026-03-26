@@ -151,7 +151,7 @@ class Hip_GL_ShaderImpl : IShader
         return betweenInclusive(str, "precision ", ";\n");
     }
 
-    static string preprocess(string shader, ShaderTypes type)
+    static string preprocess(string shader, ShaderTypes type, bool isInstanced = false)
     {
         string ver = getShaderVersion(shader);
         string prefix;
@@ -173,6 +173,8 @@ class Hip_GL_ShaderImpl : IShader
             case ShaderTypes.geometry:assert(false, "Unuspported geometry.");
             case ShaderTypes.none:assert(false, "Unuspported none.");
         }
+        if(isInstanced)
+            prefix~= "#define INSTANCED\n";
         prefix~= 
 `#if __VERSION__ == 100
     #define INOUT varying
@@ -211,13 +213,13 @@ class Hip_GL_ShaderImpl : IShader
         return prefix ~ shader ~ "\nvoid main(){ENTRY_POINT;}";
     }
 
-    ShaderProgram buildShader(string shaderSource, string shaderPath)
+    ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced = false)
     {
         Hip_GL3_ShaderProgram prog = new Hip_GL3_ShaderProgram();
         prog.name = shaderPath;
-        if(!Hip_GL3_ShaderProgram.compileShader(prog.vertexShader, preprocess(shaderSource, ShaderTypes.vertex)))
+        if(!Hip_GL3_ShaderProgram.compileShader(prog.vertexShader, preprocess(shaderSource, ShaderTypes.vertex, isInstanced)))
             return null;
-        if(!Hip_GL3_ShaderProgram.compileShader(prog.fragmentShader, preprocess(shaderSource, ShaderTypes.fragment)))
+        if(!Hip_GL3_ShaderProgram.compileShader(prog.fragmentShader, preprocess(shaderSource, ShaderTypes.fragment, isInstanced)))
             return null;
 
         glCall(() =>glAttachShader(prog.program, prog.vertexShader));

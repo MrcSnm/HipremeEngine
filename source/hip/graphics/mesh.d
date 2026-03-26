@@ -109,28 +109,33 @@ class Mesh
     /**
     *   How many indices should it draw
     */
-    public void draw(T)(T count, HipRendererMode mode, uint offset = 0)
+    public void draw(T)(T indicesCount, HipRendererMode mode, uint offset = 0)
     {
         import std.traits:isUnsigned;
         static assert(isUnsigned!T, "Mesh must receive an integral type in its draw");
-        ErrorHandler.assertExit(count < T.max, "Can't draw more than T.max");
-        // if(isVertexArray)
-        // {
-            // HipRenderer.drawVertices()
-        // }
-        //else if(isInstanced)
-        /*
-        {
-            HipRenderer.drawInstanced()
-        }
-        */
+        ErrorHandler.assertExit(indicesCount < T.max, "Can't draw more than T.max");
         if(boundMesh !is this)
         {
             if(boundMesh !is null)
                 boundMesh.unbind();
             bind();
         }
-        HipRenderer.drawIndexed(mode, cast(index_t)count, offset);
+        HipRenderer.drawIndexed(mode, cast(index_t)indicesCount, offset);
+    }
+
+    
+    /**
+    *   How many indices should it draw
+    */
+    public void drawInstanced(HipRendererMode mode, uint instanceCount, index_t indicesCount, uint indicesOffset = 0)
+    {
+        if(boundMesh !is this)
+        {
+            if(boundMesh !is null)
+                boundMesh.unbind();
+            bind();
+        }
+        HipRenderer.drawIndexedInstanced(mode, instanceCount, indicesCount, indicesOffset);
     }
 
 }

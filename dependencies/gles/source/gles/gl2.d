@@ -386,6 +386,7 @@ version(WebAssembly)
 
 
     extern(System) nothrow @nogc{
+        void glBindVertexArray(GLuint vao);
         void glBindBufferRange (GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size);
         void glBindBufferBase (GLenum target, GLuint index, GLuint buffer);
         void glUniformBlockBinding (GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
@@ -597,12 +598,21 @@ void glCullFace (GLenum mode);
 version(WebAssembly)
 {
     void glDeleteBuffer(GLuint buffer);
+    void glDeleteVertexArray(GLuint vao);
     void glDeleteBuffers (GLsizei n, GLuint* buffers)
     {
         assert(n == 1, "WebGL only allows deleting 1 buffer");
         glDeleteBuffer(*buffers);
         *buffers = 0;
     }
+
+    void glDeleteVertexArrays(GLsizei n, GLuint* vaos)
+    {
+        assert(n == 1, "WebGL only allows deleting 1 VA");
+        glDeleteVertexArray(*vaos);
+        *vaos = 0;
+    }
+
 }
 else
 {
@@ -672,11 +682,19 @@ void glFrontFace (GLenum mode);
 version(WebAssembly)
 {
     GLuint glCreateBuffer();
+    GLuint glCreateVertexArray();
     void glGenBuffers (GLsizei n, GLuint* buffers)
     {
         assert(n == 1, "Can't create more than one buffer on wasm");
         *buffers = glCreateBuffer();
     }
+
+    void glGenVertexArrays(GLsizei n, GLuint* vao)
+    {
+        assert(n == 1, "Can't create more than one VAO on wasm");
+        *vao = glCreateVertexArray();
+    }
+
 }
 else
 {
@@ -958,6 +976,10 @@ void glVertexAttrib3fv (GLuint index, GLfloat* v);
 void glVertexAttrib4f (GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
 void glVertexAttrib4fv (GLuint index, GLfloat* v);
 void glVertexAttribPointer (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, void* pointer);
+version(WebAssembly)
+{
+    void glVertexAttribDivisor(GLuint index, GLuint divisor);
+}
 void glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
 
 /* GL_ES_VERSION_2_0 */

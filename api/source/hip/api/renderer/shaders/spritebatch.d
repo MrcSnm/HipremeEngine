@@ -23,6 +23,28 @@ public import hip.math.matrix;
     // static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
 }
 
+@HipShaderInputLayout struct HipSpriteVertexInstancedPerVertex
+{
+    Vector2 vPosition = Vector2.zero;
+}
+
+HipSpriteVertexInstancedPerVertex[4] spriteBatchInstancedVertices = [
+    HipSpriteVertexInstancedPerVertex(Vector2(0, 0)),
+    HipSpriteVertexInstancedPerVertex(Vector2(1, 0)),
+    HipSpriteVertexInstancedPerVertex(Vector2(1, 1)),
+    HipSpriteVertexInstancedPerVertex(Vector2(0, 1)),
+];
+
+@HipShaderInputLayout struct HipSpriteVertexInstancedPerInstance
+{
+    Vector2 vXY;
+    Vector2 vSize;
+    HipColor vColor;
+    float vZ;
+    float vRotation;
+    float vTexID;
+}
+
 
 @HipShaderUniform(ShaderTypes.vertex, "Cbuf1", "cbuf1")
 struct HipSpriteVertexUniform

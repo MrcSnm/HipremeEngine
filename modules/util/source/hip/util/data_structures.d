@@ -799,10 +799,14 @@ class Node(T)
     
     int opApply(scope int delegate(Node!T) cb)
     {
+        int ret = cb(this);
+        if(ret)
+            return ret;
         foreach(child; children)
         {
-            if(cb(child) || child.opApply(cb))
-                return 1;
+            ret = child.opApply(cb);
+            if(ret)
+                return ret;
         }
         return 0;
     }

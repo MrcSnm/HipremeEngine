@@ -209,7 +209,15 @@ class Hip_GL3Renderer : IHipRendererImpl
         version(HipGLUseVertexArray)
             return new Hip_GL3_VertexArrayObject();
         else
+        {
+            static if(UseWebGL)
+            {
+                import gles;
+                if(isWebGL2)
+                    return new Hip_GL3_VertexArrayObject();
+            }
             return new Hip_GL_VertexArrayObject();
+        }
     }
     public IHipTexture createTexture(HipResourceUsage usage)
     {
@@ -353,9 +361,9 @@ class Hip_GL3Renderer : IHipRendererImpl
         glCall(() => glDrawElements(this.mode, indicesCount, getOpenGLIndexType!index_t, cast(void*)(offset*index_t.sizeof)));
     }
 
-    public void drawIndexedInstanced(index_t indicesCount, uint instanceCount, uint offset)
+    public void drawIndexedInstanced(uint instanceCount, index_t indicesCount, uint offset)
     {
-        glCall(() => glDrawElementsInstanced(this.mode, indicesCount, getOpenGLIndexType!index_t, cast(void*)(offset + index_t.sizeof), instanceCount));
+        glCall(() => glDrawElementsInstanced(this.mode, indicesCount, getOpenGLIndexType!index_t, cast(void*)(offset * index_t.sizeof), instanceCount));
     }
 
     bool isBlendingEnabled() const {return isGLBlendEnabled;}

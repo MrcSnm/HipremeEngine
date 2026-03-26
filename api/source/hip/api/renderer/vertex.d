@@ -31,8 +31,9 @@ enum HipResourceUsage : ubyte
 struct HipVertexAttributeCreateInfo
 {
     ///Defines the count of buffer strides will fit in the size. So, size is count * info.vboStride
-    uint count;
+    size_t count;
     HipResourceUsage usage;
+    ShaderInputRate rate;
 }
 
 enum HipResourceAccess : ubyte
@@ -68,6 +69,8 @@ struct HipVertexAttributeFieldInfo
 
 struct HipVertexAttributeInfo
 {
+    ///Is that vertex attribute info used as instanced buffer.
+    bool isInstanced;
     ///Buffer associated with this vertex info
     IHipRendererBuffer vbo;
     ///Accumulated size of the vertex data

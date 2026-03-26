@@ -114,7 +114,7 @@ class HipMTLShader : IShader
 
     ShaderProgram createShaderProgram(){return new HipMTLShaderProgram();}
    
-    ShaderProgram buildShader(string shaderSource, string shaderPath)
+    ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced)
     {
         HipMTLShaderProgram p =  new HipMTLShaderProgram();
         p.name = shaderPath;

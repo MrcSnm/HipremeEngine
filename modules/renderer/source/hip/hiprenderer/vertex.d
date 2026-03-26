@@ -179,10 +179,12 @@ class HipVertexArrayObject
     static HipVertexArrayObject getVAO(BufferTypes...)(HipVertexAttributeCreateInfo[BufferTypes.length] creationInfo)
     {
         HipVertexArrayObject obj = new HipVertexArrayObject();
+        uint indexOffset = 0;
         static foreach(i, T; BufferTypes)
         {
             static assert(is(T == struct), T.stringof~" must be a struct to create a HipVertexAttributeInfo based on it.");
-            obj.infos~= getAttributeInfo!(T)();
+            obj.infos~= getAttributeInfo!(T)(creationInfo[i], indexOffset);
+            indexOffset = obj.infos[i].fields[$-1].index + 1;
             obj.infos[i].vbo = HipRenderer.createBuffer(creationInfo[i].count * obj.infos[i].vboStride, creationInfo[i].usage, HipRendererBufferType.vertex);
         }
         return obj;
@@ -198,6 +200,7 @@ private ref HipVertexAttributeInfo appendAttributeField(return ref HipVertexAttr
     HipAttributeType valueType,
     uint typeSize,
     string fieldName,
+    uint indexOffset,
     bool isPadding = false
 )
 {
@@ -207,7 +210,7 @@ private ref HipVertexAttributeInfo appendAttributeField(return ref HipVertexAttr
         count: count,
         valueType: valueType,
         typeSize: typeSize,
-        index: cast(uint)info.fields.length,
+        index: indexOffset + cast(uint)info.fields.length,
         //It actually is the `last stride`, which is the same as the offset is the total current stride
         offset: info.vboStride
     );
@@ -221,7 +224,7 @@ private ref HipVertexAttributeInfo appendAttributeField(return ref HipVertexAttr
     return info;
 }
 
-private ref HipVertexAttributeInfo appendAttributeField(T)(return ref HipVertexAttributeInfo info, string infoName, bool isPadding = false)
+private ref HipVertexAttributeInfo appendAttributeField(T)(return ref HipVertexAttributeInfo info, string infoName, uint indexOffset, bool isPadding = false)
 {
     uint count = 1;
     HipAttributeType type = HipAttributeType.Float;
@@ -247,16 +250,17 @@ private ref HipVertexAttributeInfo appendAttributeField(T)(return ref HipVertexA
 
         typeSize = T.sizeof;
     }
-    return appendAttributeField(info, count, type, typeSize ,infoName, isPadding);
+    return appendAttributeField(info, count, type, typeSize ,infoName, indexOffset, isPadding);
 }
 
 
-private HipVertexAttributeInfo getAttributeInfo(T)() if(is(T == struct))
+private HipVertexAttributeInfo getAttributeInfo(T)(HipVertexAttributeCreateInfo createInfo, uint indexOffset) if(is(T == struct))
 {
     import std.traits:isFunction;
     import hip.util.reflection:hasUDA;
 
     HipVertexAttributeInfo info;
+    info.isInstanced = createInfo.rate == ShaderInputRate.perInstance;
 
     static foreach(member; __traits(allMembers, T))
     {{
@@ -267,6 +271,7 @@ private HipVertexAttributeInfo getAttributeInfo(T)() if(is(T == struct))
             (
                 info,
                 member,
+                indexOffset,
                 hasUDA!(mem, HipShaderInputPadding)
             );
         }

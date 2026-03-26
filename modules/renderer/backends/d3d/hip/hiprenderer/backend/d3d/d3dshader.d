@@ -210,7 +210,7 @@ class Hip_D3D11_ShaderImpl : IShader
         return true;
     }
 
-    ShaderProgram buildShader(string shaderSource, string shaderPath)
+    ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced)
     {
         Hip_D3D11_ShaderProgram prog = new Hip_D3D11_ShaderProgram();
         prog.name = shaderPath;

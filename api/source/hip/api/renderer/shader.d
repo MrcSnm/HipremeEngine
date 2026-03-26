@@ -43,7 +43,7 @@ enum HipShaderPresets : ubyte
  */
 interface IShader
 {
-    ShaderProgram buildShader(string shaderSource, string shaderPath);
+    ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced);
 
     void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq);
     void bind(ShaderProgram program);

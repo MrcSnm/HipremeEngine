@@ -138,28 +138,30 @@ final class Hip_D3D11_Buffer : IHipRendererBuffer
         d3dCall(_hip_d3d_context.Unmap(buffer, 0));
     }
 }
+
 final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
 {
     ID3D11InputLayout inputLayout;
     IHipRendererBuffer ebo;
     HipVertexAttributeInfo[] attInfos;
+
+    ID3D11Buffer[] vboBuffers;
+    UINT[] strides;
+    UINT[] offsets;
+    
+
     this(){}
     void bind()
     {
-        uint offset = 0;
         assert(inputLayout !is null, "D3D11 Input Layout wasn't created yet. Don't bind before calling createInputLayout");
         d3dCall(_hip_d3d_context.IASetInputLayout(inputLayout));
         assert(attInfos.length == 1, "Still need to adapt.");
-        foreach(info; attInfos)
-        {
-            Hip_D3D11_Buffer v = cast(Hip_D3D11_Buffer)info.vbo;
-            d3dCall(_hip_d3d_context.IASetVertexBuffers(0u, 1u, &v.buffer, &info.vboStride, &offset));
-        }
+        d3dCall(_hip_d3d_context.IASetVertexBuffers(0u, 1u, vboBuffers.ptr, strides.ptr, offsets.ptr));
         this.ebo.bind();
     }
     void unbind()
     {
-        if(vbo is null)
+        if(ebo is null)
             return;
         d3dCall(_hip_d3d_context.IASetInputLayout(null));
         foreach(info; attInfos)
@@ -176,29 +178,43 @@ final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
         this.attInfos = attInfos;
         HipD3D11VertexShader vs = (cast(Hip_D3D11_ShaderProgram)shaderProgram).vertex;
 
-        D3D11_INPUT_ELEMENT_DESC[] descs = new D3D11_INPUT_ELEMENT_DESC[attInfos.length];
-        foreach(i, ref desc; descs)
-        {
-            HipVertexAttributeInfo info = attInfos[i];
-            desc.SemanticName = info.name.toStringz;
-            desc.SemanticIndex = 0;
-            // desc.SemanticIndex = info.index;
-            desc.Format = _hip_d3d_getFormatFromInfo(info);
-            desc.InputSlot = 0;
-            desc.AlignedByteOffset = info.offset;
-            desc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-            desc.InstanceDataStepRate = 0;
-        }
+        int inputElementCount = 0;
+        foreach(att; attInfos)
+            foreach(field; att.fields)
+                inputElementCount++;
 
+        int index = 0;
+        D3D11_INPUT_ELEMENT_DESC[] descs = new D3D11_INPUT_ELEMENT_DESC[inputElementCount];
+        vboBuffers = new ID3D11Buffer[attInfos.length];
+        strides = new UINT[attInfos.length];
+        offsets = new UINT[attInfos.length];
+        foreach(i, att; attInfos)
+        {
+            foreach(field; att.fields)
+            {
+                ref D3D11_INPUT_ELEMENT_DESC desc = descs[index++];
+                desc.SemanticName = field.name.toStringz;
+                desc.SemanticIndex = 0;
+                // desc.SemanticIndex = field.index;
+                desc.Format = _hip_d3d_getFormatFromInfo(field);
+                desc.InputSlot = 0;
+                desc.AlignedByteOffset = field.offset;
+                desc.InputSlotClass = att.isInstanced ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
+                desc.InstanceDataStepRate = 0;
+            }
+            vboBuffers[i] = (cast(Hip_D3D11_Buffer)att.vbo).buffer;
+            strides[i] = att.vboStride;
+            offsets[i] = 0;
+        }
         d3dCall(_hip_d3d_device.CreateInputLayout(descs.ptr, cast(uint)descs.length,
         vs.blob.GetBufferPointer(), vs.blob.GetBufferSize(), &inputLayout));
-
         import core.memory;
         GC.free(descs.ptr);
+
     }
 }
 
-private DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref HipVertexAttributeInfo info)
+private DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref HipVertexAttributeFieldInfo info)
 {
     DXGI_FORMAT ret;
     switch(info.valueType)

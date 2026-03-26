@@ -28,6 +28,8 @@ struct DefaultShader
     string path;
     ///Complete shader source
     string function() shaderSource;
+    ///Important for having implementation on non instanced rendering.
+    bool function() isInstanced;
 }
 
 pragma(LDC_no_typeinfo)
@@ -63,11 +65,7 @@ enum HipRendererMode : ubyte
 //////////////////////////////////////////Metadata//////////////////////////////////////////
 
 //Shaders
-struct HipShaderInputLayout
-{
-    ///Input rate for that input layout. 
-    ShaderInputRate inputRate = ShaderInputRate.perVertex;
-}
+enum HipShaderInputLayout;
 /**
 *   Use this special UDA to say this type is only for accumulating stride and thus should not
 *   be defined on shader UNUSUED
@@ -132,6 +130,7 @@ interface IHipRendererImpl
     public void begin();
     public void setRendererMode(HipRendererMode mode);
     public void drawIndexed(index_t count, uint offset = 0);
+    public void drawIndexedInstanced(uint instanceCount, index_t count, uint offset = 0);
     public void drawVertices(index_t count, uint offset = 0);
     public void end();
     public void clear();

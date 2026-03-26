@@ -31,14 +31,17 @@ function initializeWebglContext()
     return {
         wglIsWebgl2()
         {
-            return false;
-            // return gl instanceof WebGL2RenderingContext;
+            // return false;
+            return gl instanceof WebGL2RenderingContext;
         },
         glAttachShader(program, shader) {
             gl.attachShader(_objects[program], _objects[shader]);
         },
         glBindBuffer ( target, buffer) {
             gl.bindBuffer(target, _objects[buffer]);
+        },
+        glBindVertexArray(vao) {
+            gl.bindVertexArray(_objects[vao]);
         },
         wglBindAttribLocation(program, index, nameLen, namePtr)
         {
@@ -108,6 +111,11 @@ function initializeWebglContext()
             gl.deleteRenderbuffer(_objects[renderbuffer])
             removeObject(renderbuffer);
         },
+        glDeleteVertexArray(vao)
+        {
+            gl.deleteVertexArray(_objects[vao]);
+            removeObject(vao);
+        },
         glClear ( mask ) {
             gl.clear(mask);
         },
@@ -173,6 +181,9 @@ function initializeWebglContext()
         },
         glDisableVertexAttribArray( index) {
             gl.disableVertexAttribArray(index);
+        },
+        glCreateVertexArray() {
+            return addObject(gl.createVertexArray());
         },
         glCreateBuffer() {
             return addObject(gl.createBuffer());
@@ -288,6 +299,9 @@ function initializeWebglContext()
         },
         glVertexAttribPointer ( index, size, type, normalized, stride, offset ) {
             gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
+        },
+        glVertexAttribDivisor(index, divisor) {
+            gl.vertexAttribDivisor(index, divisor);
         },
         glViewport ( x, y, width, height ) {
             gl.viewport(x,y,width,height);

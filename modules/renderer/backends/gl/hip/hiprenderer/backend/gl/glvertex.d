@@ -56,7 +56,6 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
     import hip.util.data_structures;
     IHipRendererBuffer ebo;
     HipVertexAttributeInfo[] vaoInfos;
-
     private __gshared Hip_GL_VertexArrayObject boundVAO;
 
     void bind()
@@ -140,7 +139,7 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
     }
 }
 
-version(HipGLUseVertexArray) final class Hip_GL3_VertexArrayObject : IHipVertexArrayImpl
+static if (OpenGLHasVAOSupport) final class Hip_GL3_VertexArrayObject : IHipVertexArrayImpl
 {
     uint vao;
     private __gshared Hip_GL3_VertexArrayObject boundVao;
@@ -165,11 +164,11 @@ version(HipGLUseVertexArray) final class Hip_GL3_VertexArrayObject : IHipVertexA
         }
     }
 
-    void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, uint stride, ShaderProgram p)
+    void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, ShaderProgram p)
     {
         glCall(() => glBindVertexArray(this.vao));
         ebo.bind();
-        foreach(info; attInfos)
+        foreach(i, info; attInfos)
         {
             info.vbo.bind();
             foreach(field; info.fields)
@@ -179,10 +178,12 @@ version(HipGLUseVertexArray) final class Hip_GL3_VertexArrayObject : IHipVertexA
                     field.count,
                     getGLAttributeType(field.valueType),
                     isGLAttributeNormalized(field.valueType),
-                    stride,
+                    info.vboStride,
                     cast(void*)field.offset
                 ));
                 glCall(() => glEnableVertexAttribArray(field.index));
+                if(info.isInstanced)
+                    glCall(() => glVertexAttribDivisor(field.index, 1));
             }
         }
         unbind();

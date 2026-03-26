@@ -520,6 +520,10 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         d3dCall(_hip_d3d_context.DrawIndexed(indicesSize, offset, 0));
     }
+    public void drawIndexedInstanced(uint instanceCount, index_t indicesSize, uint offset=0)
+    {
+        d3dCall(_hip_d3d_context.DrawIndexedInstanced(indicesSize, instanceCount, offset, 0, 0));
+    }
     void clear(){}
 
     void clear(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255)

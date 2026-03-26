@@ -13,7 +13,7 @@ else:
 immutable DefaultShader[] DefaultShaders = [
     HipShaderPresets.FRAME_BUFFER: DefaultShader(GLDefaultShadersPath, &getFrameBufferShader),
     HipShaderPresets.GEOMETRY_BATCH: DefaultShader(GLDefaultShadersPath, &getGeometryBatchShader),
-    HipShaderPresets.SPRITE_BATCH: DefaultShader(GLDefaultShadersPath, &getSpriteBatchShader),
+    HipShaderPresets.SPRITE_BATCH: DefaultShader(GLDefaultShadersPath, &getSpriteBatchShader, &isSpriteBatchInstanced),
     HipShaderPresets.BITMAP_TEXT: DefaultShader(GLDefaultShadersPath, &getBitmapTextShader),
     HipShaderPresets.NONE: DefaultShader(GLDefaultShadersPath)
 ];
@@ -28,6 +28,19 @@ private {
     string getFrameBufferShader(){return import("opengl/framebuffer.glsl");}
     string getGeometryBatchShader(){return import("opengl/geometrybatch.glsl");}
     string getBitmapTextShader(){return import("opengl/bitmaptext.glsl");}
+
+    bool isSpriteBatchInstanced()
+    {
+        version(WebAssembly)
+        {
+            import gles;
+            return isWebGL2;
+        }
+        else version(Windows)
+            return true;
+        else
+            return false;
+    }
 
     string getSpriteBatchShader()
     {
@@ -61,10 +74,21 @@ private {
             INOUT vec2 inTexST;
             INOUT float inTexID;
             #ifdef VERTEX
-            ATTRIBUTE(0) vec3 vPosition;
-            ATTRIBUTE(1) vec4 vColor;
-            ATTRIBUTE(2) vec2 vTexST;
-            ATTRIBUTE(3) float vTexID;
+
+            #ifndef INSTANCED
+                ATTRIBUTE(0) vec3 vPosition;
+                ATTRIBUTE(1) vec4 vColor;
+                ATTRIBUTE(2) vec2 vTexST;
+                ATTRIBUTE(3) float vTexID;
+            #else
+                ATTRIBUTE(0) vec2 vPosition;
+                ATTRIBUTE(1) vec2 vXY;
+                ATTRIBUTE(2) vec2 vSize;
+                ATTRIBUTE(3) vec4 vColor;
+                ATTRIBUTE(4) float vZ;
+                ATTRIBUTE(5) float vRotation;
+                ATTRIBUTE(6) float vTexID;
+            #endif
 
             UNIFORM_BUFFER_OBJECT(0, Cbuf1, cbuf1, 
             {
@@ -73,9 +97,17 @@ private {
 
             void vertexMain()
             {
-                gl_Position = cbuf1.uMVP*vec4(vPosition, 1.0);
+
+                #ifdef INSTANCED
+                    inTexST = vPosition; //Currently only default is supported
+                    vec2 actualPos = vPosition * vSize + vXY; //Ignore vRotation for now
+                    actualPos.x += vRotation; //TODO: REMOVE ME AS VROTATION USAGE WRONG
+                    gl_Position = cbuf1.uMVP*vec4(actualPos, vZ, 1.0);
+                #else 
+                    inTexST = vTexST;
+                    gl_Position = cbuf1.uMVP*vec4(vPosition, 1.0);
+                #endif
                 inVertexColor = vColor;
-                inTexST = vTexST;
                 inTexID = vTexID;
             }
             #endif

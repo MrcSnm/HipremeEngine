@@ -38,15 +38,16 @@ public class Shader : IReloadable
 
     protected string internalShaderSource;
     private bool isUseCall = false;
+    private bool _isInstanced;
 
     this(IShader shaderImpl)
     {
         this.shaderImpl = shaderImpl;
     }
-    this(IShader shaderImpl, string shaderSource)
+    this(IShader shaderImpl, string shaderSource, bool isInstanced = false)
     {
         this(shaderImpl);
-        ShaderStatus status = loadShader(shaderSource);
+        ShaderStatus status = loadShader(shaderSource, null, isInstanced);
         if(status != ShaderStatus.SUCCESS)
         {
             import hip.console.log;
@@ -54,20 +55,23 @@ public class Shader : IReloadable
         }
     }
 
-    ShaderStatus loadShader(string shaderSource, string shaderPath = "")
+    bool isInstanced() const => _isInstanced;
+
+    ShaderStatus loadShader(string shaderSource, string shaderPath = "", bool isInstanced = false)
     {
         this.internalShaderSource = shaderSource;
         this.shaderPath = shaderPath;
-        shaderProgram = shaderImpl.buildShader(shaderSource, shaderPath);
+        _isInstanced = isInstanced;
+        shaderProgram = shaderImpl.buildShader(shaderSource, shaderPath, isInstanced);
         if(shaderProgram is null)
             return ShaderStatus.LINK_ERROR;
         return ShaderStatus.SUCCESS;
     }
 
-    ShaderStatus loadShaderFromFile(string shaderPath)
+    ShaderStatus loadShaderFromFile(string shaderPath, bool isInstanced = false)
     {
         this.shaderPath = shaderPath;
-        return loadShader(getFileContent(shaderPath), shaderPath);
+        return loadShader(getFileContent(shaderPath), shaderPath, isInstanced);
     }
 
     ShaderStatus reloadShaders()

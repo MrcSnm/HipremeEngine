@@ -50,7 +50,7 @@
 				{
 					"name": "default",
 					"dependencies": {"bindbc-opengl": {"version": "~>1.1.0"}},
-					"versions": [ "HipGL3", "GL_45", "GL_ARB", "HipGLUseVertexArray" ]
+					"versions": [ "HipGL3", "GL_45", "GL_ARB" ]
 				},
 				{
 					"name": "gles20",
@@ -60,7 +60,7 @@
 				{
 					"name": "gles32",
 					"dependencies": { "gles" : {"path": "../../dependencies/gles"}},
-					"versions": ["GLES32", "HipGLUseVertexArray"]
+					"versions": ["GLES32"]
 				}
 			]
 		}
