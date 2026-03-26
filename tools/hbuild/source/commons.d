@@ -1041,17 +1041,8 @@ int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, strin
 void inParallel(scope void delegate()[] args...)
 {
 	import std.parallelism;
-
-	// version(AArch64)
-	// {
-	// 	foreach(action; args)
-	// 		action();
-	// }
-	// else
-	// {
-		foreach(action; parallel(args))
-			action();
-	// }
+	foreach(action; parallel(args))
+		action();
 }
 
 int waitRedub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = null)

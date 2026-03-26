@@ -16,16 +16,14 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		return ChoiceResult.Error;
 	}
 
-	inParallel(
-		cached(() => timed(t, submoduleLoader.execute(t, input))),
-		putResourcesIn(t, getHipPath("build", "wasm", "build", "assets")),
-		generateDirectoriesJSON(
-			buildNormalizedPath(configs["gamePath"].str, "assets"),
-			getHipPath("build", "wasm", "generated")
-		),
-		//The template may not be present
-		outputTemplate(t, configs["gamePath"].str),
-	);
+	cached(() => timed(t, submoduleLoader.execute(t, input))),
+	putResourcesIn(t, getHipPath("build", "wasm", "build", "assets")),
+	generateDirectoriesJSON(
+		buildNormalizedPath(configs["gamePath"].str, "assets"),
+		getHipPath("build", "wasm", "generated")
+	),
+	//The template may not be present
+	outputTemplate(t, configs["gamePath"].str),
 
 
 	environment["DFLAGS"] = 
