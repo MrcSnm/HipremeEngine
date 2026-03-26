@@ -213,7 +213,7 @@ class Hip_GL_ShaderImpl : IShader
         return prefix ~ shader ~ "\nvoid main(){ENTRY_POINT;}";
     }
 
-    ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced = false)
+    override ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced = false)
     {
         Hip_GL3_ShaderProgram prog = new Hip_GL3_ShaderProgram();
         prog.name = shaderPath;
@@ -240,7 +240,7 @@ class Hip_GL_ShaderImpl : IShader
         
         return prog;
     }
-    int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
+    override int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
     {
         int varID = (cast(Hip_GL3_ShaderProgram)prog).getId(name);
         if(varID <= 0)
@@ -266,7 +266,7 @@ class Hip_GL_ShaderImpl : IShader
     *       offset: It will be calculated for each value index
     *       
     */
-    void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
+    override void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
     {
         glCall(() =>glVertexAttribPointer(layoutIndex, valueAmount, dataType, normalize, stride, cast(void*)offset));
         glCall(() =>glEnableVertexAttribArray(layoutIndex));
@@ -277,7 +277,7 @@ class Hip_GL_ShaderImpl : IShader
     private __gshared HipBlendEquation currEq;
     private __gshared blendingEnabled = false;
 
-    public void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq)
+    override public void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq)
     {
         Hip_GL3_ShaderProgram p = cast(Hip_GL3_ShaderProgram)prog;
         p.blendSrc = src;
@@ -285,7 +285,7 @@ class Hip_GL_ShaderImpl : IShader
         p.blendEq = eq;
     }
 
-    void bind(ShaderProgram program)
+    override void bind(ShaderProgram program)
     {
         if(boundShader !is this)
         {
@@ -321,7 +321,7 @@ class Hip_GL_ShaderImpl : IShader
             boundShader = this;
         }
     }
-    void unbind(ShaderProgram program)
+    override void unbind(ShaderProgram program)
     {
         if(boundShader is this)
         {
@@ -397,7 +397,7 @@ class Hip_GL_ShaderImpl : IShader
         sVar.isDirty = false;
     }
 
-    void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
+    override void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[] layouts)
     {
         bind(prog);
         foreach(ShaderVariablesLayout l; layouts)
@@ -414,7 +414,7 @@ class Hip_GL_ShaderImpl : IShader
         }
     }
 
-    bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
+    override bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
     {
         ///Optimization for not allocating when inside loops.
         __gshared int[] temp;
@@ -435,7 +435,7 @@ class Hip_GL_ShaderImpl : IShader
         }
     }
 
-    void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
+    override void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
     {
         bool shouldControlBind = boundShader !is this;
 
@@ -447,12 +447,12 @@ class Hip_GL_ShaderImpl : IShader
         if(shouldControlBind)
             unbind(prog);
     }
-    void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
+    override void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
     {
         if(layout.hint & ShaderHint.GL_USE_BLOCK)
             ErrorHandler.assertExit(false, "Use HipGL3 for Uniform Block support.");
     }
-    void onRenderFrameEnd(ShaderProgram program){}
+    override void onRenderFrameEnd(ShaderProgram program){}
 }
 
 
@@ -467,6 +467,8 @@ class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
     }
     import hip.hiprenderer.backend.gl.glbuffer;
     protected ShaderVariablesLayout[] ubos;
+    private static UBO[] boundUBO;
+
     uint id = 0;
 
     override void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
@@ -478,6 +480,21 @@ class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
         layout.setAdditionalData(cast(void*)b, true);
         setUboBindPoint(shaderProgram, layout.name, *b);
         ubos~= layout;
+    }
+
+    protected static bool isUBOBound(UBO ubo)
+    {
+        return boundUBO[ubo.bindPoint].buffer is ubo.buffer;
+    }
+    protected static void bindUBO(UBO ubo)
+    {
+        if(boundUBO.length <= ubo.bindPoint)
+            boundUBO.length = ubo.bindPoint + 1;
+        if(!isUBOBound(ubo))
+        {
+            boundUBO[ubo.bindPoint] = ubo;
+            glCall(() =>glBindBufferBase(GL_UNIFORM_BUFFER, ubo.bindPoint, ubo.buffer.handle));
+        }
     }
     
     protected void setUboBindPoint(const ref ShaderProgram prog, string name, ref UBO ubo)
@@ -507,10 +524,10 @@ class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
         ubo.bindPoint = id++;
         glCall(() => glUniformBlockBinding(program, blockIndex, ubo.bindPoint));
     }
-    override void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
+    override void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[] layouts)
     {
         Hip_GL3_ShaderProgram glProg = cast(Hip_GL3_ShaderProgram)prog;
-        foreach(k, ShaderVariablesLayout l; layouts)
+        foreach(ShaderVariablesLayout l; layouts)
         {
             import core.stdc.string;
             UBO* ubo = cast(UBO*)l.getAdditionalData();
@@ -520,7 +537,7 @@ class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
                 // writeln("Bind ", l.name, " to ", ubo.blockIndex);
                 l.isDirty = false;
             }
-            glCall(() =>glBindBufferBase(GL_UNIFORM_BUFFER, ubo.bindPoint, ubo.buffer.handle));
+            bindUBO(*ubo);
         }   
     }
 

@@ -210,7 +210,7 @@ class Hip_D3D11_ShaderImpl : IShader
         return true;
     }
 
-    ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced)
+    override ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced)
     {
         Hip_D3D11_ShaderProgram prog = new Hip_D3D11_ShaderProgram();
         prog.name = shaderPath;
@@ -230,13 +230,13 @@ class Hip_D3D11_ShaderImpl : IShader
     *       offset: It will be calculated for each value index
     *
     */
-    void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
+    override void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
     {
         // glVertexAttribPointer(layoutIndex, valueAmount, dataType, normalize, stride, cast(void*)offset);
         // glEnableVertexAttribArray(layoutIndex);
     }
 
-    void bind(ShaderProgram _program)
+    override void bind(ShaderProgram _program)
     {
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)_program;
         if(p.blendState !is null &&
@@ -252,13 +252,13 @@ class Hip_D3D11_ShaderImpl : IShader
         _hip_d3d_context.VSSetShader(p.vertex.shader, cast(ID3D11ClassInstance*)0, 0u);
         _hip_d3d_context.PSSetShader(p.pixel.shader, cast(ID3D11ClassInstance*)0, 0u);
     }
-    void unbind(ShaderProgram _program)
+    override void unbind(ShaderProgram _program)
     {
         _hip_d3d_context.VSSetShader(null, cast(ID3D11ClassInstance*)0, 0u);
         _hip_d3d_context.PSSetShader(null, cast(ID3D11ClassInstance*)0, 0u);
     }
 
-    int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
+    override int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
     {
         import hip.error.handler;
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
@@ -274,11 +274,11 @@ class Hip_D3D11_ShaderImpl : IShader
         return output.BindPoint;
     }
 
-    void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
+    override void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[] layouts)
     {
         D3D11_SHADER_INPUT_BIND_DESC desc;
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
-        foreach(k, l; layouts)
+        foreach(l; layouts)
         {
             import core.stdc.string:memcpy;
             Hip_D3D11_ShaderVarAdditionalData* data = cast(Hip_D3D11_ShaderVarAdditionalData*)l.getAdditionalData();
@@ -312,13 +312,13 @@ class Hip_D3D11_ShaderImpl : IShader
         }
     }
 
-    void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
+    override void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
     {
         foreach(i, texture; textures)
             texture.bind(cast(int)i);
     }
 
-    void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
+    override void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
     {
         import core.stdc.stdlib:malloc;
         D3D11_BUFFER_DESC desc;
@@ -344,7 +344,7 @@ class Hip_D3D11_ShaderImpl : IShader
     protected __gshared HipBlendEquation currEq;
 
 
-    void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
+    override void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
     {
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
         p.blendSrc = src;
@@ -372,7 +372,7 @@ class Hip_D3D11_ShaderImpl : IShader
         }
         _hip_d3d_device.CreateBlendState(&Hip_D3D11_Renderer.blend, &p.blendState);
     }
-    bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
+    override bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
     {
         return false;
     }

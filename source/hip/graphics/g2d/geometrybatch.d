@@ -69,8 +69,7 @@ class GeometryBatch : IHipBatch
     {
         import hip.hiprenderer.initializer;
         Shader s = newShader(HipShaderPresets.GEOMETRY_BATCH);
-        s.addVarLayout(ShaderVariablesLayout.from!(HipGeometryBatchVertexUniforms)(HipRenderer.getInfo));
-        s.addVarLayout(ShaderVariablesLayout.from!(HipGeometryBatchFragmentUniforms)(HipRenderer.getInfo));
+        s.setup!(HipGeometryBatchVertexUniforms, HipGeometryBatchFragmentUniforms)(HipRenderer.getInfo);
         s.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 
         vertices = new HipGeometryBatchVertex[verticesCount];

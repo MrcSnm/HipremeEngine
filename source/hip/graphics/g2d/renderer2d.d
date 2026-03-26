@@ -30,10 +30,13 @@ package __gshared
 
 void manageBatchChange(IHipBatch newBatch)
 {
-    if(lastBatch !is null && lastBatch !is newBatch)
+    if(lastBatch !is newBatch)
     {
-        sharedDepth+= 0.1;
-        lastBatch.draw();
+        if(lastBatch !is null)
+        {
+            sharedDepth+= 0.1;
+            lastBatch.draw();
+        }
 
         if(newBatch !is null)
             newBatch.setCurrentDepth(sharedDepth);
@@ -102,6 +105,7 @@ void resizeRenderer2D(uint width, uint height)
 
 //TODO: Find a way to remove export from release
 export extern(System):
+// pragma(inline, true):
 
 
 int[2] getWindowSize(){return [HipRenderer.width, HipRenderer.height];}

@@ -24,17 +24,6 @@ import hip.graphics.g2d.spritebatch_instanced;
 import hip.graphics.g2d.spritebatch_vertex;
 
 
-interface IHipSpriteBatchImpl
-{
-    void setCurrentDepth(float depth) @nogc;
-    void flush();
-    void draw();
-    void draw(IHipTextureRegion reg, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0);
-    void draw(IHipTexture texture, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0);
-    void draw(IHipTexture t, ubyte[] vertices);
-}
-
-
 /**
 *   The spritebatch contains 2 shaders.
 *   One shader is entirely internal, which you don't have any control, this is for actually being able
@@ -50,7 +39,8 @@ class HipSpriteBatch : IHipBatch
     Shader spriteBatchShader;
     protected Shader ppShader;
 
-    protected IHipSpriteBatchImpl impl;
+    protected HipSpriteBatchInstanced instanced;
+    protected HipSpriteBatchVertex vertex;
 
     this(HipOrthoCamera camera = null, index_t maxQuads = DefaultMaxSpritesPerBatch, index_t maxInstances = DefaultMaxSpritesPerBatchInstanced)
     {
@@ -62,39 +52,45 @@ class HipSpriteBatch : IHipBatch
             camera = new HipOrthoCamera();
         
         if(spriteBatchShader.isInstanced)
-            impl = new HipSpriteBatchInstanced(spriteBatchShader, camera, maxInstances);
+            instanced = new HipSpriteBatchInstanced(spriteBatchShader, camera, maxInstances);
         else
-            impl = new HipSpriteBatchVertex(spriteBatchShader, camera, maxQuads);
+            vertex = new HipSpriteBatchVertex(spriteBatchShader, camera, maxQuads);
         spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 
     }
     void setCurrentDepth(float depth) @nogc
     {
-        impl.setCurrentDepth(depth);
+        if(instanced) instanced.setCurrentDepth(depth);
+        else vertex.setCurrentDepth(depth);
     }
   
     void draw(IHipTexture t, ubyte[] vertices)
     {
-        impl.draw(t, vertices);
+        if(instanced) instanced.draw(t, vertices);
+        else vertex.draw(t, vertices);
     }
 
     void draw(IHipTexture texture, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
-        impl.draw(texture, x, y, z, color, scaleX, scaleY, rotation);
+        if(instanced) instanced.draw(texture, x, y, z, color, scaleX, scaleY, rotation);
+        else vertex.draw(texture, x, y, z, color, scaleX, scaleY, rotation);
     }
 
 
     void draw(IHipTextureRegion reg, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
-        impl.draw(reg, x, y, z, color, scaleX, scaleY, rotation);
+        if(instanced) instanced.draw(reg, x, y, z, color, scaleX, scaleY, rotation);
+        else vertex.draw(reg, x, y, z, color, scaleX, scaleY, rotation);
     }
     void draw()
     {
-        impl.draw();
+        if(instanced) instanced.draw();
+        else vertex.draw();
     }
 
     void flush()
     {
-        impl.flush();
+        if(instanced) instanced.flush();
+        else vertex.flush();
     }
 }

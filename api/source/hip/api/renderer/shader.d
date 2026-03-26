@@ -41,26 +41,31 @@ enum HipShaderPresets : ubyte
 /** 
  * This interface is currrently a Shader factory.
  */
-interface IShader
+abstract class IShader
 {
-    ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced);
+    private bool* dirtyReference;
+    final void setDirtyReference(bool* reference){ dirtyReference = reference; }
+    final bool isDirty() { return *dirtyReference; }
+    final void setDirty() { if(dirtyReference) *dirtyReference = true; }
 
-    void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq);
-    void bind(ShaderProgram program);
-    void unbind(ShaderProgram program);
-    void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
-    int  getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout);
+    abstract ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced);
+
+    abstract void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq);
+    abstract void bind(ShaderProgram program);
+    abstract void unbind(ShaderProgram program);
+    abstract void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
+    abstract int  getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout);
     
 
-    void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram);
-    bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value);
-    void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts);
+    abstract void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram);
+    abstract bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value);
+    abstract void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[] layouts);
 
     /** 
      * Each graphics API has its own way to bind array of textures, thus, this version was required.
      */
-    void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName);
-    void onRenderFrameEnd(ShaderProgram program);
+    abstract void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName);
+    abstract void onRenderFrameEnd(ShaderProgram program);
 }
 
 abstract class ShaderProgram

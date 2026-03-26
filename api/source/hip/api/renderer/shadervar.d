@@ -127,7 +127,7 @@ struct ShaderVar
     {
         foreach(v; variables)
             v.setDirty();
-        this.layout.isDirty = true;
+        this.layout.setDirty();
         isDirty = true;
     }
 
@@ -342,6 +342,13 @@ class ShaderVariablesLayout
         if(packFunc is null) packFunc = &nonePack;
     }
 
+    void setDirty()
+    {
+        this.isDirty = true;
+        if(this.owner)
+            this.owner.setDirty();
+    }
+
     private void doCopy(TypeInfo t, void* data, size_t dataSize)
     {
         import core.stdc.string;
@@ -367,7 +374,6 @@ class ShaderVariablesLayout
             {
                 varOrder[i].sVar.set(__traits(getMember, data, mem), false);
                 // varOrder[i].sVar.isDirty = true;
-                this.isDirty = true;
             }
 
         }

@@ -25,11 +25,13 @@ public import hip.api.renderer.shader;
 
 
 private __gshared ShaderProgram lastBoundShader;
+private __gshared Shader last;
 
 public class Shader : IReloadable
 {
     ShaderProgram shaderProgram;
     ShaderVariablesLayout[string] layouts;
+    private ShaderVariablesLayout[] layoutsArray;
     protected HipShaderTexture[] textures;
     protected ShaderVariablesLayout defaultLayout;
     //Optional
@@ -39,10 +41,12 @@ public class Shader : IReloadable
     protected string internalShaderSource;
     private bool isUseCall = false;
     private bool _isInstanced;
+    private bool isDirty = true;
 
     this(IShader shaderImpl)
     {
         this.shaderImpl = shaderImpl;
+        shaderImpl.setDirtyReference(&isDirty);
     }
     this(IShader shaderImpl, string shaderSource, bool isInstanced = false)
     {
@@ -113,11 +117,12 @@ public class Shader : IReloadable
     {
         static foreach(u; Uniforms)
             addVarLayout(ShaderVariablesLayout.from!(u)(info));
+        layoutsArray = layouts.values;
         addUsedTextures(textures);
     }
 
 
-    public void addVarLayout(ShaderVariablesLayout layout)
+    private void addVarLayout(ShaderVariablesLayout layout)
     {
         ErrorHandler.assertLazyExit((layout.name in layouts) is null, "Shader: VariablesLayout '"~layout.name~"' is already defined");
         if(defaultLayout is null)
@@ -136,14 +141,6 @@ public class Shader : IReloadable
         }
     }
 
-    /**
-     * This creates a state in the current shader to which block will be accessed
-     * when using setVertexVar(".property"). If no default block is set ("")
-     * .property will always access the first block defined
-     * Params:
-     *   blockName = Which block will be accessed with .property
-     */
-    public void setDefaultBlock(string blockName){defaultLayout = layouts[blockName];}
 
     void bind()
     {
@@ -168,36 +165,10 @@ public class Shader : IReloadable
         shaderImpl.setBlending(shaderProgram, src, dest, eq);
     }
 
-    auto opDispatch(string member)()
-    {
-        static if(member == "useLayout")
-        {
-            isUseCall = true;
-            return this;
-        }
-        else
-        {
-            if(isUseCall)
-            {
-                setDefaultBlock(member);
-                isUseCall = false;
-                ShaderVar s;
-                return s;
-            }
-            return defaultLayout.variables[member].sVar;
-        }
-    }
-    auto opDispatch(string member, T)(T value)
-    {
-        if(!defaultLayout.variables[member].sVar.set(value, false))
-        {
-            ErrorHandler.assertExit(false, "Invalid value of type "~
-            T.stringof~" passed to "~defaultLayout.name~"."~member);
-        }
-    }
-
     void sendVars()
     {
+        if(!isDirty && lastBoundShader is shaderProgram)
+            return;
         foreach(string key, ShaderVariablesLayout value; layouts)
         {
             if(!value.isDirty)
@@ -216,7 +187,8 @@ public class Shader : IReloadable
         {
             tex.texture.bind(tex.bindPoint == -1 ? cast(int)i : tex.bindPoint);
         }
-        shaderImpl.sendVars(shaderProgram, layouts);
+        shaderImpl.sendVars(shaderProgram, layoutsArray);
+        isDirty = false;
     }
 
     /**

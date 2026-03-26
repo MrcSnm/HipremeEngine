@@ -31,7 +31,7 @@ public import hip.api.renderer.shaders.spritebatch;
 *   The another one is a post processing shader, which the spritebatch doesn't uses by default. If
 *   setPostProcessingShader()
 */
-class HipSpriteBatchVertex : IHipBatch, IHipSpriteBatchImpl
+final class HipSpriteBatchVertex
 {
     index_t maxQuads;
     index_t[] indices;
@@ -71,8 +71,7 @@ class HipSpriteBatchVertex : IHipBatch, IHipSpriteBatchImpl
 
 
         this.spriteBatchShader = spriteBatchShader;
-        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!(HipSpriteVertexUniform)(HipRenderer.getInfo));
-        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!(HipSpriteFragmentUniform)(HipRenderer.getInfo));
+        spriteBatchShader.setup!(HipSpriteVertexUniform, HipSpriteFragmentUniform)(HipRenderer.getInfo);
         spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 
         mesh = new Mesh(HipVertexArrayObject.getVAO!(HipSpriteVertex)(
@@ -98,7 +97,7 @@ class HipSpriteBatchVertex : IHipBatch, IHipSpriteBatchImpl
         setTexture(HipTexture.getPixelTexture());
 
     }
-    void setCurrentDepth(float depth){managedDepth = depth;}
+    void setCurrentDepth(float depth) @nogc {managedDepth = depth;}
 
     void setShader(Shader s)
     {

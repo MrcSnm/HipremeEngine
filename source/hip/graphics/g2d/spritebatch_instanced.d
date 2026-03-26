@@ -23,6 +23,12 @@ public import hip.api.graphics.color;
 public import hip.api.renderer.shaders.spritebatch;
 
 
+private struct CachedTexture
+{
+    IHipTexture texture;
+    int slot, width, height;
+}
+
 /**
 *   The spritebatch contains 2 shaders.
 *   One shader is entirely internal, which you don't have any control, this is for actually being able
@@ -31,9 +37,10 @@ public import hip.api.renderer.shaders.spritebatch;
 *   The another one is a post processing shader, which the spritebatch doesn't uses by default. If
 *   setPostProcessingShader()
 */
-class HipSpriteBatchInstanced : IHipBatch, IHipSpriteBatchImpl
+final class HipSpriteBatchInstanced
 {
     protected bool hasInitTextureSlots;
+    CachedTexture cachedTexture;
     Shader spriteBatchShader;
     HipSpriteVertexInstancedPerInstance[] vertices;
 
@@ -60,8 +67,7 @@ class HipSpriteBatchInstanced : IHipBatch, IHipSpriteBatchImpl
         this.maxInstances = maxInstances;
         usingTexturesCount = 0;
         this.spriteBatchShader = spriteBatchShader;
-        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!(HipSpriteVertexUniform)(HipRenderer.getInfo));
-        spriteBatchShader.addVarLayout(ShaderVariablesLayout.from!(HipSpriteFragmentUniform)(HipRenderer.getInfo));
+        spriteBatchShader.setup!(HipSpriteVertexUniform, HipSpriteFragmentUniform)(HipRenderer.getInfo);
         spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 
         mesh = new Mesh(HipVertexArrayObject.getVAO!(HipSpriteVertexInstancedPerVertex, HipSpriteVertexInstancedPerInstance)(
@@ -84,10 +90,11 @@ class HipSpriteBatchInstanced : IHipBatch, IHipSpriteBatchImpl
         uMVP = mesh.shader.getBuffer("Cbuf1");
         this.camera = camera;
         // vertices = cast(HipSpriteVertex[])mesh.vao.VBO.getBuffer();
-        setTexture(HipTexture.getPixelTexture());
+        int width, height, slot;
+        setTexture(HipTexture.getPixelTexture(), width, height, slot);
 
     }
-    void setCurrentDepth(float depth){managedDepth = depth;}
+    void setCurrentDepth(float depth) @nogc {managedDepth = depth;}
 
     void setShader(Shader s)
     {
@@ -115,17 +122,28 @@ class HipSpriteBatchInstanced : IHipBatch, IHipSpriteBatchImpl
     /**
     *   Sets the current texture in use on the sprite batch and returns its slot.
     */
-    protected int setTexture (IHipTexture texture)
+    protected void setTexture (IHipTexture texture, out int width, out int height, out int slot)
     {
-        int slot = getNextTextureID(texture);
-        if(slot == -1)
+        if(texture is cachedTexture.texture)
         {
-            flush();
-            slot = getNextTextureID(texture);
+            width = cachedTexture.width;
+            height = cachedTexture.height;
+            slot = cachedTexture.slot;
         }
-        return slot;
+        else
+        {
+            width = texture.getWidth(), height = texture.getHeight();
+            ErrorHandler.assertExit(width != 0 && height != 0, "Tried to draw 0 bounds texture");
+            slot = getNextTextureID(texture);
+            if(slot == -1)
+            {
+                flush();
+                slot = getNextTextureID(texture);
+            }
+            cachedTexture = CachedTexture(texture, slot, width, height);
+        }
     }
-    protected int setTexture(IHipTextureRegion reg){return setTexture(reg.getTexture());}
+    protected void setTexture(IHipTextureRegion reg, out int width, out int height, out int slot){ return setTexture(reg.getTexture(), width, height, slot); }
 
     pragma(inline, true)
     void addInstance(HipSpriteVertexInstancedPerInstance instance)
@@ -138,9 +156,8 @@ class HipSpriteBatchInstanced : IHipBatch, IHipSpriteBatchImpl
         import hip.global.gamedef;
         if(texture is null)
             texture = cast()getDefaultTexture();
-        int width = texture.getWidth(), height = texture.getHeight();
-        ErrorHandler.assertExit(width != 0 && height != 0, "Tried to draw 0 bounds texture");
-        int slot = setTexture(texture);
+        int width, height, slot;
+        setTexture(texture, width, height, slot);
         HipSpriteVertexInstancedPerInstance base = *cast(HipSpriteVertexInstancedPerInstance*) vertices.ptr;
         base.vTexID = slot;
         addInstance(base);
@@ -153,13 +170,9 @@ class HipSpriteBatchInstanced : IHipBatch, IHipSpriteBatchImpl
             flush();
         if(texture is null)
             texture = cast()getDefaultTexture();
-
-        int width = texture.getWidth(), height = texture.getHeight();
-        ErrorHandler.assertExit(width != 0 && height != 0, "Tried to draw 0 bounds texture");
-        int slot = setTexture(texture);
-        ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
-
-        addInstance(HipSpriteVertexInstancedPerInstance(Vector2(x, y), Vector2(width*scaleX, height*scaleY), color, z, rotation, slot));
+        int width, height, slot;
+        setTexture(texture, width, height, slot);
+        addInstance(HipSpriteVertexInstancedPerInstance(Vector2(x, y), Vector2(width*scaleX, width*scaleY), color, z, rotation, slot));
     }
 
 
@@ -176,7 +189,13 @@ class HipSpriteBatchInstanced : IHipBatch, IHipSpriteBatchImpl
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
 
-            uMVP.set(HipSpriteVertexUniform(camera.getMVP));
+            static Matrix4 mvp;
+            Matrix4 camMvp = camera.getMVP;
+            if(camMvp != mvp)
+            {
+                mvp = camMvp;
+                uMVP.set(HipSpriteVertexUniform(camera.getMVP));
+            }
             mesh.shader.bindArrayOfTextures(currentTextures, "uTex");
             mesh.shader.sendVars();
 

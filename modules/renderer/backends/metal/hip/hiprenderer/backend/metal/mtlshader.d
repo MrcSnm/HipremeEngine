@@ -197,7 +197,7 @@ class HipMTLShader : IShader
             p.createInputLayout(device, p.pipelineDescriptor.vertexDescriptor);
     }
 
-    void bind(ShaderProgram program)
+    override void bind(ShaderProgram program)
     {
         HipMTLShaderProgram mtlShader = cast(HipMTLShaderProgram)program;
         assert(mtlShader.pipelineState !is null);
@@ -212,7 +212,7 @@ class HipMTLShader : IShader
         }
     }
 
-    void unbind(ShaderProgram program)
+    override void unbind(ShaderProgram program)
     {
         // encoder.setRenderPipelineState(null);
         mtlRenderer.getEncoder.setVertexBuffer(null, 0, 0);
@@ -220,12 +220,12 @@ class HipMTLShader : IShader
         if(boundShader is program) boundShader = null;
     }
 
-    void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
+    override void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
     {
 
     }
 
-    int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
+    override int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
     {
         return int.init; // TODO: implement
     }
@@ -253,7 +253,8 @@ class HipMTLShader : IShader
                 break;
         }
     }
-    void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[string] layouts)
+
+    override void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[] layouts)
     {
         import core.stdc.string;
 
@@ -269,7 +270,7 @@ class HipMTLShader : IShader
         }
     }
 
-    void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
+    override void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
     {
         __gshared MTLTexture[] mtlTextures;
         __gshared MTLSamplerState[] mtlSamplers;
