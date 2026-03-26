@@ -186,7 +186,7 @@ static if (OpenGLHasVAOSupport) final class Hip_GL3_VertexArrayObject : IHipVert
                     glCall(() => glVertexAttribDivisor(field.index, 1));
             }
         }
-        unbind();
+        glCall(() => glBindVertexArray(0));
     }
     ~this(){glCall(() => glDeleteVertexArrays(1, &this.vao));}
 }

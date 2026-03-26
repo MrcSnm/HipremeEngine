@@ -140,7 +140,7 @@ class HipRendererImplementation : IHipRenderer
             output[index+5] = cast(index_t)(i*4+0);
             index+=6;
         }
-        ret.setData(output);
+        ret.updateData(0, output);
         GC.free(output.ptr);
         return ret;
     }
@@ -153,9 +153,7 @@ class HipRendererImplementation : IHipRenderer
     public IHipRendererBuffer getQuadIndexBuffer(size_t quadsCount)
     {
         if(!quadIndexBuffer)
-        {
             quadIndexBuffer = createQuadIndexBuffer(quadsCount, HipResourceUsage.Immutable);
-        }
 
         return quadIndexBuffer;
     }
