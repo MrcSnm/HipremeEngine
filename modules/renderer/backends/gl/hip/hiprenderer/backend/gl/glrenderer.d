@@ -206,7 +206,7 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public IHipVertexArrayImpl createVertexArray()
     {
-        version(HipGLUseVertexArray)
+        static if (OpenGLHasVAOSupport)
             return new Hip_GL3_VertexArrayObject();
         else
         {

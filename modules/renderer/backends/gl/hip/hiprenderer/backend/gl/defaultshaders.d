@@ -100,8 +100,12 @@ private {
 
                 #ifdef INSTANCED
                     inTexST = vPosition; //Currently only default is supported
-                    vec2 actualPos = vPosition * vSize + vXY; //Ignore vRotation for now
-                    actualPos.x += vRotation; //TODO: REMOVE ME AS VROTATION USAGE WRONG
+                    float s = sin(vRotation);
+                    float c = cos(vRotation);
+                    vec2 actualPos = vec2(
+                        vPosition.x * c - vPosition.y * s,
+                        vPosition.x * s + vPosition.y * c
+                    ) * vSize + vXY;
                     gl_Position = cbuf1.uMVP*vec4(actualPos, vZ, 1.0);
                 #else 
                     inTexST = vTexST;
