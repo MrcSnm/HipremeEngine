@@ -1,8 +1,12 @@
 function initializeWebglContext()
 {
+    const useWebGL2 = true;
+
     const canvas = document.querySelector("#glcanvas");
     /** @type {WebGL2RenderingContext} */
-    let gl = canvas.getContext("webgl2");
+    let gl = null;
+    if(useWebGL2)
+        gl = canvas.getContext("webgl2");
     if(gl === null)
     {
         gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
@@ -31,7 +35,6 @@ function initializeWebglContext()
     return {
         wglIsWebgl2()
         {
-            // return false;
             return gl instanceof WebGL2RenderingContext;
         },
         glAttachShader(program, shader) {

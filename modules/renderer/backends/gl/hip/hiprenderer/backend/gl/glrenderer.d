@@ -206,18 +206,17 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public IHipVertexArrayImpl createVertexArray()
     {
-        static if (OpenGLHasVAOSupport)
+        static if(UseWebGL)
+        {
+            import gles;
+            if(isWebGL2)
+                return new Hip_GL3_VertexArrayObject();
+            return  new Hip_GL_VertexArrayObject();
+        }
+        else static if (OpenGLHasVAOSupport)
             return new Hip_GL3_VertexArrayObject();
         else
-        {
-            static if(UseWebGL)
-            {
-                import gles;
-                if(isWebGL2)
-                    return new Hip_GL3_VertexArrayObject();
-            }
             return new Hip_GL_VertexArrayObject();
-        }
     }
     public IHipTexture createTexture(HipResourceUsage usage)
     {
