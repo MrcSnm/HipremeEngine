@@ -226,6 +226,10 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         return new Hip_GL3_Buffer(size, usage, type);
     }
+    public IHipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
+    {
+        return new Hip_GL3_Buffer(data, usage, type);
+    }
 
     public void setViewport(Viewport v)
     {

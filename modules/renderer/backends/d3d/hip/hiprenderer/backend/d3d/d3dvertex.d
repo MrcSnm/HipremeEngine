@@ -47,7 +47,17 @@ final class Hip_D3D11_Buffer : IHipRendererBuffer
         this.size = size;
         this.usage = getD3D11Usage(usage);
         this._type = type;
+        if(usage != HipResourceUsage.Immutable)
+            createBuffer(size, null);
     }
+    this(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
+    {
+        this.size = size;
+        this.usage = getD3D11Usage(usage);
+        this._type = type;
+        createBuffer(data);
+    }
+
     void bind()
     {
         final switch(type)
@@ -56,10 +66,7 @@ final class Hip_D3D11_Buffer : IHipRendererBuffer
                 d3dCall(_hip_d3d_context.IASetVertexBuffers(0, 0, null, null, null));
                 break;
             case HipRendererBufferType.index:
-                static if(is(index_t == uint))
-                    _hip_d3d_context.IASetIndexBuffer(buffer, DXGI_FORMAT_R32_UINT, 0);
-                else
-                    _hip_d3d_context.IASetIndexBuffer(buffer, DXGI_FORMAT_R16_UINT, 0);
+                _hip_d3d_context.IASetIndexBuffer(buffer, is(index_t == uint) ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT, 0);
                 break;
             case HipRendererBufferType.uniform:
                 assert(false, "Unsupported on d3d");
@@ -73,22 +80,14 @@ final class Hip_D3D11_Buffer : IHipRendererBuffer
                 d3dCall(_hip_d3d_context.IASetVertexBuffers(0, 0, null, null, null));
                 break;
             case HipRendererBufferType.index:
-                static if(is(index_t == uint))
-                    _hip_d3d_context.IASetIndexBuffer(null, DXGI_FORMAT_R32_UINT, 0);
-                else
-                    _hip_d3d_context.IASetIndexBuffer(null, DXGI_FORMAT_R16_UINT, 0);
+                _hip_d3d_context.IASetIndexBuffer(null, is(index_t == uint) ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT, 0);
                 break;
             case HipRendererBufferType.uniform:
                 assert(false, "Unsupported on D3D");
         }
     }
-
-
-    bool started = false;
-    void createBuffer(const void[] data)
+    private void createBuffer(size_t size, const(void)* data)
     {
-        started = true;
-        this.size = data.length;
         D3D11_BUFFER_DESC bd;
         bd.BindFlags = type == HipRendererBufferType.vertex ? D3D11_BIND_VERTEX_BUFFER : D3D11_BIND_INDEX_BUFFER;
         bd.Usage = usage;
@@ -97,19 +96,34 @@ final class Hip_D3D11_Buffer : IHipRendererBuffer
         bd.ByteWidth = cast(uint)size;
         bd.StructureByteStride = 0;
 
-        D3D11_SUBRESOURCE_DATA sd;
-        sd.pSysMem = cast(void*)data.ptr;
+        if(data is null)
+            d3dCall(_hip_d3d_device.CreateBuffer(&bd, null, &buffer));
+        else
+        {
+            D3D11_SUBRESOURCE_DATA sd;
+            sd.pSysMem = cast(void*)data;
+            d3dCall(_hip_d3d_device.CreateBuffer(&bd, &sd, &buffer));
+        }
+    }
 
-        //TODO: Check failure
 
-        d3dCall(_hip_d3d_device.CreateBuffer(&bd, &sd, &buffer));
+    bool started = false;
+    void createBuffer(const void[] data)
+    {
+        createBuffer(data.length, data.ptr);
 
     }
     void setData(const(void)[] data)
     {
         if(data == null || data.length == 0)
             return;
-        createBuffer(data);
+        if(buffer)
+        {
+            assert(data.length <= this.size, "Do not change the buffer size after creating, as the engine is not designed for that right now");
+            updateData(0, data);
+        }
+        else
+            createBuffer(data);
     }
 
     ubyte[] getBuffer()
@@ -155,8 +169,7 @@ final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
     {
         assert(inputLayout !is null, "D3D11 Input Layout wasn't created yet. Don't bind before calling createInputLayout");
         d3dCall(_hip_d3d_context.IASetInputLayout(inputLayout));
-        assert(attInfos.length == 1, "Still need to adapt.");
-        d3dCall(_hip_d3d_context.IASetVertexBuffers(0u, 1u, vboBuffers.ptr, strides.ptr, offsets.ptr));
+        d3dCall(_hip_d3d_context.IASetVertexBuffers(0u, cast(UINT)vboBuffers.length, vboBuffers.ptr, strides.ptr, offsets.ptr));
         this.ebo.bind();
     }
     void unbind()
@@ -197,12 +210,17 @@ final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
                 desc.SemanticIndex = 0;
                 // desc.SemanticIndex = field.index;
                 desc.Format = _hip_d3d_getFormatFromInfo(field);
-                desc.InputSlot = 0;
+                desc.InputSlot = cast(int)i;
                 desc.AlignedByteOffset = field.offset;
+                // desc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+                // desc.InstanceDataStepRate = 0;
+                import std.stdio;
+                writeln("INSTANCED? ", att.isInstanced);
                 desc.InputSlotClass = att.isInstanced ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
-                desc.InstanceDataStepRate = 0;
+                desc.InstanceDataStepRate = att.isInstanced ? 1 : 0;
             }
             vboBuffers[i] = (cast(Hip_D3D11_Buffer)att.vbo).buffer;
+            assert(vboBuffers[i]);
             strides[i] = att.vboStride;
             offsets[i] = 0;
         }

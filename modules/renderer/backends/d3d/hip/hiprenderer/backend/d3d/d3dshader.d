@@ -132,7 +132,7 @@ class Hip_D3D11_ShaderImpl : IShader
 {
     import hip.util.data_structures:Pair;
 
-    private bool compileShader(ref ID3DBlob shaderPtr, string shaderPrefix, string shaderSource)
+    private bool compileShader(ref ID3DBlob shaderPtr, string shaderPrefix, string shaderSource, bool isInstanced)
     {
         string shaderType = shaderPrefix == "ps" ? "Pixel Shader" : "Vertex Shader";
         const(char)* func = shaderPrefix == "ps" ? "fragmentMain" : "vertexMain";
@@ -158,7 +158,8 @@ class Hip_D3D11_ShaderImpl : IShader
 
         const defines =
         [
-            cast(D3D_SHADER_MACRO)null, cast(D3D_SHADER_MACRO)null
+            D3D_SHADER_MACRO("INSTANCED", isInstanced ? "1" : "0"),
+            D3D_SHADER_MACRO(null, null)
         ].staticArray;
 
         HRESULT hr = D3DCompile(shaderSource.ptr, shaderSource.length, null,
@@ -180,7 +181,7 @@ class Hip_D3D11_ShaderImpl : IShader
         }
         return true;
     }
-    private bool compileShaderType(ref Hip_D3D11_ShaderProgram program, string shaderSource, ShaderTypes type)
+    private bool compileShaderType(ref Hip_D3D11_ShaderProgram program, string shaderSource, ShaderTypes type, bool isInstanced)
     {
         assert(type == ShaderTypes.fragment || type == ShaderTypes.vertex, "Unsupported shader type.");
         HRESULT res = 0;
@@ -188,13 +189,13 @@ class Hip_D3D11_ShaderImpl : IShader
         switch(type)
         {
             case ShaderTypes.vertex:
-                if(!compileShader(program.vertex.blob, "vs", shaderSource))
+                if(!compileShader(program.vertex.blob, "vs", shaderSource, isInstanced))
                     return false;
                 blob = program.vertex.blob;
                 res = _hip_d3d_device.CreateVertexShader(blob.GetBufferPointer(), blob.GetBufferSize(), null, &program.vertex.shader);
                 break;
             case ShaderTypes.fragment:
-                if(!compileShader(program.pixel.blob, "ps", shaderSource))
+                if(!compileShader(program.pixel.blob, "ps", shaderSource, isInstanced))
                     return false;
                 blob = program.pixel.blob;
                 res = _hip_d3d_device.CreatePixelShader(blob.GetBufferPointer(), blob.GetBufferSize(), null, &program.pixel.shader);
@@ -214,8 +215,8 @@ class Hip_D3D11_ShaderImpl : IShader
     {
         Hip_D3D11_ShaderProgram prog = new Hip_D3D11_ShaderProgram();
         prog.name = shaderPath;
-        compileShaderType(prog, shaderSource, ShaderTypes.vertex);
-        compileShaderType(prog, shaderSource, ShaderTypes.fragment);
+        compileShaderType(prog, shaderSource, ShaderTypes.vertex, isInstanced);
+        compileShaderType(prog, shaderSource, ShaderTypes.fragment, isInstanced);
         prog.initialize();
         return prog;
     }

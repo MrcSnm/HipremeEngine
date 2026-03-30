@@ -113,6 +113,7 @@ interface IHipRendererImpl
     public IHipFrameBuffer createFrameBuffer(int width, int height);
     public IHipVertexArrayImpl  createVertexArray();
     public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type);
+    public IHipRendererBuffer createBuffer(const(ubyte)[], HipResourceUsage usage, HipRendererBufferType type);
     public IHipTexture  createTexture(HipResourceUsage usage);
     public int queryMaxSupportedPixelShaderTextures();
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);

@@ -126,7 +126,6 @@ class HipRendererImplementation : IHipRenderer
     {
         import hip.util.array;
         import core.memory : GC;
-        IHipRendererBuffer ret = createBuffer(quadsCount*index_t.sizeof*6, usage, HipRendererBufferType.index);
         index_t[] output = uninitializedArray!(index_t[])(quadsCount*6);
         index_t index = 0;
         for(index_t i = 0; i < quadsCount; i++)
@@ -140,7 +139,7 @@ class HipRendererImplementation : IHipRenderer
             output[index+5] = cast(index_t)(i*4+0);
             index+=6;
         }
-        ret.updateData(0, output);
+        IHipRendererBuffer ret = createBuffer(cast(ubyte[])output, usage, HipRendererBufferType.index);
         GC.free(output.ptr);
         return ret;
     }
@@ -296,6 +295,11 @@ class HipRendererImplementation : IHipRenderer
     public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {
         res.buffers~= rendererImpl.createBuffer(size, usage, type);
+        return res.buffers[$-1];
+    }
+    public IHipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
+    {
+        res.buffers~= rendererImpl.createBuffer(data, usage, type);
         return res.buffers[$-1];
     }
     public void setShader(Shader s)

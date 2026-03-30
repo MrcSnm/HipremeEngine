@@ -27,14 +27,27 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
 
     HipRendererBufferType type() const { return _type; }
 
-    this(size_t size, HipResourceUsage usage, HipRendererBufferType type, HipResourceAccess access = HipResourceAccess.write)
+    private this(HipResourceUsage usage, HipRendererBufferType type, HipResourceAccess access = HipResourceAccess.write)
     {
         this.usage = getGLUsage(usage);
         this._type = type;
         this.glType = getBufferType(type);
         this.glAccess = getGLAccess(access);
-        this.size = size;
         glCall(() => glGenBuffers(1, &handle));
+    }
+
+    this(size_t size, HipResourceUsage usage, HipRendererBufferType type, HipResourceAccess access = HipResourceAccess.write)
+    {
+        this(usage, type, access);
+        this.size = size;
+        bind();
+        glCall(() => glBufferData(glType, size, null, this.usage));
+        unbind();
+    }
+    this(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type, HipResourceAccess access = HipResourceAccess.write)
+    {
+        this(usage, type, access);
+        this.size = data.length;
         bind();
         glCall(() => glBufferData(glType, size, null, this.usage));
         unbind();

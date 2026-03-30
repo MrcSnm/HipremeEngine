@@ -191,6 +191,10 @@ class HipMTLRenderer : IHipRendererImpl
     {
         return new HipMTLBuffer(device, cmdQueue, size, usage, type);
     }
+    public IHipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
+    {
+        return new HipMTLBuffer(device, cmdQueue, data, usage, type);
+    }
 
     package pragma(inline, true) MTLRenderCommandEncoder getEncoder() { return cmdEncoder; }
 

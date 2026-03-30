@@ -50,7 +50,6 @@ class HipSpriteBatch : IHipBatch
         this.spriteBatchShader = newShader(HipShaderPresets.SPRITE_BATCH);
         if(camera is null)
             camera = new HipOrthoCamera();
-        
         if(spriteBatchShader.isInstanced)
             instanced = new HipSpriteBatchInstanced(spriteBatchShader, camera, maxInstances);
         else

@@ -75,7 +75,7 @@ final class HipSpriteBatchVertex
         spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 
         mesh = new Mesh(HipVertexArrayObject.getVAO!(HipSpriteVertex)(
-            [HipVertexAttributeCreateInfo((maxQuads*HipSpriteVertex.quadCount), HipResourceUsage.Dynamic, spriteBatchShader.isInstanced ? ShaderInputRate.perVertex : ShaderInputRate.perInstance)]
+            [HipVertexAttributeCreateInfo((maxQuads*HipSpriteVertex.quadCount), HipResourceUsage.Dynamic, ShaderInputRate.perVertex)]
         ), spriteBatchShader);
         mesh.setIndices(HipRenderer.getQuadIndexBuffer(maxQuads));
 

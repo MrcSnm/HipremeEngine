@@ -42,6 +42,16 @@ final class HipMTLBuffer : IHipRendererBuffer
         buffer.retain();
         _type = type;
     }
+    this(MTLDevice device, MTLCommandQueue cmdQueue, const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
+    {
+        this.device = device;
+        this.cmdQueue = cmdQueue;
+        options = usage.mtlOptions;
+        this.size = data.length;
+        buffer = device.newBuffer(data.ptr, data.length, options);
+        buffer.retain();
+        _type = type;
+    }
     HipRendererBufferType type() const { return _type; }
     void bind()
     {

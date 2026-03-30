@@ -406,6 +406,10 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         return new Hip_D3D11_Buffer(size, usage, type);
     }
+    public IHipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
+    {
+        return new Hip_D3D11_Buffer(data, usage, type);
+    }
     public IShader createShader()
     {
         return new Hip_D3D11_ShaderImpl();
