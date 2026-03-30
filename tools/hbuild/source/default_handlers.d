@@ -49,19 +49,7 @@ else version(OSX)
         string base = NSWorkspace.sharedWorkspace.URLForApplicationToOpenURL(
             NSURL.fileURLWithPath(referenceFile.ns)).path.toString;
         if(base.length == 0) return false;
-        static bool isExecutable(string name){return name.extension == null;}
-        if(base.extension == ".app")
-        {
-            base~= "/Contents/MacOS/";
-            foreach(DirEntry e; dirEntries(base, SpanMode.shallow))
-            {
-                if(isExecutable(e.name))
-                {
-                    defaultTextEditor = e.name;
-                    break;
-                }
-            }
-        }
+        defaultTextEditor = base;
         return true;
     }
 }

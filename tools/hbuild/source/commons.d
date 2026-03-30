@@ -875,8 +875,17 @@ bool openSourceCodeEditor(string projectPath)
 	string sourceEditor = getSourceCodeEditor(projectPath);
 	if(!sourceEditor.length)
 		return false;
-
-	spawnShell(sourceEditor.escapeShellCommand~" "~projectPath.escapeShellCommand);
+	
+	string command;
+	version(OSX)
+	{
+		import std.path:extension;
+		if(sourceEditor.extension == ".app")
+			command = "open -a "~sourceEditor~" "~projectPath.escapeShellCommand;
+	}
+	if(!command.length)
+		command = sourceEditor.escapeShellCommand~" "~projectPath.escapeShellCommand;
+	spawnShell(command);
 	return true;
 }
 
