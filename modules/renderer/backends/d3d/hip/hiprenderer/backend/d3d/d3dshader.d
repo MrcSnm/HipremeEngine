@@ -221,22 +221,6 @@ class Hip_D3D11_ShaderImpl : IShader
         return prog;
     }
 
-    /**
-    *   params:
-    *       layoutIndex: The layout index defined on shader
-    *       valueAmount: How many values using, for 3 vertices, you can use 3
-    *       dataType: Which data type to send
-    *       normalize: If it will normalize
-    *       stride: Target value amount in bytes, for instance, vec3 is float.sizeof*3
-    *       offset: It will be calculated for each value index
-    *
-    */
-    override void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
-    {
-        // glVertexAttribPointer(layoutIndex, valueAmount, dataType, normalize, stride, cast(void*)offset);
-        // glEnableVertexAttribArray(layoutIndex);
-    }
-
     override void bind(ShaderProgram _program)
     {
         Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)_program;

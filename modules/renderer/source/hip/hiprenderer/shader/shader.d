@@ -83,10 +83,6 @@ public class Shader : IReloadable
         return loadShaderFromFile(this.shaderPath);
     }
 
-    void setVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
-    {
-        shaderImpl.sendVertexAttribute(layoutIndex, valueAmount, dataType, normalize, stride, offset);
-    }
 
    
     /** 

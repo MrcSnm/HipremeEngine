@@ -30,25 +30,11 @@ private int getGLAttributeType(HipAttributeType _t)
         case Rgba32: return GL_UNSIGNED_BYTE;
         case Float: return GL_FLOAT;
         case Int: return GL_INT;
+        case Ushort: return GL_UNSIGNED_SHORT;
         case Uint: return GL_UNSIGNED_INT;
         case Bool: return GL_BOOL;
     }
 }
-
-private ubyte isGLAttributeNormalized(HipAttributeType _t)
-{
-    final switch(_t) with(HipAttributeType)
-    {
-        case Rgba32: return GL_TRUE;
-        case Float: return GL_FALSE;
-        case Int: return GL_FALSE;
-        case Uint: return GL_FALSE;
-        case Bool: return GL_FALSE;
-    }
-}
-
-
-
 
 //Used as a wrapper 
 final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
@@ -89,7 +75,7 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
                         field.index,
                         field.count,
                         getGLAttributeType(field.valueType),
-                        isGLAttributeNormalized(field.valueType),
+                        field.isNormalized,
                         info.vboStride,
                         cast(void*)field.offset
                     ));
@@ -173,14 +159,27 @@ static if (OpenGLHasVAOSupport) final class Hip_GL3_VertexArrayObject : IHipVert
             info.vbo.bind();
             foreach(field; info.fields)
             {
-                glCall(() => glVertexAttribPointer(
-                    field.index,
-                    field.count,
-                    getGLAttributeType(field.valueType),
-                    isGLAttributeNormalized(field.valueType),
-                    info.vboStride,
-                    cast(void*)field.offset
-                ));
+                if(field.isNormalized || !isAttributeTypeIntegral(field.valueType))
+                {
+                    glCall(() => glVertexAttribPointer(
+                        field.index,
+                        field.count,
+                        getGLAttributeType(field.valueType),
+                        field.isNormalized,
+                        info.vboStride,
+                        cast(void*)field.offset
+                    ));
+                }
+                else
+                {
+                    glCall(() => glVertexAttribIPointer(
+                        field.index,
+                        field.count,
+                        getGLAttributeType(field.valueType),
+                        info.vboStride,
+                        cast(void*)field.offset
+                    ));
+                }
                 glCall(() => glEnableVertexAttribArray(field.index));
                 if(info.isInstanced)
                     glCall(() => glVertexAttribDivisor(field.index, 1));

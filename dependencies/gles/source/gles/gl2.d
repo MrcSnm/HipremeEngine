@@ -573,12 +573,12 @@ void glBlendFunc (GLenum sfactor, GLenum dfactor);
 void glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 version(WebAssembly)
 {
-    void glBufferData (GLenum target, GLuint size, void* data, GLenum usage);
+    void glBufferData (GLenum target, GLuint size, const(void)* data, GLenum usage);
     void glBufferSubData (GLenum target, GLint offset, GLuint size, const(void)* data);
 }
 else
 {
-    void glBufferData (GLenum target, GLsizeiptr size, void* data, GLenum usage);
+    void glBufferData (GLenum target, GLsizeiptr size, const(void)* data, GLenum usage);
     void glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, const(void)* data);
 }
 GLenum glCheckFramebufferStatus (GLenum target);
@@ -979,6 +979,7 @@ void glVertexAttribPointer (GLuint index, GLint size, GLenum type, GLboolean nor
 version(WebAssembly)
 {
     void glVertexAttribDivisor(GLuint index, GLuint divisor);
+    void glVertexAttribIPointer (GLuint index, GLint size, GLenum type, GLsizei stride, void* pointer);
 }
 void glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
 

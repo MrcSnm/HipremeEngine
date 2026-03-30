@@ -71,6 +71,10 @@ enum HipShaderInputLayout;
 *   be defined on shader UNUSUED
 */
 enum HipShaderInputPadding;
+/** 
+ * Whether this field is normalized or not. Used with types such as ushort and uint to map into float inside the shader
+ */
+enum HipShaderInputNormalized;
 /**
 *   Declares that the struct is a collection of uniform variables.
 */

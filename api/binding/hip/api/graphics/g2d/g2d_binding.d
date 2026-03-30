@@ -62,9 +62,9 @@ else version(ScriptAPI)
             ///Draws the target sprite instance
             void function(IHipTexture texture, ubyte[] vertices) drawSprite;
             ///Draws a texture at a specified place
-            void function(IHipTexture reg, int x, int y, int z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawTexture;
+            void function(IHipTexture reg, int x, int y, ushort z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawTexture;
             ///Draws a texture region at a specified place
-            void function(IHipTextureRegion reg, int x, int y, int z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawRegion;
+            void function(IHipTextureRegion reg, int x, int y, ushort z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawRegion;
             void function(IHipTilemap reg) drawMap;
             ///Sets the font for the next drawText commands
             void function (IHipFont font) setFont;
@@ -164,9 +164,9 @@ version(none)
         ///Draws the target sprite instance
         void function(IHipTexture texture, ubyte[] vertices) drawSprite;
         ///Draws a texture at a specified place
-        void function(IHipTexture reg, int x, int y, int z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawTexture;
+        void function(IHipTexture reg, int x, int y, ushort z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawTexture;
         ///Draws a texture region at a specified place
-        void function(IHipTextureRegion reg, int x, int y, int z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawRegion;
+        void function(IHipTextureRegion reg, int x, int y, ushort z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawRegion;
         void function(IHipTilemap reg) drawMap;
 
         ///Changes textBatch state to use this color

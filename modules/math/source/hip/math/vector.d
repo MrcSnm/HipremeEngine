@@ -103,18 +103,18 @@ struct Vector(uint N, T)
         {
             pragma(inline, true)
             {
-                Vector2 xy(){return Vector2(x, y);}
-                Vector2 xy(Vector2 v){x = v.x; y = v.y; return v;}
-                Vector2 yx(){return Vector2(y, x);}
-                Vector2 yx(Vector2 v){y = v.x; x = v.y; return yx;}
+                Vector!(2, T) xy(){return Vector!(2, T)(x, y);}
+                Vector!(2, T) xy(Vector!(2, T) v){x = v.x; y = v.y; return v;}
+                Vector!(2, T) yx(){return Vector!(2, T)(y, x);}
+                Vector!(2, T) yx(Vector!(2, T) v){y = v.x; x = v.y; return yx;}
             }
         }
         static if(N == 4)
         {
             pragma(inline, true)
             {
-                Vector3 xyz(){return Vector3(x, y, z);}
-                Vector3 xyz(Vector3 v){x = v.x; y = v.y;z = v.z; return v;}
+                Vector!(3, T) xyz(){return Vector!(3, T)(x, y, z);}
+                Vector!(3, T) xyz(Vector!(3, T) v){x = v.x; y = v.y;z = v.z; return v;}
             }
         }
         pragma(inline, true) T opIndexUnary(string op)(size_t index) if(op == "-")
@@ -150,12 +150,24 @@ struct Vector(uint N, T)
                 ret+= data[i]*data[i];
             return ret;
         }
-        ref VectorN normalize()
+        static if(__traits(isFloating, T))
         {
-            const float m = mag();
-            if(m != 0)
-                data[]/=m;
-            return this;
+            ref VectorN normalize()
+            {
+                const float m = mag();
+                if(m != 0)
+                    data[]/=m;
+                return this;
+            }
+
+            VectorN unit() inout
+            {
+                const float m = mag();
+                if(m != 0)
+                    return this / m;
+                return this;
+            }
+            
         }
 
         float distance(VectorN other)
@@ -182,13 +194,6 @@ struct Vector(uint N, T)
                 return sqrt(dx+dy);
         }
 
-        VectorN unit() inout
-        {
-            const float m = mag();
-            if(m != 0)
-                return this / m;
-            return this;
-        }
         
         VectorN project()(auto ref VectorN reference) inout
         {
@@ -196,7 +201,7 @@ struct Vector(uint N, T)
             return n * dot(reference);
         }
 
-        static if(N == 3)
+        static if(N == 3 && __traits(isFloating, T))
         {
             VectorN axisAngle(in VectorN axis, float angle) inout
             {
@@ -220,7 +225,7 @@ struct Vector(uint N, T)
 
         static float Dot(VectorN first, VectorN second){return first.dot(second);}
 
-        static if(N >= 3)
+        static if(N >= 3 && __traits(isFloating, T))
         {
             VectorN rotateZ(float radians)
             {
@@ -374,3 +379,7 @@ struct Vector(uint N, T)
 alias Vector2 = Vector!(2, float);
 alias Vector3 = Vector!(3, float);
 alias Vector4 = Vector!(4, float);
+
+
+// alias ushort2 = Vector!(2, ushort);
+// alias ushort4 = Vector!(4, ushort);

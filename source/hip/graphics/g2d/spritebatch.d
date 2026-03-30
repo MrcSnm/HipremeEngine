@@ -69,14 +69,14 @@ class HipSpriteBatch : IHipBatch
         else vertex.draw(t, vertices);
     }
 
-    void draw(IHipTexture texture, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    void draw(IHipTexture texture, int x, int y, ushort z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         if(instanced) instanced.draw(texture, x, y, z, color, scaleX, scaleY, rotation);
         else vertex.draw(texture, x, y, z, color, scaleX, scaleY, rotation);
     }
 
 
-    void draw(IHipTextureRegion reg, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    void draw(IHipTextureRegion reg, int x, int y, ushort z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         if(instanced) instanced.draw(reg, x, y, z, color, scaleX, scaleY, rotation);
         else vertex.draw(reg, x, y, z, color, scaleX, scaleY, rotation);

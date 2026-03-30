@@ -53,7 +53,6 @@ abstract class IShader
     abstract void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq);
     abstract void bind(ShaderProgram program);
     abstract void unbind(ShaderProgram program);
-    abstract void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset);
     abstract int  getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout);
     
 

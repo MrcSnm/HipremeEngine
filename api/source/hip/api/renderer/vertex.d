@@ -52,9 +52,12 @@ enum HipAttributeType : ubyte
     Rgba32,
     Float,
     Uint,
+    Ushort,
     Int,
     Bool
 }
+
+bool isAttributeTypeIntegral(HipAttributeType t) { return t > HipAttributeType.Float; }
 
 
 struct HipVertexAttributeFieldInfo
@@ -64,6 +67,7 @@ struct HipVertexAttributeFieldInfo
     uint offset;
     uint typeSize;
     HipAttributeType valueType;
+    bool isNormalized;
     string name;
 }
 

@@ -212,7 +212,7 @@ void drawSprite(IHipTexture texture, ubyte[] vertices)
     manageBatchChange(spBatch);
     spBatch.draw(texture, vertices);
 }
-void drawRegion(IHipTextureRegion reg, int x, int y, int z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+void drawRegion(IHipTextureRegion reg, int x, int y, ushort z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
 {
     manageBatchChange(spBatch);
     spBatch.draw(reg, x, y, z, color, scaleX, scaleY, rotation);
@@ -223,7 +223,7 @@ void drawMap(IHipTilemap map)
     map.render(spBatch, false);
 }
 
-void drawTexture(IHipTexture texture, int x, int y, int z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+void drawTexture(IHipTexture texture, int x, int y, ushort z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
 {
     manageBatchChange(spBatch);
     spBatch.draw(texture, x, y, z, color, scaleX, scaleY, rotation);

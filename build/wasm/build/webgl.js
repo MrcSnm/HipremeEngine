@@ -303,6 +303,9 @@ function initializeWebglContext()
         glVertexAttribPointer ( index, size, type, normalized, stride, offset ) {
             gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
         },
+        glVertexAttribIPointer ( index, size, type, stride, offset ) {
+            gl.vertexAttribIPointer(index, size, type, stride, offset);
+        },
         glVertexAttribDivisor(index, divisor) {
             gl.vertexAttribDivisor(index, divisor);
         },

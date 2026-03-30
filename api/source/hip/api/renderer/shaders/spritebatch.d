@@ -37,12 +37,14 @@ HipSpriteVertexInstancedPerVertex[4] spriteBatchInstancedVertices = [
 
 @HipShaderInputLayout struct HipSpriteVertexInstancedPerInstance
 {
-    Vector2 vXY;
-    Vector2 vSize;
+    ushort[2] vXY;
+    ushort[2] vSize;
     HipColor vColor;
-    float vZ;
     float vRotation;
-    float vTexID;
+    ushort vZ;
+    ushort vTexID;
+    @HipShaderInputNormalized ushort[2] vUVMin;
+    @HipShaderInputNormalized ushort[2] vUVMax;
 }
 
 

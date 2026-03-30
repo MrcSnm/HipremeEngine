@@ -256,22 +256,6 @@ class Hip_GL_ShaderImpl : IShader
     }
     
 
-    /**
-    *   params:
-    *       layoutIndex: The layout index defined on shader
-    *       valueAmount: How many values using, for 3 vertices, you can use 3
-    *       dataType: Which data type to send
-    *       normalize: If it will normalize
-    *       stride: Target value amount in bytes, for instance, vec3 is float.sizeof*3
-    *       offset: It will be calculated for each value index
-    *       
-    */
-    override void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
-    {
-        glCall(() =>glVertexAttribPointer(layoutIndex, valueAmount, dataType, normalize, stride, cast(void*)offset));
-        glCall(() =>glEnableVertexAttribArray(layoutIndex));
-    }
-
     private __gshared Hip_GL_ShaderImpl boundShader;
     private __gshared HipBlendFunction currSrc, currDst;
     private __gshared HipBlendEquation currEq;

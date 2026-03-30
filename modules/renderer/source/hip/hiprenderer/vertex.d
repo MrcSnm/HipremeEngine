@@ -201,7 +201,8 @@ private ref HipVertexAttributeInfo appendAttributeField(return ref HipVertexAttr
     uint typeSize,
     string fieldName,
     uint indexOffset,
-    bool isPadding = false
+    bool isPadding = false,
+    bool isNormalized = false
 )
 {
      
@@ -212,7 +213,8 @@ private ref HipVertexAttributeInfo appendAttributeField(return ref HipVertexAttr
         typeSize: typeSize,
         index: indexOffset + cast(uint)info.fields.length,
         //It actually is the `last stride`, which is the same as the offset is the total current stride
-        offset: info.vboStride
+        offset: info.vboStride,
+        isNormalized: isNormalized
     );
 
     // if(!isPadding)
@@ -224,33 +226,38 @@ private ref HipVertexAttributeInfo appendAttributeField(return ref HipVertexAttr
     return info;
 }
 
-private ref HipVertexAttributeInfo appendAttributeField(T)(return ref HipVertexAttributeInfo info, string infoName, uint indexOffset, bool isPadding = false)
+private ref HipVertexAttributeInfo appendAttributeField(T)(return ref HipVertexAttributeInfo info, string infoName, uint indexOffset, bool isPadding = false, bool isNormalized = false)
 {
     uint count = 1;
     HipAttributeType type = HipAttributeType.Float;
     uint typeSize = float.sizeof;
     import hip.math.vector;
+    bool normalized = isNormalized;
 
     static if(is(T == Vector2)) count = 2;
     else static if(is(T == Vector3)) count = 3;
     else static if(is(T == Vector4) || is(T == HipColorf)) count = 4;
+    else static if(is(T == ushort[2])) { type = HipAttributeType.Ushort; count = 2; typeSize = ushort.sizeof; } //TODO: Add ushort2 and ushort
+    else static if(is(T == ushort[4])) { type = HipAttributeType.Ushort; count = 4; typeSize = ushort.sizeof; }
     else static if(is(T == HipColor))
     {
         type = HipAttributeType.Rgba32;
         count = 4;
         typeSize = ubyte.sizeof;
+        normalized = true;
     }
     else
     {
         static if(is(T == int)) type = HipAttributeType.Int;
         else static if(is(T == uint)) type = HipAttributeType.Uint;
+        else static if(is(T == ushort)) type = HipAttributeType.Ushort;
         else static if(is(T == bool)) type = HipAttributeType.Bool;
         else
             static assert(is(T == float), "Unrecognized type for attribute: "~T.stringof);
 
         typeSize = T.sizeof;
     }
-    return appendAttributeField(info, count, type, typeSize ,infoName, indexOffset, isPadding);
+    return appendAttributeField(info, count, type, typeSize ,infoName, indexOffset, isPadding, normalized);
 }
 
 
@@ -272,7 +279,8 @@ private HipVertexAttributeInfo getAttributeInfo(T)(HipVertexAttributeCreateInfo 
                 info,
                 member,
                 indexOffset,
-                hasUDA!(mem, HipShaderInputPadding)
+                hasUDA!(mem, HipShaderInputPadding),
+                hasUDA!(mem, HipShaderInputNormalized)
             );
         }
     }}

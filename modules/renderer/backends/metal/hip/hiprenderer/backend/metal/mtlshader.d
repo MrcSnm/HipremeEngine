@@ -220,10 +220,6 @@ class HipMTLShader : IShader
         if(boundShader is program) boundShader = null;
     }
 
-    override void sendVertexAttribute(uint layoutIndex, int valueAmount, uint dataType, bool normalize, uint stride, int offset)
-    {
-
-    }
 
     override int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
     {

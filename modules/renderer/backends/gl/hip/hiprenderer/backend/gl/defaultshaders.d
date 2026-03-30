@@ -82,12 +82,15 @@ private {
                 ATTRIBUTE(3) float vTexID;
             #else
                 ATTRIBUTE(0) vec2 vPosition;
-                ATTRIBUTE(1) vec2 vXY;
-                ATTRIBUTE(2) vec2 vSize;
+                
+                ATTRIBUTE(1) uvec2 vXY;
+                ATTRIBUTE(2) uvec2 vSize;
                 ATTRIBUTE(3) vec4 vColor;
-                ATTRIBUTE(4) float vZ;
-                ATTRIBUTE(5) float vRotation;
-                ATTRIBUTE(6) float vTexID;
+                ATTRIBUTE(4) float vRotation;
+                ATTRIBUTE(5) uint vZ;
+                ATTRIBUTE(6) uint vTexID;
+                ATTRIBUTE(7) vec2 vUVMin;
+                ATTRIBUTE(8) vec2 vUVMax;
             #endif
 
             UNIFORM_BUFFER_OBJECT(0, Cbuf1, cbuf1, 
@@ -99,20 +102,20 @@ private {
             {
 
                 #ifdef INSTANCED
-                    inTexST = vPosition; //Currently only default is supported
+                    inTexST = vPosition * vUVMax + vUVMin; //Currently only default is supported
                     float s = sin(vRotation);
                     float c = cos(vRotation);
                     vec2 actualPos = vec2(
                         vPosition.x * c - vPosition.y * s,
                         vPosition.x * s + vPosition.y * c
-                    ) * vSize + vXY;
+                    ) * vec2(vSize) + vec2(vXY);
                     gl_Position = cbuf1.uMVP*vec4(actualPos, vZ, 1.0);
                 #else 
                     inTexST = vTexST;
                     gl_Position = cbuf1.uMVP*vec4(vPosition, 1.0);
                 #endif
                 inVertexColor = vColor;
-                inTexID = vTexID;
+                inTexID = float(vTexID);
             }
             #endif
 

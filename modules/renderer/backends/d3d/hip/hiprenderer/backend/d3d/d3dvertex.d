@@ -235,7 +235,7 @@ final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
 private DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref HipVertexAttributeFieldInfo info)
 {
     DXGI_FORMAT ret;
-    switch(info.valueType)
+    final switch(info.valueType)
     {
         case HipAttributeType.Rgba32:
             return DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -260,6 +260,28 @@ private DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref HipVertexAttributeFieldInfo i
                     "Unknown format type from uint with length " ~ to!string(info.count));
             }
             break;
+        case HipAttributeType.Ushort:
+            if(info.isNormalized)
+            {
+                switch(info.count)
+                {
+                    case 1: ret = DXGI_FORMAT_R16_UNORM; break;
+                    case 2: ret = DXGI_FORMAT_R16G16_UNORM; break;
+                    case 4: ret = DXGI_FORMAT_R16G16B16A16_UNORM; break;
+                    default: ErrorHandler.showErrorMessage("DXGI Format Error", "Unknown format with count "~to!string(info.count));
+                }
+            }
+            else
+            {
+                switch(info.count)
+                {
+                    case 1: ret = DXGI_FORMAT_R16_UINT; break;
+                    case 2: ret = DXGI_FORMAT_R16G16_UINT; break;
+                    case 4: ret = DXGI_FORMAT_R16G16B16A16_UINT; break;
+                    default: ErrorHandler.showErrorMessage("DXGI Format Error", "Unknown format with count "~to!string(info.count));
+                }
+            }
+            break;
         case HipAttributeType.Bool:
         case HipAttributeType.Int:
             switch(info.count)
@@ -272,9 +294,6 @@ private DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref HipVertexAttributeFieldInfo i
                     ErrorHandler.showErrorMessage("DXGI Format Error",
                     "Unknown format type from int/bool with length " ~ to!string(info.count));
             }
-            break;
-        default:
-            ErrorHandler.showErrorMessage("DXGI Format Error", "Unknown format type from info");
             break;
     }
     return ret;

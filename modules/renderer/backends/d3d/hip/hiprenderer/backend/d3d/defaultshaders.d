@@ -44,7 +44,7 @@ private {
         textureSlotSwitchCase~= "\t\tdefault: return uTex[0].Sample(state[0], texST) * inVertexColor * uBatchColor;";
         textureSlotSwitchCase~= "\n\t}";
 
-        return q{
+        return `
         struct VSOut
             {
                 float4 inColor : inColor;
@@ -58,7 +58,7 @@ private {
                 float4x4 uMVP: uMVP;
             };
 
-#ifndef INSTANCED
+#if INSTANCED == 0
             VSOut vertexMain(
                 float3 pos   : vPosition,
                 float4 col   : vColor,
@@ -78,12 +78,14 @@ private {
 #else
             VSOut vertexMain(
                 float2 pos    : vPosition,
-                float2 xy     : vXY,
-                float2 size   : vSize,
+                uint2  xy     : vXY,
+                uint2 size    : vSize,
                 float4 col    : vColor,
-                float  z      : vZ,
                 float rotation: vRotation,
-                float texID   : vTexID
+                uint z       : vZ,
+                uint texID   : vTexID,
+                float2 uvMin  : vUVMin,
+                float2 uvMax  : vUVMax
                 )
             {
                 VSOut output;
@@ -96,7 +98,7 @@ private {
                 
                 float4 position = float4(actualPos.x, actualPos.y, z, 1.0f);
                 output.vPosition = mul(position, uMVP);
-                output.inTexST = pos;
+                output.inTexST = pos * uvMax + uvMin;
                 output.inColor = col;
                 output.inTexID = texID;
                 return output;
@@ -104,7 +106,7 @@ private {
 
 #endif
 
-        }~ "Texture2D uTex["~to!string(sup)~"];
+        `~ "Texture2D uTex["~to!string(sup)~"];
     SamplerState state["~to!string(sup)~"];"~q{
     cbuffer input
     {

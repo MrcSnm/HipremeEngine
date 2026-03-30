@@ -26,7 +26,8 @@ public import hip.api.renderer.shaders.spritebatch;
 private struct CachedTexture
 {
     IHipTexture texture;
-    int slot, width, height;
+    int width, height;
+    ushort slot;
 }
 
 /**
@@ -48,13 +49,13 @@ final class HipSpriteBatchInstanced
     protected Shader ppShader;
     protected HipFrameBuffer fb;
     protected HipTextureRegion fbTexRegion;
-    protected float managedDepth = 0;
+    protected ushort managedDepth = 0;
 
     HipOrthoCamera camera;
     Mesh mesh;
 
     protected IHipTexture[] currentTextures;
-    int usingTexturesCount;
+    ushort usingTexturesCount;
     uint maxInstances;
     uint instanceCount;
     ShaderVariablesLayout uMVP;
@@ -90,11 +91,12 @@ final class HipSpriteBatchInstanced
         uMVP = mesh.shader.getBuffer("Cbuf1");
         this.camera = camera;
         // vertices = cast(HipSpriteVertex[])mesh.vao.VBO.getBuffer();
-        int width, height, slot;
+        int width, height;
+        ushort slot;
         setTexture(HipTexture.getPixelTexture(), width, height, slot);
 
     }
-    void setCurrentDepth(float depth) @nogc {managedDepth = depth;}
+    void setCurrentDepth(float depth) @nogc {managedDepth = cast(ushort)depth;}
 
     void setShader(Shader s)
     {
@@ -107,9 +109,9 @@ final class HipSpriteBatchInstanced
         this.ppShader = s;
     }
     
-    private int getNextTextureID(IHipTexture t)
+    private ushort getNextTextureID(IHipTexture t)
     {
-        for(int i = 0; i < usingTexturesCount; i++)
+        for(ushort i = 0; i < usingTexturesCount; i++)
             if(currentTextures[i] is t)
                 return i;
         if(usingTexturesCount < currentTextures.length)
@@ -117,12 +119,12 @@ final class HipSpriteBatchInstanced
             currentTextures[usingTexturesCount] = t;
             return usingTexturesCount++;
         }
-        return -1;
+        return ushort.max;
     }
     /**
     *   Sets the current texture in use on the sprite batch and returns its slot.
     */
-    protected void setTexture (IHipTexture texture, out int width, out int height, out int slot)
+    protected void setTexture (IHipTexture texture, out int width, out int height, out ushort slot)
     {
         if(texture is cachedTexture.texture)
         {
@@ -135,15 +137,15 @@ final class HipSpriteBatchInstanced
             width = texture.getWidth(), height = texture.getHeight();
             ErrorHandler.assertExit(width != 0 && height != 0, "Tried to draw 0 bounds texture");
             slot = getNextTextureID(texture);
-            if(slot == -1)
+            if(slot == ushort.max)
             {
                 flush();
                 slot = getNextTextureID(texture);
             }
-            cachedTexture = CachedTexture(texture, slot, width, height);
+            cachedTexture = CachedTexture(texture, width, height, slot);
         }
     }
-    protected void setTexture(IHipTextureRegion reg, out int width, out int height, out int slot){ return setTexture(reg.getTexture(), width, height, slot); }
+    protected void setTexture(IHipTextureRegion reg, out int width, out int height, out ushort slot){ return setTexture(reg.getTexture(), width, height, slot); }
 
     pragma(inline, true)
     void addInstance(HipSpriteVertexInstancedPerInstance instance)
@@ -156,13 +158,14 @@ final class HipSpriteBatchInstanced
         import hip.global.gamedef;
         if(texture is null)
             texture = cast()getDefaultTexture();
-        int width, height, slot;
+        int width, height;
+        ushort slot;
         setTexture(texture, width, height, slot);
         HipSpriteVertexInstancedPerInstance base = *cast(HipSpriteVertexInstancedPerInstance*) vertices.ptr;
         base.vTexID = slot;
         addInstance(base);
     }
-    void draw(IHipTexture texture, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    void draw(IHipTexture texture, int x, int y, ushort z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
         import hip.global.gamedef;
         if(color.a == 0) return;
@@ -170,13 +173,18 @@ final class HipSpriteBatchInstanced
             flush();
         if(texture is null)
             texture = cast()getDefaultTexture();
-        int width, height, slot;
+        int width, height;
+        ushort slot;
         setTexture(texture, width, height, slot);
-        addInstance(HipSpriteVertexInstancedPerInstance(Vector2(x, y), Vector2(width*scaleX, width*scaleY), color, z, rotation, slot));
+        addInstance(
+            HipSpriteVertexInstancedPerInstance(
+                [cast(ushort)x, cast(ushort)y],  [cast(ushort)(width*scaleX), cast(ushort)(width*scaleY)], 
+                color, rotation, z, slot,
+                [0,0], [ushort.max, ushort.max]));
     }
 
 
-    void draw(IHipTextureRegion reg, int x, int y, int z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+    void draw(IHipTextureRegion reg, int x, int y, ushort z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
        draw(reg.getTexture, x, y, z, color, scaleX, scaleY, rotation);
     }

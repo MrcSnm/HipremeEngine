@@ -94,7 +94,7 @@ final class HipMTLBuffer : IHipRendererBuffer
     }
 }
 
-MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeInfo i)
+MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeFieldInfo i)
 {
     final switch(i.valueType)
     {
@@ -116,20 +116,67 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeInfo i)
                 case 4: return MTLVertexFormat.int4;
             }
         case HipAttributeType.Uint:
-            final switch(i.count)
+            if(i.isNormalized)
             {
-                case 1: return MTLVertexFormat.uint1;
-                case 2: return MTLVertexFormat.uint2;
-                case 3: return MTLVertexFormat.uint3;
-                case 4: return MTLVertexFormat.uint4;
+                final switch(i.count)
+                {
+                    case 1: return MTLVertexFormat.uint1Normalized;
+                    case 2: return MTLVertexFormat.uint2Normalized;
+                    case 3: return MTLVertexFormat.uint3Normalized;
+                    case 4: return MTLVertexFormat.uint4Normalized;
+                }
+            }
+            else
+            {
+                final switch(i.count)
+                {
+                    case 1: return MTLVertexFormat.uint1;
+                    case 2: return MTLVertexFormat.uint2;
+                    case 3: return MTLVertexFormat.uint3;
+                    case 4: return MTLVertexFormat.uint4;
+                }
+            }
+        case HipAttributeType.Ushort:
+            if(i.isNormalized)
+            {
+                final switch(i.count)
+                {
+                    case 1: return MTLVertexFormat.ushort1Normalized;
+                    case 2: return MTLVertexFormat.ushort2Normalized;
+                    case 3: return MTLVertexFormat.ushort3Normalized;
+                    case 4: return MTLVertexFormat.ushort4Normalized;
+                }
+            }
+            else
+            {
+                final switch(i.count)
+                {
+                    case 1: return MTLVertexFormat.ushort1;
+                    case 2: return MTLVertexFormat.ushort2;
+                    case 3: return MTLVertexFormat.ushort3;
+                    case 4: return MTLVertexFormat.ushort4;
+                }
             }
         case HipAttributeType.Bool:
-            final switch(i.count)
+            if(i.isNormalized)
             {
-                case 1: return MTLVertexFormat.char1;
-                case 2: return MTLVertexFormat.char2;
-                case 3: return MTLVertexFormat.char3;
-                case 4: return MTLVertexFormat.char4;
+                final switch(i.count)
+                {
+                    case 1: return MTLVertexFormat.char1Normalized;
+                    case 2: return MTLVertexFormat.char2Normalized;
+                    case 3: return MTLVertexFormat.char3Normalized;
+                    case 4: return MTLVertexFormat.char4Normalized;
+                }
+            }
+            else
+            {
+                final switch(i.count)
+                {
+                    case 1: return MTLVertexFormat.char1;
+                    case 2: return MTLVertexFormat.char2;
+                    case 3: return MTLVertexFormat.char3;
+                    case 4: return MTLVertexFormat.char4;
+                }
             }
     }
     assert(false, "Unknown format");

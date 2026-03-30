@@ -49,7 +49,7 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
         this(usage, type, access);
         this.size = data.length;
         bind();
-        glCall(() => glBufferData(glType, size, null, this.usage));
+        glCall(() => glBufferData(glType, size, data.ptr, this.usage));
         unbind();
     }
     void bind()
