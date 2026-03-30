@@ -76,10 +76,11 @@ private {
             #ifdef VERTEX
 
             #ifndef INSTANCED
-                ATTRIBUTE(0) vec3 vPosition;
+                ATTRIBUTE(0) vec2 vPosition;
                 ATTRIBUTE(1) vec4 vColor;
                 ATTRIBUTE(2) vec2 vTexST;
-                ATTRIBUTE(3) float vTexID;
+                ATTRIBUTE(3) float vZ;
+                ATTRIBUTE(4) float vTexID;
             #else
                 ATTRIBUTE(0) vec2 vPosition;
                 
@@ -112,7 +113,7 @@ private {
                     gl_Position = cbuf1.uMVP*vec4(actualPos, vZ, 1.0);
                 #else 
                     inTexST = vTexST;
-                    gl_Position = cbuf1.uMVP*vec4(vPosition, 1.0);
+                    gl_Position = cbuf1.uMVP*vec4(vPosition, vZ, 1.0);
                 #endif
                 inVertexColor = vColor;
                 inTexID = float(vTexID);

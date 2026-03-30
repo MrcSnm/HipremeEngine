@@ -7,7 +7,6 @@ _reloadSocket.addEventListener("open", (event) =>
     _reloadSocket.addEventListener("close", (event) =>
     {
         console.warn("Exited reload server connection.");
-        clearInterval(updateLoop);
     });
 });
 

@@ -237,8 +237,8 @@ private ref HipVertexAttributeInfo appendAttributeField(T)(return ref HipVertexA
     static if(is(T == Vector2)) count = 2;
     else static if(is(T == Vector3)) count = 3;
     else static if(is(T == Vector4) || is(T == HipColorf)) count = 4;
-    else static if(is(T == ushort[2])) { type = HipAttributeType.Ushort; count = 2; typeSize = ushort.sizeof; } //TODO: Add ushort2 and ushort
-    else static if(is(T == ushort[4])) { type = HipAttributeType.Ushort; count = 4; typeSize = ushort.sizeof; }
+    else static if(is(T == ushort[2]) || is(T == ushort2)) { type = HipAttributeType.Ushort; count = 2; typeSize = ushort.sizeof; } //TODO: Add ushort2 and ushort
+    else static if(is(T == ushort[4]) || is(T == ushort4)) { type = HipAttributeType.Ushort; count = 4; typeSize = ushort.sizeof; }
     else static if(is(T == HipColor))
     {
         type = HipAttributeType.Rgba32;

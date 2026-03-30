@@ -254,30 +254,30 @@ final class HipSpriteBatchVertex
 
     private static void setTID(HipSpriteVertex[] vertices, int tid)
     {
-        static if(!GLMaxOneBoundTexture)
+        // static if(!GLMaxOneBoundTexture)
         {
-            vertices[0].vTexID = tid;
-            vertices[1].vTexID = tid;
-            vertices[2].vTexID = tid;
-            vertices[3].vTexID = tid;
+            vertices[0].vTexID = cast(ushort)tid;
+            vertices[1].vTexID = cast(ushort)tid;
+            vertices[2].vTexID = cast(ushort)tid;
+            vertices[3].vTexID = cast(ushort)tid;
         }
     }
 
     pragma(inline, true)
-    private static Vector3[4] getBounds(float x, float y, float z, float width, float height, float scaleX = 1, float scaleY = 1)
+    private static ushort2[4] getBounds(float x, float y, float z, float width, float height, float scaleX = 1, float scaleY = 1)
     {
         width*= scaleX;
         height*= scaleY;
         return [
-            Vector3(x, y, z),
-            Vector3(x+width, y, z),
-            Vector3(x+width, y+height, z),
-            Vector3(x, y+height, z),
+            ushort2(cast(ushort)x, cast(ushort) y),
+            ushort2(cast(ushort)(x+width), cast(ushort) y),
+            ushort2(cast(ushort)(x+width),  cast(ushort)(y+height)),
+            ushort2(cast(ushort)x,  cast(ushort)(y+height)),
         ];
     }
 
     pragma(inline, true)
-    private static Vector3[4] getBoundsFromRotation(float x, float y, float z, float width, float height, float rotation, float scaleX = 1, float scaleY = 1)
+    private static ushort2[4] getBoundsFromRotation(float x, float y, float z, float width, float height, float rotation, float scaleX = 1, float scaleY = 1)
     {
         import hip.math.utils:cos,sin;
         width*= scaleX;
@@ -290,17 +290,17 @@ final class HipSpriteBatchVertex
         float s = sin(rotation);
 
         return [
-            Vector3(c*centerX - s*centerY + x, c*centerY + s*centerX + y, z),
-            Vector3(c*x2 - s*centerY + x, c*centerY + s*x2 + y, z),
-            Vector3(c*x2 - s*y2 + x, c*y2 + s*x2 + y, z),
-            Vector3(c*centerX - s*y2 + x, c*y2 + s*centerX + y, z),
+            ushort2(cast(ushort) (c*centerX - s*centerY + x), cast(ushort) (c*centerY + s*centerX + y)),
+            ushort2(cast(ushort) (c*x2 - s*centerY + x)     , cast(ushort) (c*centerY + s*x2 + y)),
+            ushort2(cast(ushort) (c*x2 - s*y2 + x)          , cast(ushort) (c*y2 + s*x2 + y)),
+            ushort2(cast(ushort) (c*centerX - s*y2 + x)     , cast(ushort) (c*y2 + s*centerX + y)),
         ];
     }
 
     static void getTextureVertices(HipSpriteVertex[] output, int slot, int width, int height,
     int x, int y, float z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
-        Vector3[4] spritePos = void;
+        ushort2[4] spritePos = void;
         if(rotation == 0)
             spritePos = getBounds(x,y,z,width,height,scaleX,scaleY);
         else
@@ -309,12 +309,14 @@ final class HipSpriteBatchVertex
 
         for(size_t i = 0; i < 4; i++)
         {
-            output[i].vTexST = HipTextureRegion.defaultVerticesV[i];
+            output[i].vTexST = (cast(ushort2[4])HipTextureRegion.defaultVertices)[i];
             output[i].vColor = color;
             output[i].vPosition = spritePos[i];
-            static if(!GLMaxOneBoundTexture)
-                output[i].vTexID = slot;
+            output[i].vZ = cast(ushort)z;
+            // static if(!GLMaxOneBoundTexture)
+                output[i].vTexID = cast(ushort)slot;
         }
+
     }
 
     static void getTextureRegionVertices(HipSpriteVertex[] output, int slot, IHipTextureRegion reg,
@@ -322,17 +324,18 @@ final class HipSpriteBatchVertex
     {
         int width = reg.getWidth();
         int height = reg.getHeight();
-        float[8] uvVertices = reg.getVertices();
+        ushort[8] uvVertices = reg.getVertices();
 
-        Vector3[4] spritePos = rotation == 0 ? getBounds(x,y,z,width,height,scaleX,scaleY) :getBoundsFromRotation(x,y,z,width,height,rotation,scaleX,scaleY);
+        ushort2[4] spritePos = rotation == 0 ? getBounds(x,y,z,width,height,scaleX,scaleY) :getBoundsFromRotation(x,y,z,width,height,rotation,scaleX,scaleY);
 
         for(size_t i = 0; i < 4; i++)
         {
-            output[i].vTexST = Vector2(uvVertices[i*2], uvVertices[i*2+1]);
+            output[i].vTexST = ushort2(uvVertices[i*2], uvVertices[i*2+1]);
             output[i].vColor = color;
             output[i].vPosition = spritePos[i];
-            static if(!GLMaxOneBoundTexture)
-                output[i].vTexID = slot;
+            output[i].vZ = cast(ushort)z;
+            // static if(!GLMaxOneBoundTexture)
+                output[i].vTexID = cast(ushort)slot;
         }
     }
 

@@ -60,7 +60,15 @@ interface IHipTexture
 pragma(LDC_no_typeinfo)
 struct TextureCoordinatesQuad
 {
-    float u1, v1, u2, v2;
+    ushort u1, v1, u2, v2;
+
+    this(float u1, float v1, float u2, float v2)
+    {
+        this.u1 = cast(ushort)(u1 * ushort.max);
+        this.u2 = cast(ushort)(u2 * ushort.max);
+        this.v1 = cast(ushort)(v1 * ushort.max);
+        this.v2 = cast(ushort)(v2 * ushort.max);
+    }
 }
 
 interface IHipTextureRegion
@@ -75,7 +83,7 @@ interface IHipTextureRegion
 
     void setRegion(float u1, float v1, float u2, float v2);
     TextureCoordinatesQuad getRegion() const;
-    ref float[8] getVertices();
+    ref ushort[8] getVertices();
 
     void setFlippedX(bool flip);
     void setFlippedY(bool flip);

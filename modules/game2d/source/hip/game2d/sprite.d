@@ -26,7 +26,7 @@ import hip.assets.texture;
 *   - Makes the sprites array vertices linear, reducing cache misses.
 *   - Wraps the setTexture and draw process so no need to manually execute the foreach
 */
-class HipMultiSprite
+final class HipMultiSprite
 {
     protected HipSpriteVertex[] vertices;
     HipSprite[] sprites;
@@ -65,7 +65,7 @@ class HipMultiSprite
     }
 }
 
-class HipSprite 
+final class HipSprite 
 {
     IHipTextureRegion texture;
     HipColor color = HipColor.white;
@@ -164,12 +164,12 @@ class HipSprite
         texture.setRegion(c.u1, c.v1, c.u2, c.v2);
         width = texture.getWidth;
         height = texture.getHeight;
-        const float[] v = texture.getVertices();
+        const ushort[] v = texture.getVertices();
 
-        vertices[0].vTexST = Vector2(v[0], v[1]);
-        vertices[1].vTexST = Vector2(v[2], v[3]);
-        vertices[2].vTexST = Vector2(v[4], v[5]);
-        vertices[3].vTexST = Vector2(v[6], v[7]);
+        vertices[0].vTexST = ushort2(v[0], v[1]);
+        vertices[1].vTexST = ushort2(v[2], v[3]);
+        vertices[2].vTexST = ushort2(v[4], v[5]);
+        vertices[3].vTexST = ushort2(v[6], v[7]);
         if(flippedX)
         {
             flippedX = false;
@@ -202,24 +202,24 @@ class HipSprite
         if(isDirty)
         {
             isDirty = false;
-            float _x = -cast(float)width*originX * scaleX + x;
-            float _y = -cast(float)height*originY * scaleY + y;
-            float x2 = _x+(width * scaleX);
-            float y2 = _y+(height * scaleY); 
+            ushort _x = (-cast(float)width*originX * scaleX + x).floatMapped!ushort;
+            ushort _y = (-cast(float)height*originY * scaleY + y).floatMapped!ushort;
+            ushort x2 = (_x+(width * scaleX)).floatMapped!ushort;
+            ushort y2 = (_y+(height * scaleY)).floatMapped!ushort;
 
             if(rotation == 0)
             {
                 //Top left
-                vertices[0].vPosition = Vector3(_x, _y,0);
+                vertices[0].vPosition = ushort2(_x, _y);
 
                 //Top right
-                vertices[1].vPosition = Vector3(x2, _y,0);
+                vertices[1].vPosition = ushort2(x2, _y);
 
                 //Bot right
-                vertices[2].vPosition = Vector3(x2, y2,0);
+                vertices[2].vPosition = ushort2(x2, y2);
 
                 //Bot left
-                vertices[3].vPosition = Vector3(_x, y2,0);
+                vertices[3].vPosition = ushort2(_x, y2);
             }
             else
             {
@@ -228,16 +228,16 @@ class HipSprite
                 float s = sin(rotation);
 
                 //Top left
-                vertices[0].vPosition = Vector3(c*_x - s*_y + this.x, c*_y + s*_x + this.y,0);
+                vertices[0].vPosition = ushort2((c*_x - s*_y + this.x).floatMapped!ushort, (c*_y + s*_x + this.y).floatMapped!ushort);
 
                 //Top right
-                vertices[1].vPosition = Vector3(c*x2 - s*_y + this.x, c*_y + s*x2 + this.y,0);
+                vertices[1].vPosition = ushort2((c*x2 - s*_y + this.x).floatMapped!ushort, (c*_y + s*x2 + this.y).floatMapped!ushort);
 
                 //Bot right
-                vertices[2].vPosition = Vector3(c*x2 - s*y2 + this.x, c*y2 + s*x2 + this.y,0);
+                vertices[2].vPosition = ushort2((c*x2 - s*y2 + this.x).floatMapped!ushort, (c*y2 + s*x2 + this.y).floatMapped!ushort);
 
                 //Bot left
-                vertices[3].vPosition = Vector3(c*_x - s*y2 + this.x, c*y2 + s*_x + this.y,0);
+                vertices[3].vPosition = ushort2((c*_x - s*y2 + this.x).floatMapped!ushort, (c*y2 + s*_x + this.y).floatMapped!ushort);
             }
         }
         return vertices;
@@ -346,17 +346,20 @@ class HipSprite
 }
 
 
-class HipSpriteAnimation : HipSprite
+final class HipSpriteAnimation
 {
     import hip.api.graphics.g2d.animation;
     private IHipAnimation animation;
     HipAnimationFrame* currentFrame;
+    HipSprite sprite;
 
-    this(){super();}
-
-    this(IHipAnimation anim)
+    this(HipSprite sprite)
     {
-        super();
+        this.sprite = sprite;
+    }
+    this(HipSprite sprite, IHipAnimation anim)
+    {
+        this.sprite = sprite;
         animation = anim;
         this.setAnimation(anim.getCurrentTrackName());
     }
@@ -381,16 +384,15 @@ class HipSpriteAnimation : HipSprite
 
     void setBounds(int width, int height)
     {
-        this.width = width;
-        this.height = height;
+        this.sprite.width = width;
+        this.sprite.height = height;
     }
 
     void setFrame(HipAnimationFrame* frame)
     {
         this.currentFrame = frame;
-        this.texture = frame.region;
+        this.sprite.setRegion(frame.region);
         setBounds(frame.region.getWidth(), frame.region.getHeight());
-        setRegion(texture.getRegion());
     }
 
     void update(float dt)

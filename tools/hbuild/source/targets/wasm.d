@@ -32,7 +32,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 		"-I="~getHipPath("dependencies", "runtime", "druntime", "source") ~" " ~
 		"-float-abi=hard "~
 		"--fvisibility=hidden "~
-		"-mattr=+bulk-memory "~
+		"-mattr=+bulk-memory,+bulk-memory-opt,+simd128 "~
 		// "-real-precision=double "~
 		"-L-allow-undefined -d-version=CarelessAlocation";
 

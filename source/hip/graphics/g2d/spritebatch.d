@@ -32,7 +32,7 @@ import hip.graphics.g2d.spritebatch_vertex;
 *   The another one is a post processing shader, which the spritebatch doesn't uses by default. If
 *   setPostProcessingShader()
 */
-class HipSpriteBatch : IHipBatch
+final class HipSpriteBatch : IHipBatch
 {
     
     protected float managedDepth = 0;

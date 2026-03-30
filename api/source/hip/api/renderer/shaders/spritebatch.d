@@ -11,15 +11,14 @@ public import hip.math.matrix;
 */
 @HipShaderInputLayout struct HipSpriteVertex
 {
-    Vector3 vPosition = Vector3.zero;
+    ushort2 vPosition = [0,0];
     HipColor vColor = HipColor.white;
-    Vector2 vTexST = Vector2.zero;
+    @HipShaderInputNormalized ushort2 vTexST;
+    ushort vZ = 0;
+    // static if(!GLMaxOneBoundTexture)
+    ushort vTexID = 0;
 
-    static if(!GLMaxOneBoundTexture)
-        float vTexID = 0;
-
-    static enum floatCount = cast(size_t)(HipSpriteVertex.sizeof/float.sizeof);
-    static enum quadCount = floatCount*4;
+    static enum quadCount = HipSpriteVertex.sizeof*4;
     // static assert(HipSpriteVertex.floatCount == 10,  "SpriteVertex should contain 9 floats and 1 int");
 }
 
@@ -35,6 +34,9 @@ HipSpriteVertexInstancedPerVertex[4] spriteBatchInstancedVertices = [
     HipSpriteVertexInstancedPerVertex(Vector2(0, 1)),
 ];
 
+/** 
+ * It is possible to actually achieve 24 bytes in that structure by applying bitfields.
+ */
 @HipShaderInputLayout struct HipSpriteVertexInstancedPerInstance
 {
     ushort[2] vXY;
@@ -46,7 +48,6 @@ HipSpriteVertexInstancedPerVertex[4] spriteBatchInstancedVertices = [
     @HipShaderInputNormalized ushort[2] vUVMin;
     @HipShaderInputNormalized ushort[2] vUVMax;
 }
-
 
 @HipShaderUniform(ShaderTypes.vertex, "Cbuf1", "cbuf1")
 struct HipSpriteVertexUniform

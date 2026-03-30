@@ -28,6 +28,11 @@ enum HipResourceUsage : ubyte
     Immutable,
 }
 
+pragma(inline, true) T floatMapped(T)(float data) pure nothrow @nogc @trusted
+{
+    return cast(T)(data * T.max);
+}
+
 struct HipVertexAttributeCreateInfo
 {
     ///Defines the count of buffer strides will fit in the size. So, size is count * info.vboStride

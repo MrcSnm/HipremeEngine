@@ -21,7 +21,7 @@ public import hip.util.data_structures:Array2D;
 public import hip.api.renderer.texture;
 public import hip.api.data.image;
 public import hip.api.graphics.color;
-public import hip.api.renderer.core: HipResourceUsage;
+public import hip.api.renderer.core: HipResourceUsage, floatMapped;
 
 class HipTexture : HipAsset
 {
@@ -82,11 +82,10 @@ class HipTexture : HipAsset
 
 class HipTextureRegion : HipAsset, IHipTextureRegion
 {
-    static immutable float[8] defaultVertices = [0,0, 1,0, 1,1, 0,1];
-    static immutable Vector2[4] defaultVerticesV = [Vector2(0,0), Vector2(1,0), Vector2(1,1), Vector2(0,1)];
+    static immutable ushort[8] defaultVertices = [0, 0, ushort.max, 0, ushort.max , ushort.max, 0, ushort.max];
     IHipTexture texture;
     public float u1, v1, u2, v2;
-    protected float[8] vertices;
+    protected ushort[8] vertices;
     protected float[8] verticesTransformed;
     private bool flippedX, flippedY;
     int regionWidth, regionHeight;
@@ -176,20 +175,20 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         regionHeight = cast(uint)(regHeight + 0.5) > cast(uint)regHeight ? cast(uint)(regHeight+0.5) : cast(uint)regHeight;
 
         //Top left
-        vertices[0] = u1;
-        vertices[1] = v1;
+        vertices[0] = u1.floatMapped!ushort;
+        vertices[1] = v1.floatMapped!ushort;
 
         //Top right
-        vertices[2] = u2;
-        vertices[3] = v1;
+        vertices[2] = u2.floatMapped!ushort;
+        vertices[3] = v1.floatMapped!ushort;
 
         //Bot right
-        vertices[4] = u2;
-        vertices[5] = v2;
+        vertices[4] = u2.floatMapped!ushort;
+        vertices[5] = v2.floatMapped!ushort;
 
         //Bot left
-        vertices[6] = u1;
-        vertices[7] = v2;
+        vertices[6] = u1.floatMapped!ushort;
+        vertices[7] = v2.floatMapped!ushort;
 
         if(flippedX)
         {
@@ -212,10 +211,10 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         if(flip != flippedX)
         {
             flippedX = flip;
-            vertices[0] = flip ? u2 : u1;
-            vertices[2] = flip ? u1 : u2;
-            vertices[4] = flip ? u1 : u2;
-            vertices[6] = flip ? u2 : u1;
+            vertices[0] = (flip ? u2 : u1).floatMapped!ushort;
+            vertices[2] = (flip ? u1 : u2).floatMapped!ushort;
+            vertices[4] = (flip ? u1 : u2).floatMapped!ushort;
+            vertices[6] = (flip ? u2 : u1).floatMapped!ushort;
         }
     }
     void setFlippedY(bool flip)
@@ -223,16 +222,16 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         if(flip != flippedY)
         {
             flippedY = flip;
-            vertices[1] = flip ? v2 : v1;
-            vertices[3] = flip ? v2 : v1;
-            vertices[5] = flip ? v1 : v2;
-            vertices[7] = flip ? v1 : v2;
+            vertices[1] = (flip ? v2 : v1).floatMapped!ushort;
+            vertices[3] = (flip ? v2 : v1).floatMapped!ushort;
+            vertices[5] = (flip ? v1 : v2).floatMapped!ushort;
+            vertices[7] = (flip ? v1 : v2).floatMapped!ushort;
         }
     }
     bool isFlippedX(){return flippedX;}
     bool isFlippedY(){return flippedY;}
 
-    ref float[8] getVertices()
+    ref ushort[8] getVertices()
     {
         return vertices;
     }
