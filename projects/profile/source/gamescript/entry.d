@@ -3,8 +3,9 @@ import hip.game2d.sprite;
 import hip.api.graphics.g2d.renderer2d;
 import HRandom = hip.math.random:Random;
 import hip.api;
+import hip.assets.texture;
 
-enum SPRITES_COUNT = 400_000;
+enum SPRITES_COUNT = 200_000;
 enum MIN_SPEED = 50;
 enum MAX_SPEED = 150;
 enum SCREEN_W = 800;
@@ -19,7 +20,7 @@ class MainScene : AScene
 
 
 	@Asset("graphics/ball.png")
-	__gshared IHipTexture texture;
+	__gshared HipTexture texture;
 
 	mixin Preload;
 	
@@ -53,11 +54,15 @@ class MainScene : AScene
 	override void render()
 	{
 		// setRendererErrorCheckingEnabled(false);
-		sprites.draw();
-		// foreach(sp; 0..SPRITES_COUNT)
-		// {
-		// 	drawTexture(sprites.texture, cast(int)sprites[sp].x, cast(int)sprites[sp].y);
-		// }
+		// sprites.draw();
+
+		HipSprite[] sps = sprites.sprites;
+		IHipTexture tex = sprites.texture;
+		for(int i = 0; i < SPRITES_COUNT; i++)
+		{
+			drawTexture(tex, cast(int)sps[i].x, cast(int)sps[i].y);
+		}
+		drawTexture(tex, cast(int)sps[0].x, cast(int)sps[0].y);
 		// setRendererErrorCheckingEnabled(true);
 	}
 	/** Pre destroy */

@@ -54,7 +54,7 @@ enum UseDelayedUnbinding = !HasMetal;
  * This can provide a reduced memory usage for sprites which can also be a big win for other platforms. You may increase that amount but can't surpass index_t.max / 4
  */
 enum DefaultMaxSpritesPerBatch = 1024;
-enum DefaultMaxSpritesPerBatchInstanced = 10_000;
+enum DefaultMaxSpritesPerBatchInstanced = 20_000;
 // enum DefaultMaxSpritesPerBatch = 10922;
 // enum DefaultMaxGeometryBatchVertices = ushort.max;
 enum DefaultMaxGeometryBatchVertices = 8_192;

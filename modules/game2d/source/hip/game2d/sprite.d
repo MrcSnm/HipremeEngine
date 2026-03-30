@@ -39,33 +39,7 @@ class HipMultiSprite
             sprites[i] = new HipSprite(vertices[i*4..(i+1)*4]);
     }
 
-    ref HipSprite opIndex(size_t index){return sprites[index];}
-
-    int opApply(scope int delegate(ref HipSprite) dg)
-    {
-        int result = 0;
-        foreach (item; sprites)
-        {
-            result = dg(item);
-            if (result)
-                break;
-        }
-        return result;
-    }
-
-    
-    int opApply(scope int delegate(size_t index, ref HipSprite) dg)
-    {
-        int result = 0;
-        foreach (i, item; sprites)
-        {
-            result = dg(i, item);
-            if (result)
-                break;
-        }
-        return result;
-    }
-
+    alias sprites this;
 
     void setTexture(IHipTexture texture)
     {
