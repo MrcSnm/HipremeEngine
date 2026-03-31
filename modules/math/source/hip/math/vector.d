@@ -381,5 +381,8 @@ alias Vector3 = Vector!(3, float);
 alias Vector4 = Vector!(4, float);
 
 
+alias short2 = Vector!(2, short);
+alias short4 = Vector!(4, short);
+
 alias ushort2 = Vector!(2, ushort);
 alias ushort4 = Vector!(4, ushort);

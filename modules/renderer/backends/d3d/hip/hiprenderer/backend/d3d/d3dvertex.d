@@ -214,8 +214,6 @@ final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
                 desc.AlignedByteOffset = field.offset;
                 // desc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
                 // desc.InstanceDataStepRate = 0;
-                import std.stdio;
-                writeln("INSTANCED? ", att.isInstanced);
                 desc.InputSlotClass = att.isInstanced ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
                 desc.InstanceDataStepRate = att.isInstanced ? 1 : 0;
             }
@@ -278,6 +276,28 @@ private DXGI_FORMAT _hip_d3d_getFormatFromInfo(ref HipVertexAttributeFieldInfo i
                     case 1: ret = DXGI_FORMAT_R16_UINT; break;
                     case 2: ret = DXGI_FORMAT_R16G16_UINT; break;
                     case 4: ret = DXGI_FORMAT_R16G16B16A16_UINT; break;
+                    default: ErrorHandler.showErrorMessage("DXGI Format Error", "Unknown format with count "~to!string(info.count));
+                }
+            }
+            break;
+        case HipAttributeType.Short:
+            if(info.isNormalized)
+            {
+                switch(info.count)
+                {
+                    case 1: ret = DXGI_FORMAT_R16_SNORM; break;
+                    case 2: ret = DXGI_FORMAT_R16G16_SNORM; break;
+                    case 4: ret = DXGI_FORMAT_R16G16B16A16_SNORM; break;
+                    default: ErrorHandler.showErrorMessage("DXGI Format Error", "Unknown format with count "~to!string(info.count));
+                }
+            }
+            else
+            {
+                switch(info.count)
+                {
+                    case 1: ret = DXGI_FORMAT_R16_SINT; break;
+                    case 2: ret = DXGI_FORMAT_R16G16_SINT; break;
+                    case 4: ret = DXGI_FORMAT_R16G16B16A16_SINT; break;
                     default: ErrorHandler.showErrorMessage("DXGI Format Error", "Unknown format with count "~to!string(info.count));
                 }
             }

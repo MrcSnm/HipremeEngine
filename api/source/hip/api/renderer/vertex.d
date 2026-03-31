@@ -30,7 +30,10 @@ enum HipResourceUsage : ubyte
 
 pragma(inline, true) T floatMapped(T)(float data) pure nothrow @nogc @trusted
 {
-    return cast(T)(data * T.max);
+    static if(__traits(isUnsigned, T))
+        return cast(T)(data * T.max);
+    else
+        return cast(T)((data * 2 - 1) * T.max);
 }
 
 struct HipVertexAttributeCreateInfo
@@ -58,6 +61,7 @@ enum HipAttributeType : ubyte
     Float,
     Uint,
     Ushort,
+    Short,
     Int,
     Bool
 }

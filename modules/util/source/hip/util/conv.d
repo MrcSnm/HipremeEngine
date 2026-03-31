@@ -163,19 +163,31 @@ TO to(TO, FROM)(FROM f) pure nothrow
         else
             return toString(f);
     }
-    else static if(is(TO == int) || is(TO == long))
+    else static if(is(TO == int) || is(TO == long) || is(TO == short) || is(TO == byte))
     {
+        long ret;
         static if(!is(FROM == string))
-            return toInt(f.toString);
+            ret = toInt(f.toString);
         else
-            return cast(TO)toInt(f);
+            ret = toInt(f);
+        assert(ret <= TO.max, "The value overflows the maximum of "~TO.stringof);
+        assert(ret >= TO.min, "The value underflows the minimum of "~TO.stringof);
+        return cast(TO)ret;
     }
-    else static if(is(TO == uint) || is(TO == size_t) || is(TO == ubyte) || is(TO == ushort))
+    else static if(is(TO == uint) || is(TO == ulong) || is(TO == ubyte) || is(TO == ushort))
     {
-        static if(!is(FROM == string))
-            return cast(TO)toInt(f.toString);
+        long ret;
+        static if(__traits(isFloating, FROM))
+            ret = cast(TO)f;
+        else static if(__traits(isIntegral, FROM))
+            ret = f;
+        else static if(!is(FROM == string))
+            ret = toInt(f.toString);
         else
-            return cast(TO)toInt(f);
+            ret = toInt(f);
+        assert(ret <= TO.max, "The value overflows the maximum of "~TO.stringof);
+        assert(ret >= 0, "The value received is not unsigned. ");
+        return cast(TO)ret;
     }
     else static if(is(TO == float) || is(TO == double))
     {

@@ -8,8 +8,10 @@ alias HipFontKerning = HipCharKerning[dchar];
 ///see hip.graphics.g2d.textrenderer
 struct HipTextRendererVertexAPI
 {
-    float[3] vPosition = [0,0,0];
-    float[2] vTexST = [0,0];
+    short[2] vPosition = [0,0];
+    ushort[2] vTexST = [0,0];
+    short vZ = 0;
+    short padding;
 }
 
 /** 
@@ -149,41 +151,44 @@ struct HipFontChar
 {
     uint id;
     ///Those are in absolute values
-    int x, y, width, height;
+    short x, y, width, height;
 
-    int xoffset, yoffset, xadvance, page, chnl;
+    short xoffset, yoffset, xadvance, page, chnl;
 
     ///Normalized values
-    float normalizedX, normalizedY, normalizedWidth, normalizedHeight;
+    ushort normalizedX, normalizedY, normalizedWidth, normalizedHeight;
     int glyphIndex;
     void putCharacterQuad(float x, float y, float depth, HipTextRendererVertexAPI[] quad, float scale = 1) const @nogc
     {
         import hip.util.data_structures;
-        float w = width*scale, h = height*scale;
+        short w = cast(short)(width*scale), h = cast(short)(height*scale);
+
+        short ux = cast(short)x, uy = cast(short)y, z = cast(short)depth;
         //Gen vertices 
         quad[0..4] = [
             //Top left
             HipTextRendererVertexAPI(
-                [x, y, depth],
-                [normalizedX, normalizedY] //ST
+                [ux, uy],
+                [normalizedX, normalizedY], //ST,
+                z
             ),
             //Top Right
             HipTextRendererVertexAPI(
-                [x+w, y,depth],
-                [normalizedX + normalizedWidth, normalizedY] //S + Wnorm, T
+                [cast(short)(ux+w), uy],
+                [cast(ushort)(normalizedX + normalizedWidth), normalizedY], z //S + Wnorm, T
             ),
             //Bot right
             HipTextRendererVertexAPI(
-                [x+ w, y +h, depth],
+                [cast(short)(ux+w), cast(short)(uy +h)],
                 [
-                    normalizedX + normalizedWidth, //S+Wnorm
-                    normalizedY + normalizedHeight //T+Hnorm
-                ]
+                    cast(short)(normalizedX + normalizedWidth), //S+Wnorm
+                    cast(ushort)(normalizedY + normalizedHeight) //T+Hnorm
+                ], z
             ),
             //Bot left
             HipTextRendererVertexAPI(
-                [x, y + h, depth],
-                [normalizedX, normalizedY + normalizedHeight] // S, T+Hnorm
+                [ux, cast(short)(uy + h)],
+                [normalizedX, cast(ushort)(normalizedY + normalizedHeight)], z // S, T+Hnorm
             )
         ].staticArray;
 

@@ -68,7 +68,7 @@ class HipArsd_TTF_Font : HipFont
     protected TtfFont font;
     string path;
     protected uint fontSize = 32;
-    protected uint _textureWidth, _textureHeight;
+    protected ushort _textureWidth, _textureHeight;
     protected Hip_TTF_Font mainInstance;
     protected Hip_TTF_Font[] clones;
 
@@ -150,16 +150,21 @@ class HipArsd_TTF_Font : HipFont
 
     protected RenderizedChar renderCharacter(dchar ch, int size, float shift_x = 0.0, float shift_y = 0.0)
     {
+        import hip.util.conv:to;
         RenderizedChar rch;
         rch.ch = ch;
-        rch.data = font.renderCharacter(ch, size, rch.width, rch.height, shift_x, shift_y);
+        int w, h;
+        rch.data = font.renderCharacter(ch, size, w, h, shift_x, shift_y);
+        rch.width = w.to!ushort;
+        rch.height = h.to!ushort;
         return rch;
     }
     /**
     *   I'm no good packer. The image will be at least 2048xMinPowOf2
     */
-    protected ubyte[] generateImage(int size, out uint width, out uint height, dstring charset = defaultCharset)
+    protected ubyte[] generateImage(int size, out ushort width, out ushort height, dstring charset = defaultCharset)
     {
+        import hip.util.conv:to;
         if(charset.length == 0)
             return null;
         scope RenderizedChar[] fontChars = new RenderizedChar[charset.length]; //TODO: USe that as it is more optimised
@@ -208,8 +213,8 @@ class HipArsd_TTF_Font : HipFont
         imageHeight = nextPowerOfTwo(imageHeight);
         imageWidth = nextPowerOfTwo(imageWidth);
 
-        width = imageWidth;
-        height = imageHeight;
+        width = imageWidth.to!ushort;
+        height = imageHeight.to!ushort;
 
         ubyte[] image = new ubyte[](imageWidth*imageHeight);
 
@@ -218,6 +223,7 @@ class HipArsd_TTF_Font : HipFont
 
         foreach(fontCh; quicksort(fontChars, (RenderizedChar a, RenderizedChar b) => a.height > b.height))
         {
+            import hip.api.renderer.core:floatMapped;
             int g = stbtt_FindGlyphIndex(&font.font, fontCh.ch);
             int xAdvance, xOffset, yOffset, lsb;
             int x1, y1;
@@ -243,14 +249,14 @@ class HipArsd_TTF_Font : HipFont
             }
 
 
-            characters[fontCh.ch] = HipFontChar(fontCh.ch, cast(int)x, cast(int)y, fontCh.width, fontCh.height,
+            characters[fontCh.ch] = HipFontChar(fontCh.ch, x.to!short, y.to!short, fontCh.width, fontCh.height,
 
-                xOffset, yOffset, round(xAdvance*scale), 0, 0,
-                cast(float)x/imageWidth, cast(float)y/imageHeight,
-                cast(float)fontCh.width/imageWidth, cast(float)fontCh.height/imageHeight,
+                xOffset.to!short, yOffset.to!short, round(xAdvance*scale).to!short, 0, 0,
+                (cast(float)x/imageWidth).floatMapped!ushort, (cast(float)y/imageHeight).floatMapped!ushort,
+                (cast(float)fontCh.width/imageWidth).floatMapped!ushort, (cast(float)fontCh.height/imageHeight).floatMapped!ushort,
                 g
             );
-            fontCh.blitToImage(image, cast(int)(x), cast(int)(y), imageWidth, imageHeight);
+            fontCh.blitToImage(image, x.to!int, y.to!int, imageWidth, imageHeight);
             x+= fontCh.width + hSpacing;
 
             if(fontCh.height > largestHeightInRow)
@@ -271,8 +277,8 @@ private struct RenderizedChar
 {
     dchar ch;
     int size;
-    int width;
-    int height;
+    ushort width;
+    ushort height;
 
     ubyte[] data;
 

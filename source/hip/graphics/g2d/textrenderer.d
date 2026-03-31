@@ -24,17 +24,12 @@ public import hip.api.graphics.text : HipTextAlign, Size;
 @HipShaderInputLayout struct HipTextRendererVertex
 {
     import hip.math.vector;
-    Vector3 vPosition;
-    Vector2 vTexST;
+    short2 vPosition;
+    @HipShaderInputNormalized ushort[2] vTexST;
+    short vZ;
+    short padding; //Ignore that.
 
-    this(Vector3 vPosition, Vector2 vTexST)
-    {
-        this.vPosition = vPosition;
-        this.vTexST = vTexST;
-    }
-
-    static enum size_t floatsCount = (HipTextRendererVertex.sizeof / float.sizeof);
-    static enum size_t quadsCount = floatsCount*4;
+    static enum size_t quadsCount = HipTextRendererVertex.sizeof*4;
 }
 
 @HipShaderUniform(ShaderTypes.vertex, "Cbuf", "cbuf")

@@ -31,6 +31,7 @@ private int getGLAttributeType(HipAttributeType _t)
         case Float: return GL_FLOAT;
         case Int: return GL_INT;
         case Ushort: return GL_UNSIGNED_SHORT;
+        case Short: return GL_SHORT;
         case Uint: return GL_UNSIGNED_INT;
         case Bool: return GL_BOOL;
     }

@@ -237,8 +237,10 @@ private ref HipVertexAttributeInfo appendAttributeField(T)(return ref HipVertexA
     static if(is(T == Vector2)) count = 2;
     else static if(is(T == Vector3)) count = 3;
     else static if(is(T == Vector4) || is(T == HipColorf)) count = 4;
-    else static if(is(T == ushort[2]) || is(T == ushort2)) { type = HipAttributeType.Ushort; count = 2; typeSize = ushort.sizeof; } //TODO: Add ushort2 and ushort
+    else static if(is(T == ushort[2]) || is(T == ushort2)) { type = HipAttributeType.Ushort; count = 2; typeSize = ushort.sizeof; }
     else static if(is(T == ushort[4]) || is(T == ushort4)) { type = HipAttributeType.Ushort; count = 4; typeSize = ushort.sizeof; }
+    else static if(is(T == short[2]) || is(T == short2)) { type = HipAttributeType.Short; count = 2; typeSize = short.sizeof; }
+    else static if(is(T == short[4]) || is(T == short4)) { type = HipAttributeType.Short; count = 4; typeSize = short.sizeof; }
     else static if(is(T == HipColor))
     {
         type = HipAttributeType.Rgba32;
@@ -251,6 +253,7 @@ private ref HipVertexAttributeInfo appendAttributeField(T)(return ref HipVertexA
         static if(is(T == int)) type = HipAttributeType.Int;
         else static if(is(T == uint)) type = HipAttributeType.Uint;
         else static if(is(T == ushort)) type = HipAttributeType.Ushort;
+        else static if(is(T == short)) type = HipAttributeType.Short;
         else static if(is(T == bool)) type = HipAttributeType.Bool;
         else
             static assert(is(T == float), "Unrecognized type for attribute: "~T.stringof);

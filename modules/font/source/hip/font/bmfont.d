@@ -246,14 +246,20 @@ class HipBitmapFont : HipFont
 
                     for(int i = 0; i < count; i++)
                     {
+                        import hip.util.conv:to;
                         HipFontChar ch;
-                        int*[10] fields = [cast(int*)&ch.id, &ch.x, &ch.y, &ch.width, &ch.height, &ch.xoffset, &ch.yoffset, &ch.xadvance, &ch.page, &ch.chnl];
                         //Advance "char"
                         index = nextToken(data, index);
+                        //ID 
+                        index = nextToken(data, index);
+                        ch.id = getNextInt(data, index);
+
+                        short*[9] fields = [&ch.x, &ch.y, &ch.width, &ch.height, &ch.xoffset, &ch.yoffset, &ch.xadvance, &ch.page, &ch.chnl];
+
                         for(int fIndex = 0; fIndex < fields.length; fIndex++)
                         {
                             index = nextToken(data, index);
-                            *fields[fIndex] = getNextInt(data, index);
+                            *fields[fIndex] = getNextInt(data, index).to!short;
                         }
                         if(ch.width > maxWidth)
                             maxWidth = ch.width;
@@ -320,12 +326,13 @@ class HipBitmapFont : HipFont
         
         foreach(ref ch; characters)
         {
+            import hip.api.renderer.core : floatMapped;
             if(ch.id != 0)
             {
-                ch.normalizedX = cast(float)ch.x/width;
-                ch.normalizedY = cast(float)ch.y/height;
-                ch.normalizedWidth = cast(float)ch.width/width;
-                ch.normalizedHeight = cast(float)ch.height/height;
+                ch.normalizedX = (cast(float)ch.x/width).floatMapped!ushort;
+                ch.normalizedY = (cast(float)ch.y/height).floatMapped!ushort;
+                ch.normalizedWidth = (cast(float)ch.width/width).floatMapped!ushort;
+                ch.normalizedHeight = (cast(float)ch.height/height).floatMapped!ushort;
             }
         }
         return true;

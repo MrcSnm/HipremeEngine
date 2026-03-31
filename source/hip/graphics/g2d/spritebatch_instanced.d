@@ -234,5 +234,6 @@ final class HipSpriteBatchInstanced
             draw(fbTexRegion, 0,0 );
             draw();
         }
+        cachedTexture.texture = null;
     }
 }

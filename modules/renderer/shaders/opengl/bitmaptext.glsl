@@ -1,7 +1,8 @@
 INOUT vec2 inTexST;
 #ifdef VERTEX
-ATTRIBUTE(0) vec3 vPosition;
-ATTRIBUTE(1) vec2 vTexST;
+ATTRIBUTE(0) uvec2 vPosition;
+ATTRIBUTE(1) uint vZ;
+ATTRIBUTE(2) vec2 vTexST;
 
 UNIFORM_BUFFER_OBJECT(0, Cbuf, cbuf, 
 {
@@ -10,7 +11,7 @@ UNIFORM_BUFFER_OBJECT(0, Cbuf, cbuf,
 
 void vertexMain()
 {
-    gl_Position = cbuf.uMVP * vec4(vPosition, 1.0);
+    gl_Position = cbuf.uMVP * vec4(vec2(vPosition), float(vZ), 1.0);
     inTexST = vTexST;
 }
 #endif
