@@ -2,17 +2,36 @@
 #include <simd/simd.h>
 
 using namespace metal;
-struct VertexInput
-{
-    float3 vPosition [[attribute(0)]];
-    float4 vColor    [[attribute(1)]];
-    float2 vTexST    [[attribute(2)]];
-    float vTexID     [[attribute(3)]];
-};
 struct VertexUniforms
 {
     float4x4 uMVP;
 };
+
+#if INSTANCED == 1
+struct VertexInput
+{
+    float2 vPosition [[attribute(0)]];
+    float2 vXY       [[attribute(1)]];
+    float2 vSize     [[attribute(2)]];
+    float4 vColor    [[attribute(3)]];
+    float vRotation  [[attribute(4)]];
+    ushort vZ        [[attribute(5)]];
+    ushort vTexID    [[attribute(6)]];
+    float2 vUVMin    [[attribute(7)]];
+    float2 vUVMax    [[attribute(8)]];
+};
+
+#else
+struct VertexInput
+{
+    ushort2 vPosition [[attribute(0)]];
+    float4 vColor     [[attribute(1)]];
+    float2 vTexST     [[attribute(2)]];
+    ushort vZ         [[attribute(3)]];
+    ushort vTexID     [[attribute(4)]];
+};
+#endif
+
 struct FragmentInput
 {
     float4 position [[position]];
@@ -27,9 +46,22 @@ vertex FragmentInput vertexMain(
 )
 {
     FragmentInput out;
-    out.position = u.uMVP*float4(v.vPosition, 1.0);
+
+    #if INSTANCED == 1
+        float s = sin(v.vRotation);
+        float c = cos(v.vRotation);
+        float2 actualPos = float2(
+            v.vPosition.x * c - v.vPosition.y * s,
+            v.vPosition.x * s + v.vPosition.y * c            
+        ) * v.vSize + v.vXY;
+        out.position = u.uMVP*float4(actualPos, v.vZ, 1.0);
+        out.inTexST = v.vPosition * v.vUVMax + v.vUVMin;
+    #else
+        out.position = u.uMVP*float4(float2(v.vPosition), float(v.vZ), 1.0);
+        out.inTexST = v.vTexST;
+    #endif
+
     out.inVertexColor = v.vColor;
-    out.inTexST = v.vTexST;
     out.inTexID = v.vTexID;
     return out;
 }

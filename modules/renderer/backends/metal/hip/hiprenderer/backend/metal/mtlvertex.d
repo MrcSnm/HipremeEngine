@@ -44,13 +44,17 @@ final class HipMTLBuffer : IHipRendererBuffer
     }
     this(MTLDevice device, MTLCommandQueue cmdQueue, const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
     {
+        _type = type;
+        options = usage.mtlOptions;
         this.device = device;
         this.cmdQueue = cmdQueue;
-        options = usage.mtlOptions;
         this.size = data.length;
-        buffer = device.newBuffer(data.ptr, data.length, options);
-        buffer.retain();
-        _type = type;
+        if(options == MTLResourceOptions.StorageModePrivate)
+        {
+            buffer = device.newBuffer(size, options);
+            buffer.retain();
+        }
+        setData(data);
     }
     HipRendererBufferType type() const { return _type; }
     void bind()
@@ -118,13 +122,14 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeFieldInfo i)
         case HipAttributeType.Uint:
             if(i.isNormalized)
             {
-                final switch(i.count)
-                {
-                    case 1: return MTLVertexFormat.uint1Normalized;
-                    case 2: return MTLVertexFormat.uint2Normalized;
-                    case 3: return MTLVertexFormat.uint3Normalized;
-                    case 4: return MTLVertexFormat.uint4Normalized;
-                }
+                throw new Exception("Unsupported normalized uint on macOS");
+                // final switch(i.count)
+                // {
+                //     case 1: return MTLVertexFormat.uint1Normalized;
+                //     case 2: return MTLVertexFormat.uint2Normalized;
+                //     case 3: return MTLVertexFormat.uint3Normalized;
+                //     case 4: return MTLVertexFormat.uint4Normalized;
+                // }
             }
             else
             {
@@ -141,7 +146,7 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeFieldInfo i)
             {
                 final switch(i.count)
                 {
-                    case 1: return MTLVertexFormat.ushort1Normalized;
+                    case 1: return MTLVertexFormat.ushortNormalized;
                     case 2: return MTLVertexFormat.ushort2Normalized;
                     case 3: return MTLVertexFormat.ushort3Normalized;
                     case 4: return MTLVertexFormat.ushort4Normalized;
@@ -157,12 +162,33 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeFieldInfo i)
                     case 4: return MTLVertexFormat.ushort4;
                 }
             }
+        case HipAttributeType.Short:
+            if(i.isNormalized)
+            {
+                final switch(i.count)
+                {
+                    case 1: return MTLVertexFormat.shortNormalized;
+                    case 2: return MTLVertexFormat.short2Normalized;
+                    case 3: return MTLVertexFormat.short3Normalized;
+                    case 4: return MTLVertexFormat.short4Normalized;
+                }
+            }
+            else
+            {
+                final switch(i.count)
+                {
+                    case 1: return MTLVertexFormat.short1;
+                    case 2: return MTLVertexFormat.short2;
+                    case 3: return MTLVertexFormat.short3;
+                    case 4: return MTLVertexFormat.short4;
+                }
+            }
         case HipAttributeType.Bool:
             if(i.isNormalized)
             {
                 final switch(i.count)
                 {
-                    case 1: return MTLVertexFormat.char1Normalized;
+                    case 1: return MTLVertexFormat.charNormalized;
                     case 2: return MTLVertexFormat.char2Normalized;
                     case 3: return MTLVertexFormat.char3Normalized;
                     case 4: return MTLVertexFormat.char4Normalized;
@@ -185,39 +211,36 @@ MTLVertexFormat mtlVertexFormatFromAttributeInfo(HipVertexAttributeFieldInfo i)
 final class HipMTLVertexArray : IHipVertexArrayImpl
 {
     MTLVertexDescriptor descriptor;
-    HipMTLBuffer vBuffer;
     HipMTLBuffer iBuffer;
 
     HipMTLRenderer mtlRenderer;
     MTLDevice device;
+    NSUInteger[] offsets;
+    MTLBuffer[] buffers;
+    HipVertexAttributeInfo[] attributes;
 
     this(MTLDevice device, HipMTLRenderer mtlRenderer)
     {
         this.device = device;
         this.mtlRenderer = mtlRenderer;
         descriptor = MTLVertexDescriptor.vertexDescriptor();
-        descriptor.layouts[1].stepFunction = MTLVertexStepFunction.PerVertex;
-        descriptor.layouts[1].stepRate = 1;
     }
 
-    void bind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
+    void bind()
     {
-        if(vbo is null || ebo is null)
+        if(iBuffer is null)
             return;
-        vBuffer = cast(HipMTLBuffer)vbo;
-        iBuffer = cast(HipMTLBuffer)ebo;
-        vbo.bind();
-        ebo.bind();
-        mtlRenderer.getEncoder.setVertexBuffer(vBuffer.buffer, 0, 1);
+        iBuffer.bind();
+        foreach(i, info; attributes)
+            buffers[i] = (cast(HipMTLBuffer)info.vbo).buffer;
+        mtlRenderer.getEncoder.setVertexBuffers(buffers.ptr, offsets.ptr, NSRange(1, attributes.length));
     }
 
-    void unbind(IHipRendererBuffer vbo, IHipRendererBuffer ebo)
+    void unbind()
     {
-        mtlRenderer.getEncoder.setVertexBuffer(null, 0, 1);
-        vbo.unbind();
-        ebo.unbind();
-        vBuffer = null;
-        iBuffer = null;
+        iBuffer.unbind();
+        buffers[] = null;
+        mtlRenderer.getEncoder.setVertexBuffers(buffers.ptr, offsets.ptr, NSRange(1, attributes.length));
     }
 
     /**
@@ -226,20 +249,37 @@ final class HipMTLVertexArray : IHipVertexArrayImpl
      *  Buffer 1 is for vertex attributes
      */
     void createInputLayout(
-        IHipRendererBuffer, IHipRendererBuffer,
-        HipVertexAttributeInfo[] attInfos, uint stride, ShaderProgram shaderProgram
+        HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo,
+        ShaderProgram shaderProgram
     )
     {
-        descriptor.layouts[1].stride = stride;
-        foreach(info; attInfos)
+        import hip.console.log;
+        //First buffer is reserved for uniform.
+        iBuffer = cast(HipMTLBuffer)ebo;
+        offsets = new NSUInteger[](attInfos.length);
+        offsets[] = 0;
+        attributes = attInfos;
+        buffers = new MTLBuffer[attributes.length];
+        hiplog("Creating input layout ");
+        foreach(i, info; attInfos)
         {
-            MTLVertexAttributeDescriptor attribute = descriptor.attributes[info.index];
-            attribute.format = mtlVertexFormatFromAttributeInfo(info);
-            attribute.offset = info.offset;
-            attribute.bufferIndex = 1;
+            foreach(field; info.fields)
+            {
+                hiplog("\t",field.valueType, field.count, " ", field.isNormalized ? "@normalized " : "", field.name, " [", field.index, "]", );
+                MTLVertexAttributeDescriptor attribute = descriptor.attributes[field.index];
+                attribute.format = mtlVertexFormatFromAttributeInfo(field);
+                attribute.offset = field.offset;
+                attribute.bufferIndex = 1+i;
+            }
+
+            descriptor.layouts[1+i].stepFunction = info.isInstanced ? 
+                MTLVertexStepFunction.PerInstance : 
+                MTLVertexStepFunction.PerVertex;
+            descriptor.layouts[1+i].stepRate = 1;
+            descriptor.layouts[1+i].stride = info.vboStride;
         }
 
         HipMTLShaderProgram shader = (cast(HipMTLShaderProgram)shaderProgram);
-        shader.createInputLayout(device, descriptor);
+        shader.createPipelineState(device, descriptor);
     }
 }

@@ -73,9 +73,13 @@ class HipMTLShaderProgram : ShaderProgram
         pipelineDescriptor = MTLRenderPipelineDescriptor.alloc.initialize;
     }
 
-    void createInputLayout(MTLDevice device, MTLVertexDescriptor descriptor)
+    void createPipelineState(MTLDevice device, MTLVertexDescriptor descriptor)
     {
-        assert(pipelineState is null, "Pipeline State was already created.");
+        if(pipelineState)
+        {
+            pipelineState.release();
+            // assert(pipelineState is null, "Pipeline State was already created.");
+        }
         NSError err;
         pipelineDescriptor.vertexDescriptor = descriptor;
         pipelineState = device.newRenderPipelineStateWithDescriptor(pipelineDescriptor, &err);
@@ -114,7 +118,7 @@ class HipMTLShader : IShader
 
     ShaderProgram createShaderProgram(){return new HipMTLShaderProgram();}
    
-    ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced)
+    override ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced)
     {
         HipMTLShaderProgram p =  new HipMTLShaderProgram();
         p.name = shaderPath;
@@ -122,7 +126,7 @@ class HipMTLShader : IShader
         NSError err;
         MTLCompileOptions opts = MTLCompileOptions.alloc.initialize;
         ///Macros
-        opts.preprocessorMacros = cast(NSDictionary)(["ARGS_TIER2": 0].ns);
+        opts.preprocessorMacros = cast(NSDictionary)(["ARGS_TIER2": 0, "INSTANCED": isInstanced].ns);
 
         p.library = device.newLibraryWithSource(shaderSource.ns, opts, &err);
 
@@ -155,7 +159,7 @@ class HipMTLShader : IShader
         return p;
     }
 
-    bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
+    override bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
     {
         switch(sv.type) with(UniformType)
         {
@@ -175,7 +179,7 @@ class HipMTLShader : IShader
             default: return false;
         }
     }
-    void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
+    override void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
     {
         HipMTLShaderProgram p = cast(HipMTLShaderProgram)prog;
         p.blendSrc = src;
@@ -192,9 +196,9 @@ class HipMTLShader : IShader
         p.pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = mtlDest;
         p.pipelineDescriptor.colorAttachments[0].sourceAlphaBlendFactor = mtlSrc;
         p.pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = mtlDest;
-
+        
         if(p.pipelineState !is null)
-            p.createInputLayout(device, p.pipelineDescriptor.vertexDescriptor);
+            p.createPipelineState(device, p.pipelineDescriptor.vertexDescriptor);
     }
 
     override void bind(ShaderProgram program)
@@ -230,7 +234,7 @@ class HipMTLShader : IShader
     {
         return device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
     }
-    void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
+    override void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
     {
         MTLBuffer buffer = getNewMTLBuffer(layout);
         HipMTLShaderProgram s = cast(HipMTLShaderProgram)shaderProgram;

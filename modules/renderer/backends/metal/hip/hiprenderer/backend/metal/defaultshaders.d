@@ -14,7 +14,7 @@ else:
 immutable DefaultShader[] DefaultShaders = [
     HipShaderPresets.FRAME_BUFFER: DefaultShader(MetalDefaultShadersPath, &getFrameBufferShader),
     HipShaderPresets.GEOMETRY_BATCH: DefaultShader(MetalDefaultShadersPath, &getGeometryBatchShader),
-    HipShaderPresets.SPRITE_BATCH: DefaultShader(MetalDefaultShadersPath, &getSpriteBatchShader),
+    HipShaderPresets.SPRITE_BATCH: DefaultShader(MetalDefaultShadersPath, &getSpriteBatchShader, () => true),
     HipShaderPresets.BITMAP_TEXT: DefaultShader(MetalDefaultShadersPath, &getBitmapTextShader),
     HipShaderPresets.NONE: DefaultShader(MetalDefaultShadersPath)
 ];

@@ -16,6 +16,7 @@
 		"assets"
 	],
 	"dflags-ldc": ["--disable-verify"],
+	"dflags-osx": ["-checkaction=C"],
 	"versions": [
 		"HIPREME_DEBUG",
 		"HipCheckUnknownKeycode",

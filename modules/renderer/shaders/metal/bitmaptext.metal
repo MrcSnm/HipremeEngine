@@ -5,8 +5,9 @@ using namespace metal;
 
 struct VertexInput
 {
-    float3 vPosition [[attribute(0)]];
+    short2 vPosition [[attribute(0)]];
     float2 vTexST    [[attribute(1)]];
+    short  vZ        [[attribute(2)]];
 };
 struct VertexUniforms
 {
@@ -23,7 +24,7 @@ vertex FragmentInput vertexMain(
 )
 {
     FragmentInput out;
-    out.position = u.uMVP * float4(input.vPosition, 1.0);
+    out.position = u.uMVP * float4(float2(input.vPosition), float(input.vZ), 1.0);
     out.inTexST = input.vTexST;
     return out;
 }

@@ -5,7 +5,7 @@ import HRandom = hip.math.random:Random;
 import hip.api;
 import hip.assets.texture;
 
-enum SPRITES_COUNT = 200_000;
+enum SPRITES_COUNT = 50_000;
 enum MIN_SPEED = 50;
 enum MAX_SPEED = 150;
 enum SCREEN_W = 800;

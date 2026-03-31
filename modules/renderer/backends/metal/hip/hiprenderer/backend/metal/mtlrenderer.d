@@ -294,7 +294,12 @@ class HipMTLRenderer : IHipRendererImpl
     {
         enum IndexType = is(index_t == ushort) ? MTLIndexType.UInt16 : MTLIndexType.UInt32;
         cmdEncoder.drawIndexedPrimitives(primitiveType, count, IndexType, boundIndexBuffer, offset*index_t.sizeof);
+    }
 
+    public void drawIndexedInstanced(uint instanceCount, index_t count, uint offset = 0)
+    {
+        enum IndexType = is(index_t == ushort) ? MTLIndexType.UInt16 : MTLIndexType.UInt32;
+        cmdEncoder.drawIndexedPrimitives(primitiveType, count, IndexType, boundIndexBuffer, offset*index_t.sizeof, instanceCount);
     }
 
     public void drawVertices(index_t count, uint offset = 0)
