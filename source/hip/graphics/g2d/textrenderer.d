@@ -27,7 +27,7 @@ public import hip.api.graphics.text : HipTextAlign, Size;
     short2 vPosition;
     @HipShaderInputNormalized ushort[2] vTexST;
     short vZ;
-    short padding; //Ignore that.
+    @HipShaderInputPadding short padding; //Ignore that.
 
     static enum size_t quadsCount = HipTextRendererVertex.sizeof*4;
 }

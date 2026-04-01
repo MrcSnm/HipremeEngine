@@ -1,8 +1,9 @@
 INOUT vec2 inTexST;
 #ifdef VERTEX
-ATTRIBUTE(0) uvec2 vPosition;
-ATTRIBUTE(1) uint vZ;
-ATTRIBUTE(2) vec2 vTexST;
+
+ATTRIBUTE(0) UVEC2 vPosition;
+ATTRIBUTE(1) vec2 vTexST;
+ATTRIBUTE(2) UINT vZ;
 
 UNIFORM_BUFFER_OBJECT(0, Cbuf, cbuf, 
 {

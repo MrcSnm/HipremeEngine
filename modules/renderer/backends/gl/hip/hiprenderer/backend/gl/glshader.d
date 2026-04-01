@@ -187,6 +187,9 @@ class Hip_GL_ShaderImpl : IShader
     #elif defined(VERTEX)
         #define ATTRIBUTE(LOC) attribute
     #endif
+
+    #define UVEC2 vec2
+    #define UINT float
 #else
     #define IN in
     #define OUT out
@@ -201,6 +204,10 @@ class Hip_GL_ShaderImpl : IShader
         #define INOUT OUT
         #define ATTRIBUTE(LOC) layout (location = LOC) in
     #endif
+
+    #define UVEC2 uvec2
+    #define UINT uint
+
 #endif
 
 #ifdef FRAGMENT

@@ -217,7 +217,7 @@ private ref HipVertexAttributeInfo appendAttributeField(return ref HipVertexAttr
         isNormalized: isNormalized
     );
 
-    // if(!isPadding)
+    if(!isPadding)
     {
         info.fields~= field;
         info.dataCount+= count;
