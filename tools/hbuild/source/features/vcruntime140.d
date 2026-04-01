@@ -32,7 +32,7 @@ private string getVCDownloadLink()
 	else version(AArch64) return "https://aka.ms/vs/17/release/vc_redist.arm64.exe";
 }
 
-private bool installVCRuntime140(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content)
+private bool installVCRuntime140(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content, string[] extractionPaths)
 {
 	auto ret = t.wait(spawnShell(content[0].getOutputPath(ver)~" /install /quiet /norestart")) == 0;
 	if(ret)
@@ -54,7 +54,7 @@ void initialize()
                     DownloadURL(
                         windows: getVCDownloadLink
                     ),
-                    outputPath: "$CWD/buildtools/vcredist.exe"
+                    outputPath: "$CONFIG_DIR/buildtools/vcredist.exe"
                 )
             ], toDelegate(&installVCRuntime140)
         ),

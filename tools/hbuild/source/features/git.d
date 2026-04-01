@@ -17,7 +17,8 @@ private void loadSubmodules(Feature*[] dependencies, ref Terminal t, ref RealTim
 
 bool installGit(ref Terminal t, ref RealTimeConsoleInput input, 
     TargetVersion ver,
-Download[] downlloads)
+Download[] downlloads,
+string[] extractionPaths)
 {
 	//aa
 	version(Windows)
@@ -48,7 +49,7 @@ void initialize()
 				),
 				outputPath: "$TEMP$NAME"
 			),
-		], toDelegate(&installGit), ["$CWD/buildtools/git"]
+		], toDelegate(&installGit), ["$CONFIG_DIR/buildtools/git"]
 	));
 }
 void start()

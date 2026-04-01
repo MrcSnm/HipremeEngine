@@ -36,7 +36,8 @@ void initialize()
 		ref Terminal t,
 		ref RealTimeConsoleInput input,
 		TargetVersion ver,
-	    Download[] content
+	    Download[] content,
+		string[] extractionPaths
 	)
 	{
 		configs["nuGet"] = buildNormalizedPath(content[0].getOutputPath);
@@ -51,7 +52,7 @@ void initialize()
 		ExistenceChecker(["nuGet"]),
 		Installation([Download(
 			DownloadURL(windows: "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"),
-			"$CWD/buildtools/nuget".executableExtension
+			"$CONFIG_DIR/buildtools/nuget".executableExtension
 		)], toDelegate(&installNuGet)),
 		startUsingFeature: null,
 		VersionRange(),

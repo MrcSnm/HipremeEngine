@@ -9,7 +9,8 @@ bool install7Zip(
     ref Terminal t,
     ref RealTimeConsoleInput input, 
     TargetVersion ver,
-    Download[] content
+    Download[] content,
+	string[] extractionPaths
 )
 {
 	import std.file;
@@ -50,7 +51,7 @@ void initialize()
 		ExistenceChecker(["7zip"], ["7z", "7za"]),
 		Installation([Download(
 			DownloadURL(windows: "https://www.7-zip.org/a/7zr.exe"),
-			"$CWD/buildtools/7z".executableExtension
+			"$CONFIG_DIR/buildtools/7z".executableExtension
 		)], toDelegate(&install7Zip)),
 		startUsingFeature: null,
 		VersionRange(),

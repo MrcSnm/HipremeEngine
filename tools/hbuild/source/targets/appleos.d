@@ -17,7 +17,7 @@ ChoiceResult prepareAppleOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	{
 		cleanAppleOSLibFolder();
 		ProjectDetails project;
-		if(waitRedub(t, 
+		if(waitRedub(t, input, 
 			DubArguments().configuration("appleos").compiler(getSelectedCompiler).opts(cOpts), 
 			project, 
 			getHipPath("build", "appleos", XCodeDFolder, "libs")) != 0)

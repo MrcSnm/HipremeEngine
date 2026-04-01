@@ -72,7 +72,7 @@ ChoiceResult prepareUWP(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
     ProjectDetails project;
 	with(WorkingDir(configs["gamePath"].str))
     {
-		if(waitRedub(t, DubArguments().command("build").configuration("uwp").compiler("ldc2").opts(cOpts), project) != 0)
+		if(waitRedub(t, input, DubArguments().command("build").configuration("uwp").compiler("ldc2").opts(cOpts), project) != 0)
         {
             t.writelnError("Could not build for UWP. ");
             return ChoiceResult.Error;

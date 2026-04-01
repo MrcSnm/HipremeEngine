@@ -284,7 +284,7 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
     with(WorkingDir(configs["gamePath"].str))
     {
         ProjectDetails d;
-        if(waitRedub(t, DubArguments().command("build").configuration("psvita").arch("armv7a-unknown-unknown-eabi").opts(cOpts), d,
+        if(waitRedub(t, input, DubArguments().command("build").configuration("psvita").arch("armv7a-unknown-unknown-eabi").opts(cOpts), d,
         getHipPath("build", "vita", "hipreme_engine", "libs")) != 0)
         {
             t.writelnError("Could not build for PSVita.");

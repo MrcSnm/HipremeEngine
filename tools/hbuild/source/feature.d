@@ -32,7 +32,7 @@ struct DownloadURL
 struct Download
 {
     DownloadURL url;
-    ///Supports $CWD, $TEMP, $VERSION and $NAME
+    ///Supports $CWD, $TEMP, $VERSION, $NAME $CONFIG_DIR
     string outputPath = "$TEMP$NAME";
     ///Negative version ignored.
     TargetVersion ver;
@@ -57,6 +57,7 @@ struct Download
         ret = replace(ret, "$TEMP", std.file.tempDir);
         ret = replace(ret, "$NAME", url.getDownloadFileName(ver));
         ret = replace(ret, "$VERSION", ver.toString);
+        ret = replace(ret, "$CONFIG_DIR", getConfigFolder);
         return ret;
     }
 }
@@ -68,20 +69,29 @@ struct Installation
         ref Terminal t, 
         ref RealTimeConsoleInput input, 
         TargetVersion ver, 
-        Download[] content
+        Download[] content,
+        string[] extractionPaths,
     ) installer;
 
     /** 
      * Follows the same order from `downloadsRequired`
      * May receive null if no extraction is desired for the download.
-     * Accepts $CWD and $VERSION
+     * Accepts $CWD, $VERSION and $CONFIG_DIR
      */
-    string[] extractionPathList;
+    private string[] extractionPathList;
 
     string getExtractionPath(size_t index, TargetVersion ver)
     {
         import std.string;
-        return extractionPathList[index].replace("$CWD", std.file.getcwd).replace("$VERSION", ver.toString).buildNormalizedPath;
+        return extractionPathList[index].replace("$CWD", std.file.getcwd).replace("$VERSION", ver.toString).replace("$CONFIG_DIR", getConfigFolder).buildNormalizedPath;
+    }
+
+    string[] getExtractionPathList(TargetVersion ver)
+    {
+        string[] ret = new string[extractionPathList.length];
+        foreach(i; 0..extractionPathList.length)
+            ret[i] = getExtractionPath(i, ver);
+        return ret;
     }
 
     bool install(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver)
@@ -104,7 +114,7 @@ struct Installation
             }
         }
         if(installer)
-            return installer(t, input, ver, downloadsRequired);
+            return installer(t, input, ver, downloadsRequired, getExtractionPathList(ver));
         return true;
     }
 

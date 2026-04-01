@@ -119,7 +119,7 @@ ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 	with(WorkingDir(configs["gamePath"].str))
 	{
 		ProjectDetails proj;
-		if(waitRedub(t, DubArguments().command("build").arch("aarch64--linux-android").configuration("android").opts(cOpts), proj) != 0)
+		if(waitRedub(t, input, DubArguments().command("build").arch("aarch64--linux-android").configuration("android").opts(cOpts), proj) != 0)
 		{
 			t.writelnError("Compilation failed.");
 			return ChoiceResult.Error;

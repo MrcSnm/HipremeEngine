@@ -86,7 +86,7 @@ private FindAndroidNdkResult tryFindAndroidNDK(ref Terminal t, ref RealTimeConso
 }
 
 
-private bool installAndroidNDK(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content)
+private bool installAndroidNDK(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content, string[] extractionPaths)
 {
     string finalOutput = buildNormalizedPath(configs["androidSdkPath"].str, "cmdline-tools", "latest");
 	string sdkManagerPath = buildNormalizedPath(finalOutput, "bin");

@@ -39,7 +39,7 @@ void initialize()
         ExistenceChecker(null, null, toDelegate(&androidLibrariesExists)),
         Installation([Download(
             DownloadURL.any("https://github.com/ldc-developers/ldc/releases/download/v$VERSION/ldc2-$VERSION-android-aarch64.tar.xz")
-        )], null, ["$CWD/Android/ldcLibs"]),
+        )], null, ["$CONFIG_DIR/Android/ldcLibs"]),
         null, VersionRange.parse(LdcVersion)
     );
 }

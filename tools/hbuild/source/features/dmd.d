@@ -7,7 +7,8 @@ bool installDmd(
     ref Terminal t,
     ref RealTimeConsoleInput input,
     TargetVersion ver,
-    Download[] downloads
+    Download[] downloads,
+    string[] extractionPaths
 )
 {
     import std.system;
@@ -25,13 +26,13 @@ bool installDmd(
         case linux: sys = "linux"; break;
         default: assert(false, "System not supported.");
     }
-    string binPath = buildNormalizedPath(downloads[0].getOutputPath, "dmd2", sys, bin);
+    string binPath = buildNormalizedPath(extractionPaths[0], "dmd2", sys, bin);
     makeFileExecutable(buildNormalizedPath(binPath, "dmd"));
     makeFileExecutable(buildNormalizedPath(binPath, "dub"));
     makeFileExecutable(buildNormalizedPath(binPath, "rdmd"));
 
     configs["dmdVersion"] = ver.toString;
-    configs["dmdPath"] = buildNormalizedPath(std.file.getcwd, "D", "dmd2", sys, bin);
+    configs["dmdPath"] = binPath;
     updateConfigFile();
     return true;
 }
@@ -51,7 +52,7 @@ void initialize()
                 osx: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.osx.tar.xz",
             ),
             outputPath: "$TEMP/$NAME",
-        )], toDelegate(&installDmd), ["$CWD/D"]), 
+        )], toDelegate(&installDmd), ["$CONFIG_DIR/D"]), 
         (ref Terminal t, string installPath)
         {
             addToPath(installPath.dirName);

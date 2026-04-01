@@ -123,7 +123,7 @@ bool hasMSVCLinker(ref Terminal t, TargetVersion v, out ExistenceStatus where)
 	return false;
 }
 
-private bool installMSLinker(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content)
+private bool installMSLinker(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content, string[] extractionPaths)
 {
 	string[] installList = 
 	[
@@ -151,7 +151,7 @@ void initialize()
                 DownloadURL(
                     windows: "https://aka.ms/vs/17/release/vs_BuildTools.exe"
                 ),
-                outputPath: "$CWD/buildtools/vc_BuildTools.exe"
+                outputPath: "$CONFIG_DIR/buildtools/vc_BuildTools.exe"
             )], toDelegate(&installMSLinker)
         ),
     );

@@ -40,7 +40,7 @@ ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	with(WorkingDir(configs["gamePath"].str))
 	{
 		ProjectDetails project;
-		if(waitRedub(t, DubArguments()
+		if(waitRedub(t, input, DubArguments()
 			.command("build").compiler("ldc2").build("debug").configuration("release-wasm")
 			.arch("wasm32-unknown-unknown-wasm").opts(cOpts), project ) != 0)
 		{

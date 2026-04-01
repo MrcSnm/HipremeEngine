@@ -16,7 +16,6 @@ enum ConfigFile = "gamebuild.json";
 JSONValue engineConfig;
 Config configs;
 
-string pathBeforeNewLdc;
 
 struct Terminal
 {
@@ -829,13 +828,18 @@ size_t downloadWithProgressBar(ref Terminal t, string url, string saveToPath, si
 	});
 }
 
+string getConfigFolder()
+{
+	import core.runtime;
+	return Runtime.args[0].dirName;
+}
 
 private string getConfigPath()
 {
 	import core.runtime;
 	static string cfgPath;
 	if(cfgPath == "")
-		cfgPath = buildNormalizedPath(Runtime.args[0].dirName, ConfigFile);
+		cfgPath = buildNormalizedPath(getConfigFolder, ConfigFile);
 	return cfgPath;
 }
 private string getEngineConfigPath()
@@ -932,11 +936,20 @@ bool writeTemplate(ref Terminal t, string projectPath, string enginePath)
 	return true;
 }
 
-private int execDubBase(ref Terminal t, in DubArguments dArgs)
+
+private int execRedubBase(ref Terminal t, ref RealTimeConsoleInput input, in DubArguments dArgs)
 {
+	import tools.compiler_getter;
+	if(!getCompiler(t, input, dArgs.getCompilerType()))
+		return -1;
+	
+	
+
 	if(absolutePath(configs["hipremeEnginePath"].str) != absolutePath(std.file.getcwd()))
-	if(std.file.exists("dub.template.json"))
-		return writeTemplate(t, std.file.getcwd(), configs["hipremeEnginePath"].str) ? 0 : -1;
+	{
+		if(std.file.exists("dub.template.json"))
+			return writeTemplate(t, std.file.getcwd(), configs["hipremeEnginePath"].str) ? 0 : -1;
+	}
 	return 0;
 }
 
@@ -989,8 +1002,8 @@ struct DubArguments
 	bool _parallel = true;
 
 	mixin BuilderPattern!(DubArguments);
-
-	string getCompiler()
+	
+	string getCompilerType() const
 	{
 		string c = _compiler;
 		if(_compiler == "auto")
@@ -1002,8 +1015,14 @@ struct DubArguments
 			if(_arch)
 				c = "ldc2";
 			else
-				return "";
+				c = "";
 		}
+		return c;
+	}
+
+	string getCompiler()
+	{
+		string c = getCompilerType;
 		if(c == "ldc2")
 			c = buildNormalizedPath(configs["ldcPath"].str, "bin", "ldc2".executableExtension);
 		else if(c == "dmd")
@@ -1012,12 +1031,12 @@ struct DubArguments
 	}
 }
 
-int waitRedub(ref Terminal t, DubArguments dArgs, out ProjectDetails proj, string copyLinkerFilesTo = null)
+int waitRedub(ref Terminal t, ref RealTimeConsoleInput input, DubArguments dArgs, out ProjectDetails proj, string copyLinkerFilesTo = null)
 {
 	import redub.logging;
 	import redub.buildapi;
 	import redub.api;
-	if(execDubBase(t, dArgs) == -1) return -1;
+	if(execRedubBase(t, input, dArgs) == -1) return -1;
 
 	setLogLevel(dArgs._opts.dubVerbose ? LogLevel.verbose : LogLevel.info);
 	proj = resolveDependencies(
@@ -1054,10 +1073,10 @@ void inParallel(scope void delegate()[] args...)
 		action();
 }
 
-int waitRedub(ref Terminal t, DubArguments dArgs, string copyLinkerFilesTo = null)
+int waitRedub(ref Terminal t, ref RealTimeConsoleInput input, DubArguments dArgs, string copyLinkerFilesTo = null)
 {
 	ProjectDetails d;
-	return waitRedub(t, dArgs, d, copyLinkerFilesTo);
+	return waitRedub(t, input, dArgs, d, copyLinkerFilesTo);
 }
 
 int waitAndPrint(ref Terminal t, Pid pid)

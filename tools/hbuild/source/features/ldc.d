@@ -20,17 +20,15 @@ private void overrideLdcConf(ref Terminal t, string outputPath)
 }
 
 
-bool installLdc(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] downloads)
+bool installLdc(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] downloads, string[] extractionPaths)
 {
     import commons:removeExtension;
-    string ldcPath = buildNormalizedPath(std.file.getcwd, "D", downloads[0].url.getDownloadFileName(ver).removeExtension);
+    string ldcPath = buildNormalizedPath(extractionPaths[0], downloads[0].url.getDownloadFileName(ver).removeExtension);
     auto binPath = buildNormalizedPath(ldcPath, "bin");
-    foreach(executable; ["ldc2", "ldmd2", "rdmd", "dub"])
+    foreach(executable; ["ldc2", "dub"])
         makeFileExecutable(buildNormalizedPath(binPath, executable));
     overrideLdcConf(t, ldcPath);
 
-    string rdmd = buildNormalizedPath(binPath, "rdmd");
-    version(Windows) rdmd = rdmd.setExtension("exe");
     configs["ldcVersion"] = ver.toString;
     configs["ldcPath"] = ldcPath;
     updateConfigFile();
@@ -57,7 +55,7 @@ void initialize()
                 ),
                 outputPath: "$TEMP$NAME",
             )
-        ], toDelegate(&installLdc), ["$CWD/D/"]),
+        ], toDelegate(&installLdc), ["$CONFIG_DIR/D/"]),
         (ref Terminal t, string ldcPath)
         {
             addToPath(ldcPath.buildNormalizedPath("bin"));

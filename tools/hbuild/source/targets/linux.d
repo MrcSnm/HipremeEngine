@@ -14,14 +14,14 @@ ChoiceResult prepareLinux(Choice* c, ref Terminal t, ref RealTimeConsoleInput in
 	with(WorkingDir(configs["gamePath"].str))
 	{
 		ProjectDetails proj;
-		if(waitRedub(t, DubArguments().command("build").configuration("script").opts(cOpts), proj) != 0)
+		if(waitRedub(t, input, DubArguments().command("build").configuration("script").opts(cOpts), proj) != 0)
 			return ChoiceResult.Error;
 	}
 
 	if(!c.scriptOnly) with(WorkingDir(getHipPath))
 	{
 		ProjectDetails proj;
-		if(waitRedub(t, DubArguments()
+		if(waitRedub(t, input, DubArguments()
 			.configuration("script")
 			.runArgs(configs["gamePath"].str)
 			.confirmKey(true)

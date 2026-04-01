@@ -13,15 +13,9 @@ else
 	string arch = "x64";
 
 
-private bool installOpenJDK(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] downloads)
+private bool installOpenJDK(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] downloads, string[] extractionPaths)
 {
-	string installationOutput = buildNormalizedPath(std.file.getcwd(), "Android", "openjdk_17");
-	if(!extractToFolder(downloads[0].getOutputPath(ver), installationOutput, t, input))
-	{
-		t.writelnError("Could not extract to folder ", installationOutput);
-		return false;
-	}
-
+	string installationOutput = extractionPaths[0];
 	string javaHome = buildNormalizedPath(installationOutput, std.file.dirEntries(installationOutput, std.file.SpanMode.shallow).front.name);// = environment["JAVA_HOME"];
 	version(OSX)
 		javaHome = buildNormalizedPath(javaHome, "Contents", "Home");
@@ -47,7 +41,7 @@ void initialize()
 				linux: "https://aka.ms/download-jdk/microsoft-jdk-$VERSION-linux-"~arch~".tar.gz",
 				osx: "https://aka.ms/download-jdk/microsoft-jdk-$VERSION-macos-"~arch~".tar.gz"
 			))
-		], toDelegate(&installOpenJDK)),
+		], toDelegate(&installOpenJDK), ["$CONFIG_DIR/Android/openjdk_17"]),
 		(ref Terminal t, string where){environment["JAVA_HOME"] = where;},
 		VersionRange.parse(JDKVersion)
 	);

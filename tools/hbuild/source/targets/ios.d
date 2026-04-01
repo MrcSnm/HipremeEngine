@@ -210,7 +210,7 @@ ChoiceResult prepareiOS(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
 	{
 		cleanAppleOSLibFolder();
 		ProjectDetails d;
-		if(waitRedub(t, DubArguments().
+		if(waitRedub(t, input, DubArguments().
 			command("build").configuration("ios").arch(getIosTriple(arch, isSimulator)).compiler("ldc2").opts(cOpts),
 			d,
 			getHipPath("build", "appleos", XCodeDFolder, "libs")) != 0)

@@ -333,19 +333,8 @@ void main(string[] args)
 	terminal.clear();
 	if(!("PATH" in environment))
 		environment["PATH"] = "";
-	pathBeforeNewLdc = environment["PATH"];
 
 
-	if(!LDCFeature.getFeature(terminal, input, TargetVersion.fromGameBuild("ldcVersion")))
-	{
-		terminal.writelnError("HipremeEngine needs LDC");
-		return;
-	}
-	if(!DMDFeature.getFeature(terminal, input, TargetVersion.fromGameBuild("dmdVersion")))
-	{
-		terminal.writelnError("HipremeEngine needs DMD");
-		return;
-	}
 	if(!HipremeEngineFeature.getFeature(terminal, input))
 	{
 		terminal.writelnError("HipremeEngine needs a copy of its repository to run.");

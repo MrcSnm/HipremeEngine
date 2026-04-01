@@ -21,7 +21,7 @@ Feature FeatureMakeRubyGem(
         }
         where = ExistenceStatus(ExistenceStatus.place.inPath);
         return true;
-    }), Installation([], (ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content)
+    }), Installation([], (ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content, string[] extractionPaths)
     {
         return t.wait(spawnShell("sudo gem install "~gemName)) == 0;
     }), null, supportedVersion, currentVersion, requiredOn, dependencies);

@@ -23,7 +23,7 @@ private bool installFromVSBuildToolsImpl(Feature*[] dependencies, ref Terminal t
 	) != 0;
 }
 
-bool installVSBuildTools(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] downloadsRequired)
+bool installVSBuildTools(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] downloadsRequired, string[] extractionPaths)
 {
 	configs["vsBuildTools"] = downloadsRequired[0].getOutputPath();
 	return true;
@@ -39,7 +39,7 @@ void initialize()
 			DownloadURL(
                 windows: "https://aka.ms/vs/$VERSION/release/vs_BuildTools.exe"
             ),
-			"$CWD/buildtools/vs_BuildTools".executableExtension
+			"$CONFIG_DIR/buildtools/vs_BuildTools".executableExtension
 		)], toDelegate(&installVSBuildTools)),
         currentVersion: TargetVersion.parse(BuildToolsVersion)
 	);

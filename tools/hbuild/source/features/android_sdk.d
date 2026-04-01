@@ -48,14 +48,13 @@ private string getAndroidSDKPackagesToinstall(string sdkMajorVer)
 
 	version(Windows)
 	{
-		packages~= `"extras;intel;Hardware_Accelerated_Execution_Manager" `~
-					`"extras;google;usb_driver" `;
+		packages~= `"extras;google;usb_driver" `;//`"extras;intel;Hardware_Accelerated_Execution_Manager" ` - Needs Intel
 	}
 	return packages;
 
 }
 
-private bool installAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content)
+private bool installAndroidSDK(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content, string[] extractionPaths)
 {
     import std.conv:to;
 	string sdkPath = buildNormalizedPath(std.file.getcwd(), "Android", "Sdk");
@@ -118,7 +117,7 @@ void initialize()
                 linux: "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip",
                 osx: "https://dl.google.com/android/repository/commandlinetools-mac-11076708_latest.zip"
             )
-        )], toDelegate(&installAndroidSDK), extractionPathList: ["$CWD/Android/Sdk/cmdline-tools"]),
+        )], toDelegate(&installAndroidSDK), extractionPathList: ["$CONFIG_DIR/Android/Sdk/cmdline-tools"]),
         (ref Terminal t, string where){environment["ANDROID_HOME"] = where;},
         VersionRange.parse(TargetAndroidSDK.to!string)
     );

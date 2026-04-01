@@ -14,7 +14,7 @@ private bool isRunningFromDubRun(string enginePath)
     return executeShell("cd \""~enginePath~"\" && git status").status != 0;
 }
 
-bool installHipremeEngine(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] contents)
+bool installHipremeEngine(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] contents, string[] extractionPaths)
 {
     import std.array:replace;
     string hipremeEnginePath;
