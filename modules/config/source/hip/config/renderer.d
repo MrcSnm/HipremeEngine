@@ -48,7 +48,8 @@ enum OpenGLHasBufferMapSupport = HasOpenGL && !UseGLES;
  * This works for both OpenGL and Direct3D 11.
  * But does not work for metal, since the render pipeline state can't be reused between frames.
  */
-enum UseDelayedUnbinding = !HasMetal;
+enum UseDelayedUnbind = !HasMetal;
+enum BindReplacesUnbind = !HasMetal;
 
 /**
  * This can provide a reduced memory usage for sprites which can also be a big win for other platforms. You may increase that amount but can't surpass index_t.max / 4

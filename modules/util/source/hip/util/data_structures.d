@@ -94,7 +94,72 @@ struct DirtyFlagsCmp(alias flag, Fields...)
     alias opCall = update;
 }
 
+template DelayedBindable(T, bool needsUnbind, bool bindReplacesUnbind, int slots = 1, alias bindFn = null, alias unbindFn = null)
+{
+    import hip.util.reflection:isReference;
 
+
+    __gshared T[slots] bound;
+
+    static if(bindFn !is null)
+        alias actualBind = bindFn;
+    else
+    {
+        static if(slots != 1)
+            alias actualBind = (T d, int slot){d.bind(slot);};
+        else
+            alias actualBind = (T d){d.bind();};
+    }
+
+    static if(unbindFn !is null)
+        alias actualUnbind = unbindFn;
+    else
+    {
+        static if(slots != 1)
+            alias actualUnbind = (T d, int slot){d.unbind(slot);};
+        else
+            alias actualUnbind = (T d){d.unbind();};
+    }
+    
+    void bind(T data, int slot = 0)
+    {
+        bool changed;
+        static if (!isReference!T)
+            changed = bound[slot] != data;
+        else
+            changed = bound[slot] !is data;
+        if(changed)
+        {
+            static if(needsUnbind)
+                unbind(bound[slot], slot);
+            static if(slots == 1)
+                actualBind(data);
+            else
+                actualBind(data, slot);
+            bound[slot] = data;
+        }
+    }
+
+    void unbind(T data, int slot = 0) 
+    {
+        static if(!bindReplacesUnbind || needsUnbind)
+        {
+            bool isSame;
+            static if(!isReference!T)
+                isSame = bound[slot] == data && bound[slot] != T.init;
+            else
+                isSame = bound[slot] is data && bound[slot] !is null;
+            if(isSame)
+            {
+                static if(slots == 1)
+                    actualUnbind(data);
+                else
+                    actualUnbind(data, slot);
+                bound[slot] = T.init;
+            }
+        }
+    }
+}
 
 /** 
  * RangeMap allows specifying a range in which a value spams, quite useful for defining outcomes

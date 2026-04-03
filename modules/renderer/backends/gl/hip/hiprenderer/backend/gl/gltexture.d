@@ -24,54 +24,43 @@ import hip.math.utils;
 
 final class Hip_GL3_Texture : IHipTexture, IReloadable
 {
+    import hip.util.data_structures;
     GLuint textureID = 0;
     int width, height;
+    int glTexType = GL_TEXTURE_2D;
     uint currentSlot;
 
     private IImage loadedImage;
-    this(HipResourceUsage usage, HipTextureType type){}
+    alias activeTextureBinder = DelayedBindable!(int, !UseDelayedUnbind, BindReplacesUnbind, 1, 
+        (int slot){glCall(() => glActiveTexture(GL_TEXTURE0+slot));},
+        (int){}
+    );
+
+    ///128 textures should be enough
+    alias textureBinder = DelayedBindable!(Hip_GL3_Texture, !UseDelayedUnbind, BindReplacesUnbind, 128,
+        (Hip_GL3_Texture tex, int slot){glBindTexture(tex.glTexType, tex.textureID);},
+        (Hip_GL3_Texture tex, int){glBindTexture(tex.glTexType, 0);}
+    );
+
+    
+    this(HipResourceUsage usage, HipTextureType type)
+    {
+        glTexType = getGLTextureType(type);
+    }
     bool hasSuccessfullyLoaded(){return width > 0;}
 
-    private __gshared int globalActiveSlot = 0;
-    ///128 textures should be enough
-    private __gshared Hip_GL3_Texture[128] boundTexture;
 
     void bind(int slot = 0)
     {
-        if(globalActiveSlot != slot)
-        {
-            glCall(() => glActiveTexture(GL_TEXTURE0+slot));
-            globalActiveSlot = slot;
-        }
-        if(boundTexture[globalActiveSlot] !is this)
-        {
-            glCall(() => glBindTexture(GL_TEXTURE_2D, textureID));
-            boundTexture[globalActiveSlot] = this;
-        }
+        activeTextureBinder.bind(slot);
+        textureBinder.bind(this, slot);
         currentSlot = slot;
     }
 
     void unbind(int slot = 0)
     {
-        if(globalActiveSlot != slot)
-        {
-            glCall(() => glActiveTexture(GL_TEXTURE0+slot));
-            globalActiveSlot = slot;
-        }
-        static if(UseDelayedUnbinding)
-        {
-
-        }
-        else
-        {
-            if(boundTexture[globalActiveSlot] is this)
-            {
-                glCall(() => glBindTexture(GL_TEXTURE_2D, 0));
-                boundTexture[globalActiveSlot] = null;
-            }
-        }
-
-        currentSlot = slot;
+        activeTextureBinder.bind(currentSlot);
+        textureBinder.unbind(this, slot);
     }
 
     void setWrapMode(TextureWrapMode mode)

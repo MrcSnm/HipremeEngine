@@ -9,7 +9,7 @@ struct VSOut
     float4 outPosition : SV_POSITION;
 };
 
-VSOut vertexMain(int2 vPosition : vPosition, float2 vTexST : vTexST, int vZ : vZ)
+VSOut vertexMain(int2 vPosition : vPosition, float2 vTexST : vTexST, uint vZ : vZ)
 {
     VSOut ret;
     ret.outPosition = mul(float4(vPosition, vZ, 1.0), uMVP);

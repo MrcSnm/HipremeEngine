@@ -24,14 +24,13 @@ public import hip.api.renderer.vertex;
 
 
 
-private __gshared HipVertexArrayObject lastBoundVertex;
-
 /**
 *   For using this class, you must first define the vertex layout for after that, create the vertex
 *   buffer and/or the index buffer.
 */
-class HipVertexArrayObject
+final class HipVertexArrayObject
 {
+    import hip.util.data_structures;
     IHipVertexArrayImpl VAO;
     IHipRendererBuffer  EBO;
     HipVertexAttributeInfo[] infos;
@@ -39,6 +38,11 @@ class HipVertexArrayObject
     bool isBonded;
     protected bool hasVertexInitialized;
     protected bool hasIndexInitialized;
+
+    alias vertexBinder = DelayedBindable!(HipVertexArrayObject, true, false, 1,
+        (HipVertexArrayObject vao){ vao.VAO.bind(); assert(!vao.isBonded, "Erroneous bind."); vao.isBonded = true;},
+        (HipVertexArrayObject vao){ vao.VAO.unbind(); assert(vao.isBonded, "Erroneous unbind"); vao.isBonded = false;}
+    );
 
     /**
     *   Remember calling sendAttributes
@@ -80,37 +84,8 @@ class HipVertexArrayObject
         this.VAO.createInputLayout(infos, EBO, s.shaderProgram);
     }
 
-    void bind()
-    {
-        static if(UseDelayedUnbinding)
-        {
-            if(lastBoundVertex is this)
-                return;
-            if(lastBoundVertex !is null)
-            {
-                lastBoundVertex.isBonded = false;
-                lastBoundVertex.VAO.unbind();
-            }
-            lastBoundVertex = this;
-        }
-        if(!this.isBonded)
-        {
-            isBonded = true;
-            this.VAO.bind();
-        }
-        else assert(false, "Erroneous bind.");
-    }
-    void unbind()
-    {
-        static if(UseDelayedUnbinding)
-            return;
-        if(this.isBonded)
-        {
-            isBonded = false;
-            this.VAO.unbind();
-        }
-        else assert(false, "Erroneous unbind.");
-    }
+    void bind() { vertexBinder.bind(this); }
+    void unbind(){ vertexBinder.unbind(this); }
 
     /**
     *   Sets the VBO data. Use this function only for initialization as it allocates memory.

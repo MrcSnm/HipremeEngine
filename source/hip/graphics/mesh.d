@@ -16,9 +16,15 @@ import hip.hiprenderer.vertex;
 import hip.error.handler;
 
 
-private __gshared Mesh boundMesh = null;
 class Mesh
 {
+    import hip.util.data_structures;
+    
+    alias meshBinder = DelayedBindable!(Mesh, !UseDelayedUnbind, BindReplacesUnbind, 1,
+        (Mesh m) { m.shader.bind(); m.vao.bind(); },
+        (Mesh m) { m.shader.unbind(); m.vao.unbind(); }
+    );
+
     protected index_t[] indices;
     protected void[] vertices;
     ///Not yet supported
@@ -38,24 +44,8 @@ class Mesh
     {
         this.vao.sendAttributes(shader);
     }
-
-    void bind()
-    {
-        if(boundMesh !is this)
-        {
-            boundMesh = this;
-            this.shader.bind();
-            this.vao.bind();
-        }
-        // else assert(false, "Erroneous call to bind.");
-    }
-    void unbind()
-    {
-        boundMesh = null;
-        this.shader.unbind();
-        this.vao.unbind();
-        // else assert(false, "Erroneous call to unbind.");
-    }
+    void bind(){meshBinder.bind(this);}
+    void unbind(){meshBinder.unbind(this);}
 
     /**
      * Use that function when the mesh doesn't hold ownership over the indices
@@ -114,12 +104,7 @@ class Mesh
         import std.traits:isUnsigned;
         static assert(isUnsigned!T, "Mesh must receive an integral type in its draw");
         ErrorHandler.assertExit(indicesCount < T.max, "Can't draw more than T.max");
-        if(boundMesh !is this)
-        {
-            if(boundMesh !is null)
-                boundMesh.unbind();
-            bind();
-        }
+        bind();
         HipRenderer.drawIndexed(mode, cast(index_t)indicesCount, offset);
     }
 
@@ -129,12 +114,7 @@ class Mesh
     */
     public void drawInstanced(HipRendererMode mode, uint instanceCount, index_t indicesCount, uint indicesOffset = 0)
     {
-        if(boundMesh !is this)
-        {
-            if(boundMesh !is null)
-                boundMesh.unbind();
-            bind();
-        }
+        bind();
         HipRenderer.drawIndexedInstanced(mode, instanceCount, indicesCount, indicesOffset);
     }
 

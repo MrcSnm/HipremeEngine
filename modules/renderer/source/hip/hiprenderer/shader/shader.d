@@ -24,11 +24,17 @@ import hip.util.string:indexOf;
 public import hip.api.renderer.shader;
 
 
-private __gshared ShaderProgram lastBoundShader;
-private __gshared Shader last;
 
 public class Shader : IReloadable
 {
+    import hip.util.data_structures;
+    import hip.config.renderer;
+    
+    alias shaderBinder = DelayedBindable!(Shader, !UseDelayedUnbind, BindReplacesUnbind, 1,
+        (Shader s){s.shaderImpl.bind(s.shaderProgram);},
+        (Shader s){s.shaderImpl.unbind(s.shaderProgram);}
+    );
+
     ShaderProgram shaderProgram;
     ShaderVariablesLayout[string] layouts;
     private ShaderVariablesLayout[] layoutsArray;
@@ -140,21 +146,11 @@ public class Shader : IReloadable
 
     void bind()
     {
-        static if(UseDelayedUnbinding)
-        {
-            if(lastBoundShader is shaderProgram)
-                return;
-            if(lastBoundShader !is null)
-                shaderImpl.unbind(lastBoundShader);
-            lastBoundShader = shaderProgram;
-        }
-        shaderImpl.bind(shaderProgram);
+        shaderBinder.bind(this);
     }
     void unbind()
     {
-        static if(UseDelayedUnbinding)
-            return;
-        shaderImpl.unbind(shaderProgram);
+        shaderBinder.unbind(this);
     }
     void setBlending(HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
     {
@@ -163,7 +159,7 @@ public class Shader : IReloadable
 
     void sendVars()
     {
-        if(!isDirty && lastBoundShader is shaderProgram)
+        if(!isDirty)
             return;
         foreach(string key, ShaderVariablesLayout value; layouts)
         {

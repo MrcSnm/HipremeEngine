@@ -43,19 +43,16 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
     import hip.util.data_structures;
     IHipRendererBuffer ebo;
     HipVertexAttributeInfo[] vaoInfos;
-    private __gshared Hip_GL_VertexArrayObject boundVAO;
 
-    void bind()
-    {
-        static if(!GLShouldDisableVertexAttrib)
+    alias vaoBinder = DelayedBindable!(Hip_GL_VertexArrayObject, !UseDelayedUnbind, BindReplacesUnbind, 1,
+        (Hip_GL_VertexArrayObject vao)
         {
-            __gshared bool[GLMaxVertexAttributes] enabledAttributes;
-        }
-
-        if(boundVAO !is this)
-        {
-            ebo.bind();
-            foreach(info; vaoInfos)
+            static if(!GLShouldDisableVertexAttrib)
+            {
+                __gshared bool[GLMaxVertexAttributes] enabledAttributes;
+            }
+            vao.ebo.bind();
+            foreach(info; vao.vaoInfos)
             {
                 info.vbo.bind();
                 foreach(field; info.fields)
@@ -82,30 +79,21 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
                     ));
                 }
             }
-            boundVAO = this;
-        }
-    }
-        
-    void unbind()
-    {
-        static if(UseDelayedUnbinding)
+        },
+        (Hip_GL_VertexArrayObject vao)
         {
-
-        }
-        else
-        {
-            if(boundVAO is this)
+            foreach(info; vao.vaoInfos)
             {
-                foreach(vao; vaoInfos)
-                {
-                    glCall(() => glDisableVertexAttribArray(vao.info.index));
-                    vao.vbo.unbind();
-                }
-                ebo.unbind();
-                boundVAO = null;
+                foreach(field; info.fields)
+                    glCall(() => glDisableVertexAttribArray(field.index));
+                info.vbo.unbind();
             }
+            vao.ebo.unbind();
         }
-    }
+    );
+
+    void bind() {vaoBinder.bind(this);}
+    void unbind(){vaoBinder.unbind(this);}
     void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, ShaderProgram p)
     {
         import hip.hiprenderer.backend.gl.glshader;
@@ -129,27 +117,17 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
 static if (OpenGLHasVAOSupport) final class Hip_GL3_VertexArrayObject : IHipVertexArrayImpl
 {
     uint vao;
-    private __gshared Hip_GL3_VertexArrayObject boundVao;
+    import hip.util.data_structures;
+    alias vBinder = DelayedBindable!(Hip_GL3_VertexArrayObject, !UseDelayedUnbind, BindReplacesUnbind, 1, 
+        (Hip_GL3_VertexArrayObject vao){glCall(() => glBindVertexArray(vao.vao));},
+        (Hip_GL3_VertexArrayObject vao){glCall(() => glBindVertexArray(0));});
+
     this()
     {
         glCall(() => glGenVertexArrays(1, &this.vao));
     }
-    void bind()
-    {
-        if(boundVao !is this)
-        {
-            glCall(() => glBindVertexArray(this.vao));
-            boundVao = this;
-        }
-    }
-    void unbind()
-    {
-        if(boundVao is this)
-        {
-            glCall(() => glBindVertexArray(0));
-            boundVao = null;
-        }
-    }
+    void bind(){vBinder.bind(this);}
+    void unbind(){vBinder.unbind(this);}
 
     void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, ShaderProgram p)
     {
