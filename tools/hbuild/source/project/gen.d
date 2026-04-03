@@ -127,12 +127,8 @@ string generateDubProject(DubProjectInfo info)
 		{
 			"name": "release",
 			"targetType": "executable",
-			"dependencies": {
-				"hipreme_engine": {"path": "#HIPREME_ENGINE"}
-			},
-			"subConfigurations": {
-				"hipreme_engine": "desktop-release"
-			}
+			"dependencies": { "hipreme_engine": {"path": "#HIPREME_ENGINE"} },
+			"subConfigurations": { "hipreme_engine": "desktop-release" }
 		},
 		{
 			"name": "release-wasm",

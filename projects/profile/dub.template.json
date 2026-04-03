@@ -36,7 +36,9 @@
 		},
 		{
 			"name": "release",
-			"targetType": "library"
+			"targetType": "executable",
+			"dependencies": { "hipreme_engine": {"path": "#HIPREME_ENGINE"} },
+			"subConfigurations": { "hipreme_engine": "desktop-release" }
 		},
 		{
 			"name": "android",
