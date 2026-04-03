@@ -1,7 +1,7 @@
 INOUT vec2 inTexST;
 #ifdef VERTEX
 
-ATTRIBUTE(0) UVEC2 vPosition;
+ATTRIBUTE(0) IVEC2 vPosition;
 ATTRIBUTE(1) vec2 vTexST;
 ATTRIBUTE(2) UINT vZ;
 

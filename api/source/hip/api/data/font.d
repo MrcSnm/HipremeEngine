@@ -10,7 +10,7 @@ struct HipTextRendererVertexAPI
 {
     short[2] vPosition = [0,0];
     ushort[2] vTexST = [0,0];
-    short vZ = 0;
+    ushort vZ = 0;
     short padding;
 }
 

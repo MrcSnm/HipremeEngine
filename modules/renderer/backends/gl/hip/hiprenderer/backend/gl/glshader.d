@@ -189,7 +189,9 @@ class Hip_GL_ShaderImpl : IShader
     #endif
 
     #define UVEC2 vec2
+    #define IVEC2 vec2
     #define UINT float
+    #define INT float
 #else
     #define IN in
     #define OUT out
@@ -206,7 +208,9 @@ class Hip_GL_ShaderImpl : IShader
     #endif
 
     #define UVEC2 uvec2
+    #define IVEC2 ivec2
     #define UINT uint
+    #define INT int
 
 #endif
 
