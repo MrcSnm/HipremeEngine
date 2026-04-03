@@ -40,22 +40,7 @@ public import hip.api.input.mouse : HipMouseButton;
 public import hip.api.net;
 
 
-//Realiasing based on function pointers
-
-version(DirectCall)
-{
-    public import hip.filesystem.hipfs;
-    public import hip.assetmanager;
-    public import hip.game.utils : HipGameUtils;
-    public import hip.systems.timer_manager : HipTimerManager;
-    public import HipDefaultAssets = hip.global.gamedef : getDefaultFont, getDefaultTexture, getDefaultFontWithSize;
-    ///All other functions that are actually exported is expected to be in that module.
-    // public import exportd;
-}
-else version(ScriptAPI)
-{
-    public import HipAssetManager = hip.api.assets.assets_binding;
-    public import hip.api.game.game_binding : HipGameUtils;
-    public import hip.api.systems.system_binding: HipTimerManager;
-    public import HipDefaultAssets = hip.api.assets.globals: getDefaultFont, getDefaultTexture, getDefaultFontWithSize;
-}
+public import HipAssetManager = hip.api.assets.assets_binding;
+public import hip.api.game.game_binding : HipGameUtils;
+public import hip.api.systems.system_binding: HipTimerManager;
+public import HipDefaultAssets = hip.api.assets.globals: getDefaultFont, getDefaultTexture, getDefaultFontWithSize;

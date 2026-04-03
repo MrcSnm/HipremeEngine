@@ -20,11 +20,8 @@ public import hip.api.graphics.text;
 public import hip.api.graphics.g2d.animation;
 public import hip.api.graphics.g2d.g2d_binding;
 
-version(ScriptAPI)
-{
-	version = DefineOverloadings;
-	version(Have_util) version = DefineCreateFromAtlas;
-}
+version = DefineOverloadings;
+version(Have_util) version = DefineCreateFromAtlas;
 
 
 version(DefineOverloadings)

@@ -1,5 +1,5 @@
 module hip.gui.button;
-import hip.api.graphics.g2d.renderer2d;
+import hip.api;
 public import hip.gui.widget;
 
 

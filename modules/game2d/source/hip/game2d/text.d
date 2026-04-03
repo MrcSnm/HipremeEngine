@@ -144,7 +144,7 @@ class HipText
 
     void draw()
     {
-        import hip.api.graphics.g2d.g2d_binding;
+        import hip.api;
         setTextColor(color);
         drawTextVertices(getVertices, font);
     }

@@ -7,18 +7,17 @@
 		"util": {"path": "../util"},
 		"math": {"path": "../math"},
 		"assets": {"path": "../assets"},
-		"hipengine_api": {"path": "../../api"}
+		"hipengine_api:interfaces": {"path": "../../api"}
 	},
 	"configurations": 
 	[
 		{
-			"name": "dynamic"
+			"name": "dynamic",
+			"dependencies": {"hipengine_api:bindings": {"path": "../../api"}}
 		},
 		{
 			"name": "direct",
-			"subConfigurations": {
-				"hipengine_api:bindings": "direct"
-			}
+			"dependencies": { "hipreme_engine": {"path": "../../"} }
 		}
 	],
 	"copyright": "Copyright © 2022, Hipreme",

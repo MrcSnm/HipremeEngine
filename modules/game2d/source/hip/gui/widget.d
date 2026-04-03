@@ -228,7 +228,7 @@ class DebugWidgetRenderer : IWidgetRenderer
 
     void render(int x, int y, int width, int height)
     {
-        import hip.api.graphics.g2d.renderer2d;
+        import hip.api;
         fillRoundRect(x,y,width,height, 4, color);
     }
 }

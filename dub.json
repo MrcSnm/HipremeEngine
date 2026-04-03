@@ -52,7 +52,6 @@
 			"name": "desktop",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
-	
 			"lflags-windows-ldc": ["-Lmodules/renderer/lib/win64"],
 			"versions": [
 				"Desktop",
@@ -95,6 +94,7 @@
 			"name": "script",
 			"targetPath": "bin/desktop",
 			"targetType": "executable",
+			"excludedSourceFiles": ["source/hip/api/package.d"],
 			"lflags-windows": ["-Lmodules/renderer/lib/win64"],
 			"dependencies": {
 				"compilewatcher": {"path": "dependencies/compilewatcher"}

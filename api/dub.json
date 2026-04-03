@@ -12,20 +12,12 @@
 	"subPackages": [
 		{
 			"name": "network",
-			"sourcePaths": ["network"],
-			"importPaths": ["network"]
+			"sourcePaths": ["network"], "importPaths": ["network"]
 		},
 		{
 			"name": "bindings",
-			"dependencies": {
-				"hipengine_api:interfaces": "*"
-			},
-			"configurations": [
-				{"name": "default"},
-				{"name": "direct", "dependencies": {"hipreme_engine": {"path": "../"}}, "versions": ["DirectCall"]}
-			],
-			"sourcePaths": ["binding"],
-			"importPaths": ["binding"]
+			"dependencies": {"hipengine_api:interfaces": "*"},
+			"sourcePaths": ["binding"], "importPaths": ["binding"]
 		},
 		{
 			"name": "interfaces",

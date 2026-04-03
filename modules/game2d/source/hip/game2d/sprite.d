@@ -58,7 +58,7 @@ final class HipMultiSprite
 
     void draw()
     {
-        import hip.api.graphics.g2d.renderer2d;
+        import hip.api;
         foreach(sp; sprites)
             sp.isDirty = true;
         drawSprite(texture, cast(ubyte[])getVertices());
@@ -339,7 +339,7 @@ final class HipSprite
 
     void draw()
     {
-        import hip.api.graphics.g2d.renderer2d;
+        import hip.api;
         this.isDirty = true;
         drawSprite(texture.getTexture, cast(ubyte[])getVertices[]);
     }

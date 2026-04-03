@@ -12,7 +12,7 @@ class ScrollArea : Widget, IRawScrollable
 {
     private static IWidgetRenderer DebugRenderer()
     {
-        import hip.api.graphics.g2d.renderer2d;
+        import hip.api;
         __gshared DebugWidgetRenderer dbgRenderer;
         if(dbgRenderer is null) dbgRenderer = new DebugWidgetRenderer(HipColor(85,85,85,85));
         return dbgRenderer;
@@ -55,7 +55,7 @@ class ScrollArea : Widget, IRawScrollable
 
     override void onRender()
     {
-        import hip.api.graphics.g2d.renderer2d;
+        import hip.api;
 
         setStencilTestingEnabled(true);
         setStencilTestingFunction(HipStencilTestingFunction.Always, 1, 0xFF);

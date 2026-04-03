@@ -29,19 +29,9 @@ public import hip.api.impl;
 public import hip.api.config;
 
 
-enum HipAssetLoadStrategy
-{
-	loadAll
-}
-
-version(ScriptAPI) version = UseExternalScene;
-
 ///Most important functions here
-version(UseExternalScene)
-{
-	alias hipDestroyFn = extern(System) void function(Object);
-	__gshared hipDestroyFn hipDestroy;
-}
+alias hipDestroyFn = extern(System) void function(Object);
+__gshared hipDestroyFn hipDestroy;
 
 version(DesktopRelease)
 {
@@ -55,64 +45,52 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 {
 	immutable string ScriptModules = import("scriptmodules.txt");
 	pragma(msg, ScriptModules);
-	version(UseExternalScene)
+	__gshared AScene _exportedScene;
+	version(Windows)
 	{
-		__gshared AScene _exportedScene;
-		version(Windows)
-		{
-			import core.sys.windows.dll;
-			mixin SimpleDllMain;
-		}
-		export extern(System) AScene HipremeEngineGameInit()
-		{
-			import hip.api;
-			import hip.api.systems.system_binding;
-			import hip.api.input.binding;
-			import hip.api.filesystem.fs_binding;
-			import hip.api.game.game_binding;
-			import core.runtime;
-			import hip.api.internal:initializeHip;
-			import hip.api.renderer.core;
-			import hip.api.internal;
-
-			rt_init();
-			initializeHip();
-			initConsole();
-			initFS();
-			initG2D();
-			// HipAudio.initAudio();
-			alias renderFn = extern(System) IHipRenderer function();
-			setHipRenderer((cast(renderFn)_loadSymbol(_dll, "HipRendererAPI"))());
-			initInput();
-			HipDefaultAssets.initGlobalAssets();
-			HipAssetManager.initAssetManager();
-			initTimerAPI();
-			initGameAPI();
-			initNet();
-
-			mixin LoadAllAssets!(ScriptModules);
-			loadReferenced();
-			
-			return _exportedScene = new StartScene();
-		}
-		export extern(System) void HipremeEngineGameDestroy()
-		{
-			if(_exportedScene)
-			{
-				_exportedScene.dispose();
-				destroy(_exportedScene);
-			}
-			_exportedScene=null;
-		}
+		import core.sys.windows.dll;
+		mixin SimpleDllMain;
 	}
-	else
+	export extern(System) AScene HipremeEngineGameInit()
 	{
-		pragma(mangle, "HipremeEngineMainScene")
-		export extern(C) AScene HipremeEngineMainScene()
-		{
-			mixin LoadAllAssets!(ScriptModules);
-			loadReferenced();
-			return new StartScene();
-		}
+		import hip.api;
+		import hip.api.systems.system_binding;
+		import hip.api.input.binding;
+		import hip.api.filesystem.fs_binding;
+		import hip.api.game.game_binding;
+		import core.runtime;
+		import hip.api.internal:initializeHip;
+		import hip.api.renderer.core;
+		import hip.api.internal;
+
+		rt_init();
+		initializeHip();
+		initConsole();
+		initFS();
+		initG2D();
+		// HipAudio.initAudio();
+		alias renderFn = extern(System) IHipRenderer function();
+		setHipRenderer((cast(renderFn)_loadSymbol(_dll, "HipRendererAPI"))());
+		initInput();
+		HipDefaultAssets.initGlobalAssets();
+		HipAssetManager.initAssetManager();
+		initTimerAPI();
+		initGameAPI();
+		initNet();
+
+		mixin LoadAllAssets!(ScriptModules);
+		loadReferenced();
+		
+		return _exportedScene = new StartScene();
 	}
+	export extern(System) void HipremeEngineGameDestroy()
+	{
+		if(_exportedScene)
+		{
+			_exportedScene.dispose();
+			destroy(_exportedScene);
+		}
+		_exportedScene=null;
+	}
+
 }
