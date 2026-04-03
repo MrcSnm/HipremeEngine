@@ -10,6 +10,8 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hiprenderer.backend.gl.gltexture;
 
+import hip.api.renderer.vertex;
+
 version(OpenGL):
 public import hip.api.renderer.texture;
 public import hip.api.data.commons:IReloadable;
@@ -20,7 +22,6 @@ import hip.error.handler;
 import hip.assets.image;
 import hip.math.utils;
 
-
 final class Hip_GL3_Texture : IHipTexture, IReloadable
 {
     GLuint textureID = 0;
@@ -28,44 +29,8 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
     uint currentSlot;
 
     private IImage loadedImage;
-    this(HipResourceUsage usage){}
+    this(HipResourceUsage usage, HipTextureType type){}
     bool hasSuccessfullyLoaded(){return width > 0;}
-    protected int getGLWrapMode(TextureWrapMode mode)
-    {
-        switch(mode)
-        {
-            case TextureWrapMode.CLAMP_TO_EDGE: return GL_CLAMP_TO_EDGE;
-            case TextureWrapMode.REPEAT: return GL_REPEAT;
-            case TextureWrapMode.MIRRORED_REPEAT: return GL_MIRRORED_REPEAT;
-            static if(!UseGLES)
-            {
-                //assert here would be better, as simply returning a default can be misleading.
-                case TextureWrapMode.MIRRORED_CLAMP_TO_EDGE: return GL_MIRROR_CLAMP_TO_EDGE;
-                case TextureWrapMode.CLAMP_TO_BORDER: return GL_CLAMP_TO_BORDER;
-            }
-            default: return GL_REPEAT;
-        }
-    }
-    protected int getGLMinMagFilter(TextureFilter filter)
-    {
-        switch(filter) with(TextureFilter)
-        {
-            case LINEAR:
-                return GL_LINEAR;
-            case NEAREST:
-                return GL_NEAREST;
-            case NEAREST_MIPMAP_NEAREST:
-                return GL_NEAREST_MIPMAP_NEAREST;
-            case LINEAR_MIPMAP_NEAREST:
-                return GL_LINEAR_MIPMAP_NEAREST;
-            case NEAREST_MIPMAP_LINEAR:
-                return GL_NEAREST_MIPMAP_LINEAR;
-            case LINEAR_MIPMAP_LINEAR:
-                return GL_LINEAR_MIPMAP_LINEAR;
-            default:
-                return -1;
-        }
-    }
 
     private __gshared int globalActiveSlot = 0;
     ///128 textures should be enough
@@ -180,6 +145,53 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
             return loadImpl(loadedImage);
         }
         return false;
+    }
+}
+
+private int getGLTextureType(HipTextureType type)
+{
+    final switch(type)
+    {
+        case HipTextureType.CubeMap: return GL_TEXTURE_CUBE_MAP;
+        case HipTextureType.Texture2D: return GL_TEXTURE_2D;
+    }
+}
+
+private int getGLWrapMode(TextureWrapMode mode)
+{
+    switch(mode)
+    {
+        case TextureWrapMode.CLAMP_TO_EDGE: return GL_CLAMP_TO_EDGE;
+        case TextureWrapMode.REPEAT: return GL_REPEAT;
+        case TextureWrapMode.MIRRORED_REPEAT: return GL_MIRRORED_REPEAT;
+        static if(!UseGLES)
+        {
+            //assert here would be better, as simply returning a default can be misleading.
+            case TextureWrapMode.MIRRORED_CLAMP_TO_EDGE: return GL_MIRROR_CLAMP_TO_EDGE;
+            case TextureWrapMode.CLAMP_TO_BORDER: return GL_CLAMP_TO_BORDER;
+        }
+        default: return GL_REPEAT;
+    }
+}
+
+private int getGLMinMagFilter(TextureFilter filter)
+{
+    switch(filter) with(TextureFilter)
+    {
+        case LINEAR:
+            return GL_LINEAR;
+        case NEAREST:
+            return GL_NEAREST;
+        case NEAREST_MIPMAP_NEAREST:
+            return GL_NEAREST_MIPMAP_NEAREST;
+        case LINEAR_MIPMAP_NEAREST:
+            return GL_LINEAR_MIPMAP_NEAREST;
+        case NEAREST_MIPMAP_LINEAR:
+            return GL_NEAREST_MIPMAP_LINEAR;
+        case LINEAR_MIPMAP_LINEAR:
+            return GL_LINEAR_MIPMAP_LINEAR;
+        default:
+            return -1;
     }
 }
 

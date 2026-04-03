@@ -71,7 +71,7 @@ class Hip_D3D11_FrameBuffer : IHipFrameBuffer
         HipRenderer.exitOnError();
         ErrorHandler.stopListeningForErrors();
 
-        retTexture = new Hip_D3D11_Texture(HipResourceUsage.Immutable);
+        retTexture = new Hip_D3D11_Texture(HipResourceUsage.Immutable, HipTextureType.Texture2D);
         retTexture.resource = shaderResourceView;
         retTexture.texture = renderTargetTexture;
         retTexture.updateSamplerState();

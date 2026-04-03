@@ -67,7 +67,7 @@ class Hip_GL3_FrameBuffer : IHipFrameBuffer
 
         ErrorHandler.assertErrorMessage(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE,
         "GL Framebuffer creation", "Framebuffer was unable to complete its creations");
-        retTexture = new Hip_GL3_Texture(HipResourceUsage.Default);
+        retTexture = new Hip_GL3_Texture(HipResourceUsage.Default, HipTextureType.Texture2D);
         retTexture.textureID = texture;
 
         //Reset to defaults

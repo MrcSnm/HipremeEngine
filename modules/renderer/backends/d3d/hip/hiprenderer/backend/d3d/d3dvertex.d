@@ -52,7 +52,7 @@ final class Hip_D3D11_Buffer : IHipRendererBuffer
     }
     this(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
     {
-        this.size = size;
+        this.size = data.length;
         this.usage = getD3D11Usage(usage);
         this._type = type;
         createBuffer(data);

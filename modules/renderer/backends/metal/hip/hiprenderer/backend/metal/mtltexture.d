@@ -69,7 +69,7 @@ final class HipMTLTexture : IHipTexture
     NSUInteger bytesPerRow;
     HipResourceUsage usage;
 
-    this(MTLDevice device, MTLCommandQueue cmdQueue, HipMTLRenderer mtlRenderer, HipResourceUsage usage)
+    this(MTLDevice device, MTLCommandQueue cmdQueue, HipMTLRenderer mtlRenderer, HipResourceUsage usage, HipTextureType type)
     {
         this.device = device;
         this.cmdQueue = cmdQueue;

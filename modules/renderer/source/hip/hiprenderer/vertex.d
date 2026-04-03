@@ -129,6 +129,11 @@ class HipVertexArrayObject
             this.infos[vbo].vbo.setData(data);
         }
     }
+
+    ubyte[] getVertexBuffer(ubyte vbo)
+    {
+        return infos[vbo].vbo.getBuffer();
+    }
     /**
      * Update the VBO. Won't cause memory allocation.
      * Params:

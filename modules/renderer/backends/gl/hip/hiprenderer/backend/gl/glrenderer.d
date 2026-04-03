@@ -218,9 +218,9 @@ class Hip_GL3Renderer : IHipRendererImpl
         else
             return new Hip_GL_VertexArrayObject();
     }
-    public IHipTexture createTexture(HipResourceUsage usage)
+    public IHipTexture createTexture(HipResourceUsage usage, HipTextureType type)
     {
-        return new Hip_GL3_Texture(usage);
+        return new Hip_GL3_Texture(usage, type);
     }
     public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {

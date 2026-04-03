@@ -28,6 +28,12 @@ enum HipResourceUsage : ubyte
     Immutable,
 }
 
+enum HipTextureType : ubyte
+{
+    Texture2D,
+    CubeMap
+}
+
 pragma(inline, true) T floatMapped(T)(float data) pure nothrow @nogc @trusted
 {
     static if(__traits(isUnsigned, T))

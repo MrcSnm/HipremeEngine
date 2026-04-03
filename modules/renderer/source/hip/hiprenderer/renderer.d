@@ -221,9 +221,9 @@ class HipRendererImplementation : IHipRenderer
     public int getMaxSupportedShaderTextures(){return rendererImpl.queryMaxSupportedPixelShaderTextures();}
 
 
-    public IHipTexture getTextureImplementation(HipResourceUsage usage = HipResourceUsage.Immutable)
+    public IHipTexture getTextureImplementation(HipResourceUsage usage = HipResourceUsage.Immutable, HipTextureType type = HipTextureType.Texture2D)
     {
-        res.textures~= rendererImpl.createTexture(usage);
+        res.textures~= rendererImpl.createTexture(usage, type);
         return res.textures[$-1];
     }
 

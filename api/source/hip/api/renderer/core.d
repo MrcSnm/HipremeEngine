@@ -118,7 +118,7 @@ interface IHipRendererImpl
     public IHipVertexArrayImpl  createVertexArray();
     public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type);
     public IHipRendererBuffer createBuffer(const(ubyte)[], HipResourceUsage usage, HipRendererBufferType type);
-    public IHipTexture  createTexture(HipResourceUsage usage);
+    public IHipTexture  createTexture(HipResourceUsage usage, HipTextureType type);
     public int queryMaxSupportedPixelShaderTextures();
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
     public void setViewport(Viewport v);
@@ -150,7 +150,7 @@ interface IHipRenderer
     HipRendererInfo getInfo();
 
     int getMaxSupportedShaderTextures();
-    IHipTexture getTextureImplementation(HipResourceUsage usage = HipResourceUsage.Immutable);
+    IHipTexture getTextureImplementation(HipResourceUsage usage = HipResourceUsage.Immutable, HipTextureType type = HipTextureType.Texture2D);
     Viewport getCurrentViewport() @nogc;
     void setViewport(Viewport v);
     IHipVertexArrayImpl createVertexArray();

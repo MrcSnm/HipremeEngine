@@ -51,7 +51,8 @@ class TestScene : Scene, IHipPreloadable
         geom = new GeometryBatch(null, 5000, 5000);
         geom.setColor(HipColor.green);
 
-        setWindowSize(HipRenderer.width, HipRenderer.height);
+        int[2] size = getWindowSize();
+        setWindowSize(size[0], size[1]);
         src = HipAudio.getSource();
         src.clip = pop;
 
@@ -104,7 +105,7 @@ class TestScene : Scene, IHipPreloadable
 
         //Use a non GC allocating string on render (String) for drawing the mousePosition
         import hip.util.string;
-        float[2] mousePos = HipInput.getMousePosition();
+        float[2] mousePos = HipInput.getTouchPosition();
         setFont(smallFont);
         String s = String(mousePos);
         drawText(s.toString, cast(int)mousePos[0], cast(int)mousePos[1]);
@@ -114,10 +115,10 @@ class TestScene : Scene, IHipPreloadable
         ////////////////////////Higher Level////////////////////////
         setGeometryColor(HipColor.white);
         setFont(null);
-        drawText("Hello World Test Scene (Default Font)", 300, 280, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        drawText("Hello World Test Scene (Default Font)", 300, 280, 1.0, HipColor.white, HipTextAlign.topLeft);
         fillRectangle(cast(int)x, cast(int)y, 100, 100);
 
-        drawText("Null Textures uses that sprite over here", 300, 480, HipColor.white, HipTextAlign.LEFT, HipTextAlign.TOP);
+        drawText("Null Textures uses that sprite over here", 300, 480, 1.0, HipColor.white, HipTextAlign.topLeft);
         fillRectangle(cast(int)x+200, cast(int)y, 100, 100);
         drawTexture(null, 300, 500);
 

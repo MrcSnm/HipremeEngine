@@ -398,9 +398,9 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         return new Hip_D3D11_VertexArrayObject();
     }
-    public IHipTexture createTexture(HipResourceUsage usage)
+    public IHipTexture createTexture(HipResourceUsage usage, HipTextureType type)
     {
-        return new Hip_D3D11_Texture(usage);
+        return new Hip_D3D11_Texture(usage, type);
     }
     public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {

@@ -943,8 +943,6 @@ private int execRedubBase(ref Terminal t, ref RealTimeConsoleInput input, in Dub
 	if(!getCompiler(t, input, dArgs.getCompilerType()))
 		return -1;
 	
-	
-
 	if(absolutePath(configs["hipremeEnginePath"].str) != absolutePath(std.file.getcwd()))
 	{
 		if(std.file.exists("dub.template.json"))

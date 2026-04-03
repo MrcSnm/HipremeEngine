@@ -9,10 +9,6 @@ import hip.hiprenderer.backend.metal.mtlshader;
 import hip.hiprenderer.backend.metal.mtlvertex;
 import hip.hiprenderer.backend.metal.mtltexture;
 
-
-
-
-
 MTLCompareFunction fromHipDepthTestingFunction(HipDepthTestingFunction fn)
 {
     final switch(fn) with(HipDepthTestingFunction)
@@ -182,9 +178,9 @@ class HipMTLRenderer : IHipRendererImpl
         return new HipMTLVertexArray(device, this);
     }
 
-    public IHipTexture createTexture(HipResourceUsage usage)
+    public IHipTexture createTexture(HipResourceUsage usage, HipTextureType type)
     {
-        return new HipMTLTexture(device,cmdQueue, this, usage);
+        return new HipMTLTexture(device,cmdQueue, this, usage, type);
     }
 
     public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)

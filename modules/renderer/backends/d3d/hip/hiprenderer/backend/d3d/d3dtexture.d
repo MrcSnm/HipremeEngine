@@ -11,7 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.hiprenderer.backend.d3d.d3dtexture;
 
 import hip.config.renderer;
-import hip.api.renderer.core:HipResourceUsage;
+import hip.api.renderer.core:HipResourceUsage, HipTextureType;
 static if(HasDirect3D):
 
 import hip.hiprenderer.backend.d3d.d3drenderer;
@@ -38,7 +38,7 @@ final class Hip_D3D11_Texture : IHipTexture
     uint stride;
     HipResourceUsage usage;
 
-    this(HipResourceUsage usage)
+    this(HipResourceUsage usage, HipTextureType type)
     {
         import hip.hiprenderer:HipRenderer;
         this.usage = usage;
