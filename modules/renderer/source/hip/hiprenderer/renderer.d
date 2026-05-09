@@ -10,14 +10,14 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.hiprenderer.renderer;
 public import hip.config.renderer;
-public import hip.hiprenderer.shader;
+public import hip.api.renderer.shader;
 public import hip.hiprenderer.vertex;
 public import hip.hiprenderer.framebuffer;
 public import hip.hiprenderer.viewport;
 public import hip.api.renderer.texture;
 public import hip.api.renderer.operations;
 public import hip.api.graphics.color;
-public import hip.api.renderer.core;
+public import hip.api.renderer.core_;
 public import hip.api.renderer.shadervar;
 import hip.windowing.window;
 import hip.math.rect;
@@ -28,7 +28,7 @@ import hip.console.log;
 private struct HipRendererResources
 {
     IHipTexture[] textures;
-    Shader[] shaders;
+    HipShaderProgram[] shaders;
     IHipVertexArrayImpl[]  vertexArrays;
     IHipRendererBuffer[] buffers;
 }
@@ -46,7 +46,6 @@ class HipRendererImplementation : IHipRenderer
     protected HipRendererMode rendererMode;
     protected Statistics stats;
     public  HipWindow window = null;
-    public  Shader currentShader;
     package HipRendererType rendererType = HipRendererType.None;
 
     public uint width, height;
@@ -269,22 +268,10 @@ class HipRendererImplementation : IHipRenderer
             return mat.transpose();
         return mat;
     }
-
-    Shader newShader()
+    
+    public HipFrameBuffer newFrameBuffer(int width, int height)
     {
-        res.shaders~= new Shader(rendererImpl.createShader());
-        return res.shaders[$-1];
-    }
-    public Shader newShader(string shaderPath)
-    {
-        Shader ret = newShader();
-        ret.loadShaderFromFile(shaderPath);
-        return ret;
-    }
-
-    public HipFrameBuffer newFrameBuffer(int width, int height, Shader frameBufferShader = null)
-    {
-        return new HipFrameBuffer(rendererImpl.createFrameBuffer(width, height), width, height, frameBufferShader);
+        return new HipFrameBuffer(rendererImpl.createFrameBuffer(width, height), width, height);
     }
     public IHipVertexArrayImpl  createVertexArray()
     {
@@ -297,16 +284,17 @@ class HipRendererImplementation : IHipRenderer
         res.buffers~= rendererImpl.createBuffer(size, usage, type);
         return res.buffers[$-1];
     }
+    public HipShaderProgram createShader()
+    {
+        res.shaders~= rendererImpl.createShader();
+        return res.shaders[$-1];
+    }
     public IHipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
     {
         res.buffers~= rendererImpl.createBuffer(data, usage, type);
         return res.buffers[$-1];
     }
-    public void setShader(Shader s)
-    {
-        currentShader = s;
-        s.bind();
-    }
+
     public bool hasErrorOccurred(out string err, string file = __FILE__, size_t line =__LINE__)
     {
         return rendererImpl.hasErrorOccurred(err, file, line);
@@ -462,6 +450,7 @@ void PreInitializeHipRenderer()
 
 
 pragma(inline, true) HipRendererImplementation HipRenderer(){return impl;}
+void SetGlobalHipRenderer(IHipRenderer r) { impl = cast(HipRendererImplementation)r; }
 
 export extern(System) IHipRenderer HipRendererAPI()
 {

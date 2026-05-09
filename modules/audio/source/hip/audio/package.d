@@ -197,11 +197,8 @@ void PreInitializeHipAudio()
     player = new HipAudioImpl();
     setIHipAudioPlayer(player);
 }
-
-pragma(inline, true)
-HipAudioImpl HipAudio(){return player;}
-
 export extern(C) IHipAudioPlayer HipAudioPlayerAPI()
 {
     return player;
 }
+HipAudioImpl HipAudio(){return player;}

@@ -73,7 +73,7 @@ final class HipVertexArrayObject
     *   Sets the attribute infos that were appended to this object. This function must only be called
     *   after binding/creating a VBO, or it will fail
     */
-    void sendAttributes(Shader s)
+    void sendAttributes(HipShaderProgram program)
     {
         // if(!isBonded)
         // {
@@ -81,7 +81,7 @@ final class HipVertexArrayObject
         //     return;
         // }
         assert(infos.length && EBO !is null, "Create the VBO and EBO before sending attributes.");
-        this.VAO.createInputLayout(infos, EBO, s.shaderProgram);
+        this.VAO.createInputLayout(infos, EBO, program);
     }
 
     void bind() { vertexBinder.bind(this); }

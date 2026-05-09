@@ -16,7 +16,6 @@ static if(HasDirect3D):
 import hip.config.opts;
 import hip.hiprenderer.renderer;
 import hip.api.renderer.texture;
-import hip.hiprenderer.shader;
 import hip.hiprenderer.backend.d3d.d3drenderer;
 import hip.util.system:getWindowsErrorMessage;
 import directx.d3d11;
@@ -37,7 +36,7 @@ struct HipD3D11VertexShader
     ID3D11VertexShader shader;
 }
 
-class Hip_D3D11_ShaderProgram : ShaderProgram
+class Hip_D3D11_ShaderProgram : HipShaderProgram
 {
     HipD3D11VertexShader vertex;
     HipD3D11PixelShader pixel;
@@ -48,6 +47,10 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
 
     ID3D11ShaderReflection vReflector;
     ID3D11ShaderReflection pReflector;
+
+    protected __gshared HipBlendFunction currSrc, currDst;
+    protected __gshared HipBlendEquation currEq;
+
 
     bool initialize()
     {
@@ -70,6 +73,203 @@ class Hip_D3D11_ShaderProgram : ShaderProgram
         }
         return true;
     }
+    override bool setShaderVar(ShaderVar* sv, void* value){return false;}
+    override void setBlending(HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
+    {
+        blendSrc = src;
+        blendDst = dest;
+        blendEq = eq;
+        auto b = &Hip_D3D11_Renderer.blend.RenderTarget[0];
+
+        if(eq == HipBlendEquation.DISABLED)
+        {
+            b.BlendEnable = cast(int)false;
+        }
+        else
+        {
+            b.BlendEnable = cast(int)true;
+            b.SrcBlend = getD3DBlendFunc(src);
+            b.DestBlend = getD3DBlendFunc(dest);
+            b.BlendOp = getD3DBlendEquation(eq);
+            b.BlendOpAlpha = getD3DBlendEquation(eq);
+
+            b.SrcBlendAlpha = getD3DBlendFunc(HipBlendFunction.ZERO);
+            b.DestBlendAlpha = getD3DBlendFunc(HipBlendFunction.ZERO);
+            b.BlendOp = getD3DBlendEquation(HipBlendEquation.ADD);
+            b.BlendOpAlpha = getD3DBlendEquation(HipBlendEquation.ADD);
+            b.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+        }
+        _hip_d3d_device.CreateBlendState(&Hip_D3D11_Renderer.blend, &blendState);
+    }
+
+    
+    override bool buildShader(string shaderSource, string shaderPath, bool isInstanced)
+    {
+        name = shaderPath;
+        if(!compileShaderType(shaderSource, ShaderTypes.vertex, isInstanced))
+            return false;
+        if(!compileShaderType(shaderSource, ShaderTypes.fragment, isInstanced))
+            return false;
+        initialize();
+        return true;
+    }
+
+    override void bind()
+    {
+        if(blendState !is null &&
+            (blendDst != currDst ||
+            blendSrc != currSrc ||
+            blendEq != currEq))
+        {
+            currEq  = blendEq;
+            currSrc = blendSrc;
+            currDst = blendDst;
+            _hip_d3d_context.OMSetBlendState(blendState, null, 0xFF_FF_FF_FF);
+        }
+        _hip_d3d_context.VSSetShader(vertex.shader, cast(ID3D11ClassInstance*)0, 0u);
+        _hip_d3d_context.PSSetShader(pixel.shader, cast(ID3D11ClassInstance*)0, 0u);
+    }
+    override void unbind()
+    {
+        _hip_d3d_context.VSSetShader(null, cast(ID3D11ClassInstance*)0, 0u);
+        _hip_d3d_context.PSSetShader(null, cast(ID3D11ClassInstance*)0, 0u);
+    }
+
+    override int getId(string name, ShaderVariablesLayout layout)
+    {
+        import hip.error.handler;
+        D3D11_SHADER_INPUT_BIND_DESC output;
+        if(!SUCCEEDED(vReflector.GetResourceBindingDescByName(name.ptr, &output)))
+        {
+            ErrorHandler.showErrorMessage("Error finding ID/Uniform for shader ", "For variable named "~name ~ " in shader " ~ this.name);
+        }
+        return output.BindPoint;
+    }
+
+    private bool compileShader(ref ID3DBlob shaderPtr, string shaderPrefix, string shaderSource, bool isInstanced)
+    {
+        string shaderType = shaderPrefix == "ps" ? "Pixel Shader" : "Vertex Shader";
+        const(char)* func = shaderPrefix == "ps" ? "fragmentMain" : "vertexMain";
+
+        //No #includes
+        import hip.util.data_structures:staticArray;
+
+        uint compile_flags = D3DCOMPILE_ENABLE_STRICTNESS;
+        uint effects_flags = 0;
+        ID3DBlob shader = null;
+        ID3DBlob error = null;
+        shaderPrefix~= "_5_0\0"; //Append version on shader type
+
+
+        static if(HIP_DEBUG)
+        {
+            compile_flags|= D3DCOMPILE_WARNINGS_ARE_ERRORS;
+            compile_flags|= D3DCOMPILE_DEBUG;
+            compile_flags|= D3DCOMPILE_SKIP_OPTIMIZATION;
+        }
+        else static if(HIP_OPTIMIZE)
+            compile_flags|= D3DCOMPILE_OPTIMIZATION_LEVEL3;
+
+        const defines =
+        [
+            D3D_SHADER_MACRO("INSTANCED", isInstanced ? "1" : "0"),
+            D3D_SHADER_MACRO(null, null)
+        ].staticArray;
+
+        HRESULT hr = D3DCompile(shaderSource.ptr, shaderSource.length, null,
+        defines.ptr, null, func,  shaderPrefix.ptr, compile_flags, effects_flags, &shader, &error);
+        shaderPtr = shader;
+
+        if(ErrorHandler.assertLazyErrorMessage(SUCCEEDED(hr), shaderType~" compilation error", "Compilation failed"))
+        {
+            if(error !is null)
+            {
+                string errMessage = to!string(cast(char*)error.GetBufferPointer());
+                ErrorHandler.showErrorMessage("Shader Source Error: ", shaderSource);
+                ErrorHandler.showErrorMessage("Compilation error:", errMessage);
+                error.Release();
+            }
+            if(shader)
+                shader.Release();
+            return false;
+        }
+        return true;
+    }
+
+    private bool compileShaderType(string shaderSource, ShaderTypes type, bool isInstanced)
+    {
+        assert(type == ShaderTypes.fragment || type == ShaderTypes.vertex, "Unsupported shader type.");
+        HRESULT res = 0;
+        ID3DBlob blob;
+        switch(type)
+        {
+            case ShaderTypes.vertex:
+                if(!compileShader(vertex.blob, "vs", shaderSource, isInstanced))
+                    return false;
+                blob = vertex.blob;
+                res = _hip_d3d_device.CreateVertexShader(blob.GetBufferPointer(), blob.GetBufferSize(), null, &vertex.shader);
+                break;
+            case ShaderTypes.fragment:
+                if(!compileShader(pixel.blob, "ps", shaderSource, isInstanced))
+                    return false;
+                blob = pixel.blob;
+                res = _hip_d3d_device.CreatePixelShader(blob.GetBufferPointer(), blob.GetBufferSize(), null, &pixel.shader);
+                break;
+            default: throw new Exception("Unsupported shader type.");
+        }
+
+        if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Shader creation error", "Creation failed"))
+        {
+            ErrorHandler.showErrorMessage("Shader Error:", getWindowsErrorMessage(res));
+            return false;
+        }
+        return true;
+    }
+
+    override void sendVars(ShaderVariablesLayout[] layouts)
+    {
+        D3D11_SHADER_INPUT_BIND_DESC desc;
+        foreach(l; layouts)
+        {
+            import core.stdc.string:memcpy;
+            Hip_D3D11_ShaderVarAdditionalData* data = cast(Hip_D3D11_ShaderVarAdditionalData*)l.getAdditionalData();
+
+            if(l.isDirty)
+            {
+                D3D11_MAPPED_SUBRESOURCE resource;
+                _hip_d3d_context.Map(data.buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+                memcpy(resource.pData, l.getBlockData(), l.getLayoutSize());
+                _hip_d3d_context.Unmap(data.buffer,  0);
+                l.isDirty = false;
+            }
+
+
+            ErrorHandler.assertExit(data != null, "D3D11 ShaderVarAdditionalData is null, can't send variables");
+
+            final switch(l.shaderType)
+            {
+                case ShaderTypes.fragment:
+                    pReflector.GetResourceBindingDescByName(l.nameStringz, &desc);
+                    _hip_d3d_context.PSSetConstantBuffers(desc.BindPoint, 1, &data.buffer);
+                    break;
+                case ShaderTypes.vertex:
+                    vReflector.GetResourceBindingDescByName(l.nameStringz, &desc);
+                    _hip_d3d_context.VSSetConstantBuffers(desc.BindPoint, 1, &data.buffer);
+                    break;
+                case ShaderTypes.geometry:
+                case ShaderTypes.none:
+                    break;
+            }
+        }
+    }
+
+    override void bindArrayOfTextures(IHipTexture[] textures, string varName)
+    {
+        foreach(i, texture; textures)
+            texture.bind(cast(int)i);
+    }
+    override void createVariablesBlock(ref ShaderVariablesLayout layout){}
+    override void onRenderFrameEnd(){}
 
     override void dispose()
     {
@@ -126,243 +326,4 @@ package D3D11_BLEND_OP getD3DBlendEquation(HipBlendEquation eq)
         case MIN:return D3D11_BLEND_OP_MIN;
         case MAX:return D3D11_BLEND_OP_MAX;
     }
-}
-
-class Hip_D3D11_ShaderImpl : IShader
-{
-    import hip.util.data_structures:Pair;
-
-    private bool compileShader(ref ID3DBlob shaderPtr, string shaderPrefix, string shaderSource, bool isInstanced)
-    {
-        string shaderType = shaderPrefix == "ps" ? "Pixel Shader" : "Vertex Shader";
-        const(char)* func = shaderPrefix == "ps" ? "fragmentMain" : "vertexMain";
-
-        //No #includes
-        import hip.util.data_structures:staticArray;
-
-        uint compile_flags = D3DCOMPILE_ENABLE_STRICTNESS;
-        uint effects_flags = 0;
-        ID3DBlob shader = null;
-        ID3DBlob error = null;
-        shaderPrefix~= "_5_0\0"; //Append version on shader type
-
-
-        static if(HIP_DEBUG)
-        {
-            compile_flags|= D3DCOMPILE_WARNINGS_ARE_ERRORS;
-            compile_flags|= D3DCOMPILE_DEBUG;
-            compile_flags|= D3DCOMPILE_SKIP_OPTIMIZATION;
-        }
-        else static if(HIP_OPTIMIZE)
-            compile_flags|= D3DCOMPILE_OPTIMIZATION_LEVEL3;
-
-        const defines =
-        [
-            D3D_SHADER_MACRO("INSTANCED", isInstanced ? "1" : "0"),
-            D3D_SHADER_MACRO(null, null)
-        ].staticArray;
-
-        HRESULT hr = D3DCompile(shaderSource.ptr, shaderSource.length, null,
-        defines.ptr, null, func,  shaderPrefix.ptr, compile_flags, effects_flags, &shader, &error);
-        shaderPtr = shader;
-
-        if(ErrorHandler.assertLazyErrorMessage(SUCCEEDED(hr), shaderType~" compilation error", "Compilation failed"))
-        {
-            if(error !is null)
-            {
-                string errMessage = to!string(cast(char*)error.GetBufferPointer());
-                ErrorHandler.showErrorMessage("Shader Source Error: ", shaderSource);
-                ErrorHandler.showErrorMessage("Compilation error:", errMessage);
-                error.Release();
-            }
-            if(shader)
-                shader.Release();
-            return false;
-        }
-        return true;
-    }
-    private bool compileShaderType(ref Hip_D3D11_ShaderProgram program, string shaderSource, ShaderTypes type, bool isInstanced)
-    {
-        assert(type == ShaderTypes.fragment || type == ShaderTypes.vertex, "Unsupported shader type.");
-        HRESULT res = 0;
-        ID3DBlob blob;
-        switch(type)
-        {
-            case ShaderTypes.vertex:
-                if(!compileShader(program.vertex.blob, "vs", shaderSource, isInstanced))
-                    return false;
-                blob = program.vertex.blob;
-                res = _hip_d3d_device.CreateVertexShader(blob.GetBufferPointer(), blob.GetBufferSize(), null, &program.vertex.shader);
-                break;
-            case ShaderTypes.fragment:
-                if(!compileShader(program.pixel.blob, "ps", shaderSource, isInstanced))
-                    return false;
-                blob = program.pixel.blob;
-                res = _hip_d3d_device.CreatePixelShader(blob.GetBufferPointer(), blob.GetBufferSize(), null, &program.pixel.shader);
-                break;
-            default: throw new Exception("Unsupported shader type.");
-        }
-
-        if(ErrorHandler.assertErrorMessage(SUCCEEDED(res), "Shader creation error", "Creation failed"))
-        {
-            ErrorHandler.showErrorMessage("Shader Error:", getWindowsErrorMessage(res));
-            return false;
-        }
-        return true;
-    }
-
-    override ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced)
-    {
-        Hip_D3D11_ShaderProgram prog = new Hip_D3D11_ShaderProgram();
-        prog.name = shaderPath;
-        compileShaderType(prog, shaderSource, ShaderTypes.vertex, isInstanced);
-        compileShaderType(prog, shaderSource, ShaderTypes.fragment, isInstanced);
-        prog.initialize();
-        return prog;
-    }
-
-    override void bind(ShaderProgram _program)
-    {
-        Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)_program;
-        if(p.blendState !is null &&
-            (p.blendDst != currDst ||
-            p.blendSrc != currSrc ||
-            p.blendEq != currEq))
-        {
-            currEq  = p.blendEq;
-            currSrc = p.blendSrc;
-            currDst = p.blendDst;
-            _hip_d3d_context.OMSetBlendState(p.blendState, null, 0xFF_FF_FF_FF);
-        }
-        _hip_d3d_context.VSSetShader(p.vertex.shader, cast(ID3D11ClassInstance*)0, 0u);
-        _hip_d3d_context.PSSetShader(p.pixel.shader, cast(ID3D11ClassInstance*)0, 0u);
-    }
-    override void unbind(ShaderProgram _program)
-    {
-        _hip_d3d_context.VSSetShader(null, cast(ID3D11ClassInstance*)0, 0u);
-        _hip_d3d_context.PSSetShader(null, cast(ID3D11ClassInstance*)0, 0u);
-    }
-
-    override int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
-    {
-        import hip.error.handler;
-        Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
-        D3D11_SHADER_INPUT_BIND_DESC output;
-
-
-        if(!SUCCEEDED(p.vReflector.GetResourceBindingDescByName(name.ptr, &output)))
-        {
-            ErrorHandler.showErrorMessage("Error finding ID/Uniform for shader ", "For variable named "~name ~ " in shader " ~ prog.name);
-        }
-
-
-        return output.BindPoint;
-    }
-
-    override void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[] layouts)
-    {
-        D3D11_SHADER_INPUT_BIND_DESC desc;
-        Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
-        foreach(l; layouts)
-        {
-            import core.stdc.string:memcpy;
-            Hip_D3D11_ShaderVarAdditionalData* data = cast(Hip_D3D11_ShaderVarAdditionalData*)l.getAdditionalData();
-
-            if(l.isDirty)
-            {
-                D3D11_MAPPED_SUBRESOURCE resource;
-                _hip_d3d_context.Map(data.buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-                memcpy(resource.pData, l.getBlockData(), l.getLayoutSize());
-                _hip_d3d_context.Unmap(data.buffer,  0);
-                l.isDirty = false;
-            }
-
-
-            ErrorHandler.assertExit(data != null, "D3D11 ShaderVarAdditionalData is null, can't send variables");
-
-            final switch(l.shaderType)
-            {
-                case ShaderTypes.fragment:
-                    p.pReflector.GetResourceBindingDescByName(l.nameStringz, &desc);
-                    _hip_d3d_context.PSSetConstantBuffers(desc.BindPoint, 1, &data.buffer);
-                    break;
-                case ShaderTypes.vertex:
-                    p.vReflector.GetResourceBindingDescByName(l.nameStringz, &desc);
-                    _hip_d3d_context.VSSetConstantBuffers(desc.BindPoint, 1, &data.buffer);
-                    break;
-                case ShaderTypes.geometry:
-                case ShaderTypes.none:
-                    break;
-            }
-        }
-    }
-
-    override void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
-    {
-        foreach(i, texture; textures)
-            texture.bind(cast(int)i);
-    }
-
-    override void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
-    {
-        import core.stdc.stdlib:malloc;
-        D3D11_BUFFER_DESC desc;
-        desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        desc.StructureByteStride=0;
-        desc.MiscFlags = 0;
-        desc.Usage = D3D11_USAGE_DYNAMIC;
-        desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        desc.ByteWidth = cast(uint)layout.getLayoutSize();
-        D3D11_SUBRESOURCE_DATA data;
-        data.pSysMem = layout.getBlockData();
-
-        Hip_D3D11_ShaderVarAdditionalData* d = new Hip_D3D11_ShaderVarAdditionalData;
-        HRESULT res = _hip_d3d_device.CreateBuffer(&desc, &data, &d.buffer);
-        layout.setAdditionalData(cast(void*)d, true);
-
-        if(FAILED(res))
-            ErrorHandler.showErrorMessage("D3D11 Error while creating variables block",
-            "Error while creating variable buffer for Shader with type "~to!string(layout.shaderType));
-    }
-
-    protected __gshared HipBlendFunction currSrc, currDst;
-    protected __gshared HipBlendEquation currEq;
-
-
-    override void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
-    {
-        Hip_D3D11_ShaderProgram p = cast(Hip_D3D11_ShaderProgram)prog;
-        p.blendSrc = src;
-        p.blendDst = dest;
-        p.blendEq = eq;
-        auto b = &Hip_D3D11_Renderer.blend.RenderTarget[0];
-
-        if(eq == HipBlendEquation.DISABLED)
-        {
-            b.BlendEnable = cast(int)false;
-        }
-        else
-        {
-            b.BlendEnable = cast(int)true;
-            b.SrcBlend = getD3DBlendFunc(src);
-            b.DestBlend = getD3DBlendFunc(dest);
-            b.BlendOp = getD3DBlendEquation(eq);
-            b.BlendOpAlpha = getD3DBlendEquation(eq);
-
-            b.SrcBlendAlpha = getD3DBlendFunc(HipBlendFunction.ZERO);
-            b.DestBlendAlpha = getD3DBlendFunc(HipBlendFunction.ZERO);
-            b.BlendOp = getD3DBlendEquation(HipBlendEquation.ADD);
-            b.BlendOpAlpha = getD3DBlendEquation(HipBlendEquation.ADD);
-            b.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-        }
-        _hip_d3d_device.CreateBlendState(&Hip_D3D11_Renderer.blend, &p.blendState);
-    }
-    override bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
-    {
-        return false;
-    }
-
-    override void onRenderFrameEnd(ShaderProgram){}
-
-
 }

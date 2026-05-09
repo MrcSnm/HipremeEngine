@@ -17,18 +17,28 @@ version(GLES30) version = GLES3;
 version(OpenGL):
 import hip.api.renderer.texture;
 import hip.hiprenderer.backend.gl.glrenderer;
-import hip.hiprenderer.shader;
+import hip.api.renderer.shader;
 import hip.hiprenderer.renderer;
 import hip.api.renderer.shadervar;
 import hip.util.conv;
 import hip.util.format: fastUnsafeCTFEFormat, format;
 import hip.error.handler;
 
-class Hip_GL3_ShaderProgram : ShaderProgram
+class HipGLShaderProgram : HipShaderProgram
 {
     uint fragmentShader;
     uint vertexShader;
     uint program;
+    protected HipBlendFunction blendSrc = HipBlendFunction.CONSTANT_COLOR, blendDst = HipBlendFunction.CONSTANT_COLOR;
+    protected HipBlendEquation blendEq = HipBlendEquation.DISABLED;
+    protected ShaderVariablesLayout[] layouts;
+
+
+    private __gshared HipGLShaderProgram boundShader;
+    private __gshared HipBlendFunction currSrc, currDst;
+    private __gshared HipBlendEquation currEq;
+    private __gshared blendingEnabled = false;
+
 
     this()
     {
@@ -89,7 +99,7 @@ class Hip_GL3_ShaderProgram : ShaderProgram
     bool isUsingUbo;
     int[string] uniformIds;
 
-    int getId(string name)
+    private int getId(string name)
     {
         int* ret = name in uniformIds;
         if(ret)
@@ -98,237 +108,38 @@ class Hip_GL3_ShaderProgram : ShaderProgram
         uniformIds[name] = v;
         return v;
     }
-    protected HipBlendFunction blendSrc = HipBlendFunction.CONSTANT_COLOR, blendDst = HipBlendFunction.CONSTANT_COLOR;
-    protected HipBlendEquation blendEq = HipBlendEquation.DISABLED;
-}
 
-
-GLenum getGLBlendFunction(HipBlendFunction func)
-{
-    final switch(func) with(HipBlendFunction)
+    override int getId(string name, ShaderVariablesLayout layout)
     {
-        case  ZERO: return GL_ZERO;
-        case  ONE: return GL_ONE;
-        case  SRC_COLOR: return GL_SRC_COLOR;
-        case  ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
-        case  DST_COLOR: return GL_DST_COLOR;
-        case  ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
-        case  SRC_ALPHA: return GL_SRC_ALPHA;
-        case  ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
-        case  DST_ALPHA: return GL_DST_ALPHA;
-        case  ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
-        case  CONSTANT_COLOR: return GL_CONSTANT_COLOR;
-        case  ONE_MINUS_CONSTANT_COLOR: return GL_ONE_MINUS_CONSTANT_COLOR;
-        case  CONSTANT_ALPHA: return GL_CONSTANT_ALPHA;
-        case  ONE_MINUS_CONSTANT_ALPHA: return GL_ONE_MINUS_CONSTANT_ALPHA;
-    }
-}
-GLenum getGLBlendEquation(HipBlendEquation eq)
-{
-    final switch(eq) with (HipBlendEquation)
-    {
-        case DISABLED: return GL_FUNC_ADD;
-        case ADD: return GL_FUNC_ADD;
-        case SUBTRACT: return GL_FUNC_SUBTRACT;
-        case REVERSE_SUBTRACT: return GL_FUNC_REVERSE_SUBTRACT;
-        case MIN: return GL_MIN;
-        case MAX: return GL_MAX;
-    }
-}
-class Hip_GL_ShaderImpl : IShader
-{
-    import hip.util.data_structures:Pair;
-    protected ShaderVariablesLayout[] layouts;
-   
-    static string getShaderVersion(string str)
-    {
-        import hip.util.string;
-        return betweenInclusive(str, "#version ", "\n");
-    }
-    static string getShaderPrecision(string str)
-    {
-        import hip.util.string;
-        return betweenInclusive(str, "precision ", ";\n");
-    }
-
-    static string preprocess(string shader, ShaderTypes type, bool isInstanced = false)
-    {
-        string ver = getShaderVersion(shader);
-        string prefix;
-        
-        string precision = getShaderPrecision(shader);
-        if(!ver.length)
-            prefix = shaderVersion;
-        if(!precision.length)
-            prefix~= floatPrecision;
-        
-        final switch(type)
-        {
-            case ShaderTypes.fragment:
-                prefix~= "#define FRAGMENT\n";
-                break;
-            case ShaderTypes.vertex:
-                prefix~= "#define VERTEX\n";
-                break;
-            case ShaderTypes.geometry:assert(false, "Unuspported geometry.");
-            case ShaderTypes.none:assert(false, "Unuspported none.");
-        }
-        if(isInstanced)
-            prefix~= "#define INSTANCED\n";
-        prefix~= 
-`#if __VERSION__ == 100
-    #define INOUT varying
-    #define IN varying
-    #define OUT varying
-    #define OUT_COLOR gl_FragColor
-    #define UNIFORM_BUFFER_OBJECT(bindingN, structType, varName, structDecl ) struct structType structDecl ; uniform structType varName
-    #ifdef FRAGMENT
-        #define SAMPLE2D texture2D
-    #elif defined(VERTEX)
-        #define ATTRIBUTE(LOC) attribute
-    #endif
-
-    #define UVEC2 vec2
-    #define IVEC2 vec2
-    #define UINT float
-    #define INT float
-#else
-    #define IN in
-    #define OUT out
-    #define OUT_COLOR outPixelColor
-    #define UNIFORM_BUFFER_OBJECT(bindingN, structType, varName, structDecl) layout(std140) uniform structType structDecl varName
-
-    #ifdef FRAGMENT
-        #define INOUT IN
-        #define SAMPLE2D texture
-        out vec4 outPixelColor;
-    #else
-        #define INOUT OUT
-        #define ATTRIBUTE(LOC) layout (location = LOC) in
-    #endif
-
-    #define UVEC2 uvec2
-    #define IVEC2 ivec2
-    #define UINT uint
-    #define INT int
-
-#endif
-
-#ifdef FRAGMENT
-#define ENTRY_POINT fragmentMain()
-#elif defined(VERTEX)
-#define ENTRY_POINT vertexMain()
-#endif
-#line 1 0
-`;
-        return prefix ~ shader ~ "\nvoid main(){ENTRY_POINT;}";
-    }
-
-    override ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced = false)
-    {
-        Hip_GL3_ShaderProgram prog = new Hip_GL3_ShaderProgram();
-        prog.name = shaderPath;
-        if(!Hip_GL3_ShaderProgram.compileShader(prog.vertexShader, preprocess(shaderSource, ShaderTypes.vertex, isInstanced)))
-            return null;
-        if(!Hip_GL3_ShaderProgram.compileShader(prog.fragmentShader, preprocess(shaderSource, ShaderTypes.fragment, isInstanced)))
-            return null;
-
-        glCall(() =>glAttachShader(prog.program, prog.vertexShader));
-        glCall(() =>glAttachShader(prog.program, prog.fragmentShader));
-        glCall(() =>glLinkProgram(prog.program));
-        
-        int success;
-        int length;
-        char[4096] infoLog;
-
-        glCall(() =>glGetProgramiv(prog.program, GL_LINK_STATUS, &success));
-
-        if(ErrorHandler.assertErrorMessage(success==true, "Shader linking error", "Linking failed"))
-        {
-            glCall(() => glGetProgramInfoLog(prog.program, 4096, &length, infoLog.ptr));
-            ErrorHandler.showErrorMessage("Linking error: ", cast(string)(infoLog[0..length]));
-        }
-        
-        return prog;
-    }
-    override int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
-    {
-        int varID = (cast(Hip_GL3_ShaderProgram)prog).getId(name);
+        int varID = getId(name);
         if(varID <= 0)
         {
             string existingVariables;
             foreach(k, v; layout.variables)
                 existingVariables~= "\t"~k~"\n";
             ErrorHandler.showErrorMessage("Uniform not found",
-            "Variable named '"~name~"' does not exists in shader "~prog.name~
+            "Variable named '"~name~"' does not exists in shader "~this.name~
             " Existing variables: "~existingVariables);
         }
         return varID;
     }
-    
 
-    private __gshared Hip_GL_ShaderImpl boundShader;
-    private __gshared HipBlendFunction currSrc, currDst;
-    private __gshared HipBlendEquation currEq;
-    private __gshared blendingEnabled = false;
-
-    override public void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq)
+    override public void setBlending(HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq)
     {
-        Hip_GL3_ShaderProgram p = cast(Hip_GL3_ShaderProgram)prog;
-        p.blendSrc = src;
-        p.blendDst = dst;
-        p.blendEq = eq;
+        blendSrc = src;
+        blendDst = dst;
+        blendEq = eq;
     }
 
-    override void bind(ShaderProgram program)
+    override void unbind()
     {
-        if(boundShader !is this)
-        {
-            Hip_GL3_ShaderProgram p = cast(Hip_GL3_ShaderProgram)program;
-            if(p.blendEq == HipBlendEquation.DISABLED)
-            {
-                if(blendingEnabled)
-                {
-                    glCall(() => glDisable(GL_BLEND));
-                    blendingEnabled = false;
-                }
-            }
-            else
-            {
-                if(!blendingEnabled)
-                {
-                    glCall(() => glEnable(GL_BLEND));
-                    blendingEnabled = true;
-                }
-                if(currEq != p.blendEq)
-                {
-                    currEq = p.blendEq;
-                    glCall(() => glBlendEquation(getGLBlendEquation(p.blendEq)));
-                }
-                if(currSrc != p.blendSrc || currDst != p.blendDst)
-                {
-                    currSrc = p.blendSrc;
-                    currDst = p.blendDst;
-                    glCall(() => glBlendFunc(getGLBlendFunction(p.blendSrc), getGLBlendFunction(p.blendDst)));
-                }
-            }
-            glCall(() =>glUseProgram(p.program));
-            boundShader = this;
-        }
+        glCall(() =>glUseProgram(0));
     }
-    override void unbind(ShaderProgram program)
-    {
-        if(boundShader is this)
-        {
-            glCall(() =>glUseProgram(0));
-            boundShader = null;
-        }
-    }
-    private void sendVar(ref ShaderVar sVar, ref ShaderProgram prog, ShaderVariablesLayout layout)
+    private void sendVar(ref ShaderVar sVar, ShaderVariablesLayout layout)
     {
         int id = 0;
         if(sVar.type != UniformType.custom) 
-            id = getId(prog, sVar.name, layout);
+            id = getId(sVar.name, layout);
         final switch(sVar.type) with(UniformType)
         {
             case boolean:
@@ -384,7 +195,7 @@ class Hip_GL_ShaderImpl : IShader
                 foreach(v; sVar.variables)
                 {
                     if(v.isDirty)
-                        sendVar(v, prog, layout);
+                        sendVar(v, layout);
                 }
                 break;
             case none:break;
@@ -392,9 +203,9 @@ class Hip_GL_ShaderImpl : IShader
         sVar.isDirty = false;
     }
 
-    override void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[] layouts)
+    override void sendVars(ShaderVariablesLayout[] layouts)
     {
-        bind(prog);
+        bind();
         foreach(ShaderVariablesLayout l; layouts)
         {
             if(!l.isDirty)
@@ -404,12 +215,12 @@ class Hip_GL_ShaderImpl : IShader
             {
                 if(!v.sVar.isDirty)
                     continue;
-                sendVar(v.sVar, prog, l);
+                sendVar(v.sVar,l);
             }
         }
     }
 
-    override bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
+    override bool setShaderVar(ShaderVar* sv, void* value)
     {
         ///Optimization for not allocating when inside loops.
         __gshared int[] temp;
@@ -430,30 +241,129 @@ class Hip_GL_ShaderImpl : IShader
         }
     }
 
-    override void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
+    override bool buildShader(string shaderSource, string shaderPath, bool isInstanced = false)
+    {
+        name = shaderPath;
+        if(!compileShader(vertexShader, preprocess(shaderSource, ShaderTypes.vertex, isInstanced)))
+            return false;
+        if(!compileShader(fragmentShader, preprocess(shaderSource, ShaderTypes.fragment, isInstanced)))
+            return false;
+
+        glCall(() =>glAttachShader(program, vertexShader));
+        glCall(() =>glAttachShader(program, fragmentShader));
+        glCall(() =>glLinkProgram(program));
+        
+        int success;
+        int length;
+        char[4096] infoLog;
+
+        glCall(() =>glGetProgramiv(program, GL_LINK_STATUS, &success));
+
+        if(ErrorHandler.assertErrorMessage(success==true, "Shader linking error", "Linking failed"))
+        {
+            glCall(() => glGetProgramInfoLog(program, 4096, &length, infoLog.ptr));
+            ErrorHandler.showErrorMessage("Linking error: ", cast(string)(infoLog[0..length]));
+        }
+        return success == true;
+    }
+   
+
+    override void bind()
+    {
+        if(boundShader !is this)
+        {
+            if(blendEq == HipBlendEquation.DISABLED)
+            {
+                if(blendingEnabled)
+                {
+                    glCall(() => glDisable(GL_BLEND));
+                    blendingEnabled = false;
+                }
+            }
+            else
+            {
+                if(!blendingEnabled)
+                {
+                    glCall(() => glEnable(GL_BLEND));
+                    blendingEnabled = true;
+                }
+                if(currEq != blendEq)
+                {
+                    currEq = blendEq;
+                    glCall(() => glBlendEquation(getGLBlendEquation(blendEq)));
+                }
+                if(currSrc != blendSrc || currDst != blendDst)
+                {
+                    currSrc = blendSrc;
+                    currDst = blendDst;
+                    glCall(() => glBlendFunc(getGLBlendFunction(blendSrc), getGLBlendFunction(blendDst)));
+                }
+            }
+            glCall(() =>glUseProgram(program));
+            boundShader = this;
+        }
+    }
+
+    override void bindArrayOfTextures(IHipTexture[] textures, string varName)
     {
         bool shouldControlBind = boundShader !is this;
 
         if(shouldControlBind)
-            bind(prog);
+            bind();
         
         foreach(int i; 0..cast(int)textures.length)
             textures[i].bind(i);
         if(shouldControlBind)
-            unbind(prog);
+            unbind();
     }
-    override void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
+    override void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
         if(layout.hint & ShaderHint.GL_USE_BLOCK)
             ErrorHandler.assertExit(false, "Use HipGL3 for Uniform Block support.");
     }
-    override void onRenderFrameEnd(ShaderProgram program){}
+    override void onRenderFrameEnd(){}
+
+}
+
+
+GLenum getGLBlendFunction(HipBlendFunction func)
+{
+    final switch(func) with(HipBlendFunction)
+    {
+        case  ZERO: return GL_ZERO;
+        case  ONE: return GL_ONE;
+        case  SRC_COLOR: return GL_SRC_COLOR;
+        case  ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
+        case  DST_COLOR: return GL_DST_COLOR;
+        case  ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
+        case  SRC_ALPHA: return GL_SRC_ALPHA;
+        case  ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
+        case  DST_ALPHA: return GL_DST_ALPHA;
+        case  ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
+        case  CONSTANT_COLOR: return GL_CONSTANT_COLOR;
+        case  ONE_MINUS_CONSTANT_COLOR: return GL_ONE_MINUS_CONSTANT_COLOR;
+        case  CONSTANT_ALPHA: return GL_CONSTANT_ALPHA;
+        case  ONE_MINUS_CONSTANT_ALPHA: return GL_ONE_MINUS_CONSTANT_ALPHA;
+    }
+}
+GLenum getGLBlendEquation(HipBlendEquation eq)
+{
+    final switch(eq) with (HipBlendEquation)
+    {
+        case DISABLED: return GL_FUNC_ADD;
+        case ADD: return GL_FUNC_ADD;
+        case SUBTRACT: return GL_FUNC_SUBTRACT;
+        case REVERSE_SUBTRACT: return GL_FUNC_REVERSE_SUBTRACT;
+        case MIN: return GL_MIN;
+        case MAX: return GL_MAX;
+    }
 }
 
 
 
+
 static if(OpenGLHasUniformBufferSupport) 
-class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
+class HipGL3ShaderProgram : HipGLShaderProgram
 {
     struct UBO
     {
@@ -466,14 +376,14 @@ class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
 
     uint id = 0;
 
-    override void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
+    override void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
         UBO* b = new UBO(
             new Hip_GL3_Buffer(layout.getLayoutSize(), HipResourceUsage.Dynamic, HipRendererBufferType.uniform),            
         );
 
         layout.setAdditionalData(cast(void*)b, true);
-        setUboBindPoint(shaderProgram, layout.name, *b);
+        setUboBindPoint(layout.name, *b);
         ubos~= layout;
     }
 
@@ -492,15 +402,14 @@ class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
         }
     }
     
-    protected void setUboBindPoint(const ref ShaderProgram prog, string name, ref UBO ubo)
+    protected void setUboBindPoint(string name, ref UBO ubo)
     {
-        int program = (cast(Hip_GL3_ShaderProgram)prog).program;
         int blockIndex = glCall(() =>glGetUniformBlockIndex(program, cast(char*)name.ptr));
         if(blockIndex == GL_INVALID_INDEX)
         {
             throw new Exception(
                 "OpenGL GLSL Usage Error: setUboBindPoint"~
-                "\nProgram: " ~prog.name~
+                "\nProgram: " ~name~
                 "\nUniform Buffer Object block with expected name '"~name~"' not found." ~
                 "\nPlease check hip.hiprenderer.backend.gl.defaultshaders #define examples for using "~
                 "UNIFORM_BUFFER_OBJECT in your shader." ~
@@ -519,9 +428,8 @@ class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
         ubo.bindPoint = id++;
         glCall(() => glUniformBlockBinding(program, blockIndex, ubo.bindPoint));
     }
-    override void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[] layouts)
+    override void sendVars(ShaderVariablesLayout[] layouts)
     {
-        Hip_GL3_ShaderProgram glProg = cast(Hip_GL3_ShaderProgram)prog;
         foreach(ShaderVariablesLayout l; layouts)
         {
             import core.stdc.string;
@@ -536,7 +444,7 @@ class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
         }   
     }
 
-    void dispose(ref ShaderProgram prog)
+    override void dispose()
     {
         foreach (ub; ubos)
         {
@@ -544,6 +452,7 @@ class Hip_GL3_ShaderImpl : Hip_GL_ShaderImpl
             glCall(() => glDeleteBuffers(1, &ubo.buffer.handle));
         }
         ubos.length = 0;
+        super.dispose();
     }
 }
 
@@ -573,3 +482,89 @@ else version(GLES20)
 }
 else
     enum shaderVersion = "#version 330 core\n";
+
+
+
+private string getShaderVersion(string str)
+{
+    import hip.util.string;
+    return betweenInclusive(str, "#version ", "\n");
+}
+private string getShaderPrecision(string str)
+{
+    import hip.util.string;
+    return betweenInclusive(str, "precision ", ";\n");
+}
+
+private string preprocess(string shader, ShaderTypes type, bool isInstanced = false)
+{
+    string ver = getShaderVersion(shader);
+    string prefix;
+    
+    string precision = getShaderPrecision(shader);
+    if(!ver.length)
+        prefix = shaderVersion;
+    if(!precision.length)
+        prefix~= floatPrecision;
+    
+    final switch(type)
+    {
+        case ShaderTypes.fragment:
+            prefix~= "#define FRAGMENT\n";
+            break;
+        case ShaderTypes.vertex:
+            prefix~= "#define VERTEX\n";
+            break;
+        case ShaderTypes.geometry:assert(false, "Unuspported geometry.");
+        case ShaderTypes.none:assert(false, "Unuspported none.");
+    }
+    if(isInstanced)
+        prefix~= "#define INSTANCED\n";
+    prefix~= 
+`#if __VERSION__ == 100
+    #define INOUT varying
+    #define IN varying
+    #define OUT varying
+    #define OUT_COLOR gl_FragColor
+    #define UNIFORM_BUFFER_OBJECT(bindingN, structType, varName, structDecl ) struct structType structDecl ; uniform structType varName
+    #ifdef FRAGMENT
+        #define SAMPLE2D texture2D
+    #elif defined(VERTEX)
+        #define ATTRIBUTE(LOC) attribute
+    #endif
+
+    #define UVEC2 vec2
+    #define IVEC2 vec2
+    #define UINT float
+    #define INT float
+#else
+    #define IN in
+    #define OUT out
+    #define OUT_COLOR outPixelColor
+    #define UNIFORM_BUFFER_OBJECT(bindingN, structType, varName, structDecl) layout(std140) uniform structType structDecl varName
+
+    #ifdef FRAGMENT
+        #define INOUT IN
+        #define SAMPLE2D texture
+        out vec4 outPixelColor;
+    #else
+        #define INOUT OUT
+        #define ATTRIBUTE(LOC) layout (location = LOC) in
+    #endif
+
+    #define UVEC2 uvec2
+    #define IVEC2 ivec2
+    #define UINT uint
+    #define INT int
+
+#endif
+
+#ifdef FRAGMENT
+#define ENTRY_POINT fragmentMain()
+#elif defined(VERTEX)
+#define ENTRY_POINT vertexMain()
+#endif
+#line 1 0
+`;
+    return prefix ~ shader ~ "\nvoid main(){ENTRY_POINT;}";
+}

@@ -1,0 +1,12 @@
+{
+    "authors": [
+        "Marcelo"
+    ],
+    "dependencies": {
+        "renderer": {"path": "../renderer"}
+    },
+    "description": "Game renderer module for Hipreme Engine",
+	"targetPath": "build",
+    "license": "proprietary",
+    "name": "game_renderer"
+}

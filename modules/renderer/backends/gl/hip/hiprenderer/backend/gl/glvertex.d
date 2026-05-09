@@ -18,7 +18,7 @@ import hip.error.handler;
 import hip.util.conv;
 import hip.config.opts;
 import hip.hiprenderer.renderer;
-import hip.hiprenderer.shader;
+import hip.api.renderer.shader;
 import hip.hiprenderer.vertex;
 
 
@@ -94,10 +94,10 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
 
     void bind() {vaoBinder.bind(this);}
     void unbind(){vaoBinder.unbind(this);}
-    void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, ShaderProgram p)
+    void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, HipShaderProgram p)
     {
         import hip.hiprenderer.backend.gl.glshader;
-        Hip_GL3_ShaderProgram glProg = cast(Hip_GL3_ShaderProgram)p;
+        HipGL3ShaderProgram glProg = cast(HipGL3ShaderProgram)p;
         this.ebo = ebo;
         vaoInfos = attInfos;
         foreach(ref info; attInfos)
@@ -129,7 +129,7 @@ static if (OpenGLHasVAOSupport) final class Hip_GL3_VertexArrayObject : IHipVert
     void bind(){vBinder.bind(this);}
     void unbind(){vBinder.unbind(this);}
 
-    void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, ShaderProgram p)
+    void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, HipShaderProgram p)
     {
         glCall(() => glBindVertexArray(this.vao));
         ebo.bind();

@@ -5,7 +5,7 @@ version(Have_bindbc_lua) version = HipremeEngineLua;
 import hip.graphics.g2d.spritebatch;
 import hip.graphics.g2d.tilemap;
 import hip.graphics.g2d.geometrybatch;
-import hip.graphics.orthocamera;
+import hip.game.orthocamera;
 import hip.hiprenderer;
 import hip.bind.interpreters;
 public import hip.api.graphics.color;

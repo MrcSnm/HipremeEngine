@@ -9,12 +9,13 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.graphics.g2d.textrenderer;
-import hip.graphics.mesh;
+import hip.game.mesh;
+import hip.game.shader;
 import hip.math.matrix;
 import hip.api.data.font;
 import hip.hiprenderer;
 import hip.assetmanager;
-public import hip.graphics.orthocamera;
+public import hip.game.orthocamera;
 public import hip.api.graphics.batch;
 public import hip.api.graphics.text : HipTextAlign, Size;
 
@@ -73,7 +74,7 @@ class HipTextRenderer : IHipBatch
         if(bmTextShader is null)
         {
             import hip.hiprenderer.initializer;
-            bmTextShader = newShader(HipShaderPresets.BITMAP_TEXT);
+            bmTextShader = Shader.fromShaderPreset(HipShaderPresets.BITMAP_TEXT);
             bmTextShader.setup!(HipTextRendererVertexUniforms, HipTextRendererFragmentUniforms)(HipRenderer.getInfo);
             bmTextShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
             const Viewport v = HipRenderer.getCurrentViewport();

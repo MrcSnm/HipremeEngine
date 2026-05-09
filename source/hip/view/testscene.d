@@ -12,7 +12,7 @@ module hip.view.testscene;
 version(Test):
 
 import hip.graphics.g2d.geometrybatch;
-import hip.hiprenderer.shader;
+import hip.game.shader;
 import hip.hiprenderer;
 import hip.hiprenderer.viewport;
 import hip.view.scene;

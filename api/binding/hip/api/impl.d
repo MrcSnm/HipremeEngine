@@ -11,6 +11,7 @@ public import hip.api.data.ini;
 public import hip.api.data.jsonc;
 
 //Rendering
+public import hip.api.renderer.core;
 public import hip.api.graphics.color;
 public import hip.api.renderer.texture;
 public import hip.api.renderer.viewport;

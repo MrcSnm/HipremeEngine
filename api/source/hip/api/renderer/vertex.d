@@ -136,7 +136,7 @@ interface IHipVertexArrayImpl
     * Metal needs a ShaderProgram for cerating a pipelinestate
     */
     void createInputLayout(
-        HipVertexAttributeInfo[] info, IHipRendererBuffer ebo, ShaderProgram shaderProgram
+        HipVertexAttributeInfo[] info, IHipRendererBuffer ebo, HipShaderProgram shaderProgram
     );
 }
 

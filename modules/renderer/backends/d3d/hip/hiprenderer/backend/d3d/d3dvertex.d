@@ -21,7 +21,7 @@ import directx.d3d11;
 import hip.util.system;
 import hip.hiprenderer;
 import hip.hiprenderer.backend.d3d.d3drenderer;
-import hip.hiprenderer.shader;
+import hip.api.renderer.shader;
 import hip.hiprenderer.backend.d3d.d3dshader;
 import hip.hiprenderer.vertex;
 import hip.config.opts;
@@ -182,7 +182,7 @@ final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
         ebo.unbind();
     }
     void createInputLayout(
-        HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, ShaderProgram shaderProgram
+        HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, HipShaderProgram shaderProgram
     )
     {
         if(ErrorHandler.assertErrorMessage(shaderProgram !is null, "D3D11 VAO Error", "Error at creating input layout"))

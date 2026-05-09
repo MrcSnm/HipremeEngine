@@ -9,7 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.hiprenderer.framebuffer;
-import hip.hiprenderer.shader;
 import hip.hiprenderer.renderer;
 import hip.api.renderer.texture;
 public import hip.api.renderer.framebuffer;
@@ -18,17 +17,13 @@ public import hip.api.renderer.framebuffer;
 
 class HipFrameBuffer : IHipFrameBuffer
 {
-    Shader currentShader;
     protected IHipFrameBuffer impl;
     int width, height;
-    this(IHipFrameBuffer fbImpl, int width, int height, Shader framebufferShader = null)
+    this(IHipFrameBuffer fbImpl, int width, int height)
     {
-        import hip.hiprenderer.initializer;
         impl = fbImpl;
         this.width = width;
         this.height = height;
-        if(framebufferShader is null)
-            currentShader = newShader(HipShaderPresets.FRAME_BUFFER);
     }
     void create(uint width, uint height){}
     void resize(uint width, uint height){}
@@ -49,7 +44,6 @@ class HipFrameBuffer : IHipFrameBuffer
 
     void draw()
     {
-        currentShader.bind();
         impl.draw();
     }
 

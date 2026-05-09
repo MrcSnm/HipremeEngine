@@ -6,7 +6,7 @@ import directx.d3d11;
 import hip.error.handler;
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
-import hip.hiprenderer.shader;
+import hip.api.renderer.shader;
 import hip.hiprenderer.backend.d3d.d3drenderer;
 import hip.hiprenderer.backend.d3d.d3dtexture;
 

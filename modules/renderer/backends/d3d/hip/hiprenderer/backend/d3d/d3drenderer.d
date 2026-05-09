@@ -31,7 +31,7 @@ import hip.util.system;
 import hip.config.opts;
 import hip.error.handler;
 
-import hip.hiprenderer.shader;
+import hip.api.renderer.shader;
 import hip.hiprenderer.viewport;
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
@@ -71,7 +71,6 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     package static D3D11_BLEND_DESC blend;
     protected static ID3D11BlendState blendState;
     protected static Viewport currentViewport;
-    public static Shader currentShader;
 
     static if(HIP_DEBUG)
     {
@@ -410,9 +409,9 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         return new Hip_D3D11_Buffer(data, usage, type);
     }
-    public IShader createShader()
+    public HipShaderProgram createShader()
     {
-        return new Hip_D3D11_ShaderImpl();
+        return new Hip_D3D11_ShaderProgram();
     }
 
     bool isBlendingEnabled() const
@@ -499,15 +498,9 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
 
     void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255){}
-    void setShader(Shader s)
-    {
-        currentShader = s;
-    }
 
     void begin()
     {
-        // if(HipRenderer.currentShader != currentShader)
-        //     HipRenderer.setShader(currentShader);
         d3dCall(_hip_d3d_context.OMSetRenderTargets(1u, &_hip_d3d_mainRenderTarget, null));
     }
     void end()

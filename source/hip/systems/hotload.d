@@ -47,7 +47,7 @@ Call `dub -c script -- path/to/project` dub -c script requires that argument.");
         if(!HipFS.absoluteExists(path))
         {
             import hip.console.log;
-            logln("Path '", path, "' does not exists while trying to find for a HotloadableDLL");
+            loglnError("Path '", path, "' does not exists while trying to find for a HotloadableDLL");
             return false;
         }
         //Create dll_hiptempdll

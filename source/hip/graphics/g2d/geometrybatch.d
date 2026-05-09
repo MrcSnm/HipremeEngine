@@ -9,11 +9,11 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.graphics.g2d.geometrybatch;
-import hip.graphics.orthocamera;
+import hip.game.orthocamera;
 import hip.hiprenderer.renderer;
-import hip.hiprenderer.shader;
+import hip.game.shader;
 import hip.error.handler;
-import hip.graphics.mesh;
+import hip.game.mesh;
 import hip.math.matrix;
 import hip.math.utils;
 import hip.math.vector;
@@ -68,7 +68,7 @@ class GeometryBatch : IHipBatch
     this(HipOrthoCamera camera = null, index_t verticesCount=DefaultMaxGeometryBatchVertices, index_t indicesCount=DefaultMaxGeometryBatchVertices)
     {
         import hip.hiprenderer.initializer;
-        Shader s = newShader(HipShaderPresets.GEOMETRY_BATCH);
+        Shader s = Shader.fromShaderPreset(HipShaderPresets.GEOMETRY_BATCH);
         s.setup!(HipGeometryBatchVertexUniforms, HipGeometryBatchFragmentUniforms)(HipRenderer.getInfo);
         s.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 

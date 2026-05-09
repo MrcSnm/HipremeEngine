@@ -19,7 +19,7 @@ else
 
 import hip.hiprenderer.renderer;
 import hip.hiprenderer.framebuffer;
-import hip.hiprenderer.shader;
+import hip.api.renderer.shader;
 import hip.hiprenderer.viewport;
 import hip.windowing.window;
 import hip.util.conv;
@@ -105,7 +105,6 @@ GLenum fromHipStencilOperation(HipStencilOperation op)
 class Hip_GL3Renderer : IHipRendererImpl
 {
     HipWindow window;
-    Shader currentShader;
     protected __gshared bool isGLBlendEnabled = false;
     protected __gshared bool isGLDepthEnabled = false;
     protected __gshared bool isGLStencilEnabled = false;
@@ -114,20 +113,20 @@ class Hip_GL3Renderer : IHipRendererImpl
     void setErrorCheckingEnabled(bool enable = true){errorCheckEnabled = enable;}
     public final bool isRowMajor(){return true;}
 
-    IShader createShader()
+    HipShaderProgram createShader()
     {
         static if(OpenGLHasUniformBufferSupport)
         {
             static if(UseWebGL)
             {
                 import gles;
-                return isWebGL2 ? new Hip_GL3_ShaderImpl() : new Hip_GL_ShaderImpl();
+                return isWebGL2 ? new HipGL3ShaderProgram() : new HipGLShaderProgram();
             }
             else 
-                return new Hip_GL3_ShaderImpl();
+                return new HipGL3ShaderProgram();
         }
         else
-            return new Hip_GL_ShaderImpl();
+            return new HipGLShaderProgram();
     }
     size_t function (ShaderTypes shaderType, UniformType uniformType) getShaderVarMapper()
     {
@@ -176,10 +175,6 @@ class Hip_GL3Renderer : IHipRendererImpl
         return true;
     }
 
-    void setShader(Shader s)
-    {
-        currentShader = s;
-    }
     public int queryMaxSupportedPixelShaderTextures()
     {
         static if(GLMaxOneBoundTexture)

@@ -281,7 +281,7 @@ class ShaderVariablesLayout
     string name;
     ///char* representation of name
     const(char)* nameZeroEnded;
-    protected IShader owner;
+    protected HipShaderProgram owner;
 
     //Single block representation of variables content
     protected ubyte[] data;
@@ -472,8 +472,8 @@ class ShaderVariablesLayout
         return ret;
     }
 
-    IShader getShader(){return owner;}
-    void lock(IShader owner)
+    HipShaderProgram getShader(){return owner;}
+    void lock(HipShaderProgram owner)
     {
         if(this.owner is null)
             this.owner = owner;

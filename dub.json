@@ -45,7 +45,8 @@
 		"math": {"path": "./modules/math", "version": "*"},
 		"renderer": {"path": "./modules/renderer", "version": "*"},
 		"util": {"path": "./modules/util", "version": "*"},
-		"net": {"path": "./modules/net", "version": "*"}
+		"net": {"path": "./modules/net", "version": "*"},
+		"game_renderer": {"path": "./modules/game_renderer"}
 	},
 	"configurations": [
 		{

@@ -10,13 +10,13 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.graphics.g2d.spritebatch_vertex;
 import hip.graphics.g2d.spritebatch;
-import hip.graphics.mesh;
-import hip.graphics.orthocamera;
+import hip.game.mesh;
+import hip.game.orthocamera;
 import hip.hiprenderer.renderer;
 import hip.assets.texture;
 import hip.hiprenderer.framebuffer;
 import hip.error.handler;
-import hip.hiprenderer.shader;
+import hip.game.shader;
 import hip.config.renderer;
 public import hip.api.graphics.batch;
 public import hip.api.graphics.color;

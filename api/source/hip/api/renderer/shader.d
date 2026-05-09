@@ -38,37 +38,29 @@ enum HipShaderPresets : ubyte
     NONE
 }
 
-/** 
- * This interface is currrently a Shader factory.
- */
-abstract class IShader
+abstract class HipShaderProgram
 {
+    string name;
     private bool* dirtyReference;
     final void setDirtyReference(bool* reference){ dirtyReference = reference; }
     final bool isDirty() { return *dirtyReference; }
     final void setDirty() { if(dirtyReference) *dirtyReference = true; }
 
-    abstract ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced);
-
-    abstract void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq);
-    abstract void bind(ShaderProgram program);
-    abstract void unbind(ShaderProgram program);
-    abstract int  getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout);
+    abstract bool buildShader(string shaderSource, string shaderPath, bool isInstanced);
+    abstract void setBlending(HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq);
+    abstract void bind();
+    abstract void unbind();
+    abstract int  getId(string name, ShaderVariablesLayout layout);
     
 
-    abstract void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram);
-    abstract bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value);
-    abstract void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[] layouts);
+    abstract void createVariablesBlock(ref ShaderVariablesLayout layout);
+    abstract bool setShaderVar(ShaderVar* sv, void* value);
+    abstract void sendVars(ShaderVariablesLayout[] layouts);
 
+    abstract void dispose();
     /** 
      * Each graphics API has its own way to bind array of textures, thus, this version was required.
      */
-    abstract void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName);
-    abstract void onRenderFrameEnd(ShaderProgram program);
-}
-
-abstract class ShaderProgram
-{
-    string name;
-    abstract void dispose();
+    abstract void bindArrayOfTextures(IHipTexture[] textures, string varName);
+    abstract void onRenderFrameEnd();
 }
