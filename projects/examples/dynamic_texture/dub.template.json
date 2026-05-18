@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/Pure-D/code-d/master/json-validation/dub.schema.json",
+	"$schema": "https://raw.githubusercontent.com/Pure-D/dub-editor/refs/heads/master/json-validation/dub.schema.json",
 	"authors": ["HipremeEngine"],
 	"description" : "Hipreme Engine test scene",
 	"license": "proprietary",

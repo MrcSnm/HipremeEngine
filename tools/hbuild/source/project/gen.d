@@ -86,7 +86,7 @@ string generateDubProject(DubProjectInfo info)
 	dstring name = outputName.map!(character => character.toLower).array;
 
 	return format!`{
-	"$schema": "https://raw.githubusercontent.com/Pure-D/code-d/master/json-validation/dub.schema.json",
+	"$schema": "https://raw.githubusercontent.com/Pure-D/dub-editor/refs/heads/master/json-validation/dub.schema.json",
 	"authors": ["%s"],
 	"description" : "%s",
 	"license": "proprietary",
