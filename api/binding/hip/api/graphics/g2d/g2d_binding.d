@@ -36,11 +36,11 @@ class HipG2DBinding
         ///Draw a pixel at (x, y) with the color specified at setGeometryColor
         void function(int x, int y, HipColor color = HipColor.no) drawPixel;
         ///Draws an unfilled rectangle
-        void function(int x, int y, int w, int h, HipColor color = HipColor.no) drawRectangle;
+        void function(int x, int y, int w, int h, HipColor color = HipColor.no, float rotation = 0) drawRectangle;
         ///Draws an unfilled triangle
         void function(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no) drawTriangle;
         ///Draws a filled rectangle
-        void function(int x, int y, int w, int h, HipColor color = HipColor.no) fillRectangle;
+        void function(int x, int y, int w, int h, HipColor color = HipColor.no, float rotation = 0) fillRectangle;
         ///Draws a filled rectangle with rounded borders
         void function(int x, int y, int w, int h, int radius = 4, HipColor color = HipColor.no, int precision = 16) fillRoundRect;
         ///Draws a filled triangle
@@ -137,11 +137,11 @@ version(none)
         ///Draw a pixel at (x, y) with the color specified at setGeometryColor
         void function(int x, int y, in HipColor color = HipColor.no) drawPixel;
         ///Draws an unfilled rectangle
-        void function(int x, int y, int w, int h, in HipColor color = HipColor.no) drawRectangle;
+        void function(int x, int y, int w, int h, in HipColor color = HipColor.no, float rotation = 0) drawRectangle;
         ///Draws an unfilled triangle
         void function(int x1, int y1, int x2, int y2, int x3, int y3, in HipColor color = HipColor.no) drawTriangle;
         ///Draws a filled rectangle
-        void function(int x, int y, int w, int h, in HipColor color = HipColor.no) fillRectangle;
+        void function(int x, int y, int w, int h, in HipColor color = HipColor.no, float rotation = 0) fillRectangle;
         ///Draws a filled rectangle with rounded borders
         void function(int x, int y, int w, int h, int radius = 4, HipColor color = HipColor.no, int precision = 16) fillRoundRect;
         ///Draws a filled triangle

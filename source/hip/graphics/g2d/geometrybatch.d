@@ -352,7 +352,32 @@ class GeometryBatch : IHipBatch
 
     }
 
-    void drawRectangle(int x, int y, int w, int h, HipColor color = HipColor.no)
+    pragma(inline, true)
+    protected void rectangleVertices(int x, int y, int w, int h, float rotation)
+    {
+        checkVerticesCount(4);
+
+        float s = sin(rotation);
+        float c = cos(rotation);
+
+        float centerX = -w/2;
+        float centerY = -h/2;
+        float x2 = w/2;
+        float y2 = h/2;
+
+        index_t topLeft = addVertex(c*centerX - s*centerY + x, c*centerY + s*centerX +y, managedDepth);
+        index_t botLeft = addVertex(c*x2 - s*centerY + x     , c*centerY + s*x2 +y, managedDepth);
+        index_t botRight= addVertex(c*x2 - s*y2 + x          , c*y2 + s*x2 + y, managedDepth);
+        index_t topRight= addVertex(c*centerX - s*y2 + x     , c*y2 + s*centerX+ y, managedDepth);
+
+        addIndex(
+            topLeft, botLeft, botRight,
+            botRight, topRight, topLeft
+        );
+
+    }
+
+    void drawRectangle(int x, int y, int w, int h, HipColor color = HipColor.no, float rotation = 0)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.lineStrip)
@@ -360,7 +385,10 @@ class GeometryBatch : IHipBatch
             flush();
             HipRenderer.setRendererMode(HipRendererMode.lineStrip);
         }
-        rectangleVertices(x,y,w,h);
+        if(rotation == 0)
+            rectangleVertices(x,y,w,h);
+        else
+            rectangleVertices(x,y,w,h,rotation);
         setColor(oldColor);
     }
 
@@ -398,7 +426,7 @@ class GeometryBatch : IHipBatch
     }
 
 
-    void fillRectangle(int x, int y, int w, int h, HipColor color = HipColor.no)
+    void fillRectangle(int x, int y, int w, int h, HipColor color = HipColor.no, float rotation = 0)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.triangles)
@@ -406,7 +434,10 @@ class GeometryBatch : IHipBatch
             flush();
             HipRenderer.setRendererMode(HipRendererMode.triangles);
         }
-        rectangleVertices(x,y,w,h);
+        if(rotation == 0)
+            rectangleVertices(x,y,w,h);
+        else
+            rectangleVertices(x,y,w,h,rotation);
         setColor(oldColor);
     }
 

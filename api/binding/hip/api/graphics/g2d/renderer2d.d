@@ -36,9 +36,9 @@ version(DefineOverloadings)
 	{
 		hip.api.graphics.g2d.g2d_binding.drawLine(cast(int)x1, cast(int)y1, cast(int)x2, cast(int)y2, color);
 	}
-	void drawRectangle(float x, float y, float width, float height, HipColor color = HipColor.no)
+	void drawRectangle(float x, float y, float width, float height, HipColor color = HipColor.no, float rotation = 0)
 	{
-		hip.api.graphics.g2d.g2d_binding.drawRectangle(cast(int)x, cast(int)y, cast(int)width, cast(int)height, color);
+		hip.api.graphics.g2d.g2d_binding.drawRectangle(cast(int)x, cast(int)y, cast(int)width, cast(int)height, color, rotation);
 	}
 
 	///Circle API
@@ -74,9 +74,9 @@ version(DefineOverloadings)
 	}
 
 	///Float overloading for fillRectangle
-	void fillRectangle(float x, float y, float width, float height, HipColor color = HipColor.no)
+	void fillRectangle(float x, float y, float width, float height, HipColor color = HipColor.no, float rotation = 0)
 	{
-		hip.api.graphics.g2d.g2d_binding.fillRectangle(cast(int)x, cast(int)y, cast(int)width, cast(int)height, color);
+		hip.api.graphics.g2d.g2d_binding.fillRectangle(cast(int)x, cast(int)y, cast(int)width, cast(int)height, color, rotation);
 	}
 
 	version(Have_util)
