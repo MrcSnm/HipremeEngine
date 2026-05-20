@@ -330,6 +330,11 @@ void main(string[] args)
 		input = RealTimeConsoleInput.init;
 		terminal.writeln("This terminal will only be able to output... No interaction will be available");
 	}
+	version(Posix)
+	{
+		import core.sys.posix.signal;
+		signal(SIGINT, SIG_DFL);
+	}
 	terminal.clear();
 	if(!("PATH" in environment))
 		environment["PATH"] = "";
