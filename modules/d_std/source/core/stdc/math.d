@@ -158,9 +158,24 @@ version(WebAssembly)
 
             return result;
         }
-        float fastAcos(float x)
+        // Handbook of Mathematical Functions
+        // M. Abramowitz and I.A. Stegun, Ed.
+
+        // Absolute error <= 6.7e-5. Implementation from https://developer.nvidia.com/w/cg/acos.html
+        float fastAcos(float x) 
         {
-            return PI_2 - fastAcos(x);
+            float negate = float(x < 0);
+            x = fabsf(x);
+            float ret = -0.0187293;
+            ret = ret * x;
+            ret = ret + 0.0742610;
+            ret = ret * x;
+            ret = ret - 0.2121144;
+            ret = ret * x;
+            ret = ret + 1.5707288;
+            ret = ret * sqrt(1.0-x);
+            ret = ret - 2 * negate * ret;
+            return negate * 3.14159265358979 + ret;
         }
 
 
