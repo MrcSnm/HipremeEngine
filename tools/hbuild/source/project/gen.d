@@ -264,6 +264,7 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
 dub.selections.json
 dub.json
 .DS_Store
+.ldc2_cache
 .dub
 .history
 .vs

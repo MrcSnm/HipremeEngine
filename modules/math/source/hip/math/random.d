@@ -39,6 +39,7 @@ class Random
 
     @nogc nothrow
     {
+        import hip.math.utils:round;
         static float rangef(float min, float max)
         {
             version(WebAssembly){return JS_Math_random() * (max-min) + min;}
@@ -49,15 +50,15 @@ class Random
         }
         static int range(int min, int max)
         {
-            return cast(int)rangef(min, max);
+            return rangef(min, max).round;
         }
         static uint rangeu(uint min, uint max)
         {
-            return cast(uint)rangef(min, max);
+            return cast(uint)rangef(min, max).round;
         }
         static ubyte rangeub(ubyte min, ubyte max)
         {
-            return cast(ubyte)rangef(min, max);
+            return cast(ubyte)rangef(min, max).round;
         }
     }
 
@@ -75,7 +76,6 @@ class Random
             int min = 0;
             int max = cast(int)(container.length) - 1;
             int index = range(min, max);
-
             return container[index];
         }
 
