@@ -83,7 +83,8 @@ interface IHipTextureRegion
 
     void setRegion(float u1, float v1, float u2, float v2);
     TextureCoordinatesQuad getRegion() const;
-    ref ushort[8] getVertices();
+    ref ushort[2] getUvMin();
+    ref ushort[2] getUvMax();
 
     void setFlippedX(bool flip);
     void setFlippedY(bool flip);
@@ -111,6 +112,20 @@ interface IHipTextureRegion
     final void setRegion(uint u1, uint v1, uint u2, uint v2)
     {
         setRegion(getTextureWidth(), getTextureHeight(), u1, v1, u2, v2);
+    }
+
+    final ushort[8] getVertices()
+    {
+        import hip.util.conv;
+        const ushort[2] uvMin = getUvMin;
+        const ushort[2] uvMax = getUvMin;
+
+        return [
+            uvMin[0], uvMin[1],
+            to!(ushort)(uvMin[0] + uvMax[0]), uvMin[1],
+            to!(ushort)(uvMin[0] + uvMax[0]), to!ushort(uvMin[1] + uvMax[1]),
+            uvMin[0], to!ushort(uvMin[1] + uvMax[1])
+        ];
     }
 
 

@@ -46,8 +46,8 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         {
             v.region = new HipTextureRegion(texture,
                 cast(uint)v.frame.x, cast(uint)v.frame.y,
-                cast(uint)(v.frame.x + v.frame.width),
-                cast(uint)(v.frame.y + v.frame.height)
+                cast(uint)(v.frame.width),
+                cast(uint)(v.frame.height)
             );
         }
         return true;
