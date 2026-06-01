@@ -775,7 +775,6 @@ auto splitRange(TString, TStrSep)(TString str, TStrSep separator) pure nothrow @
         bool empty(){return frontStr == null && index == -1 && lastFound == -1;}
         TString front()
         {
-            if(frontStr == "") popFront();
             return frontStr;
         }
         void popFront()
@@ -803,8 +802,9 @@ auto splitRange(TString, TStrSep)(TString str, TStrSep separator) pure nothrow @
                 lastFound = -1;
         }
     }
-
-    return SplitRange(str, separator);
+    SplitRange ret = SplitRange(str, separator);
+    ret.popFront();
+    return ret;
 }
 
 

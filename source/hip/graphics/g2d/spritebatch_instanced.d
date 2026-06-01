@@ -186,7 +186,25 @@ final class HipSpriteBatchInstanced
 
     void draw(IHipTextureRegion reg, int x, int y, ushort z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
-       draw(reg.getTexture, x, y, z, color, scaleX, scaleY, rotation);
+        if(color.a == 0) return;
+        if(instanceCount + 1 > maxInstances)
+            flush();
+        if(reg is null || reg.getTexture is null)
+        {
+            draw(cast(IHipTexture)null, x, y, z, color, scaleX, scaleY, rotation);
+            return;
+        }
+        int width, height;
+        ushort slot;
+        setTexture(reg.getTexture, width, height, slot);
+        width = reg.getWidth, height = reg.getHeight;
+
+        TextureCoordinatesQuad quad = reg.getRegion;
+        addInstance(
+            HipSpriteVertexInstancedPerInstance(
+                [cast(ushort)x, cast(ushort)y],  [cast(ushort)(width*scaleX), cast(ushort)(width*scaleY)], 
+                color, rotation, z, slot,
+                [quad.u1,quad.v1], [quad.u2, quad.v2]));
     }
 
     void draw()
