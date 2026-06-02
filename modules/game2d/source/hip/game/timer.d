@@ -1,4 +1,4 @@
-module hip.timer;
+module hip.game.timer;
 public import hip.api.systems.timer;
 
 class HipTimer : IHipTimer

@@ -1,18 +1,55 @@
-module hip.graphics.g2d.animation;
-
-import hip.util.reflection : ExportD;
+module hip.game2d.animation;
 import hip.error.handler;
 import hip.assets.textureatlas;
-
 import hip.api.graphics.color;
 import hip.api.renderer.texture : IHipTextureRegion;
-public import hip.api.graphics.g2d.animation;
+
+
+
+/**
+*   The frame user is responsible for using the frame properties, while the track is responsible
+*   for returning the correct frame
+*/
+struct HipAnimationFrame
+{
+    IHipTextureRegion region;
+    HipColor color = HipColor.white;
+    ///X, Y
+    float[2] offset = [0,0];
+
+    public import hip.util.data_structures:Array2D, Array2D_GC;
+    static HipAnimationFrame[] fromTextureRegions(Array2D!IHipTextureRegion reg, uint startY, uint startX, uint endY, uint endX)
+    {
+        HipAnimationFrame[] ret;
+
+        for(int i = startY; i <= endY; i++)
+            for(int j = startX; j <= endX; j++)
+                ret~= HipAnimationFrame(reg[i,j]);
+        return ret;
+    }
+    static HipAnimationFrame[] fromTextureRegions(Array2D_GC!IHipTextureRegion reg, uint startY, uint startX, uint endY, uint endX)
+    {
+        HipAnimationFrame[] ret;
+
+        for(int i = startY; i <= endY; i++)
+            for(int j = startX; j <= endX; j++)
+                ret~= HipAnimationFrame(reg[i,j]);
+        return ret;
+    }
+}
+
+enum HipAnimationLoopingMode : ubyte
+{
+    none,
+    reset,
+    pingpong
+}
 
 /**
 *   This class uses multiplication for selecting the current frame, so, depending on the frame rate, it can cause
 *   frame skipping, for giving better freedom for speeding up animation
 */
-@ExportD class HipAnimationTrack : IHipAnimationTrack
+class HipAnimationTrack
 {
     private immutable string _name;
 
@@ -45,22 +82,42 @@ public import hip.api.graphics.g2d.animation;
     bool reverse(bool setReverse) => _reverse = setReverse;
     float getDuration() const => cast(float)frames.length / framesPerSecond;
 
+
+    static HipAnimationTrack fromAtlas(IHipTextureAtlas atlas, string trackName, uint framesPerSecond, HipAnimationLoopingMode loopingMode = HipAnimationLoopingMode.none)
+    {
+        HipAnimationTrack track =  new HipAnimationTrack(trackName, framesPerSecond, loopingMode);
+        track.addFrames(atlas.animations[trackName]);
+        return track;
+    }
+
     /**
     *   Use this version if you wish a more custom frame
     */
-    IHipAnimationTrack addFrames(HipAnimationFrame[] frame...)
+    HipAnimationTrack addFrames(HipAnimationFrame[] frame...)
     {
-        foreach(f; frame)
-            frames~= f;
+        frames~= frame;
         if(frames.length > 0)
             lastFrame = cast(typeof(lastFrame))frames.length - 1;
         return this;
     }
 
-    IHipAnimationTrack addFrames(IHipTextureRegion[] regions...)
+    HipAnimationTrack addFrames(AtlasFrame[] atlasFrames...)
     {
+        int length = frames.length;
+        frames.length += atlasFrames.length;
+        foreach(r; atlasFrames)
+            frames[length++] = HipAnimationFrame(r);
+        if(frames.length > 0)
+            lastFrame = cast(typeof(lastFrame))frames.length - 1;
+        return this;
+    }
+
+    HipAnimationTrack addFrames(IHipTextureRegion[] regions...)
+    {
+        int length = frames.length;
+        frames.length += regions.length;
         foreach(r; regions)
-            frames~= HipAnimationFrame(r);
+            frames[length++] = HipAnimationFrame(r);
         if(frames.length > 0)
             lastFrame = cast(typeof(lastFrame))frames.length - 1;
         return this;
@@ -68,9 +125,6 @@ public import hip.api.graphics.g2d.animation;
     void reset(){currentFrame = 0;accumulator = 0;}
     void setFrame(uint frame)
     {
-        version(HipOptimize){}
-        else
-            ErrorHandler.assertLazyExit(frame < frames.length, "Frame is out of bounds on track "~name);
         accumulator = frame*(1.0f/framesPerSecond);
         currentFrame = frame;
     }
@@ -128,7 +182,6 @@ public import hip.api.graphics.g2d.animation;
         return &frames[frame];
     }
     
-    
 }
 
 /**
@@ -136,39 +189,51 @@ public import hip.api.graphics.g2d.animation;
 *   advanced work as setting track markers for playing tracks sequentially. Setting general animation
 *   speed 
 */
-@ExportD class HipAnimation : IHipAnimation
+final class HipAnimation
 {
-    protected IHipAnimationTrack[string] tracks;
+    protected HipAnimationTrack[string] tracks;
     immutable string name;
     protected float timeScale;
-    protected IHipAnimationTrack currentTrack;
+    protected HipAnimationTrack currentTrack;
     protected HipAnimationFrame* currentFrame;
 
 
-    this(string name)
+    this(string name, HipAnimationTrack[] tracks...)
     {
         this.name = name;
         this.timeScale = 1.0f;
+        foreach(t; tracks)
+            addTrack(t);
     }
 
     static HipAnimation fromAtlas(HipTextureAtlas atlas, string which, uint fps, HipAnimationLoopingMode loopingMode = HipAnimationLoopingMode.none)
     {
-        import hip.util.conv:to;
+        import hip.util.string:SmallString;
         HipAnimation ret = new HipAnimation(which);
         HipAnimationTrack track = new HipAnimationTrack(which, fps, loopingMode);
+
+        //Per image based.
         AtlasFrame* frame;
         int i = 1;
-        while((frame = (which~"_"~to!string(i) in atlas)) != null)
-        {
-            track.addFrames(HipAnimationFrame(frame.region));
-            i++;
-        }
+        do {
+            SmallString animName = SmallString(which, "_", i);
+            frame = animName.toString in atlas;
+            if(frame != null)
+            {
+                track.addFrames(HipAnimationFrame(frame.region));
+                i++;   
+            }
+        } while(frame != null);
+
+        AtlasFrame[]* frames = which in atlas.animations;
+        if(frames)
+            track.addFrames(*frames);
         ret.addTrack(track);
 
         return ret;
     }
 
-    IHipAnimation addTrack(IHipAnimationTrack track)
+    HipAnimation addTrack(HipAnimationTrack track)
     {
         if(currentTrack is null)
         {
@@ -180,12 +245,22 @@ public import hip.api.graphics.g2d.animation;
         tracks[track.name] = track;
         return this;
     }
-    IHipAnimationTrack getCurrentTrack() {return currentTrack;}
+    HipAnimationTrack getCurrentTrack() {return currentTrack;}
     HipAnimationFrame* getCurrentFrame() {return currentFrame;}
+
+    IHipTextureRegion getCurrentRegion()
+    {
+        HipAnimationFrame* frame = getCurrentFrame();
+        if(frame == null)
+            return null;
+        return frame.region;
+    }
+
+    string getCurrentTrackName() {return getCurrentTrack().name;}
     void setTimeScale(float scale){timeScale = scale;}
     void play(string trackName)
     {
-        IHipAnimationTrack* track = trackName in tracks;
+        HipAnimationTrack* track = trackName in tracks;
         version(HipOptimize){}
         else
             ErrorHandler.assertLazyExit(track != null,
@@ -197,9 +272,9 @@ public import hip.api.graphics.g2d.animation;
         update(0); //Updates the current frame
     }
 
-    IHipAnimationTrack getTrack(string trackName)
+    HipAnimationTrack getTrack(string trackName)
     {
-        IHipAnimationTrack* track = trackName in tracks;
+        HipAnimationTrack* track = trackName in tracks;
         if(track is null) return null;
         return *track;
     }
@@ -210,5 +285,35 @@ public import hip.api.graphics.g2d.animation;
         if(currentTrack is null)
             return;
         currentFrame = currentTrack.update(dt*timeScale);
+    }
+
+    /**
+    *   Creates an HipAnimation from a loaded texture atlas.
+    *   Its frames will be checked such as `mySprite${frameNumber}`.
+    *   The animation will be named as the string without the number.
+    */
+    static HipAnimation createFromAtlas(IHipTextureAtlas atlas, string animationName, uint framesPerSecond = 24)
+    {
+        import hip.util.string:getNumericEnding, lastIndexOf;
+        import hip.util.algorithm;
+        import hip.api;
+        import std.algorithm:sort;
+
+        HipAnimation anim = new HipAnimation(animationName);
+        foreach(string frameName; sort(atlas.frames.keys))
+        {
+            AtlasFrame* frame = frameName in atlas;
+            string name = frameName;
+            int index = frameName.lastIndexOf(frameName.getNumericEnding);
+            if(index != -1)
+                name = frameName[0..index];
+            HipAnimationTrack track = anim.getTrack(name);
+            if(track is null)
+            {
+                anim.addTrack(track = new HipAnimationTrack(name, framesPerSecond, HipAnimationLoopingMode.reset));
+            }
+            track.addFrames(HipAnimationFrame(frame.region, HipColor.white, [0,0]));
+        }
+        return anim;
     }
 }

@@ -164,7 +164,7 @@ final class HipSprite
         texture.setRegion(c.u1, c.v1, c.u2, c.v2);
         width = texture.getWidth;
         height = texture.getHeight;
-        const ushort[] v = texture.getVertices();
+        const ushort[8] v = texture.getVertices();
 
         vertices[0].vTexST = ushort2(v[0], v[1]);
         vertices[1].vTexST = ushort2(v[2], v[3]);
@@ -348,8 +348,8 @@ final class HipSprite
 
 final class HipSpriteAnimation
 {
-    import hip.api.graphics.g2d.animation;
-    private IHipAnimation animation;
+    import hip.game2d.animation;
+    private HipAnimation animation;
     HipAnimationFrame* currentFrame;
     HipSprite sprite;
 
@@ -357,21 +357,21 @@ final class HipSpriteAnimation
     {
         this.sprite = sprite;
     }
-    this(HipSprite sprite, IHipAnimation anim)
+    this(HipSprite sprite, HipAnimation anim)
     {
         this.sprite = sprite;
         animation = anim;
         this.setAnimation(anim.getCurrentTrackName());
     }
 
-    IHipAnimationTrack getAnimation(string animName)
+    HipAnimationTrack getAnimation(string animName)
     {
         return animation.getTrack(animName);
     }
     /**
     *   Sets internal animation data.
     */
-    void setAnimation(IHipAnimation anim)
+    void setAnimation(HipAnimation anim)
     {
         animation = anim;
         setAnimation(animation.getCurrentTrackName());

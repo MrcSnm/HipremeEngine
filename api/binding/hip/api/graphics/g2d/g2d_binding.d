@@ -1,8 +1,6 @@
 module hip.api.graphics.g2d.g2d_binding;
 public import hip.api.data.commons;
 public import hip.api.renderer.operations;
-public import hip.api.graphics.color;
-public import hip.api.graphics.g2d.animation;
 public import hip.api.renderer.viewport;
 public import hip.api.data.font;
 public import hip.api.data.tilemap;
@@ -87,12 +85,6 @@ class HipG2DBinding
 
         void function(uint width, uint height) setWindowSize;
         void function(uint width, uint height) setCameraSize;
-
-        ///Creates a track for the animation controller
-        IHipAnimationTrack function(string name, uint framesPerSecond, HipAnimationLoopingMode loopingMode = HipAnimationLoopingMode.none) newHipAnimationTrack;
-        ///Creates an animation to be iterated 
-        IHipAnimation function(string name) newHipAnimation;
-
 
         void function(int x = 0, int y = -1) drawGCStats;
         void function(int x = -1, int y = 0, bool clearTiming = false) drawTimings;
@@ -187,12 +179,6 @@ version(none)
         void function(uint width, uint height) setWindowSize;
 
         void function(uint width, uint height) setCameraSize;
-
-        ///Creates a track for the animation controller
-        IHipAnimationTrack function(string name, uint framesPerSecond, HipAnimationLoopingMode loopingMode = HipAnimationLoopingMode.none) newHipAnimationTrack;
-        ///Creates an animation to be iterated 
-        IHipAnimation function(string name) newHipAnimation;
-
 
         version(ImportSpritesheet)
         {

@@ -94,8 +94,6 @@ string generateDubProject(DubProjectInfo info)
 	"name" : "%s",
 	"engineModules": [
 		"util",
-		"timer",
-		"tween",
 		"data",
 		"math",
 		"game2d"
