@@ -21,8 +21,10 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     string[] texturePaths;
     IHipTexture texture;
     AtlasFrame[string] _frames;
+    AtlasFrame[][string] _animations;
 
     ref inout(AtlasFrame[string]) frames() inout {return _frames;}
+    ref inout(AtlasFrame[][string]) animations() inout {return _animations;}
 
     this()
     {
@@ -49,6 +51,15 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
                 cast(uint)(v.frame.width),
                 cast(uint)(v.frame.height)
             );
+        }
+        foreach(k, ref AtlasFrame[] frames; animations)
+        {
+            foreach(ref AtlasFrame v; frames)
+                v.region = new HipTextureRegion(texture, 
+                    cast(uint)v.frame.x, cast(uint)v.frame.y,
+                    cast(uint)v.frame.width,
+                    cast(uint)v.frame.height
+                );
         }
         return true;
     }
@@ -259,7 +270,6 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     {
         import hip.util.string : countUntil, splitRange, trim;
         import hip.util.conv : to;
-        import std.range:refRange;
 
         HipTextureAtlas ret = new HipTextureAtlas();
         ret.atlasPath = atlasPath;
@@ -315,6 +325,7 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         int sizeW, sizeH;
         int origX, origY;
         int offX, offY;
+        int index = -1;
 
         foreach(line; lineRange)
         {
@@ -324,15 +335,21 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
                 li = LineInfo.frameName;
                 if(frameName.length)
                 {
-                    ret.frames[frameName] = AtlasFrame(
+                    AtlasFrame frame = AtlasFrame(
                         frameName,
                         rotate,
                         false,
+                        index,
                         frame: AtlasRect(x, y, sizeW, sizeH),
                         spriteSourceSize: AtlasRect(offX, offY, sizeW, sizeH),
                         sourceSize: AtlasSize(sizeW, sizeH),
                     );
+                    if(index == -1)
+                        ret.frames[frameName] = frame;
+                    else
+                        ret.animations[frameName]~= frame;
                     rotate = false;
+                    index = -1;
                     frameName = null;
                     x = y = sizeW = sizeH = origX = origY = offX = offY = 0;
                 }
@@ -375,9 +392,16 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
                     offY = to!int(offset[commaIndex+2..$]);
                     break;
                 case LineInfo.index:
+                    index = line["index: ".length..$].to!int;
                     break;
             }
             li++;
+        }
+
+        foreach(string k, ref AtlasFrame[] frames; ret.animations)
+        {
+            import hip.util.algorithm:quicksort;
+            quicksort(frames, (AtlasFrame left, AtlasFrame right){ return left.index > right.index;});
         }
         return ret;
     }
