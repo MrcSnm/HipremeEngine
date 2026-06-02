@@ -178,7 +178,7 @@ final class HipSpriteBatchInstanced
         setTexture(texture, width, height, slot);
         addInstance(
             HipSpriteVertexInstancedPerInstance(
-                [cast(ushort)x, cast(ushort)y],  [cast(ushort)(width*scaleX), cast(ushort)(width*scaleY)], 
+                [cast(short)x, cast(short)y],  [cast(ushort)(width*scaleX), cast(ushort)(width*scaleY)], 
                 color, rotation, z, slot,
                 [0,0], [ushort.max, ushort.max]));
     }
@@ -202,7 +202,7 @@ final class HipSpriteBatchInstanced
         TextureCoordinatesQuad quad = reg.getRegion;
         addInstance(
             HipSpriteVertexInstancedPerInstance(
-                [cast(ushort)x, cast(ushort)y],  [cast(ushort)(width*scaleX), cast(ushort)(width*scaleY)], 
+                [cast(short)x, cast(short)y],  [cast(ushort)(width*scaleX), cast(ushort)(width*scaleY)], 
                 color, rotation, z, slot,
                 [quad.u1,quad.v1], [quad.u2, quad.v2]));
     }

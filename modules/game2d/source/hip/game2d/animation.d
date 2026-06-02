@@ -103,7 +103,7 @@ class HipAnimationTrack
 
     HipAnimationTrack addFrames(AtlasFrame[] atlasFrames...)
     {
-        int length = frames.length;
+        int length = cast(int)frames.length;
         frames.length += atlasFrames.length;
         foreach(r; atlasFrames)
             frames[length++] = HipAnimationFrame(r);
@@ -114,7 +114,7 @@ class HipAnimationTrack
 
     HipAnimationTrack addFrames(IHipTextureRegion[] regions...)
     {
-        int length = frames.length;
+        int length = cast(int)frames.length;
         frames.length += regions.length;
         foreach(r; regions)
             frames[length++] = HipAnimationFrame(r);

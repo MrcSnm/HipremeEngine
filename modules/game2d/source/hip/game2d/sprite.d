@@ -202,24 +202,24 @@ final class HipSprite
         if(isDirty)
         {
             isDirty = false;
-            ushort _x = (-cast(float)width*originX * scaleX + x).floatMapped!ushort;
-            ushort _y = (-cast(float)height*originY * scaleY + y).floatMapped!ushort;
-            ushort x2 = (_x+(width * scaleX)).floatMapped!ushort;
-            ushort y2 = (_y+(height * scaleY)).floatMapped!ushort;
+            short _x = (-cast(float)width*originX * scaleX + x).floatMapped!short;
+            short _y = (-cast(float)height*originY * scaleY + y).floatMapped!short;
+            short x2 = (_x+(width * scaleX)).floatMapped!short;
+            short y2 = (_y+(height * scaleY)).floatMapped!short;
 
             if(rotation == 0)
             {
                 //Top left
-                vertices[0].vPosition = ushort2(_x, _y);
+                vertices[0].vPosition = short2(_x, _y);
 
                 //Top right
-                vertices[1].vPosition = ushort2(x2, _y);
+                vertices[1].vPosition = short2(x2, _y);
 
                 //Bot right
-                vertices[2].vPosition = ushort2(x2, y2);
+                vertices[2].vPosition = short2(x2, y2);
 
                 //Bot left
-                vertices[3].vPosition = ushort2(_x, y2);
+                vertices[3].vPosition = short2(_x, y2);
             }
             else
             {
@@ -228,16 +228,16 @@ final class HipSprite
                 float s = sin(rotation);
 
                 //Top left
-                vertices[0].vPosition = ushort2((c*_x - s*_y + this.x).floatMapped!ushort, (c*_y + s*_x + this.y).floatMapped!ushort);
+                vertices[0].vPosition = short2((c*_x - s*_y + this.x).floatMapped!short, (c*_y + s*_x + this.y).floatMapped!short);
 
                 //Top right
-                vertices[1].vPosition = ushort2((c*x2 - s*_y + this.x).floatMapped!ushort, (c*_y + s*x2 + this.y).floatMapped!ushort);
+                vertices[1].vPosition = short2((c*x2 - s*_y + this.x).floatMapped!short, (c*_y + s*x2 + this.y).floatMapped!short);
 
                 //Bot right
-                vertices[2].vPosition = ushort2((c*x2 - s*y2 + this.x).floatMapped!ushort, (c*y2 + s*x2 + this.y).floatMapped!ushort);
+                vertices[2].vPosition = short2((c*x2 - s*y2 + this.x).floatMapped!short, (c*y2 + s*x2 + this.y).floatMapped!short);
 
                 //Bot left
-                vertices[3].vPosition = ushort2((c*_x - s*y2 + this.x).floatMapped!ushort, (c*y2 + s*_x + this.y).floatMapped!ushort);
+                vertices[3].vPosition = short2((c*_x - s*y2 + this.x).floatMapped!short, (c*y2 + s*_x + this.y).floatMapped!short);
             }
         }
         return vertices;
