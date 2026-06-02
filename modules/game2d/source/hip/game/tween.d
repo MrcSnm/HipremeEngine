@@ -1,8 +1,8 @@
-module hip.tween;
+module hip.game.tween;
 
 import core.stdc.math:cos, sin, pow, sqrt;
 private enum PI = 3.141592653589793;
-public import hip.timer;
+public import hip.game.timer;
 
 private enum c1 = 1.70158f;
 private enum c2 = c1 * 1.525;

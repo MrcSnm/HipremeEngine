@@ -11,7 +11,7 @@ public import hip.math.matrix;
 */
 @HipShaderInputLayout struct HipSpriteVertex
 {
-    ushort2 vPosition = [0,0];
+    short2 vPosition = [0,0];
     HipColor vColor = HipColor.white;
     @HipShaderInputNormalized ushort2 vTexST;
     ushort vZ = 0;
@@ -39,7 +39,7 @@ HipSpriteVertexInstancedPerVertex[4] spriteBatchInstancedVertices = [
  */
 @HipShaderInputLayout struct HipSpriteVertexInstancedPerInstance
 {
-    ushort[2] vXY;
+    short[2] vXY;
     ushort[2] vSize;
     HipColor vColor;
     float vRotation;

@@ -17,12 +17,9 @@ public import hip.api.graphics.color;
 public import hip.api.renderer.texture;
 public import hip.api.data.font;
 public import hip.api.graphics.text;
-public import hip.api.graphics.g2d.animation;
 public import hip.api.graphics.g2d.g2d_binding;
 
 version = DefineOverloadings;
-version(Have_util) version = DefineCreateFromAtlas;
-
 
 version(DefineOverloadings)
 {
@@ -36,9 +33,9 @@ version(DefineOverloadings)
 	{
 		hip.api.graphics.g2d.g2d_binding.drawLine(cast(int)x1, cast(int)y1, cast(int)x2, cast(int)y2, color);
 	}
-	void drawRectangle(float x, float y, float width, float height, HipColor color = HipColor.no)
+	void drawRectangle(float x, float y, float width, float height, HipColor color = HipColor.no, float rotation = 0)
 	{
-		hip.api.graphics.g2d.g2d_binding.drawRectangle(cast(int)x, cast(int)y, cast(int)width, cast(int)height, color);
+		hip.api.graphics.g2d.g2d_binding.drawRectangle(cast(int)x, cast(int)y, cast(int)width, cast(int)height, color, rotation);
 	}
 
 	///Circle API
@@ -74,9 +71,9 @@ version(DefineOverloadings)
 	}
 
 	///Float overloading for fillRectangle
-	void fillRectangle(float x, float y, float width, float height, HipColor color = HipColor.no)
+	void fillRectangle(float x, float y, float width, float height, HipColor color = HipColor.no, float rotation = 0)
 	{
-		hip.api.graphics.g2d.g2d_binding.fillRectangle(cast(int)x, cast(int)y, cast(int)width, cast(int)height, color);
+		hip.api.graphics.g2d.g2d_binding.fillRectangle(cast(int)x, cast(int)y, cast(int)width, cast(int)height, color, rotation);
 	}
 
 	version(Have_util)
@@ -109,39 +106,5 @@ version(DefineOverloadings)
 		}
 		
 		///Rect overload for fillRectangle
-	}
-}
-
-version(DefineCreateFromAtlas)
-{
-	/**
-	*   Creates an IHipAnimation from a loaded texture atlas.
-	*   Its frames will be checked such as `mySprite${frameNumber}`.
-	*   The animation will be named as the string without the number.
-	*/
-	static IHipAnimation createFromAtlas(IHipTextureAtlas atlas, string animationName, uint framesPerSecond = 24)
-	{
-		import hip.util.string:getNumericEnding, lastIndexOf;
-		import hip.util.algorithm;
-		import hip.api.graphics.g2d.renderer2d;
-		import std.algorithm:sort;
-
-		IHipAnimation anim = newHipAnimation(animationName);
-		foreach(string frameName; sort(atlas.frames.keys))
-		{
-			AtlasFrame* frame = frameName in atlas;
-			string name = frameName;
-			int index = frameName.lastIndexOf(frameName.getNumericEnding);
-			if(index != -1)
-				name = frameName[0..index];
-			IHipAnimationTrack track = anim.getTrack(name);
-			if(track is null)
-			{
-				anim.addTrack(track = newHipAnimationTrack(name, framesPerSecond, HipAnimationLoopingMode.reset));
-			}
-			track.addFrames(HipAnimationFrame(frame.region, HipColor.white, [0,0]));
-
-		}
-		return anim;
 	}
 }

@@ -264,20 +264,20 @@ final class HipSpriteBatchVertex
     }
 
     pragma(inline, true)
-    private static ushort2[4] getBounds(float x, float y, float z, float width, float height, float scaleX = 1, float scaleY = 1)
+    private static short2[4] getBounds(float x, float y, float z, float width, float height, float scaleX = 1, float scaleY = 1)
     {
         width*= scaleX;
         height*= scaleY;
         return [
-            ushort2(cast(ushort)x, cast(ushort) y),
-            ushort2(cast(ushort)(x+width), cast(ushort) y),
-            ushort2(cast(ushort)(x+width),  cast(ushort)(y+height)),
-            ushort2(cast(ushort)x,  cast(ushort)(y+height)),
+            short2(cast(short)x, cast(short) y),
+            short2(cast(short)(x+width), cast(short) y),
+            short2(cast(short)(x+width),  cast(short)(y+height)),
+            short2(cast(short)x,  cast(short)(y+height)),
         ];
     }
 
     pragma(inline, true)
-    private static ushort2[4] getBoundsFromRotation(float x, float y, float z, float width, float height, float rotation, float scaleX = 1, float scaleY = 1)
+    private static short2[4] getBoundsFromRotation(float x, float y, float z, float width, float height, float rotation, float scaleX = 1, float scaleY = 1)
     {
         import hip.math.utils:cos,sin;
         width*= scaleX;
@@ -290,17 +290,17 @@ final class HipSpriteBatchVertex
         float s = sin(rotation);
 
         return [
-            ushort2(cast(ushort) (c*centerX - s*centerY + x), cast(ushort) (c*centerY + s*centerX + y)),
-            ushort2(cast(ushort) (c*x2 - s*centerY + x)     , cast(ushort) (c*centerY + s*x2 + y)),
-            ushort2(cast(ushort) (c*x2 - s*y2 + x)          , cast(ushort) (c*y2 + s*x2 + y)),
-            ushort2(cast(ushort) (c*centerX - s*y2 + x)     , cast(ushort) (c*y2 + s*centerX + y)),
+            short2(cast(short) (c*centerX - s*centerY + x), cast(short) (c*centerY + s*centerX + y)),
+            short2(cast(short) (c*x2 - s*centerY + x)     , cast(short) (c*centerY + s*x2 + y)),
+            short2(cast(short) (c*x2 - s*y2 + x)          , cast(short) (c*y2 + s*x2 + y)),
+            short2(cast(short) (c*centerX - s*y2 + x)     , cast(short) (c*y2 + s*centerX + y)),
         ];
     }
 
     static void getTextureVertices(HipSpriteVertex[] output, int slot, int width, int height,
     int x, int y, float z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
-        ushort2[4] spritePos = void;
+        short2[4] spritePos = void;
         if(rotation == 0)
             spritePos = getBounds(x,y,z,width,height,scaleX,scaleY);
         else
@@ -326,7 +326,7 @@ final class HipSpriteBatchVertex
         int height = reg.getHeight();
         ushort[8] uvVertices = reg.getVertices();
 
-        ushort2[4] spritePos = rotation == 0 ? getBounds(x,y,z,width,height,scaleX,scaleY) :getBoundsFromRotation(x,y,z,width,height,rotation,scaleX,scaleY);
+        short2[4] spritePos = rotation == 0 ? getBounds(x,y,z,width,height,scaleX,scaleY) :getBoundsFromRotation(x,y,z,width,height,rotation,scaleX,scaleY);
 
         for(size_t i = 0; i < 4; i++)
         {

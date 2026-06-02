@@ -1,0 +1,12 @@
+{
+	"authors": [
+		"hipreme"
+	],
+	"dependencies": {
+		"gamut": "~>3.4.0"
+	},
+	"description": "A minimal D application.",
+	"license": "proprietary",
+	"name": "atlas_gen",
+	"targetPath": "build"
+}

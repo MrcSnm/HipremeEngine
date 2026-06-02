@@ -34,7 +34,8 @@ mixin StartFeatures!([
 	"msvclinker",
 	"vs_buildtools_installer",
 	"nuget",
-	"vcruntime140"
+	"vcruntime140",
+	"astc"
 ]);
 
 
@@ -330,10 +331,14 @@ void main(string[] args)
 		input = RealTimeConsoleInput.init;
 		terminal.writeln("This terminal will only be able to output... No interaction will be available");
 	}
+	version(Posix)
+	{
+		import core.sys.posix.signal;
+		signal(SIGINT, SIG_DFL);
+	}
 	terminal.clear();
 	if(!("PATH" in environment))
 		environment["PATH"] = "";
-
 
 	if(!HipremeEngineFeature.getFeature(terminal, input))
 	{

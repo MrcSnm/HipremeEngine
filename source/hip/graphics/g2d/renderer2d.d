@@ -117,6 +117,7 @@ void setWindowSize(uint width, uint height)
     camera.setSize(cast(int)viewport.worldWidth,cast(int)viewport.worldHeight);
 }
 void setCameraSize(uint width, uint height){camera.setSize(width, height);}
+HipOrthoCamera getCamera() { return camera; }
 void setViewport(Viewport v)
 {
     HipRenderer.setViewport(v);
@@ -161,10 +162,10 @@ void drawPixel(int x, int y, HipColor color = HipColor.no)
     manageBatchChange(geoBatch);
     geoBatch.drawPixel(x, y,color);
 }
-void drawRectangle(int x, int y, int w, int h, HipColor color = HipColor.no)
+void drawRectangle(int x, int y, int w, int h, HipColor color = HipColor.no, float rotation = 0)
 {
     manageBatchChange(geoBatch);
-    geoBatch.drawRectangle(x,y,w,h,color);
+    geoBatch.drawRectangle(x,y,w,h,color, rotation);
 }
 void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no)
 {
@@ -186,10 +187,10 @@ void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int
     manageBatchChange(geoBatch);
     geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision,color);
 }
-void fillRectangle(int x, int y, int w, int h, HipColor color = HipColor.no)
+void fillRectangle(int x, int y, int w, int h, HipColor color = HipColor.no, float rotation = 0)
 {
     manageBatchChange(geoBatch);
-    geoBatch.fillRectangle(x,y,w,h,color);
+    geoBatch.fillRectangle(x,y,w,h,color, rotation);
 }
 void fillRoundRect(int x, int y, int w, int h, int radius = 4, HipColor color = HipColor.no, int precision = 16)
 {

@@ -21,8 +21,10 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
     string[] texturePaths;
     IHipTexture texture;
     AtlasFrame[string] _frames;
+    AtlasFrame[][string] _animations;
 
     ref inout(AtlasFrame[string]) frames() inout {return _frames;}
+    ref inout(AtlasFrame[][string]) animations() inout {return _animations;}
 
     this()
     {
@@ -46,9 +48,18 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         {
             v.region = new HipTextureRegion(texture,
                 cast(uint)v.frame.x, cast(uint)v.frame.y,
-                cast(uint)(v.frame.x + v.frame.width),
-                cast(uint)(v.frame.y + v.frame.height)
+                cast(uint)(v.frame.width),
+                cast(uint)(v.frame.height)
             );
+        }
+        foreach(k, ref AtlasFrame[] frames; animations)
+        {
+            foreach(ref AtlasFrame v; frames)
+                v.region = new HipTextureRegion(texture, 
+                    cast(uint)v.frame.x, cast(uint)v.frame.y,
+                    cast(uint)v.frame.width,
+                    cast(uint)v.frame.height
+                );
         }
         return true;
     }
@@ -60,8 +71,6 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
         HipTextureAtlas ret = new HipTextureAtlas();
         ret.texturePaths~= texturePath;
         ret.atlasPath = atlasPath;
-
-        import hip.console.log;
 
         JSONValue json = parseJSON(cast(string)data);
         if(json["frames"].type == JSONType.array)
@@ -259,72 +268,140 @@ class HipTextureAtlas : HipAsset, IHipTextureAtlas
 
     static HipTextureAtlas readAtlas (const ubyte[] data, string atlasPath)
     {
-        import hip.util.string : split, countUntil;
+        import hip.util.string : countUntil, splitRange, trim;
         import hip.util.conv : to;
 
         HipTextureAtlas ret = new HipTextureAtlas();
         ret.atlasPath = atlasPath;
         string atlasFile = cast(string)data;
 
-        string[] lines = atlasFile.split("\n");
-        int i = 0;
-        while(lines[i] == "")
-            i++;
-        string textureName = lines[i++];
-        ret.texturePaths~= textureName;
-        string sizeText = lines[i++];
-        string format = lines[i++];
-        string filter = lines[i++];
-        string repeat = lines[i++];
-
-        const int offset = i;
-
-        for(; i < lines.length-offset; i+= 7)
+        auto lineRange = splitRange(atlasFile, "\n");
+        enum FileDataInfo : uint
         {
-            AtlasFrame frame;
-            frame.trimmed = false;
-            frame.filename = lines[i];
+            imageName,
+            size,
+            format,
+            filter,
+            repeat
+        }
+        FileDataInfo dataInfo = FileDataInfo.imageName;
+            import hip.console.log;
 
-            string rotate = lines[i+1];
-                rotate = rotate[rotate.countUntil(":")+2 .. $];
-            frame.rotated = to!bool(rotate);
+        while(!lineRange.empty)
+        {
+            string line = lineRange.front;
+            if(line.trim.length == 0)
+                break;
+            switch(dataInfo++)
+            {
+                case FileDataInfo.imageName:
+                    ret.texturePaths~= line;
+                    break;
+                case FileDataInfo.size:
+                case FileDataInfo.format:
+                case FileDataInfo.filter:
+                case FileDataInfo.repeat:
+                default:
+                    break;
+            }
+            lineRange.popFront();
+        }
 
-            string xy = lines[i+2];
-                xy = xy[xy.countUntil(":")+2 .. $];
+        enum LineInfo : uint
+        {
+            frameName,
+            rotation,
+            xy,
+            size,
+            orig,
+            offset,
+            index
+        }
 
-            ptrdiff_t commaIndex = xy.countUntil(',');
-            int x = to!int(xy[0..commaIndex]);
-            //To account space must increate 2
-            int y = to!int(xy[commaIndex+2..$]);
+        LineInfo li;
+        string frameName;
+        bool rotate;
+        int x, y;
+        int sizeW, sizeH;
+        int origX, origY;
+        int offX, offY;
+        int index = -1;
 
-            string size = lines[i+3];
-                size = size[size.countUntil(":")+2 .. $];
+        foreach(line; lineRange)
+        {
+            line = line.trim;
+            if(line.length == 0)
+            {
+                li = LineInfo.frameName;
+                if(frameName.length)
+                {
+                    AtlasFrame frame = AtlasFrame(
+                        frameName,
+                        rotate,
+                        false,
+                        index,
+                        frame: AtlasRect(x, y, sizeW, sizeH),
+                        spriteSourceSize: AtlasRect(offX, offY, sizeW, sizeH),
+                        sourceSize: AtlasSize(sizeW, sizeH),
+                    );
+                    if(index == -1)
+                        ret.frames[frameName] = frame;
+                    else
+                        ret.animations[frameName]~= frame;
+                    rotate = false;
+                    index = -1;
+                    frameName = null;
+                    x = y = sizeW = sizeH = origX = origY = offX = offY = 0;
+                }
+                continue;
+            }
+            final switch(li)
+            {
+                case LineInfo.frameName:
+                    frameName = line;
+                    break;
+                case LineInfo.rotation:
+                    rotate = to!bool(line["rotate: ".length..$]);
+                    break;
+                case LineInfo.xy:
+                    string xy = line["xy: ".length..$];
+                    ptrdiff_t commaIndex = xy.countUntil(',');
+                    x = to!int(xy[0..commaIndex]);
+                    //To account space must increate 2
+                    y = to!int(xy[commaIndex+2..$]);
+                    break;
+                case LineInfo.size:
+                    string size = line["size: ".length..$];
+                    ptrdiff_t commaIndex = size.countUntil(',');
+                    sizeW = to!int(size[0..commaIndex]);
+                    //To account space must increate 2
+                    sizeH = to!int(size[commaIndex+2..$]);
+                    break;
+                case LineInfo.orig:
+                    string orig = line["orig: ".length..$];
+                    ptrdiff_t commaIndex = orig.countUntil(',');
+                    origX = to!int(orig[0..commaIndex]);
+                    //To account space must increate 2
+                    origY = to!int(orig[commaIndex+2..$]);
+                    break;
+                case LineInfo.offset:
+                    string offset = line["offset: ".length..$];
+                    ptrdiff_t commaIndex = offset.countUntil(',');
+                    offX = to!int(offset[0..commaIndex]);
+                    //To account space must increate 2
+                    offY = to!int(offset[commaIndex+2..$]);
+                    break;
+                case LineInfo.index:
+                    index = line["index: ".length..$].to!int;
+                    break;
+            }
+            li++;
+        }
 
-            commaIndex = size.countUntil(',');
-            int sizeW = to!int(size[0..commaIndex]);
-            int sizeH = to!int(size[commaIndex+2..$]);
-
-            string orig = lines[i+4];
-                orig = orig[orig.countUntil(":")+2 .. $];
-
-            commaIndex = orig.countUntil(',');
-            int origX = to!int(orig[0..commaIndex]);
-            int origY = to!int(orig[commaIndex+2..$]);
-
-            string _offset = lines[i+5];
-                _offset = _offset[_offset.countUntil(":")+2 .. $];
-
-            commaIndex = _offset.countUntil(',');
-            int _offsetX = to!int(_offset[0..commaIndex]);
-            int _offsetY = to!int(_offset[commaIndex+2..$]);
-
-            string index = lines[i+6];
-                index = index[index.countUntil(":")+2 .. $];
-
-            frame.frame = AtlasRect(x, y, sizeW, sizeH);
-            frame.spriteSourceSize = AtlasRect(_offsetX, _offsetY, sizeW, sizeH);
-            frame.sourceSize = AtlasSize(sizeW, sizeH);
-            ret.frames[frame.filename] = frame;
+        foreach(string k, ref AtlasFrame[] frames; ret.animations)
+        {
+            import hip.util.algorithm:quicksort;
+            quicksort(frames, (AtlasFrame left, AtlasFrame right){ return left.index > right.index;});
         }
         return ret;
     }

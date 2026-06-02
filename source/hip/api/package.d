@@ -6,7 +6,6 @@ alias logg = logln;
 
 public import hip.filesystem.hipfs;
 public import hip.assetmanager;
-public import hip.game.utils : HipGameUtils;
 public import hip.systems.timer_manager : HipTimerManager;
 public import HipDefaultAssets = hip.global.gamedef : getDefaultFont, getDefaultTexture, getDefaultFontWithSize;
 ///All other functions that are actually exported is expected to be in that module.

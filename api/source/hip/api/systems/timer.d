@@ -25,6 +25,7 @@ interface IHipTimer
     IHipTimer play();
     void reset();
     void loopRestart();
+    bool isRunning() const;
     ///Returns wether it has finished
     bool tick(float deltaTime);
 }

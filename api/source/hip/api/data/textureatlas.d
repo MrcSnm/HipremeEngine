@@ -48,7 +48,7 @@ struct AtlasFrame
     string filename;
     bool rotated;
     bool trimmed;
-
+    int index = -1;
     AtlasRect frame;
     AtlasRect spriteSourceSize;
     AtlasSize sourceSize;
@@ -60,6 +60,7 @@ struct AtlasFrame
 interface IHipTextureAtlas
 {
     ref inout(AtlasFrame[string]) frames() inout ;
+    ref inout(AtlasFrame[][string]) animations() inout;
 
     alias frames this;
 }

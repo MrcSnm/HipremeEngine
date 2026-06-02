@@ -39,8 +39,6 @@
 		"console": {"path": "./modules/console", "version": "*"},
 		"error": {"path": "./modules/error", "version": "*"},
 		"filesystem": {"path": "./modules/filesystem", "version": "*"},
-		"timer": {"path": "./modules/timer", "version": "*"},
-		"tween": {"path": "./modules/tween", "version": "*"},
 		"hipengine_api:interfaces": {"path": "./api", "version": "*"},
 		"math": {"path": "./modules/math", "version": "*"},
 		"renderer": {"path": "./modules/renderer", "version": "*"},

@@ -94,8 +94,6 @@ string generateDubProject(DubProjectInfo info)
 	"name" : "%s",
 	"engineModules": [
 		"util",
-		"timer",
-		"tween",
 		"data",
 		"math",
 		"game2d"
@@ -264,6 +262,7 @@ DubProjectInfo dubInfo, TemplateInfo templateInfo)
 dub.selections.json
 dub.json
 .DS_Store
+.ldc2_cache
 .dub
 .history
 .vs

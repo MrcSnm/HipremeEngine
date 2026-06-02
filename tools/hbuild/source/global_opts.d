@@ -56,18 +56,18 @@ void startServer(shared ushort* usingPort, shared string* usingHost, ref Termina
         }
 
     }
-    else version(Posix)
-    {
-        import core.sys.posix.signal;
-        static extern(C) void handleCtrlC(int signum)
-        {
-            exitServer(*term);
-            destroy(*term);
-            exit(0);
-        }
-        alias fn = extern(C) void function(int) nothrow @nogc;
-        signal(SIGINT, cast(fn)&handleCtrlC);
-    }
+    // else version(Posix)
+    // {
+    //     import core.sys.posix.signal;
+    //     static extern(C) void handleCtrlC(int signum)
+    //     {
+    //         exitServer(*term);
+    //         destroy(*term);
+    //         exit(0);
+    //     }
+    //     alias fn = extern(C) void function(int) nothrow @nogc;
+    //     signal(SIGINT, cast(fn)&handleCtrlC);
+    // }
 
     s.wait;
 }

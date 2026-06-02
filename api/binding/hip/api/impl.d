@@ -42,6 +42,5 @@ public import hip.api.net;
 
 
 public import HipAssetManager = hip.api.assets.assets_binding;
-public import hip.api.game.game_binding : HipGameUtils;
 public import hip.api.systems.system_binding: HipTimerManager;
 public import HipDefaultAssets = hip.api.assets.globals: getDefaultFont, getDefaultTexture, getDefaultFontWithSize;

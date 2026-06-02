@@ -1,7 +1,5 @@
 module exportd;
 import hip.util.reflection; //ExportD
-import hip.graphics.g2d.animation;
-import hip.game.utils;
 import hip.audio;
 import hip.hiprenderer.renderer;
 import hip.assetmanager;
@@ -11,8 +9,6 @@ import hip.network;
 
 import std.traits:ReturnType;
 
-mixin HipExportDFunctions!(hip.graphics.g2d.animation);
-mixin HipExportDFunctions!(hip.game.utils);
 mixin HipExportDFunctions!(hip.assetmanager);
 mixin HipExportDFunctions!(hip.systems.timer_manager);
 
