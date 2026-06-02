@@ -84,7 +84,7 @@ private {
             #else
                 ATTRIBUTE(0) vec2 vPosition;
                 
-                ATTRIBUTE(1) uvec2 vXY;
+                ATTRIBUTE(1) ivec2 vXY;
                 ATTRIBUTE(2) uvec2 vSize;
                 ATTRIBUTE(3) vec4 vColor;
                 ATTRIBUTE(4) float vRotation;

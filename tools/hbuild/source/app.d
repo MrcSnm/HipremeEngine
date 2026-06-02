@@ -34,7 +34,8 @@ mixin StartFeatures!([
 	"msvclinker",
 	"vs_buildtools_installer",
 	"nuget",
-	"vcruntime140"
+	"vcruntime140",
+	"astc"
 ]);
 
 
@@ -338,7 +339,6 @@ void main(string[] args)
 	terminal.clear();
 	if(!("PATH" in environment))
 		environment["PATH"] = "";
-
 
 	if(!HipremeEngineFeature.getFeature(terminal, input))
 	{

@@ -85,8 +85,8 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
     static immutable ushort[8] defaultVertices = [0, 0, ushort.max, 0, ushort.max , ushort.max, 0, ushort.max];
     IHipTexture texture;
     public float u1, v1, u2, v2;
-    protected ushort[8] vertices;
-    protected float[8] verticesTransformed;
+    protected ushort[2] uvMin;
+    protected ushort[2] uvMax;
     private bool flippedX, flippedY;
     int regionWidth, regionHeight;
 
@@ -108,7 +108,7 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
     {
         this();
         this.texture = texture;
-        setRegion(texture.getWidth, texture.getHeight, u1,  v1, u2, v2);
+        setRegion(texture.getWidth, texture.getHeight, u1, v1, u2, v2);
     }
 
     void setTexture(IHipTexture texture){this.texture = texture;}
@@ -118,7 +118,12 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
     int getHeight() const {return regionHeight;}
     TextureCoordinatesQuad getRegion() const
     {
-        return TextureCoordinatesQuad(u1, v1, u2, v2);
+        TextureCoordinatesQuad q = void;
+        q.u1 = uvMin[0];
+        q.v1 = uvMin[1];
+        q.u2 = uvMax[0];
+        q.v2 = uvMax[1];
+        return q;
     }
 
     /**
@@ -169,26 +174,18 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         this.v1 = v1;
         this.v2 = v2;
         //Check for round
-        float regWidth =  (u2 - u1) * texture.getWidth;
-        float regHeight = (v2 - v1) * texture.getHeight;
+        float regWidth =  (u2) * texture.getWidth;
+        float regHeight = (v2) * texture.getHeight;
         regionWidth =  cast(uint)(regWidth + 0.5) > cast(uint)regWidth ? cast(uint)(regWidth+0.5) : cast(uint)regWidth;
         regionHeight = cast(uint)(regHeight + 0.5) > cast(uint)regHeight ? cast(uint)(regHeight+0.5) : cast(uint)regHeight;
 
         //Top left
-        vertices[0] = u1.floatMapped!ushort;
-        vertices[1] = v1.floatMapped!ushort;
+        uvMin[0] = u1.floatMapped!ushort;
+        uvMin[1] = v1.floatMapped!ushort;
 
         //Top right
-        vertices[2] = u2.floatMapped!ushort;
-        vertices[3] = v1.floatMapped!ushort;
-
-        //Bot right
-        vertices[4] = u2.floatMapped!ushort;
-        vertices[5] = v2.floatMapped!ushort;
-
-        //Bot left
-        vertices[6] = u1.floatMapped!ushort;
-        vertices[7] = v2.floatMapped!ushort;
+        uvMax[0] = u2.floatMapped!ushort;
+        uvMax[1] = v2.floatMapped!ushort;
 
         if(flippedX)
         {
@@ -202,6 +199,9 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         }
     }
 
+    ref ushort[2] getUvMin(){return uvMin;}
+    ref ushort[2] getUvMax(){return uvMax;}
+
     HipTextureRegion clone()
     {
         return new HipTextureRegion(texture, u1, v1, u2, v2);
@@ -211,10 +211,8 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         if(flip != flippedX)
         {
             flippedX = flip;
-            vertices[0] = (flip ? u2 : u1).floatMapped!ushort;
-            vertices[2] = (flip ? u1 : u2).floatMapped!ushort;
-            vertices[4] = (flip ? u1 : u2).floatMapped!ushort;
-            vertices[6] = (flip ? u2 : u1).floatMapped!ushort;
+            uvMax[0] = (flip ? u1 : u2).floatMapped!ushort;
+            uvMin[0] = (flip ? u2 : u1).floatMapped!ushort;
         }
     }
     void setFlippedY(bool flip)
@@ -222,19 +220,13 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
         if(flip != flippedY)
         {
             flippedY = flip;
-            vertices[1] = (flip ? v2 : v1).floatMapped!ushort;
-            vertices[3] = (flip ? v2 : v1).floatMapped!ushort;
-            vertices[5] = (flip ? v1 : v2).floatMapped!ushort;
-            vertices[7] = (flip ? v1 : v2).floatMapped!ushort;
+            uvMax[1] = (flip ? v1 : v2).floatMapped!ushort;
+            uvMin[1] = (flip ? v2 : v1).floatMapped!ushort;
         }
     }
     bool isFlippedX(){return flippedX;}
     bool isFlippedY(){return flippedY;}
 
-    ref ushort[8] getVertices()
-    {
-        return vertices;
-    }
     override void onFinishLoading(){}
     override void onDispose(){}
     override bool isReady() const {return texture !is null;}

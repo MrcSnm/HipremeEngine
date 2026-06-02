@@ -435,7 +435,7 @@ class HipTileset : HipAsset, IHipTileset
             for(int x = margin, currCol = 0 ; currCol < columns; currCol++, x+= (tileWidth+spacing))
             {
                 Tile* t = &tiles[i];
-                t.region = new HipTextureRegion(texture, x, y, x+tileWidth, y+tileHeight);
+                t.region = new HipTextureRegion(texture, x, y, tileWidth, tileHeight);
                 i++;
             }
 

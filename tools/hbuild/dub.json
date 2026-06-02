@@ -4,8 +4,8 @@
 	],
 	"copyright": "Copyright © 2023, Hipreme",
 	"dependencies": {
-		"arsd-official:terminal": "~>11.5.0",
-		"redub": "~>1.27.2",
+		"arsd-official:terminal": "~>12.1",
+		"redub": "~>1.28.2",
 		"handy-httpd": "~>8.4.3",
 		"archive": "~>0.7.1",
 		"my-ip": "~>0.2.0"
@@ -35,7 +35,7 @@
 		{
 			"name": "default",
 			"dependencies": {
-				"arsd-official:minigui": "~>11.5.0"
+				"arsd-official:minigui": "~>12.1"
 			}
 		},
 		{
@@ -51,7 +51,7 @@
 			"name": "ci-win",
 			"dflags-ldc": ["-Oz"],
 			"dependencies": {
-				"arsd-official:minigui": "~>11.5.0"
+				"arsd-official:minigui": "~>12.1"
 			},
 			"targetName": "win64-hbuild"
 		},

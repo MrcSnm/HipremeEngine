@@ -1,4 +1,4 @@
-module hip.timer;
+module hip.game.timer;
 public import hip.api.systems.timer;
 
 class HipTimer : IHipTimer
@@ -10,7 +10,7 @@ class HipTimer : IHipTimer
     protected float deltaTime = 0;
     protected float accumulator = 0;
     protected float durationSeconds = 0;
-    protected bool isRunning = false;
+    protected bool _isRunning = false;
     protected void delegate(float progress, uint loopCount)[] handlers;
     protected HipTimerType type;
 
@@ -31,7 +31,7 @@ class HipTimer : IHipTimer
         this.type = type;
         this.loops = loops;
         assert(type == HipTimerType.oneShot || type == HipTimerType.progressive, "Invalid timer type");
-        isRunning = false;
+        _isRunning = false;
         accumulator = 0;
         loopCount = 0;
     }
@@ -64,21 +64,23 @@ class HipTimer : IHipTimer
         stop();
     }
 
-    void pause(){isRunning = false;}
+    void pause(){_isRunning = false;}
     HipTimer play()
     {
         if(durationSeconds == 0)
             forceFinish();
         else
-            isRunning = true;
+            _isRunning = true;
         return this;
     }
     void stop()
     {
-        isRunning = false;
+        _isRunning = false;
         accumulator = 0;
         loopCount = 0;
     }
+
+    bool isRunning() const { return _isRunning; }
     void reset()
     {
         stop();
@@ -109,7 +111,7 @@ class HipTimer : IHipTimer
     ///Returns wether it has finished
     bool tick (float dt)
     {
-        if(isRunning)
+        if(_isRunning)
         {
             this.deltaTime = dt;
             accumulator+= dt;
