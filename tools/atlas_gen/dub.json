@@ -3,7 +3,7 @@
 		"hipreme"
 	],
 	"dependencies": {
-		"imageformats": "~>7.0.2"
+		"gamut": "~>3.4.0"
 	},
 	"description": "A minimal D application.",
 	"license": "proprietary",

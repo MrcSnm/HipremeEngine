@@ -7,17 +7,41 @@ import std.algorithm;
 import std.getopt;
 import std.array;
 import std.math:abs;
-import imageformats;
+import gamut;
 
 struct Rect {
     int x, y, w, h;
 }
 
+int rectDistance(Rect a, Rect b)
+{
+    int ax2 = a.x + a.w;
+    int ay2 = a.y + a.h;
+    int bx2 = b.x + b.w;
+    int by2 = b.y + b.h;
+
+    int dx = max(0, max(b.x - ax2, a.x - bx2));
+    int dy = max(0, max(b.y - ay2, a.y - by2));
+
+    return max(dx, dy); //  Chebyshev
+}
+
+Rect unionRect(Rect a, Rect b)
+{
+    int x1 = min(a.x, b.x);
+    int y1 = min(a.y, b.y);
+    int x2 = max(a.x + a.w, b.x + b.w);
+    int y2 = max(a.y + a.h, b.y + b.h);
+
+    return Rect(x1, y1, x2 - x1, y2 - y1);
+}
+
 int main(string[] args) {
-    import std.datetime.stopwatch;
     string input;
-    string output = "output.atlas";
+    string output = null;
     int alphaThreshold = 8;
+    int mergeDistance = 16;
+    int minArea = 4;
     int padding = 2;
 
     getopt(
@@ -25,7 +49,9 @@ int main(string[] args) {
         "input|i", &input,
         "output|o", &output,
         "alpha|a", &alphaThreshold,
-        "padding|p", &padding
+        "padding|p", &padding,
+        "merge-distance|m", &mergeDistance,
+        "min-area", &minArea
     );
 
     if (input.length == 0) {
@@ -33,13 +59,27 @@ int main(string[] args) {
         return 1;
     }
 
-    auto img = read_image(input);
-    int width = img.w;
-    int height = img.h;
-    int channels = img.c;
+    if(output.length == 0)
+        output = input.withExtension(".atlas").array;
 
-    if (channels < 4) {
-        writeln("Image must have alpha channel.");
+    Image img;
+    img.loadFromFile(input, LOAD_RGB | LOAD_ALPHA | LOAD_8BIT);
+    if(img.isValid)
+    {
+        img.changeLayout(LAYOUT_GAPLESS | LAYOUT_VERT_STRAIGHT);
+    }
+    else
+    {
+        writeln("Invalid image at path ", input);
+        return 1;
+    }
+    int width = img.width();
+    int height = img.height();
+
+    ubyte[] pixels = img.allPixelsAtOnce();
+
+    if (img.type != PixelType.rgba8) {
+        writeln("Image must have alpha channel. Image Format: ", img.type);
         return 1;
     }
 
@@ -47,8 +87,8 @@ int main(string[] args) {
     Rect[] rects;
 
     bool isSolid(int x, int y) {
-        auto idx = (y * width + x) * channels;
-        return img.pixels[idx + 3] > alphaThreshold;
+        auto idx = (y * width + x) * 4;
+        return pixels[idx + 3] > alphaThreshold;
     }
     int[] queue = new int[width*height];
     int qLength = 0;
@@ -102,11 +142,6 @@ int main(string[] args) {
                 }
             }
 
-            minX = max(0, minX - padding);
-            minY = max(0, minY - padding);
-            maxX = min(width - 1, maxX + padding);
-            maxY = min(height - 1, maxY + padding);
-
             rects ~= Rect(
                 minX,
                 minY,
@@ -115,6 +150,42 @@ int main(string[] args) {
             );
         }
     }
+
+    rects = rects
+    .filter!(r => r.w * r.h >= minArea)
+    .array;
+
+    bool changed = true;
+
+    while (changed)
+    {
+        changed = false;
+
+        outer:
+        foreach (i; 0 .. rects.length)
+        {
+            foreach (j; i + 1 .. rects.length)
+            {
+                if (rectDistance(rects[i], rects[j]) <= mergeDistance)
+                {
+                    rects[i] = unionRect(rects[i], rects[j]);
+                    rects = rects[0 .. j] ~ rects[j + 1 .. $];
+                    changed = true;
+                    break outer;
+                }
+            }
+        }
+    }
+    foreach (ref r; rects)
+    {
+        int x1 = max(0, r.x - padding);
+        int y1 = max(0, r.y - padding);
+        int x2 = min(width, r.x + r.w + padding);
+        int y2 = min(height, r.y + r.h + padding);
+
+        r = Rect(x1, y1, x2 - x1, y2 - y1);
+    }
+
 
     rects.sort!((a, b) => a.y == b.y ? a.x < b.x : a.y < b.y);
 
