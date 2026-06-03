@@ -7,7 +7,7 @@ struct VertexInput
 {
     short2 vPosition [[attribute(0)]];
     float2 vTexST    [[attribute(1)]];
-    short  vZ        [[attribute(2)]];
+    ushort  vZ       [[attribute(2)]];
 };
 struct VertexUniforms
 {
