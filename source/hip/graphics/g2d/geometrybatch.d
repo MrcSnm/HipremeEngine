@@ -62,6 +62,7 @@ class GeometryBatch : IHipBatch
     protected HipColor currentColor;
 
     float managedDepth = 0;
+    int drawOffset = 0;
     HipOrthoCamera camera;
     HipGeometryBatchVertex[] vertices;
     index_t[] indices;
@@ -131,6 +132,11 @@ class GeometryBatch : IHipBatch
     {
         assert(c != HipColor.no, "Can't use 'no' color on geometry batch");
         currentColor = c;
+    }
+
+    void beginFrame(int frame)
+    {
+        drawOffset = 0;
     }
 
     protected void triangleVertices(int x1, int y1, int x2, int y2, int x3, int y3)

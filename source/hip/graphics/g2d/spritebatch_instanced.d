@@ -30,6 +30,12 @@ private struct CachedTexture
     ushort slot;
 }
 
+enum SpriteBatchInstancedBuffers : ubyte
+{
+    rect = 0,
+    instances = 1
+}
+
 /**
 *   The spritebatch contains 2 shaders.
 *   One shader is entirely internal, which you don't have any control, this is for actually being able
@@ -50,6 +56,8 @@ final class HipSpriteBatchInstanced
     protected HipFrameBuffer fb;
     protected HipTextureRegion fbTexRegion;
     protected ushort managedDepth = 0;
+
+    int drawOffset = 0;
 
     HipOrthoCamera camera;
     Mesh mesh;
@@ -150,7 +158,13 @@ final class HipSpriteBatchInstanced
     pragma(inline, true)
     void addInstance(HipSpriteVertexInstancedPerInstance instance)
     {
-        vertices[instanceCount++] = instance;
+        vertices[drawOffset + instanceCount++] = instance;
+    }
+
+    void beginFrame(int frame)
+    {
+        drawOffset = 0;
+        usingTexturesCount = 0;
     }
 
     void draw(IHipTexture texture, ubyte[] vertices)
@@ -225,17 +239,20 @@ final class HipSpriteBatchInstanced
             mesh.shader.bindArrayOfTextures(currentTextures, "uTex");
             mesh.shader.sendVars();
 
-            mesh.updateVertices(vertices[0..instanceCount], 0, 1);
+            int instanceOffset = drawOffset;
+            if(HipRenderer.getType != HipRendererType.GL3)
+                drawOffset+= instanceCount;
+            
+            mesh.updateVertices(vertices[instanceOffset..instanceOffset+instanceCount], instanceOffset, SpriteBatchInstancedBuffers.instances);
 
             // mesh.vao.VBO.unmapBuffer();
-            mesh.drawInstanced(HipRendererMode.triangles, instanceCount, 6);
+            mesh.drawInstanced(HipRendererMode.triangles, instanceCount, 6, 0, instanceOffset);
 
             ///Some operations may require texture unbinding(D3D11 Framebuffer)
             foreach(i; 0..usingTexturesCount)
                 currentTextures[i].unbind(i);
             mesh.unbind();
         // mesh.vao.VBO.getBuffer();
-
         }
         instanceCount = 0;
         usingTexturesCount = 0;

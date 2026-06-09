@@ -516,9 +516,9 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         d3dCall(_hip_d3d_context.DrawIndexed(indicesSize, offset, 0));
     }
-    public void drawIndexedInstanced(uint instanceCount, index_t indicesSize, uint offset=0)
+    public void drawIndexedInstanced(uint instanceCount, index_t indicesSize, uint indexOffset=0, uint baseInstance = 0)
     {
-        d3dCall(_hip_d3d_context.DrawIndexedInstanced(indicesSize, instanceCount, offset, 0, 0));
+        d3dCall(_hip_d3d_context.DrawIndexedInstanced(indicesSize, instanceCount, indexOffset, 0, baseInstance));
     }
     void clear(){}
 

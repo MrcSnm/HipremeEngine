@@ -110,13 +110,10 @@ class Mesh
     }
 
     
-    /**
-    *   How many indices should it draw
-    */
-    public void drawInstanced(HipRendererMode mode, uint instanceCount, index_t indicesCount, uint indicesOffset = 0)
+    public void drawInstanced(HipRendererMode mode, uint instanceCount, index_t indicesCount, uint indicesOffset = 0, uint baseInstance = 0)
     {
         bind();
-        HipRenderer.drawIndexedInstanced(mode, instanceCount, indicesCount, indicesOffset);
+        HipRenderer.drawIndexedInstanced(mode, instanceCount, indicesCount, indicesOffset, baseInstance);
     }
 
 }

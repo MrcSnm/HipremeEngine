@@ -285,6 +285,13 @@ Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint r
         return cropSpritesheet(t,frameWidth,frameHeight, t.getWidth, t.getHeight, 0, 0, 0, 0);
 }
 
+void beginRender2D(int frame)
+{
+    if(geoBatch) geoBatch.beginFrame(frame);
+    if(spBatch) spBatch.beginFrame(frame);
+    if(textBatch) textBatch.beginFrame(frame);
+}
+
 void finishRender2D()
 {
     if(geoBatch) geoBatch.flush();

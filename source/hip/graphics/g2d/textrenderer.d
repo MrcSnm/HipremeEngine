@@ -64,6 +64,7 @@ class HipTextRenderer : IHipBatch
     protected HipColor color;
     protected HipOrthoCamera camera;
     protected float managedDepth = 0;
+    int drawOffset = 0;
     private uint quadsCount;
     private uint lastDrawQuadsCount;
     bool shouldRenderLineBreak, shouldRenderSpace;
@@ -122,6 +123,11 @@ class HipTextRenderer : IHipBatch
             bmTextShader.getBuffer("FragVars").set(HipTextRendererFragmentUniforms(HipColorf(color)));
         }
         this.color = color;
+    }
+
+    void beginFrame(int frame)
+    {
+        drawOffset = 0;
     }
 
     /**

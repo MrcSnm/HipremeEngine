@@ -56,6 +56,12 @@ final class HipSpriteBatch : IHipBatch
         spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 
     }
+
+    void beginFrame(int frame)
+    {
+        if(instanced) instanced.beginFrame(frame);
+        else vertex.beginFrame(frame);
+    }
     void setCurrentDepth(float depth) @nogc
     {
         if(instanced) instanced.setCurrentDepth(depth);

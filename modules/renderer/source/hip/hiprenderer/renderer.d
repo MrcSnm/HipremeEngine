@@ -328,9 +328,15 @@ class HipRendererImplementation : IHipRenderer
     }
     public HipRendererMode getMode(){return rendererMode;}
 
-    public void drawIndexedInstanced(uint instanceCount, index_t count, uint offset = 0)
+    public void drawIndexedInstanced(uint instanceCount, index_t count, uint indexOffset = 0, uint baseInstance = 0)
     {
-        rendererImpl.drawIndexedInstanced(instanceCount, count, offset);
+        rendererImpl.drawIndexedInstanced(instanceCount, count, indexOffset, baseInstance);
+        stats.drawCalls++;
+    }
+    public void drawIndexedInstanced(HipRendererMode mode, uint instanceCount, index_t count, uint indexOffset = 0, uint baseInstance = 0)
+    {
+        setRendererMode(mode);
+        HipRenderer.drawIndexedInstanced(instanceCount, count, indexOffset, baseInstance);
         stats.drawCalls++;
     }
 

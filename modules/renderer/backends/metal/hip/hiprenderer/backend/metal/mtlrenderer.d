@@ -129,6 +129,8 @@ class HipMTLRenderer : IHipRendererImpl
         _cmdEncoder.endEncoding();
         _cmdBuffer.commit();
         _cmdBuffer.waitUntilCompleted();
+
+        _cmdEncoder.release();
         if(_cmdBuffer.error)
         {
             NSLog("Command Buffer Error %@".ns, _cmdBuffer.error);
@@ -292,10 +294,10 @@ class HipMTLRenderer : IHipRendererImpl
         cmdEncoder.drawIndexedPrimitives(primitiveType, count, IndexType, boundIndexBuffer, offset*index_t.sizeof);
     }
 
-    public void drawIndexedInstanced(uint instanceCount, index_t count, uint offset = 0)
+    public void drawIndexedInstanced(uint instanceCount, index_t count, uint indexOffset = 0, uint baseInstance = 0)
     {
         enum IndexType = is(index_t == ushort) ? MTLIndexType.UInt16 : MTLIndexType.UInt32;
-        cmdEncoder.drawIndexedPrimitives(primitiveType, count, IndexType, boundIndexBuffer, offset*index_t.sizeof, instanceCount);
+        cmdEncoder.drawIndexedPrimitives(primitiveType, count, IndexType, boundIndexBuffer, indexOffset*index_t.sizeof, instanceCount, 0, baseInstance);
     }
 
     public void drawVertices(index_t count, uint offset = 0)
@@ -315,6 +317,8 @@ class HipMTLRenderer : IHipRendererImpl
     {
         renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.Clear;
         cmdEncoder.endEncoding();
+        cmdEncoder.release();
+        cmdEncoder = null;
         cmdBuffer.commit();
         begin();
     }

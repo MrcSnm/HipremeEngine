@@ -415,10 +415,12 @@ export extern(System) void HipremeRender()
 	import hip.hiprenderer.renderer;
 	
 	HipRenderer.begin();
+	beginRender2D(0);
 	HipRenderer.clear(0,0,0,255);
 	sys.render();
 	if(isUsingInterpreter)
 		renderInterpreter();
+	//TODO: Do multiframe rendering.
 	finishRender2D();
 	HipRenderer.end();
 }

@@ -358,9 +358,14 @@ class Hip_GL3Renderer : IHipRendererImpl
         glCall(() => glDrawElements(this.mode, indicesCount, getOpenGLIndexType!index_t, cast(void*)(offset*index_t.sizeof)));
     }
 
-    public void drawIndexedInstanced(uint instanceCount, index_t indicesCount, uint offset)
+    public void drawIndexedInstanced(uint instanceCount, index_t indicesCount, uint indexOffset, uint instanceOffset)
     {
-        glCall(() => glDrawElementsInstanced(this.mode, indicesCount, getOpenGLIndexType!index_t, cast(void*)(offset * index_t.sizeof), instanceCount));
+        if(instanceOffset != 0)
+        {
+            loglnError("Can't use instance offset on OpenGL. Flush your draw call insteand.");
+            return;
+        }
+        glCall(() => glDrawElementsInstanced(this.mode, indicesCount, getOpenGLIndexType!index_t, cast(void*)(indexOffset * index_t.sizeof), instanceCount));
     }
 
     bool isBlendingEnabled() const {return isGLBlendEnabled;}

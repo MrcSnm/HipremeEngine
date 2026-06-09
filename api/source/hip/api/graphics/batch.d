@@ -10,6 +10,8 @@ interface IHipBatch
     *   the switch was needed.
     */
     void setCurrentDepth(float depth) @nogc;
+
+    void beginFrame(int frame);
     /**
     *   This draw most of the time is used to avoid accessing the same buffer
     *   it doesn't flush the batch, meaning it will only populate from the current

@@ -45,6 +45,7 @@ final class HipSpriteBatchVertex
     protected HipFrameBuffer fb;
     protected HipTextureRegion fbTexRegion;
     protected float managedDepth = 0;
+    int drawOffset =0 ;
 
     HipOrthoCamera camera;
     Mesh mesh;
@@ -201,6 +202,11 @@ final class HipSpriteBatchVertex
         return v[0].vColor.a == 0 && v[1].vColor.a == 0 && v[2].vColor.a == 0 && v[3].vColor.a == 0;
     }
 
+    void beginFrame(int frame)
+    {
+        drawOffset = 0;
+    }
+
     void draw(IHipTexture t, ubyte[] vertices)
     {
         if(isZeroAlpha(vertices)) return;
@@ -343,7 +349,6 @@ final class HipSpriteBatchVertex
 
     void draw()
     {
-
         if(quadsCount - lastDrawQuadsCount != 0)
         {
             for(int i = usingTexturesCount; i < currentTextures.length; i++)
