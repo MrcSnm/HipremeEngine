@@ -48,8 +48,8 @@ vertex FragmentInput vertexMain(
     FragmentInput out;
 
     #if INSTANCED == 1
-        float s = sin(v.vRotation);
-        float c = cos(v.vRotation);
+        float c;
+        float s = sincos(v.vRotation, &c);
         float2 actualPos = float2(
             v.vPosition.x * c - v.vPosition.y * s,
             v.vPosition.x * s + v.vPosition.y * c            

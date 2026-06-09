@@ -152,7 +152,7 @@ class HipMTLShader : IShader
         p.pipelineDescriptor.label = shaderPath.ns;
         p.pipelineDescriptor.vertexFunction = p.vertexShaderFunction;
         p.pipelineDescriptor.fragmentFunction = p.fragmentShaderFunction;
-        p.pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.BGRA8Unorm_sRGB;
+        p.pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.RGBA8Unorm;
         p.pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
         p.pipelineDescriptor.stencilAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
 

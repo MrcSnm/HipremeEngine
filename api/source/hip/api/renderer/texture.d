@@ -118,7 +118,7 @@ interface IHipTextureRegion
     {
         import hip.util.conv;
         const ushort[2] uvMin = getUvMin;
-        const ushort[2] uvMax = getUvMin;
+        const ushort[2] uvMax = getUvMax;
 
         return [
             uvMin[0], uvMin[1],

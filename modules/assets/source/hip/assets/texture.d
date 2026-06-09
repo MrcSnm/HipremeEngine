@@ -119,10 +119,8 @@ class HipTextureRegion : HipAsset, IHipTextureRegion
     TextureCoordinatesQuad getRegion() const
     {
         TextureCoordinatesQuad q = void;
-        q.u1 = uvMin[0];
-        q.v1 = uvMin[1];
-        q.u2 = uvMax[0];
-        q.v2 = uvMax[1];
+        q.u1 = uvMin[0]; q.u2 = uvMax[0];
+        q.v1 = uvMin[1]; q.v2 = uvMax[1];
         return q;
     }
 

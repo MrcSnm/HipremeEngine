@@ -39,7 +39,7 @@
     /// Load Metal state objects and initialize renderer dependent view properties
 
     view.depthStencilPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
-    view.colorPixelFormat = MTLPixelFormatBGRA8Unorm_sRGB;
+    view.colorPixelFormat = MTLPixelFormatRGBA8Unorm;
     view.sampleCount = 1;
 }
 
