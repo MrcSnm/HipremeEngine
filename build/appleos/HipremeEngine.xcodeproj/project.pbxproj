@@ -86,6 +86,10 @@
 		31B53C1029D68FC500108E4C /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		31B53C1129D68FC500108E4C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		31B53C1429D68FD400108E4C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		EB57E8D22FD822E20095A1A7 /* bitmaptext.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = bitmaptext.metal; sourceTree = "<group>"; };
+		EB57E8D32FD822E20095A1A7 /* framebuffer.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = framebuffer.metal; sourceTree = "<group>"; };
+		EB57E8D42FD822E20095A1A7 /* geometrybatch.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = geometrybatch.metal; sourceTree = "<group>"; };
+		EB57E8D52FD822E20095A1A7 /* spritebatch.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = spritebatch.metal; sourceTree = "<group>"; };
 		EB8B15322B03D0CF001329EC /* modules */ = {isa = PBXFileReference; lastKnownFileType = folder; name = modules; path = ../../modules; sourceTree = SOURCE_ROOT; };
 		EBAF34ED2B233EF8004B90B1 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/OpenAL.framework; sourceTree = DEVELOPER_DIR; };
 		EBAF34F72B28913B004B90B1 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk/System/Library/Frameworks/AVFAudio.framework; sourceTree = DEVELOPER_DIR; };
@@ -189,6 +193,7 @@
 				3156445029A1546900559889 /* macOS */,
 				3156442729A1546900559889 /* Products */,
 				315796D729B6771F00CE2D39 /* Frameworks */,
+				EB57E8D62FD822E20095A1A7 /* metal */,
 			);
 			sourceTree = "<group>";
 		};
@@ -321,6 +326,18 @@
 			);
 			path = D;
 			sourceTree = "<group>";
+		};
+		EB57E8D62FD822E20095A1A7 /* metal */ = {
+			isa = PBXGroup;
+			children = (
+				EB57E8D22FD822E20095A1A7 /* bitmaptext.metal */,
+				EB57E8D32FD822E20095A1A7 /* framebuffer.metal */,
+				EB57E8D42FD822E20095A1A7 /* geometrybatch.metal */,
+				EB57E8D52FD822E20095A1A7 /* spritebatch.metal */,
+			);
+			name = metal;
+			path = /Users/hipreme/Documents/HipremeEngine/modules/renderer/shaders/metal;
+			sourceTree = "<absolute>";
 		};
 /* End PBXGroup section */
 
@@ -673,13 +690,12 @@
 					"$(inherited)",
 					"-lBindBC_Loader",
 					"-lBindBC_OpenAL",
-					"-lalignment",
-					"-larsd-official_core",
-					"-larsd-official_ttf",
+					"-lassetmanager",
 					"-lassets",
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
+					"-lautobattler",
 					"-lbind",
 					"-lconcurrency",
 					"-lconfig",
@@ -691,11 +707,10 @@
 					"-lfont",
 					"-lgame2d",
 					"-lgamut",
-					"-lhipengine_api_bindings",
 					"-lhipengine_api_interfaces",
 					"-lhipengine_api_network",
 					"-lhipreme_engine",
-					"-limage",
+					"-limage_decoding",
 					"-lintel-intrinsics",
 					"-lmath",
 					"-lmetal",
@@ -704,11 +719,10 @@
 					"-lrenderer",
 					"-lrenderer_core",
 					"-lrenderer_metal",
-					"-ltimer",
-					"-ltween",
 					"-lutil",
 					"-lwasm",
 					"-lwindowing",
+					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -746,13 +760,12 @@
 					"$(inherited)",
 					"-lBindBC_Loader",
 					"-lBindBC_OpenAL",
-					"-lalignment",
-					"-larsd-official_core",
-					"-larsd-official_ttf",
+					"-lassetmanager",
 					"-lassets",
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
+					"-lautobattler",
 					"-lbind",
 					"-lconcurrency",
 					"-lconfig",
@@ -764,11 +777,10 @@
 					"-lfont",
 					"-lgame2d",
 					"-lgamut",
-					"-lhipengine_api_bindings",
 					"-lhipengine_api_interfaces",
 					"-lhipengine_api_network",
 					"-lhipreme_engine",
-					"-limage",
+					"-limage_decoding",
 					"-lintel-intrinsics",
 					"-lmath",
 					"-lmetal",
@@ -777,11 +789,10 @@
 					"-lrenderer",
 					"-lrenderer_core",
 					"-lrenderer_metal",
-					"-ltimer",
-					"-ltween",
 					"-lutil",
 					"-lwasm",
 					"-lwindowing",
+					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -814,13 +825,12 @@
 					"$(inherited)",
 					"-lBindBC_Loader",
 					"-lBindBC_OpenAL",
-					"-lalignment",
-					"-larsd-official_core",
-					"-larsd-official_ttf",
+					"-lassetmanager",
 					"-lassets",
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
+					"-lautobattler",
 					"-lbind",
 					"-lconcurrency",
 					"-lconfig",
@@ -832,11 +842,10 @@
 					"-lfont",
 					"-lgame2d",
 					"-lgamut",
-					"-lhipengine_api_bindings",
 					"-lhipengine_api_interfaces",
 					"-lhipengine_api_network",
 					"-lhipreme_engine",
-					"-limage",
+					"-limage_decoding",
 					"-lintel-intrinsics",
 					"-lmath",
 					"-lmetal",
@@ -845,11 +854,10 @@
 					"-lrenderer",
 					"-lrenderer_core",
 					"-lrenderer_metal",
-					"-ltimer",
-					"-ltween",
 					"-lutil",
 					"-lwasm",
 					"-lwindowing",
+					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -881,13 +889,12 @@
 					"$(inherited)",
 					"-lBindBC_Loader",
 					"-lBindBC_OpenAL",
-					"-lalignment",
-					"-larsd-official_core",
-					"-larsd-official_ttf",
+					"-lassetmanager",
 					"-lassets",
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
+					"-lautobattler",
 					"-lbind",
 					"-lconcurrency",
 					"-lconfig",
@@ -899,11 +906,10 @@
 					"-lfont",
 					"-lgame2d",
 					"-lgamut",
-					"-lhipengine_api_bindings",
 					"-lhipengine_api_interfaces",
 					"-lhipengine_api_network",
 					"-lhipreme_engine",
-					"-limage",
+					"-limage_decoding",
 					"-lintel-intrinsics",
 					"-lmath",
 					"-lmetal",
@@ -912,11 +918,10 @@
 					"-lrenderer",
 					"-lrenderer_core",
 					"-lrenderer_metal",
-					"-ltimer",
-					"-ltween",
 					"-lutil",
 					"-lwasm",
 					"-lwindowing",
+					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -955,13 +960,12 @@
 					"$(inherited)",
 					"-lBindBC_Loader",
 					"-lBindBC_OpenAL",
-					"-lalignment",
-					"-larsd-official_core",
-					"-larsd-official_ttf",
+					"-lassetmanager",
 					"-lassets",
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
+					"-lautobattler",
 					"-lbind",
 					"-lconcurrency",
 					"-lconfig",
@@ -973,11 +977,10 @@
 					"-lfont",
 					"-lgame2d",
 					"-lgamut",
-					"-lhipengine_api_bindings",
 					"-lhipengine_api_interfaces",
 					"-lhipengine_api_network",
 					"-lhipreme_engine",
-					"-limage",
+					"-limage_decoding",
 					"-lintel-intrinsics",
 					"-lmath",
 					"-lmetal",
@@ -986,11 +989,10 @@
 					"-lrenderer",
 					"-lrenderer_core",
 					"-lrenderer_metal",
-					"-ltimer",
-					"-ltween",
 					"-lutil",
 					"-lwasm",
 					"-lwindowing",
+					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
@@ -1027,13 +1029,12 @@
 					"$(inherited)",
 					"-lBindBC_Loader",
 					"-lBindBC_OpenAL",
-					"-lalignment",
-					"-larsd-official_core",
-					"-larsd-official_ttf",
+					"-lassetmanager",
 					"-lassets",
 					"-laudio-formats",
 					"-laudio",
 					"-laudio_decoding",
+					"-lautobattler",
 					"-lbind",
 					"-lconcurrency",
 					"-lconfig",
@@ -1045,11 +1046,10 @@
 					"-lfont",
 					"-lgame2d",
 					"-lgamut",
-					"-lhipengine_api_bindings",
 					"-lhipengine_api_interfaces",
 					"-lhipengine_api_network",
 					"-lhipreme_engine",
-					"-limage",
+					"-limage_decoding",
 					"-lintel-intrinsics",
 					"-lmath",
 					"-lmetal",
@@ -1058,11 +1058,10 @@
 					"-lrenderer",
 					"-lrenderer_core",
 					"-lrenderer_metal",
-					"-ltimer",
-					"-ltween",
 					"-lutil",
 					"-lwasm",
 					"-lwindowing",
+					"-ldruntime-ldc",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hipreme.HipremeEngine;
 				PRODUCT_NAME = HipremeEngine;
