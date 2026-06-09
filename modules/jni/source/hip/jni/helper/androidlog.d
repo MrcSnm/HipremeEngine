@@ -11,7 +11,6 @@ Distributed under the CC BY-4.0 License.
 module hip.jni.helper.androidlog;
 version(Android):
 import hip.jni.android.log;
-import hip.util.string : toStringz;
 import core.stdc.stdarg : va_end, va_list, va_start;
 
 //INFORMATION SECTION
@@ -27,17 +26,6 @@ int alogi(const(char*) tag, const(char*) format, ...)
     va_end(arg_list);
     return result;
 }
-int alogi(string tag, string format, ...)
-{
-    va_list arg_list;
-    va_start(arg_list, format);
-    const(char*) nTag = toStringz(tag);
-    const(char*) nFormat = toStringz(format);
-    int result = alogi(nTag, nFormat, arg_list);
-    va_end(arg_list);
-    return result;    
-}
-
 
 //WARNING SECTION
 int alogw(const(char*)tag,const(char*)format,va_list args)
@@ -53,17 +41,6 @@ int alogw(const(char*) tag, const(char*) format, ...)
     return result;
 }
 
-int alogw(string tag, string format, ...)
-{
-    va_list arg_list;
-    va_start(arg_list, format);
-    const(char*) nTag = toStringz(tag);
-    const(char*) nFormat = toStringz(format);
-    int result = alogw(nTag, nFormat, arg_list);
-    va_end(arg_list);
-    return result;    
-}
-
 // ERROR SECTION
 int aloge(const(char*) tag, const(char*) format, va_list args)
 {
@@ -77,17 +54,6 @@ int aloge(const(char*) tag, const(char*) format, ...)
     va_end(arg_list);
     return result;
 }
-int aloge(string tag, string format, ...)
-{
-    va_list arg_list;
-    va_start(arg_list, format);
-    const(char*) nTag = toStringz(tag);
-    const(char*) nFormat = toStringz(format);
-    int result = aloge(nTag, nFormat, arg_list);
-    va_end(arg_list);
-    return result;    
-}
-
 
 // FATAL SECTION
 int alogf(const(char*) tag, const(char*) format, va_list args)
@@ -101,14 +67,4 @@ int alogf(const(char*) tag, const(char*) format, ...)
     int result = alogf(tag,format,arg_list);
     va_end(arg_list);
     return result;
-}
-int alogf(string tag, string format, ...)
-{
-    va_list arg_list;
-    va_start(arg_list, format);
-    const(char*) nTag = toStringz(tag);
-    const(char*) nFormat = toStringz(format);
-    int result = alogf(nTag, nFormat, arg_list);
-    va_end(arg_list);
-    return result;    
 }

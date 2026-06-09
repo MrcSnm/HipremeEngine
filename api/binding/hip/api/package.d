@@ -57,7 +57,6 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 		import hip.api.systems.system_binding;
 		import hip.api.input.binding;
 		import hip.api.filesystem.fs_binding;
-		import hip.api.game.game_binding;
 		import core.runtime;
 		import hip.api.internal:initializeHip;
 		import hip.api.renderer.core;
@@ -75,7 +74,6 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 		HipDefaultAssets.initGlobalAssets();
 		HipAssetManager.initAssetManager();
 		initTimerAPI();
-		initGameAPI();
 		initNet();
 
 		mixin LoadAllAssets!(ScriptModules);

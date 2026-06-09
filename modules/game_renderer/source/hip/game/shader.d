@@ -9,7 +9,6 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.game.shader;
-public import hip.api.renderer.shadervar : ShaderVariablesLayout, ShaderVar;
 public import hip.api.renderer.shadervar;
 public import hip.api.renderer.core;
 
@@ -17,7 +16,6 @@ import hip.api.data.commons:IReloadable;
 import hip.api.renderer.texture;
 import hip.math.matrix;
 import hip.error.handler;
-import hip.api.renderer.shadervar;
 import hip.api.renderer.shader;
 // import hip.hiprenderer.renderer;
 import hip.util.file;
