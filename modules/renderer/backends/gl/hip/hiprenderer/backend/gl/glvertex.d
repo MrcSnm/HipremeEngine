@@ -19,7 +19,6 @@ import hip.util.conv;
 import hip.config.opts;
 import hip.hiprenderer.renderer;
 import hip.api.renderer.shader;
-import hip.hiprenderer.vertex;
 
 
 

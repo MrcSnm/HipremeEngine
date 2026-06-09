@@ -103,11 +103,11 @@ class Console
                 {
                     import hip.jni.helper.androidlog; 
                     alias fnType = @nogc void function(string);
-                    _log   = cast(fnType)function(string s){alogi(androidTag, (s~"\0").ptr);};
+                    _log   = cast(fnType)function(string s){alogi(androidTag, "%.*s", s.length, s.ptr);};
                     _info = _log;
-                    _warn  = cast(fnType)function(string s){alogw(androidTag, (s~"\0").ptr);};
-                    _err   = cast(fnType)function(string s){aloge(androidTag, (s~"\0").ptr);};
-                    _fatal = cast(fnType)function(string s){alogf(androidTag, (s~"\0").ptr);};
+                    _warn  = cast(fnType)function(string s){alogw(androidTag, "%.*s", s.length, s.ptr);};
+                    _err   = cast(fnType)function(string s){aloge(androidTag, "%.*s", s.length, s.ptr);};
+                    _fatal = cast(fnType)function(string s){alogf(androidTag, "%.*s", s.length, s.ptr);};
                 }
                 break;  
             case psvita:

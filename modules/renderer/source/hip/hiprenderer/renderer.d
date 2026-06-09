@@ -11,7 +11,6 @@ Distributed under the CC BY-4.0 License.
 module hip.hiprenderer.renderer;
 public import hip.config.renderer;
 public import hip.api.renderer.shader;
-public import hip.hiprenderer.vertex;
 public import hip.hiprenderer.framebuffer;
 public import hip.hiprenderer.viewport;
 public import hip.api.renderer.texture;
