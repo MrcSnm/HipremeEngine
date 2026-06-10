@@ -20,7 +20,11 @@ interface IHipKeyboard
     float getKeyUpTime(char key);
 }
 
-enum HipKey : ushort
+/** 
+ * Convert to char as this will be used to let the developer
+ * pass chars directly
+ */
+enum HipKey : char
 {
     BACKSPACE = 8,
     TAB, 
@@ -33,7 +37,7 @@ enum HipKey : ushort
     ESCAPE = 27,
     SPACE = 32,
     PAGE_UP, PAGE_DOWN, END, HOME,
-    ARROW_LEFT, ARROW_UP, ARROW_RIGHT, ARROW_DOWN,
+    LEFT, UP, RIGHT, DOWN,
     PRINT = 44, INSERT = 45, DELETE,
     _0 = 48, _1, _2, _3, _4, _5, _6, _7, _8, _9,
     A = 65, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,

@@ -373,10 +373,10 @@ version(Windows)
             case VK_NEXT: return HipKey.PAGE_UP;
             case VK_END: return HipKey.END;
             case VK_HOME: return HipKey.HOME;
-            case VK_LEFT: return HipKey.ARROW_LEFT;
-            case VK_UP: return HipKey.ARROW_UP;
-            case VK_RIGHT: return HipKey.ARROW_RIGHT;
-            case VK_DOWN: return HipKey.ARROW_DOWN;
+            case VK_LEFT: return HipKey.LEFT;
+            case VK_UP: return HipKey.UP;
+            case VK_RIGHT: return HipKey.RIGHT;
+            case VK_DOWN: return HipKey.DOWN;
             case VK_INSERT: return HipKey.INSERT;
             case VK_DELETE: return HipKey.DELETE;
             //0
@@ -503,10 +503,10 @@ else static if(isLinuxPC)
             case XK_Page_Down: return HipKey.PAGE_DOWN;
             case XK_End: return HipKey.END;
             case XK_Home: return HipKey.HOME;
-            case XK_Left: return HipKey.ARROW_LEFT;
-            case XK_Up: return HipKey.ARROW_UP;
-            case XK_Right: return HipKey.ARROW_RIGHT;
-            case XK_Down: return HipKey.ARROW_DOWN;
+            case XK_Left: return HipKey.LEFT;
+            case XK_Up: return HipKey.UP;
+            case XK_Right: return HipKey.RIGHT;
+            case XK_Down: return HipKey.DOWN;
             case XK_Insert: return HipKey.INSERT;
             case XK_Delete: return HipKey.DELETE;
             case XK_0: return HipKey._0;
@@ -629,10 +629,10 @@ else version(WebAssembly)
             case 33: return HipKey.PAGE_UP;
             case 35: return HipKey.END;
             case 36: return HipKey.HOME;
-            case 37: return HipKey.ARROW_LEFT;
-            case 38: return HipKey.ARROW_UP;
-            case 39: return HipKey.ARROW_RIGHT;
-            case 40: return HipKey.ARROW_DOWN;
+            case 37: return HipKey.LEFT;
+            case 38: return HipKey.UP;
+            case 39: return HipKey.RIGHT;
+            case 40: return HipKey.DOWN;
             case 45: return HipKey.INSERT;
             case 46: return HipKey.DELETE;
             //0
@@ -745,10 +745,10 @@ else version(AppleOS)
             case  0x37: return HipKey.ALT; //command
             
             //DPad Keys
-            case  0x7B: return HipKey.ARROW_LEFT; //leftArrow
-            case  0x7C: return HipKey.ARROW_RIGHT; //rightArrow
-            case  0x7D: return HipKey.ARROW_DOWN; //downArrow
-            case  0x7E: return HipKey.ARROW_UP; //upArrow
+            case  0x7B: return HipKey.LEFT; //leftArrow
+            case  0x7C: return HipKey.RIGHT; //rightArrow
+            case  0x7D: return HipKey.DOWN; //downArrow
+            case  0x7E: return HipKey.UP; //upArrow
             
             //Alphabet
             case  0x00: return HipKey.A; //a

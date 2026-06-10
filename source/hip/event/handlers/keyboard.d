@@ -29,7 +29,6 @@ char toUppercase(char a)
 
 
 
-
 /** 
  *  This class controls callbacks related to keyboard buttons state, as its downtime, uptime,
  *  its current state, modifier key states and callbacks assigned to specific keys.
@@ -61,7 +60,7 @@ class KeyboardHandler : IHipKeyboard
     /**
     * Takes care of the pressed keys array
     */
-    private void setPressed(HipKey key, bool press)
+    private void setPressed(char key, bool press)
     {
         ubyte Key = cast(ubyte)key;
         metadatas[Key].setPressed(press);
@@ -98,7 +97,7 @@ class KeyboardHandler : IHipKeyboard
 
     }
 
-    void handleKeyUp(HipKey key)
+    void handleKeyUp(char key)
     {
         setPressed(key, false);
     }
@@ -114,7 +113,7 @@ class KeyboardHandler : IHipKeyboard
     /**
     *   Updates the metadata
     */
-    void handleKeyDown(HipKey key)
+    void handleKeyDown(char key)
     {
         setPressed(key, true);
         // import hip.console.log;

@@ -1,6 +1,7 @@
 module hip.api.input.inputmap;
 public import hip.api.input.gamepad;
 public import hip.math.vector;
+public import hip.api.input.keyboard;
 
 /**
  * Example of an inputmap data format:
@@ -36,7 +37,7 @@ interface IHipInputMap
         ///Got from the object that contains input information
         string name;
         ///Got from the "keyboard" properties from input json
-        char[] keys;
+        HipKey[] keys;
         ///Got from "gamepad" properties from input json
         HipGamepadButton[] btns;
     }
@@ -56,7 +57,7 @@ interface IHipInputMap
         /**
          * A keyboard key
          */
-        char key;
+        HipKey key;
         /**
         * Value ranging from byte.min - byte.max
         * A float value is usually specified on input mapping, between 1.0 and -1.0

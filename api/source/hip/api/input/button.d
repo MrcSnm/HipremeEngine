@@ -31,7 +31,7 @@ alias HipScrollAction = void delegate(float[3]);
  */
 struct HipButton
 {
-    ushort id;
+    char id;
     HipButtonType type;
     AutoRemove isAutoRemove = AutoRemove.no;
     HipInputAction action;

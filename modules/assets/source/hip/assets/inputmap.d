@@ -162,7 +162,7 @@ class HipInputMap : HipAsset, IHipInputMap
                 if(kb != null)
                 {
                     foreach(key; kb.array) //Keyboard
-                        ctx.keys~= key.str[0];
+                        ctx.keys~= cast(HipKey)key.str[0];
                 }
                 if(gp != null)
                 {
@@ -215,7 +215,7 @@ class HipInputMap : HipAsset, IHipInputMap
                             {
                                 enforce(!an, "Keyboard can only receive a string.");
                                 enforce(kb.type == JSONType.string, "Keyboard can only receive a string.");
-                                newAxis.key = kb.str[0];
+                                newAxis.key = cast(HipKey)kb.str[0];
                             }
                             if(gp)
                             {

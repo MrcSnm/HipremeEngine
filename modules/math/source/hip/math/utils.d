@@ -25,6 +25,15 @@ float degToRad(float degrees)
     return DEG_TO_RAD * degrees;
 }
 
+T cosDeg(T)(T degrees)
+{
+    return cos(degToRad(degrees));
+}
+T sinDeg(T)(T degrees)
+{
+    return sin(degToRad(degrees));
+}
+
 int getClosestMultiple(int from, int to)
 {
     float temp = to/cast(float)from;
