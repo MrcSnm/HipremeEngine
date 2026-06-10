@@ -10,29 +10,40 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0f11157d-e98d-41fc-b338-335fca3a3cb9" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/engine_logo.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/tools/compiler_getter.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/render.experimental.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/engine_text.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/engine_text.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../vita/hipreme_engine/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/../../vita/hipreme_engine/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../vita/hipreme_engine/src/d_hooks.c" beforeDir="false" afterPath="$PROJECT_DIR$/../../vita/hipreme_engine/src/d_hooks.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../vita/hipreme_engine/src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/../../vita/hipreme_engine/src/main.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wasm/build/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../wasm/build/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../dependencies/runtime/druntime" beforeDir="false" afterPath="$PROJECT_DIR$/../../../dependencies/runtime/druntime" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/config/source/hip/config/renderer.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/config/source/hip/config/renderer.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/game2d/source/hip/gui/label.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/game2d/source/hip/gui/label.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/util/source/hip/util/string.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/util/source/hip/util/string.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../modules/util/source/hip/util/system.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../modules/util/source/hip/util/system.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../projects/profile/source/gamescript/entry.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../projects/profile/source/gamescript/entry.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../projects/start_here/ct_assets/scriptmodules.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../projects/start_here/ct_assets/scriptmodules.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../projects/start_here/source/gamescript/entry.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../projects/start_here/source/gamescript/entry.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../projects/test/source/gamescript/entry.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../projects/test/source/gamescript/entry.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../renderer.conf" beforeDir="false" afterPath="$PROJECT_DIR$/../../../renderer.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/backtraced.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/backtraced.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../source/hip/graphics/mesh.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../source/hip/graphics/mesh.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/dub.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/dub.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/app.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/app.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/commons.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/commons.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/feature.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/feature.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/_7zip.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/_7zip.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/android_ldc.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/android_ldc.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/android_ndk.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/android_ndk.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/android_sdk.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/android_sdk.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/dmd.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/dmd.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/git.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/git.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/hipreme_engine.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/hipreme_engine.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/java_jdk.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/java_jdk.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/ldc.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/ldc.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/msvclinker.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/msvclinker.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/nuget.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/nuget.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/ruby_gem.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/ruby_gem.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/vcruntime140.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/vcruntime140.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/features/vs_buildtools_installer.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/features/vs_buildtools_installer.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/android.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/android.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/appleos.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/appleos.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/ios.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/ios.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/linux.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/linux.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/psvita.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/psvita.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/uwp.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/uwp.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/wasm.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/wasm.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/windows.d" beforeDir="false" afterPath="$PROJECT_DIR$/../../../tools/hbuild/source/targets/windows.d" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,7 +53,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=PhysicalDevice, isTemplate=false, identifier=serial=UGV4HIT8Z5MVYP8H)]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -60,23 +71,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Android App.app.executor&quot;: &quot;Run&quot;,
-    &quot;ResourceManagerPrefKey.ResourceType&quot;: &quot;DRAWABLE&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Android App.app.executor": "Run",
+    "ResourceManagerPrefKey.ResourceType": "DRAWABLE",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "com.google.services.firebase.aqiPopupShown": "true",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Marcelo/Documents/D/HipremeEngine/build/android/project"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
-      <module name="App.app.main" />
+      <module name="App.app" />
+      <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
       <option name="DEPLOY" value="true" />
       <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
       <option name="DEPLOY_AS_INSTANT" value="false" />
@@ -84,12 +97,14 @@
       <option name="PM_INSTALL_OPTIONS" value="" />
       <option name="ALL_USERS" value="false" />
       <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="ALLOW_ASSUME_VERIFIED" value="false" />
       <option name="CLEAR_APP_STORAGE" value="false" />
       <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
       <option name="ACTIVITY_EXTRA_FLAGS" value="" />
       <option name="MODE" value="default_activity" />
       <option name="RESTORE_ENABLED" value="false" />
       <option name="RESTORE_FILE" value="" />
+      <option name="RESTORE_FRESH_INSTALL_ONLY" value="false" />
       <option name="CLEAR_LOGCAT" value="false" />
       <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
       <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
@@ -136,6 +151,7 @@
         <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
       </Profilers>
       <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY" value="" />
       <option name="ACTIVITY_CLASS" value="" />
       <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
       <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
@@ -154,5 +170,21 @@
       <updated>1739248223296</updated>
     </task>
     <servers />
+  </component>
+  <component name="play_dynamic_filters_status">
+    <option name="appIdToCheckInfo">
+      <map>
+        <entry key="com.hipremeengine.app">
+          <value>
+            <CheckInfo lastCheckTimestamp="1775052504498" />
+          </value>
+        </entry>
+        <entry key="com.hipremeengine.app.test">
+          <value>
+            <CheckInfo lastCheckTimestamp="1775052504499" />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

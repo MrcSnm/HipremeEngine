@@ -1,0 +1,5 @@
+{
+    "buildCmd": "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\tools\\hbuild\\hbuild.exe --autoSelect=WebAssembly --scriptOnly",
+    "builderPath": "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\tools\\hbuild\\hbuild.exe",
+    "defaultProject": "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\projects\\profile"
+}

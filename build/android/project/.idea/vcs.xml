@@ -2,5 +2,9 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$/../../.." vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../dependencies/avaudioengine" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../dependencies/metal" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../dependencies/objc" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../dependencies/runtime/druntime" vcs="Git" />
   </component>
 </project>

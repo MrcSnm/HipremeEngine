@@ -18,6 +18,11 @@ function initializeWebglContext()
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
+    ["WEBGL_compressed_texture_astc", "WEBGL_compressed_texture_etc", "WEBGL_compressed_texture_pvrtc", "WEBGL_compressed_texture_s3tc"].forEach((v) =>
+    {
+        console.log(gl.getExtension(v));
+    });
+
 
     const addObject = WasmUtils.addObject;
     const removeObject = WasmUtils.removeObject;
