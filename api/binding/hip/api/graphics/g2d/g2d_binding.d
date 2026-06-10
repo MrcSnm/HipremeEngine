@@ -30,27 +30,27 @@ class HipG2DBinding
         void function(bool enable = true) setRendererErrorCheckingEnabled;
 
         ///Will change the color for the next calls to drawPixel, drawRectangle, drawTriangle, fillRectangle, fillTriangle, drawLine, drawQuadraticBezierLine
-        void function(HipColor color) setGeometryColor;
+        void function(const HipColor color) setGeometryColor;
         ///Draw a pixel at (x, y) with the color specified at setGeometryColor
-        void function(int x, int y, HipColor color = HipColor.no) drawPixel;
+        void function(int x, int y, const HipColor color = HipColor.no) drawPixel;
         ///Draws an unfilled rectangle
-        void function(int x, int y, int w, int h, HipColor color = HipColor.no, float rotation = 0) drawRectangle;
+        void function(int x, int y, int w, int h, const HipColor color = HipColor.no, float rotation = 0) drawRectangle;
         ///Draws an unfilled triangle
-        void function(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no) drawTriangle;
+        void function(int x1, int y1, int x2, int y2, int x3, int y3, const HipColor color = HipColor.no) drawTriangle;
         ///Draws a filled rectangle
-        void function(int x, int y, int w, int h, HipColor color = HipColor.no, float rotation = 0) fillRectangle;
+        void function(int x, int y, int w, int h, const HipColor color = HipColor.no, float rotation = 0) fillRectangle;
         ///Draws a filled rectangle with rounded borders
-        void function(int x, int y, int w, int h, int radius = 4, HipColor color = HipColor.no, int precision = 16) fillRoundRect;
+        void function(int x, int y, int w, int h, int radius = 4, const HipColor color = HipColor.no, int precision = 16) fillRoundRect;
         ///Draws a filled triangle
-        void function(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no) fillTriangle;
+        void function(int x1, int y1, int x2, int y2, int x3, int y3, const HipColor color = HipColor.no) fillTriangle;
         ///Draws unfilled circle
-        void function(int x, int y, int radiusW, int radiusH, int degrees = 360, HipColor color = HipColor.no, int precision = 24) drawEllipse;
+        void function(int x, int y, int radiusW, int radiusH, int degrees = 360, const HipColor color = HipColor.no, int precision = 24) drawEllipse;
         ///Draws a filled circle
-        void function(int x, int y, int radiusW, int radiusH, int degrees = 360, HipColor color = HipColor.no, int precision = 24) fillEllipse;
+        void function(int x, int y, int radiusW, int radiusH, int degrees = 360, const HipColor color = HipColor.no, int precision = 24) fillEllipse;
         ///Draws a line from (x1, y1) to (x2, y2)
-        void function(int x1, int y1, int x2, int y2, HipColor color = HipColor.no) drawLine;
+        void function(int x1, int y1, int x2, int y2, const HipColor color = HipColor.no) drawLine;
         ///Draws a line using bezier points. The higher the precision, the smoother the line, the heavier it is to execute
-        void function(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, HipColor color = HipColor.no) drawQuadraticBezierLine;
+        void function(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, const HipColor color = HipColor.no) drawQuadraticBezierLine;
         ///Draws the target sprite instance
         void function(IHipTexture texture, ubyte[] vertices) drawSprite;
         ///Draws a texture at a specified place
@@ -63,7 +63,7 @@ class HipG2DBinding
         ///Changes textBatch state to use this color
         void function(HipColor) setTextColor;
         ///Draws a text using the last font set
-        void function(string text, int x, int y, float scale = 1.0f, HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.topCenter, Size bounds = Size.init, bool wordWrap = false) drawText;
+        void function(string text, int x, int y, float scale = 1.0f, const HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.topCenter, Size bounds = Size.init, bool wordWrap = false) drawText;
         ///Draw text using those vertices. Low level API
         void function(void[] vertices, IHipFont font)  drawTextVertices;
 

@@ -183,6 +183,23 @@ bool remove(T)(ref T[] arr, const(T)* val)
     return false;
 }
 
+bool removeIndex(T)(ref T[] arr, size_t idx)
+{
+    if(idx >= arr.length)
+        return false;
+    arr[idx..$ - 1] = arr[idx+1..$];
+    arr.length--;
+    return true;
+}
+bool removeIndexUnsorted(T)(ref T[] arr, size_t idx)
+{
+    if(idx >= arr.length)
+        return false;
+    arr[idx] = arr[$-1];
+    arr.length--;
+    return true;
+}
+
 pragma(inline, true)
 bool contains(T)(in T[] arr, T val) pure nothrow @nogc {return arr.indexOf(val) != -1;} 
 
