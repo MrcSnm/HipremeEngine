@@ -56,7 +56,7 @@ class MainScene : AScene, IHipPreloadable
 
         
 
-        ////////////////////////Higher Level////////////////////////
+        // //////////////////////Higher Level////////////////////////
         // setGeometryColor(HipColor.white);
         setFont(null);
         drawText("Hello World Test Scene (Default Font)", 300, 280, 1, HipColor.white, HipTextAlign.topLeft);

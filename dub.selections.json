@@ -28,9 +28,8 @@
 		"windowing":  {"path": "modules\\windowing"},
 		"bindbc-opengl": "1.1.1",
 		"compilewatcher":  {"path": "dependencies\\compilewatcher"},
+		"game_renderer":  {"path": "modules\\game_renderer"},
 		"net":  {"path": "modules\\net"},
-		"wasm":  {"path": "modules\\wasm"},
-		"timer":  {"path": "modules\\timer"},
-		"tween":  {"path": "modules\\tween"}
+		"wasm":  {"path": "modules\\wasm"}
 	}
 }

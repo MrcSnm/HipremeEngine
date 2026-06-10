@@ -11,9 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.graphics.g2d.spritebatch;
 import hip.game.mesh;
 import hip.game.orthocamera;
-import hip.hiprenderer.renderer;
 import hip.assets.texture;
-import hip.hiprenderer.framebuffer;
 import hip.error.handler;
 import hip.game.shader;
 import hip.config.renderer;
@@ -22,6 +20,7 @@ public import hip.api.graphics.color;
 public import hip.api.renderer.shaders.spritebatch;
 import hip.graphics.g2d.spritebatch_instanced;
 import hip.graphics.g2d.spritebatch_vertex;
+import hip.graphics.g2d;
 
 
 /**
@@ -47,7 +46,7 @@ final class HipSpriteBatch : IHipBatch
         import hip.hiprenderer.initializer;
         import hip.util.conv:to;
         ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
-        this.spriteBatchShader = Shader.fromShaderPreset(HipShaderPresets.SPRITE_BATCH);
+        this.spriteBatchShader = createShader(HipShaderPresets.SPRITE_BATCH);
         if(camera is null)
             camera = new HipOrthoCamera();
         if(spriteBatchShader.isInstanced)

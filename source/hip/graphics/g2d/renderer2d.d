@@ -6,12 +6,12 @@ import hip.graphics.g2d.spritebatch;
 import hip.graphics.g2d.tilemap;
 import hip.graphics.g2d.geometrybatch;
 import hip.game.orthocamera;
-import hip.hiprenderer;
 import hip.bind.interpreters;
+import hip.hiprenderer;
 public import hip.api.graphics.color;
 public import hip.graphics.g2d.textrenderer;
 public import hip.api.renderer.viewport;
-
+public import hip.api.renderer.operations;
 public import hip.api.data.font;
 
 package __gshared

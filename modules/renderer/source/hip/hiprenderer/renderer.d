@@ -11,7 +11,6 @@ Distributed under the CC BY-4.0 License.
 module hip.hiprenderer.renderer;
 public import hip.config.renderer;
 public import hip.api.renderer.shader;
-public import hip.hiprenderer.framebuffer;
 public import hip.hiprenderer.viewport;
 public import hip.api.renderer.texture;
 public import hip.api.renderer.operations;
@@ -257,20 +256,14 @@ class HipRendererImplementation : IHipRenderer
     {
 
     }
-    /**
-    * Fixes the matrix order based on the config and renderer.
-    * If the renderer is column and the config is row, it will tranpose
-    */
-    public T getMatrix(T)(auto ref T mat)
+    bool shouldTranspose()
     {
-        if(currentConfig.isMatrixRowMajor && !rendererImpl.isRowMajor())
-            return mat.transpose();
-        return mat;
+        return currentConfig.isMatrixRowMajor && !rendererImpl.isRowMajor();
     }
-    
-    public HipFrameBuffer newFrameBuffer(int width, int height)
+
+    public IHipFrameBuffer newFrameBuffer(int width, int height)
     {
-        return new HipFrameBuffer(rendererImpl.createFrameBuffer(width, height), width, height);
+        return rendererImpl.createFrameBuffer(width, height);
     }
     public IHipVertexArrayImpl  createVertexArray()
     {
@@ -340,32 +333,15 @@ class HipRendererImplementation : IHipRenderer
         rendererImpl.drawIndexedInstanced(instanceCount, count, offset);
         stats.drawCalls++;
     }
-    public void drawIndexedInstanced(HipRendererMode mode, uint instanceCount, index_t count, uint offset = 0)
-    {
-        setRendererMode(mode);
-        HipRenderer.drawIndexedInstanced(instanceCount, count, offset);
-        stats.drawCalls++;
-    }
 
     public void drawIndexed(index_t count, uint offset = 0)
     {
         rendererImpl.drawIndexed(count, offset);
         stats.drawCalls++;
     }
-    public void drawIndexed(HipRendererMode mode, index_t count, uint offset = 0)
-    {
-        setRendererMode(mode);
-        HipRenderer.drawIndexed(count, offset);
-        stats.drawCalls++;
-    }
     public void drawVertices(index_t count, uint offset = 0)
     {
         rendererImpl.drawVertices(count, offset);
-    }
-    public void drawVertices(HipRendererMode mode, index_t count, uint offset = 0)
-    {
-        rendererImpl.setRendererMode(mode);
-        HipRenderer.drawVertices(count, offset);
     }
 
     public void end()

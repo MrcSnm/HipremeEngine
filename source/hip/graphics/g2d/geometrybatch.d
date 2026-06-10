@@ -10,15 +10,17 @@ Distributed under the CC BY-4.0 License.
 */
 module hip.graphics.g2d.geometrybatch;
 import hip.game.orthocamera;
-import hip.hiprenderer.renderer;
 import hip.game.shader;
 import hip.error.handler;
 import hip.game.mesh;
 import hip.math.matrix;
 import hip.math.utils;
 import hip.math.vector;
+import hip.graphics.g2d;
+import hip.game.vertex;
 public import hip.api.graphics.color;
 public import hip.api.graphics.batch;
+import hip.config.renderer;
 
 
 enum defaultColor = HipColor.white;
@@ -68,7 +70,7 @@ class GeometryBatch : IHipBatch
     this(HipOrthoCamera camera = null, index_t verticesCount=DefaultMaxGeometryBatchVertices, index_t indicesCount=DefaultMaxGeometryBatchVertices)
     {
         import hip.hiprenderer.initializer;
-        Shader s = Shader.fromShaderPreset(HipShaderPresets.GEOMETRY_BATCH);
+        Shader s = createShader(HipShaderPresets.GEOMETRY_BATCH);
         s.setup!(HipGeometryBatchVertexUniforms, HipGeometryBatchFragmentUniforms)(HipRenderer.getInfo);
         s.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 

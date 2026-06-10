@@ -9,11 +9,10 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.game.orthocamera;
-import hip.hiprenderer.viewport;
-import hip.hiprenderer;
 import hip.math.matrix;
 import hip.math.utils;
 import hip.math.vector;
+import hip.api.renderer.viewport;
 
 enum CameraType : ubyte
 {
@@ -66,6 +65,7 @@ class HipOrthoCamera
     }
     void updateFromViewport()
     {
+        import hip.api.renderer.core;
         Viewport v = HipRenderer.getCurrentViewport();
         updateProjection(v.x, v.y, v.width, v.height);
         dirty = true;

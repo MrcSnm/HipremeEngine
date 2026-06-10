@@ -12,11 +12,11 @@ module hip.graphics.g2d.spritebatch_instanced;
 import hip.graphics.g2d.spritebatch;
 import hip.game.mesh;
 import hip.game.orthocamera;
-import hip.hiprenderer.renderer;
 import hip.assets.texture;
-import hip.hiprenderer.framebuffer;
 import hip.error.handler;
 import hip.game.shader;
+import hip.game.vertex;
+import hip.game.framebuffer;
 import hip.config.renderer;
 public import hip.api.graphics.batch;
 public import hip.api.graphics.color;
@@ -103,7 +103,7 @@ final class HipSpriteBatchInstanced
         if(fb is null)
         {
             Viewport v = HipRenderer.getCurrentViewport;
-            fb = HipRenderer.newFrameBuffer(cast(int)v.width, cast(int)v.height);
+            fb = new HipFrameBuffer(HipRenderer.newFrameBuffer(cast(int)v.width, cast(int)v.height), cast(int)v.width, cast(int)v.height);
             // fbTexRegion = new HipTextureRegion(fb.getTexture());
         }
         this.ppShader = s;

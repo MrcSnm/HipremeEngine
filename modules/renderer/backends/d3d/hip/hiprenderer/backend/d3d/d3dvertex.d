@@ -23,7 +23,6 @@ import hip.hiprenderer;
 import hip.hiprenderer.backend.d3d.d3drenderer;
 import hip.api.renderer.shader;
 import hip.hiprenderer.backend.d3d.d3dshader;
-import hip.hiprenderer.vertex;
 import hip.config.opts;
 
 

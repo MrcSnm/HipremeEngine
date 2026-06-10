@@ -1,6 +1,6 @@
 module gamescript.entry;
 import hip.game2d.sprite;
-import hip.api.graphics.g2d.renderer2d;
+import hip.api;
 import HRandom = hip.math.random:Random;
 import hip.api;
 import hip.assets.texture;
@@ -44,10 +44,12 @@ class MainScene : AScene
 	/** Called every frame */
 	override void update(float dt)
 	{
-		foreach(i, sp; sprites)
+		HipSprite[] sps = sprites.sprites;
+		foreach(sp; 0..SPRITES_COUNT)
 		{
-			if(sp.x < SCREEN_W - sp.width)
-				sp.x+= speeds[i] * dt;
+			HipSprite s = sps.ptr[sp];
+			if(s.x < SCREEN_W - s.width)
+				s.x+= speeds[sp] * dt;
 		}
 	}
 	/** Renderer only, may not be called every frame */
@@ -60,9 +62,10 @@ class MainScene : AScene
 		IHipTexture tex = sprites.texture;
 		for(int i = 0; i < SPRITES_COUNT; i++)
 		{
-			drawTexture(tex, cast(int)sps[i].x, cast(int)sps[i].y);
+			HipSprite s = sps.ptr[i];
+			drawTexture(tex, cast(int)s.x, cast(int)s.y);
 		}
-		drawTexture(tex, cast(int)sps[0].x, cast(int)sps[0].y);
+		// drawTexture(sprites.texture, cast(int)sprites[0].x, cast(int)sprites[0].y);
 		// setRendererErrorCheckingEnabled(true);
 	}
 	/** Pre destroy */

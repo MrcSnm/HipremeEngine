@@ -39,6 +39,18 @@ struct HipRendererInfo
     size_t function(ShaderTypes, UniformType) uniformMapper;
 }
 
+pragma(LDC_no_typeinfo)
+struct HipRendererConfig
+{
+    ///Use level 0 for pixel art games
+    ubyte multisamplingLevel = 0;
+    ///Single/Double/Triple buffering
+    ubyte bufferingCount = 2;
+    bool isMatrixRowMajor = true;
+    bool fullscreen = false;
+    bool vsync = true;
+}
+
 ///Which API is being used
 enum HipRendererType : ubyte
 {
@@ -136,6 +148,7 @@ interface IHipRendererImpl
     public void setRendererMode(HipRendererMode mode);
     public void drawIndexed(index_t count, uint offset = 0);
     public void drawIndexedInstanced(uint instanceCount, index_t count, uint offset = 0);
+    
     public void drawVertices(index_t count, uint offset = 0);
     public void end();
     public void clear();
@@ -169,6 +182,19 @@ interface IHipRenderer
     ///Gets which renderer type it is
     HipRendererType getType();
     HipRendererInfo getInfo();
+    bool shouldTranspose();
+    IHipRendererBuffer createQuadIndexBuffer(size_t quadsCount, HipResourceUsage usage);
+    IHipFrameBuffer newFrameBuffer(int width, int height);
+    /**
+    * Fixes the matrix order based on the config and renderer.
+    * If the renderer is column and the config is row, it will tranpose
+    */
+    public T getMatrix(T)(auto ref T mat)
+    {
+        if(shouldTranspose)
+            return mat.transpose();
+        return mat;
+    }
 
     int getMaxSupportedShaderTextures();
     IHipTexture getTextureImplementation(HipResourceUsage usage = HipResourceUsage.Immutable, HipTextureType type = HipTextureType.Texture2D);
@@ -180,9 +206,11 @@ interface IHipRenderer
     void setRendererMode(HipRendererMode);
     HipRendererMode getMode();
     void drawIndexed(index_t count, uint offset = 0);
-    void drawIndexed(HipRendererMode mode, index_t count, uint offset = 0);
+    final void drawIndexed(HipRendererMode mode, index_t count, uint offset = 0){ setRendererMode(mode); drawIndexed(count, offset);}
+    void drawIndexedInstanced(uint instanceCount, index_t count, uint offset = 0);
+    final void drawIndexedInstanced(HipRendererMode mode, uint instanceCount, index_t count, uint offset = 0){ setRendererMode(mode); drawIndexedInstanced(instanceCount, count, offset);}
     void drawVertices(index_t count, uint toffset = 0);
-    void drawVertices(HipRendererMode mode, index_t count, uint offset = 0);
+    final void drawVertices(HipRendererMode mode, index_t count, uint offset = 0) {setRendererMode(mode); drawVertices(count, offset);}
     void end();
     void clear(HipColorf color);
     HipDepthTestingFunction getDepthTestingFunction() const;

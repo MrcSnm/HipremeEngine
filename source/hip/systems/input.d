@@ -48,7 +48,7 @@ version(Android)
     @JavaFunc!(HipAndroidRenderer) void onRendererResize(int x, int y)
     {
         ///Must be executed on the render thread :(
-        import hip.hiprenderer;
+        import hip.api.renderer.core;
         import hip.graphics.g2d.renderer2d;
         HipRenderer.setWindowSize(x, y);
         resizeRenderer2D(cast(uint)x, cast(uint)y);

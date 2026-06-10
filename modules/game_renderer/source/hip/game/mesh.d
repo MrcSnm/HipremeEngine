@@ -10,17 +10,16 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.game.mesh;
-// import hip.hiprenderer.renderer;
 import hip.game.shader;
 import hip.api.renderer.vertex;
 import hip.api.renderer.core;
-// import hip.hiprenderer.vertex;
-import hip.error.handler;
+import hip.game.vertex;
 
 
 class Mesh
 {
     import hip.util.data_structures;
+    import hip.config.renderer;
     
     alias meshBinder = DelayedBindable!(Mesh, !UseDelayedUnbind, BindReplacesUnbind, 1,
         (Mesh m) { m.shader.bind(); m.vao.bind(); },
@@ -105,7 +104,7 @@ class Mesh
     {
         import std.traits:isUnsigned;
         static assert(isUnsigned!T, "Mesh must receive an integral type in its draw");
-        ErrorHandler.assertExit(indicesCount < T.max, "Can't draw more than T.max");
+        assert(indicesCount < T.max, "Can't draw more than T.max");
         bind();
         HipRenderer.drawIndexed(mode, cast(index_t)indicesCount, offset);
     }

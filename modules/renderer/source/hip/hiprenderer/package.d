@@ -14,4 +14,3 @@ module hip.hiprenderer;
 public import hip.hiprenderer.renderer;
 public import hip.api.renderer.shader;
 public import hip.hiprenderer.viewport;
-public import hip.hiprenderer.framebuffer;

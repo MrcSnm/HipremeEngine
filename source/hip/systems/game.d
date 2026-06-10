@@ -20,7 +20,6 @@ import hip.event.dispatcher;
 import hip.event.handlers.keyboard;
 import hip.event.handlers.mouse;
 import hip.windowing.events;
-import hip.hiprenderer.renderer;
 import hip.graphics.g2d.renderer2d;
 public import hip.event.handlers.input_listener;
 
@@ -80,6 +79,7 @@ class GameSystem
 
     this(float targetFPS)
     {
+        import hip.hiprenderer;
         this.targetFPS = targetFPS;
         dispatcher = new EventDispatcher(HipRenderer.window, &this.isInUpdate);
         dispatcher.addOnResizeListener((uint width, uint height)

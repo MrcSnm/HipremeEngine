@@ -1,7 +1,7 @@
 module hip.systems.timer_manager;
 import hip.util.reflection;
 import hip.console.log;
-import hip.api.systems.timer;
+public import hip.api.systems.timer;
 
 class HipTimerManager
 {

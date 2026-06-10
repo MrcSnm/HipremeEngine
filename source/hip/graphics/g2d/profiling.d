@@ -17,7 +17,7 @@ void drawGCStats(int x = 0, int y = -1)
         x = 0;
     if(y < 0)
     {
-        import hip.hiprenderer.renderer;
+        import hip.api.renderer.core;
         y = HipRenderer.getCurrentViewport.worldHeight;
     }
 

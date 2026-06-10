@@ -70,18 +70,3 @@ version(WebAssembly) enum GLShouldDisableVertexAttrib = false;
 else enum GLShouldDisableVertexAttrib = true;
 
 enum GLMaxVertexAttributes = 64;
-
-
-
-
-pragma(LDC_no_typeinfo)
-struct HipRendererConfig
-{
-    ///Use level 0 for pixel art games
-    ubyte multisamplingLevel = 0;
-    ///Single/Double/Triple buffering
-    ubyte bufferingCount = 2;
-    bool isMatrixRowMajor = true;
-    bool fullscreen = false;
-    bool vsync = true;
-}

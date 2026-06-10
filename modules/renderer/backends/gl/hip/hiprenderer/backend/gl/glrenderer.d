@@ -18,7 +18,6 @@ else
     public import bindbc.opengl;
 
 import hip.hiprenderer.renderer;
-import hip.hiprenderer.framebuffer;
 import hip.api.renderer.shader;
 import hip.hiprenderer.viewport;
 import hip.windowing.window;

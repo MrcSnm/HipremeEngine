@@ -15,9 +15,7 @@ public import hip.api.renderer.core;
 import hip.api.data.commons:IReloadable;
 import hip.api.renderer.texture;
 import hip.math.matrix;
-import hip.error.handler;
 import hip.api.renderer.shader;
-// import hip.hiprenderer.renderer;
 import hip.util.file;
 import hip.util.string:indexOf;
 public import hip.api.renderer.shader;
@@ -57,8 +55,10 @@ public class Shader : IReloadable
         ShaderStatus status = loadShader(shaderSource, null, isInstanced);
         if(status != ShaderStatus.SUCCESS)
         {
-            import hip.console.log;
-            logln("Failed loading shaders");
+            //TODO: Make logging public?
+            assert(false, "Failed loading shaders.");
+            // import hip.console.log;
+            // logln("Failed loading shaders");
         }
     }
 
@@ -124,7 +124,7 @@ public class Shader : IReloadable
 
     private void addVarLayout(ShaderVariablesLayout layout)
     {
-        ErrorHandler.assertLazyExit((layout.name in layouts) is null, "Shader: VariablesLayout '"~layout.name~"' is already defined");
+        assert((layout.name in layouts) is null, "Shader: VariablesLayout '"~layout.name~"' is already defined");
         if(defaultLayout is null)
             defaultLayout = layout;
         layouts[layout.name] = layout;
@@ -195,22 +195,4 @@ public class Shader : IReloadable
         shaderProgram.onRenderFrameEnd();
     }
 
-    static Shader fromShaderPreset(HipShaderPresets shaderPreset, HipRendererType type = HipRendererType.None)
-    {
-        import hip.hiprenderer.initializer;
-        import hip.util.conv:to;
-        import hip.console.log;
-        if(type == HipRendererType.None)
-            type = HipRenderer.getType();
-
-        Shader ret = new Shader();
-        DefaultShader shaderInfo = HipDefaultShaders[type][shaderPreset];
-        bool isInstanced = shaderInfo.isInstanced && shaderInfo.isInstanced();
-
-
-        ShaderStatus status = ret.loadShader(shaderInfo.shaderSource(), shaderInfo.path~"."~shaderPreset.to!string, isInstanced);
-        if(status != ShaderStatus.SUCCESS)
-            logln("Failed loading shaders with status ", status, " at preset ", shaderPreset, " on "~shaderInfo.path);
-        return ret;
-    }
 }

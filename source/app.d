@@ -22,7 +22,6 @@ version(Windows)
 {
 	import hip.hiprenderer.backend.d3d.d3drenderer;
 }
-import hip.hiprenderer.renderer;
 import hip.view;
 import hip.systems.game;
 import hip.bind.interpreters;
@@ -170,6 +169,8 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	import hip.math.random;
 	import hip.util.time;
 	import backtraced;
+	import hip.hiprenderer:PreInitializeHipRenderer, HipRenderer;
+
 	backtraced_Register();
 	HipTime.initialize();
 	Random.initialize();
@@ -200,6 +201,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	version(dll)
 	{
 		import hip.console.log;
+		import hip.api.renderer.core;
 		hiplog("Will init renderer");
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11, windowWidth, windowHeight);}
 		else version(WebAssembly){HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);}
@@ -256,6 +258,7 @@ import hip.network;
  */
 static void destroyEngine()
 {
+	import hip.hiprenderer.renderer;
 
 	// hiplog("Closing ", onlineSockets.length, " Socket ", " Connections");
 	disconnectNetwork();
@@ -409,6 +412,8 @@ export extern(System) void HipremeRender()
 {
 	import hip.bind.interpreters;
 	import hip.graphics.g2d.renderer2d;
+	import hip.hiprenderer.renderer;
+	
 	HipRenderer.begin();
 	HipRenderer.clear(0,0,0,255);
 	sys.render();

@@ -34,7 +34,6 @@ import hip.error.handler;
 import hip.api.renderer.shader;
 import hip.hiprenderer.viewport;
 import hip.hiprenderer.renderer;
-import hip.hiprenderer.framebuffer;
 
 import hip.hiprenderer.backend.d3d.d3dshader;
 import hip.hiprenderer.backend.d3d.d3dframebuffer;

@@ -3,7 +3,9 @@
         "Marcelo"
     ],
     "dependencies": {
-        "renderer": {"path": "../renderer"}
+        "util": {"path": "../util"},
+        "hipengine_api:interfaces": {"path": "../../api"},
+        "config": {"path": "../config"}
     },
     "description": "Game renderer module for Hipreme Engine",
 	"targetPath": "build",
