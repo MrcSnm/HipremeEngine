@@ -333,12 +333,6 @@ class HipRendererImplementation : IHipRenderer
         rendererImpl.drawIndexedInstanced(instanceCount, count, indexOffset, baseInstance);
         stats.drawCalls++;
     }
-    public void drawIndexedInstanced(HipRendererMode mode, uint instanceCount, index_t count, uint indexOffset = 0, uint baseInstance = 0)
-    {
-        setRendererMode(mode);
-        HipRenderer.drawIndexedInstanced(instanceCount, count, indexOffset, baseInstance);
-        stats.drawCalls++;
-    }
 
     public void drawIndexed(index_t count, uint offset = 0)
     {

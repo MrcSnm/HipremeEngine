@@ -54,8 +54,13 @@ MTLBlendFactor fromHipBlendFunction(HipBlendFunction fn)
     }
 }
 
-class HipMTLShaderProgram : ShaderProgram
+__gshared HipMTLShader boundShader;
+
+class HipMTLShader : HipShaderProgram
 {
+    MTLDevice device;
+    HipMTLRenderer mtlRenderer;
+
     MTLLibrary library;
     MTLFunction vertexShaderFunction;
     MTLFunction fragmentShaderFunction;
@@ -68,9 +73,14 @@ class HipMTLShaderProgram : ShaderProgram
     MTLRenderPipelineState pipelineState;
     HipBlendFunction blendSrc, blendDst;
     HipBlendEquation blendEq;
-    this()
+
+    this(MTLDevice device, HipMTLRenderer mtlRenderer)
     {
+        this.device = device;
+        this.mtlRenderer = mtlRenderer;
+
         pipelineDescriptor = MTLRenderPipelineDescriptor.alloc.initialize;
+
     }
 
     void createPipelineState(MTLDevice device, MTLVertexDescriptor descriptor)
@@ -99,67 +109,50 @@ class HipMTLShaderProgram : ShaderProgram
                 mtlbuffer.release();
         }
     }
-}
 
-
-
-__gshared HipMTLShaderProgram boundShader;
-
-class HipMTLShader : IShader
-{
-    MTLDevice device;
-    HipMTLRenderer mtlRenderer;
-
-    this(MTLDevice device, HipMTLRenderer mtlRenderer)
-    {
-        this.device = device;
-        this.mtlRenderer = mtlRenderer;
-    }
-
-    ShaderProgram createShaderProgram(){return new HipMTLShaderProgram();}
+    HipShaderProgram createShaderProgram(){return new HipMTLShader(device, mtlRenderer);}
    
-    override ShaderProgram buildShader(string shaderSource, string shaderPath, bool isInstanced)
+    override bool buildShader(string shaderSource, string shaderPath, bool isInstanced)
     {
-        HipMTLShaderProgram p =  new HipMTLShaderProgram();
-        p.name = shaderPath;
+        name = shaderPath;
 
         NSError err;
         MTLCompileOptions opts = MTLCompileOptions.alloc.initialize;
         ///Macros
         opts.preprocessorMacros = cast(NSDictionary)(["ARGS_TIER2": 0, "INSTANCED": isInstanced].ns);
 
-        p.library = device.newLibraryWithSource(shaderSource.ns, opts, &err);
+        library = device.newLibraryWithSource(shaderSource.ns, opts, &err);
 
-        if(p.library is null || err !is null)
+        if(library is null || err !is null)
         {
             loglnError("Could not compile shader.");
             err.print();
-            return null;
+            return false;
         }
-        p.fragmentShaderFunction = p.library.newFunctionWithName("fragmentMain".ns);
-        if(p.fragmentShaderFunction is null)
+        fragmentShaderFunction = library.newFunctionWithName("fragmentMain".ns);
+        if(fragmentShaderFunction is null)
         {
             loglnError("fragmentMain() not found.");
-            return null;
+            return false;
         }
-        p.vertexShaderFunction = p.library.newFunctionWithName("vertexMain".ns);
-        if(p.vertexShaderFunction is null)
+        vertexShaderFunction = library.newFunctionWithName("vertexMain".ns);
+        if(vertexShaderFunction is null)
         {
             loglnError("vertexMain() not found.");
-            return null;
+            return false;
         }
 
-        p.pipelineDescriptor.label = shaderPath.ns;
-        p.pipelineDescriptor.vertexFunction = p.vertexShaderFunction;
-        p.pipelineDescriptor.fragmentFunction = p.fragmentShaderFunction;
-        p.pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.RGBA8Unorm;
-        p.pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
-        p.pipelineDescriptor.stencilAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
+        pipelineDescriptor.label = shaderPath.ns;
+        pipelineDescriptor.vertexFunction = vertexShaderFunction;
+        pipelineDescriptor.fragmentFunction = fragmentShaderFunction;
+        pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.RGBA8Unorm;
+        pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
+        pipelineDescriptor.stencilAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
 
-        return p;
+        return true;
     }
 
-    override bool setShaderVar(ShaderVar* sv, ShaderProgram prog, void* value)
+    override bool setShaderVar(ShaderVar* sv, void* value)
     {
         switch(sv.type) with(UniformType)
         {
@@ -179,53 +172,48 @@ class HipMTLShader : IShader
             default: return false;
         }
     }
-    override void setBlending(ShaderProgram prog, HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
+    override void setBlending(HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
     {
-        HipMTLShaderProgram p = cast(HipMTLShaderProgram)prog;
-        p.blendSrc = src;
-        p.blendDst = dest;
-        p.blendEq = eq;
+        blendSrc = src;
+        blendDst = dest;
+        blendEq = eq;
 
         MTLBlendFactor mtlSrc = src.fromHipBlendFunction;
         MTLBlendFactor mtlDest = dest.fromHipBlendFunction;
         MTLBlendOperation mtlOp = eq.fromHipBlendEquation;
-        p.pipelineDescriptor.colorAttachments[0].blendingEnabled = eq != HipBlendEquation.DISABLED;
-        p.pipelineDescriptor.colorAttachments[0].rgbBlendOperation = mtlOp;
-        p.pipelineDescriptor.colorAttachments[0].alphaBlendOperation = mtlOp;
-        p.pipelineDescriptor.colorAttachments[0].sourceRGBBlendFactor = mtlSrc;
-        p.pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = mtlDest;
-        p.pipelineDescriptor.colorAttachments[0].sourceAlphaBlendFactor = mtlSrc;
-        p.pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = mtlDest;
+        pipelineDescriptor.colorAttachments[0].blendingEnabled = eq != HipBlendEquation.DISABLED;
+        pipelineDescriptor.colorAttachments[0].rgbBlendOperation = mtlOp;
+        pipelineDescriptor.colorAttachments[0].alphaBlendOperation = mtlOp;
+        pipelineDescriptor.colorAttachments[0].sourceRGBBlendFactor = mtlSrc;
+        pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = mtlDest;
+        pipelineDescriptor.colorAttachments[0].sourceAlphaBlendFactor = mtlSrc;
+        pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = mtlDest;
         
-        if(p.pipelineState !is null)
-            p.createPipelineState(device, p.pipelineDescriptor.vertexDescriptor);
+        if(pipelineState !is null)
+            createPipelineState(device, pipelineDescriptor.vertexDescriptor);
     }
 
-    override void bind(ShaderProgram program)
+    override void bind()
     {
-        HipMTLShaderProgram mtlShader = cast(HipMTLShaderProgram)program;
-        assert(mtlShader.pipelineState !is null);
-        if(mtlShader.pipelineState !is null)
-        {
-            mtlRenderer.getEncoder.setRenderPipelineState(mtlShader.pipelineState);
-            if(mtlShader.uniformBufferVertex)
-                mtlRenderer.getEncoder.setVertexBuffer(mtlShader.uniformBufferVertex.getBuffer, 0, 0);
-            if(mtlShader.uniformBufferFragment)
-                mtlRenderer.getEncoder.setFragmentBuffer(mtlShader.uniformBufferFragment.getBuffer, 0, 0);
-            boundShader = mtlShader;
-        }
+        assert(pipelineState !is null);
+        mtlRenderer.getEncoder.setRenderPipelineState(pipelineState);
+        if(uniformBufferVertex)
+            mtlRenderer.getEncoder.setVertexBuffer(uniformBufferVertex.getBuffer, 0, 0);
+        if(uniformBufferFragment)
+            mtlRenderer.getEncoder.setFragmentBuffer(uniformBufferFragment.getBuffer, 0, 0);
+        boundShader = this;
     }
 
-    override void unbind(ShaderProgram program)
+    override void unbind()
     {
         // encoder.setRenderPipelineState(null);
         mtlRenderer.getEncoder.setVertexBuffer(null, 0, 0);
         mtlRenderer.getEncoder.setFragmentBuffer(null, 0, 0);
-        if(boundShader is program) boundShader = null;
+        if(boundShader is this) boundShader = null;
     }
 
 
-    override int getId(ref ShaderProgram prog, string name, ShaderVariablesLayout layout)
+    override int getId(string name, ShaderVariablesLayout layout)
     {
         return int.init; // TODO: implement
     }
@@ -234,19 +222,18 @@ class HipMTLShader : IShader
     {
         return device.newBuffer(layout.getLayoutSize(), MTLResourceOptions.DefaultCache);
     }
-    override void createVariablesBlock(ref ShaderVariablesLayout layout, ShaderProgram shaderProgram)
+    override void createVariablesBlock(ref ShaderVariablesLayout layout)
     {
         MTLBuffer buffer = getNewMTLBuffer(layout);
-        HipMTLShaderProgram s = cast(HipMTLShaderProgram)shaderProgram;
         BufferedMTLBuffer* buffered;
         layout.setAdditionalData(buffered = new BufferedMTLBuffer([buffer], layout), true);
         final switch(layout.shaderType)
         {
             case ShaderTypes.vertex:
-                s.uniformBufferVertex = buffered;
+                uniformBufferVertex = buffered;
                 break;
             case ShaderTypes.fragment:
-                s.uniformBufferFragment = buffered;
+                uniformBufferFragment = buffered;
                 break;
             case ShaderTypes.geometry:
             case ShaderTypes.none:
@@ -254,11 +241,9 @@ class HipMTLShader : IShader
         }
     }
 
-    override void sendVars(ref ShaderProgram prog, ShaderVariablesLayout[] layouts)
+    override void sendVars(ShaderVariablesLayout[] layouts)
     {
         import core.stdc.string;
-
-        HipMTLShaderProgram mtlShader = cast(HipMTLShaderProgram)prog;
         foreach(layout; layouts)
         {
             BufferedMTLBuffer* bufferedUniformBuffer = cast(BufferedMTLBuffer*)layout.getAdditionalData();
@@ -270,7 +255,7 @@ class HipMTLShader : IShader
         }
     }
 
-    override void bindArrayOfTextures(ref ShaderProgram prog, IHipTexture[] textures, string varName)
+    override void bindArrayOfTextures(IHipTexture[] textures, string varName)
     {
         __gshared MTLTexture[] mtlTextures;
         __gshared MTLSamplerState[] mtlSamplers;
@@ -297,10 +282,9 @@ class HipMTLShader : IShader
         mtlRenderer.getEncoder.setFragmentTextures(mtlTextures.ptr, NSRange(0, textures.length));
 
     }
-    override void onRenderFrameEnd(ShaderProgram p)
+    override void onRenderFrameEnd()
     {
-        HipMTLShaderProgram shader = cast(HipMTLShaderProgram)p;
-        shader.uniformBufferFragment.reset;
-        shader.uniformBufferVertex.reset;
+        uniformBufferFragment.reset;
+        uniformBufferVertex.reset;
     }
 }

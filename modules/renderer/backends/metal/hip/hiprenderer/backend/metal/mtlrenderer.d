@@ -146,7 +146,7 @@ class HipMTLRenderer : IHipRendererImpl
 
     public bool isRowMajor(){return true;}
     void setErrorCheckingEnabled(bool enable = true){}
-    public IShader createShader()
+    public HipShaderProgram createShader()
     {
         return new HipMTLShader(device, this);
     }

@@ -358,9 +358,9 @@ class Hip_GL3Renderer : IHipRendererImpl
         glCall(() => glDrawElements(this.mode, indicesCount, getOpenGLIndexType!index_t, cast(void*)(offset*index_t.sizeof)));
     }
 
-    public void drawIndexedInstanced(uint instanceCount, index_t indicesCount, uint indexOffset, uint instanceOffset)
+    public void drawIndexedInstanced(uint instanceCount, index_t indicesCount, uint indexOffset, uint baseInstance)
     {
-        if(instanceOffset != 0)
+        if(baseInstance != 0)
         {
             loglnError("Can't use instance offset on OpenGL. Flush your draw call insteand.");
             return;

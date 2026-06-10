@@ -147,7 +147,7 @@ interface IHipRendererImpl
     public void begin();
     public void setRendererMode(HipRendererMode mode);
     public void drawIndexed(index_t count, uint offset = 0);
-    public void drawIndexedInstanced(uint instanceCount, index_t count, uint offset = 0);
+    public void drawIndexedInstanced(uint instanceCount, index_t count, uint indexOffset = 0, uint baseInstance = 0);
     
     public void drawVertices(index_t count, uint offset = 0);
     public void end();
@@ -207,8 +207,8 @@ interface IHipRenderer
     HipRendererMode getMode();
     void drawIndexed(index_t count, uint offset = 0);
     final void drawIndexed(HipRendererMode mode, index_t count, uint offset = 0){ setRendererMode(mode); drawIndexed(count, offset);}
-    void drawIndexedInstanced(uint instanceCount, index_t count, uint offset = 0);
-    final void drawIndexedInstanced(HipRendererMode mode, uint instanceCount, index_t count, uint offset = 0){ setRendererMode(mode); drawIndexedInstanced(instanceCount, count, offset);}
+    void drawIndexedInstanced(uint instanceCount, index_t count, uint indexOffset = 0, uint baseInstance = 0);
+    final void drawIndexedInstanced(HipRendererMode mode, uint instanceCount, index_t count, uint indexOffset = 0, uint baseInstance = 0){ setRendererMode(mode); drawIndexedInstanced(instanceCount, count, indexOffset, baseInstance);}
     void drawVertices(index_t count, uint toffset = 0);
     final void drawVertices(HipRendererMode mode, index_t count, uint offset = 0) {setRendererMode(mode); drawVertices(count, offset);}
     void end();

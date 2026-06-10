@@ -250,7 +250,7 @@ final class HipMTLVertexArray : IHipVertexArrayImpl
      */
     void createInputLayout(
         HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo,
-        ShaderProgram shaderProgram
+        HipShaderProgram shaderProgram
     )
     {
         import hip.console.log;
@@ -279,7 +279,7 @@ final class HipMTLVertexArray : IHipVertexArrayImpl
             descriptor.layouts[1+i].stride = info.vboStride;
         }
 
-        HipMTLShaderProgram shader = (cast(HipMTLShaderProgram)shaderProgram);
+        HipMTLShader shader = (cast(HipMTLShader)shaderProgram);
         shader.createPipelineState(device, descriptor);
     }
 }
