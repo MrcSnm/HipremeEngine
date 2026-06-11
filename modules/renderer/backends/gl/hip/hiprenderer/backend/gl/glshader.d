@@ -72,10 +72,10 @@ class HipGLShaderProgram : HipShaderProgram
             else
             {
                 {
-                    GLint length = 0;
-                    glCall(() => glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length));
-                    infoLog = cast(char[])malloc(length)[0..length];
-                    glCall(() =>glGetShaderInfoLog(shaderID, length, &length, infoLog.ptr));
+                    GLint logLength = 0;
+                    glCall(() => glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &logLength));
+                    infoLog = cast(char[])malloc(logLength)[0..logLength];
+                    glCall(() =>glGetShaderInfoLog(shaderID, logLength, &logLength, infoLog.ptr));
                 }
             }
             ErrorHandler.showErrorMessage("Error on shader source: ", shaderSource);

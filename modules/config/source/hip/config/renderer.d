@@ -37,9 +37,10 @@ else version(WebAssembly) enum GLMaxOneBoundTexture = true;
 else version(Android) enum GLMaxOneBoundTexture = true;
 else enum GLMaxOneBoundTexture = false;
 
-enum OpenGLHasUniformBufferSupport = !UseGLES || (GLESVersion == 3) || UseWebGL;
+enum OpenGLHasUniformBufferSupport = (GLESVersion == 3) || UseWebGL;
 enum OpenGLHasVAOSupport = OpenGLHasUniformBufferSupport;
 enum OpenGLHasBufferMapSupport = HasOpenGL && !UseGLES;
+enum OpenGLHasInstancedDraw = OpenGLHasUniformBufferSupport;
 
 
 /**

@@ -808,7 +808,7 @@ auto splitRange(TString, TStrSep)(TString str, TStrSep separator) pure nothrow @
 }
 
 
-bool isNumber(const string str) nothrow @nogc
+bool isNumber(const(char)[] str) nothrow @nogc @safe
 {
     if(!str)
         return false;

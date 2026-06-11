@@ -27,7 +27,7 @@ public import hip.math.matrix;
     Vector2 vPosition = Vector2.zero;
 }
 
-HipSpriteVertexInstancedPerVertex[4] spriteBatchInstancedVertices = [
+__gshared HipSpriteVertexInstancedPerVertex[4] spriteBatchInstancedVertices = [
     HipSpriteVertexInstancedPerVertex(Vector2(0, 0)),
     HipSpriteVertexInstancedPerVertex(Vector2(1, 0)),
     HipSpriteVertexInstancedPerVertex(Vector2(1, 1)),

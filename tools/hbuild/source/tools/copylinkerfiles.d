@@ -22,6 +22,25 @@ void copyLinkerFiles(const string[] libraries, string outputPath)
     std.file.write(libIncludes, includes.toPrettyString());
 
     std.file.mkdirRecurse(outputPath);
+    copyFiles(libraries, outputPath);
+}
+
+void copyLinkerFilesAsTxt(const string[] libraries, string outputPath)
+{
+    import std.algorithm.mutation;
+    import std.algorithm.iteration:joiner;
+    import std.path;
+
+    string libIncludes = buildNormalizedPath(outputPath, "..", "libIncludes.txt");
+    string txt = libraries.map!(lib => "-l"~lib.baseName[3..$].setExtension("")).join(" ");
+    
+    std.file.write(libIncludes, txt);
+    copyFiles(libraries, outputPath);
+
+}
+
+private void copyFiles(const string[] libraries, string outputPath)
+{
     foreach(l; libraries)
     {
         string n = baseName(l);

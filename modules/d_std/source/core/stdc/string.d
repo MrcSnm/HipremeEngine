@@ -12,7 +12,11 @@ extern(C) extern @nogc nothrow pure
 
     version(CustomRuntime)
     {
-        public import object: memcpy, memset, memcmp, memmove;
+        public import object: memcpy, memset, memcmp;
+        version(WebAssembly)
+            public import object: memmove;
+        else
+            void* memmove(return scope void* s1, scope const void* s2, size_t n) pure;
     }
     else
     {

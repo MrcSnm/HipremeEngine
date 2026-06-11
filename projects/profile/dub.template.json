@@ -79,13 +79,18 @@
 			"subConfigurations": {"game2d": "direct", "hipreme_engine": "uwp"}
 		},
 		{
+			"name": "psvita",
+			"targetType": "staticLibrary",
+			"subConfigurations": {"hipreme_engine": "psvita", "game2d": "direct"}
+		},
+		{
 			"name": "run",
 			"targetType": "dynamicLibrary",
 			"lflags-windows": [
 				"/WX"
 			],
-			"postGenerateCommands-windows": ["cd ..\\..\\ && dub -c script -- .\\projects\\profile"],
-			"postGenerateCommands-linux": ["cd ../../ && dub -c script -- ./projects/profile"]
+			"postGenerateCommands-windows": ["cd /d #HIPREME_ENGINE && redub -c script -- $PACKAGE_DIR"],
+			"postGenerateCommands-linux": ["cd #HIPREME_ENGINE && redub -c script -- $PACKAGE_DIR"]
 		}
 	],
 	"versions" : ["HipMathAPI"]

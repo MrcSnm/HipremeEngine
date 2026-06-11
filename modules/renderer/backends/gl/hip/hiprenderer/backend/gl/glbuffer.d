@@ -12,7 +12,23 @@ GLenum getBufferType(HipRendererBufferType type)
         case HipRendererBufferType.index:
             return GL_ELEMENT_ARRAY_BUFFER;
         case HipRendererBufferType.uniform:
-            return GL_UNIFORM_BUFFER;
+        {
+            static if(OpenGLHasUniformBufferSupport)
+                return GL_UNIFORM_BUFFER;
+            else
+                assert(false, "OpenGL has no Uniform Buffer support.");
+        }
+    }
+}
+
+static if(OpenGLHasBufferMapSupport)
+private int getGLAccess(HipResourceAccess access)
+{
+    final switch(access) with(HipResourceAccess)
+    {
+        case write: return GL_WRITE_ONLY;
+        case read: return GL_READ_ONLY;
+        case readWrite: return GL_READ_WRITE;
     }
 }
 
@@ -32,8 +48,10 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
         this.usage = getGLUsage(usage);
         this._type = type;
         this.glType = getBufferType(type);
-        this.glAccess = getGLAccess(access);
         glCall(() => glGenBuffers(1, &handle));
+
+        static if(OpenGLHasBufferMapSupport)
+            this.glAccess = getGLAccess(access);
     }
 
     this(size_t size, HipResourceUsage usage, HipRendererBufferType type, HipResourceAccess access = HipResourceAccess.write)
@@ -69,7 +87,7 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
 
     ubyte[] getBuffer()
     {
-        version(HipGL3)
+        static if(OpenGLHasBufferMapSupport)
         {
             bind();
             scope(exit) unbind();
@@ -80,7 +98,7 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
     }
     void unmapBuffer()
     {
-        version(HipGL3)
+        static if(OpenGLHasBufferMapSupport)
         {
             bind();
             scope(exit) unbind();
@@ -105,15 +123,6 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
     ~this(){glCall(() => glDeleteBuffers(1, &handle));}
 }
 
-private int getGLAccess(HipResourceAccess access)
-{
-    final switch(access) with(HipResourceAccess)
-    {
-        case write: return GL_WRITE_ONLY;
-        case read: return GL_READ_ONLY;
-        case readWrite: return GL_READ_WRITE;
-    }
-}
 
 private int getGLUsage(HipResourceUsage usage)
 {

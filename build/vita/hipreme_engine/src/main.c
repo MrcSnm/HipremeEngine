@@ -1,5 +1,6 @@
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/kernel/processmgr.h>
+#include <psp2/message_dialog.h>
 #include <psp2/kernel/clib.h>
 #include <psp2/types.h>
 #include <psp2/ime_dialog.h>
@@ -106,7 +107,38 @@ int HipremeMain(int width, int height);
 void HipremeRender();
 
 unsigned char HipremeUpdate(float dt);
-int VITA_ShowMessageBoxStr(const char* title, const char* msg);
+int VITA_ShowMessageBoxStr(const char *message) {
+    if (!message || strlen(message) == 0) {
+        return -1; // Invalid input
+    }
+
+    // Initialize dialog parameters
+    SceMsgDialogParam param;
+    sceMsgDialogParamInit(&param);
+
+    SceMsgDialogUserMessageParam msgParam;
+    memset(&msgParam, 0, sizeof(msgParam));
+    msgParam.msg = message;
+    msgParam.buttonType = SCE_MSG_DIALOG_BUTTON_TYPE_OK;
+
+    param.mode = SCE_MSG_DIALOG_MODE_USER_MSG;
+    param.userMsgParam = &msgParam;
+
+    // Open the dialog
+    int res = sceMsgDialogInit(&param);
+    if (res < 0) {
+        return res; // Failed to open dialog
+    }
+
+    // Wait until the dialog is closed
+    while (sceMsgDialogGetStatus() != SCE_COMMON_DIALOG_STATUS_FINISHED) {
+        sceKernelDelayThread(1000); // Sleep 1ms
+    }
+
+    sceMsgDialogTerm();
+    return 0; // Success
+}
+
 
 //This function is called from D's main
 void hipVitaPollTouch();

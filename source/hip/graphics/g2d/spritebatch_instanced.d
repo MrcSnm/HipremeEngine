@@ -229,7 +229,7 @@ final class HipSpriteBatchInstanced
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
 
-            static Matrix4 mvp;
+            __gshared Matrix4 mvp;
             Matrix4 camMvp = camera.getMVP;
             if(camMvp != mvp)
             {

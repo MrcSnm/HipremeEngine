@@ -1029,7 +1029,7 @@ struct DubArguments
 	}
 }
 
-int waitRedub(ref Terminal t, ref RealTimeConsoleInput input, DubArguments dArgs, out ProjectDetails proj, string copyLinkerFilesTo = null)
+int waitRedub(ref Terminal t, ref RealTimeConsoleInput input, DubArguments dArgs, out ProjectDetails proj, string copyLinkerFilesTo = null, LibIncludesType type = LibIncludesType.json)
 {
 	import redub.logging;
 	import redub.buildapi;
@@ -1057,7 +1057,10 @@ int waitRedub(ref Terminal t, ref RealTimeConsoleInput input, DubArguments dArgs
 		timed(t, "Copying Linker Files ",
 		{
 			proj.getLinkerFiles(linkerFiles);
-			copyLinkerFiles(linkerFiles, copyLinkerFilesTo);
+			if(type == LibIncludesType.txt)
+				copyLinkerFilesAsTxt(linkerFiles, copyLinkerFilesTo);
+			else
+				copyLinkerFiles(linkerFiles, copyLinkerFilesTo);
 		}());
 		t.flush;
 	}
@@ -1071,10 +1074,16 @@ void inParallel(scope void delegate()[] args...)
 		action();
 }
 
-int waitRedub(ref Terminal t, ref RealTimeConsoleInput input, DubArguments dArgs, string copyLinkerFilesTo = null)
+enum LibIncludesType
+{
+	json,
+	txt
+}
+
+int waitRedub(ref Terminal t, ref RealTimeConsoleInput input, DubArguments dArgs, string copyLinkerFilesTo = null, LibIncludesType type = LibIncludesType.json)
 {
 	ProjectDetails d;
-	return waitRedub(t, input, dArgs, d, copyLinkerFilesTo);
+	return waitRedub(t, input, dArgs, d, copyLinkerFilesTo, type);
 }
 
 int waitAndPrint(ref Terminal t, Pid pid)

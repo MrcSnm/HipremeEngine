@@ -96,7 +96,7 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
     void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, HipShaderProgram p)
     {
         import hip.hiprenderer.backend.gl.glshader;
-        HipGL3ShaderProgram glProg = cast(HipGL3ShaderProgram)p;
+        HipGLShaderProgram glProg = cast(HipGLShaderProgram)p;
         this.ebo = ebo;
         vaoInfos = attInfos;
         foreach(ref info; attInfos)

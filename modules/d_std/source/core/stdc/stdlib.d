@@ -63,7 +63,6 @@ version(WebAssembly)
 else
 {
     extern(C) @nogc extern nothrow:
-    void* memmove(void* str1, const(void)* str2, size_t n);
     void exit(int exitCode);
     void qsort(void *base, size_t nitems, size_t size, int function (void *, void*) compare);
     int abs(int a){return a > 0 ? a : -a;}
