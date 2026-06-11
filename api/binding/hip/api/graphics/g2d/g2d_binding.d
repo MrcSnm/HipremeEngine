@@ -34,36 +34,36 @@ class HipG2DBinding
         ///Draw a pixel at (x, y) with the color specified at setGeometryColor
         void function(int x, int y, const HipColor color = HipColor.no) drawPixel;
         ///Draws an unfilled rectangle
-        void function(int x, int y, int w, int h, const HipColor color = HipColor.no, float rotation = 0) drawRectangle;
+        void function(float x, float y, float w, float h, const HipColor color = HipColor.no, float rotation = 0) drawRectangle;
         ///Draws an unfilled triangle
-        void function(int x1, int y1, int x2, int y2, int x3, int y3, const HipColor color = HipColor.no) drawTriangle;
+        void function(float x1, float y1, float x2, float y2, float x3, float y3, const HipColor color = HipColor.no) drawTriangle;
         ///Draws a filled rectangle
-        void function(int x, int y, int w, int h, const HipColor color = HipColor.no, float rotation = 0) fillRectangle;
+        void function(float x, float y, float w, float h, const HipColor color = HipColor.no, float rotation = 0) fillRectangle;
         ///Draws a filled rectangle with rounded borders
-        void function(int x, int y, int w, int h, int radius = 4, const HipColor color = HipColor.no, int precision = 16) fillRoundRect;
+        void function(float x, float y, float w, float h, float radius = 4, const HipColor color = HipColor.no, int precision = 16) fillRoundRect;
         ///Draws a filled triangle
-        void function(int x1, int y1, int x2, int y2, int x3, int y3, const HipColor color = HipColor.no) fillTriangle;
+        void function(float x1, float y1, float x2, float y2, float x3, float y3, const HipColor color = HipColor.no) fillTriangle;
         ///Draws unfilled circle
-        void function(int x, int y, int radiusW, int radiusH, int degrees = 360, const HipColor color = HipColor.no, int precision = 24) drawEllipse;
+        void function(float x, float y, float radiusW, float radiusH, float degrees = 360, const HipColor color = HipColor.no, int precision = 24) drawEllipse;
         ///Draws a filled circle
-        void function(int x, int y, int radiusW, int radiusH, int degrees = 360, const HipColor color = HipColor.no, int precision = 24) fillEllipse;
+        void function(float x, float y, float radiusW, float radiusH, float degrees = 360, const HipColor color = HipColor.no, int precision = 24) fillEllipse;
         ///Draws a line from (x1, y1) to (x2, y2)
-        void function(int x1, int y1, int x2, int y2, const HipColor color = HipColor.no) drawLine;
+        void function(float x1, float y1, float x2, float y2, const HipColor color = HipColor.no) drawLine;
         ///Draws a line using bezier points. The higher the precision, the smoother the line, the heavier it is to execute
-        void function(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, const HipColor color = HipColor.no) drawQuadraticBezierLine;
+        void function(float x0, float y0, float x1, float y1, float x2, float y2, int precision=24, const HipColor color = HipColor.no) drawQuadraticBezierLine;
         ///Draws the target sprite instance
         void function(IHipTexture texture, ubyte[] vertices) drawSprite;
         ///Draws a texture at a specified place
-        void function(IHipTexture reg, int x, int y, ushort z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawTexture;
+        void function(IHipTexture reg, float x, float y, ushort z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawTexture;
         ///Draws a texture region at a specified place
-        void function(IHipTextureRegion reg, int x, int y, ushort z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawRegion;
+        void function(IHipTextureRegion reg, float x, float y, ushort z = 0, HipColor = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0) drawRegion;
         void function(IHipTilemap reg) drawMap;
         ///Sets the font for the next drawText commands
         void function (IHipFont font) setFont;
         ///Changes textBatch state to use this color
         void function(HipColor) setTextColor;
         ///Draws a text using the last font set
-        void function(string text, int x, int y, float scale = 1.0f, const HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.topCenter, Size bounds = Size.init, bool wordWrap = false) drawText;
+        void function(string text, float x, float y, float scale = 1.0f, const HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.topCenter, Size bounds = Size.init, bool wordWrap = false) drawText;
         ///Draw text using those vertices. Low level API
         void function(void[] vertices, IHipFont font)  drawTextVertices;
 
@@ -86,8 +86,8 @@ class HipG2DBinding
         void function(uint width, uint height) setWindowSize;
         void function(uint width, uint height) setCameraSize;
 
-        void function(int x = 0, int y = -1) drawGCStats;
-        void function(int x = -1, int y = 0, bool clearTiming = false) drawTimings;
+        void function(float x = 0, float y = -1) drawGCStats;
+        void function(float x = -1, float y = 0, bool clearTiming = false) drawTimings;
 
 
 

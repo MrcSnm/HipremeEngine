@@ -180,4 +180,7 @@ pragma(inline, true)
         ubyte[4] rgba = unpackRGBA(c);
         return HipColor(rgba[0], rgba[1], rgba[2], rgba[3]);
     }
+
+    HipColor color(HipColorf c){return HipColor(c.toInteger);}
+    HipColorf color(HipColor c){return HipColorf(c);}
 }

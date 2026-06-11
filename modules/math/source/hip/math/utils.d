@@ -14,6 +14,20 @@ enum PI_4 = PI/4;
 enum RAD_TO_DEG = 180/PI;
 enum DEG_TO_RAD = PI/180;
 
+struct Float
+{
+    float value = 0;
+    pragma(inline, true) {this(float f) {value = f;}}
+
+    auto opAssign(T)(T value) if(__traits(isArithmetic, T))
+    {
+        static if(__traits(isFloating, T))
+            if(value != value) throw new Error(`Can't assign NaN to float.`);
+        this.value = cast(float)value;
+    }
+    alias value this;
+}
+
 float radToDeg(float radians)
 {
     assert(radians == radians); //float.nan check

@@ -162,47 +162,47 @@ void drawPixel(int x, int y, const HipColor color = HipColor.no)
     manageBatchChange(geoBatch);
     geoBatch.drawPixel(x, y,color);
 }
-void drawRectangle(int x, int y, int w, int h, const HipColor color = HipColor.no, float rotation = 0)
+void drawRectangle(float x, float y, float w, float h, const HipColor color = HipColor.no, float rotation = 0)
 {
     manageBatchChange(geoBatch);
     geoBatch.drawRectangle(x,y,w,h,color, rotation);
 }
-void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, const HipColor color = HipColor.no)
+void drawTriangle(float x1, float y1, float x2, float y2, float x3, float y3, const HipColor color = HipColor.no)
 {
     manageBatchChange(geoBatch);
     geoBatch.drawTriangle(x1,y1,x2,y2,x3,y3,color);
 }
-void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, const HipColor color = HipColor.no, int precision = 24)
+void drawEllipse(float x, float y, float radiusW, float radiusH, float degrees = 360, const HipColor color = HipColor.no, int precision = 24)
 {
     manageBatchChange(geoBatch);
     geoBatch.drawEllipse(x,y,radiusW,radiusH,degrees,color,precision);
 }
-void drawLine(int x1, int y1, int x2, int y2, HipColor color = HipColor.no)
+void drawLine(float x1, float y1, float x2, float y2, HipColor color = HipColor.no)
 {
     manageBatchChange(geoBatch);
     geoBatch.drawLine(x1,y1,x2,y2,color);
 }
-void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, const HipColor color = HipColor.no)
+void drawQuadraticBezierLine(float x0, float y0, float x1, float y1, float x2, float y2, int precision=24, const HipColor color = HipColor.no)
 {
     manageBatchChange(geoBatch);
     geoBatch.drawQuadraticBezierLine(x0,y0,x1,y1,x2,y2,precision,color);
 }
-void fillRectangle(int x, int y, int w, int h, const HipColor color = HipColor.no, float rotation = 0)
+void fillRectangle(float x, float y, float w, float h, const HipColor color = HipColor.no, float rotation = 0)
 {
     manageBatchChange(geoBatch);
     geoBatch.fillRectangle(x,y,w,h,color, rotation);
 }
-void fillRoundRect(int x, int y, int w, int h, int radius = 4, const HipColor color = HipColor.no, int precision = 16)
+void fillRoundRect(float x, float y, float w, float h, float radius = 4, const HipColor color = HipColor.no, int precision = 16)
 {
     manageBatchChange(geoBatch);
     geoBatch.fillRoundRect(x,y,w,h,radius, color, precision);
 }
-void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, const HipColor color = HipColor.no, int precision = 24)
+void fillEllipse(float x, float y, float radiusW, float radiusH = -1, float degrees = 360, const HipColor color = HipColor.no, int precision = 24)
 {
     manageBatchChange(geoBatch);
     geoBatch.fillEllipse(x,y,radiusW,radiusH,degrees,color,precision);
 }
-void fillTriangle(int x1, int y1, int x2,  int y2, int x3, int y3, const HipColor color = HipColor.no)
+void fillTriangle(float x1, float y1, float x2,  float y2, float x3, float y3, const HipColor color = HipColor.no)
 {
     manageBatchChange(geoBatch);
     geoBatch.fillTriangle(x1,y1,x2,y2,x3,y3,color);
@@ -213,10 +213,10 @@ void drawSprite(IHipTexture texture, ubyte[] vertices)
     manageBatchChange(spBatch);
     spBatch.draw(texture, vertices);
 }
-void drawRegion(IHipTextureRegion reg, int x, int y, ushort z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+void drawRegion(IHipTextureRegion reg, float x, float y, ushort z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
 {
     manageBatchChange(spBatch);
-    spBatch.draw(reg, x, y, z, color, scaleX, scaleY, rotation);
+    spBatch.draw(reg, cast(int)x, cast(int)y, z, color, scaleX, scaleY, rotation);
 }
 void drawMap(IHipTilemap map)
 {
@@ -224,10 +224,10 @@ void drawMap(IHipTilemap map)
     map.render(spBatch, false);
 }
 
-void drawTexture(IHipTexture texture, int x, int y, ushort z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
+void drawTexture(IHipTexture texture, float x, float y, ushort z = 0, const HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
 {
     manageBatchChange(spBatch);
-    spBatch.draw(texture, x, y, z, color, scaleX, scaleY, rotation);
+    spBatch.draw(texture, cast(int)x, cast(int)y, cast(int)z, color, scaleX, scaleY, rotation);
 }
 
 
@@ -304,16 +304,16 @@ void finishRender2D()
     if(textBatch) textBatch.setCurrentDepth(0);
 }
 
-void drawGCStats(int x = 0, int y = -1)
+void drawGCStats(float x = 0, float y = -1)
 {
     import hip.graphics.g2d.profiling;
-    hip.graphics.g2d.profiling.drawGCStats(x, y);
+    hip.graphics.g2d.profiling.drawGCStats(cast(int)x, cast(int)y);
 }
 
-void drawTimings(int x = -1, int y = 0, bool clearTimings = false)
+void drawTimings(float x = -1, float y = 0, bool clearTimings = false)
 {
     import hip.graphics.g2d.profiling;
-    hip.graphics.g2d.profiling.drawTimings(x, y, clearTimings);
+    hip.graphics.g2d.profiling.drawTimings(cast(int)x, cast(int)y, clearTimings);
 }
 
 version(Standalone)

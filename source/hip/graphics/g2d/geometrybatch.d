@@ -139,7 +139,7 @@ class GeometryBatch : IHipBatch
         drawOffset = 0;
     }
 
-    protected void triangleVertices(int x1, int y1, int x2, int y2, int x3, int y3)
+    protected void triangleVertices(float x1, float y1, float x2, float y2, float x3, float y3)
     {
         checkVerticesCount(3);
         addVertex(x1, y1, managedDepth);
@@ -153,7 +153,7 @@ class GeometryBatch : IHipBatch
     }
 
 
-    protected void fillEllipseVertices(int x, int y, int radiusW, int radiusH, int degrees, int startDegrees ,int precision)
+    protected void fillEllipseVertices(float x, float y, float radiusW, float radiusH, float degrees, float startDegrees ,int precision)
     {
         // assert(precision >= 3, "Can't have a circle with less than 3 vertices");
 
@@ -197,7 +197,7 @@ class GeometryBatch : IHipBatch
 
 
 
-    void drawEllipse(int x, int y, int radiusW, int radiusH, int degrees = 360, HipColor color = HipColor.no, int precision = 24)
+    void drawEllipse(float x, float y, float radiusW, float radiusH, float degrees = 360, HipColor color = HipColor.no, int precision = 24)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.line)
@@ -233,7 +233,7 @@ class GeometryBatch : IHipBatch
     }
 
     ///With this default precision, the circle should be smooth enough
-    void fillEllipse(int x, int y, int radiusW, int radiusH = -1, int degrees = 360, HipColor color = HipColor.no, int precision = 24)
+    void fillEllipse(float x, float y, float radiusW, float radiusH = -1, float degrees = 360, HipColor color = HipColor.no, int precision = 24)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(radiusH == -1)
@@ -247,7 +247,7 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no)
+    void fillTriangle(float x1, float y1, float x2, float y2, float x3, float y3, HipColor color = HipColor.no)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.triangles)
@@ -258,7 +258,7 @@ class GeometryBatch : IHipBatch
         triangleVertices(x1,y1,x2,y2,x3,y3);
         setColor(oldColor);
     }
-    void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, HipColor color = HipColor.no)
+    void drawTriangle(float x1, float y1, float x2, float y2, float x3, float y3, HipColor color = HipColor.no)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.lineStrip)
@@ -270,7 +270,7 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    void drawLine(int x1, int y1, int x2, int y2, HipColor color = HipColor.no)
+    void drawLine(float x1, float y1, float x2, float y2, HipColor color = HipColor.no)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.line)
@@ -289,18 +289,7 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    void drawLine(float x1, float y1, float x2, float y2, HipColor color = HipColor.no)
-    {
-        drawLine(
-            cast(int)x1,
-            cast(int)y1,
-            cast(int)x2,
-            cast(int)y2,
-            color
-        );
-    }
-
-    void drawQuadraticBezierLine(int x0, int y0, int x1, int y1, int x2, int y2, int precision=24, HipColor color = HipColor.no)
+    void drawQuadraticBezierLine(float x0, float y0, float x1, float y1, float x2, float y2, int precision=24, HipColor color = HipColor.no)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
 
@@ -345,7 +334,7 @@ class GeometryBatch : IHipBatch
     *   2, 3, 0
     */
     pragma(inline, true)
-    protected void rectangleVertices(int x, int y, int w, int h)
+    protected void rectangleVertices(float x, float y, float w, float h)
     {
         checkVerticesCount(4);
         index_t topLeft = addVertex(x, y, managedDepth);
@@ -361,7 +350,7 @@ class GeometryBatch : IHipBatch
     }
 
     pragma(inline, true)
-    protected void rectangleVertices(int x, int y, int w, int h, float rotation)
+    protected void rectangleVertices(float x, float y, float w, float h, float rotation)
     {
         checkVerticesCount(4);
 
@@ -385,7 +374,7 @@ class GeometryBatch : IHipBatch
 
     }
 
-    void drawRectangle(int x, int y, int w, int h, HipColor color = HipColor.no, float rotation = 0)
+    void drawRectangle(float x, float y, float w, float h, HipColor color = HipColor.no, float rotation = 0)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.lineStrip)
@@ -400,7 +389,7 @@ class GeometryBatch : IHipBatch
         setColor(oldColor);
     }
 
-    void fillRoundRect(int x, int y, int w, int h, int radius = 4, HipColor color = HipColor.no, int vertices = 16)
+    void fillRoundRect(float x, float y, float w, float h, float radius = 4, HipColor color = HipColor.no, int vertices = 16)
     {
         if(radius == 0)
             return fillRectangle(x,y,w,h,color);
@@ -410,7 +399,7 @@ class GeometryBatch : IHipBatch
             HipRenderer.setRendererMode(HipRendererMode.triangles);
         }
         int vPerEdge = vertices/4;
-        int r2 = radius*2;
+        float r2 = radius*2;
         HipColor old = setColorIfChangedAndGetOldColor(color);
 
         ///Draw internal rect.
@@ -434,7 +423,7 @@ class GeometryBatch : IHipBatch
     }
 
 
-    void fillRectangle(int x, int y, int w, int h, HipColor color = HipColor.no, float rotation = 0)
+    void fillRectangle(float x, float y, float w, float h, HipColor color = HipColor.no, float rotation = 0)
     {
         HipColor oldColor = setColorIfChangedAndGetOldColor(color);
         if(HipRenderer.getMode != HipRendererMode.triangles)
