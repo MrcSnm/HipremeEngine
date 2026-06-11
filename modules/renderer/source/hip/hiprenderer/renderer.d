@@ -55,6 +55,9 @@ class HipRendererImplementation : IHipRenderer
 
     protected IHipRendererBuffer quadIndexBuffer;
 
+    private bool isInRenderPass = false;
+    private bool viewportDirty = false;
+
     public bool initialize (string confData, string confPath)
     {
         import hip.config.opts;
@@ -234,7 +237,10 @@ class HipRendererImplementation : IHipRenderer
     {
         this.currentViewport = v;
         v.updateForWindowSize(width, height);
-        rendererImpl.setViewport(v);
+        if(isInRenderPass)
+            rendererImpl.setViewport(currentViewport);
+        else
+            this.viewportDirty = true;
     }
 
     public void reinitialize()
@@ -309,8 +315,13 @@ class HipRendererImplementation : IHipRenderer
 
     public void begin()
     {
-
         rendererImpl.begin();
+        isInRenderPass = true;
+        if(viewportDirty)
+        {
+            rendererImpl.setViewport(currentViewport);
+            viewportDirty = false;
+        }
     }
 
     public void setErrorCheckingEnabled(bool enable = true)
@@ -347,6 +358,7 @@ class HipRendererImplementation : IHipRenderer
     public void end()
     {
         rendererImpl.end();
+        isInRenderPass = false;
         foreach(sh; res.shaders) sh.onRenderFrameEnd();
         stats.drawCalls=0;
         stats.renderFrames++;

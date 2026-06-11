@@ -23,15 +23,23 @@ interface IScene : IHipPreloadable
     void onResize(uint width, uint height);
 }
 
+interface IGameSystem
+{
+    void restartGame();
+}
+
 
 
 abstract class AScene : IScene
 {
     Layer[] layerStack;
+    IGameSystem gameSystem;
+
     void pushLayer(Layer l)
     {
 	    //Intentionally blank for now.
     }
+    final void restart(){gameSystem.restartGame();}
     abstract void initialize();
     abstract void update(float dt);
     abstract void render();

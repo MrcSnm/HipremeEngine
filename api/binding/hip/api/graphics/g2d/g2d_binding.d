@@ -83,7 +83,7 @@ class HipG2DBinding
         ///Width, Height
         int[2] function() getWindowSize;
 
-        void function(uint width, uint height) setWindowSize;
+        void function(uint width, uint height, bool updateWorld = true) setWindowSize;
         void function(uint width, uint height) setCameraSize;
 
         void function(float x = 0, float y = -1) drawGCStats;
@@ -176,7 +176,7 @@ version(none)
         ///Width, Height
         int[2] function() getWindowSize;
 
-        void function(uint width, uint height) setWindowSize;
+        void function(uint width, uint height, bool updateWorld = true) setWindowSize;
 
         void function(uint width, uint height) setCameraSize;
 

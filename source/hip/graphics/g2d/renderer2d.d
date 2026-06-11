@@ -110,8 +110,10 @@ export extern(System):
 
 int[2] getWindowSize(){return [HipRenderer.width, HipRenderer.height];}
 
-void setWindowSize(uint width, uint height)
+void setWindowSize(uint width, uint height, bool updateWorld = true)
 {
+    if(updateWorld)
+        viewport.setWorldSize(width, height);
     HipRenderer.setWindowSize(width, height);
     HipRenderer.setViewport(viewport);
     camera.setSize(cast(int)viewport.worldWidth,cast(int)viewport.worldHeight);

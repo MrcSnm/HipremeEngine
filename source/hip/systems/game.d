@@ -50,7 +50,7 @@ version(Load_DScript)
 }
 
 
-class GameSystem
+class GameSystem : IGameSystem
 {
     /**
      * Holds the member that generates the events as inputs
@@ -228,29 +228,35 @@ class GameSystem
     {
         version(Load_DScript)
         {
-            import hip.util.array:remove;
             import hip.console.log;
             if(hotload)
             {
                 shouldResetDelta = true;
                 rawlog("Recompiling game");
-                HipTimerManager.clearSchedule();
-                scriptInputListener.clearAll();
-                HipremeEngineGameDestroy();
-                scenes.remove(externalScene);
-                externalScene = null;
+                cleanSystems();
                 recompileGame(); // Calls hotload.reload();
                 startGame();
             }
         }
     }
 
+    void cleanSystems()
+    {
+        import hip.util.array:remove;
+        HipTimerManager.clearSchedule();
+        scriptInputListener.clearAll();
+        externalScene.dispose();
+        scenes.remove(externalScene);
+        externalScene = null;
+    }
+
     /**
     *   Adding a scene will initialize them, while checking for assets referencing for auto loading them.
     */
-    void addScene(AScene s, bool isOnLoadFinish = true)
+    void addScene(AScene s, bool waitForLoading = true)
     {
         import hip.assetmanager;
+        s.gameSystem = this;
 
         auto onLoadFn = ()
         {
@@ -273,19 +279,26 @@ class GameSystem
                 catch (Error e){scriptFatalError(e);}
             }
         };
-        if(isOnLoadFinish)
+        if(waitForLoading)
             HipAssetManager.addOnLoadingFinish(onLoadFn);
         else
             onLoadFn();
         // }
     }
-
     void removeScene(AScene s)
     {
         import hip.util.array:remove;
+        s.dispose();
         remove(scenes, s);
     }
 
+
+    void restartGame()
+    {
+        import hip.util.array:remove;
+        cleanSystems();
+        startGame();
+    }
 
     bool update(float deltaTime)
     {
