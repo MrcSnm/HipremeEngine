@@ -25,7 +25,7 @@ int[2] getWindowSize(void* WindowHandle, ref string[] errors)
     return ret;
 }
 
-int[2] getMaxScreenSize(void* WindowHandle, ref string[] errors)
+int[2] getMaxScreenSize()
 {
     import core.memory;
     ubyte* intArray = WasmGetMaxScreenSize();

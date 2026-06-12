@@ -401,7 +401,7 @@ version(WindowsNative)
 
     int[2] getMaxScreenSize()
     {
-        return [GetSystemMetrics(SM_CXSCREEN), GetSystemMenu(SM_CYSCREEN)];
+        return [GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)];
     }
     void setWindowName(string name, HWND hwnd, ref string[] errors)
     {

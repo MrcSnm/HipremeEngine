@@ -109,6 +109,7 @@ export extern(System):
 
 
 int[2] getWindowSize(){return [viewport.worldWidth, viewport.worldHeight];}
+int[2] getMaxScreenSize(){return HipRenderer.window.getMaxScreenSize();}
 
 void setWindowSize(uint width, uint height, bool updateWorld = true)
 {
