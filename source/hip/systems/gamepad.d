@@ -86,7 +86,7 @@ class HipGamepad : AHipGamepad
     ubyte id;
     __gshared ubyte instanceCount = 0;
     protected float vibrationAccumulator = 0;
-    protected HipButtonMetadata[HipGamepadButton.count] buttons;
+    protected HipButtonMetadata[HipGamepadButton.count + 1] buttons;
     private IHipGamepadImpl impl;
 
 
@@ -100,7 +100,11 @@ class HipGamepad : AHipGamepad
         this.impl = impl;
     }
 
-    void setButtonPressed(HipGamepadButton btn, bool pressed){buttons[btn].setPressed(pressed);}
+    void setButtonPressed(HipGamepadButton btn, bool pressed)
+    {
+        if(btn != HipGamepadButton.count)
+            buttons[btn].setPressed(pressed);
+    }
 
     void setAnalog(HipGamepadAnalogs analog, float[3] value)
     {

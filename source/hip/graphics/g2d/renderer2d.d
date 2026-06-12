@@ -108,7 +108,7 @@ export extern(System):
 // pragma(inline, true):
 
 
-int[2] getWindowSize(){return [HipRenderer.width, HipRenderer.height];}
+int[2] getWindowSize(){return [viewport.worldWidth, viewport.worldHeight];}
 
 void setWindowSize(uint width, uint height, bool updateWorld = true)
 {

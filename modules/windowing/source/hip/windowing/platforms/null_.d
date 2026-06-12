@@ -4,10 +4,35 @@ module hip.windowing.platforms.null_;
 int openWindow(int width, int height, out void* WindowHandle){return 1;}
 void show(void* WindowHandle){}
 void poll(){}
+
+version(PSVita)
+{
+    extern(C) void vitaGetWindowSize(int* width, int* height) pure nothrow @nogc;
+}
+
 int[2] getWindowSize(void* WindowHandle, ref string[] errors)
 {
+    version(PSVita)
+    {
+        int[2] ret;
+        vitaGetWindowSize(ret.ptr, ret.ptr+1);
+        return ret;
+    }
+    else
+        return [0,0];
     // errors~= "getWindowSize is not implemented for this platform";
-    return [0,0];
+}
+
+int[2] getMaxScreenSize()
+{
+    version(PSVita)
+    {
+        int[2] ret;
+        vitaGetWindowSize(ret.ptr, ret.ptr+1);
+        return ret;
+    }
+    else
+        return [0, 0];
 }
 void setWindowSize(int width, int height, void* WindowHandle, ref string[] errors)
 {

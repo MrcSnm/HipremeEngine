@@ -62,9 +62,22 @@ class HipWindow : IHipWindow
     }
     void setSize(uint width, uint height) @nogc
     {
+        int[2] maxSize = getMaxScreenSize();
+        width = width > maxSize[0] ? maxSize[0] : width;
+        height = height > maxSize[1] ? maxSize[1] : height;
         getModule!().setWindowSize(width, height, WindowHandle, errors);
+
+        int[2] sz = getSize();
+
+        this.width = sz[0];
+        this.height = sz[1];
     }
-    int[2] getSize()
+
+    int[2] getMaxScreenSize() @nogc
+    {
+        return getModule!().getMaxScreenSize();
+    }
+    int[2] getSize() @nogc
     {
         return getModule!().getWindowSize(WindowHandle, errors);
     }

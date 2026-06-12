@@ -398,6 +398,11 @@ version(WindowsNative)
         GetClientRect(hwnd, &rect);
         return [rect.right - rect.left, rect.bottom - rect.top];
     }
+
+    int[2] getMaxScreenSize()
+    {
+        return [GetSystemMetrics(SM_CXSCREEN), GetSystemMenu(SM_CYSCREEN)];
+    }
     void setWindowName(string name, HWND hwnd, ref string[] errors)
     {
         SetWindowTextA(hwnd, name.ptr);

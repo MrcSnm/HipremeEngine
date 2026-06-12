@@ -332,7 +332,7 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
     }, "psvIp must be a valid IP address");
 
 
-    requireConfiguration("psvCmdPort", "Set up PSVita Command Port for automatic execution after compilation+installation.", t, input, (ref str)
+    requireConfiguration("psvCmdPort", "Set up PSVita Command Port for automatic execution after compilation+installation and logging (default is 8080) ", t, input, (ref str)
     {
         str = str.strip();
         return isNumeric(str);

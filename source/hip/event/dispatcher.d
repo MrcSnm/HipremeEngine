@@ -15,6 +15,7 @@ private:
     import hip.systems.gamepad;
     import hip.windowing.window;
     import hip.api.config;
+    import hip.config.input;
 
 public:
     import hip.systems.input;
@@ -252,15 +253,36 @@ class EventDispatcher : IHipInput
         return mouse.isJustReleased(btn);
     }
     float[3] getScroll(uint id = 0){return cast(float[3])mouse.getScroll();}
-    bool isKeyPressed(char key, uint id = 0){return keyboard.isKeyPressed(key.toUppercase);}
+    bool isKeyPressed(char key, uint id = 0)
+    {
+        static if(InputConvertKeyboardToGamepad)
+        {
+            static if(InputConvertAnalogToArrowsAndWASD)
+                if(keyIsDirectional(cast(HipKey)key.toUppercase) && analogMapsToKey(getAnalog(HipGamepadAnalogs.leftStick), cast(HipKey)key.toUppercase))
+                    return true;
+            if(isGamepadButtonPressed(mapToGamepad(cast(HipKey)key.toUppercase)))
+                return true;
+        }
+        return keyboard.isKeyPressed(key.toUppercase);
+    }
     bool isKeyJustPressed(char key, uint id = 0)
     {
         errUpdateOnly("isKeyJustPressed");
+        static if(InputConvertKeyboardToGamepad)
+        {
+            if(isGamepadButtonJustPressed(mapToGamepad(cast(HipKey)key.toUppercase)))
+                return true;
+        }
         return keyboard.isKeyJustPressed(key.toUppercase);
     }
     bool isKeyJustReleased(char key, uint id = 0)
     {
         errUpdateOnly("isKeyJustReleased");
+        static if(InputConvertKeyboardToGamepad)
+        {
+            if(isGamepadButtonJustReleased(mapToGamepad(cast(HipKey)key.toUppercase)))
+                return true;
+        }
         return keyboard.isKeyJustReleased(key.toUppercase);
     }
     float getKeyDownTime(char key, uint id = 0)

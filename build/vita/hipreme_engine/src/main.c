@@ -53,6 +53,15 @@ void EGLEnd();
 void hipVitaSwapBuffers();
 void psv_abort();
 
+int screenWidth = 0, screenHeight = 0;
+
+
+void vitaGetWindowSize(int* outWidth, int* outHeight)
+{
+	*outWidth = screenWidth;
+	*outHeight = screenHeight;
+}
+
 
 void initializeVitaInput()
 {
@@ -147,13 +156,10 @@ int main(int argc, char* argv)
 	psv_init_mem();
 	psvDebugScreenInit();
 	initializeVitaGL();
-	int width, height;
+	EGLInit(&screenWidth, &screenHeight);
 
-	EGLInit(&width, &height);
 
-	initializeVitaInput();
-
-	HipremeMain(width, height);
+	HipremeMain(screenWidth, screenHeight);
 	HipInputOnGamepadConnected(0,HipGamepadTypes_psvita);
 	while(1)
 	{

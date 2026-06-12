@@ -162,6 +162,16 @@ auto ScreenOfDisplay(Display* dpy, int scr){return &(cast(_XPrivDisplay)(dpy)).s
 auto DefaultScreenOfDisplay(Display* dpy){return ScreenOfDisplay(dpy,DefaultScreen(dpy));}
 auto DisplayOfScreen(Screen* s){return s.display;}
 
+auto DisplayWidth(Display* dpy, int screenId)
+{
+	return ScreenOfDisplay(dpy, screenId).width;
+}
+auto DisplayHeight(Display* dpy, int screenId)
+{
+	return ScreenOfDisplay(dpy, screenId).height;
+}
+
+
 auto BlackPixel(Display* dpy, int  scr)
 {
     return ScreenOfDisplay(dpy,scr).black_pixel;

@@ -201,8 +201,8 @@ class HipRendererImplementation : IHipRenderer
         assert(width > 0 && height > 0, "Window width and height must be greater than 0");
         logln("Changing window size to [", width, ", ",  height, "]");
         window.setSize(cast(uint)width, cast(uint)height);
-        this.width  = width;
-        this.height = height;
+        this.width  = window.width;
+        this.height = window.height;
     }
     public HipRendererType getType(){return rendererType;}
 

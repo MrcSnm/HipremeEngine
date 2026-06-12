@@ -5,6 +5,7 @@ version(WebAssembly):
 
 extern(C) void WasmSetWindowSize(int width, int height) @nogc;
 extern(C) ubyte* WasmGetWindowSize() @nogc;
+extern(C) ubyte* WasmGetMaxScreenSize() @nogc;
 
 void openWindow(int width, int height, out void* WindowHandle)
 {
@@ -23,6 +24,20 @@ int[2] getWindowSize(void* WindowHandle, ref string[] errors)
     GC.free(intArray);
     return ret;
 }
+
+int[2] getMaxScreenSize(void* WindowHandle, ref string[] errors)
+{
+    import core.memory;
+    ubyte* intArray = WasmGetMaxScreenSize();
+    int[2] ret;
+    size_t sz = *cast(size_t*)intArray;
+    assert(sz == 2, "Wrong toDArray received.");
+    int[] arr = cast(int[])intArray[size_t.sizeof..size_t.sizeof*(sz+1)];
+    ret[] = arr[];
+    GC.free(intArray);
+    return ret;
+}
+
 
 void setWindowSize(int width, int height, void* WindowHandle, ref string[] errors)
 {

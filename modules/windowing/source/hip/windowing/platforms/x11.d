@@ -343,6 +343,11 @@ int[2] getWindowSize(void* WindowHandle, ref string[] errors) @nogc
     return [att.width, att.height];
 }
 
+int[2] getMaxScreenSize() @nogc
+{
+    return [DisplayWidth(x11win.display, x11win.screenId), DisplayHeight(x11win.display, x11win.screenId)];
+}
+
 void setWindowSize(int width, int height, void* WindowHandle, ref string[] errors) @nogc
 {
     uint change_values = CWWidth | CWHeight;

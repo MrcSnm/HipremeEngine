@@ -6,6 +6,7 @@ version(AppleOS):
 ///Those are defined in Hipreme Engine Shared/Renderer.m
 extern(C) void   hipSetMTKView(void** MTKView, int* outWidth, int* outHeight);
 extern(C) int[2] hipGetWindowSize();
+extern(C) int[2] hipGetMaxScreenSize();
 extern(C) float  hipGetWindowScaleFactor();
 extern(C) void   hipSetWindowSize(uint width, uint height);
 extern(C) void   hipSetApplicationFullscreen(bool);
@@ -36,6 +37,11 @@ alias destroy_GL_Context = hip.windowing.platforms.null_.destroy_GL_Context;
 int[2] getWindowSize(void* WindowHandle, ref string[] errors)
 {
     return hipGetWindowSize();
+}
+
+int[2] getMaxScreenSize()
+{
+    return hipGetMaxScreenSize();
 }
 
 void setWindowSize(uint width, uint height, void* WindowHandle, ref string[] errors)

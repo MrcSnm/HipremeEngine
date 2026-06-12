@@ -29,6 +29,8 @@ void setFitViewport(ref Viewport v, int windowWidth, int windowHeight)
         (windowHeight - cast(int)size.y)/2,
         cast(int)size.x, cast(int)size.y
     );
+import hip.console.log;
+logln("Fit Viewport: ", v.x, " " , v.y, " " ,v.width, " ", v.height, " ", size, " ", windowWidth, " ", windowHeight);
 }
 
 void setType(ref Viewport v, ViewportType type, int windowWidth, int windowHeight)

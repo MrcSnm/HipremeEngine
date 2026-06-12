@@ -25,6 +25,10 @@ function initializeWindowing()
         {
             return WasmUtils.toDArray([innerWidth, innerHeight]);
         },
+        WasmGetMaxScreenSize()
+        {
+            return WasmUtils.toDArray([screen.width, screen.height]);
+        },
         WasmSetFullscreen(shouldSet)
         {
             if(shouldSet)

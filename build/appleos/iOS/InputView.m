@@ -104,6 +104,17 @@ HipWindowSize hipGetWindowSize(void)
     return ret;
 }
 
+HipWindowSize hipGetMaxScreenSize(void)
+{
+    HipWindowSize ret;
+    CGRect bounds = [UIScreen mainScreen].bounds;
+    ret.width = (int)bounds.size.width;
+    ret.height = (int)bounds.size.height;
+    
+    printf("Max Screen: Width: %d, Height: %d", ret.width, ret.height);
+    return ret;
+}
+
 float hipGetWindowScaleFactor(void)
 {
     return mainInputView.window.contentScaleFactor;

@@ -141,6 +141,19 @@ HipWindowSize hipGetWindowSize(void)
     return ret;
 }
 
+HipWindowSize hipGetMaxScreenSize(void)
+{
+    HipWindowSize ret;
+    NSScreen* screen = [NSScreen mainScreen];
+    NSRect frame = [screen frame];
+
+    ret.width = (int)frame.size.width;
+    ret.height = (int)frame.size.height;
+    
+    printf("Max Screen: Width: %d, Height: %d", ret.width, ret.height);
+    return ret;
+}
+
 float hipGetWindowScaleFactor(void)
 {
     return mainInputView.window.backingScaleFactor;
