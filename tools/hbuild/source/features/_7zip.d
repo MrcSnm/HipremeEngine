@@ -21,6 +21,12 @@ bool install7Zip(
 	return true;
 }
 
+private void install7zipInCfg(ref Terminal t, string where)
+{
+	configs["7zip"] = where;
+	updateConfigFile();
+}
+
 private bool extract7ZipToFolderImpl(Feature*[] dependencies, ref Terminal t, ref RealTimeConsoleInput input, string zPath, string outputDirectory)
 {
 	if(!std.file.exists(zPath)) 
@@ -48,12 +54,12 @@ void initialize()
 	_7zFeature  = Feature(
 		name: "7zip",
 		description: "Compressed file type",
-		ExistenceChecker(["7zip"], ["7z", "7za"]),
+		ExistenceChecker(["7zip"], ["7z", "7za", "7zz", "7zr"]),
 		Installation([Download(
 			DownloadURL(windows: "https://www.7-zip.org/a/7zr.exe"),
 			"$CONFIG_DIR/buildtools/7z".executableExtension
 		)], toDelegate(&install7Zip)),
-		startUsingFeature: null,
+		startUsingFeature: &install7zipInCfg,
 		VersionRange(),
 		requiredOn: [OS.win32, OS.win64],
 		dependencies: null,

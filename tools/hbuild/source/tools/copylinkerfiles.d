@@ -21,7 +21,6 @@ void copyLinkerFiles(const string[] libraries, string outputPath)
         includes[library.baseName] = true;
     std.file.write(libIncludes, includes.toPrettyString());
 
-    std.file.mkdirRecurse(outputPath);
     copyFiles(libraries, outputPath);
 }
 
@@ -41,6 +40,7 @@ void copyLinkerFilesAsTxt(const string[] libraries, string outputPath)
 
 private void copyFiles(const string[] libraries, string outputPath)
 {
+    std.file.mkdirRecurse(outputPath);
     foreach(l; libraries)
     {
         string n = baseName(l);

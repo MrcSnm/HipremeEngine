@@ -6,6 +6,7 @@ version(AppleOS):
 ///Those are defined in Hipreme Engine Shared/Renderer.m
 extern(C) void   hipSetMTKView(void** MTKView, int* outWidth, int* outHeight);
 extern(C) int[2] hipGetWindowSize();
+extern(C) float  hipGetWindowScaleFactor();
 extern(C) void   hipSetWindowSize(uint width, uint height);
 extern(C) void   hipSetApplicationFullscreen(bool);
 extern(C) void   hipSetApplicationTitle(const(char)* title);

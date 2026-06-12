@@ -104,6 +104,11 @@ HipWindowSize hipGetWindowSize(void)
     return ret;
 }
 
+float hipGetWindowScaleFactor(void)
+{
+    return mainInputView.window.contentScaleFactor;
+}
+
 void hipSetWindowSize(unsigned int width, unsigned int height)
 {
     winWidth = (float)width;

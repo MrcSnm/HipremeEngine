@@ -16,19 +16,22 @@ private bool setupPsvitaLinux(ref Terminal t, ref RealTimeConsoleInput input)
 {
     t.wait(spawnShell(updateCmd));
     t.wait(spawnShell(depsInstallCmd));
+    string rc = getBashRcPath();
     return setupVdpm(t, input, (scope string[] cmds...)
     {
-        t.writelnHighlighted("Executing: " ~ cmds); 
-        return t.wait(spawnShell(join(cmds, " ")));
+        string toExec = "source "~rc~" && "~cmds.join(" ");
+        t.writelnHighlighted("Executing: " ~ toExec); 
+        return t.wait(spawnShell(toExec));
     });
 }
 
 private bool setupPsvitaOSX(ref Terminal t, ref RealTimeConsoleInput input)
 {
+    import std.file;
     string pkgManager;
     foreach(string program; ["brew", "port"])
     {
-        if(execute(["which", program]).status != 0)
+        if(execute(["which", program]).status == 0)
         {
             pkgManager = program;
             break;
@@ -39,16 +42,19 @@ private bool setupPsvitaOSX(ref Terminal t, ref RealTimeConsoleInput input)
         t.writelnError("Please install either brew or port for PS Vita setup.");
         return false;
     }
-    t.wait(spawnShell(pkgManager~" install wget cmake"));
+    t.wait(spawnShell(pkgManager~" install wget cmake sevenzip gnu-sed"));
 
+    string rc = getBashRcPath();
 
-    auto exec = (scope string[] cmds...)
+    mkdirRecurse("/tmp/gnu-bin");
+    executeShell("ln -sf $(which gsed) /tmp/gnu-bin/sed");
+
+    return setupVdpm(t, input, (scope string[] cmds...)
     {
-        t.writelnHighlighted("WSL Execution: "~cmds);
-        return t.wait(spawnShell(join(cmds, " ")));
-    };
-
-    return setupVdpm(t, input, exec);
+        string toExec = "source "~rc~" && PATH=/tmp/gnu-bin/:$PATH && "~cmds.join(" ");
+        t.writelnHighlighted("Executing: " ~ toExec); 
+        return t.wait(spawnShell(toExec));
+    });
 }
 
 private string getWslSource()
@@ -76,8 +82,9 @@ private auto getExecFunc(ref Terminal t)
         }
         else
         {
-            t.writelnHighlighted("Executing: ", arg);
-            return wait(spawnShell(arg));
+            string toExec = "source " ~ getBashRcPath ~ " && " ~ arg;
+            t.writelnHighlighted("Executing: ", toExec);
+            return wait(spawnShell(toExec));
         }
     };
 }
@@ -171,9 +178,14 @@ private bool setupVdpm(ref Terminal t, ref RealTimeConsoleInput input, int deleg
     }
     with(WorkingDir(buildPath(vitaPath, "vdpm")))
     {
-        if(findProgramPath("vitasdk-update") != null && execFn(bootstrapVsdk) != 0)
+        if(execFn(bootstrapVsdk) != 0)
         {
             t.writelnError("Could not execute "~bootstrapVsdk);
+            version(OSX)
+            {
+                t.writelnHighlighted("Your Python installation might not have valid SSL certificate bundle." ~
+                "\nYou might need to execute a command like `/Applications/Python 3.13/Install Certificates.command`");
+            }
             execFn("sudo rm -rf "~getVitaSdkPath());
             return false;
         }
@@ -210,7 +222,7 @@ private string getBashRcPath()
 
 private void updateShell()
 {
-    string exports = "\n"~"export VITASDK="~getVitaSdkPath()~vitasdkExports;
+    string exports = "\n"~"export VITASDK=\""~getVitaSdkPath()~"\""~vitasdkExports;
     string shellRcPath = getBashRcPath();
     if(std.file.exists(shellRcPath))
     {

@@ -141,11 +141,19 @@ HipWindowSize hipGetWindowSize(void)
     return ret;
 }
 
+float hipGetWindowScaleFactor(void)
+{
+    return mainInputView.window.backingScaleFactor;
+}
+
 void hipSetWindowSize(unsigned int width, unsigned int height)
 {
-    CGRect frame = mtkView.frame;
-    frame.size = CGSizeMake((CGFloat)width, (CGFloat)height);
-    mainInputView.frame = mtkView.frame = frame;
+    CGFloat scale = mainInputView.window.backingScaleFactor;
+    
+    [mainInputView.window setContentSize:NSMakeSize(width, height)];
+    [mainInputView.window center];
+    [mainInputView.window.contentView layoutSubtreeIfNeeded];
+
 }
 
 
