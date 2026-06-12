@@ -5,10 +5,7 @@ ATTRIBUTE(0) IVEC2 vPosition;
 ATTRIBUTE(1) vec2 vTexST;
 ATTRIBUTE(2) UINT vZ;
 
-UNIFORM_BUFFER_OBJECT(0, Cbuf, cbuf, 
-{
-    mat4 uMVP;
-});
+UNIFORM_BUFFER_OBJECT(0, Cbuf, cbuf, { mat4 uMVP; });
 
 void vertexMain()
 {
@@ -17,10 +14,7 @@ void vertexMain()
 }
 #endif
 #ifdef FRAGMENT
-UNIFORM_BUFFER_OBJECT(0, FragVars, frag, 
-{
-    vec4 uColor;
-});
+UNIFORM_BUFFER_OBJECT(0, FragVars, frag, { vec4 uColor; });
 uniform sampler2D uTex;
 
 void fragmentMain()

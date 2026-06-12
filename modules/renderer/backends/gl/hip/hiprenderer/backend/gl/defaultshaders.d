@@ -94,10 +94,7 @@ private {
                 ATTRIBUTE(8) vec2 vUVMax;
             #endif
 
-            UNIFORM_BUFFER_OBJECT(0, Cbuf1, cbuf1, 
-            {
-                mat4 uMVP;
-            });
+            UNIFORM_BUFFER_OBJECT(0, Cbuf1, cbuf1, { mat4 uMVP; });
 
             void vertexMain()
             {
@@ -121,10 +118,7 @@ private {
             #endif
 
             #ifdef FRAGMENT
-            UNIFORM_BUFFER_OBJECT(0, Cbuf, cbuf, 
-            {
-                vec4 uBatchColor;
-            });
+            UNIFORM_BUFFER_OBJECT(0, Cbuf, cbuf, { vec4 uBatchColor; });
 
             void fragmentMain()
         };
