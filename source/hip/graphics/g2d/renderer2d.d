@@ -52,7 +52,7 @@ void initialize(HipInterpreterEntry entry = HipInterpreterEntry.init, bool shoul
     hiplog("2D Renderer: Initializing viewport");
     viewport = new Viewport(0, 0, HipRenderer.width, HipRenderer.height);
     viewport.setWorldSize(HipRenderer.width, HipRenderer.height);
-    viewport.setType(ViewportType.fit, HipRenderer.width, HipRenderer.height);
+    viewport.setType(ViewportType.fit, HipRenderer.window);
     HipRenderer.setViewport(viewport);
     hiplog("2D Renderer: Initializing camera");
     camera = new HipOrthoCamera();
@@ -111,15 +111,21 @@ export extern(System):
 int[2] getWindowSize(){return [viewport.worldWidth, viewport.worldHeight];}
 int[2] getMaxScreenSize(){return HipRenderer.window.getMaxScreenSize();}
 
+
+void setWorldSize(uint width, uint height)
+{
+    viewport.setWorldSize(width, height);
+    camera.setSize(width, height);
+    HipRenderer.setViewport(viewport);
+}
+
 void setWindowSize(uint width, uint height, bool updateWorld = true)
 {
     if(updateWorld)
-        viewport.setWorldSize(width, height);
+        setWorldSize(width, height);
     HipRenderer.setWindowSize(width, height);
     HipRenderer.setViewport(viewport);
-    camera.setSize(cast(int)viewport.worldWidth,cast(int)viewport.worldHeight);
 }
-void setCameraSize(uint width, uint height){camera.setSize(width, height);}
 HipOrthoCamera getCamera() { return camera; }
 void setViewport(Viewport v)
 {

@@ -82,9 +82,10 @@ class HipG2DBinding
 
         ///Width, Height
         int[2] function() getWindowSize;
+        int[2] function() getMaxScreenSize;
 
         void function(uint width, uint height, bool updateWorld = true) setWindowSize;
-        void function(uint width, uint height) setCameraSize;
+        void function(uint width, uint height) setWorldSize;
 
         void function(float x = 0, float y = -1) drawGCStats;
         void function(float x = -1, float y = 0, bool clearTiming = false) drawTimings;
@@ -175,10 +176,11 @@ version(none)
 
         ///Width, Height
         int[2] function() getWindowSize;
+        int[2] function() getMaxScreenSize;
 
         void function(uint width, uint height, bool updateWorld = true) setWindowSize;
 
-        void function(uint width, uint height) setCameraSize;
+        void function(uint width, uint height) setWorldSize;
 
         version(ImportSpritesheet)
         {

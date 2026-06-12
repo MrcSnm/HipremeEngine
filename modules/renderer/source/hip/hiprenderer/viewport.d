@@ -13,6 +13,7 @@ import hip.math.vector;
 import hip.math.scaling;
 import hip.hiprenderer.renderer;
 import hip.math.rect;
+import hip.windowing.window;
 public import hip.api.renderer.viewport;
 
 package void sanityCheck(in Viewport v)
@@ -30,25 +31,27 @@ void setFitViewport(ref Viewport v, int windowWidth, int windowHeight)
         cast(int)size.x, cast(int)size.y
     );
 import hip.console.log;
-logln("Fit Viewport: ", v.x, " " , v.y, " " ,v.width, " ", v.height, " ", size, " ", windowWidth, " ", windowHeight);
+logln("Fit Viewport: ", v.x, " " , v.y, " " ,v.width, " ", v.height, " ", size, " ", windowWidth, " ", windowHeight, " ", size.x, " ", size.y);
 }
 
-void setType(ref Viewport v, ViewportType type, int windowWidth, int windowHeight)
+void setType(ref Viewport v, ViewportType type, HipWindow window)
 {
     v.type = type;
-    updateForWindowSize(v, windowWidth, windowHeight);
+    updateForWindowSize(v, window);
 }
 
-void updateForWindowSize(ref Viewport v, int windowWidth, int windowHeight)
+void updateForWindowSize(ref Viewport v, HipWindow window)
 {
+    int[2] size = window.getSize();
+    
     final switch(v.type)
     {
         case ViewportType.default_:
-            v.width = windowWidth;
-            v.height = windowHeight;
+            v.width = size[0];
+            v.height = size[1];
             break;
         case ViewportType.fit:
-            v.setFitViewport(windowWidth, windowHeight);
+            v.setFitViewport(size[0], size[1]);
             break;
     }
     v.sanityCheck();

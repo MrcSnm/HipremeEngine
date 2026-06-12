@@ -236,7 +236,7 @@ class HipRendererImplementation : IHipRenderer
     public void setViewport(Viewport v)
     {
         this.currentViewport = v;
-        v.updateForWindowSize(width, height);
+        v.updateForWindowSize(window);
         if(isInRenderPass)
             rendererImpl.setViewport(currentViewport);
         else
