@@ -26,9 +26,9 @@ if(isNumeric!T)
 {
     return !(px <= rx || px >= rx+rw || py <= ry || py >= ry+rh);
 }
-bool isPointInRect(in Vector2 p, in Rect r)
+pragma(inline, true) bool isPointInRect(in Vector2 p, in Rect r)
 {
-    return !(p.x <= r.x || p.x >= r.x+r.w || p.y <= r.y || p.y >= r.x+r.h);
+    return isPointInRect(p.x, p.y, r.x, r.y, r.w, r.h);
 }
 
 

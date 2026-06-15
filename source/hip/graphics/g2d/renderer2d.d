@@ -108,9 +108,26 @@ export extern(System):
 // pragma(inline, true):
 
 
+///WINDOW
 int[2] getWindowSize(){return [viewport.worldWidth, viewport.worldHeight];}
 int[2] getMaxScreenSize(){return HipRenderer.window.getMaxScreenSize();}
 
+void setWindowTitle(string title){ HipRenderer.window.setName(title);}
+void setFullscreen(bool bFullscreen){ HipRenderer.window.setFullscreen(bFullscreen);}
+void setWindowSize(uint width, uint height, bool updateWorld = true)
+{
+    HipRenderer.setWindowSize(width, height);
+    HipRenderer.setViewport(viewport);
+    if(updateWorld)
+    {
+        auto sz = HipRenderer.window.getSize();
+        import std.stdio;
+        writeln(sz[0], " ", sz[1]);
+        setWorldSize(sz[0], sz[1]);
+    }
+}
+
+//End Window
 
 void setWorldSize(uint width, uint height)
 {
@@ -119,13 +136,6 @@ void setWorldSize(uint width, uint height)
     HipRenderer.setViewport(viewport);
 }
 
-void setWindowSize(uint width, uint height, bool updateWorld = true)
-{
-    if(updateWorld)
-        setWorldSize(width, height);
-    HipRenderer.setWindowSize(width, height);
-    HipRenderer.setViewport(viewport);
-}
 HipOrthoCamera getCamera() { return camera; }
 void setViewport(Viewport v)
 {

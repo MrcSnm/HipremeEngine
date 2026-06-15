@@ -12,6 +12,8 @@ extern(C) void   hipSetWindowSize(uint width, uint height);
 extern(C) void   hipSetApplicationFullscreen(bool);
 extern(C) void   hipSetApplicationTitle(const(char)* title);
 
+float getDevicePixelRatio(void* WindowHandle){return hipGetWindowScaleFactor();}
+
 void openWindow(ref int width, ref int height, out void* MTKView)
 {
     hipSetMTKView(&MTKView, &width, &height);

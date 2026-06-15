@@ -22,18 +22,19 @@
     [super viewDidLoad];
 
     _view = (MTKView *)self.view;
-    inputView = [[InputView alloc] initWithFrameAndView:_view.frame view:_view];
-
     _view.device = MTLCreateSystemDefaultDevice();
-
     if(!_view.device)
     {
         NSLog(@"Metal is not supported on this device");
         self.view = [[NSView alloc] initWithFrame:self.view.frame];
         return;
     }
+    
+    inputView = [[InputView alloc] initWithFrameAndView:_view.frame view:_view];
+    inputView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     [_view addSubview:inputView];
-    [inputView becomeFirstResponder];
+
+    [_view.window makeFirstResponder:inputView];
 
     _renderer = [[Renderer alloc] initWithMetalKitView:_view];
     [_renderer mtkView:_view drawableSizeWillChange:_view.bounds.size];

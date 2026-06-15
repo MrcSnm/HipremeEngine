@@ -370,6 +370,11 @@ version(WindowsNative)
         
         return 1;
     }
+    float getDevicePixelRatio(HWND hwnd)
+    {
+        UINT dpi = GetDpiForWindow(hwnd);
+        return cast(float)dpi / 96.0f;
+    }
 
     void show(HWND hwnd)
     {

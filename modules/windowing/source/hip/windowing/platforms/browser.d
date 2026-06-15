@@ -6,6 +6,9 @@ version(WebAssembly):
 extern(C) void WasmSetWindowSize(int width, int height) @nogc;
 extern(C) ubyte* WasmGetWindowSize() @nogc;
 extern(C) ubyte* WasmGetMaxScreenSize() @nogc;
+extern(C) float hipGetWindowScaleFactor() @nogc;
+extern(C) void WasmSetWindowTitle(uint nameLen, const(char)* namePtr) @nogc;
+extern(C) void WasmSetFullscreen(bool bFullscreen); 
 
 void openWindow(int width, int height, out void* WindowHandle)
 {
@@ -38,6 +41,8 @@ int[2] getMaxScreenSize()
     return ret;
 }
 
+float getDevicePixelRatio(void* WindowHandle){return hipGetWindowScaleFactor();}
+
 
 void setWindowSize(int width, int height, void* WindowHandle, ref string[] errors)
 {
@@ -45,9 +50,17 @@ void setWindowSize(int width, int height, void* WindowHandle, ref string[] error
 }
 
 import hip.windowing.platforms.null_;
-alias setWindowName = hip.windowing.platforms.null_.setWindowName;
+void setWindowName(string name, void* WindowHandle, ref string[] errors)
+{
+    WasmSetWindowTitle(name.length, name.ptr);
+}
+
+void setFullscreen(bool bFullscreen, void* WindowHandle, ref string[] errors)
+{
+    WasmSetFullscreen(bFullscreen);
+}
+
 alias setVsyncActive = hip.windowing.platforms.null_.setVsyncActive;
-alias setFullscreen = hip.windowing.platforms.null_.setFullscreen;
 alias initializeOpenGL = hip.windowing.platforms.null_.initializeOpenGL;
 alias show = hip.windowing.platforms.null_.show;
 alias poll = hip.windowing.platforms.null_.poll;

@@ -20,14 +20,27 @@ NSTrackingArea* trackingArea;
     self = [super initWithFrame:frame];
     mainInputView = self;
     mtkView = view;
+    
 
     trackingArea = [[NSTrackingArea alloc] initWithRect:CGRectZero options:NSTrackingMouseMoved | NSTrackingInVisibleRect | NSTrackingActiveAlways owner:self userInfo:nil];
     [self addTrackingArea:trackingArea];
     
+    [self.window makeFirstResponder:self];
+    
     return self;
+}
+- (void)viewDidMoveToWindow
+{
+    [super viewDidMoveToWindow];
+    [self.window setAcceptsMouseMovedEvents:YES];
 }
 
 - (BOOL)acceptsFirstResponder
+{
+    return YES;
+}
+
+- (BOOL)acceptsFirstMouse:(NSEvent *)event
 {
     return YES;
 }

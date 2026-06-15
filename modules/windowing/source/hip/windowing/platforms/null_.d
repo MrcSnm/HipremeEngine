@@ -4,6 +4,7 @@ module hip.windowing.platforms.null_;
 int openWindow(int width, int height, out void* WindowHandle){return 1;}
 void show(void* WindowHandle){}
 void poll(){}
+float getDevicePixelRatio(void*){return 1;}
 
 version(PSVita)
 {

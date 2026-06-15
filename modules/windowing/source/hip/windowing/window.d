@@ -81,6 +81,15 @@ class HipWindow : IHipWindow
     {
         return getModule!().getWindowSize(WindowHandle, errors);
     }
+    int[2] getDrawableSize() @nogc
+    {
+        auto size = getSize();
+        auto ratio = getModule!().getDevicePixelRatio(WindowHandle);
+        size[0] *= ratio;
+        size[1] *= ratio;
+        return size;
+    }
+
     void setVSyncActive(bool active)
     {
         //Windows must reinitialize the window if it uses modern gl, so, it must update the window here

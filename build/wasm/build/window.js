@@ -1,14 +1,10 @@
-const __windowSize = {width: 800, height: 600};
-
-function getWindowSize(){return Object.assign(__windowSize);}
 function setWindowSize(width, height)
 {
     const canvas = document.getElementById("glcanvas");
-    canvas.style.width = `${width/devicePixelRatio}px`;
-    canvas.style.height = `${height/devicePixelRatio}px`;
-    Object.assign(__windowSize, {width, height});
-    canvas.width  = Math.floor(width);
-    canvas.height = Math.floor(height);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width  = Math.floor(width*devicePixelRatio);
+    canvas.height = Math.floor(height*devicePixelRatio);
 }
 function initializeWindowing()
 {
@@ -21,9 +17,18 @@ function initializeWindowing()
         {
             setWindowSize(width, height);
         },
+        WasmSetWindowTitle(length, ptr)
+        {
+            document.title = WasmUtils.fromDString(length, ptr)
+        },
+        hipGetWindowScaleFactor()
+        {
+            return devicePixelRatio;
+        },
         WasmGetWindowSize()
         {
-            return WasmUtils.toDArray([innerWidth, innerHeight]);
+            const canvas = document.getElementById("glcanvas");
+            return WasmUtils.toDArray([canvas.clientWidth, canvas.clientHeight]);
         },
         WasmGetMaxScreenSize()
         {

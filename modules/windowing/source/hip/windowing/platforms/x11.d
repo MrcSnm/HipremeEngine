@@ -335,6 +335,10 @@ void poll()
     }
 }
 
+float getDevicePixelRatio(void* WindowHandle)
+{
+    return 1;
+}
 ///Returns [width, height]
 int[2] getWindowSize(void* WindowHandle, ref string[] errors) @nogc
 {
