@@ -189,7 +189,9 @@ class HipRendererImplementation : IHipRenderer
 
         //After init
         import hip.config.opts;
-        mainViewport = new Viewport(0,0, window.width, window.height);
+
+        int[2] sz = window.getDrawableSize();
+        mainViewport = new Viewport(0,0, sz[0], sz[1]);
         setViewport(mainViewport);
         setColor();
         HipRenderer.setRendererMode(HipRendererMode.triangles);

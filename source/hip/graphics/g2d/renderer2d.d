@@ -50,7 +50,8 @@ void initialize(HipInterpreterEntry entry = HipInterpreterEntry.init, bool shoul
 {
     autoUpdateCameraAndViewport = shouldAutoUpdateCameraAndViewport;
     hiplog("2D Renderer: Initializing viewport");
-    viewport = new Viewport(0, 0, HipRenderer.width, HipRenderer.height);
+    int[2] drawable = HipRenderer.window.getDrawableSize();
+    viewport = new Viewport(0, 0, drawable[0], drawable[1]);
     viewport.setWorldSize(HipRenderer.width, HipRenderer.height);
     viewport.setType(ViewportType.fit, HipRenderer.window);
     HipRenderer.setViewport(viewport);
@@ -283,12 +284,12 @@ void setTextColor(HipColor color)
     manageBatchChange(textBatch);
     textBatch.setColor(color);
 }
-void drawText(string text, int x, int y, float scale = 1.0f, const HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.centerLeft,
+void drawText(string text, float x, float y, float scale = 1.0f, const HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.centerLeft,
 Size bounds = Size.init, bool wordWrap = false)
 {
     manageBatchChange(textBatch);
     textBatch.setColor(color);
-    textBatch.draw(text, x, y, scale, align_, bounds, wordWrap);
+    textBatch.draw(text, cast(int)x, cast(int)y, scale, align_, bounds, wordWrap);
 }
 
 void drawTextVertices(void[] vertices, IHipFont font)

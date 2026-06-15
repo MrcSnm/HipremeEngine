@@ -87,7 +87,7 @@ function initializeHipremeEngine(exports)
     {
         const rec = canvas.getBoundingClientRect();
         xy[0] = Math.floor((xy[0] - rec.left) * devicePixelRatio) | 0;
-        xy[1] = Math.floor((xy[1] - rec.top)* devicePixelRatio) | 0;
+        xy[1] = Math.floor((xy[1] - rec.top) * devicePixelRatio) | 0;
         return xy;
     }
 

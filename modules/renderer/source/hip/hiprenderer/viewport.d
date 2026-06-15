@@ -42,7 +42,7 @@ void setType(ref Viewport v, ViewportType type, HipWindow window)
 
 void updateForWindowSize(ref Viewport v, HipWindow window)
 {
-    int[2] size = window.getSize();
+    int[2] size = window.getDrawableSize();
     
     final switch(v.type)
     {

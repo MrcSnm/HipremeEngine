@@ -8,6 +8,7 @@ import std.array:join,split,array;
 struct TemplateInfo
 {
 	string initMethod=q{
+		setWindowTitle("%s");
 	},
 	update="",
 	render=q{
@@ -25,7 +26,7 @@ struct DubProjectInfo
 	string desc = "Hipreme Engine test scene";
 }
 
-string generateCodeTemplate(TemplateInfo info = TemplateInfo())
+string generateCodeTemplate(TemplateInfo info = TemplateInfo(), DubProjectInfo dubInfo = DubProjectInfo())
 {
 	return format!q{
 module gamescript.entry;
@@ -62,7 +63,7 @@ class MainScene : AScene, IHipPreloadable
 }
 
 mixin HipEngineMain!MainScene;
-	}(info.initMethod, info.update, info.render, info.dispose);
+	}(info.initMethod.format(dubInfo.projectName), info.update, info.render, info.dispose);
 }
 
 
@@ -227,7 +228,7 @@ bool generateProject(ref Terminal t, string projectPath, string enginePath,
 DubProjectInfo dubInfo, TemplateInfo templateInfo)
 {
 	string dubProj = generateDubProject(dubInfo);
-	string codeTemplate = generateCodeTemplate(templateInfo);
+	string codeTemplate = generateCodeTemplate(templateInfo, dubInfo);
 	string debugLauncher = generateVSCodeDebuggerLaunch(enginePath);
 
 	try
@@ -268,6 +269,8 @@ dub.json
 .vs
 bin
 *.exe
+*.o
+*.obj
 *.exp
 *.lnk
 *.dll
