@@ -40,13 +40,6 @@ uint64_t get_psv_time()
 	return 0;
 }
 
-float longToFloat(int64_t v ){ return (float) v;}
-float ulongToFloat(uint64_t v){ return (float) v;}
-
-double longToDouble(int64_t v) { return (double) v; }
-double ulongToDouble(uint64_t v) { return (double) v; }
-
-
 void initializeVitaGL();
 void EGLInit(int* width, int* height);
 void EGLEnd();

@@ -108,10 +108,7 @@ class HipTime
     }
     static double getCurrentTimeDouble() nothrow
     {
-        version(PSVita)
-            return Double(getCurrentTime());
-        else
-            return cast(double)getCurrentTime();
+        return cast(double)getCurrentTime();
     }
 
     ///For some reason, float arithmetic is wrong on PSVita, so, use long instead...

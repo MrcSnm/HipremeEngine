@@ -442,7 +442,7 @@ void main(string[] args)
 			{
 				terminal.writeln("Press Enter to continue");
 				auto ch = input.getch;
-				while(ch != '\n' && ch != '\0'){}
+				while(ch != '\n' && ch != '\0'){ch = input.getch;}
 			}
 		}
 		else break;
