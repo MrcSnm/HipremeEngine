@@ -43,7 +43,7 @@ OBJS := $(addprefix out/, $(SRC_C:src/%.c=%.o)) $(addprefix out/, $(SRC_CPP:src/
 
 
 # Hipreme Engine
-LIBS += $(shell cat libIncludes.txt) -ld_std
+LIBS += $(shell cat libIncludes.txt)
 
 # Needed by psvDebugScreenPrintf
 # Third party
@@ -77,8 +77,8 @@ $(PROJECT).velf: $(PROJECT).elf
 	$(STRIP) -g $<
 	$(VITA_ELF_CREATE) $< $@
 
-$(PROJECT).elf: $(OBJS) $(wildcard libs/*.a)
-	$(CC) $(CFLAGS) $^  -L/usr/local/vitasdk/arm-vita-eabi/lib/ -L. -Llibs -Lthirdparty $(LIBS) -o $@
+$(PROJECT).elf: $(OBJS) $(wildcard libs/*.a) libIncludes.txt
+	$(CC) $(CFLAGS) $(OBJS)  -L/usr/local/vitasdk/arm-vita-eabi/lib/ -L. -Llibs -Lthirdparty $(LIBS) -o $@
 
 out/%.o : src/%.cpp | $(OBJ_DIRS)
 	$(CXX) -c $(CXXFLAGS) -o $@ $<

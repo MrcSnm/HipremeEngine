@@ -32,6 +32,9 @@ void copyLinkerFilesAsTxt(const string[] libraries, string outputPath)
 
     string libIncludes = buildNormalizedPath(outputPath, "..", "libIncludes.txt");
     string txt = libraries.map!(lib => "-l"~lib.baseName[3..$].setExtension("")).join(" ");
+
+    //Solves for libraries that depends on d std, runtime and HipremeEngineMain
+    txt~= " -ld_std -lruntime -l"~libraries[0].baseName[3..$].setExtension("");
     
     std.file.write(libIncludes, txt);
     copyFiles(libraries, outputPath);
