@@ -24,14 +24,8 @@ int hipengineStartServer(string[] args, shared ushort* serverPort, shared string
 	auto provider = new DefaultProvider(false, Levels.ERROR);
 
 	string privateIp = "127.0.0.1";
-	foreach(addr; privateAddresses)
-	{
-		if(isIpAddress(addr))
-		{
-			privateIp = addr;
-			break;
-		}
-	}
+	string local = getLocalIP();
+	if(local.length) privateIp = local;
 	configureLoggingProvider(provider);
 	ServerConfig cfg;
 	cfg.hostname = "0.0.0.0";
@@ -47,7 +41,7 @@ int hipengineStartServer(string[] args, shared ushort* serverPort, shared string
 	*serverPort = port;
 	*serverHost = privateIp.dup;
 	startPath = servePath;
-	writeln("HipremeEngine Dev Server listening from ",privateAddresses,":", port, " path ", startPath);
+	writeln("HipremeEngine Dev Server listening from ",privateAddresses(Exclude.INTERFACE | Exclude.IPV6),":", port, " path ", startPath);
 	(cast()sem).notify;
 
 	new HttpServer(pathHandler, cfg).start();

@@ -1260,6 +1260,17 @@ bool isIpAddress(string ip)
 
     return true;
 }
+string getLocalIP()
+{
+    import commons;
+    import myip;
+    foreach(addr; privateAddresses(Exclude.IPV6 | Exclude.INTERFACE))
+    {
+        if(isIpAddress(addr))
+            return addr;
+    }
+    return null;
+}
 
 void requireConfiguration(
 	string cfgRequired,

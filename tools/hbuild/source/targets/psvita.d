@@ -264,7 +264,43 @@ private bool setupPsvitaWindows(ref Terminal t, ref RealTimeConsoleInput input)
     return setupVdpm(t, input, wslExec);
 }
 
-string tryGetPsvitaIP()
+void sweepLocalNet()
+{
+    import std.conv:to;
+    import std.socket;
+
+    string local = getLocalIP;
+    if(local.length == 0)
+        return;
+    import std.string:lastIndexOf;
+    auto res = lastIndexOf(local, '.');
+    if(res == -1)
+        return;
+    string baseIp = local[0..res];
+    int ignore = local[res+1..$].to!int;
+
+    for(int i = 1; i < 255; i++)
+    {
+        if(i == ignore)
+            continue;
+        string testIp = baseIp~'.'~i.to!string;
+        Socket s = new UdpSocket();
+        scope(exit)
+            s.close();
+        
+        ubyte[1] data = [0];
+        try
+        {
+            s.sendTo(data, new InternetAddress(testIp, 9));
+        }
+        catch(Exception){}
+    }
+    import core.thread;
+    Thread.sleep(dur!"msecs"(300)); //Needs to wait for the ARP table to update.
+}
+
+
+string getPSVitaIP()
 {
     import std.string:lineSplitter, split;
     auto res = execute(["arp", "-a"]);
@@ -277,30 +313,58 @@ string tryGetPsvitaIP()
         foreach(string line; res.output.lineSplitter)
         {
             import std.algorithm.searching:countUntil;
+            import std.algorithm.iteration;
             import std.string;
             import std.array;
-            
-            foreach(oui; PSVitaOUI)
+
+            try
             {
-                if(line.countUntil(oui) != -1)
+                version(Windows)
                 {
-                    version(Posix)
+                    line = line.strip();
+                    if(line.length == 0)
+                        continue;
+                    if(!line[0..1].isNumeric)
+                        continue;
+                }
+                
+                foreach(oui; PSVitaOUI)
+                {
+                    if(line.countUntil(oui) != -1)
                     {
-                        string[] data = split(line, " ");
-                        string ipAddress = data[1][1..$-1];
-                        return ipAddress;
-                    }
-                    else version(Windows)
-                    {
-                        string[] data = line.split(' ').filter!(dat => dat.length > 0).array;
-                        string ipAddress = data[0];
-                        return ipAddress;
+                        version(Posix)
+                        {
+                            string[] data = split(line, " ");
+                            string ipAddress = data[1][1..$-1];
+                            return ipAddress;
+                        }
+                        else version(Windows)
+                        {
+                            string[] data = line.split(' ').filter!(dat => dat.length > 0).array;
+                            string ipAddress = data[0];
+                            return ipAddress;
+                        }
                     }
                 }
             }
+            catch(Exception e){}
         }
     }
     return null;
+}
+
+private string tryGetPSVitaIP()
+{
+    static bool hasSwept = false;
+    string ip;
+    ip = getPSVitaIP();
+    if(ip.length == 0 && !hasSwept)
+    {
+        hasSwept = true;
+        sweepLocalNet();
+        ip = getPSVitaIP();
+    }
+    return ip;
 }
 
 bool setupPsvita(ref Terminal t, ref RealTimeConsoleInput input)
@@ -364,9 +428,7 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 
     environment["DFLAGS"] = dflags;
 
-    static string psvIp;
-    if(!psvIp.length) 
-        psvIp = tryGetPsvitaIP();
+    string psvIp = tryGetPSVitaIP();
     if(psvIp.length)
     {
         configs["psvIp"] = psvIp;
