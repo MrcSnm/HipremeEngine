@@ -264,6 +264,45 @@ private bool setupPsvitaWindows(ref Terminal t, ref RealTimeConsoleInput input)
     return setupVdpm(t, input, wslExec);
 }
 
+string tryGetPsvitaIP()
+{
+    import std.string:lineSplitter, split;
+    auto res = execute(["arp", "-a"]);
+    version(Posix)
+        immutable string[] PSVitaOUI = ["d4:4b:5e", "f8:2f:a8"];
+    else version(Windows)
+        immutable string[] PSVitaOUI = ["d4-4b-5e", "f8-2f-a8"];
+    if(res.status == 0)
+    {
+        foreach(string line; res.output.lineSplitter)
+        {
+            import std.algorithm.searching:countUntil;
+            import std.string;
+            import std.array;
+            
+            foreach(oui; PSVitaOUI)
+            {
+                if(line.countUntil(oui) != -1)
+                {
+                    version(Posix)
+                    {
+                        string[] data = split(line, " ");
+                        string ipAddress = data[1][1..$-1];
+                        return ipAddress;
+                    }
+                    else version(Windows)
+                    {
+                        string[] data = line.split(' ').filter!(dat => dat.length > 0).array;
+                        string ipAddress = data[0];
+                        return ipAddress;
+                    }
+                }
+            }
+        }
+    }
+    return null;
+}
+
 bool setupPsvita(ref Terminal t, ref RealTimeConsoleInput input)
 {
     if(!extractToFolder(
@@ -325,11 +364,24 @@ ChoiceResult preparePSVita(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 
     environment["DFLAGS"] = dflags;
 
-    requireConfiguration("psvIp", "Set up PSVita IP for installing your application via FTP.", t, input, (ref str)
+    static string psvIp;
+    if(!psvIp.length) 
+        psvIp = tryGetPsvitaIP();
+    if(psvIp.length)
     {
-        str = str.strip();
-        return isIpAddress(str);
-    }, "psvIp must be a valid IP address");
+        configs["psvIp"] = psvIp;
+        updateConfigFile();
+        t.writelnSuccess("PSVita IP Found: ", psvIp);
+    }
+    else
+    {
+        requireConfiguration("psvIp", "Set up PSVita IP for installing your application via FTP.", t, input, (ref str)
+        {
+            str = str.strip();
+            return isIpAddress(str);
+        }, "psvIp must be a valid IP address");
+    }
+
 
 
     requireConfiguration("psvCmdPort", "Set up PSVita Command Port for automatic execution after compilation+installation and logging (default is 8080) ", t, input, (ref str)
