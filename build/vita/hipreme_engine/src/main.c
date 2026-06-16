@@ -156,6 +156,7 @@ int main(int argc, char* argv)
 	psv_init_mem();
 	psvDebugScreenInit();
 	initializeVitaGL();
+	initializeVitaInput();
 	EGLInit(&screenWidth, &screenHeight);
 
 

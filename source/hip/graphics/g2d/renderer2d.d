@@ -118,14 +118,9 @@ void setFullscreen(bool bFullscreen){ HipRenderer.window.setFullscreen(bFullscre
 void setWindowSize(uint width, uint height, bool updateWorld = true)
 {
     HipRenderer.setWindowSize(width, height);
-    HipRenderer.setViewport(viewport);
     if(updateWorld)
-    {
-        auto sz = HipRenderer.window.getSize();
-        import std.stdio;
-        writeln(sz[0], " ", sz[1]);
-        setWorldSize(sz[0], sz[1]);
-    }
+        setWorldSize(width, height);
+    HipRenderer.setViewport(viewport);
 }
 
 //End Window
@@ -133,8 +128,8 @@ void setWindowSize(uint width, uint height, bool updateWorld = true)
 void setWorldSize(uint width, uint height)
 {
     viewport.setWorldSize(width, height);
-    camera.setSize(width, height);
     HipRenderer.setViewport(viewport);
+    camera.setSize(width, height);
 }
 
 HipOrthoCamera getCamera() { return camera; }

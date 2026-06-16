@@ -84,8 +84,6 @@ class GameSystem : IGameSystem
         dispatcher = new EventDispatcher(HipRenderer.window, &this.isInUpdate);
         dispatcher.addOnResizeListener((uint width, uint height)
         {
-            HipRenderer.width  = width;
-            HipRenderer.height = height;
             resizeRenderer2D(width, height);
             foreach (AScene s; scenes)
                 s.onResize(width, height);
