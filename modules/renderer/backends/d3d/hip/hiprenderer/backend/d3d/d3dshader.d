@@ -231,8 +231,10 @@ class Hip_D3D11_ShaderProgram : HipShaderProgram
         D3D11_SHADER_INPUT_BIND_DESC desc;
         foreach(l; layouts)
         {
+            import hip.hiprenderer.backend.d3d.d3dbuffer;
             import core.stdc.string:memcpy;
-            Hip_D3D11_ShaderVarAdditionalData* data = cast(Hip_D3D11_ShaderVarAdditionalData*)l.getAdditionalData();
+            HipD3D11Buffer data = cast(HipD3D11Buffer)l.getAdditionalData();
+            ErrorHandler.assertExit(data !is null, "D3D11 ShaderVarAdditionalData is null, can't send variables");
 
             if(l.isDirty)
             {
@@ -242,9 +244,6 @@ class Hip_D3D11_ShaderProgram : HipShaderProgram
                 _hip_d3d_context.Unmap(data.buffer,  0);
                 l.isDirty = false;
             }
-
-
-            ErrorHandler.assertExit(data != null, "D3D11 ShaderVarAdditionalData is null, can't send variables");
 
             final switch(l.shaderType)
             {
@@ -268,7 +267,14 @@ class Hip_D3D11_ShaderProgram : HipShaderProgram
         foreach(i, texture; textures)
             texture.bind(cast(int)i);
     }
-    override void createVariablesBlock(ref ShaderVariablesLayout layout){}
+    override void createVariablesBlock(ref ShaderVariablesLayout layout)
+    {
+        import hip.hiprenderer.backend.d3d.d3dbuffer;
+        HipD3D11Buffer buffer = new HipD3D11Buffer(layout.getLayoutSize(), HipResourceUsage.Dynamic, HipRendererBufferType.uniform);
+        layout.setAdditionalData(cast(void*)buffer, true);
+
+
+    }
     override void onRenderFrameEnd(){}
 
     override void dispose()

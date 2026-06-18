@@ -39,6 +39,7 @@ import hip.hiprenderer.backend.d3d.d3dshader;
 import hip.hiprenderer.backend.d3d.d3dframebuffer;
 import hip.hiprenderer.backend.d3d.d3dvertex;
 import hip.hiprenderer.backend.d3d.d3dtexture;
+import hip.hiprenderer.backend.d3d.d3dbuffer;
 
 
 version(UWP)
@@ -402,11 +403,11 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     }
     public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {
-        return new Hip_D3D11_Buffer(size, usage, type);
+        return new HipD3D11Buffer(size, usage, type);
     }
     public IHipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
     {
-        return new Hip_D3D11_Buffer(data, usage, type);
+        return new HipD3D11Buffer(data, usage, type);
     }
     public HipShaderProgram createShader()
     {
@@ -474,20 +475,14 @@ class Hip_D3D11_Renderer : IHipRendererImpl
 
     public void setViewport(Viewport v)
     {
-        import hip.windowing.platforms.windows;
-        version(WindowsNative)
-            int[2] borders = getWindowBorder(window.hwnd);
-        else
-            int[2] borders = [0,0];
-
         D3D11_VIEWPORT vp;
         memset(&vp, 0, D3D11_VIEWPORT.sizeof);
-        vp.Width = v.width - borders[0];
-        vp.Height = v.height - borders[1];
+        vp.Width = v.width;
+        vp.Height = v.height;
         vp.TopLeftX = v.x;
         vp.TopLeftY = v.y;
-        // vp.MinDepth = 0;
-        // vp.MaxDepth = 1;
+        vp.MinDepth = 0;
+        vp.MaxDepth = 1;
 
 
         currentViewport = v;

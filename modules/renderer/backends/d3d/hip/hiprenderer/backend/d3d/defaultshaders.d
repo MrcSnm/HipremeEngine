@@ -78,7 +78,7 @@ private {
 #else
             VSOut vertexMain(
                 float2 pos    : vPosition,
-                uint2  xy     : vXY,
+                int2   xy     : vXY,
                 uint2 size    : vSize,
                 float4 col    : vColor,
                 float rotation: vRotation,

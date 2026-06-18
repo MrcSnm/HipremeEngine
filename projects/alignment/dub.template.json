@@ -7,8 +7,6 @@
 	"name" : "alignment",
 	"engineModules": [
 		"util",
-		"timer",
-		"tween",
 		"data",
 		"math",
 		"game2d"

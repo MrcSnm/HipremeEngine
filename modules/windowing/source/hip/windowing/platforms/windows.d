@@ -370,6 +370,8 @@ version(WindowsNative)
         
         return 1;
     }
+
+    extern(Windows) UINT GetDpiForWindow(HWND);
     float getDevicePixelRatio(HWND hwnd)
     {
         UINT dpi = GetDpiForWindow(hwnd);

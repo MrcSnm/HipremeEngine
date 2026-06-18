@@ -33,7 +33,7 @@ final class Hip_D3D11_Texture : IHipTexture
     bool[] slotsBound;
     HipColor borderColor = HipColor(255, 255, 255, 255);
     int width, height;
-    int filter = Hip_D3D11_getTextureFilter(TextureFilter.NEAREST, TextureFilter.NEAREST);
+    int filter = Hip_D3D11_getTextureFilter(TextureFilter.NEAREST_MIPMAP_LINEAR, TextureFilter.LINEAR);
     int wrap = Hip_D3D11_getWrapMode(TextureWrapMode.REPEAT);
     uint stride;
     HipResourceUsage usage;
