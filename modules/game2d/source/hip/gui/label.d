@@ -50,13 +50,13 @@ class Label : Widget
         return this;
     }
 
-    public Label setSize(int width, int height)
+    public Label setSize(float width, float height)
     {
-        txtDraw.bounds = Size(width, height);
+        txtDraw.bounds = Size(cast(uint)width, cast(uint)height);
         txtDraw.getSize(this.width, this.height);
         return this;
     }
-    private void getTextPosition(out int x, out int y)
+    private void getTextPosition(out float x, out float y)
     {
         getPositionFromAlignment(
             worldTransform.x, worldTransform.y, 
@@ -69,7 +69,7 @@ class Label : Widget
 
     override void onRender()
     {
-        int bkgX = void, bkgY = void;
+        float bkgX = void, bkgY = void;
         getTextPosition(bkgX, bkgY);
         txtDraw.setPosition(worldTransform.x, worldTransform.y);
         if(bkgRenderer !is null) bkgRenderer.render(bkgX, bkgY, txtDraw.width, txtDraw.height);

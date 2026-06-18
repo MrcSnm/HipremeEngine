@@ -41,8 +41,8 @@ class LinearLayout : Group
 
     void updateLayout()
     {
-        int x, y;
-        int maxWidth, maxHeight;
+        float x = 0, y = 0;
+        float maxWidth = 0, maxHeight = 0;
         foreach(ch; children)
         {
             import hip.api;

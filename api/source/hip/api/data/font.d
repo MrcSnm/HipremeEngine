@@ -25,11 +25,11 @@ pragma(LDC_no_typeinfo)
 struct HipLineInfo
 {
     string line;
-    int height;
-    int width;
-    int minYOffset;
+    float height;
+    float width;
+    float minYOffset;
     const(HipFontChar)*[512] fontCharCache = void;
-    int[512] kerningCache = void;
+    float[512] kerningCache = void;
 }
 
 pragma(LDC_no_typeinfo)
@@ -37,16 +37,19 @@ struct HipWordWrapRange
 {
     private string inputText;
     private IHipFont font;
-    private int maxWidth, currIndex;
+    private float maxWidth;
+    int currIndex;
+    private float scale = 1.0f;
     private HipLineInfo currLine = void;
     private bool hasFinished;
 
-    void initialize(string inputText, IHipFont font, int maxWidth) @nogc
+    void initialize(string inputText, IHipFont font, float maxWidth, float scale) @nogc
     {
         this.inputText = inputText;
         currLine.height = 0;
         currLine.width = 0;
         currLine.minYOffset = 0;
+        this.scale = scale;
         this.font = font;
         this.maxWidth = maxWidth <= 0 ? int.max : maxWidth;
         currIndex = 0;
@@ -62,8 +65,9 @@ struct HipWordWrapRange
     void popFront() @nogc
     {
         const(HipFontChar)* ch, next;
-        int currWidth = 0, wordWidth = 0, wordStartIndex = currIndex;
-        uint spaceWidth = font.spaceWidth;
+        float currWidth = 0, wordWidth = 0;
+        int wordStartIndex = currIndex;
+        float spaceWidth = font.spaceWidth * scale;
 
         for(int i = currIndex, it = 0; i < inputText.length; i++, it++)
         {
@@ -77,15 +81,20 @@ struct HipWordWrapRange
                     continue;
                 }
             }
-            currLine.height = ch.height > currLine.height ?  ch.height : currLine.height;
-            currLine.minYOffset = ch.yoffset < currLine.minYOffset ? ch.yoffset : currLine.minYOffset;
-            int kern = 0;
+            float chHeight = ch.height * scale;
+            float chXAdvance = ch.xadvance * scale;
+            float chYOffset = ch.yoffset * scale;
+
+            currLine.height = (chHeight > currLine.height ?  chHeight : currLine.height);
+            currLine.minYOffset = chYOffset < currLine.minYOffset ? chYOffset : currLine.minYOffset;
+            float kern = 0;
             if(i + 1 < inputText.length)
             {
                 next = inputText[i+1] in font.characters;
                 if(next) kern = font.getKerning(ch, next);
             }
             currLine.kerningCache[it] = kern;
+            kern *= scale;
             currLine.fontCharCache[it] = ch;
             switch(inputText[i])
             {
@@ -112,7 +121,7 @@ struct HipWordWrapRange
                     }
                     break;
                 default:
-                    if(wordWidth + ch.xadvance + kern + currWidth > maxWidth)
+                    if(wordWidth + chXAdvance + kern + currWidth > maxWidth)
                     {
                         if(wordStartIndex == currIndex)
                         {
@@ -127,7 +136,7 @@ struct HipWordWrapRange
                         currIndex = wordStartIndex;
                         return;
                     }
-                    wordWidth += ch.xadvance + kern;
+                    wordWidth += chXAdvance + kern;
                     break;
             }
             ch = next;
@@ -221,7 +230,7 @@ interface IHipFont
         import hip.util.string;
         return count(text, "\n") * lineBreakHeight;
     }
-    HipWordWrapRange wordWrapRange(string text, int maxWidth) const @nogc;
+    HipWordWrapRange wordWrapRange(string text, int maxWidth, float scale = 1.0f) const @nogc;
     ref HipFontChar[dchar] characters() @nogc;
     ref inout(IHipTexture) texture() inout @nogc;
     uint spaceWidth() const @nogc;
@@ -264,19 +273,19 @@ abstract class HipFont : HipAsset, IHipFont
 
     abstract uint getHeight() const;
 
-    final HipWordWrapRange wordWrapRange(string text, int maxWidth) const @nogc
+    final HipWordWrapRange wordWrapRange(string text, int maxWidth, float scale = 1.0f) const @nogc
     {
         ///Needs to be returned like that or else, it will memset everytime
         HipWordWrapRange ret = void;
-        ret.initialize(text, cast(IHipFont)this, maxWidth);
+        ret.initialize(text, cast(IHipFont)this, maxWidth, scale);
         return ret;
     }
     
 
-    final void calculateTextBounds(string text, ref uint[] linesWidths, out int biggestWidth, out int height, int maxWidth = -1) const
+    final void calculateTextBounds(string text, float scale, ref float[] linesWidths, out float biggestWidth, out float height, int maxWidth = -1) const
     {
         int i = 0;
-        foreach(HipLineInfo lineInfo; wordWrapRange(text, maxWidth))
+        foreach(HipLineInfo lineInfo; wordWrapRange(text, maxWidth, scale))
         {
             if(lineInfo.width > biggestWidth) biggestWidth = lineInfo.width;
             if(linesWidths.length < i+1)

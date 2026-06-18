@@ -16,7 +16,7 @@ class HipText
 {
     HipTextAlign align_ = HipTextAlign.topLeft;
     HipFont font;
-    int x, y;
+    float x = 0, y = 0;
     bool wordWrap;
     float scale = 1;
 
@@ -29,12 +29,12 @@ class HipText
 
     float depth = 0;
     ///Update dynamically based on the font, the text scale and the text content
-    int width, height;
+    float width = 0, height = 0;
 
     Size bounds;
 
     //Line widths, containing width for each line for correctly aplying text align
-    uint[] linesWidths;
+    float[] linesWidths;
 
     protected string _text;
     protected string processedText;
@@ -62,7 +62,7 @@ class HipText
         wordWrap = bWordWrap;
         this.bounds = bounds;
     }
-    this(string text, int x, int y, HipFont fnt = null, Size bounds = Size.init, bool bWordWrap = false)
+    this(string text, float x, float y, HipFont fnt = null, Size bounds = Size.init, bool bWordWrap = false)
     {
         this(bounds, bWordWrap);
         this.setPosition(x,y);
@@ -91,7 +91,7 @@ class HipText
         return _text;
     }
 
-    void setPosition(int x, int y)
+    void setPosition(float x, float y)
     {
         this.x = x;
         this.y = y;
@@ -112,18 +112,18 @@ class HipText
         return cast(void[])vertices[0..drawableTextCount * 4];
     }
     
-    protected void updateAlign(int lineNumber, out int displayX, out int displayY, Size bounds)
+    protected void updateAlign(int lineNumber, out float displayX, out float displayY, Size bounds)
     {
         import hip.api.graphics.text;
         getPositionFromAlignment(x, y, linesWidths[lineNumber], height, align_, displayX, displayY, bounds);
     }
     
 
-    public void getSize(out int width, out int height)
+    public void getSize(out float width, out float height, float scale = 1.0f)
     {
         if(processedText == null)
             HipTextStopConfig.parseText(_text, processedText, textConfig);
-        font.calculateTextBounds(processedText, linesWidths, width, height, bounds.width);
+        font.calculateTextBounds(processedText, scale, linesWidths, width, height, bounds.width);
         this.width = width;
         this.height = height;
     }

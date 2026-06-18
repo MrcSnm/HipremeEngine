@@ -8,12 +8,14 @@ import std.array:join,split,array;
 struct TemplateInfo
 {
 	string initMethod=q{
+
+		setWorldSize(WorldSize[0], WorldSize[1]);
 		setWindowTitle("%s");
 	},
 	update="",
 	render=q{
-		drawText("You can start using the D Scripting API Here!", 400, 300, 2.0, HipColor.white,
-			HipTextAlign.center
+		drawText("You can start using the D Scripting API Here!", 0, 0, 2.0, HipColor.white,
+			HipTextAlign.center, Size(WorldSize[0], WorldSize[1])
 		);
 	},
 	dispose="";
@@ -38,6 +40,8 @@ import hip.api;
 class MainScene : AScene, IHipPreloadable
 {
 	mixin Preload;
+
+	immutable int[2] WorldSize = [800, 600];
 
 	/** Constructor */
 	override void initialize()

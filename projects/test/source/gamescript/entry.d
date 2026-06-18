@@ -8,11 +8,15 @@ import hip.api;
 class MainScene : AScene, IHipPreloadable
 {
 	mixin Preload;
+
+	immutable int[2] WorldSize = [1280, 720];
 	
 	/** Constructor */
 	override void initialize()
 	{
 		
+		setWindowTitle("Hipreme Engine Test");
+		setWorldSize(WorldSize[0], WorldSize[1]);
 		setFont(HipDefaultAssets.getDefaultFontWithSize(62));
 	
 	}
@@ -25,8 +29,8 @@ class MainScene : AScene, IHipPreloadable
 	override void render()
 	{
 		
-		drawText("You can start using the D Scripting API Here!", 400, 300, 2.0, HipColor.white,
-			HipTextAlign.center
+		drawText("You can start using the D Scripting API Here!", 0, 0, 2.0, HipColor.white,
+			HipTextAlign.center, Size(WorldSize[0], WorldSize[1]), true
 		);
 	}
 	/** Pre destroy */

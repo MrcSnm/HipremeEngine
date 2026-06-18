@@ -6,8 +6,8 @@ import hip.api;
 import hip.assets.texture;
 
 enum SPRITES_COUNT = 50_000;
-enum MIN_SPEED = 50;
-enum MAX_SPEED = 150;
+enum MIN_SPEED = 200;
+enum MAX_SPEED = 400;
 enum SCREEN_W = 800;
 enum SCREEN_H = 600;
 /**
@@ -39,6 +39,12 @@ class MainScene : AScene
 			speeds[i] = HRandom.Random.range(MIN_SPEED, MAX_SPEED);
 		}
 
+		auto sz = getMaxScreenSize();
+
+		setWindowSize(SCREEN_W, SCREEN_H, true);
+		setWindowSize(sz[0], sz[1], true);
+		// logg(getMaxScreenSize());
+
 
 	}
 	/** Called every frame */
@@ -49,7 +55,9 @@ class MainScene : AScene
 		{
 			HipSprite s = sps.ptr[sp];
 			if(s.x < SCREEN_W - s.width)
+			{
 				s.x+= speeds[sp] * dt;
+			}
 		}
 	}
 	/** Renderer only, may not be called every frame */
@@ -75,7 +83,10 @@ class MainScene : AScene
 		destroy(texture);
 	}
 
-	override void onResize(uint width, uint height){}
+	override void onResize(uint width, uint height)
+	{
+		setWindowSize(width, height, false);
+	}
 }
 
 mixin HipEngineMain!MainScene;

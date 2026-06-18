@@ -57,8 +57,8 @@ HipTextAlign getAlignV(HipTextAlign input)
  *   bounds = The bounds to align to. If It is == 0, it won't be considered in the calculation
  */
 void getPositionFromAlignment(
-    int x, int y, int width, int height, HipTextAlign alignment,
-    out int newX, out int newY, Size bounds
+    float x, float y, float width, float height, HipTextAlign alignment,
+    out float newX, out float newY, Size bounds
 )
 {
     with(HipTextAlign)
@@ -123,7 +123,7 @@ void getPositionFromAlignment(
 int putTextVertices(
     IHipFont font, HipTextRendererVertexAPI[] vertices,
     string text,
-    int x, int y, float depth, float scale = 1.0f,
+    float x, float y, float depth, float scale = 1.0f,
     HipTextAlign align_ = HipTextAlign.center,
     Size bounds = Size.init,
     bool wordWrap = false,
@@ -135,7 +135,7 @@ int putTextVertices(
     int vI = 0;
     int height = cast(int)(font.getTextHeight(text) * scale);
 
-    foreach(HipLineInfo lineInfo; font.wordWrapRange(text, wordWrap ? bounds.width : -1))
+    foreach(HipLineInfo lineInfo; font.wordWrapRange(text, wordWrap ? bounds.width : -1, scale))
     {
         if(!isFirstLine)
         {
@@ -143,21 +143,21 @@ int putTextVertices(
         }
         isFirstLine = false;
         int xoffset = 0;
-        int displayX = void, displayY = void;
+        float displayX = void, displayY = void;
         int lineYOffset = 0;
         // if(align_ & HipTextAlign.top) lineYOffset = yoffset - cast(int)(lineInfo.minYOffset * scale);
-        lineYOffset =  -cast(int)(lineInfo.minYOffset * scale);
+        lineYOffset =  -cast(int)(lineInfo.minYOffset);
 
         getPositionFromAlignment(
             x, y,
-            cast(int)(lineInfo.width * scale), cast(int)(height ? height : lineInfo.height * scale),
+            cast(int)(lineInfo.width), cast(int)(height ? height : lineInfo.height),
             align_,
             displayX, displayY,
             bounds
         );
         for(int i = 0; i < lineInfo.line.length; i++)
         {
-            int kerning = lineInfo.kerningCache[i];
+            float kerning = lineInfo.kerningCache[i] * scale;
             const(HipFontChar)* ch = lineInfo.fontCharCache[i];
 
             switch(lineInfo.line[i])

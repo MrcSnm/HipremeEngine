@@ -16,10 +16,11 @@ class MainScene : AScene, IHipPreloadable
 	// /** Constructor */
 	override void initialize()
 	{
-		Viewport vp = getCurrentViewport();
-		vp.setBounds(0, 0, 800, 600);
-		setViewport(vp);
 
+        setWindowTitle("Hipreme Engine Sample");
+        auto sz = getMaxScreenSize;
+        setWorldSize(800, 600);
+        setWindowSize(sz[0], sz[1], false);
         smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
         bigFont = HipDefaultAssets.getDefaultFontWithSize(64);
 

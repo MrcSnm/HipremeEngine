@@ -8,14 +8,14 @@ class Widget
 {
     struct Bounds
     {
-        int x, y, width, height;
+        float x = 0, y = 0, width = 0, height = 0;
     }
     struct Transform
     {
-        int x, y;
+        float x = 0, y = 0;
         float rotation = 0, scaleX = 1, scaleY = 1;
     }
-    int width, height;
+    float width = 0, height = 0;
 
     protected Widget parent;
     protected Widget[] children;
@@ -64,7 +64,7 @@ class Widget
 
     Bounds getLocalBounds(){return Bounds(localTransform.x,localTransform.y,width,height);}
 
-    void setPosition(int x, int y)
+    void setPosition(float x, float y)
     {
         isDirty = true;
         localTransform.x = x;
@@ -174,7 +174,7 @@ class Widget
         ///If onMouseDown was executed, onMouseUp will be called even if the mouse is not inside the widget
         void onMouseUp(){}
         void onMouseMove(){}
-        private int dragOffsetX, dragOffsetY;
+        private float dragOffsetX = 0, dragOffsetY = 0;
         void onDragStart(int x, int y)
         {
             dragOffsetX = worldTransform.x - x;
@@ -212,7 +212,7 @@ class Widget
 
 interface IWidgetRenderer
 {
-    void render(int x, int y, int width, int height);
+    void render(float x, float y, float width, float height);
 }
 
 class DebugWidgetRenderer : IWidgetRenderer
@@ -226,7 +226,7 @@ class DebugWidgetRenderer : IWidgetRenderer
     }
     this(HipColor color){this.color = color;}
 
-    void render(int x, int y, int width, int height)
+    void render(float x, float y, float width, float height)
     {
         import hip.api;
         fillRoundRect(x,y,width,height, 4, color);
