@@ -108,7 +108,6 @@ fragment float4 fragmentMain(
 )
 {
     int texID = int(in.inTexID);
-    bool isText = (texID & (1 << 15)) != 0;
     texID = texID & 0xff;
 
     float4 texColor = float4(1,1,1,1);
@@ -125,8 +124,6 @@ fragment float4 fragmentMain(
         case 7: texColor = uTex7.sample(uSampler7, in.inTexST); break;
         default: break;
     };
-    if(isText)
-        return float4(1,1,1,texColor.r) * in.inVertexColor * u.uBatchColor;
     return texColor * in.inVertexColor * u.uBatchColor;
 }
 
