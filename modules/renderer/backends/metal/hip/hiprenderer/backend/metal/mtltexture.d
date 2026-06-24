@@ -9,12 +9,22 @@ import hip.console.log;
 import metal.texture;
 
 
-MTLPixelFormat getPixelFormat(in IImage img)
+void getPixelFormat(in IImage img, MTLTextureDescriptor desc)
 {
     final switch(img.getBytesPerPixel)
     {
-        case 1: return MTLPixelFormat.R8Unorm;
-        case 4: return MTLPixelFormat.RGBA8Unorm;
+        case 1: 
+            desc.swizzle = MTLTextureSwizzleChannels(
+                MTLTextureSwizzle.One,
+                MTLTextureSwizzle.One,
+                MTLTextureSwizzle.One,
+                MTLTextureSwizzle.Red
+            );
+            desc.pixelFormat = MTLPixelFormat.R8Unorm;
+            return;
+        case 4: 
+            desc.pixelFormat = MTLPixelFormat.RGBA8Unorm;
+            return;
         case 2:
         case 3:
     }
@@ -166,7 +176,7 @@ final class HipMTLTexture : IHipTexture
     protected bool loadImpl(in IImage img)
     {
         desc = MTLTextureDescriptor.alloc.initialize;
-        desc.pixelFormat = getPixelFormat(img);
+        getPixelFormat(img, desc);
         desc.width = img.getWidth();
         desc.height = img.getHeight();
         desc.textureType = MTLTextureType._2D;

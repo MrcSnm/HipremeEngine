@@ -43,7 +43,7 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
     IHipRendererBuffer ebo;
     HipVertexAttributeInfo[] vaoInfos;
 
-    alias vaoBinder = DelayedBindable!(Hip_GL_VertexArrayObject, !UseDelayedUnbind, BindReplacesUnbind, 1,
+    alias vaoBinder = DelayedBindable!(Hip_GL_VertexArrayObject, NeedsUnbind, BindReplacesUnbind, 1,
         (Hip_GL_VertexArrayObject vao)
         {
             static if(!GLShouldDisableVertexAttrib)
@@ -117,7 +117,7 @@ static if (OpenGLHasVAOSupport) final class Hip_GL3_VertexArrayObject : IHipVert
 {
     uint vao;
     import hip.util.data_structures;
-    alias vBinder = DelayedBindable!(Hip_GL3_VertexArrayObject, !UseDelayedUnbind, BindReplacesUnbind, 1, 
+    alias vBinder = DelayedBindable!(Hip_GL3_VertexArrayObject, NeedsUnbind, BindReplacesUnbind, 1, 
         (Hip_GL3_VertexArrayObject vao){glCall(() => glBindVertexArray(vao.vao));},
         (Hip_GL3_VertexArrayObject vao){glCall(() => glBindVertexArray(0));});
 

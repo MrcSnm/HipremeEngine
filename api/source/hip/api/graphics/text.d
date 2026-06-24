@@ -108,7 +108,7 @@ void getPositionFromAlignment(
  *
  * Params:
  *   font = The font used as a reference to build the quad
- *   vertices = Output vertices
+ *   buffer = Output buffer
  *   text = The text to build the vertices
  *   x = Start X
  *   y = Start Y
@@ -118,21 +118,26 @@ void getPositionFromAlignment(
  *   bounds = -1 value will make it be ignored. If exists, it will be used both for word wrap and for alignment to the size specified
  *   wordWrap = If the text will line-break if it reaches the size too big
  *   shouldRenderSpace = Render ' ' characters or not.
- * Returns:
+ *   instanced = Whether to treat the buffer as instance buffer or a vertex buffer
+ *   texSlot = The texture slot to access inside the sprite batch.
+ * Returns: How many indices in the underlying array has it used
  */
 int putTextVertices(
-    IHipFont font, HipTextRendererVertexAPI[] vertices,
+    IHipFont font, ubyte[] buffer,
     string text,
-    float x, float y, float depth, float scale = 1.0f,
+    float x, float y, ushort depth, HipColor color, float scale = 1.0f,
     HipTextAlign align_ = HipTextAlign.center,
     Size bounds = Size.init,
     bool wordWrap = false,
-    bool shouldRenderSpace
+    bool shouldRenderSpace = false,
+    bool instanced = false,
+    ushort texSlot = 0
 )
 {
     int yoffset = 0;
     bool isFirstLine = true;
     int vI = 0;
+
     int height = cast(int)(font.getTextHeight(text) * scale);
 
     foreach(HipLineInfo lineInfo; font.wordWrapRange(text, wordWrap ? bounds.width : -1, scale))
@@ -171,15 +176,30 @@ int putTextVertices(
                     goto default;
                 default:
                     if(ch is null) continue;
-                    ch.putCharacterQuad(
-                        cast(float)(xoffset+displayX+(ch.xoffset+kerning) *scale),
-                        cast(float)(yoffset+displayY+lineYOffset + ch.yoffset*scale), depth,
-                        vertices[vI..vI+4], scale
-                    );
-                    vI+= 4;
+                    float drawX = cast(float)(xoffset+displayX+(ch.xoffset+kerning) *scale);
+                    float drawY = cast(float)(yoffset+displayY+lineYOffset + ch.yoffset*scale);
+
+                    if(instanced)
+                    {
+                        HipSpriteVertexInstancedPerInstance[] instances = cast(HipSpriteVertexInstancedPerInstance[])buffer;
+                        ch.putCharacterInstance(
+                            drawX, drawY, depth, color,
+                            instances[vI++], scale, texSlot
+                        );
+                    }
+                    else
+                    {
+                        HipSpriteVertex[] spVertices = cast(HipSpriteVertex[])buffer;
+                        ch.putCharacterQuad(
+                            drawX, drawY, depth, color,
+                            spVertices[vI..vI+4], scale, texSlot
+                        );
+                        vI+= 4;
+                    }
+                    
                     xoffset+= ch.xadvance*scale;
             }
         }
     }
-    return vI;
+    return vI * cast(int)(instanced ? HipSpriteVertexInstancedPerInstance.sizeof : HipSpriteVertex.sizeof);
 }

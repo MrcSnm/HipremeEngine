@@ -65,7 +65,10 @@ class HipG2DBinding
         ///Draws a text using the last font set
         void function(string text, float x, float y, float scale = 1.0f, const HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.topCenter, Size bounds = Size.init, bool wordWrap = false) drawText;
         ///Draw text using those vertices. Low level API
-        void function(void[] vertices, IHipFont font)  drawTextVertices;
+        void function(ubyte[] vertices, IHipFont font)  drawTextVertices;
+
+        void function(IHipTexture texture, out int width, out int height, out ushort slot) setSpriteBatchTexture;
+        bool function() isSpriteInstanced;
 
 
         
@@ -164,7 +167,9 @@ version(none)
         ///Draws a text using the last font set
         void function(string text, int x, int y, float scale = 1.0f, HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.topCenter, Size bounds = Size.init, bool wordWrap = false) drawText;
         ///Draw text using those vertices. Low level API
-        void function(void[] vertices, IHipFont font)  drawTextVertices;
+        void function(ubyte[] vertices, IHipFont font)  drawTextVertices;
+        void function(IHipTexture texture, out int width, out int height, out ushort slot) setSpriteBatchTexture;
+        bool function() isSpriteInstanced;
         
         ///Sets active the viewport passed
         void function(Viewport v) setViewport;

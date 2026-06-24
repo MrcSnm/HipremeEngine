@@ -31,13 +31,13 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
     uint currentSlot;
 
     private IImage loadedImage;
-    alias activeTextureBinder = DelayedBindable!(int, !UseDelayedUnbind, BindReplacesUnbind, 1, 
+    alias activeTextureBinder = DelayedBindable!(int, NeedsUnbind, BindReplacesUnbind, 1, 
         (int slot){glCall(() => glActiveTexture(GL_TEXTURE0+slot));},
         (int){}
     );
 
     ///128 textures should be enough
-    alias textureBinder = DelayedBindable!(Hip_GL3_Texture, !UseDelayedUnbind, BindReplacesUnbind, 128,
+    alias textureBinder = DelayedBindable!(Hip_GL3_Texture, NeedsUnbind, BindReplacesUnbind, 128,
         (Hip_GL3_Texture tex, int slot){glBindTexture(tex.glTexType, tex.textureID);},
         (Hip_GL3_Texture tex, int){glBindTexture(tex.glTexType, 0);}
     );

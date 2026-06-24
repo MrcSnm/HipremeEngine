@@ -1,18 +1,11 @@
 module hip.api.data.font;
 import hip.api.data.asset;
 public import hip.api.renderer.texture;
+public import hip.api.renderer.shaders.spritebatch: HipSpriteVertex, HipSpriteVertexInstancedPerInstance;
 
 
 alias HipCharKerning = int[dchar];
 alias HipFontKerning = HipCharKerning[dchar];
-///see hip.graphics.g2d.textrenderer
-struct HipTextRendererVertexAPI
-{
-    short[2] vPosition = [0,0];
-    ushort[2] vTexST = [0,0];
-    ushort vZ = 0;
-    short padding;
-}
 
 /** 
  *  A text information that is returned from the word wrap range.
@@ -167,8 +160,9 @@ struct HipFontChar
     ///Normalized values
     ushort normalizedX, normalizedY, normalizedWidth, normalizedHeight;
     int glyphIndex;
-    void putCharacterQuad(float x, float y, float depth, HipTextRendererVertexAPI[] quad, float scale = 1) const @nogc
+    void putCharacterQuad(float x, float y, ushort depth, HipColor color, HipSpriteVertex[] quad, float scale = 1, ushort tex=0) const @nogc
     {
+        import hip.math.vector;
         import hip.util.data_structures;
         short w = cast(short)(width*scale), h = cast(short)(height*scale);
 
@@ -176,31 +170,54 @@ struct HipFontChar
         //Gen vertices 
         quad[0..4] = [
             //Top left
-            HipTextRendererVertexAPI(
-                [ux, uy],
-                [normalizedX, normalizedY], //ST,
-                z
+            HipSpriteVertex(
+                short2(ux, uy),
+                color,
+                ushort2(normalizedX, normalizedY), //ST,
+                z,
+                tex
             ),
             //Top Right
-            HipTextRendererVertexAPI(
-                [cast(short)(ux+w), uy],
-                [cast(ushort)(normalizedX + normalizedWidth), normalizedY], z //S + Wnorm, T
+            HipSpriteVertex(
+                short2(cast(short)(ux+w), uy),
+                color,
+                ushort2(cast(ushort)(normalizedX + normalizedWidth), normalizedY), 
+                z, //S + Wnorm, T
+                tex
             ),
             //Bot right
-            HipTextRendererVertexAPI(
-                [cast(short)(ux+w), cast(short)(uy +h)],
-                [
+            HipSpriteVertex(
+                short2(cast(short)(ux+w), cast(short)(uy +h)),
+                color,
+                ushort2(
                     cast(short)(normalizedX + normalizedWidth), //S+Wnorm
                     cast(ushort)(normalizedY + normalizedHeight) //T+Hnorm
-                ], z
+                ), z, tex
             ),
             //Bot left
-            HipTextRendererVertexAPI(
-                [ux, cast(short)(uy + h)],
-                [normalizedX, cast(ushort)(normalizedY + normalizedHeight)], z // S, T+Hnorm
+            HipSpriteVertex(
+                short2(ux, cast(short)(uy + h)),
+                color,
+                ushort2(normalizedX, cast(ushort)(normalizedY + normalizedHeight)), z, // S, T+Hnorm
+                tex
             )
         ].staticArray;
-
+    }
+    void putCharacterInstance(float x, float y, ushort depth, HipColor color, ref HipSpriteVertexInstancedPerInstance instance, float scale = 1, ushort tex=0) const @nogc
+    {
+        import hip.util.data_structures;
+        short w = cast(short)(width*scale), h = cast(short)(height*scale);
+        short ux = cast(short)x, uy = cast(short)y, z = cast(short)depth;
+        instance = HipSpriteVertexInstancedPerInstance(
+            [ux, uy],
+            [w, h],
+            color,
+            0.0f, //Rotation
+            depth,
+            tex,
+            [normalizedX, normalizedY],
+            [normalizedWidth, normalizedHeight]
+        );
     }
 }
 
@@ -209,6 +226,7 @@ interface IHipFont
     int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const @nogc;
     int getKerning(dchar current, dchar next) const @nogc;
     uint getHeight() const @nogc;
+    IHipTexture getTexture();
     /** 
      * 
      * Params:
@@ -260,6 +278,8 @@ abstract class HipFont : HipAsset, IHipFont
     uint _spaceWidth;
     ///How much the line break will offset in Y the next char
     uint _lineBreakHeight;
+
+    final IHipTexture getTexture() { return _texture; }
 
     ///////Properties///////
     final ref HipFontChar[dchar] characters(){return _characters;}

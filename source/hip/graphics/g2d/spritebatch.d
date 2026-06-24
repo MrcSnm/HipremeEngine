@@ -37,7 +37,6 @@ final class HipSpriteBatch : IHipBatch
     protected float managedDepth = 0;
     Shader spriteBatchShader;
     protected Shader ppShader;
-
     protected HipSpriteBatchInstanced instanced;
     protected HipSpriteBatchVertex vertex;
 
@@ -56,6 +55,8 @@ final class HipSpriteBatch : IHipBatch
         spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
 
     }
+
+    bool isInstanced(){return instanced !is null;}
 
     void beginFrame(int frame)
     {
@@ -78,6 +79,14 @@ final class HipSpriteBatch : IHipBatch
     {
         if(instanced) instanced.draw(texture, x, y, z, color, scaleX, scaleY, rotation);
         else vertex.draw(texture, x, y, z, color, scaleX, scaleY, rotation);
+    }
+
+    ushort getDepth(){return cast(ushort)managedDepth;}
+
+    void setTexture(IHipTexture texture, out int width, out int height, out ushort slot)
+    {
+        if(instanced) instanced.setTexture(texture,width, height, slot);
+        else vertex.setTexture(texture, width, height, slot);
     }
 
 

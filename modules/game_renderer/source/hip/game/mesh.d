@@ -21,9 +21,9 @@ class Mesh
     import hip.util.data_structures;
     import hip.config.renderer;
     
-    alias meshBinder = DelayedBindable!(Mesh, !UseDelayedUnbind, BindReplacesUnbind, 1,
-        (Mesh m) { m.shader.bind(); m.vao.bind(); },
-        (Mesh m) { m.shader.unbind(); m.vao.unbind(); }
+    alias meshBinder = DelayedBindable!(Mesh, NeedsUnbind, BindReplacesUnbind, 1,
+        (Mesh m) {m.shader.bind(); m.vao.bind(); },
+        (Mesh m) {m.shader.unbind(); m.vao.unbind(); }
     );
 
     protected index_t[] indices;
@@ -45,8 +45,14 @@ class Mesh
     {
         this.vao.sendAttributes(shader.shaderProgram);
     }
-    void bind(){meshBinder.bind(this);}
-    void unbind(){meshBinder.unbind(this);}
+    void bind()
+    {
+        meshBinder.bind(this);
+    }
+    void unbind()
+    {
+        meshBinder.unbind(this);
+    }
 
     /**
      * Use that function when the mesh doesn't hold ownership over the indices
@@ -107,6 +113,7 @@ class Mesh
         assert(indicesCount < T.max, "Can't draw more than T.max");
         bind();
         HipRenderer.drawIndexed(mode, cast(index_t)indicesCount, offset);
+        unbind();
     }
 
     
@@ -114,6 +121,7 @@ class Mesh
     {
         bind();
         HipRenderer.drawIndexedInstanced(mode, instanceCount, indicesCount, indicesOffset, baseInstance);
+        unbind();
     }
 
 }

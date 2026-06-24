@@ -23,6 +23,14 @@ public import hip.api.graphics.color;
 public import hip.api.renderer.shaders.spritebatch;
 
 
+private struct CachedTexture
+{
+    IHipTexture texture;
+    int width, height;
+    ushort slot;
+}
+
+
 /**
 *   The spritebatch contains 2 shaders.
 *   One shader is entirely internal, which you don't have any control, this is for actually being able
@@ -38,6 +46,7 @@ final class HipSpriteBatchVertex
     HipSpriteVertex[] vertices;
 
     protected bool hasInitTextureSlots;
+    CachedTexture cachedTexture;
     Shader spriteBatchShader;
 
     ///Post Processing Shader
@@ -51,7 +60,7 @@ final class HipSpriteBatchVertex
     Mesh mesh;
 
     protected IHipTexture[] currentTextures;
-    int usingTexturesCount;
+    ushort usingTexturesCount;
 
     uint lastDrawQuadsCount = 0;
     uint quadsCount;
@@ -95,7 +104,10 @@ final class HipSpriteBatchVertex
         this.camera = camera;
         mesh.setVertices(vertices);
         // vertices = cast(HipSpriteVertex[])mesh.vao.VBO.getBuffer();
-        setTexture(HipTexture.getPixelTexture());
+
+        int width, height;
+        ushort slot;
+        setTexture(HipTexture.getPixelTexture(), width , height, slot);
 
     }
     void setCurrentDepth(float depth) @nogc {managedDepth = depth;}
@@ -169,9 +181,9 @@ final class HipSpriteBatchVertex
         }
     }
 
-    private int getNextTextureID(IHipTexture t)
+    private ushort getNextTextureID(IHipTexture t)
     {
-        for(int i = 0; i < usingTexturesCount; i++)
+        for(ushort i = 0; i < usingTexturesCount; i++)
             if(currentTextures[i] is t)
                 return i;
         if(usingTexturesCount < currentTextures.length)
@@ -179,22 +191,33 @@ final class HipSpriteBatchVertex
             currentTextures[usingTexturesCount] = t;
             return usingTexturesCount++;
         }
-        return -1;
+        return ushort.max;
     }
     /**
     *   Sets the current texture in use on the sprite batch and returns its slot.
     */
-    protected int setTexture (IHipTexture texture)
+    void setTexture (IHipTexture texture,  out int width, out int height, out ushort slot)
     {
-        int slot = getNextTextureID(texture);
-        if(slot == -1)
+        if(texture is cachedTexture.texture)
         {
-            flush();
-            slot = getNextTextureID(texture);
+            width = cachedTexture.width;
+            height = cachedTexture.height;
+            slot = cachedTexture.slot;
         }
-        return slot;
+        else
+        {
+            width = texture.getWidth(), height = texture.getHeight();
+            ErrorHandler.assertExit(width != 0 && height != 0, "Tried to draw 0 bounds texture");
+            slot = getNextTextureID(texture);
+            if(slot == ushort.max)
+            {
+                flush();
+                slot = getNextTextureID(texture);
+            }
+            cachedTexture = CachedTexture(texture, width, height, slot);
+        }
     }
-    protected int setTexture(IHipTextureRegion reg){return setTexture(reg.getTexture());}
+    void setTexture(IHipTextureRegion reg, out int width, out int height, out ushort slot){ return setTexture(reg.getTexture(), width, height, slot); }
 
     protected static bool isZeroAlpha(void[] vertices)
     {
@@ -210,9 +233,9 @@ final class HipSpriteBatchVertex
     void draw(IHipTexture t, ubyte[] vertices)
     {
         if(isZeroAlpha(vertices)) return;
-        ErrorHandler.assertExit(t.getWidth != 0 && t.getHeight != 0, "Tried to draw 0 bounds sprite");
-        int slot = setTexture(t);
-        ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
+        int width, height;
+        ushort slot;
+        setTexture(t, width, height, slot);
 
         if(vertices.length == HipSpriteVertex.sizeof * 4)
             addQuad(vertices, slot);
@@ -229,11 +252,9 @@ final class HipSpriteBatchVertex
         if(texture is null)
             texture = cast()getDefaultTexture();
 
-        int width = texture.getWidth(), height = texture.getHeight();
-        ErrorHandler.assertExit(width != 0 && height != 0, "Tried to draw 0 bounds texture");
-        int slot = setTexture(texture);
-        ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
-
+        ushort slot;
+        int width, height;
+        setTexture(texture, width, height, slot);
         size_t startVertex = quadsCount *4;
         size_t endVertex = startVertex + 4;
 
@@ -247,9 +268,10 @@ final class HipSpriteBatchVertex
         if(color.a == 0) return;
         if(quadsCount+1 > maxQuads)
             flush();
-        ErrorHandler.assertExit(reg.getWidth() != 0 && reg.getHeight() != 0, "Tried to draw 0 bounds region");
-        int slot = setTexture(reg);
-        ErrorHandler.assertExit(slot != -1, "HipTexture slot can't be -1 on draw phase");
+
+        int width, height;
+        ushort slot;
+        setTexture(reg, width ,height, slot);
         size_t startVertex = quadsCount*4;
         size_t endVertex = startVertex + 4;
 

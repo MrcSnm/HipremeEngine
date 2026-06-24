@@ -27,7 +27,7 @@ class HipText
     ) checkDirty;
 
 
-    float depth = 0;
+    ushort depth = 0;
     ///Update dynamically based on the font, the text scale and the text content
     float width = 0, height = 0;
 
@@ -46,7 +46,7 @@ class HipText
     protected bool shouldRenderLineBreak = false;
 
     protected HipTextStopConfig[] textConfig;
-    protected HipTextRendererVertexAPI[] vertices;
+    protected ubyte[] buffer;
 
     //Caching
     protected size_t _drawableTextCount = 0;
@@ -83,7 +83,7 @@ class HipText
             if(_drawableTextCount > maxDrawableTextCount)
             {
                 //As it is a quad, it needs to have vertices * 4
-                vertices.length = _drawableTextCount * 4;
+                buffer.length = _drawableTextCount * 4;
                 maxDrawableTextCount = _drawableTextCount;
             }
             _text = newText;
@@ -100,7 +100,7 @@ class HipText
     HipColor color() => _color;
     HipColor color(HipColor c) => _color = c;
 
-    void[] getVertices()
+    ubyte[] getVertices()
     {
         checkDirty();
         if(shouldUpdateText)
@@ -109,7 +109,7 @@ class HipText
             checkDirty.start(this);
         }
         
-        return cast(void[])vertices[0..drawableTextCount * 4];
+        return cast(ubyte[])buffer[0..drawableTextCount * 4];
     }
     
     protected void updateAlign(int lineNumber, out float displayX, out float displayY, Size bounds)
@@ -135,10 +135,10 @@ class HipText
     package void updateText(IHipFont font)
     {
         import hip.api.graphics.text;
+        import hip.api;
         HipTextStopConfig.parseText(_text, processedText, textConfig);
         int vI = 0; //vertex buffer index
-
-        vI = putTextVertices(font, vertices[vI..$], processedText, x, y, depth, scale, align_, bounds, wordWrap, shouldRenderSpace);
+        vI = putTextVertices(font, buffer[vI..$], processedText, x, y, depth, HipColor.white, scale, align_, bounds, wordWrap, shouldRenderSpace, isSpriteInstanced(), 0);
         shouldUpdateText = true;
     }
 

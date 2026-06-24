@@ -27,7 +27,7 @@ public class Shader : IReloadable
     import hip.util.data_structures;
     import hip.config.renderer;
     
-    alias shaderBinder = DelayedBindable!(Shader, !UseDelayedUnbind, BindReplacesUnbind, 1,
+    alias shaderBinder = DelayedBindable!(Shader, NeedsUnbind, BindReplacesUnbind, 1,
         (Shader s){s.shaderProgram.bind();},
         (Shader s){s.shaderProgram.unbind();}
     );
@@ -141,14 +141,15 @@ public class Shader : IReloadable
         }
     }
 
-
     void bind()
     {
-        shaderBinder.bind(this);
+        shaderProgram.bind();
+        // shaderBinder.bind(this);
     }
     void unbind()
     {
-        shaderBinder.unbind(this);
+        shaderProgram.unbind();
+        // shaderBinder.unbind(this);
     }
     void setBlending(HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
     {

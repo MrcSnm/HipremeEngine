@@ -12,124 +12,46 @@ module hip.graphics.g2d.textrenderer;
 import hip.game.mesh;
 import hip.game.shader;
 import hip.game.vertex;
-import hip.config.renderer;
 import hip.math.matrix;
 import hip.api.data.font;
 import hip.assetmanager;
 import hip.graphics.g2d;
-public import hip.game.orthocamera;
-public import hip.api.graphics.batch;
 public import hip.api.graphics.text : HipTextAlign, Size;
-
-/**
-*   Don't change those names. If the variable names are changed, the shaders should stop working
-*/
-@HipShaderInputLayout struct HipTextRendererVertex
-{
-    import hip.math.vector;
-    short2 vPosition;
-    @HipShaderInputNormalized ushort[2] vTexST;
-    ushort vZ;
-    @HipShaderInputPadding short padding; //Ignore that.
-
-    static enum size_t quadsCount = HipTextRendererVertex.sizeof*4;
-}
-
-@HipShaderUniform(ShaderTypes.vertex, "Cbuf", "cbuf")
-struct HipTextRendererVertexUniforms
-{
-    Matrix4 uMVP = Matrix4.identity;
-}
-
-@HipShaderUniform(ShaderTypes.fragment, "FragVars", "frag")
-struct HipTextRendererFragmentUniforms
-{
-    float[4] uColor = [1,1,1,1];
-}
-
-
-private __gshared Shader bmTextShader = null;
 
 /**
 *   This class oculd be refactored in the future to actually
 * use a spritebatch for its drawing.
 */
-class HipTextRenderer : IHipBatch
+class HipTextRenderer
 {
     IHipFont font;
-    Mesh mesh;
-    index_t[] indices;
-    HipTextRendererVertex[] vertices;
-
-    protected HipColor color;
-    protected HipOrthoCamera camera;
-    protected float managedDepth = 0;
-    int drawOffset = 0;
-    private uint quadsCount;
-    private uint lastDrawQuadsCount;
+    IHipFont usedFont;
+    HipSpriteBatch batch;
+    HipColor color = HipColor.white;
+    ubyte[] buffer;
     bool shouldRenderLineBreak, shouldRenderSpace;
-    private __gshared uint[] linesWidths;
 
-    this(HipOrthoCamera camera, index_t maxQuads = DefaultMaxSpritesPerBatch)
+    this(HipSpriteBatch batch, bool shouldRenderLineBreak = false, bool shouldRenderSpace = false)
     {
-        import hip.error.handler;
-        import hip.util.conv:to;
-        if(bmTextShader is null)
-        {
-            import hip.hiprenderer.initializer;
-            bmTextShader = createShader(HipShaderPresets.BITMAP_TEXT);
-            bmTextShader.setup!(HipTextRendererVertexUniforms, HipTextRendererFragmentUniforms)(HipRenderer.getInfo);
-            bmTextShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
-            const Viewport v = HipRenderer.getCurrentViewport();
-            bmTextShader.getBuffer("Cbuf").set(HipTextRendererVertexUniforms(Matrix4.orthoLH(0, v.width, v.height, 0, 0.01, 100)));
-            // bmTextShader.setDefaultBlock("FragVars");
-            bmTextShader.sendVars();
-        }
-        ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
-        vertices = new HipTextRendererVertex[](maxQuads*4);
-        mesh = new Mesh(HipVertexArrayObject.getVAO!(HipTextRendererVertex)(
-            [HipVertexAttributeCreateInfo(vertices.length, HipResourceUsage.Dynamic)]
-        ), bmTextShader);
-        //6 indices per quad
-        mesh.setIndices(HipRenderer.createQuadIndexBuffer(maxQuads, HipResourceUsage.Immutable));
-        mesh.sendAttributes();
-        mesh.setVertices(vertices);
-        if(camera is null)
-            camera = new HipOrthoCamera();
-        this.camera = camera;
-
         import hip.global.gamedef;
+        import hip.math.utils;
+        import hip.util.array;
+        this.batch = batch;
+        this.shouldRenderLineBreak = shouldRenderLineBreak;
+        this.shouldRenderSpace = shouldRenderSpace;
         //Promise it won't modify
         setFont(cast(IHipFont)HipDefaultAssets.font);
+        buffer = uninitializedArray!(ubyte[])(getClosestMultiple(batch.isInstanced ? HipSpriteVertexInstancedPerInstance.sizeof : HipSpriteVertex.sizeof, ushort.max+1));
     }
-
-    void setCurrentDepth(float depth){managedDepth = depth;}
 
     void setFont(IHipFont font)
     {
-        if(this.font !is null && font !is this.font)
-        {
-            draw();
-        }
         this.font = font;
     }
-
     void setColor(HipColor color)
     {
-        if(this.color != color)
-        {
-            if(this.color != HipColor.no)
-                draw();
-            bmTextShader.getBuffer("FragVars").set(HipTextRendererFragmentUniforms(HipColorf(color)));
-        }
         this.color = color;
     }
-
-    void beginFrame(int frame)
-    {
-        drawOffset = 0;
-    }
-
     /**
      * Implementation for unchanging text.
      *  The text will be saved, represented as an internal ID to a managed static HipText. Which means the texture will be baked
@@ -138,65 +60,20 @@ class HipTextRenderer : IHipBatch
     void draw(string str, int x, int y, float scale = 1, HipTextAlign align_ = HipTextAlign.centerLeft, Size bounds = Size.init, bool wordWrap = false)
     {
         import hip.api.graphics.text;
-        int vI = quadsCount*4; //vertex buffer index
-        if(vI + str.length * 4 > vertices.length)
-        {
-            flush;
-            vI = 0;
-        }
 
-        vI+= putTextVertices(font, (cast(HipTextRendererVertexAPI[])vertices)[vI..$], str, x, y, managedDepth, scale, align_, bounds, wordWrap, shouldRenderSpace);
-        quadsCount = vI/4;
+        int width, height;
+        ushort slot;
+        //TODO: THIS IS DONT SET AUTOMATICALLY TEXTURE SLOTS.
+        IHipTexture tex = font.getTexture;
+        // this.batch.setTexture(tex, width, height, slot);
+        int offsetCount = putTextVertices(
+            font, buffer, str, x, y, 1, color, scale, align_, bounds, wordWrap, shouldRenderSpace, this.batch.isInstanced(), 0);
+        batch.draw(tex, buffer[0..offsetCount]);
     }
 
-    ///This way it will reallocate once.
-    void addVertices(void[] vertices, IHipFont font)
+    void bufferDraw(ubyte[] buffer, IHipFont font)
     {
-        if(vertices.length > 0)
-        {
-            setFont(font);
-            HipTextRendererVertex[] theVerts = cast(HipTextRendererVertex[])vertices;
-            if(theVerts.length+quadsCount*4 > this.vertices.length)
-                this.vertices.length = theVerts.length+quadsCount*4;
-            this.vertices[quadsCount*4..quadsCount*4+theVerts.length] = theVerts[0..$];
-            quadsCount+= theVerts.length/4;
-        }
+        batch.draw(font.getTexture(), buffer);
     }
-
-    void draw()
-    {
-        if(font is null)
-        {
-            import hip.error.handler;
-            ErrorHandler.showWarningMessage("Font Missing", "No font attached on HipTextRenderer");
-            return;
-        }
-
-        if(quadsCount - lastDrawQuadsCount != 0)
-        {
-            mesh.bind();
-            this.font.texture.bind();
-            mesh.shader.getBuffer("Cbuf").set(HipTextRendererVertexUniforms(camera.getMVP()));
-            mesh.shader.sendVars();
-
-            size_t start = lastDrawQuadsCount*4;
-            size_t end = quadsCount*4;
-
-            mesh.updateVertices(vertices[start..end], cast(int)start);
-
-            mesh.draw((quadsCount - lastDrawQuadsCount)*6, HipRendererMode.triangles, lastDrawQuadsCount*6);
-            font.texture.unbind();
-            mesh.unbind();
-        }
-        lastDrawQuadsCount = quadsCount;
-    }
-    /**
-    *   Flush should be took care since it could make it rewrite to the same part of the buffer agin.
-    *   While shadow buffering is not implemented, use it as that.
-    */
-    void flush()
-    {
-        draw();
-        lastDrawQuadsCount = quadsCount = 0;
-    }
+    
 }

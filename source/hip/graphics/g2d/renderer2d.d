@@ -19,10 +19,9 @@ package __gshared
     IHipTexture defaultTexture;
     HipSpriteBatch spBatch;
     GeometryBatch geoBatch;
-    HipTextRenderer textBatch;
+    HipTextRenderer textRenderer;
     HipOrthoCamera camera;
     Viewport viewport;
-    HipTextRenderer textRenderer;
     IHipBatch lastBatch;
     bool autoUpdateCameraAndViewport;
     float sharedDepth = 0;
@@ -59,12 +58,12 @@ void initialize(HipInterpreterEntry entry = HipInterpreterEntry.init, bool shoul
     camera = new HipOrthoCamera();
     camera.setSize(viewport.worldWidth, viewport.worldHeight);
 
-    hiplog("2D Renderer: Initializing text renderer");
-    textBatch = new HipTextRenderer(camera);
     hiplog("2D Renderer: Initializing geometrybatch");
     geoBatch = new GeometryBatch(camera);
     hiplog("2D Renderer: Initializing spritebatch");
     spBatch = new HipSpriteBatch(camera);
+    hiplog("2D Renderer: Initializing text renderer");
+    textRenderer = new HipTextRenderer(spBatch);
     // setGeometryColor(HipColor.white);
 
 
@@ -269,28 +268,32 @@ void setFont(IHipFont font)
 {
     import hip.global.gamedef;
     if(font is null)
-        textBatch.setFont(cast(IHipFont)HipDefaultAssets.font);
+        textRenderer.setFont(cast(IHipFont)HipDefaultAssets.font);
     else
-        textBatch.setFont(font);
+        textRenderer.setFont(font);
 }
 
 void setTextColor(HipColor color)
 {
-    manageBatchChange(textBatch);
-    textBatch.setColor(color);
+    textRenderer.setColor(color);
 }
 void drawText(string text, float x, float y, float scale = 1.0f, const HipColor color = HipColor.white, HipTextAlign align_ = HipTextAlign.centerLeft,
 Size bounds = Size.init, bool wordWrap = false)
 {
-    manageBatchChange(textBatch);
-    textBatch.setColor(color);
-    textBatch.draw(text, cast(int)x, cast(int)y, scale, align_, bounds, wordWrap);
+    textRenderer.setColor(color);
+    textRenderer.draw(text, cast(int)x, cast(int)y, scale, align_, bounds, wordWrap);
 }
 
-void drawTextVertices(void[] vertices, IHipFont font)
+void setSpriteBatchTexture(IHipTexture texture, out int width, out int height, out ushort slot)
 {
-    manageBatchChange(textBatch);
-    textBatch.addVertices(vertices, font);
+    spBatch.setTexture(texture, width, height, slot);
+}
+
+bool isSpriteInstanced() { return spBatch.isInstanced(); }
+
+void drawTextVertices(ubyte[] vertices, IHipFont font)
+{
+    textRenderer.bufferDraw(vertices, font);
 }
 
 Array2D_GC!IHipTextureRegion cropSpritesheetRowsAndColumns(IHipTexture t, uint rows, uint columns)
@@ -304,19 +307,16 @@ void beginRender2D(int frame)
 {
     if(geoBatch) geoBatch.beginFrame(frame);
     if(spBatch) spBatch.beginFrame(frame);
-    if(textBatch) textBatch.beginFrame(frame);
 }
 
 void finishRender2D()
 {
     if(geoBatch) geoBatch.flush();
     if(spBatch) spBatch.flush();
-    if(textBatch) textBatch.flush();
     lastBatch = null;
     sharedDepth = 0;
     if(geoBatch) geoBatch.setCurrentDepth(0);
     if(spBatch) spBatch.setCurrentDepth(0);
-    if(textBatch) textBatch.setCurrentDepth(0);
 }
 
 void drawGCStats(float x = 0, float y = -1)

@@ -49,7 +49,7 @@ enum OpenGLHasInstancedDraw = OpenGLHasUniformBufferSupport;
  * This works for both OpenGL and Direct3D 11.
  * But does not work for metal, since the render pipeline state can't be reused between frames.
  */
-enum UseDelayedUnbind = !HasMetal;
+enum NeedsUnbind = HasMetal;
 enum BindReplacesUnbind = !HasMetal;
 
 /**

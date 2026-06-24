@@ -132,7 +132,7 @@ final class HipSpriteBatchInstanced
     /**
     *   Sets the current texture in use on the sprite batch and returns its slot.
     */
-    protected void setTexture (IHipTexture texture, out int width, out int height, out ushort slot)
+    void setTexture (IHipTexture texture, out int width, out int height, out ushort slot)
     {
         if(texture is cachedTexture.texture)
         {
@@ -153,7 +153,7 @@ final class HipSpriteBatchInstanced
             cachedTexture = CachedTexture(texture, width, height, slot);
         }
     }
-    protected void setTexture(IHipTextureRegion reg, out int width, out int height, out ushort slot){ return setTexture(reg.getTexture(), width, height, slot); }
+    void setTexture(IHipTextureRegion reg, out int width, out int height, out ushort slot){ return setTexture(reg.getTexture(), width, height, slot); }
 
     pragma(inline, true)
     void addInstance(HipSpriteVertexInstancedPerInstance instance)
@@ -175,9 +175,12 @@ final class HipSpriteBatchInstanced
         int width, height;
         ushort slot;
         setTexture(texture, width, height, slot);
-        HipSpriteVertexInstancedPerInstance base = *cast(HipSpriteVertexInstancedPerInstance*) vertices.ptr;
-        base.vTexID = slot;
-        addInstance(base);
+        HipSpriteVertexInstancedPerInstance[] instances = cast(HipSpriteVertexInstancedPerInstance[]) vertices;
+        foreach(inst; instances)
+        {
+            inst.vTexID = slot;
+            addInstance(inst);
+        }
     }
     void draw(IHipTexture texture, int x, int y, ushort z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
     {
@@ -230,12 +233,12 @@ final class HipSpriteBatchInstanced
             mesh.bind();
 
             __gshared Matrix4 mvp;
-            Matrix4 camMvp = camera.getMVP;
-            if(camMvp != mvp)
-            {
-                mvp = camMvp;
+            // Matrix4 camMvp = camera.getMVP;
+            // if(camMvp != mvp)
+            // {
+                // mvp = camMvp;
                 uMVP.set(HipSpriteVertexUniform(camera.getMVP));
-            }
+            // }
             mesh.shader.bindArrayOfTextures(currentTextures, "uTex");
             mesh.shader.sendVars();
 

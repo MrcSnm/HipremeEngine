@@ -54,7 +54,6 @@ MTLBlendFactor fromHipBlendFunction(HipBlendFunction fn)
     }
 }
 
-__gshared HipMTLShader boundShader;
 
 class HipMTLShader : HipShaderProgram
 {
@@ -201,15 +200,12 @@ class HipMTLShader : HipShaderProgram
             mtlRenderer.getEncoder.setVertexBuffer(uniformBufferVertex.getBuffer, 0, 0);
         if(uniformBufferFragment)
             mtlRenderer.getEncoder.setFragmentBuffer(uniformBufferFragment.getBuffer, 0, 0);
-        boundShader = this;
     }
 
     override void unbind()
     {
-        // encoder.setRenderPipelineState(null);
         mtlRenderer.getEncoder.setVertexBuffer(null, 0, 0);
         mtlRenderer.getEncoder.setFragmentBuffer(null, 0, 0);
-        if(boundShader is this) boundShader = null;
     }
 
 
