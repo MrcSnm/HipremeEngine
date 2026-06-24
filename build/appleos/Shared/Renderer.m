@@ -16,7 +16,9 @@
 {
     CFTimeInterval lastTimeStamp;
     matrix_float4x4 _projectionMatrix;
+    MTKView* mtkView;
     float _rotation;
+    bool hasInitHipreme;
 }
 
 -(nonnull instancetype)initWithMetalKitView:(nonnull MTKView *)view;
@@ -25,19 +27,31 @@
     if(self)
     {
         lastTimeStamp = 0;
+        mtkView = view;
+        hasInitHipreme = false;
         [self _loadMetalWithView:view];
-        CGSize sz = view.frame.size;
-        HipremeInit();
-        HipremeMain((int)sz.width, (int)sz.height);
     }
 
     return self;
 }
 
+- (void)initHipremeEngine
+{
+    CGSize sz = mtkView.frame.size;
+    NSLog(@"Initializing Hipreme Engine");
+    HipremeInit();
+    HipremeMain((int)sz.width, (int)sz.height);
+    hasInitHipreme = true;
+}
+
+
 - (void)_loadMetalWithView:(nonnull MTKView *)view;
 {
     /// Load Metal state objects and initialize renderer dependent view properties
-
+    ///
+    NSLog(@"Initializing Metal with \n"
+          "Depth: MTLPixelFormatDepth32Float_Stencil8\n"
+          "Pixel: MTLPixelFormatRGBA8Unorm");
     view.depthStencilPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
     view.colorPixelFormat = MTLPixelFormatRGBA8Unorm;
     view.sampleCount = 1;
@@ -52,6 +66,8 @@
     CFTimeInterval timeNow = CACurrentMediaTime();
     CFTimeInterval dt = timeNow - lastTimeStamp;
     lastTimeStamp = timeNow;
+    if(!hasInitHipreme)
+        return;
     if(!HipremeUpdate((float)dt))
     {
 #if TARGET_OS_IPHONE

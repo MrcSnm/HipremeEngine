@@ -21,10 +21,9 @@ NSTrackingArea* trackingArea;
     mainInputView = self;
     mtkView = view;
     
-
+    NSLog(@"Initializing AppleOS Window/Input");
     trackingArea = [[NSTrackingArea alloc] initWithRect:CGRectZero options:NSTrackingMouseMoved | NSTrackingInVisibleRect | NSTrackingActiveAlways owner:self userInfo:nil];
     [self addTrackingArea:trackingArea];
-    
     [self.window makeFirstResponder:self];
     
     return self;
@@ -174,8 +173,6 @@ float hipGetWindowScaleFactor(void)
 
 void hipSetWindowSize(unsigned int width, unsigned int height)
 {
-    CGFloat scale = mainInputView.window.backingScaleFactor;
-    
     [mainInputView.window setContentSize:NSMakeSize(width, height)];
     [mainInputView.window center];
     [mainInputView.window.contentView layoutSubtreeIfNeeded];

@@ -21,9 +21,6 @@
     [super viewDidLoad];
 
     _view = (MTKView *)self.view;
-    inputView = [[InputView alloc] initWithFrameAndView:_view.frame view:_view];
-
-
     _view.device = MTLCreateSystemDefaultDevice();
     _view.backgroundColor = UIColor.blackColor;
 
@@ -38,10 +35,17 @@
 
     [_renderer mtkView:_view drawableSizeWillChange:_view.bounds.size];
     
+    _view.delegate = _renderer;
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:<#animated#>];
+    inputView = [[InputView alloc] initWithFrameAndView:_view.frame view:_view];
     [_view addSubview:inputView];
     [inputView becomeFirstResponder];
     
-    _view.delegate = _renderer;
+    [_renderer initHipremeEngine];
 }
 
 @end

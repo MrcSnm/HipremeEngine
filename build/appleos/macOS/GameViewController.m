@@ -29,20 +29,20 @@
         self.view = [[NSView alloc] initWithFrame:self.view.frame];
         return;
     }
-    
+    _renderer = [[Renderer alloc] initWithMetalKitView:_view];
+    [_renderer mtkView:_view drawableSizeWillChange:_view.bounds.size];
+
+    _view.delegate = _renderer;
+}
+
+- (void) viewDidAppear
+{
     inputView = [[InputView alloc] initWithFrameAndView:_view.frame view:_view];
     inputView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     [_view addSubview:inputView];
-
+    
     [_view.window makeFirstResponder:inputView];
-
-    _renderer = [[Renderer alloc] initWithMetalKitView:_view];
-    [_renderer mtkView:_view drawableSizeWillChange:_view.bounds.size];
-    
-    
-
-
-    _view.delegate = _renderer;
+    [_renderer initHipremeEngine];
 }
 
 
