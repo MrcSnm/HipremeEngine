@@ -1,4 +1,4 @@
-module hip.graphics.g2d.particles;
+module hip.game2d.particles;
 import hip.math.vector;
 import hip.api.graphics.color;
 
@@ -28,8 +28,8 @@ struct HipParticleSystemConfig
     
     ValueRange scaleInit = ValueRange(1,1);
     ValueRange scaleEnd = ValueRange(0,0);
-    ValueRange velocityXInit = ValueRange(0,0);
-    ValueRange velocityYInit = ValueRange(0,0);
+    ValueRange velocityXInit = ValueRange(0,150);
+    ValueRange velocityYInit = ValueRange(0,-150);
     ///In which angle will apply the acceleration
     ValueRange angleInit = ValueRange(0,0);
 
@@ -39,7 +39,7 @@ struct HipParticleSystemConfig
     ///In which rotation will init.
     ValueRange rotationInit = ValueRange(0,0);
     ///Default color stop is to go from opaque white to transparent white.
-    immutable DefaultParticleColorStops = [HipColorStop(HipColor.white, 0), HipColorStop(HipColor(255,255,255,0), 1)];
+    immutable static DefaultParticleColorStops = [HipColorStop(HipColor.white, 0), HipColorStop(HipColor(255,255,255,0), 1)];
 
     HipColorStop[] colors; // = DefaultParticleColorStops;
     float lifeTime = 2.0;
@@ -65,6 +65,7 @@ class HipParticleSystem
     this(uint maxParticles)
     {
         particles = new HipParticle[](maxParticles);
+        this.config.colors = HipParticleSystemConfig.DefaultParticleColorStops.dup;
         active = 0;
     }
 
@@ -81,7 +82,7 @@ class HipParticleSystem
     {
         ValueRange x, y;
     }
-    EmissionZone emissionZone;
+    EmissionZone emissionZone = EmissionZone(ValueRange(100, 150), ValueRange(100, 150));
 
     void setEmissionZone(int minX, int maxX, int minY, int maxY)
     {
@@ -129,7 +130,7 @@ class HipParticleSystem
 
     void draw()
     {
-        import hip.graphics.g2d.renderer2d;
+        import hip.api;
         import hip.math.utils;
         float invLifetime = 1.0f / config.lifeTime;
         for(uint i = 0; i < active; i++)

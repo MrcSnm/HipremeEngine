@@ -1,5 +1,6 @@
 module gamescript.entry;
 import hip.api;
+import hip.game2d.particles;
 
 /**
 *	Call `dub` to generate the DLL, after that, just execute `dub -c run` for starting your project
@@ -8,6 +9,7 @@ class MainScene : AScene, IHipPreloadable
 {
     // mixin Preload;
 	IHipFont bigFont, smallFont;
+    HipParticleSystem particles;
 
 
     // @Asset("arial_sdf.fnt")
@@ -21,6 +23,7 @@ class MainScene : AScene, IHipPreloadable
         auto sz = getMaxScreenSize;
         setWorldSize(800, 600);
         setWindowSize(sz[0], sz[1], false);
+        particles = new HipParticleSystem(500);
         smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
         bigFont = HipDefaultAssets.getDefaultFontWithSize(64);
 
@@ -41,6 +44,7 @@ class MainScene : AScene, IHipPreloadable
         {
             logg("Don't press ENTER!!");
         }
+        particles.update(dt);
 	}
 	// /** Renderer only, may not be called every frame */
 	override void render()
@@ -65,6 +69,8 @@ class MainScene : AScene, IHipPreloadable
 
         drawText("Null Textures uses that sprite over here ", 300, 480, 1.0, HipColor.white, HipTextAlign.topLeft);
         drawTexture(null, 300, 500);
+
+        particles.draw();
 
 
         drawGCStats();

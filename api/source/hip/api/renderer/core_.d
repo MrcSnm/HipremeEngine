@@ -21,7 +21,6 @@ enum HipWindowMode : ubyte
 /**
  * Maybe should not be used in user facing api.
  */
-pragma(LDC_no_typeinfo)
 struct DefaultShader
 {
     ///Path on where the shaders are stored.
@@ -29,7 +28,11 @@ struct DefaultShader
     ///Complete shader source
     string function() shaderSource;
     ///Important for having implementation on non instanced rendering.
-    bool function() isInstanced;
+    bool function() isInstancedCheck;
+
+    bool isInstanced(){return isInstancedCheck && isInstancedCheck();}
+
+
 }
 
 pragma(LDC_no_typeinfo)

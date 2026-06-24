@@ -204,6 +204,11 @@ class HipSequence : HipTimer, IHipTimerList
     }
 }
 
+HipTimer HipCallback(void delegate() run)
+{
+    return new HipTimer("Callback", 0).addHandler(run);
+}
+
 class HipSpawn : HipTimer, IHipTimerList
 {
     protected IHipTimer[] timerList;
