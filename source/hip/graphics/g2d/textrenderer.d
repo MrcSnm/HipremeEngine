@@ -68,12 +68,12 @@ class HipTextRenderer
         // this.batch.setTexture(tex, width, height, slot);
         int offsetCount = putTextVertices(
             font, buffer, str, x, y, 1, color, scale, align_, bounds, wordWrap, shouldRenderSpace, this.batch.isInstanced(), 0);
-        batch.draw(tex, buffer[0..offsetCount]);
+        batch.draw(tex, buffer[0..offsetCount], true);
     }
 
     void bufferDraw(ubyte[] buffer, IHipFont font)
     {
-        batch.draw(font.getTexture(), buffer);
+        batch.draw(font.getTexture(), buffer, true);
     }
     
 }

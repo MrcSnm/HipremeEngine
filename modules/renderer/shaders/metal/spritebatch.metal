@@ -108,18 +108,26 @@ fragment float4 fragmentMain(
 )
 {
     int texID = int(in.inTexID);
+    bool isText = (texID & (1 << 15)) != 0;
+    texID = texID & 0xff;
+
+    float4 texColor = float4(1,1,1,1);
+
     switch(texID)
     {
-        case 0: return uTex0.sample(uSampler0, in.inTexST)* in.inVertexColor * u.uBatchColor;
-        case 1: return uTex1.sample(uSampler1, in.inTexST)* in.inVertexColor * u.uBatchColor;
-        case 2: return uTex2.sample(uSampler2, in.inTexST)* in.inVertexColor * u.uBatchColor;
-        case 3: return uTex3.sample(uSampler3, in.inTexST)* in.inVertexColor * u.uBatchColor;
-        case 4: return uTex4.sample(uSampler4, in.inTexST)* in.inVertexColor * u.uBatchColor;
-        case 5: return uTex5.sample(uSampler5, in.inTexST)* in.inVertexColor * u.uBatchColor;
-        case 6: return uTex6.sample(uSampler6, in.inTexST)* in.inVertexColor * u.uBatchColor;
-        case 7: return uTex7.sample(uSampler7, in.inTexST)* in.inVertexColor * u.uBatchColor;
+        case 0: texColor = uTex0.sample(uSampler0, in.inTexST); break;
+        case 1: texColor = uTex1.sample(uSampler1, in.inTexST); break;
+        case 2: texColor = uTex2.sample(uSampler2, in.inTexST); break;
+        case 3: texColor = uTex3.sample(uSampler3, in.inTexST); break;
+        case 4: texColor = uTex4.sample(uSampler4, in.inTexST); break;
+        case 5: texColor = uTex5.sample(uSampler5, in.inTexST); break;
+        case 6: texColor = uTex6.sample(uSampler6, in.inTexST); break;
+        case 7: texColor = uTex7.sample(uSampler7, in.inTexST); break;
+        default: break;
     };
-    return float4(1.0, 0.0, 1.0, 1.0);
+    if(isText)
+        return float4(1,1,1,texColor.r) * in.inVertexColor * u.uBatchColor;
+    return texColor * in.inVertexColor * u.uBatchColor;
 }
 
 // #endif

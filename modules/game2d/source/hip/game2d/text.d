@@ -38,7 +38,7 @@ class HipText
 
     protected string _text;
     protected string processedText;
-    protected HipColor _color = HipColor.black;
+    protected HipColor _color = HipColor.white;
 
     //Debugging?
 

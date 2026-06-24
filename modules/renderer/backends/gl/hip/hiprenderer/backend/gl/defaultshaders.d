@@ -129,6 +129,7 @@ private {
             shaderSource~
         "{"~q{
                 int texId = int(inTexID);
+                texId = texId & 0xff;
         }~ textureSlotSwitchCase ~ "}\n#endif";
         // outPixelColor = texture(uTex[texId], inTexST)* inVertexColor;
         // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor;

@@ -230,12 +230,15 @@ final class HipSpriteBatchVertex
         drawOffset = 0;
     }
 
-    void draw(IHipTexture t, ubyte[] vertices)
+    void draw(IHipTexture t, ubyte[] vertices, bool isText)
     {
         if(isZeroAlpha(vertices)) return;
         int width, height;
         ushort slot;
         setTexture(t, width, height, slot);
+
+        if(isText)
+            slot|= 1 << 15;
 
         if(vertices.length == HipSpriteVertex.sizeof * 4)
             addQuad(vertices, slot);

@@ -39,9 +39,9 @@ private {
         for(int i = 1; i < sup; i++)
         {
             textureSlotSwitchCase~= "\t\tcase "~ to!string(i)~": "~
-            "return uTex["~to!string(i)~"].Sample(state["~to!string(i)~"], texST) * inVertexColor * uBatchColor;\n";
+            "texColor = uTex["~to!string(i)~"].Sample(state["~to!string(i)~"], texST);\n break;\n";
         }
-        textureSlotSwitchCase~= "\t\tdefault: return uTex[0].Sample(state[0], texST) * inVertexColor * uBatchColor;";
+        textureSlotSwitchCase~= "\t\tdefault: texColor = uTex[0].Sample(state[0], texST);\nbreak;\n";
         textureSlotSwitchCase~= "\n\t}";
 
         return `
@@ -118,10 +118,19 @@ private {
     q{
             // return uBatchColor * uTex.Sample(state, inTexST);
             int tid = int(inTexID);
+            bool isText = (tid & (1 << 15)) != 0;
+            tid = tid & 0xff;
+            float4 texColor = float4(1,1,1,1);
 
             //switch(tid)...
             //case 1:
                 //return uTex[1].Sample(state[1], texST) * inVertexColor * uBatchColor;
-    } ~ textureSlotSwitchCase ~ "\n}";
+    } ~ textureSlotSwitchCase ~ 
+    q{
+        if(isText)
+            return float4(1, 1, 1, texColor.r) * inVertexColor * uBatchColor;
+        return texColor * inVertexColor * uBatchColor;
+    } ~
+    "\n}";
     }
 }

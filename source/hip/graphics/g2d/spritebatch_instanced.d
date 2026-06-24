@@ -167,7 +167,7 @@ final class HipSpriteBatchInstanced
         usingTexturesCount = 0;
     }
 
-    void draw(IHipTexture texture, ubyte[] vertices)
+    void draw(IHipTexture texture, ubyte[] vertices, bool isText)
     {
         import hip.global.gamedef;
         if(texture is null)
@@ -175,6 +175,8 @@ final class HipSpriteBatchInstanced
         int width, height;
         ushort slot;
         setTexture(texture, width, height, slot);
+        if(isText)
+            slot|= 1 << 15;
         HipSpriteVertexInstancedPerInstance[] instances = cast(HipSpriteVertexInstancedPerInstance[]) vertices;
         foreach(inst; instances)
         {

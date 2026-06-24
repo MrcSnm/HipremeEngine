@@ -69,10 +69,10 @@ final class HipSpriteBatch : IHipBatch
         else vertex.setCurrentDepth(depth);
     }
   
-    void draw(IHipTexture t, ubyte[] vertices)
+    void draw(IHipTexture t, ubyte[] vertices, bool isText = false)
     {
-        if(instanced) instanced.draw(t, vertices);
-        else vertex.draw(t, vertices);
+        if(instanced) instanced.draw(t, vertices, isText);
+        else vertex.draw(t, vertices, isText);
     }
 
     void draw(IHipTexture texture, int x, int y, ushort z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)
