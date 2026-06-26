@@ -48,6 +48,11 @@ T sinDeg(T)(T degrees)
     return sin(degToRad(degrees));
 }
 
+size_t alignTo(size_t value, size_t alignment)
+{
+    return value + (alignment - (value % alignment)) % alignment;
+}
+
 int getClosestMultiple(int from, int to)
 {
     float temp = to/cast(float)from;

@@ -143,6 +143,8 @@ public class Shader : IReloadable
 
     void bind()
     {
+        if(layoutsArray.length == 0)
+            throw new Error("Please call setup!() before trying to bind this shader program.");
         shaderProgram.bind();
         // shaderBinder.bind(this);
     }
@@ -195,5 +197,10 @@ public class Shader : IReloadable
     {
         shaderProgram.onRenderFrameEnd();
     }
+
+
+    ShaderHandle getHandle(){return ShaderHandle(cast(void*)this);}
+
+    alias getHandle this;
 
 }

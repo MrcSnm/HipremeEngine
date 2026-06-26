@@ -101,7 +101,12 @@ class Mesh
     {
         this.vao.updateIndices(indices, offset);
     }
-    public void setShader(Shader s){this.shader = s;}
+    public void setShader(Shader s)
+    {
+        if(s !is shader)
+            unbind();
+        this.shader = s;
+    }
 
     /**
     *   How many indices should it draw

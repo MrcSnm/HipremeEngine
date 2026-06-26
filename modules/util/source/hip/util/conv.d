@@ -380,6 +380,22 @@ double toFloat(string str) pure nothrow @safe @nogc
 }
 
 
+/**
+ * Takes the raw bits of a value and reinterprets them as a different type.
+ *
+ * Params:
+ *   T = the new type.
+ *   value = the value to reinterpret.
+ *
+ * Returns: a reference to the reinterpreted value.
+ */
+pragma(inline, true)
+ref T bitCast(T, S)(ref S value)
+if (T.sizeof <= S.sizeof)
+{
+    return *cast(T*) &value;
+}
+
 unittest
 {
     assert(toString(500) == "500");

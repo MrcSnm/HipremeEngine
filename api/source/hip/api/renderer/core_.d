@@ -25,8 +25,23 @@ struct DefaultShader
 {
     ///Path on where the shaders are stored.
     string path;
-    ///Complete shader source
-    string function() shaderSource;
+    /** 
+     * A function which returns the default shader.
+     * Params:
+     *  extraSource = Creates some interfaces such as the Effect interface. A common pattern is to have
+     *  your default shader working and then defining some function with default inputs and returning using
+     *  a effect, such as:
+     ```d
+     void main()
+     {
+        vec4 color = sample2D(texture, input.uv);
+        return effect(color); //User defines the effect function
+     }
+     
+     *  
+     *  
+     */
+    string function(string extraSource = null) shaderSource;
     ///Important for having implementation on non instanced rendering.
     bool function() isInstancedCheck;
 

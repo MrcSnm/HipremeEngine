@@ -36,6 +36,8 @@ function initializeWindowing()
         },
         WasmSetFullscreen(shouldSet)
         {
+            if(shouldSet == !!document.fullscreenElement)
+                return;
             if(shouldSet)
                 canvas.requestFullscreen();
             else

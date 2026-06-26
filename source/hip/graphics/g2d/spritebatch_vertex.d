@@ -48,12 +48,12 @@ final class HipSpriteBatchVertex
     protected bool hasInitTextureSlots;
     CachedTexture cachedTexture;
     Shader spriteBatchShader;
+    HipSpriteBatch batch;
 
     ///Post Processing Shader
     protected Shader ppShader;
     protected HipFrameBuffer fb;
     protected HipTextureRegion fbTexRegion;
-    protected float managedDepth = 0;
     int drawOffset =0 ;
 
     HipOrthoCamera camera;
@@ -65,14 +65,11 @@ final class HipSpriteBatchVertex
     uint lastDrawQuadsCount = 0;
     uint quadsCount;
 
-
-    ShaderVariablesLayout uMVP;
-
-
-    this(Shader spriteBatchShader, HipOrthoCamera camera = null, index_t maxQuads = DefaultMaxSpritesPerBatch)
+    this(HipSpriteBatch batch, Shader spriteBatchShader, HipOrthoCamera camera = null, index_t maxQuads = DefaultMaxSpritesPerBatch)
     {
         import hip.hiprenderer.initializer;
         import hip.util.conv:to;
+        this.batch = batch;
         ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
         this.maxQuads = maxQuads;
         vertices = new HipSpriteVertex[maxQuads*4]; //XYZ -> 3, RGBA -> 4, ST -> 2, TexID 3+4+2+1=10
@@ -81,8 +78,7 @@ final class HipSpriteBatchVertex
 
 
         this.spriteBatchShader = spriteBatchShader;
-        spriteBatchShader.setup!(HipSpriteVertexUniform, HipSpriteFragmentUniform)(HipRenderer.getInfo);
-        spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
+        
 
         mesh = new Mesh(HipVertexArrayObject.getVAO!(HipSpriteVertex)(
             [HipVertexAttributeCreateInfo((maxQuads*HipSpriteVertex.quadCount), HipResourceUsage.Dynamic, ShaderInputRate.perVertex)]
@@ -97,8 +93,6 @@ final class HipSpriteBatchVertex
         spriteBatchShader.bind();
         spriteBatchShader.sendVars();
 
-        uMVP = mesh.shader.getBuffer("Cbuf1");
-
         if(camera is null)
             camera = new HipOrthoCamera();
         this.camera = camera;
@@ -110,9 +104,9 @@ final class HipSpriteBatchVertex
         setTexture(HipTexture.getPixelTexture(), width , height, slot);
 
     }
-    void setCurrentDepth(float depth) @nogc {managedDepth = depth;}
 
-    void setShader(Shader s)
+
+    void setPostProcessingShader(Shader s)
     {
         if(fb is null)
         {
@@ -261,7 +255,7 @@ final class HipSpriteBatchVertex
         size_t startVertex = quadsCount *4;
         size_t endVertex = startVertex + 4;
 
-        getTextureVertices(vertices[startVertex..endVertex], slot, width, height, x,y,managedDepth,color, scaleX, scaleY, rotation);
+        getTextureVertices(vertices[startVertex..endVertex], slot, width, height, x,y,z,color, scaleX, scaleY, rotation);
         quadsCount++;
     }
 
@@ -278,7 +272,7 @@ final class HipSpriteBatchVertex
         size_t startVertex = quadsCount*4;
         size_t endVertex = startVertex + 4;
 
-        getTextureRegionVertices(vertices[startVertex..endVertex], slot, reg,x,y,managedDepth,color, scaleX, scaleY, rotation);
+        getTextureRegionVertices(vertices[startVertex..endVertex], slot, reg,x,y,z,color, scaleX, scaleY, rotation);
         quadsCount++;
     }
 
@@ -379,11 +373,7 @@ final class HipSpriteBatchVertex
             for(int i = usingTexturesCount; i < currentTextures.length; i++)
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
-
-
-            uMVP.set(HipSpriteVertexUniform(camera.getMVP));
-            mesh.shader.bindArrayOfTextures(currentTextures, "uTex");
-            mesh.shader.sendVars();
+            batch.setUniforms(camera.getMVP, currentTextures);
 
             size_t start = lastDrawQuadsCount*4;
             size_t end = quadsCount*4;

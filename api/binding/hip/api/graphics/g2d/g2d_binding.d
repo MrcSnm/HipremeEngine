@@ -5,6 +5,7 @@ public import hip.api.renderer.viewport;
 public import hip.api.data.font;
 public import hip.api.data.tilemap;
 public import hip.api.graphics.text;
+public import hip.api.renderer.shader:ShaderHandle;
 
 version(Have_util) version = ImportSpritesheet;
 
@@ -91,6 +92,10 @@ class HipG2DBinding
         void function(string title) setWindowTitle;
         void function(bool bFullscreen) setFullscreen;
         void function(uint width, uint height) setWorldSize;
+        ShaderHandle function() getSpriteBatchShader;
+        void function(ShaderHandle handle) setSpriteBatchShader;
+        ShaderHandle function(string effect)  createSpriteBatchShaderEffect;
+
 
         void function(float x = 0, float y = -1) drawGCStats;
         void function(float x = -1, float y = 0, bool clearTiming = false) drawTimings;
@@ -190,6 +195,35 @@ version(none)
         void function(bool bFullscreen) setFullscreen;
 
         void function(uint width, uint height) setWorldSize;
+
+        ShaderHandle function() getSpriteBatchShader;
+        void function(ShaderHandle handle) setSpriteBatchShader;
+
+        /** 
+         * GLSL Effect example:
+        ```d
+
+        struct EffectInput
+        {
+            vec4 textureColor;
+            vec4 uBatchColor;
+            vec4 vertexColor;
+            vec2 worldPosition;
+        }
+
+        //Available Uniforms:
+            float uTime;
+            float uScreenSize;
+        //Access them via 'cbuf', e.g: cbuf.uTime
+
+            
+        vec4 effect(EffectInput fx)
+        {
+            return fx.textureColor * fx.vertexColor * fx.uBatchColor;
+        }
+        */
+        ShaderHandle function(string effect)  createSpriteBatchShaderEffect;
+
 
         version(ImportSpritesheet)
         {

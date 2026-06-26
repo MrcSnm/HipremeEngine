@@ -23,7 +23,7 @@ struct VarPosition
 *   Uses the OpenGL's GLSL Std 140 for getting the variable position.
 *   This function must return what is the end position given the last variable size.
 */
-VarPosition glSTD140(size_t varSize, size_t lastAlignment = 0, bool isLast, UniformType type)
+VarPosition glSTD140(size_t varSize, size_t lastAlignment = 0, bool isLast, UniformType type, size_t biggestMember)
 {
     size_t varAlignment = varSize;
     // if(type == UniformType.floating_array || type == UniformType.integer_array || type == UniformType.uinteger_array)
@@ -36,19 +36,22 @@ VarPosition glSTD140(size_t varSize, size_t lastAlignment = 0, bool isLast, Unif
         return VarPosition(0,varSize,varSize);
     size_t padding = (varAlignment % lastAlignment) % varAlignment;
 
-    // if(isLast)
-    // {
-    //     sizeOffset+= 16 - (varSize % 16);
-    // }
+    size_t alignment = 0;
+    if(isLast)
+    {
+        import hip.math.utils;
+        alignment = alignTo(cast(int)(lastAlignment+padding+varSize), cast(int)biggestMember);
+        return VarPosition(lastAlignment+padding, alignment, varSize);
+    }
     //TODO: Also send 
-    return VarPosition(lastAlignment+padding, lastAlignment + padding + varSize, varSize);
+    return VarPosition(lastAlignment+padding, lastAlignment + padding + varSize+alignment, varSize);
 }
 
 /**
 *   Uses the OpenGL's GLSL Std 140 for getting the variable position.
 *   This function must return what is the end position given the last variable size.
 */
-VarPosition dxHLSL4(size_t varSize, size_t lastAlignment = 0, bool isLast, UniformType type)
+VarPosition dxHLSL4(size_t varSize, size_t lastAlignment = 0, bool isLast, UniformType type, size_t biggestMember)
 {
     size_t newN = varSize;
     if(isLast)
@@ -77,7 +80,7 @@ VarPosition dxHLSL4(size_t varSize, size_t lastAlignment = 0, bool isLast, Unifo
     return VarPosition(lastAlignment, lastAlignment + newN, newN);
 }
 
-VarPosition nonePack(size_t varSize, size_t lastAlignment = 0, bool isLast, UniformType type)
+VarPosition nonePack(size_t varSize, size_t lastAlignment = 0, bool isLast, UniformType type, size_t biggestMember)
 {
     return VarPosition(0,0,0);
 }

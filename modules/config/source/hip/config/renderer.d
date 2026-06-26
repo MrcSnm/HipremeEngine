@@ -35,7 +35,7 @@ else enum HasDirect3D = false;
 version(PSVita) enum GLMaxOneBoundTexture = true;
 else version(WebAssembly) enum GLMaxOneBoundTexture = true;
 else version(Android) enum GLMaxOneBoundTexture = true;
-else enum GLMaxOneBoundTexture = false;
+else enum GLMaxOneBoundTexture = true;
 
 enum OpenGLHasUniformBufferSupport = (GLESVersion == 3) || UseWebGL || !UseGLES;
 enum OpenGLHasVAOSupport = OpenGLHasUniformBufferSupport;

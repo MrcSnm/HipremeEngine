@@ -296,7 +296,8 @@ class ShaderVariablesLayout
         size_t varSize,
         size_t lastAlignment,
         bool isLast,
-        UniformType type
+        UniformType type,
+        size_t biggestMember
     ) packFunc;
 
     ShaderTypes shaderType;
@@ -373,7 +374,6 @@ class ShaderVariablesLayout
             // if(memcmp(getBlockData + varOrder[i].alignment, &__traits(getMember, data, mem), varOrder[i].size) != 0)
             {
                 varOrder[i].sVar.set(__traits(getMember, data, mem), false);
-                // varOrder[i].sVar.isDirty = true;
             }
 
         }
@@ -387,13 +387,17 @@ class ShaderVariablesLayout
     
     private static ShaderVar[] getVars(T)(ref ShaderVariablesLayout layout, ref ShaderVar base, size_t lastAlign)
     {
+        import hip.math.utils:max;
         ShaderVar[] vars = [];
+        size_t big = maxMember!T;
+        
+
         foreach(mem; __traits(allMembers, T))
         {
             alias member = __traits(getMember, T, mem);
             alias Tmem = typeof(member);
             alias a = __traits(getAttributes, member);
-            VarPosition pos = layout.packFunc(sizeFromType!(Tmem), lastAlign, false, uniformTypeFrom!Tmem);
+            VarPosition pos = layout.packFunc(sizeFromType!(Tmem), lastAlign, false, uniformTypeFrom!Tmem, big);
             
             string actualName;
             if(uniformTypeFrom!Tmem == UniformType.custom)
@@ -403,7 +407,7 @@ class ShaderVariablesLayout
             ShaderVar v = ShaderVar.createBase(layout.shaderType, actualName, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem, layout, layout.data[lastAlign..pos.endPos]);
 
             static if(uniformTypeFrom!Tmem == UniformType.custom)
-                v.variables = getVars!(Tmem)(layout, v, lastAlign);
+                v.variables = getVars!(Tmem)(layout, v, lastAlign, maxMember);
             vars~= v;
             lastAlign = pos.endPos;
         }
@@ -425,6 +429,8 @@ class ShaderVariablesLayout
         ShaderVariablesLayout ret = new ShaderVariablesLayout(info.type, attr[0].name, shaderType, ShaderHint.NONE, typeid(T));
         ret.data = new ubyte[ret.calcLayoutSize!T(ret.packFunc)];
 
+        size_t big = maxMember!T;
+
         size_t lastAlign = 0;
         foreach(i, mem; __traits(allMembers, T))
         {
@@ -442,7 +448,8 @@ class ShaderVariablesLayout
                 sizeFromType!(Tmem), 
                 lastAlign, 
                 i == cast(int)__traits(allMembers, T).length-1,
-                uniformTypeFrom!Tmem
+                uniformTypeFrom!Tmem,
+                big
             );
             ShaderVarLayout v = ShaderVarLayout(
                 ShaderVar.createBase(shaderType, actualName, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem, ret, ret.data[pos.startPos..pos.endPos]),
@@ -479,22 +486,34 @@ class ShaderVariablesLayout
             this.owner = owner;
     }
 
+    private static size_t maxMember(T)()
+    {
+        import hip.math.utils;
+        size_t biggest = 0;
+        static foreach(mem; __traits(allMembers, T))
+            biggest = max(__traits(getMember, T, mem).sizeof, biggest);
+        return biggest;
+    }
+
     private size_t calcLayoutSize(T)(VarPosition function(
         size_t varSize,
         size_t lastAlignment,
         bool isLast,
-        UniformType type
+        UniformType type,
+        size_t biggest
     ) packFunc
     )
     {
         size_t lastAlign = 0;
+        size_t big = maxMember!T;
         static foreach(i, mem; __traits(allMembers, T))
         {{
             VarPosition pos = packFunc(
                 sizeFromType!(typeof(__traits(getMember, T, mem))),
                 lastAlign, 
                 i == cast(int)__traits(allMembers, T).length-1, 
-                uniformTypeFrom!(typeof(__traits(getMember, T, mem)))
+                uniformTypeFrom!(typeof(__traits(getMember, T, mem))),
+                big
             );
             lastAlign = pos.endPos;
         }}

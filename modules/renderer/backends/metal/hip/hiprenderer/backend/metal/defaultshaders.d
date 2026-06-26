@@ -20,8 +20,8 @@ immutable DefaultShader[] DefaultShaders = [
 ];
 
 private {
-    string getFrameBufferShader(){return import("metal/framebuffer.metal");}
-    string getGeometryBatchShader(){return import("metal/geometrybatch.metal");}
-    string getSpriteBatchShader(){return import("metal/spritebatch.metal");}
-    string getBitmapTextShader(){return import("metal/bitmaptext.metal");}
+    string getFrameBufferShader(string){return import("metal/framebuffer.metal");}
+    string getGeometryBatchShader(string){return import("metal/geometrybatch.metal");}
+    string getSpriteBatchShader(string){return import("metal/spritebatch.metal");}
+    string getBitmapTextShader(string){return import("metal/bitmaptext.metal");}
 }

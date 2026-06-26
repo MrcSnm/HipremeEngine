@@ -36,9 +36,14 @@ final class HipSpriteBatch : IHipBatch
     
     protected float managedDepth = 0;
     Shader spriteBatchShader;
+    Shader customSpriteBatchShader;
+
+    protected Mesh mesh;
     protected Shader ppShader;
     protected HipSpriteBatchInstanced instanced;
     protected HipSpriteBatchVertex vertex;
+    ShaderVariablesLayout uMVP, uSpritesFragmentUniform;
+
 
     this(HipOrthoCamera camera = null, index_t maxQuads = DefaultMaxSpritesPerBatch, index_t maxInstances = DefaultMaxSpritesPerBatchInstanced)
     {
@@ -49,11 +54,37 @@ final class HipSpriteBatch : IHipBatch
         if(camera is null)
             camera = new HipOrthoCamera();
         if(spriteBatchShader.isInstanced)
-            instanced = new HipSpriteBatchInstanced(spriteBatchShader, camera, maxInstances);
+        {
+            instanced = new HipSpriteBatchInstanced(this, spriteBatchShader, camera, maxInstances);
+            mesh = instanced.mesh;
+        }
         else
-            vertex = new HipSpriteBatchVertex(spriteBatchShader, camera, maxQuads);
+        {
+            vertex = new HipSpriteBatchVertex(this, spriteBatchShader, camera, maxQuads);
+            mesh = vertex.mesh;
+        }
         spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
+        reinitUniforms();
+    }
 
+    void setUniforms(Matrix4 mvp, IHipTexture[] textures)
+    {
+        import hip.hiprenderer.renderer;
+        import hip.util.time;
+        
+        uMVP.set(HipSpriteVertexUniform(mvp));
+        uSpritesFragmentUniform.set(HipSpriteFragmentUniform(
+            [1, 1, 1, 1], 
+            cast(float[2])HipRenderer.window.getSize(),
+            cast(float)HipTime.getCurrentTimeAsSeconds
+        ));
+        mesh.shader.bindArrayOfTextures(textures, "uTex");
+        mesh.shader.sendVars();
+    }
+    void reinitUniforms()
+    {
+        uMVP = mesh.shader.getBuffer("Cbuf1");
+        uSpritesFragmentUniform = mesh.shader.getBuffer("Cbuf");
     }
 
     bool isInstanced(){return instanced !is null;}
@@ -63,16 +94,41 @@ final class HipSpriteBatch : IHipBatch
         if(instanced) instanced.beginFrame(frame);
         else vertex.beginFrame(frame);
     }
-    void setCurrentDepth(float depth) @nogc
-    {
-        if(instanced) instanced.setCurrentDepth(depth);
-        else vertex.setCurrentDepth(depth);
-    }
+    void setCurrentDepth(float depth) @nogc{managedDepth = depth;}
   
     void draw(IHipTexture t, ubyte[] vertices, bool isText = false)
     {
         if(instanced) instanced.draw(t, vertices, isText);
         else vertex.draw(t, vertices, isText);
+    }
+
+    void setShader(Shader s)
+    {
+        if(s is customSpriteBatchShader)
+            return;
+        flush();
+        if(s is null)
+            mesh.setShader(spriteBatchShader);
+        else
+            mesh.setShader(s);
+        customSpriteBatchShader = s;
+        reinitUniforms();
+    }
+
+    Shader createSpriteBatchShaderEffect(string effect)
+    {
+        Shader s = createShader(HipShaderPresets.SPRITE_BATCH, HipRendererType.None, effect);
+        s.setup!(HipSpriteVertexUniform, HipSpriteFragmentUniform)(HipRenderer.getInfo);
+        s.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
+        mesh.setShader(s);
+        return s;
+    }
+
+    Shader getShader()
+    {
+        if(customSpriteBatchShader !is null)
+            return customSpriteBatchShader;
+        return spriteBatchShader;
     }
 
     void draw(IHipTexture texture, int x, int y, ushort z = 0, in HipColor color = HipColor.white, float scaleX = 1, float scaleY = 1, float rotation = 0)

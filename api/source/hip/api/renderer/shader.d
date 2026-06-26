@@ -38,6 +38,18 @@ enum HipShaderPresets : ubyte
     NONE
 }
 
+///Type safe pointer to a Shader so it can be sent to setSpriteBatcShader
+struct ShaderHandle
+{
+    void* _this;
+
+    auto shader()()
+    {
+        import hip.game.shader;
+        return cast(Shader)_this;
+    }
+}
+
 abstract class HipShaderProgram
 {
     string name;

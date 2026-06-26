@@ -49,13 +49,14 @@ final class HipSpriteBatchInstanced
     protected bool hasInitTextureSlots;
     CachedTexture cachedTexture;
     Shader spriteBatchShader;
+    Shader customSpriteBatchShader;
+    HipSpriteBatch batch;
     HipSpriteVertexInstancedPerInstance[] vertices;
 
     ///Post Processing Shader
     protected Shader ppShader;
     protected HipFrameBuffer fb;
     protected HipTextureRegion fbTexRegion;
-    protected ushort managedDepth = 0;
 
     int drawOffset = 0;
 
@@ -66,12 +67,13 @@ final class HipSpriteBatchInstanced
     ushort usingTexturesCount;
     uint maxInstances;
     uint instanceCount;
-    ShaderVariablesLayout uMVP;
+    ShaderVariablesLayout uMVP, uSpritesFragmentUniform;
 
-    this(Shader spriteBatchShader, HipOrthoCamera camera, uint maxInstances = 50_000)
+    this(HipSpriteBatch batch, Shader spriteBatchShader, HipOrthoCamera camera, uint maxInstances = 50_000)
     {
         import hip.hiprenderer.initializer;
         import hip.util.conv:to;
+        this.batch = batch;
         currentTextures = new IHipTexture[](HipRenderer.getMaxSupportedShaderTextures());
         this.maxInstances = maxInstances;
         usingTexturesCount = 0;
@@ -92,21 +94,16 @@ final class HipSpriteBatchInstanced
         mesh.setIndices(HipRenderer.createQuadIndexBuffer(1, HipResourceUsage.Immutable));
         mesh.sendAttributes();
 
-
-        spriteBatchShader.bind();
-        spriteBatchShader.sendVars();
-
-        uMVP = mesh.shader.getBuffer("Cbuf1");
         this.camera = camera;
         // vertices = cast(HipSpriteVertex[])mesh.vao.VBO.getBuffer();
         int width, height;
         ushort slot;
         setTexture(HipTexture.getPixelTexture(), width, height, slot);
-
     }
-    void setCurrentDepth(float depth) @nogc {managedDepth = cast(ushort)depth;}
 
-    void setShader(Shader s)
+    
+
+    void setPostProcessingShader(Shader s)
     {
         if(fb is null)
         {
@@ -233,16 +230,7 @@ final class HipSpriteBatchInstanced
             for(int i = usingTexturesCount; i < currentTextures.length; i++)
                 currentTextures[i] = currentTextures[0];
             mesh.bind();
-
-            __gshared Matrix4 mvp;
-            // Matrix4 camMvp = camera.getMVP;
-            // if(camMvp != mvp)
-            // {
-                // mvp = camMvp;
-                uMVP.set(HipSpriteVertexUniform(camera.getMVP));
-            // }
-            mesh.shader.bindArrayOfTextures(currentTextures, "uTex");
-            mesh.shader.sendVars();
+            batch.setUniforms(camera.getMVP, currentTextures);
 
             int instanceOffset = drawOffset;
             if(HipRenderer.getType != HipRendererType.GL3)

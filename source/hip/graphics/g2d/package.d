@@ -23,7 +23,7 @@ public import HipRenderer2D = hip.graphics.g2d.renderer2d;
 import hip.game.shader;
 import hip.api.renderer.core_;
 
-Shader createShader(HipShaderPresets shaderPreset, HipRendererType type = HipRendererType.None)
+    Shader createShader(HipShaderPresets shaderPreset, HipRendererType type = HipRendererType.None, string extraSource = null)
 {
     import hip.util.conv:to;
     import hip.console.log;
@@ -33,7 +33,7 @@ Shader createShader(HipShaderPresets shaderPreset, HipRendererType type = HipRen
     bool isInstanced = shaderInfo.isInstanced;
 
 
-    ShaderStatus status = ret.loadShader(shaderInfo.shaderSource(), shaderInfo.path~"."~shaderPreset.to!string, isInstanced);
+    ShaderStatus status = ret.loadShader(shaderInfo.shaderSource(extraSource), shaderInfo.path~"."~shaderPreset.to!string, isInstanced);
     if(status != ShaderStatus.SUCCESS)
         logln("Failed loading shaders with status ", status, " at preset ", shaderPreset, " on "~shaderInfo.path);
     return ret;

@@ -59,4 +59,6 @@ struct HipSpriteVertexUniform
 struct HipSpriteFragmentUniform
 {
     float[4] uBatchColor = [1,1,1,1];
+    float[2] uScreenSize = [0, 0];
+    float uTime = 0;
 }

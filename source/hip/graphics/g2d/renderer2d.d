@@ -331,6 +331,45 @@ void drawTimings(float x = -1, float y = 0, bool clearTimings = false)
     hip.graphics.g2d.profiling.drawTimings(cast(int)x, cast(int)y, clearTimings);
 }
 
+/** 
+* GLSL Effect example:
+```d
+
+struct EffectInput
+{
+    vec4 textureColor;
+    vec4 uBatchColor;
+    vec4 vertexColor;
+    vec2 worldPosition;
+}
+
+//Available Uniforms:
+    float uTime;
+    vec4  uBatchColor;
+    vec2  uScreenSize;
+//Access them via 'cbuf', e.g: cbuf.uTime
+
+    
+vec4 effect(EffectInput fx)
+{
+    return fx.textureColor * fx.vertexColor * fx.uBatchColor;
+}
+*/
+ShaderHandle createSpriteBatchShaderEffect(string effect)
+{
+    return spBatch.createSpriteBatchShaderEffect(effect);
+}
+
+ShaderHandle getSpriteBatchShader()
+{
+    return spBatch.getShader();
+}
+
+void setSpriteBatchShader(ShaderHandle handle)
+{
+    spBatch.setShader(handle.shader);
+}
+
 version(Standalone)
 {
     public import exportd;

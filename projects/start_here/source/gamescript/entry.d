@@ -20,12 +20,26 @@ class MainScene : AScene, IHipPreloadable
 	{
 
         setWindowTitle("Hipreme Engine Sample");
-        auto sz = getMaxScreenSize;
+        // auto sz = getMaxScreenSize();
         setWorldSize(800, 600);
-        setWindowSize(sz[0], sz[1], false);
+        // setWindowSize(sz[0], sz[1], false);
         particles = new HipParticleSystem(500);
         smallFont = HipDefaultAssets.getDefaultFontWithSize(20);
         bigFont = HipDefaultAssets.getDefaultFontWithSize(64);
+
+        import hip.game.shader;
+        Shader s = createSpriteBatchShaderEffect(
+            q{
+                vec4 effect(EffectInput fx)
+                {
+                    float sz = 0.1;
+                    // if(cbuf.uScreenSize.x != 0.0)
+                        sz = length(cbuf.uScreenSize);
+                    return sin(cbuf.uTime) * fx.uBatchColor * fx.vertexColor * fx.textureColor;
+                }
+            }
+        ).shader;
+        setSpriteBatchShader(s);
 
         // setFont(sdfFont);
         setFont(bigFont);
