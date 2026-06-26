@@ -355,9 +355,9 @@ vec4 effect(EffectInput fx)
     return fx.textureColor * fx.vertexColor * fx.uBatchColor;
 }
 */
-ShaderHandle createSpriteBatchShaderEffect(string effect)
+ShaderHandle createSpriteBatchShaderEffect(string effect, ShaderVar[] uniforms = null)
 {
-    return spBatch.createSpriteBatchShaderEffect(effect);
+    return spBatch.createSpriteBatchShaderEffect(effect, uniforms);
 }
 
 ShaderHandle getSpriteBatchShader()

@@ -154,7 +154,7 @@ private {
                 fx.uBatchColor = cbuf.uBatchColor;
                 fx.vertexColor = inVertexColor;
                 fx.worldPosition = inWorldPosition;
-        }~ textureSlotSwitchCase ~ "fx.textureColor = mix(fx.textureColor, fx.textureColor.rrrr, isText); OUT_COLOR = effect(fx); }\n#endif";
+        }~ textureSlotSwitchCase ~ "fx.textureColor = mix(fx.textureColor, fx.textureColor.rrrr, float(isText)); OUT_COLOR = effect(fx); }\n#endif";
         // outPixelColor = texture(uTex[texId], inTexST)* inVertexColor;
         // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor;
 

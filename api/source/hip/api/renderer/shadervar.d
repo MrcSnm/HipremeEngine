@@ -102,6 +102,7 @@ struct ShaderVar
     bool isDynamicArrayReference;
     bool isDirty = true;
     size_t singleSize;
+    size_t varSize;
 
     ShaderHint flags;
     ShaderVariablesLayout layout;
@@ -111,7 +112,6 @@ struct ShaderVar
     public bool usesMaxTextures() const { return (flags & ShaderHint.MaxTextures) != 0;}
 
 
-    size_t varSize() const{return data.length;}
     size_t length() const {return varSize / singleSize;}
 
     T get(T)() const
@@ -217,6 +217,31 @@ struct ShaderVar
             default: return 0;
         }
     }
+    private static ShaderVar createBufferless(
+        ShaderTypes t,
+        string varName,
+        UniformType type,
+        size_t varSize,
+        size_t singleSize,
+    )
+    {
+        if(!isShaderVarNameValid(varName))
+            throw new Exception("Variable '"~varName~"' is invalid.");
+        ShaderVar s;
+        s.varSize = varSize;
+        s.name = varName;
+        s.singleSize = singleSize;
+        s.shaderType = t;
+        s.type = type;
+        return s;
+    }
+    package void finalize(ubyte[] buffer, ShaderVariablesLayout layout)
+    {
+        this.data = buffer[0..varSize];
+        this.layout = layout;
+    }
+
+
     private static ShaderVar createBase(
         ShaderTypes t,
         string varName,
@@ -227,16 +252,9 @@ struct ShaderVar
         ubyte[] buffer
     )
     {
-        if(!isShaderVarNameValid(varName))
-            throw new Exception("Variable '"~varName~"' is invalid.");
-        ShaderVar s;
-        s.data = buffer[0..varSize];
-        s.name = varName;
-        s.singleSize = singleSize;
-        s.shaderType = t;
-        s.type = type;
-        s.layout = layout;
-        return s;
+        ShaderVar ret = createBufferless(t, varName, type, varSize, singleSize);
+        ret.finalize(buffer, layout);
+        return ret;
     }
 
     void dispose()
@@ -385,36 +403,45 @@ class ShaderVariablesLayout
         return this.nameZeroEnded;
     }
     
-    private static ShaderVar[] getVars(T)(ref ShaderVariablesLayout layout, ref ShaderVar base, size_t lastAlign)
+    private static ShaderVar[] getVarsBufferless(T)(ref ShaderVar base)
     {
-        import hip.math.utils:max;
         ShaderVar[] vars = [];
-        size_t big = maxMember!T;
-        
 
         foreach(mem; __traits(allMembers, T))
         {
             alias member = __traits(getMember, T, mem);
             alias Tmem = typeof(member);
             alias a = __traits(getAttributes, member);
-            VarPosition pos = layout.packFunc(sizeFromType!(Tmem), lastAlign, false, uniformTypeFrom!Tmem, big);
             
             string actualName;
             if(uniformTypeFrom!Tmem == UniformType.custom)
                 actualName = base.name~"."~mem;
             else
                 actualName = base.name~"."~mem~"\0";
-            ShaderVar v = ShaderVar.createBase(layout.shaderType, actualName, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem, layout, layout.data[lastAlign..pos.endPos]);
+            // ShaderVar v = ShaderVar.createBase(layout.shaderType, actualName, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem, layout, layout.data[lastAlign..pos.endPos]);
+            ShaderVar v = ShaderVar.createBufferless(layout.shaderType, actualName, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem);
 
             static if(uniformTypeFrom!Tmem == UniformType.custom)
-                v.variables = getVars!(Tmem)(layout, v, lastAlign, maxMember);
+                v.variables = getVarsBufferless!(Tmem)(v);
             vars~= v;
-            lastAlign = pos.endPos;
         }
         return vars;
     }
 
-    static ShaderVariablesLayout from(T)(HipRendererInfo info)
+    private static void updateVarBuffers(ref ShaderVariablesLayout layout, size_t lastAlign, ref ShaderVar sVar, size_t maxMember)
+    {
+        foreach(ref sv; sVar.variables)
+        {
+
+            VarPosition pos = layout.packFunc(sv.varSize, lastAlign, false, sv.type, maxMember);
+            if(sv.type == UniformType.custom)
+                updateVarBuffers(layout, lastAlign, sv, maxMember);
+            sv.finalize(layout.data[pos.startPos..pos.endPos], layout);
+            lastAlign = pos.endPos;
+        }
+    }
+
+    static ShaderVar[] getVariablesOnly(T)()
     {
         enum attr = __traits(getAttributes, T);
         static assert(is(typeof(attr[0]) == HipShaderUniform),
@@ -426,54 +453,80 @@ class ShaderVariablesLayout
             attr[0].name !is null,
             "HipShaderUniform "~T.stringof~" must contain a name as it is required to work in Direct3D 11"
         );
-        ShaderVariablesLayout ret = new ShaderVariablesLayout(info.type, attr[0].name, shaderType, ShaderHint.NONE, typeid(T));
-        ret.data = new ubyte[ret.calcLayoutSize!T(ret.packFunc)];
 
-        size_t big = maxMember!T;
 
-        size_t lastAlign = 0;
+        ShaderVar[] ret;
+
         foreach(i, mem; __traits(allMembers, T))
         {
             alias member = __traits(getMember, T, mem);
             alias Tmem = typeof(member);
             alias a = __traits(getAttributes, member);
             string actualName = attr[0].instanceName~"."~mem;
+            // ShaderVar sVar = ShaderVar.createBase(shaderType, actualName, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem, ret, ret.data[pos.startPos..pos.endPos]);
+            ShaderVar sVar = ShaderVar.createBufferless(shaderType, actualName, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem);
 
+            static if(uniformTypeFrom!Tmem == UniformType.custom)
+            {
+                ///This is only needed for old OpenGL!!!
+                sVar.variables = ShaderVariablesLayout.getVarsBufferless!(Tmem)(sVar);
+            }
+            static if(is(typeof(a[0]) == ShaderHint) && a[0] & ShaderHint.Blackbox)
+                sVar.flags|= a[0];
+
+            ret~= sVar;
+        }
+        return ret;
+    }
+
+    static ShaderVariablesLayout from(T)(HipRendererInfo info)
+    {
+        enum attr = __traits(getAttributes, T);
+        ShaderVar[] TVariables = getVariablesOnly!T;
+        ShaderVariablesLayout ret = new ShaderVariablesLayout(info.type, attr[0].name, attr[0].type, ShaderHint.NONE, typeid(T));
+        ret.data = new ubyte[ret.calcLayoutSize!T(ret.packFunc)];
+
+        size_t big = maxMember!T;
+        size_t lastAlign = 0;
+
+        foreach(i, ref sVar; TVariables)
+        {
+            
             /**
             *   Calculates the shader variables alignment based on the packFunc passed at startup.
             *   Those functions are based on the shader vendor and version. Align should be called
             *   always when there is a change on the layout.
             */
             VarPosition pos = ret.packFunc(
-                sizeFromType!(Tmem), 
+                sVar.varSize,
                 lastAlign, 
-                i == cast(int)__traits(allMembers, T).length-1,
-                uniformTypeFrom!Tmem,
+                i == TVariables.length-1,
+                sVar.type,
                 big
             );
+
+            // if(sVar.flags & ShaderHint.Blackbox)
+            // {
+                // size_t uSize = info.uniformMapper(shaderType, uniformTypeFrom!Tmem);
+                // if(uSize == 0)
+                //     throw new Exception("Unused blackboxed: "~mem);//unusedBlackboxed~= mem;
+            // }
+
+            if(sVar.type == UniformType.custom)
+                updateVarBuffers(ret, lastAlign, sVar, big);
+            sVar.finalize(ret.data[pos.startPos..pos.endPos], ret);
+        
             ShaderVarLayout v = ShaderVarLayout(
-                ShaderVar.createBase(shaderType, actualName, uniformTypeFrom!Tmem, sizeFromType!Tmem, singleSizeFromType!Tmem, ret, ret.data[pos.startPos..pos.endPos]),
+                sVar,
                 pos.startPos,
                 pos.size
             );
 
-            static if(uniformTypeFrom!Tmem == UniformType.custom)
-            {
-                ///This is only needed for old OpenGL!!!
-                v.sVar.variables = ShaderVariablesLayout.getVars!(Tmem)(ret, v.sVar, lastAlign);
-            }
             lastAlign = pos.endPos;
-            size_t uSize = info.uniformMapper(shaderType, uniformTypeFrom!Tmem);
-
-            static if(is(typeof(a[0]) == ShaderHint) && a[0] & ShaderHint.Blackbox)
-            {
-                // if(uSize == 0)
-                //     throw new Exception("Unused blackboxed: "~mem);//unusedBlackboxed~= mem;
-                v.sVar.flags|= a[0];
-            }
-            ret.variables[actualName] = v;
-            ret.varOrder~= actualName in ret.variables;
+            ret.variables[sVar.name] = v;
+            ret.varOrder~= sVar.name in ret.variables;
         }
+        
         ret.lastPosition = lastAlign;
         ret.set(T.init);
         return ret;

@@ -5,7 +5,7 @@ public import hip.api.renderer.viewport;
 public import hip.api.data.font;
 public import hip.api.data.tilemap;
 public import hip.api.graphics.text;
-public import hip.api.renderer.shader:ShaderHandle;
+public import hip.api.renderer.shader:ShaderHandle, ShaderVar;
 
 version(Have_util) version = ImportSpritesheet;
 
@@ -94,7 +94,7 @@ class HipG2DBinding
         void function(uint width, uint height) setWorldSize;
         ShaderHandle function() getSpriteBatchShader;
         void function(ShaderHandle handle) setSpriteBatchShader;
-        ShaderHandle function(string effect)  createSpriteBatchShaderEffect;
+        ShaderHandle function(string effect, ShaderVar[] uniforms = null) createSpriteBatchShaderEffect;
 
 
         void function(float x = 0, float y = -1) drawGCStats;
@@ -222,8 +222,7 @@ version(none)
             return fx.textureColor * fx.vertexColor * fx.uBatchColor;
         }
         */
-        ShaderHandle function(string effect)  createSpriteBatchShaderEffect;
-
+        ShaderHandle function(string effect, ShaderVar[] uniforms = null) createSpriteBatchShaderEffect;
 
         version(ImportSpritesheet)
         {

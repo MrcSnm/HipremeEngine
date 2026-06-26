@@ -115,7 +115,7 @@ final class HipSpriteBatch : IHipBatch
         reinitUniforms();
     }
 
-    Shader createSpriteBatchShaderEffect(string effect)
+    Shader createSpriteBatchShaderEffect(string effect, ShaderVar[] uniforms = null)
     {
         Shader s = createShader(HipShaderPresets.SPRITE_BATCH, HipRendererType.None, effect);
         s.setup!(HipSpriteVertexUniform, HipSpriteFragmentUniform)(HipRenderer.getInfo);
