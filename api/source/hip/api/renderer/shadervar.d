@@ -49,6 +49,17 @@ enum UniformType : ubyte
     none
 }
 
+struct ShaderVarLayoutInfo
+{
+    TypeInfo typeInfo;
+    string name;
+    ShaderTypes type;
+    ShaderHint hint;
+    size_t layoutSize;
+    size_t maxMember;
+    ShaderVar[] variables;
+}
+
 UniformType uniformTypeFrom(T)()
 {
     import hip.util.reflection;
@@ -282,6 +293,20 @@ struct ShaderVarLayout
     size_t size;
 }
 
+auto getPackFunc(HipRendererType type)
+{
+    import hip.api.renderer.var_packing;
+
+    final switch(type)
+    {
+        case HipRendererType.GL3: return &glSTD140;
+        case HipRendererType.D3D11: return  &dxHLSL4;
+        case HipRendererType.Metal: return &glSTD140;
+        case HipRendererType.None: return &nonePack;
+    }
+}
+
+
 /**
 *   This class is meant to be created together with the Shaders.
 *
@@ -335,30 +360,13 @@ class ShaderVariablesLayout
     */
     private this(HipRendererType type, string layoutName, ShaderTypes t, ShaderHint hint, TypeInfo from)
     {
-        import core.stdc.stdlib:malloc;
+        assert(from !is null, "Can't create a ShaderVariablesLayout with a null typeinfo.");
         this.name = layoutName;
         this.nameZeroEnded = (layoutName~"\0").ptr;
         this.shaderType = t;
         this.hint = hint;
         this.fromType = from;
-
-        switch(type)
-        {
-            case HipRendererType.GL3:
-                // if(hint & ShaderHint.GL_USE_STD_140)
-                    packFunc = &glSTD140;
-                break;
-            case HipRendererType.D3D11:
-                // if(hint & ShaderHint.D3D_USE_HLSL_4)
-                    packFunc = &dxHLSL4;
-                break;
-            case HipRendererType.Metal:
-                packFunc = &glSTD140;
-                break;
-            case HipRendererType.None:
-            default:break;
-        }
-        if(packFunc is null) packFunc = &nonePack;
+        this.packFunc = getPackFunc(type);
     }
 
     void setDirty()
@@ -381,6 +389,19 @@ class ShaderVariablesLayout
         //     this.isDirty = true;
         //     memcpy(this.data.ptr, data, dataSize);
         // }
+    }
+
+    package void bufferInitDefault()
+    {
+        assert(this.fromType !is null, "No TypeInfo found for default initialization.");
+        uint dataOffset;
+        auto initData = this.fromType.initializer;
+
+        foreach(ShaderVarLayout* l; varOrder)
+        {
+            l.sVar.data[0..l.size] = initData[dataOffset..dataOffset+l.size];
+            dataOffset+= l.size;
+        }
     }
 
     void set(T)(const T data)
@@ -479,17 +500,15 @@ class ShaderVariablesLayout
         return ret;
     }
 
-    static ShaderVariablesLayout from(T)(HipRendererInfo info)
+    static ShaderVariablesLayout from(ShaderVarLayoutInfo layoutInfo, HipRendererInfo info)
     {
-        enum attr = __traits(getAttributes, T);
-        ShaderVar[] TVariables = getVariablesOnly!T;
-        ShaderVariablesLayout ret = new ShaderVariablesLayout(info.type, attr[0].name, attr[0].type, ShaderHint.NONE, typeid(T));
-        ret.data = new ubyte[ret.calcLayoutSize!T(ret.packFunc)];
+        ShaderVariablesLayout ret = new ShaderVariablesLayout(info.type, layoutInfo.name, layoutInfo.type, ShaderHint.NONE, layoutInfo.typeInfo);
+        ret.data = new ubyte[layoutInfo.layoutSize];
 
-        size_t big = maxMember!T;
+        size_t big = layoutInfo.maxMember;
         size_t lastAlign = 0;
 
-        foreach(i, ref sVar; TVariables)
+        foreach(i, ref sVar; layoutInfo.variables)
         {
             
             /**
@@ -500,7 +519,7 @@ class ShaderVariablesLayout
             VarPosition pos = ret.packFunc(
                 sVar.varSize,
                 lastAlign, 
-                i == TVariables.length-1,
+                i == layoutInfo.variables.length-1,
                 sVar.type,
                 big
             );
@@ -528,8 +547,26 @@ class ShaderVariablesLayout
         }
         
         ret.lastPosition = lastAlign;
-        ret.set(T.init);
+        ret.bufferInitDefault();
         return ret;
+    }
+    static ShaderVariablesLayout from(T)(HipRendererInfo info)
+    {
+        return from(getInfo!(T)(info), info);
+    }
+
+    static ShaderVarLayoutInfo getInfo(T)(HipRendererInfo info)
+    {
+        enum attr = __traits(getAttributes, T);
+        return ShaderVarLayoutInfo(
+            typeid(T),
+            attr[0].name,
+            attr[0].type,
+            ShaderHint.NONE,
+            calcLayoutSize!T(getPackFunc(info.type)),
+            maxMember!T,
+            getVariablesOnly!T
+        );
     }
 
     HipShaderProgram getShader(){return owner;}
@@ -548,7 +585,7 @@ class ShaderVariablesLayout
         return biggest;
     }
 
-    private size_t calcLayoutSize(T)(VarPosition function(
+    private static size_t calcLayoutSize(T)(VarPosition function(
         size_t varSize,
         size_t lastAlignment,
         bool isLast,

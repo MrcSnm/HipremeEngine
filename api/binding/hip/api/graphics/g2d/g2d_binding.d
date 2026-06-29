@@ -94,7 +94,7 @@ class HipG2DBinding
         void function(uint width, uint height) setWorldSize;
         ShaderHandle function() getSpriteBatchShader;
         void function(ShaderHandle handle) setSpriteBatchShader;
-        ShaderHandle function(string effect, ShaderVar[] uniforms = null) createSpriteBatchShaderEffect;
+        ShaderHandle function(string effect, ShaderVarLayoutInfo info = ShaderVarLayoutInfo.init) createSpriteBatchShaderEffect;
 
 
         void function(float x = 0, float y = -1) drawGCStats;
@@ -222,7 +222,7 @@ version(none)
             return fx.textureColor * fx.vertexColor * fx.uBatchColor;
         }
         */
-        ShaderHandle function(string effect, ShaderVar[] uniforms = null) createSpriteBatchShaderEffect;
+        ShaderHandle function(string effect, ShaderVarLayoutInfo info = ShaderVarLayoutInfo.init) createSpriteBatchShaderEffect;
 
         version(ImportSpritesheet)
         {

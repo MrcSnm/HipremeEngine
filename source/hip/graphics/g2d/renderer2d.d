@@ -354,10 +354,20 @@ vec4 effect(EffectInput fx)
 {
     return fx.textureColor * fx.vertexColor * fx.uBatchColor;
 }
+
+```
+
+Params:
+    effect = The shader source
+    info = The info of the uniform variables in this effect. Get it with ShaderVariablesLayout.getInfo!T(HipRenderer.getInfo)
+Returns:
+    A shader handle. Cast it to shader by calling `shaderHandle.shader`
 */
-ShaderHandle createSpriteBatchShaderEffect(string effect, ShaderVar[] uniforms = null)
+ShaderHandle createSpriteBatchShaderEffect(string effect, ShaderVarLayoutInfo info = ShaderVarLayoutInfo.init)
 {
-    return spBatch.createSpriteBatchShaderEffect(effect, uniforms);
+    ShaderVarLayoutInfo* theInfo = &info;
+    if(info.typeInfo is null) theInfo = null;
+    return spBatch.createSpriteBatchShaderEffect(effect, theInfo);
 }
 
 ShaderHandle getSpriteBatchShader()

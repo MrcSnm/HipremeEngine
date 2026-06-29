@@ -121,6 +121,16 @@ public class Shader : IReloadable
         addUsedTextures(textures);
     }
 
+    public void setup(Uniforms...)(HipRendererInfo info, scope ShaderVarLayoutInfo[] layoutInfo, scope HipShaderTexture[] textures...)
+    {
+        static foreach(u; Uniforms)
+            addVarLayout(ShaderVariablesLayout.from!(u)(info));
+        foreach(lInfo; layoutInfo)
+            addVarLayout(ShaderVariablesLayout.from(lInfo, info));
+        layoutsArray = layouts.values;
+        addUsedTextures(textures);
+    }
+
 
     private void addVarLayout(ShaderVariablesLayout layout)
     {
