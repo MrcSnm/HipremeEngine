@@ -9,6 +9,7 @@ Distributed under the CC BY-4.0 License.
 	https://creativecommons.org/licenses/by/4.0/
 */
 module hip.util.data_structures;
+public import hip.util.allocator;
 
 public import hip.util.string: String;
 struct Pair(A, B, string aliasA = "", string aliasB = "")
@@ -268,15 +269,14 @@ struct Array(T)
     size_t length;
     T* data;
     private size_t capacity;
-    private int* countPtr;
-    import core.stdc.stdlib:malloc, calloc;
+    private int[] countPtr;
+    private Allocator* allocator;
     import core.stdc.string:memcpy, memset;
-    import core.stdc.stdlib:realloc;
 
     this(this) @nogc
     {
         if(countPtr !is null)
-            *countPtr = *countPtr + 1;
+            countPtr[0]++;
     }
 
     pragma(inline) int opApply(scope int delegate(size_t idx, ref T) dg)
@@ -301,33 +301,43 @@ struct Array(T)
         }
         return result;
     }
-    private void initialize(size_t capacity) @nogc
+    private void initialize(size_t capacity, Allocator* allocator) @nogc
     {
-        this.data = cast(T*)calloc(capacity, T.sizeof);
+        this.allocator = allocator;
+        this.data = cast(T*)allocator.calloc(capacity, T.sizeof);
         this.capacity = capacity;
-        this.countPtr = cast(int*)malloc(int.sizeof);
-        *this.countPtr = 1;
+        this.countPtr = cast(int[])allocator.alloc(int.sizeof);
+        this.countPtr[0] = 1;
         this[0..capacity] = T.init;
     }
 
-    static Array!T opCall(size_t capacity = 1) @nogc
+    static Array!T opCall(Allocator* allocator = mallocAllocator.ptr) @nogc
     {
         Array!T ret;
-        ret.initialize(capacity);
+        ret.capacity = 0;
+        ret.allocator = allocator;
         return ret;
     }
 
-    static Array!T opCall(size_t length, T value) @nogc
+
+    static Array!T opCall(size_t capacity = 1, Allocator* allocator = mallocAllocator.ptr) @nogc
     {
-        Array!T ret = Array!(T)(length);
+        Array!T ret;
+        ret.initialize(capacity, allocator);
+        return ret;
+    }
+
+    static Array!T opCall(size_t length, T value, Allocator* allocator = mallocAllocator.ptr) @nogc
+    {
+        Array!T ret = Array!(T)(length, allocator);
         ret.length = length;
         ret[] = value;
         return ret;
     }
     
-    static Array!T opCall(scope T[] arr) @nogc
+    static Array!T opCall(scope T[] arr, Allocator* allocator = mallocAllocator.ptr) @nogc
     {
-        Array!T ret = Array!(T)(arr.length);
+        Array!T ret = Array!(T)(arr.length, allocator);
         ret.length = arr.length;
         ret.data[0..ret.length] = arr[];
         return ret;
@@ -335,7 +345,7 @@ struct Array(T)
 
     void* getRef()
     {
-        *countPtr = *countPtr + 1;
+        countPtr[0]++;
         return cast(void*)&this;
     }
 
@@ -346,9 +356,8 @@ struct Array(T)
     }
     void dispose() @nogc
     {
-        import core.stdc.stdlib:free;
-        free(data);
-        free(countPtr);
+        allocator.free(data[0..capacity]);
+        allocator.free(countPtr);
     }
     immutable(T*) ptr(){return cast(immutable(T*))data;}
     size_t opDollar() @nogc {return length;}
@@ -377,9 +386,9 @@ struct Array(T)
     if(isArray!Q)
     {
         if(data == null)
-            data = cast(T*)malloc(T.sizeof*value.length);
+            data = cast(T*)allocator.alloc(T.sizeof*value.length);
         else
-            data = cast(T*)realloc(data, T.sizeof*value.length);
+            data = cast(T*)allocator.realloc(data, T.sizeof*value.length);
         length = value.length;
         capacity = value.length;
         memcpy(data, value.ptr, T.sizeof*value.length);
@@ -395,10 +404,10 @@ struct Array(T)
     pragma(inline) private void resize(uint newSize) @nogc
     {
         if(data == null || capacity == 0)
-            initialize(newSize);
+            initialize(newSize, allocator);
         else
         {
-            data = cast(T*)realloc(data, newSize*T.sizeof);
+            data = cast(T*)allocator.realloc(data[0..capacity], newSize*T.sizeof).ptr;
             capacity = newSize;
         }
     }
@@ -406,20 +415,20 @@ struct Array(T)
     void reserve(size_t newSize){if(newSize > capacity)resize(cast(uint)newSize);}
     auto ref opOpAssign(string op, Q)(Q value) @nogc if(op == "~")
     {
-        if(*countPtr != 1)
+        if(countPtr[0] != 1)
         {
             //Save old data
             T* oldData = data;
             //Remove from the ref counter
-            *countPtr = *countPtr - 1;
+            countPtr[0]--;
             //Re initialize
-            initialize(length);
+            initialize(length, allocator);
             memcpy(data, oldData, T.sizeof*length);
         }
         static if(is(Q == T))
         {
             if(data == null)
-                initialize(1);
+                initialize(1, allocator);
             if(length + 1 >= capacity)
                 resize(cast(uint)((length+1)*1.5));
             data[length++] = value;
@@ -427,7 +436,7 @@ struct Array(T)
         else static if(is(Q == T[]) || is(Q == Array!T))
         {
             if(data == null)
-                initialize(value.length);
+                initialize(value.length, allocator);
             if(length + value.length >= capacity)
                 resize(cast(uint)((length+value.length)*1.5));
             memcpy(data+length, value.ptr, T.sizeof*value.length);
@@ -445,9 +454,9 @@ struct Array(T)
     {
         if(countPtr != null)
         {
-            *countPtr = *countPtr - 1;
-            assert(*countPtr >= 0);
-            if(*countPtr == 0)
+            countPtr[0]--;
+            assert(countPtr[0] >= 0);
+            if(countPtr[0] == 0)
                 dispose();
             data = null;
             countPtr = null;
@@ -520,17 +529,19 @@ struct Array2D(T)
         return ret;
     }
     @nogc:
-    private T* data;
+    private T[] data;
+    private Allocator* allocator;
     import core.stdc.stdlib;
 
-    private int* countPtr;
+    private int[] countPtr;
 
-    this(this){*countPtr = *countPtr + 1;}
-    this(uint lengthHeight, uint lengthWidth)
+    this(this){countPtr[0]++;}
+    this(uint lengthHeight, uint lengthWidth, Allocator* allocator = mallocAllocator.ptr)
     {
-        data = cast(T*)malloc((lengthHeight*lengthWidth)*T.sizeof);
-        countPtr = cast(int*)malloc(int.sizeof);
-        *countPtr = 0;
+        this.allocator = allocator;
+        data = cast(T[])allocator.alloc((lengthHeight*lengthWidth)*T.sizeof);
+        countPtr = cast(int[])allocator.alloc(int.sizeof);
+        countPtr[0] = 0;
         height = lengthHeight;
         width = lengthWidth;
     }
@@ -538,11 +549,11 @@ struct Array2D(T)
     {
         if(countPtr == null)
             return;
-        *countPtr = *countPtr - 1;
-        if(*countPtr <= 0)
+        countPtr[0]--;
+        if(countPtr[0] <= 0)
         {
-            free(data);
-            free(countPtr);
+            allocator.free(data);
+            allocator.free(countPtr);
             data = null;
             countPtr = null;
             width = height = 0;
@@ -876,6 +887,7 @@ class Node(T)
         return 0;
     }
 }
+
 
 struct Signal(A...)
 {

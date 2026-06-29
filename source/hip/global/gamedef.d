@@ -37,10 +37,7 @@ public:
    enum int SCREEN_HEIGHT = 600;
    ///Globally shared for accessing it on Android Game Thread
    __gshared GameSystem sys;
-
    __gshared float g_deltaTime = 0;
-
-
 
 
 ///This function is callable only once.

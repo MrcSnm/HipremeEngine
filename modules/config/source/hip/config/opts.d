@@ -48,6 +48,11 @@ enum HE_ERR_ONLY = false;
 ///Unused yet?
 enum HIP_OPTIMIZE = false;
 
+version(PSVita)
+	enum HipFrameAllocatorSize = 1 << 19; //512Kb of frame buffer size as PSVita has much less memory available 
+else 
+	enum HipFrameAllocatorSize = 1 << 21; //2MB of frame buffer size.
+
 /** 
  * Default size that will be used at opening the engine window.
  * Currently it is 1280 width, 720 height

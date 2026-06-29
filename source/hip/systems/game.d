@@ -80,6 +80,9 @@ class GameSystem : IGameSystem
     this(float targetFPS)
     {
         import hip.hiprenderer;
+        import hip.api.data.commons;
+        import hip.config.opts;
+        gFrameAllocator = FrameAllocator.create(HipFrameAllocatorSize);
         this.targetFPS = targetFPS;
         dispatcher = new EventDispatcher(HipRenderer.window, &this.isInUpdate);
         dispatcher.addOnResizeListener((uint width, uint height)
@@ -352,7 +355,6 @@ class GameSystem : IGameSystem
                 catch (Error e){scriptFatalError(e);}
             }
         }
-
         return true;
     }
 

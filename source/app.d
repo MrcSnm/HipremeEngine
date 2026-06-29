@@ -347,6 +347,7 @@ version(ExternallyManagedDeltaTime)
 			if(!HipremeUpdateBase())
 				return false;
 			HipremeRender();
+			gFrameAllocator.reset();
 			return true;
 		}
 	}
@@ -375,6 +376,7 @@ else version(dll) export extern(System) bool HipremeUpdate()
 		// g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
 		g_deltaTime = 0.016;
 		// logln(g_deltaTime);
+		gFrameAllocator.reset();
 
 		return true;
 	}
@@ -399,6 +401,7 @@ version(Desktop)
 			isUpdating = HipremeUpdateBase();
 			HipremeRender();
 			g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
+			gFrameAllocator.reset();
 		}
 		HipremeDestroy();
 	}
