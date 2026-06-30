@@ -5,7 +5,7 @@ public import hip.api.renderer.viewport;
 public import hip.api.data.font;
 public import hip.api.data.tilemap;
 public import hip.api.graphics.text;
-public import hip.api.renderer.shader:ShaderHandle, ShaderVar;
+public import hip.api.renderer.shader:ShaderHandle, ShaderVar, ShaderVarLayoutInfo;
 
 version(Have_util) version = ImportSpritesheet;
 

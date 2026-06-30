@@ -78,7 +78,7 @@ struct FrameAllocator
                 {
                     ret[0..ptr.length] = ptr[];
                     debug {
-                        ptr[0..$] = 0;
+                        (cast(ubyte[])ptr)[0..$] = 0;
                     }
                 }
                 return ret;
@@ -94,7 +94,7 @@ struct FrameAllocator
             f.offset-= ptr.length;
         debug
         {
-            (cast(ubyte[])ptr)[0..length] = 0;
+            (cast(ubyte[])ptr)[0..$] = 0;
         }
     }
 

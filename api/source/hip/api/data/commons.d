@@ -2,7 +2,14 @@ module hip.api.data.commons;
 public import hip.api.data.asset;
 import hip.util.reflection;
 public import hip.util.allocator: Allocator, FrameAllocator;
-__gshared FrameAllocator gFrameAllocator;
+
+version(ScriptAPI)
+{
+    FrameAllocator* gFrameAllocator_;
+    ref FrameAllocator gFrameAllocator(){return *gFrameAllocator_; }
+}
+else
+    export extern(C) __gshared FrameAllocator gFrameAllocator;
 
 
 ///Use @Asset instead of HipAsset.

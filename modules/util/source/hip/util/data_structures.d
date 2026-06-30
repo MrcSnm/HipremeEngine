@@ -268,15 +268,28 @@ struct Array(T)
 {
     size_t length;
     T* data;
-    private size_t capacity;
-    private int[] countPtr;
+    size_t capacity;
+    int* countPtr;
     private Allocator* allocator;
     import core.stdc.string:memcpy, memset;
 
     this(this) @nogc
     {
         if(countPtr !is null)
-            countPtr[0]++;
+            *countPtr = *countPtr + 1;
+    }
+
+    ref Array!T opAssign(Array!T other)
+    {
+        import std.stdio;
+        release();
+        this.length = other.length;
+        this.data = other.data;
+        this.countPtr = other.countPtr;
+        this.capacity = other.capacity;
+        this.allocator = other.allocator;
+        *countPtr = *countPtr+1;
+        return this;
     }
 
     pragma(inline) int opApply(scope int delegate(size_t idx, ref T) dg)
@@ -306,16 +319,15 @@ struct Array(T)
         this.allocator = allocator;
         this.data = cast(T*)allocator.calloc(capacity, T.sizeof);
         this.capacity = capacity;
-        this.countPtr = cast(int[])allocator.alloc(int.sizeof);
-        this.countPtr[0] = 1;
+        this.countPtr = cast(int*)allocator.alloc(int.sizeof).ptr;
+        *this.countPtr = 1;
         this[0..capacity] = T.init;
     }
 
     static Array!T opCall(Allocator* allocator = mallocAllocator.ptr) @nogc
     {
         Array!T ret;
-        ret.capacity = 0;
-        ret.allocator = allocator;
+        ret.initialize(1, allocator);
         return ret;
     }
 
@@ -345,7 +357,7 @@ struct Array(T)
 
     void* getRef()
     {
-        countPtr[0]++;
+        *countPtr = *countPtr + 1;
         return cast(void*)&this;
     }
 
@@ -357,7 +369,7 @@ struct Array(T)
     void dispose() @nogc
     {
         allocator.free(data[0..capacity]);
-        allocator.free(countPtr);
+        allocator.free(countPtr[0..1]);
     }
     immutable(T*) ptr(){return cast(immutable(T*))data;}
     size_t opDollar() @nogc {return length;}
@@ -415,12 +427,12 @@ struct Array(T)
     void reserve(size_t newSize){if(newSize > capacity)resize(cast(uint)newSize);}
     auto ref opOpAssign(string op, Q)(Q value) @nogc if(op == "~")
     {
-        if(countPtr[0] != 1)
+        if(*countPtr != 1)
         {
             //Save old data
             T* oldData = data;
             //Remove from the ref counter
-            countPtr[0]--;
+            *countPtr = *countPtr - 1;
             //Re initialize
             initialize(length, allocator);
             memcpy(data, oldData, T.sizeof*length);
@@ -450,18 +462,24 @@ struct Array(T)
     //     return String(this[0..$]);
     // }
     void put(T data) @nogc {this~= data;}
-    ~this() @nogc
+
+    private void release()
     {
         if(countPtr != null)
         {
-            countPtr[0]--;
-            assert(countPtr[0] >= 0);
-            if(countPtr[0] == 0)
+            *countPtr = *countPtr - 1;
+            assert(*countPtr >= 0);
+            if(*countPtr == 0)
                 dispose();
             data = null;
             countPtr = null;
             length = 0;
+            capacity = 0;
         }
+    }
+    ~this() @nogc
+    {
+        release();
     }
 }
 
@@ -618,6 +636,7 @@ struct Map(K, V)
         MapBucket* next;
     }
     private Array!MapBucket dataSet;
+    private Allocator* allocator;
 
     private int* countPtr;
 
@@ -629,18 +648,19 @@ struct Map(K, V)
 
     private int entriesCount;
 
-    private void initialize() @nogc
+    private void initialize(Allocator* allocator) @nogc
     {
-        dataSet = Array!(MapBucket)(initializationLength);
+        this.allocator = allocator;
+        dataSet = Array!(MapBucket)(initializationLength, allocator);
         dataSet.length = initializationLength;
         dataSet[] = MapBucket.init;
-        countPtr = cast(int*)malloc(int.sizeof);
+        countPtr = cast(int*)allocator.alloc(int.sizeof).ptr;
         *countPtr = 0;
     }
-    static auto opCall() @nogc
+    static auto opCall(Allocator* allocator = mallocAllocator) @nogc
     {
         Map!(K, V) ret;
-        ret.initialize();
+        ret.initialize(allocator);
         return ret;
     }
 
@@ -657,7 +677,7 @@ struct Map(K, V)
                 while(buck != null)
                 {
                     MapBucket copy = *buck;
-                    free(buck);
+                    allocator.free(buck[0..1]);
                     buck = copy.next;
                 }
             }
@@ -667,7 +687,7 @@ struct Map(K, V)
     private void recalculateHashes() @nogc
     {
         size_t newSize = cast(size_t)(dataSet.capacity * increasingFactor);
-        Array!MapBucket newArray = Array!MapBucket(newSize);
+        Array!MapBucket newArray = Array!MapBucket(newSize, allocator);
 
         for(int i = 0; i < dataSet.length; i++)
         {
@@ -687,13 +707,13 @@ struct Map(K, V)
     ref auto opIndex(K index) @nogc
     {
         if(dataSet.length == 0)
-            initialize();
+            initialize(allocator);
         return dataSet[getIndex(index)].data.value;
     }
     ref auto opIndexAssign(V value, K key) @nogc
     {
         if(dataSet.length == 0)
-            initialize();
+            initialize(allocator);
         uint i = getIndex(key);
         //Unexisting bucket
         if(dataSet[i] == MapBucket.init)
@@ -718,7 +738,7 @@ struct Map(K, V)
                     curr = curr.next;
             }
             while(curr.next != null);
-            curr.next = cast(MapBucket*)malloc(MapBucket.sizeof);
+            curr.next = cast(MapBucket*)allocator.alloc(MapBucket.sizeof).ptr;
             *curr.next = MapBucket(MapData(key, value), null);
 
         }
@@ -729,7 +749,7 @@ struct Map(K, V)
     if(op == "in")
     {
         if(dataSet.length == 0)
-            initialize();
+            initialize(allocator);
         uint i = getIndex(key);
         if(dataSet[i] == MapBucket.init)
             return null;
@@ -745,7 +765,7 @@ struct Map(K, V)
             {
                 //Dispose
                 clear();
-                free(countPtr);
+                allocator.free(countPtr[0..1]);
             }
             countPtr = null;
         }

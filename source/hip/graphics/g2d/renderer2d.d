@@ -13,6 +13,7 @@ public import hip.graphics.g2d.textrenderer;
 public import hip.api.renderer.viewport;
 public import hip.api.renderer.operations;
 public import hip.api.data.font;
+public import hip.api.renderer.shadervar;
 
 package __gshared
 {

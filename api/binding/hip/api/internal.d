@@ -48,6 +48,9 @@ version(LoadFunctionPointers)
 			hipDestroy = cast(typeof(hipDestroy))_loadSymbol(_dll, "hipDestroy");
 			if(hipDestroy == null)
 				printf("Fatal error: could not load hipDestroy\n");
+
+			import hip.api.data.commons;
+			gFrameAllocator_ = cast(FrameAllocator*)_loadSymbol(_dll, "gFrameAllocator");
 		}
 	}
 }
