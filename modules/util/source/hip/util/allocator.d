@@ -45,7 +45,6 @@ struct FrameAllocator
     static void[] allocImpl(Allocator* alloc, size_t amount) @nogc
     {
         FrameAllocator* f = cast(FrameAllocator*)alloc;
-
         if(f.offset+amount > f.heap.length)
             assert(false, "Please create a bigger frame allocator.");
         
@@ -56,6 +55,8 @@ struct FrameAllocator
 
     static void[] reallocImpl(Allocator* alloc, void[] ptr, size_t amount) @nogc
     {
+        if(ptr.length == amount)
+            return ptr;
         FrameAllocator* f = cast(FrameAllocator*)alloc;
 
         if(f.heap.ptr + f.offset == ptr.ptr)
@@ -132,7 +133,7 @@ struct MallocAllocator
     }
 }
 
-__gshared MallocAllocator mallocAllocator;
+__gshared MallocAllocator mallocAllocator = MallocAllocator.create();
 
 version(none):
 struct GCAllocator
