@@ -15,6 +15,8 @@ immutable dstring defaultCharset = " \náéíóúãñçabcdefghijklmnopqrstuvwxy
 
 version = HipArsdFont;
 
+enum SDFPadding = 8;
+
 
 private uint nextPowerOfTwo(uint number)
 {
@@ -72,8 +74,9 @@ class HipArsd_TTF_Font : HipFont
     protected Hip_TTF_Font mainInstance;
     protected Hip_TTF_Font[] clones;
 
-    this(string path, uint fontSize = 32)
+    this(string path, uint fontSize = 32, HipFontType type)
     {
+        super(type);
         this.path = path;
         this.fontSize = fontSize;
     }
@@ -134,7 +137,7 @@ class HipArsd_TTF_Font : HipFont
     */
     override HipFont getFontWithSize(uint size)
     {
-        Hip_TTF_Font ret = new Hip_TTF_Font(this.path, size);
+        Hip_TTF_Font ret = new Hip_TTF_Font(this.path, size, type);
         ret.font = cast(TtfFont)this.font;
         ret.mainInstance = cast(Hip_TTF_Font)(mainInstance is null ? this : mainInstance);
         if(mainInstance)
@@ -154,7 +157,18 @@ class HipArsd_TTF_Font : HipFont
         RenderizedChar rch;
         rch.ch = ch;
         int w, h;
-        rch.data = font.renderCharacter(ch, size, w, h, shift_x, shift_y);
+        if(type == HipFontType.bitmap)
+            rch.data = font.renderCharacter(ch, size, w, h, shift_x, shift_y);
+        else
+        {
+            float scale = stbtt_ScaleForPixelHeight(&font.font, size);
+            int padding = SDFPadding;
+            ubyte onEdgeValue = 180;
+            float pixelDistScale = cast(float)onEdgeValue / padding;
+            auto ptr = stbtt_GetCodepointSDF(&font.font, scale, ch, padding, onEdgeValue, pixelDistScale, &w, &h, &rch.xOffset, &rch.yOffset);
+            rch.data = ptr[0..w*h];
+        }
+        rch.type = type;
         rch.width = w.to!ushort;
         rch.height = h.to!ushort;
         return rch;
@@ -228,7 +242,13 @@ class HipArsd_TTF_Font : HipFont
             int xAdvance, xOffset, yOffset, lsb;
             int x1, y1;
             stbtt_GetGlyphHMetrics(&font.font, g, &xAdvance, &lsb);
-            stbtt_GetGlyphBitmapBox(&font.font, g, scale,scale, &xOffset,&yOffset,&x1,&y1);
+            if(type == HipFontType.bitmap)
+                stbtt_GetGlyphBitmapBox(&font.font, g, scale,scale, &xOffset,&yOffset,&x1,&y1);
+            else
+            {
+                xOffset = fontCh.xOffset;
+                yOffset = fontCh.yOffset;
+            }
             if(fontCh.ch == ' ')
             {
                 int space_x0, space_x1;
@@ -279,6 +299,8 @@ private struct RenderizedChar
     int size;
     ushort width;
     ushort height;
+    int xOffset, yOffset; //Only in SDF
+    HipFontType type;
 
     ubyte[] data;
 
@@ -300,7 +322,10 @@ private struct RenderizedChar
             if(data.ptr != null)
             {
                 import arsd.ttf;
-                stbtt_FreeBitmap(data.ptr, null);
+                if(type == HipFontType.bitmap)
+                    stbtt_FreeBitmap(data.ptr, null);
+                else if(type == HipFontType.sdf)
+                    stbtt_FreeSDF(data.ptr, null);
             }
         }
         data = null;

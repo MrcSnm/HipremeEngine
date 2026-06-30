@@ -14,11 +14,17 @@ final class HipTTFFontLoadTask : HipAssetLoadTask
     private HipFSPromise fs;
     int fontSize;
     HipFont font;
+    HipFontType type;
     private ubyte[] rawImage;
 
     this(string path, string name, HipAsset asset, int fontSize, const(ubyte)[] extraData ,string fileRequesting, size_t lineRequesting)
     {
         super(path, name, asset, extraData, fileRequesting, lineRequesting);
+        if(extraData.length)
+        {
+            assert(extraData.length == HipFontType.sizeof);
+            type = *cast(HipFontType*)extraData.ptr;
+        }
         this.fontSize = fontSize;
     }
 
@@ -34,7 +40,7 @@ final class HipTTFFontLoadTask : HipAssetLoadTask
                     .addOnError((string err){error = err; result = cantLoad;})
                     .addOnSuccess((in ubyte[] data)
                     {
-                        Hip_TTF_Font ttFont = new Hip_TTF_Font(path, fontSize);
+                        Hip_TTF_Font ttFont = new Hip_TTF_Font(path, fontSize, type);
                         font = ttFont;
                         if(!ttFont.partialLoad(data, rawImage))
                         {

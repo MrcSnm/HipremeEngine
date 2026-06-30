@@ -25,6 +25,13 @@ struct HipLineInfo
     float[512] kerningCache = void;
 }
 
+enum HipFontType : ubyte
+{
+    bitmap,
+    sdf,
+    msdf ///Unimplemented.
+}
+
 pragma(LDC_no_typeinfo)
 struct HipWordWrapRange
 {
@@ -266,9 +273,10 @@ abstract class HipFont : HipAsset, IHipFont
     abstract int getKerning(dchar current, dchar next) const;
     abstract int getKerning(const(HipFontChar)* current, const(HipFontChar)* next) const;
 
-    this()
+    this(HipFontType type = HipFontType.bitmap)
     {
         super("Font");
+        this.type = type;
     }
 
     ///Underlying GPU texture
@@ -278,6 +286,7 @@ abstract class HipFont : HipAsset, IHipFont
     uint _spaceWidth;
     ///How much the line break will offset in Y the next char
     uint _lineBreakHeight;
+    HipFontType type;
 
     final IHipTexture getTexture() { return _texture; }
 
