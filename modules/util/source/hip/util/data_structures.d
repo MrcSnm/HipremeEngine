@@ -267,16 +267,20 @@ pragma(LDC_no_typeinfo)
 struct Array(T) 
 {
     size_t length;
-    T* data;
     size_t capacity;
-    int* countPtr;
+    private struct DataInfo
+    {
+        int countPtr;
+        T* data;
+    }
+    DataInfo* info;
     private Allocator* allocator;
     import core.stdc.string:memcpy, memset;
 
     this(this) @nogc
     {
-        if(countPtr !is null)
-            *countPtr = *countPtr + 1;
+        if(info !is null)
+            info.countPtr++;
     }
 
     ref Array!T opAssign(Array!T other)
@@ -284,11 +288,10 @@ struct Array(T)
         import std.stdio;
         release();
         this.length = other.length;
-        this.data = other.data;
-        this.countPtr = other.countPtr;
+        this.info = other.info;
         this.capacity = other.capacity;
         this.allocator = other.allocator;
-        *countPtr = *countPtr+1;
+        info.countPtr++;
         return this;
     }
 
@@ -297,7 +300,7 @@ struct Array(T)
         int result = 0;
         for(int i = 0; i < length; i++)
         {
-            result = dg(i, data[i]);
+            result = dg(i, info.data[i]);
             if(result)
                 break;
         }
@@ -309,7 +312,7 @@ struct Array(T)
         int result = 0;
         for(int i = 0; i < length; i++)
         {
-            result = dg(data[i]);
+            result = dg(info.data[i]);
             if(result) break;
         }
         return result;
@@ -317,11 +320,10 @@ struct Array(T)
     private void initialize(size_t capacity, Allocator* allocator) @nogc
     {
         this.allocator = allocator;
-        this.data = cast(T*)allocator.calloc(capacity, T.sizeof);
-        this.capacity = capacity;
-        this.countPtr = cast(int*)allocator.alloc(int.sizeof).ptr;
-        *this.countPtr = 1;
+        this.info = cast(DataInfo*)allocator.alloc(capacity*T.sizeof + int.sizeof).ptr;
+        this.info.countPtr = 1;
         this[0..capacity] = T.init;
+        this.capacity = capacity;
     }
 
     static Array!T opCall(Allocator* allocator = mallocAllocator.ptr) @nogc
@@ -351,13 +353,13 @@ struct Array(T)
     {
         Array!T ret = Array!(T)(arr.length, allocator);
         ret.length = arr.length;
-        ret.data[0..ret.length] = arr[];
+        ret.info.data[0..ret.length] = arr[];
         return ret;
     }
 
     void* getRef()
     {
-        *countPtr = *countPtr + 1;
+        info.countPtr++;
         return cast(void*)&this;
     }
 
@@ -368,29 +370,28 @@ struct Array(T)
     }
     void dispose() @nogc
     {
-        allocator.free(data[0..capacity]);
-        allocator.free(countPtr[0..1]);
+        allocator.free((cast(void*)info)[0..capacity*T.sizeof+int.sizeof]);
     }
-    immutable(T*) ptr(){return cast(immutable(T*))data;}
+    immutable(T*) ptr(){return cast(immutable(T*))info.data;}
     size_t opDollar() @nogc {return length;}
 
     T[] opSlice() @nogc
     {
-        return data[0..length];
+        return info.data[0..length];
     }
 
     T[] opSlice(size_t start, size_t end) @nogc
     {
-        return data[start..end];
+        return info.data[start..end];
     }
     auto ref opSliceAssign(T)(T value) @nogc
     {
-        data[0..length] = value;
+        info.data[0..length] = value;
         return this;
     }
     auto ref opSliceAssign(T)(T value, size_t start, size_t end) @nogc
     {
-        data[start..end] = value;
+        info.data[start..end] = value;
         return this;
     }
     import hip.util.reflection:isArray;
@@ -410,16 +411,16 @@ struct Array(T)
     ref auto opIndex(size_t index) @nogc
     {
         assert(index>= 0 && index < length, "Array out of bounds");
-        return data[index];
+        return info.data[index];
     }
 
     pragma(inline) private void resize(uint newSize) @nogc
     {
-        if(data == null || capacity == 0)
+        if(info == null || capacity == 0)
             initialize(newSize, allocator);
         else
         {
-            data = cast(T*)allocator.realloc(data[0..capacity], newSize*T.sizeof).ptr;
+            info = cast(DataInfo*)allocator.realloc((cast(void*)info)[0..capacity*T.sizeof+int.sizeof], newSize*T.sizeof+int.sizeof).ptr;
             capacity = newSize;
         }
     }
@@ -427,31 +428,31 @@ struct Array(T)
     void reserve(size_t newSize){if(newSize > capacity)resize(cast(uint)newSize);}
     auto ref opOpAssign(string op, Q)(Q value) @nogc if(op == "~")
     {
-        if(*countPtr != 1)
+        if(info.countPtr != 1)
         {
             //Save old data
-            T* oldData = data;
+            T* oldData = info.data;
             //Remove from the ref counter
-            *countPtr = *countPtr - 1;
+            info.countPtr--;
             //Re initialize
             initialize(length, allocator);
-            memcpy(data, oldData, T.sizeof*length);
+            memcpy(info.data, oldData, T.sizeof*length);
         }
         static if(is(Q == T))
         {
-            if(data == null)
+            if(info == null)
                 initialize(1, allocator);
             if(length + 1 >= capacity)
                 resize(cast(uint)((length+1)*1.5));
-            data[length++] = value;
+            info.data[length++] = value;
         }
         else static if(is(Q == T[]) || is(Q == Array!T))
         {
-            if(data == null)
+            if(info == null)
                 initialize(value.length, allocator);
             if(length + value.length >= capacity)
                 resize(cast(uint)((length+value.length)*1.5));
-            memcpy(data+length, value.ptr, T.sizeof*value.length);
+            memcpy(info.data+length, value.ptr, T.sizeof*value.length);
             length+= value.length;    
         }
         return this;
@@ -465,14 +466,12 @@ struct Array(T)
 
     private void release()
     {
-        if(countPtr != null)
+        if(info != null)
         {
-            *countPtr = *countPtr - 1;
-            assert(*countPtr >= 0);
-            if(*countPtr == 0)
+            assert(--info.countPtr >= 0);
+            if(info.countPtr == 0)
                 dispose();
-            data = null;
-            countPtr = null;
+            info = null;
             length = 0;
             capacity = 0;
         }
