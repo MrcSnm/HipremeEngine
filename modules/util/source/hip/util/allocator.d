@@ -3,14 +3,14 @@ module hip.util.allocator;
 struct Allocator
 {
     @nogc:
-    private void[] function(Allocator* allocator, size_t amount) allocFn;
-    private void[] function(Allocator* allocator, void[] ptr, size_t amount) reallocFn;
+    private void[] function(Allocator* allocator, size_t amount, size_t alignment) allocFn;
+    private void[] function(Allocator* allocator, void[] ptr, size_t amount, size_t alignment) reallocFn;
     private void function(Allocator* allocator, void[] ptr) freeFn;
 
     pragma(inline, true)
     {
-        void[] alloc(size_t amount){return allocFn(&this, amount);}
-        void[] realloc(void[] ptr, size_t amount){return reallocFn(&this, ptr, amount);}
+        void[] alloc(size_t amount, size_t alignment = size_t.sizeof){return allocFn(&this, amount, alignment);}
+        void[] realloc(void[] ptr, size_t amount, size_t alignment = size_t.sizeof){return reallocFn(&this, ptr, amount, alignment);}
         void free(void[] ptr){return freeFn(&this, ptr);}
     }
     void[] calloc(size_t count, size_t elementCount)
@@ -42,7 +42,7 @@ struct FrameAllocator
         return ret;
     }
 
-    static void[] allocImpl(Allocator* alloc, size_t amount) @nogc
+    static void[] allocImpl(Allocator* alloc, size_t amount, size_t alignment) @nogc
     {
         FrameAllocator* f = cast(FrameAllocator*)alloc;
         if(f.offset+amount > f.heap.length)
@@ -53,7 +53,7 @@ struct FrameAllocator
         return ret;
     }
 
-    static void[] reallocImpl(Allocator* alloc, void[] ptr, size_t amount) @nogc
+    static void[] reallocImpl(Allocator* alloc, void[] ptr, size_t amount, size_t alignment) @nogc
     {
         if(ptr.length == amount)
             return ptr;
@@ -127,8 +127,8 @@ struct MallocAllocator
 
     @nogc
     {
-        static void[] allocImpl(Allocator* alloc, size_t amount){return malloc(amount)[0..amount];}
-        static void[] reallocImpl(Allocator* alloc, void[] ptr, size_t amount){return realloc(ptr.ptr, amount)[0..amount];}
+        static void[] allocImpl(Allocator* alloc, size_t amount, size_t alignment){return malloc(amount)[0..amount];}
+        static void[] reallocImpl(Allocator* alloc, void[] ptr, size_t amount, size_t alignment){return realloc(ptr.ptr, amount)[0..amount];}
         static void freeImpl(Allocator* alloc, void[] ptr){ free(ptr.ptr);}
     }
 }

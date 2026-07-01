@@ -157,16 +157,16 @@ class HipArsd_TTF_Font : HipFont
         RenderizedChar rch;
         rch.ch = ch;
         int w, h;
-        if(type == HipFontType.bitmap)
-            rch.data = font.renderCharacter(ch, size, w, h, shift_x, shift_y);
-        else
+        rch.data = font.renderCharacter(ch, size, w, h, shift_x, shift_y);//
+        if(type == HipFontType.sdf)
         {
-            float scale = stbtt_ScaleForPixelHeight(&font.font, size);
-            int padding = SDFPadding;
-            ubyte onEdgeValue = 180;
-            float pixelDistScale = cast(float)onEdgeValue / padding;
-            auto ptr = stbtt_GetCodepointSDF(&font.font, scale, ch, padding, onEdgeValue, pixelDistScale, &w, &h, &rch.xOffset, &rch.yOffset);
-            rch.data = ptr[0..w*h];
+            import tinysdf;
+            auto ptr = rch.data.ptr;
+            TinySDF sdf;
+            rch.data = sdf.generateWithPadding(rch.data, w, h, SDFPadding, w, h);
+            version(WebAssembly){} //TODO: FIXME WEBASSEMBLY CANT FREE THAT
+            else
+                stbtt_FreeBitmap(ptr, null);
         }
         rch.type = type;
         rch.width = w.to!ushort;
@@ -179,15 +179,14 @@ class HipArsd_TTF_Font : HipFont
     protected ubyte[] generateImage(int size, out ushort width, out ushort height, dstring charset = defaultCharset)
     {
         import hip.util.conv:to;
+        import hip.util.rc.array;
         if(charset.length == 0)
             return null;
-        scope RenderizedChar[] fontChars = new RenderizedChar[charset.length]; //TODO: USe that as it is more optimised
+        scope Array!RenderizedChar fontChars = Array!RenderizedChar(charset.length); //TODO: USe that as it is more optimised
         scope(exit)
         {
             foreach(ch; fontChars)
                 ch.dispose();
-            import core.memory;
-            GC.free(fontChars.ptr);
         }
 
         uint avgWidth = 0;
@@ -200,6 +199,7 @@ class HipArsd_TTF_Font : HipFont
             avgHeight+= rc.height;
             fontChars[i++] = rc;
         }
+
         //Add as an error (pixel bleeding)
         avgWidth = cast(uint)(avgWidth / charset.length) + 2;
         avgHeight = cast(uint)(avgHeight / charset.length) + 2;
@@ -235,7 +235,7 @@ class HipArsd_TTF_Font : HipFont
         int largestHeightInRow = 0;
         import hip.util.algorithm;
 
-        foreach(fontCh; quicksort(fontChars, (RenderizedChar a, RenderizedChar b) => a.height > b.height))
+        foreach(fontCh; quicksort(fontChars[0..$], (RenderizedChar a, RenderizedChar b) => a.height > b.height))
         {
             import hip.api.renderer.core:floatMapped;
             int g = stbtt_FindGlyphIndex(&font.font, fontCh.ch);
@@ -324,8 +324,6 @@ private struct RenderizedChar
                 import arsd.ttf;
                 if(type == HipFontType.bitmap)
                     stbtt_FreeBitmap(data.ptr, null);
-                else if(type == HipFontType.sdf)
-                    stbtt_FreeSDF(data.ptr, null);
             }
         }
         data = null;

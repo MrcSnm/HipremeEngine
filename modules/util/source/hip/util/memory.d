@@ -9,6 +9,7 @@ module hip.util.memory;
 
 public import core.stdc.stdlib;
 public import core.stdc.string:memcpy, memcmp, memset;
+import std.traits:hasIndirections;
 import hip.util.reflection;
 
 version(WebAssembly) version = CustomRuntime;
@@ -18,6 +19,11 @@ version(CustomRuntimeTest) version = CustomRuntime;
 void setZeroMemory(T)(ref T variable)
 {
     memset(&variable, 0, T.sizeof);
+}
+
+size_t alignUp(size_t value, size_t alignment)
+{
+    return (value + alignment - 1) & ~(alignment - 1);
 }
 
 
@@ -49,6 +55,24 @@ void* toHeap(T)(T data) if(!isReference!T)
 void[] toHeapSlice(T)(T data) if(!is(T == void[]))
 {
     return toHeap(data)[0..T.sizeof];
+}
+void addRange(T)(T* ptr, size_t size)
+{
+    version(CustomRuntime){}
+    else static if(hasIndirections!T)
+    {
+        import core.memory:GC;
+        GC.addRange(ptr, size, typeid(T));
+    }
+}
+void removeRange(void* ptr)
+{
+    version(CustomRuntime){}
+    else
+    {
+        import core.memory:GC;
+        GC.removeRange(ptr);
+    }
 }
 
 

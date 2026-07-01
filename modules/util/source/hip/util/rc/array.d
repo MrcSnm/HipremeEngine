@@ -1,5 +1,6 @@
 module hip.util.rc.array;
 public import hip.util.allocator;
+import hip.util.memory;
 
 /**
 *   RefCounted, Array @nogc, OutputRange compatible, it aims to bring the same result as one would have by using
@@ -14,7 +15,20 @@ struct Array(T)
     private struct DataInfo
     {
         ptrdiff_t refCount;
-        T* data(){return cast(T*)(&this+1); }
+        T* data()
+        {
+            import hip.util.memory;
+            auto base = cast(ubyte*)&this;
+            enum offset = alignUp(DataInfo.sizeof, T.alignof);
+            return cast(T*)(base+offset);
+        }
+        static size_t byteCountForCapacity(size_t capacity)
+        {
+            import hip.util.memory;
+            enum offset = alignUp(DataInfo.sizeof, T.alignof);
+            return offset + T.sizeof * capacity;
+        }
+        static size_t bytesNoHeader(size_t capacity){return T.sizeof * capacity;}
     }
     DataInfo* info;
     private Allocator* allocator;
@@ -57,13 +71,14 @@ struct Array(T)
         }
         return result;
     }
-    private void initialize(size_t capacity, Allocator* allocator) @nogc
+    private void initialize(size_t length, Allocator* allocator) @nogc
     {
         this.allocator = allocator;
-        this.info = cast(DataInfo*)allocator.alloc(capacity*T.sizeof + DataInfo.sizeof).ptr;
+        this.info = cast(DataInfo*)allocator.alloc(DataInfo.byteCountForCapacity(length)).ptr;
+        addRange(info.data, DataInfo.bytesNoHeader(length));
         this.info.refCount = 1;
-        this[0..capacity] = T.init;
-        this.capacity = capacity;
+        this.length = this.capacity = length;
+        this[0..length] = T.init;
     }
 
     static Array!T opCall(Allocator* allocator = mallocAllocator.ptr) @nogc
@@ -75,18 +90,17 @@ struct Array(T)
     }
 
 
-    static Array!T opCall(size_t capacity = 1, Allocator* allocator = mallocAllocator.ptr) @nogc
+    static Array!T opCall(size_t length = 1, Allocator* allocator = mallocAllocator.ptr) @nogc
     {
         assert(allocator !is null);
         Array!T ret;
-        ret.initialize(capacity, allocator);
+        ret.initialize(length, allocator);
         return ret;
     }
 
     static Array!T opCall(size_t length, T value, Allocator* allocator = mallocAllocator.ptr) @nogc
     {
         Array!T ret = Array!(T)(length, allocator);
-        ret.length = length;
         ret[] = value;
         return ret;
     }
@@ -94,7 +108,6 @@ struct Array(T)
     static Array!T opCall(scope T[] arr, Allocator* allocator = mallocAllocator.ptr) @nogc
     {
         Array!T ret = Array!(T)(arr.length, allocator);
-        ret.length = arr.length;
         ret.info.data[0..ret.length] = arr[];
         return ret;
     }
@@ -112,9 +125,10 @@ struct Array(T)
     }
     void dispose() @nogc
     {
-        allocator.free((cast(void*)info)[0..capacity*T.sizeof+DataInfo.sizeof]);
+        removeRange(info);
+        allocator.free((cast(void*)info)[0..DataInfo.byteCountForCapacity(capacity)]);
     }
-    immutable(T*) ptr(){return cast(immutable(T*))info.data;}
+    T* ptr(){return cast(T*)info.data;}
     size_t opDollar() @nogc {return length;}
 
     T[] opSlice() @nogc
@@ -141,9 +155,16 @@ struct Array(T)
     if(isArray!Q)
     {
         if(info == null)
-            info = cast(DataInfo*)allocator.alloc(T.sizeof*value.length+DataInfo.sizeof);
+        {
+            info = cast(DataInfo*)allocator.alloc(DataInfo.byteCountForCapacity(value.length));
+            addRange(info.data, DataInfo.bytesNoHeader(value.length));
+        }
         else
-            info = cast(DataInfo*)allocator.realloc(info, T.sizeof*value.length+DataInfo.sizeof);
+        {
+            removeRange(info.data);
+            info = cast(DataInfo*)allocator.realloc(info, DataInfo.byteCountForCapacity(value.length));
+            addRange(info.data, DataInfo.bytesNoHeader(value.length));
+        }
         length = value.length;
         capacity = value.length;
         memcpy(info, value.ptr, T.sizeof*value.length);
@@ -162,7 +183,9 @@ struct Array(T)
             initialize(newSize, allocator);
         else
         {
-            info = cast(DataInfo*)allocator.realloc((cast(void*)info)[0..capacity*T.sizeof+DataInfo.sizeof], newSize*T.sizeof+DataInfo.sizeof).ptr;
+            removeRange(info.data);
+            info = cast(DataInfo*)allocator.realloc((cast(void*)info)[0..DataInfo.byteCountForCapacity(capacity)], DataInfo.byteCountForCapacity(newSize)).ptr;
+            addRange(info.data, DataInfo.bytesNoHeader(capacity));
             capacity = newSize;
         }
     }
