@@ -4,9 +4,9 @@
 	],
 	"configurations": [
 		{
-			"dependencies": { "gamut": "~>2.0.9" },
-			"subConfigurations": { "gamut": "just-decode" },
+			"dependencies": { "gamut": "~>2.6" },
 			"versions": [ "HipGamutImageDecoder" ],
+			"subConfigurations": {"gamut": "hipreme"},
 			"name": "gamut",
 			"targetType": "library"
 		},

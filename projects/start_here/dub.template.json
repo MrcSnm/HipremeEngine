@@ -8,7 +8,8 @@
     "engineModules": [
         "util",
         "math",
-		"game2d"
+		"game2d",
+		"game_renderer"
     ],
     "stringImportPaths": ["#PROJECT/ct_assets"],
 	"dflags-ldc": ["--disable-verify", "--oq"],

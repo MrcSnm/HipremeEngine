@@ -35,6 +35,11 @@ version(WebAssembly)
             assert(path, "HipWasmImageDecoder requires a path.");
             this.path = path;
         }
+
+        void saveToFile(string path, ubyte[] data, int width, int height)
+        {
+            //Do nothing
+        }
         bool startDecoding(void[] data, void delegate() onSuccess, void delegate() onFailure)
         {
             import hip.console.log;

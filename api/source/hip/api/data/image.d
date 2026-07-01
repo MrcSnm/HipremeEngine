@@ -27,6 +27,7 @@ public interface IHipImageDecoder : IImageBase
 {
     ///Use that for decoding from memory, returns whether data was invalid.
     bool startDecoding(ubyte[] data, void delegate() onSuccess, void delegate() onFailure);
+    void saveToFile(string path, ubyte[] data, int width, int height);
     
     static const(ubyte[4]) getPixel(){return cast(ubyte[4])[255,255,255,255];}
     ///Dispose the pixels
@@ -50,6 +51,8 @@ public interface IImage : IImageBase
     bool hasLoadedData() const;
     ubyte[] convertPalettizedToRGBA() const;
     ubyte[] monochromeToRGBA() const;
+
+    void saveToFile(string path, ubyte[] data, int width, int height);
 }
 
 

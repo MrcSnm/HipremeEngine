@@ -11,6 +11,15 @@ final class HipGamutImageDecoder : IHipImageDecoder
     {
         this.path = path;
     }
+
+    void saveToFile(string path, ubyte[] data, int width, int height)
+    {
+        img.create(width, height, PixelType.l8, LAYOUT_GAPLESS | LAYOUT_VERT_STRAIGHT );
+        // img.createViewFromData(data.ptr, width, height, PixelType.l8, width);
+        img.allPixelsAtOnce[] = data[];
+        if(!img.saveToFile(ImageFormat.BMP, path, ))
+            throw new Error("Save : " ~ img.errorMessage.idup);
+    }
     bool startDecoding(ubyte[] data, void delegate() onSuccess, void delegate() onFailure)
     {
         img.loadFromMemory(data, LOAD_RGB | LOAD_ALPHA | LOAD_8BIT);

@@ -10,6 +10,7 @@ final class HipNullImageDecoder : IHipImageDecoder
         onFailure();
         return false;
     }
+    void saveToFile(string path, ubyte[] data, int width, int height){}
     uint getWidth() const {return 0;}
     uint getHeight() const {return 0;}
     const(ubyte)[] getPixels() const {return null;}

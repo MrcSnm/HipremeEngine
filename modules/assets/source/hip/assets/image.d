@@ -50,6 +50,11 @@ public class Image : HipAsset, IImage
         this(path);
         loadFromMemory(cast(ubyte[])buffer, onSuccess, onFailure);
     }
+    
+    void saveToFile(string path, ubyte[] data, int width, int height)
+    {
+        getDecoder(path).saveToFile(path, data, width, height);
+    }
 
     static immutable(IImage) getPixelImage()
     {
