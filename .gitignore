@@ -47,3 +47,13 @@ trace.json
 .ldc2_cache
 hipreme_engine.lib
 hipreme_engine.dll
+build/appleos/assets
+build/vita/hipreme_engine/assets
+projects/
+**/*scriptmodules.txt
+bin/desktop/engine_opts.json
+build/vita/hipreme_engine/libIncludes.txt
+build/appleos/D/libIncludes.json
+tools/internal/plugins/**/*.dll
+tools/internal/plugins/**/*.dylib
+tools/internal/plugins/**/*.so
