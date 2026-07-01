@@ -125,7 +125,7 @@ final class HipBMFontLoadTask : HipAssetLoadTask
 
                 if(!font.loadTexture(new HipTexture(loadedImage, HipResourceUsage.Immutable)))
                 {
-                    result = cantLoad; error = "Failed loading texture for TTF Font";
+                    result = cantLoad; error = "Failed loading texture for BMFontFont";
                     return;
                 }
                 asset = font;

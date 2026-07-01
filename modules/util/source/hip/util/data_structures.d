@@ -134,7 +134,7 @@ template DelayedBindable(T, bool needsUnbind, bool bindReplacesUnbind, int slots
         if(changed)
         {
             static if(needsUnbind)
-                unbind(bound[slot], slot);
+                unbind(bound[slot], true, slot);
             static if(slots == 1)
                 actualBind(data);
             else
@@ -143,9 +143,12 @@ template DelayedBindable(T, bool needsUnbind, bool bindReplacesUnbind, int slots
         }
     }
 
-    void unbind(T data, int slot = 0) 
+    void unbind(T data, bool forceUnbind = false, int slot = 0) 
     {
-        static if(!bindReplacesUnbind || needsUnbind)
+        if(!forceUnbind)
+            forceUnbind = !bindReplacesUnbind || needsUnbind;
+
+        if(forceUnbind)
         {
             bool isSame;
             static if(!isReference!T)
@@ -161,6 +164,7 @@ template DelayedBindable(T, bool needsUnbind, bool bindReplacesUnbind, int slots
                 bound[slot] = T.init;
             }
         }
+
     }
 }
 

@@ -60,7 +60,7 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
     void unbind(int slot = 0)
     {
         activeTextureBinder.bind(currentSlot);
-        textureBinder.unbind(this, slot);
+        textureBinder.unbind(this, false, slot);
     }
 
     void setWrapMode(TextureWrapMode mode)

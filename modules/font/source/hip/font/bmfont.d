@@ -28,7 +28,7 @@ class HipBitmapFont : HipFont
 
         static int advanceSpace(string data, int i)
         {
-            while(i < data.length && (data[i].isWhitespace || data[i] == '='))
+            while(i < data.length && (data[i].isWhitespace || data[i] == '=' || data[i] == '\0'))
                 i++;
             return i;
         }
@@ -122,6 +122,8 @@ class HipBitmapFont : HipFont
         while(index != -1 && index < data.length)
         {
             key = getNextString(data, index);
+            if(key.length == 0)
+                break;
             final switch(context)
             {
                 case Context.info:
@@ -244,7 +246,7 @@ class HipBitmapFont : HipFont
                     uint maxWidth = 0;
 
 
-                    for(int i = 0; i < count; i++)
+                    for(int i = 0; i <= count; i++)
                     {
                         import hip.util.conv:to;
                         HipFontChar ch;
@@ -311,6 +313,8 @@ class HipBitmapFont : HipFont
                     continue;
             }
         }
+        import hip.console.log;
+        hiplog("Loaded Font: ", atlasPath, "->", characters.length, " characters loaded.");
         
 
         return true;

@@ -559,6 +559,13 @@ private string preprocess(string shader, ShaderTypes type, bool isInstanced = fa
 
 #endif
 
+#define float4 vec4
+#define float3 vec3
+#define float2 vec2
+#define float4x4 mat4
+#define float3x3 mat3
+#define float2x2 mat2
+
 #ifdef FRAGMENT
 #define ENTRY_POINT fragmentMain()
 #elif defined(VERTEX)

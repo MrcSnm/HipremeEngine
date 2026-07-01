@@ -190,6 +190,7 @@ class GameSystem : IGameSystem
     {
         import hip.view.load_scene;
         import hip.assetmanager;
+        AScene startScene;
         version(Test)
         {
             // addScene(new SoundTestScene());
@@ -201,21 +202,20 @@ class GameSystem : IGameSystem
             mixin LoadReferencedAssets!(["hip.view.testscene"]);
             loadReferenced;
             hiplog("starting test scene.");
-            addScene(new TestScene());
+            startScene = new TestScene();
         }
         else version(Load_DScript)
         {
             ErrorHandler.assertExit(HipremeEngineGameInit != null, "No game was loaded");
-            externalScene = HipremeEngineGameInit();
-            addScene(externalScene);
+            startScene = externalScene = HipremeEngineGameInit();
         }
         else version(Standalone)
         {
             import hip.console.log;
             hiplog("Starting Game");
-            externalScene = HipremeEngineMainScene();
-            addScene(externalScene);
+            startScene = externalScene = HipremeEngineMainScene();
         }
+        addScene(startScene);
 
         LoadingScene load = new LoadingScene();
         addScene(load, false);

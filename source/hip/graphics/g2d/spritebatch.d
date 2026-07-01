@@ -117,14 +117,20 @@ final class HipSpriteBatch : IHipBatch
 
     Shader createSpriteBatchShaderEffect(string effect, ShaderVarLayoutInfo* info)
     {
-        Shader s = createShader(HipShaderPresets.SPRITE_BATCH, HipRendererType.None, effect);
-        ShaderVarLayoutInfo[1] layoutInfos;
+        import hip.util.string;
+        uint count = 0;
+        BigString effectPrefix;
+        ShaderVariablesLayout[1] layoutVars;
         if(info !is null)
-            layoutInfos = [*info];
-        uint count = info is null ? 0 : 1;
-        s.setup!(HipSpriteVertexUniform, HipSpriteFragmentUniform)(HipRenderer.getInfo, layoutInfos[0..count]);
+        {
+            layoutVars[0] = ShaderVariablesLayout.from(*info, HipRenderer.getInfo);
+            count = 1;
+            layoutVars[0].generateUbo(HipRenderer.getType, effectPrefix);
+        }
+        effectPrefix~= effect;
+        Shader s = createShader(HipShaderPresets.SPRITE_BATCH, HipRendererType.None, effectPrefix.toString);
+        s.setup!(HipSpriteVertexUniform, HipSpriteFragmentUniform)(HipRenderer.getInfo, layoutVars[0..count]);
         s.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
-        mesh.setShader(s);
         return s;
     }
 

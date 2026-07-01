@@ -4,6 +4,7 @@ import hip.api.renderer.shader;
 import hip.api.graphics.color;
 import hip.math.vector;
 public import hip.api.renderer.shadervar;
+import hip.util.string;
 
 /**
 *   Changes how the Shader behaves based on the backend
@@ -48,12 +49,41 @@ enum UniformType : ubyte
     texture_array,
     none
 }
+string typeFromUniformBase(UniformType t)
+{
+    switch(t) with(UniformType)
+    {
+        case boolean:        return "bool";
+        case integer:        return "int" ;
+        case integer_array:  return "int[]";
+        case uinteger:       return "uint";
+        case uinteger_array: return "uint[]";
+        case floating:       return "float";
+        case floating2:      return "float2";
+        case floating3:      return "float3";
+        case floating4:      return "float4";
+        case floating2x2:    return "float2x2";
+        case floating3x3:    return "float3x3";
+        case floating4x4:    return "float4x4";
+        case floating_array: return "float[]";
+        default:
+            return null;
+    }
+        
+}
+
+string typeFromUniform(ShaderVar v)
+{
+    return typeFromUniformBase(v.type);
+}
 
 struct ShaderVarLayoutInfo
 {
     TypeInfo typeInfo;
     string name;
+    string instanceName;
     ShaderTypes type;
+    ubyte glBindPoint;
     ShaderHint hint;
     size_t layoutSize;
     size_t maxMember;
@@ -322,6 +352,7 @@ class ShaderVariablesLayout
     private ShaderVarLayout*[] varOrder;
     private string[] unusedBlackboxed;
     string name;
+    string instanceName;
     ///char* representation of name
     const(char)* nameZeroEnded;
     protected HipShaderProgram owner;
@@ -332,6 +363,7 @@ class ShaderVariablesLayout
 
     ///The hint are used for the Shader backend as a notifier
     public immutable int hint;
+    ubyte bindPoint;
     protected size_t lastPosition;
 
     ///A function that must return a variable size when position = 0
@@ -503,6 +535,8 @@ class ShaderVariablesLayout
     static ShaderVariablesLayout from(ShaderVarLayoutInfo layoutInfo, HipRendererInfo info)
     {
         ShaderVariablesLayout ret = new ShaderVariablesLayout(info.type, layoutInfo.name, layoutInfo.type, ShaderHint.NONE, layoutInfo.typeInfo);
+        ret.bindPoint = layoutInfo.glBindPoint;
+        ret.instanceName = layoutInfo.instanceName;
         ret.data = new ubyte[layoutInfo.layoutSize];
 
         size_t big = layoutInfo.maxMember;
@@ -561,12 +595,81 @@ class ShaderVariablesLayout
         return ShaderVarLayoutInfo(
             typeid(T),
             attr[0].name,
+            attr[0].instanceName,
             attr[0].type,
+            attr[0].glBindPoint,
             ShaderHint.NONE,
             calcLayoutSize!T(getPackFunc(info.type)),
             maxMember!T,
             getVariablesOnly!T
         );
+    }
+
+    void generateUbo(HipRendererType type, ref BigString output)
+    {
+        final switch(type)
+        {
+            case HipRendererType.GL3: 
+                output~= "UNIFORM_BUFFER_OBJECT(";
+                output~= bindPoint;
+                output~= ", ";
+                output~= name;
+                output~= ", ";
+                output~= instanceName;
+                output~= ", { ";
+                foreach(ShaderVarLayout* sv; varOrder)
+                {
+                    ShaderVar v = sv.sVar;
+                    output~= typeFromUniform(v);
+                    output~= " ";
+                    output~= v.name[instanceName.length+1..$];
+                    output~= "; ";
+                }
+                output~= "});\n";
+                break;
+            case HipRendererType.D3D11: 
+                output~= "struct ";
+                output~= name;
+                output~= "\n{";
+                foreach(ShaderVarLayout* sv; varOrder)
+                {
+                    ShaderVar v = sv.sVar;
+                    output~= "\n\t";
+                    output~= typeFromUniform(v);
+                    output~= " ";
+                    output~= v.name;
+                    output~= ";";
+                }
+                output~= "\n};";
+
+                output~= "cbuffer ";
+                output~= name;
+                output~= "Buffer : register(b";
+                output~= bindPoint;
+                output~= ")\n{\n\t";
+                output~= name;
+                output~= " ";
+                output~= instanceName;
+                output~= ";\n};\n";
+                
+                break;
+            case HipRendererType.Metal:
+                output~= "struct ";
+                output~= name;
+                output~= "\n{";
+                foreach(ShaderVarLayout* sv; varOrder)
+                {
+                    ShaderVar v = sv.sVar;
+                    output~= "\n\t";
+                    output~= typeFromUniform(v);
+                    output~= " ";
+                    output~= v.name;
+                    output~= ";";
+                }
+                output~= "\n};";
+                break;
+            case HipRendererType.None: break;
+        }
     }
 
     HipShaderProgram getShader(){return owner;}

@@ -47,6 +47,11 @@ class HipTextRenderer
     void setFont(IHipFont font)
     {
         this.font = font;
+        if(font.getTexture() is null)
+        {
+            import hip.console.log;
+            loglnWarn("Null texture in font.");
+        }
     }
     void setColor(HipColor color)
     {

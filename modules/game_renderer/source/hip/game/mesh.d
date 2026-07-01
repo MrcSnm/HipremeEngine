@@ -104,7 +104,7 @@ class Mesh
     public void setShader(Shader s)
     {
         if(s !is shader)
-            unbind();
+            meshBinder.unbind(this, true);
         this.shader = s;
     }
 
