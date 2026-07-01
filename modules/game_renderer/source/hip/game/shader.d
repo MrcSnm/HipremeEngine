@@ -20,7 +20,10 @@ import hip.util.file;
 import hip.util.string:indexOf;
 public import hip.api.renderer.shader;
 
-
+Shader shaderString(string path)()
+{
+    return new Shader(path, import(path));
+}
 
 public class Shader : IReloadable
 {
@@ -50,9 +53,9 @@ public class Shader : IReloadable
         shaderProgram = HipRenderer.createShader();
         shaderProgram.setDirtyReference(&isDirty);
     }
-    this(string shaderSource, bool isInstanced = false)
+    this(string shaderPath, string shaderSource, bool isInstanced = false)
     {
-        ShaderStatus status = loadShader(shaderSource, null, isInstanced);
+        ShaderStatus status = loadShader(shaderSource, shaderPath, isInstanced);
         if(status != ShaderStatus.SUCCESS)
         {
             //TODO: Make logging public?
@@ -64,13 +67,21 @@ public class Shader : IReloadable
 
     bool isInstanced() const => _isInstanced;
 
-    ShaderStatus loadShader(string shaderSource, string shaderPath = "", bool isInstanced = false)
+    ShaderStatus loadShader(string shaderPath, string shaderSource, bool isInstanced = false)
     {
+        if(shaderPath is null)
+            return ShaderStatus.REQUIRE_PATH;
         this.internalShaderSource = shaderSource;
         this.shaderPath = shaderPath;
         _isInstanced = isInstanced;
         if(!shaderProgram.buildShader(shaderSource, shaderPath, isInstanced))
             return ShaderStatus.LINK_ERROR;
+        import hip.util.file;
+        import hip.util.path;
+        import hip.util.conv:to;
+
+        writeFileDebug(joinPath("Shaders", "Generated", HipRenderer.getType.to!string["HipRendererType.".length..$], shaderPath), shaderSource);
+
         return ShaderStatus.SUCCESS;
     }
 
@@ -86,7 +97,7 @@ public class Shader : IReloadable
     }
     bool reload()
     {
-        return loadShader(internalShaderSource) == ShaderStatus.SUCCESS;
+        return loadShader(shaderPath, internalShaderSource) == ShaderStatus.SUCCESS;
     }
 
     /** 

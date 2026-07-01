@@ -45,6 +45,17 @@ function initializeFS()
             const toWrite = WasmUtils.fromDString(writeLength, writePtr);
             localStorage.setItem(path, toWrite);
             console.log("Saved in", path, toWrite);
+        },
+
+        WasmDebugWriteFile(pathLength, pathPtr, contentLength, contentPtr)
+        {
+            let path = WasmUtils.fromDString(pathLength, pathPtr);
+            let content = WasmUtils.fromDString(contentLength, contentPtr);
+eval(`
+/*
+${content.replaceAll("*/", "*\\/")}
+*/
+//# sourceURL=${path}`);
         }
     };
 }

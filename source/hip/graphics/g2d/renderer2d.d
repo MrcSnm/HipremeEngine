@@ -364,11 +364,11 @@ Params:
 Returns:
     A shader handle. Cast it to shader by calling `shaderHandle.shader`
 */
-ShaderHandle createSpriteBatchShaderEffect(string effect, ShaderVarLayoutInfo info = ShaderVarLayoutInfo.init)
+ShaderHandle createSpriteBatchShaderEffect(string path, string effect, ShaderVarLayoutInfo info = ShaderVarLayoutInfo.init)
 {
     ShaderVarLayoutInfo* theInfo = &info;
     if(info.typeInfo is null) theInfo = null;
-    return spBatch.createSpriteBatchShaderEffect(effect, theInfo);
+    return spBatch.createSpriteBatchShaderEffect(path, effect, theInfo);
 }
 
 ShaderHandle getSpriteBatchShader()

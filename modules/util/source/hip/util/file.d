@@ -39,6 +39,22 @@ string getFileContent(string path, bool noCarriageReturn = true)
     return (noCarriageReturn) ? content.replaceAll('\r') : content;
 }
 
+version(WebAssembly)
+extern(C) void WasmDebugWriteFile(size_t pathLength, const(char)* pathPtr, size_t contentLength, const(char)* contentPtr);
+
+void writeFileDebug(string path, string content)
+{
+    version(WebAssembly)
+    {
+        WasmDebugWriteFile(path.length, path.ptr, content.length, content.ptr);
+    }
+    else version(Desktop)
+    {
+        import std.file;
+        std.file.write(buildPath("debug-files", path), content);
+    }
+}
+
 version(Windows)
 {
     string getcwd()

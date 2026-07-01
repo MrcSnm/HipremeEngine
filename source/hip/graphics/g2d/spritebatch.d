@@ -115,7 +115,7 @@ final class HipSpriteBatch : IHipBatch
         reinitUniforms();
     }
 
-    Shader createSpriteBatchShaderEffect(string effect, ShaderVarLayoutInfo* info)
+    Shader createSpriteBatchShaderEffect(string pathOverride, string effect, ShaderVarLayoutInfo* info)
     {
         import hip.util.string;
         uint count = 0;
@@ -128,7 +128,7 @@ final class HipSpriteBatch : IHipBatch
             layoutVars[0].generateUbo(HipRenderer.getType, effectPrefix);
         }
         effectPrefix~= effect;
-        Shader s = createShader(HipShaderPresets.SPRITE_BATCH, HipRendererType.None, effectPrefix.toString);
+        Shader s = createShader(HipShaderPresets.SPRITE_BATCH, HipRendererType.None, effectPrefix.toString, pathOverride);
         s.setup!(HipSpriteVertexUniform, HipSpriteFragmentUniform)(HipRenderer.getInfo, layoutVars[0..count]);
         s.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
         return s;

@@ -146,7 +146,7 @@ private {
                 uniform sampler2D uTex[%s];}(sup)~
             shaderSource~
             effect ~
-        "void fragmentMain(){"~q{
+        "\nvoid fragmentMain()\n{"~q{
                 int texId = int(inTexID);
                 bool isText = (texId & (1 << 15)) != 0;
                 texId = texId & 0xff;
@@ -154,7 +154,9 @@ private {
                 fx.uBatchColor = cbuf.uBatchColor;
                 fx.vertexColor = inVertexColor;
                 fx.worldPosition = inWorldPosition;
-        }~ textureSlotSwitchCase ~ "fx.textureColor = mix(fx.textureColor, fx.textureColor.rrrr, float(isText)); OUT_COLOR = effect(fx); }\n#endif";
+        }~ textureSlotSwitchCase ~ "
+        fx.textureColor = mix(fx.textureColor, fx.textureColor.rrrr, float(isText)); 
+        OUT_COLOR = effect(fx); \n}\n#endif";
         // outPixelColor = texture(uTex[texId], inTexST)* inVertexColor;
         // outPixelColor = vec4(texId, texId, texId, 1.0)* inVertexColor;
 
