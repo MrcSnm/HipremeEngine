@@ -1,5 +1,6 @@
 module targets.wasm;
 import features.git;
+import features.ldc;
 import commons;
 import global_opts;
 import server;
@@ -10,7 +11,7 @@ import tools.releasegame;
 ChoiceResult prepareWASM(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	import std.conv:to;
-	if(!hasLdc)
+	if(!LDCFeature.getFeature(t, input))
 	{
 		t.writelnError("WASM build requires ldc2 in path. Please install it before building to it.");
 		return ChoiceResult.Error;

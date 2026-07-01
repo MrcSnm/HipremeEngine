@@ -390,12 +390,6 @@ string getFirstExistingVar(scope string[] vars...)
 }
 
 
-
-bool hasLdc()
-{
-	return ("ldcPath" in configs) !is null;
-}
-
 bool dbgExecuteShell(scope const(char)[] command, ref Terminal t, const string[string] env = null)
 {
 	t.writeln("Executing command: ", command);

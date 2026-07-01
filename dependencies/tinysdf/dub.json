@@ -1,0 +1,9 @@
+{
+    "authors": [
+        "hipreme"
+    ],
+    "description": "A minimal D application.",
+	"targetPath": "build",
+    "license": "proprietary",
+    "name": "tinysdf"
+}
