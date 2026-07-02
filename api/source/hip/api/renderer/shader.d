@@ -61,6 +61,7 @@ abstract class HipShaderProgram
 
     abstract bool buildShader(string shaderSource, string shaderPath, bool isInstanced);
     abstract void setBlending(HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq);
+    abstract void getBlending(out HipBlendFunction src, out HipBlendFunction dst, out HipBlendEquation eq);
     abstract void bind();
     abstract void unbind();
     abstract int  getId(string name, ShaderVariablesLayout layout);

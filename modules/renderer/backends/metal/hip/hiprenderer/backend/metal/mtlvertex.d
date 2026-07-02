@@ -22,7 +22,6 @@ MTLResourceOptions mtlOptions(HipResourceUsage usage)
 }
 
 
-__gshared MTLBuffer boundIndexBuffer;
 final class HipMTLBuffer : IHipRendererBuffer
 {
     MTLBuffer buffer;
@@ -278,8 +277,5 @@ final class HipMTLVertexArray : IHipVertexArrayImpl
             descriptor.layouts[1+i].stepRate = 1;
             descriptor.layouts[1+i].stride = info.vboStride;
         }
-
-        HipMTLShader shader = (cast(HipMTLShader)shaderProgram);
-        shader.createPipelineState(device, descriptor);
     }
 }

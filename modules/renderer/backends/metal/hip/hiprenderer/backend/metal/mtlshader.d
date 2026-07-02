@@ -66,10 +66,6 @@ class HipMTLShader : HipShaderProgram
     BufferedMTLBuffer*[] uniformBufferVertex;
     BufferedMTLBuffer*[] uniformBufferFragment;
 
-
-
-    MTLRenderPipelineDescriptor pipelineDescriptor;
-    MTLRenderPipelineState pipelineState;
     HipBlendFunction blendSrc, blendDst;
     HipBlendEquation blendEq;
 
@@ -77,28 +73,8 @@ class HipMTLShader : HipShaderProgram
     {
         this.device = device;
         this.mtlRenderer = mtlRenderer;
-
-        pipelineDescriptor = MTLRenderPipelineDescriptor.alloc.initialize;
-
     }
 
-    void createPipelineState(MTLDevice device, MTLVertexDescriptor descriptor)
-    {
-        if(pipelineState)
-        {
-            pipelineState.release();
-            // assert(pipelineState is null, "Pipeline State was already created.");
-        }
-        NSError err;
-        pipelineDescriptor.vertexDescriptor = descriptor;
-        pipelineState = device.newRenderPipelineStateWithDescriptor(pipelineDescriptor, &err);
-        if(err !is null || pipelineState is null)
-        {
-            import hip.error.handler;
-            ErrorHandler.showErrorMessage("Creating Input Layout",  "Could not create RenderPipelineState");
-            err.print();
-        }
-    }
     override void dispose()
     {
         import hip.util.data_structures;
@@ -141,14 +117,6 @@ class HipMTLShader : HipShaderProgram
             loglnError("vertexMain() not found.");
             return false;
         }
-
-        pipelineDescriptor.label = shaderPath.ns;
-        pipelineDescriptor.vertexFunction = vertexShaderFunction;
-        pipelineDescriptor.fragmentFunction = fragmentShaderFunction;
-        pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.RGBA8Unorm;
-        pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
-        pipelineDescriptor.stencilAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
-
         return true;
     }
 
@@ -177,36 +145,22 @@ class HipMTLShader : HipShaderProgram
         blendSrc = src;
         blendDst = dest;
         blendEq = eq;
-
-        MTLBlendFactor mtlSrc = src.fromHipBlendFunction;
-        MTLBlendFactor mtlDest = dest.fromHipBlendFunction;
-        MTLBlendOperation mtlOp = eq.fromHipBlendEquation;
-        pipelineDescriptor.colorAttachments[0].blendingEnabled = eq != HipBlendEquation.DISABLED;
-        pipelineDescriptor.colorAttachments[0].rgbBlendOperation = mtlOp;
-        pipelineDescriptor.colorAttachments[0].alphaBlendOperation = mtlOp;
-        pipelineDescriptor.colorAttachments[0].sourceRGBBlendFactor = mtlSrc;
-        pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = mtlDest;
-        pipelineDescriptor.colorAttachments[0].sourceAlphaBlendFactor = mtlSrc;
-        pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = mtlDest;
-        
-        if(pipelineState !is null)
-            createPipelineState(device, pipelineDescriptor.vertexDescriptor);
+    }
+    override void getBlending(out HipBlendFunction src, out HipBlendFunction dest, out HipBlendEquation eq)
+    {
+        src = blendSrc;
+        dest = blendDst;
+        eq = blendEq;
     }
 
     override void bind()
     {
-        assert(pipelineState !is null);
-        mtlRenderer.getEncoder.setRenderPipelineState(pipelineState);
-        foreach(i, b; uniformBufferVertex)
-            mtlRenderer.getEncoder.setVertexBuffer(b.getBuffer, 0, i);
-        foreach(i, b; uniformBufferFragment)
-            mtlRenderer.getEncoder.setFragmentBuffer(b.getBuffer, 0, i);
+        mtlRenderer.boundShader = this;
     }
 
     override void unbind()
     {
-        mtlRenderer.getEncoder.setVertexBuffer(null, 0, 0);
-        mtlRenderer.getEncoder.setFragmentBuffer(null, 0, 0);
+        mtlRenderer.boundShader = null;
     }
 
 
