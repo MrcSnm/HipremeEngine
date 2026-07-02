@@ -140,7 +140,11 @@ void HipremeHandleArguments()
 // 	uint unused;
 // 	NtSetTimerResolution(5000, TRUE, &unused);
 
-
+version(Standalone)
+{
+    pragma(mangle, "HipGetEntryFilePath")
+    extern(C) string HipGetEntryFilePath();
+}
 static void initEngine(bool audio3D = false)
 {
 	import hip.internal_configuration;
@@ -152,7 +156,13 @@ static void initEngine(bool audio3D = false)
 
 	string fsInstallPath = getFSInstallPath(projectToLoad);
 	HipFS.install(fsInstallPath, getFilesystemValidations());
-	setIHipFS(HipFS);
+	string projPath;
+	version(Standalone)
+	{
+		import hip.util.path;
+		projPath = buildNormalizedPath(HipGetEntryFilePath(), "..", "..", ".."); //source/gamescript/entry.d
+	}
+	setIHipFS(HipFS, projPath);
 	loglnInfo("HipFS installed at path ", fsInstallPath);
 
 	import hip.bind.dependencies;

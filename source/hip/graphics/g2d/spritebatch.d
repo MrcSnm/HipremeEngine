@@ -47,10 +47,16 @@ final class HipSpriteBatch : IHipBatch
 
     this(HipOrthoCamera camera = null, index_t maxQuads = DefaultMaxSpritesPerBatch, index_t maxInstances = DefaultMaxSpritesPerBatchInstanced)
     {
+        import hip.api.renderer.shadereffect;
         import hip.hiprenderer.initializer;
         import hip.util.conv:to;
         ErrorHandler.assertLazyExit(index_t.max > maxQuads * 6, "Invalid max quads. Max is "~to!string(index_t.max/6));
-        this.spriteBatchShader = createShader(HipShaderPresets.SPRITE_BATCH);
+        ShaderEffect fx = ShaderEffect(HipRenderer.getType());
+        fx.addSource(q{float4 effect(EFFECT_PARAMS)
+        {
+            return fx.textureColor * fx.vertexColor * fx.uBatchColor;
+        }});
+        this.spriteBatchShader = createShader(HipShaderPresets.SPRITE_BATCH, HipRendererType.None, fx);
         if(camera is null)
             camera = new HipOrthoCamera();
         if(spriteBatchShader.isInstanced)
@@ -118,16 +124,16 @@ final class HipSpriteBatch : IHipBatch
     Shader createSpriteBatchShaderEffect(string pathOverride, string effect, ShaderVarLayoutInfo* info)
     {
         uint count = 0;
-        ShaderExtra extra;
+        ShaderEffect fx = ShaderEffect(HipRenderer.getType);
         ShaderVariablesLayout[1] layoutVars;
         if(info !is null)
         {
             layoutVars[0] = ShaderVariablesLayout.from(*info, HipRenderer.getInfo);
             count = 1;
-            layoutVars[0].generateUbo(HipRenderer.getType, extra);
+            fx.addUbo(layoutVars[0]);
         }
-        extra.extraSource~= effect;
-        Shader s = createShader(HipShaderPresets.SPRITE_BATCH, HipRendererType.None, extra, pathOverride);
+        fx.addSource(effect);
+        Shader s = createShader(HipShaderPresets.SPRITE_BATCH, HipRendererType.None, fx, pathOverride);
         s.setup!(HipSpriteVertexUniform, HipSpriteFragmentUniform)(HipRenderer.getInfo, layoutVars[0..count]);
         s.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
         return s;

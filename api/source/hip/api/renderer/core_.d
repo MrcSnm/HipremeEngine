@@ -7,6 +7,7 @@ public import hip.api.renderer.texture;
 public import hip.api.renderer.framebuffer;
 public import hip.api.renderer.shader;
 public import hip.api.renderer.shadervar;
+public import hip.api.renderer.shadereffect;
 
 
 ///Could later be moved to windowing
@@ -41,17 +42,16 @@ struct DefaultShader
      *  
      *  
      */
-    string function(ShaderExtra extra = ShaderExtra.init) shaderSource;
+    string function(ShaderEffect extra = ShaderEffect.init) shaderSource;
     ///Important for having implementation on non instanced rendering.
     bool function() isInstancedCheck;
 
     bool isInstanced(){return isInstancedCheck && isInstancedCheck();}
 }
 
-struct ShaderExtra
+struct ShaderSourceResource
 {
     string extraSource;
-    string callArguments;
 }
 
 pragma(LDC_no_typeinfo)

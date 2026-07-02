@@ -605,7 +605,7 @@ class ShaderVariablesLayout
         );
     }
 
-    void generateUbo(HipRendererType type, ref ShaderExtra extra)
+    void generateUbo(HipRendererType type, ref ShaderSourceResource extra)
     {
         import hip.util.string;
         final switch(type)
@@ -628,7 +628,7 @@ class ShaderVariablesLayout
                     output~= "; ";
                 }
                 output~= "});\n";
-                extra.extraSource = output.toString.dup;
+                extra.extraSource~= output.toString;
                 break;
             case HipRendererType.D3D11:
                 BigString output;
@@ -655,6 +655,7 @@ class ShaderVariablesLayout
                 output~= " ";
                 output~= instanceName;
                 output~= ";\n};\n";
+                extra.extraSource~= output.toString;
                 
                 break;
             case HipRendererType.Metal:
@@ -672,9 +673,7 @@ class ShaderVariablesLayout
                     output~= ";";
                 }
                 output~= "\n};";
-                extra.extraSource = output.toString.dup;
-                extra.callArguments~= SmallString(",constant ", name, "& ", instanceName, " [[buffer(", bindPoint, ")]]").toString;
-
+                extra.extraSource~= output.toString;
                 break;
             case HipRendererType.None: break;
         }

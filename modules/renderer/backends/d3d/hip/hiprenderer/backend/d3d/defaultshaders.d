@@ -18,9 +18,9 @@ immutable DefaultShader[] DefaultShaders = [
 
 private {
 
-    string getFrameBufferShader(string){return import("d3d11/framebuffer.hlsl");}
-    string getGeometryBatchShader(string){return import("d3d11/geometrybatch.hlsl");}
-    string getBitmapTextShader(string){return import("d3d11/bitmaptext.hlsl");}
+    string getFrameBufferShader(ShaderEffect){return import("d3d11/framebuffer.hlsl");}
+    string getGeometryBatchShader(ShaderEffect){return import("d3d11/geometrybatch.hlsl");}
+    string getBitmapTextShader(ShaderEffect){return import("d3d11/bitmaptext.hlsl");}
 
     bool isSpriteBatchInstanced() {
         return true;
@@ -30,7 +30,7 @@ private {
     *   D3D11 causes an error if trying to access texture with a variable
     *   instead of a literal.
     */
-    string getSpriteBatchShader(string)
+    string getSpriteBatchShader(ShaderEffect fx)
     {
         import hip.util.conv:to;
         import hip.hiprenderer.renderer;

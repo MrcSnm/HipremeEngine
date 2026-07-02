@@ -63,8 +63,8 @@ class HipMTLShader : HipShaderProgram
     MTLLibrary library;
     MTLFunction vertexShaderFunction;
     MTLFunction fragmentShaderFunction;
-    BufferedMTLBuffer* uniformBufferVertex;
-    BufferedMTLBuffer* uniformBufferFragment;
+    BufferedMTLBuffer*[] uniformBufferVertex;
+    BufferedMTLBuffer*[] uniformBufferFragment;
 
 
 
@@ -102,9 +102,10 @@ class HipMTLShader : HipShaderProgram
     override void dispose()
     {
         import hip.util.data_structures;
-        foreach(BufferedMTLBuffer* buff; [uniformBufferFragment, uniformBufferVertex].staticArray)
+        foreach(BufferedMTLBuffer*[] buff; [uniformBufferFragment, uniformBufferVertex].staticArray)
         {
-            foreach(MTLBuffer mtlbuffer; buff.buffer)
+            foreach(BufferedMTLBuffer* b; buff)
+            foreach(MTLBuffer mtlbuffer; b.buffer)
                 mtlbuffer.release();
         }
     }
@@ -196,10 +197,10 @@ class HipMTLShader : HipShaderProgram
     {
         assert(pipelineState !is null);
         mtlRenderer.getEncoder.setRenderPipelineState(pipelineState);
-        if(uniformBufferVertex)
-            mtlRenderer.getEncoder.setVertexBuffer(uniformBufferVertex.getBuffer, 0, 0);
-        if(uniformBufferFragment)
-            mtlRenderer.getEncoder.setFragmentBuffer(uniformBufferFragment.getBuffer, 0, 0);
+        foreach(i, b; uniformBufferVertex)
+            mtlRenderer.getEncoder.setVertexBuffer(b.getBuffer, 0, i);
+        foreach(i, b; uniformBufferFragment)
+            mtlRenderer.getEncoder.setFragmentBuffer(b.getBuffer, 0, i);
     }
 
     override void unbind()
@@ -226,10 +227,10 @@ class HipMTLShader : HipShaderProgram
         final switch(layout.shaderType)
         {
             case ShaderTypes.vertex:
-                uniformBufferVertex = buffered;
+                uniformBufferVertex~= buffered;
                 break;
             case ShaderTypes.fragment:
-                uniformBufferFragment = buffered;
+                uniformBufferFragment~= buffered;
                 break;
             case ShaderTypes.geometry:
             case ShaderTypes.none:
@@ -280,7 +281,9 @@ class HipMTLShader : HipShaderProgram
     }
     override void onRenderFrameEnd()
     {
-        uniformBufferFragment.reset;
-        uniformBufferVertex.reset;
+        foreach(b; uniformBufferFragment)
+            b.reset;
+        foreach(b; uniformBufferVertex)
+            b.reset;
     }
 }

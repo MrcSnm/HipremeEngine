@@ -25,9 +25,9 @@ private {
     import hip.util.conv;
     import hip.util.format: format;
 
-    string getFrameBufferShader(ShaderExtra){return import("opengl/framebuffer.glsl");}
-    string getGeometryBatchShader(ShaderExtra){return import("opengl/geometrybatch.glsl");}
-    string getBitmapTextShader(ShaderExtra){return import("opengl/bitmaptext.glsl");}
+    string getFrameBufferShader(ShaderEffect){return import("opengl/framebuffer.glsl");}
+    string getGeometryBatchShader(ShaderEffect){return import("opengl/geometrybatch.glsl");}
+    string getBitmapTextShader(ShaderEffect){return import("opengl/bitmaptext.glsl");}
 
     bool isSpriteBatchInstanced()
     {
@@ -42,7 +42,7 @@ private {
             return false;
     }
 
-    string getSpriteBatchShader(ShaderExtra extra)
+    string getSpriteBatchShader(ShaderEffect extra)
     {
         import hip.hiprenderer.renderer;
         int sup = HipRenderer.getMaxSupportedShaderTextures();
@@ -145,6 +145,7 @@ private {
         return format!q{
                 uniform sampler2D uTex[%s];}(sup)~
             shaderSource~
+            extra.getEffectParamsDefinition() ~
             extra.extraSource ~
         "\nvoid fragmentMain()\n{"~q{
                 int texId = int(inTexID);

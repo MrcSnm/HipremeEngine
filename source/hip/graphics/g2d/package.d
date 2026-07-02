@@ -23,7 +23,7 @@ public import HipRenderer2D = hip.graphics.g2d.renderer2d;
 import hip.game.shader;
 import hip.api.renderer.core_;
 
-Shader createShader(HipShaderPresets shaderPreset, HipRendererType type = HipRendererType.None, ShaderExtra extra = ShaderExtra.init, string pathOverride = null)
+Shader createShader(HipShaderPresets shaderPreset, HipRendererType type = HipRendererType.None, ShaderEffect extra = ShaderEffect.init, string pathOverride = null)
 {
     import hip.util.conv:to;
     import hip.console.log;

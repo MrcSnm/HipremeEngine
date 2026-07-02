@@ -69,6 +69,8 @@ vertex FragmentInput vertexMain(
 struct FragmentUniforms
 {
     float4 uBatchColor;
+    float2 uScreenSize;
+    float uTime;
 };
 
 struct EffectInput
@@ -78,6 +80,9 @@ struct EffectInput
     float4 uBatchColor;
     float2 worldPosition;
 };
+
+/* GLOBALS_DEFINITION */
+/* EFFECT_PARAMS_DEFINITION */
 /* USER_FUNCTION */
 
 // #if ARGS_TIER2
@@ -119,22 +124,24 @@ fragment float4 fragmentMain(
 {
     int texID = int(in.inTexID);
     texID = texID & 0xff;
-
-    float4 texColor = float4(1,1,1,1);
+    EffectInput fx;
 
     switch(texID)
     {
-        case 0: texColor = uTex0.sample(uSampler0, in.inTexST); break;
-        case 1: texColor = uTex1.sample(uSampler1, in.inTexST); break;
-        case 2: texColor = uTex2.sample(uSampler2, in.inTexST); break;
-        case 3: texColor = uTex3.sample(uSampler3, in.inTexST); break;
-        case 4: texColor = uTex4.sample(uSampler4, in.inTexST); break;
-        case 5: texColor = uTex5.sample(uSampler5, in.inTexST); break;
-        case 6: texColor = uTex6.sample(uSampler6, in.inTexST); break;
-        case 7: texColor = uTex7.sample(uSampler7, in.inTexST); break;
+        case 0: fx.textureColor = uTex0.sample(uSampler0, in.inTexST); break;
+        case 1: fx.textureColor = uTex1.sample(uSampler1, in.inTexST); break;
+        case 2: fx.textureColor = uTex2.sample(uSampler2, in.inTexST); break;
+        case 3: fx.textureColor = uTex3.sample(uSampler3, in.inTexST); break;
+        case 4: fx.textureColor = uTex4.sample(uSampler4, in.inTexST); break;
+        case 5: fx.textureColor = uTex5.sample(uSampler5, in.inTexST); break;
+        case 6: fx.textureColor = uTex6.sample(uSampler6, in.inTexST); break;
+        case 7: fx.textureColor = uTex7.sample(uSampler7, in.inTexST); break;
         default: break;
     };
-    return texColor * in.inVertexColor * u.uBatchColor;
+    fx.vertexColor = in.inVertexColor;
+    fx.uBatchColor = u.uBatchColor;
+
+    return effect(/* EFFECT_PARAMS_CALL */);
 }
 
 // #endif
