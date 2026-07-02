@@ -41,13 +41,17 @@ struct DefaultShader
      *  
      *  
      */
-    string function(string extraSource = null) shaderSource;
+    string function(ShaderExtra extra = ShaderExtra.init) shaderSource;
     ///Important for having implementation on non instanced rendering.
     bool function() isInstancedCheck;
 
     bool isInstanced(){return isInstancedCheck && isInstancedCheck();}
+}
 
-
+struct ShaderExtra
+{
+    string extraSource;
+    string callArguments;
 }
 
 pragma(LDC_no_typeinfo)

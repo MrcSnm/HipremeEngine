@@ -177,6 +177,9 @@ class HipFileSystemImplementation : IHipFS
     protected bool isInstalled;
     protected IHipFileSystemInteraction fs;
     protected size_t filesReadingCount = 0;
+    protected string _projectPath;
+    void projectPath(string projectPath){ _projectPath = projectPath; }
+    string projectPath(){ return _projectPath; }
 
     protected bool function(string path, out string errMessage)[] extraValidations;
 

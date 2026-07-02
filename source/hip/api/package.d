@@ -23,13 +23,17 @@ public import hip.api.view.scene;
 public import hip.api.renderer.core;
 
 
-mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = HipAssetLoadStrategy.loadAll)
+mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = HipAssetLoadStrategy.loadAll, string projPath = __FILE_FULL_PATH__)
 {
 	immutable string ScriptModules = import("scriptmodules.txt");
 	pragma(msg, ScriptModules);
+    pragma(mangle, "HipGetEntryFilePath")
+    export extern(C) string HipGetEntryFilePath() { return projPath; }
+
     pragma(mangle, "HipremeEngineMainScene")
     export extern(C) AScene HipremeEngineMainScene()
     {
+        import hip.api.filesystem.hipfs;
         mixin LoadAllAssets!(ScriptModules);
         loadReferenced();
         return new StartScene();

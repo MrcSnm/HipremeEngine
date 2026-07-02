@@ -65,7 +65,7 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 		rt_init();
 		initializeHip();
 		initConsole();
-		initFS();
+		initFS(__FILE_FULL_PATH__);
 		initG2D();
 		// HipAudio.initAudio();
 		alias renderFn = extern(System) IHipRenderer function();
@@ -81,6 +81,7 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 		
 		return _exportedScene = new StartScene();
 	}
+
 	export extern(System) void HipremeEngineGameDestroy()
 	{
 		if(_exportedScene)

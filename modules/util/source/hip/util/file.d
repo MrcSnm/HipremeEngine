@@ -42,16 +42,21 @@ string getFileContent(string path, bool noCarriageReturn = true)
 version(WebAssembly)
 extern(C) void WasmDebugWriteFile(size_t pathLength, const(char)* pathPtr, size_t contentLength, const(char)* contentPtr);
 
-void writeFileDebug(string path, string content)
+void writeFileDebug(string basePath, string path, string content)
 {
     version(WebAssembly)
     {
+        path = basePath~path;
         WasmDebugWriteFile(path.length, path.ptr, content.length, content.ptr);
     }
-    else version(Desktop)
+    else version(Android){}
+    else version(PSVita){}
+    else
     {
         import std.file;
-        std.file.write(buildPath("debug-files", path), content);
+        string outputPath = buildNormalizedPath(basePath, "debug-files", path);
+        mkdirRecurse(dirName(outputPath));
+        std.file.write(outputPath, content);
     }
 }
 

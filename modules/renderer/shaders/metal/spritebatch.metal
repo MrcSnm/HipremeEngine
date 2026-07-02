@@ -71,6 +71,15 @@ struct FragmentUniforms
     float4 uBatchColor;
 };
 
+struct EffectInput
+{
+    float4 textureColor;
+    float4 vertexColor;
+    float4 uBatchColor;
+    float2 worldPosition;
+};
+/* USER_FUNCTION */
+
 // #if ARGS_TIER2
 // float4 uBatchColor;
 // array<texture2d<float>, 8> uTex;
@@ -105,6 +114,7 @@ fragment float4 fragmentMain(
     sampler uSampler5 [[sampler(5)]],
     sampler uSampler6 [[sampler(6)]],
     sampler uSampler7 [[sampler(7)]]
+    /* GENERATED_EXTRA_BUFFERS */
 )
 {
     int texID = int(in.inTexID);

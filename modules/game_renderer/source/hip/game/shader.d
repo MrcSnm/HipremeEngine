@@ -69,18 +69,19 @@ public class Shader : IReloadable
 
     ShaderStatus loadShader(string shaderPath, string shaderSource, bool isInstanced = false)
     {
+        import hip.util.file;
+        import hip.util.path;
+        import hip.util.conv:to;
+        import hip.api.filesystem.hipfs;
         if(shaderPath is null)
             return ShaderStatus.REQUIRE_PATH;
         this.internalShaderSource = shaderSource;
         this.shaderPath = shaderPath;
         _isInstanced = isInstanced;
+        writeFileDebug(HipFS.projectPath, joinPath("Shaders", "Generated", HipRenderer.getType.to!string["HipRendererType.".length..$], shaderPath), shaderSource);
+
         if(!shaderProgram.buildShader(shaderSource, shaderPath, isInstanced))
             return ShaderStatus.LINK_ERROR;
-        import hip.util.file;
-        import hip.util.path;
-        import hip.util.conv:to;
-
-        writeFileDebug(joinPath("Shaders", "Generated", HipRenderer.getType.to!string["HipRendererType.".length..$], shaderPath), shaderSource);
 
         return ShaderStatus.SUCCESS;
     }

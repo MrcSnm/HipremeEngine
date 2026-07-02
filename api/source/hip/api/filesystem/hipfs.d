@@ -114,6 +114,8 @@ interface IHipFileSystemInteraction
  */
 interface IHipFS
 {
+    void projectPath(string path);
+    string projectPath();
     ///Gets a path from the installed path
     string getPath(string path);
 
@@ -230,9 +232,10 @@ interface IHipFS
 
 ///Dependency injection interface for HipFS
 private __gshared IHipFS _fs;
-void setIHipFS(IHipFS fsInstance)
+void setIHipFS(IHipFS fsInstance, string projectPath)
 {
     _fs = fsInstance;
+    fsInstance.projectPath = projectPath;
 }
 IHipFS HipFileSystem()
 {

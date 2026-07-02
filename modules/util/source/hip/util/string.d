@@ -522,6 +522,34 @@ pure string replaceAll(string str, char what, string replaceWith = "") @trusted 
     }
 }
 
+string replace(string str, string what, string replaceWith = "")
+{
+    char[] ret;
+    int last;
+    int i;
+    i = indexOf(str, what, i);
+    if(i != -1)
+    {
+        int copyLength = i - last;
+        int currLength = cast(int)ret.length;
+        ret.length+= copyLength+replaceWith.length;
+        //Copy old content
+        ret[currLength..currLength+copyLength] = str[last..i];
+        //Copy replace
+        ret[currLength+copyLength..$] = replaceWith[];
+        //Skip what
+        i+= what.length;
+        last = i;
+    }
+
+    int copyLength = cast(int)(str.length - last);
+    int currLength = cast(int)ret.length;
+    ret.length+= copyLength;
+    ret[currLength..$] = str[last..$];
+
+    return cast(string)ret;
+}
+
 pure string replaceAll(string str, string what, string replaceWith = "")
 {
     char[] ret;

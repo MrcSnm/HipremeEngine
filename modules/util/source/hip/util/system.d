@@ -12,7 +12,7 @@ module hip.util.system;
 
 import hip.util.conv;
 import hip.util.string:fromStringz, toStringz;
-import hip.util.path:pathSeparator;
+import hip.util.path:dirSeparator;
 
 version(PSVita) version = NoSharedLibrarySupport;
 version(WebAssembly) version = NoSharedLibrarySupport;
@@ -64,15 +64,6 @@ bool isPathUnixStyle(string path) @safe pure nothrow
         if(path[i] == '/')
             return true;
     return false;
-}
-string buildPath(string[] args...) @safe pure nothrow
-{
-    if(args.length == 0)
-        return null;
-    string ret;
-    for(int i = 0; i < cast(int)args.length-1; i++)
-        ret~= args[i]~pathSeparator;
-    return ret~args[$-1];
 }
 
 version(Windows)

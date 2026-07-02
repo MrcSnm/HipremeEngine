@@ -605,11 +605,13 @@ class ShaderVariablesLayout
         );
     }
 
-    void generateUbo(HipRendererType type, ref BigString output)
+    void generateUbo(HipRendererType type, ref ShaderExtra extra)
     {
+        import hip.util.string;
         final switch(type)
         {
             case HipRendererType.GL3: 
+                BigString output;
                 output~= "UNIFORM_BUFFER_OBJECT(";
                 output~= bindPoint;
                 output~= ", ";
@@ -626,8 +628,10 @@ class ShaderVariablesLayout
                     output~= "; ";
                 }
                 output~= "});\n";
+                extra.extraSource = output.toString.dup;
                 break;
-            case HipRendererType.D3D11: 
+            case HipRendererType.D3D11:
+                BigString output;
                 output~= "struct ";
                 output~= name;
                 output~= "\n{";
@@ -637,7 +641,7 @@ class ShaderVariablesLayout
                     output~= "\n\t";
                     output~= typeFromUniform(v);
                     output~= " ";
-                    output~= v.name;
+                    output~= v.name[instanceName.length+1..$];
                     output~= ";";
                 }
                 output~= "\n};";
@@ -654,6 +658,7 @@ class ShaderVariablesLayout
                 
                 break;
             case HipRendererType.Metal:
+                BigString output;
                 output~= "struct ";
                 output~= name;
                 output~= "\n{";
@@ -663,10 +668,13 @@ class ShaderVariablesLayout
                     output~= "\n\t";
                     output~= typeFromUniform(v);
                     output~= " ";
-                    output~= v.name;
+                    output~= v.name[instanceName.length+1..$];
                     output~= ";";
                 }
                 output~= "\n};";
+                extra.extraSource = output.toString.dup;
+                extra.callArguments~= SmallString(",constant ", name, "& ", instanceName, " [[buffer(", bindPoint, ")]]").toString;
+
                 break;
             case HipRendererType.None: break;
         }

@@ -13,13 +13,11 @@ else// version(Posix)
 
 version(Windows)
 {
-    enum pathSeparator = '\\';
-    enum otherSeparator = '/';
+    enum dirSeparator = '\\';
 }
 else
 {
-    enum pathSeparator = '/';
-    enum otherSeparator = '\\';
+    enum dirSeparator = '/';
 }
 
 string[] pathSplitter(string path) @safe pure nothrow
@@ -30,6 +28,81 @@ string[] pathSplitter(string path) @safe pure nothrow
     return ret;
 }
 
+
+string buildNormalizedPath(scope string[] paths...)
+{
+	char[] buffer;
+	string output  = normalizePath(buffer, paths);
+	return output;
+}
+
+string normalizePath(return ref char[] output, scope string[] paths...)
+{
+    size_t start, length;
+    import std.ascii;
+    static string[1024] normalized;
+
+    foreach(path; paths)
+    {
+        foreach(p; pathSplitterRange(path))
+        {
+            if(p == ".")
+                continue;
+            else if(p == "..")
+            {
+                if(length > 0)
+                    length--;
+                else
+                    start++;
+            }
+            else
+            {
+				version(Posix)
+				{
+					if(p.length == 0) //Path is a single slash
+						length = start = 0;
+				}
+				else
+				{
+					if(p.length > 1 && p[1] == ':') //Path has drive letter is absolute
+						length = start = 0;
+				}
+                normalized[length++] = p;
+            }
+        }
+    }
+   	import core.memory;
+    if(length == 1)
+	{
+		if(output.length == 0)
+			output = normalized[0].dup;
+		else
+			output[0..normalized[0].length] = normalized[0];
+		return cast(string)output[0..normalized[0].length];
+	}
+
+    size_t totalLength = (length - start) - 1;
+    for(int i = cast(int)start; i < length; i++)
+        totalLength+= normalized[i].length;
+
+	if(output.length == 0)
+		output.length = totalLength;
+
+    totalLength = 0;
+    for(int i = cast(int)start; i < length; i++)
+    {
+        output[totalLength..totalLength+normalized[i].length] = normalized[i];
+		totalLength+= normalized[i].length;
+        if(i + 1 < length)
+            output[totalLength++] = dirSeparator;
+    }
+
+    return cast(string)output[0..totalLength];
+}
+
+
+
+
 auto pathSplitterRange(string path) pure @safe nothrow @nogc
 {
     struct PathRange
@@ -38,6 +111,7 @@ auto pathSplitterRange(string path) pure @safe nothrow @nogc
         size_t indexRight = 0;
 
         bool empty() @safe pure nothrow @nogc {return indexRight >= path.length;}
+        bool hasNext() @safe pure nothrow @nogc {return indexRight + 1 < path.length;}
         string front() @safe pure nothrow @nogc
         {
             size_t i = indexRight;
@@ -89,7 +163,7 @@ string relativePath(bool caseSensitive = defaultCaseSensitivity)(string filePath
             isEqual = false;
             break;
         }
-        else if(base[i] == pathSeparator)
+        else if(base[i] == dirSeparator)
             commonIndex = cast(int)i;
     }
     if(isEqual)
@@ -97,7 +171,7 @@ string relativePath(bool caseSensitive = defaultCaseSensitivity)(string filePath
         if(filePath.length == base.length)
             return ".";
         else //If the base string is a subset, return part after base.
-            return filePath[base.length + (filePath[base.length] == pathSeparator ? 1 : 0)..$];
+            return filePath[base.length + (filePath[base.length] == dirSeparator ? 1 : 0)..$];
     } 
     else if(commonIndex == 0)
         return filePath;
@@ -105,10 +179,10 @@ string relativePath(bool caseSensitive = defaultCaseSensitivity)(string filePath
     string ret;
     for(uint i = commonIndex; i < base.length; i++)
     {
-        if(base[i] == pathSeparator)
-            ret~= ".."~pathSeparator;
+        if(base[i] == dirSeparator)
+            ret~= ".."~dirSeparator;
     }
-    ret~= filePath[commonIndex] == pathSeparator ? filePath[commonIndex+1..$] : filePath[commonIndex..$];
+    ret~= filePath[commonIndex] == dirSeparator ? filePath[commonIndex+1..$] : filePath[commonIndex..$];
     return ret;
 }
 
@@ -127,7 +201,7 @@ bool isAbsolutePath(string fPath) pure nothrow @nogc @safe
             return false;
     }
     for(size_t i = 0; i < fPath.length; i++)
-        if(i + 2 < fPath.length && fPath[i] == '.' && fPath[i+1] == '.' && fPath[i+2] == pathSeparator)
+        if(i + 2 < fPath.length && fPath[i] == '.' && fPath[i+1] == '.' && fPath[i+2] == dirSeparator)
             return false;
     return true;
 }
@@ -302,7 +376,7 @@ string joinPath(scope const string[] paths ...) @safe pure nothrow
             break;
     }
     if(sep == '\0')
-        sep = pathSeparator;
+        sep = dirSeparator;
     return joinPath(sep, paths);
 }
 
