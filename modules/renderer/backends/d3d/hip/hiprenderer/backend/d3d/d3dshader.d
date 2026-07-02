@@ -40,9 +40,6 @@ class Hip_D3D11_ShaderProgram : HipShaderProgram
 {
     HipD3D11VertexShader vertex;
     HipD3D11PixelShader pixel;
-
-    protected HipBlendFunction blendSrc, blendDst;
-    protected HipBlendEquation blendEq;
     protected ID3D11BlendState blendState;
 
     ID3D11ShaderReflection vReflector;
@@ -76,9 +73,7 @@ class Hip_D3D11_ShaderProgram : HipShaderProgram
     override bool setShaderVar(ShaderVar* sv, void* value){return false;}
     override void setBlending(HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
     {
-        blendSrc = src;
-        blendDst = dest;
-        blendEq = eq;
+        super.setBlending(src,dst,eq);
         auto b = &Hip_D3D11_Renderer.blend.RenderTarget[0];
 
         if(eq == HipBlendEquation.DISABLED)

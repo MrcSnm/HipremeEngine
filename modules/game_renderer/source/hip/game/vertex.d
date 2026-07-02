@@ -82,16 +82,8 @@ final class HipVertexArrayObject
         this.VAO.createInputLayout(infos, EBO, program);
     }
 
-    void bind() 
-    { 
-        VAO.bind();
-        // vertexBinder.bind(this); 
-    }
-    void unbind()
-    {
-        VAO.unbind(); 
-        // vertexBinder.unbind(this); 
-    }
+    void bind() { VAO.bind();}
+    void unbind(){VAO.unbind(); }
 
     /**
     *   Sets the VBO data. Use this function only for initialization as it allocates memory.

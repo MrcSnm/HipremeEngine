@@ -132,21 +132,16 @@ private {
             };
 
         };
-        if(extra.extraSource is null)
-        {
-            extra.extraSource = q{vec4 effect(EffectInput fx)
-            {
-                return fx.textureColor * fx.vertexColor * fx.uBatchColor;
-            }
-            };
-        }
+        if(extra.getSource() is null)
+            throw new Error("ShaderEffect must not be null.");
 
 
         return format!q{
                 uniform sampler2D uTex[%s];}(sup)~
             shaderSource~
+            extra.getGlobalDefinitions() ~
             extra.getEffectParamsDefinition() ~
-            extra.extraSource ~
+            extra.getSource() ~
         "\nvoid fragmentMain()\n{"~q{
                 int texId = int(inTexID);
                 bool isText = (texId & (1 << 15)) != 0;

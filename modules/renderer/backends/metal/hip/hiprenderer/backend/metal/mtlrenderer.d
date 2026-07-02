@@ -71,19 +71,13 @@ struct HipMetalRenderPipelineState
 {
     MTLRenderPipelineDescriptor descriptor;
     MTLRenderPipelineState pipelineState;
+
+    @disable this();
     
-    void create(MTLDevice device, 
+    this(MTLDevice device, 
         MTLVertexDescriptor vertexDescriptor,
         HipMTLShader shader)
     {
-        descriptor = MTLRenderPipelineDescriptor.alloc.initialize;
-        descriptor.vertexDescriptor = vertexDescriptor;
-        descriptor.label = shader.shaderPath.ns;
-        descriptor.vertexFunction = shader.vertexShaderFunction;
-        descriptor.fragmentFunction = shader.fragmentShaderFunction;
-        pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.RGBA8Unorm;
-        pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
-        pipelineDescriptor.stencilAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
 
         HipMetalBlendState blend;
         shader.getBlending(blend.blendSrc, blend.blendDst, blend.blendEq);
@@ -92,17 +86,27 @@ struct HipMetalRenderPipelineState
         MTLBlendFactor mtlDest = blend.blendDst.fromHipBlendFunction;
         MTLBlendOperation mtlOp = blend.blendEq.fromHipBlendEquation;
         
+        
+        descriptor = MTLRenderPipelineDescriptor.alloc.initialize;
+        descriptor.label = shader.name.ns;
+        descriptor.vertexFunction = shader.vertexShaderFunction;
+        descriptor.fragmentFunction = shader.fragmentShaderFunction;
+        descriptor.vertexDescriptor = vertexDescriptor;
+        descriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.RGBA8Unorm;
+        descriptor.depthAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
+        descriptor.stencilAttachmentPixelFormat = MTLPixelFormat.Depth32Float_Stencil8;
+
         //Blending
-        pipelineDescriptor.colorAttachments[0].blendingEnabled = eq != HipBlendEquation.DISABLED;
-        pipelineDescriptor.colorAttachments[0].rgbBlendOperation = mtlOp;
-        pipelineDescriptor.colorAttachments[0].alphaBlendOperation = mtlOp;
-        pipelineDescriptor.colorAttachments[0].sourceRGBBlendFactor = mtlSrc;
-        pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = mtlDest;
-        pipelineDescriptor.colorAttachments[0].sourceAlphaBlendFactor = mtlSrc;
-        pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = mtlDest;
+        descriptor.colorAttachments[0].blendingEnabled = blend.blendEq != HipBlendEquation.DISABLED;
+        descriptor.colorAttachments[0].rgbBlendOperation = mtlOp;
+        descriptor.colorAttachments[0].alphaBlendOperation = mtlOp;
+        descriptor.colorAttachments[0].sourceRGBBlendFactor = mtlSrc;
+        descriptor.colorAttachments[0].destinationRGBBlendFactor = mtlDest;
+        descriptor.colorAttachments[0].sourceAlphaBlendFactor = mtlSrc;
+        descriptor.colorAttachments[0].destinationAlphaBlendFactor = mtlDest;
 
         NSError err;
-        pipelineState = device.newRenderPipelineStateWithDescriptor(pipelineDescriptor, &err);
+        pipelineState = device.newRenderPipelineStateWithDescriptor(descriptor, &err);
         if(err !is null || pipelineState is null)
         {
             import hip.error.handler;
@@ -122,7 +126,7 @@ struct HipMetalRenderPipelineStateCache
 {
     HipMetalRenderPipelineState[HipMetalBlendState][HipMTLShader] pipelines;
 
-    HipMetalRenderPipelineState get(HipMTLVertexArray vao, HipMTLSHader shader)
+    MTLRenderPipelineState get(MTLDevice device, HipMTLVertexArray vao, HipMTLShader shader)
     {
         HipMetalBlendState bs;
         shader.getBlending(bs.blendSrc, bs.blendDst, bs.blendEq);
@@ -135,9 +139,8 @@ struct HipMetalRenderPipelineStateCache
         HipMetalRenderPipelineState* st = bs in *pipelinesPerBlend;
         if(!st)
         {
-            (*pipelinesPerBlend)[bs] = new HipMetalRenderPipelineState();
+            (*pipelinesPerBlend)[bs] = HipMetalRenderPipelineState(device, vao.descriptor, shader);
             st  = bs in *pipelinesPerBlend; 
-            st.create(device, vao.descriptor, shader);
         }
         return st.pipelineState;
     }
@@ -154,7 +157,8 @@ class HipMTLRenderer : IHipRendererImpl
     MTLPrimitiveType primitiveType;
     HipMetalRenderPipelineStateCache pipelinesCache;
 
-    MTLBuffer boundIndexBuffer;
+    HipMTLBuffer boundIndexBuffer;
+    HipMTLVertexArray boundVAO;
     HipMTLShader boundShader;
 
     package __gshared MTLArgumentBuffersTier argsTier;
@@ -257,23 +261,43 @@ class HipMTLRenderer : IHipRendererImpl
 
     void bind(HipMTLVertexArray vao, HipMTLShader shader)
     {
-        getEncoder.setRenderPipelineState(cache.get(vao, shader));
-        foreach(i, b; shader.uniformBufferVertex)
+        if(vao !is null)
+            boundVAO = vao;
+        if(shader !is null)
+            boundShader = shader;
+        if(boundVAO is null || boundShader is null)
+            return;
+        ///Guarantees that future changes will use correct vao|shader
+        vao = boundVAO;
+        shader = boundShader;
+        boundIndexBuffer = boundVAO.iBuffer;
+        
+        getEncoder.setRenderPipelineState(pipelinesCache.get(device, boundVAO, boundShader));
+        foreach(i, b; boundShader.uniformBufferVertex)
             getEncoder.setVertexBuffer(b.getBuffer, 0, i);
-        foreach(i, b; shader.uniformBufferFragment)
+        foreach(i, b; boundShader.uniformBufferFragment)
             getEncoder.setFragmentBuffer(b.getBuffer, 0, i);
+
+        getEncoder.setVertexBuffers(boundVAO.buffers.ptr, boundVAO.offsets.ptr, NSRange(1, boundVAO.attributes.length));
     }
 
-    void unbind()
+    void unbind(HipMTLVertexArray vao, HipMTLShader shader)
     {
-        if(boundShader !is null)
+        if(boundVAO !is null && boundVAO is vao)
+        {
+            // getEncoder.setVertexBuffers(boundVAO.buffers.ptr, boundVAO.offsets.ptr, NSRange(1, boundVAO.attributes.length));
+            boundVAO = null;
+        }
+        if(boundShader !is null && shader is boundShader)
         {
             foreach(i, b; boundShader.uniformBufferVertex)
-                mtlRenderer.getEncoder.setVertexBuffer(null, 0, i);
+                getEncoder.setVertexBuffer(null, 0, i);
             foreach(i, b; boundShader.uniformBufferFragment)
-                mtlRenderer.getEncoder.setFragmentBuffer(null, 0, 0);
+                getEncoder.setFragmentBuffer(null, 0, 0);
+            boundShader = null;
         }
     }
+
 
     public IHipFrameBuffer createFrameBuffer(int width, int height)
     {
@@ -396,13 +420,13 @@ class HipMTLRenderer : IHipRendererImpl
     public void drawIndexed(index_t count, uint offset = 0)
     {
         enum IndexType = is(index_t == ushort) ? MTLIndexType.UInt16 : MTLIndexType.UInt32;
-        cmdEncoder.drawIndexedPrimitives(primitiveType, count, IndexType, boundIndexBuffer, offset*index_t.sizeof);
+        cmdEncoder.drawIndexedPrimitives(primitiveType, count, IndexType, boundIndexBuffer.buffer, offset*index_t.sizeof);
     }
 
     public void drawIndexedInstanced(uint instanceCount, index_t count, uint indexOffset = 0, uint baseInstance = 0)
     {
         enum IndexType = is(index_t == ushort) ? MTLIndexType.UInt16 : MTLIndexType.UInt32;
-        cmdEncoder.drawIndexedPrimitives(primitiveType, count, IndexType, boundIndexBuffer, indexOffset*index_t.sizeof, instanceCount, 0, baseInstance);
+        cmdEncoder.drawIndexedPrimitives(primitiveType, count, IndexType, boundIndexBuffer.buffer, indexOffset*index_t.sizeof, instanceCount, 0, baseInstance);
     }
 
     public void drawVertices(index_t count, uint offset = 0)

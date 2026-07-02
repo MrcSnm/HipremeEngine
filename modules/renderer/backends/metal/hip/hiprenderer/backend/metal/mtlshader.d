@@ -66,9 +66,6 @@ class HipMTLShader : HipShaderProgram
     BufferedMTLBuffer*[] uniformBufferVertex;
     BufferedMTLBuffer*[] uniformBufferFragment;
 
-    HipBlendFunction blendSrc, blendDst;
-    HipBlendEquation blendEq;
-
     this(MTLDevice device, HipMTLRenderer mtlRenderer)
     {
         this.device = device;
@@ -140,27 +137,15 @@ class HipMTLShader : HipShaderProgram
             default: return false;
         }
     }
-    override void setBlending(HipBlendFunction src, HipBlendFunction dest, HipBlendEquation eq)
-    {
-        blendSrc = src;
-        blendDst = dest;
-        blendEq = eq;
-    }
-    override void getBlending(out HipBlendFunction src, out HipBlendFunction dest, out HipBlendEquation eq)
-    {
-        src = blendSrc;
-        dest = blendDst;
-        eq = blendEq;
-    }
+    
 
     override void bind()
     {
-        mtlRenderer.boundShader = this;
+        mtlRenderer.bind(null, this);
     }
-
     override void unbind()
     {
-        mtlRenderer.boundShader = null;
+        mtlRenderer.unbind(null, this);
     }
 
 

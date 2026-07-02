@@ -29,8 +29,6 @@ class HipGLShaderProgram : HipShaderProgram
     uint fragmentShader;
     uint vertexShader;
     uint program;
-    protected HipBlendFunction blendSrc = HipBlendFunction.CONSTANT_COLOR, blendDst = HipBlendFunction.CONSTANT_COLOR;
-    protected HipBlendEquation blendEq = HipBlendEquation.DISABLED;
     protected ShaderVariablesLayout[] layouts;
 
 
@@ -122,13 +120,6 @@ class HipGLShaderProgram : HipShaderProgram
             " Existing variables: "~existingVariables);
         }
         return varID;
-    }
-
-    override public void setBlending(HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq)
-    {
-        blendSrc = src;
-        blendDst = dst;
-        blendEq = eq;
     }
 
     override void unbind()

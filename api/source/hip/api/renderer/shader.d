@@ -55,13 +55,27 @@ abstract class HipShaderProgram
 {
     string name;
     private bool* dirtyReference;
+    protected HipBlendFunction blendSrc = HipBlendFunction.CONSTANT_COLOR, blendDst = HipBlendFunction.CONSTANT_COLOR;
+    protected HipBlendEquation blendEq = HipBlendEquation.DISABLED;
+
     final void setDirtyReference(bool* reference){ dirtyReference = reference; }
     final bool isDirty() { return *dirtyReference; }
     final void setDirty() { if(dirtyReference) *dirtyReference = true; }
 
     abstract bool buildShader(string shaderSource, string shaderPath, bool isInstanced);
-    abstract void setBlending(HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq);
-    abstract void getBlending(out HipBlendFunction src, out HipBlendFunction dst, out HipBlendEquation eq);
+    void setBlending(HipBlendFunction src, HipBlendFunction dst, HipBlendEquation eq)
+    {
+        blendSrc = src;
+        blendDst = dst;
+        blendEq = eq;
+    }
+    final void getBlending(out HipBlendFunction src, out HipBlendFunction dest, out HipBlendEquation eq)
+    {
+        src = blendSrc;
+        dest = blendDst;
+        eq = blendEq;
+    }
+
     abstract void bind();
     abstract void unbind();
     abstract int  getId(string name, ShaderVariablesLayout layout);
