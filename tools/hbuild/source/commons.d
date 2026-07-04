@@ -744,12 +744,11 @@ private void terminalProgressBar(ref Terminal t, float percentage, ubyte ticksCo
 void addToPath(string pathToAdd)
 {
 	import std.array:join;
-	string concatPath = ":";
-    version(Windows) concatPath = ";";
+	import std.path:pathSeparator;
     environment["PATH"] = join([
 		pathToAdd,
         environment["PATH"]
-    ], concatPath);
+    ], pathSeparator);
 }
 
 size_t downloadWithProgress(string url, string saveToPath, void delegate(float t) onProgress, size_t updateDelay = 125)

@@ -28,31 +28,28 @@ bool getCompiler(ref Terminal t, ref RealTimeConsoleInput input, string compiler
 {
     if(!compilerType.length)
 	{
-		if("dmdPath" !in configs && "ldcPath" !in configs)
+		auto features = getCompilerFeatureOrder();
+		foreach(CompilerFeature f; features)
 		{
-			auto features = getCompilerFeatureOrder();
-			foreach(CompilerFeature f; features)
-			{
-				if(f.feature.getFeature(t, input, TargetVersion.fromGameBuild(f.compilerTargetVersion)))
-					return true;
-			}
-            t.writelnError("HipremeEngine needs either LDC or DMD");
-            return false;
+			if(f.feature.getFeature(t, input, TargetVersion.fromGameBuild(f.compilerTargetVersion)))
+				return true;
 		}
+		t.writelnError("HipremeEngine needs either LDC or DMD");
+		return false;
 	}
 	else
 	{
 		final switch(compilerType)
 		{
 			case "dmd":
-				if("dmdPath" !in configs && !DMDFeature.getFeature(t, input, TargetVersion.fromGameBuild("dmdVersion")))
+				if(!DMDFeature.getFeature(t, input, TargetVersion.fromGameBuild("dmdVersion")))
 				{
 					t.writelnError("HipremeEngine needs DMD");
 					return false;
 				}
 				break;
 			case "ldc2", "ldc":
-				if("ldcPath" !in configs && !LDCFeature.getFeature(t, input, TargetVersion.fromGameBuild("ldcPath")))
+				if(!LDCFeature.getFeature(t, input, TargetVersion.fromGameBuild("ldcVersion")))
 				{
 					t.writelnError("HipremeEngine needs LDC");
 					return false;
