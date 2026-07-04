@@ -35,7 +35,6 @@ enum HipShaderPresets : ubyte
     FRAME_BUFFER,
     GEOMETRY_BATCH,
     SPRITE_BATCH,
-    BITMAP_TEXT,
     NONE
 }
 

@@ -53,31 +53,18 @@ VarPosition glSTD140(size_t varSize, size_t lastAlignment = 0, bool isLast, Unif
 */
 VarPosition dxHLSL4(size_t varSize, size_t lastAlignment = 0, bool isLast, UniformType type, size_t biggestMember)
 {
-    size_t newN = varSize;
+    size_t offset = 0;
+    int remainingBytes = 16 - lastAlignment % 16;
     if(isLast)
     {
-        size_t startPos = lastAlignment;
-        if(startPos % 16 != 0) startPos = startPos + (16 - (startPos % 16));
-        size_t endPos = startPos+newN;
-        if(endPos % 16 != 0) endPos = endPos + (16 - (endPos % 16));
-        return VarPosition(startPos, endPos, newN);
+        size_t endPosPadding = 16 - (lastAlignment + varSize) % 16;
+        return VarPosition(lastAlignment, lastAlignment + varSize + endPosPadding, varSize);
     }
-    if(lastAlignment == 0)
-        return VarPosition(0,newN,newN);
 
+    if(varSize > remainingBytes)
+        offset+= remainingBytes;
 
-    size_t n4 = newN*4;
-
-    //((8 % 16) > (8+8) % 16  || 8 % 16 == 0) && (8+8 % 16 != 0)
-    // 8 + (8 % 16) + 8
-    
-    if((lastAlignment % n4 > (lastAlignment+newN) % n4 || newN % n4 == 0) && (lastAlignment+newN) % n4 != 0)
-    {
-        size_t startPos = lastAlignment+ (lastAlignment % n4);
-        return VarPosition(startPos, startPos+newN, newN);
-    }
-    
-    return VarPosition(lastAlignment, lastAlignment + newN, newN);
+    return VarPosition(lastAlignment, lastAlignment+varSize+offset, varSize);
 }
 
 VarPosition nonePack(size_t varSize, size_t lastAlignment = 0, bool isLast, UniformType type, size_t biggestMember)

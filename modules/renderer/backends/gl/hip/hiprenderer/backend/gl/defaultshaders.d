@@ -14,7 +14,6 @@ immutable DefaultShader[] DefaultShaders = [
     HipShaderPresets.FRAME_BUFFER: DefaultShader(GLDefaultShadersPath, &getFrameBufferShader),
     HipShaderPresets.GEOMETRY_BATCH: DefaultShader(GLDefaultShadersPath, &getGeometryBatchShader),
     HipShaderPresets.SPRITE_BATCH: DefaultShader(GLDefaultShadersPath, &getSpriteBatchShader, &isSpriteBatchInstanced),
-    HipShaderPresets.BITMAP_TEXT: DefaultShader(GLDefaultShadersPath, &getBitmapTextShader),
     HipShaderPresets.NONE: DefaultShader(GLDefaultShadersPath)
 ];
 
@@ -27,7 +26,6 @@ private {
 
     string getFrameBufferShader(ShaderEffect){return import("opengl/framebuffer.glsl");}
     string getGeometryBatchShader(ShaderEffect){return import("opengl/geometrybatch.glsl");}
-    string getBitmapTextShader(ShaderEffect){return import("opengl/bitmaptext.glsl");}
 
     bool isSpriteBatchInstanced()
     {

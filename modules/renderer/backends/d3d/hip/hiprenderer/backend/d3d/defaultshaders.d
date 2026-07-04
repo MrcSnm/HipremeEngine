@@ -12,7 +12,6 @@ immutable DefaultShader[] DefaultShaders = [
     HipShaderPresets.FRAME_BUFFER: DefaultShader(D3DDefaultShadersPath, &getFrameBufferShader),
     HipShaderPresets.GEOMETRY_BATCH: DefaultShader(D3DDefaultShadersPath, &getGeometryBatchShader),
     HipShaderPresets.SPRITE_BATCH: DefaultShader(D3DDefaultShadersPath, &getSpriteBatchShader, &isSpriteBatchInstanced),
-    HipShaderPresets.BITMAP_TEXT: DefaultShader(D3DDefaultShadersPath, &getBitmapTextShader),
     HipShaderPresets.NONE: DefaultShader(D3DDefaultShadersPath)
 ];
 
@@ -20,7 +19,6 @@ private {
 
     string getFrameBufferShader(ShaderEffect){return import("d3d11/framebuffer.hlsl");}
     string getGeometryBatchShader(ShaderEffect){return import("d3d11/geometrybatch.hlsl");}
-    string getBitmapTextShader(ShaderEffect){return import("d3d11/bitmaptext.hlsl");}
 
     bool isSpriteBatchInstanced() {
         return true;
@@ -39,12 +37,12 @@ private {
         for(int i = 1; i < sup; i++)
         {
             textureSlotSwitchCase~= "\t\tcase "~ to!string(i)~": "~
-            "texColor = uTex["~to!string(i)~"].Sample(state["~to!string(i)~"], texST);\n break;\n";
+            "fx.textureColor = uTex["~to!string(i)~"].Sample(state["~to!string(i)~"], texST);\n break;\n";
         }
-        textureSlotSwitchCase~= "\t\tdefault: texColor = uTex[0].Sample(state[0], texST);\nbreak;\n";
+        textureSlotSwitchCase~= "\t\tdefault: fx.textureColor = uTex[0].Sample(state[0], texST);\nbreak;\n";
         textureSlotSwitchCase~= "\n\t}";
 
-        return `
+        string ret = `
         struct VSOut
             {
                 float4 inColor : inColor;
@@ -108,10 +106,30 @@ private {
 
         `~ "Texture2D uTex["~to!string(sup)~"];
     SamplerState state["~to!string(sup)~"];"~q{
-    cbuffer input
+
+    struct FragmentUniformsBuffer
     {
-        float4 uBatchColor: uBatchColor;
+        float4 uBatchColor;
+        float2 uScreenSize;
+        float uTime;
     };
+
+    cbuffer FragmentUniforms
+    {
+        FragmentUniformsBuffer cbuf;
+    };
+
+    struct EffectInput
+    {
+        float4 textureColor;
+        float4 vertexColor;
+        float4 uBatchColor;
+        float2 worldPosition;
+    };
+
+    /* GLOBALS_DEFINITION */
+    /* EFFECT_PARAMS_DEFINITION */
+    /* USER_FUNCTION */
 
     float4 fragmentMain(float4 inVertexColor : inColor, float2 texST : inTexST, float inTexID : inTexID) : SV_TARGET
     }~"{"~
@@ -120,7 +138,9 @@ private {
             int tid = int(inTexID);
             bool isText = (tid & (1 << 15)) != 0;
             tid = tid & 0xff;
-            float4 texColor = float4(1,1,1,1);
+            EffectInput fx;
+            fx.vertexColor = inVertexColor;
+            fx.uBatchColor = cbuf.uBatchColor;
 
             //switch(tid)...
             //case 1:
@@ -128,9 +148,18 @@ private {
     } ~ textureSlotSwitchCase ~ 
     q{
         if(isText)
-            return float4(1, 1, 1, texColor.r) * inVertexColor * uBatchColor;
-        return texColor * inVertexColor * uBatchColor;
+            fx.textureColor = float4(1, 1, 1, fx.textureColor.r);
+        return effect(/* EFFECT_PARAMS_CALL */); 
     } ~
     "\n}";
+
+        import hip.util.string;
+        ret = ret.replace("/* GENERATED_EXTRA_BUFFERS */", fx.getMainArguments());
+        ret = ret.replace("/* EFFECT_PARAMS_DEFINITION */", fx.getEffectParamsDefinition());
+        ret = ret.replace("/* EFFECT_PARAMS_CALL */", fx.getEffectParamsCall());
+        ret = ret.replace("/* GLOBALS_DEFINITION */", fx.getGlobalDefinitions());
+        ret = ret.replace("/* USER_FUNCTION */", fx.getSource());
+
+        return ret;
     }
 }
