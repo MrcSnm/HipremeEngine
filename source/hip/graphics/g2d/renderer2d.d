@@ -381,7 +381,7 @@ void setSpriteBatchShader(ShaderHandle handle)
     spBatch.setShader(handle.shader);
 }
 
-version(Standalone)
+version(Load_DScript)
 {
     public import exportd;
 }

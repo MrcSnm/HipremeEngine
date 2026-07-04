@@ -359,8 +359,16 @@ interface IHipPreloadable
             }
             void preload()
             {
-                import hip.api;
-                debug logg("Loading assets for ", getName(), " : ", getAssetsForPreload);
+                version(Load_DScript)
+                {
+                    import hip.console.log;
+                    debug logln("Loading assets for ", getName(), " : ", getAssetsForPreload);
+                }
+                else
+                {
+                    import hip.api;
+                    debug logg("Loading assets for ", getName(), " : ", getAssetsForPreload);
+                }
                 mixin ForeachAssetInClass!(typeof(this), loadAsset) f;
                 f.ForeachAssetInClass;
             }

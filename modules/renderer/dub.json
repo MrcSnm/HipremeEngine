@@ -16,8 +16,7 @@
 				"windowing" : {"path" : "../windowing"}
 			},
 			"sourcePaths": [ "source" ],
-			"importPaths": [ "source", "backends/initializer"],
-			"lflags-windows": [ "-Llib/win64" ]
+			"importPaths": [ "source", "backends/initializer"]
 
 		},
 		{

@@ -361,7 +361,7 @@ void main(string[] args)
 	{
 		auto opts = getopt(args, 
 			"force", "Force for a recompilation", &cOpts.force,
-			"dubVerbose", "Builds with --verbose in dub", &cOpts.dubVerbose,
+			"verbose", "Builds with --verbose in dub", &cOpts.dubVerbose,
 			"projectPath", "Path where the project will be generated. If no path is given, this program will popup a window prompting for selection.",&createProjectToFolder,
 			"scriptOnly", "Only the script will be built, internally used for rebuilding", &scriptOnly,
 			"appleClean", "Used to clean appleos/ios build. Useful for when your build is failing", &appleClean,
