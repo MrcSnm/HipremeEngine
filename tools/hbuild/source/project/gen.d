@@ -111,6 +111,29 @@ string generateDubProject(DubProjectInfo info)
 	"preBuildPlugins": {
 		"getmodules": ["#PROJECT/ct_assets/scriptmodules.txt"]
 	},
+	"targets": {
+		"nswitch" :{
+			"compiler": "ldc2@1.41.0",
+			"arch": "aarch64-none-elf",
+			"dflags": [
+				"-P-D__SWITCH__",
+				"--Xcc=-fPIE",
+				"--Xcc=-specs=$DEVKITPRO/libnx/switch.specs",
+				"--Xcc=-mtp=soft",
+				"-mcpu=cortex-a57",
+				"-mattr=+crc,+crypto",
+				"-gcc=$DEVKITPRO/devkitA64/bin/aarch64-none-elf-gcc"
+			],
+			"libPaths": ["$DEVKITPRO/libnx/lib"],
+			"libs": ["nx"],
+			"sourceFiles": ["switch.i"],
+			"postBuildCommands": [
+				"$DEVKITPRO/tools/bin/nacptool --create \"${DUB_ROOT_PACKAGE}\" "AUTHOR" 1.0 ${DUB_ROOT_PACKAGE}.nacp",
+				"$DEVKITPRO/tools/bin/elf2nro ${BUILD_ARTIFACT} ${DUB_ROOT_PACKAGE}.nro ${DUB_ROOT_PACKAGE}.nacp --icon=$DEVKITPRO/libnx/default_icon.jpg"
+			],
+			"runCommand": ["nxlink", "${DUB_ROOT_PACKAGE}.nro"]
+		}
+	},
 	"configurations":
 	[
 		{
