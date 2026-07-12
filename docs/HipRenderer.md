@@ -69,7 +69,7 @@ When the application does not own the Window, that is, built with the version(dl
 - Function to create a VertexShader
 - Function to create a ShaderProgram
 - A function to send the variable to the shader. The Uniform/Constant buffer
-- They have specific implementations for GeometryBatch, SpriteBatch and BitmapText, listed on `HipShaderPresets`
+- They have specific implementations for GeometryBatch, SpriteBatch, listed on `HipShaderPresets`
 
 
 ### How to use it

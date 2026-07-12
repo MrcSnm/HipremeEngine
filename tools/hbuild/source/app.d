@@ -24,6 +24,7 @@ import targets.psvita;
 mixin StartFeatures!([
 	"_7zip",
 	"dmd",
+	"wsl",
 	"git",
 	"hipreme_engine",
 	"ldc",
@@ -396,6 +397,7 @@ void main(string[] args)
 		Choice("Android", &prepareAndroid, true),
 		Choice("WebAssembly", &prepareWASM, true),
 		Choice("PSVita", &preparePSVita, true),
+		// Choice("Nintendo Switch", &prepareNintendo, true),
 		Choice("Create Project", &createProject),
 		Choice("Select Game", &selectGameFolder),
 		Choice("Release Game", &releaseGame),

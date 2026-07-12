@@ -62,14 +62,6 @@ private string getWslSource()
     return executeShell("wsl echo -n $(wslpath \"%USERPROFILE%\")/.bashrc").output;
 }
 
-private string getWslPath(string inputPath)
-{
-    import std.path;
-    import std.string:replace, toLower;
-    import std.conv;
-    return "/mnt/"~driveName(inputPath)[0].toLower.to!string~replace(inputPath[2..$], '\\', '/');
-}
-
 private auto getExecFunc(ref Terminal t)
 {
     return (scope string arg)
@@ -237,31 +229,24 @@ private void updateShell()
 
 private bool setupPsvitaWindows(ref Terminal t, ref RealTimeConsoleInput input)
 {
-    if(findProgramPath("wsl") == null)
-    {
-        t.writelnError("Please, run a command prompt with administrator access and run `wsl --install` before developing for PSV on Windows.");
-        return false;
-    }
-    string fileToSource = getWslSource();
-    auto wslExec = (scope string[] commands...)
-    {
-        import std.array:join;
-        t.writelnHighlighted("WSL Execution: "~commands);
-        return t.wait(spawnShell("wsl source "~fileToSource~" ^&^& "~join(commands, " ")));
-    };
-    
-    if(wslExec(updateCmd) != 0)
+    import features.wsl;
+    if(wslExec.execute(t, input, [updateCmd]) != 0)
     {
         t.writelnError("Could not update system repositores");
         return false;
     }
-    if(wslExec(depsInstallCmd) != 0)
+    if(wslExec.execute(t, input, [depsInstallCmd]) != 0)
     {
         t.writelnError("Could not setup vita dependencies");
         return false;
     }
 
-    return setupVdpm(t, input, wslExec);
+    auto dg = (scope string[] cmds...)
+    {
+        return wslExec.execute(t, input, cmds);
+    };
+
+    return setupVdpm(t, input, dg);
 }
 
 void sweepLocalNet()

@@ -14,7 +14,7 @@ extern(C) extern @nogc nothrow pure
     {
         public import object: memcpy, memset, memcmp;
         version(WebAssembly)
-            public import object: memmove;
+            alias memmove = wasm_memmove;
         else
             void* memmove(return scope void* s1, scope const void* s2, size_t n) pure;
     }

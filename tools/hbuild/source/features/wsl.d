@@ -1,21 +1,21 @@
 module features.wsl;
 import commons;
-import feature;
+public import feature;
 
-Feature WSLFeature;
+private Feature WSLFeature;
 
 Task!(getWslSourceImpl) getWslSource;
 Task!(wslExecImpl) wslExec;
 
-string getWslSourceImpl()
+string getWslSourceImpl(Feature*[] dependencies, ref Terminal t, ref RealTimeConsoleInput input)
 {
     return executeShell("wsl echo -n $(wslpath \"%USERPROFILE%\")/.bashrc").output;
 }
 
 
-int wslExecImpl(ref T terminal, scope string[] commands...)
+int wslExecImpl(Feature*[] dependencies, ref Terminal t, ref RealTimeConsoleInput input, scope string[] commands...)
 {
-    string fileToSource = getWslSource();
+    string fileToSource = getWslSource.execute(t, input);
     import std.array:join;
     t.writelnHighlighted("WSL Execution: "~commands);
     return t.wait(spawnShell("wsl source "~fileToSource~" ^&^& "~join(commands, " ")));
