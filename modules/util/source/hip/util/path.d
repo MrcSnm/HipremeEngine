@@ -40,7 +40,7 @@ string normalizePath(return ref char[] output, scope string[] paths...)
 {
     size_t start, length;
     import std.ascii;
-    static string[1024] normalized;
+    __gshared string[1024] normalized;
 
     foreach(path; paths)
     {

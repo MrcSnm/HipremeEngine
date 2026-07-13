@@ -2,7 +2,7 @@
 	"fileVersion": 1,
 	"versions": {
 		"archive": "0.7.1",
-		"arsd-official": "12.1.0",
+		"arsd-official": "12.1.2",
 		"handy-httpd": "8.4.5",
 		"httparsed": "1.2.2",
 		"path-matcher": "1.2.0",

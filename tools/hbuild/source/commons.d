@@ -1050,7 +1050,13 @@ int waitRedub(ref Terminal t, ref RealTimeConsoleInput input, DubArguments dArgs
 		{
 			proj.getLinkerFiles(linkerFiles);
 			if(type == LibIncludesType.txt)
+			{
+				linkerFiles~= proj.tree.getOutputName(proj.cDetails.targetOS, proj.cDetails.isa);
+				foreach(ProjectNode node; proj.tree.dependencies)
+					linkerFiles~= node.getOutputName(proj.cDetails.targetOS, proj.cDetails.isa);
+				
 				copyLinkerFilesAsTxt(linkerFiles, copyLinkerFilesTo);
+			}
 			else
 				copyLinkerFiles(linkerFiles, copyLinkerFilesTo);
 		}());
