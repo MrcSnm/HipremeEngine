@@ -12,9 +12,12 @@
 		"druntime/source/rt/tls_armeabi.d",
 		"druntime/source/object.d",
 		"druntime/source/core/arsd/aa.d",
+		"druntime/source/core/arsd/template_aa.d",
 		"druntime/source/core/arsd/objectutils.d",
 		"druntime/source/core/arsd/utf_decoding.d",
-		"druntime/source/core/internal/utf.d"
+		"druntime/source/core/internal/utf.d",
+		"druntime/source/core/internal/hash.d",
+		"druntime/source/core/internal/convert.d"
 	],
 	"targetType": "staticLibrary",
 	"versions": ["CarelessAlocation"],
