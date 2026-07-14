@@ -573,8 +573,11 @@ bool extractToFolder(string zPath, string outputDirectory, ref Terminal t, ref R
 		case ".7zip", ".7z":
 			return extract7ZipToFolder.execute(t, input, zPath, outputDirectory);
 		default:
-			t.writelnError("Could not detect compressed archive type for "~zPath);
-			return false;
+			import std.file;
+			mkdirRecurse(outputDirectory);
+			copy(zPath, buildPath(outputDirectory, baseName(zPath)));
+			t.writelnSuccess(zPath, " is not a compressed file, copying it to ", outputDirectory);
+			return true;
 	}
 }
 
@@ -765,6 +768,8 @@ size_t downloadWithProgress(string url, string saveToPath, void delegate(float t
 	if(!std.file.exists(targetDir))
 		std.file.mkdirRecurse(targetDir);
 
+	string tempSave = saveToPath~".tmp";
+
 	static void writer(string path)
 	{
 		auto f = File(path, "wb");
@@ -777,7 +782,7 @@ size_t downloadWithProgress(string url, string saveToPath, void delegate(float t
 		}
 		ownerTid.send(true);
 	}
-	auto writerTid = spawn(&writer, saveToPath);
+	auto writerTid = spawn(&writer, tempSave);
 	StopWatch updateDelayChecker = StopWatch(AutoStart.yes);
 	size_t downloadTime;
 	conn.onReceive = (ubyte[] data)
@@ -799,6 +804,8 @@ size_t downloadWithProgress(string url, string saveToPath, void delegate(float t
 	conn.perform();
 	send(writerTid, (immutable(ubyte)[]).init);
 	receiveTimeout(dur!"msecs"(1000), (bool){}); //Block until finish
+	import std.file;
+	rename(tempSave, saveToPath);
 	return downloadTime; 
 }
 
@@ -988,6 +995,7 @@ struct DubArguments
 	string _build;
 	string _recipe;
 	string _runArgs;
+	string _target;
 	bool _confirmKey;
 	bool _deep;
 	bool _parallel = true;
@@ -1035,10 +1043,11 @@ int waitRedub(ref Terminal t, ref RealTimeConsoleInput input, DubArguments dArgs
 		CompilationDetails(dArgs.getCompiler(), null, dArgs._arch),
 		ProjectToParse(dArgs._configuration, std.file.getcwd(), null, dArgs._recipe),
 		InitialDubVariables.init,
-		BuildType.profile_gc
+		BuildType.profile_gc, dArgs.target
 	);
 	try {
 		if(buildProject(proj).error) return 1;
+		if(dArgs.command == "run") executeProgram(proj, null);
 	}
 	catch(BuildException err) { return 1; }
 	if(copyLinkerFilesTo.length)

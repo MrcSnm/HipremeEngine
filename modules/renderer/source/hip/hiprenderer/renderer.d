@@ -98,7 +98,7 @@ class HipRendererImplementation : IHipRenderer
     }
 
     public Statistics getStatistics(){return stats;}
-    version(dll) public bool initExternal(HipRendererType type, int windowWidth = -1, int windowHeight = -1)
+    version(InitExternal) public bool initExternal(HipRendererType type, int windowWidth = -1, int windowHeight = -1)
     {
         import hip.hiprenderer.initializer;
         rendererType = type;
@@ -168,7 +168,7 @@ class HipRendererImplementation : IHipRenderer
         ErrorHandler.assertErrorMessage(window !is null, "Error creating window", "Could not create Window");
         if(isExternal)
         {
-            version(dll)
+            version(InitExternal)
             {
                 if(!rendererImpl.initExternal())
                 {

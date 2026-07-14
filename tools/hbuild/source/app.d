@@ -18,6 +18,7 @@ import targets.uwp;
 import targets.linux;
 import targets.wasm;
 import targets.psvita;
+import targets.nintendo_switch;
 
 
 
@@ -32,6 +33,7 @@ mixin StartFeatures!([
 	"android_ldc",
 	"android_ndk",
 	"android_sdk",
+	"devkitpro",
 	"msvclinker",
 	"vs_buildtools_installer",
 	"nuget",
@@ -397,7 +399,7 @@ void main(string[] args)
 		Choice("Android", &prepareAndroid, true),
 		Choice("WebAssembly", &prepareWASM, true),
 		Choice("PSVita", &preparePSVita, true),
-		// Choice("Nintendo Switch", &prepareNintendo, true),
+		Choice("Nintendo Switch", &prepareNintendoSwitch, true),
 		Choice("Create Project", &createProject),
 		Choice("Select Game", &selectGameFolder),
 		Choice("Release Game", &releaseGame),

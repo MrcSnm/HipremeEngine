@@ -141,7 +141,7 @@ class Hip_GL3Renderer : IHipRendererImpl
             }
         };
     }
-    version(dll)public bool initExternal(){return init(null);}
+    version(InitExternal)public bool initExternal(){return init(null);}
     public bool init(IHipWindow windowInterface)
     {
         import hip.util.string;

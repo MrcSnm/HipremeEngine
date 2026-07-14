@@ -8,6 +8,7 @@ extern(C) extern @nogc nothrow pure
     version(WebAssembly) version = CustomRuntime;
     version(PSVita) version = CustomRuntime;
     version(CustomRuntimeTest) version = CustomRuntime;
+    version(NintendoSwitch) version = CustomRuntime;
     
 
     version(CustomRuntime)
@@ -24,7 +25,7 @@ extern(C) extern @nogc nothrow pure
         void* memset(void* str, int c, size_t n);
         int memcmp(const(void*) str1, const(void*) str2, size_t n) pure;
         void* memmove(return scope void* s1, scope const void* s2, size_t n) pure;
-        const(char)* strchr(const(char)* str, char c) pure @nogc nothrow @trustred;
+        const(char)* strchr(const(char)* str, char c) pure @nogc nothrow @trusted;
     }
 
     version(CustomDefinitions)

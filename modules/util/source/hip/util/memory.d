@@ -15,6 +15,7 @@ import hip.util.reflection;
 version(WebAssembly) version = CustomRuntime;
 version(PSVita) version = CustomRuntime;
 version(CustomRuntimeTest) version = CustomRuntime;
+version(NintendoSwitch) version = CustomRuntime;
 @nogc:
 void setZeroMemory(T)(ref T variable)
 {

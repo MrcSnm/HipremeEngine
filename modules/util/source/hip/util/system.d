@@ -19,6 +19,7 @@ version(WebAssembly) version = NoSharedLibrarySupport;
 version(CustomRuntimeTest) version = NoSharedLibrarySupport;
 version(Android) version = NoSharedLibrarySupport;
 version(iOS) version = NoSharedLibrarySupport;
+version(NintendoSwitch) version = NoSharedLibrarySupport;
 
  version(Windows)
 {

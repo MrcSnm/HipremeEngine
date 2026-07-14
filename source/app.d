@@ -27,13 +27,13 @@ import hip.systems.game;
 import hip.bind.interpreters;
 import hip.config.opts;
 
-version(dll)
+version(InitExternal)
 {
 	version(WebAssembly){}
 	else version(PSVita){}
 	else version = ManagesMainDRuntime;
 }
-version(dll){}
+version(InitExternal){}
 else version(AppleOS) { version = ManagesMainDRuntime;}
 else version = HandleArguments;
 ////
@@ -41,9 +41,10 @@ version(ManagesMainDRuntime)
 {
 	import core.runtime;
 }
-version(WebAssembly) version = ExternallyManagedDeltaTime;
-version(AppleOS)     version = ExternallyManagedDeltaTime;
-version(PSVita)      version = ExternallyManagedDeltaTime;
+version(WebAssembly)    version = ExternallyManagedDeltaTime;
+version(AppleOS)        version = ExternallyManagedDeltaTime;
+version(PSVita)         version = ExternallyManagedDeltaTime;
+version(NintendoSwitch) version = ExternallyManagedDeltaTime;
 
 
 /**
@@ -208,7 +209,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	else
 		HipAudio.initialize(getAudioImplementationForOS);
 
-	version(dll)
+	version(InitExternal)
 	{
 		import hip.console.log;
 		import hip.api.renderer.core;
@@ -221,6 +222,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 			HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);
 		}
 		else version(PSVita){HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);}
+		else version(NintendoSwitch){HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);}
 		else static assert(false, "No renderer for this platform");
 	}
 	else
@@ -302,7 +304,7 @@ export extern(C) void HipremeInit()
 *	- HipAudio
 *
 */
-version(dll)
+version(InitExternal)
 {
 	version(WebAssembly)
 	{
@@ -318,17 +320,40 @@ version(dll)
 else version(AppleOS){}
 else
 {
-	private string[] arguments;
-	export int main(string[] args)
+	version(NintendoSwitch)
 	{
-		arguments = args;
-		return HipremeMain();
+		export int main(string[] args)
+		{
+			arguments = args;
+			int ret = HipremeMain();
+			if(ret != 0)
+				return ret;
+
+			g_deltaTime = 0.016f;
+			while(HipremeUpdateBase())
+			{
+				HipremeRender();
+				gFrameAllocator.reset();
+			}
+			return 0;
+		}
+	}
+	else
+	{
+		export int main(string[] args)
+		{
+			arguments = args;
+			return HipremeMain();
+		}
 	}
 }
+int main(string[] args){return 0;}
+__gshared auto keepMain = &main;
 
 ///Steps an engine frame
 bool HipremeUpdateBase()
 {
+
 	import hip.graphics.g2d.profiling;
 	setFrameInitTime();
 	if(!sys.update(g_deltaTime))
@@ -370,7 +395,7 @@ version(ExternallyManagedDeltaTime)
 		}
 	}
 }
-else version(dll) export extern(System) bool HipremeUpdate()
+else version(InitExternal) export extern(System) bool HipremeUpdate()
 {
 	import hip.util.time;
 	import core.time:dur;

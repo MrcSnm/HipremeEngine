@@ -10,6 +10,7 @@ alias _compare_fp_t = extern(C) int function(const(void*) a, const(void*) b);
 
 version(WebAssembly) version = CustomRuntime;
 version(PSVita) version = CustomRuntime;
+version(NintendoSwitch) version = CustomRuntime;
 
 version(CustomRuntime)
 {

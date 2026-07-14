@@ -24,7 +24,7 @@ Can be switched by changing the renderer.conf screen.renderer property:
 
 ## Using it on a DLL
 
-When the application does not own the Window, that is, built with the version(dll), it should be started with `HipRenderer.initExternal(HipRendererType)`
+When the application does not own the Window, that is, built with the version(InitExternal), it should be started with `HipRenderer.initExternal(HipRendererType)`
 
 ## HipRenderer object mapping table
 

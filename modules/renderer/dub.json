@@ -48,7 +48,13 @@
 			"configurations": [
 				{
 					"name": "default",
-					"dependencies": {"bindbc-opengl": {"version": "~>1.1.0"}},
+					"dependencies": {"bindbc-opengl": {"path": "../../dependencies/bindbc-opengl"}},
+					"versions": [ "HipGL3", "GL_45", "GL_ARB" ]
+				},
+				{
+					"name": "egl",
+					"dependencies": {"bindbc-opengl": {"path": "../../dependencies/bindbc-opengl"}},
+					"subConfigurations": {"bindbc-opengl": "egl"},
 					"versions": [ "HipGL3", "GL_45", "GL_ARB" ]
 				},
 				{
@@ -78,6 +84,11 @@
 		{
 			"name": "nodx",
 			"dependencies": { "renderer:gl": "*"}
+		},
+		{
+			"name": "nintendo-switch",
+			"dependencies": {"renderer:gl": "*"},
+			"subConfigurations": {"renderer:gl": "egl"}
 		},
 		{
 			"name": "dxonly",

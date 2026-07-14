@@ -2,6 +2,7 @@ module core.stdc.config;
 
 version(PSVita) version = UseCustomRuntime;
 else version(WebAssembly) version = UseCustomRuntime;
+else version(NintendoSwitch) version = UseCustomRuntime;
 version(CustomRuntimeTest) version = UseCustomRuntime;
 
 version(UseCustomRuntime)

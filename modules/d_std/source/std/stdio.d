@@ -1,6 +1,8 @@
 module std.stdio;
 import core.stdc.stdio;
 
+version(NintendoSwitch) version = CustomRuntimeTest;
+
 version(WebAssembly)
 {
     import arsd.webassembly;

@@ -143,7 +143,7 @@ struct HipShaderTexture
 interface IHipRendererImpl
 {
     public bool init(IHipWindow window);
-    version(dll){public bool initExternal();}
+    version(InitExternal){public bool initExternal();}
     public bool isRowMajor();
     void setErrorCheckingEnabled(bool enable = true);
     public HipShaderProgram createShader();
@@ -182,7 +182,7 @@ interface IHipRendererImpl
  * interface IHipRendererImpl : IHipRenderer
 {
     public bool init(IHipWindow window);
-    version(dll){public bool initExternal();}
+    version(InitExternal){public bool initExternal();}
     public bool isRowMajor();
     void setErrorCheckingEnabled(bool enable = true);
     size_t function(ShaderTypes shaderType, UniformType uniformType) getShaderVarMapper();

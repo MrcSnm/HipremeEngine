@@ -217,6 +217,8 @@ struct Feature
 
     bool getFeature(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion v = TargetVersion.init)
     {
+        if(this == Feature.init)
+            throw new Error("Feature not initialized. Be sure to include it at source/app.d. mixin StartFeatures!([])");
         if(v == TargetVersion.init)
         {
             if(currentVersion != TargetVersion.init)

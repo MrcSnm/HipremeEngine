@@ -123,6 +123,8 @@ else version(CustomRuntimeTest)
 	enum CustomRuntime = true;
 else version(PSVita) 
 	enum CustomRuntime = true;
+else version(NintendoSwitch)
+	enum CustomRuntime = true;
 else
 	enum CustomRuntime = false;
 

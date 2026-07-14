@@ -16,6 +16,7 @@ import core.stdc.string;
 version(WebAssembly) version = UseDRuntimeDecoder;
 version(CustomRuntimeTest) version = UseDRuntimeDecoder;
 version(PSVita) version = UseDRuntimeDecoder;
+version(NintendoSwitch) version = UseDRuntimeDecoder;
 version(WebAssembly) version = AvoidStringFragmentation;
 
 /** 

@@ -436,7 +436,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         }
     }
 
-    version(dll)
+    version(InitExternal)
     {
         public bool initExternal()
         {

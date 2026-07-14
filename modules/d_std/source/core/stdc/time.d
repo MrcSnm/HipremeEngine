@@ -2,6 +2,7 @@ module core.stdc.time;
 
 version(PSVita) version = CustomRuntime;
 version(CustomRuntimeTest) version = CustomRuntime;
+version(NintendoSwitch) version = CustomRuntime;
 
 version(CustomRuntime)
 {

@@ -23,6 +23,7 @@ enum Platforms
     wasm,
     psvita,
     appleos,
+    nintendo_switch,
     null_
 }
 static enum androidTag = "HipremeEngine";
@@ -57,7 +58,20 @@ enum WindowsConsoleColors
     red = 12,
     white = 15
 }
-
+private struct TextColor
+{
+    @nogc:
+    version(WindowsNative)
+        static void* windowsConsole;
+    this(WindowsConsoleColors color)
+    {
+        version(WindowsNative){SetConsoleTextAttribute(windowsConsole, color);}
+    }
+    ~this()
+    {
+        version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.white);}
+    }
+}
 class Console
 {
     string name;
@@ -85,9 +99,8 @@ class Console
         {
             import core.sys.windows.winbase;
             import core.sys.windows.wincon;
-            static void* windowsConsole;
-            if(windowsConsole is null)
-                windowsConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+            if(TextColor.windowsConsole is null)
+                TextColor.windowsConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         }
         switch(p) with(Platforms)
         {
@@ -141,6 +154,7 @@ class Console
             case default_:
             case appleos:
             case desktop:
+            case nintendo_switch:
             default:
             {
                 _log = function(string s)
@@ -152,32 +166,25 @@ class Console
                         printf("%.*s\n", cast(int)s.length, s.ptr);
                         version(PSVita){}
                         else version(CustomRuntimeTest){}
+                        else version(NintendoSwitch){}
                         else fflush(stdout);
                     }
                 };
                 _info = function(string s)
                 {
-                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.blue);}
-                    _log(s);
-                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.white);}
+                    with(TextColor(WindowsConsoleColors.blue)) _log(s);
                 };
                 _warn = function(string s)
                 {
-                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.yellow);}
-                    _log(s);
-                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.white);}
+                    with(TextColor(WindowsConsoleColors.yellow)) _log(s);
                 };
                 _err = function(string s)
                 {
-                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.red);}
-                    _log(s);
-                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.white);}
+                    with(TextColor(WindowsConsoleColors.red)) _log(s);
                 };
                 _fatal = function(string s)
                 {
-                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.pink);}
-                    _log(s);
-                    version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.white);}
+                    with(TextColor(WindowsConsoleColors.pink)) _log(s);
                 };
                 break;
             }

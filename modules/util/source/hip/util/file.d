@@ -51,6 +51,7 @@ void writeFileDebug(string basePath, string path, string content)
     }
     else version(Android){}
     else version(PSVita){}
+    else version(NintendoSwitch){}
     else
     {
         import std.file;

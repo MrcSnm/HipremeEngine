@@ -20,6 +20,7 @@ INetworkBackend getNetworkImplementation(NetInterface itf)
     else
     {
         import hip.net.backend.tcp;
-		return new TCPNetwork();
+        version(NintendoSwitch){return null;}
+        else return new TCPNetwork();
     }
 }

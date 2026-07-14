@@ -113,25 +113,38 @@ string generateDubProject(DubProjectInfo info)
 	},
 	"targets": {
 		"nswitch" :{
-			"compiler": "ldc2@1.41.0",
-			"arch": "aarch64-none-elf",
-			"dflags": [
-				"-P-D__SWITCH__",
-				"--Xcc=-fPIE",
-				"--Xcc=-specs=$DEVKITPRO/libnx/switch.specs",
-				"--Xcc=-mtp=soft",
-				"-mcpu=cortex-a57",
-				"-mattr=+crc,+crypto",
-				"-gcc=$DEVKITPRO/devkitA64/bin/aarch64-none-elf-gcc"
-			],
-			"libPaths": ["$DEVKITPRO/libnx/lib"],
-			"libs": ["nx"],
-			"sourceFiles": ["switch.i"],
-			"postBuildCommands": [
-				"$DEVKITPRO/tools/bin/nacptool --create \"${DUB_ROOT_PACKAGE}\" "AUTHOR" 1.0 ${DUB_ROOT_PACKAGE}.nacp",
-				"$DEVKITPRO/tools/bin/elf2nro ${BUILD_ARTIFACT} ${DUB_ROOT_PACKAGE}.nro ${DUB_ROOT_PACKAGE}.nacp --icon=$DEVKITPRO/libnx/default_icon.jpg"
-			],
-			"runCommand": ["nxlink", "${DUB_ROOT_PACKAGE}.nro"]
+			"nswitch" :{
+		"compiler": "ldc2@1.41.0",
+		"arch": "aarch64-none-elf-newlib",
+		"targetName": "${DUB_ROOT_PACKAGE}.elf",
+		"dflags": [
+			"-P-D__SWITCH__",
+			"--Xcc=-fPIE",
+			"--Xcc=-specs=$DEVKITPRO/libnx/switch.specs",
+			"--Xcc=-mtp=soft",
+			"-mcpu=cortex-a57",
+			"-mattr=+crc,+crypto",
+			"-gcc=$DEVKITPRO/devkitA64/bin/aarch64-none-elf-gcc",
+			"--relocation-model=pic",
+			"-defaultlib="
+		],
+		"dependencies": {
+			"runtime": {"path": "#HIPREME_ENGINE/dependencies/runtime"}
+		},
+		"lflags": ["#HIPREME_ENGINE/libhipreme_engine.a"],
+		"subConfigurations": {
+			"hipreme_engine": "nintendo-switch",
+			"runtime": "psvita"
+		},
+		"importPaths": ["#HIPREME_ENGINE/modules/d_std/source"],
+		"libPaths": ["$DEVKITPRO/libnx/lib"],
+		"versions": ["NintendoSwitch"],
+		"libs": ["nx"],
+		"postBuildCommands": [
+			"$DEVKITPRO/tools/bin/nacptool --create \"${DUB_ROOT_PACKAGE}\" \"Hipreme\" 1.0 ${DUB_ROOT_PACKAGE}.nacp",
+			"$DEVKITPRO/tools/bin/elf2nro ${DUB_ROOT_PACKAGE}.elf ${DUB_ROOT_PACKAGE}.nro ${DUB_ROOT_PACKAGE}.nacp --icon=$DEVKITPRO/libnx/default_icon.jpg"
+		],
+		"runCommand": ["nxlink", "${DUB_ROOT_PACKAGE}.nro"]
 		}
 	},
 	"configurations":

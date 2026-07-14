@@ -3,6 +3,7 @@ import hip.network;
 import hip.api.net.hipnet;
 
 version(WebAssembly){}
+version(NintendoSwitch){}
 else:
 import std.socket;
 

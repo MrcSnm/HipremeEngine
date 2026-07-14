@@ -10,7 +10,7 @@ else version(AppleOS) enum ActivePlatform = Platforms.appleos;
 else enum ActivePlatform = Platforms.default_;
 
 
-version(dll)
+version(InitExternal)
 {
 	version(WebAssembly){}
 	else version(PSVita){}
