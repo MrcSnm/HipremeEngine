@@ -49,9 +49,9 @@ private bool installDevkitPro(ref Terminal t, ref RealTimeConsoleInput input, Ta
             t.writelnError("Failed installing devkitPro");
             return false;
         }
-        t.writelnHighlighted("Executing sudo dkp-pacman -S switch-dev switch-mesa");
+        t.writelnHighlighted("Executing sudo dkp-pacman -S switch-dev switch-mesa switch-openal-soft");
         t.flush;
-        if(t.wait(spawnProcess(["sudo", "dkp-pacman", "-S", "switch-dev", "switch-mesa"])) != 0)
+        if(t.wait(spawnProcess(["sudo", "dkp-pacman", "-S", "switch-dev", "switch-mesa", "switch-openal-soft"])) != 0)
         {
             t.writelnError("Failed installing development for Nintendo Switch on DevkitPro");
             return false;

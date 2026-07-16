@@ -170,7 +170,7 @@
 				"runtime": "psvita",
 				"d_std": "psvita",
 				"assets": "psvita",
-				"audio": "psvita",
+				"audio": "openal",
 				"renderer": "psvita"
 			}
 		},
@@ -184,7 +184,7 @@
 			"subConfigurations": {
 				"d_std": "psvita",
 				"assets": "psvita",
-				"audio": "null",
+				"audio": "openal",
 				"renderer": "nintendo-switch"
 			}
 		},

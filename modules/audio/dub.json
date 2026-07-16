@@ -56,7 +56,7 @@
 			"subConfigurations": {"audio_decoding": "wasm"}
 		},
 		{
-			"name": "psvita",
+			"name": "openal",
 			"dependencies": {
 				"bindbc-openal": "~>1.1.0"
 			},
