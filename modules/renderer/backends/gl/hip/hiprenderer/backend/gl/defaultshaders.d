@@ -29,15 +29,13 @@ private {
 
     bool isSpriteBatchInstanced()
     {
+        import hip.config.renderer;
         version(WebAssembly)
         {
             import gles;
             return isWebGL2;
         }
-        else version(Windows)
-            return true;
-        else
-            return false;
+        else return OpenGLHasInstancedDraw;
     }
 
     string getSpriteBatchShader(ShaderEffect extra)

@@ -363,7 +363,7 @@ class HipGL3ShaderProgram : HipGLShaderProgram
     }
     import hip.hiprenderer.backend.gl.glbuffer;
     protected ShaderVariablesLayout[] ubos;
-    private static UBO[] boundUBO;
+    private __gshared UBO[] boundUBO;
 
     uint id = 0;
 

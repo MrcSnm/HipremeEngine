@@ -441,7 +441,6 @@ class GeometryBatch : IHipBatch
     void draw()
     {
         const uint count = this.currentIndex;
-        import hip.console.log;
 
         if(count - lastIndexDrawn != 0)
         {

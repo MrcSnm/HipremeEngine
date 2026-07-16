@@ -262,23 +262,13 @@ class GameSystem : IGameSystem
         auto onLoadFn = ()
         {
             import hip.console.log;
-            version(CustomRuntime)
-            {
+            try{
                 s.preload();
                 loglnWarn("Initializing scene ", s.getName);
                 s.initialize();
                 scenes~= s;
             }
-            else
-            {
-                try{
-                    s.preload();
-                    loglnWarn("Initializing scene ", s.getName);
-                    s.initialize();
-                    scenes~= s;
-                }
-                catch (Error e){scriptFatalError(e);}
-            }
+            catch (Error e){scriptFatalError(e);}
         };
         if(waitForLoading)
             HipAssetManager.addOnLoadingFinish(onLoadFn);
@@ -358,8 +348,6 @@ class GameSystem : IGameSystem
         return true;
     }
 
-    version(CustomRuntime){}
-    else
     void scriptFatalError(Throwable e, string file = __FILE__, size_t line = __LINE__, string func = __PRETTY_FUNCTION__)
     {
         import hip.console.log;
