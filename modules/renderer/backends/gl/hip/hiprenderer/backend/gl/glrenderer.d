@@ -145,14 +145,17 @@ class Hip_GL3Renderer : IHipRendererImpl
     public bool init(IHipWindow windowInterface)
     {
         import hip.util.string;
+        import hip.console.log;
         if(windowInterface !is null)
         {
             HipWindow window = cast(HipWindow)windowInterface;
             this.window = window;
+            hiplog("Starting OpenGL Context.");
             window.startOpenGLContext();
         }
         version(Have_bindbc_opengl)
         {
+            hiplog("Loading OpenGL functions.");
             GLSupport ver = loadOpenGL();
             if(ver == GLSupport.noLibrary)
             {

@@ -88,7 +88,7 @@
 		{
 			"name": "nintendo-switch",
 			"dependencies": {"renderer:gl": "*"},
-			"subConfigurations": {"renderer:gl": "egl"}
+			"subConfigurations": {"renderer:gl": "egl", "windowing": "nintendo-switch"}
 		},
 		{
 			"name": "dxonly",

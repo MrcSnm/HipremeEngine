@@ -128,18 +128,12 @@
 				"Standalone",
 				"HipDStdFile",
 				"CarelessAlocation",
-				"dll"
+				"InitExternal"
 			]
 		},
 		{
 			"name": "android",
-			"libs": [
-				"log",
-				"android",
-				"OpenSLES",
-				"EGL",
-				"GLESv3"
-			],
+			"libs": ["log", "android", "OpenSLES", "EGL", "GLESv3"],
 			"dependencies": {
 				"jni": {"path": "./modules/jni", "version": "*"}
 			},
@@ -150,11 +144,7 @@
 			},
 			"targetPath": "bin/android/",
 			"targetType": "library",
-			"versions": [
-				"dll",
-				"Standalone",
-				"OpenSLES1_1"
-			]
+			"versions": ["InitExternal", "Standalone", "OpenSLES1_1"]
 		},
 		{
 			"name": "appleos",
@@ -171,7 +161,7 @@
 		{
 			"name": "psvita",
 			"targetType": "staticLibrary",
-			"versions": ["Standalone", "dll"],
+			"versions": ["Standalone", "InitExternal"],
 			"dependencies": {
 				"d_std": {"path": "modules/d_std"},
 				"runtime": {"path": "dependencies/runtime"}
@@ -185,6 +175,20 @@
 			}
 		},
 		{
+			"name": "nintendo-switch",
+			"targetType": "staticLibrary",
+			"versions": ["Standalone"],
+			"dependencies": {
+				"d_std": {"path": "modules/d_std"}
+			},
+			"subConfigurations": {
+				"d_std": "psvita",
+				"assets": "psvita",
+				"audio": "null",
+				"renderer": "nintendo-switch"
+			}
+		},
+		{
 			"name": "uwp",
 			"targetType": "staticLibrary",
 			"subConfigurations": {
@@ -194,7 +198,7 @@
 			"dflags-ldc": ["-link-defaultlib-shared=true"],
 			"versions-windows": [
 				"Standalone",
-				"dll",
+				"InitExternal",
 				"UWP"
 			]
 		},

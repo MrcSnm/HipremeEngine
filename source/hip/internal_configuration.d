@@ -7,18 +7,24 @@ else version(WebAssembly) enum ActivePlatform = Platforms.wasm;
 else version(PSVita) enum ActivePlatform = Platforms.psvita;
 else version(UWP) enum ActivePlatform = Platforms.uwp;
 else version(AppleOS) enum ActivePlatform = Platforms.appleos;
+else version(NintendoSwitch) enum ActivePlatform = Platforms.nintendo_switch;
 else enum ActivePlatform = Platforms.default_;
 
 
-version(InitExternal)
-{
-	version(WebAssembly){}
-	else version(PSVita){}
-	else enum ManagesMainDRuntime = true;
-}
-else version(AppleOS) {}
-else enum HandleArguments = true;
+version(Have_runtime)
+    enum ManagesMainDRuntime = false;
+else 
+    enum ManagesMainDRuntime = true;
 
+version(Windows) enum HandleArguments = true;
+else version(Android) enum HandleArguments = false;
+else version(linux) enum HandleArguments = true;
+else enum HandleArguments = false;
+
+version(Android) enum HasMain = false;
+else version(AppleOS) enum HasMain = false;
+else version(PSVita) enum HasMain = false;
+else enum HasMain = true;
 
 string getFSInstallPath(string projectToLoad)
 {

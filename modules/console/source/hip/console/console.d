@@ -36,6 +36,37 @@ enum GUI_CONSOLE = true;
 @nogc __gshared void function(string toPrint) _err;
 @nogc __gshared void function(string toPrint) _fatal;
 version(PSVita) extern(C) void hipVitaPrint(uint length, const(char)* str) @nogc;
+version(NintendoSwitch)
+{
+    extern(System) void close(int);
+    extern(System) void socketExit();
+    extern(System) int socketInitialize(void*);
+    /// Initalize the socket driver using the default configuration.
+    int socketInitializeDefault()
+    {
+        return socketInitialize(null);
+    }
+
+    /**
+    * @brief Connects to the nxlink host, setting up an output stream.
+    * @param[in] redirStdout Whether to redirect stdout to nxlink output.
+    * @param[in] redirStderr Whether to redirect stderr to nxlink output.
+    * @return Socket fd on success, negative number on failure.
+    * @note The socket should be closed with close() during application cleanup.
+    */
+    extern(System) int nxlinkConnectToHost(bool redirStdout, bool redirStderr);
+
+    /// Same as \ref nxlinkConnectToHost but redirecting both stdout/stderr.
+    int nxlinkStdio() {
+        return nxlinkConnectToHost(true, true);
+    }
+
+    /// Same as \ref nxlinkConnectToHost but redirecting only stderr.
+    int nxlinkStdioForDebug() {
+        return nxlinkConnectToHost(false, true);
+    }
+
+}
 
 version(UWP){}
 else version(Windows)
@@ -72,6 +103,8 @@ private struct TextColor
         version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.white);}
     }
 }
+
+
 class Console
 {
     string name;
@@ -92,6 +125,19 @@ class Console
     
 
     alias printFuncT = @nogc void function(string);
+    version(NintendoSwitch)
+    {
+        __gshared int nxLinkSock = -1;
+        private static void deInitNxLink()
+        {
+            if(nxLinkSock >= 0)
+            {
+                close(nxLinkSock);
+                socketExit();
+                nxLinkSock = -1;
+            }
+        }
+    }
     static void install(Platforms p = Platforms.default_, printFuncT printFunc = null)
     {
         DEFAULT = new Console("Output", 99);
@@ -151,10 +197,24 @@ class Console
                 _err = _log;
                 _fatal = _err;
                 break;
+            case nintendo_switch:
+                version(NintendoSwitch)
+                {
+                    if(socketInitializeDefault() != 0)
+                        throw new Error("No initialization on switch console.");
+                    nxLinkSock = nxlinkStdio();
+                    if(nxLinkSock >= 0)
+                    {
+                        import core.stdc.stdio;
+                        printf("Hipreme Engine: Connected to Nintendo Switch NXLink.\n");
+                    }
+                    else
+                        deInitNxLink();
+                }
+                goto default;
             case default_:
             case appleos:
             case desktop:
-            case nintendo_switch:
             default:
             {
                 _log = function(string s)

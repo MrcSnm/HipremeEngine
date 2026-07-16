@@ -17,6 +17,7 @@ import hip.global.gamedef;
 import hip.audio;
 import hip.assetmanager;
 import hip.systems.timer_manager;
+import hip.internal_configuration;
 
 version(Windows)
 {
@@ -27,20 +28,9 @@ import hip.systems.game;
 import hip.bind.interpreters;
 import hip.config.opts;
 
-version(InitExternal)
-{
-	version(WebAssembly){}
-	else version(PSVita){}
-	else version = ManagesMainDRuntime;
-}
-version(InitExternal){}
-else version(AppleOS) { version = ManagesMainDRuntime;}
-else version = HandleArguments;
+
 ////
-version(ManagesMainDRuntime)
-{
-	import core.runtime;
-}
+
 version(WebAssembly)    version = ExternallyManagedDeltaTime;
 version(AppleOS)        version = ExternallyManagedDeltaTime;
 version(PSVita)         version = ExternallyManagedDeltaTime;
@@ -73,6 +63,7 @@ __gshared bool isUsingInterpreter = false;
 __gshared HipInterpreterEntry interpreterEntry;
 
 __gshared string[] rt_options = ["gcopt=profile:1"];
+__gshared string[] arguments;
 
 
 /**
@@ -84,54 +75,57 @@ __gshared string[] rt_options = ["gcopt=profile:1"];
  *	- Project Path specified: Loads the DLL found in the project path
  *
  */
-version(HandleArguments)
 void HipremeHandleArguments()
 {
-	import hip.util.path;
-	version(Load_DScript)
+	static if(HandleArguments)
 	{
-		if(arguments.length < 2)
-		{
-			import hip.data.json;
-			import hip.filesystem.hipfs;
-			string engineExe = arguments[0];
-			string engineOpts = engineExe.dirName.joinPath("engine_opts.json").normalizePath;
-			hiplog("Loading ", engineOpts);
-			if(HipFS.absoluteExists(engineOpts))
-			{
-				string data;
-				ErrorHandler.assertExit(HipFS.absoluteReadText(engineOpts, data), "Error reading engine_opts.json");
-				JSONValue v = parseJSON(data);
-				if(v.hasErrorOccurred)
-				{
-					ErrorHandler.assertExit(false, "Error parsing engine_opts.json", v.error);
-				}
-				else
-				{
-					projectToLoad = v["defaultProject"].str;
-					buildCommand = v["buildCmd"].str;
-				}
-			}
-			return;
-		}
-	}
-	if(arguments.length == 2) //Project Path
-	{
+
 		import hip.util.path;
-		if(arguments[1] == "lua")
+		version(Load_DScript)
 		{
-			interpreterEntry.intepreter = HipInterpreter.lua;
-			interpreterEntry.sourceEntry = "source/scripting/lua/main.lua";
-			isUsingInterpreter = true;
+			if(arguments.length < 2)
+			{
+				import hip.data.json;
+				import hip.filesystem.hipfs;
+				string engineExe = arguments[0];
+				string engineOpts = engineExe.dirName.joinPath("engine_opts.json").normalizePath;
+				hiplog("Loading ", engineOpts);
+				if(HipFS.absoluteExists(engineOpts))
+				{
+					string data;
+					ErrorHandler.assertExit(HipFS.absoluteReadText(engineOpts, data), "Error reading engine_opts.json");
+					JSONValue v = parseJSON(data);
+					if(v.hasErrorOccurred)
+					{
+						ErrorHandler.assertExit(false, "Error parsing engine_opts.json", v.error);
+					}
+					else
+					{
+						projectToLoad = v["defaultProject"].str;
+						buildCommand = v["buildCmd"].str;
+					}
+				}
+				return;
+			}
 		}
-		else if(arguments[1].extension == ".lua")
+		if(arguments.length == 2) //Project Path
 		{
-			interpreterEntry.intepreter = HipInterpreter.lua;
-			interpreterEntry.sourceEntry = arguments[1];
-			isUsingInterpreter = true;
+			import hip.util.path;
+			if(arguments[1] == "lua")
+			{
+				interpreterEntry.intepreter = HipInterpreter.lua;
+				interpreterEntry.sourceEntry = "source/scripting/lua/main.lua";
+				isUsingInterpreter = true;
+			}
+			else if(arguments[1].extension == ".lua")
+			{
+				interpreterEntry.intepreter = HipInterpreter.lua;
+				interpreterEntry.sourceEntry = arguments[1];
+				isUsingInterpreter = true;
+			}
+			else
+				projectToLoad = arguments[1];
 		}
-		else
-			projectToLoad = arguments[1];
 	}
 }
 
@@ -152,8 +146,7 @@ static void initEngine(bool audio3D = false)
 	Console.install(ActivePlatform, getPlatformPrintFunction());
 	loglnInfo("Console installed for ", ActivePlatform);
 	HipFS.initializeAbsolute();
-	version(HandleArguments)
-		HipremeHandleArguments();
+	HipremeHandleArguments();
 
 	string fsInstallPath = getFSInstallPath(projectToLoad);
 	HipFS.install(fsInstallPath, getFilesystemValidations());
@@ -184,8 +177,8 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 
 	backtraced_Register();
 	HipTime.initialize();
-	Random.initialize();
 	initEngine(true);
+	Random.initialize();
 
 	if(isUsingInterpreter)
 		startInterpreter(interpreterEntry.intepreter);
@@ -213,7 +206,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	{
 		import hip.console.log;
 		import hip.api.renderer.core;
-		hiplog("Will init renderer");
+		hiplog("Initializing Renderer Externally");
 		version(UWP){HipRenderer.initExternal(HipRendererType.D3D11, windowWidth, windowHeight);}
 		else version(WebAssembly){HipRenderer.initExternal(HipRendererType.GL3, windowWidth, windowHeight);}
 		else version(Android)
@@ -257,6 +250,7 @@ void gameInitialize()
 	sys.loadGame(projectToLoad, buildCommand);
 	sys.startGame();
 	version(Desktop){HipremeDesktopGameLoop();}
+	else version(NintendoSwitch){HipremeBaseGameLoop();}
 	else version(WebAssembly){WasmStartGameLoop();}
 }
 import hip.network;
@@ -286,8 +280,9 @@ static void destroyEngine()
 */
 export extern(C) void HipremeInit()
 {
-	version(ManagesMainDRuntime)
+	static if(ManagesMainDRuntime)
 	{
+		import core.runtime;
 		rt_init();
 		importExternal();
 	}
@@ -304,56 +299,28 @@ export extern(C) void HipremeInit()
 *	- HipAudio
 *
 */
-version(InitExternal)
-{
-	version(WebAssembly)
-	{
-		import hip.windowing.platforms.browser;
-		int main()
-		{
-			string[] _;
-			int[2] windowSize = getWindowSize(null, _);
-			return HipremeMain(windowSize[0], windowSize[1]);
-		}
-	}
-}
-else version(AppleOS){}
-else
-{
-	version(NintendoSwitch)
-	{
-		export int main(string[] args)
-		{
-			arguments = args;
-			int ret = HipremeMain();
-			if(ret != 0)
-				return ret;
 
-			g_deltaTime = 0.016f;
-			while(HipremeUpdateBase())
-			{
-				HipremeRender();
-				gFrameAllocator.reset();
-			}
-			return 0;
-		}
-	}
-	else
+static if(HasMain)
+{
+	export int main(string[] args)
 	{
-		export int main(string[] args)
+		arguments = args;
+		int[2] windowSize = [-1, -1];
+		version(WebAssembly)
 		{
-			arguments = args;
-			return HipremeMain();
+			import hip.windowing.platforms.browser;
+			string[] _;
+			windowSize = getWindowSize(null, _);
 		}
+		return HipremeMain(windowSize[0], windowSize[1]);
 	}
+	__gshared auto keepMain = &main;
 }
-int main(string[] args){return 0;}
-__gshared auto keepMain = &main;
 
 ///Steps an engine frame
-bool HipremeUpdateBase()
+export extern(System) bool HipremeUpdate(float dt)
 {
-
+	g_deltaTime = dt;
 	import hip.graphics.g2d.profiling;
 	setFrameInitTime();
 	if(!sys.update(g_deltaTime))
@@ -378,45 +345,15 @@ version(ExternallyManagedDeltaTime)
 		 */
 		export extern(System) bool HipremeEngineLoop(float dt)
 		{
-			g_deltaTime = dt;
-			if(!HipremeUpdateBase())
+			if(!HipremeUpdate(dt))
 				return false;
 			HipremeRender();
 			gFrameAllocator.reset();
 			return true;
 		}
 	}
-	else
-	{
-		export extern(System) bool HipremeUpdate(float dt)
-		{
-			g_deltaTime = dt;
-			return HipremeUpdateBase();
-		}
-	}
 }
-else version(InitExternal) export extern(System) bool HipremeUpdate()
-{
-	import hip.util.time;
-	import core.time:dur;
-	import core.thread.osthread;
-	long initTime = HipTime.getCurrentTime();
-	if(HipremeUpdateBase())
-	{
-		long sleepTime = cast(long)(FRAME_TIME - g_deltaTime.msecs);
-		if(sleepTime > 0)
-		{
-			Thread.sleep(dur!"msecs"(sleepTime));
-		}
-		// g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
-		g_deltaTime = 0.016;
-		// logln(g_deltaTime);
-		gFrameAllocator.reset();
 
-		return true;
-	}
-	return false;
-}
 version(Desktop)
 {
 	void HipremeDesktopGameLoop()
@@ -433,12 +370,23 @@ version(Desktop)
 			{
 				Thread.sleep(dur!"msecs"(sleepTime));
 			}
-			isUpdating = HipremeUpdateBase();
+			isUpdating = HipremeUpdate(g_deltaTime);
 			HipremeRender();
 			g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
 			gFrameAllocator.reset();
 		}
 		HipremeDestroy();
+	}
+}
+version(NintendoSwitch)
+{
+	void HipremeBaseGameLoop()
+	{
+		while(HipremeUpdate(0.016f))
+		{
+			HipremeRender();
+			gFrameAllocator.reset();
+		}
 	}
 }
 /**
@@ -466,8 +414,11 @@ export extern(System) void HipremeDestroy()
 {
 	logln("Destroying HipremeEngine");
 	destroyEngine();
-	version(ManagesMainDRuntime)
+	static if(ManagesMainDRuntime)
+	{
+		import core.runtime;
 		rt_term();
+	}
 }
 
 export extern(System) void logMessage(string message)

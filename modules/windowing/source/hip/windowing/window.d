@@ -115,7 +115,9 @@ class HipWindow : IHipWindow
 
 private template getModule()
 {
-    version(WindowsNative)
+    version(NintendoSwitch)
+        import getModule = hip.windowing.platforms.nintendo_switch;
+    else version(WindowsNative)
         import getModule = hip.windowing.platforms.windows;
     else version(X11)
         import getModule = hip.windowing.platforms.x11;

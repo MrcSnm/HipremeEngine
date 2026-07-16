@@ -21,7 +21,8 @@
 		},
 		{"name": "android"},
 		{"name": "wasm"},
-		{"name": "psvita"}
+		{"name": "psvita"},
+		{"name": "nintendo-switch", "dependencies": {"egl": {"path": "/Users/hipreme/Documents/egl-dlang"}}, "subConfigurations": {"egl": "nintendo-switch"}}
 	],
 	"copyright": "Copyright © 2022, Hipreme",
 	"description": "Windowing module for the Hipreme Engine",

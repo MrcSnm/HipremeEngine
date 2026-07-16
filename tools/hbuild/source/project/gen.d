@@ -137,9 +137,9 @@ string generateDubProject(DubProjectInfo info)
 			"runtime": "psvita"
 		},
 		"importPaths": ["#HIPREME_ENGINE/modules/d_std/source"],
-		"libPaths": ["$DEVKITPRO/libnx/lib"],
+		"libPaths": ["$DEVKITPRO/libnx/lib", "$DEVKITPRO/portlibs/switch/lib"],
 		"versions": ["NintendoSwitch"],
-		"libs": ["nx"],
+		"libs": ["EGL", "glapi", "drm_nouveau", "nx"],
 		"postBuildCommands": [
 			"$DEVKITPRO/tools/bin/nacptool --create \"${DUB_ROOT_PACKAGE}\" \"Hipreme\" 1.0 ${DUB_ROOT_PACKAGE}.nacp",
 			"$DEVKITPRO/tools/bin/elf2nro ${DUB_ROOT_PACKAGE}.elf ${DUB_ROOT_PACKAGE}.nro ${DUB_ROOT_PACKAGE}.nacp --icon=$DEVKITPRO/libnx/default_icon.jpg"

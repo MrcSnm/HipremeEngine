@@ -29,9 +29,6 @@
 		},
 		{
 			"name": "null",
-			"dependencies": {
-				"bindbc-openal": "~>1.1.0"
-			},
 			"versions": ["NullAudio"],
 			"subConfigurations": {
 				"audio_decoding": "audioformats"

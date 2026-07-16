@@ -11,6 +11,40 @@
 		"game2d",
 		"game_renderer"
     ],
+	"targets": {
+		"nswitch" :{
+		"compiler": "ldc2@1.41.0",
+		"arch": "aarch64-none-elf-newlib",
+		"targetName": "${DUB_ROOT_PACKAGE}.elf",
+		"dflags": [
+			"-P-D__SWITCH__",
+			"--Xcc=-fPIE",
+			"--Xcc=-specs=$DEVKITPRO/libnx/switch.specs",
+			"--Xcc=-mtp=soft",
+			"-mcpu=cortex-a57",
+			"-mattr=+crc,+crypto",
+			"-gcc=$DEVKITPRO/devkitA64/bin/aarch64-none-elf-g++",
+			"--relocation-model=pic",
+			"-defaultlib="
+		],
+		"dependencies": {
+			"runtime": {"path": "#HIPREME_ENGINE/dependencies/runtime"}
+		},
+		"subConfigurations": {
+			"hipreme_engine": "nintendo-switch",
+			"runtime": "psvita"
+		},
+		"importPaths": ["#HIPREME_ENGINE/modules/d_std/source"],
+		"libPaths": ["$DEVKITPRO/libnx/lib", "$DEVKITPRO/portlibs/switch/lib"],
+		"versions": ["NintendoSwitch"],
+		"libs": ["EGL", "glapi", "drm_nouveau", "nx"],
+		"postBuildCommands": [
+			"$DEVKITPRO/tools/bin/nacptool --create \"${DUB_ROOT_PACKAGE}\" \"Hipreme\" 1.0 ${DUB_ROOT_PACKAGE}.nacp",
+			"$DEVKITPRO/tools/bin/elf2nro ${DUB_ROOT_PACKAGE}.elf ${DUB_ROOT_PACKAGE}.nro ${DUB_ROOT_PACKAGE}.nacp --icon=$DEVKITPRO/libnx/default_icon.jpg"
+		],
+		"runCommand": ["nxlink", "-s", "${DUB_ROOT_PACKAGE}.nro"]
+		}
+	},
     "stringImportPaths": ["#PROJECT/ct_assets"],
 	"dflags-ldc": ["--disable-verify", "--oq"],
 	"plugins": {
@@ -40,6 +74,12 @@
 			"targetType": "executable",
 			"dependencies": { "hipreme_engine": {"path": "#HIPREME_ENGINE"} },
 			"subConfigurations": { "hipreme_engine": "desktop-release" }
+		},
+		{
+			"name": "nswitch",
+			"targetType": "executable",
+			"dependencies": { "hipreme_engine": {"path": "#HIPREME_ENGINE"} },
+			"subConfigurations": {"game2d": "direct"}
 		},
 		{
 			"name": "android",
