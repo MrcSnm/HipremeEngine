@@ -15,12 +15,14 @@ public import hip.api.input.gamepad;
 public import hip.math.vector;
 import hip.systems.gamepads.xbox;
 import hip.systems.gamepads.psv;
+import hip.systems.gamepads.nswitch;
 
 
 enum HipGamepadTypes : ubyte
 {
     xbox,
-    psvita
+    psvita,
+    nintendo_switch
 }
 
 HipGamepad getNewGamepad(ubyte type)
@@ -29,6 +31,7 @@ HipGamepad getNewGamepad(ubyte type)
     {
         case HipGamepadTypes.xbox: return new HipGamepad(new HipXBOXGamepad());
         case HipGamepadTypes.psvita: return new HipGamepad(new HipPSVGamepad());
+        case HipGamepadTypes.nintendo_switch: return new HipGamepad(new HipNSwitchGamepad());
     }
 }
 

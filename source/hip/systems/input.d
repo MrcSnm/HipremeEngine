@@ -16,6 +16,7 @@ version(WebAssembly) version = QueuePopulatedExternally;
 else version(UWP) version = QueuePopulatedExternally;
 else version(PSVita) version = QueuePopulatedExternally;
 else version(AppleOS) version = QueuePopulatedExternally;
+else version(NintendoSwitch) version = QueuePopulatedExternally;
 
 version(Android)
 {

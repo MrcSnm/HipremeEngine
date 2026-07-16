@@ -39,6 +39,13 @@ enum HipGamepadButton : ubyte
     xboxA = psCross,
     xboxB = psCircle,
 
+    nintendoA = psCross,
+    nintendoB = psCircle,
+    nintendoX = psTriangle,
+    nintendoY = psSquare,
+
+
+
     left1,
     right1,
 

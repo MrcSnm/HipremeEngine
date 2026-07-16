@@ -1,18 +1,44 @@
 module hip.windowing.platforms.nintendo_switch;
 version(NintendoSwitch):
+import hip.windowing.platforms.nxlib.pad;
 import egl;
 
-extern(System) void* nwindowGetDefault() @nogc nothrow;
-extern(System) int nwindowGetDimensions(void* windowHandle, out int width, out int height) @nogc nothrow;
+
+enum HipGamepadTypes
+{
+	HipGamepadTypes_xbox,
+	HipGamepadTypes_psvita,
+    HipGamepadTypes_nintendo_switch
+}
+
+/// Initialize hiddbg.
+extern(System) @nogc nothrow
+{
+    Result hiddbgInitialize();
+    void hiddbgExit();
+    void HipInputOnGamepadConnected(ubyte id, ubyte type);
+    void* nwindowGetDefault();
+    int nwindowGetDimensions(void* windowHandle, out int width, out int height);
+}
+
 
 @nogc:
+__gshared PadState nxpad;
 int openWindow(int width, int height, out void* WindowHandle)
 {
     WindowHandle = nwindowGetDefault();
+    padConfigureInput(8, HidNpadStyleSet.NpadStandard);
+    padInitializeAny(&nxpad);
+    HipInputOnGamepadConnected(0, HipGamepadTypes.HipGamepadTypes_nintendo_switch);
+    hiddbgInitialize();
     return 1;
 }
 void show(void* WindowHandle){}
-void poll(){}
+
+void poll()
+{
+    
+}
 float getDevicePixelRatio(void*){return 1;}
 
 int[2] getWindowSize(void* WindowHandle, ref string[] errors)
