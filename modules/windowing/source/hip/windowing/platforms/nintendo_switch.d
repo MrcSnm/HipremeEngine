@@ -1,5 +1,8 @@
 module hip.windowing.platforms.nintendo_switch;
+
+
 version(NintendoSwitch):
+import hip.windowing.platforms.nxlib.hid;
 import hip.windowing.platforms.nxlib.pad;
 import egl;
 
@@ -17,6 +20,10 @@ extern(System) @nogc nothrow
     Result hiddbgInitialize();
     void hiddbgExit();
     void HipInputOnGamepadConnected(ubyte id, ubyte type);
+    void HipInputOnTouchPressed(uint id, float x, float y);
+    void HipInputOnTouchMoved(uint id, float x, float y);
+    void HipInputOnTouchReleased(uint id, float x, float y);
+
     void* nwindowGetDefault();
     int nwindowGetDimensions(void* windowHandle, out int width, out int height);
 }
@@ -31,13 +38,80 @@ int openWindow(int width, int height, out void* WindowHandle)
     padInitializeAny(&nxpad);
     HipInputOnGamepadConnected(0, HipGamepadTypes.HipGamepadTypes_nintendo_switch);
     hiddbgInitialize();
+    hidInitializeTouchScreen();
+
     return 1;
 }
 void show(void* WindowHandle){}
 
+
+/// @brief Gets touch ID used by hipreme engine
+/// @param psvId 
+/// @return 
+private int getTouchId(uint fingerId)
+{
+    for(int i = 0; i < 6; i++) if(touches[i] == fingerId) return i;
+    return -1;
+}
+private __gshared uint[6] touches = uint.max;
+
+
+private __gshared HidTouchScreenState oldTouch;
+
+private int idInTouchReport(const ref HidTouchState touch, const ref HidTouchScreenState newState)
+{
+    for(int i = 0; i < newState.count; i++)
+    {
+        if(newState.touches[i].finger_id == touch.finger_id)
+            return i;
+    }
+    return -1;
+}
+
 void poll()
 {
-    
+    HidTouchScreenState state;
+    enum float touchPixelRatio = 1.0f;
+    if (hidGetTouchScreenStates(&state, 1)) 
+    {
+        for(int i = 0; i < state.count; i++)
+        {
+            if(getTouchId(state.touches[i].finger_id) == -1)
+                touches[i] = state.touches[i].finger_id;
+        }
+        //Check release
+        for(int i = 0; i < oldTouch.count; i++)
+        {
+            if(idInTouchReport(oldTouch.touches[i], state) != -1)
+                continue;
+            
+            int id = getTouchId(oldTouch.touches[i].finger_id);
+            if(id != -1)
+            {
+                HipInputOnTouchReleased(id, cast(float)oldTouch.touches[i].x*touchPixelRatio, cast(float)oldTouch.touches[i].y*touchPixelRatio);
+                touches[i] = uint.max;
+            }
+        }
+
+        //Press check
+        for(int i = 0; i < state.count;i++)
+        {
+            int id = getTouchId(state.touches[i].finger_id);
+            int oldId = idInTouchReport(state.touches[i], oldTouch);
+            if(oldId != -1)  //in old
+            {
+                if(state.touches[i].x != oldTouch.touches[i].x || state.touches[i].x != oldTouch.touches[i].y)
+                    HipInputOnTouchMoved(id, cast(float)state.touches[i].x*touchPixelRatio, cast(float)state.touches[i].y*touchPixelRatio);
+                continue;
+            }
+
+            if(id != -1)
+                HipInputOnTouchPressed(id, cast(float)state.touches[i].x*touchPixelRatio, cast(float)state.touches[i].y*touchPixelRatio);
+        }
+
+    }
+    oldTouch = state;
+
 }
 float getDevicePixelRatio(void*){return 1;}
 

@@ -1,6 +1,7 @@
 module hip.windowing.platforms.nxlib.hid;
 public import hip.windowing.platforms.nxlib.types;
 
+extern(System) nothrow @nogc:
 /// HID controller IDs
 enum HidNpadIdType : ubyte {
     No1      = 0,    ///< Player 1 controller
@@ -104,6 +105,68 @@ enum HidNpadButton {
     AnySR    = LeftSR | RightSR,                                 ///< Bitmask containing SR buttons on both Joy-Cons (Left/Right)
 }
 
+struct HidCommonLifoHeader {
+    u64 unused;                                 ///< Unused
+    u64 buffer_count;                           ///< BufferCount
+    u64 tail;                                   ///< Tail
+    u64 count;                                  ///< Count
+}
+
+struct HidTouchState {
+    u64 delta_time;                             ///< DeltaTime
+    u32 attributes;                             ///< Bitfield of \ref HidTouchAttribute.
+    u32 finger_id;                              ///< FingerId
+    u32 x;                                      ///< X
+    u32 y;                                      ///< Y
+    u32 diameter_x;                             ///< DiameterX
+    u32 diameter_y;                             ///< DiameterY
+    u32 rotation_angle;                         ///< RotationAngle
+    u32 reserved;                               ///< Reserved
+}
+
+/// HidTouchScreenState
+struct HidTouchScreenState {
+    u64 sampling_number;                        ///< SamplingNumber
+    s32 count;                                  ///< Number of entries in the touches array.
+    u32 reserved;                               ///< Reserved
+    HidTouchState[16] touches;                  ///< Array of \ref HidTouchState, with the above count.
+}
+
+/// HidTouchScreenStateAtomicStorage
+struct HidTouchScreenStateAtomicStorage {
+    u64 sampling_number;                             ///< SamplingNumber
+    HidTouchScreenState state;                       ///< \ref HidTouchScreenState
+}
+
+/// HidTouchScreenLifo
+struct HidTouchScreenLifo {
+    HidCommonLifoHeader header;                      ///< \ref HidCommonLifoHeader
+    HidTouchScreenStateAtomicStorage[17] storage;    ///< \ref HidTouchScreenStateAtomicStorage
+}
+
+/// HidTouchScreenSharedMemoryFormat
+struct HidTouchScreenSharedMemoryFormat {
+    HidTouchScreenLifo lifo;
+    u8[0x3c8] padding;
+}
+
+/// HidTouchScreenConfigurationForNx
+struct HidTouchScreenConfigurationForNx {
+    u8 mode;                                         ///< \ref HidTouchScreenModeForNx
+    u8[0xF] reserved;                                ///< Reserved
+}
+
+/// Initialize TouchScreen. Must be called when TouchScreen is being used. Used automatically by \ref hidScanInput when required.
+void hidInitializeTouchScreen();
+
+/**
+ * @brief Gets \ref HidTouchScreenState.
+ * @param[out] states Output array of \ref HidTouchScreenState.
+ * @param[in] count Size of the states array in entries.
+ * @return Total output entries.
+ */
+size_t hidGetTouchScreenStates(HidTouchScreenState *states, size_t count);
+
 /// Type values for HidVibrationDeviceInfo::type.
 enum HidVibrationDeviceType{
     Unknown                          = 0,     ///< Unknown
@@ -149,3 +212,6 @@ struct HidVibrationValue {
     float amp_high = 0;  ///< High Band amplitude. 1.0f: Max amplitude.
     float freq_high = 0; ///< High Band frequency in Hz.
 }
+
+
+
