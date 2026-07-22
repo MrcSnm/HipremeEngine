@@ -148,6 +148,29 @@ enum ChoiceResult
 	Back,
 }
 
+struct Toggle
+{
+	string display;
+	dchar key;
+	bool* opt;
+
+	bool checkKey(size_t k)
+	{
+		import std.string;
+		return k == toLower(key) || k == toUpper(key);
+	}
+	void show(ref Terminal t)
+	{
+		with(TerminalColors(*opt ? Color.green : Color.red, Color.DEFAULT, t))
+			t.write(display, " ");
+	}
+
+	void toggle()
+	{
+		*opt = !*opt;
+	}
+}
+
 struct Choice
 {
 	string name;
@@ -156,11 +179,6 @@ struct Choice
 	string function() updateChoice;
 	bool scriptOnly;
 	bool disableSelectedConfigCache;
-
-
-
-
-
 
 	this(string name,
 	ChoiceResult function(Choice* self, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions opts) onSelected,
@@ -225,17 +243,8 @@ struct Config
 
 struct CompilationOptions
 {
-	bool dubVerbose;
+	bool verbose;
 	bool force;
-	bool tempBuild;
-	string getDubOptions() const
-	{
-		string ret;
-		if(force) ret~= " --force";
-		if(tempBuild) ret~= " --temp-build";
-		if(dubVerbose) ret~= " --verbose";
-		return ret;
-	}
 }
 
 T[] unique(T)(T[] input)
@@ -254,7 +263,7 @@ T[] unique(T)(T[] input)
 }
 
 size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices, 
-	string selectionTitle, size_t selectedChoice = 0)
+	string selectionTitle, size_t selectedChoice = 0, Toggle[] toggles = null)
 {
 	bool exit;
 	enum ESC = 983067;
@@ -263,13 +272,17 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	enum SelectionHint = "Select an option by using W/S or Arrow Up/Down and choose it by pressing Enter.";
 
 	static bool isFirst = true;
-	static void changeChoiceClear(ref Terminal t, Choice[] choices, string title, Choice current, Choice next, int nextCursorOffset, bool bClear)
+	static void changeChoiceClear(ref Terminal t, Choice[] choices, Toggle[] toggles, string title, Choice next, bool bClear)
 	{
 		t.color(Color.DEFAULT, Color.DEFAULT);
 		if(bClear)
 			t.clear();
 		t.writelnHighlighted(title);
 		t.writeln(SelectionHint);
+		foreach(toggle; toggles)
+			toggle.show(t);
+		if(toggles.length)
+			t.writeln();
 		foreach(i, c; choices)
 		{
 			if(c.name == next.name) with(TerminalColors(Color.green, Color.DEFAULT, t))
@@ -286,11 +299,11 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	terminal.moveTo(0, startLine + cast(int)selectedChoice);
 	terminal.hideCursor();
 
-
 	size_t oldChoice = selectedChoice;
 	while(!exit)
 	{
-		changeChoiceClear(terminal, choices, selectionTitle, choices[oldChoice], choices[selectedChoice], cast(int)(cast(long)selectedChoice-oldChoice), !isFirst);
+		start:
+		changeChoiceClear(terminal, choices, toggles, selectionTitle, choices[selectedChoice], !isFirst);
 		isFirst = false;
 		oldChoice = selectedChoice;
 
@@ -312,13 +325,21 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 				exit = true;
 				break;
 			default:
+				foreach(t; toggles)
+				{
+					if(t.checkKey(choice))
+					{
+						t.toggle();
+						goto start;
+					}
+				}
 				goto CheckInput;
 		}
 	}
 	import std.algorithm.searching;
 	terminal.moveTo(0, cast(int)startLine);
-	//Title + SelectionHint
-	foreach(i; 0..choices.length+ ( count(selectionTitle, "\n")+2))
+	//Title + SelectionHint + (Toggle?)
+	foreach(i; 0..choices.length+ ( count(selectionTitle, "\n")+2 + (toggles != null)))
 		terminal.moveTo(0, cast(int)(startLine+i)), terminal.clearToEndOfLine();
 	terminal.moveTo(0, cast(int)startLine+1); //Jump title
 	terminal.writelnSuccess(">> ", choices[selectedChoice].name);
@@ -1037,7 +1058,7 @@ int waitRedub(ref Terminal t, ref RealTimeConsoleInput input, DubArguments dArgs
 	import redub.api;
 	if(execRedubBase(t, input, dArgs) == -1) return -1;
 
-	setLogLevel(dArgs._opts.dubVerbose ? LogLevel.verbose : LogLevel.info);
+	setLogLevel(dArgs._opts.verbose ? LogLevel.verbose : LogLevel.info);
 	proj = resolveDependencies(
 		ResolveInfo(dArgs._opts.force),
 		CompilationDetails(dArgs.getCompiler(), null, dArgs._arch),

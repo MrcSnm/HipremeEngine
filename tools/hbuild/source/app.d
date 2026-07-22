@@ -55,7 +55,9 @@ bool isChoiceAutoSelectable(string selected)
 	}
 }
 
-Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices)
+
+
+Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices, Toggle[] toggle)
 {
 	string currentGame = "Current Game: ";
 	if("gamePath" in configs)
@@ -75,7 +77,7 @@ Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choi
 		selectedChoice = selectChoiceBase(
 			terminal, input, choices, "Select a target platform to build.\n\t"~currentGame~
 			(serverStarted ? "\n\tWebAssembly server running at http://"~gameServerHost~":"~gameServerPort.to!string : ""),
-			selectedChoice);
+			selectedChoice, toggle);
 	}
 
 	if(!choices[selectedChoice].disableSelectedConfigCache)
@@ -364,7 +366,7 @@ void main(string[] args)
 	{
 		auto opts = getopt(args, 
 			"force", "Force for a recompilation", &cOpts.force,
-			"verbose", "Builds with --verbose in dub", &cOpts.dubVerbose,
+			"verbose", "Builds with --verbose in dub", &cOpts.verbose,
 			"projectPath", "Path where the project will be generated. If no path is given, this program will popup a window prompting for selection.",&createProjectToFolder,
 			"scriptOnly", "Only the script will be built, internally used for rebuilding", &scriptOnly,
 			"appleClean", "Used to clean appleos/ios build. Useful for when your build is failing", &appleClean,
@@ -406,13 +408,17 @@ void main(string[] args)
 		Choice("Selected Compiler: ", &changeCompiler, false, &updateSelectedCompiler),
 		Choice("Exit", &exitFn, false, null, false, true)
 	];
+	Toggle[] toggle = [
+		Toggle("[F]orce", 'f', &cOpts.force),
+		Toggle("[V]erbose", 'v', &cOpts.verbose)
+	];
 
 	bool usesDflags = "DFLAGS" in environment;
 	string preDflags = usesDflags ? environment["DFLAGS"] : null;
 	StopWatch sw = StopWatch(AutoStart.yes);
 	while(true)
 	{
-		Choice* selection = selectChoice(terminal, input, choices);
+		Choice* selection = selectChoice(terminal, input, choices, toggle);
 		if(selection.shouldTime)
 			sw.reset();
 	

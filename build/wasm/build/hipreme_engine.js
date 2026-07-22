@@ -69,6 +69,7 @@ function initializeHipremeEngine(exports)
     lookupForFunction(exports, "HipInputOnGamepadConnected");   //(ubyte id)
     lookupForFunction(exports, "HipInputOnGamepadDisconnected");//(ubyte id)
     lookupForFunction(exports, "HipOnRendererResize");          //(int x, int y)
+    lookupForFunction(exports, "HipWindowVisibilityChanged");   //(bool bVisible)
 
 
     const canvas = document.getElementById("glcanvas");
@@ -134,6 +135,11 @@ function initializeHipremeEngine(exports)
         exports.HipOnRendererResize(width, height);//Currently maintain it as that.
     };
 
+    const HipWindowVisiblityChanged = (ev) =>
+    {
+        exports.HipWindowVisibilityChanged(!document.hidden);
+    };
+
     canvas.addEventListener("touchstart", (ev) =>
     {
         for(let i = 0; i < ev.touches.length; i++)
@@ -159,6 +165,7 @@ function initializeHipremeEngine(exports)
     window.addEventListener("gamepadconnected", HipInputOnGamepadConnected);
     window.addEventListener("gamepaddisconnected", HipInputOnGamepadDisconnected);
     window.addEventListener("resize", HipOnRendererResize);
+    document.addEventListener("visibilitychange", HipWindowVisiblityChanged);
 
     const destroyEngine = () =>
     {
@@ -171,6 +178,7 @@ function initializeHipremeEngine(exports)
         window.removeEventListener("gamepadconnected", HipInputOnGamepadConnected);
         window.removeEventListener("gamepaddisconnected", HipInputOnGamepadDisconnected);
         window.removeEventListener("resize", HipOnRendererResize);
+        document.removeEventListener("visibilitychange", HipWindowVisiblityChanged);
     };
     window.druntimeAbortHook = destroyEngine;
 
