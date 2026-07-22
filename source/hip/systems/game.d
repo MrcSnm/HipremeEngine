@@ -320,7 +320,7 @@ class GameSystem : IGameSystem
             if(watcher.update())
                 recompileReloadExternalScene();
         }
-        dispatcher.handleEvent();
+        deltaTime = dispatcher.handleEvent(deltaTime);
         dispatcher.pollGamepads(deltaTime);
         inputListener.update();
         scriptInputListener.update();
@@ -330,20 +330,12 @@ class GameSystem : IGameSystem
         foreach(s; scenes)
         {
             import hip.console.log;
-            version(CustomRuntime)
+            try
             {
                 if(s is null) logln("SCENE IS NULL");
                 else s.update(deltaTime);
             }
-            else
-            {
-                try
-                {
-                    if(s is null) logln("SCENE IS NULL");
-                    else s.update(deltaTime);
-                }
-                catch (Error e){scriptFatalError(e);}
-            }
+            catch (Error e){scriptFatalError(e);}
         }
         return true;
     }

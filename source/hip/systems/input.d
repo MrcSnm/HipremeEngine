@@ -101,6 +101,14 @@ else version(QueuePopulatedExternally)
         {
             HipEventQueue.post(0, HipEventQueue.EventType.windowResize, HipEventQueue.Resize(cast(uint)x, cast(uint)y));
         }
+
+        void HipWindowVisibilityChanged(bool bVisible)
+        {
+            if(bVisible)
+                HipEventQueue.post(0, HipEventQueue.EventType.focusReceived, null);
+            else
+                HipEventQueue.post(0, HipEventQueue.EventType.focusLost, null);
+        }
     }    
 } 
 

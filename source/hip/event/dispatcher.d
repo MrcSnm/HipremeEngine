@@ -105,6 +105,10 @@ class EventDispatcher : IHipInput
     }
     
     bool hasQuit = false;
+    ///Currently only used to control reset delta.
+    bool suspended = false;
+    ///Used to reset delta after focus recovered. So a sequence of focus lost and focus received will make the deltaTime 0 once
+    private bool resetDelta = false;
 
     final void errUpdateOnly(string name)
     {
@@ -117,17 +121,29 @@ class EventDispatcher : IHipInput
         }
     }
 
-    void handleEvent()
+    /** 
+     * Polls the events, setup windowing events and input state.
+     * Params:
+     *   dt = Delta time from the clock
+     * Returns: The same delta time or 0 if the game received a focus recover.
+     */
+    float handleEvent(float dt)
     {
         window.pollWindowEvents();
         handleHipEvent();
         frameCount++;
+        if(resetDelta)
+        {
+            dt = 0;
+            resetDelta = false;
+        }
+        return dt;
     }
 
 
     void handleHipEvent()
     {
-        
+        import hip.console.log;
         //Now poll the cross platform input queue
         HipEventQueue.InputEvent* ev;
         while((ev = HipEventQueue.poll(0)) != null)
@@ -167,16 +183,27 @@ class EventDispatcher : IHipInput
                     keyboard.handleKeyUp(cast(HipKey)(k.id));
                     break;
                 case HipEventQueue.EventType.gamepadConnected:
-                    import hip.console.log;rawlog("Gamepad connected");
+                    hiplog("Gamepad connected");
                     auto g = ev.get!(HipEventQueue.Gamepad);
                     if(g.id+1 > gamepads.length)
                         gamepads~= getNewGamepad(g.type);
                     gamepads[g.id].setConnected(true);
                     break;
                 case HipEventQueue.EventType.gamepadDisconnected:
-                    import hip.console.log;rawlog("Gamepad disconnected");
+                    hiplog("Gamepad disconnected");
                     auto g = ev.get!(HipEventQueue.Gamepad);
                     gamepads[g.id].setConnected(false);
+                    break;
+                case HipEventQueue.EventType.focusReceived:
+                    if(suspended)
+                    {
+                        suspended = false;
+                        resetDelta = true; 
+                        hiplog("Focus Received and DeltaTime Reset");
+                    }
+                    break;
+                case HipEventQueue.EventType.focusLost:
+                    suspended = true;
                     break;
                 case HipEventQueue.EventType.exit:
                     hasQuit = true;
