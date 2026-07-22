@@ -8,6 +8,9 @@ public import std.process;
 public static import std.file;
 public import default_handlers;
 public import redub.api;
+enum ESC = 983067;
+enum ArrowUp = 983078;
+enum ArrowDown = 983080;
 
 
 enum hipremeEngineRepo = "https://github.com/MrcSnm/HipremeEngine.git";
@@ -148,11 +151,50 @@ enum ChoiceResult
 	Back,
 }
 
-struct Toggle
+enum HotkeyAction
 {
-	string display;
+	toggleBool,
+	execCallback
+}
+struct Hotkey
+{
+	private string display;
 	dchar key;
-	bool* opt;
+	private HotkeyAction act;
+	private union
+	{
+		void delegate() callback;
+		bool* opt;
+	}
+	string delegate() getDisplayName;
+
+	static Hotkey makeToggle(string display, dchar key, bool* opt, string delegate() getDisplayName = null)
+	{
+		Hotkey ret = void;
+		ret.act = HotkeyAction.toggleBool;
+		ret.key = key;
+		ret.opt = opt;
+		ret.display = display;
+		ret.getDisplayName = getDisplayName;
+		return ret;
+	}
+
+	static Hotkey makeCallback(string display, dchar key, void delegate() cb, string delegate() getDisplayName = null)
+	{
+		Hotkey ret = void;
+		ret.act = HotkeyAction.execCallback;
+		ret.key = key;
+		ret.callback = cb;
+		ret.display = display;
+		ret.getDisplayName = getDisplayName;
+		return ret;
+	}
+	string getName()
+	{
+		if(getDisplayName !is null)
+			return display ~ " " ~ getDisplayName();
+		return display;
+	}
 
 	bool checkKey(size_t k)
 	{
@@ -161,13 +203,26 @@ struct Toggle
 	}
 	void show(ref Terminal t)
 	{
-		with(TerminalColors(*opt ? Color.green : Color.red, Color.DEFAULT, t))
-			t.write(display, " ");
+		Color textColor = Color.DEFAULT;
+		if(act == HotkeyAction.toggleBool)
+			textColor = *opt ? Color.green : Color.red;
+		with(TerminalColors(textColor, Color.DEFAULT, t))
+			t.write(getName, " ");
+
 	}
 
-	void toggle()
+	///Executes either a toggle or a callback depending on its type.
+	void exec()
 	{
-		*opt = !*opt;
+		final switch(act)
+		{
+			case HotkeyAction.toggleBool:
+				*opt = !*opt;
+				break;
+			case HotkeyAction.execCallback:
+				callback();
+				break;
+		}
 	}
 }
 
@@ -263,25 +318,22 @@ T[] unique(T)(T[] input)
 }
 
 size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices, 
-	string selectionTitle, size_t selectedChoice = 0, Toggle[] toggles = null)
+	string selectionTitle, size_t selectedChoice = 0, Hotkey[] hotkeys = null)
 {
 	bool exit;
-	enum ESC = 983067;
-	enum ArrowUp = 983078;
-	enum ArrowDown = 983080;
 	enum SelectionHint = "Select an option by using W/S or Arrow Up/Down and choose it by pressing Enter.";
 
 	static bool isFirst = true;
-	static void changeChoiceClear(ref Terminal t, Choice[] choices, Toggle[] toggles, string title, Choice next, bool bClear)
+	static void changeChoiceClear(ref Terminal t, Choice[] choices, Hotkey[] hotkeys, string title, Choice next, bool bClear)
 	{
 		t.color(Color.DEFAULT, Color.DEFAULT);
 		if(bClear)
 			t.clear();
 		t.writelnHighlighted(title);
 		t.writeln(SelectionHint);
-		foreach(toggle; toggles)
-			toggle.show(t);
-		if(toggles.length)
+		foreach(hk; hotkeys)
+			hk.show(t);
+		if(hotkeys.length)
 			t.writeln();
 		foreach(i, c; choices)
 		{
@@ -303,7 +355,7 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	while(!exit)
 	{
 		start:
-		changeChoiceClear(terminal, choices, toggles, selectionTitle, choices[selectedChoice], !isFirst);
+		changeChoiceClear(terminal, choices, hotkeys, selectionTitle, choices[selectedChoice], !isFirst);
 		isFirst = false;
 		oldChoice = selectedChoice;
 
@@ -325,11 +377,11 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 				exit = true;
 				break;
 			default:
-				foreach(t; toggles)
+				foreach(hk; hotkeys)
 				{
-					if(t.checkKey(choice))
+					if(hk.checkKey(choice))
 					{
-						t.toggle();
+						hk.exec();
 						goto start;
 					}
 				}
@@ -339,7 +391,7 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	import std.algorithm.searching;
 	terminal.moveTo(0, cast(int)startLine);
 	//Title + SelectionHint + (Toggle?)
-	foreach(i; 0..choices.length+ ( count(selectionTitle, "\n")+2 + (toggles != null)))
+	foreach(i; 0..choices.length+ ( count(selectionTitle, "\n")+2 + (hotkeys != null)))
 		terminal.moveTo(0, cast(int)(startLine+i)), terminal.clearToEndOfLine();
 	terminal.moveTo(0, cast(int)startLine+1); //Jump title
 	terminal.writelnSuccess(">> ", choices[selectedChoice].name);

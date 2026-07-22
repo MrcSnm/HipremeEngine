@@ -57,7 +57,7 @@ bool isChoiceAutoSelectable(string selected)
 
 
 
-Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices, Toggle[] toggle)
+Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices, Hotkey[] toggle)
 {
 	string currentGame = "Current Game: ";
 	if("gamePath" in configs)
@@ -293,21 +293,19 @@ ChoiceResult releaseGame(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	return ChoiceResult.Continue;
 }
 
-ChoiceResult changeCompiler(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
+void changeCompiler()
 {
 	if(("selectedCompiler" in configs) is null)
 		configs["selectedCompiler"] = 0;
 	configs["selectedCompiler"] = (configs["selectedCompiler"].get!int + 1) % compilers.length;
-	c.name = c.updateChoice();
 	updateConfigFile();
-	return ChoiceResult.Back;
 }
 
-string updateSelectedCompiler()
+string selectedCompilerName()
 {
 	if(!("selectedCompiler" in configs))
 		configs["selectedCompiler"] = 0, updateConfigFile();
-	return "Selected Compiler: "~compilers[configs["selectedCompiler"].get!uint];
+	return compilers[configs["selectedCompiler"].get!uint];
 }
 
 ChoiceResult exitFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
@@ -405,12 +403,13 @@ void main(string[] args)
 		Choice("Create Project", &createProject),
 		Choice("Select Game", &selectGameFolder),
 		Choice("Release Game", &releaseGame),
-		Choice("Selected Compiler: ", &changeCompiler, false, &updateSelectedCompiler),
-		Choice("Exit", &exitFn, false, null, false, true)
+		Choice("Exit [ESC]", &exitFn, false, null, false, true)
 	];
-	Toggle[] toggle = [
-		Toggle("[F]orce", 'f', &cOpts.force),
-		Toggle("[V]erbose", 'v', &cOpts.verbose)
+	Hotkey[] hotkeys = [
+		Hotkey.makeToggle("[F]orce", 'f', &cOpts.force),
+		Hotkey.makeToggle("[V]erbose", 'v', &cOpts.verbose),
+		Hotkey.makeCallback("[C]ompiler", 'c', toDelegate(&changeCompiler), toDelegate(&selectedCompilerName))
+
 	];
 
 	bool usesDflags = "DFLAGS" in environment;
@@ -418,7 +417,7 @@ void main(string[] args)
 	StopWatch sw = StopWatch(AutoStart.yes);
 	while(true)
 	{
-		Choice* selection = selectChoice(terminal, input, choices, toggle);
+		Choice* selection = selectChoice(terminal, input, choices, hotkeys);
 		if(selection.shouldTime)
 			sw.reset();
 	
@@ -448,7 +447,7 @@ void main(string[] args)
 		}
 		if(res != ChoiceResult.Continue)
 		{
-			if(selection.onSelected != &changeCompiler && !autoSelect)
+			if(!autoSelect)
 			{
 				terminal.writeln("Press Enter to continue");
 				auto ch = input.getch;
