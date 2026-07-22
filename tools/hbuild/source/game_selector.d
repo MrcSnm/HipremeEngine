@@ -45,8 +45,7 @@ ChoiceResult selectGameFolder(Choice* c, ref Terminal t, ref RealTimeConsoleInpu
     import std.algorithm;
     Choice[] extraChoices = 
     [
-        Choice("Type the game path manually", &typeGamePath),
-        getBackChoice()
+        Choice("Type the game path manually", &typeGamePath)
     ];
     Choice[] choices = getProjectsAvailable().map!((string name) => Choice(name, null)).array;
     if(isGameFolderValid(std.file.getcwd()))
@@ -55,16 +54,19 @@ ChoiceResult selectGameFolder(Choice* c, ref Terminal t, ref RealTimeConsoleInpu
         "Select your game",
         getHipPath("projects"), t, input, choices, extraChoices
     );
-    if(selectedChoice.onSelected != null)
-        selectedChoice.onSelected(selectedChoice, t, input, cOpts);
-    // Chose a path
-    if(selectedChoice.onSelected == null)
-        changeGamePath(t, selectedChoice.name);
-    if(hasTypedGamepath || selectedChoice.onSelected == null)
+    if(selectedChoice != null)
     {
-        configs["selectedChoice"] = 0;
-        updateEngineFile();
-        updateConfigFile();
+        if(selectedChoice.onSelected != null)
+            selectedChoice.onSelected(selectedChoice, t, input, cOpts);
+        // Chose a path
+        if(selectedChoice.onSelected == null)
+            changeGamePath(t, selectedChoice.name);
+        if(hasTypedGamepath || selectedChoice.onSelected == null)
+        {
+            configs["selectedChoice"] = 0;
+            updateEngineFile();
+            updateConfigFile();
+        }
     }
 
     return ChoiceResult.Back;

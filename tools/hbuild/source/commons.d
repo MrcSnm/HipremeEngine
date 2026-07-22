@@ -163,7 +163,7 @@ struct Hotkey
 	private HotkeyAction act;
 	private union
 	{
-		void delegate() callback;
+		bool delegate() callback;
 		bool* opt;
 	}
 	string delegate() getDisplayName;
@@ -178,8 +178,12 @@ struct Hotkey
 		ret.getDisplayName = getDisplayName;
 		return ret;
 	}
+	static Hotkey makeExitChoice(string display)
+	{
+		return Hotkey.makeCallback(display, ESC, (){return true;});
+	}
 
-	static Hotkey makeCallback(string display, dchar key, void delegate() cb, string delegate() getDisplayName = null)
+	static Hotkey makeCallback(string display, dchar key, bool delegate() cb, string delegate() getDisplayName = null)
 	{
 		Hotkey ret = void;
 		ret.act = HotkeyAction.execCallback;
@@ -211,17 +215,19 @@ struct Hotkey
 
 	}
 
-	///Executes either a toggle or a callback depending on its type.
-	void exec()
+	/** 
+	 * Toggles the bool or execute callback depending on its type.
+	 * Returns: Whether it should break the key check.
+	 */
+	bool exec()
 	{
 		final switch(act)
 		{
 			case HotkeyAction.toggleBool:
 				*opt = !*opt;
-				break;
+				return false;
 			case HotkeyAction.execCallback:
-				callback();
-				break;
+				return callback();
 		}
 	}
 }
@@ -321,7 +327,7 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	string selectionTitle, size_t selectedChoice = 0, Hotkey[] hotkeys = null)
 {
 	bool exit;
-	enum SelectionHint = "Select an option by using W/S or Arrow Up/Down and choose it by pressing Enter.";
+	enum SelectionHint = "Select an option with W/S or ↑/↓ and choose it by pressing Enter.";
 
 	static bool isFirst = true;
 	static void changeChoiceClear(ref Terminal t, Choice[] choices, Hotkey[] hotkeys, string title, Choice next, bool bClear)
@@ -334,7 +340,15 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 		foreach(hk; hotkeys)
 			hk.show(t);
 		if(hotkeys.length)
+		{
 			t.writeln();
+			size_t separationLength = 0;
+			foreach(hk; hotkeys)
+				separationLength+= hk.getName().length;
+			foreach(_; 0..separationLength)
+				t.write('-');
+			t.writeln();
+		}
 		foreach(i, c; choices)
 		{
 			if(c.name == next.name) with(TerminalColors(Color.green, Color.DEFAULT, t))
@@ -369,10 +383,6 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 			case 's', 'S', ArrowDown:
 				selectedChoice = (selectedChoice+1) % choices.length;
 				break;
-			case ESC:
-				selectedChoice = choices.length - 1;
-				exit = true;
-				break;
 			case '\n':
 				exit = true;
 				break;
@@ -381,7 +391,8 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 				{
 					if(hk.checkKey(choice))
 					{
-						hk.exec();
+						if(hk.exec())
+							return size_t.max;
 						goto start;
 					}
 				}
@@ -391,7 +402,7 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	import std.algorithm.searching;
 	terminal.moveTo(0, cast(int)startLine);
 	//Title + SelectionHint + (Toggle?)
-	foreach(i; 0..choices.length+ ( count(selectionTitle, "\n")+2 + (hotkeys != null)))
+	foreach(i; 0..choices.length+ ( count(selectionTitle, "\n")+2 + ((hotkeys != null) * 2)))
 		terminal.moveTo(0, cast(int)(startLine+i)), terminal.clearToEndOfLine();
 	terminal.moveTo(0, cast(int)startLine+1); //Jump title
 	terminal.writelnSuccess(">> ", choices[selectedChoice].name);
@@ -977,19 +988,6 @@ string getGitExec()
 	return "git ";
 }
 
-
-
-private ChoiceResult _backFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
-{
-	return ChoiceResult.Back;
-}
-Choice getBackChoice()
-{
-	return Choice("Back", &_backFn, false, null, false, true);
-}
-
-
-
 bool writeTemplate(ref Terminal t, string projectPath, string enginePath)
 {
 	import std.conv:to;
@@ -1248,7 +1246,9 @@ return scope Choice[] choices, scope Choice[] extraChoices, scope string[] extFi
 	}
 	choices = (choices ~ extraChoices).unique;
 	size_t choice;
-	choice = selectChoiceBase(t, input, choices, selectWhat);
+	choice = selectChoiceBase(t, input, choices, selectWhat, 0, [Hotkey.makeExitChoice("[ESC] Back")]);
+	if(choice == size_t.max)
+		return null;
 
 	return &choices[choice];
 }

@@ -57,7 +57,7 @@ bool isChoiceAutoSelectable(string selected)
 
 
 
-Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices, Hotkey[] toggle)
+Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choice[] choices, Hotkey[] hotkeys)
 {
 	string currentGame = "Current Game: ";
 	if("gamePath" in configs)
@@ -77,7 +77,9 @@ Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choi
 		selectedChoice = selectChoiceBase(
 			terminal, input, choices, "Select a target platform to build.\n\t"~currentGame~
 			(serverStarted ? "\n\tWebAssembly server running at http://"~gameServerHost~":"~gameServerPort.to!string : ""),
-			selectedChoice, toggle);
+			selectedChoice, hotkeys);
+		if(selectedChoice == size_t.max)
+			return null;
 	}
 
 	if(!choices[selectedChoice].disableSelectedConfigCache)
@@ -293,12 +295,13 @@ ChoiceResult releaseGame(Choice* c, ref Terminal t, ref RealTimeConsoleInput inp
 	return ChoiceResult.Continue;
 }
 
-void changeCompiler()
+bool changeCompiler()
 {
 	if(("selectedCompiler" in configs) is null)
 		configs["selectedCompiler"] = 0;
 	configs["selectedCompiler"] = (configs["selectedCompiler"].get!int + 1) % compilers.length;
 	updateConfigFile();
+	return false;
 }
 
 string selectedCompilerName()
@@ -308,10 +311,6 @@ string selectedCompilerName()
 	return compilers[configs["selectedCompiler"].get!uint];
 }
 
-ChoiceResult exitFn(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
-{
-	return ChoiceResult.Continue;
-}
 
 CompilationOptions cOpts;
 
@@ -403,9 +402,9 @@ void main(string[] args)
 		Choice("Create Project", &createProject),
 		Choice("Select Game", &selectGameFolder),
 		Choice("Release Game", &releaseGame),
-		Choice("Exit [ESC]", &exitFn, false, null, false, true)
 	];
 	Hotkey[] hotkeys = [
+		Hotkey.makeCallback("[ESC] Exit", ESC, (){return true;}),
 		Hotkey.makeToggle("[F]orce", 'f', &cOpts.force),
 		Hotkey.makeToggle("[V]erbose", 'v', &cOpts.verbose),
 		Hotkey.makeCallback("[C]ompiler", 'c', toDelegate(&changeCompiler), toDelegate(&selectedCompilerName))
@@ -418,6 +417,8 @@ void main(string[] args)
 	while(true)
 	{
 		Choice* selection = selectChoice(terminal, input, choices, hotkeys);
+		if(selection == null)
+			break;
 		if(selection.shouldTime)
 			sw.reset();
 	
@@ -447,7 +448,7 @@ void main(string[] args)
 		}
 		if(res != ChoiceResult.Continue)
 		{
-			if(!autoSelect)
+			if(!autoSelect && res != ChoiceResult.Back)
 			{
 				terminal.writeln("Press Enter to continue");
 				auto ch = input.getch;
