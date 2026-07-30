@@ -16,22 +16,50 @@ public import hip.api.graphics.color;
 
 enum TextureWrapMode : ubyte
 {
-    CLAMP_TO_EDGE,
-    CLAMP_TO_BORDER,
-    REPEAT,
-    MIRRORED_REPEAT,
-    MIRRORED_CLAMP_TO_EDGE,
-    UNKNOWN
+    clampToEdge,
+    clampToBorder,
+    repeat,
+    mirroredRepeat,
+    mirroredClampToEdge,
+    unknown
 }
 
 enum TextureFilter : ubyte
 {
-    LINEAR,
-    NEAREST,
-    NEAREST_MIPMAP_NEAREST,
-    LINEAR_MIPMAP_NEAREST,
-    NEAREST_MIPMAP_LINEAR,
-    LINEAR_MIPMAP_LINEAR
+    linear,
+    nearest,
+    nearestMipNearest,
+    linearMipNearest,
+    nearestMipLinear,
+    linearMipLinear
+}
+
+///Defines texture pixel channels and size
+enum TextureFormat : ubyte
+{
+    ///Red channel with uint 8 format.
+    r8,
+    ///Red/Green channel with uint 8 format.
+    rg8,
+    ///Red/Green/Blue channel with uint 8 format.
+    rgb8,
+    ///Red/Green/Blue/Alpha channel with uint 8 format.
+    rgba8,
+    ///Depth channel with uint 16 format
+    depth16,
+    ///Depth channel with 24 bits format
+    depth24,
+    ///Depth channel with 24 bits format and 8 bits stencil
+    depth24Stencil8
+}
+
+///Compatibility layer for depth only formats.
+enum DepthFormat : ubyte
+{
+    none,
+    depth16 = TextureFormat.depth16,
+    depth24 = TextureFormat.depth24,
+    depth24Stencil8 = TextureFormat.depth24Stencil8
 }
 
 interface IHipTexture

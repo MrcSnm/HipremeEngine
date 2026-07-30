@@ -65,7 +65,7 @@ function initializeWebglContext()
             gl.blendEquation(mode);
         },
         glCheckFramebufferStatus (target) {
-            gl.checkFramebufferStatus(target)
+            return gl.checkFramebufferStatus(target)
         },
         glCreateFramebuffer() {
             return addObject(gl.createFramebuffer());
@@ -242,7 +242,7 @@ function initializeWebglContext()
             {
                 case gl.RGBA: multiplier = 4; break;
                 case gl.RGB: multiplier = 3; break;
-                case gl.LUMINANCE: multiplier = 1; break;
+                case gl.LUMINANCE, gl.RED: multiplier = 1; break;
                 default: throw new Error("Unexpected format received: ", format);
             }
             const buffer = new Uint8Array(memory.buffer, image, width*height*multiplier);

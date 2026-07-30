@@ -269,9 +269,9 @@ class HipRendererImplementation : IHipRenderer
         return currentConfig.isMatrixRowMajor && !rendererImpl.isRowMajor();
     }
 
-    public IHipFrameBuffer newFrameBuffer(int width, int height)
+    public IHipFrameBuffer newFrameBuffer(int width, int height, TextureFormat format = TextureFormat.rgb8, DepthFormat depth = DepthFormat.depth16)
     {
-        return rendererImpl.createFrameBuffer(width, height);
+        return rendererImpl.createFrameBuffer(width, height, format, depth);
     }
     public IHipVertexArrayImpl  createVertexArray()
     {

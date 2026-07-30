@@ -10,6 +10,7 @@ Distributed under the CC BY-4.0 License.
 */
 
 module hip.api.data.image;
+import hip.api.renderer.texture;
 
 public interface IImageBase
 {
@@ -21,6 +22,19 @@ public interface IImageBase
     final size_t getSizeBytes() const{return getBytesPerPixel * getPixels.length;}
     const(ubyte[]) getPalette() const;
     final bool hasPalette() const {return getPalette.length != 0;}
+
+    final TextureFormat getTextureFormat() const
+    {
+        switch(getBytesPerPixel)
+        {
+            case 1: return TextureFormat.r8;
+            case 2: return TextureFormat.rg8;
+            case 3: return TextureFormat.rgb8;
+            case 4: return TextureFormat.rgba8;
+            default:
+                throw new Error("Unsupported TextureFormat for this image.");
+        }
+    }
 }
 
 public interface IHipImageDecoder : IImageBase

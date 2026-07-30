@@ -213,17 +213,17 @@ pure int Hip_D3D11_getWrapMode(TextureWrapMode mode)
 {
     switch(mode) with(TextureWrapMode)
     {
-        case CLAMP_TO_EDGE:
+        case clampToEdge:
             return D3D11_TEXTURE_ADDRESS_CLAMP;
-        case CLAMP_TO_BORDER:
+        case clampToBorder:
             return D3D11_TEXTURE_ADDRESS_BORDER;
-        case REPEAT:
+        case repeat:
             return D3D11_TEXTURE_ADDRESS_WRAP;
-        case MIRRORED_REPEAT:
+        case mirroredRepeat:
             return D3D11_TEXTURE_ADDRESS_MIRROR;
-        case MIRRORED_CLAMP_TO_EDGE:
+        case mirroredClampToEdge:
             return D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
-        case UNKNOWN:
+        case unknown:
         default:
             return D3D11_TEXTURE_ADDRESS_WRAP;
     }

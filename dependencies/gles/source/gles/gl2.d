@@ -385,6 +385,16 @@ version(WebAssembly)
     enum GL_INVALID_INDEX = 0xFFFFFFFFu;
 
 
+    enum GL_RED = 0x1903;
+    enum GL_RGB8 = 0x8051;
+    enum GL_RGBA8 = 0x8058;
+    enum GL_R8 = 0x8229;
+
+    enum GL_DEPTH_COMPONENT24 = 0x81A6;
+    enum GL_DEPTH_STENCIL_ATTACHMENT = 0x821A;
+    enum GL_DEPTH24_STENCIL8 = 0x88F0;
+
+
     extern(System) nothrow @nogc{
         void glBindVertexArray(GLuint vao);
         void glBindBufferRange (GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size);

@@ -29,6 +29,7 @@ import hip.hiprenderer.backend.gl.glvertex;
 import hip.hiprenderer.backend.gl.gltexture;
 import hip.hiprenderer.backend.gl.glframebuffer;
 import hip.hiprenderer.backend.gl.glshader;
+import hip.hiprenderer.backend.gl.glconfig;
 
 private __gshared bool errorCheckEnabled = true;
 
@@ -114,18 +115,9 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     HipShaderProgram createShader()
     {
-        static if(OpenGLHasUniformBufferSupport)
-        {
-            static if(UseWebGL)
-            {
-                import gles;
-                return isWebGL2 ? new HipGL3ShaderProgram() : new HipGLShaderProgram();
-            }
-            else 
-                return new HipGL3ShaderProgram();
-        }
-        else
-            return new HipGLShaderProgram();
+        static if(OpenGLHasUniformBufferSupport) if(hipGlCapabilities.uniformBuffers) 
+            return new HipGL3ShaderProgram();
+        return new HipGLShaderProgram();
     }
     size_t function (ShaderTypes shaderType, UniformType uniformType) getShaderVarMapper()
     {
@@ -196,24 +188,16 @@ class Hip_GL3Renderer : IHipRendererImpl
         glCall(() => glClearColor(cast(float)r/255, cast(float)g/255, cast(float)b/255, cast(float)a/255));
     }
 
-    public IHipFrameBuffer createFrameBuffer(int width, int height)
+    public IHipFrameBuffer createFrameBuffer(int width, int height, TextureFormat format, DepthFormat depth)
     {
-        return new Hip_GL3_FrameBuffer(width, height);
+        return new Hip_GL3_FrameBuffer(width, height, format, depth);
     }
 
     public IHipVertexArrayImpl createVertexArray()
     {
-        static if(UseWebGL)
-        {
-            import gles;
-            if(isWebGL2)
-                return new Hip_GL3_VertexArrayObject();
-            return  new Hip_GL_VertexArrayObject();
-        }
-        else static if (OpenGLHasVAOSupport)
+        static if(OpenGLHasVAOSupport) if(hipGlCapabilities.vertexArrayObjects)
             return new Hip_GL3_VertexArrayObject();
-        else
-            return new Hip_GL_VertexArrayObject();
+        return new Hip_GL_VertexArrayObject();
     }
     public IHipTexture createTexture(HipResourceUsage usage, HipTextureType type)
     {

@@ -4,7 +4,7 @@ public import hip.api.renderer.texture;
 interface IHipFrameBuffer
 {
     ///Creates the framebuffer using the target width and height
-    void create(uint width, uint height);
+    void create(uint width, uint height, TextureFormat format = TextureFormat.rgb8, DepthFormat depth = DepthFormat.depth16);
 
     ///Resizes the framebuffer, probably this will not be implemented in the backend level
     void resize(uint width, uint height);

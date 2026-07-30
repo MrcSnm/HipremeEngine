@@ -22,8 +22,8 @@ class HipFrameBuffer : IHipFrameBuffer
         this.width = width;
         this.height = height;
     }
-    void create(uint width, uint height){}
-    void resize(uint width, uint height){}
+    void create(uint width, uint height, TextureFormat format = TextureFormat.rgb8, DepthFormat depth = DepthFormat.depth16){impl.create(width,height,format,depth);}
+    void resize(uint width, uint height){impl.resize(width,height);}
 
     void bind()
     {

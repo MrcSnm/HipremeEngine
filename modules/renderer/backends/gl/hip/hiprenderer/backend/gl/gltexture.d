@@ -47,6 +47,19 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
     {
         glTexType = getGLTextureType(type);
     }
+
+    void initWithFormat(uint width, uint height, TextureFormat format)
+    {
+        this.width = width;
+        this.height = height;
+        glCall(() => glGenTextures(1, &textureID));
+        bind();
+        glCall(() => glTexImage2D(GL_TEXTURE_2D, 0, getInternalFormat(format), width, height, 0, getFormat(format), GL_UNSIGNED_BYTE, null));
+        setTextureFilter(TextureFilter.linear, TextureFilter.linear);
+        unbind();
+
+    }
+
     bool hasSuccessfullyLoaded(){return width > 0;}
 
 
@@ -68,9 +81,9 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
         int mod = getGLWrapMode(mode);
         version(GLES2)
         {
-            assert((isPowerOf2(width) && isPowerOf2(height)) || mod  == TextureWrapMode.CLAMP_TO_EDGE,
+            assert((isPowerOf2(width) && isPowerOf2(height)) || mod  == TextureWrapMode.clampToEdge,
                 "OpenGL ES 2.0/WebGL 1.0 must use Textures using Power of 2 size. If you wish to use "~
-                "a non Power of 2, you must use the TextureWrapMode.CLAMP_TO_EDGE"
+                "a non Power of 2, you must use the TextureWrapMode.clampToEdge"
             );
         }
         bind(currentSlot);
@@ -104,14 +117,13 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
         bind(currentSlot);
 
         glCall(() => glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.getWidth, image.getHeight, 0, mode, GL_UNSIGNED_BYTE, cast(void*)pixels.ptr));
-        glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        glCall(() => glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        setWrapMode(TextureWrapMode.REPEAT);
+        setTextureFilter(TextureFilter.nearest, TextureFilter.nearest);
+        setWrapMode(TextureWrapMode.repeat);
 
         version(GLES20)
         if(!isPowerOf2(image.getWidth) || !isPowerOf2(image.getHeight))
         {
-            setWrapMode(TextureWrapMode.CLAMP_TO_EDGE);
+            setWrapMode(TextureWrapMode.clampToEdge);
         }
         return true;
     }
@@ -135,6 +147,13 @@ final class Hip_GL3_Texture : IHipTexture, IReloadable
         }
         return false;
     }
+
+    void dispose()
+    {
+        glCall(() => glDeleteTextures(1, &this.textureID));
+        width = height = 0;
+        this.textureID = 0;
+    }
 }
 
 private int getGLTextureType(HipTextureType type)
@@ -150,14 +169,14 @@ private int getGLWrapMode(TextureWrapMode mode)
 {
     switch(mode)
     {
-        case TextureWrapMode.CLAMP_TO_EDGE: return GL_CLAMP_TO_EDGE;
-        case TextureWrapMode.REPEAT: return GL_REPEAT;
-        case TextureWrapMode.MIRRORED_REPEAT: return GL_MIRRORED_REPEAT;
+        case TextureWrapMode.clampToBorder: return GL_CLAMP_TO_EDGE;
+        case TextureWrapMode.repeat: return GL_REPEAT;
+        case TextureWrapMode.mirroredRepeat: return GL_MIRRORED_REPEAT;
         static if(!UseGLES)
         {
             //assert here would be better, as simply returning a default can be misleading.
-            case TextureWrapMode.MIRRORED_CLAMP_TO_EDGE: return GL_MIRROR_CLAMP_TO_EDGE;
-            case TextureWrapMode.CLAMP_TO_BORDER: return GL_CLAMP_TO_BORDER;
+            case TextureWrapMode.mirroredClampToEdge: return GL_MIRROR_CLAMP_TO_EDGE;
+            case TextureWrapMode.clampToBorder: return GL_CLAMP_TO_BORDER;
         }
         default: return GL_REPEAT;
     }
@@ -167,74 +186,88 @@ private int getGLMinMagFilter(TextureFilter filter)
 {
     switch(filter) with(TextureFilter)
     {
-        case LINEAR:
+        case linear:
             return GL_LINEAR;
-        case NEAREST:
+        case nearest:
             return GL_NEAREST;
-        case NEAREST_MIPMAP_NEAREST:
+        case nearestMipNearest:
             return GL_NEAREST_MIPMAP_NEAREST;
-        case LINEAR_MIPMAP_NEAREST:
+        case linearMipNearest:
             return GL_LINEAR_MIPMAP_NEAREST;
-        case NEAREST_MIPMAP_LINEAR:
+        case nearestMipLinear:
             return GL_NEAREST_MIPMAP_LINEAR;
-        case LINEAR_MIPMAP_LINEAR:
+        case linearMipLinear:
             return GL_LINEAR_MIPMAP_LINEAR;
         default:
             return -1;
     }
 }
 
+static if(StaticGLES20)
+private int getInternalFormatGLES20(TextureFormat f)
+{
+    import hip.util.conv;
+    switch(f)
+    {
+        case TextureFormat.r8: return GL_LUMINANCE;
+        case TextureFormat.rgb8: return GL_RGB;
+        case TextureFormat.rgba8: return GL_RGBA;
+        default:
+            throw new Error("No support to internalFormat "~f.to!string);
+    }
+}
+else
+private int getInternalFormat(TextureFormat f)
+{
+    import hip.hiprenderer.backend.gl.glconfig;
+    import hip.util.conv;
+    switch(f)
+    {
+        case TextureFormat.r8: 
+            return hipGlCapabilities.gles3Features ? GL_R8 : GL_LUMINANCE;
+        case TextureFormat.rgb8:
+            return hipGlCapabilities.gles3Features ? GL_RGB8 : GL_RGB;
+        case TextureFormat.rgba8:
+            return hipGlCapabilities.gles3Features ? GL_RGBA8 : GL_RGBA;
+        default:
+            throw new Error("No support to internalFormat "~f.to!string);
+    }
+}
+
+private int getFormat(TextureFormat f)
+{
+    import hip.util.conv;
+    import hip.hiprenderer.backend.gl.glconfig;
+    switch(f)
+    {
+        case TextureFormat.r8:
+            static if(StaticGLES20)
+                return GL_LUMINANCE;
+            else
+                return hipGlCapabilities.gles3Features ? GL_RED : GL_LUMINANCE;
+        case TextureFormat.rgb8:
+            return GL_RGB;
+        case TextureFormat.rgba8:
+            return GL_RGBA;
+        default:
+            throw new Error("No support for format "~f.to!string);
+    }
+}
+
+
 private void formatsFromImage(const IImage image, out int internalFormat, out int mode, ref const(ubyte)[] pixels)
 {
     if(pixels is null)
         pixels = image.getPixels();
-    switch(image.getBytesPerPixel)
+    
+    TextureFormat format;
+    if(image.hasPalette)
     {
-        case 1:
-            if(image.hasPalette)
-            {
-                pixels = image.convertPalettizedToRGBA();
-                version(GLES20)
-                {
-                    internalFormat = mode = GL_RGBA;
-                }
-                else
-                {
-                    mode = GL_RGBA;
-                    internalFormat = GL_RGBA8;
-                }
-            }
-            else
-            {
-                version(GLES20)
-                {
-                    internalFormat = mode = GL_LUMINANCE;
-                }
-                else
-                {
-                    mode = GL_RED;
-                    internalFormat = GL_R8;
-                }
-            }
-            break;
-        case 3:
-            version(GLES20)
-            {
-                internalFormat = mode = GL_RGB;
-            }
-            else
-            {
-                mode = GL_RGB;
-                internalFormat = GL_RGB8;
-            }
-            break;
-        case 4:
-            mode = GL_RGBA;
-            internalFormat = GL_RGBA;
-            break;
-        case 2:
-        default:
-            import hip.util.conv;
-            ErrorHandler.assertExit(false, "GL Pixel format unsupported on image "~image.getName~", bytesPerPixel: "~to!string(image.getBytesPerPixel));
+        pixels = image.convertPalettizedToRGBA();
+        format = TextureFormat.rgba8;
     }
+    else
+        format = image.getTextureFormat();
+    internalFormat = getInternalFormat(format);
+    mode = getFormat(format);
 }

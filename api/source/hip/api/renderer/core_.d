@@ -148,7 +148,7 @@ interface IHipRendererImpl
     void setErrorCheckingEnabled(bool enable = true);
     public HipShaderProgram createShader();
     size_t function(ShaderTypes shaderType, UniformType uniformType) getShaderVarMapper();
-    public IHipFrameBuffer createFrameBuffer(int width, int height);
+    public IHipFrameBuffer createFrameBuffer(int width, int height, TextureFormat format = TextureFormat.rgb8, DepthFormat depth = DepthFormat.depth16);
     public IHipVertexArrayImpl  createVertexArray();
     public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type);
     public IHipRendererBuffer createBuffer(const(ubyte)[], HipResourceUsage usage, HipRendererBufferType type);
@@ -206,7 +206,7 @@ interface IHipRenderer
     HipRendererInfo getInfo();
     bool shouldTranspose();
     IHipRendererBuffer createQuadIndexBuffer(size_t quadsCount, HipResourceUsage usage);
-    IHipFrameBuffer newFrameBuffer(int width, int height);
+    IHipFrameBuffer newFrameBuffer(int width, int height, TextureFormat format = TextureFormat.rgb8, DepthFormat depth = DepthFormat.depth16);
     /**
     * Fixes the matrix order based on the config and renderer.
     * If the renderer is column and the config is row, it will tranpose
