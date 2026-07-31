@@ -342,12 +342,23 @@ version(WindowsNative)
     }
     package HWND createWindow(int width, int height) @nogc nothrow
     {
+        RECT rc= RECT(0,0,width,height);
+        AdjustWindowRectEx(&rc, WS_OVERLAPPEDWINDOW, FALSE, 0);
+
+        int windowWidth = rc.right - rc.left;
+        int windowHeight = rc.bottom - rc.top;
+
+        int[2] screenSize = getMaxScreenSize();
+
+        int x = (screenSize[0] - windowWidth ) / 2;
+        int y = (screenSize[1] - windowHeight) / 2;
+
         return CreateWindowEx(
             0,
             winClassName,
             winClassName, //Title
             WS_OVERLAPPEDWINDOW | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_VISIBLE,
-            CW_USEDEFAULT, CW_USEDEFAULT,
+            x, y,
             width, height, HWND_DESKTOP, null, GetModuleHandle(null), null
         );
     }
@@ -406,7 +417,7 @@ version(WindowsNative)
         return [rect.right - rect.left, rect.bottom - rect.top];
     }
 
-    int[2] getMaxScreenSize()
+    int[2] getMaxScreenSize() nothrow @nogc
     {
         return [GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)];
     }
