@@ -176,7 +176,6 @@ private int getGLWrapMode(TextureWrapMode mode)
         {
             //assert here would be better, as simply returning a default can be misleading.
             case TextureWrapMode.mirroredClampToEdge: return GL_MIRROR_CLAMP_TO_EDGE;
-            case TextureWrapMode.clampToBorder: return GL_CLAMP_TO_BORDER;
         }
         default: return GL_REPEAT;
     }
@@ -224,7 +223,9 @@ private int getInternalFormat(TextureFormat f)
     switch(f)
     {
         case TextureFormat.r8: 
-            return hipGlCapabilities.gles3Features ? GL_R8 : GL_LUMINANCE;
+            static if(UseWebGL)
+                return hipGlCapabilities.gles3Features ? GL_R8 : GL_LUMINANCE;
+            return GL_R8;
         case TextureFormat.rgb8:
             return hipGlCapabilities.gles3Features ? GL_RGB8 : GL_RGB;
         case TextureFormat.rgba8:
@@ -243,8 +244,9 @@ private int getFormat(TextureFormat f)
         case TextureFormat.r8:
             static if(StaticGLES20)
                 return GL_LUMINANCE;
-            else
+            else static if(UseWebGL)
                 return hipGlCapabilities.gles3Features ? GL_RED : GL_LUMINANCE;
+            return GL_RED;
         case TextureFormat.rgb8:
             return GL_RGB;
         case TextureFormat.rgba8:

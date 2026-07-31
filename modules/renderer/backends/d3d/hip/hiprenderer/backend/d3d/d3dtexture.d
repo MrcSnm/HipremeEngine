@@ -33,8 +33,8 @@ final class Hip_D3D11_Texture : IHipTexture
     bool[] slotsBound;
     HipColor borderColor = HipColor(255, 255, 255, 255);
     int width, height;
-    int filter = Hip_D3D11_getTextureFilter(TextureFilter.NEAREST_MIPMAP_LINEAR, TextureFilter.LINEAR);
-    int wrap = Hip_D3D11_getWrapMode(TextureWrapMode.REPEAT);
+    int filter = Hip_D3D11_getTextureFilter(TextureFilter.nearestMipLinear, TextureFilter.linear);
+    int wrap = Hip_D3D11_getWrapMode(TextureWrapMode.repeat);
     uint stride;
     HipResourceUsage usage;
 
@@ -193,15 +193,15 @@ pure int Hip_D3D11_getTextureFilter(TextureFilter min, TextureFilter mag)
     {
         switch(min)
         {
-            case LINEAR:
-                if(mag == LINEAR)
+            case linear:
+                if(mag == linear)
                     return D3D11_FILTER_MIN_MAG_MIP_LINEAR;
                 break;
-            case NEAREST:
-                if(mag == LINEAR)
+            case nearest:
+                if(mag == linear)
                     return D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR;
                 return D3D11_FILTER_MIN_MAG_MIP_POINT;
-            case NEAREST_MIPMAP_LINEAR:
+            case nearestMipLinear:
                 return D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR;
             default:break;
         }

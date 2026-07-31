@@ -25,7 +25,7 @@ class Hip_D3D11_FrameBuffer : IHipFrameBuffer
     }
 
 
-    void create(uint width, uint height)
+    void create(uint width, uint height, TextureFormat format = TextureFormat.rgb8, DepthFormat depth = DepthFormat.depth16)
     {
         D3D11_TEXTURE2D_DESC textureDesc;
         HRESULT hres;

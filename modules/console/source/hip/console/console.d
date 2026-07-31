@@ -73,7 +73,7 @@ else version(Windows)
     version = WindowsNative;
 
 
-enum WindowsConsoleColors
+enum WindowsConsoleColors : ushort
 {
     lightBlue = 1,
     darkGreen = 2,
@@ -96,11 +96,19 @@ private struct TextColor
         static void* windowsConsole;
     this(WindowsConsoleColors color)
     {
-        version(WindowsNative){SetConsoleTextAttribute(windowsConsole, color);}
+        version(WindowsNative)
+        {
+            import core.sys.windows.wincon;
+            SetConsoleTextAttribute(windowsConsole, color);
+        }
     }
     ~this()
     {
-        version(WindowsNative){SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.white);}
+        version(WindowsNative)
+        {
+            import core.sys.windows.wincon;
+            SetConsoleTextAttribute(windowsConsole, WindowsConsoleColors.white);
+        }
     }
 }
 

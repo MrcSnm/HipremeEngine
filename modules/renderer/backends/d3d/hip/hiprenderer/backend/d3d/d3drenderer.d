@@ -389,7 +389,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
         return false;
     }
 
-    public IHipFrameBuffer createFrameBuffer(int width, int height)
+    public IHipFrameBuffer createFrameBuffer(int width, int height, TextureFormat format = TextureFormat.rgb8, DepthFormat depth = DepthFormat.depth16)
     {
         return new Hip_D3D11_FrameBuffer(width,height);
     }
