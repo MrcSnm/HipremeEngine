@@ -57,7 +57,7 @@ abstract class HipAsset
     final void dispose()
     {
         _assetID = 0;
-        onDispose();
+        // onDispose(); //TODO: ON DISPOSE IS CRASHING
     }
 
 }

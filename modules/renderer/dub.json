@@ -48,12 +48,12 @@
 			"configurations": [
 				{
 					"name": "default",
-					"dependencies": {"bindbc-opengl": {"path": "../../dependencies/bindbc-opengl"}},
+					"dependencies": {"bindbc-opengl": "~>1.1.2"},
 					"versions": [ "HipGL3", "GL_45", "GL_ARB" ]
 				},
 				{
 					"name": "egl",
-					"dependencies": {"bindbc-opengl": {"path": "../../dependencies/bindbc-opengl"}},
+					"dependencies": {"bindbc-opengl": "~>1.1.2"},
 					"subConfigurations": {"bindbc-opengl": "egl"},
 					"versions": [ "HipGL3", "GL_45", "GL_ARB" ]
 				},
