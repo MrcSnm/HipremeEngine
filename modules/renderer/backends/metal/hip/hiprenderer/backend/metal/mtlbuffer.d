@@ -79,4 +79,12 @@ final class HipMTLBuffer : IHipRendererBuffer
     {
         buffer.contents[offset..offset+data.length] = data[];
     }
+
+    void dispose()
+    {
+        if(buffer)
+            buffer.release();
+        buffer = null;
+        size = 0;
+    }
 }

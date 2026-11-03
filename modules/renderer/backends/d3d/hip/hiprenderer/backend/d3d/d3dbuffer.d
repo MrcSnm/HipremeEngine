@@ -131,6 +131,14 @@ final class HipD3D11Buffer : IHipRendererBuffer
         memcpy(resource.pData+offset, data.ptr, data.length);
         d3dCall(_hip_d3d_context.Unmap(buffer, 0));
     }
+
+    void dispose()
+    {
+        if(buffer)
+            buffer.Release();
+        buffer = null;
+        size = 0;
+    }
 }
 
 int getD3D11BufferType(HipRendererBufferType type)

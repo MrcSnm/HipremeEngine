@@ -32,6 +32,9 @@ import hip.hiprenderer.backend.gl.glshader;
 import hip.hiprenderer.backend.gl.glconfig;
 
 private __gshared bool errorCheckEnabled = true;
+///False after the GL context is destroyed. GC finalizers on GPU resources run
+///during shutdown and would otherwise call dangling WGL function pointers.
+private __gshared bool isGLContextAlive = false;
 
 
 GLenum getOpenGLIndexType(T)()
@@ -45,6 +48,8 @@ GLenum getOpenGLIndexType(T)()
 auto glCall(T)(scope T delegate() dg, string file = __FILE__, size_t line = __LINE__)
 {
     import hip.config.opts;
+    if(!isGLContextAlive)
+        throw new Error("Tried to call GL Function after kiling context.");
     static if(is(T == void))
         dg();
     else
@@ -145,6 +150,7 @@ class Hip_GL3Renderer : IHipRendererImpl
             hiplog("Starting OpenGL Context.");
             window.startOpenGLContext();
         }
+        isGLContextAlive = true;
         version(Have_bindbc_opengl)
         {
             hiplog("Loading OpenGL functions.");
@@ -358,6 +364,7 @@ class Hip_GL3Renderer : IHipRendererImpl
 
     public void dispose()
     {
+        isGLContextAlive = false;
         if(window !is null)
         {
             window.destroyOpenGLContext();

@@ -123,6 +123,7 @@ interface IHipRendererBuffer
      */
     void unmapBuffer();
     void updateData(int offset, const void[] data);
+    void dispose();
 }
 
 

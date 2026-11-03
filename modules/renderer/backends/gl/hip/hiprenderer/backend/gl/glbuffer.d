@@ -120,7 +120,7 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
             glCall(() => glBufferSubData(glType, offset, data.length, data.ptr));
         }
     }
-    ~this(){glCall(() => glDeleteBuffers(1, &handle));}
+    void dispose(){glCall(() => glDeleteBuffers(1, &handle));}
 }
 
 

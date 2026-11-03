@@ -28,6 +28,8 @@ class HipXAudioPlayer : IHipAudioPlayer
 {
     IXAudio2 xAudio;
     IXAudio2MasteringVoice masterVoice;
+    ///False once the engine is released; GC finalizers must not touch voices then.
+    __gshared bool isAlive = true;
 
     package immutable(AudioConfig) config;
 
@@ -37,6 +39,7 @@ class HipXAudioPlayer : IHipAudioPlayer
     */
     public this(AudioConfig cfg)
     {
+        isAlive = true;
         this.config = cfg;
 
         HRESULT hr;
@@ -93,7 +96,20 @@ class HipXAudioPlayer : IHipAudioPlayer
 
     public void onDestroy()
     {
-        xAudio.Release();
+        import hip.console.log;
+        hiplog("Shutdown: destroying XAudio2 mastering voice");
+        if(masterVoice !is null)
+        {
+            masterVoice.DestroyVoice();
+            masterVoice = null;
+        }
+        hiplog("Shutdown: releasing XAudio2");
+        if(xAudio !is null)
+        {
+            xAudio.Release();
+            xAudio = null;
+        }
+        isAlive = false;
     }
     public void update(){}
 }

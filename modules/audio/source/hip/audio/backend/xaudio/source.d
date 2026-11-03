@@ -126,10 +126,10 @@ class HipXAudioSource : HipAudioSource
 
     ~this()
     {
-        if(sourceVoice !is null)
+        if(sourceVoice !is null && HipXAudioPlayer.isAlive)
         {
             sourceVoice.DestroyVoice();
-            sourceVoice = null;
         }
+        sourceVoice = null;
     }
 }

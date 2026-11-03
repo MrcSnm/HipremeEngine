@@ -440,7 +440,7 @@ class HipGL3ShaderProgram : HipGLShaderProgram
         foreach (ub; ubos)
         {
             UBO* ubo = cast(UBO*)ub.getAdditionalData();
-            glCall(() => glDeleteBuffers(1, &ubo.buffer.handle));
+            ubo.buffer.dispose();
         }
         ubos.length = 0;
         super.dispose();

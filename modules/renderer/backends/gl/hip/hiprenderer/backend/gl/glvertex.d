@@ -167,5 +167,5 @@ static if (OpenGLHasVAOSupport) final class Hip_GL3_VertexArrayObject : IHipVert
         foreach(i, info; attInfos)
             info.vbo.unbind();
     }
-    ~this(){glCall(() => glDeleteVertexArrays(1, &this.vao));}
+    void dispose(){glCall(() => glDeleteVertexArrays(1, &this.vao));}
 }
