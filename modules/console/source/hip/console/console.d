@@ -291,8 +291,9 @@ class Console
         // Elapsed since HipTime.initialize (engine boot). If the platform has no
         // usable time source, fall back to a sequence number so ordering is kept.
         logSequence++;
-        string stamped = HipTime.isInitialized()
-            ? BigString("[", HipTime.getCurrentTimeAsMsLong(), " ms] ", msg).toString.dup
+        long ms = HipTime.tryGetCurrentTimeAsMsLong();
+        string stamped = ms >= 0
+            ? BigString("[", ms, " ms] ", msg).toString.dup
             : BigString("[#", logSequence, "] ", msg).toString.dup;
 
         // Keep the last maxLines verbose lines for crash diagnostics, even when

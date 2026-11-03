@@ -25,3 +25,14 @@ else enum HasWebAudio = false;
 
 version(iOS) enum HasAVAudioEngine = true;
 else enum HasAVAudioEngine = false;
+
+
+version(Windows)
+{
+    version(UWP)
+		enum HipAudioBackgroundInit = false;
+    else 
+		enum HipAudioBackgroundInit = true;
+}
+else
+	enum HipAudioBackgroundInit = false;

@@ -190,7 +190,6 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	PreInitializeHipRenderer();
 	PreInitializeHipAudio();
 
-	long startupTimer = HipTime.getCurrentTimeAsMsLong();
 	version(Android)
 	{
 		bool hasProFeature = HipAndroid.javaCall!(bool, "hasProFeature");
@@ -207,9 +206,8 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	}
 	else
 		HipAudio.initialize(getAudioImplementationForOS);
-	reportRow("timings", "audio", HipTime.getCurrentTimeAsMsLong() - startupTimer, " ms");
 
-	startupTimer = HipTime.getCurrentTimeAsMsLong();
+	ReportTimer rendererTimer = ReportTimer.start();
 	version(InitExternal)
 	{
 		import hip.console.log;
@@ -232,7 +230,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 		HipFS.absoluteReadText("renderer.conf", confFile); //Ignore return, renderer can handle no conf.
 		HipRenderer.initialize(confFile, "renderer.conf");
 	}
-	reportRow("timings", "renderer", HipTime.getCurrentTimeAsMsLong() - startupTimer, " ms");
+	rendererTimer.report("renderer");
 	loadDefaultAssets((){gameInitialize();}, (err)
 	{
 		loglnError("Could not load default assets! ", err);
@@ -424,7 +422,9 @@ export extern(System) void HipremeRender()
 		import hip.util.time;
 		import hip.console.report;
 		reportRow("timings", "first frame", HipTime.getCurrentTimeAsMsLong() - hipStartupTimeMs, " ms");
+		HipAudio.reportPendingInitIfReady();
 		flushReport();
+		HipAudio.printPendingInit();
 	}
 	
 	HipRenderer.begin();
@@ -440,6 +440,10 @@ export extern(System) void HipremeRender()
 export extern(System) void HipremeDestroy()
 {
 	logln("Destroying HipremeEngine");
+	// If the engine exits before the first frame, still print the startup report.
+	import hip.console.report : reportWasFlushed, flushReport;
+	if(!reportWasFlushed())
+		flushReport();
 	destroyEngine();
 	// Only terminate the runtime when the engine owns it (no D `main`).
 	// On desktop/script builds druntime is managed by main; calling rt_term()

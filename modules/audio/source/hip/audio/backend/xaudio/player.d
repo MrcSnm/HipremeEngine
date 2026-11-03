@@ -37,30 +37,34 @@ class HipXAudioPlayer : IHipAudioPlayer
     *   For getting better debug information, you need to run this application on Visual Studio.
     *   The debug messages actually appears inside the `Output` window.
     */
-    public this(AudioConfig cfg)
+    public this(AudioConfig cfg, bool reportTimings = true)
     {
+        import hip.console.report : ReportTimer;
         isAlive = true;
         this.config = cfg;
+        ReportTimer timer = ReportTimer.start();
 
         HRESULT hr;
         version(UWP)
         {}
         else
         {
-            CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+            hr = CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
             ErrorHandler.assertLazyExit(SUCCEEDED(hr), "CoInitializeEx error:\n\t"~HipXAudioPlayer.getError(hr));
         }
+        if(reportTimings) timer.report("audio coinit");
 
         UINT32 flags;
         version(HIPREME_DEBUG)
-            flags|= XAUDIO2_DEBUG_ENGINE;
+            flags |= XAUDIO2_DEBUG_ENGINE;
 
         hr = XAudio2Create(xAudio, flags, XAUDIO2_DEFAULT_PROCESSOR);
         ErrorHandler.assertLazyExit(SUCCEEDED(hr), "XAudio2Create error:\n\t"~HipXAudioPlayer.getError(hr));
-
+        if(reportTimings) timer.report("audio engine");
 
         hr = xAudio.CreateMasteringVoice(&masterVoice, cfg.channels,  cfg.sampleRate, 0);
         ErrorHandler.assertLazyExit(SUCCEEDED(hr), "CreateMasteringVoice error:\n\t"~HipXAudioPlayer.getError(hr));
+        if(reportTimings) timer.report("audio device");
 
         version(HIPREME_DEBUG)
         {

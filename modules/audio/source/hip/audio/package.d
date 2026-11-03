@@ -19,6 +19,11 @@ import hip.audio_decoding.audio;
 import hip.math.utils:getClosestMultiple;
 import hip.error.handler;
 
+static if(HipAudioBackgroundInit)
+{
+    import core.thread : Thread;
+}
+
 class HipAudioImpl : IHipAudioPlayer
 {
     public bool initialize(HipAudioImplementation implementation = HipAudioImplementation.OpenAL,
@@ -31,7 +36,7 @@ class HipAudioImpl : IHipAudioPlayer
         ErrorHandler.startListeningForErrors("HipremeAudio initialization");
         _hasInitializedAudio = true;
         this.is3D = is3D;
-        audioInterface = getAudioInterface(implementation);
+        this.implementation     = implementation;
         this.hasProAudio        = hasProAudio;
         this.hasLowLatencyAudio = hasLowLatencyAudio;
         this.optimalBufferSize  = optimalBufferSize;
@@ -42,7 +47,95 @@ class HipAudioImpl : IHipAudioPlayer
         reportRow("audio", "low latency", hasLowLatencyAudio);
         reportRow("audio", "optimal buffer", optimalBufferSize);
         reportRow("audio", "optimal rate", optimalSampleRate);
+        static if(HasXAudio2)
+        {
+            if(implementation == HipAudioImplementation.XAudio2)
+            {
+                AudioConfig cfg = AudioConfig.musicConfig;
+                reportRow("audio", "backend", "XAudio2");
+                reportRow("audio", "sample rate", cfg.sampleRate);
+                reportRow("audio", "format", cfg.format);
+                reportRow("audio", "channels", cfg.channels);
+                reportRow("audio", "buffer", cfg.bufferSize);
+            }
+        }
+        // Creating the device can take hundreds of ms (WASAPI endpoint wakeup),
+        // so on Windows it runs in the background instead of blocking startup.
+        bool startedInBackground = false;
+        reportRow("audio", "device init", HipAudioBackgroundInit ? "background" : "eager");
+        static if(HipAudioBackgroundInit)
+        {
+            static if(HasXAudio2)
+            {
+                if(implementation == HipAudioImplementation.XAudio2)
+                {
+                    startAudioInitThread();
+                    startedInBackground = true;
+                }
+            }
+        }
+        if(!startedInBackground)
+            createInterface(true);
         return ErrorHandler.stopListeningForErrors();
+    }
+
+    static if(HipAudioBackgroundInit)
+    {
+        private Thread audioInitThread;
+
+        private void startAudioInitThread()
+        {
+            if(audioInitThread !is null)
+                return;
+            audioInitThread = new Thread(&backgroundAudioInit);
+            audioInitThread.start();
+        }
+
+        private void backgroundAudioInit()
+        {
+            try createInterface(false);
+            catch(Throwable e)
+            {
+                pendingInitError = (e.msg !is null ? e.msg : "unknown error").dup;
+                pendingInitBackground = true;
+                pendingInit = true;
+                if(audioInterface is null)
+                {
+                    import hip.audio.backend.nullaudio : HipNullAudio;
+                    audioInterface = new HipNullAudio();
+                }
+            }
+        }
+    }
+
+    private void createInterface(bool reportTimings)
+    {
+        import hip.console.report : ReportTimer;
+        ReportTimer timer = ReportTimer.start();
+        audioInterface = getAudioInterface(implementation, hasProAudio, hasLowLatencyAudio,
+            optimalBufferSize, optimalSampleRate, reportTimings);
+        pendingInitMs = timer.lap();
+        pendingInitBackground = !reportTimings;
+        pendingInit = true;
+    }
+
+    private IHipAudioPlayer ensureInterface()
+    {
+        if(audioInterface is null)
+        {
+            static if(HipAudioBackgroundInit)
+            {
+                // The background thread is the only creator; just wait for it.
+                if(audioInitThread !is null)
+                {
+                    try audioInitThread.join();
+                    catch(Throwable) {}
+                    return audioInterface;
+                }
+            }
+            createInterface(true);
+        }
+        return audioInterface;
     }
     bool pause(AHipAudioSource src)
     {
@@ -51,11 +144,11 @@ class HipAudioImpl : IHipAudioPlayer
     }
     bool play_streamed(AHipAudioSource src)
     {
-        audioInterface.play_streamed(src);
+        ensureInterface().play_streamed(src);
         src.isPlaying = true;
         return false;
     }
-    IHipAudioClip getClip(){return audioInterface.getClip();}
+    IHipAudioClip getClip(){return ensureInterface().getClip();}
 
     /**
     *   Loads a file from disk, sets the chunkSize for streaming and does one decoding frame
@@ -63,24 +156,37 @@ class HipAudioImpl : IHipAudioPlayer
     IHipAudioClip loadStreamed(string path, uint chunkSize = ushort.max+1)
     {
         chunkSize = getClosestMultiple(optimalBufferSize, chunkSize);
-        IHipAudioClip buf = audioInterface.loadStreamed(path, chunkSize);
+        IHipAudioClip buf = ensureInterface().loadStreamed(path, chunkSize);
         return buf;
     }
 
     void updateStream(AHipAudioSource source)
     {
-        audioInterface.updateStream(source);
+        ensureInterface().updateStream(source);
     }
     AHipAudioSource getSource(bool isStreamed = false, IHipAudioClip clip = null)
     {
         if(isStreamed) ErrorHandler.assertExit(clip !is null, "Can't get streamed source without any buffer");
-        HipAudioSource ret = cast(HipAudioSource)audioInterface.getSource(isStreamed);
+        HipAudioSource ret = cast(HipAudioSource)ensureInterface().getSource(isStreamed);
         if(clip)
             ret.clip = clip;
         return ret;
     }
     void onDestroy()
     {
+        static if(HipAudioBackgroundInit)
+        {
+            if(audioInitThread !is null)
+            {
+                // join() waits for the device creation to finish and closes the
+                // OS thread handle. destroy() releases the Thread object now
+                // instead of leaving it to the GC during runtime teardown.
+                try audioInitThread.join();
+                catch(Throwable) {}
+                destroy(audioInitThread);
+                audioInitThread = null;
+            }
+        }
         if(audioInterface !is null)
             audioInterface.onDestroy();
         audioInterface = null;
@@ -88,15 +194,51 @@ class HipAudioImpl : IHipAudioPlayer
 
     void update()
     {
+        // Keep the startup report first: only print the audio init result after
+        // it has been flushed (or at the first-frame flush, see HipremeRender).
+        import hip.console.report : reportWasFlushed;
+        if(pendingInit && reportWasFlushed())
+            printPendingInit();
         if(audioInterface !is null)
             audioInterface.update();
+    }
+
+    ///If the device finished before the report, include it in the table.
+    void reportPendingInitIfReady()
+    {
+        if(!pendingInit || pendingInitError !is null || pendingInitMs < 0)
+            return;
+        pendingInit = false;
+        import hip.console.report : reportRow;
+        reportRow("timings", "audio", pendingInitMs, " ms");
+        pendingInitMs = -1;
+    }
+
+    ///Prints the deferred init result after the startup report.
+    void printPendingInit()
+    {
+        if(!pendingInit)
+            return;
+        pendingInit = false;
+        import hip.util.string : BigString;
+        import hip.console.log : rawlog;
+        string suffix = pendingInitBackground ? " (background)" : "";
+        if(pendingInitError !is null)
+            rawlog(BigString("HIP: Audio device initialization failed: ", pendingInitError).toString);
+        else if(pendingInitMs >= 0)
+            rawlog(BigString("HIP: Audio device initialized in ", pendingInitMs, " ms", suffix).toString);
+        else
+            rawlog(BigString("HIP: Audio device initialized", suffix).toString);
+        pendingInitMs = -1;
+        pendingInitError = null;
     }
 
     private static IHipAudioPlayer getAudioInterface(HipAudioImplementation impl,
     bool hasProAudio = false,
     bool hasLowLatencyAudio = false,
     int  optimalBufferSize = 4096,
-    int optimalSampleRate = 44_100)
+    int optimalSampleRate = 44_100,
+    bool reportTimings = true)
     {
         import hip.console.log;
         final switch(impl)
@@ -129,14 +271,7 @@ class HipAudioImpl : IHipAudioPlayer
                 static if(HasXAudio2)
                 {
                     import hip.audio.backend.xaudio.player;
-                    import hip.console.report;
-                    AudioConfig cfg = AudioConfig.musicConfig;
-                    reportRow("audio", "backend", "XAudio2");
-                    reportRow("audio", "sample rate", cfg.sampleRate);
-                    reportRow("audio", "format", cfg.format);
-                    reportRow("audio", "channels", cfg.channels);
-                    reportRow("audio", "buffer", cfg.bufferSize);
-                    return new HipXAudioPlayer(cfg);
+                    return new HipXAudioPlayer(AudioConfig.musicConfig, reportTimings);
                 }
                 else 
                 {
@@ -181,6 +316,12 @@ class HipAudioImpl : IHipAudioPlayer
 
 
    
+    protected HipAudioImplementation implementation;
+    ///Deferred "audio initialized" message, printed after the startup report.
+    private long pendingInitMs = -1;
+    private string pendingInitError;
+    private bool pendingInit;
+    private bool pendingInitBackground;
     protected bool hasProAudio;
     protected bool hasLowLatencyAudio;
     protected int  optimalBufferSize;
