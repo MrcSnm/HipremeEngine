@@ -1,6 +1,5 @@
 module hip.audio.backend.xaudio.clip;
 
-version(Windows):
 version(XAudio2):
 import hip.audio.clip;
 import directx.xaudio2;

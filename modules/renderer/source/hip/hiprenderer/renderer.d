@@ -29,6 +29,19 @@ private struct HipRendererResources
     HipShaderProgram[] shaders;
     IHipVertexArrayImpl[]  vertexArrays;
     IHipRendererBuffer[] buffers;
+
+    void dispose()
+    {
+        foreach(buffer; res.buffers)
+            buffer.dispose();
+        foreach(texture; res.textures)
+            texture.dispose();
+        foreach(vertexArray; res.vertexArrays)
+            vertexArray.dispose();
+        foreach(shader; res.shaders)
+            shader.dispose();
+        textures.length = shaders.length = vertexArrays.length = buffers.length = 0;
+    }
 }
 
 class HipRendererImplementation : IHipRenderer
@@ -424,6 +437,7 @@ class HipRendererImplementation : IHipRenderer
 
     public void dispose()
     {
+        res.dispose();
         rendererImpl.dispose();
         if(window !is null)
             window.exit();

@@ -1,6 +1,5 @@
 module hip.audio.backend.xaudio.player;
 
-version(Windows):
 version(XAudio2):
 import hip.util.system:getWindowsErrorMessage;
 import hip.audio.backend.xaudio.source;

@@ -1,6 +1,5 @@
 module hip.audio.backend.xaudio.source;
 
-version(Windows):
 version(XAudio2):
 
 import hip.audio.backend.xaudio.player;
@@ -124,12 +123,10 @@ class HipXAudioSource : HipAudioSource
     override bool play_streamed() => false;
 
 
-    ~this()
+    void dispose()
     {
         if(sourceVoice !is null && HipXAudioPlayer.isAlive)
-        {
             sourceVoice.DestroyVoice();
-        }
         sourceVoice = null;
     }
 }

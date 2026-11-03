@@ -122,6 +122,12 @@ class HipTime
         return getCurrentTime() / 1_000_000;
     }
 
+    ///Returns -1 when the platform has no usable time source yet.
+    static long tryGetCurrentTimeAsMsLong() nothrow
+    {
+        return initialized ? getCurrentTimeAsMsLong() : -1;
+    }
+
     static double getCurrentTimeAsMs() nothrow
     {
         return getCurrentTimeDouble() / 1_000_000.0f;

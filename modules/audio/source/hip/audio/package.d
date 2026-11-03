@@ -24,8 +24,16 @@ static if(HipAudioBackgroundInit)
     import core.thread : Thread;
 }
 
+struct HipAudioResources
+{
+    HipAudioSource[] audioSources;
+    IHipAudioClip[] audioClips;
+}
+
 class HipAudioImpl : IHipAudioPlayer
 {
+    HipAudioResources res;
+
     public bool initialize(HipAudioImplementation implementation = HipAudioImplementation.OpenAL,
     bool hasProAudio = false,
     bool hasLowLatencyAudio = false,
@@ -148,7 +156,12 @@ class HipAudioImpl : IHipAudioPlayer
         src.isPlaying = true;
         return false;
     }
-    IHipAudioClip getClip(){return ensureInterface().getClip();}
+    IHipAudioClip getClip()
+    {
+        IHipAudioClip clip = ensureInterface().getClip();
+        res.audioClips~= clip;
+        return clip;
+    }
 
     /**
     *   Loads a file from disk, sets the chunkSize for streaming and does one decoding frame
@@ -170,10 +183,18 @@ class HipAudioImpl : IHipAudioPlayer
         HipAudioSource ret = cast(HipAudioSource)ensureInterface().getSource(isStreamed);
         if(clip)
             ret.clip = clip;
+
+        res.audioSources ~= ret;
         return ret;
     }
     void onDestroy()
     {
+        foreach(clip; res.audioClips)
+            clip.unload();
+        foreach(source; res.audioSources)
+            source.dispose();
+        res.audioSources.length = res.audioClips.length = 0;
+        
         static if(HipAudioBackgroundInit)
         {
             if(audioInitThread !is null)
