@@ -299,9 +299,10 @@ class HipMTLRenderer : IHipRendererImpl
     }
 
 
-    public IHipFrameBuffer createFrameBuffer(int width, int height)
+    public IHipFrameBuffer createFrameBuffer(int width, int height, TextureFormat format = TextureFormat.rgb8, DepthFormat depth = DepthFormat.depth16)
     {
-        return IHipFrameBuffer.init; // TODO: implement
+        import hip.hiprenderer.backend.metal.mtlframebuffer;
+        return new HipMTLFramebuffer();
     }
 
     public IHipVertexArrayImpl createVertexArray()

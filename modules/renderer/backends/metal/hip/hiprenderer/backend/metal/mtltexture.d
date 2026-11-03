@@ -49,17 +49,17 @@ MTLSamplerAddressMode fromHipTextureWrapMode(TextureWrapMode m)
 {
     final switch(m)
     {
-        case TextureWrapMode.CLAMP_TO_EDGE:
+        case TextureWrapMode.clampToEdge:
             return MTLSamplerAddressMode.ClampToEdge;
-        case TextureWrapMode.MIRRORED_CLAMP_TO_EDGE:
+        case TextureWrapMode.mirroredClampToEdge:
             return MTLSamplerAddressMode.MirrorClampToEdge;
-        case TextureWrapMode.REPEAT:
+        case TextureWrapMode.repeat:
             return MTLSamplerAddressMode.Repeat;
-        case TextureWrapMode.MIRRORED_REPEAT:
+        case TextureWrapMode.mirroredRepeat:
             return MTLSamplerAddressMode.MirrorRepeat;
-        case TextureWrapMode.CLAMP_TO_BORDER:
+        case TextureWrapMode.clampToBorder:
             return MTLSamplerAddressMode.ClampToBorderColor;
-        case TextureWrapMode.UNKNOWN: assert(false, "Don't use that");
+        case TextureWrapMode.unknown: assert(false, "Don't use that");
 
     }
 }
@@ -87,8 +87,8 @@ final class HipMTLTexture : IHipTexture
         this.usage = usage;
         samplerDesc = MTLSamplerDescriptor.alloc.initialize;
 
-        setWrapMode(TextureWrapMode.REPEAT);
-        setTextureFilter(TextureFilter.NEAREST, TextureFilter.NEAREST);
+        setWrapMode(TextureWrapMode.repeat);
+        setTextureFilter(TextureFilter.nearest, TextureFilter.nearest);
     }
 
     void setWrapMode(TextureWrapMode mode)
@@ -105,54 +105,54 @@ final class HipMTLTexture : IHipTexture
     {
         final switch ( min ) with(TextureFilter)
         {
-            case LINEAR:
+            case linear:
                 samplerDesc.minFilter = MTLSamplerMinMagFilter.Linear;
                 samplerDesc.mipFilter = MTLSamplerMipFilter.NotMipmapped;
                 break;
-            case NEAREST:
+            case nearest:
                 samplerDesc.minFilter = MTLSamplerMinMagFilter.Nearest;
                 samplerDesc.mipFilter = MTLSamplerMipFilter.NotMipmapped;
                 break;
-            case NEAREST_MIPMAP_NEAREST:
+            case nearestMipNearest:
                 samplerDesc.minFilter = MTLSamplerMinMagFilter.Nearest;
                 samplerDesc.mipFilter = MTLSamplerMipFilter.Nearest;
                 break;
-            case LINEAR_MIPMAP_NEAREST:
+            case linearMipNearest:
                 samplerDesc.minFilter = MTLSamplerMinMagFilter.Linear;
                 samplerDesc.mipFilter = MTLSamplerMipFilter.Nearest;
                 break;
-            case NEAREST_MIPMAP_LINEAR:
+            case nearestMipLinear:
                 samplerDesc.minFilter = MTLSamplerMinMagFilter.Nearest;
                 samplerDesc.mipFilter = MTLSamplerMipFilter.Linear;
                 break;
-            case LINEAR_MIPMAP_LINEAR:
+            case linearMipLinear:
                 samplerDesc.minFilter = MTLSamplerMinMagFilter.Linear;
                 samplerDesc.mipFilter = MTLSamplerMipFilter.Linear;
                 break;
         }
         final switch ( mag ) with(TextureFilter)
         {
-            case LINEAR:
+            case linear:
                 samplerDesc.magFilter = MTLSamplerMinMagFilter.Linear;
                 samplerDesc.mipFilter = MTLSamplerMipFilter.NotMipmapped;
                 break;
-            case NEAREST:
+            case nearest:
                 samplerDesc.magFilter = MTLSamplerMinMagFilter.Nearest;
                 samplerDesc.mipFilter = MTLSamplerMipFilter.NotMipmapped;
                 break;
-            case NEAREST_MIPMAP_NEAREST:
+            case nearestMipNearest:
                 samplerDesc.magFilter = MTLSamplerMinMagFilter.Nearest;
                 samplerDesc.mipFilter = MTLSamplerMipFilter.Nearest;
                 break;
-            case LINEAR_MIPMAP_NEAREST:
+            case linearMipNearest:
                 samplerDesc.magFilter = MTLSamplerMinMagFilter.Linear;
                 samplerDesc.mipFilter = MTLSamplerMipFilter.Nearest;
                 break;
-            case NEAREST_MIPMAP_LINEAR:
+            case nearestMipLinear:
                 samplerDesc.magFilter = MTLSamplerMinMagFilter.Nearest;
                 samplerDesc.mipFilter = MTLSamplerMipFilter.Linear;
                 break;
-            case LINEAR_MIPMAP_LINEAR:
+            case linearMipLinear:
                 samplerDesc.magFilter = MTLSamplerMinMagFilter.Linear;
                 samplerDesc.mipFilter = MTLSamplerMipFilter.Linear;
                 break;
