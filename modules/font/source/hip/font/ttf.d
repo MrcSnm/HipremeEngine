@@ -139,11 +139,34 @@ class HipArsd_TTF_Font : HipFont
     {
         Hip_TTF_Font ret = new Hip_TTF_Font(this.path, size, type);
         ret.font = cast(TtfFont)this.font;
-        ret.mainInstance = cast(Hip_TTF_Font)(mainInstance is null ? this : mainInstance);
-        if(mainInstance)
-            mainInstance.clones~= ret;
-        else
-            clones~= ret;
+        Hip_TTF_Font base = cast(Hip_TTF_Font)(mainInstance is null ? this : mainInstance);
+        ret.mainInstance = base;
+        base.clones~= ret;
+
+        // SDF is resolution independent, so reuse the already generated atlas
+        // and scale the glyph metrics instead of rasterizing the whole charset
+        // again for every requested size (this was a big startup cost).
+        if(type == HipFontType.sdf && base._texture !is null && base._characters.length != 0)
+        {
+            float ratio = cast(float)size / cast(float)base.fontSize;
+            ret._texture = base._texture;
+            ret._spaceWidth = cast(uint)(base._spaceWidth * ratio);
+            ret._lineBreakHeight = cast(uint)(base._lineBreakHeight * ratio);
+            ret.fontScale = base.fontScale * ratio;
+            ret._textureWidth = base._textureWidth;
+            ret._textureHeight = base._textureHeight;
+            foreach(dchar ch, HipFontChar c; base._characters)
+            {
+                HipFontChar scaled = c;
+                scaled.width = cast(short)(c.width * ratio);
+                scaled.height = cast(short)(c.height * ratio);
+                scaled.xoffset = cast(short)(c.xoffset * ratio);
+                scaled.yoffset = cast(short)(c.yoffset * ratio);
+                scaled.xadvance = cast(short)(c.xadvance * ratio);
+                ret._characters[ch] = scaled;
+            }
+            return cast(HipFont)ret;
+        }
 
         if(!ret.loadTexture(ret.generateImage(size, ret._textureWidth, ret._textureHeight)))
             return null;

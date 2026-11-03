@@ -263,7 +263,7 @@ public class HipOpenALAudioSource : HipAudioSource
 
 
 
-    ~this()
+    override void dispose()
     {
         logln("HipAudioSource Killed!");
         alDeleteSources(1, &id);

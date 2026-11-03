@@ -115,8 +115,13 @@ Call `dub -c script -- path/to/project` dub -c script requires that argument.");
         import hip.error.handler;
         if(lib != null)
         {
+            import hip.console.log;
+            hiplog("Releasing Dynamic Library: ", lib);
             if(!dynamicLibraryRelease(lib))
                 return ErrorHandler.showErrorMessage("Could not unload the dll ", tempDll);
+            else
+                lib = null;
+            hiplog("After Release: ", lib);
             
             foreach(remFile; [tempDll, tempPdb]) 
             {
@@ -132,6 +137,8 @@ Call `dub -c script -- path/to/project` dub -c script requires that argument.");
                     ErrorHandler.showErrorMessage("Could not remove file ", remFile);
                 }
             }
+            hiplog("No Error: ", lib);
+            
         }
     }
 }

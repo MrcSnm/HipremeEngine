@@ -151,6 +151,7 @@ class Hip_GL3Renderer : IHipRendererImpl
             window.startOpenGLContext();
         }
         isGLContextAlive = true;
+        import hip.console.report;
         version(Have_bindbc_opengl)
         {
             hiplog("Loading OpenGL functions.");
@@ -164,11 +165,11 @@ class Hip_GL3Renderer : IHipRendererImpl
             {
                 ErrorHandler.showErrorMessage("Loading OpenGL", "OpenGL version is different than expected");
             }
-            rawlog(SmallString("BindBC OpenGL Version: ", ver).toString);
+            reportRow("OpenGL", "BindBC Support", ver);
         }
-        rawlog(SmallString("GL Renderer: ",  glGetString(GL_RENDERER)).toString);
-        rawlog(SmallString("GL Version: ",  glGetString(GL_VERSION)).toString);
-        rawlog(SmallString("GLSL Version: ",  glGetString(GL_SHADING_LANGUAGE_VERSION)).toString);
+        reportRow("OpenGL", "Renderer", glGetString(GL_RENDERER));
+        reportRow("OpenGL", "Version", glGetString(GL_VERSION));
+        reportRow("OpenGL", "GLSL Version", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
         // setColor();
         HipRenderer.rendererType = HipRendererType.GL3;

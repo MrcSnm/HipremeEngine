@@ -10,5 +10,5 @@ void initInput()
     setHipInput((cast(inputFn)_loadSymbol(_dll, "HipInputAPI"))());
     setHipInputListener((cast(inputListenerFn)_loadSymbol(_dll, "HipInputListenerAPI"))());
     import hip.api.console;
-    log("HipengineAPI: Initialized Input");
+    verbose("HipengineAPI: Initialized Input");
 }

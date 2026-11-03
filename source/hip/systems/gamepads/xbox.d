@@ -68,7 +68,7 @@ void initXboxGamepadInput()
     __gshared bool hasInit = false;
     if(hasInit)
         return;
-    version(Windows)
+    version(UWP)
     {
         string[] errors = dllImportVariables!(
             HipGamepadCheckConnectedGamepads,

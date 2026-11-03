@@ -27,7 +27,7 @@ class HipAudioImpl : IHipAudioPlayer
     int  optimalBufferSize = 4096,
     int optimalSampleRate = 44_100)
     {
-        import hip.console.log;
+        import hip.console.report;
         ErrorHandler.startListeningForErrors("HipremeAudio initialization");
         _hasInitializedAudio = true;
         this.is3D = is3D;
@@ -37,12 +37,11 @@ class HipAudioImpl : IHipAudioPlayer
         this.optimalBufferSize  = optimalBufferSize;
         this.optimalSampleRate  = optimalSampleRate;
 
-        loglnInfo("Hipreme Audio Started: ", implementation,
-            "\nPro Audio: ", hasProAudio,
-            "\nLow Latency: ", hasLowLatencyAudio,
-            "\nOptimal Buffer Size: ", optimalBufferSize,
-            "\nOptimal Sample Rate: ", optimalSampleRate
-        );
+        reportRow("audio", "requested", implementation);
+        reportRow("audio", "pro audio", hasProAudio);
+        reportRow("audio", "low latency", hasLowLatencyAudio);
+        reportRow("audio", "optimal buffer", optimalBufferSize);
+        reportRow("audio", "optimal rate", optimalSampleRate);
         return ErrorHandler.stopListeningForErrors();
     }
     bool pause(AHipAudioSource src)
@@ -130,8 +129,14 @@ class HipAudioImpl : IHipAudioPlayer
                 static if(HasXAudio2)
                 {
                     import hip.audio.backend.xaudio.player;
-                    loglnInfo("Initializing XAudio2 with audio config ", AudioConfig.musicConfig);
-                    return new HipXAudioPlayer(AudioConfig.musicConfig);
+                    import hip.console.report;
+                    AudioConfig cfg = AudioConfig.musicConfig;
+                    reportRow("audio", "backend", "XAudio2");
+                    reportRow("audio", "sample rate", cfg.sampleRate);
+                    reportRow("audio", "format", cfg.format);
+                    reportRow("audio", "channels", cfg.channels);
+                    reportRow("audio", "buffer", cfg.bufferSize);
+                    return new HipXAudioPlayer(cfg);
                 }
                 else 
                 {

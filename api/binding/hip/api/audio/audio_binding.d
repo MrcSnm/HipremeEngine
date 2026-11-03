@@ -7,6 +7,6 @@ void initAudio()
     alias fn = extern(C) IHipAudioPlayer function();
     setIHipAudioPlayer((cast(fn)_loadSymbol(_dll, "HipAudioPlayerAPI"))());
     import hip.api.console;
-    log("HipengineAPI: Initialized Audio");
+    verbose("HipengineAPI: Initialized Audio");
 }
 public import hip.api.audio;

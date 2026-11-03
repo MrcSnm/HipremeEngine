@@ -64,6 +64,7 @@ __gshared HipInterpreterEntry interpreterEntry;
 
 __gshared string[] rt_options = ["gcopt=profile:1"];
 __gshared string[] arguments;
+__gshared long hipStartupTimeMs;
 
 
 /**
@@ -143,8 +144,9 @@ version(Standalone)
 static void initEngine(bool audio3D = false)
 {
 	import hip.internal_configuration;
+	import hip.console.report;
 	Console.install(ActivePlatform, getPlatformPrintFunction());
-	loglnInfo("Console installed for ", ActivePlatform);
+	reportRow("engine", "console", ActivePlatform);
 	HipFS.initializeAbsolute();
 	HipremeHandleArguments();
 
@@ -157,7 +159,7 @@ static void initEngine(bool audio3D = false)
 		projPath = buildNormalizedPath(HipGetEntryFilePath(), "..", "..", ".."); //source/gamescript/entry.d
 	}
 	setIHipFS(HipFS, projPath);
-	loglnInfo("HipFS installed at path ", fsInstallPath);
+	reportRow("engine", "filesystem", fsInstallPath);
 
 	import hip.bind.dependencies;
 	loadEngineDependencies();
@@ -172,11 +174,14 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	import hip.data.ini;
 	import hip.math.random;
 	import hip.util.time;
+	import hip.console.report;
 	import backtraced;
 	import hip.hiprenderer:PreInitializeHipRenderer, HipRenderer;
 
 	backtraced_Register();
 	HipTime.initialize();
+	hipStartupTimeMs = HipTime.getCurrentTimeAsMsLong();
+
 	initEngine(true);
 	Random.initialize();
 
@@ -185,6 +190,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	PreInitializeHipRenderer();
 	PreInitializeHipAudio();
 
+	long startupTimer = HipTime.getCurrentTimeAsMsLong();
 	version(Android)
 	{
 		bool hasProFeature = HipAndroid.javaCall!(bool, "hasProFeature");
@@ -201,7 +207,9 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	}
 	else
 		HipAudio.initialize(getAudioImplementationForOS);
+	reportRow("timings", "audio", HipTime.getCurrentTimeAsMsLong() - startupTimer, " ms");
 
+	startupTimer = HipTime.getCurrentTimeAsMsLong();
 	version(InitExternal)
 	{
 		import hip.console.log;
@@ -224,6 +232,7 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 		HipFS.absoluteReadText("renderer.conf", confFile); //Ignore return, renderer can handle no conf.
 		HipRenderer.initialize(confFile, "renderer.conf");
 	}
+	reportRow("timings", "renderer", HipTime.getCurrentTimeAsMsLong() - startupTimer, " ms");
 	loadDefaultAssets((){gameInitialize();}, (err)
 	{
 		loglnError("Could not load default assets! ", err);
@@ -236,7 +245,7 @@ version(WebAssembly) extern(C) void WasmStartGameLoop();
 void gameInitialize()
 {
 	import hip.console.log;
-	loglnInfo("Initializing Asset Manager");
+	hiplog("Initializing Asset Manager");
 	HipAssetManager.initialize();
 	hip.global.gamedef.sys = new GameSystem(FRAME_TIME);
 
@@ -305,6 +314,13 @@ static if(HasMain)
 	export int main(string[] args)
 	{
 		arguments = args;
+		import hip.console.log : setVerboseLogging;
+		import core.stdc.stdlib : getenv;
+		if(getenv("HIP_VERBOSE") !is null)
+			setVerboseLogging(true);
+		foreach(arg; args)
+			if(arg == "--verbose")
+				setVerboseLogging(true);
 		int[2] windowSize = [-1, -1];
 		version(WebAssembly)
 		{
@@ -371,7 +387,8 @@ version(Desktop)
 				Thread.sleep(dur!"msecs"(sleepTime));
 			}
 			isUpdating = HipremeUpdate(g_deltaTime);
-			HipremeRender();
+			if(isUpdating)
+				HipremeRender();
 			g_deltaTime = (cast(float)(HipTime.getCurrentTime() - initTime) / 1.nsecs); //As seconds
 			gFrameAllocator.reset();
 		}
@@ -399,6 +416,16 @@ export extern(System) void HipremeRender()
 	import hip.bind.interpreters;
 	import hip.graphics.g2d.renderer2d;
 	import hip.hiprenderer.renderer;
+
+	static bool firstFrame = true;
+	if(firstFrame)
+	{
+		firstFrame = false;
+		import hip.util.time;
+		import hip.console.report;
+		reportRow("timings", "first frame", HipTime.getCurrentTimeAsMsLong() - hipStartupTimeMs, " ms");
+		flushReport();
+	}
 	
 	HipRenderer.begin();
 	beginRender2D(0);
@@ -414,7 +441,10 @@ export extern(System) void HipremeDestroy()
 {
 	logln("Destroying HipremeEngine");
 	destroyEngine();
-	static if(ManagesMainDRuntime)
+	// Only terminate the runtime when the engine owns it (no D `main`).
+	// On desktop/script builds druntime is managed by main; calling rt_term()
+	// here tears down the GC while still inside the game loop and can hang.
+	static if(ManagesMainDRuntime && !HasMain)
 	{
 		import core.runtime;
 		rt_term();
@@ -425,6 +455,13 @@ export extern(System) void logMessage(string message)
 {
 	import hip.console.log;
 	rawlog(message);
+}
+
+export extern(System) void verboseMessage(string message)
+{
+	import hip.console.console : Console;
+	if(Console.DEFAULT !is null)
+		Console.DEFAULT.hipLog(message, verboseLogging);
 }
 
 version(UWP)

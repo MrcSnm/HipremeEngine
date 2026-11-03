@@ -43,7 +43,6 @@ version(WindowsNative)
             case WM_CLOSE:
                 if(onWindowClosed != null)
                     onWindowClosed();
-                DestroyWindow(hwnd);
                 break;
             case WM_DESTROY:
                 PostQuitMessage(0);
@@ -323,7 +322,8 @@ version(WindowsNative)
         wc.hInstance = hInstance; //Application handle
         wc.hIcon = LoadIcon(null, IDI_APPLICATION); //Big icon
         wc.hCursor = LoadCursor(null, IDC_ARROW); //Cursor
-        wc.hbrBackground = cast(HBRUSH)(COLOR_WINDOW); //Background brush
+        //Paint black while the engine is still initializing before the first frame.
+        wc.hbrBackground = cast(HBRUSH)GetStockObject(BLACK_BRUSH);
         wc.lpszMenuName = null; //Name of menu resource
         wc.lpszClassName = winClassName; //Name to identify this class of windows
 

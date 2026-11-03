@@ -9,7 +9,7 @@ void initGlobalAssets()
     loadClassFunctionPointers!HipGlobalAssetsBinding;
     import hip.api.console;
     setImageDecoderProvider(getDecoder);
-    log("HipEngineAPI: Initialized Global Assets");
+    verbose("HipEngineAPI: Initialized Global Assets");
 }
 class HipGlobalAssetsBinding
 {

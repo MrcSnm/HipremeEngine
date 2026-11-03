@@ -87,13 +87,18 @@ class HipTime
 
     private __gshared ulong startTime;
     private __gshared ulong ticksPerSecond;
+    private __gshared bool initialized;
     protected __gshared long[string] performanceMeasurement;
 
     static void initialize()
     {
         ticksPerSecond = getSystemTicksPerSecond();
         startTime =  getSystemTime();
+        initialized = startTime != 0;
     }
+
+    ///False when the platform has no usable time source yet.
+    static bool isInitialized() nothrow {return initialized;}
 
     static long getCurrentTime() nothrow
     {

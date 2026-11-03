@@ -8,5 +8,5 @@ void initFS(string projectPath)
     projectPath = buildNormalizedPath(projectPath, "..", "..", ".."); //source/gamescript/entry.d
     setIHipFS((cast(fs)_loadSymbol(_dll, "HipFileSystemAPI"))(), projectPath);
     import hip.api.console;
-    log("HipEngine API: Initialized FS for project: "~projectPath);
+    verbose("HipEngine API: Initialized FS for project: "~projectPath);
 }

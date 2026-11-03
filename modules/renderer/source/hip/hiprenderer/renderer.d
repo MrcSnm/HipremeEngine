@@ -162,6 +162,8 @@ class HipRendererImplementation : IHipRenderer
         ErrorHandler.startListeningForErrors("Renderer initialization");
         if(config != null)
             currentConfig = *config;
+        import hip.console.report;
+        reportRow("renderer", "backend", rendererType);
         currentConfig.logConfiguration();
         rendererImpl = impl;
         window = createWindow(width, height);
@@ -448,13 +450,12 @@ export extern(System) IHipRenderer HipRendererAPI()
 
 void logConfiguration(HipRendererConfig config)
 {
-    import hip.console.log;
+    import hip.console.report;
     with(config)
     {
-        loglnInfo("Starting HipRenderer with configuration: ",
-        "\nMultisamplingLevel: ", multisamplingLevel,
-        "\nBufferingCount: ", bufferingCount,
-        "\nFullscreen: ", fullscreen,
-        "\nVsync: ", vsync? "activated" : "deactivated");
+        reportRow("renderer", "multisampling", multisamplingLevel);
+        reportRow("renderer", "buffering", bufferingCount);
+        reportRow("renderer", "fullscreen", fullscreen);
+        reportRow("renderer", "vsync", vsync ? "on" : "off");
     }
 }

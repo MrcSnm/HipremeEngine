@@ -283,10 +283,34 @@ class Console
             logCounter--;
         }
     }
-    void hipLog(string msg)
+    __gshared ulong logSequence;
+
+    void hipLog(string msg, bool print = true)
     {
-        lines~= msg;
-        _log(lines[$-1]);
+        import hip.util.time : HipTime;
+        // Elapsed since HipTime.initialize (engine boot). If the platform has no
+        // usable time source, fall back to a sequence number so ordering is kept.
+        logSequence++;
+        string stamped = HipTime.isInitialized()
+            ? BigString("[", HipTime.getCurrentTimeAsMsLong(), " ms] ", msg).toString.dup
+            : BigString("[#", logSequence, "] ", msg).toString.dup;
+
+        // Keep the last maxLines verbose lines for crash diagnostics, even when
+        // they are hidden from the console.
+        lines ~= stamped;
+        if(lines.length > maxLines)
+            lines = lines[$-maxLines..$];
+        if(print)
+            _log(stamped);
+    }
+
+    ///Prints the buffered verbose lines. Meant for the crash handler.
+    void dumpLogs()
+    {
+        import core.stdc.stdio : fprintf, stderr;
+        foreach(line; lines)
+            if(line.length != 0)
+                fprintf(stderr, "%.*s\n", cast(int)line.length, line.ptr);
     }
     
     

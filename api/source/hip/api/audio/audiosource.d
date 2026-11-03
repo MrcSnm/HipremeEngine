@@ -92,6 +92,8 @@ abstract class AHipAudioSource
     abstract void pullStreamData();
     abstract void* getFreeBuffer();
 
+    void dispose(){}
+
 
     
 

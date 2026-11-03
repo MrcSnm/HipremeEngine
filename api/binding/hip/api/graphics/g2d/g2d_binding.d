@@ -20,7 +20,7 @@ void initG2D()
     import hip.api.internal;
     import hip.api.console;
     loadClassFunctionPointers!HipG2DBinding;
-    log("HipengineAPI: Initialized G2D");
+    verbose("HipengineAPI: Initialized G2D");
 }
 
 class HipG2DBinding

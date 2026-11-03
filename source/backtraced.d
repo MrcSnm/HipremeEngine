@@ -116,6 +116,10 @@ version (Windows)
         version(DigitalMars) ///DMD can't print the stack trace.
         {
             fprintf(stderr, "%.*s\n", cast(int)msg.length, msg.ptr);
+            // Dump the hidden verbose trace so the last engine steps survive the crash.
+            import hip.console.console : Console;
+            if(Console.DEFAULT !is null)
+                Console.DEFAULT.dumpLogs();
             printStackTrace();
         }
         else

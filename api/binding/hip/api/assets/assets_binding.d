@@ -11,7 +11,7 @@ void initAssetManager()
     import hip.api.internal;
     loadClassFunctionPointers!(HipAssetsBinding, UseExportedClass.Yes, "HipAssetManager");
     import hip.api.console;
-    log("HipengineAPI: Initialized AssetManager");
+    verbose("HipengineAPI: Initialized AssetManager");
 }
 
 

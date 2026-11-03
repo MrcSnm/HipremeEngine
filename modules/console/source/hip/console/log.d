@@ -64,6 +64,10 @@ private string _formatPrettyFunction(string f) @nogc
 }
 
 
+///Verbose engine traces are hidden by default but kept in a ring for crashes.
+__gshared bool verboseLogging = false;
+void setVerboseLogging(bool enabled = true){verboseLogging = enabled;}
+
 /**
 *   hiplog is a special function and should be used only within the engine for documentation.
 *   It generates less data by not taking the function name and simplifying the read load.
@@ -74,9 +78,9 @@ ulong line = __LINE__)
 {
     import hip.config.opts;
     static if(HIP_TRACK_HIPLOG)
-        Console.DEFAULT.hipLog(BigString("HIP: ", a, " [[", file, ":", line, "]]").toString);
+        Console.DEFAULT.hipLog(BigString("HIP: ", a, " [[", file, ":", line, "]]").toString, verboseLogging);
     else
-        Console.DEFAULT.hipLog(BigString("HIP: ", a).toString);
+        Console.DEFAULT.hipLog(BigString("HIP: ", a).toString, verboseLogging);
 }
 
 

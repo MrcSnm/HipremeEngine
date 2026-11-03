@@ -67,10 +67,4 @@ class HipAVAudioSource : HipAudioSource
         return false;
     }
     override bool play_streamed() => false;
-
-
-    ~this()
-    {
-
-    }
 }
