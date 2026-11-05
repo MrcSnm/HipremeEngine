@@ -29,8 +29,8 @@ import hip.game.shader;
 final class HipVertexArrayObject
 {
     import hip.util.data_structures;
-    IHipVertexArrayImpl VAO;
-    IHipRendererBuffer  EBO;
+    HipVertexArrayImpl VAO;
+    HipRendererBuffer  EBO;
     HipVertexAttributeInfo[] infos;
 
     bool isBonded;
@@ -62,7 +62,7 @@ final class HipVertexArrayObject
     /**
     *   Sets the index buffer. Mainly useful for sharing multiple index buffer (quads and etc)
     */
-    void setIndexBuffer(IHipRendererBuffer buffer)
+    void setIndexBuffer(HipRendererBuffer buffer)
     {
         this.EBO = buffer;
     }

@@ -305,7 +305,7 @@ class HipMTLRenderer : IHipRendererImpl
         return new HipMTLFramebuffer();
     }
 
-    public IHipVertexArrayImpl createVertexArray()
+    public HipVertexArrayImpl createVertexArray()
     {
         return new HipMTLVertexArray(device, this);
     }
@@ -315,11 +315,11 @@ class HipMTLRenderer : IHipRendererImpl
         return new HipMTLTexture(device,cmdQueue, this, usage, type);
     }
 
-    public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
+    public HipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {
         return new HipMTLBuffer(device, cmdQueue, size, usage, type);
     }
-    public IHipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
+    public HipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
     {
         return new HipMTLBuffer(device, cmdQueue, data, usage, type);
     }

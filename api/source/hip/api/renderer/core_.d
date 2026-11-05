@@ -149,9 +149,9 @@ interface IHipRendererImpl
     public HipShaderProgram createShader();
     size_t function(ShaderTypes shaderType, UniformType uniformType) getShaderVarMapper();
     public IHipFrameBuffer createFrameBuffer(int width, int height, TextureFormat format = TextureFormat.rgb8, DepthFormat depth = DepthFormat.depth16);
-    public IHipVertexArrayImpl  createVertexArray();
-    public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type);
-    public IHipRendererBuffer createBuffer(const(ubyte)[], HipResourceUsage usage, HipRendererBufferType type);
+    public HipVertexArrayImpl  createVertexArray();
+    public HipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type);
+    public HipRendererBuffer createBuffer(const(ubyte)[], HipResourceUsage usage, HipRendererBufferType type);
     public IHipTexture  createTexture(HipResourceUsage usage, HipTextureType type);
     public int queryMaxSupportedPixelShaderTextures();
     public void setColor(ubyte r = 255, ubyte g = 255, ubyte b = 255, ubyte a = 255);
@@ -187,7 +187,7 @@ interface IHipRendererImpl
     void setErrorCheckingEnabled(bool enable = true);
     size_t function(ShaderTypes shaderType, UniformType uniformType) getShaderVarMapper();
     public IHipFrameBuffer createFrameBuffer(int width, int height);
-    public IHipRendererBuffer createBuffer(const(ubyte)[], HipResourceUsage usage, HipRendererBufferType type);
+    public HipRendererBuffer createBuffer(const(ubyte)[], HipResourceUsage usage, HipRendererBufferType type);
     public IHipTexture  createTexture(HipResourceUsage usage, HipTextureType type);
     public int queryMaxSupportedPixelShaderTextures();
     public bool setWindowMode(HipWindowMode mode);
@@ -205,7 +205,7 @@ interface IHipRenderer
     HipRendererType getType();
     HipRendererInfo getInfo();
     bool shouldTranspose();
-    IHipRendererBuffer createQuadIndexBuffer(size_t quadsCount, HipResourceUsage usage);
+    HipRendererBuffer createQuadIndexBuffer(size_t quadsCount, HipResourceUsage usage);
     IHipFrameBuffer newFrameBuffer(int width, int height, TextureFormat format = TextureFormat.rgb8, DepthFormat depth = DepthFormat.depth16);
     /**
     * Fixes the matrix order based on the config and renderer.
@@ -222,8 +222,8 @@ interface IHipRenderer
     IHipTexture getTextureImplementation(HipResourceUsage usage = HipResourceUsage.Immutable, HipTextureType type = HipTextureType.Texture2D);
     Viewport getCurrentViewport() @nogc;
     void setViewport(Viewport v);
-    IHipVertexArrayImpl createVertexArray();
-    IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type);
+    HipVertexArrayImpl createVertexArray();
+    HipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type);
     public HipShaderProgram createShader();
     void setRendererMode(HipRendererMode);
     HipRendererMode getMode();
@@ -238,7 +238,7 @@ interface IHipRenderer
     HipDepthTestingFunction getDepthTestingFunction() const;
     bool isDepthTestingEnabled() const;
     void setDepthTestingEnabled(bool bEnable);
-    IHipRendererBuffer getQuadIndexBuffer(size_t quadsCount);
+    HipRendererBuffer getQuadIndexBuffer(size_t quadsCount);
     void setDepthTestingFunction(HipDepthTestingFunction);
     void setStencilTestingEnabled(bool bEnable);
     void setStencilTestingMask(uint mask);

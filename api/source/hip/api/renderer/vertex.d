@@ -1,5 +1,6 @@
 module hip.api.renderer.vertex;
 import hip.api.renderer.shader;
+public import hip.api.resource;
 
 // version(Android){alias index_t = ushort;}
 // else{alias index_t = uint;}
@@ -91,7 +92,7 @@ struct HipVertexAttributeInfo
     ///Is that vertex attribute info used as instanced buffer.
     bool isInstanced;
     ///Buffer associated with this vertex info
-    IHipRendererBuffer vbo;
+    HipRendererBuffer vbo;
     ///Accumulated size of the vertex data
     uint vboStride;
     ///How many data slots it uses, for instance, vec3 will count +3. Unused?
@@ -107,9 +108,11 @@ enum HipRendererBufferType : ubyte
     uniform
 }
 
-interface IHipRendererBuffer
+abstract class HipRendererBuffer : HipResource
 {
-    HipRendererBufferType type() const;
+    protected HipRendererBufferType _type;
+
+    HipRendererBufferType type() const { return _type; }
     void bind();
     void unbind();
     void setData(const void[] data);
@@ -122,12 +125,11 @@ interface IHipRendererBuffer
      * This API is only necessary when dealing with D3D. The buffer is automatically mapped when getBuffer is called.
      */
     void unmapBuffer();
-    void updateData(int offset, const void[] data);
-    void dispose();
+    abstract void updateData(int offset, const void[] data);
 }
 
 
-interface IHipVertexArrayImpl
+abstract class HipVertexArrayImpl : HipResource
 {
     void bind();
     void unbind();
@@ -137,7 +139,7 @@ interface IHipVertexArrayImpl
     * Metal needs a ShaderProgram for cerating a pipelinestate
     */
     void createInputLayout(
-        HipVertexAttributeInfo[] info, IHipRendererBuffer ebo, HipShaderProgram shaderProgram
+        HipVertexAttributeInfo[] info, HipRendererBuffer ebo, HipShaderProgram shaderProgram
     );
 }
 

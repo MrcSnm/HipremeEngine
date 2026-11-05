@@ -59,7 +59,7 @@ class Mesh
      * Params:
      *   indexBuffer = The index buffer to be shared
      */
-    public void setIndices(IHipRendererBuffer indexBuffer)
+    public void setIndices(HipRendererBuffer indexBuffer)
     {
         this.indices = null;
         this.vao.setIndexBuffer(indexBuffer);

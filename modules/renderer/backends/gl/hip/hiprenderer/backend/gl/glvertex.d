@@ -37,10 +37,10 @@ private int getGLAttributeType(HipAttributeType _t)
 }
 
 //Used as a wrapper 
-final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
+final class Hip_GL_VertexArrayObject : HipVertexArrayImpl
 {
     import hip.util.data_structures;
-    IHipRendererBuffer ebo;
+    HipRendererBuffer ebo;
     HipVertexAttributeInfo[] vaoInfos;
 
     alias vaoBinder = DelayedBindable!(Hip_GL_VertexArrayObject, NeedsUnbind, BindReplacesUnbind, 1,
@@ -91,9 +91,9 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
         }
     );
 
-    void bind() {vaoBinder.bind(this);}
-    void unbind(){vaoBinder.unbind(this);}
-    void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, HipShaderProgram p)
+    override void bind() {vaoBinder.bind(this);}
+    override void unbind(){vaoBinder.unbind(this);}
+    override void createInputLayout(HipVertexAttributeInfo[] attInfos, HipRendererBuffer ebo, HipShaderProgram p)
     {
         import hip.hiprenderer.backend.gl.glshader;
         HipGLShaderProgram glProg = cast(HipGLShaderProgram)p;
@@ -111,9 +111,10 @@ final class Hip_GL_VertexArrayObject : IHipVertexArrayImpl
             // glCall(() => glBindAttribLocation(glProg.program, i, vao.info.name.ptr)); That strategy does not work since the shader is already linked at that stage...
         }
     }
+    override void dispose(){}
 }
 
-static if (OpenGLHasVAOSupport) final class Hip_GL3_VertexArrayObject : IHipVertexArrayImpl
+static if (OpenGLHasVAOSupport) final class Hip_GL3_VertexArrayObject : HipVertexArrayImpl
 {
     uint vao;
     import hip.util.data_structures;
@@ -125,10 +126,10 @@ static if (OpenGLHasVAOSupport) final class Hip_GL3_VertexArrayObject : IHipVert
     {
         glCall(() => glGenVertexArrays(1, &this.vao));
     }
-    void bind(){vBinder.bind(this);}
-    void unbind(){vBinder.unbind(this);}
+    override void bind(){vBinder.bind(this);}
+    override void unbind(){vBinder.unbind(this);}
 
-    void createInputLayout(HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, HipShaderProgram p)
+    override void createInputLayout(HipVertexAttributeInfo[] attInfos, HipRendererBuffer ebo, HipShaderProgram p)
     {
         glCall(() => glBindVertexArray(this.vao));
         ebo.bind();
@@ -167,5 +168,5 @@ static if (OpenGLHasVAOSupport) final class Hip_GL3_VertexArrayObject : IHipVert
         foreach(i, info; attInfos)
             info.vbo.unbind();
     }
-    void dispose(){glCall(() => glDeleteVertexArrays(1, &this.vao));}
+    override void dispose(){glCall(() => glDeleteVertexArrays(1, &this.vao));}
 }

@@ -27,18 +27,17 @@ private struct HipRendererResources
 {
     IHipTexture[] textures;
     HipShaderProgram[] shaders;
-    IHipVertexArrayImpl[]  vertexArrays;
-    IHipRendererBuffer[] buffers;
+    HipVertexArrayImpl[]  vertexArrays;
+    HipRendererBuffer[] buffers;
 
     void dispose()
     {
-        foreach(buffer; res.buffers)
+        //Textures are managed by the assetmanager.
+        foreach(buffer; buffers)
             buffer.dispose();
-        foreach(texture; res.textures)
-            texture.dispose();
-        foreach(vertexArray; res.vertexArrays)
+        foreach(vertexArray; vertexArrays)
             vertexArray.dispose();
-        foreach(shader; res.shaders)
+        foreach(shader; shaders)
             shader.dispose();
         textures.length = shaders.length = vertexArrays.length = buffers.length = 0;
     }
@@ -66,7 +65,7 @@ class HipRendererImplementation : IHipRenderer
     protected bool depthTestingEnabled;
     protected HipDepthTestingFunction currentDepthTestFunction;
 
-    protected IHipRendererBuffer quadIndexBuffer;
+    protected HipRendererBuffer quadIndexBuffer;
 
     private bool isInRenderPass = false;
     private bool viewportDirty = false;
@@ -135,7 +134,7 @@ class HipRendererImplementation : IHipRenderer
     *   If the quadsCount is bigger than the existing one, throws since
     *   it probably can be set at compile time and it is easier to control like that
     */
-    public IHipRendererBuffer createQuadIndexBuffer(size_t quadsCount, HipResourceUsage usage)
+    public HipRendererBuffer createQuadIndexBuffer(size_t quadsCount, HipResourceUsage usage)
     {
         import hip.util.array;
         import core.memory : GC;
@@ -152,7 +151,7 @@ class HipRendererImplementation : IHipRenderer
             output[index+5] = cast(index_t)(i*4+0);
             index+=6;
         }
-        IHipRendererBuffer ret = createBuffer(cast(ubyte[])output, usage, HipRendererBufferType.index);
+        HipRendererBuffer ret = createBuffer(cast(ubyte[])output, usage, HipRendererBufferType.index);
         GC.free(output.ptr);
         return ret;
     }
@@ -162,7 +161,7 @@ class HipRendererImplementation : IHipRenderer
     *   If the quadsCount is bigger than the existing one, throws since
     *   it probably can be set at compile time and it is easier to control like that
     */
-    public IHipRendererBuffer getQuadIndexBuffer(size_t quadsCount)
+    public HipRendererBuffer getQuadIndexBuffer(size_t quadsCount)
     {
         if(!quadIndexBuffer)
             quadIndexBuffer = createQuadIndexBuffer(quadsCount, HipResourceUsage.Immutable);
@@ -288,13 +287,13 @@ class HipRendererImplementation : IHipRenderer
     {
         return rendererImpl.createFrameBuffer(width, height, format, depth);
     }
-    public IHipVertexArrayImpl  createVertexArray()
+    public HipVertexArrayImpl  createVertexArray()
     {
         res.vertexArrays~= rendererImpl.createVertexArray();
         return res.vertexArrays[$-1];
     }
 
-    public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
+    public HipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {
         res.buffers~= rendererImpl.createBuffer(size, usage, type);
         return res.buffers[$-1];
@@ -304,7 +303,7 @@ class HipRendererImplementation : IHipRenderer
         res.shaders~= rendererImpl.createShader();
         return res.shaders[$-1];
     }
-    public IHipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
+    public HipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
     {
         res.buffers~= rendererImpl.createBuffer(data, usage, type);
         return res.buffers[$-1];

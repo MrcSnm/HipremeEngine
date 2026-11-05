@@ -393,7 +393,7 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         return new Hip_D3D11_FrameBuffer(width,height);
     }
-    public IHipVertexArrayImpl  createVertexArray()
+    public HipVertexArrayImpl  createVertexArray()
     {
         return new Hip_D3D11_VertexArrayObject();
     }
@@ -401,11 +401,11 @@ class Hip_D3D11_Renderer : IHipRendererImpl
     {
         return new Hip_D3D11_Texture(usage, type);
     }
-    public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
+    public HipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {
         return new HipD3D11Buffer(size, usage, type);
     }
-    public IHipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
+    public HipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
     {
         return new HipD3D11Buffer(data, usage, type);
     }

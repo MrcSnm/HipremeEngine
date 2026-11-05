@@ -8,7 +8,7 @@ import hip.hiprenderer.backend.metal.mtlrenderer;
 import hip.hiprenderer.backend.metal.mtlshader;
 public import hip.hiprenderer.backend.metal.mtlbuffer;
 
-final class HipMTLVertexArray : IHipVertexArrayImpl
+final class HipMTLVertexArray : HipVertexArrayImpl
 {
     MTLVertexDescriptor descriptor;
     HipMTLBuffer iBuffer;
@@ -26,14 +26,14 @@ final class HipMTLVertexArray : IHipVertexArrayImpl
         this.mtlRenderer = mtlRenderer;
     }
 
-    void dispose()
+    override void dispose()
     {
         foreach(b; buffers)
             b.release();
         descriptor.release();
     }
 
-    void bind()
+    override void bind()
     {
         foreach(i, att; attributes)
         {
@@ -41,14 +41,14 @@ final class HipMTLVertexArray : IHipVertexArrayImpl
         }
         mtlRenderer.bind(this, null);
     }
-    void unbind(){mtlRenderer.unbind(this, null);}
+    override void unbind(){mtlRenderer.unbind(this, null);}
     /**
      * HipMTLRenderer will ALWAYS assume that:
      *  Buffer 0 is for uniforms
      *  Buffer 1 is for vertex attributes
      */
-    void createInputLayout(
-        HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo,
+    override void createInputLayout(
+        HipVertexAttributeInfo[] attInfos, HipRendererBuffer ebo,
         HipShaderProgram shaderProgram
     )
     {

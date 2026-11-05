@@ -29,10 +29,10 @@ import hip.hiprenderer.backend.d3d.d3dbuffer;
 
 
 
-final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
+final class Hip_D3D11_VertexArrayObject : HipVertexArrayImpl
 {
     ID3D11InputLayout inputLayout;
-    IHipRendererBuffer ebo;
+    HipRendererBuffer ebo;
     HipVertexAttributeInfo[] attInfos;
 
     ID3D11Buffer[] vboBuffers;
@@ -41,14 +41,14 @@ final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
     
 
     this(){}
-    void bind()
+    override void bind()
     {
         assert(inputLayout !is null, "D3D11 Input Layout wasn't created yet. Don't bind before calling createInputLayout");
         d3dCall(_hip_d3d_context.IASetInputLayout(inputLayout));
         d3dCall(_hip_d3d_context.IASetVertexBuffers(0u, cast(UINT)vboBuffers.length, vboBuffers.ptr, strides.ptr, offsets.ptr));
         this.ebo.bind();
     }
-    void unbind()
+    override void unbind()
     {
         if(ebo is null)
             return;
@@ -57,8 +57,8 @@ final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
             info.vbo.unbind();
         ebo.unbind();
     }
-    void createInputLayout(
-        HipVertexAttributeInfo[] attInfos, IHipRendererBuffer ebo, HipShaderProgram shaderProgram
+    override void createInputLayout(
+        HipVertexAttributeInfo[] attInfos, HipRendererBuffer ebo, HipShaderProgram shaderProgram
     )
     {
         if(ErrorHandler.assertErrorMessage(shaderProgram !is null, "D3D11 VAO Error", "Error at creating input layout"))
@@ -102,7 +102,10 @@ final class Hip_D3D11_VertexArrayObject : IHipVertexArrayImpl
         vs.blob.GetBufferPointer(), vs.blob.GetBufferSize(), &inputLayout));
         import core.memory;
         GC.free(descs.ptr);
-
+    }
+    override void dispose()
+    {
+        inputLayout.Release();
     }
 }
 

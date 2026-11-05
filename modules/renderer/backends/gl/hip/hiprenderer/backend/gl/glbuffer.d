@@ -32,17 +32,14 @@ private int getGLAccess(HipResourceAccess access)
     }
 }
 
-final class Hip_GL3_Buffer : IHipRendererBuffer
+final class Hip_GL3_Buffer : HipRendererBuffer
 {
     size_t size;
     uint handle;
     immutable int usage;
     int glType;
     int glAccess;
-    immutable HipRendererBufferType _type;
-
-    HipRendererBufferType type() const { return _type; }
-
+    
     private this(HipResourceUsage usage, HipRendererBufferType type, HipResourceAccess access = HipResourceAccess.write)
     {
         this.usage = getGLUsage(usage);
@@ -70,22 +67,22 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
         glCall(() => glBufferData(glType, size, data.ptr, this.usage));
         unbind();
     }
-    void bind()
+    override void bind()
     {
         glCall(()=>glBindBuffer(glType, handle));
     }
-    void unbind()
+    override void unbind()
     {
         glCall(()=>glBindBuffer(glType, 0));
     }
-    void setData(const(void)[] data)
+    override void setData(const(void)[] data)
     {
         this.size = data.length;
         bind();
         glCall(() => glBufferData(glType, data.length, cast(void*)data.ptr, this.usage));
     }
 
-    ubyte[] getBuffer()
+    override ubyte[] getBuffer()
     {
         static if(OpenGLHasBufferMapSupport)
         {
@@ -96,7 +93,7 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
         else
             return null;
     }
-    void unmapBuffer()
+    override void unmapBuffer()
     {
         static if(OpenGLHasBufferMapSupport)
         {
@@ -105,7 +102,7 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
             glUnmapBuffer(glType);
         }
     }
-    void updateData(int offset, const(void)[] data)
+    override void updateData(int offset, const(void)[] data)
     {
         import hip.error.handler;
         import hip.util.conv;
@@ -120,7 +117,7 @@ final class Hip_GL3_Buffer : IHipRendererBuffer
             glCall(() => glBufferSubData(glType, offset, data.length, data.ptr));
         }
     }
-    void dispose(){glCall(() => glDeleteBuffers(1, &handle));}
+    override void dispose(){glCall(() => glDeleteBuffers(1, &handle));}
 }
 
 

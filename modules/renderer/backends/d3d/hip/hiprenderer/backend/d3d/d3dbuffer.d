@@ -10,14 +10,11 @@ import directx.d3d11;
 * managed array, but you're able to get it by using the private name, for flexibility.
 */
 
-final class HipD3D11Buffer : IHipRendererBuffer
+final class HipD3D11Buffer : HipRendererBuffer
 {
     immutable D3D11_USAGE usage;
     ID3D11Buffer buffer;
     ulong size;
-    HipRendererBufferType _type;
-
-    HipRendererBufferType type() const { return _type; }
 
     this(ulong size, HipResourceUsage usage, HipRendererBufferType type)
     {
@@ -35,7 +32,7 @@ final class HipD3D11Buffer : IHipRendererBuffer
         createBuffer(data);
     }
 
-    void bind()
+    override void bind()
     {
         final switch(type)
         {
@@ -49,7 +46,7 @@ final class HipD3D11Buffer : IHipRendererBuffer
                 assert(false, "Unsupported on d3d");
         }
     }
-    void unbind()
+    override void unbind()
     {
         final switch(type)
         {
@@ -90,7 +87,7 @@ final class HipD3D11Buffer : IHipRendererBuffer
         createBuffer(data.length, data.ptr);
 
     }
-    void setData(const(void)[] data)
+    override void setData(const(void)[] data)
     {
         if(data == null || data.length == 0)
             return;
@@ -103,18 +100,18 @@ final class HipD3D11Buffer : IHipRendererBuffer
             createBuffer(data);
     }
 
-    ubyte[] getBuffer()
+    override ubyte[] getBuffer()
     {
         D3D11_MAPPED_SUBRESOURCE resource;
         d3dCall(_hip_d3d_context.Map(buffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &resource));
         return cast(ubyte[])resource.pData[0..size];
     }
-    void unmapBuffer()
+    override void unmapBuffer()
     {
         d3dCall(_hip_d3d_context.Unmap(this.buffer, 0));
     }
 
-    void updateData(int offset, const (void)[] data)
+    override void updateData(int offset, const (void)[] data)
     {
         import core.stdc.string;
         import hip.util.conv;
@@ -132,7 +129,7 @@ final class HipD3D11Buffer : IHipRendererBuffer
         d3dCall(_hip_d3d_context.Unmap(buffer, 0));
     }
 
-    void dispose()
+    override void dispose()
     {
         if(buffer)
             buffer.Release();

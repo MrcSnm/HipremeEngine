@@ -200,7 +200,7 @@ class Hip_GL3Renderer : IHipRendererImpl
         return new Hip_GL3_FrameBuffer(width, height, format, depth);
     }
 
-    public IHipVertexArrayImpl createVertexArray()
+    public HipVertexArrayImpl createVertexArray()
     {
         static if(OpenGLHasVAOSupport) if(hipGlCapabilities.vertexArrayObjects)
             return new Hip_GL3_VertexArrayObject();
@@ -210,11 +210,11 @@ class Hip_GL3Renderer : IHipRendererImpl
     {
         return new Hip_GL3_Texture(usage, type);
     }
-    public IHipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
+    public HipRendererBuffer createBuffer(size_t size, HipResourceUsage usage, HipRendererBufferType type)
     {
         return new Hip_GL3_Buffer(size, usage, type);
     }
-    public IHipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
+    public HipRendererBuffer createBuffer(const(ubyte)[] data, HipResourceUsage usage, HipRendererBufferType type)
     {
         return new Hip_GL3_Buffer(data, usage, type);
     }

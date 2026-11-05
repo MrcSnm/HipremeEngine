@@ -16,13 +16,12 @@ MTLResourceOptions mtlOptions(HipResourceUsage usage)
     }
 }
 
-final class HipMTLBuffer : IHipRendererBuffer
+final class HipMTLBuffer : HipRendererBuffer
 {
     MTLBuffer buffer;
     MTLCommandQueue cmdQueue;
     MTLResourceOptions options;
     MTLDevice device;
-    HipRendererBufferType _type;
     size_t size;
 
     this(MTLDevice device, MTLCommandQueue cmdQueue, size_t size, HipResourceUsage usage, HipRendererBufferType type)
@@ -45,10 +44,9 @@ final class HipMTLBuffer : IHipRendererBuffer
             buffer = device.newBuffer(size, options);
         setData(data);
     }
-    HipRendererBufferType type() const { return _type; }
-    void bind(){}
-    void unbind(){}
-    void setData(const void[] data)
+    override void bind(){}
+    override void unbind(){}
+    override void setData(const void[] data)
     {
         if(options == MTLResourceOptions.StorageModePrivate)
         {
@@ -72,15 +70,15 @@ final class HipMTLBuffer : IHipRendererBuffer
             throw new Error("Could not create buffer.");
     }
 
-    ubyte[] getBuffer(){return cast(ubyte[])buffer.contents[0..size];}
-    void unmapBuffer(){}
+    override ubyte[] getBuffer(){return cast(ubyte[])buffer.contents[0..size];}
+    override void unmapBuffer(){}
 
-    void updateData(int offset, const void[] data)
+    override void updateData(int offset, const void[] data)
     {
         buffer.contents[offset..offset+data.length] = data[];
     }
 
-    void dispose()
+    override void dispose()
     {
         if(buffer)
             buffer.release();
