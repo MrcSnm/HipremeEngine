@@ -6,9 +6,24 @@ import global_opts;
 import game_selector;
 
 import feature;
-import features.hipreme_engine;
-import features.ldc;
-import features.dmd;
+import featurelib.terminal : StdoutTerminalBackend;
+import terminal_adapter;
+import featurelib.features.hipreme_engine;
+static import featurelib.features._7zip;
+static import featurelib.features.dmd;
+static import featurelib.features.wsl;
+static import featurelib.features.git;
+static import featurelib.features.ldc;
+static import featurelib.features.java_jdk;
+static import featurelib.features.android_ldc;
+static import featurelib.features.android_ndk;
+static import featurelib.features.android_sdk;
+static import featurelib.features.devkitpro;
+static import featurelib.features.msvclinker;
+static import featurelib.features.vs_buildtools_installer;
+static import featurelib.features.nuget;
+static import featurelib.features.vcruntime140;
+static import featurelib.features.astc;
 
 import targets.windows;
 import targets.android;
@@ -22,24 +37,24 @@ import targets.nintendo_switch;
 
 
 
-mixin StartFeatures!([
-	"_7zip",
-	"dmd",
-	"wsl",
-	"git",
-	"hipreme_engine",
-	"ldc",
-	"java_jdk",
-	"android_ldc",
-	"android_ndk",
-	"android_sdk",
-	"devkitpro",
-	"msvclinker",
-	"vs_buildtools_installer",
-	"nuget",
-	"vcruntime140",
-	"astc"
-]);
+mixin StartFeatures!(
+	featurelib.features._7zip,
+	featurelib.features.dmd,
+	featurelib.features.wsl,
+	featurelib.features.git,
+	featurelib.features.hipreme_engine,
+	featurelib.features.ldc,
+	featurelib.features.java_jdk,
+	featurelib.features.android_ldc,
+	featurelib.features.android_ndk,
+	featurelib.features.android_sdk,
+	featurelib.features.devkitpro,
+	featurelib.features.msvclinker,
+	featurelib.features.vs_buildtools_installer,
+	featurelib.features.nuget,
+	featurelib.features.vcruntime140,
+	featurelib.features.astc
+);
 
 
 bool isChoiceAutoSelectable(string selected)
@@ -221,7 +236,7 @@ string generateHelp(T)()
 
 void promptForConfigCreation(ref Terminal t)
 {
-	string gamePath = buildNormalizedPath(configs["hipremeEnginePath"].str, "projects", "start_here");
+	string gamePath = buildNormalizedPath(featureConfigs["hipremeEnginePath"].str, "projects", "start_here");
 	string phobosLibPath;
 	version(OSX)
 	{
@@ -271,7 +286,7 @@ ChoiceResult createProject(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 		return ChoiceResult.Back;
 	}
 	string projName = pathSplitter(projectPath).array[$-1];
-	if(generateProject(t, projectPath, configs["hipremeEnginePath"].str, DubProjectInfo("HipremeEngine", projName), TemplateInfo()))
+	if(generateProject(t, projectPath, featureConfigs["hipremeEnginePath"].str, DubProjectInfo("HipremeEngine", projName), TemplateInfo()))
 	{
 		if(!("projectsAvailable" in configs))
 			configs["projectsAvailable"] = [projectPath];
@@ -288,7 +303,7 @@ ChoiceResult createProject(Choice* c, ref Terminal t, ref RealTimeConsoleInput i
 ChoiceResult releaseGame(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
 	import std.net.curl;
-	outputTemplate(t, buildPath(configs["hipremeEnginePath"].str, "tools", "build", "targets", "uwp"));
+	outputTemplate(t, buildPath(featureConfigs["hipremeEnginePath"].str, "tools", "build", "targets", "uwp"));
 	downloadFileIfNotExists("Visual C Redist.", "https://aka.ms/vs/17/release/vc_redist.x64.exe", "target.exe", t, input);
 	std.file.remove("target.exe");
 
@@ -322,15 +337,20 @@ void main(string[] args)
 {
 	Terminal terminal;
 	RealTimeConsoleInput input;
+	ArsdTerminalBackend terminalBackend;
+	ArsdConsoleInput consoleInput;
 	try
 	{
-		terminal = Terminal(new arsd.terminal.Terminal(ConsoleOutputType.linear));
-		input = RealTimeConsoleInput(new arsd.terminal.RealTimeConsoleInput(terminal.arsdTerminal, ConsoleInputFlags.raw));
+		auto arsdTerminal = new arsd.terminal.Terminal(ConsoleOutputType.linear);
+		terminalBackend = new ArsdTerminalBackend(arsdTerminal);
+		terminal = Terminal(terminalBackend);
+		consoleInput = new ArsdConsoleInput(new arsd.terminal.RealTimeConsoleInput(arsdTerminal, ConsoleInputFlags.raw));
+		input = consoleInput;
 	}
 	catch(Exception e)
 	{
-		terminal = Terminal.init;
-		input = RealTimeConsoleInput.init;
+		terminal = Terminal(new StdoutTerminalBackend());
+		input = null;
 		terminal.writeln("This terminal will only be able to output... No interaction will be available");
 	}
 	version(Posix)
@@ -347,7 +367,7 @@ void main(string[] args)
 		terminal.writelnError("HipremeEngine needs a copy of its repository to run.");
 		return;
 	}
-	if(("hipremeEnginePath" in configs) is null ||
+	if(("hipremeEnginePath" in featureConfigs) is null ||
 	   ("gamePath" in configs) is null ||
 	   ("phobosLibPath" in configs) is null || 
 	   ("selectedChoice" in configs) is null)
@@ -377,6 +397,7 @@ void main(string[] args)
 
 			terminal.writeln("gamebuild.json documentation:\n" ~ generateHelp!EngineVariables);
 			terminal.writeln(output);
+			terminal.flush();
 
 			return;
 		}
@@ -458,7 +479,8 @@ void main(string[] args)
 		else break;
 	}
 	exitServer(terminal);
-	destroy(terminal);
+	if(consoleInput) destroy(consoleInput);
+	if(terminalBackend) destroy(terminalBackend);
 	import core.stdc.stdlib;
 	exit(0);
 }

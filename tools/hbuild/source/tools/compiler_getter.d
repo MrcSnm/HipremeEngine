@@ -1,8 +1,8 @@
 module tools.compiler_getter;
 import commons;
 import feature;
-import features.dmd;
-import features.ldc;
+import featurelib.features.dmd;
+import featurelib.features.ldc;
 
 
 
@@ -31,7 +31,7 @@ bool getCompiler(ref Terminal t, ref RealTimeConsoleInput input, string compiler
 		auto features = getCompilerFeatureOrder();
 		foreach(CompilerFeature f; features)
 		{
-			if(f.feature.getFeature(t, input, TargetVersion.fromGameBuild(f.compilerTargetVersion)))
+			if(f.feature.getFeature(t, input, TargetVersion.fromConfig(f.compilerTargetVersion)))
 				return true;
 		}
 		t.writelnError("HipremeEngine needs either LDC or DMD");
@@ -42,14 +42,14 @@ bool getCompiler(ref Terminal t, ref RealTimeConsoleInput input, string compiler
 		final switch(compilerType)
 		{
 			case "dmd":
-				if(!DMDFeature.getFeature(t, input, TargetVersion.fromGameBuild("dmdVersion")))
+				if(!DMDFeature.getFeature(t, input, TargetVersion.fromConfig("dmdVersion")))
 				{
 					t.writelnError("HipremeEngine needs DMD");
 					return false;
 				}
 				break;
 			case "ldc2", "ldc":
-				if(!LDCFeature.getFeature(t, input, TargetVersion.fromGameBuild("ldcVersion")))
+				if(!LDCFeature.getFeature(t, input, TargetVersion.fromConfig("ldcVersion")))
 				{
 					t.writelnError("HipremeEngine needs LDC");
 					return false;

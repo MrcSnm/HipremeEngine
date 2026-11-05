@@ -22,4 +22,8 @@ buildtools/
 *.obj
 *.lst
 gamebuild.json
+features.local.json
+linux64-hbuild
+macos64-hbuild
+win64-hbuild
 dub.selections.json

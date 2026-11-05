@@ -1,25 +1,23 @@
-module features.dmd;
+module featurelib.features.dmd;
 
-import commons;
-import feature;
+import featurelib;
+import featurelib.features._7zip : _7zFeature;
+import std.path : buildNormalizedPath, dirName;
+import std.system;
 
 bool installDmd(
     ref Terminal t,
-    ref RealTimeConsoleInput input,
+    ConsoleInput input,
     TargetVersion ver,
     Download[] downloads,
-    string[] extractionPaths
-)
+    string[] extractionPaths)
 {
-    import std.system;
-    import std.path;
-
     string sys;
-    version(X86_64)
+    version (X86_64)
         string bin = "bin64";
     else
         string bin = "bin";
-    switch(os) with(OS)
+    switch (os) with (OS)
     {
         case osx: sys = "osx"; break;
         case win32, win64: sys = "windows"; break;
@@ -37,13 +35,13 @@ bool installDmd(
     return true;
 }
 
-
 Feature DMDFeature;
+
 void initialize()
 {
     DMDFeature = Feature(
         "DMD",
-        "Digital Mars D Compiler. Used for fast iteration development", 
+        "Digital Mars D Compiler. Used for fast iteration development",
         ExistenceChecker(["dmdPath"]),
         Installation([Download(
             DownloadURL(
@@ -52,15 +50,17 @@ void initialize()
                 osx: "https://downloads.dlang.org/releases/2.x/$VERSION/dmd.$VERSION.osx.tar.xz",
             ),
             outputPath: "$TEMP/$NAME",
-        )], toDelegate(&installDmd), ["$CONFIG_DIR/D"]), 
+        )], toDelegate(&installDmd), ["$CONFIG_DIR/D"]),
         (ref Terminal t, string installPath)
         {
             addToPath(installPath.dirName);
         },
         VersionRange.parse("2.111.0", "2.111.0")
     );
+    DMDFeature.shareable = true;
 }
+
 void start()
 {
-    
+    DMDFeature.dependencies = [&_7zFeature];
 }

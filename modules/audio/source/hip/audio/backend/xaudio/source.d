@@ -123,7 +123,7 @@ class HipXAudioSource : HipAudioSource
     override bool play_streamed() => false;
 
 
-    void dispose()
+    override void dispose()
     {
         if(sourceVoice !is null && HipXAudioPlayer.isAlive)
             sourceVoice.DestroyVoice();

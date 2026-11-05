@@ -1,5 +1,5 @@
 module targets.android;
-import features.ldc;
+import feature;
 import commons;
 import std.net.curl;
 import std.path;
@@ -23,7 +23,7 @@ private string getAndroidFlagsToolchains()
 		string system = "darwin-x86_64";
 	else static assert(false, "Your OS does not support android NDK installation.");
 
-	string toolsPath = buildNormalizedPath(configs["androidNdkPath"].str, "toolchains", "llvm", "prebuilt", system);
+	string toolsPath = buildNormalizedPath(featureConfigs["androidNdkPath"].str, "toolchains", "llvm", "prebuilt", system);
 
 	version(Windows)
 	{
@@ -47,12 +47,12 @@ private ChoiceResult runAndroidApplication(ref Terminal t)
 {
 	version(Windows)
 	{
-		string adb = buildNormalizedPath(configs["androidSdkPath"].str, "platform-tools", "adb.exe");
+		string adb = buildNormalizedPath(featureConfigs["androidSdkPath"].str, "platform-tools", "adb.exe");
 		string gradlew = "gradlew.bat";
 	}
 	else version(Posix)
 	{
-		string adb = buildNormalizedPath(configs["androidSdkPath"].str, "platform-tools", "adb");
+		string adb = buildNormalizedPath(featureConfigs["androidSdkPath"].str, "platform-tools", "adb");
 		string gradlew = "./gradlew";
 
 		if(!makeFileExecutable(getHipPath("build", "android", "project", "gradlew")))
@@ -92,9 +92,9 @@ private ChoiceResult runAndroidApplication(ref Terminal t)
 
 ChoiceResult prepareAndroid(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-	import features.android_ndk;
-	import features.java_jdk;
-	import features.android_ldc;
+	import featurelib.features.android_ndk;
+	import featurelib.features.java_jdk;
+	import featurelib.features.android_ldc;
 
 	if(!JavaJDKFeature.getFeature(t, input, TargetVersion.parse(TargetJavaJDK)))
 		return ChoiceResult.Error;

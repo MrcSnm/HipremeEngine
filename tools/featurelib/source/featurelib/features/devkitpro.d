@@ -1,73 +1,69 @@
-module features.devkitpro;
-import feature;
-import commons;
+module featurelib.features.devkitpro;
+
+import featurelib;
+import std.file;
+import std.path : buildNormalizedPath, buildPath;
+import std.process : environment, spawnProcess;
 
 Feature DevKitProFeature;
 
 private bool hasDevkitPro(ref Terminal t, TargetVersion ver, out ExistenceStatus status)
 {
-    import std.file;
-    import std.path;
-    version(Posix)
+    version (Posix)
     {
-        if("DEVKITPRO" in environment)
+        if ("DEVKITPRO" in environment)
         {
             string where = buildNormalizedPath(environment["DEVKITPRO"], "libnx", "lib", "libnx.a");
-            if(exists(where))
+            if (exists(where))
             {
                 status = ExistenceStatus(ExistenceStatus.Place.custom, environment["DEVKITPRO"]);
                 return true;
             }
         }
-        if(exists("/opt/devkitpro/libnx/lib/libnx.a"))
+        if (exists("/opt/devkitpro/libnx/lib/libnx.a"))
         {
             status = ExistenceStatus(ExistenceStatus.Place.custom, "/opt/devkitpro");
-        t.writeln = status;
-
             return true;
-
         }
     }
     else
     {
-        if("DEVKITPRO" in environment && exists(buildNormalizedPath(environment["DEVKITPRO"], "libnx", "libnx.a")))
+        if ("DEVKITPRO" in environment && exists(buildNormalizedPath(environment["DEVKITPRO"], "libnx", "libnx.a")))
             return true;
         return exists(`C:\devkitpro\libnx\libnx.a`);
     }
     return false;
 }
 
-private bool installDevkitPro(ref Terminal t, ref RealTimeConsoleInput input, TargetVersion ver, Download[] content, string[] extractionPaths)
+private bool installDevkitPro(ref Terminal t, ConsoleInput input, TargetVersion ver, Download[] content, string[] extractionPaths)
 {
-    version(OSX)
+    version (OSX)
     {
         string pkgPath = buildPath(extractionPaths[0], "devkitpro-pacman-installer.pkg");
         t.writelnHighlighted("Executing sudo installer -pkg ", pkgPath, " -target / for installing dkp-pacman");
-        t.flush;
-        if(t.wait(spawnProcess(["sudo", "installer", "-pkg", pkgPath, "-target", "/"])) != 0)
+        t.flush();
+        if (t.wait(spawnProcess(["sudo", "installer", "-pkg", pkgPath, "-target", "/"])) != 0)
         {
             t.writelnError("Failed installing devkitPro");
             return false;
         }
         t.writelnHighlighted("Executing sudo dkp-pacman -S switch-dev switch-mesa switch-openal-soft");
-        t.flush;
-        if(t.wait(spawnProcess(["sudo", "dkp-pacman", "-S", "switch-dev", "switch-mesa", "switch-openal-soft"])) != 0)
+        t.flush();
+        if (t.wait(spawnProcess(["sudo", "dkp-pacman", "-S", "switch-dev", "switch-mesa", "switch-openal-soft"])) != 0)
         {
             t.writelnError("Failed installing development for Nintendo Switch on DevkitPro");
             return false;
         }
-
     }
     else
     {
         makeFileExecutable(extractionPaths[0]);
     }
-	return true;
+    return true;
 }
 
 void initialize()
 {
-    import std.conv:to;
     DevKitProFeature = Feature(
         "DevKitPRO LibNX",
         "Required for being able to develop applications for Nintendo Switch",
@@ -79,10 +75,12 @@ void initialize()
                 osx: "https://github.com/devkitPro/pacman/releases/download/v6.0.2/devkitpro-pacman-installer.pkg",
             )
         )], toDelegate(&installDevkitPro), extractionPathList: ["$CONFIG_DIR/buildtools/dkp-pacman"]),
-        (ref Terminal t, string where){
+        (ref Terminal t, string where)
+        {
             environment["DEVKITPRO"] = where;
-            t.writeln = where;
         }
     );
+    DevKitProFeature.shareable = true;
 }
-void start(){}
+
+void start() {}

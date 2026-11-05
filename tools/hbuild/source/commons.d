@@ -1,5 +1,5 @@
 module commons;
-public import arsd.terminal : Color, ConsoleOutputType, ConsoleInputFlags;
+public import arsd.terminal : ConsoleOutputType, ConsoleInputFlags;
 public static import arsd.terminal;
 public import std.array:join, split;
 public import std.json;
@@ -8,6 +8,15 @@ public import std.process;
 public static import std.file;
 public import default_handlers;
 public import redub.api;
+
+public import featurelib.terminal : Terminal, ConsoleInput, Color;
+public import featurelib.util : wait;
+static import featurelib.config;
+static import featurelib.extract;
+public alias RealTimeConsoleInput = ConsoleInput;
+public alias featureConfigs = featurelib.config.configs;
+public alias updateFeatureConfig = featurelib.config.updateConfigFile;
+public alias ConfigScope = featurelib.config.ConfigScope;
 enum ESC = 983067;
 enum ArrowUp = 983078;
 enum ArrowDown = 983080;
@@ -20,103 +29,6 @@ JSONValue engineConfig;
 Config configs;
 
 
-struct Terminal
-{
-	import std.stdio;
-	import core.sync.mutex;
-
-	arsd.terminal.Terminal* arsdTerminal;
-	Mutex mtx;
-	this(arsd.terminal.Terminal* arsdTerminal)
-	{
-		this.arsdTerminal = arsdTerminal;
-		mtx = new Mutex();
-	}
-
-	void color(Color main, Color secondary)
-	{
-		if(arsdTerminal) synchronized(mtx)
-			arsdTerminal.color(main, secondary);
-	}
-	int cursorY()
-	{
-		if(arsdTerminal) synchronized(mtx)
-		{
-			arsdTerminal.updateCursorPosition();
-			return arsdTerminal.cursorY;
-		}
-		return 0;
-	}
-	string getline(string message)
-	{
-		if(arsdTerminal) synchronized(mtx) return arsdTerminal.getline(message); 
-		std.stdio.writeln("Can't get line with message [", message, "]");
-		return "";
-	}
-	void moveTo(int x, int y){if(arsdTerminal) synchronized(mtx) arsdTerminal.moveTo(x, y);}
-	void clear(){if(arsdTerminal) synchronized(mtx) arsdTerminal.clear();}
-	void write(T...)(T args)
-	{
-		if(arsdTerminal) synchronized(mtx) arsdTerminal.write(args);
-		else std.stdio.write(args);
-	}
-	void flush()
-	{
-		if(arsdTerminal) synchronized(mtx)
-		{
-			arsdTerminal.flush();
-			arsdTerminal.updateCursorPosition();
-		}
-	}
-
-	int wait(Pid pid)
-	{
-		this.flush;
-		return std.process.wait(pid);
-	}
-
-	void hideCursor(){ if(arsdTerminal) synchronized(mtx) arsdTerminal.hideCursor();}
-	void showCursor(){ if(arsdTerminal) synchronized(mtx) arsdTerminal.showCursor();}
-	void clearToEndOfLine()
-	{
-		if(arsdTerminal) synchronized(mtx) arsdTerminal.clearToEndOfLine();
-		flush();
-	}
-	void clearLine()
-	{
-		moveTo(0, cursorY);
-		clearToEndOfLine();
-		flush();
-	}
-
-	void writeln(T...)(T args)
-	{
-		if (arsdTerminal) synchronized(mtx) arsdTerminal.writeln(args);
-		else std.stdio.writeln(args);
-	}
-	~this()
-	{
-		showCursor();
-		if(arsdTerminal) synchronized(mtx) destroy(*arsdTerminal);
-		mtx = null;
-	}
-}
-
-struct RealTimeConsoleInput
-{
-	private arsd.terminal.RealTimeConsoleInput* input;
-	this(arsd.terminal.RealTimeConsoleInput* input){this.input = input;}
-	dchar getch()
-	{
-		if(input) return input.getch();
-		return '\0';
-	}
-	~this()
-	{
-		if(input) destroy(*input);
-	}
-}
-
 struct TerminalColors
 {
 	private Terminal* _t;
@@ -127,7 +39,7 @@ struct TerminalColors
 	}
 	~this()
 	{
-		_t.color(Color.DEFAULT, Color.DEFAULT);
+		_t.color(Color.default_, Color.default_);
 		_t.flush();
 	}
 }
@@ -207,10 +119,10 @@ struct Hotkey
 	}
 	void show(ref Terminal t)
 	{
-		Color textColor = Color.DEFAULT;
+		Color textColor = Color.default_;
 		if(act == HotkeyAction.toggleBool)
 			textColor = *opt ? Color.green : Color.red;
-		with(TerminalColors(textColor, Color.DEFAULT, t))
+		with(TerminalColors(textColor, Color.default_, t))
 			t.write(getName, " ");
 
 	}
@@ -332,7 +244,7 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 	static bool isFirst = true;
 	static void changeChoiceClear(ref Terminal t, Choice[] choices, Hotkey[] hotkeys, string title, Choice next, bool bClear)
 	{
-		t.color(Color.DEFAULT, Color.DEFAULT);
+		t.color(Color.default_, Color.default_);
 		if(bClear)
 			t.clear();
 		t.writelnHighlighted(title);
@@ -351,7 +263,7 @@ size_t selectChoiceBase(ref Terminal terminal, ref RealTimeConsoleInput input, C
 		}
 		foreach(i, c; choices)
 		{
-			if(c.name == next.name) with(TerminalColors(Color.green, Color.DEFAULT, t))
+			if(c.name == next.name) with(TerminalColors(Color.green, Color.default_, t))
 				t.writeln(">> ", c.name);
 			else t.writeln(c.name);
 		}
@@ -460,7 +372,7 @@ string getFirstExisting(string basePath, scope string[] tests...)
 
 string getHipPath(scope string[] paths...)
 {
-	return buildPath([configs["hipremeEnginePath"].str] ~ paths);
+	return buildPath([featureConfigs["hipremeEnginePath"].str] ~ paths);
 }
 
 string getFirstExistingVar(scope string[] vars...)
@@ -505,19 +417,19 @@ string findProgramPath(string program)
 
 void writelnHighlighted(ref Terminal t, scope string[] what...)
 {
-	with(TerminalColors(Color.yellow, Color.DEFAULT, t))
+	with(TerminalColors(Color.yellow, Color.default_, t))
 		t.writeln(what.join());
 }
 
 void writelnSuccess(ref Terminal t, scope string[] what...)
 {
-	with(TerminalColors(Color.green, Color.DEFAULT, t))
+	with(TerminalColors(Color.green, Color.default_, t))
 		t.writeln(what.join());
 }
 
 void writelnError(ref Terminal t, scope string[] what...)
 {
-	with(TerminalColors(Color.red, Color.DEFAULT, t))
+	with(TerminalColors(Color.red, Color.default_, t))
 		t.writeln(what.join());
 }
 
@@ -633,36 +545,7 @@ bool isCompactedFile(string fileName)
 
 bool extractToFolder(string zPath, string outputDirectory, ref Terminal t, ref RealTimeConsoleInput input)
 {
-	import features._7zip;
-	import std.path;
-	switch(zPath.extension)
-	{
-		case ".gz", ".xz":
-			version(Posix)
-			{
-				return extractTarGzToFolder(zPath, outputDirectory, t);
-			}
-			else version(Windows)
-			{
-				///Handles .gz, .xz
-				if(!extract7ZipToFolder.execute(t, input, zPath, dirName(zPath)))
-					return false;
-				t.writelnSuccess("Extracted to ", dirName(zPath));
-				//Now handle tar
-				return extractTarToFolder(t, zPath[0..$-".xz".length], outputDirectory);
-			}
-			else assert(false, "No .tar.gz support on non Posix");
-		case ".zip":
-			return extractZipToFolder(zPath, outputDirectory, t);
-		case ".7zip", ".7z":
-			return extract7ZipToFolder.execute(t, input, zPath, outputDirectory);
-		default:
-			import std.file;
-			mkdirRecurse(outputDirectory);
-			copy(zPath, buildPath(outputDirectory, baseName(zPath)));
-			t.writelnSuccess(zPath, " is not a compressed file, copying it to ", outputDirectory);
-			return true;
-	}
+	return featurelib.extract.extractToFolder(zPath, outputDirectory, t, input);
 }
 
 string executableExtension(string path)
@@ -819,10 +702,10 @@ private void terminalProgressBar(ref Terminal t, float percentage, ubyte ticksCo
 	t.write("<");
 	foreach(int i; 0..ticksCount)
 	{
-		t.color(i < drawnTicks ? Color.green : Color.red, Color.DEFAULT);
+		t.color(i < drawnTicks ? Color.green : Color.red, Color.default_);
 		t.write(i < drawnTicks ? "=" : ".");
 	}
-	t.color(Color.DEFAULT, Color.DEFAULT);
+	t.color(Color.default_, Color.default_);
 	t.write("> (", percentage*100, "%)");
 	t.flush();
 }
@@ -980,10 +863,10 @@ bool openSourceCodeEditor(string projectPath)
 
 string getGitExec()
 {
-	if("git" in configs)
+	if("git" in featureConfigs)
 	{
-		version(Windows) return buildNormalizedPath(configs["git"].str, "git.exe");
-		else return buildNormalizedPath(configs["git"].str, "git");
+		version(Windows) return buildNormalizedPath(featureConfigs["git"].str, "git.exe");
+		else return buildNormalizedPath(featureConfigs["git"].str, "git");
 	}
 	return "git ";
 }
@@ -1014,10 +897,10 @@ private int execRedubBase(ref Terminal t, ref RealTimeConsoleInput input, in Dub
 	if(!getCompiler(t, input, dArgs.getCompilerType()))
 		return -1;
 	
-	if(absolutePath(configs["hipremeEnginePath"].str) != absolutePath(std.file.getcwd()))
+	if(absolutePath(featureConfigs["hipremeEnginePath"].str) != absolutePath(std.file.getcwd()))
 	{
 		if(std.file.exists("dub.template.json"))
-			return writeTemplate(t, std.file.getcwd(), configs["hipremeEnginePath"].str) ? 0 : -1;
+			return writeTemplate(t, std.file.getcwd(), featureConfigs["hipremeEnginePath"].str) ? 0 : -1;
 	}
 	return 0;
 }
@@ -1094,9 +977,9 @@ struct DubArguments
 	{
 		string c = getCompilerType;
 		if(c == "ldc2")
-			c = buildNormalizedPath(configs["ldcPath"].str, "bin", "ldc2".executableExtension);
+			c = buildNormalizedPath(featureConfigs["ldcPath"].str, "bin", "ldc2".executableExtension);
 		else if(c == "dmd")
-			c = buildNormalizedPath(configs["dmdPath"].str, "dmd".executableExtension);
+			c = buildNormalizedPath(featureConfigs["dmdPath"].str, "dmd".executableExtension);
 		return c;
 	}
 }
@@ -1166,7 +1049,7 @@ int waitRedub(ref Terminal t, ref RealTimeConsoleInput input, DubArguments dArgs
 
 int waitAndPrint(ref Terminal t, Pid pid)
 {
-	return wait(pid);
+	return std.process.wait(pid);
 }
 
 public import std.concurrency;
@@ -1293,7 +1176,7 @@ void outputTemplate(ref Terminal t, string templatePath)
 	import template_processor;
 	string out_templ;
 	
-	switch(processTemplate(templatePath, configs["hipremeEnginePath"].str, out_templ, [
+	switch(processTemplate(templatePath, featureConfigs["hipremeEnginePath"].str, out_templ, [
 		"TARGET_PROJECT": configs["gamePath"].str
 	]))
 	{
@@ -1452,9 +1335,36 @@ private bool hasAdminRights()
 }
 
 
+private void migrateFeatureConfig()
+{
+	bool changed;
+	static immutable string[] shareableKeys = [
+		"7zip", "git", "ldcPath", "ldcVersion", "dmdPath", "dmdVersion",
+		"javaHome", "androidSdkPath", "androidNdkPath", "astc", "nuGet",
+		"vsBuildTools",
+	];
+	foreach(key; shareableKeys)
+	{
+		if(!(key in featureConfigs) && key in configs)
+		{
+			ConfigScope scope_ = ConfigScope(true);
+			featureConfigs[key] = configs[key];
+			changed = true;
+		}
+	}
+	if(!("hipremeEnginePath" in featureConfigs) && "hipremeEnginePath" in configs)
+	{
+		ConfigScope scope_ = ConfigScope(false);
+		featureConfigs["hipremeEnginePath"] = configs["hipremeEnginePath"];
+		changed = true;
+	}
+	if(changed) updateFeatureConfig();
+}
+
 static this()
 {
 	configs = std.file.exists(getConfigPath) ? Config(parseJSON(std.file.readText(getConfigPath))) : Config(parseJSON("{}"));
 	try engineConfig = std.file.exists(getEngineConfigPath) ? parseJSON(std.file.readText(getEngineConfigPath)) : parseJSON("{}");
 	catch(Exception e) engineConfig = parseJSON("{}");
+	migrateFeatureConfig();
 }

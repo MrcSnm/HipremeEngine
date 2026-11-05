@@ -5,7 +5,7 @@ import common_windows;
 
 private bool installUWPBuildTools(ref Terminal t, ref RealTimeConsoleInput input, out string devConsoleDir)
 {
-    import features.vs_buildtools_installer;
+    import featurelib.features.vs_buildtools_installer;
     import std.conv:to;
 
     wchar[] ver, installDir;
@@ -100,7 +100,7 @@ ChoiceResult prepareUWP(Choice* c, ref Terminal t, ref RealTimeConsoleInput inpu
         string nugetPath = getHipPath("build", "uwp", "HipremeEngine", "packages");
         if(!getCppWinRt(nugetPath))
         {
-            import features.nuget;
+            import featurelib.features.nuget;
             if(!installWithNuGet.execute(t, input, "being able to build with MSBuild.", "Microsoft.Windows.CppWinRT -Version 2.0.240405.15", nugetPath))
             {
                 t.writelnError("Download Failure: This package is needed for executing build on UWP");

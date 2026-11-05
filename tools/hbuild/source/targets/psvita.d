@@ -1,6 +1,6 @@
 module targets.psvita;
 import std.exception;
-import features.git;
+import featurelib.features.git;
 import commons;
 import std.path;
 
@@ -70,13 +70,13 @@ private auto getExecFunc(ref Terminal t)
         {
             string toExec = "wsl source "~getWslSource~" ^&^& "~arg;
             t.writelnHighlighted("Executing: ", toExec);
-            return wait(spawnShell(toExec));
+            return std.process.wait(spawnShell(toExec));
         }
         else
         {
             string toExec = "source " ~ getBashRcPath ~ " && " ~ arg;
             t.writelnHighlighted("Executing: ", toExec);
-            return wait(spawnShell(toExec));
+            return std.process.wait(spawnShell(toExec));
         }
     };
 }
@@ -229,7 +229,7 @@ private void updateShell()
 
 private bool setupPsvitaWindows(ref Terminal t, ref RealTimeConsoleInput input)
 {
-    import features.wsl;
+    import featurelib.features.wsl;
     if(wslExec.execute(t, input, [updateCmd]) != 0)
     {
         t.writelnError("Could not update system repositores");

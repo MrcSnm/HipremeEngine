@@ -4,7 +4,7 @@ import feature;
 
 ChoiceResult prepareNintendoSwitch(Choice* c, ref Terminal t, ref RealTimeConsoleInput input, in CompilationOptions cOpts)
 {
-    import features.devkitpro;
+    import featurelib.features.devkitpro;
 
     if(!DevKitProFeature.getFeature(t, input))
         return ChoiceResult.Error;

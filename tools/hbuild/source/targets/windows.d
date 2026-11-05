@@ -1,13 +1,9 @@
 module targets.windows;
 
-import features.hipreme_engine;
-import features.ldc;
 
 version(Windows):
 import commons;
 import feature;
-import features.msvclinker;
-import features.vcruntime140;
 import std.windows.registry;
 static import std.file;
 
@@ -72,7 +68,7 @@ private bool installVCRuntime140(ref Terminal t, ref RealTimeConsoleInput input)
 
 private bool installMSLinker(ref Terminal t, ref RealTimeConsoleInput input)
 {
-	import features.vs_buildtools_installer;
+	import featurelib.features.vs_buildtools_installer;
 
 	return installFromVSBuildTools.execute(t, input, "Get Windows SDK for being able  to compile D programming language",
 	[

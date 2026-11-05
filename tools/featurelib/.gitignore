@@ -1,0 +1,4 @@
+.dub/
+featurelib-test-library
+libfeaturelib.*
+*.lib

@@ -1,6 +1,6 @@
 module targets.wasm;
-import features.git;
-import features.ldc;
+import featurelib.features.git;
+import featurelib.features.ldc;
 import commons;
 import global_opts;
 import server;

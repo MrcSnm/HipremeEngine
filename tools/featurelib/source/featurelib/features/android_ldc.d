@@ -1,29 +1,26 @@
-module features.android_ldc;
-public import feature;
-import features.ldc;
-import commons;
+module featurelib.features.android_ldc;
+
+import featurelib;
+import featurelib.features._7zip : _7zFeature;
+import featurelib.features.ldc : LdcVersion;
+import std.file;
+import std.path : buildNormalizedPath;
 
 Feature AndroidLDCLibraries;
 
-/**
-```d
-  string function(ref Terminal t, ref RealTimeConsoleInput);
-```
-*/
 Task!(getAndroidLDCLibrariesPathImpl) getAndroidLDCLibrariesPath;
 
-private string getAndroidLDCLibrariesPathImpl(Feature*[] dependencies, ref Terminal t, ref RealTimeConsoleInput input)
+private string getAndroidLDCLibrariesPathImpl(Feature*[] dependencies, ref Terminal t, ConsoleInput input)
 {
     string installPath = dependencies[0].installer.getExtractionPath(0, dependencies[0].currentVersion);
     string ver = dependencies[0].currentVersion.toString();
-    return buildNormalizedPath(installPath, "ldc2-"~ver~"-android-aarch64", "lib");
+    return buildNormalizedPath(installPath, "ldc2-" ~ ver ~ "-android-aarch64", "lib");
 }
-
 
 private bool androidLibrariesExists(ref Terminal t, TargetVersion ver, out ExistenceStatus status)
 {
-    string path = buildNormalizedPath(std.file.getcwd(), "Android", "ldcLibs", "ldc2-"~ver.toString~"-android-aarch64", "lib", "libdruntime-ldc.a");
-    if(std.file.exists(path))
+    string path = buildNormalizedPath(getConfigFolder(), "Android", "ldcLibs", "ldc2-" ~ ver.toString ~ "-android-aarch64", "lib", "libdruntime-ldc.a");
+    if (exists(path))
     {
         status.where = path;
         status.place = ExistenceStatus.Place.custom;
@@ -31,6 +28,7 @@ private bool androidLibrariesExists(ref Terminal t, TargetVersion ver, out Exist
     }
     return false;
 }
+
 void initialize()
 {
     AndroidLDCLibraries = Feature(
@@ -42,9 +40,11 @@ void initialize()
         )], null, ["$CONFIG_DIR/Android/ldcLibs"]),
         null, VersionRange.parse(LdcVersion)
     );
+    AndroidLDCLibraries.shareable = true;
 }
 
 void start()
 {
+    AndroidLDCLibraries.dependencies = [&_7zFeature];
     getAndroidLDCLibrariesPath = Task!(getAndroidLDCLibrariesPathImpl)([&AndroidLDCLibraries]);
 }

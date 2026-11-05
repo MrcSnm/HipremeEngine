@@ -1,0 +1,10 @@
+{
+	"name": "featurelib",
+	"description": "Runtime feature provisioning: versioned dependencies, downloads, installation and activation.",
+	"authors": ["Hipreme"],
+	"copyright": "Copyright © 2026, Hipreme",
+	"license": "proprietary",
+	"dependencies": {
+		"archive": "~>0.7.1"
+	}
+}

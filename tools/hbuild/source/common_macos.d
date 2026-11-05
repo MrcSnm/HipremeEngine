@@ -1,6 +1,7 @@
 module common_macos;
+import feature;
 import commons;
-import features.git;
+import featurelib.features.git;
 import tools.releasegame;
 enum XCodeDFolder = "D";
 
@@ -12,11 +13,11 @@ void setupPerCompiler(ref Terminal t, string compiler, string arch, out string e
 		case "auto", "ldc2":
 		{
 			string outputDruntime = getHipPath("build", "appleos", XCodeDFolder, "static", "libdruntime-ldc.a");
-			string ldcLibPath = buildNormalizedPath(configs["ldcPath"].str, "lib-"~arch);
+			string ldcLibPath = buildNormalizedPath(featureConfigs["ldcPath"].str, "lib-"~arch);
 			
 			string druntimeLib = ldcLibPath.getFirstExisting("libdruntime-ldc.a");
 			if(druntimeLib == null) 
-				throw new Error("DRuntime Library not found on path "~configs["ldcPath"].str);
+				throw new Error("DRuntime Library not found on path "~featureConfigs["ldcPath"].str);
 			t.writelnSuccess("Copying druntime to XCode ", druntimeLib, " -> ", outputDruntime);
 			t.flush;
 			std.file.copy(druntimeLib, outputDruntime);
@@ -72,7 +73,7 @@ void cleanAppleOSLibFolder()
 }
 
 
-import features.ruby_gem;
+import featurelib.features.ruby_gem;
 Feature[] requiredGems;
 
 static this()
