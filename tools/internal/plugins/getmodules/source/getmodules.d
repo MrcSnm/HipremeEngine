@@ -2,18 +2,20 @@ module getmodules;
 import redub.plugin.api;
 class GetModulePlugin : RedubPlugin
 {
-    void preGenerate(){}
-    void postGenerate(){}
+    extern(C) ref RedubPluginStatus preGenerate(RedubPluginData input, out RedubPluginData output, const ref string[] args, ref return RedubPluginStatus status)
+	{
+		return status = RedubPluginStatus.success();
+    }
 	/**
 	 * Utility to generate a list of the modules found in all sourcePaths from the current dependency.
 	 * Use it with:
 	 ```json
-	 "preBuildPlugins": {
+	 "postGeneratePlugins": {
 	 	"getmodules": "ct_assets/game_modules.txt"
 	 }
 	 ```
 	 */
-    extern(C) ref RedubPluginStatus preBuild(RedubPluginData input, out RedubPluginData output, const ref string[] args, ref return RedubPluginStatus status)
+    extern(C) ref RedubPluginStatus postGenerate(RedubPluginData input, out RedubPluginData output, const ref string[] args, ref return RedubPluginStatus status)
     {
 		import std.file;
 		import std.path;

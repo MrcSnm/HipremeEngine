@@ -2,6 +2,7 @@ module hip.api.renderer.shader;
 public import hip.api.renderer.operations;
 public import hip.api.renderer.texture;
 public import hip.api.renderer.shadervar;
+public import hip.api.resource;
 
 enum ShaderStatus : ubyte
 {
@@ -50,7 +51,7 @@ struct ShaderHandle
     }
 }
 
-abstract class HipShaderProgram
+abstract class HipShaderProgram : HipResource
 {
     string name;
     private bool* dirtyReference;
@@ -83,8 +84,6 @@ abstract class HipShaderProgram
     abstract void createVariablesBlock(ref ShaderVariablesLayout layout);
     abstract bool setShaderVar(ShaderVar* sv, void* value);
     abstract void sendVars(ShaderVariablesLayout[] layouts);
-
-    abstract void dispose();
     /** 
      * Each graphics API has its own way to bind array of textures, thus, this version was required.
      */

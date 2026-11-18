@@ -82,6 +82,17 @@ enum HipRendererType : ubyte
     None
 }
 
+version(InitExternal)
+{
+    version(UWP)
+        enum ExternalInitRendererType = HipRendererType.D3D11;
+    // Every other external renderer targets OpenGL ES/GL 3.
+    else version(OpenGL) 
+        enum ExternalInitRendererType = HipRendererType.GL3;
+    else
+        static assert(false, "No renderer for this platform");
+}
+
 
 /// Primitive which the renderer will use
 enum HipRendererMode : ubyte

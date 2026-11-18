@@ -129,15 +129,4 @@ else
 	enum CustomRuntime = false;
 
 
-static if(CustomRuntime)
-	enum HipConcurrency = false;
-else version(Windows) 
-	enum HipConcurrency = true;
-else version(Android)
-	enum HipConcurrency = true;
-else version(UWP)
-	enum HipConcurrency = true;
-else version(AppleOS)
-	enum HipConcurrency = true;
-else version(linux) 
-	enum HipConcurrency = true;
+enum HipConcurrency = !CustomRuntime;

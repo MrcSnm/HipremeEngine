@@ -994,7 +994,7 @@ int waitRedub(ref Terminal t, ref RealTimeConsoleInput input, DubArguments dArgs
 	setLogLevel(dArgs._opts.verbose ? LogLevel.verbose : LogLevel.info);
 	proj = resolveDependencies(
 		ResolveInfo(dArgs._opts.force),
-		CompilationDetails(dArgs.getCompiler(), null, dArgs._arch),
+		CompilationDetails(CompilationInfo(getCompiler(dArgs.getCompiler()), dArgs._arch)),
 		ProjectToParse(dArgs._configuration, std.file.getcwd(), null, dArgs._recipe),
 		InitialDubVariables.init,
 		BuildType.profile_gc, dArgs.target

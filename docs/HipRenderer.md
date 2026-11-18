@@ -35,7 +35,7 @@ When the application does not own the Window, that is, built with the version(In
 | Hipreme Engine | OpenGL | Direct3D |
 |:--------------:|:------:|:--------:|
 | HipFrameBuffer | glFramebuffer/glRenderbuffer | ID3DRenderTargetView/ID3DShaderResourceView |
-| IHipVertexArrayImpl | glVertexArray | ID3D11InputLayout |
+| HipVertexArrayImpl | glVertexArray | ID3D11InputLayout |
 | IHipVertexBufferImpl | glGenBuffer + GL_ARRAY_BUFFER | ID3D11Buffer + D3D11_BIND_VERTEX_BUFFER |
 | IHipIndexBufferImpl | glGenBuffers + GL_ELEMENT_ARRAY_BUFFER | ID3D11Buffer + D3D11_BIND_INDEX_BUFFER |
 | ShaderVariablesLayout | glGenBuffers + GL_UNIFORM_BUFFER | ID3D11Buffer + D3D11_BIND_CONSTANT_BUFFER |

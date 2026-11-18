@@ -31,7 +31,7 @@ When the application does not own the Window, that is, built with the version(In
 |     Hipreme Engine    |                   OpenGL                  |                   Direct3D                   |        Metal        |
 | :-------------------: | :---------------------------------------: | :------------------------------------------: | :-----------------: |
 |     HipFrameBuffer    |        glFramebuffer/glRenderbuffer       |  ID3DRenderTargetView/ID3DShaderResourceView |         None        |
-|  IHipVertexArrayImpl  |               glVertexArray               |               ID3D11InputLayout              | MTLVertexDescriptor |
+|  HipVertexArrayImpl  |               glVertexArray               |               ID3D11InputLayout              | MTLVertexDescriptor |
 |  IHipVertexBufferImpl |      glGenBuffer + GL\_ARRAY\_BUFFER      |  ID3D11Buffer + D3D11\_BIND\_VERTEX\_BUFFER  |      MTLBuffer      |
 |  IHipIndexBufferImpl  | glGenBuffers + GL\_ELEMENT\_ARRAY\_BUFFER |   ID3D11Buffer + D3D11\_BIND\_INDEX\_BUFFER  |      MTLBuffer      |
 | ShaderVariablesLayout |     glGenBuffers + GL\_UNIFORM\_BUFFER    | ID3D11Buffer + D3D11\_BIND\_CONSTANT\_BUFFER |      MTLBuffer      |

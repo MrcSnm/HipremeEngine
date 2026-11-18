@@ -1,7 +1,7 @@
 module android_entry;
 
 version(Android):
-import app;
+import hip.engine_runtime;
 import hip.jni.helper.androidlog;
 import hip.jni.jni;
 import hip.jni.helper.jnicall;

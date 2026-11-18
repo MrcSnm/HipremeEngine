@@ -308,10 +308,20 @@ class Console
     ///Prints the buffered verbose lines. Meant for the crash handler.
     void dumpLogs()
     {
-        import core.stdc.stdio : fprintf, stderr;
         foreach(line; lines)
             if(line.length != 0)
-                fprintf(stderr, "%.*s\n", cast(int)line.length, line.ptr);
+            {
+                import hip.config.opts;
+                static if(CustomRuntime)
+                {
+                    _log(line);
+                }
+                else
+                {
+                    import core.stdc.stdio : fprintf, stderr;
+                    fprintf(stderr, "%.*s\n", cast(int)line.length, line.ptr);
+                }
+            }
     }
     
     
