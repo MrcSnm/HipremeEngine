@@ -38,4 +38,26 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
         loadReferenced();
         return new StartScene();
     }
+
+    // The game executable owns the entry point on platforms where the engine
+    // is linked as a library but the runtime entry calls `_Dmain`.
+    version(WebAssembly)
+    {
+        export int main(string[] args)
+        {
+            import hip.windowing.platforms.browser : getWindowSize;
+            import hip.engine_runtime : HipremeMain;
+            string[] _;
+            int[2] windowSize = getWindowSize(null, _);
+            return HipremeMain(windowSize[0], windowSize[1]);
+        }
+    }
+    else version(NintendoSwitch)
+    {
+        export int main(string[] args)
+        {
+            import hip.engine_runtime : HipremeMain;
+            return HipremeMain();
+        }
+    }
 }
