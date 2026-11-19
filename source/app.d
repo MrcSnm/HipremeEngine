@@ -18,10 +18,6 @@ static if(HasMain)
 	export int main(string[] args)
 	{
 		arguments = args;
-		import hip.console.log : setVerboseLogging;
-		foreach(arg; args)
-			if(arg == "--verbose")
-				setVerboseLogging(true);
 		int[2] windowSize = [-1, -1];
 		version(WebAssembly)
 		{

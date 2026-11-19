@@ -125,7 +125,7 @@ ChoiceResult prepareWindows(Choice* c, ref Terminal t, ref RealTimeConsoleInput 
 		// return true;
 	// }]);
 
-	t.wait(spawnProcess([getHipPath("bin", "desktop", "hipreme_engine.exe"), configs["gamePath"].str], ["PATH": environment["PATH"]]));
+	runEngine(t, cOpts);
 
 	return ChoiceResult.None;
 }

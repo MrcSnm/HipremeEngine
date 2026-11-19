@@ -105,6 +105,26 @@ Choice* selectChoice(ref Terminal terminal, ref RealTimeConsoleInput input, Choi
 	return &choices[selectedChoice];
 }
 
+ChoiceResult engineOptionsMenu(Choice* c, ref Terminal terminal, ref RealTimeConsoleInput input, in CompilationOptions opts)
+{
+	auto options = getEngineOptions(&cOpts);
+	size_t current;
+	while(true)
+	{
+		Choice[] choices;
+		foreach(opt; options)
+			choices ~= Choice((*opt.value ? "[x] " : "[ ] ") ~ opt.name, null);
+
+		size_t selected = selectChoiceBase(terminal, input, choices, "Engine options",
+			current, [Hotkey.makeExitChoice("[ESC] Back")]);
+		if(selected == size_t.max)
+			return ChoiceResult.Back;
+
+		*options[selected].value = !*options[selected].value;
+		current = selected;
+	}
+}
+
 struct Section{string name;}
 
 ///Meta struct for the time.
@@ -184,6 +204,9 @@ struct EngineVariables
 
 		@("Which source code editor must be opened whenever you select a game to build")
 		string sourceCodeEditor;
+
+		@("Extra arguments forwarded to the engine executable when running, e.g. [\"--frame-guard\"]")
+		string[] engineArgs;
 
 		@Section("Autos")
 		{
@@ -422,6 +445,7 @@ void main(string[] args)
 		Choice("Nintendo Switch", &prepareNintendoSwitch, true),
 		Choice("Create Project", &createProject),
 		Choice("Select Game", &selectGameFolder),
+		Choice("Engine Options", &engineOptionsMenu),
 		Choice("Release Game", &releaseGame),
 	];
 	Hotkey[] hotkeys = [

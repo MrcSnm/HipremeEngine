@@ -218,6 +218,33 @@ struct CompilationOptions
 {
 	bool verbose;
 	bool force;
+	bool engineFrameGuard = true;
+	bool engineVerbose;
+}
+
+///A boolean engine argument exposed in the "Engine Options" menu.
+struct EngineOption
+{
+	string name;
+	bool* value;
+	string onFlag, offFlag;
+}
+
+EngineOption[] getEngineOptions(CompilationOptions* opts)
+{
+	return [
+		EngineOption("Frame allocator guard", &opts.engineFrameGuard, "--frame-guard", "--no-frame-guard"),
+		EngineOption("Verbose engine logging", &opts.engineVerbose, "--verbose", "--no-verbose"),
+	];
+}
+
+///Explicit engine args for the current options (appended after `engineArgs`).
+string[] getEngineOptionsArgs(CompilationOptions opts)
+{
+	string[] ret;
+	foreach(opt; getEngineOptions(&opts))
+		ret ~= *opt.value ? opt.onFlag : opt.offFlag;
+	return ret;
 }
 
 T[] unique(T)(T[] input)
@@ -825,6 +852,35 @@ void updateConfigFile()
 		updateEngineFile();
 	}
 	std.file.write(getConfigPath, configs.toString());
+}
+///Extra arguments forwarded to the engine executable when running.
+string[] getEngineArgs()
+{
+	if("engineArgs" !in configs)
+		return [];
+	JSONValue v = configs["engineArgs"];
+	if(v.type == JSONType.string)
+		return [v.str];
+	string[] ret;
+	if(v.type == JSONType.array)
+		foreach(arg; v.array)
+			if(arg.type == JSONType.string)
+				ret ~= arg.str;
+	return ret;
+}
+///Launches the desktop engine with `engineArgs` plus the current options.
+void runEngine(ref Terminal t, in CompilationOptions cOpts)
+{
+	version(Windows)
+		string engine = getHipPath("bin", "desktop", "hipreme_engine.exe");
+	else
+		string engine = getHipPath("bin", "desktop", "hipreme_engine");
+
+	string[] args = [engine, configs["gamePath"].str];
+	args ~= getEngineArgs();
+	args ~= getEngineOptionsArgs(cOpts);
+
+	t.wait(spawnProcess(args, ["PATH": environment["PATH"]]));
 }
 string getSourceCodeEditor(string projectPath)
 {

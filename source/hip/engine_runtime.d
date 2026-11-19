@@ -29,6 +29,8 @@ import hip.view;
 import hip.systems.game;
 import hip.bind.interpreters;
 import hip.config.opts;
+import hip.config.args : parseHipremeEngineArgs, printHipremeEngineArgsHelp;
+import hip.util.allocator : frameAllocatorGuardEnabled;
 import hip.network;
 
 version(Desktop)        version = LocalGameLoop;
@@ -101,6 +103,8 @@ void HipremeHandleArguments()
 					{
 						projectToLoad = v["defaultProject"].str;
 						buildCommand = v["buildCmd"].str;
+						if("frameAllocatorGuard" in v)
+							frameAllocatorGuardEnabled = v["frameAllocatorGuard"].boolean;
 					}
 				}
 				return;
@@ -138,14 +142,34 @@ version(Standalone)
     pragma(mangle, "HipGetEntryFilePath")
     extern(C) string HipGetEntryFilePath();
 }
-static void initEngine(bool audio3D = false)
+static bool initEngine(bool audio3D = false)
 {
 	import hip.internal_configuration;
 	import hip.console.report;
 	Console.install(ActivePlatform, getPlatformPrintFunction());
 	reportRow("engine", "console", ActivePlatform);
+
+	auto parsedArgs = parseHipremeEngineArgs(arguments, frameAllocatorGuardEnabled);
+	if(parsedArgs.verbose.specified)
+		setVerboseLogging(parsedArgs.verbose.value);
+	if(parsedArgs.help.value)
+	{
+		printHipremeEngineArgsHelp(&rawlog);
+		return false;
+	}
+
+	// Keep HipremeHandleArguments receiving the format it understands: [exe, project].
+	string[] remainingArgs;
+	if(arguments.length)
+		remainingArgs ~= arguments[0];
+	if(parsedArgs.project.value.length)
+		remainingArgs ~= parsedArgs.project.value;
+	arguments = remainingArgs;
+
 	HipFS.initializeAbsolute();
 	HipremeHandleArguments();
+	if(parsedArgs.frameGuard.specified)
+		frameAllocatorGuardEnabled = parsedArgs.frameGuard.value;
 
 	string fsInstallPath = getFSInstallPath(projectToLoad);
 	HipFS.install(fsInstallPath, getFilesystemValidations());
@@ -160,6 +184,7 @@ static void initEngine(bool audio3D = false)
 
 	import hip.bind.dependencies;
 	loadEngineDependencies();
+	return true;
 }
 
 
@@ -179,7 +204,8 @@ export extern(C) int HipremeMain(int windowWidth = -1, int windowHeight = -1)
 	HipTime.initialize();
 	hipStartupTimeMs = HipTime.getCurrentTimeAsMsLong();
 
-	initEngine(true);
+	if(!initEngine(true))
+		return 0;
 	Random.initialize();
 
 	if(isUsingInterpreter)
