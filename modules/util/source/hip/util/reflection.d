@@ -45,12 +45,67 @@ template isDynamicArray(T)
         enum bool isDynamicArray = false;
 }
 
+
+bool hasDynamicArray(T)()
+{
+	static if(is(T == struct))
+	{
+		foreach(v; T.init.tupleof)
+		{
+			static if(hasDynamicArray!(typeof(v)))
+				return true;
+		}
+		return false;
+	}
+	else static if(is(T == U[N], U, size_t N))
+		return hasDynamicArray!U;
+	else
+		return isDynamicArray!T;
+}
+
+
+/**
+ * Used for determining if the data can be copied to stack and sent. This is the most efficient way to send data
+ * since it won't allocate on frame.
+ * Returns: If the type sequence has a dynamic array
+ */
+bool hasDynamicArray(T...)()
+{
+	static foreach(t; T)
+	{
+		static if(hasDynamicArray!t)
+			return true;
+	}
+	return false;
+}
+
 enum bool isArray(T) = isDynamicArray!T || __traits(isStaticArray, T);
 
 /**
  * Detect whether type `T` is a pointer.
  */
 enum bool isPointer(T) = is(T == U*, U);
+
+bool hasBool(T)()
+{
+	static if(is(Unqual!T == bool))
+		return true;
+	else static if(is(T == struct))
+	{
+		static foreach(v; T.init.tupleof)
+		{
+			static if(hasBool!(typeof(v)))
+				return true;
+		}
+		return false;
+	}
+	else static if(is(T == U[N], U, size_t N))
+		return hasBool!U;
+	else static if(isDynamicArray!T)
+		return hasBool!(typeof(T.init[0]));
+	else
+		return false;
+}
 
 /**
  * Detect whether `T` is a built-in numeric type (integral or floating

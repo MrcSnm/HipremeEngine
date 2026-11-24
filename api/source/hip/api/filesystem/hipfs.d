@@ -228,6 +228,13 @@ interface IHipFS
      * Uses a key/value pair for writing cache values. 
      */
     string writeCache(string cacheName, void[] data);
+
+    /**
+     * Returns: The base directory where relative writes are stored.
+     * On Apple platforms this is a writable directory for user data,
+     * separate from the bundled read-only assets.
+     */
+    string getWritablePath();
 }
 
 ///Dependency injection interface for HipFS

@@ -181,6 +181,7 @@ static bool initEngine(bool audio3D = false)
 	}
 	setIHipFS(HipFS, projPath);
 	reportRow("engine", "filesystem", fsInstallPath);
+	reportRow("engine", "filesystem-write", HipFS.getWritablePath());
 
 	import hip.bind.dependencies;
 	loadEngineDependencies();
@@ -326,11 +327,19 @@ export extern(System) bool HipremeUpdate(float dt)
 	g_deltaTime = dt;
 	import hip.graphics.g2d.profiling;
 	setFrameInitTime();
-	if(!sys.update(g_deltaTime))
+	try
+	{
+		if(!sys.update(g_deltaTime))
+			return false;
+		if(isUsingInterpreter)
+			updateInterpreter();
+		sys.postUpdate();
+	}
+	catch (Throwable e)
+	{
+		sys.scriptFatalError(e);
 		return false;
-	if(isUsingInterpreter)
-		updateInterpreter();
-	sys.postUpdate();
+	}
 	return true;
 }
 

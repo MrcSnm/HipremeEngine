@@ -16,6 +16,18 @@ struct GC
         return desiredExtensionInSize;
     }
 
+    static void* malloc(size_t sz) pure nothrow
+    {
+        import rt.hooks : pureMalloc;
+        return pureMalloc(sz).ptr;
+    }
+
+    static void* realloc(void* ptr, size_t sz) pure nothrow
+    {
+        import rt.hooks : pureRealloc;
+        return pureRealloc((cast(ubyte*)ptr)[0..0], sz).ptr;
+    }
+
     static BlkInfo qalloc(size_t sz, uint ba = 0, const scope TypeInfo ti = null) pure nothrow
     {
         import core.arsd.memory_allocation;

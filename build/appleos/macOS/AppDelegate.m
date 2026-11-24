@@ -31,10 +31,6 @@
 
 @end
 
-const char* hipGetResourcesPath(void)
-{
-    return [[NSBundle mainBundle].resourcePath UTF8String];
-}
 
 NSWindow* getGameWindow(void)
 {return [NSApplication sharedApplication].windows[0];}

@@ -268,7 +268,7 @@ class GameSystem : IGameSystem
                 s.initialize();
                 scenes~= s;
             }
-            catch (Error e){scriptFatalError(e);}
+            catch (Throwable e){scriptFatalError(e);}
         };
         if(waitForLoading)
             HipAssetManager.addOnLoadingFinish(onLoadFn);
@@ -335,7 +335,7 @@ class GameSystem : IGameSystem
                 if(s is null) logln("SCENE IS NULL");
                 else s.update(deltaTime);
             }
-            catch (Error e){scriptFatalError(e);}
+            catch (Throwable e){scriptFatalError(e);}
         }
         return true;
     }

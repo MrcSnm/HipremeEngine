@@ -1,15 +1,15 @@
 module backtraced;
 version(Windows) version = UseBacktraced;
 else version(Android) version = UseNullBacktraced;
-else version(linux) version = UseBacktraced;
+else version(linux) version = UsePosixBacktraced;
+else version(OSX) version = UsePosixBacktraced;
 else version = UseNullBacktraced;
-
-
 
 version(UseNullBacktraced)
 void backtraced_Register() { }
 
-version(UseBacktraced):
+version(UseBacktraced)
+{
 import core.demangle;
 
 version (Windows)
@@ -134,125 +134,174 @@ version (Windows)
         SetUnhandledExceptionFilter(&TopLevelExceptionHandler);
     }
 }
+}
 
-version (linux)
+version(UsePosixBacktraced)
 {
-    import core.stdc.signal : SIGSEGV, SIGFPE, SIGILL, SIGABRT, signal;
-    import core.stdc.stdlib : free, exit;
-    import core.stdc.string : strlen, memcpy;
-    import core.stdc.stdio : fprintf, stderr, sprintf, fgets, fclose, FILE;
-    import core.sys.posix.unistd : STDERR_FILENO, readlink;
-    import core.sys.posix.signal : SIGUSR1;
-    import core.sys.posix.stdio : popen, pclose;
-    import core.sys.linux.execinfo : backtrace, backtrace_symbols;
-    import core.sys.linux.dlfcn : dladdr, dladdr1, Dl_info, RTLD_DL_LINKMAP;
-    import core.sys.linux.link : link_map;
-    import core.demangle : demangle;
+    import core.stdc.signal : SIG_DFL, signal, raise;
+    import core.stdc.stdio : fprintf, fflush, stderr;
+    import core.stdc.stdlib : exit;
+    import core.sys.posix.signal : SIGSEGV, SIGBUS, SIGFPE, SIGILL, SIGABRT, SIGUSR1;
+    import core.sys.posix.unistd : _exit;
+
+    version (linux)
+        import core.sys.linux.execinfo : backtrace;
+    else version (OSX)
+        import core.sys.darwin.execinfo : backtrace;
+
+    private __gshared bool handlingCrash;
 
     void backtraced_Register()
     {
         signal(SIGSEGV, &handler);
+        signal(SIGBUS, &handler);
+        signal(SIGFPE, &handler);
+        signal(SIGILL, &handler);
+        signal(SIGABRT, &handler);
         signal(SIGUSR1, &handler);
     }
 
-    // TODO: clean this mess
-    // TODO: use core.demangle instead
-    extern (C) void handler(int sig) nothrow @nogc
+    private extern(C) void handler(int sig) nothrow @nogc
     {
-        enum MAX_DEPTH = 32;
+        if (handlingCrash)
+            _exit(1);
+        handlingCrash = true;
+
+        enum MAX_DEPTH = 64;
 
         string signal_string;
         switch (sig)
         {
-        case SIGSEGV:
-            signal_string = "SIGSEGV";
-            break;
-        case SIGFPE:
-            signal_string = "SIGFPE";
-            break;
-        case SIGILL:
-            signal_string = "SIGILL";
-            break;
-        case SIGABRT:
-            signal_string = "SIGABRT";
-            break;
-        default:
-            signal_string = "unknown";
-            break;
+            case SIGSEGV: signal_string = "SIGSEGV"; break;
+            case SIGBUS:  signal_string = "SIGBUS";  break;
+            case SIGFPE:  signal_string = "SIGFPE";  break;
+            case SIGILL:  signal_string = "SIGILL";  break;
+            case SIGABRT: signal_string = "SIGABRT"; break;
+            case SIGUSR1: signal_string = "SIGUSR1"; break;
+            default:      signal_string = "unknown"; break;
         }
 
-        fprintf(stderr, "-------------------------------------------------------------------+\r\n");
-        fprintf(stderr, "Received signal '%s' (%d)\r\n", signal_string.ptr, sig);
-        fprintf(stderr, "-------------------------------------------------------------------+\r\n");
+        fprintf(stderr, "-------------------------------------------------------------------+\n");
+        fprintf(stderr, "Received signal '%s' (%d)\n", signal_string.ptr, sig);
+        fprintf(stderr, "-------------------------------------------------------------------+\n");
 
         void*[MAX_DEPTH] trace;
-        int stack_depth = backtrace(&trace[0], MAX_DEPTH);
-        char** strings = backtrace_symbols(&trace[0], stack_depth);
+        int stack_depth = backtrace(cast(void**)&trace[0], MAX_DEPTH);
+        fprintf(stderr, "backtrace: %d\n", stack_depth);
 
-        enum BUF_SIZE = 1024;
-        char[BUF_SIZE] syscom = 0;
-        char[BUF_SIZE] my_exe = 0;
-        char[BUF_SIZE] output = 0;
+        printBacktrace(trace[0 .. stack_depth]);
 
-        readlink("/proc/self/exe", &my_exe[0], BUF_SIZE);
+        fflush(stderr);
 
-        fprintf(stderr, "executable: %s\n", &my_exe[0]);
-        fprintf(stderr, "backtrace: %i\n", stack_depth);
-
-        for (auto i = 2; i < stack_depth; ++i)
-        {
-            auto line = strings[i];
-            auto len = strlen(line);
-            bool insideParenthesis;
-            int startParenthesis;
-            int endParenthesis;
-            for (int j = 0; j < len; j++)
-            {
-                // ()
-                if (!insideParenthesis && line[j] == '(')
-                {
-                    insideParenthesis = true;
-                    startParenthesis = j + 1;
-                }
-                else if (insideParenthesis && line[j] == ')')
-                {
-                    insideParenthesis = false;
-                    endParenthesis = j;
-                }
-            }
-            auto addr = convert_to_vma(cast(size_t) trace[i]);
-            FILE* fp;
-
-            auto locLen = sprintf(&syscom[0], "addr2line -e %s %p | ddemangle", &my_exe[0], addr);
-            fp = popen(&syscom[0], "r");
-
-            auto loc = fgets(&output[0], output.length, fp);
-            fclose(fp);
-
-            // printf("loc: %s\n", loc);
-
-            auto getLen = strlen(output.ptr);
-
-            char[256] func = 0;
-            memcpy(func.ptr, &line[startParenthesis], (endParenthesis - startParenthesis));
-            sprintf(&syscom[0], "echo '%s' | ddemangle", func.ptr);
-            fp = popen(&syscom[0], "r");
-
-            output[getLen - 1] = ' '; // strip new line
-            auto locD = fgets(&output[getLen], cast(int)(output.length - getLen), fp);
-            fclose(fp);
-
-            fprintf(stderr, "%s", output.ptr);
-        }
-        exit(-1);
+        signal(sig, SIG_DFL);
+        version (linux)
+            exit(-1);
+        else version (OSX)
+            raise(sig);
     }
 
-    // https://stackoverflow.com/questions/56046062/linux-addr2line-command-returns-0/63856113#63856113
-    size_t convert_to_vma(size_t addr) nothrow @nogc
+    version (linux)
     {
-        Dl_info info;
-        link_map* link_map;
-        dladdr1(cast(void*) addr, &info, cast(void**)&link_map, RTLD_DL_LINKMAP);
-        return addr - link_map.l_addr;
+        import core.demangle : demangle;
+        import core.stdc.string : strlen, memcpy;
+        import core.stdc.stdio : sprintf, fgets, FILE;
+        import core.sys.posix.unistd : readlink;
+        import core.sys.posix.stdio : popen, pclose;
+        import core.sys.linux.execinfo : backtrace_symbols;
+        import core.sys.linux.dlfcn : Dl_info, RTLD_DL_LINKMAP, dladdr1;
+        import core.sys.linux.link : link_map;
+
+        private @trusted @nogc nothrow
+        const(char)[] demangleInto(const(char)[] mangled, char[] buffer)
+        {
+            alias DemangleFn = char[] function(const(char)[], char[], void*) pure nothrow @safe @nogc;
+            return (cast(DemangleFn)&demangle)(mangled, buffer, null);
+        }
+
+        private void printBacktrace(void*[] trace) nothrow @nogc
+        {
+            enum BUF_SIZE = 1024;
+            char[BUF_SIZE] syscom = 0;
+            char[BUF_SIZE] my_exe = 0;
+            char[BUF_SIZE] output = 0;
+
+            readlink("/proc/self/exe", &my_exe[0], BUF_SIZE);
+            fprintf(stderr, "executable: %s\n", &my_exe[0]);
+
+            char** strings = backtrace_symbols(cast(const(void*)*)&trace[0], cast(int)trace.length);
+
+            for (size_t i = 2; i < trace.length; ++i)
+            {
+                auto line = strings[i];
+                auto len = strlen(line);
+                bool insideParenthesis;
+                bool hasSymbol;
+                int startParenthesis;
+                int endParenthesis;
+                for (int j = 0; j < len; j++)
+                {
+                    if (!insideParenthesis && line[j] == '(')
+                    {
+                        insideParenthesis = true;
+                        startParenthesis = j + 1;
+                    }
+                    else if (insideParenthesis && line[j] == ')')
+                    {
+                        insideParenthesis = false;
+                        endParenthesis = j;
+                        hasSymbol = true;
+                    }
+                }
+                auto addr = convertToVma(cast(size_t) trace[i]);
+
+                sprintf(&syscom[0], "addr2line -e %s %p", &my_exe[0], addr);
+                FILE* fp = popen(&syscom[0], "r");
+
+                output[0] = 0;
+                fgets(&output[0], output.length, fp);
+                pclose(fp);
+
+                auto getLen = strlen(output.ptr);
+                if (getLen > 0)
+                    output[getLen - 1] = ' ';
+                fprintf(stderr, "%s", output.ptr);
+
+                if (hasSymbol && endParenthesis > startParenthesis)
+                {
+                    char[256] func = void;
+                    auto funcLen = endParenthesis - startParenthesis;
+                    if (funcLen > func.length)
+                        funcLen = func.length;
+                    memcpy(func.ptr, &line[startParenthesis], funcLen);
+
+                    char[BUF_SIZE] demangled = void;
+                    auto funcName = demangleInto(func[0 .. funcLen], demangled[]);
+                    if (funcName.ptr !is demangled.ptr)
+                        funcName = func[0 .. funcLen];
+                    fprintf(stderr, "%.*s", cast(int)funcName.length, funcName.ptr);
+                }
+                fprintf(stderr, "\n");
+            }
+        }
+
+        private size_t convertToVma(size_t addr) nothrow @nogc
+        {
+            Dl_info info;
+            link_map* link_map;
+            dladdr1(cast(void*) addr, &info, cast(void**)&link_map, RTLD_DL_LINKMAP);
+            return addr - link_map.l_addr;
+        }
+    }
+    else version (OSX)
+    {
+        import core.sys.darwin.execinfo : backtrace_symbols_fd;
+        import core.sys.posix.unistd : STDERR_FILENO;
+
+        private void printBacktrace(void*[] trace) nothrow @nogc
+        {
+            int start = trace.length > 2 ? 2 : 0;
+            backtrace_symbols_fd(cast(const(void*)*)&trace[start], cast(int)(trace.length - start), STDERR_FILENO);
+            fprintf(stderr, "Symbolize with: atos -o <executable> -arch <arch> <address> ...\n");
+        }
     }
 }

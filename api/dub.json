@@ -12,7 +12,10 @@
 	"subPackages": [
 		{
 			"name": "network",
-			"sourcePaths": ["network"], "importPaths": ["network"]
+			"sourcePaths": ["network"], "importPaths": ["network"],
+			"dependencies": {
+				"util": {"path": "../modules/util"}
+			}
 		},
 		{
 			"name": "bindings",

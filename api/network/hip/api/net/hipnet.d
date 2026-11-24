@@ -317,7 +317,7 @@ interface INetwork
 	{
 		import std.traits:isDynamicArray;
         import hip.api.net.utils;
-		uint size = getSendTypeSize(data);
+		uint size = getPackedTypeSize(data);
 
 		static if(is(T == string))
 		{

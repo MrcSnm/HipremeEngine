@@ -111,7 +111,8 @@ class HipCStdioFileSystemInteraction : IHipFileSystemInteraction
         {
             import core.sys.posix.sys.stat;
             stat_t st;
-            stat(cachedStringz(path), &st);
+            if(stat(cachedStringz(path), &st) != 0)
+                return false;
             return S_ISDIR(st.st_mode);
         }
         else return path[$-1] == '/';

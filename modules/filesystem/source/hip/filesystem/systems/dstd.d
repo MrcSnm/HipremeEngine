@@ -7,20 +7,40 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
     {
         import std.stdio : File;
         import hip.error.handler;
-        if(ErrorHandler.assertLazyErrorMessage(exists(path), "FileSystem Error:", "Filed named '"~path~"' does not exists"))
+        if(ErrorHandler.assertLazyErrorMessage(exists(path), "FileSystem Error:", "File named '"~path~"' does not exist"))
             return false;
-        auto f = File(path);
-        import hip.util.array;
-        ubyte[] output = uninitializedArray!(ubyte[])(f.size);
-        f.rawRead(output); //TODO: onError should be on try/catch
-        f.close();
+
+        ubyte[] output;
+        try
+        {
+            auto f = File(path);
+            import hip.util.array;
+            output = uninitializedArray!(ubyte[])(f.size);
+            f.rawRead(output);
+            f.close();
+        }
+        catch (Exception e)
+        {
+            ErrorHandler.showErrorMessage("FileSystem Error", "Could not read '"~path~"': "~e.msg);
+            return false;
+        }
         onSuccess(output);
         return true;
     }
     bool write(string path, const void[] data)
     {
-        static import std.file; 
-        std.file.write(path, data);return true;
+        static import std.file;
+        import hip.error.handler;
+        try
+        {
+            std.file.write(path, data);
+            return true;
+        }
+        catch (std.file.FileException e)
+        {
+            ErrorHandler.showErrorMessage("FileSystem Error", "Could not write '"~path~"': "~e.msg);
+            return false;
+        }
     }
     bool exists(string path)
     {
@@ -30,13 +50,34 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
     bool remove(string path)
     {
         static import std.file;
-        std.file.remove(path);return true;
+        import hip.error.handler;
+        if(!std.file.exists(path))
+            return false;
+        try
+        {
+            std.file.remove(path);
+            return true;
+        }
+        catch (std.file.FileException e)
+        {
+            ErrorHandler.showErrorMessage("FileSystem Error", "Could not remove '"~path~"': "~e.msg);
+            return false;
+        }
     }
     
     bool isDir(string path)
     {
         static import std.file;
-        return std.file.isDir(path);
+        import hip.error.handler;
+        try
+        {
+            return std.file.exists(path) && std.file.isDir(path);
+        }
+        catch (std.file.FileException e)
+        {
+            ErrorHandler.showErrorMessage("FileSystem Error", "Could not stat '"~path~"': "~e.msg);
+            return false;
+        }
     }
     
 }

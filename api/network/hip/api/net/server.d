@@ -53,7 +53,7 @@ ubyte[] getNetworkFormattedData(T)(T data, MarkedNetReservedTypes code)
 	import hip.api.net.utils;
 	import std.traits:isDynamicArray;
 
-	uint size = getSendTypeSize(data) + cast(uint)ubyte.sizeof;
+	uint size = getPackedTypeSize(data) + cast(uint)ubyte.sizeof;
 
 	static if(is(T == string))
 	{

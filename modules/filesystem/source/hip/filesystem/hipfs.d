@@ -57,7 +57,10 @@ private pure bool validatePath(string initial, string toAppend)
 
 ///Function is implemented AppDelegate.m
 version(AppleOS)
-private extern(C) const(char*) hipGetResourcesPath();
+{
+    private extern(C) const(char*) hipGetResourcesPath();
+    private extern(C) const(char*) hipGetWritablePath(const(char)* appName);
+}
 
 abstract class HipFile : IHipFileItf
 {
@@ -107,6 +110,8 @@ class HipFSPromise : IHipFSPromise
     void delegate(string err)[] onErrorList;
     ubyte[] data;
     bool finished = false;
+    bool failed = false;
+    string errorMessage;
     FileReadResult result = FileReadResult.keep;
     this(string filename){this.filename = filename;}
     IHipFSPromise addOnSuccess(FileReadResult delegate(in ubyte[] data) onSuccess)
@@ -115,6 +120,8 @@ class HipFSPromise : IHipFSPromise
             throw new Exception("HipFSPromise Error: "~filename~" data was already freed, but addOnSuccess is being called.");
         if(finished)
         {
+            if(failed)
+                return this;
             if(onSuccess(data) == FileReadResult.free)
             {
                 result = FileReadResult.free;
@@ -129,8 +136,8 @@ class HipFSPromise : IHipFSPromise
     {
         if(finished)
         {
-            if(data.length == 0 && result != FileReadResult.free)
-                onError("No data");
+            if(failed && result != FileReadResult.free)
+                onError(errorMessage.length ? errorMessage : "No data");
         }
         else
             onErrorList~= onError;
@@ -145,12 +152,26 @@ class HipFSPromise : IHipFSPromise
         FileReadResult r = FileReadResult.keep;
         if(data) foreach(success; onSuccessList)
             r|= success(data);
-        else foreach(err; onErrorList)
-            err("Could not read file");
+        else
+        {
+            failed = true;
+            foreach(err; onErrorList)
+                err(errorMessage.length ? errorMessage : "Could not read file");
+        }
 
         if(r == FileReadResult.free)
             dispose();
         return result = r;
+    }
+    void setError(string err)
+    {
+        assert(!finished, "HipFSPromise was already resolved.");
+        this.data = null;
+        this.failed = true;
+        this.finished = true;
+        this.errorMessage = err;
+        foreach(errorHandler; onErrorList)
+            errorHandler(err);
     }
     bool resolved() const{return finished;}
 
@@ -178,7 +199,8 @@ class HipFileSystemImplementation : IHipFS
     protected IHipFileSystemInteraction fs;
     protected size_t filesReadingCount = 0;
     protected string _projectPath;
-    void projectPath(string projectPath){ _projectPath = projectPath; }
+    protected string writablePath;
+    void projectPath(string projectPath){ _projectPath = projectPath; writablePath = null; }
     string projectPath(){ return _projectPath; }
 
     protected bool function(string path, out string errMessage)[] extraValidations;
@@ -231,6 +253,63 @@ class HipFileSystemImplementation : IHipFS
         return cast(string)str[0..strlen(str)];
     }
 
+    version(AppleOS)
+    public string getWritablePath()
+    {
+        import core.stdc.string : strlen;
+        import hip.util.path : baseName;
+        import hip.util.system : sanitizePath;
+
+        if(writablePath.length == 0)
+        {
+            string appName;
+            if(_projectPath.length)
+                appName = _projectPath.baseName;
+            const(char)* str = hipGetWritablePath((appName ~ '\0').ptr);
+            if(str !is null && strlen(str))
+                writablePath = str[0 .. strlen(str)].idup.sanitizePath;
+        }
+        return writablePath;
+    }
+    else
+    public string getWritablePath()
+    {
+        return combinedPath;
+    }
+
+    private string getWritePath(string path)
+    {
+        version(AppleOS)
+        {
+            import hip.util.path : joinPath;
+            import hip.util.system : sanitizePath;
+
+            string writable = getWritablePath();
+            if(writable.length)
+            {
+                string p = path.sanitizePath;
+                if(defPath.length)
+                    p = joinPath(defPath, p);
+                return joinPath(writable, p);
+            }
+        }
+        return null;
+    }
+
+    private string writePathFor(string path)
+    {
+        string ret = getWritePath(path);
+        return ret.length ? ret : getPath(path);
+    }
+
+    private string resolvePath(string path)
+    {
+        string writePath = getWritePath(path);
+        if(writePath.length && fs.exists(writePath))
+            return writePath;
+        return getPath(path);
+    }
+
     
     public void install(string path,
     bool function(string path, out string errMessage)[] validations ...)
@@ -248,6 +327,13 @@ class HipFileSystemImplementation : IHipFS
         import hip.util.system : sanitizePath;
         import hip.console.log;
 
+        version(AppleOS)
+        {
+            string p = path.sanitizePath;
+            string writable = getWritePath(p);
+            if(writable.length && fs.exists(writable))
+                return writable;
+        }
         if(combinedPath)
             return joinPath(combinedPath, path.sanitizePath);
         return path.sanitizePath;
@@ -321,8 +407,8 @@ class HipFileSystemImplementation : IHipFS
     public IHipFSPromise read(string path)
     {
         import hip.console.log;
-        hiplog("Required path ", getPath(path));
-        path = getPath(path);
+        path = resolvePath(path);
+        hiplog("Required path ", path);
         if(!isPathValid(path))
         {
             hiplog("Invalid path ",path," received.");
@@ -332,15 +418,21 @@ class HipFileSystemImplementation : IHipFS
 
         HipFSPromise promise = new HipFSPromise(path);
 
-        fs.read(path, (ubyte[] data)
+        bool started = fs.read(path, (ubyte[] data)
         {
             filesReadingCount--;
             return promise.setFinished(data);
         }, (string err)
         {
-            promise.setFinished(null);
-            defaultErrorHandler(err);
+            filesReadingCount--;
+            promise.setError(err);
         });
+
+        if(!started && !promise.resolved())
+        {
+            filesReadingCount--;
+            promise.setError("Could not start reading '"~path~"'");
+        }
         
         return promise;
     }
@@ -358,22 +450,33 @@ class HipFileSystemImplementation : IHipFS
     
     public bool write(string path, const(void)[] data)
     {
-        if(!isPathValid(path))
+        if(!isPathValid(path, true, false))
             return false;
-        return fs.write(getPath(path), data);
+        return fs.write(writePathFor(path), data);
     }
 
 
-    public bool exists(string path){return isPathValid(path) && fs.exists(getPath(path));}
+    public bool exists(string path)
+    {
+        string resolved = resolvePath(path);
+        return isPathValid(resolved, true, false) && fs.exists(resolved);
+    }
     public bool remove(string path)
     {
-        if(!isPathValid(path))
+        string resolved = resolvePath(path);
+        if(!isPathValid(resolved, true, false))
             return false;
-        return fs.remove(getPath(path));
+        return fs.remove(resolved);
     }
 
     public string getcwd()
     {
+        version(AppleOS)
+        {
+            string writable = getWritablePath();
+            if(writable.length)
+                return writable;
+        }
         return getPath("");
     }
 
@@ -406,8 +509,16 @@ class HipFileSystemImplementation : IHipFS
     }
 
 
-    public bool isDir(string path){return isPathValid(path, false, false) && fs.isDir(getPath(path));}
-    public bool isFile(string path){return isPathValid(path, true, false) && fs.isFile(getPath(path));}
+    public bool isDir(string path)
+    {
+        string resolved = resolvePath(path);
+        return isPathValid(resolved, false, false) && fs.isDir(resolved);
+    }
+    public bool isFile(string path)
+    {
+        string resolved = resolvePath(path);
+        return isPathValid(resolved, true, false) && fs.isFile(resolved);
+    }
 
     public string writeCache(string cacheName, void[] data)
     {

@@ -287,7 +287,7 @@ unittest
     (cast(ubyte[])fourth)[] = 7;
     void[] grown = b.realloc(fourth, 16);
     assert(grown.ptr is fourth.ptr, "Reallocating the last allocation must grow in place");
-    assert(grown.length == 16 && grown[0] == 7);
+    assert(grown.length == 16 && (cast(ubyte[])grown)[0] == 7);
     b.free(grown);
     assert(b.alloc(16).ptr is grown.ptr, "Freeing the last allocation must rewind the frame");
 
@@ -319,8 +319,8 @@ struct MallocAllocator
 }
 
 __gshared MallocAllocator mallocAllocator = MallocAllocator.create();
+__gshared GCAllocator gcAllocator = GCAllocator.create();
 
-version(none):
 struct GCAllocator
 {
     Allocator allocator;
@@ -330,14 +330,19 @@ struct GCAllocator
     static GCAllocator create()
     {
         GCAllocator ret;
-        ret.allocator.allocFn = &allocImpl;
+        ret.allocator.allocFn = cast(void[] function(Allocator*, size_t, size_t) @nogc)&allocImpl;
         ret.allocator.freeFn = &freeImpl;
-        ret.allocator.reallocFn = &reallocImpl;
+        ret.allocator.reallocFn = cast(void[] function(Allocator*, void[], size_t, size_t) @nogc)&reallocImpl;
         return ret;
     }
 
-    static void[] allocImpl(Allocator* alloc, size_t amount){return GC.malloc(amount)[0..amount];}
-    static void[] reallocImpl(Allocator* alloc, void[] ptr, size_t amount){return GC.realloc(ptr.ptr, amount)[0..amount];}
+    @trusted
+    static void[] allocImpl(Allocator* alloc, size_t amount, size_t alignment){return GC.malloc(amount)[0..amount];}
+
+    @trusted
+    static void[] reallocImpl(Allocator* alloc, void[] ptr, size_t amount, size_t alignment){return GC.realloc(ptr.ptr, amount)[0..amount];}
+
+    @nogc
     static void freeImpl(Allocator* alloc, void[] ptr){ GC.free(ptr.ptr);}
 
 }

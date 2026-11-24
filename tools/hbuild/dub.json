@@ -8,7 +8,8 @@
 		"redub": {"path": "/Users/hipreme/Documents/redub/"},
 		"handy-httpd": "~>8.4.3",
 		"archive": "~>0.7.1",
-		"my-ip": "~>0.2.0"
+		"my-ip": "~>0.2.0",
+		"featurelib": {"path": "../featurelib"}
 	},
 	"subConfigurations": {
 		"redub": "library",

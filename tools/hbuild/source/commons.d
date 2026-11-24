@@ -112,21 +112,6 @@ struct Terminal
 	}
 }
 
-struct RealTimeConsoleInput
-{
-	private arsd.terminal.RealTimeConsoleInput* input;
-	this(arsd.terminal.RealTimeConsoleInput* input){this.input = input;}
-	dchar getch()
-	{
-		if(input) return input.getch();
-		return '\0';
-	}
-	~this()
-	{
-		if(input) destroy(*input);
-	}
-}
-
 struct TerminalColors
 {
 	private Terminal* _t;

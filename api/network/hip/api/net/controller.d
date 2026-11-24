@@ -1,5 +1,9 @@
 module hip.api.net.controller;
 public import hip.api.net.hipnet;
+import hip.util.binary : fromPackedBytes, getStructFromPackedBytes, getArrayFromPackedBytes;
+
+alias getNetworkStruct = getStructFromPackedBytes;
+alias getNetworkArray = getArrayFromPackedBytes;
 
 /**
 Example usage
@@ -225,57 +229,6 @@ class NetController(alias NetData)
     }
 }
 
-T getNetworkArray(T, E = typeof(T.init[0]))(ubyte[] data)
-{
-    import hip.api.net.utils;
-    assert(data.length >= 4, "Data received is not an actual array since it is smaller than a length element.");
-    uint length = *(cast(uint*)data.ptr);
-    static if(hasDynamicArray!E) //Dynamic arrays for type of dynamic size
-    {
-        T temp;
-        temp.length = length;
-        size_t offset = uint.sizeof;
-        foreach(i; 0..length)
-        {
-            temp[i] = getNetworkStruct!(E)(data[offset..$]);
-            offset+= getSendTypeSize(temp[i]);
-        }
-        return temp;
-    }
-    else //Static size
-    {
-        assert(data.length >= 4 + length * E.sizeof, "Data received is not valid.Not enough space available for type "~E.stringof);
-        return (cast(E*)(data.ptr + uint.sizeof))[0..length].dup;
-    }
-}
-
-
-T getNetworkStruct(T)(ubyte[] data)
-{
-    import hip.api.net.utils;
-    import std.traits:isDynamicArray;
-
-    static if(hasDynamicArray!T)
-    {
-        T ret;
-        size_t offset;
-        foreach(ref v; ret.tupleof)
-        {
-            static if(isDynamicArray!(typeof(v)))
-                v = getNetworkArray!(typeof(v))(data[offset..$]);
-            else
-                v = getNetworkStruct!(typeof(v))(data[offset..$]);
-            offset+= getSendTypeSize(v);
-        }
-        return ret;
-    }
-    else
-    {
-        assert(data.length >= T.sizeof, "Data length is not enough to be interpreted as "~T.stringof);
-        return *cast(T*)data.ptr;
-    }
-}
-
 T interpretNetworkData(T)(NetHeader header, ubyte[] data)
 {
 	import std.traits;
@@ -294,23 +247,9 @@ T interpretNetworkData(T)(NetHeader header, ubyte[] data)
 		if(header.type != NetDataType.binary)
 			throw new Exception("Unmatched data type when trying to get a binary.");
 
-		static if(isArray!T)
-		{
-			size_t arraySize = header.length / T.init[0].sizeof;
-			static if(isStaticArray!T)
-			{
-				if(arraySize != T.init.length)
-					throw new Exception("Received more data than the static array size of "~T.init.length.stringof);
-				return (cast(T)data)[0..T.init.length];
-			}
-			else
-			{
-				return cast(T)data;
-			}
-		}
+		static if(isDynamicArray!T)
+			return getArrayFromPackedBytes!T(data);
 		else
-		{
-			return *cast(T*)data.ptr;
-		}
+			return fromPackedBytes!T(data);
 	}
 }

@@ -21,6 +21,15 @@ private extern(C) void WasmRead(JSStringType str,
     JSDelegateType!(void delegate(string)) onError
 );
 
+private extern(C) void WasmOPFSRead(JSStringType str,
+    JSDelegateType!(void delegate(ubyte[])) onSuccess,
+    JSDelegateType!(void delegate(string)) onError
+);
+
+private extern(C) bool WasmOPFSWrite(JSStringType str, JSStringType data);
+private extern(C) bool WasmOPFSRemove(JSStringType str);
+private extern(C) bool WasmOPFSExists(JSStringType str);
+
 class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
 {
     import hip.data.json;
@@ -41,8 +50,12 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
         import hip.console.log;
         if(!getFromPath(path, dummy))
         {
-            loglnError("File at path '", path, "' not found. Please check build/wasm/generated/directories.json");
-            return false;
+            hiplog("Browser OPFS read start on ", path);
+            WasmOPFSRead(JSString(path).tupleof, sendJSDelegate!((ubyte[] wasmBin, WasmParametersMemory memory)
+            {
+                onSuccess(wasmBin);
+            }).tupleof, sendJSDelegate!(onError).tupleof);
+            return true;
         }
         hiplog("Browser read start on ", path);
 
@@ -60,7 +73,10 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
         
         return true;
     }
-    bool write(string path, const(void)[] data){return false;}
+    bool write(string path, const(void)[] data)
+    {
+        return WasmOPFSWrite(path.length, cast(void*)path.ptr, data.length, cast(void*)data.ptr);
+    }
 
     private bool getFromPath(string path, out JSONValue output)
     {
@@ -78,9 +94,12 @@ class HipBrowserFileSystemInteraction : IHipFileSystemInteraction
     bool exists(string path)
     {
         JSONValue dummy = void;
-        return getFromPath(path, dummy);
+        return getFromPath(path, dummy) || WasmOPFSExists(path.length, cast(void*)path.ptr);
     }
-    bool remove(string path){return false;}
+    bool remove(string path)
+    {
+        return WasmOPFSRemove(path.length, cast(void*)path.ptr);
+    }
 
     bool isDir(string path)
     {
