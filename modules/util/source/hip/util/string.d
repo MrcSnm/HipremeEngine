@@ -11,6 +11,7 @@ Distributed under the CC BY-4.0 License.
 module hip.util.string;
 public import hip.util.conv:to;
 public import hip.util.to_string_range;
+public import hip.util.allocator;
 import core.stdc.string;
 
 version(WebAssembly) version = UseDRuntimeDecoder;
@@ -25,11 +26,11 @@ version(WebAssembly) version = AvoidStringFragmentation;
 struct String
 {
     @nogc:
-    import core.stdc.stdlib;
     import core.int128;
     char[] chars;
     private size_t _capacity;
     private int* countPtr;
+    private Allocator* allocator;
     size_t length() @safe pure const nothrow  {return chars.length;}
 
     this(this) nothrow @safe pure
@@ -40,26 +41,39 @@ struct String
 
     char* ptr(){ return chars.ptr;}
 
+    private enum isAllocatorType(T) = is(T : Allocator*);
+
+    private template hasAllocatorArg(Args...)
+    {
+        static if(Args.length == 0)
+            enum hasAllocatorArg = false;
+        else
+            enum hasAllocatorArg = isAllocatorType!(Args[0]) || hasAllocatorArg!(Args[1..$]);
+    }
+
     private void initialize(size_t length)
     {
+        if(allocator is null)
+            allocator = mallocAllocator.ptr;
         if(length == 0)
             length = 128;
-        this.countPtr = cast(int*)malloc(int.sizeof);
-        this.chars = (cast(char*)malloc(length))[0..0];
+        this.countPtr = cast(int*)allocator.alloc(int.sizeof).ptr;
+        this.chars = (cast(char*)allocator.alloc(length).ptr)[0..0];
         this._capacity = length;
         this.chars.ptr[0.._capacity] = '\0';
         *countPtr = 1;
     }
 
-    static auto opCall(string str)
+    static auto opCall(string str, Allocator* allocator = mallocAllocator.ptr)
     {
         String s;
+        s.allocator = allocator;
         s.initialize(str.length);
         s.chars = s.chars.ptr[0..str.length];
         s.chars[] = str[];
         return s;
     }
-    static auto opCall(const(char)* str){return opCall(str[0..strlen(str)]);}
+    static auto opCall(const(char)* str, Allocator* allocator = mallocAllocator.ptr){return opCall(cast(string)str[0..strlen(str)], allocator);}
     static auto opCall(String str){return str;}
 
     private enum isAppendable(T) = is(T == string) || is(T == immutable(char)*) || is(T == char);
@@ -67,6 +81,15 @@ struct String
     version(AvoidStringFragmentation)
     {
         static auto opCall(Args...)(Args args)
+        if(!hasAllocatorArg!Args)
+        {
+            return createWithAllocator(mallocAllocator.ptr, args);
+        }
+        static auto opCall(Allocator* allocator, Args...)(Args args)
+        {
+            return createWithAllocator(allocator, args);
+        }
+        private static auto createWithAllocator(Args...)(Allocator* allocator, Args args)
         {
             import hip.util.conv:toStringRange;
             rcStringBuffer.clear();
@@ -93,7 +116,7 @@ struct String
                 static if(is(typeof(a) == String))
                     destroy(a);
             }
-            return String(rcStringBuffer.toString());
+            return String(rcStringBuffer.toString(), allocator);
         }
         auto ref opOpAssign(string op, T)(T value)
         if(op == "~")
@@ -127,9 +150,19 @@ struct String
     else
     {
         static auto opCall(Args...)(Args args)
+        if(!hasAllocatorArg!Args)
+        {
+            return createWithAllocator(mallocAllocator.ptr, args);
+        }
+        static auto opCall(Allocator* allocator, Args...)(Args args)
+        {
+            return createWithAllocator(allocator, args);
+        }
+        private static auto createWithAllocator(Args...)(Allocator* allocator, Args args)
         {
             import hip.util.conv:toStringRange;
             String s;
+            s.allocator = allocator;
             s.initialize(128);
             static foreach(a; args)
             {
@@ -169,7 +202,7 @@ struct String
             }
             else
             {
-                temp = String(value);
+                temp = createWithAllocator(allocator, value);
                 chs = temp.chars;
             }
             if(!updateBorrowed(chs.length) && chs.length + this.length >= this._capacity) //New size is greater than capacity
@@ -247,13 +280,14 @@ struct String
         return cast(string)chars[0..length];
     }
 
-    String opSlice(size_t start, size_t end) nothrow
+    String opSlice(size_t start, size_t end)
     {
         assert(countPtr != null, "Can't slice a null pointer.");
         String ret;
         ret.countPtr = countPtr;
         ret.chars = chars.ptr[start..end];
         ret._capacity = _capacity;
+        ret.allocator = allocator;
         *countPtr = *countPtr+1;
         return ret;
     }
@@ -275,7 +309,9 @@ struct String
 
     pragma(inline, true) private void resize(size_t newSize)
     {
-        chars = (cast(char*)realloc(chars.ptr, newSize))[0..chars.length];
+        if(allocator is null)
+            allocator = mallocAllocator.ptr;
+        chars = (cast(char*)allocator.realloc(chars.ptr[0.._capacity], newSize).ptr)[0..chars.length];
         _capacity = newSize;
     }
     ///Make this struct OutputRange compatible
@@ -314,17 +350,16 @@ struct String
         return chars[index];
     }
 
-    ~this() nothrow @trusted pure
+    ~this() @trusted
     {
-        import core.memory;
         if(countPtr != null)
         {
             *countPtr = *countPtr - 1;
             assert(*countPtr >= 0);
             if(*countPtr == 0)
             {
-                pureFree(chars.ptr);
-                pureFree(countPtr);
+                allocator.free(chars.ptr[0.._capacity]);
+                allocator.free(countPtr[0..1]);
             }
             countPtr = null;
             chars = null;
@@ -582,7 +617,7 @@ pure string replaceAll(string str, string what, string replaceWith = "")
     return cast(string)ret;
 }
 
-pure int indexOf(String str, const(char)[] toFind, int startIndex = 0) nothrow @nogc @safe
+int indexOf(String str, const(char)[] toFind, int startIndex = 0) @nogc @safe
 {
     return indexOf(str.toString, toFind, startIndex);
 }
@@ -965,6 +1000,9 @@ string join(string[] args, string separator = "")
 
 unittest
 {
+    assert(String("hello", mallocAllocator.ptr) == "hello");
+    auto customAllocator = MallocAllocator.create();
+    assert(String("hello", customAllocator) == "hello");
     assert(join(["hello", "world"], ", ") == "hello, world");
     assert(split("hello world", " ").length == 2);
     assert(toDefault!int("hello") == 0);

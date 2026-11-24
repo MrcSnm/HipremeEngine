@@ -91,6 +91,12 @@ struct Allocator
 
     pragma(inline, true)
     {
+        T[] get(T)(size_t count)
+        {
+            T[] ret = cast(T[])alloc(count * T.sizeof, T.alignof);
+            ret[] = T.init;
+            return ret;
+        }
         void[] alloc(size_t amount, size_t alignment = size_t.sizeof){return allocFn(&this, amount, alignment);}
         void[] realloc(void[] ptr, size_t amount, size_t alignment = size_t.sizeof){return reallocFn(&this, ptr, amount, alignment);}
         void free(void[] ptr){return freeFn(&this, ptr);}
@@ -165,14 +171,15 @@ struct FrameAllocator
             return ptr;
         FrameAllocator* f = cast(FrameAllocator*)alloc;
 
-        if(f.heap.ptr + f.offset == ptr.ptr)
+        if(f.heap.ptr + f.offset == cast(ubyte*)ptr.ptr + ptr.length)
         {
-            ptrdiff_t deltaSize = amount - cast(ptrdiff_t)ptr.length;
+            ptrdiff_t deltaSize = cast(ptrdiff_t)amount - cast(ptrdiff_t)ptr.length;
             if(deltaSize > 0 && f.offset + deltaSize > f.heap.length)
                 assert(false, "Please create a bigger frame allocator.");
 
+            size_t start = cast(size_t)(cast(ubyte*)ptr.ptr - f.heap.ptr);
             f.offset+= deltaSize;
-            return f.heap[0..amount];
+            return f.heap[start .. start + amount];
         }
         else
         {
@@ -197,7 +204,7 @@ struct FrameAllocator
     static void freeImpl(Allocator* alloc, void[] ptr) @nogc
     {
         FrameAllocator* f = cast(FrameAllocator*)alloc;
-        if(f.heap.ptr + f.offset == ptr.ptr)
+        if(f.heap.ptr + f.offset == cast(ubyte*)ptr.ptr + ptr.length)
             f.offset-= ptr.length;
         debug
         {
@@ -241,7 +248,7 @@ struct FrameAllocator
     }
 }
 
-version(assert) unittest
+unittest
 {
     bool oldGuard = frameAllocatorGuardEnabled;
 
@@ -275,6 +282,14 @@ version(assert) unittest
     (cast(ubyte[])third)[] = 1;
     b.reset();
     assert(b.alloc(8).ptr is third.ptr, "Without the guard the same heap must be reused");
+
+    void[] fourth = b.alloc(8);
+    (cast(ubyte[])fourth)[] = 7;
+    void[] grown = b.realloc(fourth, 16);
+    assert(grown.ptr is fourth.ptr, "Reallocating the last allocation must grow in place");
+    assert(grown.length == 16 && grown[0] == 7);
+    b.free(grown);
+    assert(b.alloc(16).ptr is grown.ptr, "Freeing the last allocation must rewind the frame");
 
     frameAllocatorGuardEnabled = oldGuard;
 }
