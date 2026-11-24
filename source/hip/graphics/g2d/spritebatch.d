@@ -69,6 +69,7 @@ final class HipSpriteBatch : IHipBatch
             vertex = new HipSpriteBatchVertex(this, spriteBatchShader, camera, maxQuads);
             mesh = vertex.mesh;
         }
+
         spriteBatchShader.setBlending(HipBlendFunction.SRC_ALPHA, HipBlendFunction.ONE_MINUS_SRC_ALPHA, HipBlendEquation.ADD);
         reinitUniforms();
     }

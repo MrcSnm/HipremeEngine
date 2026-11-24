@@ -1,10 +1,11 @@
 function setWindowSize(width, height)
 {
+    const dpr = window.devicePixelRatio || 1;
     const canvas = document.getElementById("glcanvas");
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
-    canvas.width  = Math.floor(width*devicePixelRatio);
-    canvas.height = Math.floor(height*devicePixelRatio);
+    canvas.width  = Math.round(width*dpr);
+    canvas.height = Math.round(height*dpr);
 }
 function initializeWindowing()
 {
@@ -28,11 +29,11 @@ function initializeWindowing()
         WasmGetWindowSize()
         {
             const canvas = document.getElementById("glcanvas");
-            return WasmUtils.toDArray([canvas.clientWidth, canvas.clientHeight]);
+            return WasmUtils.toDArray([innerWidth, innerHeight]);
         },
         WasmGetMaxScreenSize()
         {
-            return WasmUtils.toDArray([screen.width, screen.height]);
+            return WasmUtils.toDArray([screen.availWidth, screen.availHeight]);
         },
         WasmSetFullscreen(shouldSet)
         {

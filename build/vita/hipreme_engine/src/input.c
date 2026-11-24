@@ -65,7 +65,6 @@ void hipVitaPollTouch()
     {
         if(getTouchId(touch.report[i].id) == -1)
             touches[i].vitaID = touch.report[i].id;
-
     }
 
 

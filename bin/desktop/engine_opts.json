@@ -1,5 +1,5 @@
 {
-    "buildCmd": "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\tools\\hbuild\\hbuild.exe --autoSelect=WebAssembly --scriptOnly",
-    "builderPath": "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\tools\\hbuild\\hbuild.exe",
-    "defaultProject": "C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine\\projects\\profile"
+    "buildCmd": "\/Users\/hipreme\/Documents\/HipremeEngine\/tools\/hbuild\/hbuild --autoSelect=AppleOS --scriptOnly",
+    "builderPath": "\/Users\/hipreme\/Documents\/HipremeEngine\/tools\/hbuild\/hbuild",
+    "defaultProject": "\/Users\/hipreme\/Documents\/HipremeEngine\/projects\/shape_editor"
 }

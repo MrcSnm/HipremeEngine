@@ -24,6 +24,8 @@
 			"-mcpu=cortex-a57",
 			"-mattr=+crc,+crypto",
 			"-gcc=$DEVKITPRO/devkitA64/bin/aarch64-none-elf-g++",
+			"--fthread-model=local-exec",
+			"--emulated-tls",
 			"--relocation-model=pic",
 			"-defaultlib="
 		],

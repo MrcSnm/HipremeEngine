@@ -10,6 +10,9 @@ class MainScene : AScene, IHipPreloadable
 	mixin Preload;
 
 	immutable int[2] WorldSize = [1280, 720];
+
+	@Asset("candara.fnt")
+	HipFont fntFont;
 	
 	/** Constructor */
 	override void initialize()

@@ -29,6 +29,104 @@ JSONValue engineConfig;
 Config configs;
 
 
+struct Terminal
+{
+	import std.stdio;
+	import core.sync.mutex;
+
+	arsd.terminal.Terminal* arsdTerminal;
+	Mutex mtx;
+	this(arsd.terminal.Terminal* arsdTerminal)
+	{
+		this.arsdTerminal = arsdTerminal;
+		mtx = new Mutex();
+	}
+
+	void color(Color main, Color secondary)
+	{
+		if(arsdTerminal) synchronized(mtx)
+			arsdTerminal.color(main, secondary);
+	}
+	int cursorY()
+	{
+		if(arsdTerminal) synchronized(mtx)
+		{
+			arsdTerminal.updateCursorPosition();
+			return arsdTerminal.cursorY;
+		}
+		return 0;
+	}
+	string getline(string message)
+	{
+		if(arsdTerminal) synchronized(mtx) return arsdTerminal.getline(message); 
+		std.stdio.writeln("Can't get line with message [", message, "]");
+		return "";
+	}
+	void moveTo(int x, int y){if(arsdTerminal) synchronized(mtx) arsdTerminal.moveTo(x, y);}
+	void clear(){if(arsdTerminal) synchronized(mtx) arsdTerminal.clear();}
+	void write(T...)(T args)
+	{
+		if(arsdTerminal) synchronized(mtx) arsdTerminal.write(args);
+		else std.stdio.write(args);
+	}
+	void flush()
+	{
+		if(arsdTerminal) synchronized(mtx)
+		{
+			arsdTerminal.flush();
+			try arsdTerminal.updateCursorPosition();
+			catch(Exception e) { arsdTerminal = null; }
+		}
+	}
+
+	int wait(Pid pid)
+	{
+		this.flush;
+		return std.process.wait(pid);
+	}
+
+	void hideCursor(){ if(arsdTerminal) synchronized(mtx) arsdTerminal.hideCursor();}
+	void showCursor(){ if(arsdTerminal) synchronized(mtx) arsdTerminal.showCursor();}
+	void clearToEndOfLine()
+	{
+		if(arsdTerminal) synchronized(mtx) arsdTerminal.clearToEndOfLine();
+		flush();
+	}
+	void clearLine()
+	{
+		moveTo(0, cursorY);
+		clearToEndOfLine();
+		flush();
+	}
+
+	void writeln(T...)(T args)
+	{
+		if (arsdTerminal) synchronized(mtx) arsdTerminal.writeln(args);
+		else std.stdio.writeln(args);
+	}
+	~this()
+	{
+		showCursor();
+		if(arsdTerminal) synchronized(mtx) destroy(*arsdTerminal);
+		mtx = null;
+	}
+}
+
+struct RealTimeConsoleInput
+{
+	private arsd.terminal.RealTimeConsoleInput* input;
+	this(arsd.terminal.RealTimeConsoleInput* input){this.input = input;}
+	dchar getch()
+	{
+		if(input) return input.getch();
+		return '\0';
+	}
+	~this()
+	{
+		if(input) destroy(*input);
+	}
+}
+
 struct TerminalColors
 {
 	private Terminal* _t;

@@ -185,8 +185,10 @@ class HipArsd_TTF_Font : HipFont
         {
             import tinysdf;
             auto ptr = rch.data.ptr;
-            TinySDF sdf;
-            rch.data = sdf.generateWithPadding(rch.data, w, h, SDFPadding, w, h);
+            SDFResult res = bitmapToSDF(rch.data, w, h, 7, SDFPadding);
+            w = res.width;
+            h = res.height;
+            rch.data = res.pixels;
             version(WebAssembly){} //TODO: FIXME WEBASSEMBLY CANT FREE THAT
             else
                 stbtt_FreeBitmap(ptr, null);

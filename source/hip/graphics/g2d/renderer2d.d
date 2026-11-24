@@ -24,6 +24,8 @@ package __gshared
     HipOrthoCamera camera;
     Viewport viewport;
     IHipBatch lastBatch;
+    IHipFrameBuffer renderTarget;
+    Viewport renderTargetViewport;
     bool autoUpdateCameraAndViewport;
     float sharedDepth = 0;
 }
@@ -58,6 +60,9 @@ void initialize(HipInterpreterEntry entry = HipInterpreterEntry.init, bool shoul
     hiplog("2D Renderer: Initializing camera");
     camera = new HipOrthoCamera();
     camera.setSize(viewport.worldWidth, viewport.worldHeight);
+
+    renderTargetViewport = new Viewport(0,0,drawable[0], drawable[1]);
+    renderTargetViewport.setWorldSize(HipRenderer.width, HipRenderer.height);
 
     hiplog("2D Renderer: Initializing geometrybatch");
     geoBatch = new GeometryBatch(camera);
@@ -308,6 +313,26 @@ void beginRender2D(int frame)
 {
     if(geoBatch) geoBatch.beginFrame(frame);
     if(spBatch) spBatch.beginFrame(frame);
+}
+
+void setRenderTarget(IHipFrameBuffer fbo)
+{
+    if(renderTarget is fbo)
+        return;
+    finishRender2D();
+    if(renderTarget !is null)
+    {
+        // setViewport(viewport);
+        renderTarget.unbind();
+    }
+    renderTarget = fbo;
+    if(fbo !is null)
+    {
+        // renderTargetViewport.width = fbo.getWidth();
+        // renderTargetViewport.height = fbo.getHeight();
+        // setViewport(renderTargetViewport);
+        fbo.bind();
+    }
 }
 
 void finishRender2D()
