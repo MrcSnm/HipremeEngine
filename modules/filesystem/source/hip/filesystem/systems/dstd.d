@@ -36,7 +36,7 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
             std.file.write(path, data);
             return true;
         }
-        catch (std.file.FileException e)
+        catch (Exception e)
         {
             ErrorHandler.showErrorMessage("FileSystem Error", "Could not write '"~path~"': "~e.msg);
             return false;
@@ -58,7 +58,7 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
             std.file.remove(path);
             return true;
         }
-        catch (std.file.FileException e)
+        catch (Exception e)
         {
             ErrorHandler.showErrorMessage("FileSystem Error", "Could not remove '"~path~"': "~e.msg);
             return false;
@@ -73,7 +73,7 @@ version(HipDStdFile) class HipStdFileSystemInteraction : IHipFileSystemInteracti
         {
             return std.file.exists(path) && std.file.isDir(path);
         }
-        catch (std.file.FileException e)
+        catch (Exception e)
         {
             ErrorHandler.showErrorMessage("FileSystem Error", "Could not stat '"~path~"': "~e.msg);
             return false;

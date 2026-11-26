@@ -104,15 +104,23 @@
             "targetType": "dynamicLibrary"
         },
         {
+            "name": "psvita",
+            "subConfigurations": {
+                "game2d": "direct",
+                "hipreme_engine": "psvita"
+            },
+            "targetType": "staticLibrary"
+        },
+        {
             "lflags-windows": [
                 "/WX"
             ],
             "name": "run",
             "postGenerateCommands-linux": [
-                "cd ../../ && dub -c script -- ./projects/profile"
+                "cd C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine && redub -c script -- $PACKAGE_DIR"
             ],
             "postGenerateCommands-windows": [
-                "cd ..\\..\\ && dub -c script -- .\\projects\\profile"
+                "cd /d C:\\Users\\Marcelo\\Documents\\D\\HipremeEngine && redub -c script -- $PACKAGE_DIR"
             ],
             "targetType": "dynamicLibrary"
         }

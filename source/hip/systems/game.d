@@ -382,12 +382,14 @@ class GameSystem : IGameSystem
                     HipremeEngineGameDestroy();
                 scenes.length = 0;
                 externalScene = null;
-                hotload.dispose();
                 watcher.stop();
+                // Don't unload the game DLL on final quit. On DMD it links its own
+                // static druntime, so FreeLibrary runs its DllMain(DETACH) teardown
+                // under the loader lock, which can deadlock. The OS unloads it when
+                // the process exits. hotload.reload() still unloads during hot reload.
             }
         }
         import hip.assetmanager;
         HipAssetManager.dispose();
-
     }
 }

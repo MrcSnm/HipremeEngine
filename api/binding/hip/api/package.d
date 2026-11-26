@@ -62,6 +62,11 @@ mixin template HipEngineMain(alias StartScene, HipAssetLoadStrategy strategy = H
 		import hip.api.renderer.core;
 		import hip.api.internal;
 
+		// Keep this extra rt_init() to hold the DLL runtime alive. The DLL is not
+		// unloaded on final quit anymore; if its refcount reached 0 in
+		// DllMain(DETACH), its gc_term would run after the exe runtime is already
+		// gone (the DLL GC proxies to the exe GC), causing an access violation at
+		// process exit. With count staying at 1, the OS can unload it safely.
 		rt_init();
 		initializeHip();
 		initConsole();

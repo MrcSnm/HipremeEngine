@@ -57,3 +57,4 @@ build/appleos/D/libIncludes.json
 tools/internal/plugins/**/*.dll
 tools/internal/plugins/**/*.dylib
 tools/internal/plugins/**/*.so
+debug-files
